@@ -120,6 +120,18 @@ export const readConfigPresetImportBundle = async (context: AuthContext, user: A
   return readConfigPresetBundle(await loadConfigPresetImportZip(context, user, fileId));
 };
 
+const BUNDLE_ITEM_LABEL_MAX_LENGTH = 255;
+
+// The name a family gives to an item of the bundle, which is not trusted: only a non empty string is kept, cut to a length a row can show
+const bundleItemLabel = (family: ConfigPresetFamilyDefinition, item: ConfigPresetBundleItem): string | undefined => {
+  try {
+    const label = family.bundleItemLabel?.(item);
+    return typeof label === 'string' && label.trim() ? label.trim().slice(0, BUNDLE_ITEM_LABEL_MAX_LENGTH) : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 // What the importer of the family decides for an item. A family that requires the Enterprise Edition skips its items on a platform
 // without it. The platform is read at each call: a license applied since the preview is taken into account by the next
 // computation, and the real import computes before it writes.
@@ -134,7 +146,7 @@ export const computeConfigPresetItem = async (
   // The importer of a family the platform cannot import is never called: it may read through domain functions that refuse without
   // the Enterprise Edition, and what it would validate or find is of no use. The item is named by the family from its bundle entry, or after the family.
   if (!(await isConfigPresetFamilyAvailable(context, family))) {
-    const itemLabel = family.bundleItemLabel?.(item);
+    const itemLabel = bundleItemLabel(family, item);
     return { label: itemLabel ?? family.label, translatable: !itemLabel, exists: false, conflict: false, status: 'skipped', reason: CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED };
   }
   return family.importer!.compute(context, user, item, plan, mode);

@@ -66,6 +66,17 @@ describe('Import of a family that requires the Enterprise Edition (compute)', ()
     expect(family.importer!.compute).not.toHaveBeenCalled();
   });
 
+  it('does not trust what the family reads from the bundle: a name that is not text, empty or throws is ignored, a long one is cut', async () => {
+    enterpriseEdition.enabled = false;
+    const named = (read: () => unknown) => ({ ...futureFamily(), bundleItemLabel: read }) as unknown as ConfigPresetFamilyDefinition;
+    expect(await compute(named(() => 42), 'item', {})).toMatchObject({ label: 'Messages', translatable: true });
+    expect(await compute(named(() => '  '), 'item', {})).toMatchObject({ label: 'Messages', translatable: true });
+    expect(await compute(named(() => {
+      throw new Error('Malformed configuration');
+    }), 'item', {})).toMatchObject({ label: 'Messages', translatable: true });
+    expect((await compute(named(() => 'a'.repeat(1000)), 'item', {})).label).toHaveLength(255);
+  });
+
   it('takes a license applied since the last computation into account, without any state to refresh', async () => {
     const family = futureFamily();
     enterpriseEdition.enabled = false;
