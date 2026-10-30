@@ -59,7 +59,7 @@ const newsFeedBlogPostsDeletedSubscription = graphql`
 
 const newsFeedBlogPostsMarkAllAsReadMutation = graphql`
   mutation NewsFeedBlogPostsMarkAllAsReadMutation {
-    markAllNewsFeedItemsAsRead
+    markAllNewsFeedItemsAsRead(category: BLOG_POST)
   }
 `;
 
@@ -95,7 +95,17 @@ const NewsFeedBlogPostsComponent: FunctionComponent<NewsFeedBlogPostsComponentPr
   const blogPosts = (data.myNewsFeeds?.edges ?? []).flatMap((edge) => (edge?.node ? [edge.node] : []));
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 24 }}>
+      {blogPosts.length === 0 ? (
+        <Text variant="content-base">{t_i18n('No blog post for the moment')}</Text>
+      ) : (
+        // 3 cards per row at most, fewer when the page is too narrow to keep the cards readable
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(max(320px, calc((100% - 48px) / 3)), 1fr))', gap: 24 }}>
+          {blogPosts.map((blogPost) => (
+            <NewsFeedBlogPostCard key={blogPost.id} item={blogPost} />
+          ))}
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button
           variant="secondary"
@@ -108,15 +118,6 @@ const NewsFeedBlogPostsComponent: FunctionComponent<NewsFeedBlogPostsComponentPr
           {t_i18n('See all')}
         </Button>
       </div>
-      {blogPosts.length === 0 ? (
-        <Text variant="content-base">{t_i18n('No blog post for the moment')}</Text>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
-          {blogPosts.map((blogPost) => (
-            <NewsFeedBlogPostCard key={blogPost.id} item={blogPost} />
-          ))}
-        </div>
-      )}
     </div>
   );
 };

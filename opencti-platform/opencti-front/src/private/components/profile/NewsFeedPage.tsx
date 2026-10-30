@@ -40,7 +40,8 @@ const newsFeedPageSettingsFragment = graphql`
 
 const newsFeedPageQuery = graphql`
   query NewsFeedPageQuery {
-    myUnreadNewsFeedsCount
+    myUnreadResourcesCount: myUnreadNewsFeedsCount(category: RESOURCE)
+    myUnreadBlogPostsCount: myUnreadNewsFeedsCount(category: BLOG_POST)
     settings {
       ...NewsFeedPageSettings_settings
     }
@@ -50,7 +51,8 @@ const newsFeedPageQuery = graphql`
 const newsFeedNumberSubscription = graphql`
   subscription NewsFeedPageNewsFeedNumberSubscription {
     newsFeedsNumber {
-      count
+      resource_count
+      blog_post_count
     }
   }
 `;
@@ -68,15 +70,15 @@ const NewsFeedPage: FunctionComponent = () => {
 
   const data = useLazyLoadQuery<NewsFeedPageQuery>(newsFeedPageQuery, {});
   const [activeTab, setActiveTab] = useState<NewsFeedTab>('news-feed');
-  const [liveNewsFeedsCount, setLiveNewsFeedsCount] = useState<number | null>(null);
+  const [liveCounts, setLiveCounts] = useState<{ resources: number | null; blogPosts: number | null }>({ resources: null, blogPosts: null });
 
   const isUnsubscribedFromAllNewsFeeds = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const handleNewNewsFeedNumber = useCallback((
     response: NewsFeedPageNewsFeedNumberSubscription$data | null | undefined | unknown,
   ) => {
-    const count = response ? (response as NewsFeedPageNewsFeedNumberSubscription$data).newsFeedsNumber?.count : null;
-    setLiveNewsFeedsCount(count ?? null);
-  }, [setLiveNewsFeedsCount]);
+    const newsFeedsNumber = response ? (response as NewsFeedPageNewsFeedNumberSubscription$data).newsFeedsNumber : null;
+    setLiveCounts({ resources: newsFeedsNumber?.resource_count ?? null, blogPosts: newsFeedsNumber?.blog_post_count ?? null });
+  }, [setLiveCounts]);
 
   const shouldSubscribeToNewsFeed = isXTMHubRegistered && !isUnsubscribedFromAllNewsFeeds;
   useEffect(() => {
@@ -89,9 +91,9 @@ const NewsFeedPage: FunctionComponent = () => {
     return () => sub.dispose();
   }, [shouldSubscribeToNewsFeed, handleNewNewsFeedNumber]);
 
-  const unreadNewsFeedsCount = shouldSubscribeToNewsFeed && liveNewsFeedsCount !== null
-    ? liveNewsFeedsCount
-    : (shouldSubscribeToNewsFeed ? (data.myUnreadNewsFeedsCount ?? 0) : 0);
+  // Resources and blog posts are counted, and read, independently: each tab shows its own unread count.
+  const unreadResourcesCount = shouldSubscribeToNewsFeed ? (liveCounts.resources ?? data.myUnreadResourcesCount ?? 0) : 0;
+  const unreadBlogPostsCount = shouldSubscribeToNewsFeed ? (liveCounts.blogPosts ?? data.myUnreadBlogPostsCount ?? 0) : 0;
 
   const handleSubmitField = (name: string, value: string[]) => {
     const variables: NewsFeedPageFieldPatchMutation$variables = {
@@ -138,10 +140,10 @@ const NewsFeedPage: FunctionComponent = () => {
           <TabsTrigger
             value="news-feed"
             icon={<CampaignOutlined fontSize="small" />}
-            badge={unreadNewsFeedsCount}
+            badge={unreadResourcesCount}
             badgeMax={99}
             badgeColor="error"
-            badgeInvisible={unreadNewsFeedsCount === 0}
+            badgeInvisible={unreadResourcesCount === 0}
           >
             {t_i18n('News feed')}
           </TabsTrigger>
@@ -149,6 +151,10 @@ const NewsFeedPage: FunctionComponent = () => {
             <TabsTrigger
               value="blog-posts"
               icon={<ArticleOutlined fontSize="small" />}
+              badge={unreadBlogPostsCount}
+              badgeMax={99}
+              badgeColor="error"
+              badgeInvisible={unreadBlogPostsCount === 0}
             >
               {t_i18n('Blogpost')}
             </TabsTrigger>

@@ -52,6 +52,12 @@ describe('NewsFeedBlogPostCard', () => {
       expect(screen.getByText('7 min read')).toBeInTheDocument();
     });
 
+    it('renders a long title entirely, without truncation', () => {
+      const longTitle = 'A very long blog post title '.repeat(12).trim();
+      renderCard(buildItem({ title: longTitle }));
+      expect(screen.getByText(longTitle)).toBeInTheDocument();
+    });
+
     it('renders the tags', () => {
       renderCard(buildItem());
       expect(screen.getByText('Threat Intelligence')).toBeInTheDocument();

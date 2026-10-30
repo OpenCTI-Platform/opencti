@@ -1,4 +1,5 @@
 import { Card, CardContent, CardFooter, CardHeader, CardSubtitle, CardTitle } from '@filigran/design-system';
+import { Box } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
 import Tag from '../../../components/common/tag/Tag';
 import { useFormatter } from '../../../components/i18n';
@@ -17,6 +18,20 @@ export interface NewsFeedBlogPostData {
 interface NewsFeedBlogPostCardProps {
   item: NewsFeedBlogPostData;
 }
+
+// Blog titles can be long: the design system truncates the card title on one line, here it is
+// entirely displayed instead, in a smaller size so it stays compact.
+const titleSx = {
+  '& .truncate': {
+    overflow: 'visible',
+    whiteSpace: 'normal',
+    textOverflow: 'clip',
+    overflowWrap: 'anywhere',
+    fontSize: 'var(--text-title-xs)',
+    lineHeight: 'var(--leading-title-xs)',
+    fontWeight: 'var(--font-weight-title-xs)',
+  },
+};
 
 const NewsFeedBlogPostCard: FunctionComponent<NewsFeedBlogPostCardProps> = ({ item }) => {
   const { t_i18n, fsd } = useFormatter();
@@ -52,7 +67,9 @@ const NewsFeedBlogPostCard: FunctionComponent<NewsFeedBlogPostCardProps> = ({ it
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 24 }}>
         <CardHeader>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, flex: 1 }}>
-            <CardTitle as="h3">{item.title}</CardTitle>
+            <Box sx={titleSx}>
+              <CardTitle as="h3">{item.title}</CardTitle>
+            </Box>
             {hasSubtitle && (
               <CardSubtitle
                 endAdornment={readMinutes !== undefined

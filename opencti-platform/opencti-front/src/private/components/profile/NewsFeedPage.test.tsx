@@ -68,10 +68,12 @@ const renderPage = (options?: {
   settings?: Record<string, unknown>;
   me?: Record<string, unknown>;
   unreadCount?: number | null;
+  unreadBlogPostsCount?: number | null;
 }) => {
   const settings = options?.settings ?? REGISTERED_SETTINGS;
   mockUseLazyLoadQuery.mockReturnValue({
-    myUnreadNewsFeedsCount: options?.unreadCount ?? 0,
+    myUnreadResourcesCount: options?.unreadCount ?? 0,
+    myUnreadBlogPostsCount: options?.unreadBlogPostsCount ?? 0,
     settings,
   });
   return testRender(<NewsFeedPage />, {
@@ -82,11 +84,19 @@ const renderPage = (options?: {
   });
 };
 
-const emitNewsFeedNumber = (count: number | null) => act(() => {
-  subscriptionOnNext?.({ newsFeedsNumber: count === null ? null : { count } });
+const emitNewsFeedNumber = (resourceCount: number | null, blogPostCount: number | null = null) => act(() => {
+  subscriptionOnNext?.({
+    newsFeedsNumber: resourceCount === null && blogPostCount === null
+      ? null
+      : { resource_count: resourceCount, blog_post_count: blogPostCount },
+  });
 });
 
-const getBadge = () => document.querySelector('[aria-label$="items"]');
+const BLOG_POST_SETTINGS = { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed_types: ['BLOG_POST'] };
+
+const getTabBadge = (tabName: RegExp) => screen.getByRole('tab', { name: tabName }).querySelector('[aria-label$="items"]');
+const getBadge = () => getTabBadge(/News feed/);
+const getBlogPostsBadge = () => getTabBadge(/Blogpost/);
 
 describe('NewsFeedPage', () => {
   beforeEach(() => {
@@ -173,6 +183,30 @@ describe('NewsFeedPage', () => {
   it('hides the badge when the platform is not registered', () => {
     renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_registration_status: 'not_registered' }, unreadCount: 4 });
     expect(getBadge()).not.toBeInTheDocument();
+  });
+
+  it('displays the unread blog posts count on the blog posts tab only', () => {
+    renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 2, unreadBlogPostsCount: 5 });
+    expect(getBlogPostsBadge()).toHaveTextContent('5');
+    expect(getBadge()).toHaveTextContent('2');
+  });
+
+  it('does not count the blog posts on the news feed tab', () => {
+    renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 0, unreadBlogPostsCount: 5 });
+    expect(getBadge()).not.toBeInTheDocument();
+    expect(getBlogPostsBadge()).toHaveTextContent('5');
+  });
+
+  it('hides the blog posts badge when there is no unread blog post', () => {
+    renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 3, unreadBlogPostsCount: 0 });
+    expect(getBlogPostsBadge()).not.toBeInTheDocument();
+  });
+
+  it('updates each badge with its own live count', () => {
+    renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 2, unreadBlogPostsCount: 5 });
+    emitNewsFeedNumber(7, 0);
+    expect(getBadge()).toHaveTextContent('7');
+    expect(getBlogPostsBadge()).not.toBeInTheDocument();
   });
 
   it('hides the disconnected banner when the platform is registered', () => {

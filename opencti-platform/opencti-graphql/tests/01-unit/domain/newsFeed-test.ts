@@ -8,6 +8,7 @@ import {
   upsertNewsFeed,
   cleanOldNewsFeedItems,
 } from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
+import { NewsFeedCategory } from '../../../src/generated/graphql';
 import { NewsFeedItemType } from '../../../src/modules/xtm/hub/news-feed/news-feed-types';
 import type { NewsFeedAddInput } from '../../../src/modules/xtm/hub/news-feed/news-feed-types';
 import { ALREADY_DELETED_ERROR } from '../../../src/config/errors';
@@ -172,14 +173,15 @@ describe('News feed', () => {
 
     it('should notify with the unread count for the created item user_id', async () => {
       mockCreateInternalObject.mockResolvedValue({ id: 'new-id', user_id: mockUser.id });
-      mockElCount.mockResolvedValue(3);
+      // blog posts count first, then resources count
+      mockElCount.mockResolvedValueOnce(1).mockResolvedValueOnce(2);
 
       await addNewsFeed(mockContext, mockUser, baseInput);
 
       expect(mockNotify).toHaveBeenCalledOnce();
       expect(mockNotify).toHaveBeenCalledWith(
         'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
-        { count: 3, user_id: mockUser.id },
+        { count: 3, blog_post_count: 1, resource_count: 2, user_id: mockUser.id },
         mockUser,
       );
     });
@@ -187,13 +189,13 @@ describe('News feed', () => {
     it('should use the user_id from the created entity (not from the auth user) when notifying', async () => {
       const differentUserId = 'different-user-99';
       mockCreateInternalObject.mockResolvedValue({ id: 'new-id', user_id: differentUserId });
-      mockElCount.mockResolvedValue(2);
+      mockElCount.mockResolvedValueOnce(0).mockResolvedValueOnce(2);
 
       await addNewsFeed(mockContext, mockUser, { ...baseInput, user_id: differentUserId });
 
       expect(mockNotify).toHaveBeenCalledWith(
         'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
-        { count: 2, user_id: differentUserId },
+        { count: 2, blog_post_count: 0, resource_count: 2, user_id: differentUserId },
         mockUser,
       );
     });
@@ -287,6 +289,53 @@ describe('News feed', () => {
       );
     });
 
+    it('should not filter on the type when no category is given', async () => {
+      mockElCount.mockResolvedValue(1);
+
+      await myUnreadNewsFeedsCount(mockContext, mockUser);
+
+      const { filters } = mockElCount.mock.calls[0][3];
+      expect(filters.filters.some((f: { key: unknown }) => f.key === 'news_feed_type' || (Array.isArray(f.key) && f.key[0] === 'news_feed_type'))).toBe(false);
+    });
+
+    it('should only count the blog posts for the blog post category', async () => {
+      mockElCount.mockResolvedValue(1);
+
+      await myUnreadNewsFeedsCount(mockContext, mockUser, null, NewsFeedCategory.BlogPost);
+
+      expect(mockElCount).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        expect.any(String),
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            filters: expect.arrayContaining([
+              { key: ['news_feed_type'], values: ['BLOG_POST'] },
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('should count everything but the blog posts for the resource category', async () => {
+      mockElCount.mockResolvedValue(1);
+
+      await myUnreadNewsFeedsCount(mockContext, mockUser, null, NewsFeedCategory.Resource);
+
+      expect(mockElCount).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        expect.any(String),
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            filters: expect.arrayContaining([
+              { key: ['news_feed_type'], values: ['BLOG_POST'], operator: 'not_eq' },
+            ]),
+          }),
+        }),
+      );
+    });
+
     it('should return the count from elCount when a userId is provided', async () => {
       mockElCount.mockResolvedValue(7);
 
@@ -366,11 +415,11 @@ describe('News feed', () => {
 
       await markAllNewsFeedItemsAsRead(mockContext, mockUser);
 
-      expect(mockElCount).toHaveBeenCalledOnce();
+      expect(mockElCount).toHaveBeenCalledTimes(2);
       expect(mockNotify).toHaveBeenCalledOnce();
       expect(mockNotify).toHaveBeenCalledWith(
         'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
-        { count: 0, user_id: mockUser.id },
+        { count: 0, blog_post_count: 0, resource_count: 0, user_id: mockUser.id },
         mockUser,
       );
     });
@@ -378,16 +427,54 @@ describe('News feed', () => {
     it('should notify with a non-zero count if new unread items appeared concurrently', async () => {
       mockFullEntitiesList.mockResolvedValue([{ id: 'item-1', is_read: false }]);
       // Simulate a concurrent new unread item arriving after the patches
-      mockElCount.mockResolvedValue(1);
+      mockElCount.mockResolvedValueOnce(1).mockResolvedValueOnce(0);
 
       await markAllNewsFeedItemsAsRead(mockContext, mockUser);
 
-      expect(mockElCount).toHaveBeenCalledOnce();
+      expect(mockElCount).toHaveBeenCalledTimes(2);
       expect(mockNotify).toHaveBeenCalledOnce();
       expect(mockNotify).toHaveBeenCalledWith(
         'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
-        { count: 1, user_id: mockUser.id },
+        { count: 1, blog_post_count: 1, resource_count: 0, user_id: mockUser.id },
         mockUser,
+      );
+    });
+
+    it('should only mark the blog posts as read for the blog post category', async () => {
+      mockFullEntitiesList.mockResolvedValue([]);
+
+      await markAllNewsFeedItemsAsRead(mockContext, mockUser, NewsFeedCategory.BlogPost);
+
+      expect(mockFullEntitiesList).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        ['NewsFeedItem'],
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            filters: expect.arrayContaining([
+              { key: ['news_feed_type'], values: ['BLOG_POST'] },
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('should only mark the resources as read for the resource category', async () => {
+      mockFullEntitiesList.mockResolvedValue([]);
+
+      await markAllNewsFeedItemsAsRead(mockContext, mockUser, NewsFeedCategory.Resource);
+
+      expect(mockFullEntitiesList).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        ['NewsFeedItem'],
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            filters: expect.arrayContaining([
+              { key: ['news_feed_type'], values: ['BLOG_POST'], operator: 'not_eq' },
+            ]),
+          }),
+        }),
       );
     });
   });

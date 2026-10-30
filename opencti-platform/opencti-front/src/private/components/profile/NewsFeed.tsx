@@ -124,7 +124,7 @@ const newsFeedItemDeletedSubscription = graphql`
 
 const markAllNewsFeedItemsAsReadMutation = graphql`
   mutation NewsFeedMarkAllAsReadMutation {
-    markAllNewsFeedItemsAsRead
+    markAllNewsFeedItemsAsRead(category: RESOURCE)
   }
 `;
 

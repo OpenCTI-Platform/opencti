@@ -9178,7 +9178,7 @@ type Query {
   form(id: ID!): Form
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
   myNewsFeeds(first: Int, after: ID, orderBy: NewsFeedItemsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): NewsFeedItemConnection
-  myUnreadNewsFeedsCount: Int
+  myUnreadNewsFeedsCount(category: NewsFeedCategory): Int
   availableSecrets: [AvailableSecretInfo!]!
   authenticationProvider(id: String!): AuthenticationProvider
   authenticationProviders(first: Int, after: ID, orderBy: AuthenticationProviderOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AuthenticationProviderConnection
@@ -10137,7 +10137,7 @@ type Mutation {
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   contactUsXtmHub(message: String!): Success!
-  markAllNewsFeedItemsAsRead: Boolean
+  markAllNewsFeedItemsAsRead(category: NewsFeedCategory): Boolean
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
   oidcProviderAdd(input: OidcInput!): AuthenticationProvider
   oidcProviderEdit(id: ID!, input: OidcInput!): AuthenticationProvider
@@ -16610,9 +16610,16 @@ type NewsFeedItemEdge {
   node: NewsFeedItem!
 }
 
+enum NewsFeedCategory {
+  BLOG_POST
+  RESOURCE
+}
+
 type NewsFeedCount {
   user_id: String
   count: Int
+  blog_post_count: Int
+  resource_count: Int
 }
 
 type Metric {

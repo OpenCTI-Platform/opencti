@@ -1,29 +1,50 @@
 import type { AuthContext, AuthUser } from '../../../../types/user';
 import { ENTITY_TYPE_NEWS_FEED_ITEM, NEWS_FEED_NUMBER, type BasicStoreEntityNewsFeedItem, type StoreEntityNewsFeedItem } from './news-feed-types';
-import type { NewsFeedAddInput } from './news-feed-types';
+import { NewsFeedItemType, type NewsFeedAddInput } from './news-feed-types';
 import { createInternalObject } from '../../../../domain/internalObject';
 import { addFilter } from '../../../../utils/filtering/filtering-utils';
 import { fullEntitiesList, pageEntitiesConnection } from '../../../../database/middleware-loader';
 import { elCount, elPaginate } from '../../../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../../../database/utils';
-import { FilterMode, FilterOperator, type QueryMyNewsFeedsArgs } from '../../../../generated/graphql';
+import { FilterMode, FilterOperator, NewsFeedCategory, type QueryMyNewsFeedsArgs } from '../../../../generated/graphql';
 import { notify } from '../../../../database/redis';
 import { deleteElementById, patchAttribute } from '../../../../database/middleware';
 import { BUS_TOPICS, logApp } from '../../../../config/conf';
 import { ALREADY_DELETED_ERROR } from '../../../../config/errors';
 import { promiseMap } from '../../../../utils/promiseUtils';
 
-export const myUnreadNewsFeedsCount = (context: AuthContext, user: AuthUser, userId?: string | null) => {
+// Blog posts and resources are read independently: each one has its own tab in the news feed page.
+const categoryFilters = (category?: NewsFeedCategory | null) => {
+  if (category === NewsFeedCategory.BlogPost) {
+    return [{ key: ['news_feed_type'], values: [NewsFeedItemType.BLOG_POST] }];
+  }
+  if (category === NewsFeedCategory.Resource) {
+    return [{ key: ['news_feed_type'], values: [NewsFeedItemType.BLOG_POST], operator: FilterOperator.NotEq }];
+  }
+  return [];
+};
+
+export const myUnreadNewsFeedsCount = (context: AuthContext, user: AuthUser, userId?: string | null, category?: NewsFeedCategory | null) => {
   const queryFilters = {
     mode: FilterMode.And,
     filters: [
       { key: 'user_id', values: [userId ?? user.id] },
       { key: 'is_read', values: [false] },
+      ...categoryFilters(category),
     ],
     filterGroups: [],
   };
   const queryArgs = { filters: queryFilters, types: [ENTITY_TYPE_NEWS_FEED_ITEM] };
   return elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, queryArgs);
+};
+
+const notifyUnreadNewsFeedsCount = async (context: AuthContext, user: AuthUser, userId: string) => {
+  const [blogPostCount, resourceCount] = await Promise.all([
+    myUnreadNewsFeedsCount(context, user, userId, NewsFeedCategory.BlogPost),
+    myUnreadNewsFeedsCount(context, user, userId, NewsFeedCategory.Resource),
+  ]);
+  const payload = { count: blogPostCount + resourceCount, blog_post_count: blogPostCount, resource_count: resourceCount, user_id: userId };
+  await notify(BUS_TOPICS[NEWS_FEED_NUMBER].EDIT_TOPIC, payload, user);
 };
 
 export const myNewsFeedsFind = (context: AuthContext, user: AuthUser, opts: QueryMyNewsFeedsArgs) => {
@@ -47,8 +68,7 @@ export const addNewsFeed = async (context: AuthContext, user: AuthUser, input: N
     tags: input.tags ?? [],
   };
   const created = await createInternalObject<StoreEntityNewsFeedItem>(context, user, newsFeedToCreate, ENTITY_TYPE_NEWS_FEED_ITEM);
-  const unreadNewsFeedsCount = await myUnreadNewsFeedsCount(context, user, created.user_id);
-  await notify(BUS_TOPICS[NEWS_FEED_NUMBER].EDIT_TOPIC, { count: unreadNewsFeedsCount, user_id: created.user_id }, user);
+  await notifyUnreadNewsFeedsCount(context, user, created.user_id);
   return created;
 };
 
@@ -97,27 +117,24 @@ export const deleteNewsFeedItemsByExternalId = async (context: AuthContext, user
     await notify(BUS_TOPICS[ENTITY_TYPE_NEWS_FEED_ITEM].DELETE_TOPIC, item, user);
   }, 5);
 
-  await promiseMap(Array.from(impactedUsers), async (userId) => {
-    const unreadNewsFeedsCount = await myUnreadNewsFeedsCount(context, user, userId);
-    await notify(BUS_TOPICS[NEWS_FEED_NUMBER].EDIT_TOPIC, { count: unreadNewsFeedsCount, user_id: userId }, user);
-  }, 5);
+  await promiseMap(Array.from(impactedUsers), (userId) => notifyUnreadNewsFeedsCount(context, user, userId), 5);
 
   return toDelete.length;
 };
 
-export const markAllNewsFeedItemsAsRead = async (context: AuthContext, user: AuthUser): Promise<boolean> => {
+export const markAllNewsFeedItemsAsRead = async (context: AuthContext, user: AuthUser, category?: NewsFeedCategory | null): Promise<boolean> => {
   const queryFilters = {
     mode: FilterMode.And,
     filters: [
       { key: ['user_id'], values: [user.id] },
       { key: ['is_read'], values: [false] },
+      ...categoryFilters(category),
     ],
     filterGroups: [],
   };
   const unreadItems = await fullEntitiesList<BasicStoreEntityNewsFeedItem>(context, user, [ENTITY_TYPE_NEWS_FEED_ITEM], { filters: queryFilters });
   await promiseMap(unreadItems, (item) => patchAttribute(context, user, item.id, ENTITY_TYPE_NEWS_FEED_ITEM, { is_read: true }), 5);
-  const remainingUnreadCount = await myUnreadNewsFeedsCount(context, user);
-  await notify(BUS_TOPICS[NEWS_FEED_NUMBER].EDIT_TOPIC, { count: remainingUnreadCount, user_id: user.id }, user);
+  await notifyUnreadNewsFeedsCount(context, user, user.id);
   return true;
 };
 
