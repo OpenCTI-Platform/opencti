@@ -35,8 +35,9 @@ const UNSUPPORTED_INTPUT_PROPS = ['_id', 'sort', 'i_attributes', 'i_relation']; 
 export const EVENT_SCOPE_VALUES = [
   'create', 'update', 'delete', 'merge', 'read', 'search', 'enrich', 'download', 'import', 'export', 'send', 'login', 'logout', 'unauthorized', 'disseminate', 'forgot',
   'critical', 'degraded', 'recovered',
+  'user_action_error', 'graphql_error', 'functional_error', 'technical_error',
 ];
-export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command', 'ingestion_health'];
+export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command', 'ingestion_health', 'error'];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
 
