@@ -28,6 +28,7 @@ import type {
 
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
 export const HEALTH_CHECK_USER_MISSING_CAPABILITY = 'USER_MISSING_CAPABILITY';
+export const HEALTH_CHECK_USER_DISABLED = 'USER_DISABLED';
 export const HEALTH_CHECK_HEARTBEAT_MISSING = 'HEARTBEAT_MISSING';
 export const HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT = 'USER_NOT_SERVICE_ACCOUNT';
 export const HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED = 'FEED_AND_SYNC_EXECUTION_FAILED';
@@ -41,6 +42,7 @@ export type HealthCheckCode = typeof HEALTH_CHECK_USER_MISSING
   | typeof HEALTH_CHECK_CONNECTOR_ERROR_REPORTED
   | typeof HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED
   | typeof HEALTH_CHECK_USER_MISSING_CAPABILITY
+  | typeof HEALTH_CHECK_USER_DISABLED
   | typeof HEALTH_CHECK_HEARTBEAT_MISSING
   | typeof HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT
   | typeof HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED
@@ -122,6 +124,16 @@ export const HEALTH_CHECK_REGISTRY = {
         metadata: { capability, capability_description: findCapabilityDescription(capability) ?? capability },
       }];
     },
+  },
+  // The platform refuses to authenticate a disabled user (locked, expired...): a connector can neither register nor ping,
+  // and the worker impersonating the user of a feed or a sync is refused too.
+  [HEALTH_CHECK_USER_DISABLED]: {
+    kind: IngestionHealthCheckKind.Configuration,
+    label: 'User is disabled',
+    // Only an existing user: a missing one is reported by USER_MISSING. Internal users (system...) are never disabled:
+    // a feed or a sync without user runs as the system user, so it is never judged
+    isEnabled: (_, { user }) => !!user && !user.internal,
+    getFailures: (_, { user }) => (user?.disabled ? [{ severity: IngestionHealthCheckSeverity.Blocking }] : []),
   },
   // An ingestion should not depend on a person: a regular user leaving or changing rights breaks it
   [HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT]: {

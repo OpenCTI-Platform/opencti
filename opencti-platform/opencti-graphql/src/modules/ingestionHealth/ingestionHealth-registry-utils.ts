@@ -1,6 +1,8 @@
 import { redisGetIngestionLogHistory } from '../../database/redis';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../../schema/internalObject';
-import { durationInMs } from '../../utils/format';
+import { ACCOUNT_STATUS_ACTIVE } from '../../config/conf';
+import type { AuthUser } from '../../types/user';
+import { durationInMs, utcDate } from '../../utils/format';
 import { CONNECTOR_LIVELINESS_GRACE_PERIOD_MS, type ConnectorInfoError } from '../connector/connector-types';
 import { redisGetConnectorErrors } from '../connector/connector-redis';
 import type { IngestionHealthCheckSeverity } from '../../generated/graphql';
@@ -30,6 +32,18 @@ export const getIngestorUserId = (ingestor: HealthCheckIngestor) => {
 // Feeds and syncs enforce none: absent, the check does not apply
 export const REQUIRED_CAPABILITY_BY_INGESTOR_TYPE: Record<string, string> = {
   [ENTITY_TYPE_CONNECTOR]: 'CONNECTORAPI',
+};
+
+// endregion
+// region USER_DISABLED
+
+/**
+ * Whether the platform refuses to authenticate the user: same rule as the validation of a user at login,
+ * an account status other than active, or a lock date in the past (the expiration manager only updates the status later).
+ */
+export const isUserDisabled = (user: Pick<AuthUser, 'account_status' | 'account_lock_after_date'>): boolean => {
+  return user.account_status !== ACCOUNT_STATUS_ACTIVE
+    || (!!user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date)));
 };
 
 // endregion

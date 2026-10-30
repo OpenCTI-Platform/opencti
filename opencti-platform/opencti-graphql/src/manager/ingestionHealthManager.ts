@@ -36,7 +36,7 @@ import { findRegularlyPingingConnectors, isConnectorStopped } from '../modules/c
 import { isSyncRunning } from '../domain/connector';
 import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
 import type { RuntimeData } from '../modules/ingestionHealth/ingestionHealth-registry';
-import { getIngestorUserId } from '../modules/ingestionHealth/ingestionHealth-registry-utils';
+import { getIngestorUserId, isUserDisabled } from '../modules/ingestionHealth/ingestionHealth-registry-utils';
 
 const INGESTION_HEALTH_MANAGER_ENABLED = booleanConf('ingestion_health_manager:enabled', true);
 const INGESTION_HEALTH_MANAGER_KEY = conf.get('ingestion_health_manager:lock_key') || 'ingestion_health_manager_lock';
@@ -184,7 +184,12 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     const internal = userId in INTERNAL_USERS;
     const authUser = internal ? INTERNAL_USERS[userId] : users.get(userId); // Ensure userID exist in user list or INTERNAL_USERS
     return authUser
-      ? { internal, user_service_account: authUser.user_service_account === true, hasCapability: (capability) => isUserHasCapability(authUser, capability) }
+      ? {
+          internal,
+          user_service_account: authUser.user_service_account === true,
+          disabled: isUserDisabled(authUser),
+          hasCapability: (capability) => isUserHasCapability(authUser, capability),
+        }
       : undefined;
   };
   const { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks } = await getResolvedIngestionHealthSettings(context, INGESTION_HEALTH_MANAGER_USER);

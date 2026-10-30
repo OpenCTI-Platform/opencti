@@ -622,6 +622,7 @@ describe('Settings ingestion health behavior', () => {
   const ALL_CHECKS_ENABLED = {
     USER_MISSING: true,
     USER_MISSING_CAPABILITY: true,
+    USER_DISABLED: true,
     USER_NOT_SERVICE_ACCOUNT: true,
     HEARTBEAT_MISSING: true,
     FEED_AND_SYNC_EXECUTION_FAILED: true,
@@ -691,7 +692,7 @@ describe('Settings ingestion health behavior', () => {
 
   it('should reject unknown or duplicated disabled health checks and keep the stored ones', async () => {
     const { id } = await readSettings();
-    const error = 'Invalid disabled health checks, expected distinct codes among USER_MISSING, USER_MISSING_CAPABILITY, USER_NOT_SERVICE_ACCOUNT, HEARTBEAT_MISSING, FEED_AND_SYNC_EXECUTION_FAILED, SOURCE_ACCESS_DENIED, LAST_RUN_FAILED, CONNECTOR_ERROR_REPORTED, CONNECTOR_CRITICAL_ERROR_REPORTED';
+    const error = 'Invalid disabled health checks, expected distinct codes among USER_MISSING, USER_MISSING_CAPABILITY, USER_DISABLED, USER_NOT_SERVICE_ACCOUNT, HEARTBEAT_MISSING, FEED_AND_SYNC_EXECUTION_FAILED, SOURCE_ACCESS_DENIED, LAST_RUN_FAILED, CONNECTOR_ERROR_REPORTED, CONNECTOR_CRITICAL_ERROR_REPORTED';
     await queryAsAdminWithError(editSettings(id, { notification_delay: 120000, disabled_health_checks: ['UNKNOWN_CHECK'] }), error);
     await queryAsAdminWithError(editSettings(id, { notification_delay: 120000, disabled_health_checks: ['USER_MISSING', 'USER_MISSING'] }), error);
     const settings = await readSettings();
