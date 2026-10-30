@@ -569,6 +569,7 @@ type HistoryChange {
   changes_removed: [String!]
 }
 type ContextData {
+  file_id: String
   entity_id: String
   entity_name: String
   entity_type: String
@@ -1264,6 +1265,10 @@ type PlatformProtectedSensitiveConfig {
   file_indexing: PlatformProtectedSubConfig!
   platform_organization: PlatformProtectedSubConfig!
 }
+enum PlatformBootstrapStatus {
+  pending
+  completed
+}
 enum CGUStatus {
   pending
   disabled
@@ -1410,6 +1415,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_providers: [Provider!]!
   platform_user_statuses: [UserStatus!]!
   platform_language: String
+  platform_date_format: DateFormat
+  platform_time_format: TimeFormat
   platform_theme: Theme
   platform_map_tile_server_dark: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
   platform_map_tile_server_light: String @deprecated(reason: "Replaced by client-side PMTiles rendering (#17254). Kept for API backward-compatibility, always returns null.")
@@ -1433,6 +1440,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_feature_flags: [Module!]
   platform_critical_alerts: [PlatformCriticalAlert!]!
   platform_trash_enabled: Boolean!
+  platform_bootstrap_wizard_enabled: Boolean!
+  platform_bootstrap_status: PlatformBootstrapStatus @ff(flags: ["CONFIG_PRESET"], softFail: true)
   platform_translations: String
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   is_authentication_by_env: Boolean
@@ -1575,6 +1584,18 @@ enum UnitSystem {
   auto
   Metric
   Imperial
+}
+# How dates are written in tables. "auto" follows the platform for a user, and the language for the platform.
+enum DateFormat {
+  auto
+  iso
+}
+# Time shown with the dates of tables. "auto" follows the platform for a user, and keeps the default of each column for the platform.
+enum TimeFormat {
+  auto
+  none
+  minutes
+  seconds
 }
 type CreatorConnection {
   pageInfo: PageInfo!

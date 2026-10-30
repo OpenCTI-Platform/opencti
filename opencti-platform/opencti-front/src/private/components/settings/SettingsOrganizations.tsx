@@ -40,7 +40,7 @@ const SettingsOrganizations = () => {
   };
 
   const queryRef = useQueryLoading<SettingsOrganizationsLinesPaginationQuery>(settingsOrganizationsLinesQuery, paginationOptions);
-  const { fd, t_i18n } = useFormatter();
+  const { ftd, t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Organizations | Security | Settings'));
 
@@ -61,13 +61,13 @@ const SettingsOrganizations = () => {
       label: 'Original creation date',
       width: '25%',
       isSortable: true,
-      render: (node: Organization) => fd(node.created),
+      render: (node: Organization) => ftd(node.created),
     },
     modified: {
       label: 'Modification date',
       width: '25%',
       isSortable: true,
-      render: (node: Organization) => fd(node.modified),
+      render: (node: Organization) => ftd(node.modified),
     },
   };
   return (

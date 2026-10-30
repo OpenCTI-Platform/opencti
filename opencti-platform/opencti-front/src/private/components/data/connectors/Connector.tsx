@@ -1,6 +1,6 @@
 import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
-import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
-import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
+import IntegrationStatusChip from '@components/data/connectors/IntegrationStatusChip';
+import ConnectorHealthAlerts from '@components/data/connectors/ConnectorHealthAlerts';
 import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
 import UpdateIcon from '@mui/icons-material/Update';
 import Alert from '@mui/material/Alert';
@@ -759,6 +759,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     );
   }, [connector.manager_connector_logs, theme, t_i18n]);
 
+  const connectorStatus = computeConnectorStatus(connector, isFeatureEnable('INGESTION_HEALTH'));
   const managedConnectorDisplayName = (() => {
     if (!connector.is_managed) {
       return connector.name;
@@ -992,8 +993,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </span>
               </Tooltip>
               <div style={{ display: 'flex', flexShrink: 0, gap: theme.spacing(1) }}>
-                <ConnectorStatusChip connector={connector} />
-                <IngestionHealthChip ingestionHealth={connector.ingestionHealth} />
+                <IntegrationStatusChip status={connectorStatus.integrationStatus} />
               </div>
             </TitleMainEntity>
           </Box>
@@ -1014,7 +1014,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               />
               {connector.is_managed && (
                 <Button
-                  disabled={computeConnectorStatus(connector).processing}
+                  disabled={connectorStatus.processing}
                   color={connector.manager_current_status === 'started' ? 'error' : 'primary'}
                   onClick={() => commitUpdateStatus({
                     variables: {
@@ -1033,6 +1033,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           </Security>
         </div>
       </div>
+
+      <ConnectorHealthAlerts ingestionHealth={connector.ingestionHealth} />
 
       <Tabs value={tabValue} onValueChange={setTabValue}>
         <TabsList className="mb-6">
@@ -1090,7 +1092,7 @@ const Connector = createRefetchContainer(
         connector_user_id
         is_managed
         ingestionHealth {
-          ...IngestionHealthChip_ingestionHealth
+          ...ConnectorHealthAlerts_ingestionHealth
         }
         manager_contract_configuration {
           key

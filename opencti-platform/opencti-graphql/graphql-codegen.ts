@@ -94,6 +94,8 @@ const config: CodegenConfig = {
           UserSession: '../modules/user/user-types#StoreUserSession',
           Creator: '../modules/user/user-types#BasicStoreMember',
           Member: '../modules/user/user-types#BasicStoreMember',
+          ConfigPresetImportResult: '../modules/configPreset/import/configPreset-import-session#ConfigPresetImportItemResult',
+          ConfigPresetImportSession: '../modules/configPreset/import/configPreset-import-session#ConfigPresetImportGraphqlSession',
         },
       },
     },

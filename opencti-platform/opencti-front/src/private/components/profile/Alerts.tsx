@@ -5,6 +5,7 @@ import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLi
 import { AlertsLines_data$data } from '@components/profile/__generated__/AlertsLines_data.graphql';
 import { AlertsLinesPaginationQuery, AlertsLinesPaginationQuery$variables } from '@components/profile/__generated__/AlertsLinesPaginationQuery.graphql';
 import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
+import { getHealthDisplay } from '@components/data/connectors/ingestionHealthDisplay';
 import { CheckCircleOutlined, DeleteOutlined, UnpublishedOutlined } from '@mui/icons-material';
 import { Badge, Stack, Tooltip } from '@mui/material';
 import { Chip, type ChipSeverity } from '@filigran/design-system';
@@ -132,16 +133,15 @@ interface AlertsLineActionsProps {
 
 // Event type is categorical, so the tone carries the distinction without asserting a level:
 // create -> low, update -> info, delete -> critical, several at once -> medium.
-// Ingestion health transitions follow IngestionHealthChip: critical, degraded -> high, recovered -> low.
+// Ingestion health transitions follow the health chip (getHealthDisplay), recovered -> low.
 const operationSeverity = (operation: string): ChipSeverity => {
+  const health = getHealthDisplay(operation);
+  if (health) return health.chip;
   switch (operation) {
     case 'update':
       return 'info';
     case 'delete':
-    case 'critical':
       return 'critical';
-    case 'degraded':
-      return 'high';
     case 'multiple':
       return 'medium';
     default:
@@ -350,7 +350,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
       label: 'Original creation date',
       percentWidth: 25,
       isSortable: isRuntimeSort,
-      render: ({ created }, item) => defaultRender(item.fldt(created)),
+      render: ({ created }, item) => defaultRender(item.ftdt(created, 'long')),
     },
     name: {
       id: 'name',

@@ -284,7 +284,7 @@ First, you have to [download and extract the latest release file](https://github
 
 **For Linux:**
 
-- If your OS supports libc (Ubuntu, Debian, ...) you have to install the `opencti-release_{RELEASE_VERSION}.tar.gz` version.
+- If your OS supports libc (Ubuntu, Debian, ...) you have to install the `opencti-release-{RELEASE_VERSION}.tar.gz` version.
 - If your OS uses musl (Alpine, ...) you have to install the `opencti-release-{RELEASE_VERSION}_musl.tar.gz` version.
 
 **For Windows:**
@@ -304,7 +304,7 @@ tar xvfz opencti-release-{RELEASE_VERSION}.tar.gz
 The main application has just one JSON configuration file to change and a few Python modules to install
 
 ```bash
-cd opencti
+cd opencti/opencti-platform/opencti-graphql
 cp config/default.json config/production.json
 ```
 
@@ -333,7 +333,7 @@ corepack --version
 #0.34.0
 ```
 
-Once Node.js is setup, you can build and run with (from inside `opencti` folder):
+Once Node.js is setup, you can build and run with (from inside the `opencti/opencti-platform/opencti-graphql` folder):
 ```bash
 yarn install
 yarn build
@@ -349,7 +349,7 @@ The OpenCTI worker is used to write the data coming from the RabbitMQ messages b
 #### Configure the worker
 
 ```bash
-cd worker
+cd ../../worker
 pip3 install -r requirements.txt
 cp config.yml.sample config.yml
 ```

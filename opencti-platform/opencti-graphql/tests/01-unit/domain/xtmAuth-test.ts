@@ -243,6 +243,26 @@ describe('XTM Authentication', () => {
         .rejects.toThrow('JWT signature verification failed');
     });
 
+    it('should not resolve the kid to a key set on the object prototype', async () => {
+      const { publicKey, privateKey } = await generateKeyPair('EdDSA');
+      const token = await new SignJWT({ email: 'inherited-kid@test.com' })
+        .setSubject('inherited-kid-user')
+        .setIssuer(PLATFORM_URL)
+        .setAudience('https://audience.example.com')
+        .setIssuedAt()
+        .setExpirationTime('5m')
+        .setProtectedHeader({ alg: 'EdDSA', kid: 'inherited-kid' })
+        .sign(privateKey);
+      const prototype = Object.prototype as Record<string, unknown>;
+      prototype['inherited-kid'] = publicKey;
+      try {
+        await expect(verifyXtmJwt(token))
+          .rejects.toThrow('JWT signature verification failed');
+      } finally {
+        delete prototype['inherited-kid'];
+      }
+    });
+
     it('should throw generic failure for a token signed with a different key', async () => {
       const { privateKey: wrongKey } = await generateKeyPair('EdDSA');
       const token = await new SignJWT({ email: 'tampered@test.com' })

@@ -20,7 +20,7 @@ interface ConnectorWorksErrorLineProps {
 }
 
 const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> = ({ error }) => {
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
   const [openModalErrorDetails, setOpenModalErrorDetails] = useState<boolean>(false);
   const truncateLimit = 60;
 
@@ -53,7 +53,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
   return (
     <>
       <TableRow key={error.rawError.timestamp}>
-        <TableCell>{nsdt(error.rawError.timestamp)}</TableCell>
+        <TableCell>{ftdt(error.rawError.timestamp)}</TableCell>
         <TableCell>
           {error.isParsed && error.parsedError.doc_code ? (
             <a href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.doc_code.toLowerCase()}`} target="_blank" rel="noreferrer">{error.parsedError.doc_code}</a>

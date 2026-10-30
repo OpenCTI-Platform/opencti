@@ -330,7 +330,7 @@ const StixDomainObjectNestedEntitiesLines = ({
   queryRef,
 }: StixDomainObjectNestedEntitiesLinesProps) => {
   const theme = useTheme();
-  const { fsd } = useFormatter();
+  const { ftd } = useFormatter();
   const queryData = usePreloadedQuery<StixDomainObjectNestedEntitiesLinesQuery>(stixDomainObjectNestedEntitiesLinesQuery, queryRef);
   const data = useFragment<StixDomainObjectNestedEntitiesLines_data$key>(
     StixDomainObjectNestedEntitiesLinesFragment,
@@ -410,7 +410,7 @@ const StixDomainObjectNestedEntitiesLines = ({
                       <div
                         style={{ ...bodyItemStyle, paddingTop: '2px' }}
                       >
-                        {fsd(node.start_time)}
+                        {ftd(node.start_time)}
                       </div>
                     </Stack>
                   )}

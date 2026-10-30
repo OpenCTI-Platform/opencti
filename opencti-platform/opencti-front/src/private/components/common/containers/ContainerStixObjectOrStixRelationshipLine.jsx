@@ -37,7 +37,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
   paginationOptions,
   enableReferences,
 }) => {
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const restrictedWithFrom = node.from === null;
 
   const link = node.relationship_type
@@ -108,7 +108,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
               <BodyItem
                 style={{ width: dataColumns.created_at.width }}
               >
-                {fd(node.created_at)}
+                {ftd(node.created_at)}
               </BodyItem>
               <BodyItem
                 style={{ width: dataColumns.objectMarking.width }}

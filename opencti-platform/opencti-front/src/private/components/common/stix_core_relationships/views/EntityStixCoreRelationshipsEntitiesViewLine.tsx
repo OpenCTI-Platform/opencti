@@ -229,7 +229,7 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
   onToggleShiftEntity,
   index,
 }) => {
-  const { nsdt } = useFormatter();
+  const { ftdt } = useFormatter();
   const stixCoreObject = useFragment(
     entityStixCoreRelationshipsEntitiesFragment,
     node,
@@ -300,7 +300,7 @@ export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
             <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
-              {nsdt(stixCoreObject.created_at)}
+              {ftdt(stixCoreObject.created_at)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.objectMarking.width }}

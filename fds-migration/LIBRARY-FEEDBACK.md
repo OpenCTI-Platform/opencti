@@ -2698,3 +2698,129 @@ components) or an `anchor` point on `Menu`, both opening from the keyboard.
 library anchor, delete the marker, and check that a right click on a node of a
 report graph opens the menu at the pointer, that Shift+F10 opens it for the
 entity of the keyboard list, and that Escape gives the focus back.
+
+---
+
+## 71. `Dialog` is always modal, so a form embedding the product's MUI filter editor cannot use it
+
+`Dialog` omits Radix's `modal` prop (`Omit<…DialogPrimitive.Root…, "modal">`):
+it is always modal. A modal Radix dialog sets `pointer-events: none` on `<body>`
+and traps the focus inside its content. Anything portalled outside of it is
+then neither clickable nor focusable.
+
+**Where it bites.** The dashboard variables dialog edits the rule of a variable
+restricted by filters with the shared filter editor (`Filters` +
+`FilterIconButton`), the one of the widget editor. Its key picker is a library
+`Combobox` and works, but the value of a filter is chosen in `FilterChipPopover`,
+a MUI `Popover` portalled to `<body>`: inside the library `Dialog` it does not
+open in a usable state. Rendering the MUI popover inside the dialog content is no
+way out either: the content is centred with a `translate`, which offsets a
+fixed-positioned popover.
+
+**Workaround.** FDS-WORKAROUND #71: `DashboardVariableDialog.tsx` goes back to the
+MUI wrapper `@common/dialog/Dialog`, as the widget editor (`WidgetUpsert.tsx`),
+and its `Dialog` adoption is removed from `migration-state.json`. The deletion
+dialog of a variable, which embeds no filter, stays on the library `Dialog`.
+
+**Ask.** Either a non-modal option on `Dialog`, or the product's filter editor
+moving to library floating surfaces (the value popover first).
+
+**Removal test.** Back on the library `Dialog`, create an entity variable, choose
+*By filter*, add a `Label` filter: the value popover opens, a label can be searched
+by typing and picked with the mouse, and the dialog stays open.
+
+---
+
+## 72. `ComboboxChips` keys its chips by label, so two values sharing a label break the chip row
+
+`ComboboxChips` renders `engine.selectedValues.map(…)` with
+`key = engine.getOptionLabel(option)` (`components/combobox/Combobox.mjs`). Two
+selected values with the same label get the same React key.
+
+**Where it bites.** The values of a dashboard variable restricted to a selection
+are ids whose labels resolve after the field mounts: every chip is labelled
+`Loading` meanwhile, and React left stale `Loading` chips next to the resolved
+ones once the labels arrived. Two deleted entities (both `Restricted`) or two
+entities of the same name hit the same defect.
+
+**Workaround.** FDS-WORKAROUND #72: `SelectionValuesInput.tsx` numbers a label
+already taken (`benign`, `benign (2)`).
+
+**Ask.** Key the chips by position, or by a `getOptionKey` the host provides.
+
+**Removal test.** Drop the numbering; select three labels, two of the same name,
+switch the restriction mode away and back: exactly three chips, no `Loading` chip
+left once the labels resolve.
+
+---
+
+## 73. There is no `Stepper`, so the bootstrap wizard draws its steps with the MUI one
+
+**Needed.** The bootstrap wizard (`ConfigPresetWizardStepper.tsx`) shows where the
+administrator is in the import: welcome, upload, selection, progress, result. It
+needs the steps in order, the current one marked, and the finished ones ticked.
+
+**Today.** The library has no stepper or progress-steps component (`ProgressBar`
+is a single bar, `Tabs` are free navigation, not an ordered flow).
+
+**What the product did.** It uses the MUI `Stepper`, as the priority rule allows
+when the library does not ship the component. Nothing is forked or worked
+around inside the library; this entry is the record the rule asks for.
+
+**Ask.** A `Stepper` with `activeStep`, completed and disabled steps, a label per
+step and both orientations.
+
+**Removal test.** The wizard imports `Stepper` from the library, and
+`ConfigPresetWizardStepper.tsx` no longer imports from `@mui/material`.
+
+---
+
+## 74. There is no collapsible row, so the selection and the results draw their sections by hand
+
+**Needed.** The export drawer, the import preview and the import results list
+their items in groups, then types, each with a checkbox or a title, a chevron that
+shows or hides what is below it, and a count. A screen reader must hear which
+section a chevron opens.
+
+**Today.** The library has no `Accordion` or `Collapsible`. A section is a
+`Checkbox` (or a `Text`) next to an `IconButton`, with the content shown or not.
+
+**What the product did.** `ConfigPresetExpandableRow` (in
+`ConfigPresetSelectionAccordion.tsx`) and `ConfigPresetResultGroups.tsx` draw the
+rows by hand, with `aria-expanded`, `aria-controls` and a label that names the
+section. The rule is the same as for entry 73: MUI is the fallback, and the gap is
+recorded.
+
+**Ask.** A collapsible section with a header slot (a checkbox, a title and
+actions), the open state controlled or not, and the `aria-expanded` /
+`aria-controls` wiring built in.
+
+**Removal test.** Both files render the library component, and a screen reader
+reads each chevron with the name of its section without the product setting it.
+
+---
+
+## 75. `Alert` paragraphs keep the browser margins, so a compact banner needs a scoped reset
+
+**Needed.** Ingestion health banners (connector and feed detail pages, deployed
+integrations page): one-to-three line alerts stacked above the page content,
+which must stay as short as the library's Alert frame intends.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.1.0):
+`Alert` renders its `title` and `description` as `<p>` elements
+(`title-xs` / `content-compact` classes) and the library ships no preflight, so
+both `<p>` keep the user-agent block margins. Neither the component nor its
+`className` reaches those inner paragraphs, and there is no prop to reset them.
+
+**Workaround.** `IngestionHealthBanner.tsx` wraps the `Alert` in a `Box` whose
+`sx` sets `'& p': { margin: 0 }`, under one `FDS-WORKAROUND #71` marker.
+Several detail lines are passed as `display: block` spans inside the
+`description` (a `<p>`, so no block children).
+
+**Ask.** Zero the margins of the Alert's own paragraphs library-side (an
+`m-0` on the two `<p>`), and accept a node list for `description` rendered as
+block lines.
+
+**Removal test.** At a pin where the paragraphs carry no margin: delete the
+`Box` wrapper and the marker, and check that a banner with a title and one
+description line is no taller than the Alert frame (padding plus the two lines).

@@ -56,7 +56,7 @@ export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
   node,
   onLabelClick,
 }) => {
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const data = useFragment(organizationLineFragment, node);
   return (
     <ListItemButton
@@ -94,12 +94,12 @@ export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
             <BodyItem
               style={{ width: dataColumns.created.width }}
             >
-              {fd(data.created)}
+              {ftd(data.created)}
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.modified.width }}
             >
-              {fd(data.modified)}
+              {ftd(data.modified)}
             </BodyItem>
           </div>
         )}

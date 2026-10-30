@@ -17,11 +17,21 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   hiddenEntityTypesFamily,
 ];
 
+// How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.
+// A type the registry does not know (a bundle of a newer platform) is its own group.
+export const getConfigPresetFamilyDisplay = (type: string) => {
+  const index = CONFIG_PRESET_FAMILIES.findIndex(({ id }) => id === type);
+  const family = CONFIG_PRESET_FAMILIES[index];
+  return {
+    type_label: family?.label ?? type,
+    type_index: Math.max(index, 0),
+    group: family ? { key: family.group.id, label: family.group.label } : { key: type, label: type },
+  };
+};
+
 export const configPresetItemFilePath = (family: ConfigPresetFamilyDefinition, item: ConfigPresetItemDefinition) => {
   return `${family.directory}/${item.fileName ?? `${item.id}.json`}`;
 };
-
-export const configPresetItemBundleId = (item: ConfigPresetItemDefinition) => item.bundleId ?? item.id;
 
 // The type written in the item files and in dependencies.json: `<group id>.<category id>`
 export const configPresetFamilyType = (family: ConfigPresetFamilyDefinition) => `${family.group.id}.${family.id}`;
@@ -35,8 +45,8 @@ export const exportConfigPresetItem = async (
   return {
     openCTI_version: PLATFORM_VERSION,
     type: configPresetFamilyType(family),
-    // The bundle id, never an internal id: the static item id, or the standard id of an entity
-    id: configPresetItemBundleId(item),
+    // The id of the item: the static id, or the standard id of an entity, never an internal id
+    id: item.id,
     configuration: await item.exporter(context, user),
   };
 };

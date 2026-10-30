@@ -1,5 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicConnection } from '../../types/store';
+import type { ConfigPresetImporter } from './import/configPreset-import-types';
+import type { ConfigImportMode } from '../configImport/configImport-types';
 
 export type ConfigPresetConfiguration = Record<string, unknown>;
 
@@ -8,7 +10,7 @@ export interface ConfigPresetItemFile {
   openCTI_version: string;
   // `<group id>.<category id>`
   type: string;
-  // Bundle id of the item
+  // Id of the item, the same on every platform
   id: string;
   configuration: ConfigPresetConfiguration;
 }
@@ -20,10 +22,8 @@ export interface ConfigPresetItemReference {
 }
 
 export interface ConfigPresetItemDefinition {
-  // API id: the category id for a singleton, the internal id for an entity
+  // The category id for a singleton, the standard id for an entity: the same in the API and in the bundle, and on every platform
   id: string;
-  // Id in the bundle, the same on every platform: the standard id for an entity, the API id when absent
-  bundleId?: string;
   label: string;
   // True when the label is a static string the UI translates; false when it is user data (an entity name)
   translatable: boolean;
@@ -69,4 +69,8 @@ export interface ConfigPresetFamilyDefinition {
   listItems: (context: AuthContext, user: AuthUser, args: ConfigPresetListItemsArgs) => Promise<BasicConnection<ConfigPresetItemDefinition>>;
   // Every exportable item (ids null) or only the given ones, without the excluded ones: what the export writes
   resolveItems: (context: AuthContext, user: AuthUser, ids: string[] | null, excludedIds: string[]) => Promise<ConfigPresetItemDefinition[]>;
+  // How the items of this family are imported; a family without importer is reported as not importable
+  importer?: ConfigPresetImporter;
+  // What an import can do with the items that already exist: OVERWRITE when absent. The dialog offers a choice from two modes.
+  importModes?: ConfigImportMode[];
 }

@@ -1,4 +1,4 @@
-import { computeAccountStatusChoices } from '../../config/conf';
+import { CONFIG_PRESET_FEATURE_FLAG, computeAccountStatusChoices } from '../../config/conf';
 import { draftChange, draftContext } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { registerDefinition, type ModuleDefinition } from '../../schema/module';
@@ -65,7 +65,10 @@ const USER_DEFINITION: ModuleDefinition<StoreEntityUser, StixUser> = {
     { name: 'merged_into', label: 'Merged into', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'administrated_organizations', label: 'Administrated organizations', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'unit_system', label: 'Unit system', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'date_format', label: 'Date format', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'time_format', label: 'Time format', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'submenu_show_icons', label: 'Show submenu icons', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'bootstrap_wizard_skipped', label: 'Bootstrap wizard skipped', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: CONFIG_PRESET_FEATURE_FLAG },
     { name: 'submenu_auto_collapse', label: 'Auto collapse submenus', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'monochrome_labels', label: 'Monochrome labels and entity types', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'unsubscribed_news_feed_types', label: 'Unsubscribed news feed types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },

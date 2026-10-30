@@ -129,6 +129,7 @@ jobs:
             -v ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-graphql/src/python/testing:/opt/opencti/src/python/testing \
             -e APP__PORT=4100 \
             -e APP__ENABLED_DEV_FEATURES='${{ matrix.dev_features }}' \
+            -e APP__BOOTSTRAP_WIZARD__ENABLED=false \
             -e APP__ADMIN__PASSWORD=admin \
             -e APP__CRYPTO__MASTER_SEED=mMG7tprE8I9atEkYth6jIcAyKUbXMkoKC66VDnLK2Lc= \
             -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
@@ -181,7 +182,7 @@ jobs:
             sh -c 'set -eux;
                 cd /home/workspace/opencti-platform/opencti-front
                 npm install -g corepack
-                yarn install
+                yarn workspaces focus opencti-front
                 yarn playwright install --with-deps chromium
                 yarn test:e2e ${{ matrix.grep_args }}
               '

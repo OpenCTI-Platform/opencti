@@ -1,6 +1,9 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { buildPaginationFromEdges } from '../../../database/utils';
+import { FunctionalError } from '../../../config/errors';
+import type { ConfigImportResult } from '../../configImport/configImport-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition, ConfigPresetListItemsArgs } from '../configPreset-types';
+import type { ConfigPresetComputedItem, ConfigPresetImportField } from '../import/configPreset-import-types';
 
 // Export groups of the spec table; a group is added with its first category
 export const platformSettingsGroup = { id: 'platformSettings', label: 'Platform settings' };
@@ -39,3 +42,19 @@ export const staticFamily = (
     return (await getItems(context, user)).filter((item) => matchesListArgs(item, { ids, excludedIds }));
   },
 });
+
+// What an importer reports of an item a module has decided (a dry run): the result of the module with the label, and the fields of the preview when it shows some
+export const toComputedItem = (
+  label: Pick<ConfigPresetComputedItem, 'label' | 'translatable'>,
+  result: ConfigImportResult,
+  fields?: ConfigPresetImportField[],
+): ConfigPresetComputedItem => ({ ...label, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason, fields });
+
+// What an importer returns once a module has written an item: a failure is an error that makes the item failed,
+// and a status other than the computed one is reported
+export const toAppliedStatus = (result: ConfigImportResult, computed: ConfigPresetComputedItem) => {
+  if (result.status === 'failed') {
+    throw FunctionalError(result.reason ?? 'Item cannot be imported');
+  }
+  return result.status === computed.status ? undefined : result.status;
+};

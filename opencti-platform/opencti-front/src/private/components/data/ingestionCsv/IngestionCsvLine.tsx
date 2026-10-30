@@ -64,7 +64,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
   node,
   paginationOptions,
 }) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
   const data = useFragment(ingestionCsvLineFragment, node);
   const [stateHash, setStateHash] = useState(data.current_state_hash ? data.current_state_hash : EMPTY_VALUE);
   return (
@@ -101,7 +101,7 @@ export const IngestionCsvLineComponent: FunctionComponent<IngestionCsvLineProps>
               />
             </Cell>
             <Cell width={dataColumns.last_execution_date.width}>
-              {fldt(data.last_execution_date) || EMPTY_VALUE}
+              {ftdt(data.last_execution_date, 'long') || EMPTY_VALUE}
             </Cell>
             <Cell width={dataColumns.current_state_hash.width}>
               {stateHash}

@@ -64,7 +64,8 @@ const EnterpriseEditionButton = ({
             size={size}
             disabled={disabled}
             onClick={() => setFeedbackCreation(true)}
-            sx={{ marginLeft: '20px' }}
+            keepMui
+            sx={inLine ? undefined : { marginLeft: '20px' }}
           >
             {t_i18n('Create a feedback')}
           </Button>

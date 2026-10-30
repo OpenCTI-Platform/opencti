@@ -27,12 +27,12 @@ const singleton = (key: string, group = platformSettings, dependsOn: { type: str
 // The platform configuration depends on the custom default theme
 const platform = singleton('platform', platformSettings, [{ type: 'branding', key: 'theme-default' }]);
 const hiddenEntityTypes = singleton('hiddenEntityTypes', dataModel);
-// Whitemark and 40 themes, the first page holds 3 items
+// 40 themes, the first page holds 3 items
 const branding = {
   key: 'branding',
   group: platformSettings,
-  items: [{ key: 'whitemark', dependsOn: [] }, { key: 'theme-1', dependsOn: [] }, { key: 'theme-default', dependsOn: [] }],
-  itemsPageInfo: { globalCount: 41 },
+  items: [{ key: 'theme-0', dependsOn: [] }, { key: 'theme-1', dependsOn: [] }, { key: 'theme-default', dependsOn: [] }],
+  itemsPageInfo: { globalCount: 40 },
 };
 const messages = { key: 'messages', group: platformSettings, items: [{ key: 'banner', dependsOn: [] }, { key: 'login', dependsOn: [] }], itemsPageInfo: { globalCount: 2 } };
 const types = [platform, hiddenEntityTypes, branding, messages];
@@ -57,8 +57,8 @@ describe('configPresetSelection', () => {
     const all = selectAllConfigPresetItems(types);
     expect(all.branding).toEqual({ mode: 'all', ids: [] });
     expect(isConfigPresetItemSelected(all, 'branding', 'theme-39')).toBe(true);
-    expect(countConfigPresetCheckedItems(types, all, NO_FORCED)).toBe(45);
-    expect(countConfigPresetItems(types)).toBe(45);
+    expect(countConfigPresetCheckedItems(types, all, NO_FORCED)).toBe(44);
+    expect(countConfigPresetItems(types)).toBe(44);
   });
 
   it('checks or unchecks one item, as an exception of all or as a member of some', () => {
@@ -92,7 +92,7 @@ describe('configPresetSelection', () => {
     const selection: ConfigPresetSelection = { platform: { mode: 'all', ids: [] }, branding: { mode: 'all', ids: ['theme-default', 'theme-1'] } };
     const forced = getConfigPresetForcedItems(types, selection);
     expect(forced).toEqual({ branding: ['theme-default'] });
-    expect(countConfigPresetCheckedItems([branding], selection, forced)).toBe(40);
+    expect(countConfigPresetCheckedItems([branding], selection, forced)).toBe(39);
     expect(countConfigPresetCheckedItems([branding], { branding: { mode: 'some', ids: ['theme-1'] } }, forced)).toBe(2);
     // Without the platform configuration, nothing is forced
     expect(getConfigPresetForcedItems(types, toggleConfigPresetItem(selection, 'platform', 'platform', false))).toEqual({});
@@ -125,5 +125,42 @@ describe('configPresetSelection', () => {
     // A singleton unchecked as an item: all mode with its only item excluded
     expect(buildConfigPresetSelections([platform], toggleConfigPresetItem(selection, 'platform', 'platform', false))).toEqual([]);
     expect(buildConfigPresetSelections(types, {})).toEqual([]);
+  });
+
+  it('adds the import mode of the items of a type to its selection, and only the types that have one', () => {
+    const selection: ConfigPresetSelection = {
+      platform: { mode: 'all', ids: [] },
+      hiddenEntityTypes: { mode: 'some', ids: ['hiddenEntityTypes'] },
+      branding: { mode: 'all', ids: ['theme-1'] },
+    };
+    const modes = { 'branding/theme-0': 'COPY', 'branding/theme-default': 'COPY', 'hiddenEntityTypes/hiddenEntityTypes': 'COPY' } as const;
+    expect(buildConfigPresetSelections(types, selection, modes)).toEqual([
+      { type: 'platform', items: null },
+      { type: 'hiddenEntityTypes', items: ['hiddenEntityTypes'], item_modes: [{ key: 'hiddenEntityTypes', mode: 'COPY' }] },
+      { type: 'branding', items: null, excluded_items: ['theme-1'], item_modes: [{ key: 'theme-0', mode: 'COPY' }, { key: 'theme-default', mode: 'COPY' }] },
+    ]);
+    // A type that has no selected item is not sent, the modes with it
+    expect(buildConfigPresetSelections(types, { platform: { mode: 'some', ids: [] } }, { 'platform/platform': 'COPY' })).toEqual([]);
+  });
+
+  it('keeps the mode of a forced item when nothing of its type is selected, and only the one of a forced item', () => {
+    const selection: ConfigPresetSelection = { platform: { mode: 'all', ids: [] }, branding: { mode: 'some', ids: [] } };
+    const forced = getConfigPresetForcedItems(types, selection);
+    const modes = { 'branding/theme-default': 'COPY', 'branding/theme-0': 'COPY' } as const;
+    expect(buildConfigPresetSelections(types, selection, modes, forced)).toEqual([
+      { type: 'platform', items: null },
+      { type: 'branding', items: [], item_modes: [{ key: 'theme-default', mode: 'COPY' }] },
+    ]);
+    // Every item of the type excluded, the forced one still imported with its mode
+    const excluded: ConfigPresetSelection = { platform: { mode: 'all', ids: [] }, branding: { mode: 'all', ids: ['theme-0', 'theme-1', 'theme-default'] } };
+    const smallBranding = { ...branding, itemsPageInfo: { globalCount: 3 } };
+    expect(buildConfigPresetSelections([platform, smallBranding], excluded, modes, forced)).toEqual([
+      { type: 'platform', items: null },
+      { type: 'branding', items: [], item_modes: [{ key: 'theme-default', mode: 'COPY' }] },
+    ]);
+    // The platform is no longer selected: its theme is not forced, nothing is sent
+    expect(buildConfigPresetSelections(types, { branding: { mode: 'some', ids: [] } }, modes, {})).toEqual([]);
+    // A forced item that overwrites has no mode: nothing to send
+    expect(buildConfigPresetSelections(types, selection, {}, forced)).toEqual([{ type: 'platform', items: null }]);
   });
 });

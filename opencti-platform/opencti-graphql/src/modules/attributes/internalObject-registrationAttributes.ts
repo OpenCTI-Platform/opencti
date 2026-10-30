@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { CONFIG_PRESET_FEATURE_FLAG } from '../../config/conf';
 import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
 import { type AttributeDefinition, changes, createdAt, creators, draftContext, errors, id, lastEventId, refreshedAt, updatedAt } from '../../schema/attribute-definition';
 import {
@@ -188,6 +189,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'platform_theme_light_logo_collapsed', label: 'Light logo collapsed', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_theme_light_logo_login', label: 'Light logo login', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_language', label: 'Platform language', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'platform_date_format', label: 'Platform date format', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'platform_time_format', label: 'Platform time format', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_login_message', label: 'Login message', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_consent_message', label: 'Consent message', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_consent_confirm_text', label: 'Consent confirm text', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -223,6 +226,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'xtm_hub_registration_status', label: 'XTM Hub registration status', type: 'string', format: 'enum', values: ['registered', 'unregistered', 'lost_connectivity'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_available_news_feed_types', label: 'XTM Hub available news feed types', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: false, isFilterable: false },
     { name: 'filigran_chatbot_ai_cgu_status', label: 'XTM1 CGU acceptance status', type: 'string', format: 'enum', values: ['pending', 'disabled', 'enabled'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
+    { name: 'platform_bootstrap_status', label: 'Platform bootstrap status', type: 'string', format: 'enum', values: ['pending', 'completed'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false, featureFlag: CONFIG_PRESET_FEATURE_FLAG },
     { name: 'platform_ai_enabled', label: 'AI insight activation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_notifier_auto_trigger_assignee', label: 'Auto-trigger notifications for assignees/participants', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_session_max_concurrent', label: 'Max concurrent sessions (0 equals no maximum)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

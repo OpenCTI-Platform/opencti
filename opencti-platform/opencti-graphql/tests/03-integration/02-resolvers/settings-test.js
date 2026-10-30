@@ -27,6 +27,8 @@ const READ_QUERY = gql`
       platform_title
       platform_email
       platform_language
+      platform_date_format
+      platform_time_format
       platform_ip_whitelist_enabled
       caller_ip
       platform_ip_whitelist_exclusions {
@@ -105,6 +107,8 @@ describe('Settings resolver standard behavior', () => {
     expect(settings.platform_title).toEqual(PLATFORM_TITLE);
     expect(settings.platform_email).toEqual('admin@opencti.io');
     expect(settings.platform_language).toEqual('auto');
+    expect(settings.platform_date_format).toEqual('auto');
+    expect(settings.platform_time_format).toEqual('auto');
     expect(settings.platform_ip_whitelist_enabled).toBeDefined();
     expect(settings.caller_ip).toBeDefined();
     expect(settings.platform_ip_whitelist_exclusions).toBeDefined();
@@ -128,6 +132,52 @@ describe('Settings resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.settingsEdit.fieldPatch.platform_title).toEqual(PLATFORM_TITLE);
+  });
+  it('should update the date and time display of tables', async () => {
+    const settingsInternalId = await settingsId();
+    const DATE_DISPLAY_QUERY = gql`
+      mutation SettingsEdit($id: ID!, $input: [EditInput]!) {
+        settingsEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            platform_date_format
+            platform_time_format
+          }
+        }
+      }
+    `;
+    let queryResult = await queryAsAdmin({
+      query: DATE_DISPLAY_QUERY,
+      variables: {
+        id: settingsInternalId,
+        input: [{ key: 'platform_date_format', value: ['iso'] }, { key: 'platform_time_format', value: ['minutes'] }],
+      },
+    });
+    expect(queryResult.data.settingsEdit.fieldPatch.platform_date_format).toEqual('iso');
+    expect(queryResult.data.settingsEdit.fieldPatch.platform_time_format).toEqual('minutes');
+    // Back to previous value
+    queryResult = await queryAsAdmin({
+      query: DATE_DISPLAY_QUERY,
+      variables: {
+        id: settingsInternalId,
+        input: [{ key: 'platform_date_format', value: ['auto'] }, { key: 'platform_time_format', value: ['auto'] }],
+      },
+    });
+    expect(queryResult.data.settingsEdit.fieldPatch.platform_date_format).toEqual('auto');
+    expect(queryResult.data.settingsEdit.fieldPatch.platform_time_format).toEqual('auto');
+  });
+  it('should fail when updating the date format with an invalid value', async () => {
+    const settingsInternalId = await settingsId();
+    const queryResult = await queryAsAdmin({
+      query: EDIT_FIELD_QUERY,
+      variables: {
+        id: settingsInternalId,
+        input: { key: 'platform_date_format', value: ['DD/MM/YYYY'] },
+      },
+    });
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors[0].message).toContain('Unsupported date format');
   });
   it('should fail when updating filigran_chatbot_ai_cgu_status with an invalid value', async () => {
     const settingsInternalId = await settingsId();

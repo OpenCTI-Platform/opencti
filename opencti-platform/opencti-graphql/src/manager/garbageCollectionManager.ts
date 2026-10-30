@@ -13,7 +13,8 @@ import { lockResources } from '../lock/master-lock';
 import { elUpdateRemovedFiles } from '../database/file-search';
 import type { BasicStoreBase } from '../types/store';
 import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation/deleteOperation-types';
-import { deleteExpiredConfigPresetExports } from '../modules/configPreset/configPreset-domain';
+import { deleteExpiredConfigPresetExports } from '../modules/configPreset/export/configPreset-export-domain';
+import { deleteExpiredConfigPresetImportFiles } from '../modules/configPreset/import/configPreset-import-domain';
 
 const GARBAGE_COLLECTION_MANAGER_ENABLED = booleanConf('garbage_collection_manager:enabled', true);
 const TRASH_ENABLED = booleanConf('app:trash:enabled', true);
@@ -116,9 +117,10 @@ export const garbageCollectionHandler = async () => {
   logApp.debug('[OPENCTI-MODULE] Garbage collection manager deletion process complete', { count: deleteOperationsToManage.length });
 
   await garbageCollectRedisStreamFiles(context);
-  // The configuration preset exports are only kept for a short time, they belong to no entity
+  // The configuration preset exports, the uploads of an import and its history are only kept for a while, they belong to no entity
   if (isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG)) {
     await deleteExpiredConfigPresetExports(context, GARBAGE_COLLECTION_MANAGER_USER);
+    await deleteExpiredConfigPresetImportFiles(context, GARBAGE_COLLECTION_MANAGER_USER);
   }
 };
 

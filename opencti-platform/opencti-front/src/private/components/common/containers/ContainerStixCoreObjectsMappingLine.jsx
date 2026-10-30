@@ -37,7 +37,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
     contentMappingData,
     enableReferences,
   } = props;
-  const { t_i18n, fd } = useFormatter();
+  const { t_i18n, ftd } = useFormatter();
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
@@ -97,7 +97,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
               <BodyItem
                 style={{ width: dataColumns.created_at.width }}
               >
-                {fd(node.created_at)}
+                {ftd(node.created_at)}
               </BodyItem>
               <BodyItem
                 style={{ width: dataColumns.objectMarking.width }}

@@ -272,7 +272,7 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
       label: 'Original creation date',
       percentWidth: 20,
       isSortable: true,
-      render: ({ creation_date }: NewsFeedLine_node$data, item) => defaultRender(item.fldt(creation_date)),
+      render: ({ creation_date }: NewsFeedLine_node$data, item) => defaultRender(item.ftdt(creation_date, 'long')),
     },
     tags: {
       id: 'tags',
