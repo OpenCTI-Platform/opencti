@@ -4,6 +4,10 @@ import type { FormFieldDefinition } from './form-types';
 import { isEmptyField } from '../../database/utils';
 import { FunctionalError } from '../../config/errors';
 import { PENDING_EXTERNAL_REFERENCE } from './form-pending-marker';
+import { withPendingExternalReferenceFiles } from './form-pending';
+import { buildExternalReferences } from '../../database/stix-2-1-converter';
+import { INPUT_EXTERNAL_REFS } from '../../schema/general';
+import type { StoreObject } from '../../types/store';
 
 // Helper function to convert string values to proper types based on field type
 export const convertFieldType = (value: any, field: FormFieldDefinition): any => {
@@ -133,7 +137,13 @@ export const transformSpecialFields = async (
           references.push(refId);
         }
       }
-      (transformed as any).externalReferences = references;
+      if (isRelationship) {
+        // pycti reads the STIX key on a relationship, the files of a reference created in the form travel with it
+        const stix = { external_references: buildExternalReferences({ [INPUT_EXTERNAL_REFS]: references } as unknown as StoreObject) };
+        transformed.external_references = withPendingExternalReferenceFiles(stix, { [INPUT_EXTERNAL_REFS]: references }).external_references;
+      } else {
+        (transformed as any).externalReferences = references;
+      }
     } else if (isRelationship && attrName && value !== undefined) {
       // For relationships, apply other fields directly
       transformed[attrName] = value;

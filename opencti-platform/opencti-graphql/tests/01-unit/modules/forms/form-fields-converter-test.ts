@@ -276,6 +276,24 @@ describe('transformSpecialFields', () => {
       const copy = { ...Object.defineProperty({ source_name: 'x' }, PENDING_EXTERNAL_REFERENCE, { value: true }) };
       await expect(transformSpecialFields(ctx, user, { externalReferences: [copy] }, fields, false)).rejects.toThrow('An external reference must be');
     });
+
+    // pycti only reads external_references on a relationship
+    it('should send the references of a relationship in STIX format, with the files of a reference created in the form', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ internal_id: 'ext-1', standard_id: 'external-reference--1', entity_type: 'External-Reference', source_name: 'existing', external_id: 'E-1' } as any);
+      const files = [{ name: 'a.txt', data: 'ZGF0YQ==', mime_type: 'text/plain' }];
+      const pending = Object.defineProperty({ source_name: 'pending', url: 'https://example.com', x_opencti_files: files }, PENDING_EXTERNAL_REFERENCE, { value: true });
+      const fields = [makeField({ type: 'externalReferences', attributeMapping: { entity: 'rel1', attributeName: 'externalReferences' } })];
+
+      const result = await transformSpecialFields(ctx, user, { id: 'relationship--1', fields: { externalReferences: ['ext-1', pending] } }, fields, true);
+
+      expect(result).toEqual({
+        id: 'relationship--1',
+        external_references: [
+          { source_name: 'existing', external_id: 'E-1' },
+          { source_name: 'pending', url: 'https://example.com', x_opencti_files: files },
+        ],
+      });
+    });
   });
 
   describe('relationship passthrough fields', () => {
