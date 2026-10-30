@@ -6,9 +6,10 @@ import { notify } from '../database/redis';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { getResolvedIngestionHealthSettings } from '../modules/ingestionHealth/ingestionHealth-domain';
 import type { BasicStoreEntity } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import { executionContext, INGESTION_HEALTH_MANAGER_USER, INTERNAL_USERS } from '../utils/access';
+import { executionContext, INGESTION_HEALTH_MANAGER_USER, INTERNAL_USERS, isUserHasCapability } from '../utils/access';
 import { now } from '../utils/format';
 import type { CachedConnector } from '../modules/connector/connector-types';
 import {
@@ -108,9 +109,14 @@ const writeIngestionHealth = async <T extends IngestionElement>(context: AuthCon
 // Reads the values of the runtime checks for a batch of ingestions: one getRuntimeData call per check, whatever the number of ingestions.
 // Each check only reads the ingestions it is enabled for, and is not called when there is none.
 // A read failure is not hidden: it rejects, so that an unreachable storage is never read as a missing value.
-const loadRuntimeData = async (elements: IngestionElement[], globalContext: GlobalIngestionHealthContext): Promise<Map<string, RuntimeData>> => {
+const loadRuntimeData = async (
+  elements: IngestionElement[],
+  globalContext: GlobalIngestionHealthContext,
+): Promise<Map<string, RuntimeData>> => {
+  // A disabled check is not evaluated: its values are not read
   const runtimeChecks = Object.entries(HEALTH_CHECK_REGISTRY)
-    .filter((entry): entry is [HealthCheckCode, RuntimeCheck] => entry[1].kind === IngestionHealthCheckKind.Runtime);
+    .filter((entry): entry is [HealthCheckCode, RuntimeCheck] => entry[1].kind === IngestionHealthCheckKind.Runtime)
+    .filter(([code]) => !globalContext.disabledHealthChecks?.includes(code));
   const valuesByCheck = await Promise.all(runtimeChecks.map(([, definition]) => {
     const enabledIds = elements.filter((element) => definition.isEnabled(element, globalContext)).map((element) => element.internal_id);
     return enabledIds.length > 0 ? definition.getRuntimeData(enabledIds) : new Map<string, unknown>();
@@ -141,7 +147,7 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
 
   // The notification is evaluated at every period, even when the health did not change: it is deferred until the status is stable
   const nextHealth = patch ? patch.ingestion_health : element.ingestion_health;
-  const transition = computeHealthTransition(nextHealth, sourceContext.evaluatedAt);
+  const transition = computeHealthTransition(nextHealth, sourceContext.evaluatedAt, sourceContext.notificationDelay);
   if (transition && nextHealth) {
     try {
       await publishUserAction({
@@ -183,12 +189,16 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     }
     const internal = userId in INTERNAL_USERS;
     const authUser = internal ? INTERNAL_USERS[userId] : users.get(userId); // Ensure userID exist in user list or INTERNAL_USERS
-    return authUser ? { internal, user_service_account: authUser.user_service_account === true } : undefined;
+    return authUser
+      ? { internal, user_service_account: authUser.user_service_account === true, hasCapability: (capability) => isUserHasCapability(authUser, capability) }
+      : undefined;
   };
+  const { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks } = await getResolvedIngestionHealthSettings(context, INGESTION_HEALTH_MANAGER_USER);
   const pingingConnectors = await findRegularlyPingingConnectors(context, INGESTION_HEALTH_MANAGER_USER);
   const pingingConnectorsIds = new Set(pingingConnectors.map((connector) => connector.internal_id));
 
-  const globalContext: GlobalIngestionHealthContext = { pingingConnectorsIds };
+  // The disabled checks are known before the read: the ingestions depending on them only are not read, nor skipped on a read failure
+  const globalContext: GlobalIngestionHealthContext = { pingingConnectorsIds, disabledHealthChecks };
 
   // check the ingestions sources: the active ones are evaluated together, once the runtime data is read for all of them
   const activeIngestions: { source: IngestionSource<IngestionElement>; element: IngestionElement }[] = [];
@@ -226,7 +236,7 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
     logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER' });
   }
   // Right after the read: the values read are judged against the moment they were read at
-  const periodContext = { ...globalContext, evaluatedAt: now() };
+  const periodContext = { ...globalContext, evaluatedAt: now(), notificationDelay };
 
   // Active
   for (let i = 0; i < activeIngestions.length; i += 1) {

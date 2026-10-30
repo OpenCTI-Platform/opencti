@@ -78,3 +78,21 @@ export const ingestionHealthAttributes: AttributeDefinition[] = [
     ],
   },
 ];
+
+// Stored in the platform settings, registered on them by the module (see ingestionHealth)
+export const ingestionHealthSettingsAttribute: AttributeDefinition = {
+  name: 'ingestion_health_settings',
+  label: 'Ingestion health settings',
+  type: 'object',
+  format: 'standard',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
+  featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
+  mappings: [
+    { name: 'notification_delay', label: 'Notification delay (in minute)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'disabled_health_checks', label: 'Disabled health checks', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+  ],
+};

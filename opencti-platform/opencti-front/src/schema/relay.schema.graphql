@@ -9008,6 +9008,7 @@ type Query {
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
+  ingestionHealthSettings: IngestionHealthSettings
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
   catalogsRevisions: [CatalogRevision!]!
@@ -9855,6 +9856,7 @@ type Mutation {
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
+  ingestionHealthSettingsEdit(input: IngestionHealthSettingsInput!): IngestionHealthSettings
   languageAdd(input: LanguageAddInput!): Language
   languageDelete(id: ID!): ID
   languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language
@@ -10903,14 +10905,33 @@ enum IngestionHealthCheckSeverity {
 type IngestionHealthCheck {
   health_check_code: String!
   health_check_message: String
+  health_check_metadata: JSON
   health_check_kind: IngestionHealthCheckKind!
   health_check_severity: IngestionHealthCheckSeverity!
+}
+
+type IngestionHealthCheckSetting {
+  health_check_code: String!
+  health_check_label: String!
+  health_check_kind: IngestionHealthCheckKind!
+  enabled: Boolean!
+}
+
+type IngestionHealthSettings {
+  notification_delay: Int!
+  disabled_health_checks: [String!]!
+  health_checks: [IngestionHealthCheckSetting!]!
 }
 
 type IngestionHealth {
   status: IngestionHealthStatus!
   status_since: DateTime!
   healthChecks: [IngestionHealthCheck!]!
+}
+
+input IngestionHealthSettingsInput {
+  notification_delay: Int
+  disabled_health_checks: [String!]
 }
 
 type Catalog implements InternalObject & BasicObject {

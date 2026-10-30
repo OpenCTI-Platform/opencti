@@ -14348,6 +14348,7 @@ export type IngestionHealthCheck = {
   health_check_code: Scalars['String']['output'];
   health_check_kind: IngestionHealthCheckKind;
   health_check_message?: Maybe<Scalars['String']['output']>;
+  health_check_metadata?: Maybe<Scalars['JSON']['output']>;
   health_check_severity: IngestionHealthCheckSeverity;
 };
 
@@ -14356,10 +14357,30 @@ export enum IngestionHealthCheckKind {
   Runtime = 'runtime'
 }
 
+export type IngestionHealthCheckSetting = {
+  __typename?: 'IngestionHealthCheckSetting';
+  enabled: Scalars['Boolean']['output'];
+  health_check_code: Scalars['String']['output'];
+  health_check_kind: IngestionHealthCheckKind;
+  health_check_label: Scalars['String']['output'];
+};
+
 export enum IngestionHealthCheckSeverity {
   Advisory = 'advisory',
   Blocking = 'blocking'
 }
+
+export type IngestionHealthSettings = {
+  __typename?: 'IngestionHealthSettings';
+  disabled_health_checks: Array<Scalars['String']['output']>;
+  health_checks: Array<IngestionHealthCheckSetting>;
+  notification_delay: Scalars['Int']['output'];
+};
+
+export type IngestionHealthSettingsInput = {
+  disabled_health_checks?: InputMaybe<Array<Scalars['String']['input']>>;
+  notification_delay?: InputMaybe<Scalars['Int']['input']>;
+};
 
 export enum IngestionHealthStatus {
   Critical = 'critical',
@@ -17825,6 +17846,7 @@ export type Mutation = {
   ingestionCsvFieldPatch?: Maybe<IngestionCsv>;
   ingestionCsvResetState?: Maybe<IngestionCsv>;
   ingestionCsvTester?: Maybe<CsvMapperTestResult>;
+  ingestionHealthSettingsEdit?: Maybe<IngestionHealthSettings>;
   ingestionJsonAdd?: Maybe<IngestionJson>;
   ingestionJsonAddInputFromImport: IngestionJsonAddInputFromImport;
   ingestionJsonDelete?: Maybe<Scalars['ID']['output']>;
@@ -19258,6 +19280,11 @@ export type MutationIngestionCsvResetStateArgs = {
 
 export type MutationIngestionCsvTesterArgs = {
   input: IngestionCsvAddInput;
+};
+
+
+export type MutationIngestionHealthSettingsEditArgs = {
+  input: IngestionHealthSettingsInput;
 };
 
 
@@ -25388,6 +25415,7 @@ export type Query = {
   ingestionCsv?: Maybe<IngestionCsv>;
   ingestionCsvLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestionCsvs?: Maybe<IngestionCsvConnection>;
+  ingestionHealthSettings?: Maybe<IngestionHealthSettings>;
   ingestionJson?: Maybe<IngestionJson>;
   ingestionJsonLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestionJsons?: Maybe<IngestionJsonConnection>;
@@ -41653,7 +41681,10 @@ export type ResolversTypes = ResolversObject<{
   IngestionHealth: ResolverTypeWrapper<IngestionHealth>;
   IngestionHealthCheck: ResolverTypeWrapper<IngestionHealthCheck>;
   IngestionHealthCheckKind: IngestionHealthCheckKind;
+  IngestionHealthCheckSetting: ResolverTypeWrapper<IngestionHealthCheckSetting>;
   IngestionHealthCheckSeverity: IngestionHealthCheckSeverity;
+  IngestionHealthSettings: ResolverTypeWrapper<IngestionHealthSettings>;
+  IngestionHealthSettingsInput: IngestionHealthSettingsInput;
   IngestionHealthStatus: IngestionHealthStatus;
   IngestionJson: ResolverTypeWrapper<BasicStoreEntityIngestionJson>;
   IngestionJsonAddInput: IngestionJsonAddInput;
@@ -42806,6 +42837,9 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionHeader: IngestionHeader;
   IngestionHealth: IngestionHealth;
   IngestionHealthCheck: IngestionHealthCheck;
+  IngestionHealthCheckSetting: IngestionHealthCheckSetting;
+  IngestionHealthSettings: IngestionHealthSettings;
+  IngestionHealthSettingsInput: IngestionHealthSettingsInput;
   IngestionJson: BasicStoreEntityIngestionJson;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonAddInputFromImport: IngestionJsonAddInputFromImport;
@@ -48225,7 +48259,21 @@ export type IngestionHealthCheckResolvers<ContextType = any, ParentType extends 
   health_check_code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   health_check_kind?: Resolver<ResolversTypes['IngestionHealthCheckKind'], ParentType, ContextType>;
   health_check_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  health_check_metadata?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   health_check_severity?: Resolver<ResolversTypes['IngestionHealthCheckSeverity'], ParentType, ContextType>;
+}>;
+
+export type IngestionHealthCheckSettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealthCheckSetting'] = ResolversParentTypes['IngestionHealthCheckSetting']> = ResolversObject<{
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  health_check_code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  health_check_kind?: Resolver<ResolversTypes['IngestionHealthCheckKind'], ParentType, ContextType>;
+  health_check_label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IngestionHealthSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealthSettings'] = ResolversParentTypes['IngestionHealthSettings']> = ResolversObject<{
+  disabled_health_checks?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  health_checks?: Resolver<Array<ResolversTypes['IngestionHealthCheckSetting']>, ParentType, ContextType>;
+  notification_delay?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type IngestionJsonResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionJson'] = ResolversParentTypes['IngestionJson']> = ResolversObject<{
@@ -49784,6 +49832,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionCsvFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvFieldPatchArgs, 'id' | 'input'>>;
   ingestionCsvResetState?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvResetStateArgs, 'id'>>;
   ingestionCsvTester?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationIngestionCsvTesterArgs, 'input'>>;
+  ingestionHealthSettingsEdit?: Resolver<Maybe<ResolversTypes['IngestionHealthSettings']>, ParentType, ContextType, RequireFields<MutationIngestionHealthSettingsEditArgs, 'input'>>;
   ingestionJsonAdd?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<MutationIngestionJsonAddArgs, 'input'>>;
   ingestionJsonAddInputFromImport?: Resolver<ResolversTypes['IngestionJsonAddInputFromImport'], ParentType, ContextType, RequireFields<MutationIngestionJsonAddInputFromImportArgs, 'file'>>;
   ingestionJsonDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionJsonDeleteArgs, 'id'>>;
@@ -51686,6 +51735,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionCsv?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<QueryIngestionCsvArgs, 'id'>>;
   ingestionCsvLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionCsvLogsArgs, 'id'>>;
   ingestionCsvs?: Resolver<Maybe<ResolversTypes['IngestionCsvConnection']>, ParentType, ContextType, Partial<QueryIngestionCsvsArgs>>;
+  ingestionHealthSettings?: Resolver<Maybe<ResolversTypes['IngestionHealthSettings']>, ParentType, ContextType>;
   ingestionJson?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<QueryIngestionJsonArgs, 'id'>>;
   ingestionJsonLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionJsonLogsArgs, 'id'>>;
   ingestionJsons?: Resolver<Maybe<ResolversTypes['IngestionJsonConnection']>, ParentType, ContextType, Partial<QueryIngestionJsonsArgs>>;
@@ -56128,6 +56178,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionHeader?: IngestionHeaderResolvers<ContextType>;
   IngestionHealth?: IngestionHealthResolvers<ContextType>;
   IngestionHealthCheck?: IngestionHealthCheckResolvers<ContextType>;
+  IngestionHealthCheckSetting?: IngestionHealthCheckSettingResolvers<ContextType>;
+  IngestionHealthSettings?: IngestionHealthSettingsResolvers<ContextType>;
   IngestionJson?: IngestionJsonResolvers<ContextType>;
   IngestionJsonAddInputFromImport?: IngestionJsonAddInputFromImportResolvers<ContextType>;
   IngestionJsonConnection?: IngestionJsonConnectionResolvers<ContextType>;

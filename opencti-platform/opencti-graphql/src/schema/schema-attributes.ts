@@ -128,7 +128,10 @@ export const schemaAttributesDefinition = {
     if (usageProtection) {
       throw UnsupportedError('Register attributes use after usage, please check your imports');
     }
-    this.registeredTypes.push(entityType);
+    // A type can be registered several times: a module can add its attributes to the platform settings
+    if (!this.registeredTypes.includes(entityType)) {
+      this.registeredTypes.push(entityType);
+    }
     const directAttributes = this.attributes[entityType] ?? new Map<string, AttributeDefinition>();
     // Register given attribute
     const currentAttributes = Object.values(this.attributes);
