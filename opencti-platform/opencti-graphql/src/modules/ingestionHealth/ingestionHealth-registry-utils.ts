@@ -130,22 +130,30 @@ export const CONNECTOR_ERROR_BLOCKING_CRITICITY = 2;
 
 // A work error can quote the url called, with its query string or its user and password: they may hold a secret,
 // and the error is shown to every reader of the connector, and written in the activity log.
-// The query string of any url or path, absolute or relative (urllib3 writes "with url: /v1/feed?apikey=..."),
-// up to the whitespace or quote ending it: a parenthesis or bracket can be part of it ("?filter=(active)&apikey=..."),
-// the ones closing it ("(https://...?key=...)") are restored by scrubWorkError.
-// The path is looked for behind each "?" only, and the scheme is bounded: linear on a long error, a traceback included
-const URL_QUERY_STRING = /\?(?<=\/[^\s'"()[\]?]*\?)[^\s'"]*/g;
-const CLOSING_PUNCTUATION = /[)\]]+$/;
-const URL_USERINFO = /\b([a-z][a-z\d+.-]{0,30}:\/\/)[^\s/?#@'"]+@/gi;
+// Any absolute url ("scheme://..."), whole, up to the whitespace or quote ending it: the user, the path (a parenthesis
+// can be part of it: "/items(1)"), the query and the fragment may all hold a secret.
+// The scheme is bounded: linear on a long error, a traceback included
+const ABSOLUTE_URL = /\b[a-z][a-z\d+.-]{0,30}:\/\/[^\s'"<>]+/gi;
+// The path of a relative url, as urllib3 writes it: "with url: /v1/feed?apikey=...", whole
+const URL_AFTER_LABEL = /(?<=\burl: )\/[^\s'"]*/g;
+// The query string of any other path ("GET /items(1)?apikey=..."), up to the whitespace or quote ending it:
+// the path is looked for behind each "?" only, linear on a long error
+const PATH_QUERY_STRING = /\?(?<=\/[^\s'"?]*\?)[^\s'"]*/g;
+// Punctuation closing the sentence or the group around a url ("(https://...)"): restored after the redaction
+const TRAILING_PUNCTUATION = /[)\]},.;:]+$/;
+const REDACTED_URL = '<redacted-url>';
 const MAX_WORK_ERROR_LENGTH = 200;
 
 /**
- * Removes from an error message what may hold a secret: the user and password of any url (the scheme is kept)
- * and the query string of any url or path, whole, but for the parentheses and brackets ending it. Then truncates it to MAX_WORK_ERROR_LENGTH characters.
+ * Removes from an error message what may hold a secret: any absolute url, and the relative url following "url: ", whole;
+ * the query string of any other path. The punctuation ending them is kept.
+ * Then truncates it to MAX_WORK_ERROR_LENGTH characters.
+ * ponytail: a secret outside a url (a bearer token, an echoed body) is not recognized, drop the message if that must be guaranteed
  */
 export const scrubWorkError = (message: string) => message
-  .replace(URL_USERINFO, '$1')
-  .replace(URL_QUERY_STRING, (query) => query.match(CLOSING_PUNCTUATION)?.[0] ?? '')
+  .replace(ABSOLUTE_URL, (url) => REDACTED_URL + (url.match(TRAILING_PUNCTUATION)?.[0] ?? ''))
+  .replace(URL_AFTER_LABEL, (url) => REDACTED_URL + (url.match(TRAILING_PUNCTUATION)?.[0] ?? ''))
+  .replace(PATH_QUERY_STRING, (query) => query.match(TRAILING_PUNCTUATION)?.[0] ?? '')
   .slice(0, MAX_WORK_ERROR_LENGTH);
 
 /**

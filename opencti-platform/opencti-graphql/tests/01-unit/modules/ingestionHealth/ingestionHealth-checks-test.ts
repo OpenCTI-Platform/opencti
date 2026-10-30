@@ -533,39 +533,48 @@ describe('last run failed check', () => {
     health_check_metadata: error === undefined ? {} : { error },
   }];
 
-  it('should report the failure with the error, query string removed', () => {
+  it('should report the failure with the error, absolute url redacted', () => {
     expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Timeout calling https://api.example.com/x?key=secret', source: null }])))
-      .toEqual(failed('Timeout calling https://api.example.com/x'));
+      .toEqual(failed('Timeout calling <redacted-url>'));
   });
 
-  it('should remove the query string of every url of the error, keeping the rest', () => {
+  it('should redact every absolute url of the error, keeping the rest', () => {
     expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET https://a.example.com/x?token=1 then http://b.example.com/y?k=2&z=3 failed', source: null }])))
-      .toEqual(failed('GET https://a.example.com/x then http://b.example.com/y failed'));
+      .toEqual(failed('GET <redacted-url> then <redacted-url> failed'));
   });
 
-  it('should remove the query string of a relative url, as urllib3 writes it', () => {
-    const maxRetry = "HTTPSConnectionPool(host='api.x', port=443): Max retries exceeded with url: /v1/feed?apikey=SECRET (Caused by …)";
+  it('should redact an absolute url whole: user and password, path, fragment', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET https://user:secret@api.example.com/v1/TOKEN/x#access_token=1 failed', source: null }])))
+      .toEqual(failed('GET <redacted-url> failed'));
+  });
+
+  it('should redact an absolute url with parentheses in its path', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET https://api.example.com/items(1)?apikey=SECRET failed', source: null }])))
+      .toEqual(failed('GET <redacted-url> failed'));
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: "GET https://api.example.com/users(a)/items[2]?apikey=SECRET failed", source: null }])))
+      .toEqual(failed('GET <redacted-url> failed'));
+  });
+
+  it('should redact the relative url following "url: ", as urllib3 writes it', () => {
+    const maxRetry = "HTTPSConnectionPool(host='api.x', port=443): Max retries exceeded with url: /v1/TOKEN/feed?apikey=SECRET (Caused by …)";
     expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: maxRetry, source: null }])))
-      .toEqual(failed("HTTPSConnectionPool(host='api.x', port=443): Max retries exceeded with url: /v1/feed (Caused by …)"));
+      .toEqual(failed("HTTPSConnectionPool(host='api.x', port=443): Max retries exceeded with url: <redacted-url> (Caused by …)"));
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Max retries exceeded with url: /items(1)?apikey=SECRET (Caused by …)', source: null }])))
+      .toEqual(failed('Max retries exceeded with url: <redacted-url> (Caused by …)'));
   });
 
-  it('should remove the user and password of an absolute url', () => {
-    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET https://user:secret@api.example.com/x failed', source: null }])))
-      .toEqual(failed('GET https://api.example.com/x failed'));
-  });
-
-  it('should keep the parenthesis or bracket closing the query string', () => {
-    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Timeout (https://api.example.com/x?key=secret) [url=/y?token=1]', source: null }])))
-      .toEqual(failed('Timeout (https://api.example.com/x) [url=/y]'));
-  });
-
-  it('should remove the parameters following a parenthesis or bracket of the query string', () => {
-    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET https://api.example.com/x?filter=(active)&apikey=SECRET failed', source: null }])))
-      .toEqual(failed('GET https://api.example.com/x failed'));
+  it('should remove the query string of another relative path, parentheses before the question mark included', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET /items(1)?apikey=SECRET failed', source: null }])))
+      .toEqual(failed('GET /items(1) failed'));
     expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET /v1/feed?ids[]=1&apikey=SECRET failed', source: null }])))
       .toEqual(failed('GET /v1/feed failed'));
-    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Timeout (https://api.example.com/x?filter=(active)&apikey=SECRET)', source: null }])))
-      .toEqual(failed('Timeout (https://api.example.com/x)'));
+  });
+
+  it('should keep the punctuation closing the url', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Timeout (https://api.example.com/x?key=secret) [url=/y?token=1]', source: null }])))
+      .toEqual(failed('Timeout (<redacted-url>) [url=/y]'));
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Timeout (https://api.example.com/x?filter=(active)&apikey=SECRET).', source: null }])))
+      .toEqual(failed('Timeout (<redacted-url>).'));
   });
 
   it('should keep a question mark that does not follow a url or a path', () => {
@@ -713,7 +722,7 @@ describe('connector reported errors checks', () => {
 
   it('should scrub the query string of the message', () => {
     const [check] = evaluate([{ code: 'RATE_LIMITED', message: 'GET https://api.example.com/x?key=secret failed', criticity: LOW }]);
-    expect(check.health_check_metadata?.error_message).toBe('GET https://api.example.com/x failed');
+    expect(check.health_check_metadata?.error_message).toBe('GET <redacted-url> failed');
   });
 
   it('should be enabled for every connector, pinging or not, and nothing else', () => {
