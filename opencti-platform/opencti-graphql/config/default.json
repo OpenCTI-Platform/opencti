@@ -51,8 +51,8 @@
       "max_time": 1000
     },
     "graphql": {
+      "secure_by_default": false,
       "armor_protection": {
-        "disabled": true,
         "max_depth": 20,
         "max_directives": 20,
         "max_tokens": 100000,
@@ -65,7 +65,6 @@
         "query_subtypes": 4
       },
       "playground": {
-        "enabled": true,
         "force_disabled_introspection": true
       }
     },
