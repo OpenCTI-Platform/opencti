@@ -10,7 +10,7 @@ This table regroups all the breaking changes introduced, with the corresponding 
 
 | Change                                                                                                              | Deprecated in | Changed in |
 |:--------------------------------------------------------------------------------------------------------------------|:--------------|:-----------|
-| [Object storage: RustFS and the `s3` configuration section](#s3-object-storage-rustfs)                              | 7.26XXXX.0     | -          |
+| [Object storage: RustFS and the `s3` configuration section](#s3-object-storage-rustfs)                              | 7.26XXXX.0     | 7.26XXXX.0 |
 | [Removal of filter script](#filter-script-api)                                                                      | -             | 7.260401.0 |
 | [SSO, cryptography and tokens management](#cryptography-and-tokens-management)                                      | -             | 7.260224.0 |
 | [Update license for SSO (& migration to UI)](#SSO-update-license)                                                   |               | 7.260224.0 |
