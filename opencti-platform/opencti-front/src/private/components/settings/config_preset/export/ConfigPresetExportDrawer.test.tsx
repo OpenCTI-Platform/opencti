@@ -294,7 +294,7 @@ describe('ConfigPresetExportDrawer', () => {
   });
 
   describe('a type still locked by the backend on a platform the front end knows has the license', () => {
-    const STALE_TITLE = 'The Enterprise Edition license is not taken into account yet, try again in a moment';
+    const STALE_TITLE = 'The Enterprise Edition license is not taken into account yet, click to try again';
     const staleType = () => type('whitemark', 'Remove Filigran logos', [], { requiresEnterpriseEdition: true, locked: true });
     const resolveCatalog = async (rendered: Awaited<ReturnType<typeof renderOpenDrawer>>, types: unknown[]) => {
       await act(async () => {
@@ -328,7 +328,7 @@ describe('ConfigPresetExportDrawer', () => {
           await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().length).toBeGreaterThan(0), { timeout: 4000 });
         }
       }
-      await rendered.user.click(screen.getByRole('button', { name: STALE_TITLE }));
+      await rendered.user.click(screen.getByRole('button', { name: `Remove Filigran logos. ${STALE_TITLE}` }));
       await resolveCatalog(rendered, [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { requiresEnterpriseEdition: true, locked: false })]);
       expect(await screen.findByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'checked');
     }, 15000);

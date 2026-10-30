@@ -104,14 +104,16 @@ const ConfigPresetLockedTypeRow: FunctionComponent<{ type: ConfigPresetAccordion
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const retryTitle = t_i18n('The Enterprise Edition license is not taken into account yet, click to try again');
+  // The row is the one button: named after the type, and its checkbox is out of the way of assistive tech, as in the gate of the license
   const retryProps = isEnterpriseEdition && onRetry
-    ? { role: 'button', tabIndex: 0, onClick: onRetry, onKeyDown: onActivationKey(onRetry) }
+    ? { role: 'button', tabIndex: 0, 'aria-label': `${t_i18n(type.label)}. ${retryTitle}`, onClick: onRetry, onKeyDown: onActivationKey(onRetry) }
     : {};
   // The whole row is the button (it opens the license dialog, or reads again): its disabled checkbox and chip let the row's pointer cursor through
   return (
-    <EETooltip title={isEnterpriseEdition ? 'The Enterprise Edition license is not taken into account yet, try again in a moment' : title}>
+    <EETooltip title={isEnterpriseEdition ? 'The Enterprise Edition license is not taken into account yet, click to try again' : title}>
       <div style={{ cursor: !isEnterpriseEdition || onRetry ? 'pointer' : undefined }} {...retryProps}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), pointerEvents: 'none' }}>
+        <div aria-hidden={retryProps.role ? true : undefined} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), pointerEvents: 'none' }}>
           <Checkbox label={t_i18n(type.label)} description={t_i18n(type.description)} checked={false} disabled />
           <EEChip feature={t_i18n(type.label)} size="sm" clickable={false} />
         </div>
