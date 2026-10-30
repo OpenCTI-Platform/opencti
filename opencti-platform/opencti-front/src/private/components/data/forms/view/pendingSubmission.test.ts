@@ -167,6 +167,36 @@ describe('prepareFormSubmission', () => {
     expect(formatted.objectLabel).toEqual(['a']);
   });
 
+  // Contract with resolvePendingFieldRefs (form-pending.ts, backend): these fields are keyed by attribute name
+  it('sends the pending labels and external references of a parsed entity and of a relationship under the attribute name', () => {
+    const mapped = (name: string, type: string, entity: string, attributeName: string) => ({ id: name, name, label: name, type, attributeMapping: { entity, attributeName } });
+    const parsedSchema = {
+      version: '2.0',
+      mainEntityType: 'Malware',
+      mainEntityMultiple: true,
+      mainEntityFieldMode: 'parsed',
+      mainEntityParseMode: 'line',
+      additionalEntities: [{ id: 'actor', entityType: 'Intrusion-Set', label: 'Actor', multiple: true, fieldMode: 'parsed', parseMode: 'line' }],
+      fields: [
+        mapped('field_main_labels', 'objectLabel', 'main_entity', 'objectLabel'),
+        mapped('field_actor_refs', 'externalReferences', 'actor', 'externalReferences'),
+      ],
+      relationships: [{ id: 'rel1', fromEntity: 'main_entity', toEntity: 'actor', relationshipType: 'related-to', fields: [mapped('field_rel_labels', 'objectLabel', 'rel1', 'objectLabel')] }],
+    } as unknown as FormSchemaDefinition;
+    const values = {
+      mainEntityParsed: 'Qakbot\nIcedID',
+      mainEntityFields: { field_main_labels: [{ label: 'new-label', value: '__pending__:label' }] },
+      additional_actor_parsed: 'APT-X',
+      additional_actor_fields: { field_actor_refs: [{ id: '__pending__:ref', value: '__pending__:ref' }] },
+      relationship_rel1: { field_rel_labels: [{ label: 'new-label', value: '__pending__:label' }] },
+    };
+    const { values: formatted } = prepareFormSubmission(values as unknown as Values, parsedSchema, getPending);
+    expect(formatted.mainEntityFields).toEqual({ objectLabel: [{ pending: '__pending__:label' }] });
+    expect(formatted.additional_actor_fields).toEqual({ externalReferences: [{ pending: '__pending__:ref' }] });
+    expect(formatted.relationships).toEqual([expect.objectContaining({ id: 'rel1', fields: { objectLabel: [{ pending: '__pending__:label' }] } })]);
+    expect(formatted.pendingObjects).toHaveLength(2);
+  });
+
   it('returns the files of the lookup roots', () => {
     const lookupSchema = { ...schema, mainEntityLookup: true, mainEntityMultiple: false } as FormSchemaDefinition;
     const file = new File(['x'], 'evidence.txt', { type: 'text/plain' });
