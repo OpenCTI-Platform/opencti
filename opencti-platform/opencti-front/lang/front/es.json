@@ -340,6 +340,7 @@
   "All add or remove actions done on the graph after the last expansion will be lost.": "Todas las acciones de añadir o eliminar realizadas en el grafo después de la última expansión se perderán.",
   "All attributes": "Todos los atributos",
   "All confidence levels": "Todos los niveles de confianza",
+  "All drafts": "Todos los borradores",
   "All elements in the bundle": "Todos los elementos del paquete",
   "All entities": "Todas las entidades",
   "All except main element in the bundle": "Todos excepto el elemento principal del paquete",

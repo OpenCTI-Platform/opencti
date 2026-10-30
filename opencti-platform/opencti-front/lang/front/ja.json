@@ -340,6 +340,7 @@
   "All add or remove actions done on the graph after the last expansion will be lost.": "最後の拡張以降にグラフ上で行われた追加や削除の操作はすべて失われる。",
   "All attributes": "全属性",
   "All confidence levels": "すべての信頼水準",
+  "All drafts": "すべての下書き",
   "All elements in the bundle": "バンドル内のすべての要素",
   "All entities": "すべてのエンティティ",
   "All except main element in the bundle": "バンドル内のメイン要素以外のすべて",
