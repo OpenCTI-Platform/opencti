@@ -103,24 +103,33 @@ const writeIngestionHealth = async <T extends IngestionElement>(context: AuthCon
 
 // Reads the values of the runtime checks for a batch of ingestions: one getRuntimeData call per check, whatever the number of ingestions.
 // Each check only reads the ingestions it is enabled for, and is not called when there is none.
-// A read failure is not hidden: it rejects, so that an unreachable storage is never read as a missing value.
+// A read failure is not hidden: the ingestions the failed check is enabled for are returned as unread, so that an unreachable
+// storage is never read as a missing value. The checks read are kept: the ingestions needing none of the failed ones are still evaluated.
 const loadRuntimeData = async (
   context: AuthContext,
   elements: IngestionElement[],
   globalContext: GlobalIngestionHealthContext,
-): Promise<Map<string, RuntimeData>> => {
+): Promise<{ runtimeDataByIngestion: Map<string, RuntimeData>; unreadIngestionIds: Set<string> }> => {
   // A disabled check is not evaluated: its values are not read
   const runtimeChecks = getEnabledRuntimeChecks(globalContext);
-  const valuesByCheck = await Promise.all(runtimeChecks.map(([, definition]) => {
-    const enabledElements = elements.filter((element) => definition.isEnabled(element, globalContext));
-    return enabledElements.length > 0
-      ? definition.getRuntimeData(enabledElements, { context, user: INGESTION_HEALTH_MANAGER_USER })
-      : new Map<string, unknown>();
-  }));
-  return new Map(elements.map((element) => {
+  const elementsByCheck = runtimeChecks.map(([, definition]) => elements.filter((element) => definition.isEnabled(element, globalContext)));
+  const results = await Promise.allSettled(runtimeChecks.map(([, definition], index) => (elementsByCheck[index].length > 0
+    ? definition.getRuntimeData(elementsByCheck[index], { context, user: INGESTION_HEALTH_MANAGER_USER })
+    : Promise.resolve(new Map<string, unknown>()))));
+  const unreadIngestionIds = new Set<string>();
+  const valuesByCheck = results.map((result, index) => {
+    if (result.status === 'fulfilled') {
+      return result.value;
+    }
+    logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: result.reason, manager: 'INGESTION_HEALTH_MANAGER', health_check_code: runtimeChecks[index][0] });
+    elementsByCheck[index].forEach((element) => unreadIngestionIds.add(element.internal_id));
+    return new Map<string, unknown>();
+  });
+  const runtimeDataByIngestion = new Map(elements.map((element) => {
     const runtimeData = Object.fromEntries(runtimeChecks.map(([code], index) => [code, valuesByCheck[index].get(element.internal_id)]));
     return [element.internal_id, runtimeData];
   }));
+  return { runtimeDataByIngestion, unreadIngestionIds };
 };
 
 // Stopped on purpose: nothing is evaluated (no checks, no runtime data read) and nothing is reported,
@@ -244,12 +253,13 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
   const runtimeElements = activeIngestions
     .map(({ element }) => element)
     .filter((element) => isRuntimeCheckEnabled(element, globalContext));
-  const runtimeIngestionIds = new Set(runtimeElements.map((element) => element.internal_id));
-  let runtimeDataByIngestion: Map<string, RuntimeData> | undefined;
+  // Not read as a missing value: the ingestions needing a check that could not be read are skipped until the next period,
+  // the others are still evaluated. On an unexpected failure of the whole read, every ingestion needing runtime data is skipped
+  let runtimeDataByIngestion = new Map<string, RuntimeData>();
+  let unreadIngestionIds = new Set(runtimeElements.map((element) => element.internal_id));
   try {
-    runtimeDataByIngestion = await loadRuntimeData(context, runtimeElements, globalContext);
+    ({ runtimeDataByIngestion, unreadIngestionIds } = await loadRuntimeData(context, runtimeElements, globalContext));
   } catch (e) {
-    // Not read as a missing value: the ingestions needing it are skipped until the next period, the others are still evaluated
     logApp.warn('[OPENCTI-MODULE] Ingestion health runtime data read error', { cause: e, manager: 'INGESTION_HEALTH_MANAGER' });
   }
   // Right after the read: the values read are judged against the moment they were read at
@@ -259,11 +269,11 @@ export const ingestionHealthHandler = async (lock: { signal: AbortSignal }) => {
   for (let i = 0; i < activeIngestions.length; i += 1) {
     lock.signal.throwIfAborted();
     const { source, element } = activeIngestions[i];
-    if (!runtimeDataByIngestion && runtimeIngestionIds.has(element.internal_id)) {
+    if (unreadIngestionIds.has(element.internal_id)) {
       continue;
     }
     try {
-      const runtimeData = runtimeDataByIngestion?.get(element.internal_id) ?? {};
+      const runtimeData = runtimeDataByIngestion.get(element.internal_id) ?? {};
       await evaluateIngestionHealth(context, source, element, { ...periodContext, runtimeData, user: resolveUser(element) });
     } catch (e) {
       // One broken ingestion must not stop the evaluation of the others, retried at the next period

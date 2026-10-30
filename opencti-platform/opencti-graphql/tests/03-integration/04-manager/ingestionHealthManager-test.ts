@@ -336,8 +336,8 @@ describe('Ingestion health manager: connector runtime checks', () => {
 });
 
 // Scenario: the heartbeat check is disabled on the platform, a connector pinging continuously runs with a deleted user,
-// and the history of a failing feed cannot be read. The connector depends on no runtime data anymore: it must still be
-// evaluated, only the feed needing the history is skipped until the next period.
+// and the history of a failing feed cannot be read. The connector does not need the feed history (its other runtime checks
+// are read): it must still be evaluated, only the feed needing the history is skipped until the next period.
 describe('Ingestion health manager: runtime data read failure with the heartbeat check disabled', () => {
   const CONNECTOR_ID = '5d1a5c3e-8b0f-4f43-9a52-6f3f0c1e2a03';
   const CONNECTOR_NAME = 'Ingestion health connector without heartbeat check';
