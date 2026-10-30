@@ -72,10 +72,15 @@ vi.mock('../../../../src/modules/publicDashboard/publicDashboard-utils', async (
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
 
-import { publicStixCoreObjectsTimeSeriesBreakdown, publicStixRelationshipsTimeSeriesBreakdown } from '../../../../src/modules/publicDashboard/publicDashboard-domain';
+import {
+  createPublicManifest,
+  publicStixCoreObjectsTimeSeriesBreakdown,
+  publicStixRelationshipsTimeSeriesBreakdown,
+} from '../../../../src/modules/publicDashboard/publicDashboard-domain';
 import * as StixCoreObjectDomain from '../../../../src/domain/stixCoreObject';
 import * as StixRelationshipDomain from '../../../../src/domain/stixRelationship';
 import * as PublicDashboardUtils from '../../../../src/modules/publicDashboard/publicDashboard-utils';
+import { fromB64 } from '../../../../src/utils/base64';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -95,8 +100,8 @@ const widgetRelationships = (storedFilters?: unknown) => ({
   filterGroups: storedFilters ? [storedFilters] : [],
 });
 
-const storeWidget = (perspective: string | null, dataSelection: unknown[], parameters: unknown) => {
-  vi.mocked(PublicDashboardUtils.getWidgetArguments).mockResolvedValue({ user: publicUser, perspective, dataSelection, parameters } as any);
+const storeWidget = (perspective: string | null, dataSelection: unknown[], parameters: unknown, type = 'line') => {
+  vi.mocked(PublicDashboardUtils.getWidgetArguments).mockResolvedValue({ user: publicUser, type, perspective, dataSelection, parameters } as any);
 };
 const request = (overrides: Record<string, unknown> = {}) => ({ uriKey: 'public-key', widgetId: 'widget-1', startDate, endDate, ...overrides } as any);
 
@@ -183,6 +188,34 @@ describe('publicStixRelationshipsTimeSeriesBreakdown', () => {
     }
     expect(StixRelationshipDomain.stixRelationshipsTimeSeriesBreakdown).not.toHaveBeenCalled();
   });
+
+  it('should refuse the widgets that cannot be broken down, still carrying a breakdown', async () => {
+    // Edited without the breakdown feature, or imported: the private dashboards draw their regular chart
+    const relationships = { date_attribute: 'created_at', perspective: 'relationships', filters: targets };
+    const stale = [
+      { type: 'donut', dataSelection: [relationships] },
+      { type: 'line', dataSelection: [relationships, relationships] },
+      { type: 'line', dataSelection: [] },
+      // a relationships widget can hold entities datasets, which cannot be broken down as relationships
+      { type: 'vertical-bar', dataSelection: [{ ...relationships, perspective: 'entities', filters: malwares }] },
+    ];
+    for (const { type, dataSelection } of stale) {
+      storeWidget('relationships', dataSelection, breakdownParameters, type);
+      await expect(publicStixRelationshipsTimeSeriesBreakdown({} as any, request())).rejects.toMatchObject({
+        message: 'This widget cannot be broken down',
+        extensions: { code: 'FUNCTIONAL_ERROR' },
+      });
+    }
+    expect(StixRelationshipDomain.stixRelationshipsTimeSeriesBreakdown).not.toHaveBeenCalled();
+  });
+
+  it('should break down every time series of a single relationships dataset', async () => {
+    for (const type of ['vertical-bar', 'line', 'area', 'heatmap']) {
+      storeWidget('relationships', [{ date_attribute: 'created_at', perspective: 'relationships', filters: targets }], breakdownParameters, type);
+      await publicStixRelationshipsTimeSeriesBreakdown({} as any, request());
+    }
+    expect(StixRelationshipDomain.stixRelationshipsTimeSeriesBreakdown).toHaveBeenCalledTimes(4);
+  });
 });
 
 describe('publicStixCoreObjectsTimeSeriesBreakdown', () => {
@@ -224,5 +257,56 @@ describe('publicStixCoreObjectsTimeSeriesBreakdown', () => {
       await expect(publicStixCoreObjectsTimeSeriesBreakdown({} as any, request())).rejects.toThrow('This widget has no breakdown');
     }
     expect(StixCoreObjectDomain.stixCoreObjectsTimeSeriesBreakdown).not.toHaveBeenCalled();
+  });
+
+  it('should refuse the entities widgets that cannot be broken down, still carrying a breakdown', async () => {
+    const entities = { date_attribute: 'published', perspective: 'entities', filters: malwares };
+    const stale = [
+      { type: 'number', dataSelection: [entities] },
+      { type: 'area', dataSelection: [entities, entities] },
+      { type: 'area', dataSelection: [{ ...entities, perspective: 'relationships' }] },
+    ];
+    for (const { type, dataSelection } of stale) {
+      storeWidget('entities', dataSelection, { interval: 'day', breakdownBy: 'objectLabel' }, type);
+      await expect(publicStixCoreObjectsTimeSeriesBreakdown({} as any, request())).rejects.toMatchObject({
+        message: 'This widget cannot be broken down',
+        extensions: { code: 'FUNCTIONAL_ERROR' },
+      });
+    }
+    expect(StixCoreObjectDomain.stixCoreObjectsTimeSeriesBreakdown).not.toHaveBeenCalled();
+  });
+});
+
+describe('createPublicManifest', () => {
+  it('should keep the perspective of every dataset, without its filters', () => {
+    const manifest = {
+      widgets: {
+        'widget-1': {
+          id: 'widget-1',
+          type: 'line',
+          perspective: 'relationships',
+          parameters: { title: 'Attacks', breakdownBy: 'toTypes' },
+          dataSelection: [
+            { label: 'attacks', date_attribute: 'start_time', perspective: 'relationships', filters: targets, dynamicFrom: malwares, isTo: true },
+            { label: 'malwares', date_attribute: 'created_at', perspective: 'entities', filters: malwares },
+            { label: 'older dataset', filters: sectors },
+          ],
+        },
+      },
+      config: { refresh_interval: 0 },
+    };
+
+    // Whether a widget is routed to its breakdown depends on it: the perspective of a dataset is not sensitive
+    expect(fromB64(createPublicManifest(manifest) as string).widgets['widget-1']).toEqual({
+      id: 'widget-1',
+      type: 'line',
+      perspective: 'relationships',
+      parameters: { title: 'Attacks', breakdownBy: 'toTypes' },
+      dataSelection: [
+        { label: 'attacks', date_attribute: 'start_time', perspective: 'relationships' },
+        { label: 'malwares', date_attribute: 'created_at', perspective: 'entities' },
+        { label: 'older dataset' },
+      ],
+    });
   });
 });

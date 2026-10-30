@@ -1581,6 +1581,10 @@ describe('Public dashboards and dashboard variables', () => {
     expect(Object.keys(publicManifest.widgets)).toHaveLength(Object.keys(PRIVATE_DASHBOARD_MANIFEST.widgets).length);
     expect(publicManifest.variables).toBeUndefined();
     expect(publicManifest.presets).toBeUndefined();
+    // The datasets keep their perspective, which routes a widget to its breakdown, and never their filters
+    expect(publicManifest.widgets['e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38'].dataSelection).toEqual([
+      { label: 'attacks by target type', attribute: 'entity_type', date_attribute: 'created_at', perspective: 'relationships' },
+    ]);
   });
 
   const READ_PRIVATE_MANIFEST_QUERY = gql`

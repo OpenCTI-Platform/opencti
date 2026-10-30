@@ -21,7 +21,7 @@ vi.mock('./stix_relationships/PublicStixRelationshipsMultiLineChart', () => ({
   default: () => <div data-testid="relationships-line" />,
 }));
 
-// Public manifests keep one entry per dataset but strip its filters
+// Public manifests keep one entry per dataset, with its perspective, but strip its filters
 const makeWidget = (overrides: Partial<Widget> = {}): Widget => ({
   id: 'public-widget-1',
   type: 'line',
@@ -73,6 +73,23 @@ describe('usePublicDashboardWidgets', () => {
 
     expect(getByTestId('relationships-breakdown').textContent).toEqual('public-key/public-widget-1');
     expect(queryByTestId('relationships-line')).toBeNull();
+  });
+
+  it('should keep the regular chart of a widget that cannot be broken down, still carrying a breakdown', () => {
+    // Edited without the breakdown feature, or imported: drawn as in the private dashboards
+    const parameters = { breakdownBy: 'toTypes', interval: 'day' };
+    const entitiesDataset = makeWidget({ perspective: 'relationships', dataSelection: [{ label: 'Reports', perspective: 'entities' }], parameters });
+    const severalDatasets = makeWidget({
+      perspective: 'relationships',
+      dataSelection: [{ label: 'Targets', perspective: 'relationships' }, { label: 'Uses', perspective: 'relationships' }],
+      parameters,
+    });
+    for (const widget of [entitiesDataset, severalDatasets]) {
+      const { getByTestId, queryByTestId, unmount } = renderWidget(widget, 'relationshipWidget');
+      expect(getByTestId('relationships-line')).toBeTruthy();
+      expect(queryByTestId('relationships-breakdown')).toBeNull();
+      unmount();
+    }
   });
 
   it('should keep rendering a relationships widget without breakdown as before', () => {

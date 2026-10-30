@@ -192,7 +192,7 @@ const createPrivateManifest = async (
  * Creates the public manifest by stripping each widget's dataSelection
  * to only keep display-related properties (no filters, no query data).
  */
-const createPublicManifest = (manifest: any) => {
+export const createPublicManifest = (manifest: any) => {
   // Dashboard variables and presets are internal definitions (filters, ids, default values):
   // the public manifest is served to anonymous visitors and must never carry them.
   const parsedManifest = manifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest) : manifest;
@@ -202,6 +202,8 @@ const createPublicManifest = (manifest: any) => {
         const publicDataSelection = widget.dataSelection.map((selection: any) => {
           return {
             ...(selection.label && { label: selection.label }),
+            // The kind of elements of the dataset: the front only routes a widget to its breakdown when they are the ones of the widget
+            ...(selection.perspective && { perspective: selection.perspective }),
             ...(selection.attribute && { attribute: selection.attribute }),
             ...(selection.date_attribute && { date_attribute: selection.date_attribute }),
             ...(isNotEmptyField(selection.number) && { number: selection.number }),
@@ -363,12 +365,12 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 
 // region Widgets Public API
 const ensurePublicContext = async (context: AuthContext, uriKey: string, widgetId: string) => {
-  const { user, perspective, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
+  const { user, type, perspective, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
   context.user = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
-  return { user, perspective, dataSelection, parameters };
+  return { user, type, perspective, dataSelection, parameters };
 };
 
 // heatmap & vertical-bar & line & area
@@ -388,16 +390,26 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
 };
 
+// Widgets drawing a time series, the only ones a breakdown expands (the 'timeseries' category of the front widgets)
+const TIME_SERIES_WIDGET_TYPES = ['vertical-bar', 'line', 'area', 'heatmap'];
+
 // Every setting of a breakdown is read from the stored widget, never from the request of the visitor.
 // A widget of another perspective can carry a breakdown too (an audits widget, whose logs have no public API).
 const buildPublicBreakdownArgs = (
   args: Pick<QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs, 'widgetId' | 'startDate' | 'endDate'>,
-  widget: Pick<PublicDashboardCachedWidget, 'perspective' | 'parameters'> & { selection: PublicDashboardCachedWidget['dataSelection'][number] },
+  widget: Pick<PublicDashboardCachedWidget, 'type' | 'perspective' | 'dataSelection' | 'parameters'>,
   breakdownPerspective: PublicDashboardCachedWidget['perspective'],
 ) => {
-  const { perspective, selection, parameters } = widget;
+  const { type, perspective, dataSelection, parameters } = widget;
   if (perspective !== breakdownPerspective || !parameters?.breakdownBy) {
     throw UnsupportedError('This widget has no breakdown', { widgetId: args.widgetId });
+  }
+  // A widget edited without the breakdown feature, or imported, can keep a breakdown it cannot have: the private
+  // dashboards draw its regular chart. Same rule as the front (canWidgetBeBrokenDown in widgetBreakdown.ts): a time
+  // series of a single dataset, of the elements of the widget (a relationships widget can also hold entities datasets).
+  const [selection] = dataSelection;
+  if (!TIME_SERIES_WIDGET_TYPES.includes(type) || dataSelection.length !== 1 || (selection.perspective ?? perspective) !== perspective) {
+    throw FunctionalError('This widget cannot be broken down', { widgetId: args.widgetId, type, datasetsCount: dataSelection.length });
   }
   // The histogram is anchored on the start date: without it the series would silently collapse on today
   if (!args.startDate) {
@@ -418,10 +430,10 @@ const buildPublicBreakdownArgs = (
 
 // vertical-bar & line & area & heatmap with a breakdown: one series per value of a field
 export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs) => {
-  const { user, perspective, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, type, perspective, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
+  const breakdownArgs = buildPublicBreakdownArgs(args, { type, perspective, dataSelection, parameters }, 'entities');
   const selection = dataSelection[0];
-  const breakdownArgs = buildPublicBreakdownArgs(args, { perspective, selection, parameters }, 'entities');
   const types = getBreakdownEntityTypes(selection.filters);
   const standardArgs = {
     ...breakdownArgs,
@@ -438,10 +450,10 @@ const RELATIONSHIP_WIDGETS_TYPES = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTI
 
 // vertical-bar & line & area & heatmap of relationships with a breakdown
 export const publicStixRelationshipsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixRelationshipsTimeSeriesBreakdownArgs) => {
-  const { user, perspective, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, type, perspective, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
+  const breakdownArgs = buildPublicBreakdownArgs(args, { type, perspective, dataSelection, parameters }, 'relationships');
   const selection = dataSelection[0];
-  const breakdownArgs = buildPublicBreakdownArgs(args, { perspective, selection, parameters }, 'relationships');
   const relationshipTypes = getBreakdownEntityTypes(selection.filters, RELATION_TYPE_FILTER);
   const standardArgs = {
     ...breakdownArgs,
