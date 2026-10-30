@@ -533,7 +533,7 @@ export const planSubmission = async (
   validatePendingPayload(values, input.files?.length ?? 0);
   if (!isBypass) {
     // A submission that creates no draft is imported in the current draft of the applicant, if any (see commitSubmission)
-    const toDraft = finalIsDraft || getDraftContext(context, user) !== undefined;
+    const toDraft = finalIsDraft || !!getDraftContext(context, user); // '' once the applicant left a draft
     checkFormSubmissionAccess(user, toDraft, { pendingLabels: countPendingLabels(values) });
   }
   validatePendingRoots(schema, values);
@@ -632,7 +632,7 @@ export const commitSubmission = async (
         await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
       }
       // A submission that creates no draft is imported where it was made: in the current draft of the applicant, or in main
-      const draftId = createdDraftId ?? getDraftContext(context, user) ?? null;
+      const draftId = createdDraftId ?? (getDraftContext(context, user) || null);
       // The work is bound to the applicant, the form and the draft: the import is only allowed to write for this submission
       const formSubmission = { applicant_id: user.id, form_id: formId, draft_id: draftId };
       const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now(), formSubmission });

@@ -611,6 +611,18 @@ describe('formSubmit - deferred creation', () => {
     await expect(submit({ ...mockUser, capabilities: [{ name: BYPASS }] }, false)).resolves.toMatchObject({ success: true });
   });
 
+  it('should check a submission made after leaving a draft in main', async () => {
+    const values = {
+      mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'Labelled Malware' }, refs: { objectLabel: [{ pending: 'l1' }] } }],
+      pendingObjects: [{ id: 'l1', entityType: 'Label', input: { value: 'new-label' } }],
+    };
+    // leaving a draft sets an empty draft context: the draft-scope rights do not count any more
+    const inDraft = { ...mockUser, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }], capabilitiesInDraft: [{ name: 'SETTINGS_SETLABELS' }], draft_context: '' };
+    const submit = () => formSubmit({ ...mockContext, draft_context: '' }, inDraft, { formId: 'form-1', values: JSON.stringify(values) }, false);
+    await expect(submit()).rejects.toThrow('You are not allowed to create labels.');
+    expect(rabbitmq.pushBundleToWorker).not.toHaveBeenCalled();
+  });
+
   it('should still accept the legacy pending payload', async () => {
     const values = { mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'Legacy Malware' } }] };
 
