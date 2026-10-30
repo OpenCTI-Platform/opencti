@@ -22,7 +22,7 @@ const InvestigationEnrichmentExpandEmpty = ({
             {t_i18n('Nothing to add to the graph')}
           </Text>
           <DialogDescription>
-            {t_i18n('Everything this enrichment touched is already in the graph, or it touched nothing that can be drawn.')}
+            {t_i18n('The data from the enrichment has already been added to the graph.')}
           </DialogDescription>
         </div>
       </DialogBody>
