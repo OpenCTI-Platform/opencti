@@ -59,10 +59,10 @@ export const isSingletonConfigPresetType = (type: { readonly key: string; readon
   return type.items.length === 1 && type.items[0].key === type.key;
 };
 
-// A type that needs the Enterprise Edition and has no item for this platform: without the license, or, once it has it, until the items are loaded.
+// A type the platform cannot use: the backend says so (`locked`), and so does the front end when it knows the platform has no license.
 // Nothing of it is listed, counted or selected.
-export const isConfigPresetTypeLocked = (type: { readonly requiresEnterpriseEdition?: boolean; readonly items: ReadonlyArray<unknown> }, isEnterpriseEdition: boolean): boolean => {
-  return !!type.requiresEnterpriseEdition && (!isEnterpriseEdition || type.items.length === 0);
+export const isConfigPresetTypeLocked = (type: { readonly requiresEnterpriseEdition?: boolean; readonly locked?: boolean }, isEnterpriseEdition: boolean): boolean => {
+  return !!type.locked || (!!type.requiresEnterpriseEdition && !isEnterpriseEdition);
 };
 
 export const selectAllConfigPresetItems = (types: ReadonlyArray<{ readonly key: string }>): ConfigPresetSelection => {

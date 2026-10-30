@@ -41,12 +41,13 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   dependsOn: [],
   ...overrides,
 });
-const previewType = (key: string, label: string, items: unknown[], modes = ['OVERWRITE'], requiresEnterpriseEdition = false) => ({
+const previewType = (key: string, label: string, items: unknown[], modes = ['OVERWRITE'], requiresEnterpriseEdition = false, locked = false) => ({
   key,
   label,
   description: `${label} description`,
   group: platformSettings,
   requiresEnterpriseEdition,
+  locked,
   modes,
   items,
 });
@@ -72,7 +73,7 @@ const preview = {
 // A bundle with the whitemark, a type that needs the Enterprise Edition: a platform without it has no item of it
 const previewWithWhitemark = {
   ...preview,
-  types: [...preview.types, previewType('whitemark', 'Remove Filigran logos', [], ['OVERWRITE'], true)],
+  types: [...preview.types, previewType('whitemark', 'Remove Filigran logos', [], ['OVERWRITE'], true, true)],
 };
 // The same bundle once the platform has the license: the type comes with its item
 const previewWithWhitemarkUnlocked = {

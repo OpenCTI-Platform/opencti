@@ -91,18 +91,21 @@ export interface ConfigPresetAccordionType {
   readonly group: { readonly key: string; readonly label: string };
   readonly items: ReadonlyArray<AccordionItem>;
   readonly itemsPageInfo: { readonly globalCount: number; readonly hasNextPage?: boolean };
-  // The type is part of the Enterprise Edition: without it the platform has no item of it, and its row opens the license dialog
+  // The type is part of the Enterprise Edition: without it its row opens the license dialog
   readonly requiresEnterpriseEdition?: boolean;
+  // The backend cannot use the type now: it has no item
+  readonly locked?: boolean;
 }
 
-// A type that needs the Enterprise Edition the platform does not have: one row that stays unchecked, with the chip, and opens the license dialog
+// A type the platform cannot use: one row that stays unchecked, with the chip, and opens the license dialog. When the front end knows the
+// platform has the license, the backend has not taken it into account yet: the row says so, as there is nothing to activate.
 const ConfigPresetLockedTypeRow: FunctionComponent<{ type: ConfigPresetAccordionType; title?: string }> = ({ type, title }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
   // The whole row opens the license dialog: its disabled checkbox and chip let the row's pointer cursor through instead of showing their own
   return (
-    <EETooltip title={title}>
+    <EETooltip title={isEnterpriseEdition ? 'The Enterprise Edition license is not taken into account yet, try again in a moment' : title}>
       <div style={{ cursor: isEnterpriseEdition ? undefined : 'pointer' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), pointerEvents: 'none' }}>
           <Checkbox label={t_i18n(type.label)} description={t_i18n(type.description)} checked={false} disabled />

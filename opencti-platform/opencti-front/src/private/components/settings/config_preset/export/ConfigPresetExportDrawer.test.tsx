@@ -1,6 +1,6 @@
 import React, { useSyncExternalStore } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import ConfigPresetExportDrawer from './ConfigPresetExportDrawer';
@@ -42,6 +42,7 @@ const type = (key: string, label: string, items: ReturnType<typeof item>[], over
   description: `${label} description`,
   group: platformSettings,
   requiresEnterpriseEdition: false,
+  locked: false,
   items,
   itemsPageInfo: { hasNextPage: false, globalCount: items.length },
   ...overrides,
@@ -179,7 +180,7 @@ describe('ConfigPresetExportDrawer', () => {
   it('does not show a type without item, nor a group left without type', async () => {
     const emptyTypes = [
       ...catalog,
-      { key: 'observedData', label: 'Observed datas', group: { key: 'entities', label: 'Entities' }, requiresEnterpriseEdition: false, items: [] },
+      { key: 'observedData', label: 'Observed datas', group: { key: 'entities', label: 'Entities' }, requiresEnterpriseEdition: false, locked: false, items: [] },
     ];
     await renderOpenDrawer(vi.fn(), emptyTypes);
     expect(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' })).toBeInTheDocument();
@@ -238,8 +239,8 @@ describe('ConfigPresetExportDrawer', () => {
 
   describe('a type that needs the Enterprise Edition', () => {
     // On a platform without it the type has no item; with it, one
-    const lockedType = () => type('whitemark', 'Remove Filigran logos', [], { requiresEnterpriseEdition: true });
-    const unlockedType = () => type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { requiresEnterpriseEdition: true });
+    const lockedType = () => type('whitemark', 'Remove Filigran logos', [], { requiresEnterpriseEdition: true, locked: true });
+    const unlockedType = () => type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { requiresEnterpriseEdition: true, locked: false });
     const GATE = 'Activate the Enterprise Edition to export this item';
     const exportedTypes = async ({ user, relayEnv }: Awaited<ReturnType<typeof renderOpenDrawer>>) => {
       await user.click(screen.getByRole('button', { name: 'Export Platform Bundle' }));
@@ -288,6 +289,42 @@ describe('ConfigPresetExportDrawer', () => {
       expect(screen.queryByRole('button', { name: GATE })).not.toBeInTheDocument();
       expect(screen.getByRole('checkbox', { name: 'Messages' })).toHaveAttribute('data-state', 'unchecked');
       expect(await exportedTypes(rendered)).toEqual(['platform', 'hiddenEntityTypes', 'whitemark']);
+    });
+  });
+
+  describe('a type still locked by the backend on a platform the front end knows has the license', () => {
+    const STALE_TITLE = 'The Enterprise Edition license is not taken into account yet, try again in a moment';
+    const staleType = () => type('whitemark', 'Remove Filigran logos', [], { requiresEnterpriseEdition: true, locked: true });
+    const resolveCatalog = async (rendered: Awaited<ReturnType<typeof renderOpenDrawer>>, types: unknown[]) => {
+      await act(async () => {
+        rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+          Query: () => ({ configPresetExportableTypes: types }),
+        }));
+      });
+    };
+
+    it('says the license is not taken into account yet, instead of offering to activate it', async () => {
+      const rendered = await renderOpenDrawer(vi.fn(), [...catalog, staleType()]);
+      await act(async () => {
+        enterpriseEdition.activate();
+      });
+      await resolveCatalog(rendered, [...catalog, staleType()]);
+      expect(screen.queryByRole('button', { name: 'Activate the Enterprise Edition to export this item' })).not.toBeInTheDocument();
+      // The row lets the pointer through to the tooltip: the events of its content reach it
+      fireEvent.mouseOver(screen.getByText('Remove Filigran logos'));
+      expect(await screen.findByText(STALE_TITLE)).toBeInTheDocument();
+    });
+
+    it('reads the catalog again until the backend has taken the license into account', async () => {
+      const rendered = await renderOpenDrawer(vi.fn(), [...catalog, staleType()]);
+      await act(async () => {
+        enterpriseEdition.activate();
+      });
+      await resolveCatalog(rendered, [...catalog, staleType()]);
+      // The retry asks for the catalog again after a delay, and this time the backend has the license
+      await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().length).toBeGreaterThan(0), { timeout: 4000 });
+      await resolveCatalog(rendered, [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { requiresEnterpriseEdition: true, locked: false })]);
+      expect(await screen.findByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'checked');
     });
   });
 
