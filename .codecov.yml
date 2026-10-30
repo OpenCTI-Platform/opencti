@@ -43,7 +43,7 @@ coverage:
         paths:
           - opencti-platform
       client-python:
-        target: 70%
+        target: 80%
         informational: false
         paths:
           - client-python
