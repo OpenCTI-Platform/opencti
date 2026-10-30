@@ -1,6 +1,7 @@
 import { vi } from 'vitest';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../../src/database/middleware-loader';
 import { buildPagination } from '../../../../src/database/utils';
+import type { BasicStoreEntityLabel } from '../../../../src/modules/label/label-types';
 import type { BasicStoreEntityTheme } from '../../../../src/modules/theme/theme-types';
 
 const colors = {
@@ -72,32 +73,63 @@ export const THEME_FILE_FIELDS = [
   'theme_login_aside_image',
 ];
 
-interface ThemeListingArgs {
+export const customLabel = {
+  id: 'custom-label-id',
+  internal_id: 'custom-label-id',
+  standard_id: 'label--5d2c1a7e-3b4f-5c6d-8e9f-0a1b2c3d4e5f',
+  entity_type: 'Label',
+  creator_id: ['creator-secret-id'],
+  created_at: '2026-01-01T00:00:00.000Z',
+  value: 'tlp:amber',
+  color: '#ffc107',
+} as unknown as BasicStoreEntityLabel;
+
+export const otherLabel = {
+  ...customLabel,
+  id: 'other-label-id',
+  internal_id: 'other-label-id',
+  standard_id: 'label--9a8b7c6d-5e4f-5a3b-9c2d-1e0f9a8b7c6d',
+  value: 'APT',
+  color: '#ff0000',
+} as unknown as BasicStoreEntityLabel;
+
+export const ALL_LABELS = [customLabel, otherLabel];
+
+interface ListingArgs {
   search?: string | null;
   filters?: { filters: { key: string[]; values: string[]; operator?: string }[] };
 }
 
-// The eq / not_eq filters and the search the families send, applied like the engine does, sorted by name
-export const listThemesLikeTheEngine = (args: ThemeListingArgs = {}) => {
-  return ALL_THEMES
-    .filter((theme) => (args.filters?.filters ?? []).every(({ key, values, operator }) => {
-      const matches = values.map(String).includes(String((theme as unknown as Record<string, unknown>)[key[0]]));
+// The eq / not_eq filters and the search the families send, applied like the engine does, sorted by the given field
+const listLikeTheEngine = <T extends object>(entities: T[], field: string, args: ListingArgs = {}) => {
+  const valueOf = (entity: T, key: string) => String((entity as Record<string, unknown>)[key]);
+  return entities
+    .filter((entity) => (args.filters?.filters ?? []).every(({ key, values, operator }) => {
+      const matches = values.map(String).includes(valueOf(entity, key[0]));
       return operator === 'not_eq' ? !matches : matches;
     }))
-    .filter((theme) => !args.search || theme.name.toLowerCase().includes(args.search.toLowerCase()))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .filter((entity) => !args.search || valueOf(entity, field).toLowerCase().includes(args.search.toLowerCase()))
+    .sort((a, b) => valueOf(a, field).localeCompare(valueOf(b, field)));
 };
 
+export const listThemesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_THEMES, 'name', args);
+export const listLabelsLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_LABELS, 'value', args);
+
 // For a test that mocks fullEntitiesList, pageEntitiesConnection and storeLoadById of the middleware loader:
-// the themes come from the fixtures, any other type listed by fullEntitiesList gets otherEntities
+// the themes and the labels come from the fixtures, any other type listed by fullEntitiesList gets otherEntities
 export const mockThemeLoaders = (otherEntities: unknown[] = []) => {
   vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, types, args) => {
+    if (types?.[0] === 'Label') {
+      return listLabelsLikeTheEngine(args as never) as never;
+    }
     return (types?.[0] === 'Theme' ? listThemesLikeTheEngine(args as never) : otherEntities) as never;
   });
-  vi.mocked(pageEntitiesConnection).mockImplementation(async (_ctx, _user, _types, args) => {
+  vi.mocked(pageEntitiesConnection).mockImplementation(async (_ctx, _user, types, args) => {
     const first = args?.first ?? 500;
-    const themes = listThemesLikeTheEngine(args as never);
-    return buildPagination(first, args?.after, themes.slice(0, first).map((node) => ({ node, sort: [node.name] })), themes.length) as never;
+    const isLabel = types?.[0] === 'Label';
+    const entities = isLabel ? listLabelsLikeTheEngine(args as never) : listThemesLikeTheEngine(args as never);
+    const sortOf = (entity: unknown) => (isLabel ? (entity as BasicStoreEntityLabel).value : (entity as BasicStoreEntityTheme).name);
+    return buildPagination(first, args?.after, entities.slice(0, first).map((node) => ({ node, sort: [sortOf(node)] })), entities.length) as never;
   });
-  vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => ALL_THEMES.find((theme) => theme.id === id) as never);
+  vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => [...ALL_THEMES, ...ALL_LABELS].find((entity) => entity.id === id) as never);
 };

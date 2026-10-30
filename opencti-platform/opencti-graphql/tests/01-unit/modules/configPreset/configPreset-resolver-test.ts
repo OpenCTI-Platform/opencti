@@ -34,7 +34,7 @@ import { topEntitiesList } from '../../../../src/database/middleware-loader';
 import { buildPaginationFromEdges } from '../../../../src/database/utils';
 import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme } from './configPreset-themes-fixtures';
+import { builtInTheme, customLabel, customTheme, mockThemeLoaders, otherCustomTheme, otherLabel } from './configPreset-themes-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -73,6 +73,7 @@ const themeItem = (theme: { standard_id: string; name: string }, isDefault: bool
   dependsOn: [],
   isDefault,
 });
+const labelItem = (label: { standard_id: string; value: string }) => ({ key: label.standard_id, label: label.value, translatable: false, dependsOn: [], isDefault: false });
 const onePage = (globalCount: number) => ({ hasNextPage: false, globalCount });
 
 describe('Config preset exportable types query', () => {
@@ -123,6 +124,15 @@ describe('Config preset exportable types query', () => {
         items: [staticItem('hiddenEntityTypes', 'Hidden entity types')],
         itemsPageInfo: onePage(1),
       },
+      {
+        key: 'labels',
+        label: 'Labels',
+        description: 'Labels and their colors',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // The labels by value
+        items: [labelItem(otherLabel), labelItem(customLabel)],
+        itemsPageInfo: onePage(2),
+      },
     ]);
   });
 
@@ -138,7 +148,7 @@ describe('Config preset exportable types query', () => {
   it('lists the messages set on the platform and hides the category when none is set', async () => {
     // No message is set in the default settings of these tests: the category is not returned
     const none = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
-    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes']);
+    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'labels']);
 
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id, platform_login_message: 'Welcome' }] as never);
     const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
@@ -160,7 +170,7 @@ describe('Config preset exportable types query', () => {
     const result = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
     expect(result.errors).toBeUndefined();
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
-    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['whitemark', true], ['hiddenEntityTypes', false]]);
+    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['whitemark', true], ['hiddenEntityTypes', false], ['labels', false]]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
@@ -196,6 +206,7 @@ describe('Config preset exportable types query', () => {
       ['branding', 'platformSettings'],
       ['whitemark', 'platformSettings'],
       ['hiddenEntityTypes', 'dataModel'],
+      ['labels', 'taxonomy'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
