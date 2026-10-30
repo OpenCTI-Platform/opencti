@@ -43,6 +43,7 @@ vi.mock('amqplib/callback_api', () => ({
 vi.mock('../../../src/config/conf', () => ({
   default: { get: vi.fn(() => undefined) },
   booleanConf: vi.fn(() => false),
+  TLS_REJECT_UNAUTHORIZED: true,
   configureCA: vi.fn(() => ({})),
   loadCert: vi.fn(),
   logApp: {

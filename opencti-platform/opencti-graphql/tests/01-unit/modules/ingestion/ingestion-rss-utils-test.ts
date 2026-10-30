@@ -96,9 +96,10 @@ describe('ingestion-rss-utils', () => {
       expect(options.headers).toMatchObject({ 'User-Agent': expect.any(String) });
     });
 
-    it('should not verify SSL unless the feed asks for it', () => {
-      expect(rssHttpClientOptions(buildIngestion()).rejectUnauthorized).toBe(false);
+    it('should defer SSL verification to the global TLS default unless the feed sets it', () => {
+      expect(rssHttpClientOptions(buildIngestion()).rejectUnauthorized).toBeUndefined();
       expect(rssHttpClientOptions(buildIngestion({ ssl_verify: true })).rejectUnauthorized).toBe(true);
+      expect(rssHttpClientOptions(buildIngestion({ ssl_verify: false })).rejectUnauthorized).toBe(false);
     });
   });
 

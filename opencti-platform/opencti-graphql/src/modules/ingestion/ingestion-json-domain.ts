@@ -169,6 +169,8 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   }
   const httpClientOptions: GetHttpClient = {
     headers,
+    // JSON feeds without ssl_verify have always been verified, unlike the other feed types.
+    // Keep it until tls:reject_unauthorized defaults to true, then follow it with ingestion.ssl_verify.
     rejectUnauthorized: ingestion.ssl_verify ?? true,
     timeout,
     responseType: 'json',
