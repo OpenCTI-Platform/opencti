@@ -490,10 +490,13 @@ export const coarsenSeriesForRendering = <T extends { data: TimeSeriesPoint[] }>
 export const numberSharedSeriesNames = (names: string[]) => {
   const counts = new Map<string, number>();
   names.forEach((name) => counts.set(name, (counts.get(name) ?? 0) + 1));
+  // A number another series is already named with is skipped: "Alice (1)" next to two "Alice"
+  const inputNames = new Set(names);
   const ranks = new Map<string, number>();
   return names.map((name) => {
     if ((counts.get(name) ?? 0) < 2) return name;
-    const rank = (ranks.get(name) ?? 0) + 1;
+    let rank = (ranks.get(name) ?? 0) + 1;
+    while (inputNames.has(`${name} (${rank})`)) rank += 1;
     ranks.set(name, rank);
     return `${name} (${rank})`;
   });

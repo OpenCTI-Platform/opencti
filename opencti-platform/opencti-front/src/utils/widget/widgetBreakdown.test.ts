@@ -629,6 +629,15 @@ describe('numberSharedSeriesNames', () => {
     expect(numberSharedSeriesNames(['Alice', 'Bob'])).toEqual(['Alice', 'Bob']);
     expect(numberSharedSeriesNames([])).toEqual([]);
   });
+
+  it('skips the numbers other series are already named with', () => {
+    expect(numberSharedSeriesNames(['Alice', 'Alice', 'Alice (1)'])).toEqual(['Alice (2)', 'Alice (3)', 'Alice (1)']);
+    expect(numberSharedSeriesNames(['Alice (2)', 'Alice', 'Alice', 'Alice', 'Alice (4)'])).toEqual(['Alice (2)', 'Alice (1)', 'Alice (3)', 'Alice (5)', 'Alice (4)']);
+    // Shared numbered names are numbered too, apart from the others
+    const names = numberSharedSeriesNames(['Alice', 'Alice', 'Alice (1)', 'Alice (1)']);
+    expect(names).toEqual(['Alice (2)', 'Alice (3)', 'Alice (1) (1)', 'Alice (1) (2)']);
+    expect(new Set(names).size).toEqual(names.length);
+  });
 });
 
 describe('audits breakdown', () => {
