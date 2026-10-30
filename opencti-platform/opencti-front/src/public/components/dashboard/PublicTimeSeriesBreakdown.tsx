@@ -83,7 +83,7 @@ const PublicTimeSeriesBreakdown = <TQuery extends OperationType>({
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <WidgetBreakdownErrorBoundary resetKey={queryRef}>
+          <WidgetBreakdownErrorBoundary resetKey={queryRef} readOnly>
             <PublicTimeSeriesBreakdownContent<TQuery>
               query={query}
               selectBreakdown={selectBreakdown}
