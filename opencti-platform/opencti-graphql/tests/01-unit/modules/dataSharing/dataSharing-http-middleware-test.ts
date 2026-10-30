@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import * as jsonpatch from 'fast-json-patch';
 
 // Mock all external dependencies before importing the modules under test
 vi.mock('../../../../src/http/httpAuthenticatedContext', () => ({
@@ -53,6 +54,7 @@ import { elFindByIds } from '../../../../src/database/engine';
 import { extractUserAndCollection } from '../../../../src/http/httpTaxii.js';
 import { resolveUserForFeed } from '../../../../src/http/httpRollingFeed.js';
 import { emptyFilterGroup } from '../../../../src/utils/filtering/filtering-utils';
+import { computeJsonPatch } from '../../../../src/utils/json-patch';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -281,6 +283,57 @@ describe('sendEventWithFilteredObjectRefs', () => {
 
     expect(elFindByIds).not.toHaveBeenCalled();
     expect(client.sendEvent).toHaveBeenCalledWith('event-1', 'update', event.eventData);
+  });
+
+  const makeUpdateEvent = (previousRefs: string[], currentRefs: string[]) => {
+    const previous = { id: 'report--x', object_refs: previousRefs };
+    const current = { id: 'report--x', object_refs: currentRefs };
+    return {
+      eventId: 'event-1',
+      eventType: 'update',
+      eventData: { data: current, context: { patch: computeJsonPatch(previous, current), reverse_patch: computeJsonPatch(current, previous) } },
+    };
+  };
+
+  it('removes restricted refs from the update patches when kept refs are replaced as a whole', async () => {
+    const accessibleRefs = Array.from({ length: 1500 }, (_, index) => `malware--accessible-${index}`);
+    const cache = new Map(accessibleRefs.map((ref) => [ref, 'hit']));
+    const client = { sendEvent: vi.fn() };
+    vi.mocked(elFindByIds).mockResolvedValue({} as any);
+    const event = makeUpdateEvent([RESTRICTED_UNCACHED_REF, ...accessibleRefs], [RESTRICTED_UNCACHED_REF, ...accessibleRefs.slice(1001)]);
+    expect(JSON.stringify(event.eventData.context)).toContain(RESTRICTED_UNCACHED_REF);
+
+    await sendEventWithFilteredObjectRefs({} as any, {} as any, cache as any, client as any, event as any);
+
+    const [, , sentEventData] = vi.mocked(client.sendEvent).mock.calls[0];
+    expect(JSON.stringify(sentEventData)).not.toContain(RESTRICTED_UNCACHED_REF);
+    expect(sentEventData.data.object_refs).toEqual(accessibleRefs.slice(1001));
+    expect(jsonpatch.applyPatch(structuredClone(sentEventData.data), sentEventData.context.reverse_patch).newDocument.object_refs).toEqual(accessibleRefs);
+  });
+
+  it('removes a restricted ref added by the update from the update patches', async () => {
+    const cache = new Map([[CACHED_REF, 'hit']]);
+    const client = { sendEvent: vi.fn() };
+    vi.mocked(elFindByIds).mockResolvedValue({} as any);
+    const event = makeUpdateEvent([CACHED_REF], [CACHED_REF, RESTRICTED_UNCACHED_REF]);
+
+    await sendEventWithFilteredObjectRefs({} as any, {} as any, cache as any, client as any, event as any);
+
+    const [, , sentEventData] = vi.mocked(client.sendEvent).mock.calls[0];
+    expect(JSON.stringify(sentEventData)).not.toContain(RESTRICTED_UNCACHED_REF);
+    expect(sentEventData.context).toEqual({ patch: [], reverse_patch: [] });
+  });
+
+  it('keeps the update patches when every ref is accessible', async () => {
+    const cache = new Map([[CACHED_REF, 'hit'], [ACCESSIBLE_UNCACHED_REF, 'hit']]);
+    const client = { sendEvent: vi.fn() };
+    const event = makeUpdateEvent([CACHED_REF], [CACHED_REF, ACCESSIBLE_UNCACHED_REF]);
+    const { context } = event.eventData;
+
+    await sendEventWithFilteredObjectRefs({} as any, {} as any, cache as any, client as any, event as any);
+
+    expect(elFindByIds).not.toHaveBeenCalled();
+    expect(event.eventData.context).toBe(context);
   });
 });
 

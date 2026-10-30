@@ -352,6 +352,38 @@ export const filterUpdateInstanceIdsFromUpdatePatch = (
   return instances;
 };
 
+const isArrayReplacement = (operation: jsonpatch.Operation): operation is jsonpatch.ReplaceOperation<unknown[]> => {
+  return operation.op === 'replace' && Array.isArray(operation.value);
+};
+
+const keepNewArrayElements = (operations: jsonpatch.Operation[], replacedDocument: unknown) => {
+  if (!operations.some(isArrayReplacement)) {
+    return operations;
+  }
+  let document = structuredClone(replacedDocument);
+  return operations.map((operation) => {
+    let keptOperation = operation;
+    if (isArrayReplacement(operation)) {
+      const replacedValue = jsonpatch.getValueByPointer(document, operation.path);
+      if (Array.isArray(replacedValue)) {
+        const replacedElements = new Set(replacedValue);
+        keptOperation = { ...operation, value: operation.value.filter((element) => !replacedElements.has(element)) };
+      }
+    }
+    document = jsonpatch.applyOperation(document, jsonpatch.deepClone(operation)).newDocument;
+    return keptOperation;
+  });
+};
+
+export const normalizeUpdatePatch = (
+  updatePatch: { patch: jsonpatch.Operation[]; reverse_patch: jsonpatch.Operation[] },
+  previous: StixCoreObject | StixRelationshipObject,
+  current: StixCoreObject | StixRelationshipObject,
+) => ({
+  patch: keepNewArrayElements(updatePatch.patch, previous),
+  reverse_patch: keepNewArrayElements(updatePatch.reverse_patch, current),
+});
+
 const eventTypeTranslater = (
   isPreviousMatch: boolean,
   isCurrentlyMatch: boolean,
@@ -489,6 +521,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
 export interface UpdateEventContext {
   readonly previous: Readonly<StixCoreObject | StixRelationshipObject>;
   readonly eventContext: Readonly<FilterEventContext>;
+  readonly normalizedUpdatePatch: Readonly<{ patch: jsonpatch.Operation[]; reverse_patch: jsonpatch.Operation[] }>;
 }
 
 // Derived from the stream event only: identical for every trigger of the same event.
@@ -497,7 +530,11 @@ export const buildUpdateEventContext = (streamEvent: SseEvent<DataEvent>): Updat
   const { data: { data } } = streamEvent;
   const { context: updatePatch } = streamEvent.data as UpdateEvent;
   const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(data), updatePatch.reverse_patch);
-  return { previous, eventContext: buildFilterEventContext(streamEvent.data as UpdateEvent) };
+  return {
+    previous,
+    eventContext: buildFilterEventContext(streamEvent.data as UpdateEvent),
+    normalizedUpdatePatch: normalizeUpdatePatch(updatePatch, previous, data as StixCoreObject | StixRelationshipObject),
+  };
 };
 
 export const buildTargetEvents = async (
@@ -527,8 +564,7 @@ export const buildTargetEvents = async (
   const targets: Array<{ user: NotificationUser; type: string; message: string }> = [];
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   if (eventType === EVENT_TYPE_UPDATE) {
-    const { context: updatePatch } = streamEvent.data as UpdateEvent;
-    const { previous, eventContext } = getUpdateEventContext();
+    const { previous, eventContext, normalizedUpdatePatch } = getUpdateEventContext();
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       // For each user for a specific trigger
       const user = users[indexUser];
@@ -563,8 +599,8 @@ export const buildTargetEvents = async (
           if (isPreviousMatch || isCurrentlyMatch) { // we keep events if : was visible and/or is visible
             const listenedInstanceIdsMap = await resolveFiltersMapForUser(userContext, user, finalFilters);
             // eslint-disable-next-line max-len
-            const translatedType = await eventTypeTranslaterForSideEvents(userContext, user, isPreviousMatch, isCurrentlyMatch, eventType, previous, data, listenedInstanceIdsMap, updatePatch);
-            const message = await generateNotificationMessageForFilteredSideEvents(userContext, user, data, finalFilters, translatedType, updatePatch, previous);
+            const translatedType = await eventTypeTranslaterForSideEvents(userContext, user, isPreviousMatch, isCurrentlyMatch, eventType, previous, data, listenedInstanceIdsMap, normalizedUpdatePatch);
+            const message = await generateNotificationMessageForFilteredSideEvents(userContext, user, data, finalFilters, translatedType, normalizedUpdatePatch, previous);
             if (message) {
               targets.push({ user: notificationUser, type: translatedType, message });
             }
