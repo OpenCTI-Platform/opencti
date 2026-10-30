@@ -12,7 +12,6 @@ const makeItem = (overrides: Partial<DeployedIntegrationItem> = {}): DeployedInt
   name: 'Connector A',
   description: null,
   status: 'active',
-  statusLabel: 'active',
   messagesCount: 0,
   throughputRate: null,
   lastRunDate: null,
@@ -31,15 +30,18 @@ const renderFilters = ({
   items,
   params = '',
   isConnectorUpdateEnabled = true,
+  isIngestionHealthEnabled = false,
 }: {
   items: DeployedIntegrationItem[];
   params?: string;
   isConnectorUpdateEnabled?: boolean;
+  isIngestionHealthEnabled?: boolean;
 }) => {
   const props: HookProps = {
     items,
     searchParams: new URLSearchParams(params),
     isConnectorUpdateEnabled,
+    isIngestionHealthEnabled,
   };
   return renderHook((hookProps: HookProps) => useDeployedIntegrationsFilters(hookProps), { initialProps: props });
 };
@@ -119,5 +121,73 @@ describe('useDeployedIntegrationsFilters', () => {
     expect(result.current.filters.updateAvailable).toBe(false);
     expect(result.current.filteredItems.map((item) => item.id)).toEqual(['no-update']);
     expect(window.location.search).toBe('');
+  });
+
+  describe('health facet', () => {
+    const healthItems = () => [
+      makeItem({ id: 'critical', name: 'Critical', healthStatus: 'critical' }),
+      makeItem({ id: 'degraded', name: 'Degraded', healthStatus: 'degraded' }),
+      makeItem({ id: 'healthy', name: 'Healthy', healthStatus: null }),
+    ];
+
+    it('filters deployed items by both health severities', () => {
+      const { result } = renderFilters({ items: healthItems(), isIngestionHealthEnabled: true });
+
+      act(() => {
+        result.current.setFilters((prev) => ({ ...prev, healthStatuses: ['critical', 'degraded'] }));
+      });
+
+      expect(result.current.filteredItems.map((item) => item.id).sort()).toEqual(['critical', 'degraded']);
+      expect(result.current.hasActiveFilters).toBe(true);
+      expect(new URLSearchParams(window.location.search).get('health')).toBe('critical,degraded');
+    });
+
+    it('hydrates the health filter from the URL and clears it', () => {
+      const { result } = renderFilters({ items: healthItems(), params: 'health=degraded,critical', isIngestionHealthEnabled: true });
+
+      expect(result.current.filters.healthStatuses).toEqual(['degraded', 'critical']);
+      expect(result.current.filteredItems.map((item) => item.id).sort()).toEqual(['critical', 'degraded']);
+
+      act(() => {
+        result.current.clearAllFilters();
+      });
+
+      expect(result.current.filters.healthStatuses).toEqual([]);
+      expect(result.current.filteredItems).toHaveLength(3);
+      expect(result.current.hasActiveFilters).toBe(false);
+      expect(window.location.search).toBe('');
+    });
+
+    it('ignores invalid health values in the URL', () => {
+      const { result } = renderFilters({ items: healthItems(), params: 'health=critical,healthy,unknown', isIngestionHealthEnabled: true });
+
+      expect(result.current.filters.healthStatuses).toEqual(['critical']);
+      expect(result.current.filteredItems.map((item) => item.id)).toEqual(['critical']);
+    });
+
+    it('ignores the health URL parameter when ingestion health is disabled', () => {
+      const { result } = renderFilters({ items: healthItems(), params: 'health=critical' });
+
+      expect(result.current.filters.healthStatuses).toEqual([]);
+      expect(result.current.filteredItems).toHaveLength(3);
+      expect(window.location.search).toBe('');
+    });
+
+    it('computes health counts with its own facet skipped while respecting the other filters', () => {
+      const items = [
+        makeItem({ id: 'active-critical', healthStatus: 'critical', status: 'active' }),
+        makeItem({ id: 'active-degraded', healthStatus: 'degraded', status: 'active' }),
+        makeItem({ id: 'inactive-critical', healthStatus: 'critical', status: 'inactive' }),
+        makeItem({ id: 'active-healthy', healthStatus: null, status: 'active' }),
+      ];
+      const { result } = renderFilters({ items, isIngestionHealthEnabled: true });
+
+      act(() => {
+        result.current.setFilters((prev) => ({ ...prev, statuses: ['active'], healthStatuses: ['critical'] }));
+      });
+
+      expect(result.current.filteredItems.map((item) => item.id)).toEqual(['active-critical']);
+      expect(result.current.facets.healthCounts).toEqual({ critical: 1, degraded: 1 });
+    });
   });
 });
