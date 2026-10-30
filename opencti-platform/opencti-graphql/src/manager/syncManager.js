@@ -405,6 +405,24 @@ const syncManagerInstance = (syncId) => {
         await syncLogger.error('Feed execution failed', buildIngestionErrorMeta(error))
           .catch((reason) => logApp.warn('[OPENCTI] Sync: error on pushing ingestion error log', { id: syncId, cause: reason }));
       };
+      // Retried until written: a failing status write must neither end a working connection nor leave a stale error
+      const reportSuccess = async (meta) => {
+        while (running) {
+          try {
+            await patchSync(context, SYSTEM_USER, syncId, {
+              last_execution_date: new Date().toISOString(),
+              last_execution_status: 'success',
+            });
+            await syncLogger.success('Feed execution succeeded', meta);
+            return;
+          } catch (reason) {
+            logApp.warn('[OPENCTI-MODULE] Sync manager success status error, retrying...', {
+              cause: reason, id: syncId, manager: 'SYNC_MANAGER',
+            });
+            await wait(5000);
+          }
+        }
+      };
       const synchronized = sync.synchronized ?? false;
       const { ssl_verify: ssl = false } = sync;
       const token = await decryptSynchronizerCredential(sync.token);
@@ -432,13 +450,7 @@ const syncManagerInstance = (syncId) => {
               connectionId = connectedData.connectionId;
               connectedAt = new Date().toISOString();
               logApp.info(`[OPENCTI] Sync ${syncId}: listening ${sseUri} with id ${connectionId}`);
-              await patchSync(context, SYSTEM_USER, syncId, {
-                last_execution_date: new Date().toISOString(),
-                last_execution_status: 'success',
-              });
-              await syncLogger.success('Feed execution succeeded', {
-                connection_id: connectionId,
-              });
+              await reportSuccess({ connection_id: connectionId });
               continue;
             }
             // Handle heartbeat - just save state, no data to process
@@ -497,20 +509,8 @@ const syncManagerInstance = (syncId) => {
             }
             // Recovered from a failed attempt: without a new success, the failure would be the last outcome until the next reconnection.
             // Retried on its own: the event is already processed, a failure here must neither push it again nor report it as failed
-            while (processed && failed && running) {
-              try {
-                await patchSync(context, SYSTEM_USER, syncId, {
-                  last_execution_date: new Date().toISOString(),
-                  last_execution_status: 'success',
-                });
-                await syncLogger.success('Feed execution succeeded');
-                failed = false;
-              } catch (recoveryError) {
-                logApp.warn('[OPENCTI-MODULE] Sync manager recovery status error, retrying...', {
-                  cause: recoveryError, id: syncId, manager: 'SYNC_MANAGER',
-                });
-                await wait(5000);
-              }
+            if (processed && failed) {
+              await reportSuccess();
             }
           }
           // Stream ended cleanly (server closed) — reconnect if still running
@@ -641,5 +641,5 @@ const initSyncManager = () => {
 };
 const syncManager = initSyncManager();
 
-export { isStringTooLongError, dropAttachedFilesData, buildSyncEventContent };
+export { isStringTooLongError, dropAttachedFilesData, buildSyncEventContent, syncManagerInstance };
 export default syncManager;
