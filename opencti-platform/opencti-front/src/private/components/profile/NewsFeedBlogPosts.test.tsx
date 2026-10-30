@@ -66,12 +66,12 @@ describe('NewsFeedBlogPosts', () => {
   it('displays an empty message when there is no blog post', () => {
     renderBlogPosts({ edges: [] });
     expect(screen.queryByTestId('blog-post-card')).not.toBeInTheDocument();
-    expect(screen.getByText('No blog post for the moment')).toBeInTheDocument();
+    expect(screen.getByText('No results')).toBeInTheDocument();
   });
 
   it('displays an empty message when the query returns nothing', () => {
     renderBlogPosts({ edges: null });
-    expect(screen.getByText('No blog post for the moment')).toBeInTheDocument();
+    expect(screen.getByText('No results')).toBeInTheDocument();
   });
 
   it('ignores the empty edges', () => {
@@ -83,7 +83,7 @@ describe('NewsFeedBlogPosts', () => {
     mockUseQueryLoading.mockReturnValue([null, mockLoadQuery]);
     renderBlogPosts();
     expect(screen.queryByTestId('blog-post-card')).not.toBeInTheDocument();
-    expect(screen.queryByText('No blog post for the moment')).not.toBeInTheDocument();
+    expect(screen.queryByText('No results')).not.toBeInTheDocument();
   });
 
   it('asks only the blog posts of the connected user, the most recent first', () => {

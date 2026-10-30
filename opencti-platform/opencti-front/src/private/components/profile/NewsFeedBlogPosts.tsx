@@ -1,8 +1,8 @@
-import { Text } from '@filigran/design-system';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import React, { FunctionComponent, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery, useSubscription } from 'react-relay';
 import Button from '@common/button/Button';
+import DataTableSearchEmptyState from '../../../components/dataGrid/components/DataTableSearchEmptyState';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -97,7 +97,8 @@ const NewsFeedBlogPostsComponent: FunctionComponent<NewsFeedBlogPostsComponentPr
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 24 }}>
       {blogPosts.length === 0 ? (
-        <Text variant="content-base">{t_i18n('No blog post for the moment')}</Text>
+        // same empty state as the news feed datatable
+        <DataTableSearchEmptyState rawSearchTerm={undefined} />
       ) : (
         // 3 cards per row at most, fewer when the page is too narrow to keep the cards readable
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(max(320px, calc((100% - 48px) / 3)), 1fr))', gap: 24 }}>
