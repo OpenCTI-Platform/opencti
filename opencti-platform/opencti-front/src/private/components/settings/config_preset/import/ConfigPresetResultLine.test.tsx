@@ -23,6 +23,7 @@ describe('ConfigPresetResultLine', () => {
     ['Unknown message', 'Unknown message'],
     ['The standard id of the theme does not match its id', 'The standard id of the theme does not match its id'],
     ['The standard id of the theme is required to overwrite it', 'The standard id of the theme is required to overwrite it'],
+    ['Requires Enterprise Edition', 'Requires Enterprise Edition'],
     ['Built-in theme', 'Built-in theme'],
     ['Theme already exists', 'Theme already exists'],
     ['Theme name already exists', 'Theme name already exists'],

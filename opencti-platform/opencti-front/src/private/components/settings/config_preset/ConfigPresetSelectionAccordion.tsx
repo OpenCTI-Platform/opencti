@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import {
   ConfigPresetForcedItems,
+  ConfigPresetItemKey,
   ConfigPresetSelection,
   countConfigPresetCheckedItems,
   getConfigPresetCheckboxState,
@@ -103,6 +104,8 @@ interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionTyp
   renderTypeActions?: (type: T) => ReactNode;
   // Types with several items start expanded (default false)
   expandTypes?: boolean;
+  // Items that cannot be selected: they stay unchecked and do not keep their type or group from showing as checked
+  unselectable?: ReadonlyArray<ConfigPresetItemKey>;
 }
 
 // The groups, types and items of a bundle with their checkboxes, counts and chevrons: shared by the export drawer and the import preview
@@ -116,6 +119,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   renderItem,
   renderTypeActions,
   expandTypes = false,
+  unselectable,
 }: ConfigPresetSelectionAccordionProps<T>) => {
   const { t_i18n } = useFormatter();
   // Groups start expanded, types with several items collapsed
@@ -123,7 +127,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   const [toggledTypeKeys, setToggledTypeKeys] = useState<readonly string[]>([]);
   const isExpanded = (type: T) => toggledTypeKeys.includes(type.key) !== expandTypes;
   const typeLabel = (type: T) => `${t_i18n(type.label)} (${countConfigPresetCheckedItems([type], selection, forced)}/${type.itemsPageInfo.globalCount})`;
-  const typeState = (type: T) => getConfigPresetCheckboxState([type], selection, forced);
+  const typeState = (type: T) => getConfigPresetCheckboxState([type], selection, forced, unselectable);
   const isEmpty = (type: T) => type.itemsPageInfo.globalCount === 0;
   const toggleType = (type: T, checked: boolean) => onSelectionChange(toggleConfigPresetTypes(selection, [type], checked));
   const theme = useTheme<Theme>();
@@ -133,7 +137,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
         <div key={group.key} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
           <ConfigPresetExpandableRow
             label={`${t_i18n(group.label)} (${countConfigPresetCheckedItems(group.types, selection, forced)}/${group.types.reduce((count, type) => count + type.itemsPageInfo.globalCount, 0)})`}
-            checked={getConfigPresetCheckboxState(group.types, selection, forced)}
+            checked={getConfigPresetCheckboxState(group.types, selection, forced, unselectable)}
             disabled={disabled}
             onCheckedChange={(checked) => onSelectionChange(toggleConfigPresetTypes(selection, group.types, checked))}
             expanded={!collapsedGroupKeys.includes(group.key)}

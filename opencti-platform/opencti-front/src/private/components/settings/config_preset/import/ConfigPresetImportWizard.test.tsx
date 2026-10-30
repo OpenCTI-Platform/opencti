@@ -1,9 +1,31 @@
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import ConfigPresetImportWizard from './ConfigPresetImportWizard';
+
+// The Enterprise Edition of the platform, which can change while the wizard is open (a license activated from it)
+const enterpriseEdition = vi.hoisted(() => {
+  const listeners = new Set<() => void>();
+  return {
+    enabled: false,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    activate: () => {
+      enterpriseEdition.enabled = true;
+      listeners.forEach((listener) => listener());
+    },
+  };
+});
+vi.mock('../../../../../utils/hooks/useEnterpriseEdition', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../utils/hooks/useEnterpriseEdition')>()),
+  default: () => useSyncExternalStore(enterpriseEdition.subscribe, () => enterpriseEdition.enabled),
+}));
 
 type Rendered = ReturnType<typeof testRender>;
 
@@ -13,6 +35,7 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   label,
   translatable: true,
   isDefault: false,
+  requiresEnterpriseEdition: false,
   exists: true,
   conflict: false,
   fields: [],
@@ -45,6 +68,21 @@ const preview = {
     ], ['OVERWRITE', 'COPY']),
     previewType('messages', 'Messages', [previewItem('banner', 'Banner')]),
   ],
+};
+// A bundle with the whitemark, which needs the Enterprise Edition
+const previewWithWhitemark = {
+  ...preview,
+  types: [
+    ...preview.types,
+    previewType('whitemark', 'Remove Filigran logos', [previewItem('whitemark', 'Remove Filigran logos', { requiresEnterpriseEdition: true })]),
+  ],
+};
+const ENTERPRISE_EDITION_GATE = 'Activate the Enterprise Edition to import this item';
+const whitemarkRow = () => within(screen.getByTestId('config-preset-import-item-whitemark-whitemark'));
+// The types of the selection the pending expected results are asked for (a resolved request is no longer pending)
+const simulatedTypes = async (rendered: Rendered) => {
+  await waitFor(() => expect(dryRuns(rendered).length).toBeGreaterThan(0));
+  return (dryRuns(rendered).at(-1)!.request.variables.selections as { type: string }[]).map(({ type }) => type);
 };
 // What the session returns for a processed item: its name, the type and the group of the type
 const PROCESSED = {
@@ -139,6 +177,7 @@ const checkbox = (name: string) => screen.getByRole('checkbox', { name });
 describe('ConfigPresetImportWizard', () => {
   beforeEach(() => {
     onFinish.mockReset();
+    enterpriseEdition.enabled = false;
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -224,6 +263,77 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.getAllByText('Hidden entity types')).toHaveLength(1);
       await user.click(checkbox('Hidden entity types'));
       expect(screen.queryByText('Attack Pattern, Malware')).not.toBeInTheDocument();
+    });
+
+    describe('an item that needs the Enterprise Edition', () => {
+      it('is not selected on a platform without it, and is asked for neither the expected results nor the import', async () => {
+        const rendered = await openPreview(session(), previewWithWhitemark);
+        const gate = screen.getByRole('button', { name: ENTERPRISE_EDITION_GATE });
+        // The row is there, unchecked, behind the gate
+        expect(within(gate).getByRole('checkbox', { hidden: true })).toHaveAttribute('data-state', 'unchecked');
+        expect(within(gate).getByText('EE')).toBeInTheDocument();
+        expect(await simulatedTypes(rendered)).toEqual(['platform', 'branding', 'messages']);
+        await resolveSimulation(rendered);
+        await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
+        await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+        expect((operation(rendered, 'ConfigPresetImportWizardApplyMutation').request.variables.selections as { type: string }[]).map(({ type }) => type)).toEqual(['platform', 'branding', 'messages']);
+      });
+
+      it('opens the license dialog instead of selecting it, and a group checked as a whole does not select it either', async () => {
+        const { user } = await renderPreview(session(), [], previewWithWhitemark);
+        await user.click(screen.getByRole('button', { name: ENTERPRISE_EDITION_GATE }));
+        expect(await screen.findByText('OpenCTI Enterprise Edition (EE) license agreement')).toBeInTheDocument();
+        expect(whitemarkRow().getByRole('checkbox', { hidden: true })).toHaveAttribute('data-state', 'unchecked');
+        await user.click(screen.getByRole('button', { name: 'Cancel' }));
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        // Checking the whole group selects everything it holds but the item behind the gate
+        await user.click(checkbox('Messages (1/1)'));
+        await user.click(checkbox('Platform settings (3/5)'));
+        // Everything that can be selected is: the group shows as checked, though the item behind the gate is not
+        expect(checkbox('Platform settings (4/5)')).toHaveAttribute('data-state', 'checked');
+        expect(whitemarkRow().getByRole('checkbox', { hidden: true })).toHaveAttribute('data-state', 'unchecked');
+      });
+
+      it('lets a group that holds it be cleared as a whole, and checked again, without ever selecting it', async () => {
+        const { user } = await renderPreview(session(), [], previewWithWhitemark);
+        // Everything is selected but the item behind the gate: the group shows as checked
+        expect(checkbox('Platform settings (4/5)')).toHaveAttribute('data-state', 'checked');
+        await user.click(checkbox('Platform settings (4/5)'));
+        expect(checkbox('Platform settings (0/5)')).toHaveAttribute('data-state', 'unchecked');
+        await user.click(checkbox('Platform settings (0/5)'));
+        expect(checkbox('Platform settings (4/5)')).toHaveAttribute('data-state', 'checked');
+        expect(whitemarkRow().getByRole('checkbox', { hidden: true })).toHaveAttribute('data-state', 'unchecked');
+      });
+
+      it('is not selected from a selection saved before, either', async () => {
+        await openPreview(session({ revision: 2, selections: [{ type: 'whitemark', items: ['whitemark'], excluded_items: null }] }), previewWithWhitemark);
+        expect(whitemarkRow().getByRole('checkbox', { hidden: true })).toHaveAttribute('data-state', 'unchecked');
+        expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
+      });
+
+      it('is selected and no longer gated as soon as a license is activated, without a refresh, and the expected results are asked again with it', async () => {
+        const rendered = await renderPreview(session(), [], previewWithWhitemark);
+        const askedBefore = dryRuns(rendered).length;
+        await act(async () => {
+          enterpriseEdition.activate();
+        });
+        expect(screen.queryByRole('button', { name: ENTERPRISE_EDITION_GATE })).not.toBeInTheDocument();
+        expect(whitemarkRow().queryByText('EE')).not.toBeInTheDocument();
+        expect(whitemarkRow().getByRole('checkbox')).toHaveAttribute('data-state', 'checked');
+        await waitFor(() => expect(dryRuns(rendered).length).toBeGreaterThan(askedBefore));
+        expect(await simulatedTypes(rendered)).toEqual(['platform', 'branding', 'messages', 'whitemark']);
+        // The checkbox is the user's again
+        await rendered.user.click(whitemarkRow().getByRole('checkbox'));
+        expect(whitemarkRow().getByRole('checkbox')).toHaveAttribute('data-state', 'unchecked');
+      });
+
+      it('is selected like any item, with no gate, on a platform that has the Enterprise Edition', async () => {
+        enterpriseEdition.enabled = true;
+        const rendered = await openPreview(session(), previewWithWhitemark);
+        expect(screen.queryByRole('button', { name: ENTERPRISE_EDITION_GATE })).not.toBeInTheDocument();
+        expect(whitemarkRow().getByRole('checkbox')).toHaveAttribute('data-state', 'checked');
+        expect(await simulatedTypes(rendered)).toEqual(['platform', 'branding', 'messages', 'whitemark']);
+      });
     });
 
     it('disables Apply with nothing selected', async () => {
