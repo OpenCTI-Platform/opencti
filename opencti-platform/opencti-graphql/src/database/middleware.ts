@@ -922,6 +922,23 @@ type BreakdownField = {
 };
 // Indexed form of a keyword value (string_normalizer: lowercase and asciifolding), for the accented latin letters
 const normalizeKeywordValue = (value: string) => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+// Entity types are indexed in lowercase: give them back the name of their registered type. The lookup is built at
+// the first use, once every type is registered, and only built again if the registered types change.
+let entityTypesLookup: { registeredTypes: string[]; size: number; labels: Map<string, string> } | null = null;
+const resolveEntityTypeLabel = (key: string) => {
+  const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
+  if (entityTypesLookup?.registeredTypes !== registeredTypes || entityTypesLookup.size !== registeredTypes.length) {
+    const labels = new Map<string, string>();
+    // The first registered type of a lowercase name keeps it
+    registeredTypes.forEach((type) => {
+      if (!labels.has(type.toLowerCase())) {
+        labels.set(type.toLowerCase(), type);
+      }
+    });
+    entityTypesLookup = { registeredTypes, size: registeredTypes.length, labels };
+  }
+  return entityTypesLookup.labels.get(key) ?? key;
+};
 // A breakdown field read from the schema is a filter key that every requested type carries: a relation ref of
 // the allowlist (author, labels, markings, assignees, participants), or an id, vocabulary or enum attribute.
 // Free text, dates, numbers and the special filter keys cannot be broken down.
@@ -957,7 +974,7 @@ const resolveSchemaBreakdownField = (types: string[], field: string): BreakdownF
 // Entities: the schema fields, and the entity type
 export const resolveBreakdownField = (types: string[], field: string): BreakdownField => {
   if (field === 'entity_type') {
-    return { aggregationField: field, resolveEntities: false };
+    return { aggregationField: field, resolveEntities: false, resolveLabel: resolveEntityTypeLabel };
   }
   const breakdownField = resolveSchemaBreakdownField(types, field);
   if (!breakdownField) {
@@ -975,17 +992,13 @@ export const resolveRelationshipBreakdownField = (types: string[], field: string
   }
   if (field === RELATION_FROM_TYPES_FILTER || field === RELATION_TO_TYPES_FILTER) {
     const connectionSide = field === RELATION_FROM_TYPES_FILTER ? 'from' : 'to';
-    return { aggregationField: 'connections.types', resolveEntities: false, connectionSide };
+    return { aggregationField: 'connections.types', resolveEntities: false, resolveLabel: resolveEntityTypeLabel, connectionSide };
   }
   const breakdownField = resolveSchemaBreakdownField(types, field);
   if (!breakdownField) {
     throw FunctionalError('Time series breakdown does not support this field for these relationship types', { field, types });
   }
   return breakdownField;
-};
-// Entity types are indexed in lowercase: give them back the name of their registered type
-const resolveEntityTypeLabel = (key: string) => {
-  return schemaAttributesDefinition.getRegisteredTypes().find((type) => type.toLowerCase() === key) ?? key;
 };
 // Fields of the history and activity logs a breakdown accepts, all with a bounded cardinality: the kind of
 // event, who did it (user, groups, organizations) and the types involved. Any other field is refused, the
@@ -1085,7 +1098,7 @@ const timeSeriesBreakdown = async (
   // desc gets the top values only, asc every value, ranked exactly or refused when there are too many of them.
   const candidates = connectionSide
     ? await elConnectionTypesAggregationCount(context, user, indices, { ...breakdownArgs, connectionSide, bucketsOrder })
-    : await elAggregationCount(context, user, indices, { ...breakdownArgs, convertEntityTypeLabel: true, normalizeLabel: false, rankByCount: true, bucketsOrder });
+    : await elAggregationCount(context, user, indices, { ...breakdownArgs, normalizeLabel: false, rankByCount: true, bucketsOrder });
   const labelledCandidates = resolveLabel ? candidates.map((candidate) => ({ ...candidate, label: resolveLabel(candidate.key) })) : candidates;
   // desc keeps the values with the most entities over the period, asc the fewest
   const sortedCandidates = R.sortWith([isAscending ? R.ascend(R.prop('value')) : R.descend(R.prop('value'))], labelledCandidates);

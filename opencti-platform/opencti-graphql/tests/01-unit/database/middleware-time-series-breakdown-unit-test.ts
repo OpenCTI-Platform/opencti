@@ -75,6 +75,9 @@ type Points = { date: string; value: number }[];
 // Result of elHistogramBreakdownCount: the histogram of each key, and apart the one of Other when it is requested
 const histogramsOf = (entries: [string, Points][] = [], other: Points | null = null) => ({ histograms: new Map(entries), other });
 
+// Registered entity types, as their lowercase indexed form is resolved
+const REGISTERED_TYPES = ['History', 'Activity', 'Report', 'Malware', 'Intrusion-Set', 'Sector', 'Country', 'Organization', 'IMEI', 'SecurityPlatform', 'PublicDashboard', 'uses'];
+const mockRegisteredTypes = () => vi.spyOn(schemaAttributesDefinition, 'getRegisteredTypes').mockReturnValue(REGISTERED_TYPES);
 // Refusal of the engine when the lowest values cannot be ranked exactly
 const tooManyValuesError = () => FunctionalError('Too many values to rank the lowest ones, narrow the filters or the period', {
   reason: 'too_many_values',
@@ -120,6 +123,7 @@ describe('timeSeriesBreakdownEntities', () => {
     vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
     vi.mocked(engine.elList).mockResolvedValue([]);
     mockSchema();
+    mockRegisteredTypes();
   });
 
   it('should reject a limit out of bounds', async () => {
@@ -549,19 +553,23 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(engine.elList).not.toHaveBeenCalled();
   });
 
-  it('should keep the converted label and no entity for entity types', async () => {
+  it('should name the entity types after their registered type, without entity', async () => {
+    // The labels converted from the indexed type garble some of them
     vi.mocked(engine.elAggregationCount).mockResolvedValue([
       { key: 'intrusion-set', label: 'Intrusion-Set', value: 6, count: 6 },
       { key: 'malware', label: 'Malware', value: 4, count: 4 },
+      { key: 'imei', label: 'Imei', value: 3, count: 3 },
+      { key: 'securityplatform', label: 'Securityplatform', value: 2, count: 2 },
+      { key: 'not-registered', label: 'Not-Registered', value: 1, count: 1 },
     ]);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
     const result = await breakdown({ field: 'entity_type' });
 
     expect(engine.elFindByIds).not.toHaveBeenCalled();
-    expect(result.series.map((serie) => serie.label)).toEqual(['Intrusion-Set', 'Malware']);
+    expect(result.series.map((serie) => serie.label)).toEqual(['Intrusion-Set', 'Malware', 'IMEI', 'SecurityPlatform', 'not-registered']);
     expect(result.series.every((serie) => serie.entity === null)).toBe(true);
-    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['intrusion-set', 'malware']);
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['intrusion-set', 'malware', 'imei', 'securityplatform', 'not-registered']);
   });
 
   it('should query both aggregations with the same filters, field and inclusive bounds', async () => {
@@ -608,6 +616,7 @@ describe('resolveBreakdownField', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSchema();
+    mockRegisteredTypes();
   });
 
   it('should aggregate relation refs on their denormalized ids and resolve their entities', () => {
@@ -618,7 +627,12 @@ describe('resolveBreakdownField', () => {
     expect(resolveBreakdownField(['Report'], 'creator_id')).toEqual({ aggregationField: 'creator_id', resolveEntities: true });
     expect(resolveBreakdownField(['Report'], 'report_types')).toEqual({ aggregationField: 'report_types', resolveEntities: false, vocabularyCategories: ['report_types_ov'] });
     expect(resolveBreakdownField(['Report'], 'x_opencti_cvss_base_severity')).toMatchObject({ aggregationField: 'x_opencti_cvss_base_severity', resolveEntities: false });
-    expect(resolveBreakdownField(['Report', 'Malware'], 'entity_type')).toEqual({ aggregationField: 'entity_type', resolveEntities: false });
+    expect(resolveBreakdownField(['Report', 'Malware'], 'entity_type')).toMatchObject({ aggregationField: 'entity_type', resolveEntities: false });
+  });
+
+  it('should name the entity types after their registered type', () => {
+    const { resolveLabel } = resolveBreakdownField(['Stix-Cyber-Observable', 'Identity'], 'entity_type');
+    expect(['imei', 'securityplatform', 'intrusion-set', 'not-registered'].map((key) => resolveLabel?.(key))).toEqual(['IMEI', 'SecurityPlatform', 'Intrusion-Set', 'not-registered']);
   });
 
   it('should accept creator_id as the only id attribute', () => {
@@ -695,7 +709,7 @@ describe('timeSeriesBreakdownHistory', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
-    vi.spyOn(schemaAttributesDefinition, 'getRegisteredTypes').mockReturnValue(['History', 'Activity', 'Report', 'Intrusion-Set', 'PublicDashboard', 'uses']);
+    mockRegisteredTypes();
   });
 
   it('should refuse a field outside the allowlist before querying', async () => {
@@ -880,6 +894,7 @@ describe('resolveRelationshipBreakdownField', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRelationshipSchema();
+    mockRegisteredTypes();
   });
 
   it('should break relationships down by their type, as indexed', () => {
@@ -890,8 +905,14 @@ describe('resolveRelationshipBreakdownField', () => {
   });
 
   it('should break relationships down by the type of their source or of their target', () => {
-    expect(resolveRelationshipBreakdownField(['uses'], 'fromTypes')).toEqual({ aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'from' });
-    expect(resolveRelationshipBreakdownField(['uses'], 'toTypes')).toEqual({ aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'to' });
+    const fromTypes = resolveRelationshipBreakdownField(['uses'], 'fromTypes');
+    const toTypes = resolveRelationshipBreakdownField(['uses'], 'toTypes');
+    expect(fromTypes).toMatchObject({ aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'from' });
+    expect(toTypes).toMatchObject({ aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'to' });
+    // Named after their registered type
+    for (const { resolveLabel } of [fromTypes, toTypes]) {
+      expect(['imei', 'securityplatform', 'malware'].map((key) => resolveLabel?.(key))).toEqual(['IMEI', 'SecurityPlatform', 'Malware']);
+    }
   });
 
   it('should accept the author, labels, markings and creators of the relationships', () => {
@@ -935,6 +956,7 @@ describe('timeSeriesBreakdownRelations', () => {
     vi.clearAllMocks();
     vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
     mockRelationshipSchema();
+    mockRegisteredTypes();
   });
 
   it('should reject a limit out of bounds and the fields that cannot be broken down', async () => {
@@ -1022,6 +1044,20 @@ describe('timeSeriesBreakdownRelations', () => {
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3]).toMatchObject({ connectionSide: 'to', keys: ['country'] });
     expect(result.truncated).toBe(true);
     expect(result.series.map((serie) => serie.label)).toEqual(['Country']);
+  });
+
+  it('should name the types of a side after their registered type', async () => {
+    // The labels converted from the indexed type garble some of them
+    vi.mocked(engine.elConnectionTypesAggregationCount).mockResolvedValue([
+      { key: 'imei', label: 'Imei', value: 3, count: 3 },
+      { key: 'securityplatform', label: 'Securityplatform', value: 2, count: 2 },
+    ]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
+
+    const result = await relationsBreakdown({ field: 'toTypes' });
+
+    expect(result.series.map((serie) => serie.label)).toEqual(['IMEI', 'SecurityPlatform']);
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['imei', 'securityplatform']);
   });
 
   it('should pass the refusal of the lowest types of a side on to the caller', async () => {
