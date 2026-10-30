@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import FiltersPageModel from './filters.pageModel';
 import TextFieldPageModel from './field/TextField.pageModel';
 import SelectFieldPageModel from './field/SelectField.pageModel';
@@ -15,6 +15,9 @@ export default class DashboardWidgetsPageModel {
   dateAttributeSub: SelectFieldPageModel;
   attributeFieldMain: SelectFieldPageModel;
   attributeFieldSub: SelectFieldPageModel;
+  breakdownField: SelectFieldPageModel;
+  breakdownLimit: SelectFieldPageModel;
+  breakdownOrder: SelectFieldPageModel;
 
   constructor(private page: Page) {
     this.filters = new FiltersPageModel(this.page, this.page.getByTestId('widget-selection-0'));
@@ -29,6 +32,10 @@ export default class DashboardWidgetsPageModel {
     this.dateAttributeSub = new SelectFieldPageModel(this.page, 'Date attribute', false, this.page.getByTestId('widget-params-selection-1'), true);
     this.attributeFieldMain = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-0'), true);
     this.attributeFieldSub = new SelectFieldPageModel(this.page, 'Attribute', false, this.page.getByTestId('widget-params-selection-1'), true);
+    const breakdownSelection = this.page.getByTestId('widget-breakdown-selection');
+    this.breakdownField = new SelectFieldPageModel(this.page, 'Break down by', false, breakdownSelection, true);
+    this.breakdownLimit = new SelectFieldPageModel(this.page, 'Maximum number of series', false, breakdownSelection, true);
+    this.breakdownOrder = new SelectFieldPageModel(this.page, 'Order', false, breakdownSelection, true);
   }
 
   getCreateWidgetButton() {
@@ -95,6 +102,36 @@ export default class DashboardWidgetsPageModel {
     const stepButton = this.page.getByRole('dialog').getByRole('tab', { name: step, exact: true });
     if (await stepButton.getAttribute('aria-selected') === 'true') return;
     await stepButton.click();
+  }
+
+  getBreakdownSelection() {
+    return this.page.getByTestId('widget-breakdown-selection');
+  }
+
+  /** Alert of the Filters step, shown when the widget can be broken down in the Parameters step. */
+  getBreakdownInfoMessage() {
+    return this.page.getByText('You can break this dataset down into one series per field value in the Parameters step.');
+  }
+
+  getBreakdownOtherSwitch() {
+    return this.getBreakdownSelection().getByRole('switch', { name: 'Include Other' });
+  }
+
+  getDisplayLegendSwitch() {
+    return this.page.getByLabel('Display legend');
+  }
+
+  /** Adds a second dataset from the Filters step (the "+" button below the datasets). */
+  addDataSelection() {
+    return this.page.getByRole('button', { name: 'Add', exact: true }).click();
+  }
+
+  getChartCanvas() {
+    return this.page.locator('.apexcharts-canvas');
+  }
+
+  getChartLegendEntry(name: string): Locator {
+    return this.page.locator('.apexcharts-legend-text').filter({ hasText: name });
   }
 
   getItemFromWidgetList(name: string) {

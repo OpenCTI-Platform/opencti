@@ -19,6 +19,10 @@ export default class SelectFieldPageModel {
     this.parentLocator = this.inputLocator.locator('../..');
   }
 
+  getInput() {
+    return this.inputLocator;
+  }
+
   async selectOption(option: string) {
     await this.inputLocator.click();
     const list = this.page.getByRole('listbox', { name: this.label });

@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs, fillTimeSeries } from '../../../src/database/utils';
+import moment from 'moment/moment';
+import {
+  buildTimeSeriesAxis,
+  countTimeSeriesIntervals,
+  extractObjectsPirsFromInputs,
+  extractObjectsRestrictionsFromInputs,
+  fillTimeSeries,
+  fillTimeSeriesValues,
+} from '../../../src/database/utils';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { EditOperation } from '../../../src/generated/graphql';
 
@@ -294,5 +302,132 @@ describe('Function fillTimeSeries()', () => {
         { date: '2025-08-01T01:00:00.000Z', value: 0 },
       ]);
     });
+  });
+});
+
+describe('Function fillTimeSeries() range helpers', () => {
+  // Noon UTC keeps the same calendar day in any timezone the tests may run in
+  const startDate = new Date('2026-01-01T12:00:00.000Z');
+  const endDate = new Date('2026-01-05T12:00:00.000Z');
+
+  it('should count every interval including both bounds', () => {
+    expect(countTimeSeriesIntervals(startDate, endDate, 'day')).toEqual(5);
+    expect(fillTimeSeries(startDate, endDate, 'day', [])).toHaveLength(5);
+  });
+
+  it('should keep known values and fill missing dates with zero', () => {
+    const series = fillTimeSeries(startDate, endDate, 'day', [
+      { date: '2026-01-02', value: 3 },
+      { date: '2026-01-05', value: 7 },
+    ]);
+    expect(series.map((point) => point.value)).toEqual([0, 3, 0, 0, 7]);
+  });
+
+  it('should ignore values outside of the period', () => {
+    const series = fillTimeSeries(startDate, endDate, 'day', [{ date: '2025-12-31', value: 9 }]);
+    expect(series.map((point) => point.value)).toEqual([0, 0, 0, 0, 0]);
+  });
+
+  it('should keep the last value when a date is duplicated', () => {
+    const series = fillTimeSeries(startDate, endDate, 'day', [
+      { date: '2026-01-03', value: 1 },
+      { date: '2026-01-03', value: 4 },
+    ]);
+    expect(series[2].value).toEqual(4);
+  });
+
+  it('should place the values of several series on one shared axis', () => {
+    const axis = buildTimeSeriesAxis(startDate, endDate, 'day');
+    expect(axis.keys).toEqual(['2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04', '2026-01-05']);
+    expect(axis.dates[0]).toEqual('2026-01-01T00:00:00.000Z');
+    expect(fillTimeSeriesValues(axis, [{ date: '2026-01-02', value: 3 }])).toEqual([0, 3, 0, 0, 0]);
+    expect(fillTimeSeriesValues(axis, [{ date: '2026-01-05', value: 7 }])).toEqual([0, 0, 0, 0, 7]);
+    // Same dates and values as the series filled one by one
+    const points = [{ date: '2026-01-04', value: 2 }];
+    const values = fillTimeSeriesValues(axis, points);
+    expect(axis.dates.map((date, i) => ({ date, value: values[i] }))).toEqual(fillTimeSeries(startDate, endDate, 'day', points));
+  });
+});
+
+describe('Function buildTimeSeriesAxis()', () => {
+  const initialTimeZone = process.env.TZ;
+  afterEach(() => {
+    if (initialTimeZone === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = initialTimeZone;
+    }
+  });
+
+  // The axis as it was built with moment for every bucket: the same range, then add(i, interval) formatted
+  // as the date histogram keys and truncated with startOf(interval)
+  const TRUNCATED_STARTS: Record<string, moment.unitOfTime.StartOf> = { quarter: 'quarter', week: 'isoWeek', hour: 'hour' };
+  const KEY_FORMATS: Record<string, string> = { year: 'YYYY', quarter: 'YYYY-MM', month: 'YYYY-MM', week: 'YYYY-MM-DD', day: 'YYYY-MM-DD', hour: 'YYYY-MM-DD HH:mm:ss' };
+  const momentAxis = (startDate: Date, endDate: Date, interval: string) => {
+    const truncation = TRUNCATED_STARTS[interval];
+    const start = truncation ? moment.utc(startDate).startOf(truncation) : moment.utc(startDate);
+    const startOfInterval = (interval === 'week' ? 'isoWeek' : interval) as moment.unitOfTime.StartOf;
+    const count = countTimeSeriesIntervals(startDate, endDate, interval);
+    const keys = [];
+    const dates = [];
+    for (let i = 0; i < count; i += 1) {
+      const workDate = start.clone().add(i, `${interval}s` as moment.unitOfTime.DurationConstructor);
+      keys.push(workDate.format(KEY_FORMATS[interval]));
+      dates.push(workDate.clone().startOf(startOfInterval).toISOString());
+    }
+    return { keys, dates };
+  };
+  // Seeded, so that a failure can be replayed
+  const randomGenerator = (seed: number) => {
+    let state = seed;
+    return () => {
+      state = (state * 1103515245 + 12345) % 2147483648;
+      return state / 2147483648;
+    };
+  };
+  // Bounds every interval is sensitive to: month ends, leap days, the last days of a year (ISO weeks 1 and 53),
+  // mondays and sundays around midnight, the first and last instants of an hour
+  const EDGE_DATES = [
+    '2024-01-31T10:00:00.000Z', '2024-02-29T23:59:59.999Z', '2023-03-31T00:00:00.000Z', '2024-11-15T12:30:00.000Z',
+    '2024-12-31T23:30:00.000Z', '2020-12-31T00:00:00.000Z', '2021-01-03T23:59:59.000Z', '2025-06-30T00:00:00.000Z',
+    '2025-07-06T23:00:00.000Z', '2025-03-30T01:59:59.999Z', '2025-10-26T00:00:00.001Z', '2026-01-01T00:00:00.000Z',
+  ].map((date) => new Date(date));
+  const DAY_MS = 86400000;
+  const SPANS_MS: Record<string, number> = {
+    year: 9 * 365 * DAY_MS,
+    quarter: 6 * 365 * DAY_MS,
+    month: 4 * 365 * DAY_MS,
+    week: 3 * 365 * DAY_MS,
+    day: 400 * DAY_MS,
+    hour: 30 * DAY_MS,
+  };
+
+  it('should build the same keys and dates as moment, for every interval and time zone', () => {
+    const random = randomGenerator(11384);
+    ['UTC', 'Pacific/Kiritimati', 'America/New_York'].forEach((timeZone) => {
+      process.env.TZ = timeZone;
+      Object.entries(SPANS_MS).forEach(([interval, span]) => {
+        const ranges = EDGE_DATES.flatMap((start) => [
+          [start, new Date(start.getTime() + span * random())],
+          [start, EDGE_DATES[Math.floor(random() * EDGE_DATES.length)]],
+        ]);
+        ranges.forEach(([start, end]) => {
+          const axis = buildTimeSeriesAxis(start, end, interval);
+          expect(axis, `${interval} from ${start.toISOString()} to ${end.toISOString()} in ${timeZone}`).toEqual(momentAxis(start, end, interval));
+        });
+      });
+    });
+  });
+
+  it('should build the 50,000 hours of the largest breakdown as moment did', () => {
+    const start = new Date('2021-01-01T00:20:00.000Z');
+    const end = new Date(start.getTime() + 49999 * 3600000);
+    const axis = buildTimeSeriesAxis(start, end, 'hour');
+    expect(axis.keys).toHaveLength(50000);
+    expect(axis).toEqual(momentAxis(start, end, 'hour'));
+  });
+
+  it('should refuse an interval the date histogram does not support', () => {
+    expect(() => buildTimeSeriesAxis(new Date('2026-01-01T00:00:00.000Z'), new Date('2026-01-02T00:00:00.000Z'), 'minute')).toThrow('Unsupported interval');
   });
 });

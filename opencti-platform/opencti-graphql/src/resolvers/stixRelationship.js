@@ -9,6 +9,7 @@ import {
   stixRelationshipsMultiTimeSeries,
   stixRelationshipsNumber,
   stixRelationshipsTimeSeries,
+  stixRelationshipsTimeSeriesBreakdown,
 } from '../domain/stixRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_CREATED_BY } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -23,6 +24,7 @@ const stixRelationshipResolvers = {
     stixRelationships: (_, args, context) => findStixRelationPaginated(context, context.user, args),
     stixRelationshipsTimeSeries: (_, args, context) => stixRelationshipsTimeSeries(context, context.user, args),
     stixRelationshipsMultiTimeSeries: (_, args, context) => stixRelationshipsMultiTimeSeries(context, context.user, args),
+    stixRelationshipsTimeSeriesBreakdown: (_, args, context) => stixRelationshipsTimeSeriesBreakdown(context, context.user, args),
     stixRelationshipsDistribution: (_, args, context) => stixRelationshipsDistribution(context, context.user, args),
     stixRelationshipsNumber: (_, args, context) => stixRelationshipsNumber(context, context.user, args),
     schemaRelationsTypesMapping: () => schemaRelationsTypesMapping(),

@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
 import { findUnknownStixCoreObjects, stixCoreObjectsDistributionByEntity } from '../../../src/domain/stixCoreObject';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_DISINFORMATION_ANALYST } from '../../utils/testQuery';
-import { queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { deleteFile, fileToReadStream } from '../../../src/database/file-storage';
 
@@ -86,6 +86,267 @@ describe('stixCoreObjectsDistributionByEntity', () => {
     });
     expect(distribution).toBeDefined();
     expect(distribution.length).toEqual(1);
+  });
+
+  it('should keep the order of a distribution out of its aggregation', async () => {
+    // The order of the distribution APIs only sorts their result: any value must reach Elasticsearch unchanged
+    const DISTRIBUTION_QUERY = gql`
+      query StixCoreObjectsDistributionOrder($order: String) {
+        stixCoreObjectsDistribution(field: "entity_type", operation: count, types: ["Stix-Domain-Object"], limit: 3, order: $order) {
+          label
+          value
+        }
+      }
+    `;
+    const withoutOrder = await queryAsAdminWithSuccess({ query: DISTRIBUTION_QUERY, variables: {} });
+    const withUnknownOrder = await queryAsAdminWithSuccess({ query: DISTRIBUTION_QUERY, variables: { order: 'descending' } });
+    expect(withoutOrder.data?.stixCoreObjectsDistribution.length).toEqual(3);
+    expect(withUnknownOrder.data?.stixCoreObjectsDistribution).toEqual(withoutOrder.data?.stixCoreObjectsDistribution);
+  });
+});
+
+describe('stixCoreObjectsTimeSeriesBreakdown', () => {
+  const LABEL_ADD_QUERY = gql`
+    mutation LabelAdd($input: LabelAddInput!) {
+      labelAdd(input: $input) {
+        id
+      }
+    }
+  `;
+  const LABEL_DELETE_QUERY = gql`
+    mutation LabelDelete($id: ID!) {
+      labelEdit(id: $id) {
+        delete
+      }
+    }
+  `;
+  const ORGANIZATION_ADD_QUERY = gql`
+    mutation OrganizationAdd($input: OrganizationAddInput!) {
+      organizationAdd(input: $input) {
+        id
+      }
+    }
+  `;
+  const ORGANIZATION_DELETE_QUERY = gql`
+    mutation OrganizationDelete($id: ID!) {
+      organizationDelete(id: $id)
+    }
+  `;
+  const REPORT_ADD_QUERY = gql`
+    mutation ReportAdd($input: ReportAddInput!) {
+      reportAdd(input: $input) {
+        id
+      }
+    }
+  `;
+  const REPORT_DELETE_QUERY = gql`
+    mutation ReportDelete($id: ID!) {
+      reportEdit(id: $id) {
+        delete
+      }
+    }
+  `;
+  const BREAKDOWN_QUERY = gql`
+    query StixCoreObjectsTimeSeriesBreakdown(
+      $field: String!
+      $dateAttribute: String
+      $startDate: DateTime!
+      $endDate: DateTime
+      $interval: String!
+      $limit: Int
+      $order: OrderingMode
+      $includeOther: Boolean
+      $types: [String]
+      $filters: FilterGroup
+    ) {
+      stixCoreObjectsTimeSeriesBreakdown(
+        field: $field
+        dateAttribute: $dateAttribute
+        startDate: $startDate
+        endDate: $endDate
+        interval: $interval
+        limit: $limit
+        order: $order
+        includeOther: $includeOther
+        types: $types
+        filters: $filters
+      ) {
+        truncated
+        dates
+        series {
+          label
+          value
+          isOther
+          entity {
+            ... on Label {
+              value
+            }
+          }
+          values
+        }
+      }
+    }
+  `;
+  type Serie = { label: string; value: number; isOther: boolean; entity: { value: string } | null; values: number[] };
+  const LABELS = { a: 'bkd-int-a', b: 'bkd-int-b', c: 'bkd-int-c' };
+  // Reports (label, creation date): a=3, b=2, c=1 and one report without label, over January to March 2021
+  const REPORTS: { label: keyof typeof LABELS | null; created: string }[] = [
+    { label: 'a', created: '2021-01-10T12:00:00.000Z' },
+    { label: 'a', created: '2021-01-20T12:00:00.000Z' },
+    { label: 'a', created: '2021-02-10T12:00:00.000Z' },
+    { label: 'b', created: '2021-02-20T12:00:00.000Z' },
+    { label: 'b', created: '2021-03-10T12:00:00.000Z' },
+    { label: 'c', created: '2021-03-20T12:00:00.000Z' },
+    { label: null, created: '2021-01-25T12:00:00.000Z' },
+  ];
+  let organizationId: string;
+  const labelIds: Record<string, string> = {};
+  const reportIds: string[] = [];
+
+  const breakdown = async (variables: Record<string, unknown>) => {
+    const result = await queryAsAdminWithSuccess({
+      query: BREAKDOWN_QUERY,
+      variables: {
+        dateAttribute: 'created',
+        startDate: '2021-01-01T00:00:00.000Z',
+        endDate: '2021-03-31T23:59:59.999Z',
+        interval: 'month',
+        types: ['Report'],
+        // Isolate the reports of this test from the ones of the other tests
+        filters: { mode: 'and', filters: [{ key: ['createdBy'], values: [organizationId] }], filterGroups: [] },
+        ...variables,
+      },
+    });
+    // DateTime values are Date objects when the query runs in process, ISO strings over HTTP
+    return result.data?.stixCoreObjectsTimeSeriesBreakdown as { truncated: boolean; dates: (Date | string)[]; series: Serie[] };
+  };
+  const sumOf = (serie: Serie) => serie.values.reduce((total, value) => total + value, 0);
+  const expectBreakdownError = (variables: Record<string, unknown>, message: string) => {
+    const request = {
+      query: BREAKDOWN_QUERY,
+      variables: { dateAttribute: 'created', startDate: '2021-01-01T00:00:00.000Z', interval: 'month', types: ['Report'], ...variables },
+    };
+    return queryAsAdminWithError(request, message, 'FUNCTIONAL_ERROR');
+  };
+
+  beforeAll(async () => {
+    const organization = await queryAsAdminWithSuccess({
+      query: ORGANIZATION_ADD_QUERY,
+      variables: { input: { name: 'bkd-int-author' } },
+    });
+    organizationId = organization.data?.organizationAdd.id;
+    for (const [key, value] of Object.entries(LABELS)) {
+      const label = await queryAsAdminWithSuccess({ query: LABEL_ADD_QUERY, variables: { input: { value } } });
+      labelIds[key] = label.data?.labelAdd.id;
+    }
+    for (let i = 0; i < REPORTS.length; i += 1) {
+      const { label, created } = REPORTS[i];
+      const report = await queryAsAdminWithSuccess({
+        query: REPORT_ADD_QUERY,
+        variables: {
+          input: {
+            name: `bkd-int-report-${i}`,
+            published: created,
+            created,
+            report_types: ['threat-report'],
+            createdBy: organizationId,
+            objectLabel: label ? [labelIds[label]] : [],
+          },
+        },
+      });
+      reportIds.push(report.data?.reportAdd.id);
+    }
+  });
+
+  afterAll(async () => {
+    for (let i = 0; i < reportIds.length; i += 1) {
+      await queryAsAdminWithSuccess({ query: REPORT_DELETE_QUERY, variables: { id: reportIds[i] } });
+    }
+    for (const id of Object.values(labelIds)) {
+      await queryAsAdminWithSuccess({ query: LABEL_DELETE_QUERY, variables: { id } });
+    }
+    if (organizationId) {
+      await queryAsAdminWithSuccess({ query: ORGANIZATION_DELETE_QUERY, variables: { id: organizationId } });
+    }
+  });
+
+  it('should break down by label in descending order', async () => {
+    const { truncated, dates, series } = await breakdown({ field: 'objectLabel', order: 'desc', limit: 2 });
+    expect(series.map((s) => s.entity?.value)).toEqual([LABELS.a, LABELS.b]);
+    expect(series.map((s) => s.value)).toEqual([3, 2]);
+    expect(series.map((s) => s.isOther)).toEqual([false, false]);
+    // The label c is left out by the limit
+    expect(truncated).toEqual(true);
+    series.forEach((serie) => expect(sumOf(serie)).toEqual(serie.value));
+    // One point per month, from January to March, on dates shared by every serie
+    expect(dates.map((date) => new Date(date).toISOString())).toEqual(['2021-01-01T00:00:00.000Z', '2021-02-01T00:00:00.000Z', '2021-03-01T00:00:00.000Z']);
+    expect(series[0].values).toEqual([2, 1, 0]);
+    expect(series[1].values).toEqual([0, 1, 1]);
+    // With a limit above the number of labels, nothing is left out and the unlabeled report is not a serie
+    const all = await breakdown({ field: 'objectLabel', order: 'desc', limit: 10 });
+    expect(all.truncated).toEqual(false);
+    expect(all.series.map((s) => s.entity?.value)).toEqual([LABELS.a, LABELS.b, LABELS.c]);
+  });
+
+  it('should break down with one filter per value when there are many values for the series kept', async () => {
+    // 3 labels for 1 series: the histogram uses one filter per value instead of a restricted terms
+    const { truncated, series } = await breakdown({ field: 'objectLabel', order: 'desc', limit: 1, includeOther: true });
+    expect(truncated).toEqual(true);
+    expect(series.map((s) => s.entity?.value ?? s.label)).toEqual([LABELS.a, 'Other']);
+    expect(series[0].values).toEqual([2, 1, 0]);
+    expect(series[0].value).toEqual(3);
+    // Other: the reports of the labels b and c, and the unlabeled report
+    expect(series[1].values).toEqual([1, 1, 2]);
+    expect(series[1].value).toEqual(4);
+  });
+
+  it('should break down by label in ascending order', async () => {
+    const { truncated, series } = await breakdown({ field: 'objectLabel', order: 'asc', limit: 2 });
+    expect(series.map((s) => s.entity?.value)).toEqual([LABELS.c, LABELS.b]);
+    expect(series.map((s) => s.value)).toEqual([1, 2]);
+    expect(series.map((s) => s.isOther)).toEqual([false, false]);
+    expect(truncated).toEqual(true);
+    series.forEach((serie) => expect(sumOf(serie)).toEqual(serie.value));
+  });
+
+  it('should add the Other serie for the entities outside of the selected series', async () => {
+    // desc: Other counts the report of the label c and the unlabeled report
+    const desc = await breakdown({ field: 'objectLabel', order: 'desc', limit: 2, includeOther: true });
+    expect(desc.series.map((s) => s.isOther)).toEqual([false, false, true]);
+    expect(desc.series.slice(0, 2).map((s) => s.entity?.value)).toEqual([LABELS.a, LABELS.b]);
+    const descOther = desc.series[2];
+    expect(descOther.label).toEqual('Other');
+    expect(descOther.entity).toBeNull();
+    expect(descOther.value).toEqual(2);
+    expect(sumOf(descOther)).toEqual(2);
+    expect(descOther.values).toEqual([1, 0, 1]);
+    // asc: Other counts the reports of the label a and the unlabeled report
+    const asc = await breakdown({ field: 'objectLabel', order: 'asc', limit: 2, includeOther: true });
+    expect(asc.series.map((s) => s.isOther)).toEqual([false, false, true]);
+    expect(asc.series.slice(0, 2).map((s) => s.entity?.value)).toEqual([LABELS.c, LABELS.b]);
+    expect(asc.series[2].value).toEqual(4);
+    expect(sumOf(asc.series[2])).toEqual(4);
+  });
+
+  it('should break down by a scalar field', async () => {
+    const byType = await breakdown({ field: 'entity_type' });
+    expect(byType.truncated).toEqual(false);
+    expect(byType.series.map((s) => [s.label, s.value, s.entity])).toEqual([['Report', REPORTS.length, null]]);
+    expect(sumOf(byType.series[0])).toEqual(REPORTS.length);
+    const byReportType = await breakdown({ field: 'report_types' });
+    expect(byReportType.series.map((s) => [s.label, s.value])).toEqual([['threat-report', REPORTS.length]]);
+  });
+
+  it('should refuse a field that cannot be broken down', async () => {
+    const message = 'Time series breakdown does not support this field for these entity types';
+    await expectBreakdownError({ field: 'objects' }, message);
+    await expectBreakdownError({ field: 'externalReferences' }, message);
+  });
+
+  it('should refuse an invalid limit', async () => {
+    const message = 'Time series breakdown limit must be an integer between 1 and the maximum';
+    await expectBreakdownError({ field: 'objectLabel', limit: 0 }, message);
+    await expectBreakdownError({ field: 'objectLabel', limit: 51 }, message);
   });
 });
 

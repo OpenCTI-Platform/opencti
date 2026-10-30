@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
-import type { WidgetColumn, WidgetHost } from 'src/utils/widget/widget';
-import { getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
+import type { WidgetColumn, WidgetDataSelection, WidgetHost } from 'src/utils/widget/widget';
+import { applyBreakdownCompatibility, getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 
 describe('WidgetCreationParameters.utils', () => {
   it('returns undefined when filterGroup is undefined', () => {
@@ -137,5 +137,68 @@ describe('WidgetCreationParameters.utils', () => {
       fintelEditorValue: '',
     };
     expect(getWidgetColumnsEntityType(filterGroup, 'entities', host)).toBeUndefined();
+  });
+});
+
+describe('applyBreakdownCompatibility', () => {
+  const workspace = { kind: 'workspace' } as const;
+  const selection = { filters: { mode: 'and', filters: [], filterGroups: [] } } as unknown as WidgetDataSelection;
+  const brokenDownLine = {
+    type: 'line',
+    perspective: 'entities' as const,
+    dataSelection: [selection],
+    parameters: { breakdownBy: 'entity_type' as const, breakdownLimit: 20, breakdownOrder: 'asc' as const, breakdownOther: true },
+  };
+
+  it('keeps the breakdown of every entities time series visualization', () => {
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      const { parameters } = applyBreakdownCompatibility({ ...brokenDownLine, type }, workspace);
+      expect(parameters).toEqual(brokenDownLine.parameters);
+    });
+  });
+
+  it('drops the breakdown and its settings for a non time series visualization', () => {
+    const widget = applyBreakdownCompatibility({ ...brokenDownLine, type: 'donut' }, workspace);
+    expect(widget.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
+  });
+
+  it('keeps the breakdown of every relationships time series visualization', () => {
+    const relationships = { ...brokenDownLine, perspective: 'relationships' as const, parameters: { ...brokenDownLine.parameters, breakdownBy: 'toTypes' } };
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      expect(applyBreakdownCompatibility({ ...relationships, type }, workspace).parameters).toEqual(relationships.parameters);
+    });
+    // A relationships widget left with an entities dataset cannot be broken down as relationships
+    const entitiesDataset = { ...selection, perspective: 'entities' as const };
+    expect(applyBreakdownCompatibility({ ...relationships, dataSelection: [entitiesDataset] }, workspace).parameters.breakdownBy).toBeNull();
+  });
+
+  it('drops the breakdown without perspective, with several datasets or another host', () => {
+    expect(applyBreakdownCompatibility({ ...brokenDownLine, perspective: null }, workspace).parameters.breakdownBy).toBeNull();
+    expect(applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace).parameters.breakdownBy).toBeNull();
+    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+    expect(applyBreakdownCompatibility(brokenDownLine, fintelTemplate).parameters.breakdownBy).toBeNull();
+    // A custom view keeps it: editing an imported broken down widget does not lose its breakdown
+    const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
+    expect(applyBreakdownCompatibility(brokenDownLine, customView).parameters).toEqual(brokenDownLine.parameters);
+    const severalDatasets = applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace);
+    expect(severalDatasets.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
+  });
+
+  it('keeps the breakdown of every audits time series visualization', () => {
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      const { parameters } = applyBreakdownCompatibility({ ...brokenDownLine, perspective: 'audits' as const, type }, workspace);
+      expect(parameters).toEqual(brokenDownLine.parameters);
+    });
+  });
+
+  it('drops the breakdown of audits lines and areas counting distinct values', () => {
+    const distinct = { ...brokenDownLine, perspective: 'audits' as const, dataSelection: [{ ...selection, unique: true }] };
+    expect(applyBreakdownCompatibility(distinct, workspace).parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
+    expect(applyBreakdownCompatibility({ ...distinct, type: 'vertical-bar' }, workspace).parameters).toEqual(brokenDownLine.parameters);
+  });
+
+  it('returns the widget untouched without breakdown', () => {
+    const widget = { ...brokenDownLine, type: 'donut', parameters: { title: 'Donut' } };
+    expect(applyBreakdownCompatibility(widget, workspace)).toBe(widget);
   });
 });
