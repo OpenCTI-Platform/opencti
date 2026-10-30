@@ -9312,6 +9312,14 @@ export enum EntitySettingsOrdering {
   TargetType = 'target_type'
 }
 
+export type ErrorData = {
+  __typename?: 'ErrorData';
+  code?: Maybe<Scalars['String']['output']>;
+  message?: Maybe<Scalars['String']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  raw_data?: Maybe<Scalars['String']['output']>;
+};
+
 export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'Event';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -16222,6 +16230,7 @@ export type Log = {
   context_data?: Maybe<ContextData>;
   context_uri?: Maybe<Scalars['String']['output']>;
   entity_type?: Maybe<Scalars['String']['output']>;
+  error_data?: Maybe<ErrorData>;
   event_scope?: Maybe<Scalars['String']['output']>;
   event_status: Scalars['String']['output'];
   event_type: Scalars['String']['output'];
@@ -41953,6 +41962,7 @@ export type ResolversTypes = ResolversObject<{
   EntitySettingConnection: ResolverTypeWrapper<Omit<EntitySettingConnection, 'edges'> & { edges: Array<ResolversTypes['EntitySettingEdge']> }>;
   EntitySettingEdge: ResolverTypeWrapper<Omit<EntitySettingEdge, 'node'> & { node: ResolversTypes['EntitySetting'] }>;
   EntitySettingsOrdering: EntitySettingsOrdering;
+  ErrorData: ResolverTypeWrapper<ErrorData>;
   Event: ResolverTypeWrapper<BasicStoreEntityEvent>;
   EventAddInput: EventAddInput;
   EventConnection: ResolverTypeWrapper<Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['EventEdge']>>> }>;
@@ -43150,6 +43160,7 @@ export type ResolversParentTypes = ResolversObject<{
   EntitySetting: BasicStoreEntityEntitySetting;
   EntitySettingConnection: Omit<EntitySettingConnection, 'edges'> & { edges: Array<ResolversParentTypes['EntitySettingEdge']> };
   EntitySettingEdge: Omit<EntitySettingEdge, 'node'> & { node: ResolversParentTypes['EntitySetting'] };
+  ErrorData: ErrorData;
   Event: BasicStoreEntityEvent;
   EventAddInput: EventAddInput;
   EventConnection: Omit<EventConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['EventEdge']>>> };
@@ -47174,6 +47185,13 @@ export type EntitySettingEdgeResolvers<ContextType = any, ParentType extends Res
   node?: Resolver<ResolversTypes['EntitySetting'], ParentType, ContextType>;
 }>;
 
+export type ErrorDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ErrorData'] = ResolversParentTypes['ErrorData']> = ResolversObject<{
+  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  raw_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type EventResolvers<ContextType = any, ParentType extends ResolversParentTypes['Event'] = ResolversParentTypes['Event']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
@@ -49539,6 +49557,7 @@ export type LogResolvers<ContextType = any, ParentType extends ResolversParentTy
   context_data?: Resolver<Maybe<ResolversTypes['ContextData']>, ParentType, ContextType, Partial<LogContext_DataArgs>>;
   context_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  error_data?: Resolver<Maybe<ResolversTypes['ErrorData']>, ParentType, ContextType>;
   event_scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   event_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -56694,6 +56713,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   EntitySetting?: EntitySettingResolvers<ContextType>;
   EntitySettingConnection?: EntitySettingConnectionResolvers<ContextType>;
   EntitySettingEdge?: EntitySettingEdgeResolvers<ContextType>;
+  ErrorData?: ErrorDataResolvers<ContextType>;
   Event?: EventResolvers<ContextType>;
   EventConnection?: EventConnectionResolvers<ContextType>;
   EventEdge?: EventEdgeResolvers<ContextType>;

@@ -48,6 +48,7 @@ import { ENTITY_TYPE_AUTHENTICATION_PROVIDER } from '../modules/authenticationPr
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_NEWS_FEED_ITEM, NEWS_FEED_NUMBER } from '../modules/xtm/hub/news-feed/news-feed-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+// import { ErrorHistoryTransport } from '../utils/errorHistoryTransport';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -230,6 +231,10 @@ if (appLogFileTransport) {
       maxFiles,
     }),
   );
+  /*
+  appLogTransports.push(
+    new ErrorHistoryTransport({ level: 'error' }),
+  ); // */
 }
 if (appLogConsoleTransport) {
   appLogTransports.push(new winston.transports.Console());

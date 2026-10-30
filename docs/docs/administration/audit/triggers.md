@@ -37,3 +37,6 @@ In order to correctly configure the filters, here's a definition of the event st
 
 - Event type: `command`
     - Event scopes: `search `, `enrich `, `import` and `export`
+
+- Event type: `error`
+    - Event scopes: `graphql_error`, `functional_error`, `technical_error` and `user_action_error`

@@ -35,10 +35,10 @@ const UNSUPPORTED_INTPUT_PROPS = ['_id', 'sort', 'i_attributes', 'i_relation']; 
 // The ingestion health events only exist behind their feature flag: their values are not offered in the filters without it
 const isIngestionHealthEnabled = isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG);
 export const EVENT_SCOPE_VALUES = [
-  'create', 'update', 'delete', 'merge', 'read', 'search', 'enrich', 'download', 'import', 'export', 'send', 'login', 'logout', 'unauthorized', 'disseminate', 'forgot',
+  'create', 'update', 'delete', 'merge', 'read', 'search', 'enrich', 'download', 'import', 'export', 'send', 'login', 'logout', 'unauthorized', 'disseminate', 'forgot', 'user_action_error', 'graphql_error', 'functional_error', 'technical_error',
   ...(isIngestionHealthEnabled ? ['critical', 'degraded', 'recovered'] : []),
 ];
-export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command', ...(isIngestionHealthEnabled ? ['ingestion_health'] : [])];
+export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command', 'error', ...(isIngestionHealthEnabled ? ['ingestion_health'] : [])];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
 
