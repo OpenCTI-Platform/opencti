@@ -42,6 +42,7 @@ import { FilterMode } from '../../../src/generated/graphql';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
+import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { WORKFLOW_MANAGER_USER } from '../../../src/utils/access';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
@@ -162,10 +163,10 @@ vi.mock('../../../src/utils/access', async (importOriginal) => {
 
 const defaultCreateDefinition = (WorkflowFactory.createDefinition as any).getMockImplementation();
 const mockContext = { user: { id: 'ctx-user-id' } } as any;
-const mockUser = { id: 'user-id' } as any;
+const mockUser = { id: 'user-id', effective_confidence_level: { max_confidence: 100, overrides: [] } } as any;
 
 describe('Workflow bypass', () => {
-  const user = { id: 'admin', capabilities: [{ name: 'BYPASS' }], draft_context: 'draft-id' } as any;
+  const user = { id: 'admin', capabilities: [{ name: 'BYPASS' }], draft_context: 'draft-id', effective_confidence_level: { max_confidence: 100, overrides: [] } } as any;
   const context = {} as any;
   let entity: any;
   let instance: any;
@@ -3861,6 +3862,93 @@ describe('triggerWorkflowEvent — status projection', () => {
     await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close');
 
     expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+});
+
+// ===========================================================================
+// triggerWorkflowEvent — confidence pre-check (regression guard for PR #19421)
+// ===========================================================================
+// An edit-capable user can still lack the effective confidence level required to update the
+// entity. triggerWorkflowEvent now calls controlUserConfidenceAgainstElement right after the
+// edit-access check and BEFORE resolving the workflow config, advancing the instance, or
+// projecting the status. Without the pre-check, the insufficient-confidence failure would only
+// surface inside the best-effort projectWorkflowState write (whose errors are swallowed), so the
+// mutation would wrongly report success while the instance had already moved on.
+describe('triggerWorkflowEvent — confidence pre-check', () => {
+  // controlUserConfidenceAgainstElement is a no-op unless the entity type has a registered
+  // `confidence` attribute (schemaAttributesDefinition.getAttribute(type, 'confidence')). Unit
+  // tests do not register the full platform schema, so we force only ('Incident', 'confidence')
+  // to be truthy and delegate every other lookup to the real implementation. The spy is restored
+  // after each test, so sibling tests that use schemaAttributesDefinition are unaffected.
+  let getAttributeSpy: any;
+
+  const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', confidence: 80 };
+  const workflowContent = {
+    id: 'workflow-1',
+    name: 'Test Workflow',
+    initialState: 'open',
+    states: [{ statusId: 'open' }, { statusId: 'closed' }],
+    transitions: [{ from: 'open', to: 'closed', event: 'close' }],
+  };
+  const version = { id: 'v1', content: JSON.stringify(workflowContent), validation_errors: [] };
+  const existingInstance = { id: 'instance-1', internal_id: 'instance-1', currentState: 'open', history: '[]', scope: 'GLOBAL' };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    const realGetAttribute = schemaAttributesDefinition.getAttribute.bind(schemaAttributesDefinition);
+    getAttributeSpy = vi.spyOn(schemaAttributesDefinition, 'getAttribute').mockImplementation(
+      (entityType: string, name: string) => {
+        if (entityType === 'Incident' && name === 'confidence') {
+          return { name: 'confidence', label: 'Confidence', type: 'numeric', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true } as any;
+        }
+        return realGetAttribute(entityType, name);
+      },
+    );
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, _id: any, type: any) => {
+      if (type === 'Basic-Object') return entity;
+      if (type === 'WorkflowDefinition') {
+        return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
+      }
+      return null;
+    });
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+    // Plain synchronous success, since other describe blocks override getInstance via mockReturnValue.
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({ success: true }),
+      getCurrentState: vi.fn().mockReturnValue('closed'),
+    });
+  });
+
+  afterEach(() => {
+    getAttributeSpy.mockRestore();
+  });
+
+  it('rejects an edit-capable user whose confidence is below the entity, without running or persisting the transition', async () => {
+    // Same unrestricted-entity edit-access path as the success tests (no restricted_members ⇒
+    // ADMIN access right), but the user's effective max confidence (50) is below the entity (80).
+    const lowConfidenceUser = { id: 'low-confidence-user', effective_confidence_level: { max_confidence: 50, overrides: [] } } as any;
+
+    await expect(triggerWorkflowEvent(mockContext, lowConfidenceUser, 'entity-1', 'close'))
+      .rejects.toThrow('User effective max confidence level is insufficient to update this element');
+
+    // The pre-check runs before the workflow engine and before any persistence, so nothing
+    // executes or advances: no transition engine, no instance create/update, no projection.
+    expect(WorkflowFactory.getInstance).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
+  it('allows a user whose confidence is at or above the entity and still projects the new state', async () => {
+    const sufficientUser = { id: 'sufficient-user', effective_confidence_level: { max_confidence: 90, overrides: [] } } as any;
+
+    const result = await triggerWorkflowEvent(mockContext, sufficientUser, 'entity-1', 'close');
+
+    expect(result.success).toBe(true);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, { ...sufficientUser, draft_context: undefined }, entity, 'closed', StatusScope.Global);
   });
 });
 
