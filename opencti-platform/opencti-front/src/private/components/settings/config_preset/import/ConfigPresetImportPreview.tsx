@@ -27,7 +27,6 @@ import {
   ConfigPresetSelection,
   getConfigPresetForcedItems,
   isConfigPresetItemSelected,
-  isConfigPresetTypeLocked,
   isSingletonConfigPresetType,
   selectAllConfigPresetItems,
   toggleConfigPresetTypes,
@@ -56,8 +55,7 @@ const configPresetImportPreviewQuery = graphql`
         key
         label
         description
-        requiresEnterpriseEdition
-        locked
+        lockedByEnterpriseEdition
         modes
         group {
           key
@@ -167,8 +165,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   // Read live: a license activated from the preview is known without a refresh, and the preview is read again with what it unlocks
   const isEnterpriseEdition = useEnterpriseEdition();
   const hasLoadedRef = useRef(false);
-  // The types that needed the license and were unlocked by the last load: the next load selects those it unlocks, and only those
-  const unlockedKeysRef = useRef<Set<string>>(new Set());
+  // The types the last load locked: the next load selects those it unlocks, and only those
+  const lockedKeysRef = useRef<Set<string>>(new Set());
   // Read again by the retry, while the backend has not taken a license into account
   const [reloadCount, setReloadCount] = useState(0);
   const [commitSave] = useApiMutation<ConfigPresetImportPreviewSaveMutation>(configPresetImportPreviewSaveMutation);
@@ -193,9 +191,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         if (active && data) {
           const loaded = data.configPresetImportPreview;
           setPreview(loaded);
-          const previouslyUnlocked = unlockedKeysRef.current;
-          const unlocked = loaded.types.filter((type) => type.requiresEnterpriseEdition && !type.locked);
-          unlockedKeysRef.current = new Set(unlocked.map((type) => type.key));
+          const previouslyLocked = lockedKeysRef.current;
+          lockedKeysRef.current = new Set(loaded.types.filter((type) => type.lockedByEnterpriseEdition).map((type) => type.key));
           if (!hasLoadedRef.current) {
             hasLoadedRef.current = true;
             // A new upload has no saved selection yet: every item starts selected, as in the export
@@ -204,7 +201,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
             setImportModes(toConfigImportModes(session.selections));
           } else {
             // A license was activated: the types it unlocks come with their items, and are selected, as activating it was asking for them
-            const newlyUnlocked = unlocked.filter((type) => !previouslyUnlocked.has(type.key));
+            const newlyUnlocked = loaded.types.filter((type) => previouslyLocked.has(type.key) && !type.lockedByEnterpriseEdition);
             if (newlyUnlocked.length > 0) {
               const next = toggleConfigPresetTypes(selectionRef.current, newlyUnlocked, true);
               setSelection(next);
@@ -267,7 +264,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
 
   const types = preview ? toCountedTypes(preview.types) : [];
   // What is imported: a type that is locked has no item to import, whatever a selection saved before says
-  const selectableTypes = (allTypes: typeof types) => allTypes.filter((type) => !isConfigPresetTypeLocked(type, isEnterpriseEdition));
+  const selectableTypes = (allTypes: typeof types) => allTypes.filter((type) => !type.lockedByEnterpriseEdition);
   const forced = getConfigPresetForcedItems(types, selection);
   const selections = buildConfigPresetSelections(selectableTypes(types), selection, importModes, forced);
   // Selected, or required by a selected item

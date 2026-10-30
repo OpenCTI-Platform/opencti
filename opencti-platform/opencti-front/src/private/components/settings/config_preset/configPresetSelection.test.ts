@@ -10,7 +10,6 @@ import {
   getConfigPresetForcedItems,
   groupConfigPresetTypes,
   isConfigPresetItemSelected,
-  isConfigPresetTypeLocked,
   isSingletonConfigPresetType,
   selectAllConfigPresetItems,
   toggleConfigPresetItem,
@@ -163,17 +162,5 @@ describe('configPresetSelection', () => {
     expect(buildConfigPresetSelections(types, { branding: { mode: 'some', ids: [] } }, modes, {})).toEqual([]);
     // A forced item that overwrites has no mode: nothing to send
     expect(buildConfigPresetSelections(types, selection, {}, forced)).toEqual([{ type: 'platform', items: null }]);
-  });
-
-  it('locks a type the backend says is locked, or that needs the Enterprise Edition on a platform the front end knows has none', () => {
-    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: true, locked: true }, false)).toBe(true);
-    // The backend has not taken the license into account yet: the type stays locked, whatever the front end knows
-    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: true, locked: true }, true)).toBe(true);
-    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: true, locked: false }, true)).toBe(false);
-    // Without the license nothing of it is listed, whatever the backend sent
-    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: true, locked: false }, false)).toBe(true);
-    // A type that does not need it is not locked, even with no item: it is not guessed from its items
-    expect(isConfigPresetTypeLocked({ requiresEnterpriseEdition: false, locked: false }, false)).toBe(false);
-    expect(isConfigPresetTypeLocked({}, false)).toBe(false);
   });
 });

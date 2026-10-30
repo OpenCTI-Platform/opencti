@@ -91,7 +91,7 @@ describe('Contract of a family that requires the Enterprise Edition, on a platfo
     const listItems = flagged().map((family) => vi.spyOn(family, 'listItems'));
     const types = await findConfigPresetExportableTypes(context, user);
     expect(types.map((type) => type.key)).toEqual(flagged().map((family) => family.id));
-    types.forEach((type) => expect(type).toMatchObject({ requiresEnterpriseEdition: true, locked: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } }));
+    types.forEach((type) => expect(type).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } }));
     listItems.forEach((spy) => expect(spy).not.toHaveBeenCalled());
   });
 
@@ -128,6 +128,6 @@ describe('Contract of a family that requires the Enterprise Edition, on a platfo
   it('is shown by the import preview as a locked type, without items', async () => {
     const preview = await configPresetImportPreview(context, user, FILE_ID);
     expect(preview.types.map((type) => type.key)).toEqual(flagged().map((family) => family.id));
-    preview.types.forEach((type) => expect(type).toMatchObject({ requiresEnterpriseEdition: true, locked: true, items: [] }));
+    preview.types.forEach((type) => expect(type).toMatchObject({ lockedByEnterpriseEdition: true, items: [] }));
   });
 });

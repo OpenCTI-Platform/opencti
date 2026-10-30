@@ -1,4 +1,4 @@
-import React, { FunctionComponent, Suspense, useCallback, useEffect, useState } from 'react';
+import React, { FunctionComponent, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import { Input, Text } from '@filigran/design-system';
 import { DownloadOutlined } from '@mui/icons-material';
@@ -27,8 +27,7 @@ export const configPresetExportDrawerQuery = graphql`
       key
       label
       description
-      requiresEnterpriseEdition
-      locked
+      lockedByEnterpriseEdition
       group {
         key
         label
@@ -147,11 +146,13 @@ const ConfigPresetExportForm: FunctionComponent<ConfigPresetExportFormProps> = (
   const retryLocked = useConfigPresetLicenseRetry(configPresetExportableTypes, onReload);
   // A type without item has nothing to check: it is not shown, and neither is a group left without type. A type the platform cannot use
   // (it needs the Enterprise Edition the platform does not have) is shown, locked.
-  const types = configPresetExportableTypes.filter((type) => type.items.length > 0 || type.locked);
+  const types = configPresetExportableTypes.filter((type) => type.items.length > 0 || type.lockedByEnterpriseEdition);
   // The selection starts with every item checked: the content is remounted when the catalog changes, as the cached catalog is first
-  // rendered and then replaced by the network one. The types of the Enterprise Edition are not part of the key: a license activated
-  // while the drawer is open adds them to the catalog, and the selection made until then is kept (they come checked, as the selection holds them all).
-  const catalogKey = types.filter((type) => !type.requiresEnterpriseEdition).flatMap((type) => type.items.map((item) => `${type.key}/${item.key}`)).join(',');
+  // rendered and then replaced by the network one. A type that was locked is not part of the key: a license activated while the drawer
+  // is open adds its items to the catalog, and the selection made until then is kept (it comes checked, as the selection holds every type).
+  const lockedKeysRef = useRef(new Set<string>());
+  configPresetExportableTypes.forEach((type) => type.lockedByEnterpriseEdition && lockedKeysRef.current.add(type.key));
+  const catalogKey = types.filter((type) => !lockedKeysRef.current.has(type.key)).flatMap((type) => type.items.map((item) => `${type.key}/${item.key}`)).join(',');
   return <ConfigPresetExportContent key={catalogKey} types={types} onClose={onClose} onLockedRetry={retryLocked} />;
 };
 

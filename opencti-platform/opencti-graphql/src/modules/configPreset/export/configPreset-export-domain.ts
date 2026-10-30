@@ -69,8 +69,7 @@ export const findConfigPresetExportableTypes = async (context: AuthContext, user
       label: family.label,
       description: family.description,
       group: { key: family.group.id, label: family.group.label },
-      requiresEnterpriseEdition: family.requiresEnterpriseEdition ?? false,
-      locked: !isAvailable,
+      lockedByEnterpriseEdition: !isAvailable,
       items: (page?.edges ?? []).map(({ node }) => toExportableItem(node)),
       itemsPageInfo: page?.pageInfo ?? NO_ITEMS_PAGE_INFO,
     };

@@ -42,8 +42,7 @@ const type = (key: string, label: string, items: ReturnType<typeof item>[], over
   label,
   description: `${label} description`,
   group: platformSettings,
-  requiresEnterpriseEdition: false,
-  locked: false,
+  lockedByEnterpriseEdition: false,
   items,
   itemsPageInfo: { hasNextPage: false, globalCount: items.length },
   ...overrides,
@@ -181,7 +180,7 @@ describe('ConfigPresetExportDrawer', () => {
   it('does not show a type without item, nor a group left without type', async () => {
     const emptyTypes = [
       ...catalog,
-      { key: 'observedData', label: 'Observed datas', group: { key: 'entities', label: 'Entities' }, requiresEnterpriseEdition: false, locked: false, items: [] },
+      { key: 'observedData', label: 'Observed datas', group: { key: 'entities', label: 'Entities' }, lockedByEnterpriseEdition: false, items: [] },
     ];
     await renderOpenDrawer(vi.fn(), emptyTypes);
     expect(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' })).toBeInTheDocument();
@@ -240,8 +239,8 @@ describe('ConfigPresetExportDrawer', () => {
 
   describe('a type that needs the Enterprise Edition', () => {
     // On a platform without it the type has no item; with it, one
-    const lockedType = () => type('whitemark', 'Remove Filigran logos', [], { requiresEnterpriseEdition: true, locked: true });
-    const unlockedType = () => type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { requiresEnterpriseEdition: true, locked: false });
+    const lockedType = () => type('whitemark', 'Remove Filigran logos', [], { lockedByEnterpriseEdition: true });
+    const unlockedType = () => type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { lockedByEnterpriseEdition: false });
     const GATE = 'Activate the Enterprise Edition to export this item';
     const exportedTypes = async ({ user, relayEnv }: Awaited<ReturnType<typeof renderOpenDrawer>>) => {
       await user.click(screen.getByRole('button', { name: 'Export Platform Bundle' }));
@@ -295,7 +294,7 @@ describe('ConfigPresetExportDrawer', () => {
 
   describe('a type still locked by the backend on a platform the front end knows has the license', () => {
     const STALE_TITLE = 'The Enterprise Edition license is not taken into account yet, click to try again';
-    const staleType = () => type('whitemark', 'Remove Filigran logos', [], { requiresEnterpriseEdition: true, locked: true });
+    const staleType = () => type('whitemark', 'Remove Filigran logos', [], { lockedByEnterpriseEdition: true });
     const resolveCatalog = async (rendered: Awaited<ReturnType<typeof renderOpenDrawer>>, types: unknown[]) => {
       await act(async () => {
         rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
@@ -329,7 +328,7 @@ describe('ConfigPresetExportDrawer', () => {
         }
       }
       await rendered.user.click(screen.getByRole('button', { name: `Remove Filigran logos. ${STALE_TITLE}` }));
-      await resolveCatalog(rendered, [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { requiresEnterpriseEdition: true, locked: false })]);
+      await resolveCatalog(rendered, [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { lockedByEnterpriseEdition: false })]);
       expect(await screen.findByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'checked');
     }, 15000);
 
@@ -341,7 +340,7 @@ describe('ConfigPresetExportDrawer', () => {
       await resolveCatalog(rendered, [...catalog, staleType()]);
       // The retry asks for the catalog again after a delay, and this time the backend has the license
       await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().length).toBeGreaterThan(0), { timeout: 4000 });
-      await resolveCatalog(rendered, [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { requiresEnterpriseEdition: true, locked: false })]);
+      await resolveCatalog(rendered, [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { lockedByEnterpriseEdition: false })]);
       expect(await screen.findByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'checked');
     });
   });
