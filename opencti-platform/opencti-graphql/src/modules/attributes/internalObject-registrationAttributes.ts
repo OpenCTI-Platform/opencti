@@ -1,7 +1,19 @@
 import * as R from 'ramda';
 import { CONFIG_PRESET_FEATURE_FLAG } from '../../config/conf';
 import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYPE_VALUES } from '../../manager/activityListener';
-import { type AttributeDefinition, changes, createdAt, creators, draftContext, errors, id, lastEventId, refreshedAt, updatedAt } from '../../schema/attribute-definition';
+import {
+  type AttributeDefinition,
+  ingestion_health_changes,
+  history_changes,
+  createdAt,
+  creators,
+  draftContext,
+  errors,
+  id,
+  lastEventId,
+  refreshedAt,
+  updatedAt,
+} from '../../schema/attribute-definition';
 import {
   ENTITY_TYPE_ACTIVITY,
   ENTITY_TYPE_BACKGROUND_TASK,
@@ -135,7 +147,8 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'pir_ids', label: 'PIR IDS', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_PIR], editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
       { name: 'pir_score', label: 'PIR Score', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'pir_match_from', label: 'Match Pir with source of relationship', type: 'boolean', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
-      changes,
+      history_changes,
+      ingestion_health_changes,
     ],
   },
   { ...creators, isFilterable: false },

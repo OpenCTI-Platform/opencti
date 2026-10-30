@@ -21,11 +21,13 @@ import {
 } from '../modules/ingestion/ingestion-types';
 import {
   buildHealthTransitionMessage,
+  describeHealthChecks,
   buildIngestionHealthContext,
   computeHealthTransition,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
   getEnabledRuntimeChecks,
+  groupHealthCheckMessages,
   type IngestionHealthEvaluationContext,
   isRuntimeCheckEnabled,
   markHealthNotified,
@@ -143,6 +145,8 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
   const nextHealth = patch ? patch.ingestion_health : element.ingestion_health;
   const transition = computeHealthTransition(nextHealth, sourceContext.evaluatedAt, sourceContext.notificationDelay);
   if (transition && nextHealth) {
+    const checksDescription = describeHealthChecks(element.entity_type, nextHealth.health_checks ?? []);
+    const { critical: criticalMessages, advisory: advisoryMessages } = groupHealthCheckMessages(element.entity_type, nextHealth.health_checks ?? []);
     try {
       await publishUserAction({
         user: INGESTION_HEALTH_MANAGER_USER,
@@ -151,7 +155,21 @@ const evaluateIngestionHealth = async <T extends IngestionElement>(
         event_access: 'administration',
         status: transition === HealthTransition.Recovered ? 'success' : 'error',
         message: buildHealthTransitionMessage(element, transition, nextHealth.health_checks ?? []),
-        context_data: { id: element.internal_id, entity_type: source.entityType, entity_name: element.name },
+        context_data: {
+          id: element.internal_id,
+          entity_type: source.entityType,
+          entity_name: element.name,
+          ingestion_health_changes: {
+            // What fails, joined: absent when no check fails
+            ...(checksDescription ? { message: checksDescription } : {}),
+            // The same messages, one by check, the critical ones apart: absent when empty
+            ...(criticalMessages.length > 0 ? { critical_messages: criticalMessages } : {}),
+            ...(advisoryMessages.length > 0 ? { advisory_messages: advisoryMessages } : {}),
+            // Not yet overwritten by markHealthNotified: the status reported by the previous event
+            ...(nextHealth.last_event_status ? { previous_status: nextHealth.last_event_status } : {}),
+            status_since: nextHealth.status_since,
+          },
+        },
       });
     } catch (error) {
       // Not published: the health is written without the marker, the transition is published again at the next period

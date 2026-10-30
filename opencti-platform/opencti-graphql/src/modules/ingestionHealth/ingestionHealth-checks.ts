@@ -233,12 +233,30 @@ export const formatHealthCheckMessage = (message: string, metadata: HealthCheckM
   return message.replace(/\{(\w+)\}/g, (placeholder, key: string) => (metadata[key] !== undefined ? String(metadata[key]) : placeholder));
 };
 
+const toHealthCheckMessage = (check: IngestionHealthCheck) => {
+  return formatHealthCheckMessage(check.health_check_message ?? check.health_check_code, check.health_check_metadata ?? {});
+};
+
+// The messages of the checks, filled with their metadata and untranslated. Empty when there is no check
+export const describeHealthChecks = (entityType: string, checks: StoredHealthCheck[]) => {
+  return toGraphqlHealthChecks(checks, entityType).map(toHealthCheckMessage).join(', ');
+};
+
+// The same messages, one by check: the critical ones (blocking runtime checks, see computeHealthStatus) apart from the others
+export const groupHealthCheckMessages = (entityType: string, checks: StoredHealthCheck[]) => {
+  const messages: { critical: string[]; advisory: string[] } = { critical: [], advisory: [] };
+  toGraphqlHealthChecks(checks, entityType).forEach((check) => {
+    const isCritical = check.health_check_kind === IngestionHealthCheckKind.Runtime
+      && check.health_check_severity === IngestionHealthCheckSeverity.Blocking;
+    (isCritical ? messages.critical : messages.advisory).push(toHealthCheckMessage(check));
+  });
+  return messages;
+};
+
 // The activity log prefixes the message with the manager user name
 export const buildHealthTransitionMessage = (element: { name: string; entity_type: string }, transition: HealthTransition, checks: StoredHealthCheck[]) => {
-  const checkMessages = toGraphqlHealthChecks(checks, element.entity_type)
-    .map((check) => formatHealthCheckMessage(check.health_check_message ?? check.health_check_code, check.health_check_metadata ?? {}));
-  const details = checkMessages.length > 0 ? `: ${checkMessages.join(', ')}` : '';
-  return `reports \`${element.name}\` (${element.entity_type}) as ${transition}${details}`;
+  const details = describeHealthChecks(element.entity_type, checks);
+  return `reports \`${element.name}\` (${element.entity_type}) as ${transition}${details ? `: ${details}` : ''}`;
 };
 // endregion
 
