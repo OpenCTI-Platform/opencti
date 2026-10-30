@@ -53,9 +53,10 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  // Form Intake: the labels are created on submission with the rights of the user, do not offer what would fail then
-  const { isDeferredMode } = useDeferredCreation();
-  const canCreateLabel = useGranted([SETTINGS_SETLABELS]);
+  // Form Intake: the labels are created on submission with the rights of the user (in the draft scope too for a submission
+  // to a draft), do not offer what would fail then
+  const { isDeferredMode, toDraft } = useDeferredCreation();
+  const canCreateLabel = useGranted([SETTINGS_SETLABELS], false, { capabilitiesInDraft: toDraft ? [SETTINGS_SETLABELS] : [] });
 
   const [labelCreation, setLabelCreation] = useState(false);
   const [labels, setLabels] = useState<FieldOption[]>([]);

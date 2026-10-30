@@ -161,9 +161,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const data = usePreloadedQuery(formViewQuery, queryRef);
   const { form } = data;
 
-  // Must stay outside the DeferredCreationContext.Provider below: inside it, useApiMutation would
-  // intercept this mutation instead of sending it. isSubmitInFlight covers the whole request: Formik
-  // resets isSubmitting as soon as the (async) submit handler returns, before the server answers.
+  // isSubmitInFlight covers the whole request: Formik resets isSubmitting as soon as the (async)
+  // submit handler returns, before the server answers.
   const [commitFormMutation, isSubmitInFlight] = useApiMutation(formSubmitMutation);
   const entitySettings = useEntitySettings();
 
@@ -409,6 +408,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
   // Initialize isDraft based on schema settings or import context override
   const [isDraft, setIsDraft] = useState(isForcedImportToDraft || schema.isDraftByDefault || false);
+  const deferredCreation = useMemo(() => ({ ...pendingStore, toDraft: isDraft }), [pendingStore, isDraft]);
 
   const validationSchema = React.useMemo(() => {
     let baseSchema = convertFormSchemaToYupSchema(schema, t_i18n);
@@ -584,7 +584,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
         {/* Deferred mode for everything inside: creation dialogs keep their objects in the pending store.
             The formSubmit mutation (useApiMutation above) must stay outside, it would be intercepted. */}
-        <DeferredCreationContext.Provider value={pendingStore}>
+        <DeferredCreationContext.Provider value={deferredCreation}>
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}

@@ -16,7 +16,7 @@ vi.mock('../../settings/labels/LabelCreation', () => ({ __esModule: true, defaul
 
 const useGrantedSpy = vi.spyOn(useGrantedModule, 'default');
 
-const renderField = (isDeferredMode?: boolean) => {
+const renderField = (isDeferredMode?: boolean, toDraft?: boolean) => {
   const field = (
     <Formik initialValues={{ objectLabel: [] }} onSubmit={() => {}}>
       <ObjectLabelField name="objectLabel" />
@@ -25,7 +25,7 @@ const renderField = (isDeferredMode?: boolean) => {
   return testRender(isDeferredMode === undefined
     ? field
     : (
-        <DeferredCreationContext.Provider value={{ isDeferredMode, captureInput: vi.fn(), registerPending: vi.fn(), getPending: vi.fn() }}>
+        <DeferredCreationContext.Provider value={{ isDeferredMode, toDraft, captureInput: vi.fn(), registerPending: vi.fn(), getPending: vi.fn() }}>
           {field}
         </DeferredCreationContext.Provider>
       ));
@@ -53,6 +53,19 @@ describe('ObjectLabelField', () => {
   it('does not offer to create a label in a form intake to a user who cannot manage labels', () => {
     useGrantedSpy.mockReturnValue(false);
     renderField(true);
+    expect(canCreate()).toBe('false');
+  });
+
+  it('counts the right to manage labels in the draft scope only for a submission to a draft', () => {
+    // a user in main who can manage labels in the draft scope only
+    useGrantedSpy.mockImplementation((_capabilities, _matchAll, options) => !!options?.capabilitiesInDraft?.includes(useGrantedModule.SETTINGS_SETLABELS));
+    renderField(true, true);
+    expect(canCreate()).toBe('true');
+  });
+
+  it('does not count the right to manage labels in the draft scope for a submission to main', () => {
+    useGrantedSpy.mockImplementation((_capabilities, _matchAll, options) => !!options?.capabilitiesInDraft?.includes(useGrantedModule.SETTINGS_SETLABELS));
+    renderField(true, false);
     expect(canCreate()).toBe('false');
   });
 });

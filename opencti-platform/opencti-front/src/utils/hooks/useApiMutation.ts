@@ -20,13 +20,10 @@ export interface UsiApiMutationOptions {
 /**
  * Hook wrapping Relay useMutation to automatically display an error popup with a message if the mutation fails.
  *
- * When `DeferredCreationContext.isDeferredMode` is active (e.g. a draft-only user is
- * creating an entity on the fly inside a Form Intake), the mutation is NOT dispatched
- * to the server. Instead, the raw `input` from `variables` is captured via the context
- * so it can be bundled and created in draft when the form intake is submitted.
- * Only creation mutations are intercepted, the others are sent as usual.
- * Consequence: a mutation that must really be sent (e.g. the form intake submission itself)
- * has to be called from outside the `DeferredCreationContext.Provider`.
+ * When `DeferredCreationContext.isDeferredMode` is active (an entity created on the fly
+ * inside a Form Intake), a creation mutation (`<type>Add`) is NOT dispatched to the server.
+ * Instead, the raw `input` from `variables` is captured via the context so it can be
+ * created with the form intake submission. The other mutations are sent as usual.
  */
 const useApiMutation = <T extends MutationParameters>(
   query: GraphQLTaggedNode,
