@@ -20,7 +20,7 @@ const DashboardWidgetVariablesMarker = ({ names }: DashboardWidgetVariablesMarke
         <span
           className={`noDrag ${EXPORT_REMOVE_CLASS}`}
           data-testid="widget-variables-marker"
-          style={{ display: 'inline-flex', verticalAlign: 'middle' }}
+          style={{ display: 'inline-flex' }}
         >
           {/* The glyph of the Variable value source in the widget filters. */}
           <Variable fontSize="small" color="action" />

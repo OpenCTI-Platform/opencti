@@ -80,11 +80,12 @@ const DashboardContent = ({
             />
           );
           // The marker is for everyone who sees the widget, the menu for those who may edit it.
+          // Centered together on one row: in the header action slot (a block), the icon would sit on the text baseline.
           const action = usageMarkerVariables ? (
-            <>
+            <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, verticalAlign: 'top' }}>
               <DashboardWidgetVariablesMarker names={getWidgetVariableNames(widget, usageMarkerVariables, t_i18n)} />
               {popover}
-            </>
+            </Box>
           ) : popover;
 
           return (
