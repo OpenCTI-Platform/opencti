@@ -25,8 +25,32 @@ import {
 import { now } from '../../utils/Time';
 
 /**
- * Query variables every breakdown shares: the field and the series settings of the widget,
- * the dates and the filters of its single dataset.
+ * Query variables every perspective shares: the field and the series settings of the widget,
+ * its interval and its period.
+ */
+export const buildTimeSeriesBreakdownSettings = (config: DashboardConfig, parameters?: WidgetParameters) => {
+  const breakdownBy = parameters?.breakdownBy;
+  if (!isBreakdownField(breakdownBy)) {
+    throw Error('Missing breakdown field');
+  }
+  const interval = getWidgetInterval(parameters);
+  // Dates set on the dashboard are kept as is. Without a start date, a daily breakdown only looks
+  // back a short while from the end date: the default 12 months would draw too many bars.
+  const { startDate, endDate } = computeStartEndDates(config);
+  return {
+    field: breakdownBy,
+    startDate: startDate ?? getBreakdownDefaultStartDate(interval, endDate),
+    endDate: endDate ?? now(),
+    interval,
+    limit: getWidgetBreakdownLimit(parameters),
+    order: getWidgetBreakdownOrder(parameters),
+    includeOther: getWidgetBreakdownOther(parameters),
+  };
+};
+
+/**
+ * Query variables of the knowledge breakdowns: the settings shared by every perspective,
+ * and the date attribute and the filters of the single dataset, restricted to the same period.
  */
 export const buildTimeSeriesBreakdownVariables = (
   resolvedDataSelection: WidgetDataSelection[],
@@ -34,36 +58,14 @@ export const buildTimeSeriesBreakdownVariables = (
   parameters?: WidgetParameters,
   opts: { isKnowledgeRelationshipWidget?: boolean } = {},
 ) => {
-  const breakdownBy = parameters?.breakdownBy;
-  if (!isBreakdownField(breakdownBy)) {
-    throw Error('Missing breakdown field');
-  }
+  const settings = buildTimeSeriesBreakdownSettings(config, parameters);
   const [selection] = resolvedDataSelection;
-  const interval = getWidgetInterval(parameters);
-  // Dates set on the dashboard are kept as is. Without a start date, a daily breakdown only looks
-  // back a short while: the default 12 months would draw too many bars.
-  const configuredDates = computeStartEndDates(config);
-  const { dateAttribute, startDate, endDate, filters } = computeWidgetFiltersForSelection(
+  const { dateAttribute, filters } = computeWidgetFiltersForSelection(
     selection,
-    {
-      ...config,
-      relativeDate: null,
-      startDate: configuredDates.startDate ?? getBreakdownDefaultStartDate(interval),
-      endDate: configuredDates.endDate ?? now(),
-    },
+    { ...config, relativeDate: null, startDate: settings.startDate, endDate: settings.endDate },
     opts,
   );
-  return {
-    field: breakdownBy,
-    dateAttribute,
-    startDate,
-    endDate,
-    interval,
-    limit: getWidgetBreakdownLimit(parameters),
-    order: getWidgetBreakdownOrder(parameters),
-    includeOther: getWidgetBreakdownOther(parameters),
-    filters,
-  };
+  return { ...settings, dateAttribute, filters };
 };
 
 type BreakdownRenderContentProps = WidgetRenderGuards & {

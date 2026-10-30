@@ -195,6 +195,23 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(weekly.startDate).toEqual(monthsAgo(12));
   });
 
+  it('looks back from the end date of a dashboard that sets only this one', () => {
+    respond([]);
+    render(makeWidget('line', { breakdownBy: 'objectLabel', interval: 'day' }));
+    const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.calls[0][0];
+
+    // Long ago: 30 days back from today would start after the end
+    const endDate = '2024-01-15T12:00:00.000Z';
+    const variables = buildQueryVariables(dataSelection, { relativeDate: null, startDate: null, endDate }, parameters);
+    expect(variables.endDate).toEqual(endDate);
+    expect(variables.startDate).toEqual(daysAgo(30, endDate));
+    const lookBackDays = (new Date(endDate).getTime() - new Date(variables.startDate).getTime()) / 86400000;
+    expect(lookBackDays).toBeGreaterThanOrEqual(30);
+    expect(lookBackDays).toBeLessThan(31);
+    // the entities the top values are computed on are restricted to the same period
+    expect(JSON.stringify(variables.filters)).toContain(daysAgo(30, endDate));
+  });
+
   it('names the series after the entity, or the translated entity type', async () => {
     respond([
       { label: 'user-id', entity: { id: 'user-id', name: 'Alice' }, values: dailyValues(3) },
