@@ -19,7 +19,7 @@ import { isStixDomainObject, isStixDomainObjectIdentity } from '../../schema/sti
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import type { StoreEntity } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { FormFieldType, type FormSchemaDefinition } from './form-types';
+import { type FormFieldDefinition, FormFieldType, type FormSchemaDefinition } from './form-types';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { PENDING_EXTERNAL_REFERENCE } from './form-pending-marker';
 
@@ -568,11 +568,18 @@ const FIELD_POOLED_TYPES: Partial<Record<string, string>> = {
  * values (label names, external reference ids). Replace them by the pooled label name or the pooled
  * external reference attributes, so the field converters handle them like any other value.
  * An entry must sit in a field of the form that takes its type (a labels field takes a label, wherever the field is).
+ * The fields are keyed by name, except in the fields of a parsed entity and of a relationship, keyed by attribute name.
  * Pending roots and the pool are left untouched (their refs are resolved by materializePendingRoots).
  */
 export const resolvePendingFieldRefs = (values: Record<string, any>, schema: FormSchemaDefinition, uploads: PendingUpload[] = []): Record<string, any> => {
   const pool = new Map(toArray<PendingObject>(values.pendingObjects).map((object) => [object.id, object]));
   const fieldTypes = new Map((schema.fields ?? []).map((field) => [field.name, FIELD_POOLED_TYPES[field.type]]));
+  // As the bundle builder reads them by attribute name (the validation also accepts the field name)
+  const attributeTypes = (fields: FormFieldDefinition[] = []) => new Map(fields.flatMap((field) => {
+    const type = FIELD_POOLED_TYPES[field.type];
+    return [[field.name, type], [field.attributeMapping.attributeName, type]];
+  }));
+  const entityFields = (entity: string) => (schema.fields ?? []).filter((field) => field.attributeMapping.entity === entity);
   const resolve = (id: string, expected: string | undefined) => {
     const target = pool.get(id);
     if (!target || !POOLED_TYPES.includes(target.entityType)) {
@@ -585,16 +592,29 @@ export const resolvePendingFieldRefs = (values: Record<string, any>, schema: For
     // Marked (not enumerable) so the field converter only accepts the objects produced here
     return Object.defineProperty(materializePooledReference(target, uploads), PENDING_EXTERNAL_REFERENCE, { value: true });
   };
-  const walk = (node: any, expected: string | undefined): any => {
-    if (Array.isArray(node)) return node.map((item) => walk(item, expected));
+  const walk = (node: any, expected: string | undefined, keyTypes = fieldTypes): any => {
+    if (Array.isArray(node)) return node.map((item) => walk(item, expected, keyTypes));
     if (isPendingRef(node)) return resolve(node.pending, expected);
     if (typeof node === 'object' && node !== null) {
-      return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, walk(value, fieldTypes.has(key) ? fieldTypes.get(key) : expected)]));
+      return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, walk(value, keyTypes.has(key) ? keyTypes.get(key) : expected, keyTypes)]));
     }
     return node;
   };
+  const walkRelationship = (relationship: any) => {
+    if (!isObject(relationship) || !('fields' in relationship)) return walk(relationship, undefined);
+    const { fields, ...rest } = relationship as Record<string, any>;
+    const definition = (schema.relationships ?? []).find((r) => r.id === rest.id);
+    return { ...walk(rest, undefined), fields: walk(fields, undefined, attributeTypes(definition?.fields)) };
+  };
+  const walkValue = (key: string, value: any) => {
+    if (key === 'mainEntityFields') return walk(value, undefined, attributeTypes(entityFields('main_entity')));
+    const additional = /^additional_(.+)_fields$/.exec(key);
+    if (additional) return walk(value, undefined, attributeTypes(entityFields(additional[1])));
+    if (key === 'relationships' && Array.isArray(value)) return value.map(walkRelationship);
+    return walk(value, fieldTypes.get(key));
+  };
   const isPendingKey = (key: string) => key === 'pendingObjects' || isRootKey(key);
-  return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, isPendingKey(key) ? value : walk(value, fieldTypes.get(key))]));
+  return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, isPendingKey(key) ? value : walkValue(key, value)]));
 };
 
 export const countPendingLabels = (values: Record<string, any>): number => {
