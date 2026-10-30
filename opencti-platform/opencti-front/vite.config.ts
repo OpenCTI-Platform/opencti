@@ -8,7 +8,8 @@ const monacoEditorPlugin = (monacoEditorPluginImport as unknown as {default: typ
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '');
+  // Load only the variables read below.
+  const env = loadEnv(mode, process.cwd(), ['APP__BASE_PATH', 'BACK_END_URL']);
 
   // Support APP__BASE_PATH from .env* files (via loadEnv) or from process.env (e.g. set by test scripts).
   // Normalize: ensure leading slash, strip trailing slash.
