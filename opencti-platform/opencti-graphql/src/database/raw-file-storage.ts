@@ -167,6 +167,22 @@ export const downloadFile = async (id: string): Promise<Readable | null> => {
   }
 };
 
+export const downloadFileWithoutLogging = async (key: string): Promise<Readable | null> => {
+  let object: GetObjectCommandOutput;
+  try {
+    object = await s3Client.send(new s3.GetObjectCommand({ Bucket: bucketName, Key: key }));
+  } catch (err) {
+    if ((err as Error).name === 'NoSuchKey') {
+      return null;
+    }
+    throw err;
+  }
+  if (!object.Body) {
+    throw UnsupportedError('File body is null or undefined');
+  }
+  return object.Body as Readable;
+};
+
 export interface RangeDownloadResult {
   stream: Readable;
   contentLength: number;
