@@ -74,6 +74,7 @@ import {
   WifiTetheringOutlined,
   WorkOutlined,
   WorkspacesOutlined,
+  WarningAmber,
 } from '@mui/icons-material';
 import {
   AccountGroupOutline,
@@ -641,6 +642,16 @@ const iconSelector = (
       return <FilterOutline style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'default':
       return <CircleOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    case 'auth_error':
+      return <WarningAmber style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    case 'functional_error':
+      return <WarningAmber style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    case 'graphql_error':
+      return <WarningAmber style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    case 'technical_error':
+      return <WarningAmber style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    case 'user_action_error':
+      return <WarningAmber style={style} fontSize={fontSize} role="img" aria-label={type} />;
     default:
       return <AutoAwesomeMotion style={style} fontSize={fontSize} role="img" aria-label="item" />;
   }
