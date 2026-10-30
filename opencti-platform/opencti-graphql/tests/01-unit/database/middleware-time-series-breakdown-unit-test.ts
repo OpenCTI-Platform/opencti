@@ -40,6 +40,7 @@ import {
   distributionEntities,
   distributionHistory,
   HISTORY_BREAKDOWN_ALLOWED_FIELDS,
+  normalizeKeywordValue,
   resolveBreakdownField,
   resolveHistoryBreakdownField,
   resolveRelationshipBreakdownField,
@@ -542,6 +543,16 @@ describe('timeSeriesBreakdownEntities', () => {
     ]));
   });
 
+  it('should name the vocabulary values whose letters the keyword normalizer folds', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('strasse', 2), bucket('oeuvre', 1)]);
+    vi.mocked(engine.elList).mockResolvedValue([{ name: 'Straße' }, { name: 'Œuvre' }] as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
+
+    const result = await breakdown({ field: 'report_types' });
+
+    expect(result.series.map((serie) => serie.label)).toEqual(['Straße', 'Œuvre']);
+  });
+
   it('should name the enum values as they are written in the schema, without reading anything', async () => {
     vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('critical', 4), bucket('unknown', 2), bucket('not-in-schema', 1)]);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
@@ -650,6 +661,24 @@ describe('resolveBreakdownField', () => {
   it('should only accept a field carried by every requested type', () => {
     expect(resolveBreakdownField(['Report', 'Malware'], 'objectLabel').resolveEntities).toBe(true);
     expect(() => resolveBreakdownField(['Report', 'Malware'], 'report_types')).toThrow('does not support this field');
+  });
+});
+
+describe('normalizeKeywordValue', () => {
+  it('should lowercase and strip the diacritics of the accented letters', () => {
+    expect(normalizeKeywordValue('Réseau Interne')).toEqual('reseau interne');
+    expect(normalizeKeywordValue('ÇA VA')).toEqual('ca va');
+  });
+
+  it('should fold the letters without decomposition as asciifolding does', () => {
+    expect(normalizeKeywordValue('Straße')).toEqual('strasse');
+    expect(normalizeKeywordValue('Œuvre')).toEqual('oeuvre');
+    expect(normalizeKeywordValue('Ærø Łódź Đakovo Þór Ðorð ıstanbul')).toEqual('aero lodz dakovo thor dord istanbul');
+  });
+
+  it('should fold the typographic quotes and dashes', () => {
+    expect(normalizeKeywordValue('\u2018a\u2019 \u201ab\u201b \u201cc\u201d \u201ed\u201d e\u2013f\u2014g')).toEqual('\'a\' \'b\' "c" "d" e-f-g');
+    expect(normalizeKeywordValue('L’Équipe')).toEqual("l'equipe");
   });
 });
 

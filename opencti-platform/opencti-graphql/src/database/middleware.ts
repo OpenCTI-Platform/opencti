@@ -920,8 +920,19 @@ type BreakdownField = {
   // Set to break relationships down by the type of their source or target
   connectionSide?: ConnectionSide;
 };
+// Letters and punctuation asciifolding folds that have no decomposition, which stripping the diacritics leaves as
+// they are: the most common ones, with the typographic quotes (‘ ’ ‚ ‛ “ ” „) and dashes (– —)
+const ASCII_FOLDINGS: Record<string, string> = {
+  ß: 'ss', œ: 'oe', æ: 'ae', ø: 'o', ł: 'l', đ: 'd', ð: 'd', þ: 'th', ı: 'i',
+  '\u2018': "'", '\u2019': "'", '\u201a': "'", '\u201b': "'", '\u201c': '"', '\u201d': '"', '\u201e': '"', '\u2013': '-', '\u2014': '-',
+};
+const ASCII_FOLDINGS_PATTERN = new RegExp(`[${Object.keys(ASCII_FOLDINGS).join('')}]`, 'g');
 // Indexed form of a keyword value (string_normalizer: lowercase and asciifolding), for the accented latin letters
-const normalizeKeywordValue = (value: string) => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+// and the most common letters and punctuation without decomposition
+export const normalizeKeywordValue = (value: string) => value.toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(ASCII_FOLDINGS_PATTERN, (character) => ASCII_FOLDINGS[character]);
 // Entity types are indexed in lowercase: give them back the name of their registered type. The lookup is built at
 // the first use, once every type is registered, and only built again if the registered types change.
 let entityTypesLookup: { registeredTypes: string[]; size: number; labels: Map<string, string> } | null = null;
