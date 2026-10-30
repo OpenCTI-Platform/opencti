@@ -239,10 +239,10 @@ interface StixCoreObjectsFieldProps {
   types?: string[] | null;
   disableCreation?: boolean;
   /**
-   * When true (and the user has draft-only permissions), entity creation on the fly
-   * is deferred: the creation form is shown but the mutation is intercepted and the
-   * entity data is stored locally. The entity is only created when the form intake is
-   * submitted (as part of the draft STIX bundle).
+   * When true, entity creation on the fly is deferred: the creation form is shown but the
+   * creation mutation is intercepted and the entity data is kept locally. The entity is only
+   * created when the form intake is submitted. A field inside a creation dialog that is already
+   * deferred defers as well, without this prop.
    */
   deferCreation?: boolean;
 }
@@ -295,18 +295,20 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   const deferredCapturedRef = useRef<Record<string, unknown>[]>([]);
 
   /**
-   * Context value provided to the SDO / SCO creation dialogs when deferCreation=true.
+   * Context value provided to the SDO / SCO creation dialogs when the creation is deferred.
    * useApiMutation will call captureInput() instead of dispatching the real mutation;
    * the pending store of the enclosing form (labels, external references) is kept.
    */
   const parentDeferredContext = useDeferredCreation();
+  // A field inside a creation dialog of a form (e.g. the entities of an observed data) defers as well
+  const isDeferred = deferCreation || parentDeferredContext.isDeferredMode;
   const deferredContextValue = useMemo(() => ({
     ...parentDeferredContext,
-    isDeferredMode: deferCreation,
+    isDeferredMode: isDeferred,
     captureInput: (input: Record<string, unknown>) => {
       deferredCapturedRef.current.push(input);
     },
-  }), [deferCreation, parentDeferredContext]);
+  }), [isDeferred, parentDeferredContext]);
 
   /**
    * Turns the inputs captured in deferred mode into pending-creation options, selects them
@@ -314,7 +316,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
    */
   const applyDeferredCapture = useCallback(() => {
     const capturedInputs = deferredCapturedRef.current;
-    if (!deferCreation || capturedInputs.length === 0) return false;
+    if (!isDeferred || capturedInputs.length === 0) return false;
     const newOptions = buildPendingOptions(capturedInputs, createEntityType, currentSearchTerm);
     setStixCoreObjects((prev) => [...newOptions, ...prev.filter((o) => !o.isCreateOption)]);
     const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
@@ -327,7 +329,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
     // A creation dialog may close more than once (resetForm calls onReset, then onCompleted): the next close must keep the selection
     entityCreatedSuccessfully.current = true;
     return true;
-  }, [deferCreation, createEntityType, currentSearchTerm, values, name, multiple, setFieldValue]);
+  }, [isDeferred, createEntityType, currentSearchTerm, values, name, multiple, setFieldValue]);
 
   const handleOpenSearchScope = (event: React.MouseEvent<HTMLElement>) => setAnchorElSearchScope(event.currentTarget);
   const handleCloseSearchScope = () => setAnchorElSearchScope(null);
