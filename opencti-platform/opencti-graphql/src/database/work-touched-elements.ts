@@ -1,15 +1,23 @@
 import { LRUCache } from 'lru-cache';
 import type { AuthContext } from '../types/user';
-import type { BaseEvent, StreamDataEvent } from '../types/event';
+import type { BaseEvent, CreatedRef, StreamDataEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
-import { redisAddWorkTouchedElement, redisGetWorkTouchedElements, redisGetWorkTrackingInfo } from './redis';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { redisAddWorkTouchedElements, redisGetWorkTouchedElements, redisGetWorkTrackingInfo } from './redis';
 import { logApp } from '../config/conf';
 import { WORK_INVESTIGATION_STATUS_TO_REVIEW } from '../modules/workspace/workspace-types';
 
+// How the touched elements of a work are tracked. enrichedEntityId is the internal id of the
+// enriched entity, used to keep only the refs concerning it; null when the work has none.
+type WorkTracking = {
+  isTracked: boolean;
+  enrichedEntityId: string | null;
+};
+
 // Cache used to avoid making a read inside Redis for each element of a work to know
 // if the work is an enrichment triggered from an investigation or not.
-const workTrackedCache = new LRUCache<string, boolean>({ max: 5000, ttl: 60 * 60 * 1000 });
+const workTrackedCache = new LRUCache<string, WorkTracking>({ max: 5000, ttl: 60 * 60 * 1000 });
 
 /**
  * Empty the work tracked cache. Tests only.
@@ -17,33 +25,48 @@ const workTrackedCache = new LRUCache<string, boolean>({ max: 5000, ttl: 60 * 60
 export const resetWorkTrackedCache = () => workTrackedCache.clear();
 
 /**
- * Tell whether the touched elements of a work are tracked, reading redis once per work.
+ * Tell whether and how the touched elements of a work are tracked, reading redis once per work.
  * Only enrichment works triggered from an investigation are tracked.
  */
-const resolveIsWorkTracked = async (workId: string) => {
+const resolveWorkTracking = async (workId: string) => {
   const cached = workTrackedCache.get(workId);
   if (cached !== undefined) {
     return cached;
   }
-  // A work type and investigation never change, so the cache needs no invalidation
-  const { eventType, investigationId } = await redisGetWorkTrackingInfo(workId);
-  const isTracked = eventType === CONNECTOR_INTERNAL_ENRICHMENT && !!investigationId;
-  workTrackedCache.set(workId, isTracked);
-  return isTracked;
+  // A work type, investigation and enriched entity never change, so the cache needs no invalidation
+  const { eventType, investigationId, enrichedEntityId } = await redisGetWorkTrackingInfo(workId);
+  const tracking = {
+    isTracked: eventType === CONNECTOR_INTERNAL_ENRICHMENT && !!investigationId,
+    enrichedEntityId,
+  };
+  workTrackedCache.set(workId, tracking);
+  return tracking;
+};
+
+/**
+ * Tell whether a created ref is to record: it must start or end on the enriched entity, and not point
+ * to a user, as the investigation expand leaves the refs to users out.
+ */
+const isTrackedRef = (ref: CreatedRef, enrichedEntityId: string | null) => {
+  return !!enrichedEntityId
+    && (ref.fromId === enrichedEntityId || ref.toId === enrichedEntityId)
+    && ref.toType !== ENTITY_TYPE_USER;
 };
 
 /**
  * Record the element of a create / update stream event into the touched elements of the current work,
- * when it is an enrichment triggered from an investigation.
+ * when it is an enrichment triggered from an investigation, together with the refs created with it
+ * that concern the enriched entity (see isTrackedRef). Refs have no stream event of their own.
  * Never throws: tracking must not make a knowledge write fail.
+ * @param createdRefs the ref relationships created with the event element
  */
-export const trackWorkTouchedElement = async (context: AuthContext, event: BaseEvent) => {
+export const trackWorkTouchedElement = async (context: AuthContext, event: BaseEvent, createdRefs: CreatedRef[] = []) => {
   const { workId } = context;
   if (!workId || (event.type !== 'create' && event.type !== 'update')) {
     return;
   }
   try {
-    const isTracked = await resolveIsWorkTracked(workId);
+    const { isTracked, enrichedEntityId } = await resolveWorkTracking(workId);
     if (!isTracked) {
       return;
     }
@@ -51,7 +74,10 @@ export const trackWorkTouchedElement = async (context: AuthContext, event: BaseE
     if (!elementId) {
       return;
     }
-    await redisAddWorkTouchedElement(workId, elementId);
+    const refIds = createdRefs
+      .filter((ref) => isTrackedRef(ref, enrichedEntityId))
+      .map((ref) => ref.internal_id);
+    await redisAddWorkTouchedElements(workId, [elementId, ...refIds]);
   } catch (err) {
     logApp.warn('[WORK] Unable to track touched element', { workId, cause: err });
   }

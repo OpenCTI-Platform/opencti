@@ -64,7 +64,7 @@ const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: Au
       // Deprecated attribute to be removed when transition done
       [SEMATTRS_DB_NAME]: 'stream_engine',
     }, pushToStreamFn);
-    await trackWorkTouchedElement(context, event);
+    await trackWorkTouchedElement(context, event, opts.createdRefs);
   }
 };
 

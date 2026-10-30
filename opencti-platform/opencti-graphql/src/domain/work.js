@@ -226,7 +226,8 @@ export const deleteWorkForSource = async (sourceId) => {
 };
 
 /**
- * Create a work for a connector. The optional args.investigationId links the work to an investigation.
+ * Create a work for a connector. The optional args.investigationId links the work to an investigation,
+ * and the optional args.enrichedEntityId gives the internal id of the entity an enrichment work enriches.
  */
 export const createWork = async (context, user, connector, friendlyName, sourceId, args = {}) => {
   // Create the new work
@@ -236,6 +237,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     fileMarkings = [],
     draftContext,
     investigationId,
+    enrichedEntityId,
   } = args;
   const isMultiPartWork = args.isMultiPartWork === true;
   // Create the work and an initial job
@@ -275,7 +277,7 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
   const createdWork = await loadWorkById(context, user, workId);
   // If work was created, initialize work on redis
   if (createdWork) {
-    await redisInitializeWork(createdWork.id, isMultiPartWork, connector.connector_type, investigationId);
+    await redisInitializeWork(createdWork.id, isMultiPartWork, connector.connector_type, investigationId, enrichedEntityId);
   }
   logApp.info('Work initiated', {
     workId,

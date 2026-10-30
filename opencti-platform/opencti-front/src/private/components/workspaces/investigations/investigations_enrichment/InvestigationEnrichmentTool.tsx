@@ -56,7 +56,7 @@ const investigationQuery = graphql`
               active
               connector_type
             }
-            touchedElements {
+            touchedElements(first: 1000) {
               ...on StixCoreObject {
                 id
                 entity_type
@@ -68,6 +68,12 @@ const investigationQuery = graphql`
                 toId
               }
               ...on StixSightingRelationship {
+                id
+                entity_type
+                fromId
+                toId
+              }
+              ...on StixRefRelationship {
                 id
                 entity_type
                 fromId

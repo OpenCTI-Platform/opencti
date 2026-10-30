@@ -33823,6 +33823,7 @@ export type StixRefRelationship = BasicRelationship & StixRelationship & {
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   from?: Maybe<StixObjectOrStixRelationshipOrCreator>;
+  fromId: Scalars['String']['output'];
   fromRole?: Maybe<Scalars['String']['output']>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -33842,6 +33843,7 @@ export type StixRefRelationship = BasicRelationship & StixRelationship & {
   start_time?: Maybe<Scalars['DateTime']['output']>;
   stop_time?: Maybe<Scalars['DateTime']['output']>;
   to?: Maybe<StixObjectOrStixRelationshipOrCreator>;
+  toId: Scalars['String']['output'];
   toRole?: Maybe<Scalars['String']['output']>;
   toStix?: Maybe<Scalars['String']['output']>;
   updated_at: Scalars['DateTime']['output'];
@@ -53300,6 +53302,7 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
+  fromId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixRefRelationshipGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -53319,6 +53322,7 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
   start_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   stop_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
+  toId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixRefRelationshipToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

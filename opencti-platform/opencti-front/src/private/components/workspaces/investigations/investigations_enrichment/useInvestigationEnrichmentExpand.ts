@@ -21,7 +21,7 @@ const touchedElementsQuery = graphql`
       enrichmentWorks(first: $first, entityIds: $entityIds, filters: $filters) {
         edges {
           node {
-            touchedElements {
+            touchedElements(first: 1000) {
               ...graphNodeFragment_node @relay(mask: false)
               ... on StixRelationship {
                 id

@@ -8714,7 +8714,9 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
+  fromId: String!
   from: StixObjectOrStixRelationshipOrCreator
+  toId: String!
   to: StixObjectOrStixRelationshipOrCreator
   x_opencti_inferences: [Inference]
   spec_version: String!
