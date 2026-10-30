@@ -36,7 +36,7 @@ services:
       - 9300:9300
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
-    image: kibana:8.19.23@sha256:f82f2ee9f2979dbfe315a81f08c9dcb5ff83856d990b90a1b07f6014325bfd3f
+    image: kibana:8.19.23@sha256:5974054d04b8cbfde28ba26977e6cc0ae0a59d44d7c0e20fb93724b4de7e8741
     environment:
       - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
     restart: unless-stopped
