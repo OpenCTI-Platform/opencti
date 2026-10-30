@@ -37,6 +37,12 @@ describe('prepareElementForIndexing testing', () => {
 });
 
 describe('buildLocalMustFilter testing', () => {
+  it('should build a nested match on at least one entry, or on none when negated', () => {
+    const notNil = buildLocalMustFilter({ key: ['coverage_information'], values: [], nested: [] });
+    expect(notNil).toEqual({ nested: { path: 'coverage_information', query: { bool: { must: [], must_not: [] } } } });
+    const nil = buildLocalMustFilter({ key: ['coverage_information'], values: [], nested: [], negateNested: true });
+    expect(nil).toEqual({ bool: { must_not: [notNil] } });
+  });
   it('should buildLocalMustFilter with script be refused by default', () => {
     const scriptFilter = {
       key: ['name'],
