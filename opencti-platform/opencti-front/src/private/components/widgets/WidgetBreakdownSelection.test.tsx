@@ -161,25 +161,6 @@ describe('WidgetBreakdownSelection', () => {
     expect(queryByText('Maximum number of series')).toBeNull();
   });
 
-  it('disables every control with several datasets', () => {
-    setWidget({ dataSelection: [reports, reports], parameters: { breakdownBy: 'report_types' } });
-    const { getAllByRole, getByRole } = testRender(<WidgetBreakdownSelection />);
-
-    const comboboxes = getAllByRole('combobox');
-    expect(comboboxes).toHaveLength(3);
-    comboboxes.forEach((combobox) => expect(isDisabled(combobox)).toBe(true));
-    expect(isDisabled(getByRole('switch'))).toBe(true);
-  });
-
-  it('keeps showing the configured field, disabled, with several datasets', () => {
-    setWidget({ dataSelection: [reports, reports], parameters: { breakdownBy: 'report_types' } });
-    const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
-
-    const [fieldSelect] = getAllByRole('combobox');
-    expect(fieldSelect.textContent).toContain('Report types');
-    expect(isDisabled(fieldSelect)).toBe(true);
-  });
-
   it('drops a field the dataset types no longer carry, with its settings', () => {
     setWidget({ parameters: { breakdownBy: 'malware_types', breakdownLimit: 20, breakdownOrder: 'asc', breakdownOther: true } });
     testRender(<WidgetBreakdownSelection />);
@@ -343,11 +324,12 @@ describe('WidgetBreakdownSelection', () => {
       }));
     });
 
-    it('disables every control with several relationships datasets', () => {
-      setWidget({ perspective: 'relationships', type: 'line', dataSelection: [targets, targets], parameters: { breakdownBy: 'toTypes' } });
-      const { getAllByRole, getByRole } = testRender(<WidgetBreakdownSelection />);
-      getAllByRole('combobox').forEach((combobox) => expect(isDisabled(combobox)).toBe(true));
-      expect(isDisabled(getByRole('switch'))).toBe(true);
+    it('cannot be chosen with several relationships datasets', () => {
+      setWidget({ perspective: 'relationships', type: 'line', dataSelection: [targets, targets] });
+      const { getAllByRole, queryByRole } = testRender(<WidgetBreakdownSelection />);
+      expect(getAllByRole('combobox')).toHaveLength(1);
+      expect(isDisabled(getAllByRole('combobox')[0])).toBe(true);
+      expect(queryByRole('switch')).toBeNull();
     });
   });
 });

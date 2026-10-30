@@ -28,8 +28,8 @@ const CaptureContext = () => {
   return null;
 };
 
-const renderProvider = () => testRender(
-  <WidgetConfigProvider host={{ kind: 'workspace' }} disabledSteps={[]} initialWidget={brokenDownLine} initialVariableName={undefined} open>
+const renderProvider = (initialWidget = brokenDownLine) => testRender(
+  <WidgetConfigProvider host={{ kind: 'workspace' }} disabledSteps={[]} initialWidget={initialWidget} initialVariableName={undefined} open>
     <CaptureContext />
   </WidgetConfigProvider>,
 );
@@ -49,6 +49,17 @@ describe('WidgetConfigProvider', () => {
   it('drops the breakdown of a widget that can no longer be broken down', () => {
     renderProvider();
     changeIntoDonut();
+    expect(captured.context?.config.widget.parameters).toEqual({
+      title: 'Reports', breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null,
+    });
+  });
+
+  it('drops the stored breakdown of a widget with several datasets once the filters step stores them, before the parameters step', () => {
+    const [selection] = brokenDownLine.dataSelection;
+    renderProvider({ ...brokenDownLine, dataSelection: [selection, selection] });
+    // Opened on the filters step, whose datasets each store their filters when mounted (WidgetFilters)
+    expect(captured.context?.step).toBe(2);
+    act(() => captured.context?.setDataSelectionWithIndex(selection, 0));
     expect(captured.context?.config.widget.parameters).toEqual({
       title: 'Reports', breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null,
     });
