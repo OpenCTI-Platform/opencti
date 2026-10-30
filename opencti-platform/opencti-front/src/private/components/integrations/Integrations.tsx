@@ -57,7 +57,9 @@ interface IntegrationsDataProviderProps {
 const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) => {
   const isConnectorReader = useGranted([MODULES]);
   const isIngestionReader = useGranted([INGESTION]);
-  const isFormReader = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]);
+  const isFormReader = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE], false, {
+    capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE], // the @auth of forms
+  });
 
   const [catalogsRef, loadCatalogs] = useQueryLoader<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery);
   const [deploymentRef, loadDeployment] = useQueryLoader<IngestionConnectorsQuery>(ingestionConnectorsQuery);
