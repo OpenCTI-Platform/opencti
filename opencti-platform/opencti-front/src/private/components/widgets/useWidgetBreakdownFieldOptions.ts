@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import useAuth from '../../../utils/hooks/useAuth';
+import { useFormatter } from '../../../components/i18n';
 import type { Widget } from '../../../utils/widget/widget';
 import type { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import { getWidgetBreakdownFieldOptions } from '../../../utils/widget/widgetBreakdown';
@@ -10,9 +11,11 @@ import { useOptionalDashboardVariableDefinitions } from '../../../components/das
  * Fields the edited widget can be broken down by, on the dataset its query reads: the content of its saved
  * filter, and the types its type variables allow, whatever their value. `isResolved` is false while the saved
  * filter is read, or when it cannot be: only the fields of any dataset are then offered.
+ * The fields are ordered as their labels are shown, translated.
  */
 const useWidgetBreakdownFieldOptions = (widget: Pick<Widget, 'perspective' | 'dataSelection'>, enabled: boolean) => {
   const { schema: { filterKeysSchema } } = useAuth();
+  const { t_i18n } = useFormatter();
   const variables = useOptionalDashboardVariableDefinitions();
   const { perspective, dataSelection } = widget;
   const savedFilterId = dataSelection[0]?.filters_id;
@@ -39,8 +42,8 @@ const useWidgetBreakdownFieldOptions = (widget: Pick<Widget, 'perspective' | 'da
     }
     const [firstSelection, ...otherSelections] = dataSelection;
     const resolvedSelection = savedFilters ? [{ ...firstSelection, filters: savedFilters }, ...otherSelections] : dataSelection;
-    return getWidgetBreakdownFieldOptions(filterKeysSchema, { perspective, dataSelection: resolvedSelection }, variables);
-  }, [enabled, filterKeysSchema, perspective, dataSelection, savedFilters, variables]);
+    return getWidgetBreakdownFieldOptions(filterKeysSchema, { perspective, dataSelection: resolvedSelection }, variables, t_i18n);
+  }, [enabled, filterKeysSchema, perspective, dataSelection, savedFilters, variables, t_i18n]);
   return { fieldOptions, isResolved };
 };
 

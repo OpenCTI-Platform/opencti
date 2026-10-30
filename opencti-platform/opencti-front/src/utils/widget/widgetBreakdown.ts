@@ -136,11 +136,13 @@ export const resolveBreakdownTypeVariables = (types: string[], variables?: Dashb
  * (BREAKDOWN_ALLOWED_REFS, vocabularies and enums); with several types, the ones they have in common,
  * plus the type itself, also offered for a single abstract type, which holds several concrete ones.
  * Relationships can also be broken down by the type of their source or target.
+ * The fields are ordered by their label as shown, `translate`d.
  */
 export const getBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   entityTypes: string[],
   perspective: WidgetPerspective = 'entities',
+  translate: (label: string) => string = (label) => label,
 ): BreakdownField[] => {
   const breakdownPerspective = getBreakdownPerspective(perspective);
   if (!breakdownPerspective) return [];
@@ -162,7 +164,7 @@ export const getBreakdownFieldOptions = (
   if (entityTypes.length !== 1 || isAbstractType) {
     options.push(breakdownPerspective.typeField);
   }
-  return options.sort((a, b) => a.label.localeCompare(b.label));
+  return options.sort((a, b) => translate(a.label).localeCompare(translate(b.label)));
 };
 
 /**
@@ -170,11 +172,13 @@ export const getBreakdownFieldOptions = (
  * types for the entities and the relationships, the allowed fields of the logs for the audits.
  * The dataset filters are the ones of the widget, its saved filters read: its type variables are
  * resolved with the dashboard `variables`. None for draft workspaces, which a saved filter can select.
+ * The audits fields keep their order, the others are ordered by their `translate`d label.
  */
 export const getWidgetBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   widget: Pick<Widget, 'perspective' | 'dataSelection'>,
   variables?: DashboardVariable[],
+  translate?: (label: string) => string,
 ): BreakdownField[] => {
   if (isDraftWorkspaceDataset(widget.dataSelection)) {
     return [];
@@ -184,7 +188,7 @@ export const getWidgetBreakdownFieldOptions = (
   }
   const perspective = widget.perspective ?? 'entities';
   const types = resolveBreakdownTypeVariables(getBreakdownEntityTypes(widget.dataSelection[0]?.filters, perspective), variables);
-  return getBreakdownFieldOptions(filterKeysSchema, types, perspective);
+  return getBreakdownFieldOptions(filterKeysSchema, types, perspective, translate);
 };
 
 /**

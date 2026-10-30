@@ -335,6 +335,23 @@ describe('getBreakdownFieldOptions', () => {
       ['fromId', 'toId', 'objects', 'externalReferences', 'killChainPhases', 'workflow_id', 'entity_type'].forEach((key) => expect(options).not.toContain(key));
     });
 
+    it('orders the fields by their translated label', () => {
+      const french: Record<string, string> = {
+        Author: 'Auteur',
+        Creators: 'Créateurs',
+        Label: 'Label',
+        Marking: 'Marquage',
+        'Relationship type': 'Type de relation',
+        'Source type': 'Type de source',
+        'Target type': 'Type de cible',
+      };
+      const translate = (label: string) => french[label] ?? label;
+      const labels = getBreakdownFieldOptions(relationshipsSchema, [], 'relationships', translate).map(({ label }) => translate(label));
+      expect(labels).toEqual(['Auteur', 'Créateurs', 'Label', 'Marquage', 'Type de cible', 'Type de relation', 'Type de source']);
+      // The labels themselves are kept, to be translated where shown
+      expect(getBreakdownFieldOptions(relationshipsSchema, [], 'relationships', translate).map(({ label }) => label)).toContain('Target type');
+    });
+
     it('labels the relationships fields', () => {
       const labels = getBreakdownFieldOptions(relationshipsSchema, [], 'relationships').map(({ label }) => label);
       expect(labels).toEqual(expect.arrayContaining(['Relationship type', 'Source type', 'Target type']));
@@ -719,6 +736,9 @@ describe('audits breakdown', () => {
     const apiFields = ['event_type', 'event_scope', 'user_id', 'group_ids', 'organization_ids', 'entity_type', 'context_data.entity_type'];
     expect(AUDITS_BREAKDOWN_FIELDS.map(({ key }) => key)).toEqual(apiFields);
     expect(getWidgetBreakdownFieldOptions(emptyMap, makeAuditsWidget()).map(({ key }) => key)).toEqual(apiFields);
+    // In their own order, whatever the language
+    const reversed = (label: string) => label.split('').reverse().join('');
+    expect(getWidgetBreakdownFieldOptions(emptyMap, makeAuditsWidget(), undefined, reversed).map(({ key }) => key)).toEqual(apiFields);
     ['context_data.id', 'context_data.search', 'context_data.message', 'creator_id', 'createdBy'].forEach((key) => {
       expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: key } }))).toBe(false);
     });

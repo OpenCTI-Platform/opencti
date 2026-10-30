@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   flags: ['TIME_SERIES_BREAKDOWN'],
   variables: undefined as unknown[] | undefined,
   fetchSavedFilterContent: vi.fn(),
+  translations: {} as Record<string, string>,
 }));
 
 const definition = (filterKey: string, type: string, label: string, subEntityTypes: string[]): FilterDefinition => ({
@@ -37,6 +38,17 @@ vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
     },
   }),
 }));
+// The labels translated in another language, the others as in English
+vi.mock('../../../components/i18n', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../../components/i18n')>();
+  return {
+    ...original,
+    useFormatter: () => {
+      const formatter = original.useFormatter();
+      return { ...formatter, t_i18n: (key: string) => mocks.translations[key] ?? formatter.t_i18n(key) };
+    },
+  };
+});
 vi.mock('../../../utils/hooks/useHelper', () => ({
   default: () => ({ isFeatureEnable: (flag: string) => mocks.flags.includes(flag) }),
 }));
@@ -79,6 +91,7 @@ describe('WidgetBreakdownSelection', () => {
     vi.clearAllMocks();
     mocks.flags = ['TIME_SERIES_BREAKDOWN'];
     mocks.variables = undefined;
+    mocks.translations = {};
   });
 
   const isDisabled = (element: HTMLElement) => element.hasAttribute('disabled') || element.getAttribute('data-disabled') !== null;
@@ -292,6 +305,19 @@ describe('WidgetBreakdownSelection', () => {
       setWidget({ perspective: 'relationships', type: 'heatmap', dataSelection: [targets] });
       const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
       expect(openFieldOptions(getAllByRole)).toEqual(['None', 'Marking', 'Source type', 'Target type']);
+    });
+
+    it('orders the fields as they read in the language of the user', () => {
+      mocks.translations = {
+        None: 'Aucun',
+        Marking: 'Marquage',
+        'Relationship type': 'Type de relation',
+        'Source type': 'Type de source',
+        'Target type': 'Type de cible',
+      };
+      setWidget({ perspective: 'relationships', type: 'line', dataSelection: [relationships] });
+      const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+      expect(openFieldOptions(getAllByRole)).toEqual(['Aucun', 'Marquage', 'Type de cible', 'Type de relation', 'Type de source']);
     });
 
     it('keeps a relationships field, and drops one the relationship types no longer carry', () => {
