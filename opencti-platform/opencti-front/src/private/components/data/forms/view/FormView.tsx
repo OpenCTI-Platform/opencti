@@ -127,10 +127,12 @@ const entityCheckQuery = graphql`
   }
 `;
 
+// What the draft page loads: draftWorkspace alone is not enough (e.g. its workflow needs Create / Update knowledge)
 const draftCheckQuery = graphql`
   query FormViewDraftCheckQuery($id: String!) {
     draftWorkspace(id: $id) {
       id
+      ...DraftRootFragment
     }
   }
 `;
@@ -508,7 +510,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     };
   }, [pollingEntityId, pollingEntityType, navigate, isConnectorReader, onSuccess]);
 
-  // The draft of the submission is opened only when the user can read it (its authorized members), else it is confirmed
+  // The draft of the submission is opened only when the user can load its page, else the submission is confirmed
   const openDraftOrConfirm = async (draftId?: string) => {
     const result = draftId
       ? await fetchQuery(relayEnvironment, draftCheckQuery, { id: draftId }).toPromise().catch(() => null) as { draftWorkspace?: { id: string } | null } | null

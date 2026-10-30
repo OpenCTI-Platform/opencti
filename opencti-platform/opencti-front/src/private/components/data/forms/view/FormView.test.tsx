@@ -320,7 +320,7 @@ describe('FormView submission into a draft', () => {
     vi.clearAllMocks();
   });
 
-  // The draft returned by draftWorkspace(id) once submitted: null when the user cannot read it, an error without access
+  // The draft page query once submitted: null when the user cannot read the draft, an error when a field of the page is refused
   const submitForm = async (draft: { id: string } | null | Error, onSuccess = vi.fn(), embedded = false) => {
     useGrantedSpy.mockImplementation((capabilities: string[]) => !capabilities.includes(useGrantedModule.BYPASS));
     const { relayEnv, user } = testRender(<FormView embedded={embedded} onSuccess={onSuccess} />, { userContext: mockUserContext });
@@ -340,7 +340,7 @@ describe('FormView submission into a draft', () => {
     return { user, onSuccess };
   };
 
-  it('opens the draft, closing the dialog first, when the user can read it', async () => {
+  it('opens the draft, closing the dialog first, when the user can load its page', async () => {
     const { onSuccess } = await submitForm({ id: 'draft-id' }, vi.fn(), true);
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/dashboard/data/import/draft/draft-id');
@@ -354,7 +354,7 @@ describe('FormView submission into a draft', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it('confirms the submission when the draft cannot be checked', async () => {
+  it('confirms the submission when the draft page cannot be loaded (e.g. its workflow without Create / Update knowledge)', async () => {
     await submitForm(new Error('You are not allowed to do this.'));
     expect(await screen.findByText('Your submission has been sent and is being processed.')).toBeTruthy();
     expect(mockNavigate).not.toHaveBeenCalled();
