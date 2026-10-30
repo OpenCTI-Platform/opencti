@@ -16,7 +16,7 @@ vi.mock('../../../common/form/AuthorizedMembersField', () => ({
 vi.mock('../../../common/form/CreatedByField', () => ({
   __esModule: true,
   default: (props: { name?: string; label?: string }) => (
-    <div data-testid="created-by-field" data-deferred={String(useDeferredCreation().isDeferredMode)}>
+    <div data-testid="created-by-field" data-deferred={String(useDeferredCreation().isDeferredMode)} data-to-draft={String(useDeferredCreation().toDraft)}>
       <label>{props.label}</label>
     </div>
   ),
@@ -257,6 +257,27 @@ describe('FormView', () => {
       author: { type: 'static', isEditable: true, isRequired: false, defaultValue: 'identity-1', defaultValueLabel: 'Org A' },
     }));
     expect(screen.getByTestId('created-by-field').getAttribute('data-deferred')).toBe('true');
+    // the creation dialogs know the destination of the submission (a draft by default for this form)
+    expect(screen.getByTestId('created-by-field').getAttribute('data-to-draft')).toBe('true');
+  });
+
+  it('should send the values of the form, without files when nothing was created in it', async () => {
+    useGrantedSpy.mockReturnValue(true);
+    const { relayEnv, user } = testRender(<FormView />, { userContext: mockUserContext });
+    await resolveAndWait(relayEnv, defaultMockForm);
+
+    await user.type(screen.getByLabelText(/Name/), 'My report');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    const submit = await waitFor(() => {
+      const operation = relayEnv.mock.getAllOperations().find((o) => o.request.node.params.name === 'FormViewMutation');
+      expect(operation).toBeDefined();
+      return operation!;
+    });
+    const { input, isDraft } = submit.request.variables;
+    expect(isDraft).toBe(true);
+    expect(input.formId).toBe('form-id');
+    expect(JSON.parse(input.values)).toMatchObject({ name: 'My report' });
+    expect(input.files).toBeUndefined();
   });
 
   it('should send the submission once and disable the submit button while it is in flight', async () => {
