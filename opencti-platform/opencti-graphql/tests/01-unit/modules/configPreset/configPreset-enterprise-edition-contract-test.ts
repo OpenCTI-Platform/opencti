@@ -109,7 +109,7 @@ describe('Contract of a family that requires the Enterprise Edition, on a platfo
       const family = flagged()[i];
       const resolveItems = vi.spyOn(family, 'resolveItems');
       const free = { ...CONFIG_PRESET_FAMILIES[0], items: [{ id: 'free', label: 'Free', translatable: false, exporter: vi.fn(), dependsOn: [{ type: family.id, id: 'item' }] }] };
-      await expect(addConfigPresetDependencies(context, user, [free])).rejects.toThrow('A configuration preset dependency cannot be exported');
+      await expect(addConfigPresetDependencies(context, user, [free])).rejects.toThrow('Enterprise edition is not enabled');
       expect(resolveItems).not.toHaveBeenCalled();
     }
   });
