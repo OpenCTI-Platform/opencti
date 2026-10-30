@@ -53,25 +53,28 @@ const findAvailableConfigPresetFamily = async (context: AuthContext, type: strin
   return family;
 };
 
-const findAvailableConfigPresetFamilies = async (context: AuthContext) => {
-  const availability = await Promise.all(CONFIG_PRESET_FAMILIES.map((family) => isConfigPresetFamilyAvailable(context, family)));
-  return CONFIG_PRESET_FAMILIES.filter((_family, index) => availability[index]);
-};
+const NO_ITEMS_PAGE_INFO = { startCursor: '', endCursor: '', hasNextPage: false, hasPreviousPage: false, globalCount: 0 };
 
+// A family the platform cannot export is listed without its items, and its items are never read: the dialog shows it as locked
 export const findConfigPresetExportableTypes = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetExportableType[]> => {
-  const types = await Promise.all((await findAvailableConfigPresetFamilies(context)).map(async (family) => {
-    const page = await family.listItems(context, user, { first: CONFIG_PRESET_FIRST_PAGE_SIZE });
+  const types = await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family): Promise<ConfigPresetExportableType | null> => {
+    const isAvailable = await isConfigPresetFamilyAvailable(context, family);
+    const page = isAvailable ? await family.listItems(context, user, { first: CONFIG_PRESET_FIRST_PAGE_SIZE }) : null;
+    // A category with nothing to export on this platform (no message set) is not shown, but a category the platform cannot export is
+    if (page && page.pageInfo.globalCount === 0) {
+      return null;
+    }
     return {
       key: family.id,
       label: family.label,
       description: family.description,
       group: { key: family.group.id, label: family.group.label },
-      items: page.edges.map(({ node }) => toExportableItem(node)),
-      itemsPageInfo: page.pageInfo,
+      requiresEnterpriseEdition: family.requiresEnterpriseEdition ?? false,
+      items: (page?.edges ?? []).map(({ node }) => toExportableItem(node)),
+      itemsPageInfo: page?.pageInfo ?? NO_ITEMS_PAGE_INFO,
     };
   }));
-  // A category with nothing to export on this platform (no message set) is not shown
-  return types.filter((type) => type.itemsPageInfo.globalCount > 0);
+  return types.filter((type): type is ConfigPresetExportableType => type !== null);
 };
 
 export const findConfigPresetExportableItems = async (
