@@ -216,6 +216,15 @@ export const getWidgetBreakdownLimit = (parameters?: WidgetParameters | null) =>
   return parameters?.breakdownLimit ?? DEFAULT_BREAKDOWN_LIMIT;
 };
 
+/**
+ * Numbers of series offered, with the one of the widget among them: the API accepts any from 1 to 50,
+ * so an imported widget, or one written through the API, can hold another.
+ */
+export const getBreakdownLimitOptions = (parameters?: WidgetParameters | null) => {
+  const limit = getWidgetBreakdownLimit(parameters);
+  return BREAKDOWN_LIMIT_OPTIONS.includes(limit) ? BREAKDOWN_LIMIT_OPTIONS : [...BREAKDOWN_LIMIT_OPTIONS, limit].sort((a, b) => a - b);
+};
+
 export const getWidgetBreakdownOrder = (parameters?: WidgetParameters | null): 'asc' | 'desc' => {
   return parameters?.breakdownOrder === 'asc' ? 'asc' : 'desc';
 };

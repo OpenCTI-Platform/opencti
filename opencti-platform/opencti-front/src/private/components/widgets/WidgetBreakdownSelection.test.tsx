@@ -95,6 +95,11 @@ describe('WidgetBreakdownSelection', () => {
   });
 
   const isDisabled = (element: HTMLElement) => element.hasAttribute('disabled') || element.getAttribute('data-disabled') !== null;
+  const openOptions = (select: HTMLElement) => {
+    fireEvent.pointerDown(select, { button: 0, ctrlKey: false, pointerType: 'mouse' });
+    fireEvent.click(select);
+    return Array.from(document.querySelectorAll('[role="option"]')).map((option) => option.textContent);
+  };
 
   it('offers the fields of the dataset types, then the series settings once a field is chosen', () => {
     setWidget({ parameters: { breakdownBy: 'report_types' } });
@@ -126,6 +131,16 @@ describe('WidgetBreakdownSelection', () => {
     expect(mocks.setConfigWidget).toHaveBeenCalledWith(expect.objectContaining({
       parameters: expect.objectContaining({ breakdownBy: 'report_types', breakdownOther: true }),
     }));
+  });
+
+  it('offers the number of series of the widget, even one the editor does not offer', () => {
+    // The API accepts any number from 1 to 50: written through it, or imported
+    setWidget({ parameters: { breakdownBy: 'report_types', breakdownLimit: 15 } });
+    const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+    const limitSelect = getAllByRole('combobox')[1];
+
+    expect(limitSelect.textContent).toContain('15');
+    expect(openOptions(limitSelect)).toEqual(['5', '10', '15', '20', '50']);
   });
 
   it('does not offer the order and other series without a field', () => {
@@ -288,12 +303,7 @@ describe('WidgetBreakdownSelection', () => {
   });
 
   describe('relationships', () => {
-    const openFieldOptions = (getAllByRole: (role: string) => HTMLElement[]) => {
-      const [fieldSelect] = getAllByRole('combobox');
-      fireEvent.pointerDown(fieldSelect, { button: 0, ctrlKey: false, pointerType: 'mouse' });
-      fireEvent.click(fieldSelect);
-      return getAllByRole('option').map((option) => option.textContent);
-    };
+    const openFieldOptions = (getAllByRole: (role: string) => HTMLElement[]) => openOptions(getAllByRole('combobox')[0]);
 
     it('offers the relationships fields the API accepts, the relationship type with several types', () => {
       setWidget({ perspective: 'relationships', type: 'line', dataSelection: [relationships] });

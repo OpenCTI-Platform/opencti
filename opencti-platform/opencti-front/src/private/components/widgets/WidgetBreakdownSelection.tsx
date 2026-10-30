@@ -4,7 +4,7 @@ import { useFormatter } from '../../../components/i18n';
 import useHelper from '../../../utils/hooks/useHelper';
 import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
 import {
-  BREAKDOWN_LIMIT_OPTIONS,
+  getBreakdownLimitOptions,
   getWidgetBreakdownLimit,
   getWidgetBreakdownLockReason,
   getWidgetBreakdownOrder,
@@ -89,7 +89,7 @@ const WidgetBreakdownSelection = () => {
         <SelectValue />
       </SelectTrigger>
       <SelectContent aria-label={t_i18n('Maximum number of series')}>
-        {BREAKDOWN_LIMIT_OPTIONS.map((limit) => (
+        {getBreakdownLimitOptions(parameters).map((limit) => (
           <SelectItem key={limit} value={String(limit)}>
             {limit}
           </SelectItem>

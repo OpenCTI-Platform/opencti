@@ -7,10 +7,12 @@ import { dayStartDate, daysAgo, monthsAgo } from '../Time';
 import {
   AUDITS_BREAKDOWN_FIELDS,
   BREAKDOWN_ALLOWED_REFS,
+  BREAKDOWN_LIMIT_OPTIONS,
   coarsenSeriesForRendering,
   getBreakdownEntityTypes,
   getBreakdownDefaultStartDate,
   getBreakdownFieldOptions,
+  getBreakdownLimitOptions,
   getBreakdownTickAmount,
   getRenderedBarsBudget,
   getRenderedPointsBudget,
@@ -133,6 +135,15 @@ describe('widget breakdown eligibility', () => {
   it('defaults the number of series', () => {
     expect(getWidgetBreakdownLimit({})).toEqual(10);
     expect(getWidgetBreakdownLimit({ breakdownLimit: 50 })).toEqual(50);
+  });
+
+  it('offers the number of series of the widget, even one the editor does not offer', () => {
+    expect(getBreakdownLimitOptions({})).toEqual(BREAKDOWN_LIMIT_OPTIONS);
+    expect(getBreakdownLimitOptions({ breakdownLimit: 20 })).toEqual([5, 10, 20, 50]);
+    // The API accepts any number from 1 to 50: an imported widget can hold another
+    expect(getBreakdownLimitOptions({ breakdownLimit: 15 })).toEqual([5, 10, 15, 20, 50]);
+    expect(getBreakdownLimitOptions({ breakdownLimit: 1 })).toEqual([1, 5, 10, 20, 50]);
+    expect(BREAKDOWN_LIMIT_OPTIONS).toEqual([5, 10, 20, 50]);
   });
 
   it('orders by highest values and leaves the other series out by default', () => {
