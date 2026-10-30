@@ -75,4 +75,7 @@ export interface ConfigPresetFamilyDefinition {
   importModes?: ConfigImportMode[];
   // The family is part of the Enterprise Edition: a platform without it neither exports its items nor imports them
   requiresEnterpriseEdition?: boolean;
+  // The name of an item of the bundle, read from its configuration alone (no domain call): what the import calls an item it skips
+  // on a platform that cannot import the family, as its importer is not called then. The family name when absent.
+  bundleItemLabel?: (item: { id: string; configuration: Record<string, unknown> }) => string | undefined;
 }

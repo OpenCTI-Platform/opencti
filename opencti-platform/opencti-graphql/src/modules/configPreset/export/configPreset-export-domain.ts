@@ -70,6 +70,7 @@ export const findConfigPresetExportableTypes = async (context: AuthContext, user
       description: family.description,
       group: { key: family.group.id, label: family.group.label },
       requiresEnterpriseEdition: family.requiresEnterpriseEdition ?? false,
+      locked: !isAvailable,
       items: (page?.edges ?? []).map(({ node }) => toExportableItem(node)),
       itemsPageInfo: page?.pageInfo ?? NO_ITEMS_PAGE_INFO,
     };
@@ -138,7 +139,7 @@ export const resolveConfigPresetSelections = async (
 const referenceKey = (type: string, id: string) => `${type}/${id}`;
 
 // Adds, depth first, the items the selected ones depend on, whatever the selection excluded.
-// The visited set stops on cycles; a dependency the registry cannot export fails the export.
+// The visited set stops on cycles; a dependency the registry or the platform cannot export fails the export.
 export const addConfigPresetDependencies = async (
   context: AuthContext,
   user: AuthUser,
@@ -152,7 +153,8 @@ export const addConfigPresetDependencies = async (
     if (!visited.has(referenceKey(reference.type, reference.id))) {
       visited.add(referenceKey(reference.type, reference.id));
       const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === reference.type);
-      const [item] = family ? await family.resolveItems(context, user, [reference.id], []) : [];
+      // The items of a family the platform cannot export are never read, a dependency on one included
+      const [item] = (family && await isConfigPresetFamilyAvailable(context, family)) ? await family.resolveItems(context, user, [reference.id], []) : [];
       if (!item) {
         throw FunctionalError('A configuration preset dependency cannot be exported', { type: reference.type, item: reference.id });
       }

@@ -40,8 +40,11 @@ type ConfigPresetExportableType {
     # What the category holds, translated by the UI like the label.
     description: String!
     group: ConfigPresetExportableGroup!
-    # The category is part of the Enterprise Edition: a platform without it has no item of it, and the dialog offers to activate it.
+    # The category is part of the Enterprise Edition.
     requiresEnterpriseEdition: Boolean!
+    # The platform cannot use the category now (it requires the Enterprise Edition and the platform has not got it): it has no item,
+    # and the dialog offers to activate the license. False for a category that is available, whether or not it has items.
+    locked: Boolean!
     # First page of the items; the next pages come from configPresetExportableItems.
     items: [ConfigPresetExportableItem!]!
     # Page info of items: globalCount is the number of exportable items of the type.
@@ -60,8 +63,6 @@ type ConfigPresetImportItem {
     label: String!
     translatable: Boolean!
     isDefault: Boolean!
-    # The item is part of the Enterprise Edition: a platform without it cannot import it, and the dialog offers to activate it.
-    requiresEnterpriseEdition: Boolean!
     # The item already exists on the platform.
     exists: Boolean!
     # The item conflicts with one of the platform: it exists, or another one has its name. The dialog offers a choice of what to do with it.
@@ -76,8 +77,11 @@ type ConfigPresetImportType {
     label: String!
     description: String!
     group: ConfigPresetExportableGroup!
-    # The category is part of the Enterprise Edition: a platform without it has no item of it, and the dialog offers to activate it.
+    # The category is part of the Enterprise Edition.
     requiresEnterpriseEdition: Boolean!
+    # The platform cannot import the category now (it requires the Enterprise Edition and the platform has not got it): it has no item,
+    # and the dialog offers to activate the license.
+    locked: Boolean!
     items: [ConfigPresetImportItem!]!
     # The modes the type supports for an item in conflict; the dialog shows a choice on such an item when there is more than one.
     modes: [ConfigImportMode!]!

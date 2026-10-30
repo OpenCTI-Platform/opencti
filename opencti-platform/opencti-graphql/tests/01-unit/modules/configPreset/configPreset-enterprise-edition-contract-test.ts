@@ -33,7 +33,11 @@ vi.mock('../../../../src/modules/configPreset/import/configPreset-import-bundle'
 
 import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { ConfigPresetFamilyDefinition } from '../../../../src/modules/configPreset/configPreset-types';
-import { findConfigPresetExportableTypes, resolveConfigPresetSelections } from '../../../../src/modules/configPreset/export/configPreset-export-domain';
+import {
+  addConfigPresetDependencies,
+  findConfigPresetExportableTypes,
+  resolveConfigPresetSelections,
+} from '../../../../src/modules/configPreset/export/configPreset-export-domain';
 import { computeConfigPresetItem, configPresetImportPreview } from '../../../../src/modules/configPreset/import/configPreset-import-domain';
 import { CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED } from '../../../../src/modules/configPreset/import/configPreset-import-types';
 import { platformSettingsGroup } from '../../../../src/modules/configPreset/registry/common-configPreset-registry';
@@ -87,7 +91,7 @@ describe('Contract of a family that requires the Enterprise Edition, on a platfo
     const listItems = flagged().map((family) => vi.spyOn(family, 'listItems'));
     const types = await findConfigPresetExportableTypes(context, user);
     expect(types.map((type) => type.key)).toEqual(flagged().map((family) => family.id));
-    types.forEach((type) => expect(type).toMatchObject({ requiresEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } }));
+    types.forEach((type) => expect(type).toMatchObject({ requiresEnterpriseEdition: true, locked: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } }));
     listItems.forEach((spy) => expect(spy).not.toHaveBeenCalled());
   });
 
@@ -96,6 +100,16 @@ describe('Contract of a family that requires the Enterprise Edition, on a platfo
       const family = flagged()[i];
       const resolveItems = vi.spyOn(family, 'resolveItems');
       await expect(resolveConfigPresetSelections(context, user, [{ type: family.id, items: null }])).rejects.toThrow('Enterprise edition is not enabled');
+      expect(resolveItems).not.toHaveBeenCalled();
+    }
+  });
+
+  it('is not read to complete an export, whatever the item that depends on it', async () => {
+    for (let i = 0; i < flagged().length; i += 1) {
+      const family = flagged()[i];
+      const resolveItems = vi.spyOn(family, 'resolveItems');
+      const free = { ...CONFIG_PRESET_FAMILIES[0], items: [{ id: 'free', label: 'Free', translatable: false, exporter: vi.fn(), dependsOn: [{ type: family.id, id: 'item' }] }] };
+      await expect(addConfigPresetDependencies(context, user, [free])).rejects.toThrow('A configuration preset dependency cannot be exported');
       expect(resolveItems).not.toHaveBeenCalled();
     }
   });
@@ -114,6 +128,6 @@ describe('Contract of a family that requires the Enterprise Edition, on a platfo
   it('is shown by the import preview as a locked type, without items', async () => {
     const preview = await configPresetImportPreview(context, user, FILE_ID);
     expect(preview.types.map((type) => type.key)).toEqual(flagged().map((family) => family.id));
-    preview.types.forEach((type) => expect(type).toMatchObject({ requiresEnterpriseEdition: true, items: [] }));
+    preview.types.forEach((type) => expect(type).toMatchObject({ requiresEnterpriseEdition: true, locked: true, items: [] }));
   });
 });
