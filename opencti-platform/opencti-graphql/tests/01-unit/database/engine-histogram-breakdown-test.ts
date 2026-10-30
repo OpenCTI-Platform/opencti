@@ -19,8 +19,9 @@ vi.mock('@opensearch-project/opensearch', () => ({ Client: FakeOpenClient }));
 vi.mock('@opensearch-project/opensearch/aws', () => ({ AwsSigv4Signer: vi.fn(() => ({})) }));
 
 import conf from '../../../src/config/conf';
-import { buildHistogramBreakdownAggregations, elHistogramBreakdownCount, searchEngineInit } from '../../../src/database/engine';
+import { buildHistogramBreakdownAggregations, elConnectionTypesAggregationCount, elHistogramBreakdownCount, searchEngineInit } from '../../../src/database/engine';
 import { SYSTEM_USER } from '../../../src/utils/access';
+import { CLIENT_ABORT_ERROR, DATABASE_ERROR } from '../../../src/config/errors';
 import type { AuthContext } from '../../../src/types/user';
 
 const countOverTime = { date_histogram: { field: 'created_at', calendar_interval: 'day' } };
@@ -98,6 +99,12 @@ describe('buildHistogramBreakdownAggregations', () => {
 });
 
 const context = { source: 'test' } as AuthContext;
+// A request aborted by its client before reaching the engine
+const abortedContext = () => {
+  const controller = new AbortController();
+  controller.abort();
+  return { ...context, requestAbortSignal: controller.signal } as AuthContext;
+};
 const searchResponse = (aggregations: Record<string, unknown>) => ({ _shards: { total: 2, successful: 2, failed: 0 }, aggregations });
 
 describe('engine: requests of the time series breakdowns', () => {
@@ -113,6 +120,24 @@ describe('engine: requests of the time series breakdowns', () => {
 
   beforeEach(() => {
     elkSearch.mockReset();
+  });
+
+  describe('elConnectionTypesAggregationCount', () => {
+    const rankTypes = (bucketsOrder: 'asc' | 'desc', ctx = context) => elConnectionTypesAggregationCount(ctx, SYSTEM_USER, 'index', {
+      connectionSide: 'from',
+      bucketsOrder,
+    });
+
+    it('should keep a request aborted by its client a client abort', async () => {
+      await expect(rankTypes('desc', abortedContext())).rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
+      expect(elkSearch).not.toHaveBeenCalled();
+    });
+
+    it('should report an engine failure as a database error', async () => {
+      elkSearch.mockRejectedValue(new Error('index_not_found_exception'));
+
+      await expect(rankTypes('desc')).rejects.toMatchObject({ extensions: { code: DATABASE_ERROR } });
+    });
   });
 
   describe('elHistogramBreakdownCount', () => {
@@ -146,6 +171,15 @@ describe('engine: requests of the time series breakdowns', () => {
       const { other } = await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { field: 'rel_object-label.internal_id', interval: 'day', keys: ['label-a'] });
 
       expect(other).toBeNull();
+    });
+
+    it('should keep a request aborted by its client a client abort', async () => {
+      const options = { field: 'creator_id', interval: 'day', keys: ['user-a'] };
+      await expect(elHistogramBreakdownCount(abortedContext(), SYSTEM_USER, 'index', options)).rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
+      expect(elkSearch).not.toHaveBeenCalled();
+
+      elkSearch.mockRejectedValue(new Error('index_not_found_exception'));
+      await expect(elHistogramBreakdownCount(context, SYSTEM_USER, 'index', options)).rejects.toMatchObject({ extensions: { code: DATABASE_ERROR } });
     });
   });
 });

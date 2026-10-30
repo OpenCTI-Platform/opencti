@@ -3654,7 +3654,7 @@ export const elConnectionTypesAggregationCount = async (
       return buckets.map((b: any) => ({ key: String(b.key), label: convertEntityTypeKeyToLabel(b.key), value: b.doc_count, count: b.doc_count }));
     })
     .catch((err) => {
-      throw DatabaseError('Connection types aggregation count fail', { cause: err, query });
+      throw wrapEngineError('Connection types aggregation count fail', err, { query });
     });
 };
 export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
@@ -3788,7 +3788,7 @@ export const elHistogramBreakdownCount = async (
       return { histograms, other };
     })
     .catch((err) => {
-      throw DatabaseError('Histogram breakdown computation fail', { cause: err, query });
+      throw wrapEngineError('Histogram breakdown computation fail', err, { query });
     });
 };
 
