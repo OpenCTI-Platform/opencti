@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type ConnectorWork, getConclusiveWork, getWorkFailure, loadConnectorsRuntimeState } from '../../../../src/modules/ingestionHealth/ingestionHealth-connectorWorks';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../../../../src/modules/connector/connector-types';
-import type { RuntimeDataReadContext } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
+import type { RuntimeDataReadContext } from '../../../../src/modules/ingestionHealth/ingestionHealth-types';
 import { fullEntitiesList } from '../../../../src/database/middleware-loader';
 import { worksForConnector } from '../../../../src/domain/work';
 import { addFilter } from '../../../../src/utils/filtering/filtering-utils';

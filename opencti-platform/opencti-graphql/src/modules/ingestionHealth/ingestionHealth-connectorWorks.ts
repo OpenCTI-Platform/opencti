@@ -6,7 +6,7 @@ import { ES_MAX_CONCURRENCY } from '../../database/engine';
 import { worksForConnector } from '../../domain/work';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { BasicStoreEntityConnector, ConnectorInfo } from '../connector/connector-types';
-import type { HealthCheckIngestor, RuntimeDataReadContext } from './ingestionHealth-registry';
+import type { HealthCheckIngestor, RuntimeDataReadContext } from './ingestionHealth-types';
 
 // A stream pushes events as they come: it creates no work
 const CONNECTOR_TYPE_STREAM = 'STREAM';
