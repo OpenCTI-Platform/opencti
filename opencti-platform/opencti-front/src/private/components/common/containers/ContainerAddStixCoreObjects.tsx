@@ -243,6 +243,7 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
           disableLineSelection
           hideSavedFilters
           variant={DataTableVariant.inline}
+          enableInfiniteScroll
           rootRef={tableRootRef ?? undefined}
           dataColumns={dataColumns}
           resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}

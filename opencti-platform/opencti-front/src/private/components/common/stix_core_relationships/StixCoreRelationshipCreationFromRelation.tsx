@@ -294,6 +294,7 @@ const StixCoreRelationshipCreationFromRelationSelectEntity: FunctionComponent<St
             selectOnLineClick
             hideSavedFilters
             variant={DataTableVariant.inline}
+            enableInfiniteScroll
             rootRef={tableRootRef ?? undefined}
             dataColumns={dataColumns}
             resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
@@ -468,7 +469,10 @@ const StixCoreRelationshipCreationFromRelation: FunctionComponent<StixCoreRelati
     setOpen(false);
   };
 
-  const commit = (input: Record<string, unknown>) => new Promise((resolve, reject) => {
+  const commit = (
+    input: Record<string, unknown>,
+    setSubmitting: (isSubmitting: boolean) => void,
+  ) => new Promise((resolve, reject) => {
     commitMutation({
       mutation: isRelationReversed
         ? stixCoreRelationshipCreationFromRelationToMutation
@@ -482,6 +486,7 @@ const StixCoreRelationshipCreationFromRelation: FunctionComponent<StixCoreRelati
           'stixCoreRelationshipAdd',
         );
       },
+      setSubmitting,
       onError: reject,
       onCompleted: resolve,
     });
@@ -507,7 +512,7 @@ const StixCoreRelationshipCreationFromRelation: FunctionComponent<StixCoreRelati
         ),
       )(values);
       try {
-        await commit(finalValues);
+        await commit(finalValues, setSubmitting);
       } catch (error) {
         setSubmitting(false);
         return handleErrorInForm(error as Error, setErrors);
