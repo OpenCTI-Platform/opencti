@@ -17,8 +17,10 @@ import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import {
   builtInTheme,
   customLabel,
+  customStatusTemplate,
   customTheme,
   customVocabulary,
+  defaultStatusTemplate,
   disarmKillChainPhase,
   killChainPhase,
   mockEntityLoaders,
@@ -112,6 +114,14 @@ describe('Config preset registry', () => {
         group: 'taxonomy',
         itemIds: ['case_severity_ov', 'incident_type_ov', 'integrity_level_ov', 'report_types_ov'],
       },
+      // The status templates by name, the ones of the platform included
+      {
+        id: 'statusTemplates',
+        label: 'Status templates',
+        description: 'Status templates and their colors',
+        group: 'taxonomy',
+        itemIds: [customStatusTemplate.standard_id, defaultStatusTemplate.standard_id],
+      },
     ]);
   });
 
@@ -119,7 +129,7 @@ describe('Config preset registry', () => {
     expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark']);
   });
 
-  it('translates the static labels only, never a theme name or a label value, a phase name or a vocabulary entry', async () => {
+  it('translates the static labels only, never a theme name or a label value, a phase name, a vocabulary entry or a status template name', async () => {
     const items = await resolveAllItems();
     expect(items.map((item) => [item.label, item.translatable])).toEqual([
       ['Platform configuration', true],
@@ -140,10 +150,12 @@ describe('Config preset registry', () => {
       ['incident_type_ov', false],
       ['integrity_level_ov', false],
       ['report_types_ov', false],
+      ['Escalated', false],
+      ['IN_PROGRESS', false],
     ]);
   });
 
-  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label, a phase by its standard id, a vocabulary category by its name', async () => {
+  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label, a phase, a status template by its standard id, a vocabulary category by its name', async () => {
     const paths = (await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
       const items = await family.resolveItems(context, user, null, []);
       return items.map((item) => configPresetItemFilePath(family, item));
@@ -167,6 +179,8 @@ describe('Config preset registry', () => {
       'taxonomy/vocabularies/incident_type_ov.json',
       'taxonomy/vocabularies/integrity_level_ov.json',
       'taxonomy/vocabularies/report_types_ov.json',
+      `taxonomy/status_templates/${customStatusTemplate.standard_id}.json`,
+      `taxonomy/status_templates/${defaultStatusTemplate.standard_id}.json`,
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -496,6 +510,55 @@ describe('Config preset registry', () => {
       expect(await ids(null, ['integrity_level_ov'])).toEqual(['case_severity_ov', 'incident_type_ov', 'report_types_ov']);
       expect(await ids(['report_types_ov', 'incident_type_ov', 'opinion_ov'], [])).toEqual(['incident_type_ov', 'report_types_ov']);
       expect(await ids([], [])).toEqual([]);
+    });
+  });
+
+  describe('status templates', () => {
+    const templates = findFamily('statusTemplates');
+    const pageIds = async (args: Parameters<typeof templates.listItems>[2]) => (await templates.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports a status template in the import format only: its name and its color', async () => {
+      const file = await exportConfigPresetItem(context, user, templates, await findItem('statusTemplates', customStatusTemplate.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'taxonomy.statusTemplates',
+        id: customStatusTemplate.standard_id,
+        configuration: { name: 'Escalated', color: '#e91e63' },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|escalated-template-id/);
+    });
+
+    it('opens the first page with the status templates by name, the ones of the platform included, and counts them', async () => {
+      const page = await templates.listItems(context, user, { first: 1 });
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['StatusTemplate'], {
+        first: 1,
+        after: undefined,
+        search: undefined,
+        orderBy: 'name',
+        orderMode: 'asc',
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([[customStatusTemplate.standard_id, 'Escalated', false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
+    });
+
+    it('applies search, ids and excluded ids to the status templates', async () => {
+      expect(await pageIds({ search: 'progress' })).toEqual([defaultStatusTemplate.standard_id]);
+      expect(await pageIds({ ids: [customStatusTemplate.standard_id] })).toEqual([customStatusTemplate.standard_id]);
+      expect(await pageIds({ excludedIds: [customStatusTemplate.standard_id] })).toEqual([defaultStatusTemplate.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every template
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the status templates to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await templates.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([customStatusTemplate.standard_id, defaultStatusTemplate.standard_id]);
+      expect(await ids(null, [customStatusTemplate.standard_id])).toEqual([defaultStatusTemplate.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
     });
   });
 
