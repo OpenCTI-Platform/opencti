@@ -437,6 +437,16 @@ describe('ConfigPresetExportDrawer', () => {
       expect(screen.getByRole('button', { name: 'Export Platform Bundle' })).toBeInTheDocument();
     });
 
+    it('asks the server for the items each time the sub-view opens, not the store: the items change while the page stays open', async () => {
+      const { user, relayEnv } = await openThemes();
+      expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+      await user.click(screen.getByRole('button', { name: 'Back' }));
+      await user.click(screen.getByRole('button', { name: 'Manage' }));
+      // The items of the first opening are in the store: they are not the answer, the server is asked again
+      expect(relayEnv.mock.getAllOperations()).toHaveLength(1);
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ type: 'branding', count: 25 });
+    });
+
     it('queries the excluded or selected items, and searches from the first page', async () => {
       const { user, relayEnv } = await openThemes();
       await user.click(screen.getByRole('checkbox', { name: 'ACME' }));
