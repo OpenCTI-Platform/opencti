@@ -75,3 +75,34 @@ describe('Import of a family that requires the Enterprise Edition (compute)', ()
     expect(await compute(findFamily('messages'), 'banner', { platform_banner_text: 'Hello' })).toMatchObject({ status: 'overwritten' });
   });
 });
+
+describe('Import of the whitemark (compute)', () => {
+  const whitemark = () => findFamily('whitemark');
+
+  it('imports it on a platform that has the Enterprise Edition', async () => {
+    expect(await compute(whitemark(), 'whitemark', { platform_whitemark: true })).toMatchObject({ status: 'overwritten' });
+  });
+
+  it('skips it, with the reason, on a platform without the Enterprise Edition', async () => {
+    enterpriseEdition.enabled = false;
+    expect(await compute(whitemark(), 'whitemark', { platform_whitemark: true })).toMatchObject({
+      status: 'skipped',
+      reason: CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED,
+      label: 'Remove Filigran logos',
+      translatable: true,
+      conflict: false,
+    });
+  });
+
+  it('imports it once a license is applied, without any state to refresh', async () => {
+    enterpriseEdition.enabled = false;
+    expect(await compute(whitemark(), 'whitemark', { platform_whitemark: true })).toMatchObject({ status: 'skipped' });
+    enterpriseEdition.enabled = true;
+    expect(await compute(whitemark(), 'whitemark', { platform_whitemark: true })).toMatchObject({ status: 'overwritten' });
+  });
+
+  it('keeps an invalid whitemark as failed, whatever the edition', async () => {
+    enterpriseEdition.enabled = false;
+    expect(await compute(whitemark(), 'whitemark', { platform_whitemark: 'yes' })).toMatchObject({ status: 'failed' });
+  });
+});

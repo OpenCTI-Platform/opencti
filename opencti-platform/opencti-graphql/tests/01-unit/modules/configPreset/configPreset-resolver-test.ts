@@ -5,9 +5,14 @@ import { graphql, type GraphQLObjectType } from 'graphql';
 import type { IResolvers } from '@graphql-tools/utils';
 
 const flags = vi.hoisted(() => ({ enabled: true }));
+const enterpriseEdition = vi.hoisted(() => ({ enabled: true }));
 vi.mock('../../../../src/config/conf', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/config/conf')>()),
   isFeatureEnabled: vi.fn(() => flags.enabled),
+}));
+vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/enterprise-edition/ee')>()),
+  isEnterpriseEdition: vi.fn(async () => enterpriseEdition.enabled),
 }));
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
@@ -74,6 +79,7 @@ describe('Config preset exportable types query', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     flags.enabled = true;
+    enterpriseEdition.enabled = true;
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id }] as never);
     mockThemeLoaders();
   });
@@ -102,6 +108,14 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(2),
       },
       {
+        key: 'whitemark',
+        label: 'Remove Filigran logos',
+        description: 'Whitemark',
+        group: platformSettings,
+        items: [staticItem('whitemark', 'Remove Filigran logos')],
+        itemsPageInfo: onePage(1),
+      },
+      {
         key: 'hiddenEntityTypes',
         label: 'Hidden entity types',
         description: 'Entity types hidden in the platform',
@@ -124,7 +138,7 @@ describe('Config preset exportable types query', () => {
   it('lists the messages set on the platform and hides the category when none is set', async () => {
     // No message is set in the default settings of these tests: the category is not returned
     const none = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
-    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'hiddenEntityTypes']);
+    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes']);
 
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id, platform_login_message: 'Welcome' }] as never);
     const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
@@ -138,6 +152,13 @@ describe('Config preset exportable types query', () => {
       items: [staticItem('login', 'Login message')],
       itemsPageInfo: onePage(1),
     });
+  });
+
+  it('does not list a family that requires the Enterprise Edition when the platform has none', async () => {
+    enterpriseEdition.enabled = false;
+    const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
+    expect(result.errors).toBeUndefined();
+    expect((result.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'hiddenEntityTypes']);
   });
 
   it('rejects a user without BYPASS', async () => {
@@ -165,6 +186,7 @@ describe('Config preset exportable types query', () => {
     expect(types.map(({ key, group }) => [key, group.key])).toEqual([
       ['platform', 'platformSettings'],
       ['branding', 'platformSettings'],
+      ['whitemark', 'platformSettings'],
       ['hiddenEntityTypes', 'dataModel'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false }]);
@@ -184,6 +206,7 @@ describe('Config preset exportable items query', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     flags.enabled = true;
+    enterpriseEdition.enabled = true;
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: builtInTheme.id }] as never);
     mockThemeLoaders();
   });
@@ -219,6 +242,16 @@ describe('Config preset exportable items query', () => {
   it('rejects an unknown type', async () => {
     const result = await queryItems({ type: 'dashboards' });
     expect(result.errors?.[0].message).toBe('Unknown configuration preset type');
+  });
+
+  it('serves the items of a family that requires the Enterprise Edition only when the platform has it', async () => {
+    const withEnterpriseEdition = await queryItems({ type: 'whitemark' });
+    expect(withEnterpriseEdition.errors).toBeUndefined();
+    const connection = withEnterpriseEdition.data?.configPresetExportableItems as { edges: { node: unknown }[] };
+    expect(connection.edges.map(({ node }) => node)).toEqual([staticItem('whitemark', 'Remove Filigran logos')]);
+    enterpriseEdition.enabled = false;
+    const withoutEnterpriseEdition = await queryItems({ type: 'whitemark' });
+    expect(withoutEnterpriseEdition.errors?.[0].message).toBe('Enterprise edition is not enabled');
   });
 
   it('rejects a user without BYPASS', async () => {
@@ -293,8 +326,8 @@ describe('Config preset import result fields', () => {
     expect(fields.type_label(result())).toBe('Branding');
     expect(fields.group(result())).toEqual({ key: 'platformSettings', label: 'Platform settings' });
     expect(fields.group(result({ type: 'hiddenEntityTypes' }))).toEqual({ key: 'dataModel', label: 'Data model' });
-    const places = ['platform', 'branding', 'messages', 'hiddenEntityTypes'].map((type) => fields.type_index(result({ type })));
-    expect(places).toEqual([0, 1, 2, 3]);
+    const places = ['platform', 'branding', 'messages', 'whitemark', 'hiddenEntityTypes'].map((type) => fields.type_index(result({ type })));
+    expect(places).toEqual([0, 1, 2, 3, 4]);
   });
 
   it('does not fail on a type the registry does not know', () => {

@@ -4,6 +4,8 @@ import type { AuthContext, AuthUser } from '../../types/user';
 // Allowlists of the Settings fields a configuration carries. Anything not listed here
 // (credentials, license, providers) never leaves the platform. The import takes the same keys.
 export const SETTINGS_PLATFORM_FIELDS = ['platform_title', 'platform_favicon', 'platform_language'];
+// Part of the Enterprise Edition: the family that carries it requires it, on export and on import
+export const SETTINGS_WHITEMARK_FIELDS = ['platform_whitemark'];
 // One configuration per message
 // The first field of a message is the message itself: the message is set when it is filled, the others only qualify it
 export const SETTINGS_MESSAGES_FIELDS = {
@@ -36,6 +38,10 @@ export const getPlatformConfigPresetConfiguration = async (
     ...pickFields(settings, SETTINGS_PLATFORM_FIELDS),
     default_theme: theme ? { standard_id: theme.standard_id, name: theme.name } : null,
   };
+};
+
+export const getWhitemarkConfigPresetConfiguration = async (context: AuthContext) => {
+  return pickFields(await readSettings(context), SETTINGS_WHITEMARK_FIELDS);
 };
 
 // The configuration of each message, by message id
