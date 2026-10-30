@@ -16,17 +16,16 @@ export interface PendingObjectData {
  * Context for deferred entity creation within Form Intake.
  *
  * Inside a Form Intake nothing is created on the fly: a creation dialog must not write
- * to the platform. This context signals that mode: any mutation fired through
- * `useApiMutation` while `isDeferredMode = true` is intercepted and its input captured,
+ * to the platform. This context signals that mode: a creation mutation (`<type>Add`) fired
+ * through `useApiMutation` while `isDeferredMode = true` is intercepted and its input captured,
  * and dialogs that do not go through `useApiMutation` (labels, external references)
  * keep the prepared object with `registerPending`. Everything is only created when the
- * form intake is submitted.
- *
- * Every `useApiMutation` under the provider is intercepted, so the mutation that submits
- * the form intake must be called from a component above the provider.
+ * form intake is submitted. The other mutations are sent as usual.
  */
 export interface DeferredCreationContextValue {
   isDeferredMode: boolean;
+  /** Whether the submission goes to a draft: the objects are then created with the rights of the user in the draft scope. */
+  toDraft?: boolean;
   /**
    * Called by `useApiMutation` when a mutation is intercepted.
    * Receives the raw `input` from the mutation variables.
