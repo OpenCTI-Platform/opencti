@@ -36,15 +36,20 @@ const errorConverter = (e: any) => {
   };
 };
 
-const escapeCsvField = (separator: string, data: string) => {
-  let escapedData: string;
+// Leading characters that spreadsheet engines evaluate as a formula (CWE-1236, OWASP CSV injection)
+const CSV_FORMULA_PREFIXES = ['=', '+', '-', '@', '\t', '\r'];
+const CSV_PLAIN_NUMBER = /^[+-]?\d+(\.\d+)?$/;
 
-  if (data.includes('"') || data.includes(separator)
-  ) {
-    escapedData = data.replaceAll('"', '""');
+export const escapeCsvField = (separator: string, data: string) => {
+  // Plain numbers (e.g. a negative latitude) cannot carry a formula and are kept as is
+  const isFormula = CSV_FORMULA_PREFIXES.some((prefix) => data.startsWith(prefix)) && !CSV_PLAIN_NUMBER.test(data);
+  // A leading single quote makes the spreadsheet read the cell as text
+  const value = isFormula ? `'${data}` : data;
+  if (isFormula || value.includes('"') || value.includes(separator)) {
+    const escapedData = value.replaceAll('"', '""');
     return `"${escapedData}"`;
   }
-  return data;
+  return value;
 };
 
 const neighborKey = (relType: string, targetType: string) => `${relType}:${targetType}`;
