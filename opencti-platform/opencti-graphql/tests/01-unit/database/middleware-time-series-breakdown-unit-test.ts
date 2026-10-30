@@ -591,6 +591,27 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['intrusion-set', 'malware', 'imei', 'securityplatform', 'not-registered']);
   });
 
+  it('should restrict the authors the user cannot access, and keep their entities counted', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('identity-a', 5), bucket('identity-b', 3)]);
+    vi.mocked(engine.elFindByIds).mockResolvedValue({
+      'identity-a': { ...makeEntity('identity-a', 'Filigran'), entity_type: 'Organization' },
+      'identity-b': { ...makeEntity('identity-b', 'Secret'), entity_type: 'Organization' },
+    } as any);
+    vi.mocked(accessModule.userFilterStoreElements).mockImplementation(async (_context, _user, elements) => elements.filter((element) => element.internal_id === 'identity-a'));
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf([['identity-b', [{ date: '2026-01-02', value: 3 }]]]));
+
+    const result = await breakdown({ field: 'createdBy' });
+
+    expect((vi.mocked(engine.elAggregationCount).mock.calls[0][3] as any).field).toEqual('rel_created-by.internal_id');
+    // The restricted author keeps its series, under its id and without any of its attributes
+    expect(result.series.map((serie) => [serie.label, (serie.entity as any)?.name, (serie.entity as any)?.entity_type])).toEqual([
+      ['identity-a', 'Filigran', 'Organization'],
+      ['identity-b', 'Restricted', 'Organization'],
+    ]);
+    expect(result.series[1]).toMatchObject({ value: 3, values: [0, 3, 0] });
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['identity-a', 'identity-b']);
+  });
+
   it('should query both aggregations with the same filters, field and inclusive bounds', async () => {
     vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('label-a', 4)]);
     vi.mocked(engine.elFindByIds).mockResolvedValue({ 'label-a': makeEntity('label-a', 'tlp') } as any);
