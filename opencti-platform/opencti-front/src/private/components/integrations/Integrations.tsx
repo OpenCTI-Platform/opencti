@@ -30,7 +30,7 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import PageContainer from '../../../components/PageContainer';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { fetchQuery } from '../../../relay/environment';
-import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
+import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
 import { paperBg, paperBorder } from './paperSurface';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 
@@ -57,7 +57,9 @@ interface IntegrationsDataProviderProps {
 const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) => {
   const isConnectorReader = useGranted([MODULES]);
   const isIngestionReader = useGranted([INGESTION]);
-  const isFormReader = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT]);
+  const isFormReader = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE], false, {
+    capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE], // the @auth of forms
+  });
 
   const [catalogsRef, loadCatalogs] = useQueryLoader<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery);
   const [deploymentRef, loadDeployment] = useQueryLoader<IngestionConnectorsQuery>(ingestionConnectorsQuery);

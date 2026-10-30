@@ -22,7 +22,7 @@ import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY = 'threatActorsGroups';
@@ -96,7 +96,7 @@ const ThreatActorsGroup = () => {
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
         additionalHeaderButtons={[
-          <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+          <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}>
             <StixCoreObjectForms entityType="Threat-Actor-Group" />
           </Security>,
         ]}
@@ -173,7 +173,7 @@ const ThreatActorsGroup = () => {
             lineFragment={ThreatActorGroupCardFragment}
             exportContext={{ entity_type: 'Threat-Actor-Group' }}
             additionalHeaderButtons={[
-              <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+              <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}>
                 <StixCoreObjectForms entityType="Threat-Actor-Group" />
               </Security>,
             ]}
