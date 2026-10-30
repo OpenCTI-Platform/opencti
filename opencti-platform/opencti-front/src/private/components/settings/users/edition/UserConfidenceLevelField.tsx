@@ -118,7 +118,18 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
           sx={{ zIndex: 2 }}
           title={t_i18n('The user\'s Max Confidence Level overrides Max Confidence Level inherited from user\'s groups')}
         >
-          <InformationOutline fontSize="small" color="primary" />
+          {/* top: -4px: InformationOutline's 20px SVG box sits 4px below the FDS Switch
+              label span's optical centre because the Radix-wrapped label uses a
+              content-compact-medium span whose text metrics (12px font / 18px line) centre
+              against the switch button, not the icon. No existing codebase convention for
+              icon-to-label alignment; shift is applied locally rather than inside SwitchField
+              because the external-Tooltip pattern is used here (see UserCreation.jsx:169 for
+              the SwitchField tooltip-prop path, which handles alignment differently). */}
+          <InformationOutline
+            fontSize="small"
+            color="primary"
+            sx={{ position: 'relative', top: '-4px' }}
+          />
         </Tooltip>
       </Box>
       <Field

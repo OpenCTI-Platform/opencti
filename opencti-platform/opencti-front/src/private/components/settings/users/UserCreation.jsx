@@ -165,23 +165,13 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
               <Form>
                 <Stack sx={{ gap: 2.5 }}>
                   {hasSetAccess && (
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Field
-                        component={SwitchField}
-                        type="checkbox"
-                        name="user_service_account"
-                        label={t_i18n('This user is a service account')}
-                      />
-                      <Tooltip
-                        title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}
-                      >
-                        <InformationOutline
-                          fontSize="small"
-                          color="primary"
-                          style={{ cursor: 'default' }}
-                        />
-                      </Tooltip>
-                    </div>
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="user_service_account"
+                      label={t_i18n('This user is a service account')}
+                      tooltip={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}
+                    />
                   )}
                   <Field
                     component={TextField}
@@ -256,12 +246,12 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     type="checkbox"
                     name="prevent_default_groups"
                     label={(
-                      <div style={{ display: 'flex' }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
                         <>{t_i18n('Don\'t add the user to the default groups')}</>
                         <Tooltip
                           title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
                         >
-                          <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
+                          <InformationOutline style={{ marginLeft: 10 }} fontSize="small" color="primary" />
                         </Tooltip>
                       </div>
                     )}
