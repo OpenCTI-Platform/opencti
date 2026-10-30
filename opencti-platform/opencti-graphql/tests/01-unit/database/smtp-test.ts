@@ -541,6 +541,23 @@ describe('createSmtpTransporter — DB vs JSON config, sendMail, smtpIsAlive', (
     expect(result).toBe(true);
     expect(nodemailerVerify).not.toHaveBeenCalled();
   });
+
+  it('should keep the SMTP transport when the transport selectors are set on the object prototype', async () => {
+    await smtpIsAlive();
+    const callOptions = (nodemailerCreateTransport.mock.calls[0] as any[])[0];
+    const actualNodemailer = await vi.importActual<typeof import('nodemailer')>('nodemailer');
+    const prototype = Object.prototype as Record<string, unknown>;
+    prototype.sendmail = true;
+    prototype.path = '/bin/sh';
+    try {
+      const transporter = actualNodemailer.createTransport(callOptions);
+      expect(transporter.transporter.name).toBe('SMTP');
+      transporter.close();
+    } finally {
+      delete prototype.sendmail;
+      delete prototype.path;
+    }
+  });
 });
 
 // ==========================================================================
