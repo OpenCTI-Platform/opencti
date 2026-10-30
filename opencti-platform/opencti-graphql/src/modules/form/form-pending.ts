@@ -322,22 +322,56 @@ const materializePooledReference = (pooled: PendingObject, uploads: PendingUploa
   return reference;
 };
 
-/**
- * How many times each pooled object is put in the bundle: once per reference of a root, and once per entry of a
- * direct field of the form. A pooled object nothing uses is never put in it.
- */
-export const countPooledCopies = (values: Record<string, any>): Map<string, number> => {
-  const copies = new Map<string, number>();
-  const add = (id: string) => copies.set(id, (copies.get(id) ?? 0) + 1);
-  for (const root of getPendingRoots(values)) {
-    Object.values(getPendingRefs(root)).flatMap((refs) => toArray(refs)).forEach((ref) => isPendingRef(ref) && add(ref.pending));
+// How many objects the form builds for an entity of its schema (main_entity or an additional entity), as the bundle builder does.
+const countFormEntities = (schema: FormSchemaDefinition, values: Record<string, any>, entityId: string): number => {
+  if (entityId === 'main_entity') {
+    if (schema.mainEntityLookup) return toArray(values.mainEntityLookup).length + toArray(values.mainEntityLookupPending).length;
+    if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') return toArray(values.mainEntityGroups).length;
+    if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') return toArray(values.mainEntityParsed).length;
+    return 1;
   }
-  const walk = (node: unknown): void => {
-    if (Array.isArray(node)) node.forEach(walk);
-    else if (isPendingRef(node)) add(node.pending);
-    else if (isObject(node)) Object.values(node).forEach(walk);
+  const entity = schema.additionalEntities?.find((additional) => additional.id === entityId);
+  if (!entity) return 0;
+  const key = `additional_${entity.id}`;
+  if (entity.lookup) return toArray(values[`${key}_lookup`]).length + toArray(values[`${key}_lookup_pending`]).length;
+  if (entity.multiple && entity.fieldMode === 'multiple') return toArray(values[`${key}_groups`]).length;
+  if (entity.multiple && entity.fieldMode === 'parsed') return toArray(values[`${key}_parsed`]).length;
+  return 1;
+};
+
+/**
+ * How many objects a direct field of the form is written on: the fields of a parsed entity on each of its parsed lines,
+ * the fields of a relationship on each of its from x to pairs, the others once.
+ */
+const countFieldCopies = (schema: FormSchemaDefinition | undefined, values: Record<string, any>, key: string, entry: unknown): number => {
+  if (!schema) return 1;
+  if (key === 'mainEntityFields') return countFormEntities(schema, values, 'main_entity');
+  const additional = schema.additionalEntities?.find((entity) => `additional_${entity.id}_fields` === key);
+  if (additional) return countFormEntities(schema, values, additional.id);
+  const relationship = key === 'relationships' && isObject(entry) ? schema.relationships?.find((rel) => rel.id === entry.id) : undefined;
+  if (relationship) return countFormEntities(schema, values, relationship.fromEntity) * countFormEntities(schema, values, relationship.toEntity);
+  return 1;
+};
+
+/**
+ * How many times each pooled object is put in the bundle: once per reference of a root, and once per object a direct
+ * field of the form is written on (countFieldCopies). A pooled object nothing uses is never put in it.
+ */
+export const countPooledCopies = (values: Record<string, any>, schema?: FormSchemaDefinition): Map<string, number> => {
+  const copies = new Map<string, number>();
+  const add = (id: string, count: number) => copies.set(id, (copies.get(id) ?? 0) + count);
+  for (const root of getPendingRoots(values)) {
+    Object.values(getPendingRefs(root)).flatMap((refs) => toArray(refs)).forEach((ref) => isPendingRef(ref) && add(ref.pending, 1));
+  }
+  const walk = (node: unknown, count: number): void => {
+    if (Array.isArray(node)) node.forEach((item) => walk(item, count));
+    else if (isPendingRef(node)) add(node.pending, count);
+    else if (isObject(node)) Object.values(node).forEach((item) => walk(item, count));
   };
-  Object.entries(values).filter(([key]) => key !== 'pendingObjects' && !isRootKey(key)).forEach(([, value]) => walk(value));
+  Object.entries(values).filter(([key]) => key !== 'pendingObjects' && !isRootKey(key)).forEach(([key, value]) => {
+    if (key === 'relationships' && Array.isArray(value)) value.forEach((rel) => walk(rel, countFieldCopies(schema, values, key, rel)));
+    else walk(value, countFieldCopies(schema, values, key, value));
+  });
   return copies;
 };
 
@@ -346,8 +380,8 @@ export const countPooledCopies = (values: Record<string, any>): Map<string, numb
  * A pasted image is written in the description at each place it is shown: it counts once per place (the images are given in the
  * order of their tokens, see applyPendingFiles).
  */
-export const getPendingUploadCopies = (values: Record<string, any>): Map<number, number> => {
-  const pooledCopies = countPooledCopies(values);
+export const getPendingUploadCopies = (values: Record<string, any>, schema?: FormSchemaDefinition): Map<number, number> => {
+  const pooledCopies = countPooledCopies(values, schema);
   const copies = new Map<number, number>();
   const add = (object: PendingObject, count: number) => {
     if (count === 0) return;
@@ -420,7 +454,7 @@ const validatePendingRef = (key: string, ref: unknown): void => {
  * the frontend keeps the user input. Everything is checked synchronously, before any upload is read
  * or any reference is loaded.
  */
-export const validatePendingPayload = (values: Record<string, any>, uploadCount: number): void => {
+export const validatePendingPayload = (values: Record<string, any>, uploadCount: number, schema?: FormSchemaDefinition): void => {
   for (const key of Object.keys(values).filter(isRootKey)) {
     if (values[key] != null && typeof values[key] !== 'object') throw FunctionalError('Invalid objects created in a form', { field: key });
   }
@@ -491,7 +525,7 @@ export const validatePendingPayload = (values: Record<string, any>, uploadCount:
       }
     }
   }
-  const pooledCopies = countPooledCopies(values);
+  const pooledCopies = countPooledCopies(values, schema);
   let pooledBytes = 0;
   for (const object of pool) {
     pooledBytes += (pooledCopies.get(object.id as string) ?? 0) * Buffer.byteLength(JSON.stringify(object.input));
@@ -499,7 +533,7 @@ export const validatePendingPayload = (values: Record<string, any>, uploadCount:
       throw FunctionalError('The labels and external references created in the form are too large once copied on the objects that use them', { maxBytes: MAX_PENDING_POOLED_BYTES });
     }
   }
-  const referenced = getPendingUploadCopies(values);
+  const referenced = getPendingUploadCopies(values, schema);
   for (let index = 0; index < uploadCount; index += 1) {
     if (!referenced.has(index)) throw FunctionalError('An upload is not referenced by any object created in the form', { uploadIndex: index });
   }

@@ -9,6 +9,7 @@ import { schemaAttributesDefinition } from '../../../src/schema/schema-attribute
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { Readable } from 'stream';
 import { logApp } from '../../../src/config/conf';
+import { MAX_PENDING_POOLED_BYTES, MAX_PENDING_UPLOAD_BYTES } from '../../../src/modules/form/form-pending';
 
 const { mockStoreLoadById } = vi.hoisted(() => ({
   mockStoreLoadById: vi.fn(),
@@ -586,6 +587,49 @@ describe('formSubmit - deferred creation', () => {
     expect(malware.external_references).toEqual([
       { source_name: 'src', external_id: 'REF-1', x_opencti_files: [{ name: 'report.txt', data: Buffer.from('report').toString('base64'), mime_type: 'text/plain' }] },
     ]);
+  });
+
+  // The fields of a parsed entity are written on each parsed line, the external reference and its files with them
+  describe('in the fields of a parsed entity', () => {
+    const parsedForm = {
+      id: 'form-1',
+      name: 'Parsed Form',
+      form_schema: JSON.stringify({
+        mainEntityType: 'Malware',
+        mainEntityMultiple: true,
+        mainEntityFieldMode: 'parsed',
+        mainEntityParseField: 'text',
+        mainEntityParseFieldMapping: 'name',
+        fields: [{ name: 'refs', label: 'refs', type: 'externalReferences', attributeMapping: { entity: 'main_entity', attributeName: 'externalReferences' } }],
+      }),
+    };
+    const submitParsed = (lines: number, reference: Record<string, any>, files: any[] = []) => {
+      const values = {
+        mainEntityParsed: Array.from({ length: lines }, (_, index) => `Parsed Malware ${index}`),
+        mainEntityFields: { externalReferences: [{ pending: 'e1' }] },
+        pendingObjects: [{ id: 'e1', entityType: 'External-Reference', input: { source_name: 'src', url: 'https://example.com', ...reference }, files: files.length ? [{ name: 'report.txt', uploadIndex: 0 }] : [] }],
+      };
+      return formSubmit(mockContext, mockUser, { formId: 'form-1', values: JSON.stringify(values), files } as any, false);
+    };
+    beforeEach(() => mockStoreLoadById.mockResolvedValue(parsedForm));
+
+    it('should put the external reference and its files on each parsed line', async () => {
+      await submitParsed(3, { external_id: 'REF-1' }, [upload('report')]);
+      const malwares = pushedBundle().objects.filter((o: any) => o.type === 'malware');
+      expect(malwares.map((o: any) => o.name)).toEqual(['Parsed Malware 0', 'Parsed Malware 1', 'Parsed Malware 2']);
+      malwares.forEach((malware: any) => expect(malware.external_references).toEqual([
+        { source_name: 'src', url: 'https://example.com', external_id: 'REF-1', x_opencti_files: [{ name: 'report.txt', data: Buffer.from('report').toString('base64'), mime_type: 'text/plain' }] },
+      ]));
+    });
+
+    it('should count the external reference once per parsed line against the caps', async () => {
+      const description = 'x'.repeat(MAX_PENDING_POOLED_BYTES / 4);
+      await expect(submitParsed(3, { description })).resolves.toMatchObject({ success: true });
+      await expect(submitParsed(4, { description })).rejects.toThrow('The labels and external references created in the form are too large');
+      // a file of a third of the upload cap, copied on 4 lines
+      const file = Promise.resolve({ filename: 'report.txt', mimetype: 'text/plain', createReadStream: () => Readable.from([Buffer.alloc(MAX_PENDING_UPLOAD_BYTES / 3)]) });
+      await expect(submitParsed(4, {}, [file])).rejects.toThrow('The uploads of the form are too large');
+    });
   });
 
   it('should refuse the labels created in the form to a user who cannot manage labels', async () => {

@@ -532,13 +532,13 @@ export const planSubmission = async (
 
   const isBypass = isUserHasCapability(user, BYPASS);
   validateFormSubmission(schema, values, isBypass);
-  validatePendingPayload(values, input.files?.length ?? 0);
+  validatePendingPayload(values, input.files?.length ?? 0, schema);
   validatePendingRoots(schema, values);
   // The import creates the labels of the form as the submitter: creating a label needs its own right, in the destination scope
   if (!isBypass && countPendingLabels(values) > 0 && !canCreateLabels(user, finalIsDraft)) {
     throw ForbiddenAccess('You are not allowed to create labels.', { capability: SETTINGS_SETLABELS });
   }
-  const uploads = await readUploads(input.files, getPendingUploadCopies(values));
+  const uploads = await readUploads(input.files, getPendingUploadCopies(values, schema));
   values = resolvePendingFieldRefs(values, schema, uploads);
   const bundle: any = {
     type: 'bundle',

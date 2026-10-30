@@ -152,6 +152,40 @@ describe('validatePendingPayload', () => {
     expect(getPendingUploadCopies({})).toEqual(new Map());
   });
 
+  it('should count a pooled object once per object its field is written on: each parsed line, each relationship pair', () => {
+    const schema = {
+      mainEntityType: 'Malware',
+      mainEntityMultiple: true,
+      mainEntityFieldMode: 'parsed',
+      fields: [],
+      additionalEntities: [
+        { id: 'actor', entityType: 'Intrusion-Set', multiple: true, fieldMode: 'parsed' },
+        { id: 'tool', entityType: 'Tool', lookup: true },
+      ],
+      relationships: [
+        { id: 'rel1', fromEntity: 'main_entity', toEntity: 'actor', relationshipType: 'related-to' },
+        { id: 'rel2', fromEntity: 'actor', toEntity: 'tool', relationshipType: 'uses' },
+      ],
+    } as unknown as FormSchemaDefinition;
+    const ref = { externalReferences: [{ pending: 'e1' }] };
+    const values = {
+      mainEntityParsed: ['a', 'b', 'c'], // 3 malwares
+      mainEntityFields: ref, // 3 copies
+      additional_actor_parsed: ['x', 'y'], // 2 intrusion sets
+      additional_actor_fields: ref, // 2 copies
+      additional_tool_lookup: ['t1'],
+      additional_tool_lookup_pending: [malware()], // 2 tools
+      relationships: [{ id: 'rel1', fields: ref }, { id: 'rel2', fields: ref }], // 3 x 2 + 2 x 2 copies
+      pendingObjects: [{ ...extRef('e1'), files: [{ name: 'd', uploadIndex: 0 }] }],
+    };
+    expect(countPooledCopies(values, schema)).toEqual(new Map([['e1', 15]]));
+    expect(getPendingUploadCopies(values, schema)).toEqual(new Map([[0, 15]]));
+    const big = { id: 'e1', entityType: 'External-Reference', input: { source_name: 's', url: 'https://example.com', description: 'x'.repeat(MAX_PENDING_POOLED_BYTES / 4) } };
+    const parsed = (lines: number) => ({ mainEntityParsed: Array.from({ length: lines }, (_, i) => `m${i}`), mainEntityFields: ref, pendingObjects: [big] });
+    expect(() => validatePendingPayload(parsed(3), 0, schema)).not.toThrow();
+    expect(() => validatePendingPayload(parsed(4), 0, schema)).toThrow('The labels and external references created in the form are too large');
+  });
+
   it('should cap the size of the pooled objects once copied on the objects that use them', () => {
     const big = { id: 'e1', entityType: 'External-Reference', input: { source_name: 's', url: 'https://example.com', description: 'x'.repeat(MAX_PENDING_POOLED_BYTES / 4) } };
     const usedBy = (count: number) => ({ externalReferences: Array.from({ length: count }, () => ({ pending: 'e1' })), pendingObjects: [big] });
