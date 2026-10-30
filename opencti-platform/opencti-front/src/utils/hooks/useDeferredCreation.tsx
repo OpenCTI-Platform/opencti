@@ -7,6 +7,9 @@ export const PENDING_ENTITY_PREFIX = '__pending__:';
 /** The one generator of pending ids. */
 export const newPendingId = () => `${PENDING_ENTITY_PREFIX}${uuidv4()}`;
 
+/** Types a form does not create: an Observed-Data needs its observed objects, which a form cannot create with it. */
+export const FORM_UNCREATABLE_TYPES = ['Observed-Data'];
+
 export interface PendingObjectData {
   entityType: string;
   input: Record<string, unknown>;

@@ -20,7 +20,7 @@ import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import { FieldOption } from '../../../../utils/field';
-import { DeferredCreationContext, useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
+import { DeferredCreationContext, FORM_UNCREATABLE_TYPES, useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import { Checkbox } from '@filigran/design-system';
 import { buildPendingOptions, PendingCreationOption } from './pendingOptions';
 
@@ -349,8 +349,8 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
     if (resultsCount >= 10) return false;
     const targetTypes = getTargetTypes();
     if (targetTypes.length === 0) return true;
-    return targetTypes.some((t) => isDomainObjectType(t) || isObservableType(t));
-  }, [disabled, disableCreation, getTargetTypes, isDomainObjectType, isObservableType]);
+    return targetTypes.some((t) => (isDomainObjectType(t) || isObservableType(t)) && !(isDeferred && FORM_UNCREATABLE_TYPES.includes(t)));
+  }, [disabled, disableCreation, getTargetTypes, isDomainObjectType, isObservableType, isDeferred]);
 
   const getCreationType = useCallback(() => {
     const targetTypes = getTargetTypes();

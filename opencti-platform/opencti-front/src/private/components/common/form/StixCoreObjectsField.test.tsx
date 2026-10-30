@@ -8,7 +8,7 @@ import StixCoreObjectsField from './StixCoreObjectsField';
 
 vi.mock('../../../../utils/hooks/useAttributes', () => ({
   __esModule: true,
-  default: () => ({ stixCoreObjectTypes: ['Attack-Pattern'], stixDomainObjectTypes: ['Attack-Pattern'], stixCyberObservableTypes: [] }),
+  default: () => ({ stixCoreObjectTypes: ['Attack-Pattern', 'Observed-Data'], stixDomainObjectTypes: ['Attack-Pattern', 'Observed-Data'], stixCyberObservableTypes: [] }),
 }));
 
 // A creation form submitted in deferred mode: the creation is captured, then the dialog closes twice,
@@ -84,5 +84,18 @@ describe('StixCoreObjectsField - deferred creation', () => {
     renderNestedField();
     await createInDialog();
     expect(selection()).toEqual([expect.objectContaining({ label: 'New TTP', type: 'Attack-Pattern', isPendingCreation: true })]);
+  });
+
+  // An Observed-Data needs its observed objects, which a form cannot create with it
+  it.each([false, true])('should offer to create an Observed-Data outside a form only (form: %s)', async (deferCreation) => {
+    testRender(
+      <Formik initialValues={{ observed: [] }} onSubmit={() => {}}>
+        <StixCoreObjectsField name="observed" types={['Observed-Data']} multiple deferCreation={deferCreation} />
+      </Formik>,
+    );
+    await userEvent.type(screen.getByRole('combobox'), 'New observed data');
+    const createOption = screen.findByRole('option', { name: /Create/ });
+    if (deferCreation) await expect(createOption).rejects.toThrow();
+    else expect(await createOption).toBeInTheDocument();
   });
 });
