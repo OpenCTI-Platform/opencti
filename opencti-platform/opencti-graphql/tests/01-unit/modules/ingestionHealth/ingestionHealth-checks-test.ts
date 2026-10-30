@@ -554,9 +554,18 @@ describe('last run failed check', () => {
       .toEqual(failed('GET https://api.example.com/x failed'));
   });
 
-  it('should stop the query string at a closing parenthesis or bracket, kept', () => {
+  it('should keep the parenthesis or bracket closing the query string', () => {
     expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Timeout (https://api.example.com/x?key=secret) [url=/y?token=1]', source: null }])))
       .toEqual(failed('Timeout (https://api.example.com/x) [url=/y]'));
+  });
+
+  it('should remove the parameters following a parenthesis or bracket of the query string', () => {
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET https://api.example.com/x?filter=(active)&apikey=SECRET failed', source: null }])))
+      .toEqual(failed('GET https://api.example.com/x failed'));
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'GET /v1/feed?ids[]=1&apikey=SECRET failed', source: null }])))
+      .toEqual(failed('GET /v1/feed failed'));
+    expect(evaluate(IMPORT_CONNECTOR, lastWork([{ message: 'Timeout (https://api.example.com/x?filter=(active)&apikey=SECRET)', source: null }])))
+      .toEqual(failed('Timeout (https://api.example.com/x)'));
   });
 
   it('should keep a question mark that does not follow a url or a path', () => {

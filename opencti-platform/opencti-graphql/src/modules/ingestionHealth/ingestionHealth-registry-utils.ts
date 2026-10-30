@@ -131,19 +131,21 @@ export const CONNECTOR_ERROR_BLOCKING_CRITICITY = 2;
 // A work error can quote the url called, with its query string or its user and password: they may hold a secret,
 // and the error is shown to every reader of the connector, and written in the activity log.
 // The query string of any url or path, absolute or relative (urllib3 writes "with url: /v1/feed?apikey=..."),
-// up to the whitespace, quote, parenthesis or bracket ending it.
+// up to the whitespace or quote ending it: a parenthesis or bracket can be part of it ("?filter=(active)&apikey=..."),
+// the ones closing it ("(https://...?key=...)") are restored by scrubWorkError.
 // The path is looked for behind each "?" only, and the scheme is bounded: linear on a long error, a traceback included
-const URL_QUERY_STRING = /\?(?<=\/[^\s'"()[\]?]*\?)[^\s'")\]]*/g;
+const URL_QUERY_STRING = /\?(?<=\/[^\s'"()[\]?]*\?)[^\s'"]*/g;
+const CLOSING_PUNCTUATION = /[)\]]+$/;
 const URL_USERINFO = /\b([a-z][a-z\d+.-]{0,30}:\/\/)[^\s/?#@'"]+@/gi;
 const MAX_WORK_ERROR_LENGTH = 200;
 
 /**
  * Removes from an error message what may hold a secret: the user and password of any url (the scheme is kept)
- * and the query string of any url or path. Then truncates it to MAX_WORK_ERROR_LENGTH characters.
+ * and the query string of any url or path, whole, but for the parentheses and brackets ending it. Then truncates it to MAX_WORK_ERROR_LENGTH characters.
  */
 export const scrubWorkError = (message: string) => message
   .replace(URL_USERINFO, '$1')
-  .replace(URL_QUERY_STRING, '')
+  .replace(URL_QUERY_STRING, (query) => query.match(CLOSING_PUNCTUATION)?.[0] ?? '')
   .slice(0, MAX_WORK_ERROR_LENGTH);
 
 /**
