@@ -15,6 +15,7 @@ import { Alert as FdsAlert, Icon, IconButton as FdsIconButton, Input, Text, Tool
 import { isBreakdownField, isWidgetBreakdownEligible } from '../../../utils/widget/widgetBreakdown';
 import useHelper from '../../../utils/hooks/useHelper';
 import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
+import useWidgetBreakdownFieldOptions from './useWidgetBreakdownFieldOptions';
 
 type StepContainerProps = {
   perspective?: WidgetPerspective | null;
@@ -108,8 +109,14 @@ const WidgetCreationDataSelection = () => {
   const canAddDataSelection = getCurrentDataSelectionLimit(type) > 1;
   // A breakdown generates its series from a single dataset
   const isBreakdownEnabled = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
-  const isBreakdownActive = isBreakdownEnabled && isBreakdownField(parameters?.breakdownBy);
   const isBreakdownEligible = isBreakdownEnabled && isWidgetBreakdownEligible(config.widget, host);
+  const { fieldOptions, isResolved } = useWidgetBreakdownFieldOptions({ perspective, dataSelection }, isBreakdownEligible);
+  const breakdownBy = parameters?.breakdownBy;
+  // Only a field the parameters step keeps locks the dataset: one the filters no longer offer is dropped there,
+  // once the saved filter is read
+  const isBreakdownActive = isBreakdownEligible
+    && isBreakdownField(breakdownBy)
+    && (!isResolved || fieldOptions.some(({ key }) => key === breakdownBy));
   // A disabled button gets no pointer events: the wrapper carries the tooltip
   const lockedByBreakdown = (button: React.ReactElement) => (isBreakdownActive ? (
     <Tooltip>

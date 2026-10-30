@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { stixRelationshipsDistribution, stixRelationshipsNumber } from '../../../src/domain/stixRelationship';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { queryAsAdminWithError, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
@@ -281,7 +281,8 @@ describe('stixRelationshipsTimeSeriesBreakdown', () => {
   `;
   type Serie = { label: string; value: number; isOther: boolean; entity: { definition: string } | null; values: number[] };
   // Relationships (creation date, source, type, target, marking) over January to March 2021:
-  // targets 3 and uses 2; from 2 malwares and 3 intrusion sets; to 3 organizations and 2 malwares; 3 green, 1 amber, 1 without marking
+  // targets 3 and uses 2; from 2 malwares and 3 intrusion sets; to 3 organizations and 2 malwares; 3 green, 1 amber, 1 without marking.
+  // A user of the green group reads all of them but the amber one: from January to March 2, 1 and 1 relationships.
   const RELATIONSHIPS: { created: string; from: string; relationship_type: string; to: string; marking: string | null }[] = [
     { created: '2021-01-10T12:00:00.000Z', from: 'malwareA', relationship_type: 'targets', to: 'organization', marking: MARKING_TLP_GREEN },
     { created: '2021-01-20T12:00:00.000Z', from: 'malwareB', relationship_type: 'targets', to: 'organization', marking: MARKING_TLP_GREEN },
@@ -297,20 +298,27 @@ describe('stixRelationshipsTimeSeriesBreakdown', () => {
   const intrusionSets = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Intrusion-Set'], operator: 'eq', mode: 'or' }], filterGroups: [] };
   const malwares = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] };
 
+  type Breakdown = { truncated: boolean; dates: (Date | string)[]; series: Serie[] };
+  const breakdownRequest = (variables: Record<string, unknown>) => ({
+    query: BREAKDOWN_QUERY,
+    variables: { ...period, dateAttribute: 'created', filters: authorFilter(), ...variables },
+  });
   const breakdown = async (variables: Record<string, unknown>) => {
-    const result = await queryAsAdminWithSuccess({
-      query: BREAKDOWN_QUERY,
-      variables: { ...period, dateAttribute: 'created', filters: authorFilter(), ...variables },
-    });
-    return result.data?.stixRelationshipsTimeSeriesBreakdown as { truncated: boolean; dates: (Date | string)[]; series: Serie[] };
+    const result = await queryAsAdminWithSuccess(breakdownRequest(variables));
+    return result.data?.stixRelationshipsTimeSeriesBreakdown as Breakdown;
   };
-  const timeSeries = async (parameters: Record<string, unknown> = {}) => {
-    const result = await queryAsAdminWithSuccess({
-      query: TIME_SERIES_QUERY,
-      variables: { ...period, timeSeriesParameters: [{ field: 'created', filters: authorFilter(), ...parameters }] },
-    });
-    return (result.data?.stixRelationshipsMultiTimeSeries[0].data as { value: number }[]).map(({ value }) => value);
+  // As a user of the green group, who does not read the amber relationship
+  const breakdownAsGreenUser = async (variables: Record<string, unknown>) => {
+    const result = await queryAsUserWithSuccess(USER_PARTICIPATE, breakdownRequest(variables));
+    return result.data?.stixRelationshipsTimeSeriesBreakdown as Breakdown;
   };
+  const timeSeriesRequest = (parameters: Record<string, unknown>) => ({
+    query: TIME_SERIES_QUERY,
+    variables: { ...period, timeSeriesParameters: [{ field: 'created', filters: authorFilter(), ...parameters }] },
+  });
+  const valuesOf = (data: Record<string, any> | undefined) => (data?.stixRelationshipsMultiTimeSeries[0].data as { value: number }[]).map(({ value }) => value);
+  const timeSeries = async (parameters: Record<string, unknown> = {}) => valuesOf((await queryAsAdminWithSuccess(timeSeriesRequest(parameters))).data);
+  const timeSeriesAsGreenUser = async () => valuesOf((await queryAsUserWithSuccess(USER_PARTICIPATE, timeSeriesRequest({}))).data);
   const summary = (series: Serie[]) => series.map((serie) => [serie.label, serie.value, serie.values]);
   const expectBreakdownError = (variables: Record<string, unknown>, message: string) => {
     const request = { query: BREAKDOWN_QUERY, variables: { ...period, dateAttribute: 'created', ...variables } };
@@ -400,6 +408,32 @@ describe('stixRelationshipsTimeSeriesBreakdown', () => {
         const sums = total.map((_, index) => series.reduce((sum, serie) => sum + serie.values[index], 0));
         expect(sums, `${field} of ${JSON.stringify(dataset)}`).toEqual(total);
       }
+    }
+  });
+
+  it('should not count the relationships above the markings of the user, neither in the series nor in Other', async () => {
+    // The amber marking is not a value for the user, and Other only counts the relationship without marking (March):
+    // [0, 1, 1] for the admin, the amber relationship of February included
+    const byMarking = await breakdownAsGreenUser({ field: 'objectMarking', limit: 10, includeOther: true });
+    expect(byMarking.truncated).toEqual(false);
+    expect(byMarking.series.map((serie) => [serie.entity?.definition ?? serie.label, serie.value, serie.values])).toEqual([
+      ['TLP:GREEN', 3, [2, 1, 0]],
+      ['Other', 1, [0, 0, 1]],
+    ]);
+    // targets loses the amber relationship of February: targets and uses then tie, so the series are compared by label
+    const byType = await breakdownAsGreenUser({ field: 'relationship_type', includeOther: true });
+    expect(Object.fromEntries(byType.series.map((serie) => [serie.label, [serie.value, serie.values]]))).toEqual({
+      targets: [2, [2, 0, 0]],
+      uses: [2, [0, 1, 1]],
+      Other: [0, [0, 0, 0]],
+    });
+    // A breakdown with its Other serie splits the relationships time series of the user, whatever the field
+    const total = await timeSeriesAsGreenUser();
+    expect(total).toEqual([2, 1, 1]);
+    for (const field of ['relationship_type', 'fromTypes', 'toTypes', 'objectMarking']) {
+      const { series } = await breakdownAsGreenUser({ field, includeOther: true });
+      const sums = total.map((_, index) => series.reduce((sum, serie) => sum + serie.values[index], 0));
+      expect(sums, field).toEqual(total);
     }
   });
 

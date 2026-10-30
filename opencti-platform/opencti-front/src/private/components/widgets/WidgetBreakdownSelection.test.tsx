@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   flags: ['TIME_SERIES_BREAKDOWN'],
   variables: undefined as unknown[] | undefined,
   fetchSavedFilterContent: vi.fn(),
+  translations: {} as Record<string, string>,
 }));
 
 const definition = (filterKey: string, type: string, label: string, subEntityTypes: string[]): FilterDefinition => ({
@@ -37,6 +38,17 @@ vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
     },
   }),
 }));
+// The labels translated in another language, the others as in English
+vi.mock('../../../components/i18n', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../../components/i18n')>();
+  return {
+    ...original,
+    useFormatter: () => {
+      const formatter = original.useFormatter();
+      return { ...formatter, t_i18n: (key: string) => mocks.translations[key] ?? formatter.t_i18n(key) };
+    },
+  };
+});
 vi.mock('../../../utils/hooks/useHelper', () => ({
   default: () => ({ isFeatureEnable: (flag: string) => mocks.flags.includes(flag) }),
 }));
@@ -79,9 +91,15 @@ describe('WidgetBreakdownSelection', () => {
     vi.clearAllMocks();
     mocks.flags = ['TIME_SERIES_BREAKDOWN'];
     mocks.variables = undefined;
+    mocks.translations = {};
   });
 
   const isDisabled = (element: HTMLElement) => element.hasAttribute('disabled') || element.getAttribute('data-disabled') !== null;
+  const openOptions = (select: HTMLElement) => {
+    fireEvent.pointerDown(select, { button: 0, ctrlKey: false, pointerType: 'mouse' });
+    fireEvent.click(select);
+    return Array.from(document.querySelectorAll('[role="option"]')).map((option) => option.textContent);
+  };
 
   it('offers the fields of the dataset types, then the series settings once a field is chosen', () => {
     setWidget({ parameters: { breakdownBy: 'report_types' } });
@@ -115,6 +133,16 @@ describe('WidgetBreakdownSelection', () => {
     }));
   });
 
+  it('offers the number of series of the widget, even one the editor does not offer', () => {
+    // The API accepts any number from 1 to 50: written through it, or imported
+    setWidget({ parameters: { breakdownBy: 'report_types', breakdownLimit: 15 } });
+    const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+    const limitSelect = getAllByRole('combobox')[1];
+
+    expect(limitSelect.textContent).toContain('15');
+    expect(openOptions(limitSelect)).toEqual(['5', '10', '15', '20', '50']);
+  });
+
   it('does not offer the order and other series without a field', () => {
     setWidget({});
     const { queryByText, queryByRole } = testRender(<WidgetBreakdownSelection />);
@@ -131,25 +159,6 @@ describe('WidgetBreakdownSelection', () => {
 
     expect(isDisabled(getAllByRole('combobox')[0])).toBe(true);
     expect(queryByText('Maximum number of series')).toBeNull();
-  });
-
-  it('disables every control with several datasets', () => {
-    setWidget({ dataSelection: [reports, reports], parameters: { breakdownBy: 'report_types' } });
-    const { getAllByRole, getByRole } = testRender(<WidgetBreakdownSelection />);
-
-    const comboboxes = getAllByRole('combobox');
-    expect(comboboxes).toHaveLength(3);
-    comboboxes.forEach((combobox) => expect(isDisabled(combobox)).toBe(true));
-    expect(isDisabled(getByRole('switch'))).toBe(true);
-  });
-
-  it('keeps showing the configured field, disabled, with several datasets', () => {
-    setWidget({ dataSelection: [reports, reports], parameters: { breakdownBy: 'report_types' } });
-    const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
-
-    const [fieldSelect] = getAllByRole('combobox');
-    expect(fieldSelect.textContent).toContain('Report types');
-    expect(isDisabled(fieldSelect)).toBe(true);
   });
 
   it('drops a field the dataset types no longer carry, with its settings', () => {
@@ -275,12 +284,7 @@ describe('WidgetBreakdownSelection', () => {
   });
 
   describe('relationships', () => {
-    const openFieldOptions = (getAllByRole: (role: string) => HTMLElement[]) => {
-      const [fieldSelect] = getAllByRole('combobox');
-      fireEvent.pointerDown(fieldSelect, { button: 0, ctrlKey: false, pointerType: 'mouse' });
-      fireEvent.click(fieldSelect);
-      return getAllByRole('option').map((option) => option.textContent);
-    };
+    const openFieldOptions = (getAllByRole: (role: string) => HTMLElement[]) => openOptions(getAllByRole('combobox')[0]);
 
     it('offers the relationships fields the API accepts, the relationship type with several types', () => {
       setWidget({ perspective: 'relationships', type: 'line', dataSelection: [relationships] });
@@ -292,6 +296,19 @@ describe('WidgetBreakdownSelection', () => {
       setWidget({ perspective: 'relationships', type: 'heatmap', dataSelection: [targets] });
       const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
       expect(openFieldOptions(getAllByRole)).toEqual(['None', 'Marking', 'Source type', 'Target type']);
+    });
+
+    it('orders the fields as they read in the language of the user', () => {
+      mocks.translations = {
+        None: 'Aucun',
+        Marking: 'Marquage',
+        'Relationship type': 'Type de relation',
+        'Source type': 'Type de source',
+        'Target type': 'Type de cible',
+      };
+      setWidget({ perspective: 'relationships', type: 'line', dataSelection: [relationships] });
+      const { getAllByRole } = testRender(<WidgetBreakdownSelection />);
+      expect(openFieldOptions(getAllByRole)).toEqual(['Aucun', 'Marquage', 'Type de cible', 'Type de relation', 'Type de source']);
     });
 
     it('keeps a relationships field, and drops one the relationship types no longer carry', () => {
@@ -307,11 +324,12 @@ describe('WidgetBreakdownSelection', () => {
       }));
     });
 
-    it('disables every control with several relationships datasets', () => {
-      setWidget({ perspective: 'relationships', type: 'line', dataSelection: [targets, targets], parameters: { breakdownBy: 'toTypes' } });
-      const { getAllByRole, getByRole } = testRender(<WidgetBreakdownSelection />);
-      getAllByRole('combobox').forEach((combobox) => expect(isDisabled(combobox)).toBe(true));
-      expect(isDisabled(getByRole('switch'))).toBe(true);
+    it('cannot be chosen with several relationships datasets', () => {
+      setWidget({ perspective: 'relationships', type: 'line', dataSelection: [targets, targets] });
+      const { getAllByRole, queryByRole } = testRender(<WidgetBreakdownSelection />);
+      expect(getAllByRole('combobox')).toHaveLength(1);
+      expect(isDisabled(getAllByRole('combobox')[0])).toBe(true);
+      expect(queryByRole('switch')).toBeNull();
     });
   });
 });

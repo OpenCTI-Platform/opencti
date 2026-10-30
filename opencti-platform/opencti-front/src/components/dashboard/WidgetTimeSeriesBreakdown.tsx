@@ -50,7 +50,8 @@ interface WidgetTimeSeriesBreakdownProps {
   breakdown?: WidgetTimeSeriesBreakdownData | null;
   type: string;
   parameters: WidgetParameters;
-  onMounted: (chart: ApexCharts) => void;
+  // Called with the chart once it is drawn, and without it once it is gone
+  onMounted: (chart?: ApexCharts) => void;
   onWarningChange: (warning?: string) => void;
 }
 
@@ -154,6 +155,14 @@ const WidgetTimeSeriesBreakdown = ({
   }, [truncated, limit, order, coarsenedInterval, weeksCountedByMonday, onWarningChange, intl]);
   // The warnings leave with the chart, when an error replaces it
   useEffect(() => () => onWarningChange(undefined), [onWarningChange]);
+  // So does the export of the chart, once no series is drawn any more or an error replaces it
+  const hasChart = series.length > 0;
+  useEffect(() => {
+    if (!hasChart) {
+      return undefined;
+    }
+    return () => onMounted(undefined);
+  }, [hasChart, onMounted]);
 
   const renderChart = () => {
     if (series.length === 0) {

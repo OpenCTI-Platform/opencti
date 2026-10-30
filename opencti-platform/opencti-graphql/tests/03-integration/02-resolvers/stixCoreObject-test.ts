@@ -2,9 +2,10 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
 import { findUnknownStixCoreObjects, stixCoreObjectsDistributionByEntity } from '../../../src/domain/stixCoreObject';
-import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_DISINFORMATION_ANALYST } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_DISINFORMATION_ANALYST, USER_PARTICIPATE } from '../../utils/testQuery';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
+import { MARKING_TLP_AMBER } from '../../../src/schema/identifier';
 import { deleteFile, fileToReadStream } from '../../../src/database/file-storage';
 
 describe('StixCoreObject resolver standard behavior', () => {
@@ -181,44 +182,56 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
             ... on Label {
               value
             }
+            ... on Organization {
+              name
+            }
           }
           values
         }
       }
     }
   `;
-  type Serie = { label: string; value: number; isOther: boolean; entity: { value: string } | null; values: number[] };
+  type Serie = { label: string; value: number; isOther: boolean; entity: { value?: string; name?: string } | null; values: number[] };
   const LABELS = { a: 'bkd-int-a', b: 'bkd-int-b', c: 'bkd-int-c' };
-  // Reports (label, creation date): a=3, b=2, c=1 and one report without label, over January to March 2021
-  const REPORTS: { label: keyof typeof LABELS | null; created: string }[] = [
-    { label: 'a', created: '2021-01-10T12:00:00.000Z' },
-    { label: 'a', created: '2021-01-20T12:00:00.000Z' },
-    { label: 'a', created: '2021-02-10T12:00:00.000Z' },
-    { label: 'b', created: '2021-02-20T12:00:00.000Z' },
-    { label: 'b', created: '2021-03-10T12:00:00.000Z' },
-    { label: 'c', created: '2021-03-20T12:00:00.000Z' },
-    { label: null, created: '2021-01-25T12:00:00.000Z' },
+  // Reports (label, creation date, marking): a=3, b=2, c=1 and one report without label, over January to March 2021.
+  // Their author, the report of b of February and the report without label are amber: a user of the green group
+  // reads 5 reports out of 7 (a=3, b=1, c=1, from January to March 2, 1 and 2), and not their author.
+  const REPORTS: { label: keyof typeof LABELS | null; created: string; marking: string | null }[] = [
+    { label: 'a', created: '2021-01-10T12:00:00.000Z', marking: null },
+    { label: 'a', created: '2021-01-20T12:00:00.000Z', marking: null },
+    { label: 'a', created: '2021-02-10T12:00:00.000Z', marking: null },
+    { label: 'b', created: '2021-02-20T12:00:00.000Z', marking: MARKING_TLP_AMBER },
+    { label: 'b', created: '2021-03-10T12:00:00.000Z', marking: null },
+    { label: 'c', created: '2021-03-20T12:00:00.000Z', marking: null },
+    { label: null, created: '2021-01-25T12:00:00.000Z', marking: MARKING_TLP_AMBER },
   ];
   let organizationId: string;
   const labelIds: Record<string, string> = {};
   const reportIds: string[] = [];
 
+  type Breakdown = { truncated: boolean; dates: (Date | string)[]; series: Serie[] };
+  const breakdownRequest = (variables: Record<string, unknown>) => ({
+    query: BREAKDOWN_QUERY,
+    variables: {
+      dateAttribute: 'created',
+      startDate: '2021-01-01T00:00:00.000Z',
+      endDate: '2021-03-31T23:59:59.999Z',
+      interval: 'month',
+      types: ['Report'],
+      // Isolate the reports of this test from the ones of the other tests
+      filters: { mode: 'and', filters: [{ key: ['createdBy'], values: [organizationId] }], filterGroups: [] },
+      ...variables,
+    },
+  });
   const breakdown = async (variables: Record<string, unknown>) => {
-    const result = await queryAsAdminWithSuccess({
-      query: BREAKDOWN_QUERY,
-      variables: {
-        dateAttribute: 'created',
-        startDate: '2021-01-01T00:00:00.000Z',
-        endDate: '2021-03-31T23:59:59.999Z',
-        interval: 'month',
-        types: ['Report'],
-        // Isolate the reports of this test from the ones of the other tests
-        filters: { mode: 'and', filters: [{ key: ['createdBy'], values: [organizationId] }], filterGroups: [] },
-        ...variables,
-      },
-    });
+    const result = await queryAsAdminWithSuccess(breakdownRequest(variables));
     // DateTime values are Date objects when the query runs in process, ISO strings over HTTP
-    return result.data?.stixCoreObjectsTimeSeriesBreakdown as { truncated: boolean; dates: (Date | string)[]; series: Serie[] };
+    return result.data?.stixCoreObjectsTimeSeriesBreakdown as Breakdown;
+  };
+  // As a user of the green group, who reads neither the amber reports nor their amber author
+  const breakdownAsGreenUser = async (variables: Record<string, unknown>) => {
+    const result = await queryAsUserWithSuccess(USER_PARTICIPATE, breakdownRequest(variables));
+    return result.data?.stixCoreObjectsTimeSeriesBreakdown as Breakdown;
   };
   const sumOf = (serie: Serie) => serie.values.reduce((total, value) => total + value, 0);
   const expectBreakdownError = (variables: Record<string, unknown>, message: string) => {
@@ -232,7 +245,7 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
   beforeAll(async () => {
     const organization = await queryAsAdminWithSuccess({
       query: ORGANIZATION_ADD_QUERY,
-      variables: { input: { name: 'bkd-int-author' } },
+      variables: { input: { name: 'bkd-int-author', objectMarking: [MARKING_TLP_AMBER] } },
     });
     organizationId = organization.data?.organizationAdd.id;
     for (const [key, value] of Object.entries(LABELS)) {
@@ -240,7 +253,7 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
       labelIds[key] = label.data?.labelAdd.id;
     }
     for (let i = 0; i < REPORTS.length; i += 1) {
-      const { label, created } = REPORTS[i];
+      const { label, created, marking } = REPORTS[i];
       const report = await queryAsAdminWithSuccess({
         query: REPORT_ADD_QUERY,
         variables: {
@@ -251,6 +264,7 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
             report_types: ['threat-report'],
             createdBy: organizationId,
             objectLabel: label ? [labelIds[label]] : [],
+            objectMarking: marking ? [marking] : [],
           },
         },
       });
@@ -335,6 +349,37 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
     expect(sumOf(byType.series[0])).toEqual(REPORTS.length);
     const byReportType = await breakdown({ field: 'report_types' });
     expect(byReportType.series.map((s) => [s.label, s.value])).toEqual([['threat-report', REPORTS.length]]);
+  });
+
+  it('should not count the entities above the markings of the user, neither in the series nor in Other', async () => {
+    // The top label is the same for both: Other loses the amber reports of February (b) and January (no label)
+    const top = await breakdownAsGreenUser({ field: 'objectLabel', order: 'desc', limit: 1, includeOther: true });
+    expect(top.truncated).toEqual(true);
+    expect(top.series.map((s) => [s.entity?.value ?? s.label, s.value, s.values])).toEqual([
+      [LABELS.a, 3, [2, 1, 0]],
+      // [1, 1, 2] for the admin
+      ['Other', 2, [0, 0, 2]],
+    ]);
+    // The series of b loses its amber report; b and c then tie, so the series are compared by label
+    const all = await breakdownAsGreenUser({ field: 'objectLabel', order: 'desc', limit: 10, includeOther: true });
+    expect(all.truncated).toEqual(false);
+    expect(Object.fromEntries(all.series.map((s) => [s.entity?.value ?? s.label, [s.value, s.values]]))).toEqual({
+      [LABELS.a]: [3, [2, 1, 0]],
+      [LABELS.b]: [1, [0, 0, 1]],
+      [LABELS.c]: [1, [0, 0, 1]],
+      // The only report without any of the labels is amber
+      Other: [0, [0, 0, 0]],
+    });
+    const byType = await breakdownAsGreenUser({ field: 'entity_type' });
+    expect(byType.series.map((s) => [s.label, s.value, s.values])).toEqual([['Report', 5, [2, 1, 2]]]);
+  });
+
+  it('should break down by an author the user cannot read as a restricted entity', async () => {
+    const asAdmin = await breakdown({ field: 'createdBy' });
+    expect(asAdmin.series.map((s) => [s.label, s.entity?.name, s.value, s.values])).toEqual([[organizationId, 'bkd-int-author', 7, [3, 2, 2]]]);
+    // The reports the user reads are counted, under the id of their author, which is restricted
+    const asGreenUser = await breakdownAsGreenUser({ field: 'createdBy' });
+    expect(asGreenUser.series.map((s) => [s.label, s.entity?.name, s.value, s.values])).toEqual([[organizationId, 'Restricted', 5, [2, 1, 2]]]);
   });
 
   it('should refuse a field that cannot be broken down', async () => {

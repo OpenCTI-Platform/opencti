@@ -3,14 +3,16 @@ import type { Widget } from './widget';
 import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
-import { daysAgo, monthsAgo } from '../Time';
+import { dayStartDate, daysAgo, monthsAgo } from '../Time';
 import {
   AUDITS_BREAKDOWN_FIELDS,
   BREAKDOWN_ALLOWED_REFS,
+  BREAKDOWN_LIMIT_OPTIONS,
   coarsenSeriesForRendering,
   getBreakdownEntityTypes,
   getBreakdownDefaultStartDate,
   getBreakdownFieldOptions,
+  getBreakdownLimitOptions,
   getBreakdownTickAmount,
   getRenderedBarsBudget,
   getRenderedPointsBudget,
@@ -135,6 +137,15 @@ describe('widget breakdown eligibility', () => {
     expect(getWidgetBreakdownLimit({ breakdownLimit: 50 })).toEqual(50);
   });
 
+  it('offers the number of series of the widget, even one the editor does not offer', () => {
+    expect(getBreakdownLimitOptions({})).toEqual(BREAKDOWN_LIMIT_OPTIONS);
+    expect(getBreakdownLimitOptions({ breakdownLimit: 20 })).toEqual([5, 10, 20, 50]);
+    // The API accepts any number from 1 to 50: an imported widget can hold another
+    expect(getBreakdownLimitOptions({ breakdownLimit: 15 })).toEqual([5, 10, 15, 20, 50]);
+    expect(getBreakdownLimitOptions({ breakdownLimit: 1 })).toEqual([1, 5, 10, 20, 50]);
+    expect(BREAKDOWN_LIMIT_OPTIONS).toEqual([5, 10, 20, 50]);
+  });
+
   it('orders by highest values and leaves the other series out by default', () => {
     expect(getWidgetBreakdownOrder({})).toEqual('desc');
     expect(getWidgetBreakdownOrder({ breakdownOrder: null })).toEqual('desc');
@@ -162,6 +173,21 @@ describe('getBreakdownDefaultStartDate', () => {
       expect(getBreakdownDefaultStartDate(interval)).toEqual(monthsAgo(12));
     });
   });
+
+  it('looks back from the end date of the dashboard, which can be long ago', () => {
+    const endDate = '2024-03-31T12:00:00.000Z';
+    const endDay = dayStartDate(endDate);
+    const dailyStart = new Date(getBreakdownDefaultStartDate('day', endDate));
+    expect(dailyStart.getTime()).toEqual(new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate() - 30).getTime());
+    expect(dailyStart.getTime()).toBeLessThan(new Date(endDate).getTime());
+    ['week', 'month', 'quarter', 'year'].forEach((interval) => {
+      const start = new Date(getBreakdownDefaultStartDate(interval, endDate));
+      expect(start.getTime()).toEqual(new Date(endDay.getFullYear() - 1, endDay.getMonth(), endDay.getDate()).getTime());
+    });
+    // Without end date, from today
+    expect(getBreakdownDefaultStartDate('day', null)).toEqual(daysAgo(30));
+    expect(getBreakdownDefaultStartDate('month', undefined)).toEqual(monthsAgo(12));
+  });
 });
 
 describe('getBreakdownEntityTypes', () => {
@@ -174,8 +200,16 @@ describe('getBreakdownEntityTypes', () => {
     ]))).toEqual(['Report', 'Grouping']);
   });
 
+  it('reads a single type whatever the mode of its filter', () => {
+    // Left by removing a value from "type = Report AND Grouping"
+    expect(getBreakdownEntityTypes(group([{ key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'and' }]))).toEqual(['Report']);
+    expect(getBreakdownEntityTypes(group([{ key: 'relationship_type', values: ['targets'], operator: 'eq', mode: 'and' }]), 'relationships')).toEqual(['targets']);
+  });
+
   it('returns no type when the filters do not restrict it for sure', () => {
     expect(getBreakdownEntityTypes(undefined)).toEqual([]);
+    // An element is of a single type: several types in "and" are not the types of the dataset
+    expect(getBreakdownEntityTypes(group([{ key: 'entity_type', values: ['Report', 'Grouping'], operator: 'eq', mode: 'and' }]))).toEqual([]);
     expect(getBreakdownEntityTypes(group([{ key: 'objectLabel', values: ['label-id'], operator: 'eq', mode: 'or' }]))).toEqual([]);
     expect(getBreakdownEntityTypes(group([{ key: 'entity_type', values: ['Report'], operator: 'not_eq', mode: 'or' }]))).toEqual([]);
     // "type = Report OR label = A" can also return other types
@@ -312,6 +346,23 @@ describe('getBreakdownFieldOptions', () => {
       ['fromId', 'toId', 'objects', 'externalReferences', 'killChainPhases', 'workflow_id', 'entity_type'].forEach((key) => expect(options).not.toContain(key));
     });
 
+    it('orders the fields by their translated label', () => {
+      const french: Record<string, string> = {
+        Author: 'Auteur',
+        Creators: 'Créateurs',
+        Label: 'Label',
+        Marking: 'Marquage',
+        'Relationship type': 'Type de relation',
+        'Source type': 'Type de source',
+        'Target type': 'Type de cible',
+      };
+      const translate = (label: string) => french[label] ?? label;
+      const labels = getBreakdownFieldOptions(relationshipsSchema, [], 'relationships', translate).map(({ label }) => translate(label));
+      expect(labels).toEqual(['Auteur', 'Créateurs', 'Label', 'Marquage', 'Type de cible', 'Type de relation', 'Type de source']);
+      // The labels themselves are kept, to be translated where shown
+      expect(getBreakdownFieldOptions(relationshipsSchema, [], 'relationships', translate).map(({ label }) => label)).toContain('Target type');
+    });
+
     it('labels the relationships fields', () => {
       const labels = getBreakdownFieldOptions(relationshipsSchema, [], 'relationships').map(({ label }) => label);
       expect(labels).toEqual(expect.arrayContaining(['Relationship type', 'Source type', 'Target type']));
@@ -373,6 +424,18 @@ describe('getBreakdownFieldOptions', () => {
 
     it('refuses a widget without breakdown field', () => {
       expect(isBreakdownFieldSupported(schema, makeWidget({ parameters: { breakdownBy: null } }))).toBe(false);
+    });
+
+    it('offers and accepts no field for draft workspaces, read from a saved filter', () => {
+      const withDrafts = new Map(schema);
+      withDrafts.set('DraftWorkspace', new Map([['creator_id', definition('creator_id', 'id', 'Creators', ['DraftWorkspace'])]]));
+      // The content of a saved filter, once read: the widget itself holds none, so it is eligible
+      const drafts = makeWidget({ parameters: { breakdownBy: 'creator_id' } }, ['DraftWorkspace']);
+      expect(getWidgetBreakdownFieldOptions(withDrafts, drafts)).toEqual([]);
+      expect(isBreakdownFieldSupported(withDrafts, drafts)).toBe(false);
+      // Not even the entity type, accepted for any other dataset
+      expect(isBreakdownFieldSupported(withDrafts, { ...drafts, parameters: { breakdownBy: 'entity_type' } })).toBe(false);
+      expect(getWidgetBreakdownFieldOptions(withDrafts, makeWidget({}, ['Report'])).length).toBeGreaterThan(0);
     });
   });
 
@@ -621,6 +684,15 @@ describe('numberSharedSeriesNames', () => {
     expect(numberSharedSeriesNames(['Alice', 'Bob'])).toEqual(['Alice', 'Bob']);
     expect(numberSharedSeriesNames([])).toEqual([]);
   });
+
+  it('skips the numbers other series are already named with', () => {
+    expect(numberSharedSeriesNames(['Alice', 'Alice', 'Alice (1)'])).toEqual(['Alice (2)', 'Alice (3)', 'Alice (1)']);
+    expect(numberSharedSeriesNames(['Alice (2)', 'Alice', 'Alice', 'Alice', 'Alice (4)'])).toEqual(['Alice (2)', 'Alice (1)', 'Alice (3)', 'Alice (5)', 'Alice (4)']);
+    // Shared numbered names are numbered too, apart from the others
+    const names = numberSharedSeriesNames(['Alice', 'Alice', 'Alice (1)', 'Alice (1)']);
+    expect(names).toEqual(['Alice (2)', 'Alice (3)', 'Alice (1) (1)', 'Alice (1) (2)']);
+    expect(new Set(names).size).toEqual(names.length);
+  });
 });
 
 describe('audits breakdown', () => {
@@ -675,6 +747,9 @@ describe('audits breakdown', () => {
     const apiFields = ['event_type', 'event_scope', 'user_id', 'group_ids', 'organization_ids', 'entity_type', 'context_data.entity_type'];
     expect(AUDITS_BREAKDOWN_FIELDS.map(({ key }) => key)).toEqual(apiFields);
     expect(getWidgetBreakdownFieldOptions(emptyMap, makeAuditsWidget()).map(({ key }) => key)).toEqual(apiFields);
+    // In their own order, whatever the language
+    const reversed = (label: string) => label.split('').reverse().join('');
+    expect(getWidgetBreakdownFieldOptions(emptyMap, makeAuditsWidget(), undefined, reversed).map(({ key }) => key)).toEqual(apiFields);
     ['context_data.id', 'context_data.search', 'context_data.message', 'creator_id', 'createdBy'].forEach((key) => {
       expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: key } }))).toBe(false);
     });

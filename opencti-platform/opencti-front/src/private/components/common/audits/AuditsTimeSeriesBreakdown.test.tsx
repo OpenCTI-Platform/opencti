@@ -147,6 +147,21 @@ describe('AuditsTimeSeriesBreakdown', () => {
     expect(buildQueryVariables(dataSelection, {}, { ...parameters, interval: 'month' }).startDate).toEqual(monthsAgo(12));
   });
 
+  it('looks back from the end date of a dashboard that sets only this one', () => {
+    respond([]);
+    const widget = makeWidget('line', { breakdownBy: 'user_id', interval: 'day' });
+    render(widget);
+
+    // Long ago: 30 days back from today would start after the end
+    const endDate = '2024-01-15T12:00:00.000Z';
+    const variables = queryVariables(widget, { relativeDate: null, startDate: null, endDate });
+    expect(variables.endDate).toEqual(endDate);
+    expect(variables.startDate).toEqual(daysAgo(30, endDate));
+    const lookBackDays = (new Date(endDate).getTime() - new Date(variables.startDate).getTime()) / 86400000;
+    expect(lookBackDays).toBeGreaterThanOrEqual(30);
+    expect(lookBackDays).toBeLessThan(31);
+  });
+
   it('names the series after the user, the group, or the translated entity type', async () => {
     respond([
       { label: 'user-id', entity: { id: 'user-id', name: 'Alice' }, values: [1, 2, 3] },

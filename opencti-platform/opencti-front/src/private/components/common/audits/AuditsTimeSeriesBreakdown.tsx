@@ -17,21 +17,11 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { AuditsTimeSeriesBreakdownQuery } from '@components/common/audits/__generated__/AuditsTimeSeriesBreakdownQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import TimeSeriesBreakdownViz, { type TimeSeriesBreakdownVizProps } from '../../../../components/dashboard/TimeSeriesBreakdownViz';
+import TimeSeriesBreakdownViz, { buildTimeSeriesBreakdownSettings, type TimeSeriesBreakdownVizProps } from '../../../../components/dashboard/TimeSeriesBreakdownViz';
 import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
 import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
-import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
 import { normalizeFilterGroupForBackend, removeEntityTypeAllFromFilterGroup } from '../../../../utils/filters/filtersUtils';
-import { getWidgetInterval } from '../../../../utils/widget/widgetUtils';
-import {
-  getBreakdownDefaultStartDate,
-  getWidgetBreakdownLimit,
-  getWidgetBreakdownOrder,
-  getWidgetBreakdownOther,
-  isBreakdownField,
-} from '../../../../utils/widget/widgetBreakdown';
-import { now } from '../../../../utils/Time';
 
 const auditsTimeSeriesBreakdownQuery = graphql`
   query AuditsTimeSeriesBreakdownQuery(
@@ -96,25 +86,12 @@ const buildQueryVariables = (
   config: DashboardConfig,
   parameters?: WidgetParameters,
 ): AuditsTimeSeriesBreakdownQuery['variables'] => {
-  const breakdownBy = parameters?.breakdownBy;
-  if (!isBreakdownField(breakdownBy)) {
-    throw Error('Missing breakdown field');
-  }
   const [selection] = resolvedDataSelection;
-  const interval = getWidgetInterval(parameters);
-  // Dates set on the dashboard are kept as is. Without a start date, a daily breakdown only looks
-  // back a short while: the default 12 months would draw too many bars.
-  const { startDate, endDate } = computeStartEndDates(config);
   return {
-    field: breakdownBy,
+    ...buildTimeSeriesBreakdownSettings(config, parameters),
     dateAttribute: selection?.date_attribute?.length ? selection.date_attribute : 'timestamp',
-    startDate: startDate ?? getBreakdownDefaultStartDate(interval),
-    endDate: endDate ?? now(),
-    interval,
-    limit: getWidgetBreakdownLimit(parameters),
-    order: getWidgetBreakdownOrder(parameters),
-    includeOther: getWidgetBreakdownOther(parameters),
     types: AUDITS_TYPES,
+    // The period is sent apart from the filters, as the other audits time series do
     filters: normalizeFilterGroupForBackend(removeEntityTypeAllFromFilterGroup(selection?.filters)),
   };
 };

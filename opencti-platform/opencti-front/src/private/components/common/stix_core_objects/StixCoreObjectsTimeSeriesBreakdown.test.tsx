@@ -39,9 +39,10 @@ vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
-  default: ({ children, warning }: { children: React.ReactNode; warning?: string }) => (
+  default: ({ children, warning, chart }: { children: React.ReactNode; warning?: string; chart?: unknown }) => (
     <div>
       {warning && <div data-testid="widget-warning">{warning}</div>}
+      {chart ? <div data-testid="widget-export" /> : null}
       {children}
     </div>
   ),
@@ -193,6 +194,23 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
 
     const weekly = buildQueryVariables(dataSelection, {}, { ...parameters, interval: 'week' });
     expect(weekly.startDate).toEqual(monthsAgo(12));
+  });
+
+  it('looks back from the end date of a dashboard that sets only this one', () => {
+    respond([]);
+    render(makeWidget('line', { breakdownBy: 'objectLabel', interval: 'day' }));
+    const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.calls[0][0];
+
+    // Long ago: 30 days back from today would start after the end
+    const endDate = '2024-01-15T12:00:00.000Z';
+    const variables = buildQueryVariables(dataSelection, { relativeDate: null, startDate: null, endDate }, parameters);
+    expect(variables.endDate).toEqual(endDate);
+    expect(variables.startDate).toEqual(daysAgo(30, endDate));
+    const lookBackDays = (new Date(endDate).getTime() - new Date(variables.startDate).getTime()) / 86400000;
+    expect(lookBackDays).toBeGreaterThanOrEqual(30);
+    expect(lookBackDays).toBeLessThan(31);
+    // the entities the top values are computed on are restricted to the same period
+    expect(JSON.stringify(variables.filters)).toContain(daysAgo(30, endDate));
   });
 
   it('names the series after the entity, or the translated entity type', async () => {
@@ -382,17 +400,63 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
   it('says why the API refused the breakdown, and leaves any other error to the widget', () => {
     // React logs the errors its boundaries catch
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const refusal = (message: string) => ({ res: { errors: [{ message, extensions: { code: 'FUNCTIONAL_ERROR' } }] } });
+    const refusal = (message: string, data?: Record<string, unknown>) => ({ res: { errors: [{ message, extensions: { code: 'FUNCTIONAL_ERROR', data } }] } });
     const widget = makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection);
+    const tooLarge = 'This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.';
+    const tooManyValues = 'There are too many values to find the lowest ones. Choose the highest values or narrow the filters of this widget.';
+    const generic = 'This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.';
+    const refusedWith = (error: unknown) => {
+      mocks.error = error;
+      const { container, unmount } = render(widget);
+      const { textContent } = container;
+      unmount();
+      return textContent;
+    };
 
-    mocks.error = refusal('Time series breakdown is too large, reduce the period, the interval or the number of series');
-    expect(render(widget).getByText('This breakdown has too many points for the selected period. Reduce the period, the interval or the number of series.')).toBeTruthy();
-
-    mocks.error = refusal('Time series breakdown does not support this field for these entity types');
-    expect(render(widget).getByText('This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.')).toBeTruthy();
+    // The reason of the refusal tells which one it is, whatever its message says
+    expect(refusedWith(refusal('Refused', { reason: 'too_large', limit: 50, intervalsCount: 1097, max: 50000 }))).toEqual(tooLarge);
+    expect(refusedWith(refusal('Refused', { reason: 'too_many_values', max: 5000 }))).toEqual(tooManyValues);
+    // Any other refusal, even one whose message speaks of a size, keeps the generic message
+    expect(refusedWith(refusal('Time series breakdown is too large, reduce the period, the interval or the number of series'))).toEqual(generic);
+    expect(refusedWith(refusal('Time series breakdown does not support this field for these entity types', { reason: 'unsupported' }))).toEqual(generic);
 
     mocks.error = new Error('Network error');
     expect(() => render(widget)).toThrow('Network error');
+    vi.mocked(console.error).mockRestore();
+  });
+
+  it('stops offering the export of a chart that is gone', async () => {
+    // React logs the errors its boundaries catch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const widget = makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection);
+    let refresh = () => {};
+    const RefreshedWidget = () => {
+      const [, setRefreshCount] = useState(0);
+      refresh = () => setRefreshCount((count) => count + 1);
+      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />;
+    };
+    // The chart says it is mounted once drawn
+    const mountChart = () => act(() => mocks.lines.mock.lastCall?.[0].onMounted({}));
+    respond([{ label: 'Report', entity: null, values: [1, 2, 3] }]);
+    const { queryByTestId, getByText } = testRender(<RefreshedWidget />, { userContext });
+    await drawn(mocks.lines);
+    mountChart();
+    expect(queryByTestId('widget-export')).not.toBeNull();
+
+    // A refresh brings no series: the chart leaves, and its export with it
+    respond([]);
+    act(() => refresh());
+    expect(queryByTestId('widget-export')).toBeNull();
+
+    // Drawn again, then refused by the API: the refusal replaces the chart
+    respond([{ label: 'Report', entity: null, values: [1, 2, 4] }]);
+    act(() => refresh());
+    mountChart();
+    expect(queryByTestId('widget-export')).not.toBeNull();
+    mocks.error = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_large' } } }] } };
+    act(() => refresh());
+    expect(getByText('This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.')).toBeTruthy();
+    expect(queryByTestId('widget-export')).toBeNull();
     vi.mocked(console.error).mockRestore();
   });
 
