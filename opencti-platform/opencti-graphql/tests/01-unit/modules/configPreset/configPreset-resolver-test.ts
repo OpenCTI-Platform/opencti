@@ -50,6 +50,7 @@ import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
 import { administratorRole, analystRole } from './configPreset-roles-fixtures';
 import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
 import { customMarking, papRed } from './configPreset-markings-fixtures';
+import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -88,6 +89,7 @@ const themeItem = (theme: { standard_id: string; name: string }, isDefault: bool
   dependsOn: [],
   isDefault,
 });
+const labelItem = (label: { standard_id: string; value: string }) => ({ key: label.standard_id, label: label.value, translatable: false, dependsOn: [], isDefault: false });
 const onePage = (globalCount: number) => ({ hasNextPage: false, globalCount });
 
 describe('Config preset exportable types query', () => {
@@ -178,6 +180,15 @@ describe('Config preset exportable types query', () => {
         items: [staticItem('policies', 'Policies')],
         itemsPageInfo: onePage(1),
       },
+      {
+        key: 'labels',
+        label: 'Labels',
+        description: 'Labels and their colors',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // The labels by value
+        items: [labelItem(otherLabel), labelItem(customLabel)],
+        itemsPageInfo: onePage(2),
+      },
     ]);
   });
 
@@ -194,7 +205,7 @@ describe('Config preset exportable types query', () => {
     // No message is set in the default settings of these tests: the category is not returned
     const none = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
     expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key))
-      .toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'markings', 'roles', 'groups', 'policies']);
+      .toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'markings', 'roles', 'groups', 'policies', 'labels']);
 
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id, platform_login_message: 'Welcome' }] as never);
     const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
@@ -218,7 +229,7 @@ describe('Config preset exportable types query', () => {
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['whitemark', true], ['hiddenEntityTypes', false],
-      ['markings', false], ['roles', false], ['groups', false], ['policies', false],
+      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false],
     ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
@@ -259,6 +270,7 @@ describe('Config preset exportable types query', () => {
       ['roles', 'securityAccess'],
       ['groups', 'securityAccess'],
       ['policies', 'securityAccess'],
+      ['labels', 'taxonomy'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
