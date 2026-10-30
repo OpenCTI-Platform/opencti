@@ -2797,3 +2797,30 @@ actions), the open state controlled or not, and the `aria-expanded` /
 
 **Removal test.** Both files render the library component, and a screen reader
 reads each chevron with the name of its section without the product setting it.
+
+---
+
+## 75. `Alert` paragraphs keep the browser margins, so a compact banner needs a scoped reset
+
+**Needed.** Ingestion health banners (connector and feed detail pages, deployed
+integrations page): one-to-three line alerts stacked above the page content,
+which must stay as short as the library's Alert frame intends.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.1.0):
+`Alert` renders its `title` and `description` as `<p>` elements
+(`title-xs` / `content-compact` classes) and the library ships no preflight, so
+both `<p>` keep the user-agent block margins. Neither the component nor its
+`className` reaches those inner paragraphs, and there is no prop to reset them.
+
+**Workaround.** `IngestionHealthBanner.tsx` wraps the `Alert` in a `Box` whose
+`sx` sets `'& p': { margin: 0 }`, under one `FDS-WORKAROUND #71` marker.
+Several detail lines are passed as `display: block` spans inside the
+`description` (a `<p>`, so no block children).
+
+**Ask.** Zero the margins of the Alert's own paragraphs library-side (an
+`m-0` on the two `<p>`), and accept a node list for `description` rendered as
+block lines.
+
+**Removal test.** At a pin where the paragraphs carry no margin: delete the
+`Box` wrapper and the marker, and check that a banner with a title and one
+description line is no taller than the Alert frame (padding plus the two lines).

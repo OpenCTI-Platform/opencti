@@ -479,6 +479,8 @@
   "Health check code": "ヘルスチェックコード",
   "Health check metadata": "ヘルスチェックメタデータ",
   "Health checks": "ヘルスチェック",
+  "Health last event date": "最後のヘルスイベントの日時",
+  "Health last event status": "最後のヘルスイベントのステータス",
   "Health status": "ヘルスステータス",
   "Health status since": "ヘルスステータスの開始日時",
   "Height": "身長",

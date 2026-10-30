@@ -14,6 +14,7 @@ export const connectorsStateQuery = graphql`
       manager_requested_status
       ingestionHealth {
         ...IngestionHealthChip_ingestionHealth
+        ...IngestionHealthSummary_ingestionHealth
       }
     }
     rabbitMQMetrics {
