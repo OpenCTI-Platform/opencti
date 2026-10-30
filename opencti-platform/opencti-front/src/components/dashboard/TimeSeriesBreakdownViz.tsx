@@ -108,7 +108,10 @@ interface TimeSeriesBreakdownContentProps<TQuery extends OperationType> {
   onWarningChange: (warning?: string) => void;
 }
 
-const TimeSeriesBreakdownContent = <TQuery extends OperationType>({
+/**
+ * Draws the breakdown its query returns: shared by the dashboard widgets and the public dashboards.
+ */
+export const TimeSeriesBreakdownContent = <TQuery extends OperationType>({
   query,
   queryRef,
   selectBreakdown,

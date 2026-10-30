@@ -55,6 +55,10 @@ export interface PublicDashboardCachedWidget {
     stacked?: boolean;
     legend?: boolean;
     distributed?: boolean;
+    breakdownBy?: string;
+    breakdownLimit?: number;
+    breakdownOrder?: 'asc' | 'desc';
+    breakdownOther?: boolean;
   };
   dataSelection: {
     filters?: FilterGroup;

@@ -12,13 +12,16 @@ import {
   publicStixCoreObjectsDistribution,
   publicStixCoreObjectsMultiTimeSeries,
   publicStixCoreObjectsNumber,
+  publicStixCoreObjectsTimeSeriesBreakdown,
   publicStixRelationships,
   publicStixRelationshipsDistribution,
   publicStixRelationshipsMultiTimeSeries,
   publicStixRelationshipsNumber,
+  publicStixRelationshipsTimeSeriesBreakdown,
 } from './publicDashboard-domain';
 import { findById as findWorkspaceById } from '../workspace/workspace-domain';
 import { loadCreator } from '../../database/members';
+import { getServedPublicManifest } from './publicDashboard-utils';
 
 const publicDashboardResolvers: Resolvers = {
   Query: {
@@ -27,7 +30,9 @@ const publicDashboardResolvers: Resolvers = {
     publicDashboardByUriKey: (_, { uri_key }, context) => getPublicDashboardByUriKey(context, uri_key),
     publicStixCoreObjectsNumber: (_, args, context) => publicStixCoreObjectsNumber(context, args),
     publicStixCoreObjectsMultiTimeSeries: (_, args, context) => publicStixCoreObjectsMultiTimeSeries(context, args),
+    publicStixCoreObjectsTimeSeriesBreakdown: (_, args, context) => publicStixCoreObjectsTimeSeriesBreakdown(context, args),
     publicStixRelationshipsMultiTimeSeries: (_, args, context) => publicStixRelationshipsMultiTimeSeries(context, args),
+    publicStixRelationshipsTimeSeriesBreakdown: (_, args, context) => publicStixRelationshipsTimeSeriesBreakdown(context, args),
     publicStixRelationshipsNumber: (_, args, context) => publicStixRelationshipsNumber(context, args),
     publicStixCoreObjectsDistribution: (_, args, context) => publicStixCoreObjectsDistribution(context, args),
     publicStixRelationshipsDistribution: (_, args, context) => publicStixRelationshipsDistribution(context, args),
@@ -36,6 +41,7 @@ const publicDashboardResolvers: Resolvers = {
     publicStixRelationships: (_, args, context) => publicStixRelationships(context, args),
   },
   PublicDashboard: {
+    public_manifest: (publicDashboard) => getServedPublicManifest(publicDashboard.public_manifest),
     allowed_markings: (publicDashboard, _, context) => getAllowedMarkings(context, context.user, publicDashboard),
     owner: (publicDashboard, _, context) => loadCreator(context, context.user, publicDashboard.user_id),
     dashboard: (publicDashboard, _, context) => findWorkspaceById(context, context.user, publicDashboard.dashboard_id),

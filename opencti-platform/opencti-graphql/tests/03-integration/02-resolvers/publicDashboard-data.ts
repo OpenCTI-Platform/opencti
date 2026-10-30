@@ -476,6 +476,201 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         static: false,
       },
     },
+    'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10': {
+      id: 'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10',
+      type: 'vertical-bar',
+      perspective: 'entities',
+      dataSelection: [
+        {
+          label: 'areas and malwares by entity type',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'entities',
+          isTo: true,
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: ['entity_type'],
+                values: ['Administrative-Area', 'Malware'],
+                operator: 'eq',
+                mode: 'or',
+              },
+              {
+                key: 'description',
+                values: ['widget tests'],
+                operator: 'search',
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: {
+        title: 'Evolution of areas and malwares by entity type',
+        interval: 'day',
+        breakdownBy: 'entity_type',
+        breakdownLimit: 5,
+        breakdownOrder: 'desc',
+        breakdownOther: false,
+      },
+      layout: {
+        w: 4,
+        h: 2,
+        x: 0,
+        y: 8,
+        i: 'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10',
+        moved: false,
+        static: false,
+      },
+    },
+    'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38': {
+      id: 'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38',
+      type: 'line',
+      perspective: 'relationships',
+      dataSelection: [
+        {
+          label: 'attacks by target type',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'relationships',
+          isTo: true,
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: ['relationship_type'],
+                values: ['targets'],
+                operator: 'eq',
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+          dynamicFrom: {
+            mode: 'and',
+            filters: [{
+              key: ['description'],
+              values: ['widget tests'],
+              operator: 'search',
+              mode: 'or',
+            }],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: {
+        title: 'Evolution of attacks by target type',
+        interval: 'day',
+        breakdownBy: 'toTypes',
+        breakdownLimit: 5,
+        breakdownOrder: 'desc',
+        breakdownOther: true,
+      },
+      layout: {
+        w: 4,
+        h: 2,
+        x: 4,
+        y: 8,
+        i: 'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38',
+        moved: false,
+        static: false,
+      },
+    },
+    '2f27537c-a5ae-45de-b8d4-1e85e325a71c': {
+      id: '2f27537c-a5ae-45de-b8d4-1e85e325a71c',
+      type: 'line',
+      perspective: 'relationships',
+      dataSelection: [
+        {
+          label: 'relationships by type',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'relationships',
+          isTo: true,
+          // No relationship type: the same relationships as the 'Evolution of attacks without filters' widget
+          filters: undefined,
+          dynamicFrom: {
+            mode: 'and',
+            filters: [{
+              key: ['description'],
+              values: ['widget tests'],
+              operator: 'search',
+              mode: 'or',
+            }],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: {
+        title: 'Evolution of relationships by type',
+        interval: 'day',
+        breakdownBy: 'relationship_type',
+        breakdownLimit: 5,
+        breakdownOrder: 'desc',
+        breakdownOther: false,
+      },
+      layout: {
+        w: 4,
+        h: 2,
+        x: 8,
+        y: 8,
+        i: '2f27537c-a5ae-45de-b8d4-1e85e325a71c',
+        moved: false,
+        static: false,
+      },
+    },
+    '65b10e7f-f502-4fed-a192-085f460fb94a': {
+      id: '65b10e7f-f502-4fed-a192-085f460fb94a',
+      type: 'area',
+      perspective: 'entities',
+      dataSelection: [
+        {
+          label: 'top type of areas and malwares',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'entities',
+          isTo: true,
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: ['entity_type'],
+                values: ['Administrative-Area', 'Malware'],
+                operator: 'eq',
+                mode: 'or',
+              },
+              {
+                key: 'description',
+                values: ['widget tests'],
+                operator: 'search',
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: {
+        title: 'Evolution of the top type of areas and malwares',
+        interval: 'day',
+        // A single serie: the other type is counted in the Other serie
+        breakdownBy: 'entity_type',
+        breakdownLimit: 1,
+        breakdownOrder: 'desc',
+        breakdownOther: true,
+      },
+      layout: {
+        w: 4,
+        h: 2,
+        x: 0,
+        y: 10,
+        i: '65b10e7f-f502-4fed-a192-085f460fb94a',
+        moved: false,
+        static: false,
+      },
+    },
   },
   config: {
 
