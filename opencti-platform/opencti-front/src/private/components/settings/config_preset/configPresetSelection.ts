@@ -59,6 +59,12 @@ export const isSingletonConfigPresetType = (type: { readonly key: string; readon
   return type.items.length === 1 && type.items[0].key === type.key;
 };
 
+// A type that needs the Enterprise Edition and has no item for this platform: without the license, or, once it has it, until the items are loaded.
+// Nothing of it is listed, counted or selected.
+export const isConfigPresetTypeLocked = (type: { readonly requiresEnterpriseEdition?: boolean; readonly items: ReadonlyArray<unknown> }, isEnterpriseEdition: boolean): boolean => {
+  return !!type.requiresEnterpriseEdition && (!isEnterpriseEdition || type.items.length === 0);
+};
+
 export const selectAllConfigPresetItems = (types: ReadonlyArray<{ readonly key: string }>): ConfigPresetSelection => {
   return Object.fromEntries(types.map((type) => [type.key, ALL]));
 };
@@ -98,19 +104,16 @@ export const countConfigPresetCheckedItems = (types: ReadonlyArray<CountedType>,
 };
 
 // State of the checkbox of a type or a group: checked when all its items are, indeterminate when only some are
-// unselectable: items that stay unchecked, they do not keep the checkbox from being checked, so that it can be cleared again
 export const getConfigPresetCheckboxState = (
   types: ReadonlyArray<CountedType>,
   selection: ConfigPresetSelection,
   forced: ConfigPresetForcedItems,
-  unselectable: ReadonlyArray<ConfigPresetItemKey> = [],
 ): boolean | 'indeterminate' => {
   const checkedCount = countConfigPresetCheckedItems(types, selection, forced);
   if (checkedCount === 0) {
     return false;
   }
-  const unselectableCount = unselectable.filter(({ type }) => types.some(({ key }) => key === type)).length;
-  return checkedCount === countConfigPresetItems(types) - unselectableCount ? true : 'indeterminate';
+  return checkedCount === countConfigPresetItems(types) ? true : 'indeterminate';
 };
 
 // Every item or none, without exceptions
@@ -128,17 +131,6 @@ export const toggleConfigPresetItem = (selection: ConfigPresetSelection, typeKey
   // In 'all' mode the ids are the keys of the excluded items, in 'some' mode the selected ones
   const listed = mode === 'all' ? !checked : checked;
   return { ...selection, [typeKey]: { mode, ids: listed ? [...others, itemKey] : others } };
-};
-
-// The items of a type, by type key and item key
-export interface ConfigPresetItemKey {
-  readonly type: string;
-  readonly key: string;
-}
-
-// The selection with these items checked, or unchecked: the other items are left as they are
-export const withConfigPresetItemsChecked = (selection: ConfigPresetSelection, items: ReadonlyArray<ConfigPresetItemKey>, checked: boolean): ConfigPresetSelection => {
-  return items.reduce((current, { type, key }) => toggleConfigPresetItem(current, type, key, checked), selection);
 };
 
 // Keys and excluded keys (ids and excludedIds) of the items query for a filter of the sub-view

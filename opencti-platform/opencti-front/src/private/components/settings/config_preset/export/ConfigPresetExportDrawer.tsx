@@ -1,5 +1,5 @@
-import React, { FunctionComponent, Suspense, useState } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import React, { FunctionComponent, Suspense, useEffect, useState } from 'react';
+import { graphql, PreloadedQuery, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import { Input, Text } from '@filigran/design-system';
 import { DownloadOutlined } from '@mui/icons-material';
 import Divider from '@mui/material/Divider';
@@ -11,7 +11,7 @@ import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import type { Theme } from '../../../../../components/Theme';
 import { APP_BASE_PATH } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { ConfigPresetExportDrawerQuery } from './__generated__/ConfigPresetExportDrawerQuery.graphql';
 import { ConfigPresetExportDrawerMutation } from './__generated__/ConfigPresetExportDrawerMutation.graphql';
 import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems } from '../configPresetSelection';
@@ -26,6 +26,7 @@ export const configPresetExportDrawerQuery = graphql`
       key
       label
       description
+      requiresEnterpriseEdition
       group {
         key
         label
@@ -109,6 +110,7 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
           forced={forced}
           onSelectionChange={setSelection}
           onManageType={setManagedTypeKey}
+          lockedTitle="Activate the Enterprise Edition to export this item"
         />
         <Input
           label={t_i18n('Bundle name')}
@@ -137,17 +139,24 @@ interface ConfigPresetExportFormProps {
 
 const ConfigPresetExportForm: FunctionComponent<ConfigPresetExportFormProps> = ({ queryRef, onClose }) => {
   const { configPresetExportableTypes } = usePreloadedQuery(configPresetExportDrawerQuery, queryRef);
-  // A type without item has nothing to check: it is not shown, and neither is a group left without type
-  const types = configPresetExportableTypes.filter((type) => type.items.length > 0);
-  // The selection starts with every item checked: the content is remounted when the catalog changes,
-  // as the cached catalog is first rendered and then replaced by the network one
-  const catalogKey = types.flatMap((type) => type.items.map((item) => `${type.key}/${item.key}`)).join(',');
+  // A type without item has nothing to check: it is not shown, and neither is a group left without type. A type that needs the
+  // Enterprise Edition the platform does not have is shown, locked.
+  const types = configPresetExportableTypes.filter((type) => type.items.length > 0 || type.requiresEnterpriseEdition);
+  // The selection starts with every item checked: the content is remounted when the catalog changes, as the cached catalog is first
+  // rendered and then replaced by the network one. The types of the Enterprise Edition are not part of the key: a license activated
+  // while the drawer is open adds them to the catalog, and the selection made until then is kept (they come checked, as the selection holds them all).
+  const catalogKey = types.filter((type) => !type.requiresEnterpriseEdition).flatMap((type) => type.items.map((item) => `${type.key}/${item.key}`)).join(',');
   return <ConfigPresetExportContent key={catalogKey} types={types} onClose={onClose} />;
 };
 
 // The drawer content is only mounted while it is open, so the catalog is loaded on demand
+// and read again when a license is activated, which adds the types that need it
 const ConfigPresetExportLoader: FunctionComponent<{ onClose: () => void }> = ({ onClose }) => {
-  const queryRef = useQueryLoading<ConfigPresetExportDrawerQuery>(configPresetExportDrawerQuery, {});
+  const isEnterpriseEdition = useEnterpriseEdition();
+  const [queryRef, loadQuery] = useQueryLoader<ConfigPresetExportDrawerQuery>(configPresetExportDrawerQuery);
+  useEffect(() => {
+    loadQuery({}, { fetchPolicy: 'store-and-network' });
+  }, [isEnterpriseEdition]);
   if (!queryRef) {
     return <Loader variant={LoaderVariant.inElement} />;
   }

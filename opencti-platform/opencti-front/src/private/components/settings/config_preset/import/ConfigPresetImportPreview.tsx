@@ -8,8 +8,6 @@ import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
-import EEChip from '../../../common/entreprise_edition/EEChip';
-import EETooltip from '../../../common/entreprise_edition/EETooltip';
 import { ConfigPresetImportPreviewQuery, ConfigPresetImportPreviewQuery$data } from './__generated__/ConfigPresetImportPreviewQuery.graphql';
 import { ConfigPresetImportPreviewSaveMutation } from './__generated__/ConfigPresetImportPreviewSaveMutation.graphql';
 import { toConfigImportModes, toConfigPresetSelection } from './configPresetImportSelection';
@@ -29,10 +27,10 @@ import {
   ConfigPresetSelection,
   getConfigPresetForcedItems,
   isConfigPresetItemSelected,
-  type ConfigPresetItemKey,
+  isConfigPresetTypeLocked,
   isSingletonConfigPresetType,
   selectAllConfigPresetItems,
-  withConfigPresetItemsChecked,
+  toggleConfigPresetTypes,
 } from '../configPresetSelection';
 import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
 import ConfigPresetImportActions from './ConfigPresetImportActions';
@@ -57,6 +55,7 @@ const configPresetImportPreviewQuery = graphql`
         key
         label
         description
+        requiresEnterpriseEdition
         modes
         group {
           key
@@ -67,7 +66,6 @@ const configPresetImportPreviewQuery = graphql`
           label
           translatable
           isDefault
-          requiresEnterpriseEdition
           exists
           conflict
           fields {
@@ -99,11 +97,6 @@ type PreviewType = Preview['types'][number];
 const toCountedTypes = (types: ReadonlyArray<PreviewType>) => types.map((type) => ({ ...type, itemsPageInfo: { globalCount: type.items.length } }));
 
 type ImportSelections = ReturnType<typeof buildConfigPresetSelections>;
-
-// The items of the types that are part of the Enterprise Edition, whether the platform has it or not
-const getEnterpriseEditionItems = (types: ReadonlyArray<{ key: string; items: ReadonlyArray<{ key: string; requiresEnterpriseEdition: boolean }> }>): ConfigPresetItemKey[] => {
-  return types.flatMap((type) => type.items.filter((item) => item.requiresEnterpriseEdition).map((item) => ({ type: type.key, key: item.key })));
-};
 
 // The expected result of a processed item
 interface SimulatedResult {
@@ -171,10 +164,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const isMountedRef = useRef(true);
   const onSimulateRef = useRef(onSimulate);
   onSimulateRef.current = onSimulate;
-  // Read live: a license activated from the preview is known without a refresh
+  // Read live: a license activated from the preview is known without a refresh, and the preview is read again with what it unlocks
   const isEnterpriseEdition = useEnterpriseEdition();
-  const isEnterpriseEditionRef = useRef(isEnterpriseEdition);
-  isEnterpriseEditionRef.current = isEnterpriseEdition;
+  const hasLoadedRef = useRef(false);
   const [commitSave] = useApiMutation<ConfigPresetImportPreviewSaveMutation>(configPresetImportPreviewSaveMutation);
   // The revision only goes up: the backend ignores a lower one
   const revisionRef = useRef(session.revision);
@@ -182,6 +174,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const timerRef = useRef<number | null>(null);
   const commitSaveRef = useRef(commitSave);
   commitSaveRef.current = commitSave;
+  // What the load of the preview reads when a license is activated: the selection and the modes as they are then
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
+  const importModesRef = useRef(importModes);
+  importModesRef.current = importModes;
+  const scheduleSaveRef = useRef<(nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes, nextTypes: ReturnType<typeof toCountedTypes>) => void>(() => {});
 
   useEffect(() => {
     let active = true;
@@ -191,12 +189,21 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         if (active && data) {
           const loaded = data.configPresetImportPreview;
           setPreview(loaded);
-          // A new upload has no saved selection yet: every item starts selected, as in the export
-          const isNew = session.revision === 0 && session.selections.length === 0;
-          const initialSelection = isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections);
-          // What needs the Enterprise Edition is not selected on a platform without it, whatever the saved selection says
-          setSelection(isEnterpriseEditionRef.current ? initialSelection : withConfigPresetItemsChecked(initialSelection, getEnterpriseEditionItems(loaded.types), false));
-          setImportModes(toConfigImportModes(session.selections));
+          if (!hasLoadedRef.current) {
+            hasLoadedRef.current = true;
+            // A new upload has no saved selection yet: every item starts selected, as in the export
+            const isNew = session.revision === 0 && session.selections.length === 0;
+            setSelection(isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections));
+            setImportModes(toConfigImportModes(session.selections));
+          } else if (isEnterpriseEdition) {
+            // A license was activated: the types that needed it come with their items, and are selected, as activating it was asking for them
+            const unlocked = loaded.types.filter((type) => type.requiresEnterpriseEdition);
+            if (unlocked.length > 0) {
+              const next = toggleConfigPresetTypes(selectionRef.current, unlocked, true);
+              setSelection(next);
+              scheduleSaveRef.current(next, importModesRef.current, toCountedTypes(loaded.types));
+            }
+          }
         }
       })
       .catch((err) => {
@@ -212,8 +219,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     return () => {
       active = false;
     };
-  // The preview is read once for a file
-  }, [environment, session.file_id]);
+  // The preview is read again when a license is activated, which unlocks the types that need it
+  }, [environment, session.file_id, isEnterpriseEdition]);
 
   // Resolved once the save is answered, whatever the answer. A failure is notified by the global error toast; a file that is no longer
   // the one of the session (another tab uploaded a new one) sends the wizard back to the upload.
@@ -250,39 +257,29 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   }, []);
 
   const types = preview ? toCountedTypes(preview.types) : [];
-  const enterpriseEditionItems = getEnterpriseEditionItems(types);
-  // Without the Enterprise Edition these items cannot be selected: the import would skip them
-  const lockedItems = isEnterpriseEdition ? [] : enterpriseEditionItems;
+  // What is imported: a type that is locked has no item to import, whatever a selection saved before says
+  const selectableTypes = (allTypes: typeof types) => allTypes.filter((type) => !isConfigPresetTypeLocked(type, isEnterpriseEdition));
   const forced = getConfigPresetForcedItems(types, selection);
-  const selections = buildConfigPresetSelections(types, selection, importModes, forced);
+  const selections = buildConfigPresetSelections(selectableTypes(types), selection, importModes, forced);
   // Selected, or required by a selected item
   const isImportedItem = (typeKey: string, itemKey: string) => (forced[typeKey] ?? []).includes(itemKey) || isConfigPresetItemSelected(selection, typeKey, itemKey);
 
   // The selection and the modes are saved together, after a short delay
-  const scheduleSave = (nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes) => {
+  const scheduleSave = (nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes, nextTypes = types) => {
     revisionRef.current += 1;
-    pendingRef.current = buildConfigPresetSelections(types, nextSelection, nextImportModes, getConfigPresetForcedItems(types, nextSelection));
+    pendingRef.current = buildConfigPresetSelections(selectableTypes(nextTypes), nextSelection, nextImportModes, getConfigPresetForcedItems(nextTypes, nextSelection));
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
     }
     timerRef.current = window.setTimeout(flushSave, SAVE_DELAY_MS);
   };
 
-  const handleSelectionChange = (requested: ConfigPresetSelection) => {
-    // A type or a group checked as a whole does not select the locked items it holds
-    const next = withConfigPresetItemsChecked(requested, lockedItems, false);
+  scheduleSaveRef.current = scheduleSave;
+
+  const handleSelectionChange = (next: ConfigPresetSelection) => {
     setSelection(next);
     scheduleSave(next, importModes);
   };
-
-  // A license activated while the preview is open unlocks its items, which are selected: activating it was asking for them
-  const wasEnterpriseEditionRef = useRef(isEnterpriseEdition);
-  useEffect(() => {
-    if (isEnterpriseEdition && !wasEnterpriseEditionRef.current && preview) {
-      handleSelectionChange(withConfigPresetItemsChecked(selection, enterpriseEditionItems, true));
-    }
-    wasEnterpriseEditionRef.current = isEnterpriseEdition;
-  }, [isEnterpriseEdition]);
 
   const handleImportModeChange = (typeKey: string, itemKey: string, mode: ConfigImportMode) => {
     const next = withConfigImportMode(importModes, typeKey, itemKey, mode);
@@ -402,7 +399,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         selection={selection}
         forced={forced}
         expandTypes
-        unselectable={lockedItems}
+        lockedTitle="Activate the Enterprise Edition to import this item"
         onSelectionChange={handleSelectionChange}
         renderTypeActions={(type) => {
           // From two items in conflict that are imported: with one, its own choice is enough, and an item that is not imported has none
@@ -428,8 +425,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           // The platform points to a theme by its standard id: a copy of the default theme is another theme, the default stays the one it is
           const keepsDefaultTheme = hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
           const hiddenTypes = isImportedItem(type.key, item.key) && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
-          const isLocked = item.requiresEnterpriseEdition && !isEnterpriseEdition;
-          const row = (
+          return (
             <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
               <ConfigPresetItemRow
                 typeKey={type.key}
@@ -438,9 +434,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                 selection={selection}
                 forced={forced}
                 onSelectionChange={handleSelectionChange}
-                statusSlot={(isLocked || hasChoice || (result && isResultShown(result, hasChoice))) ? (
+                statusSlot={(hasChoice || (result && isResultShown(result, hasChoice))) ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-                    {isLocked && <EEChip feature={item.label} size="sm" clickable={false} />}
                     {hasChoice && (
                       <ConfigPresetImportModeSelect
                         subject={item.translatable ? t_i18n(item.label) : item.label}
@@ -466,10 +461,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
               )}
             </div>
           );
-          // The gate of the Enterprise Edition opens the license dialog of the platform instead of the row, until the platform has it
-          return item.requiresEnterpriseEdition
-            ? <EETooltip title={isLocked ? 'Activate the Enterprise Edition to import this item' : undefined}>{row}</EETooltip>
-            : row;
         }}
       />
       <div
