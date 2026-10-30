@@ -16,20 +16,11 @@ const useImportAccess = () => {
   });
   const hasKnowledgeUpdateInDraftOnly = !hasKnowledgeUpdateInMain && hasKnowledgeUpdateInDraft;
 
-  // Has the form intake capability only in draft (not in main, and no create/update in main either)
   const hasFormIntakeInMain = useGranted([KNOWLEDGE_KNFORMINTAKE]);
-  const hasFormIntakeInDraft = useGranted([], false, {
-    capabilitiesInDraft: [KNOWLEDGE_KNFORMINTAKE],
-  });
-  const hasFormIntakeInDraftOnly = !hasFormIntakeInMain && !hasKnowledgeUpdateInMain && hasFormIntakeInDraft;
 
   // Forced to create Draft on import if they have no import capability in base but have it in draft,
   // or if they only have KNOWLEDGE_KNUPDATE in draft (not in main).
   const isForcedImportToDraft = (!hasImportBaseCapability && hasAnyImportCapability) || hasKnowledgeUpdateInDraftOnly;
-
-  // A form is submitted where the form capability is held: with it in main, the submission can stay in main, whatever
-  // the user can do in draft; with it in draft only, the submission goes to a draft. File imports are not concerned.
-  const isForcedFormSubmissionToDraft = (isForcedImportToDraft || hasFormIntakeInDraftOnly) && !hasFormIntakeInMain;
 
   // Only access to Import Draft Tab: requires at minimum KNOWLEDGE_KNUPDATE (in main or draft)
   const hasKnowledgeUpdate = useGranted([KNOWLEDGE_KNUPDATE], false, {
@@ -37,9 +28,6 @@ const useImportAccess = () => {
   });
 
   const hasOnlyAccessToImportDraftTab = !hasImportBaseCapability && hasKnowledgeUpdate;
-
-  // A draft page (and its workflow) needs KNOWLEDGE_KNUPDATE: a form-only user cannot open the draft their submission created
-  const canOpenDraft = hasKnowledgeUpdate;
 
   // Can submit forms (in main or in draft) but cannot import files: the import dialog only offers the forms
   const hasFormIntakeCapability = useGranted([KNOWLEDGE_KNFORMINTAKE], false, {
@@ -52,6 +40,11 @@ const useImportAccess = () => {
   const canSubmitForms = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE], false, {
     capabilitiesInDraft: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNASKIMPORT],
   });
+  const canSubmitFormsInMain = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]);
+
+  // A form is submitted to a draft when it cannot be submitted to main (canSubmitFormTo), and, as for a file import, when
+  // the user can only import in draft, unless the form capability is held in main. File imports are not concerned.
+  const isForcedFormSubmissionToDraft = (isForcedImportToDraft && !hasFormIntakeInMain) || (canSubmitForms && !canSubmitFormsInMain);
 
   return {
     isForcedImportToDraft,
@@ -59,7 +52,6 @@ const useImportAccess = () => {
     hasOnlyAccessToImportDraftTab,
     hasOnlyAccessToFormImport,
     canSubmitForms,
-    canOpenDraft,
   };
 };
 
