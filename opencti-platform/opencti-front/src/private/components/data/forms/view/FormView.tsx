@@ -591,8 +591,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           </Alert>
         )}
 
-        {/* Deferred mode for everything inside: creation dialogs keep their objects in the pending store.
-            The formSubmit mutation (useApiMutation above) must stay outside, it would be intercepted. */}
+        {/* Deferred mode for everything inside: creation dialogs keep their objects in the pending store. */}
         <DeferredCreationContext.Provider value={deferredCreation}>
           <Formik
             initialValues={initialValues}
