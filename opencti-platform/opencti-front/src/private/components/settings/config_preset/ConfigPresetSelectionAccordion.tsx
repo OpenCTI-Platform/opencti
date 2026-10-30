@@ -6,6 +6,7 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import { onActivationKey } from '../../../../utils/domEvent';
 import EEChip from '../../common/entreprise_edition/EEChip';
 import EETooltip from '../../common/entreprise_edition/EETooltip';
 import type { Theme } from '../../../../components/Theme';
@@ -98,15 +99,18 @@ export interface ConfigPresetAccordionType {
 }
 
 // A type the platform cannot use: one row that stays unchecked, with the chip, and opens the license dialog. When the front end knows the
-// platform has the license, the backend has not taken it into account yet: the row says so, as there is nothing to activate.
-const ConfigPresetLockedTypeRow: FunctionComponent<{ type: ConfigPresetAccordionType; title?: string }> = ({ type, title }) => {
+// platform has the license, the backend has not taken it into account yet: the row says so, and reads the types again when it is clicked.
+const ConfigPresetLockedTypeRow: FunctionComponent<{ type: ConfigPresetAccordionType; title?: string; onRetry?: () => void }> = ({ type, title, onRetry }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
-  // The whole row opens the license dialog: its disabled checkbox and chip let the row's pointer cursor through instead of showing their own
+  const retryProps = isEnterpriseEdition && onRetry
+    ? { role: 'button', tabIndex: 0, onClick: onRetry, onKeyDown: onActivationKey(onRetry) }
+    : {};
+  // The whole row is the button (it opens the license dialog, or reads again): its disabled checkbox and chip let the row's pointer cursor through
   return (
     <EETooltip title={isEnterpriseEdition ? 'The Enterprise Edition license is not taken into account yet, try again in a moment' : title}>
-      <div style={{ cursor: isEnterpriseEdition ? undefined : 'pointer' }}>
+      <div style={{ cursor: !isEnterpriseEdition || onRetry ? 'pointer' : undefined }} {...retryProps}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), pointerEvents: 'none' }}>
           <Checkbox label={t_i18n(type.label)} description={t_i18n(type.description)} checked={false} disabled />
           <EEChip feature={t_i18n(type.label)} size="sm" clickable={false} />
@@ -132,6 +136,8 @@ interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionTyp
   expandTypes?: boolean;
   // The tooltip of a type that needs the Enterprise Edition the platform does not have yet, which opens the license dialog
   lockedTitle?: string;
+  // Reads the types again: what a locked row does when clicked on a platform that has the license, which the backend has not taken into account yet
+  onLockedRetry?: () => void;
 }
 
 // The groups, types and items of a bundle with their checkboxes, counts and chevrons: shared by the export drawer and the import preview
@@ -146,6 +152,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   renderTypeActions,
   expandTypes = false,
   lockedTitle,
+  onLockedRetry,
 }: ConfigPresetSelectionAccordionProps<T>) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -174,7 +181,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
             {group.types.map((type) => {
               // Nothing of the type is listed, checked or counted until the platform has the license
               if (isLocked(type)) {
-                return <ConfigPresetLockedTypeRow key={type.key} type={type} title={lockedTitle} />;
+                return <ConfigPresetLockedTypeRow key={type.key} type={type} title={lockedTitle} onRetry={onLockedRetry} />;
               }
               // A type whose only item has the key of the type is one row, not a type with an item of the same name below it
               if (isSingletonConfigPresetType(type)) {

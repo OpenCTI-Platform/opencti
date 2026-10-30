@@ -158,7 +158,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [confirmStartOver, setConfirmStartOver] = useState(false);
   // The expected results, by `<type>/<key>`: held here only, never saved; computed again when the selection changes
   const [results, setResults] = useState<Record<string, SimulatedResult> | null>(null);
-  // True from a change of the selection until the results of the latest request are in: Apply waits
   // Only the response of the latest request is kept
   const simulationRef = useRef(0);
   const hasSimulatedRef = useRef(false);
@@ -256,7 +255,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     });
   }, [session.file_id]);
 
-  useConfigPresetLicenseRetry(preview?.types, () => setReloadCount((count) => count + 1));
+  const retryLocked = useConfigPresetLicenseRetry(preview?.types, () => setReloadCount((count) => count + 1));
 
   // A pending save is sent on close
   useEffect(() => () => {
@@ -406,6 +405,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         forced={forced}
         expandTypes
         lockedTitle="Activate the Enterprise Edition to import this item"
+        onLockedRetry={retryLocked}
         onSelectionChange={handleSelectionChange}
         renderTypeActions={(type) => {
           // From two items in conflict that are imported: with one, its own choice is enough, and an item that is not imported has none

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
+import { CONFIG_PRESET_LICENSE_MAX_RETRIES } from '../useConfigPresetLicenseRetry';
 import ConfigPresetExportDrawer from './ConfigPresetExportDrawer';
 
 // The Enterprise Edition of the platform, which can change while the drawer is open (a license activated from it)
@@ -314,6 +315,23 @@ describe('ConfigPresetExportDrawer', () => {
       fireEvent.mouseOver(screen.getByText('Remove Filigran logos'));
       expect(await screen.findByText(STALE_TITLE)).toBeInTheDocument();
     });
+
+    it('reads the catalog again when the row is clicked, after the automatic attempts', async () => {
+      const rendered = await renderOpenDrawer(vi.fn(), [...catalog, staleType()]);
+      await act(async () => {
+        enterpriseEdition.activate();
+      });
+      // The backend keeps answering locked, with the same catalog: the load of the license, then each automatic attempt
+      for (let attempt = 0; attempt <= CONFIG_PRESET_LICENSE_MAX_RETRIES; attempt += 1) {
+        await resolveCatalog(rendered, [...catalog, staleType()]);
+        if (attempt < CONFIG_PRESET_LICENSE_MAX_RETRIES) {
+          await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().length).toBeGreaterThan(0), { timeout: 4000 });
+        }
+      }
+      await rendered.user.click(screen.getByRole('button', { name: STALE_TITLE }));
+      await resolveCatalog(rendered, [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { requiresEnterpriseEdition: true, locked: false })]);
+      expect(await screen.findByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'checked');
+    }, 15000);
 
     it('reads the catalog again until the backend has taken the license into account', async () => {
       const rendered = await renderOpenDrawer(vi.fn(), [...catalog, staleType()]);

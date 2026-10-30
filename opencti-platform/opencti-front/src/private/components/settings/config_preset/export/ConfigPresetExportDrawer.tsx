@@ -64,9 +64,10 @@ type ExportableTypes = ConfigPresetExportDrawerQuery['response']['configPresetEx
 interface ConfigPresetExportContentProps {
   types: ExportableTypes;
   onClose: () => void;
+  onLockedRetry: () => void;
 }
 
-const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProps> = ({ types, onClose }) => {
+const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProps> = ({ types, onClose, onLockedRetry }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [selection, setSelection] = useState<ConfigPresetSelection>(() => selectAllConfigPresetItems(types));
@@ -113,6 +114,7 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
           onSelectionChange={setSelection}
           onManageType={setManagedTypeKey}
           lockedTitle="Activate the Enterprise Edition to export this item"
+          onLockedRetry={onLockedRetry}
         />
         <Input
           label={t_i18n('Bundle name')}
@@ -142,15 +144,15 @@ interface ConfigPresetExportFormProps {
 
 const ConfigPresetExportForm: FunctionComponent<ConfigPresetExportFormProps> = ({ queryRef, onClose, onReload }) => {
   const { configPresetExportableTypes } = usePreloadedQuery(configPresetExportDrawerQuery, queryRef);
-  useConfigPresetLicenseRetry(configPresetExportableTypes, onReload);
-  // A type without item has nothing to check: it is not shown, and neither is a group left without type. A type that needs the
-  // Enterprise Edition the platform does not have is shown, locked.
-  const types = configPresetExportableTypes.filter((type) => type.items.length > 0 || type.requiresEnterpriseEdition);
+  const retryLocked = useConfigPresetLicenseRetry(configPresetExportableTypes, onReload);
+  // A type without item has nothing to check: it is not shown, and neither is a group left without type. A type the platform cannot use
+  // (it needs the Enterprise Edition the platform does not have) is shown, locked.
+  const types = configPresetExportableTypes.filter((type) => type.items.length > 0 || type.locked);
   // The selection starts with every item checked: the content is remounted when the catalog changes, as the cached catalog is first
   // rendered and then replaced by the network one. The types of the Enterprise Edition are not part of the key: a license activated
   // while the drawer is open adds them to the catalog, and the selection made until then is kept (they come checked, as the selection holds them all).
   const catalogKey = types.filter((type) => !type.requiresEnterpriseEdition).flatMap((type) => type.items.map((item) => `${type.key}/${item.key}`)).join(',');
-  return <ConfigPresetExportContent key={catalogKey} types={types} onClose={onClose} />;
+  return <ConfigPresetExportContent key={catalogKey} types={types} onClose={onClose} onLockedRetry={retryLocked} />;
 };
 
 // The drawer content is only mounted while it is open, so the catalog is loaded on demand

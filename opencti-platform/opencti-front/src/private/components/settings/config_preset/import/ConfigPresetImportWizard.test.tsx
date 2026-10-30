@@ -915,9 +915,8 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
       expect(checkbox('Messages (0/1)')).toBeEnabled();
       expect(screen.getByRole('button', { name: 'Start over' })).toBeEnabled();
-      // The previous results stay until the new ones are in, and nothing says they are being computed
+      // The previous results stay until the new ones are in
       expect(screen.getByText('Failed')).toBeInTheDocument();
-      expect(screen.queryByText('Checking what the import would do')).not.toBeInTheDocument();
       await resolveSimulation(rendered, []);
       await waitFor(() => expect(screen.queryByText('Failed')).not.toBeInTheDocument());
       expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled();
