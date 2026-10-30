@@ -1089,6 +1089,7 @@ const timeSeriesBreakdown = async (
   const seriesCount = seriesLimit + (withOther ? 1 : 0);
   if (seriesCount * intervalsCount > TIME_SERIES_BREAKDOWN_MAX_BUCKETS) {
     throw FunctionalError('Time series breakdown is too large, reduce the period, the interval or the number of series', {
+      reason: 'too_large',
       limit: seriesCount,
       intervalsCount,
       max: TIME_SERIES_BREAKDOWN_MAX_BUCKETS,

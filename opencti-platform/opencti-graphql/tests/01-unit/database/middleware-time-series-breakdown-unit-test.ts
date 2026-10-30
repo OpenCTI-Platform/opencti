@@ -155,6 +155,14 @@ describe('timeSeriesBreakdownEntities', () => {
     await expect(breakdown({ field: 'creator_id', limit: 50, endDate: thousandDaysLater })).resolves.toBeDefined();
   });
 
+  it('should give the reason and the size of a breakdown refused as too large', async () => {
+    const threeYearsLater = new Date('2029-01-01T12:00:00.000Z');
+    // The front tests the reason, not the message
+    await expect(breakdown({ field: 'creator_id', limit: 50, endDate: threeYearsLater })).rejects.toMatchObject({
+      extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_large', limit: 50, intervalsCount: 1097, max: 50000 } },
+    });
+  });
+
   it('should keep the values with the lowest total in asc order', async () => {
     vi.mocked(engine.elAggregationCount).mockResolvedValue([
       bucket('user-a', 10),
