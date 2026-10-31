@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react';
 import Tag from '@common/tag/Tag';
 import { SxProps } from '@mui/material';
 import { useFormatter } from './i18n';
@@ -10,7 +11,7 @@ interface ItemStatusProps {
     } | null;
   } | null;
   disabled?: boolean;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent) => void;
 }
 
 const ItemStatus = ({ status, disabled, onClick }: ItemStatusProps) => {
