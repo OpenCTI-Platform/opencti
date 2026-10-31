@@ -24361,6 +24361,7 @@ export type PlatformEe = {
 };
 
 export enum PlatformEeSource {
+  FiligranLicense = 'FILIGRAN_LICENSE',
   OpenctiLicense = 'OPENCTI_LICENSE',
   XtmOneLicense = 'XTM_ONE_LICENSE'
 }
