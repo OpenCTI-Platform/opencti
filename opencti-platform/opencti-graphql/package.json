@@ -68,7 +68,7 @@
     "@langchain/mistralai": "1.2.0",
     "@langchain/openai": "1.7.0",
     "@lezer/javascript": "1.5.6",
-    "@mistralai/mistralai": "2.7.0",
+    "@mistralai/mistralai": "3.4.0",
     "@noble/ed25519": "3.2.0",
     "@node-saml/passport-saml": "5.1.1",
     "@opensearch-project/opensearch": "3.9.0",
