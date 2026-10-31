@@ -340,6 +340,7 @@
   "All add or remove actions done on the graph after the last expansion will be lost.": "마지막 확장 후 그래프에서 수행된 모든 추가 또는 제거 작업이 손실됩니다.",
   "All attributes": "모든 속성",
   "All confidence levels": "모든 신뢰 수준",
+  "All drafts": "모든 초안",
   "All elements in the bundle": "번들의 모든 요소",
   "All entities": "모든 엔터티",
   "All except main element in the bundle": "번들의 주요 요소를 제외한 모든 요소",

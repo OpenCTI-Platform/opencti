@@ -340,6 +340,7 @@
   "All add or remove actions done on the graph after the last expansion will be lost.": "Все действия по добавлению или удалению, выполненные на графе после последнего расширения, будут потеряны.",
   "All attributes": "Все атрибуты",
   "All confidence levels": "Все уровни доверия",
+  "All drafts": "Все черновики",
   "All elements in the bundle": "Все элементы пакета",
   "All entities": "Все организации",
   "All except main element in the bundle": "Все, кроме основного элемента пакета",

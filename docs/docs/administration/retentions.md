@@ -17,7 +17,7 @@ Retention rules can be configured in the "Settings > Customization > Retention p
 - **Active**: Toggle to enable or disable the retention rule without deleting it (see [Enabling and disabling a rule](#enabling-and-disabling-a-rule)).
 ![Retention policy active/inactive](./assets/retentions-active.png)
 
-- **Filters** (for Knowledge scope only): Define filters based on specific criteria to select the types of objects subject to retention rules.
+- **Filters** (for Knowledge scope and Draft scope only): Define filters based on specific criteria to select the types of objects subject to retention rules.
 ![Retention policy parameters](./assets/retention-policy-parameters.png)
 
 ## Scopes
@@ -33,6 +33,8 @@ There are 5 possible scopes for a retention rule:
 - **History**: The rule is applied on the history logs of all knowledge entities. History log entries older than the maximum retention duration are permanently deleted. The rule is created by default and set to Inactive if you had not created it before.
 
 - **Activity**: The rule is applied on the platform activity logs (administration events such as login, logout, and security actions). Activity log entries older than the maximum retention duration are permanently deleted. The rule is created by default and set to Inactive if you had not created it before.
+
+- **Draft**: The rule is applied on all drafts and associated data objects created within them. Users can define filters to target specific property values in DraftWorkspace. Any Draft respecting the specified filters and that haven't been updated within the maximum retention duration will be permanently deleted. The rule is created by default and set to Inactive if you had not created it before.
 
 ## Enabling and disabling a rule
 
