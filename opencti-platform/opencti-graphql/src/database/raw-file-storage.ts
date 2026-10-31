@@ -17,23 +17,63 @@ import {
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Upload } from '@aws-sdk/lib-storage';
 import { enrichWithRemoteCredentials } from '../config/credentials';
-import conf, { booleanConf, logApp, logS3Debug } from '../config/conf';
+import conf, { booleanConf, confNameToEnvName, isConfKeyDefined, logApp, logS3Debug, resolveRenamedConfKey } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
 import type { AuthUser } from '../types/user';
 import { getRoleAssumerWithWebIdentity, setupAwsClient } from '../utils/awsSdk';
 
-// Minio configuration
-const clientEndpoint = conf.get('minio:endpoint');
-const clientPort = conf.get('minio:port') || 9000;
-const clientAccessKey = conf.get('minio:access_key');
-const clientSecretKey = conf.get('minio:secret_key');
-const clientSessionToken = conf.get('minio:session_token');
-const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
-const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
-const useSslConnection = booleanConf('minio:use_ssl', false);
-const useAwsRole = booleanConf('minio:use_aws_role', false);
-const useAwsLogs = booleanConf('minio:use_aws_logs', false);
-const disableChecksumValidation = booleanConf('minio:disable_checksum_validation', false);
+// Object storage configuration, `s3` section. The former `minio` section is still read as an alias.
+const STORAGE_CONF_NAMES = ['endpoint', 'port', 'access_key', 'secret_key', 'session_token', 'bucket_name', 'bucket_region',
+  'use_ssl', 'use_aws_role', 'use_aws_logs', 'disable_checksum_validation', 'excluded_files', 'credentials_provider'];
+export const storageConfKey = (name: string) => resolveRenamedConfKey(`s3:${name}`, `minio:${name}`);
+
+// Former names read (used), former names hidden by a new name (ignored), new names hidden by a former name of higher
+// priority (shadowed). Key names only, never values.
+export const storageConfDeprecations = () => {
+  const userStores = Object.fromEntries(Object.entries(conf.stores).filter(([name]) => name !== 'default'));
+  const used: string[] = [];
+  const ignored: string[] = [];
+  const shadowed: string[] = [];
+  STORAGE_CONF_NAMES.forEach((name) => {
+    const key = `s3:${name}`;
+    const legacyKey = `minio:${name}`;
+    if (storageConfKey(name) === legacyKey) {
+      used.push(legacyKey);
+      if (isConfKeyDefined(key, userStores)) {
+        shadowed.push(key);
+      }
+    } else if (isConfKeyDefined(legacyKey)) {
+      ignored.push(legacyKey);
+    }
+  });
+  return { used, ignored, shadowed };
+};
+
+export const logStorageConfDeprecations = () => {
+  const { used, ignored, shadowed } = storageConfDeprecations();
+  const describe = (keys: string[]) => keys.map((key) => `${key} (${confNameToEnvName(key)})`);
+  if (used.length > 0) {
+    logApp.warn('[FILE STORAGE] The minio configuration section is deprecated, rename it to s3', { keys: describe(used) });
+  }
+  if (ignored.length > 0) {
+    logApp.warn('[FILE STORAGE] Former minio configuration ignored, the s3 name is set', { keys: describe(ignored) });
+  }
+  if (shadowed.length > 0) {
+    logApp.warn('[FILE STORAGE] s3 configuration ignored, a minio name of higher priority is set', { keys: describe(shadowed) });
+  }
+};
+const clientEndpoint = conf.get(storageConfKey('endpoint'));
+const clientPort = conf.get(storageConfKey('port')) || 9000;
+const clientAccessKey = conf.get(storageConfKey('access_key'));
+const clientSecretKey = conf.get(storageConfKey('secret_key'));
+const clientSessionToken = conf.get(storageConfKey('session_token'));
+const bucketName = conf.get(storageConfKey('bucket_name')) || 'opencti-bucket';
+const bucketRegion = conf.get(storageConfKey('bucket_region')) || 'us-east-1';
+const useSslConnection = booleanConf(storageConfKey('use_ssl'), false);
+const useAwsRole = booleanConf(storageConfKey('use_aws_role'), false);
+const useAwsLogs = booleanConf(storageConfKey('use_aws_logs'), false);
+const disableChecksumValidation = booleanConf(storageConfKey('disable_checksum_validation'), false);
+const credentialsPrefix = storageConfKey('credentials_provider').split(':')[0];
 export const defaultValidationMode = conf.get('app:validation_mode');
 
 /**
@@ -66,7 +106,7 @@ const buildCredentialProvider = async () => {
   }
   // If direct configuration
   const baseAuth = { accessKeyId: clientAccessKey, secretAccessKey: clientSecretKey };
-  const userPasswordAuth = await enrichWithRemoteCredentials('minio', baseAuth);
+  const userPasswordAuth = await enrichWithRemoteCredentials(credentialsPrefix, baseAuth);
   return () => {
     return {
       ...userPasswordAuth,
@@ -124,6 +164,7 @@ export const deleteBucket = async () => {
 
 export const storageInit = async () => {
   logApp.info('[CHECK] Checking if File Storage is available');
+  logStorageConfDeprecations();
   await initializeFileStorageClient();
   await initializeBucket();
   logApp.info('[CHECK] File Storage is alive');

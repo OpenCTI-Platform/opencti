@@ -80,7 +80,7 @@ yarn graphql
 The `:venv` variants wrap the command with a Python virtual environment — use them when working on `client-python` or `opencti-worker` and running the backend app.
 
 ### 4. Local Development Stack
-Start the necessary infrastructure (Elastic, Redis, RabbitMQ, Silo):
+Start the necessary infrastructure (Elastic, Redis, RabbitMQ, RustFS):
 ```bash
 cd opencti-platform/opencti-dev
 docker compose up -d
