@@ -92,6 +92,7 @@ describe('extractWorkflowMembersIds', () => {
           event: 'go',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [],
           syncActions: [{
             type: 'updateAuthorizedMembers',
@@ -113,6 +114,7 @@ describe('extractWorkflowMembersIds', () => {
           event: 'share',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [{
             type: 'asyncBulkAction',
             params: {
@@ -134,6 +136,7 @@ describe('extractWorkflowMembersIds', () => {
           event: 'unshare',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [{
             type: 'asyncBulkAction',
             params: {
@@ -214,6 +217,7 @@ describe('extractWorkflowMembersIds', () => {
           event: 'go',
           conditions: {},
           comment: null,
+          closingReason: null,
           asyncActions: [{
             type: 'asyncBulkAction',
             params: { actions: [{ type: 'SHARE', context: { values: ['user-1', 'org-1'] } }] },

@@ -47,6 +47,7 @@ export interface WorkflowPendingTransition {
   triggeredAt: string; // ISO 8601
   runtimeParams: Record<string, unknown>;
   comment?: string;
+  closingReason?: string | null;
   asyncActions: AsyncActionSlot[];
   syncActions: WorkflowActionConfig[];
   onEnterActions?: WorkflowActionConfig[]; // onEnter actions of the target state, serialized so phase 2 can replay them.
@@ -87,6 +88,7 @@ export interface Transition<TContext extends Context = Context> {
   to?: State | null;
   event: Event;
   comment?: string;
+  closingReason?: string;
   conditions?: ConditionValidator<TContext>[];
   /** Phase 1: async effects (background tasks). State does NOT advance until all succeed. */
   asyncSideEffects?: SideEffect<TContext>[];
@@ -138,6 +140,8 @@ export interface TriggerResult {
 // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.graphql.ts
 export const COMMENT_MAX_LENGTH = 1000;
 
+export const CLOSING_REASON_MAX_LENGTH = 255;
+
 /**
  * Workflow validation error structure
  */
@@ -175,6 +179,7 @@ export interface WorkflowSerializedTransition {
   to: string | null;
   event: string;
   comment?: string;
+  closingReason?: string;
   /** Phase 1: async background task actions. Run before syncActions. */
   asyncActions?: WorkflowActionConfig[];
   /** Phase 2: sync actions. Run after all asyncActions succeed (or immediately if no asyncActions). */

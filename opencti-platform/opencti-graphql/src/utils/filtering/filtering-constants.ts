@@ -76,6 +76,7 @@ export const DESCRIPTION_FILTER = 'description';
 export const SSVC_EXPLOITATION_FILTER = 'x_opencti_ssvc_exploitation';
 export const SSVC_AUTOMATABLE_FILTER = 'x_opencti_ssvc_automatable';
 export const SSVC_TECHNICAL_IMPACT_FILTER = 'x_opencti_ssvc_technical_impact';
+export const CLOSING_REASON_FILTER = 'x_opencti_closing_reason';
 
 // special cases
 export const IDS_FILTER = 'ids';

@@ -1,4 +1,5 @@
 import { CSSProperties } from 'react';
+import { Text } from '@filigran/design-system';
 import { FlagOutlined } from '@mui/icons-material';
 import { Alert, Box, FormControlLabel, Icon, Switch, Typography } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
@@ -10,13 +11,19 @@ import ObjectOrganizationField from '../../../common/form/ObjectOrganizationFiel
 import WorkflowConditionFilters from './WorkflowConditionFilters';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import WorkflowFieldList from './WorkflowFieldList';
-import { CommentMode, CommentModeType, FEATURE_NAME, WorkflowActionType, WorkflowDataType } from './utils';
+import { CommentMode, CommentModeType, FEATURE_NAME, type TargetStatusExits, WorkflowActionType, WorkflowDataType } from './utils';
 import { AUTHORIZED_MEMBERS_ENTITY_TYPES } from '../../../../../utils/authorizedMembers';
+import useAuth from '../../../../../utils/hooks/useAuth';
+import useHelper from '../../../../../utils/hooks/useHelper';
+import { isClosingReasonEnabledForType } from '../../../common/workflow/workflowFeatureFlag';
 
-const TransitionForm = ({ entityType }: { entityType: string }) => {
+const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string; targetStatusExits?: TargetStatusExits }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
+  const { schema } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const showClosingReason = isClosingReasonEnabledForType(entityType, isFeatureEnable, schema.sdos);
   const hasUpdateAuthorizedMembers = values.syncActions?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
   const hasValidateDraft = values.syncActions?.some((a) => a.type === WorkflowActionType.validateDraft);
   const hasShare = values.asyncActions?.some((a) => a.type === WorkflowActionType.shareWithOrganizations);
@@ -39,6 +46,9 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
   const handleToggleRequireComments = (checked: boolean) => {
     setFieldValue('comment', checked ? CommentMode.required : CommentMode.allowed);
   };
+
+  const closingReasonMode: CommentModeType = values.closingReason ?? CommentMode.disabled;
+  const enableClosingReason = closingReasonMode !== CommentMode.disabled;
 
   const handleToggleAction = (actionType: WorkflowActionType, checked: boolean) => {
     const currentActions = values.syncActions ?? [];
@@ -192,6 +202,51 @@ const TransitionForm = ({ entityType }: { entityType: string }) => {
           </Box>
         </Box>
       </Box>
+
+      {showClosingReason && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
+          <Typography variant="h6">
+            {t_i18n('Closing reason')}
+          </Typography>
+          <Alert severity="info" variant="outlined">
+            {t_i18n('When enabled, users will be prompted to select a closing reason when changing the status.')}
+          </Alert>
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <FormControlLabel
+              control={(
+                <Switch
+                  checked={enableClosingReason}
+                  // Kept enabled when already on, so a closing reason the status no longer allows can be turned off
+                  disabled={!enableClosingReason && !!targetStatusExits}
+                  onChange={(e) => setFieldValue('closingReason', e.target.checked ? CommentMode.allowed : CommentMode.disabled)}
+                />
+              )}
+              label={t_i18n('Enable closing reason')}
+            />
+            {targetStatusExits && (
+              <Text variant="content-caption">
+                {t_i18n('Only on a transition into a final state: {status} is left by {transitions}.', {
+                  // Quoted here: an apostrophe in the message itself is an ICU escape
+                  values: { status: `'${targetStatusExits.status}'`, transitions: targetStatusExits.events.map((event) => `'${event}'`).join(', ') },
+                })}
+              </Text>
+            )}
+            <Box sx={{ pl: 4 }}>
+              <FormControlLabel
+                control={(
+                  <Switch
+                    checked={closingReasonMode === CommentMode.required}
+                    disabled={!enableClosingReason}
+                    onChange={(e) => setFieldValue('closingReason', e.target.checked ? CommentMode.required : CommentMode.allowed)}
+                    slotProps={{ input: { 'aria-label': t_i18n('Closing reason required') } }}
+                  />
+                )}
+                label={t_i18n('Required')}
+              />
+            </Box>
+          </Box>
+        </Box>
+      )}
 
       {entityType === 'DraftWorkspace' && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>

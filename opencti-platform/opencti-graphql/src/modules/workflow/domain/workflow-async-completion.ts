@@ -21,6 +21,11 @@ import { projectWorkflowState, resolveProjectionScope } from './workflow-project
 
 // history is rewritten as a whole on each append, so keep only the latest entries.
 const MAX_WORKFLOW_HISTORY_ENTRIES = 200;
+// A failed entity write must not lose a closing reason: the history entry keeps it, the instance error points to it
+export const closingReasonNotWrittenError = (closingReason: string) => {
+  return `Closing reason "${closingReason}" could not be written on the entity: a user with bypass rights can set it`;
+};
+
 export const appendWorkflowHistoryEntry = (history: any[], entry: any): any[] => {
   return [...history, entry].slice(-MAX_WORKFLOW_HISTORY_ENTRIES);
 };
@@ -229,6 +234,7 @@ const completeWorkflowAsyncActionResult = async (
     completedAt: new Date().toISOString(),
     ...(pendingTransition.completesWorkflow ? { completed: true } : {}),
     ...(pendingTransition.comment ? { comment: pendingTransition.comment } : {}),
+    ...(pendingTransition.closingReason ? { closing_reason: pendingTransition.closingReason } : {}),
   });
 
   await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
@@ -243,7 +249,13 @@ const completeWorkflowAsyncActionResult = async (
   // Keep the legacy `x_opencti_workflow_id` in sync with the completed state.
   // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
   if (fullEntity) {
-    await projectWorkflowState(executionContext, executionUser, fullEntity, pendingTransition.toState, resolveProjectionScope(instanceEntity.scope));
+    const scope = resolveProjectionScope(instanceEntity.scope);
+    const projected = await projectWorkflowState(executionContext, executionUser, fullEntity, pendingTransition.toState, scope, pendingTransition.closingReason);
+    if (!projected && pendingTransition.closingReason) {
+      await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason)] },
+      ]);
+    }
   } else {
     logApp.warn('[workflow-async-completion] Skipping status projection: entity could not be loaded', { entityId: instanceEntity.entity_id });
   }

@@ -338,3 +338,15 @@ describe('WorkflowFactory.createConditions – entity attribute filters', () => 
     expect(stixLoadByIdMock).not.toHaveBeenCalled();
   });
 });
+
+describe('WorkflowFactory.createDefinition – closingReason field', () => {
+  it('propagates the closing reason mode to the transition definition', () => {
+    const definition = WorkflowFactory.createDefinition(makeSchema({ closingReason: 'required' }));
+    expect(definition.getTransition('draft', 'submit')!.closingReason).toBe('required');
+  });
+
+  it('leaves closingReason undefined when the schema transition has none', () => {
+    const definition = WorkflowFactory.createDefinition(makeSchema());
+    expect(definition.getTransition('draft', 'submit')!.closingReason).toBeUndefined();
+  });
+});

@@ -30,6 +30,7 @@ export type Transition = {
   syncActions?: Action[];
   conditions?: { filters: FilterGroup };
   comment?: CommentModeType;
+  closingReason?: CommentModeType;
 };
 
 export const FEATURE_NAME = 'Workflow';
@@ -149,7 +150,7 @@ const transformToWorkflowDefinition = (
   // 2. Extract transitions
   const transitions = nodes.flatMap((node) => {
     if (node.type === WorkflowNodeType.transition) {
-      const { event, conditions = {}, comment, asyncActions = [], syncActions = [] } = node.data;
+      const { event, conditions = {}, comment, closingReason, asyncActions = [], syncActions = [] } = node.data;
       // Find ALL incoming edges (From Status -> This Transition)
       const incomingEdges = edges.filter((e) => e.target === node.id);
       // Find ALL outgoing edges (This Transition -> To Status)
@@ -166,6 +167,7 @@ const transformToWorkflowDefinition = (
         asyncActions: formatActions(asyncActions),
         syncActions: formatActions(syncActions),
         comment,
+        closingReason,
       };
 
       // Fan out: one SerializedTransition per (from, to) pair.
@@ -197,9 +199,24 @@ const transformToWorkflowDefinition = (
 const isElementStatus = (selectedElement: Node) => (selectedElement?.type === WorkflowNodeType.status || selectedElement?.type === WorkflowNodeType.placeholder);
 const isNewElementStatus = (selectedElement: Node) => (selectedElement?.type === WorkflowNodeType.placeholder);
 
+export type TargetStatusExits = { status: string; events: string[] };
+
+// The transitions leaving the status a transition leads to. A closing reason is only allowed into a final status, left by none.
+const findTargetStatusExits = (transitionId: string, nodes: Node[], edges: Edge[]): TargetStatusExits | undefined => {
+  const target = nodes.find((node) => node.type === WorkflowNodeType.status
+    && edges.some((edge) => edge.source === transitionId && edge.target === node.id));
+  if (!target) return undefined;
+  const events = edges
+    .filter((edge) => edge.source === target.id)
+    .map((edge) => nodes.find((node) => node.id === edge.target && node.type === WorkflowNodeType.transition)?.data.event)
+    .filter((event): event is string => !!event);
+  return events.length > 0 ? { status: target.data.statusTemplate?.name ?? target.id, events } : undefined;
+};
+
 export {
   getInitialState,
   transformToWorkflowDefinition,
   isElementStatus,
   isNewElementStatus,
+  findTargetStatusExits,
 };
