@@ -39,7 +39,7 @@
     "@filigran/chatbot/uuid": "14.0.3",
     "@types/pdfmake": "0.3.3",
     "axios": "1.21.0",
-    "babel-plugin-relay/graphql": "15.3.0",
+    "babel-plugin-relay/graphql": "17.0.2",
     "chokidar": "6.0.0",
     "d3-color": "3.1.0",
     "graphql": "patch:graphql@17.0.2#./patch/graphql-17.patch",
