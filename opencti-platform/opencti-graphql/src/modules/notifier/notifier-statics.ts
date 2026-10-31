@@ -62,10 +62,15 @@ export interface NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE {
   headers: { attribute: string; value: string }[];
 }
 
+// Header names and values that node accepts once normalized (see normalizeWebhookHeaders), so the form also
+// accepts the surrounding spaces and the trailing colons of a header copied from a curl command.
+const WEBHOOK_HEADER_NAME_PATTERN = "^\\s*[!#$%&'*+.^_`|~0-9A-Za-z-]+\\s*:*\\s*$";
+const WEBHOOK_HEADER_VALUE_PATTERN = '^\\s*[\\t\\x20-\\x7e\\x80-\\xff]*\\s*$';
+
 export const NOTIFIER_CONNECTOR_WEBHOOK_CONFIG: JSONSchemaType<NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE> = {
   type: 'object',
   properties: {
-    verb: { type: 'string', enum: ['GET', 'POST', 'PUT', ' DELETE'] },
+    verb: { type: 'string', enum: ['GET', 'POST', 'PUT', 'DELETE'] },
     url: { type: 'string' },
     template: { type: 'string' },
     params: {
@@ -90,9 +95,11 @@ export const NOTIFIER_CONNECTOR_WEBHOOK_CONFIG: JSONSchemaType<NOTIFIER_CONNECTO
         properties: {
           attribute: {
             type: 'string',
+            pattern: WEBHOOK_HEADER_NAME_PATTERN,
           },
           value: {
             type: 'string',
+            pattern: WEBHOOK_HEADER_VALUE_PATTERN,
           },
         },
         required: ['attribute', 'value'],
