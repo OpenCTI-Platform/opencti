@@ -266,6 +266,37 @@ const extractTokenFromBearer = (authorization: string | undefined) => {
   return isBearer ? authorization.substring(BEARER.length) : null;
 };
 
+export const TOKEN_MASK = '****';
+const TOKEN_MASK_VISIBLE_CHARS = 4;
+// Below this length, showing the last characters would reveal too much of the token
+const TOKEN_MASK_MIN_LENGTH = 12;
+
+/**
+ * The single mask of an API token, used everywhere a token is shown or written:
+ * the stored masked_token (GraphQL API and UI), the admin base token, the legacy
+ * token migration and the logs. Only the last 4 characters are kept, never a prefix.
+ */
+export const maskToken = (token: string | null | undefined): string => {
+  if (!token || token.length < TOKEN_MASK_MIN_LENGTH) {
+    return TOKEN_MASK;
+  }
+  return `${TOKEN_MASK}${token.slice(-TOKEN_MASK_VISIBLE_CHARS)}`;
+};
+
+/**
+ * Log metadata of a failed token authentication: the token is masked with maskToken.
+ */
+export const buildTokenAuthFailureLogMeta = (
+  cause: unknown,
+  bearerToken: string,
+  req: { headers: Record<string, string | string[] | undefined> },
+) => ({
+  cause,
+  masked_token: maskToken(bearerToken),
+  user_agent: req.headers['user-agent'] || 'unknown',
+  origin: req.headers.origin || req.headers.referer || 'unknown',
+});
+
 const extractInfoFromBasicAuth = (authorization: string | undefined) => {
   const isBasic = authorization && authorization.startsWith(BASIC);
   if (isBasic) {
@@ -2467,15 +2498,7 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
     try {
       return await authenticateUserByToken(context, req, bearerToken);
     } catch (err) {
-      const tokenPrefix = bearerToken.substring(0, 20);
-      const userAgent = req.headers['user-agent'] || 'unknown';
-      const origin = req.headers.origin || req.headers.referer || 'unknown';
-      logApp.warn('Error resolving user by token', {
-        cause: err,
-        token_prefix: `${tokenPrefix}...`,
-        user_agent: userAgent,
-        origin,
-      });
+      logApp.warn('Error resolving user by token', buildTokenAuthFailureLogMeta(err, bearerToken, req));
       return undefined;
     }
   }
@@ -2544,7 +2567,7 @@ const initAdmin = async (context: AuthContext, email: string, password: string, 
     name: 'Base token',
     hash: await generateTokenHmac(tokenValue),
     created_at: now,
-    masked_token: `****${tokenValue.slice(-4)}`,
+    masked_token: maskToken(tokenValue),
   };
   tokensWithoutBaseOne.push(newToken);
   const updates = [{ key: apiTokens.name, value: tokensWithoutBaseOne, operation: UPDATE_OPERATION_REPLACE as EditOperation }];
@@ -2811,7 +2834,7 @@ export const generateSecureToken = async (): Promise<GeneratedToken> => {
   const random = crypto.randomBytes(48).toString('base64url');
   const token = `flgrn_octi_tkn_${random}`;
   const hash = await generateTokenHmac(token);
-  const masked_token = `****${token.slice(-4)}`;
+  const masked_token = maskToken(token);
   return { token, hash, masked_token };
 };
 
