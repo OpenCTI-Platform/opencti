@@ -153,7 +153,7 @@ export const fetchRemoteStreams = async (context: AuthContext, user: AuthUser, i
   `;
 
     const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
-    const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: ssl_verify ?? false, responseType: 'json' };
+    const httpClientOptions: GetHttpClient = { headers, rejectUnauthorized: ssl_verify, responseType: 'json' };
     const httpClient = getHttpClient(httpClientOptions);
     const remoteUri = computeStreamRemoteUrl(uri);
     const { data } = await httpClient.post(remoteUri, { query });

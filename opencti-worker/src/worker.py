@@ -18,6 +18,10 @@ from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
 )
+from pycti.utils.opencti_tls import (
+    get_tls_reject_unauthorized,
+    log_tls_verification_disabled,
+)
 
 from listen_handler import ListenHandler
 from message_queue_consumer import MessageQueueConsumer
@@ -73,7 +77,10 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             "OPENCTI_TOKEN", ["opencti", "token"], config
         )
         self.opencti_ssl_verify = get_config_variable(
-            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, default=False
+            "OPENCTI_SSL_VERIFY",
+            ["opencti", "ssl_verify"],
+            config,
+            default=get_tls_reject_unauthorized(config),
         )
         self.opencti_json_logging = get_config_variable(
             "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, default=True
@@ -122,7 +129,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             "WORKER_LISTEN_API_SSL_VERIFY",
             ["worker", "listen_api_ssl_verify"],
             config,
-            default=False,
+            default=get_tls_reject_unauthorized(config),
         )
         self.listen_api_http_proxy = get_config_variable(
             "WORKER_LISTEN_API_HTTP_PROXY",
@@ -189,6 +196,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             provider="worker/" + __version__,
         )
         self.worker_logger = self.api.logger_class("worker")
+        log_tls_verification_disabled(self.worker_logger, config)
 
     def build_pika_parameters(
         self, connector_config: Dict[str, Any]

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getProxyConfigurationForContract, injectProxyConfiguration } from '../../../src/config/proxy-config';
 import type { ConfigAdapter } from '../../../src/config/proxy-config';
+import { TLS_REJECT_UNAUTHORIZED } from '../../../src/config/conf';
 
 // Helper function to create mock certificate content
 const createMockCert = (identifier: string): string => {
@@ -71,9 +72,9 @@ describe('Connector Proxy configuration tests', () => {
 
       const result = getProxyConfigurationForContract(configAdapter);
 
-      // Empty proxy values should not be included (except reject_unauthorized which has default)
+      // Empty proxy values should not be included (except reject_unauthorized which follows the global TLS option)
       expect(result).toEqual({
-        HTTPS_PROXY_REJECT_UNAUTHORIZED: 'true',
+        HTTPS_PROXY_REJECT_UNAUTHORIZED: String(TLS_REJECT_UNAUTHORIZED),
       });
     });
 
@@ -234,7 +235,7 @@ describe('Connector Proxy configuration tests', () => {
       result = getProxyConfigurationForContract(configAdapter2);
       expect(result.HTTPS_PROXY_REJECT_UNAUTHORIZED).toBe('true');
 
-      // Test with undefined (default to false for proxy)
+      // Test with undefined (follows the global TLS option)
       const configAdapter3 = createTestConfigAdapter({
         https_proxy: 'https://secure-proxy.example.com:8443',
         https_proxy_reject_unauthorized: undefined,
@@ -244,7 +245,7 @@ describe('Connector Proxy configuration tests', () => {
       });
 
       result = getProxyConfigurationForContract(configAdapter3);
-      expect(result.HTTPS_PROXY_REJECT_UNAUTHORIZED).toBe('true');
+      expect(result.HTTPS_PROXY_REJECT_UNAUTHORIZED).toBe(String(TLS_REJECT_UNAUTHORIZED));
     });
 
     it('should handle whitespace in NO_PROXY correctly', () => {

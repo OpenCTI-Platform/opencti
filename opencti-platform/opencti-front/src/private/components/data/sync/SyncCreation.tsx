@@ -207,7 +207,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
     setErrors: FormikHelpers<SynchronizerAddInput>['setErrors'],
     currentErrors: FormikErrors<SynchronizerAddInput>,
   ) => {
-    const args = { uri: values.uri, token: values.token, ssl_verify: values.ssl_verify ?? false };
+    const args = { uri: values.uri, token: values.token, ssl_verify: values.ssl_verify ?? true };
     fetchQuery(syncStreamCollectionQuery, args)
       .toPromise()
       .then((result) => {
@@ -260,7 +260,7 @@ const SyncCreation: FunctionComponent<SyncCreationProps> = ({
             stream_id: ingestionSynchronizerData?.stream_id || '',
             no_dependencies: ingestionSynchronizerData?.no_dependencies ?? false,
             listen_deletion: ingestionSynchronizerData?.listen_deletion ?? true,
-            ssl_verify: ingestionSynchronizerData?.ssl_verify ?? false,
+            ssl_verify: ingestionSynchronizerData?.ssl_verify ?? true,
             synchronized: ingestionSynchronizerData?.synchronized ?? false,
             user_id: '',
             automatic_user: true,

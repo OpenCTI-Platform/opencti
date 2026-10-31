@@ -285,7 +285,7 @@ export const fetchCsvFromUrl = async (
   }
   const httpClientOptions: GetHttpClient = {
     headers,
-    rejectUnauthorized: ingestion.ssl_verify ?? false,
+    rejectUnauthorized: ingestion.ssl_verify,
     timeout,
     responseType: 'arraybuffer',
     certificates,

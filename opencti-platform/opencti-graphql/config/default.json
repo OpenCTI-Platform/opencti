@@ -161,11 +161,13 @@
     }
   },
   "demo_mode": false,
+  "tls": {
+    "reject_unauthorized": false
+  },
   "http_proxy": "",
   "https_proxy": "",
   "no_proxy": "",
   "https_proxy_ca": [],
-  "https_proxy_reject_unauthorized": false,
   "trust_proxy_addresses": [],
   "relations_deduplication": {
     "past_days": 30,
@@ -231,7 +233,6 @@
     "xtm_one_token": "",
     "openaev_url": "",
     "openaev_token": "",
-    "openaev_reject_unauthorized": false,
     "opengrc_url": "",
     "opengrc_token": "",
     "xtmhub_url": "https://hub.filigran.io",
@@ -462,7 +463,6 @@
   "smtp": {
     "hostname": "localhost",
     "use_ssl": false,
-    "reject_unauthorized": false,
     "port": 25,
     "username": "",
     "password": "",
