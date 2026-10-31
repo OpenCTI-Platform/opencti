@@ -16,6 +16,7 @@ import type { AuthContext } from '../../../../src/types/user';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { isEmptyField } from '../../../../src/database/utils';
 import { convertFieldType, transformSpecialFields } from '../../../../src/modules/form/form-fields-converter';
+import { PENDING_EXTERNAL_REFERENCE } from '../../../../src/modules/form/form-pending-marker';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
 const ctx = {} as AuthContext;
@@ -247,6 +248,33 @@ describe('transformSpecialFields', () => {
       const result = await transformSpecialFields(ctx, user, data, fields, false);
 
       expect(result.externalReferences).toEqual([]);
+    });
+
+    it('should keep an inline external reference created on submission', async () => {
+      vi.mocked(internalLoadById).mockResolvedValue({ internal_id: 'ext-1', source_name: 'existing' } as any);
+
+      const pending = Object.defineProperty({ source_name: 'pending', url: 'https://example.com' }, PENDING_EXTERNAL_REFERENCE, { value: true });
+      const data = { externalReferences: ['ext-1', pending] };
+      const fields = [makeField({ type: 'externalReferences', attributeMapping: { entity: 'main_entity', attributeName: 'externalReferences' } })];
+
+      const result = await transformSpecialFields(ctx, user, data, fields, false);
+
+      expect(result.externalReferences).toEqual([
+        { internal_id: 'ext-1', source_name: 'existing' },
+        { source_name: 'pending', url: 'https://example.com' },
+      ]);
+      expect(result.externalReferences[1]).toBe(pending);
+    });
+
+    it('should reject an object that was not produced from the pending pool', async () => {
+      const fields = [makeField({ type: 'externalReferences', attributeMapping: { entity: 'main_entity', attributeName: 'externalReferences' } })];
+      const forged = { source_name: 'forged', x_opencti_files: [{ name: 'a.txt', data: 'ZGF0YQ==' }] };
+
+      await expect(transformSpecialFields(ctx, user, { externalReferences: [forged] }, fields, false))
+        .rejects.toThrow('An external reference must be an existing one or one created in the form');
+      // a spread copy loses the marker as well
+      const copy = { ...Object.defineProperty({ source_name: 'x' }, PENDING_EXTERNAL_REFERENCE, { value: true }) };
+      await expect(transformSpecialFields(ctx, user, { externalReferences: [copy] }, fields, false)).rejects.toThrow('An external reference must be');
     });
   });
 
