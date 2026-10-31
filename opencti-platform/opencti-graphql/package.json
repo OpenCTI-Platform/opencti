@@ -83,7 +83,7 @@
     "@opentelemetry/resources": "3.0.0",
     "@opentelemetry/sdk-metrics": "3.0.0",
     "@opentelemetry/sdk-trace": "3.0.0",
-    "@opentelemetry/semantic-conventions": "1.43.0",
+    "@opentelemetry/semantic-conventions": "1.44.0",
     "@pyroscope/nodejs": "0.7.0",
     "@sesamecare-oss/redlock": "1.4.0",
     "ae-cvss-calculator": "1.0.13",
