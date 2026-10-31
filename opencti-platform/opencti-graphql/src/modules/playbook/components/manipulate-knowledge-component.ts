@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
 import {
@@ -292,8 +293,7 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     // Apply operations if needed
     if (patchOperations.length > 0) {
       const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
-      const diff = jsonpatch.compare(bundle, patchedBundle);
-      if (isNotEmptyField(diff)) {
+      if (!isDeepStrictEqual(bundle, patchedBundle)) {
         return { output_port: 'out', bundle: patchedBundle };
       }
     }
