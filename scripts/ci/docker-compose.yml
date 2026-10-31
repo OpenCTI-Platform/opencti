@@ -2,7 +2,7 @@ services:
   redis:
     container_name: redis
     profiles: ["backend"]
-    image: redis:8.6.7@sha256:e6dae84f7db289dde3384fdb18d182556784e5a681df3a3f54d1289952364ce8
+    image: redis:8.6.8@sha256:69e1dec6badbf924c21dc6c81a7bac6cfd1709aef032228f39aed9e34596ef45
     restart: unless-stopped
     networks:
       - runner-docker-network
