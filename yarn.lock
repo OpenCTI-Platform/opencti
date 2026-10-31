@@ -3504,47 +3504,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jsonforms/core@npm:3.9.0-alpha.1":
-  version: 3.9.0-alpha.1
-  resolution: "@jsonforms/core@npm:3.9.0-alpha.1"
+"@jsonforms/core@npm:3.9.0-alpha.2":
+  version: 3.9.0-alpha.2
+  resolution: "@jsonforms/core@npm:3.9.0-alpha.2"
   dependencies:
-    "@types/json-schema": "npm:^7.0.3"
+    "@types/json-schema": "npm:^7.0.15"
     ajv: "npm:^8.18.0"
-    ajv-formats: "npm:^2.1.0"
-    lodash: "npm:^4.17.21"
-  checksum: 10c0/5da67d439163184b59802ee77393138e49b48357a89829de1e62b11923ab04e91d73a613a94e4c6e96eaae09c9e8563a8646ed40bfdf94815fde4e64a1ba9168
+    ajv-formats: "npm:^2.1.1"
+    lodash: "npm:^4.18.1"
+  checksum: 10c0/629987b9f1e6f68fa2f69babfaffd1c73a572bcdf738a7dca5b6a1435848afe55ac38ca56cee48dff571b7018676ac21e66079472887d79042576fbcd24f5053
   languageName: node
   linkType: hard
 
-"@jsonforms/material-renderers@npm:3.9.0-alpha.1":
-  version: 3.9.0-alpha.1
-  resolution: "@jsonforms/material-renderers@npm:3.9.0-alpha.1"
+"@jsonforms/material-renderers@npm:3.9.0-alpha.2":
+  version: 3.9.0-alpha.2
+  resolution: "@jsonforms/material-renderers@npm:3.9.0-alpha.2"
   dependencies:
     "@date-io/dayjs": "npm:^3.0.0"
-    dayjs: "npm:1.10.7"
-    lodash: "npm:^4.17.21"
+    dayjs: "npm:^1.11.11"
+    lodash: "npm:^4.18.1"
   peerDependencies:
     "@emotion/react": ^11.5.0
     "@emotion/styled": ^11.3.0
-    "@jsonforms/core": 3.9.0-alpha.1
-    "@jsonforms/react": 3.9.0-alpha.1
+    "@jsonforms/core": 3.9.0-alpha.2
+    "@jsonforms/react": 3.9.0-alpha.2
     "@mui/icons-material": ^9.0.0
     "@mui/material": ^9.0.0
     "@mui/x-date-pickers": ^9.0.0
     react: ^16.12.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/0640f58425e37f64fa1868fec01afc43aa489df46176cf7f931a1b350846035c0c4a0b3e5824c59028ae7bbeb112d4a52c862b3f8efd39393d10ecb0b78fa523
+  checksum: 10c0/b03e8f7e3050a6af0d3da87b66129e642454ee53cdf749d0eb0d6bd8ad13146a0d9b464d4b4c5ec07f1c683a59ecb04c9c3ffaa339c480116a81305e65dec446
   languageName: node
   linkType: hard
 
-"@jsonforms/react@npm:3.9.0-alpha.1":
-  version: 3.9.0-alpha.1
-  resolution: "@jsonforms/react@npm:3.9.0-alpha.1"
+"@jsonforms/react@npm:3.9.0-alpha.2":
+  version: 3.9.0-alpha.2
+  resolution: "@jsonforms/react@npm:3.9.0-alpha.2"
   dependencies:
-    lodash: "npm:^4.17.21"
+    lodash: "npm:^4.18.1"
   peerDependencies:
-    "@jsonforms/core": 3.9.0-alpha.1
+    "@jsonforms/core": 3.9.0-alpha.2
     react: ^16.12.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/debb945cc1f65af21c19dd7b02b29913374d85777225608c37bfbd3bbafe9b41946f7fc51a30bf2c0b8846da08f296c8d1e1fbe3c971fd3fc88441c894e06e9c
+  checksum: 10c0/b93d4e0d28a993ba3680dbb219e379d2b3c4556c8f92182b6d39ae2e91cfbeb16dab8327bb96239551661550a92cebcfa2c1bfbd0441479d6fb255ce061d1f3f
   languageName: node
   linkType: hard
 
@@ -7688,7 +7688,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/json-schema@npm:^7.0.15, @types/json-schema@npm:^7.0.3":
+"@types/json-schema@npm:^7.0.15":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
   checksum: 10c0/a996a745e6c5d60292f36731dd41341339d4eeed8180bb09226e5c8d23759067692b1d88e5d91d72ee83dfc00d3aca8e7bd43ea120516c17922cbcb7c3e252db
@@ -8863,7 +8863,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ajv-formats@npm:^2.1.0, ajv-formats@npm:^2.1.1":
+"ajv-formats@npm:^2.1.1":
   version: 2.1.1
   resolution: "ajv-formats@npm:2.1.1"
   dependencies:
@@ -11069,14 +11069,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dayjs@npm:1.10.7":
-  version: 1.10.7
-  resolution: "dayjs@npm:1.10.7"
-  checksum: 10c0/2ce908776ea5b383dba2c01c72290ff12ad97cafa81b9c72a9cc4f801d736d592f20bd992ea1dff083ab80e807080b5af21f634bb09e67f89f66582a9059053a
-  languageName: node
-  linkType: hard
-
-"dayjs@npm:^1.11.23":
+"dayjs@npm:^1.11.11, dayjs@npm:^1.11.23":
   version: 1.11.23
   resolution: "dayjs@npm:1.11.23"
   checksum: 10c0/69ab04bf19c676e44ab50cc2fca223d265f3dafd107151ef3b0f3ad74d360c37caa602abe62f87cb25d90bd9f6bee003698af47df5b0dbf10a998b7b5f3bb3f1
@@ -15855,7 +15848,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.18.1, lodash@npm:^4.0.1, lodash@npm:^4.17.15, lodash@npm:^4.17.21":
+"lodash@npm:4.18.1, lodash@npm:^4.0.1, lodash@npm:^4.17.15, lodash@npm:^4.17.21, lodash@npm:^4.18.1":
   version: 4.18.1
   resolution: "lodash@npm:4.18.1"
   checksum: 10c0/757228fc68805c59789e82185135cf85f05d0b2d3d54631d680ca79ec21944ec8314d4533639a14b8bcfbd97a517e78960933041a5af17ecb693ec6eecb99a27
@@ -18008,9 +18001,9 @@ __metadata:
     "@fontsource/roboto": "npm:5.3.0"
     "@graphiql/toolkit": "npm:0.12.1"
     "@hello-pangea/dnd": "npm:18.0.1"
-    "@jsonforms/core": "npm:3.9.0-alpha.1"
-    "@jsonforms/material-renderers": "npm:3.9.0-alpha.1"
-    "@jsonforms/react": "npm:3.9.0-alpha.1"
+    "@jsonforms/core": "npm:3.9.0-alpha.2"
+    "@jsonforms/material-renderers": "npm:3.9.0-alpha.2"
+    "@jsonforms/react": "npm:3.9.0-alpha.2"
     "@mui/icons-material": "npm:9.5.0"
     "@mui/lab": "npm:9.0.0-beta.10"
     "@mui/material": "npm:9.5.0"
