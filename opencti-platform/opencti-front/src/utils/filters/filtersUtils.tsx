@@ -18,6 +18,7 @@ import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
 import { getVariableTokenLabel } from '../../components/dashboard/dashboardVariableTokenLabel';
+import { logger } from '../logging/logger';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -694,7 +695,14 @@ export const filterValue = (
   }
 
   // Defensive check to prevent errors on string manipulation after this call
-  return typeof value === 'string' ? value : String(value);
+  if (typeof value !== 'string') {
+    logger.warn('Filter value is not a string', {
+      eventName: 'opencti.filter.value_not_string',
+      data: { filter: { key: filterKey, type: filterType, operator: filterOperator }, value: { type: typeof value } },
+    });
+    return String(value);
+  }
+  return value;
 };
 
 export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | undefined, filterKey: string, filterValues: string[]) => {
