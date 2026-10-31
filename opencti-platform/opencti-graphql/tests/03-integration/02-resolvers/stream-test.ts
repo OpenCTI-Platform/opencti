@@ -1,11 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess, queryAsUser, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { type StreamCollectionAddInput } from '../../../src/generated/graphql';
-import { logApp } from '../../../src/config/conf';
+import { getBaseUrl, logApp } from '../../../src/config/conf';
 import { getGroupEntity } from '../../utils/domainQueryHelper';
-import { AMBER_GROUP, USER_CONNECTOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, generateBasicAuth, ONE_MINUTE, testContext, USER_CONNECTOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { MEMBER_ACCESS_RIGHT_VIEW } from '../../../src/utils/access';
+import { stixDomainObjectEditField } from '../../../src/domain/stixDomainObject';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 describe('Stream resolver coverage', () => {
   let publicStreamId: string;
@@ -277,4 +279,119 @@ describe('Stream resolver coverage', () => {
     logApp.info('deleteRestrictedStreamResponse:', deleteRestrictedStreamResponse);
     expect(deleteRestrictedStreamResponse?.data?.streamCollectionEdit?.delete).toBeDefined();
   });
+});
+
+const STREAM_ORIGIN_REPORT_ADD_QUERY = gql`
+  mutation streamOriginReportAdd($input: ReportAddInput!) {
+    reportAdd(input: $input) {
+      id
+    }
+  }
+`;
+
+const STREAM_ORIGIN_REPORT_DELETE_QUERY = gql`
+  mutation streamOriginReportDelete($id: ID!) {
+    stixDomainObjectEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
+const STREAM_ORIGIN_STREAM_ADD_QUERY = gql`
+  mutation streamOriginStreamAdd($input: StreamCollectionAddInput!) {
+    streamCollectionAdd(input: $input) {
+      id
+    }
+  }
+`;
+
+const STREAM_ORIGIN_STREAM_DELETE_QUERY = gql`
+  mutation streamOriginStreamDelete($id: ID!) {
+    streamCollectionEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
+interface SseMessage { event: string; data: any }
+
+const parseSseMessage = (rawMessage: string): SseMessage | undefined => {
+  const lines = rawMessage.split('\n');
+  const event = lines.find((line) => line.startsWith('event: '))?.substring(7);
+  const data = lines.find((line) => line.startsWith('data: '))?.substring(6);
+  return event && data ? { event, data: JSON.parse(data) } : undefined;
+};
+
+// Reads a live stream replayed from `from` until `isExpected` matches
+const readStreamUntil = async (streamUrl: string, isExpected: (message: SseMessage) => boolean, timeoutMs = 30000) => {
+  const headers = { Accept: 'text/event-stream', authorization: generateBasicAuth() };
+  const response = await fetch(streamUrl, { headers, signal: AbortSignal.timeout(timeoutMs) });
+  expect(response.status).toBe(200);
+  const reader = response.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  try {
+    let isReading = true;
+    while (isReading) {
+      const { value, done } = await reader.read();
+      isReading = !done;
+      buffer += decoder.decode(value ?? new Uint8Array(), { stream: true });
+      let separatorIndex = buffer.indexOf('\n\n');
+      while (separatorIndex >= 0) {
+        const message = parseSseMessage(buffer.substring(0, separatorIndex));
+        buffer = buffer.substring(separatorIndex + 2);
+        if (message && isExpected(message)) {
+          await reader.cancel();
+          return message;
+        }
+        separatorIndex = buffer.indexOf('\n\n');
+      }
+    }
+  } catch (error: any) {
+    logApp.info('Stream read ended:', { streamUrl, cause: error });
+  }
+  throw new Error(`Expected event never received on ${streamUrl}`);
+};
+
+describe('Stream event origin', () => {
+  let reportId: string;
+  let streamId: string;
+
+  beforeAll(async () => {
+    const report = await queryAsAdminWithSuccess({
+      query: STREAM_ORIGIN_REPORT_ADD_QUERY,
+      variables: { input: { name: 'Stream-Origin-Report', published: '2023-10-06T00:00:00.000Z' } },
+    });
+    reportId = report.data?.reportAdd.id;
+    const streamInput: StreamCollectionAddInput = {
+      name: 'Stream origin',
+      filters: JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', values: ['Report'], mode: 'or' }], filterGroups: [] }),
+      stream_live: true,
+      stream_public: false,
+    };
+    const stream = await queryAsAdminWithSuccess({ query: STREAM_ORIGIN_STREAM_ADD_QUERY, variables: { input: streamInput } });
+    streamId = stream.data?.streamCollectionAdd.id;
+  });
+
+  afterAll(async () => {
+    await queryAsAdminWithSuccess({ query: STREAM_ORIGIN_STREAM_DELETE_QUERY, variables: { id: streamId } });
+    await queryAsAdminWithSuccess({ query: STREAM_ORIGIN_REPORT_DELETE_QUERY, variables: { id: reportId } });
+  });
+
+  it('Should only publish the stream origin attributes', async () => {
+    // The stream processor of a fresh connection starts at the end of the redis stream, replay from before the update
+    const fromEventId = `${Date.now() - 1000}-0`;
+    const description = 'Stream-Origin-Report description';
+    const userWithOrigin = {
+      ...ADMIN_USER,
+      origin: { socket: 'query', ip: 'value', user_id: ADMIN_USER.id, user_metadata: { key: 'value' }, referer: 'value' },
+    };
+    await stixDomainObjectEditField(testContext, userWithOrigin, reportId, [{ key: 'description', value: [description] }]);
+    const isOriginUpdate = (message: SseMessage) => message.event === 'update'
+      && message.data.data.extensions?.[STIX_EXT_OCTI]?.id === reportId
+      && message.data.data.description === description;
+    const message = await readStreamUntil(`${getBaseUrl()}/stream/${streamId}?from=${fromEventId}`, isOriginUpdate);
+
+    expect(message.data.origin).toEqual({ socket: 'query', user_id: ADMIN_USER.id });
+  }, ONE_MINUTE);
 });
