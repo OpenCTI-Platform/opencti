@@ -124,7 +124,7 @@ services:
   ## podman compose --profile telemetry up -d (launch everything + telemetry)
   opencti-dev-telemetry-pyroscope:
     container_name: opencti-dev-telemetry-pyroscope
-    image: grafana/pyroscope:2.4.1@sha256:8ade8d37ac58c20aca0054360fbcdef956a8242f48ad68e0ec67757f21d48e28
+    image: grafana/pyroscope:2.4.2@sha256:ef9b48976386aa2781e84664dfdba7cc33a1b6793c0cc9d130812173a926ca1f
     restart: unless-stopped
     ports:
       - "4040:4040"
@@ -142,7 +142,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-otlp:
     container_name: opencti-dev-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.163.2@sha256:7f22d2a6748110ffb6a59bc0df448bccbf501cdb667d610ede4c61d3863d5849
+    image: otel/opentelemetry-collector-contrib:0.164.0@sha256:340c9ca6a36617084c6661bdc4f0fe92b7cda5a805d61673ec8db375fddc522b
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
@@ -164,7 +164,7 @@ services:
     profiles:
       - "telemetry"
   opencti-dev-telemetry-grafana:
-    image: grafana/grafana:13.2.4@sha256:dbbc38ea21103cefb50396340cd88afec779c7e070b0a7bf5a75b4ce46651d3f
+    image: grafana/grafana:13.3.0@sha256:488984b716c0862639f91a698adbe2862677a5a07bad42da5f03f3030883b205
     container_name: opencti-dev-telemetry-grafana
     ports:
       - "3100:3000"
@@ -194,7 +194,7 @@ services:
       - "9999:8080"
 
   opencti-dev-mokapi:
-    image: mokapi/mokapi:0.53.0@sha256:52a16a7de1161049fcc7b3918c265c3ad1f791a4b975874714201e307dced779
+    image: mokapi/mokapi:0.54.0@sha256:0911a78af264541dbf1b3cf171b252da28249ba8db539e4ee694c626d1a846db
     profiles: [mokapi]
     container_name: opencti-dev-mokapi
     command: mokapi --providers.file.directory=/share
