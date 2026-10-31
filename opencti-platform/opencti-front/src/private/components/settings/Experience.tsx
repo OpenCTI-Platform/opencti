@@ -26,7 +26,7 @@ import type { Theme } from '../../../components/Theme';
 import { FieldOption } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useAuth from '../../../utils/hooks/useAuth';
-import { isEnterpriseEditionFromXtmOne } from '../../../utils/hooks/useEnterpriseEdition';
+import { isEnterpriseEditionFromFiligranLicense, isEnterpriseEditionFromXtmOne } from '../../../utils/hooks/useEnterpriseEdition';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useGranted, { SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -112,6 +112,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const isEnterpriseEditionActivated = enterpriseEdition.license_enterprise;
   const isEnterpriseEditionByConfig = enterpriseEdition.license_by_configuration;
   const isEnterpriseEditionByXtmOne = isEnterpriseEditionFromXtmOne(enterpriseEdition);
+  const isEnterpriseEditionByFiligranLicense = isEnterpriseEditionFromFiligranLicense(enterpriseEdition);
   const [openEEChanges, setOpenEEChanges] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
   const experienceValidation = () => Yup.object().shape({
@@ -173,7 +174,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
     return <Tag label={t_i18n('Activated')} color={theme.palette.success.main} labelTextTransform="none" disableTooltip />;
   })();
 
-  // With the XTM One license there is no OpenCTI license to disable: an OpenCTI license can still be added, and wins.
+  // With the Filigran license of XTM One there is no OpenCTI license to disable: an own license can still be added, and wins.
   const eeActivatedFooter = !isEnterpriseEditionByConfig && isGrantedToParameters
     ? (
         <>
@@ -211,7 +212,11 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
     <div>
       <ExperienceDetailRow label={t_i18n('License source')}>
         <ItemBoolean
-          neutralLabel={isEnterpriseEditionByXtmOne ? t_i18n('XTM One license') : t_i18n('OpenCTI license')}
+          neutralLabel={(() => {
+            if (isEnterpriseEditionByXtmOne) return t_i18n('Filigran license (through XTM One)');
+            if (isEnterpriseEditionByFiligranLicense) return t_i18n('Filigran license');
+            return t_i18n('OpenCTI license');
+          })()}
           status={null}
         />
       </ExperienceDetailRow>

@@ -48,12 +48,51 @@ export const getEnterpriseEditionActivePem = (settings: BasicStoreSettings) => {
   };
 };
 
-export const decodeLicensePem = (settings: BasicStoreSettings, overridePem?: string): PlatformEe => {
+// XTM One counts its expiration warning in days.
+const XTM_LICENSE_EXPIRATION_PREVENTION = 90 * 24 * 60 * 60 * 1000;
+const DAY = 24 * 60 * 60 * 1000;
+
+// Enterprise Edition granted by a Filigran license (the XTM One license, product `filigran xtm`, signed by the XTM
+// CA), verified with XTM One's own rules and described like an OpenCTI license from the certificate itself. The
+// certificate comes from the XTM One registration answer, or is the license pasted in this platform's settings.
+const getFiligranLicenseEnterpriseEdition = (
+  settings: BasicStoreSettings,
+  pem: unknown,
+  source: PlatformEeSource,
+  licenseByConfiguration = false,
+): PlatformEe | undefined => {
+  const verification = verifyXtmLicenseProof(pem, buildXtmLicenseContext(settings, IS_LTS_PLATFORM));
+  const { certificate, licenseType, validUntil } = verification;
+  if (!verification.granted || !certificate || !licenseType || !validUntil) {
+    return undefined;
+  }
   const currentDate = new Date();
-  const { pem, licenseByConfiguration } = overridePem ? {
-    pem: overridePem,
-    licenseByConfiguration: false,
-  } : getEnterpriseEditionActivePem(settings);
+  const license_expired = currentDate > certificate.expirationDate || currentDate < certificate.startDate;
+  const hasGracePeriod = licenseType !== LICENSE_TYPE_TRIAL && licenseType !== LICENSE_TYPE_CI;
+  const license_extra_expiration = license_expired && hasGracePeriod;
+  return {
+    license_enterprise: true,
+    license_by_configuration: licenseByConfiguration,
+    license_validated: true,
+    license_valid_cert: true,
+    license_customer: certificate.customer,
+    license_expired,
+    license_extra_expiration,
+    license_extra_expiration_days: license_extra_expiration ? Math.floor((validUntil.getTime() - currentDate.getTime()) / DAY) : 0,
+    license_expiration_date: certificate.expirationDate,
+    license_start_date: certificate.startDate,
+    license_expiration_prevention: hasGracePeriod && certificate.expirationDate.getTime() - currentDate.getTime() < XTM_LICENSE_EXPIRATION_PREVENTION,
+    license_platform: certificate.platform,
+    license_type: licenseType,
+    license_platform_match: true,
+    license_creator: certificate.creator,
+    license_global: certificate.global,
+    license_source: source,
+  };
+};
+
+const decodeOpenctiLicensePem = (settings: BasicStoreSettings, pem: string | undefined, licenseByConfiguration: boolean): PlatformEe => {
+  const currentDate = new Date();
   const license_enterprise = pem !== undefined && isNotEmptyField(pem);
   if (license_enterprise) {
     try {
@@ -108,6 +147,7 @@ export const decodeLicensePem = (settings: BasicStoreSettings, overridePem?: str
         license_platform_match,
         license_creator,
         license_global,
+        license_source: PlatformEeSource.OpenctiLicense,
       };
     } catch {
       // Nothing to do here
@@ -130,44 +170,25 @@ export const decodeLicensePem = (settings: BasicStoreSettings, overridePem?: str
     license_platform_match: true,
     license_creator: 'Unknown',
     license_global: false,
+    license_source: PlatformEeSource.OpenctiLicense,
   };
 };
 
-// XTM One counts its expiration warning in days.
-const XTM_LICENSE_EXPIRATION_PREVENTION = 90 * 24 * 60 * 60 * 1000;
-const DAY = 24 * 60 * 60 * 1000;
-
-// Enterprise Edition granted by the XTM license installed on XTM One, verified again on every read and described
-// like an OpenCTI license from the certificate itself.
-const getXtmLicenseEnterpriseEdition = (settings: BasicStoreSettings): PlatformEe | undefined => {
-  const verification = verifyXtmLicenseProof(getCurrentXtmLicenseProof(), buildXtmLicenseContext(settings, IS_LTS_PLATFORM));
-  const { certificate, licenseType, validUntil } = verification;
-  if (!verification.granted || !certificate || !licenseType || !validUntil) {
-    return undefined;
+/**
+ * The license this platform holds (configuration first, then settings), or the one being installed (`overridePem`).
+ * An OpenCTI license signed by the OpenCTI CA is read as always. A certificate that is not one is then read as a
+ * Filigran license: accepted when the XTM CA signed it and its OpenCTI sub-license lists `global` or this platform.
+ */
+export const decodeLicensePem = (settings: BasicStoreSettings, overridePem?: string): PlatformEe => {
+  const { pem, licenseByConfiguration } = overridePem ? {
+    pem: overridePem,
+    licenseByConfiguration: false,
+  } : getEnterpriseEditionActivePem(settings);
+  const openctiLicense = decodeOpenctiLicensePem(settings, pem, licenseByConfiguration);
+  if (openctiLicense.license_valid_cert || !openctiLicense.license_enterprise) {
+    return openctiLicense;
   }
-  const currentDate = new Date();
-  const license_expired = currentDate > certificate.expirationDate || currentDate < certificate.startDate;
-  const hasGracePeriod = licenseType !== LICENSE_TYPE_TRIAL && licenseType !== LICENSE_TYPE_CI;
-  const license_extra_expiration = license_expired && hasGracePeriod;
-  return {
-    license_enterprise: true,
-    license_by_configuration: false,
-    license_validated: true,
-    license_valid_cert: true,
-    license_customer: certificate.customer,
-    license_expired,
-    license_extra_expiration,
-    license_extra_expiration_days: license_extra_expiration ? Math.floor((validUntil.getTime() - currentDate.getTime()) / DAY) : 0,
-    license_expiration_date: certificate.expirationDate,
-    license_start_date: certificate.startDate,
-    license_expiration_prevention: hasGracePeriod && certificate.expirationDate.getTime() - currentDate.getTime() < XTM_LICENSE_EXPIRATION_PREVENTION,
-    license_platform: certificate.platform,
-    license_type: licenseType,
-    license_platform_match: true,
-    license_creator: certificate.creator,
-    license_global: certificate.global,
-    license_source: PlatformEeSource.XtmOneLicense,
-  };
+  return getFiligranLicenseEnterpriseEdition(settings, pem, PlatformEeSource.FiligranLicense, licenseByConfiguration) ?? openctiLicense;
 };
 
 let cachedLicence: PlatformEe | undefined = undefined;
@@ -175,8 +196,9 @@ let cachedPem: string | undefined = undefined;
 let cacheExpiration: number | undefined = undefined;
 
 /**
- * The Enterprise Edition of this platform, read by every Enterprise Edition check: OpenCTI's own valid license,
- * otherwise the verified XTM license that sub-licenses this platform, otherwise the (invalid) own license state.
+ * The Enterprise Edition of this platform, read by every Enterprise Edition check: its own valid license (an OpenCTI
+ * license, or a Filigran license pasted in the settings), otherwise the verified Filigran license of the XTM One
+ * registration answer that sub-licenses this platform, otherwise the (invalid) own license state.
  */
 export const getEnterpriseEditionInfo = (settings: BasicStoreSettings): PlatformEe => {
   const { pem } = getEnterpriseEditionActivePem(settings);
@@ -186,9 +208,9 @@ export const getEnterpriseEditionInfo = (settings: BasicStoreSettings): Platform
     cachedPem = pem;
     cacheExpiration = now + 300000; // Cache for 5 minutes
   }
-  const ownLicense = { ...cachedLicence, license_source: PlatformEeSource.OpenctiLicense };
+  const ownLicense = { license_source: PlatformEeSource.OpenctiLicense, ...cachedLicence };
   if (ownLicense.license_validated) {
     return ownLicense;
   }
-  return getXtmLicenseEnterpriseEdition(settings) ?? ownLicense;
+  return getFiligranLicenseEnterpriseEdition(settings, getCurrentXtmLicenseProof(), PlatformEeSource.XtmOneLicense) ?? ownLicense;
 };
