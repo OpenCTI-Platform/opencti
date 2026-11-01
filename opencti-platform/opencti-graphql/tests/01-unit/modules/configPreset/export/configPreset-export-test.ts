@@ -11,6 +11,7 @@ vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) 
   ...(await importOriginal<typeof import('../../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
   fullEntitiesList: vi.fn(),
+  fullRelationsList: vi.fn(),
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
@@ -45,7 +46,8 @@ import {
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import type { ConfigPresetItemDefinition } from '../../../../../src/modules/configPreset/configPreset-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
-import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme } from '../configPreset-themes-fixtures';
+import { builtInTheme, customTheme, otherCustomTheme } from '../configPreset-themes-fixtures';
+import { mockConfigPresetLoaders } from '../configPreset-loaders-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const draftContext = { source: 'test', draft_context: 'draft-id' } as AuthContext;
@@ -142,7 +144,7 @@ describe('Config preset export', () => {
     uploadedZip = undefined;
     tmpFileModeDuringUpload = undefined;
     vi.mocked(topEntitiesList).mockResolvedValue([storedSettings] as never);
-    mockThemeLoaders([{ target_type: 'Channel', platform_hidden_type: true }]);
+    mockConfigPresetLoaders([{ target_type: 'Channel', platform_hidden_type: true }]);
     mockUploadReadingTheZip();
   });
 
@@ -426,7 +428,7 @@ describe('Config preset export', () => {
 describe('Config preset selections', () => {
   beforeEach(() => {
     vi.mocked(topEntitiesList).mockResolvedValue([storedSettings] as never);
-    mockThemeLoaders();
+    mockConfigPresetLoaders();
   });
 
   const resolveIds = async (selections: Parameters<typeof resolveConfigPresetSelections>[2]) => {
