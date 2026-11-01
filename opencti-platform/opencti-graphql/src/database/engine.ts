@@ -196,6 +196,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { FiltersWithNested } from './middleware-loader';
 import { pushAll, unshiftAll } from '../utils/arrayUtil';
 import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
+import { createSharedCredentialProvider } from '../utils/awsCredentialProvider';
 import { elConvertHits, elConvertHitsToMap, INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
 import { engineMappingGenerator, getRetroCompatibleMappings } from './engine-mapping-generator';
 import { isEsScriptFilterEnabled } from './engine-config';
@@ -435,17 +436,17 @@ export const searchEngineInit = async (): Promise<boolean> => {
     },
   };
   elkSearchConfiguration.auth = await enrichWithRemoteCredentials('elasticsearch', elkSearchConfiguration.auth);
+  // One provider for the whole client: the SigV4 signer asks for credentials before each request,
+  // and the provider serves its cached credentials instead of calling STS every time.
+  const credentialsProvider = createSharedCredentialProvider(() => defaultProvider({
+    roleAssumerWithWebIdentity: getRoleAssumerWithWebIdentity({ region }),
+  }));
   const openSearchConfiguration = {
     ...elkSearchConfiguration,
     ...(region ? AwsSigv4Signer({
       region,
       service: conf.get('opensearch:service') || 'es',
-      getCredentials: () => {
-        const credentialsProvider = defaultProvider({
-          roleAssumerWithWebIdentity: getRoleAssumerWithWebIdentity({ region }),
-        });
-        return credentialsProvider();
-      },
+      getCredentials: () => credentialsProvider(),
     }) : {}),
   };
   // Select the correct engine
