@@ -388,6 +388,8 @@ Only a specific set of key can be used in the filters.
 
 Automatic key checking prevents typing error when constructing filters via the API. If a user write an unhandled key (`object-label` instead of `objectLabel` for instance), the API will return an error instead of an empty list. Doing so, we make sure the platform do not provide misleading results.
 
+The technical name of a [custom field](../administration/custom-fields.md) (for instance `x_opencti_cf_priority`) is also a filter key, for the entity types the custom field is attached to.
+
 #### Allowed filter keys for elastic filters
 
 Query filters are used in a query fetching objects in the database. It concerns:

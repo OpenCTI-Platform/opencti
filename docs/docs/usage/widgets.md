@@ -97,6 +97,8 @@ If a saved filter is no longer available, the widget cannot be displayed. Export
 
 Parameters depend on the chosen visualization and allow users to define widget titles, choose displayed elements from the filtered data, select data reference date, and configure various other parameters specific to each visualization.
 
+For a list widget filtered on a single entity type, the [custom fields](../administration/custom-fields.md) attached to this entity type can be added as columns.
+
 For the "Knowledge Graph" perspective, a critical parameter is the `Display the source` toggle. This feature empowers users to choose whether the widget displays entities from the source side or the target side of the relationships.
 
 - Toggle ON ("Display the source"): The widget focuses on entities positioned as the source of the relationships (in the "from" position).

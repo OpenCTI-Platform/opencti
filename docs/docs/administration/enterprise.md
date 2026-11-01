@@ -96,6 +96,10 @@ Priority Intelligence Requirements (PIRs) gather and prioritize the most relevan
 
 Defining and using SSO (OpenID, LDAP, SAML, Certificate, Headers) requires an entreprise license. This feature allow you to define, from UI, any of these authentications. For more information, please read the Authentication via GUI configuration section in the deployment documentation.
 
+### Custom fields
+
+If the STIX data model does not provide enough fields to match your modelization or your needs in terms of business process, create custom fields and attach them to the entity types that need them. Please read the [Custom fields page](custom-fields.md) to get all information.
+
 
 ## More to come
 

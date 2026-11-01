@@ -139,7 +139,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
     workflowEnabled: Boolean
     workflowInstance: WorkflowInstance
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-    customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+    customFieldValues: [CustomFieldValue!]
     # DataComponents
     name: String!
     description: String
