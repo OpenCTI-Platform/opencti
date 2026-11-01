@@ -9830,6 +9830,7 @@ export type Feed = {
   id: Scalars['ID']['output'];
   include_header: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
+  neutralize_formulas?: Maybe<Scalars['Boolean']['output']>;
   rolling_time: Scalars['Int']['output'];
   separator: Scalars['String']['output'];
   standard_id: Scalars['ID']['output'];
@@ -9846,6 +9847,7 @@ export type FeedAddInput = {
   filters?: InputMaybe<Scalars['String']['input']>;
   include_header: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
+  neutralize_formulas?: InputMaybe<Scalars['Boolean']['input']>;
   rolling_time: Scalars['Int']['input'];
   separator: Scalars['String']['input'];
 };
@@ -46840,6 +46842,7 @@ export type FeedResolvers<ContextType = any, ParentType extends ResolversParentT
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   include_header?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  neutralize_formulas?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   rolling_time?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   separator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

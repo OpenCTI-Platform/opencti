@@ -74,7 +74,7 @@ export const createFeed = async (context: AuthContext, user: AuthUser, input: Fe
   if (input.feed_public_user_id) {
     await validatePublicUserId(context, input.feed_public_user_id);
   }
-  const feedToCreate = { ...input, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
+  const feedToCreate = { ...input, neutralize_formulas: input.neutralize_formulas ?? true, authorized_authorities: [TAXIIAPI_SETCOLLECTIONS] };
   const { element, isCreation } = await createEntity(context, user, feedToCreate, ENTITY_TYPE_FEED, { complete: true });
   if (isCreation) {
     await publishUserAction({

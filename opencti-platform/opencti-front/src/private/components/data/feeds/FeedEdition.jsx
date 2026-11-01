@@ -34,6 +34,7 @@ import inject18n, { useFormatter } from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
+import { Alert as FdsAlert } from '@filigran/design-system';
 import ComboboxField from '../../../../components/ComboboxField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
@@ -293,6 +294,7 @@ const FeedEditionContainer = (props) => {
     rolling_time: feed.rolling_time,
     feed_date_attribute: feed.feed_date_attribute ?? 'created_at',
     include_header: feed.include_header,
+    neutralize_formulas: feed.neutralize_formulas ?? false,
     feed_types: feed.feed_types,
     feed_public: feed.feed_public,
     feed_public_user_id: convertUser(feed, 'feed_public_user'),
@@ -471,6 +473,21 @@ const FeedEditionContainer = (props) => {
                       label={t_i18n('Include headers in the feed')}
                       containerstyle={{ marginTop: 20 }}
                     />
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="neutralize_formulas"
+                      label={t_i18n('Neutralize spreadsheet formulas')}
+                      containerstyle={{ marginTop: 20 }}
+                    />
+                    {R.isNil(feed.neutralize_formulas) && (
+                      <FdsAlert
+                        severity="warning"
+                        title={t_i18n('Spreadsheet formulas are not neutralized for this feed')}
+                        description={t_i18n('This feed was created before this option existed. Enable it unless only scripts read this feed.')}
+                        style={{ marginTop: 10 }}
+                      />
+                    )}
                     <Box sx={{
                       paddingTop: 4,
                       display: 'flex',
@@ -768,6 +785,7 @@ const FeedEditionFragment = createFragmentContainer(FeedEditionContainer, {
       filters
       rolling_time
       include_header
+      neutralize_formulas
       feed_types
       feed_date_attribute
       separator
