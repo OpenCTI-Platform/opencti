@@ -46,6 +46,7 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'Built-in theme': return t_i18n('Built-in theme');
     case 'Theme already exists': return t_i18n('Theme already exists');
     case 'Theme name already exists': return t_i18n('Theme name already exists');
+    case 'Requires Enterprise Edition': return t_i18n('Requires Enterprise Edition');
     default: break;
   }
   const copyName = reason.match(/^Added as "(.+)"$/)?.[1];

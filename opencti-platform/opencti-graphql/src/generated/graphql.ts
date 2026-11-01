@@ -4624,6 +4624,7 @@ export type ConfigPresetExportableType = {
   itemsPageInfo: PageInfo;
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
+  lockedByEnterpriseEdition: Scalars['Boolean']['output'];
 };
 
 export type ConfigPresetImportCounts = {
@@ -4758,6 +4759,7 @@ export type ConfigPresetImportType = {
   items: Array<ConfigPresetImportItem>;
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
+  lockedByEnterpriseEdition: Scalars['Boolean']['output'];
   modes: Array<ConfigImportMode>;
 };
 
@@ -44913,6 +44915,7 @@ export type ConfigPresetExportableTypeResolvers<ContextType = any, ParentType ex
   itemsPageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  lockedByEnterpriseEdition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type ConfigPresetImportCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportCounts'] = ResolversParentTypes['ConfigPresetImportCounts']> = ResolversObject<{
@@ -45005,6 +45008,7 @@ export type ConfigPresetImportTypeResolvers<ContextType = any, ParentType extend
   items?: Resolver<Array<ResolversTypes['ConfigPresetImportItem']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  lockedByEnterpriseEdition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   modes?: Resolver<Array<ResolversTypes['ConfigImportMode']>, ParentType, ContextType>;
 }>;
 

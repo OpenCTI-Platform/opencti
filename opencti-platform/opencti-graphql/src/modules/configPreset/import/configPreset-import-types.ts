@@ -6,6 +6,9 @@ import type { ConfigPresetConfiguration } from '../configPreset-types';
 export const CONFIG_PRESET_REASON_FILE_MISSING = 'file_missing';
 export const CONFIG_PRESET_REASON_BUNDLE_REFUSED = 'bundle_refused';
 
+// Why an item of a family that requires the Enterprise Edition is skipped on a platform without it: shown to the user as is (the front translates it)
+export const CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED = 'Requires Enterprise Edition';
+
 // What an import does with the items of a family that already exist, chosen by family: a family without a choice overwrites
 export const CONFIG_PRESET_DEFAULT_IMPORT_MODE = ConfigImportMode.Overwrite;
 
