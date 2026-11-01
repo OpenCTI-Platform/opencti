@@ -47,6 +47,7 @@ const StreamCollectionPopover: FunctionComponent<StreamCollectionPopoverProps> =
 
   // Popover
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => setAnchorEl(null);
