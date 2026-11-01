@@ -39,6 +39,9 @@ export type UserMergeScalarDisposition
  */
 export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDisposition> = {
   '*.creator_id': { kind: 'covered', registerRow: 'basic-object.creator-id' },
+  // Discovered by walking into the object mappings, see userMerge-scalarDiscovery.
+  '*.i_attributes.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'Last modifier of each attribute, rewritten by the history chunk' },
+  [`${ENTITY_TYPE_INTERNAL_FILE}.metaData.creator_id`]: { kind: 'covered', registerRow: 'internal-file.metadata-creator-id' },
   '*.applicant_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History, Activity and PirHistory are rewritten by the history chunk' },
   '*.xtm_hub_registration_user_id': { kind: 'covered', registerRow: 'settings.xtm-hub-registration-user-id' },
   '*.platform_ip_whitelist_exclusion_ids': { kind: 'excluded', reason: 'another-handler', detail: 'Settings handler, which writes through the domain layer so the platform cache follows' },
@@ -132,14 +135,6 @@ export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
     condition: { path: 'completed', equals: true, negate: true },
     unexpectedAtRest: true,
     missingBecause: "declared with format 'short'",
-  },
-  {
-    id: 'internal-file-metadata-creator-id',
-    registerRow: 'internal-file.metadata-creator-id',
-    entityTypes: [ENTITY_TYPE_INTERNAL_FILE],
-    path: 'metaData.creator_id',
-    shape: 'single',
-    missingBecause: "held under metaData, declared with format 'standard' and no attribute definitions",
   },
   {
     id: 'workflow-definition-published-version-created-by',

@@ -28,8 +28,8 @@ const countTarget = async (target: UserMergeScalarTarget, sourceId: string): Pro
  *
  * The targets are listed rather than discovered. `user_id` and `applicant_id` are visible to
  * the schema but are deliberately left out of the scalar handler so the history is decided
- * here as a whole, and `i_attributes.user_id` is invisible to it in any case since the
- * discovery does not walk into object mappings.
+ * here as a whole; the same goes for `i_attributes.user_id`, which the discovery reaches by
+ * walking into the object mappings and the scalar rules exclude for this chunk.
  */
 export const userMergeHistoryHandler: UserMergeHandler = {
   identifier: USER_MERGE_HISTORY_HANDLER,
