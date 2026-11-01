@@ -96,7 +96,7 @@ services:
 
   opencti-dev-minio:
     container_name: opencti-dev-minio
-    image: pgsty/silo:RELEASE.2026-10-18T00-00-00Z@sha256:2636fc4155d9a7e41ff58cdb65ddd13ba9304e67184e13c25bc5cb34016269d7
+    image: pgsty/silo:RELEASE.2026-10-26T00-00-00Z@sha256:7bb2aff6b89efe1cb1303c10fc21d579447434ed06649ac9ec05a5e2dbf30ad7
     ports:
       - "9000:9000"
       - "9001:9001"
