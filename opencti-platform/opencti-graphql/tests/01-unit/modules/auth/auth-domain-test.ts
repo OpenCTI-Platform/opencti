@@ -13,12 +13,15 @@ vi.mock('../../../../src/database/redis', () => ({
   redisDelForgotPassword: vi.fn(),
 }));
 
-vi.mock('../../../../src/modules/user/user-domain', () => ({
-  AVAILABLE_LANGUAGES: ['auto', 'en-us'],
-  findById: vi.fn(),
-  getUserByEmail: vi.fn(),
-  userEditField: vi.fn(),
-}));
+vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>;
+  return {
+    ...actual,
+    findById: vi.fn(),
+    getUserByEmail: vi.fn(),
+    userEditField: vi.fn(),
+  };
+});
 
 vi.mock('../../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(async () => ({})),

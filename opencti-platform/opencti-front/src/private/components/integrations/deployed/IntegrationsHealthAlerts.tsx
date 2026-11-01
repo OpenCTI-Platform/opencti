@@ -4,6 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import IngestionHealthBanner from '@components/data/connectors/IngestionHealthBanner';
 import type { HealthIssue } from '@components/integrations/deployed/IngestionHealthSummary';
+import useHealthCheckMessage from '@components/data/connectors/useHealthCheckMessage';
 import type { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -19,6 +20,7 @@ interface IntegrationsHealthAlertsProps {
 // One alert per health issue (critical, then degraded) summarizing the deployed integrations concerned.
 const IntegrationsHealthAlerts = ({ items, onShowIssue }: IntegrationsHealthAlertsProps) => {
   const { t_i18n } = useFormatter();
+  const { getHealthCheckMessage } = useHealthCheckMessage();
   const theme = useTheme();
   const { isFeatureEnable } = useHelper();
   if (!isFeatureEnable('INGESTION_HEALTH')) return null;
@@ -38,7 +40,8 @@ const IntegrationsHealthAlerts = ({ items, onShowIssue }: IntegrationsHealthAler
     const names = affected.slice(0, MAX_NAMES).map((item) => item.name).join(', ');
     const more = count > MAX_NAMES ? ` +${count - MAX_NAMES}` : '';
     // A single integration says what is wrong with it
-    const message = isSingleAlert ? affected[0].healthIssue?.message : null;
+    const check = isSingleAlert ? affected[0].healthIssue?.check : null;
+    const message = check ? getHealthCheckMessage(check) : null;
     const label = isSingleAlert ? t_i18n('Review') : t_i18n('See all');
     return [(
       <IngestionHealthBanner

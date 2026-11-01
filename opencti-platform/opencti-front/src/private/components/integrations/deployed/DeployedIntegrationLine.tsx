@@ -8,6 +8,7 @@ import { useHealthIssueDisplay } from '@components/integrations/deployed/Ingesti
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
 import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
 import IngestionHealthChip from '@components/data/connectors/IngestionHealthChip';
+import useHealthCheckMessage from '@components/data/connectors/useHealthCheckMessage';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
@@ -134,6 +135,7 @@ const DeployedIntegrationLine = ({
   onChange,
 }: DeployedIntegrationLineProps) => {
   const { t_i18n, n, ftdt, rd } = useFormatter();
+  const { getHealthCheckMessage } = useHealthCheckMessage();
   const theme = useTheme();
   const { isFeatureEnable } = useHelper();
   const typeMetadata = useDeployedTypeMetadata();
@@ -277,8 +279,9 @@ const DeployedIntegrationLine = ({
                   textOverflow: 'ellipsis',
                 }}
               >
-                {healthIssue.message
-                  ?? t_i18n(capitalizeFirstLetter(healthIssue.severity))}
+                {healthIssue.check
+                  ? getHealthCheckMessage(healthIssue.check)
+                  : t_i18n(capitalizeFirstLetter(healthIssue.severity))}
               </Typography>
             </Stack>
           )}

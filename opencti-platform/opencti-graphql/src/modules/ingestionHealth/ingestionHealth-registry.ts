@@ -5,14 +5,17 @@ import { durationInMs } from '../../utils/format';
 import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_TAXII } from '../ingestion/ingestion-types';
 import { redisGetConnectorsHeartbeats } from '../connector/connector-redis';
 import { redisGetIngestionLogHistory } from '../../database/redis';
+import { findCapabilityDescription } from '../../database/data-initialization';
 
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
+export const HEALTH_CHECK_USER_MISSING_CAPABILITY = 'USER_MISSING_CAPABILITY';
 export const HEALTH_CHECK_HEARTBEAT_MISSING = 'HEARTBEAT_MISSING';
 export const HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT = 'USER_NOT_SERVICE_ACCOUNT';
 export const HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED = 'FEED_AND_SYNC_EXECUTION_FAILED';
 
 // Every check of the registry: adding a check adds its code here
 export type HealthCheckCode = typeof HEALTH_CHECK_USER_MISSING
+  | typeof HEALTH_CHECK_USER_MISSING_CAPABILITY
   | typeof HEALTH_CHECK_HEARTBEAT_MISSING
   | typeof HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT
   | typeof HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED;
@@ -42,6 +45,10 @@ export interface HealthCheckIngestor {
 export interface GlobalIngestionHealthContext {
   // Connectors pinging continuously
   pingingConnectorsIds: Set<string>;
+  // ms a status must stay unchanged before it is notified, from the platform settings (default when absent)
+  notificationDelay?: number;
+  // Checks disabled in the platform settings: neither read nor evaluated
+  disabledHealthChecks?: HealthCheckCode[];
 }
 
 // The user an ingestor runs as, as needed by the checks
@@ -49,6 +56,8 @@ export interface HealthCheckUser {
   // Platform internal user (system...): not a user account an admin manages
   internal: boolean;
   user_service_account: boolean;
+  // Same rule as the platform authorization (bypass, parent capabilities)
+  hasCapability: (capability: string) => boolean;
 }
 
 // What the evaluation looks at, besides the configuration of the ingestion: whether a check applies, whether it fails, the status.
@@ -67,9 +76,13 @@ export interface SourceIngestionHealthContext extends GlobalIngestionHealthConte
 export type HealthCheckMetadata = Record<string, unknown>;
 
 interface BaseHealthCheckDefinition {
+  // Name of the check, the same for every occurrence: shown in the platform settings, translated by the front (lang/back)
+  label: string;
   severity: IngestionHealthCheckSeverity;
   // Computed when read, never stored: the entity type of the ingestor adapts it to the kind of ingestion
-  message: (metadata: HealthCheckMetadata, entityType: string) => string;
+  // Absent when the failure needs nothing more than the name of the check: the label is the message.
+  // A {key} placeholder is filled from metadata[key]: by the front once translated, by formatHealthCheckMessage elsewhere
+  message?: (metadata: HealthCheckMetadata, entityType: string) => string;
 }
 
 // getFailure returns null when the check passes, and the metadata of the failure when it fails ({} when there is nothing to tell)
@@ -105,6 +118,12 @@ const isUserRequired = (ingestor: HealthCheckIngestor) => ingestor.entity_type =
 
 export const getIngestorUserId = (ingestor: HealthCheckIngestor) => {
   return ingestor.entity_type === ENTITY_TYPE_CONNECTOR ? ingestor.connector_user_id : ingestor.user_id;
+};
+
+// The capability the platform requires from the user of an ingestor, by entity type: a connector registers and pings with CONNECTORAPI.
+// Feeds and syncs enforce none: absent, the check does not apply
+const REQUIRED_CAPABILITY_BY_ENTITY_TYPE: Record<string, string> = {
+  [ENTITY_TYPE_CONNECTOR]: 'CONNECTORAPI',
 };
 
 // Executed by the ingestion manager (feeds) or the sync manager (syncs), which log the outcome of each execution
@@ -174,17 +193,35 @@ export const HEALTH_CHECK_REGISTRY = {
   // Advisory: a configuration check degrades the health, only a blocking runtime check makes it critical (see computeHealthStatus)
   [HEALTH_CHECK_USER_MISSING]: {
     kind: IngestionHealthCheckKind.Configuration,
+    label: 'User is missing',
     severity: IngestionHealthCheckSeverity.Advisory,
-    message: () => 'User is missing',
     // A required user, or an optional one that was set: it must exist
     isEnabled: (ingestor) => isUserRequired(ingestor) || !!getIngestorUserId(ingestor),
     getFailure: (_, { user }) => (user ? null : {}),
   },
+  // Without it the platform refuses what the ingestor does (a connector cannot register nor ping)
+  [HEALTH_CHECK_USER_MISSING_CAPABILITY]: {
+    kind: IngestionHealthCheckKind.Configuration,
+    label: 'User lacks required capability',
+    severity: IngestionHealthCheckSeverity.Blocking,
+    // The description of the capability, translated by the front as in the roles
+    message: () => 'User lacks required capability: "{capability_description}"',
+    // Only an existing user: a missing one is reported by USER_MISSING. Internal users (system...) are not judged
+    isEnabled: (ingestor, { user }) => !!user && !user.internal && ingestor.entity_type in REQUIRED_CAPABILITY_BY_ENTITY_TYPE,
+    getFailure: (ingestor, { user }) => {
+      const capability = REQUIRED_CAPABILITY_BY_ENTITY_TYPE[ingestor.entity_type];
+      if (user?.hasCapability(capability)) {
+        return null;
+      }
+      // Its description, as shown in the roles. A capability without description is shown by its name
+      return { capability, capability_description: findCapabilityDescription(capability) ?? capability };
+    },
+  },
   // An ingestion should not depend on a person: a regular user leaving or changing rights breaks it
   [HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT]: {
     kind: IngestionHealthCheckKind.Configuration,
+    label: 'User is not a service account',
     severity: IngestionHealthCheckSeverity.Advisory,
-    message: () => 'User is not a service account',
     // Only an existing user: a missing one is reported by USER_MISSING. Internal users (system...) are not judged
     isEnabled: (_, { user }) => !!user && !user.internal,
     getFailure: (_, { user }) => (user?.user_service_account ? null : {}),
@@ -192,8 +229,8 @@ export const HEALTH_CHECK_REGISTRY = {
   // A running process pings regularly: no heartbeat means it is down
   [HEALTH_CHECK_HEARTBEAT_MISSING]: defineRuntimeCheck({
     kind: IngestionHealthCheckKind.Runtime,
+    label: 'No heartbeat received',
     severity: IngestionHealthCheckSeverity.Blocking,
-    message: () => 'No heartbeat received',
     // Only the running connectors pinging continuously: the others would be missing their heartbeat between two runs
     isEnabled: (ingestor, { pingingConnectorsIds }) => pingingConnectorsIds.has(ingestor.internal_id),
     getRuntimeData: redisGetConnectorsHeartbeats,
@@ -203,16 +240,23 @@ export const HEALTH_CHECK_REGISTRY = {
   // nothing is ingested until it succeeds again. Known from the feed or sync itself, the next success clears it
   [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: defineRuntimeCheck({
     kind: IngestionHealthCheckKind.Runtime,
+    label: 'Feed or sync execution failed',
     severity: IngestionHealthCheckSeverity.Blocking,
+    // The details stay out of the text: the front translates the message before filling {failure_description}
     message: (metadata, entityType) => {
-      const failure = describeFeedAndSyncExecutionFailure(metadata);
       const executionFailed = entityType === ENTITY_TYPE_SYNC ? 'Sync execution failed' : 'Feed execution failed';
-      return failure ? `${executionFailed}: ${failure}` : executionFailed;
+      return metadata.failure_description ? `${executionFailed}: {failure_description}` : executionFailed;
     },
     // Only the failing ones: nothing is read for the others
     isEnabled: (ingestor) => FEED_AND_SYNC_ENTITY_TYPES.includes(ingestor.entity_type) && ingestor.last_execution_status === 'error',
     getRuntimeData: getFeedsAndSyncsLastFailureDetails,
-    // The details are not always known: the failure is reported without them. They are not dated: the metadata must stay the same while the failure lasts
-    getFailure: (details) => ({ ...details }),
+    // The details are not always known: the failure is reported without them. They are not dated: the metadata must stay the same while the failure lasts.
+    // Their description fills the message: stored with them, it is the same for the same details
+    getFailure: (details) => {
+      const failureDescription = details ? describeFeedAndSyncExecutionFailure(details) : undefined;
+      return { ...details, ...(failureDescription ? { failure_description: failureDescription } : {}) };
+    },
   }),
 } satisfies Record<HealthCheckCode, HealthCheckDefinition>;
+
+export const isHealthCheckCode = (code: unknown): code is HealthCheckCode => typeof code === 'string' && Object.hasOwn(HEALTH_CHECK_REGISTRY, code);
