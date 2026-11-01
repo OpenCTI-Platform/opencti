@@ -4,7 +4,7 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, PLATFORM_VERSION } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { notify } from '../../database/redis';
+import { notify, redisDeleteIngestionLogHistory } from '../../database/redis';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -113,6 +113,7 @@ export const taxiiCollectionExport = async (ingestionTaxiiCollection: BasicStore
 export const ingestionDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   const deleted = await deleteElementById<StoreEntityIngestionTaxiiCollection>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION);
   await unregisterConnectorForIngestion(context, deleted.id);
+  await redisDeleteIngestionLogHistory(deleted.internal_id);
   await publishUserAction({
     user,
     event_type: 'mutation',

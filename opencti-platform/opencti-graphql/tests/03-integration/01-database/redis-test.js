@@ -9,6 +9,7 @@ import {
   getClientBase,
   getLastPlaybookExecutions,
   getRedisVersion,
+  INGESTION_LOG_TTL,
   lockResource,
   PLAYBOOK_EXECUTIONS_MAX_LENGTH,
   CACHE_RESET_TOPIC,
@@ -35,6 +36,7 @@ import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { awaitUntilCondition } from '../../utils/testQueryHelper';
 
 const ingestionHistoryKey = (feedId) => `ingestion-${feedId}-history`;
+const ingestionLogKey = (feedId) => `ingestion-log-${feedId}-history`;
 
 describe('Redis basic and utils', () => {
   it('should redis in correct version', async () => {
@@ -396,6 +398,20 @@ describe('Redis ingestion logs', () => {
     await redisDeleteIngestionLogHistory(feedId);
     const logs = await redisGetIngestionLogHistory(feedId);
     expect(logs).toHaveLength(0);
+  });
+
+  it('should expire a history recreated by a log pushed after its deletion', async () => {
+    const feedId = `ingestion-${uuid()}`;
+    const logEntry = { level: 'error', type: 'rss', identifier: feedId, message: 'in-flight', meta: {} };
+    await redisPushIngestionLog(feedId, logEntry);
+    await redisDeleteIngestionLogHistory(feedId);
+    // An execution still running when the feed was deleted logs its failure afterwards
+    await redisPushIngestionLog(feedId, logEntry);
+
+    const ttl = await getClientBase().ttl(ingestionLogKey(feedId));
+    expect(ttl).toBeGreaterThan(0);
+    expect(ttl).toBeLessThanOrEqual(INGESTION_LOG_TTL);
+    await redisDeleteIngestionLogHistory(feedId);
   });
 });
 

@@ -966,6 +966,9 @@ export const redisDeleteAuthLogHistory = async (id: string): Promise<void> => {
 // region ingestion log history (FIFO, last 20 per feed)
 const INGESTION_LOG_KEY_PREFIX = 'ingestion-log-';
 const INGESTION_LOG_MAX_SIZE = 20;
+// Refreshed on every push: an execution still in flight when its feed is deleted can log after the
+// cleanup and recreate the list, so the key must never live forever.
+export const INGESTION_LOG_TTL = 30 * 24 * 60 * 60; // 30 days
 
 export interface IngestionLogEntry {
   timestamp: number;
@@ -985,6 +988,7 @@ export const redisPushIngestionLog = async (feedId: string, entry: Omit<Ingestio
     await redisTx(getClientBase(), async (tx) => {
       tx.lpush(key, value);
       tx.ltrim(key, 0, INGESTION_LOG_MAX_SIZE - 1);
+      tx.expire(key, INGESTION_LOG_TTL);
     });
   } catch (err) {
     logApp.error('Failed to push ingestion log entry to Redis', { cause: err });
