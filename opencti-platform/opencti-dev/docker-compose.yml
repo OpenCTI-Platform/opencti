@@ -96,16 +96,22 @@ services:
 
   opencti-dev-minio:
     container_name: opencti-dev-minio
-    image: pgsty/silo:RELEASE.2026-10-18T00-00-00Z@sha256:2636fc4155d9a7e41ff58cdb65ddd13ba9304e67184e13c25bc5cb34016269d7
+    image: rustfs/rustfs:1.0.4@sha256:ed9210d6411d77ffceb70d94b964a3cb7d225983368bc25bebe01e995293dcc2
     ports:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: ChangeMe
-      MINIO_ROOT_PASSWORD: ChangeMe
-    command: server /data --console-address ":9001"
+      RUSTFS_ACCESS_KEY: ChangeMe
+      RUSTFS_SECRET_KEY: ChangeMe
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_OBS_LOG_DIRECTORY: "" # logs to stdout instead of /logs
+    volumes:
+      # Named volume: the anonymous /data volume of a previous MinIO or Silo container is owned by root,
+      # and RustFS (uid 10001) cannot start on it
+      - rustfsdata:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health/ready"]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -215,4 +221,6 @@ volumes:
   ossnapshots:
     driver: local
   keycloakdata:
+    driver: local
+  rustfsdata:
     driver: local

@@ -53,9 +53,9 @@ Alternatively, you can use a [Stunnel](https://www.stunnel.org/) TLS endpoint to
 
 ### S3 Bucket / MinIO
 
-MinIO used to provide FIPS 140 compliant Docker images, but the project has been archived and Docker Hub no longer serves the `minio/minio` repository. The FIPS images remain downloadable from Quay.io ([quay.io/minio/minio](https://quay.io/repository/minio/minio?tab=tags), tags suffixed with `.fips`, the last one being `RELEASE.2025-01-18T00-31-37Z.fips`), but they are no longer maintained upstream, and Silo ([pgsty/silo](https://github.com/pgsty/silo)), the community-maintained fork of MinIO used by the OpenCTI development and CI stacks, does not publish FIPS-validated builds either.
+MinIO used to provide FIPS 140 compliant Docker images, but the project has been archived and Docker Hub no longer serves the `minio/minio` repository. The FIPS images remain downloadable from Quay.io ([quay.io/minio/minio](https://quay.io/repository/minio/minio?tab=tags), tags suffixed with `.fips`, the last one being `RELEASE.2025-01-18T00-31-37Z.fips`), but they are no longer maintained upstream, and Silo ([pgsty/silo](https://github.com/pgsty/silo)), the community-maintained fork of MinIO, does not publish FIPS-validated builds either.
 
-In a FIPS 140 compliant environment, prefer an S3 endpoint that is already validated, for example the [AWS S3 FIPS endpoints](https://aws.amazon.com/compliance/fips/) or the object storage service of your platform. If you deploy the frozen MinIO FIPS images instead, check them against your compliance requirements first.
+In a FIPS 140 compliant environment, prefer an S3 endpoint that is already validated, for example the [AWS S3 FIPS endpoints](https://aws.amazon.com/compliance/fips/) or the object storage service of your platform. If you deploy the frozen MinIO FIPS images instead, check them against your compliance requirements first. RustFS, the object storage of the reference Docker deployment since OpenCTI 7.26XXXX.0, states that it is [not FIPS 140-3 (or 140-2) validated](https://github.com/rustfs/rustfs/blob/1.0.4/docs/operations/kms-cryptographic-compliance.md) as of RustFS 1.0.4.
 
 ## OpenCTI stack
 

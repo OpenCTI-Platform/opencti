@@ -63,7 +63,7 @@
     "index_prefix": "test",
     "url": "http://127.0.0.1:9200"
   },
-  "minio": {
+  "s3": {
     "bucket_name": "test",
     "endpoint": "127.0.0.1",
     "port": 9000

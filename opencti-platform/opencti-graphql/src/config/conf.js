@@ -72,6 +72,17 @@ export const booleanConf = (key, defaultValue = true) => {
   return configValue === true || configValue === 'true';
 };
 
+// A store sets a key as soon as its value is defined, empty values included, like nconf.get
+export const isConfKeyDefined = (key, stores = nconf.stores) => Object.values(stores).some((s) => s.get(key) !== undefined);
+
+// A renamed setting keeps its former name as an alias. Stores are read in nconf priority order
+// (environment, command line, configuration file, default.json): the first store setting either name
+// decides, and the new name wins inside a same store.
+export const resolveRenamedConfKey = (key, legacyKey, stores = nconf.stores) => {
+  const store = Object.values(stores).find((s) => s.get(key) !== undefined || s.get(legacyKey) !== undefined);
+  return store && store.get(key) === undefined ? legacyKey : key;
+};
+
 // Environment from NODE_ENV environment variable
 const envSeparator = '__';
 nconf.env({ separator: envSeparator, lowerCase: true, parseValues: true });
