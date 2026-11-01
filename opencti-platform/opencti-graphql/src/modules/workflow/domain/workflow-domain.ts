@@ -20,6 +20,7 @@ import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { AccessOperation, SYSTEM_USER, WORKFLOW_MANAGER_USER, isBypassUser, validateUserAccessOperation } from '../../../utils/access';
+import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { now } from '../../../utils/format';
 import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
@@ -1349,6 +1350,13 @@ export const triggerWorkflowEvent = async (
   if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
     throw ForbiddenAccess();
   }
+
+  // Edit access alone isn't enough: an edit-capable user can still lack the confidence level
+  // required to update the entity. Check it up front so the transition fails early with a clear
+  // reason, before the workflow instance is advanced. Otherwise the later projectWorkflowState
+  // update throws, is swallowed as a best-effort write, and the mutation wrongly reports success
+  // while the instance moves to the new state and the entity keeps its old status.
+  controlUserConfidenceAgainstElement(user, entity);
 
   // 2. Fetch its EntitySetting to get the workflow configuration
   const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
