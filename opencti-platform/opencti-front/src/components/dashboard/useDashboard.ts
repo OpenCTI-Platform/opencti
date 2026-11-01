@@ -1,17 +1,31 @@
 import { v4 as uuid } from 'uuid';
 import * as R from 'ramda';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import fileDownload from 'js-file-download';
 import type { Widget, WidgetLayout } from '../../utils/widget/widget';
 import { deserializeDashboardManifestForFrontend, prepareManifest, serializeDashboardManifestForBackend } from './dashboard-utils';
-import type { DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
+import type { DashboardConfig, DashboardLike, DashboardManifest, DashboardWidget } from './dashboard-types';
 import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
+import { applyDateChange, type DashboardDateField } from './dashboardTimeRange';
 
 const LAYOUT_SAVE_DEBOUNCE_MS = 300;
 
+interface SaveManifestOptions {
+  layouts: Record<string, WidgetLayout>;
+  noRefresh: boolean;
+  onCompleted?: () => void;
+  onError?: (error: Error) => void;
+}
+
 interface useDashboardProps {
   entity: DashboardLike | undefined | null;
-  onSave?: (entityId: string, newSerializedManifest: string, noRefresh: boolean, onCompleted: () => void) => void;
+  onSave?: (
+    entityId: string,
+    newSerializedManifest: string,
+    noRefresh: boolean,
+    onCompleted: () => void,
+    onError?: (error: Error) => void,
+  ) => void;
   onImportWidget?: (entityId: string, widgetConfigFile: File, serializedManifest: string) => void;
   onExportWidget?: (entityId: string, widget: { id: string; type: string }) => Promise<string | null>;
 }
@@ -62,17 +76,26 @@ function useDashboard({
     );
   }, [widgetsArray]);
 
-  const saveManifest = (newManifest: DashboardManifest, opts = { layouts: widgetsLayouts, noRefresh: false }) => {
-    const { layouts, noRefresh } = opts;
+  const saveManifest = (
+    newManifest: DashboardManifest,
+    opts: SaveManifestOptions = { layouts: widgetsLayouts, noRefresh: false },
+  ) => {
+    const { layouts, noRefresh, onCompleted, onError } = opts;
     const preparedManifest = prepareManifest(newManifest, layouts);
     const newManifestEncoded = serializeDashboardManifestForBackend(preparedManifest);
     // Sometimes (in case of layout adjustment) we do not want to re-fetch
     // all the manifest because widgets data is still the same, and it's costly
     // in performance.
     if (serializedManifest !== newManifestEncoded) {
-      onSave?.(entity?.id ?? '', newManifestEncoded, noRefresh, () => {
+      const handleCompleted = () => {
         setDeleting(false);
-      });
+        onCompleted?.();
+      };
+      // The error callback is only handed when someone waits for the result.
+      if (onError) onSave?.(entity?.id ?? '', newManifestEncoded, noRefresh, handleCompleted, onError);
+      else onSave?.(entity?.id ?? '', newManifestEncoded, noRefresh, handleCompleted);
+    } else {
+      onCompleted?.();
     }
   };
 
@@ -87,27 +110,40 @@ function useDashboard({
     debouncedSaveLayout.cancel();
   };
 
-  const handleDateChange = (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => {
+  const handleDateChange = (type: DashboardDateField, value: string | null) => {
     cancelPendingLayoutSave();
-    let newManifest = {
-      ...manifest,
-      config: {
-        ...manifest.config,
-        [type]: value === 'none' ? null : value,
-      },
-    } satisfies DashboardManifest;
-    if (type === 'relativeDate' && value !== 'none') {
-      newManifest = {
-        ...newManifest,
-        config: {
-          ...newManifest.config,
-          startDate: null,
-          endDate: null,
-        },
-      } satisfies DashboardManifest;
-    }
-    saveManifest(newManifest);
+    saveManifest({ ...manifest, config: applyDateChange(manifest.config, type, value) });
   };
+
+  // Saved with the current widget layouts: the manifest of the store misses the moves saved without refresh.
+  // The config changes still being saved. The manifest only reflects a change once its save is done: a change made
+  // meanwhile (another switch flipped) builds on it, or it would send the old value back and the server would keep that.
+  const pendingConfig = useRef<{ count: number; patch: Partial<DashboardConfig> }>({ count: 0, patch: {} });
+  const handleConfigChange = (patch: Partial<DashboardConfig>) => new Promise<void>((resolve, reject) => {
+    cancelPendingLayoutSave();
+    const pending = pendingConfig.current;
+    pending.patch = { ...pending.patch, ...patch };
+    pending.count += 1;
+    const settle = () => {
+      pending.count -= 1;
+      if (pending.count === 0) pending.patch = {};
+    };
+    saveManifest(
+      { ...manifest, config: { ...manifest.config, ...pending.patch } },
+      {
+        layouts: widgetsLayouts,
+        noRefresh: false,
+        onCompleted: () => {
+          settle();
+          resolve();
+        },
+        onError: (error) => {
+          settle();
+          reject(error);
+        },
+      },
+    );
+  });
 
   const getNextRow = () => {
     return widgetsArray.reduce((max, { layout }) => {
@@ -211,6 +247,7 @@ function useDashboard({
   return {
     handleAddWidget,
     handleDateChange,
+    handleConfigChange,
     handleUpdateWidget,
     handleDeleteWidget,
     handleDuplicateWidget,

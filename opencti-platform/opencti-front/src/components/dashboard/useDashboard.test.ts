@@ -751,4 +751,59 @@ describe('useDashboard', () => {
       expect(result.current.idToResize).toBe(existingWidget.id);
     });
   });
+
+  describe('using handleConfigChange to change the dashboard config', () => {
+    const widget = {
+      id: '474752bc-4a56-4b05-8230-633b0ca97cb2',
+      type: 'text',
+      perspective: 'entities',
+      dataSelection: [],
+      layout: { i: '474752bc-4a56-4b05-8230-633b0ca97cb2', x: 0, y: 0, w: 4, h: 4, moved: false, static: false },
+    } as DashboardWidget;
+    const entity = {
+      id: '802cbd27-7af4-4eb8-a5d2-3eee65f7049f',
+      manifest: fakeSerialize({ config: { relativeDate: 'days-7' }, widgets: { [widget.id]: widget } }),
+    };
+
+    it('saves a config patch with the current widget layouts, without touching the other keys', async () => {
+      vi.useFakeTimers();
+      const saveSpy = vi.fn((_id, _manifest, _noRefresh, onCompleted: () => void) => onCompleted());
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      act(() => result.current.handleLayoutChange([{ ...widget.layout, x: 4 }]));
+      // Before the layout save delay: the pending layout save is replaced by this one.
+      await act(() => result.current.handleConfigChange({ allowViewersToEditTimeFilters: true }));
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      const saved = saveSpy.mock.calls[0][1] as unknown as DashboardManifest;
+      expect(saved.config).toStrictEqual({ relativeDate: 'days-7', allowViewersToEditTimeFilters: true });
+      expect(saved.widgets[widget.id].layout.x).toBe(4);
+    });
+
+    it('keeps a change still being saved in the next one, then forgets it once saved', async () => {
+      const completions: (() => void)[] = [];
+      const saveSpy = vi.fn((_id, _manifest, _noRefresh, onCompleted: () => void) => {
+        completions.push(onCompleted);
+      });
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      const first = result.current.handleConfigChange({ allowViewersToEditTimeFilters: true });
+      // Flipped before the first save is done: the manifest still has the old config.
+      const second = result.current.handleConfigChange({ allowViewersToChangeVariables: true });
+      const secondConfig = (saveSpy.mock.calls[1][1] as unknown as DashboardManifest).config;
+      expect(secondConfig).toStrictEqual({ relativeDate: 'days-7', allowViewersToEditTimeFilters: true, allowViewersToChangeVariables: true });
+      act(() => completions.forEach((complete) => complete()));
+      await Promise.all([first, second]);
+      // Both saved: the next change builds on the manifest only.
+      result.current.handleConfigChange({ allowViewersToSwitchPresets: true });
+      expect((saveSpy.mock.calls[2][1] as unknown as DashboardManifest).config)
+        .toStrictEqual({ relativeDate: 'days-7', allowViewersToSwitchPresets: true });
+    });
+
+    it('rejects when the save fails', async () => {
+      const saveSpy = vi.fn((_id, _manifest, _noRefresh, _onCompleted, onError?: (error: Error) => void) => onError?.(new Error('boom')));
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      await expect(result.current.handleConfigChange({ allowViewersToChangeVariables: true })).rejects.toThrow('boom');
+    });
+  });
 });
