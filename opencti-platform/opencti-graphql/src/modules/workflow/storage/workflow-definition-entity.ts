@@ -1,4 +1,5 @@
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
+import { ENTITY_TYPE_USER } from '../../../schema/internalObject';
 import type { MappingDefinition } from '../../../schema/attribute-definition';
 import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
 import convertWorkflowToStix from '../engine/workflow-converter';
@@ -7,7 +8,7 @@ import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../types/workflow-types';
 const versionMappings: MappingDefinition<any>[] = [
   { name: 'id', label: 'Version ID', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   { name: 'timestamp', label: 'Timestamp', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-  { name: 'createdBy', label: 'Created by', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+  { name: 'createdBy', label: 'Created by', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   { name: 'content', label: 'Workflow schema', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   {
     name: 'validation_errors',

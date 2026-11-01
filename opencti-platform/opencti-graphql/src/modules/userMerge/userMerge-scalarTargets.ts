@@ -105,7 +105,7 @@ export const resolveUserMergeScalarTargets = (): UserMergeScalarResolution => {
       const shape = shapeFor(attribute);
       const variants = disposition.kind === 'split'
         ? disposition.variants
-        : [{ id: targetIdFromRow(disposition.registerRow), registerRow: disposition.registerRow, condition: undefined, unexpectedAtRest: undefined }];
+        : [{ id: disposition.id ?? targetIdFromRow(disposition.registerRow), registerRow: disposition.registerRow, condition: undefined, unexpectedAtRest: undefined }];
       variants.forEach((variant) => {
         const existing = grouped.get(variant.id);
         if (existing) {

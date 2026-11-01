@@ -57,6 +57,36 @@ describe('userMerge schema discovery', () => {
     });
   });
 
+  it('should reach the version author under each nested root of a workflow definition', () => {
+    const targets = userMergeScalarResolution().targets.filter((target) => target.registerRow === 'workflow-definition.versions-created-by');
+    expect(targets).toEqual([
+      {
+        id: 'workflow-definition-all-versions-created-by',
+        registerRow: 'workflow-definition.versions-created-by',
+        entityTypes: ['WorkflowDefinition'],
+        path: 'all_versions.createdBy',
+        shape: 'object-array',
+        nestedRoot: 'all_versions',
+      },
+      {
+        id: 'workflow-definition-draft-version-created-by',
+        registerRow: 'workflow-definition.versions-created-by',
+        entityTypes: ['WorkflowDefinition'],
+        path: 'draft_version.createdBy',
+        shape: 'single',
+        nestedRoot: 'draft_version',
+      },
+      {
+        id: 'workflow-definition-published-version-created-by',
+        registerRow: 'workflow-definition.versions-created-by',
+        entityTypes: ['WorkflowDefinition'],
+        path: 'published_version.createdBy',
+        shape: 'single',
+        nestedRoot: 'published_version',
+      },
+    ]);
+  });
+
   it('should record the nested root and the object array of a walked user reference', () => {
     const userReference = { type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], multiple: false };
     const versions = { type: 'object', format: 'nested', multiple: true, mappings: [{ ...userReference, name: 'author' }] };
