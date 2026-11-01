@@ -1,4 +1,5 @@
-import { discoverUserIdAttributes } from './userMerge-scalarDiscovery';
+import { UnsupportedError } from '../../config/errors';
+import { type DiscoveredUserAttribute, discoverUserIdAttributes } from './userMerge-scalarDiscovery';
 import { USER_MERGE_SCALAR_COMPLEMENTS, USER_MERGE_SCALAR_DISPOSITIONS, type UserMergeScalarExclusion } from './userMerge-scalarRules';
 
 /**
@@ -53,6 +54,25 @@ export interface UserMergeScalarResolution {
 
 const targetIdFromRow = (registerRow: string) => registerRow.replace(/\./g, '-');
 
+/**
+ * Shape of a discovered attribute. A single value held by the items of an object array is
+ * rewritten item by item; the rewrite script only reaches a leaf held directly by the array
+ * items, so anything deeper is refused rather than silently missed.
+ */
+const shapeFor = (attribute: DiscoveredUserAttribute): UserMergeScalarShape => {
+  if (!attribute.arrayRoot) {
+    return attribute.multiple ? 'multiple' : 'single';
+  }
+  const leaf = attribute.name.slice(attribute.arrayRoot.length + 1);
+  if (attribute.multiple || leaf.includes('.')) {
+    throw UnsupportedError('User reference held in an object array cannot be rewritten by the user merge', {
+      attribute: attribute.name,
+      array: attribute.arrayRoot,
+    });
+  }
+  return 'object-array';
+};
+
 const dispositionFor = (entityType: string | undefined, name: string) => {
   const scoped = entityType ? USER_MERGE_SCALAR_DISPOSITIONS[`${entityType}.${name}`] : undefined;
   return scoped ?? USER_MERGE_SCALAR_DISPOSITIONS[`*.${name}`];
@@ -82,10 +102,10 @@ export const resolveUserMergeScalarTargets = (): UserMergeScalarResolution => {
         excluded.push({ key, reason: disposition.reason, detail: disposition.detail });
         return;
       }
-      const shape = attribute.multiple ? 'multiple' : 'single';
+      const shape = shapeFor(attribute);
       const variants = disposition.kind === 'split'
         ? disposition.variants
-        : [{ id: targetIdFromRow(disposition.registerRow), registerRow: disposition.registerRow, condition: undefined, unexpectedAtRest: undefined }];
+        : [{ id: disposition.id ?? targetIdFromRow(disposition.registerRow), registerRow: disposition.registerRow, condition: undefined, unexpectedAtRest: undefined }];
       variants.forEach((variant) => {
         const existing = grouped.get(variant.id);
         if (existing) {
@@ -95,6 +115,9 @@ export const resolveUserMergeScalarTargets = (): UserMergeScalarResolution => {
         const target: UserMergeScalarTarget = { id: variant.id, registerRow: variant.registerRow, path: attribute.name, shape };
         if (entityType) {
           target.entityTypes = [entityType];
+        }
+        if (attribute.nestedRoot) {
+          target.nestedRoot = attribute.nestedRoot;
         }
         if (variant.condition) {
           target.condition = variant.condition;
