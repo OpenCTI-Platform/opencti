@@ -145,7 +145,7 @@
     "nconf": "0.13.0",
     "node-calls-python": "1.13.0",
     "node-fetch": "3.3.2",
-    "node-forge": "1.4.0",
+    "node-forge": "1.4.2",
     "nodemailer": "10.2.1",
     "openai": "7.45.1",
     "openid-client": "6.8.8",
