@@ -4,7 +4,17 @@ import { FilterListOutlined, LibraryAddOutlined } from '@mui/icons-material';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
 import { RayEndArrow, RayStartArrow, RelationManyToMany } from 'mdi-material-ui';
-import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxTrigger,
+  Tooltip as FdsTooltip,
+  TooltipContent as FdsTooltipContent,
+  TooltipTrigger as FdsTooltipTrigger,
+} from '@filigran/design-system';
 import { type handleFilterHelpers } from 'src/utils/filters/filtersHelpers-types';
 import { type SavedFiltersSelectionData } from 'src/components/saved_filters/SavedFilterSelection';
 import { useFormatter } from '../../../../components/i18n';
@@ -34,6 +44,8 @@ type ListFiltersProps = {
   entityTypes: string[];
   isDatatable?: boolean;
   disabled?: boolean;
+  /** Explains, on hover, why the "Add filter" picker is disabled. Only shown while `disabled`. */
+  disabledTooltip?: string;
   hideSavedFilters?: boolean;
   disableAddFilterGroup?: boolean;
   /** Stretches the "Add filter" picker over the free width of its row instead of the fixed 200px. */
@@ -73,6 +85,7 @@ const ListFilters = ({
   entityTypes,
   isDatatable = false,
   disabled = false,
+  disabledTooltip,
   hideSavedFilters = false,
   disableAddFilterGroup = false,
   expandAddFilter = false,
@@ -113,6 +126,7 @@ const ListFilters = ({
   };
 
   const { icon, tooltip, placeholder, color } = getParameters(type);
+  const isDisabledTooltipActive = disabled && !!disabledTooltip;
 
   const handleClearFilters = () => {
     setCurrentSavedFilter(undefined);
@@ -135,8 +149,10 @@ const ListFilters = ({
     groupOrder: Number.MAX_SAFE_INTEGER, // always displayed on top of the other groups
   };
 
+  const isAddFilterGroupDisabled = disableAddFilterGroup || options.length === 0;
+
   // prepended after the sorts so that it cannot be moved by them
-  const allOptions: OptionType[] = disableAddFilterGroup
+  const allOptions: OptionType[] = isAddFilterGroupDisabled
     ? (options as OptionType[])
     : [addFilterGroupOption, ...(options as OptionType[])];
 
@@ -147,7 +163,7 @@ const ListFilters = ({
   };
   // the synthetic option must never be filtered out by the search input
   const filterOptions = (unfilteredOptions: OptionType[], inputValue: string) => (
-    disableAddFilterGroup
+    isAddFilterGroupDisabled
       ? defaultFilterOptions(unfilteredOptions.filter((o) => o.value !== ADD_FILTER_GROUP_OPTION_VALUE), inputValue)
       : [
           addFilterGroupOption,
@@ -175,68 +191,73 @@ const ListFilters = ({
       ) : (
         <>
           {/* Null value and no <ComboboxLabel>, both deliberate — see fds-migration/MIGRATION-DECISIONS.md#add-filter-picker */}
-          <Combobox<OptionType>
-            // The Combobox ROOT carries `flex w-full flex-col`, so in a flex row it claims the whole line and
-            // pushes the search field, the funnel and the chips onto lines of their own — the stacked filter bar
-            // reported on the Triggers page and the threat- actor card page.
-            className={expandAddFilter ? 'min-w-0 flex-1' : 'w-50 shrink-0'}
-            options={allOptions}
-            filterOptions={filterOptions}
-            labelPosition="none"
-            value={null}
-            onValueChange={(next) => {
-              const picked = Array.isArray(next) ? next[0] : next;
-              if (picked?.value === ADD_FILTER_GROUP_OPTION_VALUE) {
-                handleAddFilterGroup();
-              } else if (picked?.value) {
-                handleChange(picked.value);
-              }
-              setInputValue('');
-            }}
-            disabled={disabled}
-            required={required}
-            groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
-            getOptionLabel={(option) => option.label}
-            // The row element, its role and its state stay the library's: this only fills the content,
-            // which is how the "Add Filter Group" entry gets its icon back (the MUI renderOption equivalent).
-            renderOption={(option) => (option.value === ADD_FILTER_GROUP_OPTION_VALUE
-              ? (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    <LibraryAddOutlined fontSize="small" />
-                    {option.label}
-                  </span>
-                )
-              : option.label)}
-            inputValue={inputValue}
-            onInputChange={(newValue, meta) => {
-              if (meta.cause !== 'type') {
-                return;
-              }
-              setInputValue(newValue);
-            }}
-          >
-            {/* The declared width was shrunk to 119px by the flex row, which cut the label off at 95px of the 101px
-                it needs. flexShrink keeps it at 200. */}
-            <ComboboxField style={expandAddFilter ? { width: '100%' } : { width: 200, flexShrink: 0 }}>
-              <ComboboxInput
-                placeholder={placeholder}
-                aria-label={placeholder}
-                required={required}
-              />
-              <ComboboxControls>
-                {/* No aria-label on purpose — see fds-migration/MIGRATION-DECISIONS.md#add-filter-picker */}
-                <ComboboxTrigger />
-              </ComboboxControls>
-            </ComboboxField>
-            <ComboboxContent listAriaLabel={placeholder} />
-          </Combobox>
+          <FdsTooltip open={isDisabledTooltipActive ? undefined : false}>
+            <FdsTooltipTrigger asChild>
+              <div
+                className={isDisabledTooltipActive ? (expandAddFilter ? 'min-w-0 flex-1' : 'w-50 shrink-0') : 'contents'}
+                role={isDisabledTooltipActive ? 'button' : undefined}
+                tabIndex={isDisabledTooltipActive ? 0 : undefined}
+                aria-label={isDisabledTooltipActive ? placeholder : undefined}
+                aria-disabled={isDisabledTooltipActive ? true : undefined}
+              >
+                <Combobox<OptionType>
+                  className={expandAddFilter ? 'min-w-0 flex-1' : 'w-50 shrink-0'}
+                  options={allOptions}
+                  filterOptions={filterOptions}
+                  labelPosition="none"
+                  value={null}
+                  onValueChange={(next) => {
+                    const picked = Array.isArray(next) ? next[0] : next;
+                    if (picked?.value === ADD_FILTER_GROUP_OPTION_VALUE) {
+                      handleAddFilterGroup();
+                    } else if (picked?.value) {
+                      handleChange(picked.value);
+                    }
+                    setInputValue('');
+                  }}
+                  disabled={disabled}
+                  required={required}
+                  groupBy={isNotUniqEntityTypes ? (option) => option?.groupLabel ?? '' : undefined}
+                  getOptionLabel={(option) => option.label}
+                  renderOption={(option) => (option.value === ADD_FILTER_GROUP_OPTION_VALUE
+                    ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                          <LibraryAddOutlined fontSize="small" />
+                          {option.label}
+                        </span>
+                      )
+                    : option.label)}
+                  inputValue={inputValue}
+                  onInputChange={(newValue, meta) => {
+                    if (meta.cause !== 'type') {
+                      return;
+                    }
+                    setInputValue(newValue);
+                  }}
+                >
+                  <ComboboxField style={expandAddFilter ? { width: '100%' } : { width: 200, flexShrink: 0 }}>
+                    <ComboboxInput
+                      placeholder={placeholder}
+                      aria-label={placeholder}
+                      required={required}
+                    />
+                    <ComboboxControls>
+                      {/* No aria-label on purpose — see fds-migration/MIGRATION-DECISIONS.md#add-filter-picker */}
+                      <ComboboxTrigger />
+                    </ComboboxControls>
+                  </ComboboxField>
+                  <ComboboxContent listAriaLabel={placeholder} />
+                </Combobox>
+              </div>
+            </FdsTooltipTrigger>
+            <FdsTooltipContent>{disabledTooltip}</FdsTooltipContent>
+          </FdsTooltip>
           {!hideSavedFilters && isDatatable && variant === 'default' && (
             <SavedFilters
               currentSavedFilter={currentSavedFilter}
               setCurrentSavedFilter={setCurrentSavedFilter}
             />
           )}
-          {/* The row runs at 8px; the two tertiary icons read as one control and sit closer. */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <ClearFiltersIcon
               disabled={disabled}

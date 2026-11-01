@@ -4637,6 +4637,7 @@
   "Select an entity on the left to see its changes": "左側のエンティティを選択すると、その変更が表示されます。",
   "Select an existing entity": "既存のエンティティを選択",
   "Select an instance above to be able to choose attributes": "上記のインスタンスを選択すると、属性を選択できるようになります。",
+  "Select at least one entity type to add filters": "フィルタを追加するには、少なくとも1つのエンティティタイプを選択してください",
   "Select at least one value": "少なくとも1つの値を選択してください",
   "Select Attribute": "属性を選択",
   "Select authorized members": "許可されたメンバーを選択する",

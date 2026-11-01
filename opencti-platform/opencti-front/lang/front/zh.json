@@ -4637,6 +4637,7 @@
   "Select an entity on the left to see its changes": "选择左边的实体，查看其更改",
   "Select an existing entity": "选择一个现有实体",
   "Select an instance above to be able to choose attributes": "选择上面的实例，以便能够选择属性",
+  "Select at least one entity type to add filters": "请选择至少一种实体类型以添加筛选条件",
   "Select at least one value": "请至少选择一个值",
   "Select Attribute": "选择属性",
   "Select authorized members": "选择授权成员",

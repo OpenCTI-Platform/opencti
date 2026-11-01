@@ -95,6 +95,19 @@ describe('ListFilters', () => {
     expect(options[0]).toHaveTextContent('Add Filter Group');
   });
 
+  it('does not offer "Add Filter Group" when there is no filter key to default to', async () => {
+    const { user } = testRender(<ListFilters {...baseProps} availableFilterKeys={[]} />, { userContext: mockUserContext() });
+    await user.click(screen.getByRole('combobox'));
+    expect(screen.queryByRole('option', { name: 'Add Filter Group' })).toBeNull();
+  });
+
+  it('exposes the disabled explanation through a focusable, named trigger', () => {
+    testRender(<ListFilters {...baseProps} disabled disabledTooltip="Pick a type first" />, { userContext: mockUserContext() });
+    const trigger = screen.getByRole('button', { name: 'Add filter' });
+    expect(trigger).toHaveAttribute('tabindex', '0');
+    expect(trigger).toHaveAttribute('aria-disabled', 'true');
+  });
+
   it('keeps "Add Filter Group" first when the search term matches no filter key', async () => {
     const { user } = testRender(<ListFilters {...baseProps} />, { userContext: mockUserContext() });
     await user.click(screen.getByRole('combobox'));

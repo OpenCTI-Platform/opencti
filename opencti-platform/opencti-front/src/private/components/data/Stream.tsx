@@ -18,6 +18,7 @@ import ItemCopy from '../../../components/ItemCopy';
 import { StreamLine_node$data } from '@components/data/__generated__/StreamLine_node.graphql';
 import ItemBoolean from '../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../utils/String';
+import { stopLinkNavigation } from '../../../utils/domEvent';
 import Tag from '@common/tag/Tag';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
@@ -215,12 +216,15 @@ const Stream = () => {
         const deserializedFilters = deserializeFilterGroupForFrontend(filters);
         return isFilterGroupNotEmpty(deserializedFilters)
           ? (
-              <FilterIconButton
-                filters={deserializedFilters}
-                variant="small"
-                // as the stream edition form, so that a custom field filter is shown with its label
-                entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
-              />
+              <div role="presentation" onClick={stopLinkNavigation}>
+                <FilterIconButton
+                  filters={deserializedFilters}
+                  variant="small"
+                  showGroupsSummaryButtonOnReadOnly
+                  // as the stream edition form, so that a custom field filter is shown with its label
+                  entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+                />
+              </div>
             )
           : EMPTY_VALUE;
       },
@@ -256,7 +260,7 @@ const Stream = () => {
             />
           )}
           actions={(node) => (
-            <div>
+            <div role="presentation" onClick={stopLinkNavigation}>
               <Security needs={[TAXIIAPI]}>
                 <StreamPopover
                   streamCollection={node}
