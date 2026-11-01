@@ -1,7 +1,7 @@
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
-import { type AttributeDefinition, coverageInformation, customFieldValues, entityType, opinionsMetrics } from '../../schema/attribute-definition';
+import { type AttributeDefinition, coverageInformation, customFieldValues, entityType, hasCoveredCoverageInformation, opinionsMetrics } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
+import { RELATION_HAS_COVERED, STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { connections } from './basicRelationship-registrationAttributes';
 import { workflowId } from './stixDomainObject-registrationAttributes';
 
@@ -16,5 +16,10 @@ export const stixCoreRelationshipsAttributes: Array<AttributeDefinition> = [
   workflowId,
   customFieldValues,
 ];
+// coverage_information is filterable on has-covered only
+const hasCoveredAttributes: Array<AttributeDefinition> = stixCoreRelationshipsAttributes
+  .map((attribute) => (attribute === coverageInformation ? hasCoveredCoverageInformation : attribute));
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CORE_RELATIONSHIP, stixCoreRelationshipsAttributes);
-STIX_CORE_RELATIONSHIPS.map((type) => schemaAttributesDefinition.registerAttributes(type, stixCoreRelationshipsAttributes));
+STIX_CORE_RELATIONSHIPS.forEach((type) => {
+  schemaAttributesDefinition.registerAttributes(type, type === RELATION_HAS_COVERED ? hasCoveredAttributes : stixCoreRelationshipsAttributes);
+});

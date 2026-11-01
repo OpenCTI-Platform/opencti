@@ -19,6 +19,7 @@ const stixCoreRelationshipFilterKeys: string[] = [
   'objectLabel',
   'externalReferences',
   'killChainPhases',
+  'coverage_information',
 ];
 
 export default stixCoreRelationshipFilterKeys;
