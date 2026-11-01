@@ -32,6 +32,17 @@ export const checkDashboardConfigurationImport = (type: string, parsedData: Conf
       { reason: parsedData.openCTI_version },
     );
   }
+
+  // A dashboard stored without a name breaks the dashboards list (name is mandatory in the GraphQL schema)
+  if (type === 'dashboard') {
+    const { configuration } = parsedData as ConfigImportData & { configuration?: { name?: unknown } };
+    const name = configuration?.name;
+    if (typeof name !== 'string' || name.trim().length === 0) {
+      throw FunctionalError('Invalid dashboard file. The dashboard configuration must have a name', {
+        reason: name === undefined ? 'missing name' : 'empty name',
+      });
+    }
+  }
 };
 
 /**
