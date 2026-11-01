@@ -69,6 +69,13 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
       { id: 'work-active-user-id', registerRow: 'work-active.user-id', condition: { path: 'status', equals: 'complete', negate: true }, unexpectedAtRest: true },
     ],
   },
+  [`${ENTITY_TYPE_BACKGROUND_TASK}.initiator_id`]: {
+    kind: 'split',
+    variants: [
+      { id: 'background-task-terminal-initiator-id', registerRow: 'background-task-terminal.initiator-id', condition: { path: 'completed', equals: true } },
+      { id: 'background-task-pending-initiator-id', registerRow: 'background-task-pending.initiator-id', condition: { path: 'completed', equals: true, negate: true }, unexpectedAtRest: true },
+    ],
+  },
   [`${ENTITY_TYPE_NOTIFICATION}.user_id`]: {
     kind: 'split',
     variants: [
@@ -113,25 +120,6 @@ export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
     path: 'user_id',
     shape: 'single',
     missingBecause: 'not declared at all, though the entity stores it',
-  },
-  {
-    id: 'background-task-terminal-initiator-id',
-    registerRow: 'background-task-terminal.initiator-id',
-    entityTypes: [ENTITY_TYPE_BACKGROUND_TASK],
-    path: 'initiator_id',
-    shape: 'single',
-    condition: { path: 'completed', equals: true },
-    missingBecause: "declared with format 'short'",
-  },
-  {
-    id: 'background-task-pending-initiator-id',
-    registerRow: 'background-task-pending.initiator-id',
-    entityTypes: [ENTITY_TYPE_BACKGROUND_TASK],
-    path: 'initiator_id',
-    shape: 'single',
-    condition: { path: 'completed', equals: true, negate: true },
-    unexpectedAtRest: true,
-    missingBecause: "declared with format 'short'",
   },
   {
     id: 'internal-file-metadata-creator-id',
