@@ -44,6 +44,7 @@ services:
       RUSTFS_CONSOLE_ENABLE: "true"
       RUSTFS_CONSOLE_ADDRESS: ":9001"
       RUSTFS_OBS_LOG_DIRECTORY: "" # logs to stdout instead of /logs
+      RUSTFS_CHECK_UPDATE: "false" # no call to version.rustfs.com at each start
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/health/ready"]
       interval: 30s

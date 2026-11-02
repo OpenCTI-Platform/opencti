@@ -100,6 +100,7 @@ If you maintain your own compose file, the storage service becomes the following
       RUSTFS_ACCESS_KEY: ${MINIO_ROOT_USER}
       RUSTFS_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       RUSTFS_OBS_LOG_DIRECTORY: "" # logs to stdout (docker logs) instead of files inside the container
+      RUSTFS_CHECK_UPDATE: "false" # no call to version.rustfs.com at each start
     restart: always
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/health/ready"]
