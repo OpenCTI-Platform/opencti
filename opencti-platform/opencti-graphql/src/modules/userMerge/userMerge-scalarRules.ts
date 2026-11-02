@@ -28,7 +28,7 @@ export interface UserMergeScalarSplit {
 
 export type UserMergeScalarDisposition
   = | ({ kind: 'excluded' } & UserMergeScalarExclusion)
-    | { kind: 'covered'; registerRow: string; id?: string }
+    | { kind: 'covered'; registerRow: string }
     | { kind: 'split'; variants: UserMergeScalarSplit[] };
 
 /**
@@ -42,22 +42,6 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   // Discovered by walking into the object mappings, see userMerge-scalarDiscovery.
   '*.i_attributes.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'Last modifier of each attribute, rewritten by the history chunk' },
   [`${ENTITY_TYPE_INTERNAL_FILE}.metaData.creator_id`]: { kind: 'covered', registerRow: 'internal-file.metadata-creator-id' },
-  // One version mapping reached under three roots: one register row, three targets.
-  [`${ENTITY_TYPE_WORKFLOW_DEFINITION}.published_version.createdBy`]: {
-    kind: 'covered',
-    registerRow: 'workflow-definition.versions-created-by',
-    id: 'workflow-definition-published-version-created-by',
-  },
-  [`${ENTITY_TYPE_WORKFLOW_DEFINITION}.draft_version.createdBy`]: {
-    kind: 'covered',
-    registerRow: 'workflow-definition.versions-created-by',
-    id: 'workflow-definition-draft-version-created-by',
-  },
-  [`${ENTITY_TYPE_WORKFLOW_DEFINITION}.all_versions.createdBy`]: {
-    kind: 'covered',
-    registerRow: 'workflow-definition.versions-created-by',
-    id: 'workflow-definition-all-versions-created-by',
-  },
   '*.applicant_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History, Activity and PirHistory are rewritten by the history chunk' },
   '*.xtm_hub_registration_user_id': { kind: 'covered', registerRow: 'settings.xtm-hub-registration-user-id' },
   '*.platform_ip_whitelist_exclusion_ids': { kind: 'excluded', reason: 'another-handler', detail: 'Settings handler, which writes through the domain layer so the platform cache follows' },
@@ -68,6 +52,9 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   '*.taxii_public_user_id': { kind: 'excluded', reason: 'another-handler', detail: 'Public sharing handler, which also reports the exposure change' },
   '*.stream_public_user_id': { kind: 'excluded', reason: 'another-handler', detail: 'Public sharing handler, which also reports the exposure change' },
   'Sync.user_id': { kind: 'covered', registerRow: 'sync.user-id' },
+  [`${ENTITY_TYPE_CONNECTOR}.connector_user_id`]: { kind: 'covered', registerRow: 'connector.user-id' },
+  [`${ENTITY_TYPE_NEWS_FEED_ITEM}.user_id`]: { kind: 'covered', registerRow: 'news-feed-item.user-id' },
+  [`${ENTITY_TYPE_PUBLIC_DASHBOARD}.user_id`]: { kind: 'covered', registerRow: 'public-dashboard.user-id' },
   'IngestionCsv.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionJson.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionRss.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
@@ -86,6 +73,13 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
     variants: [
       { id: 'work-terminal-user-id', registerRow: 'work-terminal.user-id', condition: { path: 'status', equals: 'complete' } },
       { id: 'work-active-user-id', registerRow: 'work-active.user-id', condition: { path: 'status', equals: 'complete', negate: true }, unexpectedAtRest: true },
+    ],
+  },
+  [`${ENTITY_TYPE_BACKGROUND_TASK}.initiator_id`]: {
+    kind: 'split',
+    variants: [
+      { id: 'background-task-terminal-initiator-id', registerRow: 'background-task-terminal.initiator-id', condition: { path: 'completed', equals: true } },
+      { id: 'background-task-pending-initiator-id', registerRow: 'background-task-pending.initiator-id', condition: { path: 'completed', equals: true, negate: true }, unexpectedAtRest: true },
     ],
   },
   [`${ENTITY_TYPE_NOTIFICATION}.user_id`]: {
@@ -110,46 +104,30 @@ export interface UserMergeScalarComplement extends UserMergeScalarTarget {
 
 export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
   {
-    id: 'connector-user-id',
-    registerRow: 'connector.user-id',
-    entityTypes: [ENTITY_TYPE_CONNECTOR],
-    path: 'connector_user_id',
+    id: 'workflow-definition-published-version-created-by',
+    registerRow: 'workflow-definition.versions-created-by',
+    entityTypes: [ENTITY_TYPE_WORKFLOW_DEFINITION],
+    path: 'published_version.createdBy',
     shape: 'single',
-    missingBecause: "declared with format 'short'",
+    nestedRoot: 'published_version',
+    missingBecause: 'nested mapping child declared without entityTypes',
   },
   {
-    id: 'news-feed-item-user-id',
-    registerRow: 'news-feed-item.user-id',
-    entityTypes: [ENTITY_TYPE_NEWS_FEED_ITEM],
-    path: 'user_id',
+    id: 'workflow-definition-draft-version-created-by',
+    registerRow: 'workflow-definition.versions-created-by',
+    entityTypes: [ENTITY_TYPE_WORKFLOW_DEFINITION],
+    path: 'draft_version.createdBy',
     shape: 'single',
-    missingBecause: "declared with format 'short'",
+    nestedRoot: 'draft_version',
+    missingBecause: 'nested mapping child declared without entityTypes',
   },
   {
-    id: 'public-dashboard-user-id',
-    registerRow: 'public-dashboard.user-id',
-    entityTypes: [ENTITY_TYPE_PUBLIC_DASHBOARD],
-    path: 'user_id',
-    shape: 'single',
-    missingBecause: 'not declared at all, though the entity stores it',
-  },
-  {
-    id: 'background-task-terminal-initiator-id',
-    registerRow: 'background-task-terminal.initiator-id',
-    entityTypes: [ENTITY_TYPE_BACKGROUND_TASK],
-    path: 'initiator_id',
-    shape: 'single',
-    condition: { path: 'completed', equals: true },
-    missingBecause: "declared with format 'short'",
-  },
-  {
-    id: 'background-task-pending-initiator-id',
-    registerRow: 'background-task-pending.initiator-id',
-    entityTypes: [ENTITY_TYPE_BACKGROUND_TASK],
-    path: 'initiator_id',
-    shape: 'single',
-    condition: { path: 'completed', equals: true, negate: true },
-    unexpectedAtRest: true,
-    missingBecause: "declared with format 'short'",
+    id: 'workflow-definition-all-versions-created-by',
+    registerRow: 'workflow-definition.versions-created-by',
+    entityTypes: [ENTITY_TYPE_WORKFLOW_DEFINITION],
+    path: 'all_versions.createdBy',
+    shape: 'object-array',
+    nestedRoot: 'all_versions',
+    missingBecause: 'nested mapping child declared without entityTypes',
   },
 ];
