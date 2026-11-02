@@ -137,6 +137,35 @@ describe('useDashboardViz', () => {
     widgetA2.unmount();
   });
 
+  it('does not refetch when the widget gets new parameters with the same content (manifest refreshed)', () => {
+    const buildQueryVariables = vi.fn((_, __, parameters?: { title?: string | null }) => ({
+      title: parameters?.title ?? null,
+      // Computed from "now", as a relative range is: a rebuild would change the variables.
+      at: Date.now(),
+    }));
+    // Stable, as the dashboard memoizes it on the range.
+    const config = {};
+    const widget = renderHook(({ parameters }: { parameters: { title: string } }) => useDashboardViz({
+      dataSelection: EMPTY_DATA_SELECTION,
+      perspective: 'entities',
+      refreshRate: null,
+      query: {} as never,
+      config,
+      parameters,
+      buildQueryVariables,
+    }), {
+      initialProps: { parameters: { title: 'A' } },
+    });
+    const [load] = loadMocks;
+    const baselineCalls = load.mock.calls.length;
+    vi.advanceTimersByTime(5000);
+    act(() => {
+      widget.rerender({ parameters: { title: 'A' } });
+    });
+    expect(load).toHaveBeenCalledTimes(baselineCalls);
+    widget.unmount();
+  });
+
   it('fetches on mount and then refetches when refresh token increments', () => {
     const buildQueryVariables = vi.fn(() => ({ marker: 'token-refetch' }));
 
