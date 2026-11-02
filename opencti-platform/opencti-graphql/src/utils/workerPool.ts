@@ -13,6 +13,8 @@ export interface WorkerPoolOptions {
   // Maximum number of workers running at once: tasks beyond it wait for a free worker. Unbounded if not set.
   maxPoolSize?: number;
   maxTasksPerWorker: number;
+  // An idle worker still holds the memory of its last task: it is terminated after this delay, in ms. Kept if not set.
+  idleTimeout?: number;
   resourceLimits: ResourceLimits;
   timeoutError: (timeout: number) => Error;
   // Error reported when a task exceeds the worker resource limits. A generic worker error if not set.
@@ -28,6 +30,7 @@ interface PooledWorker {
   worker: Worker;
   tasks: number;
   retired: boolean;
+  idleTimer?: NodeJS.Timeout;
 }
 
 interface WaitingTask {
@@ -38,7 +41,7 @@ interface WaitingTask {
 // A worker handles one task at a time: a timeout then terminates exactly the task that hung,
 // and never a bystander sharing the same thread.
 export const createWorkerPool = <Request, Result>(poolOptions: WorkerPoolOptions): WorkerPool<Request, Result> => {
-  const { workerFile, idlePoolSize, maxPoolSize = Infinity, maxTasksPerWorker, resourceLimits, timeoutError, outOfMemoryError } = poolOptions;
+  const { workerFile, idlePoolSize, maxPoolSize = Infinity, maxTasksPerWorker, idleTimeout, resourceLimits, timeoutError, outOfMemoryError } = poolOptions;
   let shuttingDown = false;
   const idleWorkers: PooledWorker[] = [];
   const activeWorkers = new Set<PooledWorker>();
@@ -49,11 +52,19 @@ export const createWorkerPool = <Request, Result>(poolOptions: WorkerPoolOptions
     return new URL(isProduction ? workerFile : `../../build/${workerFile}`, import.meta.url);
   };
 
+  const stopIdleTimer = (pooled: PooledWorker) => {
+    if (pooled.idleTimer) {
+      clearTimeout(pooled.idleTimer);
+      pooled.idleTimer = undefined;
+    }
+  };
+
   const retireWorker = (pooled: PooledWorker) => {
     if (pooled.retired) {
       return;
     }
     pooled.retired = true;
+    stopIdleTimer(pooled);
     const index = idleWorkers.indexOf(pooled);
     if (index !== -1) {
       idleWorkers.splice(index, 1);
@@ -77,6 +88,9 @@ export const createWorkerPool = <Request, Result>(poolOptions: WorkerPoolOptions
       return Promise.reject(new Error(`Worker pool ${workerFile} is shutting down`));
     }
     const idle = idleWorkers.pop();
+    if (idle) {
+      stopIdleTimer(idle);
+    }
     if (idle || activeWorkers.size < maxPoolSize) {
       const available = idle ?? spawnWorker();
       activeWorkers.add(available);
@@ -115,6 +129,10 @@ export const createWorkerPool = <Request, Result>(poolOptions: WorkerPoolOptions
     }
     if (canReuse && idleWorkers.length < idlePoolSize) {
       idleWorkers.push(pooled);
+      if (idleTimeout !== undefined) {
+        pooled.idleTimer = setTimeout(() => discardWorker(pooled), idleTimeout);
+        pooled.idleTimer.unref();
+      }
     } else if (canReuse) {
       discardWorker(pooled);
     }

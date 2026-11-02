@@ -65,6 +65,26 @@ describe('check createWorkerPool', () => {
     }
   });
 
+  it('terminates a worker that stays idle longer than idleTimeout', async () => {
+    const pool = createWorkerPool<JsonPathQuery, any>({ ...poolOptions, idleTimeout: 200 });
+    const postMessageSpy = vi.spyOn(Worker.prototype, 'postMessage');
+    const terminateSpy = vi.spyOn(Worker.prototype, 'terminate');
+    const threadOf = (call: number) => (postMessageSpy.mock.contexts[call] as Worker).threadId;
+    try {
+      await pool.run(query(1), 5000);
+      // Reused while the next task comes before the idle timeout
+      await pool.run(query(2), 5000);
+      expect(threadOf(1)).toBe(threadOf(0));
+      expect(terminateSpy).not.toHaveBeenCalled();
+      // Terminated once idle for longer, and replaced by a new worker
+      await vi.waitFor(() => expect(terminateSpy).toHaveBeenCalledTimes(1), { timeout: 2000 });
+      expect(await pool.run(query(3), 5000)).toEqual(['3']);
+      expect(threadOf(2)).not.toBe(threadOf(0));
+    } finally {
+      await pool.shutdown();
+    }
+  });
+
   it('rejects waiting tasks on shutdown', async () => {
     const pool = createWorkerPool<JsonPathQuery, any>({ ...poolOptions, maxPoolSize: 1 });
     const settled = (promise: Promise<unknown>) => promise.then(() => 'resolved').catch((error) => error.message);

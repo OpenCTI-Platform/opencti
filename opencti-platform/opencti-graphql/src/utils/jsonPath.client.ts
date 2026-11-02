@@ -10,6 +10,8 @@ const pool = createWorkerPool<JsonPathQuery, any>({
   // Each worker can hold a copy of the document up to its heap limit: the bound keeps the total under control
   maxPoolSize: conf.get('json_path:max_pool_size') ?? 4,
   maxTasksPerWorker: conf.get('json_path:max_queries_per_worker') ?? 10000,
+  // A worker that copied a large document keeps that memory while idle: it is given back after a quiet period
+  idleTimeout: conf.get('json_path:idle_timeout') ?? 60000,
   resourceLimits: {
     maxOldGenerationSizeMb: conf.get('json_path:resource_limits:max_old_generation_size_mb') ?? 512,
     maxYoungGenerationSizeMb: conf.get('json_path:resource_limits:max_young_generation_size_mb') ?? 32,
