@@ -7,6 +7,8 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { Add, ChevronRightOutlined } from '@mui/icons-material';
 import { Stack } from '@mui/material';
+import type { Theme } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
@@ -271,6 +273,7 @@ const StixCoreRelationshipCreationFromRelationSelectEntity: FunctionComponent<St
   onContinue,
 }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
   const queryRef = useQueryLoading<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery>(
     stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
@@ -285,7 +288,7 @@ const StixCoreRelationshipCreationFromRelationSelectEntity: FunctionComponent<St
   } as UsePreloadedPaginationFragment<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery>;
   return (
     <>
-      <div style={{ flex: '1 0 0', overflow: 'hidden' }} ref={setTableRootRef}>
+      <div style={{ flex: '1 0 0', overflow: 'hidden', paddingTop: theme.spacing(1) }} ref={setTableRootRef}>
         {queryRef && (
           <DataTable
             disableToolBar
