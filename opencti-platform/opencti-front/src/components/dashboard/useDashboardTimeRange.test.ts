@@ -43,6 +43,12 @@ describe('useDashboardTimeRange', () => {
     expect(renderHook(() => useDashboardTimeRange('ws-1', config)).result.current.range.relativeDate).toBe('months-1');
   });
 
+  it('writes a range restored from this browser into the URL, so the address opens the same view', () => {
+    store('user-1', 'ws-1', 'months-1');
+    renderHook(() => useDashboardTimeRange('ws-1', config));
+    expect(timeRangeParam()).toBe('months-1');
+  });
+
   it('prefers the URL over the stored range', () => {
     store('user-1', 'ws-1', 'months-1');
     window.history.replaceState(null, '', '/?timeRange=years-1');

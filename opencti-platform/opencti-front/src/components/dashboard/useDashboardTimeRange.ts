@@ -29,6 +29,11 @@ export const useDashboardTimeRange = (
     setState({ key, ignoreLocalValues, enabled, stored });
   }
 
+  // The URL shows the range in use, also when it was restored from this browser: a shared address opens the same view.
+  useEffect(() => {
+    if (!ignoreLocalValues && enabled) writeTimeRangeParam(stored);
+  }, [stored, ignoreLocalValues, enabled]);
+
   const { startDate, endDate, relativeDate } = pickTimeRange(config);
   const defaultRange = useMemo(() => ({ startDate, endDate, relativeDate }), [startDate, endDate, relativeDate]);
   const range = stored ?? defaultRange;
