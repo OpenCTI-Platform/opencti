@@ -21,6 +21,7 @@ interface FiltersProps {
   variant?: string;
   isDatatable?: boolean;
   disabled?: boolean;
+  disabledTooltip?: string;
   availableFilterKeys: string[];
   availableEntityTypes?: string[];
   availableRelationshipTypes?: string[];
@@ -52,6 +53,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
   variant,
   isDatatable,
   disabled,
+  disabledTooltip,
   availableFilterKeys,
   availableEntityTypes,
   availableRelationshipTypes,
@@ -170,6 +172,7 @@ const Filters: FunctionComponent<FiltersProps> = ({
           entityTypes={entityTypes}
           isDatatable={isDatatable}
           disabled={disabled}
+          disabledTooltip={disabledTooltip}
           hideSavedFilters={hideSavedFilters}
           disableAddFilterGroup={disableAddFilterGroup}
           expandAddFilter={expandAddFilter}

@@ -4637,6 +4637,7 @@
   "Select an entity on the left to see its changes": "Выберите сущность слева, чтобы увидеть ее изменения",
   "Select an existing entity": "Выберите существующую сущность",
   "Select an instance above to be able to choose attributes": "Выберите экземпляр выше, чтобы иметь возможность выбирать атрибуты",
+  "Select at least one entity type to add filters": "Выберите как минимум один тип объекта, чтобы добавить фильтры",
   "Select at least one value": "Выберите хотя бы одно значение",
   "Select Attribute": "Выбрать атрибут",
   "Select authorized members": "Выберите уполномоченных членов",
