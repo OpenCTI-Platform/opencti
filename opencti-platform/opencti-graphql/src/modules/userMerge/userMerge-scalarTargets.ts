@@ -1,6 +1,8 @@
 import { UnsupportedError } from '../../config/errors';
-import { type DiscoveredUserAttribute, discoverUserIdAttributes } from './userMerge-scalarDiscovery';
-import { USER_MERGE_SCALAR_COMPLEMENTS, USER_MERGE_SCALAR_DISPOSITIONS, type UserMergeScalarExclusion } from './userMerge-scalarRules';
+import { isAbstract } from '../../schema/general';
+import { schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { type DiscoveredUserAttribute, declaresUserReference, discoverUserIdAttributes } from './userMerge-scalarDiscovery';
+import { USER_MERGE_SCALAR_DISPOSITIONS, type UserMergeScalarExclusion } from './userMerge-scalarRules';
 
 /**
  * How the value sits in the document, which decides the rewrite script.
@@ -79,6 +81,30 @@ const dispositionFor = (entityType: string | undefined, name: string) => {
 };
 
 /**
+ * Refuses a target that one of its entity types does not declare as a user reference.
+ *
+ * Elasticsearch mappings are index-wide, so a query on an undeclared path still runs whenever a
+ * neighbouring type of the same index declares a field of that name, and silently matches nothing
+ * the day that neighbour changes. Targets derived from the schema hold this by construction; the
+ * check keeps it that way should another source of targets ever be added. A global target must be
+ * declared by an abstract root.
+ */
+export const assertUserMergeTargetDeclared = (target: UserMergeScalarTarget) => {
+  const declaredGlobally = () => schemaAttributesDefinition.getRegisteredTypes()
+    .some((entityType) => isAbstract(entityType) && declaresUserReference(entityType, target.path));
+  const undeclared = target.entityTypes
+    ? target.entityTypes.filter((entityType) => !declaresUserReference(entityType, target.path))
+    : declaredGlobally() ? [] : ['*'];
+  if (undeclared.length > 0) {
+    throw UnsupportedError('User merge target is not declared as a user reference on its entity types', {
+      target: target.id,
+      path: target.path,
+      entity_types: undeclared,
+    });
+  }
+};
+
+/**
  * Derives the rewrite targets from the schema, then applies the register dispositions.
  *
  * Targets sharing a register row, an attribute and a condition are merged into a single one
@@ -130,10 +156,7 @@ export const resolveUserMergeScalarTargets = (): UserMergeScalarResolution => {
       });
     });
   });
-  USER_MERGE_SCALAR_COMPLEMENTS.forEach((complement) => {
-    const { id, registerRow, entityTypes, path, shape, nestedRoot, condition, unexpectedAtRest } = complement;
-    targets.push({ id, registerRow, entityTypes, path, shape, nestedRoot, condition, unexpectedAtRest });
-  });
+  targets.forEach(assertUserMergeTargetDeclared);
   return { targets, excluded, unassigned };
 };
 

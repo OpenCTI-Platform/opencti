@@ -58,6 +58,21 @@ const collectUserReferences = (
 };
 
 /**
+ * Whether the entity type itself declares the dotted path as a user reference, following the
+ * object mappings segment by segment, the same way the discovery reaches a field.
+ */
+export const declaresUserReference = (entityType: string, path: string): boolean => {
+  const [root, ...segments] = path.split('.');
+  let attribute: AttributeDefinition | MappingDefinition | undefined = schemaAttributesDefinition.getAttribute(entityType, root);
+  segments.forEach((segment) => {
+    attribute = attribute?.type === 'object' && 'mappings' in attribute
+      ? attribute.mappings.find((mapping) => mapping.name === segment)
+      : undefined;
+  });
+  return attribute !== undefined && isUserReference(attribute);
+};
+
+/**
  * Walks the schema type by type rather than through `getIdAttributes()`, which deduplicates by
  * attribute name and would collapse the several entities declaring `user_id` into one entry.
  *
