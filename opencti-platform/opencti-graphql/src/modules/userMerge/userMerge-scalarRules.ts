@@ -50,6 +50,8 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   '*.stream_public_user_id': { kind: 'excluded', reason: 'another-handler', detail: 'Public sharing handler, which also reports the exposure change' },
   'Sync.user_id': { kind: 'covered', registerRow: 'sync.user-id' },
   [`${ENTITY_TYPE_CONNECTOR}.connector_user_id`]: { kind: 'covered', registerRow: 'connector.user-id' },
+  [`${ENTITY_TYPE_NEWS_FEED_ITEM}.user_id`]: { kind: 'covered', registerRow: 'news-feed-item.user-id' },
+  [`${ENTITY_TYPE_PUBLIC_DASHBOARD}.user_id`]: { kind: 'covered', registerRow: 'public-dashboard.user-id' },
   'IngestionCsv.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionJson.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionRss.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
@@ -98,22 +100,6 @@ export interface UserMergeScalarComplement extends UserMergeScalarTarget {
 }
 
 export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
-  {
-    id: 'news-feed-item-user-id',
-    registerRow: 'news-feed-item.user-id',
-    entityTypes: [ENTITY_TYPE_NEWS_FEED_ITEM],
-    path: 'user_id',
-    shape: 'single',
-    missingBecause: "declared with format 'short'",
-  },
-  {
-    id: 'public-dashboard-user-id',
-    registerRow: 'public-dashboard.user-id',
-    entityTypes: [ENTITY_TYPE_PUBLIC_DASHBOARD],
-    path: 'user_id',
-    shape: 'single',
-    missingBecause: 'not declared at all, though the entity stores it',
-  },
   {
     id: 'internal-file-metadata-creator-id',
     registerRow: 'internal-file.metadata-creator-id',

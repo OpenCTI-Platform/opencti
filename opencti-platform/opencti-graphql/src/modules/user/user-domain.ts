@@ -1274,14 +1274,18 @@ export const validateAndNormalizeEmailInput = async (context: AuthContext, userI
 export const userEditField = async (context: AuthContext, user: AuthUser, userId: string, rawInputs: any[], opts: Parameters<typeof updateAttribute>[5] = {}) => {
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
-  let skipThisInput = false;
   let clearPassword: string | undefined;
   let passwordInput: { key: string; value: unknown[] } | undefined;
   let hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
+  // Switching between user and service account sets or removes the password itself, so a password sent
+  // alongside is dropped, whatever the order of the inputs. Same conditions as the two switch branches below
+  // (user_service_account is not set on users created before service accounts existed)
+  const requestedServiceAccount = rawInputs.find((x) => x.key === 'user_service_account')?.value[0];
+  const switchesAccountType = userToUpdate.user_service_account ? requestedServiceAccount === false : requestedServiceAccount === true;
   // While the password history applies, a password change sent with other fields could be refused by one of them
   // after the reuse check ran, which would tell the caller what the check decided without changing anything.
   // Without a history there is nothing to learn, so existing API calls keep working. The one field allowed
-  // alongside is the switch to a service account, which discards the password before any check of its history.
+  // alongside is the account type switch, which drops the password before any check of its history.
   if (hasPasswordUpdate && isLocalUser(userToUpdate)) {
     const historySettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const passwordInputsCount = rawInputs.filter((input) => input.key === 'password').length;
@@ -1313,11 +1317,9 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     // Check user email is valid and not already used in case of email change
     await validateAndNormalizeEmailInput(context, userId, input);
     if (input.key === 'password') {
-      const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
-      if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
-        skipThisInput = true;
+      if (switchesAccountType) {
+        continue;
       }
-
       if (!userToUpdate.user_service_account) {
         const userPassword = R.head(input.value)!.toString();
         await checkPasswordFromPolicy(context, userPassword);
@@ -1387,10 +1389,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
       hasPasswordUpdate = true;
       await addServiceAccountIntoUserCount();
     }
-
-    if (!skipThisInput) {
-      inputs.push(input);
-    }
+    inputs.push(input);
   }
   // Reset the password validity window whenever the password changes.
   if (hasPasswordUpdate) {
@@ -1406,7 +1405,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   const editContext = isDraftContextEdit ? { ...context, draft_context: undefined } : context;
   const editUser = isDraftContextEdit ? { ...user, draft_context: undefined } : user;
   // Password history, last before saving so that a refused password changes nothing
-  const tracksPasswordHistory = clearPassword !== undefined && !skipThisInput && isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) && isLocalUser(userToUpdate);
+  const tracksPasswordHistory = clearPassword !== undefined && isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) && isLocalUser(userToUpdate);
   let lock;
   let lockedIds: string[] = [];
   let element: StoreEntityUser;

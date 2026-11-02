@@ -93,7 +93,7 @@ describe('changePassword with password history', () => {
     await expect(changePassword(testContext, { transactionId, otp, newPassword: 'Reset-History-1!' }))
       .rejects.toMatchObject({ extensions: { code: 'PASSWORD_REUSED' } });
     const key = await redisGetForgotPasswordOtp(transactionId);
-    expect(key.hashedOtp).toBeTypeOf('string');
+    expect(key?.hashedOtp).toBeTypeOf('string');
     // Same transaction and code, a new password: the change goes through
     expect(await changePassword(testContext, { transactionId, otp, newPassword: 'Reset-History-2!' })).toBe(true);
   });
