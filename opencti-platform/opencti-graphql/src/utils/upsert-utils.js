@@ -254,7 +254,11 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
     }
   }
   // region confidence control / upsert
-  updatePatch.confidence = confidenceLevelToApply;
+  // An input without confidence keeps the existing confidence: confidenceLevelToApply only controls the upsert
+  // An element without confidence still receives one, as in a standard update
+  if (isNotEmptyField(basePatch.confidence) || isEmptyField(resolvedElement.confidence)) {
+    updatePatch.confidence = confidenceLevelToApply;
+  }
   // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
   // endregion
   return updatePatch;

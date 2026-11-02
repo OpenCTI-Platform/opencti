@@ -88,6 +88,8 @@ imported from TAXII feeds or third-party CTI repositories.
 In cases where an entity already exists in the platform, incoming creations can trigger updates to the existing entity's attributes.
 This logic has been implemented to converge the knowledge base towards the highest confidence and quality levels for both entities and relationships.
 
+When an incoming entity has no confidence level, the existing entity keeps its confidence level. The maximum confidence level of the user who sends the data still decides whether the other attributes are updated.
+
 To understand in details how the deduplication mechanism works in context of the maximum confidence level, you can navigate through this diagram (section deduplication):
 
 <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Ffile%2FlVU6O39B76MJmtnzg9DbZZ%2FConfidence-Level---Documentation%3Ftype%3Dwhiteboard%26node-id%3D0%253A1%26t%3DPQWrdBF6iMGEp0bw-1" allowfullscreen></iframe>

@@ -3925,6 +3925,7 @@ const internalCreateEntityRaw = async (
 ) => {
   // region confidence control
   const input = { ...rawInput };
+  const isInputConfidenceMissing = isEmptyField(rawInput.confidence);
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input as ObjectWithConfidence, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // authorized_members renaming
@@ -4013,6 +4014,11 @@ const internalCreateEntityRaw = async (
     // If existing entities have been found and type is a STIX Core Object
     let dataMessage;
     if (existingEntities.length > 0) {
+      // An input without confidence must not replace the existing confidence with the user's max confidence
+      // The user's max confidence still controls the upsert of the other attributes
+      if (isInputConfidenceMissing) {
+        delete resolvedInput.confidence;
+      }
       // We need to filter what we found with the user rights
       const filteredEntities = await userFilterStoreElements(context, user, existingEntities) as BasicStoreEntity[];
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
