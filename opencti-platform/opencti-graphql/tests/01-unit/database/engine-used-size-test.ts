@@ -31,8 +31,7 @@ import { ES_INDEX_PREFIX } from '../../../src/database/utils';
 const initEngine = async (selector: 'elk' | 'opensearch') => {
   const realGet = conf.get.bind(conf);
   vi.spyOn(conf, 'get').mockImplementation((key?: string) => {
-    if (key === 'elasticsearch:engine_selector') return selector;
-    if (key === 'elasticsearch:engine_check') return false;
+    if (key === 'elasticsearch:engine_client') return selector === 'elk' ? 'elasticsearch8' : 'opensearch';
     return realGet(key as string);
   });
   await searchEngineInit();
