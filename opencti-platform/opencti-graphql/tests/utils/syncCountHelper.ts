@@ -35,7 +35,7 @@ testCreatedCounter.identity = 58;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
-testCreatedCounter.indicator = 57;
+testCreatedCounter.indicator = 58;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -92,7 +92,7 @@ testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
-testUpdatedCounter.indicator = 30;
+testUpdatedCounter.indicator = 33;
 testUpdatedCounter.label = 1;
 testUpdatedCounter['malware-analysis'] = 3;
 testUpdatedCounter.note = 3;
@@ -146,7 +146,7 @@ testDeletedCounter.file = 7;
 testDeletedCounter.grouping = 2;
 testDeletedCounter.identity = 41;
 testDeletedCounter.incident = 6;
-testDeletedCounter.indicator = 29;
+testDeletedCounter.indicator = 30;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
