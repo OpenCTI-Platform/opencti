@@ -17,14 +17,17 @@ const DashboardWidgetVariablesMarker = ({ names }: DashboardWidgetVariablesMarke
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span
+        {/* A button, named after the variables, so that the tooltip also opens from the keyboard. It does nothing on click. */}
+        <button
+          type="button"
           className={`noDrag ${EXPORT_REMOVE_CLASS}`}
           data-testid="widget-variables-marker"
-          style={{ display: 'inline-flex' }}
+          aria-label={`${t_i18n('Uses variables:')} ${names.join(', ')}`}
+          style={{ display: 'inline-flex', padding: 0, border: 0, background: 'none', cursor: 'default' }}
         >
           {/* The glyph of the Variable value source in the widget filters. */}
-          <Variable fontSize="small" color="action" />
-        </span>
+          <Variable fontSize="small" color="action" aria-hidden />
+        </button>
       </TooltipTrigger>
       <TooltipContent>
         <div>{t_i18n('Uses variables:')}</div>

@@ -22,4 +22,12 @@ describe('DashboardWidgetVariablesMarker', () => {
     testRender(<DashboardWidgetVariablesMarker names={['Sector']} />);
     expect(screen.getByTestId('widget-variables-marker')).toHaveClass(EXPORT_REMOVE_CLASS, 'noDrag');
   });
+
+  it('can be reached from the keyboard and is named after the variables', async () => {
+    const { user } = testRender(<DashboardWidgetVariablesMarker names={['Sector', 'Topic']} />);
+    await user.tab();
+    const marker = screen.getByRole('button', { name: 'Uses variables: Sector, Topic' });
+    expect(marker).toHaveFocus();
+    expect((await screen.findAllByText('Topic')).length).toBeGreaterThan(0);
+  });
 });
