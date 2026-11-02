@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { Worker } from 'worker_threads';
 import { JSONPath } from 'jsonpath-plus';
+import conf from '../../../src/config/conf';
 import { queryJsonPath, shutdownJsonPathPool } from '../../../src/utils/jsonPath.client';
 
 describe('check queryJsonPath', () => {
@@ -42,5 +43,25 @@ describe('check queryJsonPath', () => {
 
   it('rejects a script error raised in the worker', async () => {
     await expect(queryJsonPath({ path: '$.Event.Attribute[?(@.value.unknown())]', json: data })).rejects.toThrow();
+  });
+
+  it('reports a timeout as a functional error and recovers on a fresh worker', async () => {
+    const originalTimeout = conf.get('json_path:timeout');
+    const postMessageSpy = vi.spyOn(Worker.prototype, 'postMessage');
+    // A large document cannot be copied to the worker and filtered within 1ms
+    const json = { items: Array.from({ length: 200000 }, (_, i) => ({ type: i % 2 ? 'ip-dst' : 'domain', value: `${i}` })) };
+    conf.set('json_path:timeout', 1);
+    try {
+      await expect(queryJsonPath({ path: '$.items[?(@.type == \'ip-dst\')].value', json })).rejects.toMatchObject({
+        message: 'JSONPath evaluation timeout after 1ms',
+        extensions: { code: 'FUNCTIONAL_ERROR' },
+      });
+    } finally {
+      conf.set('json_path:timeout', originalTimeout);
+    }
+    expect(postMessageSpy).toHaveBeenCalled();
+    postMessageSpy.mockRestore();
+    // The timed-out worker was discarded, the next query runs on a fresh one
+    expect(await queryJsonPath({ path: '$.Event.Attribute[?(@.type == \'domain\')].value', json: data, wrap: false })).toEqual(['filigran.io']);
   });
 });

@@ -4,8 +4,6 @@ import { FunctionalError } from '../config/errors';
 import type { JsonPathQuery } from './jsonPath.worker';
 import { createWorkerPool } from './workerPool';
 
-const TIMEOUT: number = conf.get('json_path:timeout') ?? 5000;
-
 const pool = createWorkerPool<JsonPathQuery, any>({
   workerFile: 'jsonPath.worker.mjs',
   idlePoolSize: conf.get('json_path:idle_pool_size') ?? 2,
@@ -28,7 +26,8 @@ export const queryJsonPath = async (query: JsonPathQuery): Promise<any> => {
   if (!hasScriptExpression(query.path)) {
     return JSONPath({ ...query, eval: false });
   }
-  return pool.run(query, TIMEOUT);
+  const timeout: number = conf.get('json_path:timeout') ?? 5000;
+  return pool.run(query, timeout);
 };
 
 // Exposed for tests and for a clean platform shutdown.
