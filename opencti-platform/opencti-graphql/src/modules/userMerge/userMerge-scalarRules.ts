@@ -50,7 +50,6 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   '*.stream_public_user_id': { kind: 'excluded', reason: 'another-handler', detail: 'Public sharing handler, which also reports the exposure change' },
   'Sync.user_id': { kind: 'covered', registerRow: 'sync.user-id' },
   [`${ENTITY_TYPE_CONNECTOR}.connector_user_id`]: { kind: 'covered', registerRow: 'connector.user-id' },
-  [`${ENTITY_TYPE_PUBLIC_DASHBOARD}.user_id`]: { kind: 'covered', registerRow: 'public-dashboard.user-id' },
   'IngestionCsv.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionJson.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionRss.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
@@ -69,6 +68,13 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
     variants: [
       { id: 'work-terminal-user-id', registerRow: 'work-terminal.user-id', condition: { path: 'status', equals: 'complete' } },
       { id: 'work-active-user-id', registerRow: 'work-active.user-id', condition: { path: 'status', equals: 'complete', negate: true }, unexpectedAtRest: true },
+    ],
+  },
+  [`${ENTITY_TYPE_BACKGROUND_TASK}.initiator_id`]: {
+    kind: 'split',
+    variants: [
+      { id: 'background-task-terminal-initiator-id', registerRow: 'background-task-terminal.initiator-id', condition: { path: 'completed', equals: true } },
+      { id: 'background-task-pending-initiator-id', registerRow: 'background-task-pending.initiator-id', condition: { path: 'completed', equals: true, negate: true }, unexpectedAtRest: true },
     ],
   },
   [`${ENTITY_TYPE_NOTIFICATION}.user_id`]: {
@@ -101,23 +107,12 @@ export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
     missingBecause: "declared with format 'short'",
   },
   {
-    id: 'background-task-terminal-initiator-id',
-    registerRow: 'background-task-terminal.initiator-id',
-    entityTypes: [ENTITY_TYPE_BACKGROUND_TASK],
-    path: 'initiator_id',
+    id: 'public-dashboard-user-id',
+    registerRow: 'public-dashboard.user-id',
+    entityTypes: [ENTITY_TYPE_PUBLIC_DASHBOARD],
+    path: 'user_id',
     shape: 'single',
-    condition: { path: 'completed', equals: true },
-    missingBecause: "declared with format 'short'",
-  },
-  {
-    id: 'background-task-pending-initiator-id',
-    registerRow: 'background-task-pending.initiator-id',
-    entityTypes: [ENTITY_TYPE_BACKGROUND_TASK],
-    path: 'initiator_id',
-    shape: 'single',
-    condition: { path: 'completed', equals: true, negate: true },
-    unexpectedAtRest: true,
-    missingBecause: "declared with format 'short'",
+    missingBecause: 'not declared at all, though the entity stores it',
   },
   {
     id: 'internal-file-metadata-creator-id',
