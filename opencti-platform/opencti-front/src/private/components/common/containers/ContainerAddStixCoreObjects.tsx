@@ -44,6 +44,7 @@ import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { insertNode } from '../../../../utils/store';
+import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import CommitMessage from '../form/CommitMessage';
 import { ExternalReferencesValues } from '../form/ExternalReferencesField';
 import { DefaultMarking } from '../../settings/marking_definitions/markingDefinition.types';
@@ -239,7 +240,7 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
         <DataTable
           disableToolBar
           disableNavigation
-          // The checkbox tells whether the entity is in the container, not the line selection
+          // The checkbox tells whether the entity is in the container
           disableLineSelection
           hideSavedFilters
           variant={DataTableVariant.inline}
@@ -256,7 +257,10 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
           availableEntityTypes={targetTypes}
           additionalFilterKeys={['entity_type']}
           createButton={createButton}
-          icon={(stixCoreObject: ContainerAddStixCoreObjectsLine) => <Checkbox checked={isAdded(stixCoreObject)} />}
+          // The row is not focusable without navigation, so the checkbox is the keyboard entry point and needs the entity name
+          icon={(stixCoreObject: ContainerAddStixCoreObjectsLine) => (
+            <Checkbox checked={isAdded(stixCoreObject)} aria-label={getMainRepresentative(stixCoreObject)} />
+          )}
           onLineClick={handleToggle}
         />
       )}
@@ -448,19 +452,19 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
           <SpeedDialAction
             title={t_i18n('Create an observable')}
             icon={<HexagonOutline />}
-            tooltipTitle={t_i18n('Create an observable')}
             onClick={() => handleOpenCreateObservable()}
-            FabProps={{
-              sx: speedDialButtonSx,
+            slotProps={{
+              tooltip: { title: t_i18n('Create an observable') },
+              fab: { sx: speedDialButtonSx },
             }}
           />
           <SpeedDialAction
             title={t_i18n('Create an entity')}
             icon={<GlobeModel />}
-            tooltipTitle={t_i18n('Create an entity')}
             onClick={() => handleOpenCreateEntity()}
-            FabProps={{
-              sx: speedDialButtonSx,
+            slotProps={{
+              tooltip: { title: t_i18n('Create an entity') },
+              fab: { sx: speedDialButtonSx },
             }}
           />
         </SpeedDial>

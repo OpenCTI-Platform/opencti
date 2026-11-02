@@ -564,7 +564,7 @@ const StixCoreRelationshipCreationFromRelation: FunctionComponent<StixCoreRelati
   );
 
   const creationButtons = (
-    <Stack direction="row" gap={1}>
+    <Stack direction="row" spacing={1}>
       {showSDOCreation && (
         <Button
           disableElevation
