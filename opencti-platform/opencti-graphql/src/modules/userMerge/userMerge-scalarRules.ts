@@ -39,9 +39,6 @@ export type UserMergeScalarDisposition
  */
 export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDisposition> = {
   '*.creator_id': { kind: 'covered', registerRow: 'basic-object.creator-id' },
-  // Discovered by walking into the object mappings, see userMerge-scalarDiscovery.
-  '*.i_attributes.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'Last modifier of each attribute, rewritten by the history chunk' },
-  [`${ENTITY_TYPE_INTERNAL_FILE}.metaData.creator_id`]: { kind: 'covered', registerRow: 'internal-file.metadata-creator-id' },
   '*.applicant_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History, Activity and PirHistory are rewritten by the history chunk' },
   '*.xtm_hub_registration_user_id': { kind: 'covered', registerRow: 'settings.xtm-hub-registration-user-id' },
   '*.platform_ip_whitelist_exclusion_ids': { kind: 'excluded', reason: 'another-handler', detail: 'Settings handler, which writes through the domain layer so the platform cache follows' },
@@ -52,6 +49,8 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   '*.taxii_public_user_id': { kind: 'excluded', reason: 'another-handler', detail: 'Public sharing handler, which also reports the exposure change' },
   '*.stream_public_user_id': { kind: 'excluded', reason: 'another-handler', detail: 'Public sharing handler, which also reports the exposure change' },
   'Sync.user_id': { kind: 'covered', registerRow: 'sync.user-id' },
+  [`${ENTITY_TYPE_CONNECTOR}.connector_user_id`]: { kind: 'covered', registerRow: 'connector.user-id' },
+  [`${ENTITY_TYPE_NEWS_FEED_ITEM}.user_id`]: { kind: 'covered', registerRow: 'news-feed-item.user-id' },
   'IngestionCsv.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionJson.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionRss.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
@@ -70,6 +69,13 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
     variants: [
       { id: 'work-terminal-user-id', registerRow: 'work-terminal.user-id', condition: { path: 'status', equals: 'complete' } },
       { id: 'work-active-user-id', registerRow: 'work-active.user-id', condition: { path: 'status', equals: 'complete', negate: true }, unexpectedAtRest: true },
+    ],
+  },
+  [`${ENTITY_TYPE_BACKGROUND_TASK}.initiator_id`]: {
+    kind: 'split',
+    variants: [
+      { id: 'background-task-terminal-initiator-id', registerRow: 'background-task-terminal.initiator-id', condition: { path: 'completed', equals: true } },
+      { id: 'background-task-pending-initiator-id', registerRow: 'background-task-pending.initiator-id', condition: { path: 'completed', equals: true, negate: true }, unexpectedAtRest: true },
     ],
   },
   [`${ENTITY_TYPE_NOTIFICATION}.user_id`]: {
@@ -94,22 +100,6 @@ export interface UserMergeScalarComplement extends UserMergeScalarTarget {
 
 export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
   {
-    id: 'connector-user-id',
-    registerRow: 'connector.user-id',
-    entityTypes: [ENTITY_TYPE_CONNECTOR],
-    path: 'connector_user_id',
-    shape: 'single',
-    missingBecause: "declared with format 'short'",
-  },
-  {
-    id: 'news-feed-item-user-id',
-    registerRow: 'news-feed-item.user-id',
-    entityTypes: [ENTITY_TYPE_NEWS_FEED_ITEM],
-    path: 'user_id',
-    shape: 'single',
-    missingBecause: "declared with format 'short'",
-  },
-  {
     id: 'public-dashboard-user-id',
     registerRow: 'public-dashboard.user-id',
     entityTypes: [ENTITY_TYPE_PUBLIC_DASHBOARD],
@@ -118,23 +108,12 @@ export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
     missingBecause: 'not declared at all, though the entity stores it',
   },
   {
-    id: 'background-task-terminal-initiator-id',
-    registerRow: 'background-task-terminal.initiator-id',
-    entityTypes: [ENTITY_TYPE_BACKGROUND_TASK],
-    path: 'initiator_id',
+    id: 'internal-file-metadata-creator-id',
+    registerRow: 'internal-file.metadata-creator-id',
+    entityTypes: [ENTITY_TYPE_INTERNAL_FILE],
+    path: 'metaData.creator_id',
     shape: 'single',
-    condition: { path: 'completed', equals: true },
-    missingBecause: "declared with format 'short'",
-  },
-  {
-    id: 'background-task-pending-initiator-id',
-    registerRow: 'background-task-pending.initiator-id',
-    entityTypes: [ENTITY_TYPE_BACKGROUND_TASK],
-    path: 'initiator_id',
-    shape: 'single',
-    condition: { path: 'completed', equals: true, negate: true },
-    unexpectedAtRest: true,
-    missingBecause: "declared with format 'short'",
+    missingBecause: "held under metaData, declared with format 'standard' and no attribute definitions",
   },
   {
     id: 'workflow-definition-published-version-created-by',
