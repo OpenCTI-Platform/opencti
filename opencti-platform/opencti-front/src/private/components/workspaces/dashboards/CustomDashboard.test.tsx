@@ -16,7 +16,7 @@ const captured = vi.hoisted(() => ({
   relayCommit: vi.fn(),
   timeFilters: undefined as { config: Record<string, unknown>; handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void } | undefined,
   contentConfig: undefined as Record<string, unknown> | undefined,
-  contentMarkerVariables: undefined as { name: string }[] | undefined,
+  contentMarkerNames: undefined as ReadonlyMap<string, readonly string[]> | undefined,
 }));
 
 vi.mock('../../../../components/dashboard/DashboardVariableValuesContext', async (importOriginal) => ({
@@ -82,11 +82,11 @@ vi.mock('../../../../relay/environment', async (importOriginal) => ({
 }));
 vi.mock('../../../../components/dashboard/DashboardContent', async () => {
   const { useOptionalDashboardVariableDefinitions } = await import('../../../../components/dashboard/DashboardVariablesContext');
-  const Content = ({ helpers, usageMarkerVariables }: { helpers: { config: Record<string, unknown> }; usageMarkerVariables?: { name: string }[] }) => {
+  const Content = ({ helpers, variableNamesByWidget }: { helpers: { config: Record<string, unknown> }; variableNamesByWidget?: ReadonlyMap<string, readonly string[]> }) => {
     const definitions = useOptionalDashboardVariableDefinitions();
     captured.contentDefinitions = definitions;
     captured.contentConfig = helpers.config;
-    captured.contentMarkerVariables = usageMarkerVariables;
+    captured.contentMarkerNames = variableNamesByWidget;
     return <div>dashboard-content</div>;
   };
   return { default: Content };
@@ -544,6 +544,19 @@ describe('CustomDashboard time range', () => {
     expect(captured.commit).toHaveBeenCalledTimes(1);
   });
 
+  it('saves the variables first, and does not save the range when a variable is refused', async () => {
+    storeFinanceEverywhere();
+    // The variable upsert is refused; a manifest write would succeed.
+    captured.commit.mockImplementation((args) => (Array.isArray(args.variables.input) ? args.onCompleted?.({}) : args.onError?.(new Error('denied'))));
+    const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
+    changeRange('months-1');
+    await user.click(setAsDefaultsButton());
+    await waitFor(() => expect(setAsDefaultsButton()).toBeEnabled());
+    expect(captured.commit).toHaveBeenCalledTimes(1);
+    expect(captured.commit.mock.calls[0][0].variables.input).toMatchObject({ id: SECTOR_ID, defaultValue: 'Finance' });
+    expect(window.localStorage.getItem(timeRangeKey)).toBe(JSON.stringify(relative('months-1')));
+  });
+
   it('keeps a range changed while the defaults are being saved', async () => {
     let completeMutation: () => void = () => {};
     captured.commit.mockImplementation((args) => {
@@ -602,8 +615,8 @@ describe('CustomDashboard time range', () => {
     testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: userContext([]) });
     expect(screen.getByTestId('refresh-control')).toBeInTheDocument();
     changeRange('months-1');
-    expect(captured.relayCommit).toHaveBeenCalledTimes(1);
-    expect(captured.relayCommit.mock.calls[0][0].variables.input.key).toBe('manifest');
+    expect(captured.commit).toHaveBeenCalledTimes(1);
+    expect(captured.commit.mock.calls[0][0].variables.input[0].key).toBe('manifest');
     expect(window.localStorage.getItem(timeRangeKey)).toBeNull();
   });
 });
@@ -628,6 +641,23 @@ describe('CustomDashboard viewer permissions', () => {
     expect(screen.queryByRole('switch')).not.toBeInTheDocument();
   });
 
+  it('shows a switch in its new position at once, disabled until it is saved', async () => {
+    let completeMutation: () => void = () => {};
+    captured.commit.mockImplementation((args) => {
+      completeMutation = () => args.onCompleted?.({});
+    });
+    const { user } = testRender(
+      <CustomDashboard data={buildWorkspace({}, { relativeDate: 'days-7' }) as never} />,
+      { userContext: userContext(['DASHBOARD_VARIABLES']) },
+    );
+    const toggle = () => screen.getByRole('switch', { name: 'Allow viewers to edit time filters' });
+    await user.click(toggle());
+    expect(toggle()).toBeChecked();
+    expect(toggle()).toBeDisabled();
+    act(() => completeMutation());
+    await waitFor(() => expect(toggle()).toBeEnabled());
+  });
+
   it('saves a switch through the dashboard config, keeping the other keys', async () => {
     const { user } = testRender(
       <CustomDashboard data={buildWorkspace({}, { relativeDate: 'days-7' }) as never} />,
@@ -645,26 +675,26 @@ describe('CustomDashboard widget usage marker', () => {
   beforeEach(() => {
     window.localStorage.clear();
     window.history.replaceState(null, '', '/');
-    captured.contentMarkerVariables = undefined;
+    captured.contentMarkerNames = undefined;
   });
 
-  it('gives the widgets the variable definitions for the usage marker, to readers too', () => {
+  it('gives the widgets the names of the variables they use, from the server usage, to readers too', () => {
     captured.granted = false;
     testRender(
       <CustomDashboard data={buildWorkspace({ currentUserAccessRight: 'view' }) as never} />,
       { userContext: userContext(['DASHBOARD_VARIABLES']) },
     );
-    expect(captured.contentMarkerVariables?.map(({ name }) => name)).toEqual(['Sector']);
+    expect([...(captured.contentMarkerNames ?? [])]).toEqual([['widget-1', ['Sector']]]);
     captured.granted = true;
   });
 
   it('gives no marker on the home dashboard', () => {
     testRender(<CustomDashboard data={workspace as never} noToolbar />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
-    expect(captured.contentMarkerVariables).toBeUndefined();
+    expect(captured.contentMarkerNames).toBeUndefined();
   });
 
   it('gives no marker when the flag is off', () => {
     testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });
-    expect(captured.contentMarkerVariables).toBeUndefined();
+    expect(captured.contentMarkerNames).toBeUndefined();
   });
 });

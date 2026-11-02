@@ -18,7 +18,7 @@ import { DashboardVariablesProvider } from '../../../../components/dashboard/Das
 import { useDashboardVariables } from '../../../../components/dashboard/useDashboardVariables';
 import { useDashboardTimeRange } from '../../../../components/dashboard/useDashboardTimeRange';
 import DashboardValuesActions from '../../../../components/dashboard/DashboardValuesActions';
-import DashboardViewerPermissions from '../../../../components/dashboard/DashboardViewerPermissions';
+import DashboardViewerPermissions, { type ViewerPermissions } from '../../../../components/dashboard/DashboardViewerPermissions';
 import DashboardVariablesBar from '../../../../components/dashboard/variables/DashboardVariablesBar';
 import DashboardVariableDialog from '../../../../components/dashboard/variables/DashboardVariableDialog';
 import DashboardVariableDeletion from '../../../../components/dashboard/variables/DashboardVariableDeletion';
@@ -32,6 +32,7 @@ import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDas
 import { WIDGET_WORKSPACE_HOST } from './custom-dashboards-utils';
 import { CustomDashboardExportQuery } from './__generated__/CustomDashboardExportQuery.graphql';
 import { WorkspaceEditionOverviewFieldPatchMutation } from '../__generated__/WorkspaceEditionOverviewFieldPatchMutation.graphql';
+import { CustomDashboardLayoutMutation } from './__generated__/CustomDashboardLayoutMutation.graphql';
 import { Box } from '@mui/material';
 import { useFormatter } from 'src/components/i18n';
 
@@ -104,6 +105,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   const workspace = useFragment(dashboardFragment, data);
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
   const [commitManifestPatch] = useApiMutation<WorkspaceEditionOverviewFieldPatchMutation>(workspaceMutationFieldPatch);
+  const [commitLayoutPatch] = useApiMutation<CustomDashboardLayoutMutation>(dashboardLayoutMutation);
 
   const userHasEditAccess = workspace.currentUserAccessRight === 'admin'
     || workspace.currentUserAccessRight === 'edit';
@@ -146,33 +148,13 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     }
   };
 
-  const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void, onError?: (error: Error) => void) => {
-    if (onError) {
-      // Someone waits for the result: unlike commitMutation, this hook reports every failure, network ones included.
-      commitManifestPatch({
-        variables: { id, input: [{ key: 'manifest', value: [newManifestEncoded] }] },
-        onCompleted,
-        onError,
-      });
-      return;
-    }
-    const mutation = noRefresh ? dashboardLayoutMutation : workspaceMutationFieldPatch;
-    commitMutation({
-      mutation,
-      variables: {
-        id,
-        input: {
-          key: 'manifest',
-          value: newManifestEncoded,
-        },
-      },
+  // Both mutations report every failure, network ones included: the next dashboard write waits for this one to end.
+  const onSave = (id: string, newManifestEncoded: string, noRefresh: boolean, onCompleted: () => void, onError: (error: Error) => void) => {
+    const commit = noRefresh ? commitLayoutPatch : commitManifestPatch;
+    commit({
+      variables: { id, input: [{ key: 'manifest', value: [newManifestEncoded] }] },
       onCompleted,
       onError,
-      // Remove these once commitMutation gets migrated to TS
-      optimisticResponse: undefined,
-      optimisticUpdater: undefined,
-      setSubmitting: undefined,
-      updater: undefined,
     });
   };
 
@@ -221,6 +203,31 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     () => new Map(workspace.variables.map((variable) => [variable.id, [...variable.usedInWidgetIds]])),
     [workspace.variables],
   );
+  // The same server computation, read the other way round for the widget usage marker.
+  const variableNamesByWidget = useMemo(() => {
+    const byWidget = new Map<string, string[]>();
+    variables.forEach(({ id, name }) => {
+      (usedInWidgetIdsByVariable.get(id) ?? []).forEach((widgetId) => {
+        byWidget.set(widgetId, [...(byWidget.get(widgetId) ?? []), name]);
+      });
+    });
+    return byWidget;
+  }, [variables, usedInWidgetIdsByVariable]);
+  // A switch shows its new position at once, disabled until saved; then the saved config takes over, so a failure
+  // (already notified by the mutation) puts it back.
+  const [pendingPermissions, setPendingPermissions] = useState<ViewerPermissions>({});
+  const onPermissionChange = (patch: ViewerPermissions) => {
+    setPendingPermissions((current) => ({ ...current, ...patch }));
+    handleConfigChange(patch).catch(() => {}).finally(() => {
+      setPendingPermissions((current) => {
+        const next = { ...current };
+        (Object.keys(patch) as (keyof ViewerPermissions)[]).forEach((key) => {
+          if (next[key] === patch[key]) delete next[key];
+        });
+        return next;
+      });
+    });
+  };
   const onReset = () => {
     variableControls.reset();
     timeRange.reset();
@@ -229,13 +236,16 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     try {
       const submittedValues = variableControls.values;
       const submittedRange = timeRange.range;
-      if (timeRange.isModified) {
-        await handleConfigChange(submittedRange);
-        timeRange.resetRange(submittedRange);
-      }
+      const isRangeModified = timeRange.isModified;
+      // The variables first: their validation is the step most likely to refuse, and their definitions are then the
+      // ones just read. A refused variable stops here, before the range is saved for every viewer.
       await setAsDefaults(variables, submittedValues);
       // The server default now is the submitted value: the local entry is redundant, unless it changed since.
       variableControls.resetValues(submittedValues);
+      if (isRangeModified) {
+        await handleConfigChange(submittedRange);
+        timeRange.resetRange(submittedRange);
+      }
     } catch {
       // The mutation already notified the user: this only avoids an unhandled rejection.
       // The local values are kept so nothing the user chose is lost.
@@ -285,8 +295,10 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     />
   );
   // The widgets follow the per user range; flag off, the manifest one, untouched.
-  // Memoized: the widgets rebuild their queries when the config identity changes.
-  const contentConfig = useMemo(() => ({ ...config, ...timeRange.range }), [config, timeRange.range]);
+  // Only the range, memoized on its values: the widgets rebuild their queries when the config identity changes, and
+  // saving any other key of the config (a viewer switch) refreshes the manifest.
+  const { startDate, endDate, relativeDate } = timeRange.range;
+  const contentConfig = useMemo(() => ({ startDate, endDate, relativeDate }), [startDate, endDate, relativeDate]);
   const contentHelpers = isVariablesEnabled ? { ...helpers, config: contentConfig } : helpers;
 
   return (
@@ -309,11 +321,9 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
               variant="dashboard"
               editionExtra={isVariablesEnabled ? (
                 <DashboardViewerPermissions
-                  config={config}
-                  // A failure is already notified by the mutation, and the switch follows the saved config.
-                  onChange={(patch) => {
-                    handleConfigChange(patch).catch(() => {});
-                  }}
+                  config={{ ...config, ...pendingPermissions }}
+                  pending={Object.keys(pendingPermissions) as (keyof ViewerPermissions)[]}
+                  onChange={onPermissionChange}
                 />
               ) : undefined}
             />
@@ -409,7 +419,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
             <DashboardVariableValuesProvider values={variableControls.values} dateVariableIds={dateVariableIds}>
               <DashboardContent
                 helpers={contentHelpers}
-                usageMarkerVariables={variableDefinitions}
+                variableNamesByWidget={isVariablesEnabled && !noToolbar ? variableNamesByWidget : undefined}
                 isEditable={userCanEdit}
                 entity={workspace}
                 host={WIDGET_WORKSPACE_HOST}

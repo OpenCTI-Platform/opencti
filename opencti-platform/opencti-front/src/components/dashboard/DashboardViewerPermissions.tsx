@@ -3,20 +3,22 @@ import SwitchField from '../fields/SwitchField';
 import { useFormatter } from '../i18n';
 import type { DashboardConfig } from './dashboard-types';
 
-type ViewerPermissions = Pick<DashboardConfig, 'allowViewersToEditTimeFilters' | 'allowViewersToChangeVariables'>;
+export type ViewerPermissions = Pick<DashboardConfig, 'allowViewersToEditTimeFilters' | 'allowViewersToChangeVariables'>;
 type ViewerPermission = keyof ViewerPermissions;
 
 interface DashboardViewerPermissionsProps {
   config: DashboardConfig;
+  // The switches whose change is being saved: shown disabled.
+  pending?: readonly ViewerPermission[];
   // Reports the switched key only: the caller merges it into the dashboard config.
   onChange: (patch: ViewerPermissions) => void;
 }
 
 /**
  * What a viewer of the dashboard may change for themselves. None of these grants any right to write the dashboard.
- * Laid out as the other switches of the edition drawers; each one follows the saved config, not the form state.
+ * Laid out as the other switches of the edition drawers; each one follows the given config, not the form state.
  */
-const DashboardViewerPermissions = ({ config, onChange }: DashboardViewerPermissionsProps) => {
+const DashboardViewerPermissions = ({ config, pending = [], onChange }: DashboardViewerPermissionsProps) => {
   const { t_i18n } = useFormatter();
   const isOn = (name: ViewerPermission) => config[name] === true;
   const handleChange = (name: ViewerPermission, value: string) => onChange({ [name]: value === 'true' });
@@ -33,6 +35,7 @@ const DashboardViewerPermissions = ({ config, onChange }: DashboardViewerPermiss
           name="allowViewersToEditTimeFilters"
           label={t_i18n('Allow viewers to edit time filters')}
           checked={isOn('allowViewersToEditTimeFilters')}
+          disabled={pending.includes('allowViewersToEditTimeFilters')}
           containerstyle={{ marginTop: 20 }}
           onChange={handleChange}
         />
@@ -42,6 +45,7 @@ const DashboardViewerPermissions = ({ config, onChange }: DashboardViewerPermiss
           name="allowViewersToChangeVariables"
           label={t_i18n('Allow viewers to change variable values')}
           checked={isOn('allowViewersToChangeVariables')}
+          disabled={pending.includes('allowViewersToChangeVariables')}
           containerstyle={{ marginTop: 20 }}
           onChange={handleChange}
         />
