@@ -596,6 +596,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                           availableFilterKeys={availableFilterKeys}
                           helpers={helpers}
                           searchContext={{ entityTypes: selectedTypes }}
+                          disabled={selectedTypes.length === 0}
+                          disabledTooltip={t_i18n('Select at least one entity type to add filters')}
                         />
                       </Box>
                       <FilterIconButton

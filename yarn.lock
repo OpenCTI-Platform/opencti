@@ -2003,9 +2003,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/chatbot@npm:3.14.0":
-  version: 3.14.0
-  resolution: "@filigran/chatbot@npm:3.14.0"
+"@filigran/chatbot@npm:3.15.1":
+  version: 3.15.1
+  resolution: "@filigran/chatbot@npm:3.15.1"
   dependencies:
     remark-parse: "npm:^11.0.0"
     unified: "npm:^11.0.0"
@@ -2015,7 +2015,7 @@ __metadata:
     react-markdown: ">=10"
     remark-breaks: ">=4"
     remark-gfm: ">=4"
-  checksum: 10c0/aa6e8f20c9c7ec7a8fe8ef95ea750fb75e015f57bbf19145c3b689285b1812abb8ec5dee443a0653b0fd31f4ad608b4e8e68aac819e2c4430934c56807167a88
+  checksum: 10c0/4227ffffb4fb1b2861d3c6459fde4cd718610bba394b9418ac990feedd07ae6f2d002ee61895228cb7770ef9162e31e244e3212508dafca9043e5b29acc5b990
   languageName: node
   linkType: hard
 
@@ -2825,15 +2825,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/merge@npm:10.0.6, @graphql-tools/merge@npm:^10.0.6":
-  version: 10.0.6
-  resolution: "@graphql-tools/merge@npm:10.0.6"
+"@graphql-tools/merge@npm:10.0.7, @graphql-tools/merge@npm:^10.0.7":
+  version: 10.0.7
+  resolution: "@graphql-tools/merge@npm:10.0.7"
   dependencies:
-    "@graphql-tools/utils": "npm:^13.1.3"
+    "@graphql-tools/utils": "npm:^13.2.0"
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^16.0.0 || ^17.0.0
-  checksum: 10c0/2097e425b7e45c9f6d774e5f0b6d55c1b699e39b6612c09827fb33dd25e9d17a407c257789a5d9097890078621755474e174513a0c498b5b42dcb5f8154b1f9b
+  checksum: 10c0/288eb8fea3b7bdca08cc7e5cc5178e338418b4afb3305b1d7fb9b6fc166ac18e7cf433481718d424fa443a978c6651eabf33984f0148037c9f6cb066d5742a4a
   languageName: node
   linkType: hard
 
@@ -2873,16 +2873,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/schema@npm:11.0.6":
-  version: 11.0.6
-  resolution: "@graphql-tools/schema@npm:11.0.6"
+"@graphql-tools/schema@npm:11.0.7":
+  version: 11.0.7
+  resolution: "@graphql-tools/schema@npm:11.0.7"
   dependencies:
-    "@graphql-tools/merge": "npm:^10.0.6"
-    "@graphql-tools/utils": "npm:^13.1.3"
+    "@graphql-tools/merge": "npm:^10.0.7"
+    "@graphql-tools/utils": "npm:^13.2.0"
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^16.0.0 || ^17.0.0
-  checksum: 10c0/579f7ed5b6e3784f00b2ea0b395d491e4fb249084aeb5cf6d0682ee8a311eeb459be37ade3f6d2d881a2b96e7128a3e0dbf548320e0eabe5c6989d5bb97af82c
+  checksum: 10c0/008b12dc01aeffb24a4828b18ae9671930e1a144e264de00e9667b17865836a89e25988b0340da46ab878876cb0d511b8a23334c9fcdc10d9511276a3d408d57
   languageName: node
   linkType: hard
 
@@ -2921,16 +2921,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/utils@npm:13.1.3, @graphql-tools/utils@npm:^13.1.3":
-  version: 13.1.3
-  resolution: "@graphql-tools/utils@npm:13.1.3"
+"@graphql-tools/utils@npm:13.2.0, @graphql-tools/utils@npm:^13.2.0":
+  version: 13.2.0
+  resolution: "@graphql-tools/utils@npm:13.2.0"
   dependencies:
     "@graphql-typed-document-node/core": "npm:^3.2.0"
     "@whatwg-node/promise-helpers": "npm:^2.0.0"
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^16.0.0 || ^17.0.0
-  checksum: 10c0/25aa21ab47883bd2040b85e242f8307cc2b6c1c98555725945b9f19b5019744b6711eb02849a973bf24747d9f032793ca2b8f36801511981764d51ba9048b022
+  checksum: 10c0/645d23ed99bb76d29fb1d89f0f8329dcadc487ed85ffce69774bc42cf78d06c7f4d52a6e4ec31124c1889d6dac82cbb9ff3c9b5189935d259367c5713167e597
   languageName: node
   linkType: hard
 
@@ -3486,7 +3486,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jsep-plugin/assignment@npm:^1.3.0":
+"@jsep-plugin/assignment@npm:^1.4.0":
   version: 1.4.0
   resolution: "@jsep-plugin/assignment@npm:1.4.0"
   peerDependencies:
@@ -3495,7 +3495,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jsep-plugin/regex@npm:^1.0.4":
+"@jsep-plugin/regex@npm:^1.1.0":
   version: 1.1.0
   resolution: "@jsep-plugin/regex@npm:1.1.0"
   peerDependencies:
@@ -3728,14 +3728,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@maplibre/vt-pbf@npm:^4.3.2":
-  version: 4.3.2
-  resolution: "@maplibre/vt-pbf@npm:4.3.2"
+"@maplibre/vt-pbf@npm:^4.3.3":
+  version: 4.3.3
+  resolution: "@maplibre/vt-pbf@npm:4.3.3"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@types/geojson": "npm:^7946.0.16"
-    pbf: "npm:^5.1.0"
-  checksum: 10c0/3fd235b16f8070b2c1eabc8c68b44d60d4585db59f28821c846d25b2c84eabc3dc78c9a417b711e104819962ea0bede36770bc22a92c17e530c5ecce84a66ec5
+    pbf: "npm:^5.1.2"
+  checksum: 10c0/62cf2e714c819f9448302d922e9fd415c5182fd208d1a3e38cb453641aea7d8b740c3d9225dec4594435d4952a9ca0aee87fd538aecd3698572bb6e7598ac17f
   languageName: node
   linkType: hard
 
@@ -9382,15 +9382,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.20.0":
-  version: 1.20.0
-  resolution: "axios@npm:1.20.0"
+"axios@npm:1.21.0":
+  version: 1.21.0
+  resolution: "axios@npm:1.21.0"
   dependencies:
     follow-redirects: "npm:^1.16.0"
     form-data: "npm:^4.0.6"
     https-proxy-agent: "npm:^5.0.1"
     proxy-from-env: "npm:^2.1.0"
-  checksum: 10c0/976088acf532286356f4c2e65df1ef47ba7da3936d83e928d0d64357bbf5370456abd3eb5826c15df322335fcb1fe200d4a84b4fcf20ffccdd63b40d80fa495c
+  checksum: 10c0/adaf1e81762aa7476b95a588f173796e9251a2683c1ffc3e2dfb3ae705c4f629976ef05ded4e7a513832214072058d480fb0bc7e46fe819621909a70f9571ed2
   languageName: node
   linkType: hard
 
@@ -12397,7 +12397,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventsource-parser@npm:4.1.2, eventsource-parser@npm:^4.1.2":
+"eventsource-parser@npm:4.1.3":
+  version: 4.1.3
+  resolution: "eventsource-parser@npm:4.1.3"
+  checksum: 10c0/141ebaa774b86f143dea88742bf766ed5f3ed1df17506e4b7098facc8915e90d952054ef94474ad29eac38ae53deac6d9f092ae44a86ef0c995c4e2a4f98b65c
+  languageName: node
+  linkType: hard
+
+"eventsource-parser@npm:^4.1.2":
   version: 4.1.2
   resolution: "eventsource-parser@npm:4.1.2"
   checksum: 10c0/1ee29bb5e2c9d6018c1542ed3a4e6570eca9109d995f912f86bdf8e61172e29afc143d5c9fbf948a13295186779ca486936c1e768d4501a28bf52614930d8f2d
@@ -15139,7 +15146,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsep@npm:^1.4.0":
+"jsep@npm:^1.6.0":
   version: 1.6.0
   resolution: "jsep@npm:1.6.0"
   checksum: 10c0/68b706c9f8873599ecf9c408b063ce661d1f53e5bceb6c25bf59448c73b1b8d4906ee40f892ccf32d83c6dba70b3aae495f00f3855fa0049025a07eadcd672ea
@@ -15289,17 +15296,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonpath-plus@npm:11.2.1":
-  version: 11.2.1
-  resolution: "jsonpath-plus@npm:11.2.1"
+"jsonpath-plus@npm:11.2.2":
+  version: 11.2.2
+  resolution: "jsonpath-plus@npm:11.2.2"
   dependencies:
-    "@jsep-plugin/assignment": "npm:^1.3.0"
-    "@jsep-plugin/regex": "npm:^1.0.4"
-    jsep: "npm:^1.4.0"
+    "@jsep-plugin/assignment": "npm:^1.4.0"
+    "@jsep-plugin/regex": "npm:^1.1.0"
+    jsep: "npm:^1.6.0"
   bin:
     jsonpath: ./bin/jsonpath-cli.js
     jsonpath-plus: ./bin/jsonpath-cli.js
-  checksum: 10c0/54a607e4bcc2d62337377483182887f76295bde1eb0709f20ca7a48125e55f41b535f0ebf0798ca9dc7ac4dec40d1c2a6e26b622aa1cb6f556e20aa2fb5d48d8
+  checksum: 10c0/52ca47072c8d9ae90a58a03b3bfb80ce00160efc94fb8e4f88d6c21d9212093c123e111c3122c17edad9a4579a3e6f72f820edb40eb0d8cf9e9e8c8b6259fe5f
   languageName: node
   linkType: hard
 
@@ -16092,9 +16099,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"maplibre-gl@npm:6.15.0":
-  version: 6.15.0
-  resolution: "maplibre-gl@npm:6.15.0"
+"maplibre-gl@npm:6.16.0":
+  version: 6.16.0
+  resolution: "maplibre-gl@npm:6.16.0"
   dependencies:
     "@mapbox/point-geometry": "npm:^1.1.0"
     "@mapbox/tiny-sdf": "npm:^2.3.0"
@@ -16103,7 +16110,7 @@ __metadata:
     "@maplibre/geojson-vt": "npm:^6.3.0"
     "@maplibre/maplibre-gl-style-spec": "npm:^26.4.4"
     "@maplibre/mlt": "npm:^1.3.0"
-    "@maplibre/vt-pbf": "npm:^4.3.2"
+    "@maplibre/vt-pbf": "npm:^4.3.3"
     "@types/geojson": "npm:^7946.0.16"
     bidi-js: "npm:^1.1.0"
     earcut: "npm:^3.2.4"
@@ -16114,7 +16121,7 @@ __metadata:
     potpack: "npm:^2.1.0"
     quickselect: "npm:^3.0.0"
     tinyqueue: "npm:^3.0.0"
-  checksum: 10c0/a696fc8431873134537dce938f448471acfbef65742cda3f3223521890d50c2f1c65d3f1f9e6576d08c18225ce7cbe303b45ab64f995dfe8ce48e54a3b9ea98f
+  checksum: 10c0/7230677a8f053bedf7f23eb0922911698d842cd34e7098c7d26d78f4cb652d4cc801447dadf18d320976b237a448712ec0e9d2434f233e22b6e837f57fb323b6
   languageName: node
   linkType: hard
 
@@ -16161,12 +16168,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:18.1.1":
-  version: 18.1.1
-  resolution: "marked@npm:18.1.1"
+"marked@npm:18.1.2":
+  version: 18.1.2
+  resolution: "marked@npm:18.1.2"
   bin:
     marked: bin/marked.js
-  checksum: 10c0/650d37ef22d39cc28e9afb194517dc7a23baa7c93971ccd518583907ac9b61ce90affb654e0f37b1505f7809988b6c35e45fbb8023bc03a33104bcdfe26324b1
+  checksum: 10c0/0e7312138d6cf866f59a28d2d97ab332ef1b6d1d09263306375a8e9c0e5a4ee892ff1e6ecb668a4959fab0c5f1008c3ddec16c861396fe7cce8f7810521484c9
   languageName: node
   linkType: hard
 
@@ -17922,7 +17929,37 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.43.0, openai@npm:^7.23.0":
+"openai@npm:7.45.1":
+  version: 7.45.1
+  resolution: "openai@npm:7.45.1"
+  peerDependencies:
+    "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
+    "@smithy/hash-node": ">=4.3.0 <5"
+    "@smithy/signature-v4": ">=5.4.0 <6"
+    google-auth-library: ">=9.15.1 <12"
+    undici: ">=5 <9"
+    ws: ^8.21.0
+    zod: ^3.25 || ^4.0
+  peerDependenciesMeta:
+    "@aws-sdk/credential-provider-node":
+      optional: true
+    "@smithy/hash-node":
+      optional: true
+    "@smithy/signature-v4":
+      optional: true
+    google-auth-library:
+      optional: true
+    undici:
+      optional: true
+    ws:
+      optional: true
+    zod:
+      optional: true
+  checksum: 10c0/5376321a1d165f5b2c1ffb1c1bc353aeaad99ed278b2a53d03b263c244c7ee6deed194b6c6ac3bd6c63cd1c8a137141b137f036d68517d95ce84ad42fffe0ca8
+  languageName: node
+  linkType: hard
+
+"openai@npm:^7.23.0":
   version: 7.43.0
   resolution: "openai@npm:7.43.0"
   peerDependencies:
@@ -17962,7 +17999,7 @@ __metadata:
     "@emotion/styled": "npm:11.14.1"
     "@eslint/js": "npm:10.0.1"
     "@faker-js/faker": "npm:10.6.0"
-    "@filigran/chatbot": "npm:3.14.0"
+    "@filigran/chatbot": "npm:3.15.1"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
     "@filigran/design-system": "npm:1.3.0"
     "@filigran/rich-text-editor": "npm:2.0.1"
@@ -18046,13 +18083,13 @@ __metadata:
     json5: "npm:2.2.3"
     knip: "npm:6.42.1"
     license-checker-rseidelsohn: "npm:5.0.1"
-    maplibre-gl: "npm:6.15.0"
+    maplibre-gl: "npm:6.16.0"
     markdown-to-jsx: "npm:9.10.3"
-    marked: "npm:18.1.1"
+    marked: "npm:18.1.2"
     mdi-material-ui: "npm:8.0.0"
     moment: "npm:2.31.0"
     monocart-reporter: "npm:2.15.1"
-    pdfmake: "npm:0.3.12"
+    pdfmake: "npm:0.3.13"
     pmtiles: "npm:4.5.0"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
@@ -18068,7 +18105,7 @@ __metadata:
     react-force-graph-2d: "npm:1.29.2"
     react-force-graph-3d: "npm:1.29.2"
     react-grid-layout: "npm:2.3.0"
-    react-intl: "npm:12.1.5"
+    react-intl: "npm:12.1.6"
     react-markdown: "npm:10.1.0"
     react-material-ui-carousel: "npm:3.4.2"
     react-mde: "npm:11.5.0"
@@ -18076,7 +18113,7 @@ __metadata:
     react-pdf: "npm:11.0.0"
     react-relay: "npm:21.0.1"
     react-relay-network-modern: "npm:6.2.2"
-    react-router: "npm:8.5.0"
+    react-router: "npm:8.5.1"
     react-syntax-highlighter: "npm:16.1.2"
     react-transition-group: "npm:4.4.5"
     react-virtualized: "npm:10.0.0"
@@ -18124,9 +18161,9 @@ __metadata:
     "@graphql-codegen/introspection": "npm:6.1.0"
     "@graphql-codegen/typescript": "npm:6.1.2"
     "@graphql-codegen/typescript-resolvers": "npm:6.1.1"
-    "@graphql-tools/merge": "npm:10.0.6"
-    "@graphql-tools/schema": "npm:11.0.6"
-    "@graphql-tools/utils": "npm:13.1.3"
+    "@graphql-tools/merge": "npm:10.0.7"
+    "@graphql-tools/schema": "npm:11.0.7"
+    "@graphql-tools/utils": "npm:13.2.0"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:1.3.0"
     "@langchain/mistralai": "npm:1.2.0"
@@ -18207,7 +18244,7 @@ __metadata:
     eslint-plugin-import: "npm:2.32.0"
     eslint-plugin-import-newlines: "npm:2.0.0"
     eventsource: "npm:5.1.3"
-    eventsource-parser: "npm:4.1.2"
+    eventsource-parser: "npm:4.1.3"
     express: "npm:5.3.0"
     express-rate-limit: "npm:8.7.1"
     express-session: "npm:1.19.0"
@@ -18234,13 +18271,13 @@ __metadata:
     jiti: "npm:2.7.0"
     jose: "npm:6.2.13"
     js-deep-equals: "npm:2.1.1"
-    jsonpath-plus: "npm:11.2.1"
+    jsonpath-plus: "npm:11.2.2"
     jwt-decode: "npm:4.0.0"
     knip: "npm:6.42.1"
     license-checker-rseidelsohn: "npm:5.0.1"
     lru-cache: "npm:11.5.3"
     luxon: "npm:3.7.2"
-    marked: "npm:18.1.1"
+    marked: "npm:18.1.2"
     migrate: "npm:2.1.0"
     mime-types: "npm:3.0.2"
     moment: "npm:2.31.0"
@@ -18250,7 +18287,7 @@ __metadata:
     node-forge: "npm:1.4.0"
     node-gyp-build: "npm:4.8.4"
     nodemailer: "npm:10.2.1"
-    openai: "npm:7.43.0"
+    openai: "npm:7.45.1"
     openid-client: "npm:6.8.8"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
@@ -18977,7 +19014,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pbf@npm:^5.0.0, pbf@npm:^5.1.0, pbf@npm:^5.1.2":
+"pbf@npm:^5.0.0, pbf@npm:^5.1.2":
   version: 5.1.2
   resolution: "pbf@npm:5.1.2"
   dependencies:
@@ -19014,14 +19051,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfmake@npm:0.3.12":
-  version: 0.3.12
-  resolution: "pdfmake@npm:0.3.12"
+"pdfmake@npm:0.3.13":
+  version: 0.3.13
+  resolution: "pdfmake@npm:0.3.13"
   dependencies:
     linebreak: "npm:^1.1.0"
     pdfkit: "npm:^0.20.2"
     xmldoc: "npm:^2.0.3"
-  checksum: 10c0/a7ef340b3f3ec12c0ee27dcc7d6903f70cb83afa69c706713c068faeb425cfa0276f14ffd828b3444d4ca2f7e5379e874516716ec47f70730b28e35371583e5c
+  checksum: 10c0/c8043ab6b836d3701d9ba7bf248eec6779d8bb061050ddfa39966fbb6afaffdbca670d5b86041060cbc94629d7472560d531bc303da315f5c7bec7de187d0656
   languageName: node
   linkType: hard
 
@@ -19808,9 +19845,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-intl@npm:12.1.5":
-  version: 12.1.5
-  resolution: "react-intl@npm:12.1.5"
+"react-intl@npm:12.1.6":
+  version: 12.1.6
+  resolution: "react-intl@npm:12.1.6"
   dependencies:
     "@formatjs/icu-messageformat-parser": "npm:3.5.22"
     "@formatjs/intl": "npm:6.1.4"
@@ -19818,7 +19855,7 @@ __metadata:
   peerDependencies:
     "@types/react": ">=18.0.0"
     react: ">=18.0.0"
-  checksum: 10c0/f9ad0f73328f15990f5b9fa1d16313016ac226f10fea8a340420cc8218fd9727b77b64072b1d86edd2feb08514613318c9623733e500a1aed82ec05d2f4fcd86
+  checksum: 10c0/b3fd0ba8e15e1c15d955b5236f19fcb8f122e11677cf288bf4dc9ebb66376c4f18344607ef3ef8d1324e10f46fa20de2d68c59ede89702ceb34eee46c3fa8e20
   languageName: node
   linkType: hard
 
@@ -20066,9 +20103,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:8.5.0":
-  version: 8.5.0
-  resolution: "react-router@npm:8.5.0"
+"react-router@npm:8.5.1":
+  version: 8.5.1
+  resolution: "react-router@npm:8.5.1"
   dependencies:
     "@remix-run/route-pattern": "npm:^0.22.1"
     cookie-es: "npm:^3.1.1"
@@ -20084,7 +20121,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 10c0/072edf07459485149dc85d9b7f4ee6b127d1443f83f4ba2dd3bb9443ed065ecc36964cdbc26c46cbd3517b93d51d888cb50d8c89d5e42bed79b6fd4a5abf39ea
+  checksum: 10c0/07503a26d5c5669d84d044e59e3a7f97dad36946dbb9ade14f243f187096bc12cea5bf7401f8681c602d9100238cef752bd3d0e6a742e1c0794e2abd20662368
   languageName: node
   linkType: hard
 

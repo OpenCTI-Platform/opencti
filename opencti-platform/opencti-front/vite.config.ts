@@ -38,7 +38,8 @@ const watchGraphQL = process.env.WATCH_GRAPHQL === 'true';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {
-  const env = loadEnv(mode, process.cwd(), '');
+  // Load only the variables read below.
+  const env = loadEnv(mode, process.cwd(), ['FRONT_END_PORT', 'APP__BASE_PATH', 'BACK_END_URL']);
   const configuredFrontEndPort = env.FRONT_END_PORT?.trim();
   const frontEndPort = configuredFrontEndPort ? Number.parseInt(configuredFrontEndPort, 10) : 3000;
 

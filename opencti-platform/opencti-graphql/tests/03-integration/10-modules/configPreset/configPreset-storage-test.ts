@@ -88,8 +88,8 @@ describe('Config preset bundle storage round trip', () => {
     }
   });
 
-  it('stores the bundle in its own folder under config_preset', () => {
-    expect(fileId).toMatch(/^config_preset\/[0-9a-f-]{36}\/opencti-config-\d{8}-\d{6}-.+\.zip$/);
+  it('stores the bundle in its own folder under config_preset/export', () => {
+    expect(fileId).toMatch(/^config_preset\/export\/[0-9a-f-]{36}\/opencti-config-\d{8}-\d{6}-.+\.zip$/);
     expect(fileId.endsWith(`/${fileName}`)).toBe(true);
   });
 

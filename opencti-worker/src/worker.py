@@ -17,6 +17,7 @@ from pycti import OpenCTIApiClient, __version__
 from pycti.connector.opencti_connector_helper import (
     create_mq_ssl_context,
     get_config_variable,
+    parse_boolean_config,
 )
 
 from listen_handler import ListenHandler
@@ -72,8 +73,18 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         self.opencti_token = get_config_variable(
             "OPENCTI_TOKEN", ["opencti", "token"], config
         )
-        self.opencti_ssl_verify = get_config_variable(
-            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, default=False
+        # ssl_verify takes a boolean or a CA bundle path: parse the boolean
+        # spellings, keep any other string as a path
+        self.opencti_ssl_verify = parse_boolean_config(
+            "OPENCTI_SSL_VERIFY",
+            get_config_variable(
+                "OPENCTI_SSL_VERIFY",
+                ["opencti", "ssl_verify"],
+                config,
+                default=False,
+                isBoolean=False,
+            ),
+            strict=False,
         )
         self.opencti_json_logging = get_config_variable(
             "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, default=True
@@ -118,11 +129,16 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             config,
             default="info",
         )
-        self.listen_api_ssl_verify = get_config_variable(
+        self.listen_api_ssl_verify = parse_boolean_config(
             "WORKER_LISTEN_API_SSL_VERIFY",
-            ["worker", "listen_api_ssl_verify"],
-            config,
-            default=False,
+            get_config_variable(
+                "WORKER_LISTEN_API_SSL_VERIFY",
+                ["worker", "listen_api_ssl_verify"],
+                config,
+                default=False,
+                isBoolean=False,
+            ),
+            strict=False,
         )
         self.listen_api_http_proxy = get_config_variable(
             "WORKER_LISTEN_API_HTTP_PROXY",
