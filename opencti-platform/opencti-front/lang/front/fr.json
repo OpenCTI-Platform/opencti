@@ -5362,6 +5362,7 @@
   "This value cannot be null": "Cette valeur ne peut être nulle",
   "This value is overridden for the following entity types": "Cette valeur est remplacée pour les types d'entités suivants",
   "This widget requires a context entity to be displayed.": "Ce widget nécessite une entité de contexte pour être affiché.",
+  "This widget uses variables missing from this dashboard...": "Ce widget utilise {count} variable(s) absente(s) de ce tableau de bord. Il n'affiche aucune donnée tant qu'elles ne sont pas corrigées.",
   "This will clear the draft workflow and keep the published workflow unchanged. Are you sure you want to start from scratch?": "Cette action effacera le brouillon du workflow tout en conservant le workflow publié tel quel. Êtes-vous sûr de vouloir repartir de zéro ?",
   "This will erase all the views settings you have made. All these changes will be lost. Are you sure?": "Cette opération effacera tous les paramètres des vues que vous avez définis. Toutes ces modifications seront perdues. Êtes-vous sûr ?",
   "This will replace the workflow with the last published version. All unpublished changes will be lost. Are you sure?": "Cette action remplacera le workflow par la dernière version publiée. Toutes les modifications non publiées seront perdues. Êtes-vous sûr ?",

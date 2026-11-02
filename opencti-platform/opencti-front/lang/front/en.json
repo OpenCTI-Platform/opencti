@@ -5362,6 +5362,7 @@
   "This value cannot be null": "This value cannot be null",
   "This value is overridden for the following entity types": "This value is overridden for the following entity types",
   "This widget requires a context entity to be displayed.": "This widget requires a context entity to be displayed.",
+  "This widget uses variables missing from this dashboard...": "This widget uses {count} variable(s) missing from this dashboard. It shows no data until they are fixed.",
   "This will clear the draft workflow and keep the published workflow unchanged. Are you sure you want to start from scratch?": "This will clear the draft workflow and keep the published workflow unchanged. Are you sure you want to start from scratch?",
   "This will erase all the views settings you have made. All these changes will be lost. Are you sure?": "This will erase all the views settings you have made. All these changes will be lost. Are you sure?",
   "This will replace the workflow with the last published version. All unpublished changes will be lost. Are you sure?": "This will replace the workflow with the last published version. All unpublished changes will be lost. Are you sure?",

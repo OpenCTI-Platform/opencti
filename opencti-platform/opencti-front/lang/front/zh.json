@@ -5362,6 +5362,7 @@
   "This value cannot be null": "该值不能为空",
   "This value is overridden for the following entity types": "以下实体类型可重载该值",
   "This widget requires a context entity to be displayed.": "该窗口小部件需要显示上下文实体。",
+  "This widget uses variables missing from this dashboard...": "此小部件使用了此仪表板中缺失的 {count} 个变量。修复之前不会显示任何数据。",
   "This will clear the draft workflow and keep the published workflow unchanged. Are you sure you want to start from scratch?": "这将清除工作流草稿，并保持已发布的工作流不变。您确定要从头开始吗？",
   "This will erase all the views settings you have made. All these changes will be lost. Are you sure?": "这将会清除你所做的所有视图设置。所有这些更改都将丢失。你确定吗？",
   "This will replace the workflow with the last published version. All unpublished changes will be lost. Are you sure?": "这将用最后一个已发布版本替换当前工作流。所有未发布的更改都将丢失。您确定吗？",

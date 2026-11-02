@@ -125,6 +125,12 @@ const Message = () => {
             {text}
           </Alert>
         );
+      case 'warning':
+        return (
+          <Alert severity="warning" onClose={() => handleCloseMessage()}>
+            {text}
+          </Alert>
+        );
       case 'nlq':
         return (
           <Alert

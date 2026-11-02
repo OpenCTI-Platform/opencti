@@ -5362,6 +5362,7 @@
   "This value cannot be null": "この値をNULLにすることはできない",
   "This value is overridden for the following entity types": "この値は以下のエンティティ・タイプでオーバーライドされます。",
   "This widget requires a context entity to be displayed.": "このウィジェットを表示するには、コンテキストエンティティが必要です。",
+  "This widget uses variables missing from this dashboard...": "このウィジェットは、このダッシュボードに存在しない変数を {count} 個使用しています。修正されるまでデータは表示されません。",
   "This will clear the draft workflow and keep the published workflow unchanged. Are you sure you want to start from scratch?": "これにより、下書きのワークフローが削除され、公開済みのワークフローは変更されません。本当に最初からやり直しますか？",
   "This will erase all the views settings you have made. All these changes will be lost. Are you sure?": "この操作を行うと、設定したすべてのビューが消去されます。これらの変更はすべて失われます。よろしいですか？",
   "This will replace the workflow with the last published version. All unpublished changes will be lost. Are you sure?": "これにより、ワークフローが最後に公開されたバージョンに置き換えられます。未公開の変更内容はすべて失われます。本当に実行しますか？",
