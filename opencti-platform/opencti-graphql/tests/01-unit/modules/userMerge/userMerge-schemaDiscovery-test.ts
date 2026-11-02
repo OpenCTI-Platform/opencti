@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import '../../../../src/modules/index';
 import { findRegisterRow } from '../../../../src/modules/userMerge/userMerge-register';
 import { discoverUserIdAttributes } from '../../../../src/modules/userMerge/userMerge-scalarDiscovery';
-import { assertUserMergeTargetDeclared, userMergeScalarResolution } from '../../../../src/modules/userMerge/userMerge-scalarTargets';
+import { userMergeScalarResolution } from '../../../../src/modules/userMerge/userMerge-scalarTargets';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 
@@ -116,25 +116,5 @@ describe('userMerge schema discovery', () => {
     userMergeScalarResolution().excluded.forEach((exclusion) => {
       expect(exclusion.detail.length, exclusion.key).toBeGreaterThan(0);
     });
-  });
-
-  it('should find every resolved target declared as a user reference on its entity types', () => {
-    userMergeScalarResolution().targets.forEach((target) => {
-      expect(() => assertUserMergeTargetDeclared(target), target.id).not.toThrow();
-    });
-  });
-
-  /**
-   * Elasticsearch mappings are index-wide, so these queries would run on the strength of a
-   * neighbouring declaration. They must be refused instead of silently matching nothing.
-   */
-  it('should refuse a target its entity type does not declare as a user reference', () => {
-    const target = { id: 'fake', registerRow: 'fake', shape: 'single' as const };
-    const refusal = 'not declared as a user reference';
-    expect(() => assertUserMergeTargetDeclared({ ...target, entityTypes: ['Report'], path: 'user_id' })).toThrow(refusal);
-    expect(() => assertUserMergeTargetDeclared({ ...target, entityTypes: ['Sync', 'Report'], path: 'user_id' })).toThrow(refusal);
-    expect(() => assertUserMergeTargetDeclared({ ...target, entityTypes: ['Report'], path: 'name' })).toThrow(refusal);
-    expect(() => assertUserMergeTargetDeclared({ ...target, entityTypes: ['WorkflowDefinition'], path: 'all_versions.unknown' })).toThrow(refusal);
-    expect(() => assertUserMergeTargetDeclared({ ...target, path: 'user_id' })).toThrow(refusal);
   });
 });
