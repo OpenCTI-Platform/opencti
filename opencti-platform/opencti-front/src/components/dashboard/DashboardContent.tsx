@@ -4,11 +4,9 @@ import useDashboard from './useDashboard';
 import DashboardWidgetPopover from './DashboardWidgetPopover';
 import DashboardViz from './DashboardViz';
 import DashboardWidgetVariablesMarker from './DashboardWidgetVariablesMarker';
-import { getWidgetVariableNames } from './dashboardWidgetVariableUsage';
-import type { DashboardLike, DashboardVariable } from './dashboard-types';
+import type { DashboardLike } from './dashboard-types';
 import type { WidgetHost } from '../../utils/widget/widget';
 import { DASHBOARD_GRID_CONFIG } from './dashboard-utils';
-import { useFormatter } from '../i18n';
 
 type DashboardContentProps = {
   helpers: ReturnType<typeof useDashboard>;
@@ -16,15 +14,15 @@ type DashboardContentProps = {
   entity: DashboardLike;
   isEditable: boolean;
   refreshRate?: number | null;
-  // The variables of the dashboard: each widget filtering on some of them shows a marker. Undefined: no marker.
-  usageMarkerVariables?: readonly DashboardVariable[];
+  // Names of the variables each widget filters on: a widget listed here shows a marker. Undefined: no marker.
+  variableNamesByWidget?: ReadonlyMap<string, readonly string[]>;
 };
 
 const DashboardContent = ({
   entity,
   isEditable,
   refreshRate,
-  usageMarkerVariables,
+  variableNamesByWidget,
   helpers: {
     widgetsLayouts,
     widgetsArray,
@@ -39,7 +37,6 @@ const DashboardContent = ({
   },
   host,
 }: DashboardContentProps) => {
-  const { t_i18n } = useFormatter();
   const { width, containerRef } = useContainerWidth();
   return (
     <Box
@@ -82,9 +79,9 @@ const DashboardContent = ({
           );
           // The marker is for everyone who sees the widget, the menu for those who may edit it.
           // Centered together on one row: in the header action slot (a block), the icon would sit on the text baseline.
-          const action = usageMarkerVariables ? (
+          const action = variableNamesByWidget ? (
             <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, verticalAlign: 'top' }}>
-              <DashboardWidgetVariablesMarker names={getWidgetVariableNames(widget, usageMarkerVariables, t_i18n)} />
+              <DashboardWidgetVariablesMarker names={variableNamesByWidget.get(widget.id) ?? []} />
               {popover}
             </Box>
           ) : popover;
