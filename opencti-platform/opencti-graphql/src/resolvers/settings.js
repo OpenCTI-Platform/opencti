@@ -70,6 +70,7 @@ const settingsResolvers = {
     password_policy_validity_days: (settings) => settings.password_policy_validity_days ?? 0,
     local_auth_lockout_enabled: (settings) => settings.local_auth_lockout_enabled ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_enabled,
     local_auth_lockout_max_attempts: (settings) => settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts,
+    local_auth_lockout_final_action: (settings) => settings.local_auth_lockout_final_action ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_final_action,
     local_auth_lockout_window: (settings) => settings.local_auth_lockout_window ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window,
     local_auth_lockout_duration: (settings) => settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration,
     local_auth_lockout_max_duration: (settings) => settings.local_auth_lockout_max_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_duration,

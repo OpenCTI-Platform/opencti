@@ -22,7 +22,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { notify } from '../database/redis';
 import { BUS_TOPICS, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
 import { FunctionalError } from '../config/errors';
-import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../generated/graphql';
+import { type CertAuthConfigInput, type HeadersAuthConfigInput, type LocalAuthConfigInput, LocalAuthLockoutFinalAction } from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil } from '../modules/user/user-domain';
@@ -60,15 +60,17 @@ export const buildAvailableProviders = async (platformSettings: BasicStoreSettin
 export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
   local_auth_lockout_enabled: false,
   local_auth_lockout_max_attempts: 5,
+  // Applied once max attempts are reached: a lock for the whole window, or the account set to Locked until an admin unlocks it
+  local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Temporary,
   local_auth_lockout_window: 1440, // minutes, 24h
-  local_auth_lockout_duration: 15, // minutes
-  local_auth_lockout_max_duration: 180, // minutes, 3h
+  local_auth_lockout_duration: 30, // seconds
+  local_auth_lockout_max_duration: 10800, // seconds, 3h
 };
 
 // Upper bounds of the lockout policy, mirrored by the local strategy form
 export const LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
 export const LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT = 1440; // minutes, the window is capped to 24h by the specification
-export const LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT = 180; // minutes, locks are capped to 3h by the specification
+export const LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT = 10800; // seconds, locks are capped to 3h by the specification
 
 const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuthConfigInput) => {
   if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
@@ -77,6 +79,8 @@ const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuth
   const patch = {
     ...(input.local_auth_lockout_enabled !== undefined && { local_auth_lockout_enabled: input.local_auth_lockout_enabled }),
     ...(input.local_auth_lockout_max_attempts !== undefined && { local_auth_lockout_max_attempts: input.local_auth_lockout_max_attempts }),
+    // The GraphQL enum already restricts the final action to its allowed values
+    ...(input.local_auth_lockout_final_action !== undefined && { local_auth_lockout_final_action: input.local_auth_lockout_final_action }),
     ...(input.local_auth_lockout_window !== undefined && { local_auth_lockout_window: input.local_auth_lockout_window }),
     ...(input.local_auth_lockout_duration !== undefined && { local_auth_lockout_duration: input.local_auth_lockout_duration }),
     ...(input.local_auth_lockout_max_duration !== undefined && { local_auth_lockout_max_duration: input.local_auth_lockout_max_duration }),
