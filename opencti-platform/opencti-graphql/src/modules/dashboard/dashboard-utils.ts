@@ -6,7 +6,7 @@ import { fromB64, toB64 } from '../../utils/base64';
 import { isNotEmptyField } from '../../database/utils';
 import { FunctionalError } from '../../config/errors';
 import { extractContentFrom } from '../../utils/fileToContent';
-import { convertWidgetsIds } from '../workspace/workspace-utils';
+import { convertDashboardVariablesIds, convertWidgetsIds } from '../workspace/workspace-utils';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import type { ConfigImportData, WidgetConfigImportData, WidgetConfiguration } from './dashboard-types';
 import { findSavedFilter } from '../savedFilter/savedFilter-domain';
@@ -150,11 +150,13 @@ export const importDashboardWidgetConfiguration = async (
 };
 
 /**
- * Convert dashboard widget ids between internal and STIX 2_1 formats.
+ * Convert dashboard widget and variable ids between internal and STIX 2_1 formats.
  *
  * - Export (`from = 'internal'`): filter ids are converted to STIX ids and
  *   saved filter references are resolved to inline filter content.
  * - Import (`from = 'stix'`): filter ids are converted back to internal ids.
+ *
+ * The variables are converted even without widget. A manifest with neither is returned untouched.
  */
 export const convertDashboardManifestIds = async (
   context: AuthContext,
@@ -163,15 +165,21 @@ export const convertDashboardManifestIds = async (
   from: 'internal' | 'stix',
 ): Promise<string> => {
   const parsedManifest = fromB64(manifest ?? '{}');
+  const hasWidgets = parsedManifest && isNotEmptyField(parsedManifest.widgets);
+  const hasVariables = parsedManifest && Array.isArray(parsedManifest.variables) && parsedManifest.variables.length > 0;
+  if (!hasWidgets && !hasVariables) {
+    return manifest;
+  }
   // Regeneration for dashboards
-  if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
-    const { widgets } = parsedManifest;
-    const widgetDefinitions: Widget[] = Object.values(widgets);
+  if (hasWidgets) {
+    const widgetDefinitions: Widget[] = Object.values(parsedManifest.widgets);
     if (from === 'internal') { // for exports: replace saved filters ids with the associated filters content
       await Promise.all(widgetDefinitions.map((widgetDefinition) => resolveSavedFiltersInDataSelection(context, user, widgetDefinition)));
     }
     await convertWidgetsIds(context, user, widgetDefinitions, from);
-    return toB64(parsedManifest) as string;
   }
-  return manifest;
+  if (hasVariables) {
+    await convertDashboardVariablesIds(context, user, parsedManifest.variables, from);
+  }
+  return toB64(parsedManifest) as string;
 };

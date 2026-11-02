@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { getUserIdByEmail, USER_EDITOR } from '../../utils/testQuery';
 import {
+  createUploadFromBuffer,
   createUploadFromTestDataFile,
   queryAsAdmin,
   queryAsAdminWithError,
@@ -11,6 +12,7 @@ import {
 } from '../../utils/testQueryHelper';
 import { fromB64, toB64 } from '../../../src/utils/base64';
 import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
+import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 
 const CREATE = gql`
   mutation WorkspaceVariablesTestAdd($input: WorkspaceAddInput!) {
@@ -97,8 +99,10 @@ describe('Dashboard variables API', () => {
     dashboardId = await createWorkspace({ type: 'dashboard', name: 'Dashboard variables test' });
   });
   afterAll(async () => {
-    for (let i = 0; i < createdIds.length; i += 1) {
-      await queryAsAdmin({ query: DELETE, variables: { id: createdIds[i] } });
+    // Emptied as it is deleted: each describe only deletes the workspaces created since the previous one
+    const ids = createdIds.splice(0);
+    for (let i = 0; i < ids.length; i += 1) {
+      await queryAsAdmin({ query: DELETE, variables: { id: ids[i] } });
     }
   });
 
@@ -244,5 +248,90 @@ describe('Dashboard variables API', () => {
     expect(imported.variables).toEqual([expect.objectContaining({ id: '11111111-1111-4111-8111-111111111111', defaultValue: 'Malware', usedInWidgetIds: ['variable-widget'] })]);
     const invalidFile = await createUploadFromTestDataFile('dashboard-variables/dashboard-import-invalid-variables.json', 'invalid.json', 'application/json');
     await queryAsAdminWithError({ query: IMPORT_CONFIGURATION, variables: { file: invalidFile } }, 'A variable value cannot reference another variable', 'FUNCTIONAL_ERROR');
+  });
+});
+
+describe('Dashboard variables export and import', () => {
+  const EXPORT = gql`
+    query WorkspaceVariablesTestExport($id: String!) {
+      workspace(id: $id) { id toConfigurationExport }
+    }
+  `;
+  const MARKING = gql`
+    query WorkspaceVariablesTestMarking($id: String!) {
+      markingDefinition(id: $id) { id standard_id }
+    }
+  `;
+  const readMarking = async (id: string) => (await queryAsAdminWithSuccess({ query: MARKING, variables: { id } })).data.markingDefinition as { id: string; standard_id: string };
+  const exportManifest = async (id: string) => {
+    const { data } = await queryAsAdminWithSuccess({ query: EXPORT, variables: { id } });
+    return { file: data.workspace.toConfigurationExport as string, manifest: fromB64(JSON.parse(data.workspace.toConfigurationExport).configuration.manifest) };
+  };
+  const markingFilters = (markingId: string) => JSON.stringify({ mode: 'and', filters: [{ key: ['objectMarking'], values: [markingId], operator: 'eq', mode: 'or' }], filterGroups: [] });
+  let green: { id: string; standard_id: string };
+  let amber: { id: string; standard_id: string };
+  beforeAll(async () => {
+    green = await readMarking(MARKING_TLP_GREEN);
+    amber = await readMarking(MARKING_TLP_AMBER);
+  });
+  afterAll(async () => {
+    // Emptied as it is deleted: each describe only deletes the workspaces created since the previous one
+    const ids = createdIds.splice(0);
+    for (let i = 0; i < ids.length; i += 1) {
+      await queryAsAdmin({ query: DELETE, variables: { id: ids[i] } });
+    }
+  });
+
+  it('should convert the entity references of the variables on export', async () => {
+    const id = await createWorkspace({ type: 'dashboard', name: 'Variables export' });
+    await patchManifest(id, { widgets: {}, config: {} });
+    await upsert(id, { name: 'Marking', type: 'marking', defaultValue: green.id, restriction: { mode: 'selection', values: [green.id, amber.id] } });
+    await upsert(id, { name: 'Entity', type: 'entity', entityTypes: ['Malware'], defaultValue: 'malware-id', restriction: { mode: 'filters', filters: markingFilters(amber.id) } });
+    await upsert(id, { name: 'Text', type: 'text', defaultValue: green.id });
+    const { manifest } = await exportManifest(id);
+    const byName = (name: string) => manifest.variables.find((variable: { name: string }) => variable.name === name);
+    expect(byName('Marking').defaultValue).toEqual(green.standard_id);
+    expect(byName('Marking').restriction.values).toEqual([green.standard_id, amber.standard_id]);
+    expect(byName('Entity').restriction.filters.filters[0].values).toEqual([amber.standard_id]);
+    // A text value is never an entity reference, whatever its shape
+    expect(byName('Text').defaultValue).toEqual(green.id);
+  });
+
+  it('should convert the variables of a dashboard without widget on export', async () => {
+    const id = await createWorkspace({ type: 'dashboard', name: 'Variables export without widget' });
+    await upsert(id, { name: 'Marking', type: 'marking', defaultValue: green.id });
+    const { manifest } = await exportManifest(id);
+    expect(manifest.variables[0].defaultValue).toEqual(green.standard_id);
+  });
+
+  it('should keep the tokens and restore the references through an export and import round trip', async () => {
+    const id = await createWorkspace({ type: 'dashboard', name: 'Variables round trip' });
+    await patchManifest(id, { widgets: {}, config: {} });
+    const created = await upsert(id, { name: 'Marking', type: 'marking', defaultValue: green.id, restriction: { mode: 'selection', values: [green.id] } });
+    const variableId = created.variables[0].id;
+    const { manifest: stored } = await readWorkspace(id);
+    await patchManifest(id, { ...fromB64<Record<string, unknown>>(stored), widgets: { 'widget-1': widgetUsing(variableId) } });
+    const { file } = await exportManifest(id);
+    const upload = createUploadFromBuffer(Buffer.from(file), 'round-trip.json', 'application/json');
+    const { data } = await queryAsAdminWithSuccess({ query: IMPORT_CONFIGURATION, variables: { file: upload } });
+    createdIds.push(data.workspaceConfigurationImport);
+    const imported = await readWorkspace(data.workspaceConfigurationImport);
+    expect(imported.variables).toEqual([expect.objectContaining({ id: variableId, defaultValue: green.id, usedInWidgetIds: ['widget-1'] })]);
+    expect(imported.variables[0].restriction.values).toEqual([green.id]);
+    expect(fromB64(imported.manifest).widgets['widget-1'].dataSelection[0].filters.filters[0].values).toEqual([`$var:${variableId}`]);
+  });
+
+  it('should keep an unknown reference as is on import', async () => {
+    const unknownMarking = 'marking-definition--00000000-0000-4000-8000-000000000000';
+    const variable = { id: '22222222-2222-4222-8222-222222222222', name: 'Marking', type: 'marking', restriction: { mode: 'none' }, defaultValue: unknownMarking };
+    const file = JSON.stringify({
+      openCTI_version: '7.0.0',
+      type: 'dashboard',
+      configuration: { name: 'Variables unknown reference', manifest: toB64({ widgets: {}, config: {}, variables: [variable] }) },
+    });
+    const { data } = await queryAsAdminWithSuccess({ query: IMPORT_CONFIGURATION, variables: { file: createUploadFromBuffer(Buffer.from(file), 'unknown.json', 'application/json') } });
+    createdIds.push(data.workspaceConfigurationImport);
+    const imported = await readWorkspace(data.workspaceConfigurationImport);
+    expect(imported.variables[0].defaultValue).toEqual(unknownMarking);
   });
 });
