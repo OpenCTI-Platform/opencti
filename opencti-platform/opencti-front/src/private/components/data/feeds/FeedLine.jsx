@@ -17,6 +17,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../
 import { TAXIIAPI_SETCOLLECTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import { EMPTY_VALUE } from '../../../../utils/String';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -92,6 +93,8 @@ class FeedLineLineComponent extends Component {
                 </BodyItem>
                 <FiltersItem
                   style={{ width: dataColumns.filters.width }}
+                  onClick={stopLinkNavigation}
+                  onAuxClick={stopLinkNavigation}
                 >
                   {isFilterGroupNotEmpty(filters)
                     ? (
@@ -99,6 +102,7 @@ class FeedLineLineComponent extends Component {
                           filters={filters}
                           variant="small"
                           dataColumns={dataColumns}
+                          showGroupsSummaryButtonOnReadOnly
                         />
                       )
                     : EMPTY_VALUE}
