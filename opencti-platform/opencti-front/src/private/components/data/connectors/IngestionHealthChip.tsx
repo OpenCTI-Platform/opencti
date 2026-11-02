@@ -1,6 +1,7 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Chip, type ChipSeverity, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { getHealthDisplay } from '@components/data/connectors/ingestionHealthDisplay';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { capitalizeFirstLetter } from '../../../../utils/String';
@@ -19,23 +20,17 @@ const ingestionHealthFragment = graphql`
 `;
 
 interface IngestionHealthChipProps {
-  // Null until the manager first evaluates the ingestion, or when the status is unknown: no chip
+  // Null until the manager first evaluates the ingestion: no chip
   ingestionHealth?: IngestionHealthChip_ingestionHealth$key | null;
 }
-
-// Design system feedback tones
-const HEALTH_STATUS_SEVERITY_COLORS: Record<string, ChipSeverity> = {
-  critical: 'critical',
-  degraded: 'high',
-  healthy: 'low',
-};
 
 const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHealth: ingestionHealthKey }) => {
   const { t_i18n, nsdt } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const ingestionHealth = useFragment(ingestionHealthFragment, ingestionHealthKey ?? null);
-  // No health: not evaluated yet or unknown, nothing to show
-  if (!isFeatureEnable('INGESTION_HEALTH') || !ingestionHealth) {
+  // Nothing to flag: not evaluated yet, healthy or unknown
+  const severity = ingestionHealth ? getHealthDisplay(ingestionHealth.status)?.chip : undefined;
+  if (!isFeatureEnable('INGESTION_HEALTH') || !ingestionHealth || !severity) {
     return null;
   }
   const { status } = ingestionHealth;
@@ -45,7 +40,7 @@ const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHeal
       <TooltipTrigger asChild>
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <span tabIndex={0} style={{ display: 'inline-flex' }}>
-          <Chip label={t_i18n(capitalizeFirstLetter(status))} severity={HEALTH_STATUS_SEVERITY_COLORS[status] ?? 'neutral'} />
+          <Chip label={t_i18n(capitalizeFirstLetter(status))} severity={severity} />
         </span>
       </TooltipTrigger>
       <TooltipContent>

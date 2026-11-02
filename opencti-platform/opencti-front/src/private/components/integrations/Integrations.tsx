@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useEffect, useMemo } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
 import { Box, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -244,6 +244,7 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
   const { t_i18n } = useFormatter();
   const { hasActiveManagers } = useConnectorManagerStatus();
   const { deploymentData, feedsData, formsData } = data;
+  const [alertsSlot, setAlertsSlot] = useState<HTMLElement | null>(null);
 
   // Feed instances register a technical twin connector: excluded from the
   // connector count so deployed integrations are not counted twice.
@@ -284,6 +285,9 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
 
         <IntegrationsHero deployedCount={deployedCount} />
 
+        {/* Receives the health alerts of the deployed tab; display: contents adds no box, so no extra gap while empty */}
+        <div ref={setAlertsSlot} style={{ display: 'contents' }} />
+
         <Tabs value={tab} panels="external">
           <TabsList>
             <TabsTrigger value="deployed" asChild>
@@ -300,7 +304,7 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
         </Tabs>
 
         {tab === 'deployed' ? (
-          <IntegrationsDeployed data={data} />
+          <IntegrationsDeployed data={data} alertsSlot={alertsSlot} />
         ) : (
           <IntegrationsAvailable data={data} />
         )}

@@ -15,7 +15,6 @@ const item: DeployedIntegrationItem = {
   sectionKey: 'EXTERNAL_IMPORT',
   name: 'My connector',
   status: 'active',
-  statusLabel: 'Active',
   messagesCount: null,
   throughputRate: null,
   lastRunDate: null,

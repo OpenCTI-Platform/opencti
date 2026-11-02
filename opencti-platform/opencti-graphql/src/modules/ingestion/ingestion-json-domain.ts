@@ -169,7 +169,9 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   }
   const httpClientOptions: GetHttpClient = {
     headers,
-    rejectUnauthorized: ingestion.ssl_verify ?? false,
+    // JSON feeds without ssl_verify have always been verified, unlike the other feed types.
+    // Keep it until tls:reject_unauthorized defaults to true, then follow it with ingestion.ssl_verify.
+    rejectUnauthorized: ingestion.ssl_verify ?? true,
     timeout,
     responseType: 'json',
     certificates,
@@ -186,7 +188,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   const parsedBody = replaceVariables(ingestion.body, bodyVariables);
   // Execute the http query
   logApp.info(`> Main query: ${parsedUri}`, { body: parsedBody });
-  const { data: requestData, headers: responseHeaders } = await httpClient.call({
+  const { data: requestData, headers: responseHeaders } = await httpClient.request({
     method: ingestion.verb,
     url: parsedUri,
     data: parsedBody,
@@ -208,7 +210,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
       verifyIngestionUri(url);
       logApp.info(`> Sub query: ${url}`);
       await wait(100); // Wait 100 ms between 2 calls
-      const { data: paginationData } = await httpClient.call({
+      const { data: paginationData } = await httpClient.request({
         method: ingestion.pagination_with_sub_page_query_verb ?? ingestion.verb,
         url,
         data: ingestion.body,

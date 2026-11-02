@@ -70,13 +70,13 @@ describe('Config preset registry', () => {
     })));
     expect(families).toEqual([
       { id: 'platform', label: 'Platform configuration', description: 'Title, favicon, default theme, language', group: 'platformSettings', itemIds: ['platform'] },
-      // Whitemark first, then the themes by name, built-in ones included
+      // The themes by name, without the built-in ones
       {
         id: 'branding',
         label: 'Branding',
         description: 'Themes, colors, logos',
         group: 'platformSettings',
-        itemIds: ['whitemark', otherCustomTheme.id, builtInTheme.id, customTheme.id],
+        itemIds: [otherCustomTheme.standard_id, customTheme.standard_id],
       },
       { id: 'messages', label: 'Messages', description: 'Banner, login and consent messages', group: 'platformSettings', itemIds: ['banner', 'login', 'consent', 'noAccess'] },
       { id: 'hiddenEntityTypes', label: 'Hidden entity types', description: 'Entity types hidden in the platform', group: 'dataModel', itemIds: ['hiddenEntityTypes'] },
@@ -87,9 +87,7 @@ describe('Config preset registry', () => {
     const items = await resolveAllItems();
     expect(items.map((item) => [item.label, item.translatable])).toEqual([
       ['Platform configuration', true],
-      ['Remove Filigran logos', true],
       ['Customer ACME', false],
-      ['Filigran Dark', false],
       ['SOC night', false],
       ['Banner', true],
       ['Login message', true],
@@ -106,9 +104,7 @@ describe('Config preset registry', () => {
     }))).flat();
     expect(paths).toEqual([
       'platform_settings/platform.json',
-      'platform_settings/branding/whitemark.json',
       `platform_settings/branding/${otherCustomTheme.standard_id}.json`,
-      `platform_settings/branding/${builtInTheme.standard_id}.json`,
       `platform_settings/branding/${customTheme.standard_id}.json`,
       'platform_settings/messages/banner.json',
       'platform_settings/messages/login.json',
@@ -128,7 +124,7 @@ describe('Config preset registry', () => {
   describe('platform configuration', () => {
     it('exports the allowlisted platform fields and the custom default theme it depends on', async () => {
       const item = await findItem('platform', 'platform');
-      expect(item.dependsOn).toEqual([{ type: 'branding', id: customTheme.id }]);
+      expect(item.dependsOn).toEqual([{ type: 'branding', id: customTheme.standard_id }]);
       expect(await exportConfigPresetItem(context, user, findFamily('platform'), item)).toEqual({
         openCTI_version: PLATFORM_VERSION,
         type: 'platformSettings.platform',
@@ -144,7 +140,7 @@ describe('Config preset registry', () => {
 
     it('references the default theme the dependency was computed with, even if the default changes afterwards', async () => {
       const [item] = await findFamily('platform').resolveItems(context, user, ['platform'], []);
-      expect(item.dependsOn).toEqual([{ type: 'branding', id: customTheme.id }]);
+      expect(item.dependsOn).toEqual([{ type: 'branding', id: customTheme.standard_id }]);
       withSettings({ platform_theme: otherCustomTheme.id });
       expect((await item.exporter(context, user)).default_theme).toEqual({ standard_id: customTheme.standard_id, name: 'SOC night' });
     });
@@ -235,18 +231,10 @@ describe('Config preset registry', () => {
     const branding = findFamily('branding');
     const pageIds = async (args: Parameters<typeof branding.listItems>[2]) => (await branding.listItems(context, user, args)).edges.map(({ node }) => node.id);
 
-    it('exports whitemark without dependency', async () => {
-      const item = await findItem('branding', 'whitemark');
-      expect(item.dependsOn).toBeUndefined();
-      expect(await exportConfigPresetItem(context, user, branding, item)).toMatchObject({ type: 'platformSettings.branding', id: 'whitemark', configuration: { platform_whitemark: true } });
-      withSettings({ platform_whitemark: undefined });
-      expect(await item.exporter(context, user)).toEqual({ platform_whitemark: false });
-    });
-
     it('exports a theme in the theme import format, with its standard id', async () => {
       const fullTheme = { ...customTheme, theme_login_aside_gradient_start: '#111111', theme_login_aside_gradient_end: '#222222', theme_login_aside_image: 'https://example.com/aside.png' };
       vi.mocked(fullEntitiesList).mockResolvedValueOnce([fullTheme] as never);
-      const file = await exportConfigPresetItem(context, user, branding, await findItem('branding', customTheme.id));
+      const file = await exportConfigPresetItem(context, user, branding, await findItem('branding', customTheme.standard_id));
       expect(file).toMatchObject({ type: 'platformSettings.branding', id: customTheme.standard_id });
       expect(Object.keys(file.configuration).sort()).toEqual([...THEME_FILE_FIELDS].sort());
       expect(file.configuration).toMatchObject({ standard_id: customTheme.standard_id, name: 'SOC night', theme_logo: 'data:image/png;base64,AAAA', theme_logo_collapsed: '' });
@@ -254,71 +242,57 @@ describe('Config preset registry', () => {
     });
 
     it('leaves the missing values of a theme out, so the import gives them their default', async () => {
-      const file = await exportConfigPresetItem(context, user, branding, await findItem('branding', customTheme.id));
+      const file = await exportConfigPresetItem(context, user, branding, await findItem('branding', customTheme.standard_id));
       const emptyFields = ['theme_login_aside_gradient_start', 'theme_login_aside_gradient_end', 'theme_login_aside_image'];
       expect(Object.keys(file.configuration).sort()).toEqual(THEME_FILE_FIELDS.filter((field) => !emptyFields.includes(field)).sort());
     });
 
-    it('opens the first page with whitemark, then the themes by name, and counts both', async () => {
-      const page = await branding.listItems(context, user, { first: 3 });
-      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['Theme'], { first: 2, after: undefined, search: undefined, orderBy: 'name', orderMode: 'asc', filters: undefined });
-      expect(page.edges.map(({ node }) => node.id)).toEqual(['whitemark', otherCustomTheme.id, builtInTheme.id]);
+    it('opens the first page with the themes by name, and counts them', async () => {
+      const page = await branding.listItems(context, user, { first: 1 });
+      // The built-in themes are filtered out by the query, so the count and the pages do not include them
+      const notBuiltIn = { mode: 'and', filters: [{ key: ['built_in'], values: ['true'], operator: 'not_eq' }], filterGroups: [] };
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['Theme'], { first: 1, after: undefined, search: undefined, orderBy: 'name', orderMode: 'asc', filters: notBuiltIn });
+      expect(page.edges.map(({ node }) => node.id)).toEqual([otherCustomTheme.standard_id]);
       // The next page and its cursor come from the themes
-      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[2].cursor, globalCount: 4 });
-      expect(page.edges.map(({ node }) => [node.id, node.isDefault ?? false])).toEqual([['whitemark', false], [otherCustomTheme.id, false], [builtInTheme.id, false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
+      const all = await branding.listItems(context, user, { first: 10 });
+      expect(all.pageInfo).toMatchObject({ hasNextPage: false, globalCount: 2 });
+      expect(all.edges.map(({ node }) => [node.id, node.isDefault ?? false])).toEqual([[otherCustomTheme.standard_id, false], [customTheme.standard_id, true]]);
     });
 
-    it('lists only themes after a cursor, still counting whitemark', async () => {
+    it('lists the themes after a cursor, still counting all of them', async () => {
       const page = await branding.listItems(context, user, { first: 2, after: 'cursor' });
       expect(vi.mocked(pageEntitiesConnection).mock.calls[0][3]).toMatchObject({ first: 2, after: 'cursor' });
-      expect(page.edges.map(({ node }) => node.id)).not.toContain('whitemark');
-      expect(page.pageInfo.globalCount).toBe(4);
+      expect(page.pageInfo.globalCount).toBe(2);
     });
 
-    it('keeps the page size across whitemark and the themes', async () => {
-      const two = await branding.listItems(context, user, { first: 2 });
-      expect(two.edges.map(({ node }) => node.id)).toEqual(['whitemark', otherCustomTheme.id]);
-      expect(two.pageInfo).toMatchObject({ hasNextPage: true, endCursor: two.edges[1].cursor });
-      // Whitemark fills the page: only a probe of one theme tells if a next page exists
+    it('applies search, ids and excluded ids to the themes', async () => {
+      expect(await pageIds({ search: 'soc' })).toEqual([customTheme.standard_id]);
+      expect((await branding.listItems(context, user, { search: 'soc' })).pageInfo.globalCount).toBe(1);
+      // The built-in themes are not found by their name
+      expect(await pageIds({ search: 'filigran' })).toEqual([]);
+      expect(await pageIds({ ids: [customTheme.standard_id] })).toEqual([customTheme.standard_id]);
+      expect(await pageIds({ excludedIds: [customTheme.standard_id] })).toEqual([otherCustomTheme.standard_id]);
+      // A built-in theme is not an item, even when it is asked for
+      expect(await pageIds({ ids: [builtInTheme.standard_id] })).toEqual([]);
       vi.mocked(pageEntitiesConnection).mockClear();
-      const one = await branding.listItems(context, user, { first: 1 });
-      expect(one.edges.map(({ node }) => node.id)).toEqual(['whitemark']);
-      expect(one.pageInfo).toMatchObject({ hasNextPage: true, endCursor: 'whitemark', globalCount: 4 });
-      expect(vi.mocked(pageEntitiesConnection).mock.calls[0][3]).toMatchObject({ first: 1 });
-    });
-
-    it('starts with the themes after a cursor on whitemark', async () => {
-      const page = await branding.listItems(context, user, { first: 1, after: 'whitemark' });
-      expect(page.edges.map(({ node }) => node.id)).toEqual([otherCustomTheme.id]);
-      expect(vi.mocked(pageEntitiesConnection).mock.calls[0][3]).toMatchObject({ first: 1, after: undefined });
-    });
-
-    it('applies search to the themes only, and ids and excluded ids to whitemark and to the themes', async () => {
-      // Whitemark is a static item the UI translates: the search does not hide it
-      expect(await pageIds({ search: 'filigran' })).toEqual(['whitemark', builtInTheme.id]);
-      expect(await pageIds({ search: 'soc' })).toEqual(['whitemark', customTheme.id]);
-      expect((await branding.listItems(context, user, { search: 'soc' })).pageInfo.globalCount).toBe(2);
-      expect(await pageIds({ ids: [customTheme.id] })).toEqual([customTheme.id]);
-      expect(await pageIds({ excludedIds: ['whitemark', customTheme.id] })).toEqual([otherCustomTheme.id, builtInTheme.id]);
-      vi.mocked(pageEntitiesConnection).mockClear();
-      // Only static ids, or none: no theme query, whose empty filter would match every theme
-      expect(await pageIds({ ids: ['whitemark'] })).toEqual(['whitemark']);
+      // No ids: no theme query, whose empty filter would match every theme
       expect(await pageIds({ ids: [] })).toEqual([]);
       expect(pageEntitiesConnection).not.toHaveBeenCalled();
     });
 
     it('marks the default theme', async () => {
       const page = await branding.listItems(context, user, {});
-      expect(page.edges.filter(({ node }) => node.isDefault).map(({ node }) => node.id)).toEqual([customTheme.id]);
+      expect(page.edges.filter(({ node }) => node.isDefault).map(({ node }) => node.id)).toEqual([customTheme.standard_id]);
     });
 
-    it('resolves whitemark and the themes to export the same way', async () => {
+    it('resolves the themes to export, with the same rules as the listing', async () => {
       const ids = async (selected: string[] | null, excluded: string[]) => (await branding.resolveItems(context, user, selected, excluded)).map((item) => item.id);
-      expect(await ids(null, [])).toEqual(['whitemark', otherCustomTheme.id, builtInTheme.id, customTheme.id]);
-      expect(await ids(null, ['whitemark', otherCustomTheme.id, builtInTheme.id])).toEqual([customTheme.id]);
-      expect(await ids([customTheme.id, builtInTheme.id], [])).toEqual([builtInTheme.id, customTheme.id]);
+      expect(await ids(null, [])).toEqual([otherCustomTheme.standard_id, customTheme.standard_id]);
+      expect(await ids(null, [otherCustomTheme.standard_id])).toEqual([customTheme.standard_id]);
+      // A built-in theme is not an item, even when it is asked for
+      expect(await ids([customTheme.standard_id, builtInTheme.standard_id], [])).toEqual([customTheme.standard_id]);
       vi.mocked(fullEntitiesList).mockClear();
-      expect(await ids(['whitemark'], [])).toEqual(['whitemark']);
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();
     });

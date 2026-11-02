@@ -141,7 +141,10 @@ if (ENABLED_METRICS) {
   // PROMETHEUS
   const exporterPrometheus = nconf.get('app:telemetry:metrics:exporter_prometheus');
   if (exporterPrometheus) {
-    const prometheusExporter = new PrometheusExporter({ port: exporterPrometheus });
+    // Always pass a host: since @opentelemetry/exporter-prometheus 0.300.0, an unset host listens on localhost only.
+    // Not '::': the exporter builds its base URL from an unbracketed host, so an IPv6 literal answers 400 to every request.
+    const exporterPrometheusHost = nconf.get('app:telemetry:metrics:exporter_prometheus_host') || '0.0.0.0';
+    const prometheusExporter = new PrometheusExporter({ host: exporterPrometheusHost, port: exporterPrometheus });
     metricReaders.push(prometheusExporter);
   }
 }

@@ -20,9 +20,16 @@ Then you will need to put a valid OpenCTI EE license. If you don't have it, you 
 
 ![OpenCTI EE EULA](assets/enterprise-eula.png)
 
+### The Filigran license
+
+The Filigran license is the single license of the XTM Platform: one certificate for XTM One and its OpenCTI, OpenAEV and OpenCRQ modules, each module in Enterprise Edition by default. OpenCTI accepts it in two ways, and keeps accepting existing OpenCTI licenses unchanged.
+
+- **Pasted in OpenCTI**: paste the Filigran license PEM where you would paste an OpenCTI license (settings, or `APP__ENTERPRISE_EDITION_LICENSE`). OpenCTI accepts it when it is signed by Filigran, when its OpenCTI module covers every instance (`global`) or lists this platform's identifier, and while it is valid (trial and CI licenses until their end date, the others for 90 days after it). The settings page shows **Filigran license** as the license source.
+- **Through XTM One**: see below.
+
 ### Enterprise Edition through XTM One
 
-When the platform is registered with XTM One and the XTM license installed on XTM One sub-licenses it, the Enterprise Edition is activated without an OpenCTI license: OpenCTI verifies that Filigran-signed XTM license itself at every registration. The settings page then shows **XTM One license** as the license source, with the customer, type and dates of the XTM license. An OpenCTI license, if you add one, takes precedence. See [XTM Suite configuration](../deployment/configuration.md#xtm-suite) for the requirements.
+When the platform is registered with XTM One and the Filigran license installed on XTM One covers it, the Enterprise Edition is activated without a license in OpenCTI: OpenCTI verifies that Filigran-signed license itself at every registration. The settings page then shows **Filigran license (through XTM One)** as the license source, with the customer, type and dates of the license. A license pasted in OpenCTI, if you add one, takes precedence. See [XTM Suite configuration](../deployment/configuration.md#xtm-suite) for the requirements.
 
 As a reminder:
 
