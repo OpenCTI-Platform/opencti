@@ -21,7 +21,15 @@ import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { AccessOperation, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS, SYSTEM_USER, WORKFLOW_MANAGER_USER, isBypassUser, isUserHasCapability, validateUserAccessOperation } from '../../../utils/access';
+import {
+  AccessOperation,
+  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
+  SYSTEM_USER,
+  WORKFLOW_MANAGER_USER,
+  isBypassUser,
+  isUserHasCapability,
+  validateUserAccessOperation,
+} from '../../../utils/access';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { now } from '../../../utils/format';
 import { addFilter } from '../../../utils/filtering/filtering-utils';
