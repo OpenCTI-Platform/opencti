@@ -55,6 +55,14 @@ export const useDashboardVariables = (
     setState({ key, ignoreLocalValues, enabled, stored: kept });
   }, [key, ignoreLocalValues, enabled, idsSignature]);
 
+  // The URL shows the values in use, also when they were restored from this browser: a shared address opens the same
+  // view. Only the variables that still exist.
+  useEffect(() => {
+    if (ignoreLocalValues || !enabled) return;
+    const ids = new Set<string>(JSON.parse(idsSignature));
+    writeVariablesParam(Object.fromEntries(Object.entries(stored).filter(([id]) => ids.has(id))));
+  }, [stored, ignoreLocalValues, enabled, idsSignature]);
+
   const setValue = useCallback((variableId: string, value: string) => {
     if (ignoreLocalValues || !enabled) return;
     // Based on the in-memory state, not on a re-read of the storage, which may have refused the previous write.
