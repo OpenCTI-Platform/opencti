@@ -301,7 +301,7 @@ export const sendResultToQueue = async (context, user, task, objects, opts = {})
   }
 };
 
-const buildBundleElement = (element, actionType, operations, customFieldDefinitions = []) => {
+export const buildBundleElement = (element, actionType, operations, customFieldDefinitions = []) => {
   const baseObject = {
     id: element.standard_id,
     type: convertTypeToStixType(element.entity_type),
