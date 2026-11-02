@@ -549,9 +549,8 @@ If `allowed` is `false`, review `blockers`. Re-run the merge if changes are stil
     the trigger or the dashboard that carries it, and those objects now belong to the target. A gap a
     re-run would repair becomes a permanent loss.
 
-    The platform refuses that button on any account carrying `merged_into`. Do not work around the
-    refusal by clearing the field unless you have run the readiness query first and it answered
-    `allowed: true` (see 5.3).
+    The platform refuses that button on any account carrying `merged_into`. Delete the source with
+    `userMergeDeleteSource` (section 5.2), and do not clear `merged_into` to work around the refusal.
 
 ### 5.2 Execute Permanent Deletion
 
@@ -564,25 +563,6 @@ mutation UserMergeDeleteSource($sourceId: ID!, $targetId: ID!) {
 ```
 
 The mutation re-verifies readiness internally before deletion, deletes the User entity document, kills residual sessions, and emits an administrative audit log (`deletes merged user <email>`). It does not run the cascades, and it does not go through the ordinary deletion path, so the `merged_into` mark never has to be cleared.
-
-### 5.3 If the deletion mutation is not available
-
-Some platform versions ship the readiness query without `userMergeDeleteSource`. The source account then has to be removed through Settings → Users, and the mark has to be cleared first — which means the check the mutation would have done internally becomes the operator's responsibility.
-
-1. Run the readiness query of 5.1. **Stop here unless it answers `allowed: true`.**
-2. Clear the mark on the source account:
-
-```graphql
-mutation ClearMergeMark($id: ID!) {
-  userEdit(id: $id) {
-    fieldPatch(input: [{ key: "merged_into", value: [null] }]) { id }
-  }
-}
-```
-
-3. Delete the account through Settings → Users.
-
-Between steps 2 and 3 the account is deletable by anyone with the rights, and the cascades will run on it. Keep that window as short as possible, and do not perform this sequence while workers or connectors are running.
 
 ---
 
