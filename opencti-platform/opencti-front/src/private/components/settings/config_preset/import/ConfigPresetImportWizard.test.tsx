@@ -338,6 +338,21 @@ describe('ConfigPresetImportWizard', () => {
       expect(realApplies(rendered)).toHaveLength(1);
     });
 
+    it('waits for a save that is already sent before it imports', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(checkbox('Messages (1/1)'));
+      // The delay is over: the save is sent before Apply is clicked
+      await waitFor(() => expect(operationNames(rendered)).toContain('ConfigPresetImportPreviewSaveMutation'), { timeout: 2000 });
+      await resolveSimulation(rendered);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
+      await act(async () => {});
+      expect(realApplies(rendered)).toHaveLength(0);
+      await resolve(rendered, 'ConfigPresetImportPreviewSaveMutation', {});
+      await waitFor(() => expect(realApplies(rendered)).toHaveLength(1));
+    });
+
     it('applies once the save is answered, even when the save failed', async () => {
       const rendered = await renderPreview();
       await rendered.user.click(checkbox('Messages (1/1)'));

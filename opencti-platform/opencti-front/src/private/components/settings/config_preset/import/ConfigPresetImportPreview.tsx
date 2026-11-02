@@ -165,6 +165,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const revisionRef = useRef(session.revision);
   const pendingRef = useRef<ReturnType<typeof buildConfigPresetSelections> | null>(null);
   const timerRef = useRef<number | null>(null);
+  // The save that is sent and not answered yet: Apply waits for it too
+  const inFlightSaveRef = useRef<Promise<void> | null>(null);
   const commitSaveRef = useRef(commitSave);
   commitSaveRef.current = commitSave;
 
@@ -200,17 +202,19 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
 
   // Resolved once the save is answered, whatever the answer. A failure is notified by the global error toast; a file that is no longer
   // the one of the session (another tab uploaded a new one) sends the wizard back to the upload.
+  // With nothing new to save, it resolves once the save already sent (by the delay) is answered, so that Apply never races it.
   const flushSave = useCallback((): Promise<void> => {
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
     if (!pendingRef.current) {
-      return Promise.resolve();
+      return inFlightSaveRef.current ?? Promise.resolve();
     }
     const selections = pendingRef.current;
     pendingRef.current = null;
-    return new Promise((resolve) => {
+    const previous = inFlightSaveRef.current ?? Promise.resolve();
+    const request = new Promise<void>((resolve) => {
       commitSaveRef.current({
         variables: { file_id: session.file_id, selections, revision: revisionRef.current },
         onCompleted: () => resolve(),
@@ -222,6 +226,14 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         },
       });
     });
+    // Answered once this save and the one sent before it are both answered
+    const save: Promise<void> = Promise.all([previous, request]).then(() => undefined).finally(() => {
+      if (inFlightSaveRef.current === save) {
+        inFlightSaveRef.current = null;
+      }
+    });
+    inFlightSaveRef.current = save;
+    return save;
   }, [session.file_id]);
 
   // A pending save is sent on close
