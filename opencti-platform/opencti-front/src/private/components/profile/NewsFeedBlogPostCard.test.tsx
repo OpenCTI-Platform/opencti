@@ -60,8 +60,9 @@ describe('NewsFeedBlogPostCard', () => {
 
     it('renders the tags', () => {
       renderCard(buildItem());
-      expect(screen.getByText('Threat Intelligence')).toBeInTheDocument();
-      expect(screen.getByText('Partnership')).toBeInTheDocument();
+      // widths are always 0 in jsdom: every tag fits, and is also rendered once in the hidden measurement row
+      expect(screen.getAllByText('Threat Intelligence').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Partnership').length).toBeGreaterThan(0);
     });
 
     it('renders the publication date', () => {
@@ -172,7 +173,7 @@ describe('NewsFeedBlogPostCard', () => {
 
     it('ignores the empty tags', () => {
       renderCard(buildItem({ tags: ['', null, 'Partnership'] }));
-      expect(screen.getByText('Partnership')).toBeInTheDocument();
+      expect(screen.getAllByText('Partnership').length).toBeGreaterThan(0);
     });
 
     it('renders only the title when the item has no metadata at all', () => {

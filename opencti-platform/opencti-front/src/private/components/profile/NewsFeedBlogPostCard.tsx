@@ -1,9 +1,9 @@
-import { Card, CardContent, CardFooter, CardHeader, CardSubtitle, CardTitle } from '@filigran/design-system';
+import { Card, CardContent, CardFooter, CardHeader, CardSubtitle, CardTitle, Text } from '@filigran/design-system';
 import { Box } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
-import Tag from '../../../components/common/tag/Tag';
 import { useFormatter } from '../../../components/i18n';
 import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';
+import NewsFeedTags from './NewsFeedTags';
 import { getNewsFeedMetadataValue, parseNewsFeedAuthorNames, parseNewsFeedReadMinutes } from '../../../utils/NewsFeed';
 import { toSafeHttpUrl } from '../../../utils/url';
 
@@ -71,20 +71,25 @@ const NewsFeedBlogPostCard: FunctionComponent<NewsFeedBlogPostCardProps> = ({ it
               <CardTitle as="h3">{item.title}</CardTitle>
             </Box>
             {hasSubtitle && (
-              <CardSubtitle
-                endAdornment={readMinutes !== undefined
-                  ? <span style={{ whiteSpace: 'nowrap' }}>{t_i18n('{count} min read', { values: { count: readMinutes } })}</span>
-                  : undefined}
-              >
-                {authors.join(', ')}
-              </CardSubtitle>
+              // the read time sticks to the right of the card, the authors take the remaining space
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minWidth: 0 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  {authors.length > 0 && <CardSubtitle>{authors.join(', ')}</CardSubtitle>}
+                </div>
+                {readMinutes !== undefined && (
+                  <Text variant="content-compact" className="text-default-secondary" style={{ whiteSpace: 'nowrap' }}>
+                    {t_i18n('{count} min read', { values: { count: readMinutes } })}
+                  </Text>
+                )}
+              </div>
             )}
           </div>
         </CardHeader>
         {description && <CardContent>{description}</CardContent>}
         <CardFooter>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-            {tags.map((tag) => <Tag key={tag} label={tag} />)}
+          {/* the tags that do not fit are hidden behind a "+N" tag, with a tooltip */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <NewsFeedTags tags={tags} />
           </div>
           <time dateTime={item.creation_date} style={{ whiteSpace: 'nowrap' }}>{fsd(item.creation_date)}</time>
         </CardFooter>
