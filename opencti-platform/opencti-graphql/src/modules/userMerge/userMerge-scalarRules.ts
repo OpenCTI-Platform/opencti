@@ -39,9 +39,6 @@ export type UserMergeScalarDisposition
  */
 export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDisposition> = {
   '*.creator_id': { kind: 'covered', registerRow: 'basic-object.creator-id' },
-  // Discovered by walking into the object mappings, see userMerge-scalarDiscovery.
-  '*.i_attributes.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'Last modifier of each attribute, rewritten by the history chunk' },
-  [`${ENTITY_TYPE_INTERNAL_FILE}.metaData.creator_id`]: { kind: 'covered', registerRow: 'internal-file.metadata-creator-id' },
   '*.applicant_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History, Activity and PirHistory are rewritten by the history chunk' },
   '*.xtm_hub_registration_user_id': { kind: 'covered', registerRow: 'settings.xtm-hub-registration-user-id' },
   '*.platform_ip_whitelist_exclusion_ids': { kind: 'excluded', reason: 'another-handler', detail: 'Settings handler, which writes through the domain layer so the platform cache follows' },
@@ -54,6 +51,7 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   'Sync.user_id': { kind: 'covered', registerRow: 'sync.user-id' },
   [`${ENTITY_TYPE_CONNECTOR}.connector_user_id`]: { kind: 'covered', registerRow: 'connector.user-id' },
   [`${ENTITY_TYPE_NEWS_FEED_ITEM}.user_id`]: { kind: 'covered', registerRow: 'news-feed-item.user-id' },
+  [`${ENTITY_TYPE_PUBLIC_DASHBOARD}.user_id`]: { kind: 'covered', registerRow: 'public-dashboard.user-id' },
   'IngestionCsv.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionJson.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionRss.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
@@ -103,12 +101,12 @@ export interface UserMergeScalarComplement extends UserMergeScalarTarget {
 
 export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
   {
-    id: 'public-dashboard-user-id',
-    registerRow: 'public-dashboard.user-id',
-    entityTypes: [ENTITY_TYPE_PUBLIC_DASHBOARD],
-    path: 'user_id',
+    id: 'internal-file-metadata-creator-id',
+    registerRow: 'internal-file.metadata-creator-id',
+    entityTypes: [ENTITY_TYPE_INTERNAL_FILE],
+    path: 'metaData.creator_id',
     shape: 'single',
-    missingBecause: 'not declared at all, though the entity stores it',
+    missingBecause: "held under metaData, declared with format 'standard' and no attribute definitions",
   },
   {
     id: 'workflow-definition-published-version-created-by',
