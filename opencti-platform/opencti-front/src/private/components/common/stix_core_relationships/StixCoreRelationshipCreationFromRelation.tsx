@@ -322,15 +322,19 @@ const StixCoreRelationshipCreationFromRelationSelectEntity: FunctionComponent<St
           />
         )}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 16 }}>
-        <Button
-          disabled={numberOfSelectedElements < 1}
-          onClick={onContinue}
-          endIcon={<ChevronRightOutlined />}
-        >
-          {t_i18n('Continue')}
-        </Button>
-      </div>
+      {/* Floats over the lines, as in the creation from an entity */}
+      <Button
+        disabled={numberOfSelectedElements < 1}
+        onClick={onContinue}
+        endIcon={<ChevronRightOutlined />}
+        sx={{
+          position: 'fixed',
+          bottom: 40,
+          right: 30,
+        }}
+      >
+        {t_i18n('Continue')}
+      </Button>
     </>
   );
 };
