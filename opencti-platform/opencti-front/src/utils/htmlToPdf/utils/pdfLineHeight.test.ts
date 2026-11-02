@@ -48,6 +48,16 @@ describe('Utils: normalizeLineHeights', () => {
     expect(pdfmakeLineHeightOf('<p style="line-height:24px">Text</p>')).toBe(1.5);
   });
 
+  it('keeps quotes of the other kind inside the style attribute', () => {
+    expect(lineHeightOf('<p style="font-family: \'Arial\'; line-height:24px">Text</p>')).toBe('1.5');
+    expect(lineHeightOf('<p style=\'font-family: "Arial"; line-height:24px\'>Text</p>')).toBe('1.5');
+  });
+
+  it('does not touch line-height written outside a style attribute', () => {
+    const html = '<p data-note="line-height:12px">line-height:12px</p>';
+    expect(normalizeLineHeights(html)).toBe(html);
+  });
+
   it('normalizes nested elements independently', () => {
     const container = document.createElement('div');
     container.innerHTML = normalizeLineHeights('<div style="line-height:24pt"><span style="font-size:24pt;line-height:24pt">Text</span></div>');
