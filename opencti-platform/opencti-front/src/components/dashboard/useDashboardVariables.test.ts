@@ -351,12 +351,16 @@ describe('useDashboardVariables', () => {
       seed();
       const { result, rerender } = render(false);
       expect(result.current.values.get(sector.id)).toBe('Finance');
+      // While used, the values restored from this browser and from the URL are both shown in the URL.
+      const urlInUse = `${sector.id}:Finance,${country.id}:DE`;
+      expect(new URLSearchParams(window.location.search).get('variables')).toBe(urlInUse);
       rerender({ ignore: true });
       expect(result.current.values.get(sector.id)).toBe('Energy');
       expect(result.current.values.get(country.id)).toBe('FR');
       act(() => result.current.setValue(sector.id, 'Retail'));
+      // Once ignored, neither the storage nor the URL is written any more.
       expect(JSON.parse(window.localStorage.getItem(storageKey) as string)).toEqual({ [sector.id]: 'Finance' });
-      expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${country.id}:DE`);
+      expect(new URLSearchParams(window.location.search).get('variables')).toBe(urlInUse);
     });
 
     it('keeps the state stable between renders once resynchronised', () => {
