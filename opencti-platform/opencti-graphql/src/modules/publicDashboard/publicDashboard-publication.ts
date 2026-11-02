@@ -1,11 +1,6 @@
 import { FunctionalError } from '../../config/errors';
 import type { PublicDashboardTimeRangeInput, PublicDashboardVariableValueInput } from '../../generated/graphql';
-import {
-  buildDashboardVariableDefaultValues,
-  isStrictIsoDate,
-  isValidDashboardVariableValue,
-  isValidTimeZone,
-} from '../dashboard/dashboard-variables-resolution';
+import { buildDashboardVariableDefaultValues, isStrictIsoDate, isValidDashboardVariableValue, isValidTimeZone } from '../dashboard/dashboard-variables-resolution';
 
 // The relative dates offered by the time filters of a dashboard (DashboardRelativeDateSelect).
 const RELATIVE_DATES: ReadonlySet<string> = new Set(['days-1', 'days-7', 'months-1', 'months-3', 'months-6', 'years-1']);

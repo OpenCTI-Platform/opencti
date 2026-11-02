@@ -158,12 +158,12 @@ export const importDashboardWidgetConfiguration = async (
  *
  * The variables are converted even without widget. A manifest with neither is returned untouched.
  */
-export const convertDashboardManifestIds = async (
+export const convertDashboardManifestIds = async <M extends string | null | undefined>(
   context: AuthContext,
   user: AuthUser,
-  manifest: string | null | undefined,
+  manifest: M,
   from: 'internal' | 'stix',
-): Promise<string | null | undefined> => {
+): Promise<M | string> => {
   const parsedManifest = fromB64(manifest ?? '{}');
   const hasWidgets = parsedManifest && isNotEmptyField(parsedManifest.widgets);
   const hasVariables = parsedManifest && Array.isArray(parsedManifest.variables) && parsedManifest.variables.length > 0;

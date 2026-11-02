@@ -2,13 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { toB64 } from '../../../../../utils/String';
 import { dashboardVariablesStorageKey } from '../../../../../components/dashboard/dashboardVariablesStorage';
 import type { DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
-import {
-  applyPublishedTimeRangeChange,
-  buildPublicationInput,
-  buildPublishedValuesState,
-  buildPublishedVariables,
-  buildPublishedVariableValues,
-} from './public-dashboard-utils';
+import { applyPublishedTimeRangeChange, buildPublicationInput, buildPublishedValuesState, buildPublishedVariables, buildPublishedVariableValues } from './public-dashboard-utils';
 
 const USED = '11111111-1111-4111-8111-111111111111';
 const UNUSED = '22222222-2222-4222-8222-222222222222';

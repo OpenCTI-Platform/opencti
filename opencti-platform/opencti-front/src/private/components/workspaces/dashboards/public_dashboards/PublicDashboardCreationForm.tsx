@@ -22,12 +22,7 @@ import { fromB64 } from '../../../../../utils/String';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import useHelper from '../../../../../utils/hooks/useHelper';
 import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../../components/dashboard/dashboardVariablesFeatureFlag';
-import {
-  buildPublicationInput,
-  EMPTY_PUBLISHED_TIME_RANGE,
-  generatePublicDashboardUriKey,
-  type PublicDashboardCreationFormData,
-} from './public-dashboard-utils';
+import { buildPublicationInput, EMPTY_PUBLISHED_TIME_RANGE, generatePublicDashboardUriKey, type PublicDashboardCreationFormData } from './public-dashboard-utils';
 import PublicDashboardPublishedValues from './PublicDashboardPublishedValues';
 
 const publicDashboardCreateMutation = graphql`

@@ -108,7 +108,18 @@ export const applyPublishedTimeRangeChange = (
  * Input of the creation mutation. The published values are only sent with the dashboard variables feature:
  * without it, the input is exactly the one of before.
  */
-export const buildPublicationInput = (values: PublicDashboardCreationFormData, isVariablesEnabled: boolean) => {
+export interface PublicDashboardPublicationInput {
+  name: string;
+  enabled: boolean;
+  uri_key: string;
+  dashboard_id: string;
+  allowed_markings_ids: string[];
+  variable_values?: { variable_id: string; value: string }[];
+  time_range?: { relative_date: string | null; start_date: string | null; end_date: string | null };
+  time_zone?: string;
+}
+
+export const buildPublicationInput = (values: PublicDashboardCreationFormData, isVariablesEnabled: boolean): PublicDashboardPublicationInput => {
   const input = {
     name: values.name,
     enabled: values.enabled,

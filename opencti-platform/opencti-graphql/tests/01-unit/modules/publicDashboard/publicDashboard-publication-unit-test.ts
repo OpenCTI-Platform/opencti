@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  applyPublicationTimeRange,
-  buildPublicationVariableValues,
-  toPublicationTimeZone,
-} from '../../../../src/modules/publicDashboard/publicDashboard-publication';
+import { applyPublicationTimeRange, buildPublicationVariableValues, toPublicationTimeZone } from '../../../../src/modules/publicDashboard/publicDashboard-publication';
 
 const TEXT = '11111111-1111-4111-8111-111111111111';
 const NUMERIC = '22222222-2222-4222-8222-222222222222';
