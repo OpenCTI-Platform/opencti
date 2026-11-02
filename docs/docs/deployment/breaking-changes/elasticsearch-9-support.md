@@ -2,7 +2,7 @@
 
 !!! info ""
 
-    * **Introduced in**: `OpenCTI TBD`
+    * **Introduced in**: `OpenCTI 7.261102.0`
 
 ## Description of changes
 
