@@ -44,6 +44,39 @@ describe('userMerge schema discovery', () => {
     }
   });
 
+  it('should reach a user reference held inside a standard object attribute', () => {
+    const creatorId = discoverUserIdAttributes().find((attribute) => attribute.name === 'metaData.creator_id');
+    expect(creatorId).toEqual({ name: 'metaData.creator_id', multiple: false, entityTypes: ['InternalFile'] });
+    const target = userMergeScalarResolution().targets.find((candidate) => candidate.id === 'internal-file-metadata-creator-id');
+    expect(target).toEqual({
+      id: 'internal-file-metadata-creator-id',
+      registerRow: 'internal-file.metadata-creator-id',
+      entityTypes: ['InternalFile'],
+      path: 'metaData.creator_id',
+      shape: 'single',
+    });
+  });
+
+  it('should record the nested root and the object array of a walked user reference', () => {
+    const userReference = { type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], multiple: false };
+    const versions = { type: 'object', format: 'nested', multiple: true, mappings: [{ ...userReference, name: 'author' }] };
+    const fake: Record<string, Map<string, unknown>> = {
+      Sync: new Map([
+        ['holder', { type: 'object', format: 'standard', multiple: false, name: 'holder', mappings: [{ ...versions, name: 'versions' }] }],
+        ['flat_holder', { type: 'object', format: 'flat', multiple: false, name: 'flat_holder' }],
+      ]),
+    };
+    vi.spyOn(schemaAttributesDefinition, 'getRegisteredTypes').mockReturnValue(Object.keys(fake));
+    vi.spyOn(schemaAttributesDefinition, 'getAttributes').mockImplementation((entityType: string) => fake[entityType] as never);
+    try {
+      expect(discoverUserIdAttributes()).toEqual([
+        { name: 'holder.versions.author', multiple: false, entityTypes: ['Sync'], nestedRoot: 'holder.versions', arrayRoot: 'holder.versions' },
+      ]);
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
   it('should answer for an existing register row on every target', () => {
     userMergeScalarResolution().targets.forEach((target) => {
       expect(findRegisterRow(target.registerRow), target.id).toBeDefined();
