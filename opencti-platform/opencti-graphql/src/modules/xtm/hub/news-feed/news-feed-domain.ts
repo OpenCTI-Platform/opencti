@@ -151,6 +151,9 @@ export const cleanOldNewsFeedItems = async (
         values: [cutoffDate.toISOString()],
         operator: FilterOperator.Lt,
       },
+      // The creation date of a blog post is its publication date, it can be older than the cutoff while the post is
+      // still live: only the XTM Hub removes the blog posts (when it drops them).
+      { key: ['news_feed_type'], values: [NewsFeedItemType.BLOG_POST], operator: FilterOperator.NotEq },
     ],
     filterGroups: [],
   };

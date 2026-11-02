@@ -511,6 +511,26 @@ describe('News feed', () => {
       );
     });
 
+    it('should never clean up the blog posts, whatever their publication date', async () => {
+      mockElPaginate.mockResolvedValue({ edges: [] });
+
+      await cleanOldNewsFeedItems(mockContext, mockUser, cutoffDate);
+
+      expect(mockElPaginate).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        expect.any(String),
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            mode: 'and',
+            filters: expect.arrayContaining([
+              { key: ['news_feed_type'], values: ['BLOG_POST'], operator: 'not_eq' },
+            ]),
+          }),
+        }),
+      );
+    });
+
     it('should delete each returned item and return the count', async () => {
       mockElPaginate
         .mockResolvedValueOnce({
