@@ -1,0 +1,64 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "NetworkTraffic": {
+          "dst_byte_count": 4096,
+          "dst_packets": null,
+          "dst_port": 443,
+          "embedded": null,
+          "end": "2026-01-01T01:00:00.000Z",
+          "files": null,
+          "filesMarkings": null,
+          "is_active": false,
+          "networkDst": "ipv4-addr--bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          "networkSrc": "ipv4-addr--aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "noTriggerImport": null,
+          "protocols": [
+            "tcp",
+            "https"
+          ],
+          "src_byte_count": 1024,
+          "src_packets": null,
+          "src_port": 44123,
+          "start": "2026-01-01T00:00:00.000Z"
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "network-traffic--20000000-0000-4000-8000-000000000036",
+        "type": "Network-Traffic",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "network-traffic--20000000-0000-4000-8000-000000000036",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

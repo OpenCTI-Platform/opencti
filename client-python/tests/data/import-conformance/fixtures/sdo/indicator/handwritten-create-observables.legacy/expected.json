@@ -1,0 +1,124 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "stix"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "pattern_type_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "stix",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "IndicatorAdd",
+      "op": "mutation",
+      "root": "indicatorAdd",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": null,
+          "createObservables": true,
+          "created": "2025-01-01T00:00:00.000Z",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_create_observables",
+              "value": true
+            },
+            {
+              "field_name": "x_opencti_main_observable_type",
+              "value": "IPv4-Addr"
+            },
+            {
+              "field_name": "x_opencti_score",
+              "value": 75
+            }
+          ],
+          "description": null,
+          "embedded": null,
+          "externalReferences": [],
+          "files": null,
+          "filesMarkings": null,
+          "indicator_types": null,
+          "killChainPhases": [],
+          "lang": null,
+          "modified": "2025-01-01T00:00:00.000Z",
+          "name": "198.51.100.9",
+          "noTriggerImport": null,
+          "objectLabel": [],
+          "objectMarking": null,
+          "objectOrganization": null,
+          "pattern": "[ipv4-addr:value = '198.51.100.9']",
+          "pattern_type": "stix",
+          "pattern_version": null,
+          "revoked": null,
+          "stix_id": "indicator--30000000-0000-4000-8000-000000000003",
+          "update": false,
+          "upsertOperations": null,
+          "valid_from": "2025-01-01T00:00:00.000Z",
+          "valid_until": null,
+          "x_mitre_platforms": null,
+          "x_opencti_detection": null,
+          "x_opencti_main_observable_type": "IPv4-Addr",
+          "x_opencti_modified_at": null,
+          "x_opencti_score": 75,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "indicator--30000000-0000-4000-8000-000000000003",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

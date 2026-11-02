@@ -1,0 +1,465 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "activist"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "threat_actor_individual_type_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "activist",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "operator"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "threat_actor_individual_role_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "operator",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 6,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "intermediate"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 7,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "threat_actor_individual_sophistication_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "intermediate",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 8,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "female"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 9,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "gender_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "female",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 10,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "single"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 11,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "marital_status_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "single",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 12,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "black"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 13,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "hair_color_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "black",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 14,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "brown"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 15,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "eye_color_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "brown",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 16,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "activism"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 17,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "activism",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 18,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "phishing campaign",
+          "embedded": null,
+          "external_id": "CAPEC-98",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "capec",
+          "stix_id": null,
+          "update": false,
+          "url": null,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ThreatActorIndividualAdd",
+      "op": "mutation",
+      "root": "threatActorIndividualAdd",
+      "seq": 19,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": [
+            "tai-1"
+          ],
+          "confidence": 70,
+          "created": "2025-04-01T00:00:00.000Z",
+          "createdBy": "identity--44444444-4444-4444-8444-400000000001",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "44444444-4444-4444-8444-444444444444"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "Threat-Actor-Individual"
+            }
+          ],
+          "description": "threat actor individual description",
+          "embedded": null,
+          "externalReferences": [
+            "5e20c34b-c635-567c-89bd-ca8f768c9b10"
+          ],
+          "files": null,
+          "filesMarkings": null,
+          "first_seen": "2025-04-01T00:00:00.000Z",
+          "goals": [
+            "disruption"
+          ],
+          "lang": null,
+          "last_seen": "2025-04-05T00:00:00.000Z",
+          "modified": "2025-04-06T00:00:00.000Z",
+          "name": "Threat Individual Stix 2.0",
+          "noTriggerImport": null,
+          "objectLabel": [
+            "1e4f91b0-5eb9-5ec6-bcb3-9f9c0b35c930"
+          ],
+          "objectMarking": [
+            "marking-definition--44444444-4444-4444-8444-100000000001"
+          ],
+          "objectOrganization": null,
+          "personal_motivations": [
+            "personal-gain"
+          ],
+          "primary_motivation": "ideology",
+          "resource_level": "team",
+          "revoked": false,
+          "roles": [
+            "operator"
+          ],
+          "secondary_motivations": [
+            "notoriety"
+          ],
+          "sophistication": "intermediate",
+          "stix_id": "threat-actor--44444444-4444-4444-8444-444444444444",
+          "threat_actor_types": [
+            "activist"
+          ],
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "threat-actor--44444444-4444-4444-8444-444444444444",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

@@ -1,0 +1,22 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "relationship--90000000-0000-4000-8000-000000000914",
+      "outcome": "KeyError"
+    }
+  ],
+  "logged_errors": []
+}

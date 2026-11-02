@@ -1,0 +1,33 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "StixCyberObservableEdit",
+      "op": "mutation",
+      "root": "stixCyberObservableEdit",
+      "seq": 1,
+      "sub": "fieldPatch",
+      "variables": {
+        "id": "10000000-0000-4000-8000-000000000020",
+        "input": [
+          {
+            "key": "x_opencti_description",
+            "operation": "replace",
+            "value": [
+              "Updated description"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "ipv4-addr--20000000-0000-4000-8000-000000000020",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

@@ -1,0 +1,49 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "pir--20000000-0000-4000-8000-000000000a12",
+      "spec_version": "2.1",
+      "type": "pir",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "id": "10000000-0000-4000-8000-000000000a12",
+          "type": "Pir",
+          "created_at": "2025-01-01T00:00:00.000Z",
+          "updated_at": "2025-01-02T00:00:00.000Z",
+          "is_inferred": false,
+          "opencti_operation": "pir_flag_element"
+        }
+      },
+      "name": "Ransomware targeting energy",
+      "input": {
+        "relationshipId": "10000000-0000-4000-8000-000000000a13",
+        "sourceId": "d86d8f38-42e2-4c6f-a016-9c7aabb22f03",
+        "matchingCriteria": [
+          {
+            "weight": 2,
+            "filters": {
+              "mode": "and",
+              "filters": [
+                {
+                  "key": [
+                    "toId"
+                  ],
+                  "values": [
+                    "10000000-0000-4000-8000-000000000a19"
+                  ],
+                  "operator": "eq",
+                  "mode": "or"
+                }
+              ],
+              "filterGroups": []
+            }
+          }
+        ],
+        "relationshipAuthorId": "10000000-0000-4000-8000-000000000a20"
+      }
+    }
+  ]
+}

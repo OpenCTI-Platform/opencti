@@ -1,0 +1,26 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "indicator--20000000-0000-4000-8000-000000000a15",
+      "type": "indicator",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "id": "10000000-0000-4000-8000-000000000a15",
+          "type": "Indicator",
+          "opencti_operation": "patch",
+          "opencti_field_patch": [
+            {
+              "key": "description",
+              "value": [
+                "Updated description"
+              ],
+              "operation": "replace"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

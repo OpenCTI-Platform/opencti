@@ -1,0 +1,117 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "ransomware"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "ransomware",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ThreatActorGroupAdd",
+      "op": "mutation",
+      "root": "threatActorGroupAdd",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "confidence": null,
+          "created": "2026-07-21T09:07:30.527265Z",
+          "createdBy": "identity--098b49c5-5c08-53e9-87ad-d237f39c94ed",
+          "customFieldValues": null,
+          "description": "Synthetic description of a ransomware group, written for the import conformance fixtures.\n",
+          "embedded": null,
+          "externalReferences": [],
+          "files": null,
+          "filesMarkings": null,
+          "first_seen": null,
+          "goals": null,
+          "lang": null,
+          "last_seen": null,
+          "modified": "2026-07-21T09:07:30.527265Z",
+          "name": "synthetic-group",
+          "noTriggerImport": null,
+          "objectLabel": [
+            "db073b44-17c5-5725-bfc7-f21f42f92ce6"
+          ],
+          "objectMarking": [
+            "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+          ],
+          "objectOrganization": null,
+          "personal_motivations": null,
+          "primary_motivation": null,
+          "resource_level": null,
+          "revoked": null,
+          "roles": null,
+          "secondary_motivations": null,
+          "sophistication": null,
+          "stix_id": "threat-actor--8507d8c7-5fe8-5233-947e-96984457713b",
+          "threat_actor_types": null,
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_score": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "threat-actor--8507d8c7-5fe8-5233-947e-96984457713b",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

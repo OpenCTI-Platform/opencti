@@ -1,0 +1,23 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "process--20000000-0000-4000-8000-000000000037",
+      "type": "process",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000037",
+      "x_opencti_type": "Process",
+      "defanged": false,
+      "is_hidden": false,
+      "pid": 1234,
+      "created_time": "2026-01-01T00:00:00.000Z",
+      "cwd": "C:\\Windows\\System32",
+      "command_line": "cmd.exe /c whoami",
+      "aslr_enabled": true,
+      "dep_enabled": true,
+      "priority": "NORMAL",
+      "owner_sid": "S-1-5-21-123456789"
+    }
+  ]
+}

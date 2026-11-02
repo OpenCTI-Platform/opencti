@@ -1,0 +1,83 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "Artifact": {
+          "decryption_key": null,
+          "embedded": null,
+          "encryption_algorithm": null,
+          "files": null,
+          "filesMarkings": null,
+          "hashes": [
+            {
+              "algorithm": "SHA-256",
+              "hash": "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0"
+            }
+          ],
+          "mime_type": "application/zip",
+          "noTriggerImport": null,
+          "url": null,
+          "x_opencti_additional_names": null
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "artifact--30000000-0000-4000-8000-000000000005",
+        "type": "Artifact",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": "Sample",
+        "x_opencti_score": 90
+      }
+    },
+    {
+      "files": [
+        {
+          "mime": "application/zip",
+          "name": "artifact.bin",
+          "path": "file",
+          "sha256": "75363f819665668fd539c4a3e46ce829989f7e83c6bb53211c8ab177792f777e"
+        }
+      ],
+      "name": "StixCyberObservableEdit",
+      "op": "mutation",
+      "root": "stixCyberObservableEdit",
+      "seq": 3,
+      "sub": "importPush",
+      "variables": {
+        "embedded": false,
+        "file": null,
+        "fileMarkings": null,
+        "id": "aee3ba96-226e-5794-94a1-b338f6b759b2",
+        "noTriggerImport": false,
+        "version": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "artifact--30000000-0000-4000-8000-000000000005",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

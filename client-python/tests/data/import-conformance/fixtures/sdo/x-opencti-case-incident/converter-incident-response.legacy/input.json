@@ -1,0 +1,50 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "x-opencti-case-incident--0ed8c294-d99f-5155-a54b-7cc3044174c3",
+      "type": "x-opencti-case-incident",
+      "spec_version": "2.0",
+      "x_opencti_id": "4c849ab0-81f2-457c-b837-bea76f4d4d15",
+      "x_opencti_type": "Case-Incident",
+      "x_opencti_files": [
+        {
+          "name": "ipv4_example.json",
+          "uri": "/storage/get/import/Case-Incident/4c849ab0-81f2-457c-b837-bea76f4d4d15/ipv4_example.json",
+          "mime_type": "application/json",
+          "version": "2025-06-26T16:06:52.222Z",
+          "object_marking_refs": [
+            "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+          ]
+        }
+      ],
+      "created": "2025-06-26T16:06:02.000Z",
+      "modified": "2025-06-26T16:06:52.288Z",
+      "revoked": false,
+      "confidence": 100,
+      "labels": [
+        "ryuk"
+      ],
+      "object_marking_refs": [
+        "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+      ],
+      "created_by_ref": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "description": "spear phishing",
+          "external_id": "CAPEC-163"
+        }
+      ],
+      "name": "IR STIX 2.0",
+      "description": "description",
+      "severity": "medium",
+      "priority": "P2",
+      "response_types": [
+        "data-leak"
+      ],
+      "object_refs": []
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "StixEdit",
+      "op": "mutation",
+      "root": "stixEdit",
+      "seq": 1,
+      "sub": "delete",
+      "variables": {
+        "forceDelete": false,
+        "id": "label--20000000-0000-4000-8000-000000000a16"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "label--20000000-0000-4000-8000-000000000a16",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

@@ -1,0 +1,15 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "mac-addr--20000000-0000-4000-8000-000000000031",
+      "type": "mac-addr",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000031",
+      "x_opencti_type": "Mac-Addr",
+      "defanged": false,
+      "value": "00:1B:44:11:3A:B7"
+    }
+  ]
+}

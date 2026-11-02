@@ -1,0 +1,19 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000106",
+  "objects": [
+    {
+      "type": "location",
+      "spec_version": "2.1",
+      "id": "location--cb6c53e7-4f14-5d5d-9311-5cae03838f3d",
+      "created_by_ref": "identity--098b49c5-5c08-53e9-87ad-d237f39c94ed",
+      "created": "2026-07-21T09:07:30.560924Z",
+      "modified": "2026-07-21T09:07:30.560924Z",
+      "name": "AU",
+      "country": "AU",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
+    }
+  ]
+}

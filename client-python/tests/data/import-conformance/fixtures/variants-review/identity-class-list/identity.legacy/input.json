@@ -1,0 +1,17 @@
+{
+  "type": "bundle",
+  "id": "bundle--b0000000-0000-4000-8000-000000000034",
+  "objects": [
+    {
+      "type": "identity",
+      "spec_version": "2.1",
+      "id": "identity--b0000000-0000-4000-8000-000000000001",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z",
+      "name": "Review identity",
+      "identity_class": [
+        "individual"
+      ]
+    }
+  ]
+}

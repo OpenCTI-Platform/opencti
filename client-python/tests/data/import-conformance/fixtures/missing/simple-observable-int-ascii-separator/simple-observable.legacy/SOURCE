@@ -1,0 +1,1 @@
+E: hand-written, a simple observable whose AS number starts with an ASCII file separator: str.isspace() but int() does not strip it (ValueError)

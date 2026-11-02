@@ -1,0 +1,2 @@
+C: buildBundleElement(external-reference, KNOWLEDGE_CHANGE), opencti-graphql src/manager/taskManager.js
+x_opencti_files patch built by hand: no producer of the platform emits it

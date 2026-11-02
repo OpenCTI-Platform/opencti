@@ -1,0 +1,120 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "stix 2.0"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "stix 2.0",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "DataComponentAdd",
+      "op": "mutation",
+      "root": "dataComponentAdd",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "confidence": 100,
+          "created": "2026-03-18T10:06:27.555Z",
+          "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "9b98e5a8-e4a9-44a0-ad49-5e26affd779d"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "Data-Component"
+            },
+            {
+              "field_name": "x_mitre_data_source_ref",
+              "value": "x-mitre-data-source--d9ad9c14-1310-53f0-85ad-3654c552cc2d"
+            }
+          ],
+          "dataSource": "x-mitre-data-source--d9ad9c14-1310-53f0-85ad-3654c552cc2d",
+          "description": "descriptions",
+          "embedded": null,
+          "externalReferences": [],
+          "files": null,
+          "filesMarkings": null,
+          "lang": null,
+          "modified": "2026-03-18T13:11:47.212Z",
+          "name": "Data Component STIX 2.0",
+          "noTriggerImport": null,
+          "objectLabel": [
+            "9b36b7b3-8ee6-5f3c-84fd-be02a9e8e306"
+          ],
+          "objectMarking": [
+            "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+          ],
+          "objectOrganization": null,
+          "revoked": false,
+          "stix_id": "x-mitre-data-component--e83a6698-2379-5c7c-8cd6-e0cdf2c4842f",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "x-mitre-data-component--e83a6698-2379-5c7c-8cd6-e0cdf2c4842f",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

@@ -1,0 +1,24 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "relationship--a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": [
+    "Unknown object type, doing nothing..."
+  ]
+}

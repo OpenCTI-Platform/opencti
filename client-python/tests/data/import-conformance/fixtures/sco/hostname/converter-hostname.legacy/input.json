@@ -1,0 +1,27 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "hostname--20000000-0000-4000-8000-000000000040",
+      "type": "hostname",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000040",
+      "x_opencti_type": "Hostname",
+      "defanged": false,
+      "x_opencti_score": 85,
+      "x_opencti_description": "C2 hostname",
+      "x_opencti_labels": [
+        "malware"
+      ],
+      "x_opencti_created_by_ref": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+      "value": "c2.evil.com",
+      "labels": [
+        "malware"
+      ],
+      "description": "C2 hostname",
+      "score": 85,
+      "created_by_ref": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb"
+    }
+  ]
+}

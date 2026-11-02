@@ -1,0 +1,648 @@
+[
+  {
+    "key": "account_type_ov",
+    "entity_types": [
+      "User-Account"
+    ],
+    "fields": [
+      {
+        "key": "account_type",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "attack_motivation_ov",
+    "entity_types": [
+      "Threat-Actor-Group",
+      "Intrusion-Set"
+    ],
+    "fields": [
+      {
+        "key": "primary_motivation",
+        "required": false,
+        "multiple": false
+      },
+      {
+        "key": "secondary_motivations",
+        "required": false,
+        "multiple": true
+      },
+      {
+        "key": "personal_motivations",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "attack_resource_level_ov",
+    "entity_types": [
+      "Threat-Actor-Group",
+      "Intrusion-Set"
+    ],
+    "fields": [
+      {
+        "key": "resource_level",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "coverage_ov",
+    "entity_types": [
+      "Security-Coverage",
+      "has-covered"
+    ],
+    "fields": [
+      {
+        "key": "coverage_information",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "case_severity_ov",
+    "entity_types": [
+      "Case-Incident",
+      "Case-Rfi",
+      "Case-Rft"
+    ],
+    "fields": [
+      {
+        "key": "severity",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "case_priority_ov",
+    "entity_types": [
+      "Case-Incident",
+      "Case-Rfi",
+      "Case-Rft"
+    ],
+    "fields": [
+      {
+        "key": "priority",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "channel_types_ov",
+    "entity_types": [
+      "Channel"
+    ],
+    "fields": [
+      {
+        "key": "channel_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "collection_layers_ov",
+    "entity_types": [
+      "Data-Source"
+    ],
+    "fields": [
+      {
+        "key": "collection_layers",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "event_type_ov",
+    "entity_types": [
+      "Event"
+    ],
+    "fields": [
+      {
+        "key": "event_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "grouping_context_ov",
+    "entity_types": [
+      "Grouping"
+    ],
+    "fields": [
+      {
+        "key": "context",
+        "required": true,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "implementation_language_ov",
+    "entity_types": [
+      "Malware"
+    ],
+    "fields": [
+      {
+        "key": "implementation_languages",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "incident_response_types_ov",
+    "entity_types": [
+      "Case-Incident"
+    ],
+    "fields": [
+      {
+        "key": "response_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "incident_type_ov",
+    "entity_types": [
+      "Incident"
+    ],
+    "fields": [
+      {
+        "key": "incident_type",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "incident_severity_ov",
+    "entity_types": [
+      "Incident"
+    ],
+    "fields": [
+      {
+        "key": "severity",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "indicator_type_ov",
+    "entity_types": [
+      "Indicator"
+    ],
+    "fields": [
+      {
+        "key": "indicator_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "infrastructure_type_ov",
+    "entity_types": [
+      "Infrastructure"
+    ],
+    "fields": [
+      {
+        "key": "infrastructure_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "integrity_level_ov",
+    "entity_types": [
+      "Process"
+    ],
+    "fields": [
+      {
+        "key": "integrity_level",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "malware_capabilities_ov",
+    "entity_types": [
+      "Malware"
+    ],
+    "fields": [
+      {
+        "key": "capabilities",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "malware_result_ov",
+    "entity_types": [
+      "Malware-Analysis"
+    ],
+    "fields": [
+      {
+        "key": "result",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "malware_type_ov",
+    "entity_types": [
+      "Malware"
+    ],
+    "fields": [
+      {
+        "key": "malware_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "note_types_ov",
+    "entity_types": [
+      "Note"
+    ],
+    "fields": [
+      {
+        "key": "note_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "opinion_ov",
+    "entity_types": [
+      "Opinion"
+    ],
+    "fields": [
+      {
+        "key": "opinion",
+        "required": true,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "organization_type_ov",
+    "entity_types": [
+      "Organization"
+    ],
+    "fields": [
+      {
+        "key": "x_opencti_organization_type",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "platforms_ov",
+    "entity_types": [
+      "Data-Source",
+      "Indicator",
+      "Attack-Pattern"
+    ],
+    "fields": [
+      {
+        "key": "x_mitre_platforms",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "pattern_type_ov",
+    "entity_types": [
+      "Indicator"
+    ],
+    "fields": [
+      {
+        "key": "pattern_type",
+        "required": true,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "processor_architecture_ov",
+    "entity_types": [
+      "Malware"
+    ],
+    "fields": [
+      {
+        "key": "architecture_execution_envs",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "permissions_ov",
+    "entity_types": [
+      "Attack-Pattern"
+    ],
+    "fields": [
+      {
+        "key": "x_mitre_permissions_required",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "persona_type_ov",
+    "entity_types": [
+      "Persona"
+    ],
+    "fields": [
+      {
+        "key": "persona_type",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "reliability_ov",
+    "entity_types": [
+      "Report",
+      "Organization",
+      "Individual",
+      "System"
+    ],
+    "fields": [
+      {
+        "key": "x_opencti_reliability",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "report_types_ov",
+    "entity_types": [
+      "Report"
+    ],
+    "fields": [
+      {
+        "key": "report_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "request_for_information_types_ov",
+    "entity_types": [
+      "Case-Rfi"
+    ],
+    "fields": [
+      {
+        "key": "information_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "request_for_takedown_types_ov",
+    "entity_types": [
+      "Case-Rft"
+    ],
+    "fields": [
+      {
+        "key": "takedown_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "security_platform_type_ov",
+    "entity_types": [
+      "SecurityPlatform"
+    ],
+    "fields": [
+      {
+        "key": "security_platform_type",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "service_status_ov",
+    "entity_types": [
+      "Process"
+    ],
+    "fields": [
+      {
+        "key": "service_status",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "service_type_ov",
+    "entity_types": [
+      "Process"
+    ],
+    "fields": [
+      {
+        "key": "service_type",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "start_type_ov",
+    "entity_types": [
+      "Process"
+    ],
+    "fields": [
+      {
+        "key": "start_type",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "key_type_ov",
+    "entity_types": [
+      "SSH-Key"
+    ],
+    "fields": [
+      {
+        "key": "key_type",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "threat_actor_group_type_ov",
+    "entity_types": [
+      "Threat-Actor-Group"
+    ],
+    "fields": [
+      {
+        "key": "threat_actor_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "threat_actor_group_role_ov",
+    "entity_types": [
+      "Threat-Actor-Group"
+    ],
+    "fields": [
+      {
+        "key": "roles",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "threat_actor_group_sophistication_ov",
+    "entity_types": [
+      "Threat-Actor-Group"
+    ],
+    "fields": [
+      {
+        "key": "sophistication",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "threat_actor_individual_type_ov",
+    "entity_types": [
+      "Threat-Actor-Individual"
+    ],
+    "fields": [
+      {
+        "key": "threat_actor_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "threat_actor_individual_role_ov",
+    "entity_types": [
+      "Threat-Actor-Individual"
+    ],
+    "fields": [
+      {
+        "key": "roles",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "threat_actor_individual_sophistication_ov",
+    "entity_types": [
+      "Threat-Actor-Individual"
+    ],
+    "fields": [
+      {
+        "key": "sophistication",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "tool_types_ov",
+    "entity_types": [
+      "Tool"
+    ],
+    "fields": [
+      {
+        "key": "tool_types",
+        "required": false,
+        "multiple": true
+      }
+    ]
+  },
+  {
+    "key": "gender_ov",
+    "entity_types": [
+      "Threat-Actor-Individual"
+    ],
+    "fields": [
+      {
+        "key": "gender",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "marital_status_ov",
+    "entity_types": [
+      "Threat-Actor-Individual"
+    ],
+    "fields": [
+      {
+        "key": "marital_status",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "hair_color_ov",
+    "entity_types": [
+      "Threat-Actor-Individual"
+    ],
+    "fields": [
+      {
+        "key": "hair_color",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  },
+  {
+    "key": "eye_color_ov",
+    "entity_types": [
+      "Threat-Actor-Individual"
+    ],
+    "fields": [
+      {
+        "key": "eye_color",
+        "required": false,
+        "multiple": false
+      }
+    ]
+  }
+]

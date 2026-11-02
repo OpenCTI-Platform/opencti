@@ -1,0 +1,28 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "StixCoreObjectEdit",
+      "op": "mutation",
+      "root": "stixCoreObjectEdit",
+      "seq": 1,
+      "sub": "restrictionOrganizationAdd",
+      "variables": {
+        "directContainerSharing": false,
+        "id": "report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f",
+        "organizationId": [
+          "10000000-0000-4000-8000-000000000b01"
+        ]
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

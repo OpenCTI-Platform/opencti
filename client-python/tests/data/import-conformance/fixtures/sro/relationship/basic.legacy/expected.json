@@ -1,0 +1,102 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "Threat Intelligence and Research. (2015, March 30). VOLATILE CEDAR. Retrieved February 8, 2021.",
+          "embedded": null,
+          "external_id": null,
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "CheckPoint Volatile Cedar March 2015",
+          "stix_id": null,
+          "update": false,
+          "url": "https://media.kasperskycontenthub.com/wp-content/uploads/sites/43/2015/03/20082004/volatile-cedar-technical-report.pdf",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "StixCoreRelationshipAdd",
+      "op": "mutation",
+      "root": "stixCoreRelationshipAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": null,
+          "coverage_information": [],
+          "created": "2021-04-27T01:56:35.810Z",
+          "createdBy": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+          "customFieldValues": [
+            {
+              "field_name": "x_mitre_modified_by_ref",
+              "value": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5"
+            },
+            {
+              "field_name": "x_mitre_deprecated",
+              "value": false
+            },
+            {
+              "field_name": "x_mitre_attack_spec_version",
+              "value": "3.3.0"
+            }
+          ],
+          "description": " [Explosive](https://attack.mitre.org/software/S0569) has collected the MAC address from the victim's machine.(Citation: CheckPoint Volatile Cedar March 2015) ",
+          "externalReferences": [
+            "3a4c41a8-e332-5dc4-9caf-8f2b76384d8e"
+          ],
+          "external_uri": null,
+          "fromId": "malware--6a21e3a4-5ffe-4581-af9a-6a54c7536f44",
+          "killChainPhases": [],
+          "lang": null,
+          "modified": "2026-04-29T14:23:05.902Z",
+          "objectLabel": [],
+          "objectMarking": [
+            "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+          ],
+          "objectOrganization": null,
+          "relationship_type": "uses",
+          "revoked": false,
+          "start_time": "2015-03-30T00:00:00Z",
+          "stix_id": "relationship--00038d0e-7fc7-41c3-9055-edb4d87ea912",
+          "stop_time": "2015-03-30T00:00:00Z",
+          "toId": "attack-pattern--707399d6-ab3e-4963-9315-d9d3818cd6a0",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "relationship--00038d0e-7fc7-41c3-9055-edb4d87ea912",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

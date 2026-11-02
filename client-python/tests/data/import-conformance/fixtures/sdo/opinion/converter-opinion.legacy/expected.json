@@ -1,0 +1,193 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "agree"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "opinion_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "agree",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "opinion"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "opinion",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 6,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": null,
+          "embedded": null,
+          "external_id": "G0096",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "mitre-attack",
+          "stix_id": null,
+          "update": false,
+          "url": "https://attack.mitre.org/groups/G0096",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "OpinionAdd",
+      "op": "mutation",
+      "root": "opinionAdd",
+      "seq": 7,
+      "sub": null,
+      "variables": {
+        "input": {
+          "authors": null,
+          "confidence": 75,
+          "created": "2025-06-26T15:36:22.864Z",
+          "createdBy": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "2a2d3e3e-a767-4184-aca1-a11e1d557d05"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "Opinion"
+            },
+            {
+              "field_name": "x_opencti_granted_refs",
+              "value": [
+                "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
+              ]
+            }
+          ],
+          "embedded": null,
+          "explanation": "my opinion",
+          "externalReferences": [
+            "6798c254-e435-55a5-b2a8-17c7533f8c00"
+          ],
+          "files": null,
+          "filesMarkings": null,
+          "lang": null,
+          "modified": "2025-06-26T15:37:27.254Z",
+          "noTriggerImport": null,
+          "objectLabel": [
+            "9f17c916-b617-5712-87eb-d57dad354ed4"
+          ],
+          "objectMarking": null,
+          "objectOrganization": [
+            "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
+          ],
+          "objects": [
+            "note--2a80c942-1c85-5bb7-91d4-e92ed2b86fd8"
+          ],
+          "opinion": "agree",
+          "revoked": false,
+          "stix_id": "opinion--0fe325be-7171-5696-a922-c9d15685c495",
+          "update": false,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "opinion--0fe325be-7171-5696-a922-c9d15685c495",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

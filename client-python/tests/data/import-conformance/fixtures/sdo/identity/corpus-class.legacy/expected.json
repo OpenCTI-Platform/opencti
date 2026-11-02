@@ -1,0 +1,61 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "IdentityAdd",
+      "op": "mutation",
+      "root": "identityAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": null,
+          "contact_information": null,
+          "created": "2026-07-21T09:07:30.542904Z",
+          "customFieldValues": null,
+          "description": null,
+          "embedded": null,
+          "externalReferences": [],
+          "files": null,
+          "filesMarkings": null,
+          "lang": null,
+          "modified": "2026-07-21T09:07:30.542904Z",
+          "name": "Synthetic sector",
+          "noTriggerImport": null,
+          "objectLabel": [],
+          "objectMarking": [
+            "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+          ],
+          "revoked": null,
+          "roles": null,
+          "stix_id": "identity--b7ce8d60-60fb-5443-9966-1a0f0c070e86",
+          "type": "Sector",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_aliases": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "identity--b7ce8d60-60fb-5443-9966-1a0f0c070e86",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

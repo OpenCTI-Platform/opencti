@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "type": "malware",
+      "id": "malware--30000000-0000-4000-8000-000000000026",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "id": "10000000-0000-4000-8000-000000000026",
+          "opencti_operation": "merge",
+          "merge_target_id": "t",
+          "merge_source_ids": {
+            "a": 1
+          }
+        }
+      }
+    }
+  ]
+}

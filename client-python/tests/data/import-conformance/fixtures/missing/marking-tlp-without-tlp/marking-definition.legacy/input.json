@@ -1,0 +1,16 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000908",
+  "objects": [
+    {
+      "type": "marking-definition",
+      "spec_version": "2.1",
+      "id": "marking-definition--90000000-0000-4000-8000-000000000908",
+      "created": "2025-01-01T00:00:00.000Z",
+      "definition_type": "tlp",
+      "definition": {
+        "statement": "no tlp key"
+      }
+    }
+  ]
+}

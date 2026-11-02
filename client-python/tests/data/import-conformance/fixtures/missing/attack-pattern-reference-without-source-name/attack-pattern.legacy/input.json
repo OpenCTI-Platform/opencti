@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000918",
+  "objects": [
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--90000000-0000-4000-8000-000000000918",
+      "spec_version": "2.1",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z",
+      "name": "Attack pattern with a reference without source_name",
+      "external_references": [
+        {
+          "url": "https://example.org/attack",
+          "external_id": "T0000"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000101",
+  "objects": [
+    {
+      "type": "simple-observable",
+      "id": "simple-observable--30000000-0000-4000-8000-000000000002",
+      "key": "IPv4-Addr.value",
+      "value": "198.51.100.8",
+      "description": "Seen in a phishing campaign",
+      "extensions": {
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "score": 80,
+          "labels": [
+            "phishing"
+          ],
+          "created_by_ref": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb"
+        }
+      }
+    }
+  ]
+}

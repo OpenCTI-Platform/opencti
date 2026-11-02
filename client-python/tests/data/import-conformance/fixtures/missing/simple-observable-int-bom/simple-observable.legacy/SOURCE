@@ -1,0 +1,1 @@
+E: hand-written, a simple observable whose AS number ends with a BOM: a JavaScript space, not a Python one (ValueError)

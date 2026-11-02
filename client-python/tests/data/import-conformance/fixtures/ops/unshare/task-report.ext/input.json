@@ -1,0 +1,21 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f",
+      "type": "report",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "id": "0c38a734-3150-468f-bf38-8dc1f937a1b3",
+          "type": "Report",
+          "opencti_operation": "unshare",
+          "sharing_organization_ids": [
+            "10000000-0000-4000-8000-000000000b01"
+          ],
+          "sharing_direct_container": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+C: buildBundleElement(uses, RULE_APPLY), opencti-graphql src/manager/taskManager.js

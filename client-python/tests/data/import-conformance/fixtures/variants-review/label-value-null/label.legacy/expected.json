@@ -1,0 +1,14 @@
+{
+  "bundle_error": null,
+  "calls": [],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "label--b0000000-0000-4000-8000-000000000001",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": [
+    "[opencti_label] Missing parameters: value"
+  ]
+}

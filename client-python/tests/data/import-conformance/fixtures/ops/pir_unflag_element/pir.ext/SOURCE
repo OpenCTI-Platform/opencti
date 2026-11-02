@@ -1,0 +1,1 @@
+C: convertStoreToStix_2_1(PIR) + operation, as opencti-graphql src/manager/pirManager.ts builds it

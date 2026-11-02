@@ -1,0 +1,152 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "indicator"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "indicator",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": null,
+          "embedded": null,
+          "external_id": "CVE-2012-0158",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "cve",
+          "stix_id": null,
+          "update": false,
+          "url": null,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "StixSightingRelationshipAdd",
+      "op": "mutation",
+      "root": "stixSightingRelationshipAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "attribute_count": 1,
+          "confidence": 100,
+          "created": "2025-07-31T07:26:56.885Z",
+          "createdBy": "identity--072d8aaa-93a9-5ded-89e4-1ad87d8b91c6",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "11cad6c5-98f1-4491-899a-15b7789e1492"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "stix-sighting-relationship"
+            },
+            {
+              "field_name": "x_opencti_granted_refs",
+              "value": [
+                "identity--18fe5225-fee1-5627-ad3e-20c14435b024"
+              ]
+            },
+            {
+              "field_name": "x_opencti_negative",
+              "value": true
+            }
+          ],
+          "description": "descri",
+          "externalReferences": [
+            "fc09ec33-4ceb-548d-8ad0-17a6e657b68a"
+          ],
+          "first_seen": "2025-07-30T22:00:00.000Z",
+          "fromId": "indicator--3e01a7d8-997b-5e7b-a1a3-32f8956ca752",
+          "last_seen": "2025-07-30T22:00:00.000Z",
+          "modified": "2025-07-31T07:28:43.240Z",
+          "objectLabel": [
+            "e1110284-92c3-588d-81fb-d4cc07412cf5"
+          ],
+          "objectMarking": [
+            "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+          ],
+          "objectOrganization": [
+            "identity--18fe5225-fee1-5627-ad3e-20c14435b024"
+          ],
+          "stix_id": "sighting--22799cbd-e9b5-5b7c-8733-5c2a5cc49ebe",
+          "toId": "identity--4f347cc9-4658-59ee-9707-134f434f9d1c",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_negative": true,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "sighting--22799cbd-e9b5-5b7c-8733-5c2a5cc49ebe",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

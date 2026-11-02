@@ -1,0 +1,234 @@
+[
+  {
+    "label": "MITRE: the citation date first",
+    "text": "Hosseini, A. (2017, July 18). Ten Process Injection Techniques: A Technical Survey Of Common And Trending Process Injection Techniques. Retrieved December 7, 2017."
+  },
+  {
+    "label": "MITRE: date first, before an ' of ' fragment",
+    "text": "Threat Intelligence and Research. (2015, March 30). VOLATILE CEDAR. Retrieved February 8, 2021."
+  },
+  {
+    "label": "MITRE: an ' of ' before any date ends the search",
+    "text": "A Survey of Things. Retrieved December 7, 2017."
+  },
+  {
+    "label": "MITRE: (n.d.) then the retrieval date",
+    "text": "Microsoft. (n.d.). About Window Classes. Retrieved December 16, 2017."
+  },
+  {
+    "label": "MITRE: ' on ' before the date ends the search",
+    "text": "Based on the report. Retrieved May 3, 2017."
+  },
+  {
+    "label": "MITRE: the 'mon' of 'Common' is a lone token",
+    "text": "Common Weakness. (2019, April 2). Retrieved April 10, 2019."
+  },
+  {
+    "label": "Retrieved date only",
+    "text": "Retrieved February 8, 2021."
+  },
+  {
+    "label": "source name without a date",
+    "text": "mitre-attack"
+  },
+  {
+    "label": "plain words",
+    "text": "phishing campaign"
+  },
+  {
+    "label": "empty text",
+    "text": ""
+  },
+  {
+    "label": "ISO date",
+    "text": "Published 2024-03-12"
+  },
+  {
+    "label": "ISO date time Z",
+    "text": "Retrieved 2019-05-03T10:20:30Z."
+  },
+  {
+    "label": "ISO with an offset, converted to UTC",
+    "text": "Seen 2019-05-03T01:20:30+05:30."
+  },
+  {
+    "label": "a number word after the date ends the search",
+    "text": "Seen 2019-05-03T01:20:30+05:30 first"
+  },
+  {
+    "label": "ISO with microseconds",
+    "text": "at 2019-05-03T10:20:30.123456Z"
+  },
+  {
+    "label": "ordinal day without year: 1970",
+    "text": "bug nino 20th January - Threat Intelligence Report. Retrieved 2025-01-20T15:03:57.000Z."
+  },
+  {
+    "label": "day month year",
+    "text": "Blog post of 15 January 2023"
+  },
+  {
+    "label": "a date within the last day is skipped, the next one kept",
+    "text": "Retrieved 2025-12-31T12:00:00Z and 2015-03-04"
+  },
+  {
+    "label": "a future date is skipped",
+    "text": "Planned 2027-05-01 after 2016-02-03"
+  },
+  {
+    "label": "year below 1000 skipped",
+    "text": "https://www.intel.com/content/www/us/en/security-center/advisory/intel-sa-00918.html"
+  },
+  {
+    "label": "URL with a long number ends the search",
+    "text": "https://github.com/201206030/novel-plus"
+  },
+  {
+    "label": "URL with a dated path, rejected by dateutil",
+    "text": "https://example.com/blog/2019/05/post"
+  },
+  {
+    "label": "URL with a date path then a range",
+    "text": "https://example.com/2019/05/07/a"
+  },
+  {
+    "label": "ambiguous slashes, month first",
+    "text": "03/04/05"
+  },
+  {
+    "label": "slashes with a year",
+    "text": "Posted 12/25/2018"
+  },
+  {
+    "label": "day above 12 first",
+    "text": "Posted 25/12/2018"
+  },
+  {
+    "label": "invalid day ends the search",
+    "text": "Feb 30, 2015 then March 3, 2015"
+  },
+  {
+    "label": "month 13",
+    "text": "2015-13-01"
+  },
+  {
+    "label": "range split on ' to '",
+    "text": "From March 3, 2015 to April 5, 2016"
+  },
+  {
+    "label": "range split on ' through '",
+    "text": "Active January 2014 through June 2015"
+  },
+  {
+    "label": "weekday and a day alone",
+    "text": "Monday, the 5th"
+  },
+  {
+    "label": "weekday and month",
+    "text": "Tuesday May 2015"
+  },
+  {
+    "label": "time only: today in 1970",
+    "text": "Seen at 10:30 am"
+  },
+  {
+    "label": "time and date",
+    "text": "10:30 PM EST, March 3, 2015"
+  },
+  {
+    "label": "UTC name",
+    "text": "March 3, 2015 10:30 UTC"
+  },
+  {
+    "label": "GMT+3 is three hours behind",
+    "text": "March 3, 2015 10:30 GMT+3"
+  },
+  {
+    "label": "numeric offset",
+    "text": "March 3, 2015 10:30 -0500"
+  },
+  {
+    "label": "unknown zone name ignored",
+    "text": "March 3, 2015 10:30 CEST"
+  },
+  {
+    "label": "lowercase utc is not a zone",
+    "text": "March 3, 2015 10:30 utc"
+  },
+  {
+    "label": "'by' is not a dateutil word",
+    "text": "Fixed by March 3, 2015"
+  },
+  {
+    "label": "'today' ends the search",
+    "text": "Updated today, 2015-03-04"
+  },
+  {
+    "label": "'may' as a verb",
+    "text": "This may be useful. Retrieved 2018-01-01"
+  },
+  {
+    "label": "Spanish date",
+    "text": "Publicado 5 de mayo de 2015"
+  },
+  {
+    "label": "abbreviated month with a dot and an ordinal",
+    "text": "Sept. 3rd, 2019"
+  },
+  {
+    "label": "month of year",
+    "text": "June of 2016"
+  },
+  {
+    "label": "undelimited stamp",
+    "text": "build 20171223 release"
+  },
+  {
+    "label": "undelimited stamp with time",
+    "text": "dump-20171223101112.bin"
+  },
+  {
+    "label": "year and month stamp",
+    "text": "report 201712"
+  },
+  {
+    "label": "two-digit year",
+    "text": "Mar 5, 15"
+  },
+  {
+    "label": "CVE identifier",
+    "text": "CVE-2021-44228"
+  },
+  {
+    "label": "version numbers read as a date",
+    "text": "Version 1.2.3 released 2020"
+  },
+  {
+    "label": "a year between words",
+    "text": "In 2016 the group"
+  },
+  {
+    "label": "year with month",
+    "text": "In May 2016 the group"
+  },
+  {
+    "label": "offset of 24 hours or more ends the search",
+    "text": "March 3, 2015 10:30 +2500"
+  },
+  {
+    "label": "repeated zone names after a time, rejected by dateutil",
+    "text": "11 AM ESTUTC on May 3, 2015"
+  },
+  {
+    "label": "weekday alone, a single token",
+    "text": "Monday"
+  },
+  {
+    "label": "Arabic-Indic digits",
+    "text": "Retrieved March 3, ٢٠١٥"
+  },
+  {
+    "label": "month and year only",
+    "text": "Kaspersky. (2015, February). Equation Group: Questions and Answers. Retrieved December 21, 2015."
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "InternalFileDelete",
+      "op": "mutation",
+      "root": "deleteImport",
+      "seq": 1,
+      "sub": null,
+      "variables": {
+        "fileName": "import/global/report.pdf"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "import/global/report.pdf",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

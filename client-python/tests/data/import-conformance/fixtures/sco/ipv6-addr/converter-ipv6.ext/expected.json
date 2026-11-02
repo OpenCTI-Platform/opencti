@@ -1,0 +1,50 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "IPv6Addr": {
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "noTriggerImport": null,
+          "value": "2001:0db8:85a3::8a2e:0370:7334"
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "ipv6-addr--20000000-0000-4000-8000-000000000030",
+        "type": "IPv6-Addr",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": 60
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "ipv6-addr--20000000-0000-4000-8000-000000000030",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

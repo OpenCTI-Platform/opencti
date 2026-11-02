@@ -1,0 +1,109 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "ryuk"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "ryuk",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "TaskAdd",
+      "op": "mutation",
+      "root": "taskAdd",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": "2025-06-26T17:55:28.987Z",
+          "customFieldValues": null,
+          "description": "Description",
+          "due_date": "2025-06-27T22:00:00.000Z",
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "name": "task STIX 2.0",
+          "noTriggerImport": null,
+          "objectAssignee": [
+            "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+          ],
+          "objectLabel": [
+            "8651b296-b51f-5b6a-b88d-56ac56428d65"
+          ],
+          "objectMarking": [
+            "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+          ],
+          "objectOrganization": [
+            "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
+          ],
+          "objectParticipant": [
+            "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+          ],
+          "objects": [
+            "case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763"
+          ],
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "task--8788511e-974c-571d-9a47-381299785038",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

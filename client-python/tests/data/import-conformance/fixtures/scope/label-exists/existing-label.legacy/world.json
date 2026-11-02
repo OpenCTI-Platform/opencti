@@ -1,0 +1,22 @@
+{
+  "reads": {
+    "labels": {
+      "edges": [
+        {
+          "node": {
+            "id": "existing-label-id",
+            "value": "shared-label",
+            "color": "#ffffff"
+          }
+        }
+      ],
+      "pageInfo": {
+        "startCursor": null,
+        "endCursor": null,
+        "hasNextPage": false,
+        "hasPreviousPage": false,
+        "globalCount": 1
+      }
+    }
+  }
+}

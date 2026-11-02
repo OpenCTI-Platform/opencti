@@ -1,0 +1,27 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "StixEdit",
+      "op": "mutation",
+      "root": "stixEdit",
+      "seq": 1,
+      "sub": "merge",
+      "variables": {
+        "id": "t",
+        "stixObjectsIds": {
+          "a": 1
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "malware--30000000-0000-4000-8000-000000000026",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

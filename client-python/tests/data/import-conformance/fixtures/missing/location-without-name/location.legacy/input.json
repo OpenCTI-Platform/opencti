@@ -1,0 +1,15 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000903",
+  "objects": [
+    {
+      "type": "location",
+      "id": "location--90000000-0000-4000-8000-000000000903",
+      "spec_version": "2.1",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z",
+      "latitude": 48.8,
+      "longitude": 2.3
+    }
+  ]
+}

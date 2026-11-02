@@ -1,0 +1,15 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000902",
+  "objects": [
+    {
+      "type": "indicator",
+      "id": "indicator--90000000-0000-4000-8000-000000000902",
+      "spec_version": "2.1",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z",
+      "pattern_type": "stix",
+      "valid_from": "2025-01-01T00:00:00.000Z"
+    }
+  ]
+}

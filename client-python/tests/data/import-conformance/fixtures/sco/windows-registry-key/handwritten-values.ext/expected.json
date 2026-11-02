@@ -1,0 +1,142 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "WindowsRegistryKey": {
+          "attribute_key": "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "modified_time": null,
+          "noTriggerImport": null,
+          "number_of_subkeys": null
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "windows-registry-key--30000000-0000-4000-8000-000000000101",
+        "type": "Windows-Registry-Key",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": 40
+      }
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "WindowsRegistryValueType": {
+          "data": "C:\\Users\\Public\\updater.exe",
+          "data_type": "REG_SZ",
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "name": "Updater",
+          "noTriggerImport": null
+        },
+        "createIndicator": false,
+        "externalReferences": null,
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": null,
+        "stix_id": null,
+        "type": "Windows-Registry-Value-Type",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAddRelation",
+      "op": "mutation",
+      "root": "stixCyberObservableEdit",
+      "seq": 4,
+      "sub": "relationAdd",
+      "variables": {
+        "id": "2f9bfd6e-458c-5692-82e1-5f1899ceb3a9",
+        "input": {
+          "relationship_type": "values",
+          "toId": "1ca6bad5-79d4-5c24-8c5d-88d22750a789"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "WindowsRegistryValueType": {
+          "data": "rundll32.exe loader.dll,Start",
+          "data_type": "REG_EXPAND_SZ",
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "name": "Loader",
+          "noTriggerImport": null
+        },
+        "createIndicator": false,
+        "externalReferences": null,
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": null,
+        "stix_id": null,
+        "type": "Windows-Registry-Value-Type",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAddRelation",
+      "op": "mutation",
+      "root": "stixCyberObservableEdit",
+      "seq": 6,
+      "sub": "relationAdd",
+      "variables": {
+        "id": "2f9bfd6e-458c-5692-82e1-5f1899ceb3a9",
+        "input": {
+          "relationship_type": "values",
+          "toId": "79f3f7c5-5afe-570a-bea7-fb3c3c2c6b61"
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "windows-registry-key--30000000-0000-4000-8000-000000000101",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

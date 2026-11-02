@@ -1,0 +1,24 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "ExternalReferenceEdit",
+      "op": "mutation",
+      "root": "externalReferenceEdit",
+      "seq": 1,
+      "sub": "delete",
+      "variables": {
+        "id": "external-reference--20000000-0000-4000-8000-000000000a14"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "external-reference--20000000-0000-4000-8000-000000000a14",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

@@ -1,0 +1,90 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "IPv4Addr": {
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "noTriggerImport": null,
+          "value": "198.51.100.10"
+        },
+        "createIndicator": false,
+        "externalReferences": null,
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": null,
+        "type": "IPv4-Addr",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    },
+    {
+      "files": [],
+      "name": "ObservedDataAdd",
+      "op": "mutation",
+      "root": "observedDataAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": null,
+          "created": null,
+          "customFieldValues": null,
+          "embedded": null,
+          "externalReferences": [],
+          "files": null,
+          "filesMarkings": null,
+          "first_observed": "2025-01-01T00:00:00.000Z",
+          "lang": null,
+          "last_observed": "2025-01-02T00:00:00.000Z",
+          "max_distinct_count": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "number_observed": 3,
+          "number_seen": null,
+          "objectLabel": [],
+          "objectMarking": null,
+          "objectOrganization": null,
+          "objects": [
+            "d3be856a-9976-540f-9dcd-6c64d9c8cb0b"
+          ],
+          "revoked": null,
+          "stix_id": "observed-data--30000000-0000-4000-8000-000000000015",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "observed-data--30000000-0000-4000-8000-000000000015",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

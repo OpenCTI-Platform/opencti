@@ -1,0 +1,29 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "hostname--20000000-0000-4000-8000-000000000040",
+      "spec_version": "2.1",
+      "type": "hostname",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Hostname",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "new-sco"
+        }
+      },
+      "defanged": false,
+      "value": "c2.evil.com",
+      "labels": [
+        "malware"
+      ],
+      "description": "C2 hostname",
+      "score": 85,
+      "created_by_ref": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb"
+    }
+  ]
+}

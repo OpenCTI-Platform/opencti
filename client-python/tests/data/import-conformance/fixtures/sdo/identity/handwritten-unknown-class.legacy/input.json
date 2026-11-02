@@ -1,0 +1,15 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000122",
+  "objects": [
+    {
+      "type": "identity",
+      "spec_version": "2.1",
+      "id": "identity--30000000-0000-4000-8000-000000000014",
+      "name": "Unknown class",
+      "identity_class": "group",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z"
+    }
+  ]
+}

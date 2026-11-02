@@ -1,0 +1,62 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "Artifact": {
+          "decryption_key": null,
+          "embedded": null,
+          "encryption_algorithm": null,
+          "files": null,
+          "filesMarkings": null,
+          "hashes": [
+            {
+              "algorithm": "SHA-256",
+              "hash": "abcdef1234567890"
+            }
+          ],
+          "mime_type": "application/pdf",
+          "noTriggerImport": null,
+          "url": null,
+          "x_opencti_additional_names": [
+            "report.pdf"
+          ]
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "artifact--20000000-0000-4000-8000-000000000038",
+        "type": "Artifact",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "artifact--20000000-0000-4000-8000-000000000038",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

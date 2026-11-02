@@ -1,0 +1,26 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "text--20000000-0000-4000-8000-000000000054",
+      "spec_version": "2.1",
+      "type": "text",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Text",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "new-sco"
+        }
+      },
+      "defanged": false,
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "value": "v=spf1 redirect=spf.hostens.com"
+    }
+  ]
+}

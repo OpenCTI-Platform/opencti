@@ -1,0 +1,162 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "campaign"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "campaign",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "spear phishing",
+          "embedded": null,
+          "external_id": "CAPEC-163",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "capec",
+          "stix_id": null,
+          "update": false,
+          "url": null,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ObservedDataAdd",
+      "op": "mutation",
+      "root": "observedDataAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": 94,
+          "created": "2025-06-26T15:23:30.704Z",
+          "createdBy": "identity--072d8aaa-93a9-5ded-89e4-1ad87d8b91c6",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "9653626d-54c7-433b-beca-ee1dee226125"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "Observed-Data"
+            },
+            {
+              "field_name": "x_opencti_files",
+              "value": [
+                {
+                  "mime_type": "application/json",
+                  "name": "ipv4_example.json",
+                  "object_marking_refs": [
+                    "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                  ],
+                  "uri": "/storage/get/import/Observed-Data/9653626d-54c7-433b-beca-ee1dee226125/ipv4_example.json",
+                  "version": "2025-06-26T15:23:30.705Z"
+                }
+              ]
+            }
+          ],
+          "embedded": null,
+          "externalReferences": [
+            "709d0a80-a6b6-5597-9ae8-7cd4656149d5"
+          ],
+          "files": null,
+          "filesMarkings": null,
+          "first_observed": "2025-06-18T22:00:00.000Z",
+          "lang": null,
+          "last_observed": "2025-06-27T22:00:00.000Z",
+          "max_distinct_count": null,
+          "modified": "2025-06-26T15:29:37.100Z",
+          "noTriggerImport": null,
+          "number_observed": 1,
+          "number_seen": null,
+          "objectLabel": [
+            "c9400ec7-1fe7-5f20-9f7c-2c1403520ee4"
+          ],
+          "objectMarking": [
+            "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+          ],
+          "objectOrganization": null,
+          "objects": [
+            "campaign--737733a0-2cb5-5981-9814-53c0e3fbd9e9",
+            "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a"
+          ],
+          "revoked": false,
+          "stix_id": "observed-data--a9ed3299-df09-5bc6-bd5f-0831d75114ae",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "observed-data--a9ed3299-df09-5bc6-bd5f-0831d75114ae",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

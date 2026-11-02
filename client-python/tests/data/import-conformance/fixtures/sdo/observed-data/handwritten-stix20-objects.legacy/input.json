@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000123",
+  "objects": [
+    {
+      "type": "observed-data",
+      "spec_version": "2.1",
+      "id": "observed-data--30000000-0000-4000-8000-000000000015",
+      "first_observed": "2025-01-01T00:00:00.000Z",
+      "last_observed": "2025-01-02T00:00:00.000Z",
+      "number_observed": 3,
+      "objects": {
+        "0": {
+          "type": "ipv4-addr",
+          "value": "198.51.100.10"
+        }
+      }
+    }
+  ]
+}

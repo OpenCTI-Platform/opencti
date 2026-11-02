@@ -1,0 +1,24 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "StixCyberObservableEdit",
+      "op": "mutation",
+      "root": "stixCyberObservableEdit",
+      "seq": 1,
+      "sub": "delete",
+      "variables": {
+        "id": "ipv4-addr--20000000-0000-4000-8000-000000000020"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "ipv4-addr--20000000-0000-4000-8000-000000000020",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

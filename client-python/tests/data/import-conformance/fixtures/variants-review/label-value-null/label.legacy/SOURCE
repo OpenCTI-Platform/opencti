@@ -1,0 +1,1 @@
+E: hand-written, a label whose value is null (pycti label.create logs the missing value, no call)

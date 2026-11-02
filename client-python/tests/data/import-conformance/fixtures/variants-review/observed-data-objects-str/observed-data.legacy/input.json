@@ -1,0 +1,19 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "type": "observed-data",
+      "spec_version": "2.0",
+      "id": "observed-data--30000000-0000-4000-8000-000000000025",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z",
+      "first_observed": "2025-01-01T00:00:00.000Z",
+      "last_observed": "2025-01-01T00:00:00.000Z",
+      "number_observed": 1,
+      "objects": {
+        "0": "x"
+      }
+    }
+  ]
+}

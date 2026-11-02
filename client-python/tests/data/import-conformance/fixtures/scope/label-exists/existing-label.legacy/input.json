@@ -1,0 +1,22 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000126",
+  "objects": [
+    {
+      "type": "malware",
+      "spec_version": "2.1",
+      "id": "malware--30000000-0000-4000-8000-000000000022",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z",
+      "name": "Variant malware 22",
+      "is_family": true,
+      "labels": [
+        "shared-label"
+      ],
+      "created_by_ref": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
+    }
+  ]
+}

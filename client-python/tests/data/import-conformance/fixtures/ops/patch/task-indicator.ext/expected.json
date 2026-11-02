@@ -1,0 +1,33 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "IndicatorFieldPatch",
+      "op": "mutation",
+      "root": "indicatorFieldPatch",
+      "seq": 1,
+      "sub": null,
+      "variables": {
+        "id": "10000000-0000-4000-8000-000000000a15",
+        "input": [
+          {
+            "key": "description",
+            "operation": "replace",
+            "value": [
+              "Updated description"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "indicator--20000000-0000-4000-8000-000000000a15",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

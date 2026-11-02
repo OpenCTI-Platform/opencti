@@ -1,0 +1,182 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "malware-analysis"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "grouping_context_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "malware-analysis",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "ryuk"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "ryuk",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 6,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "spear phishing",
+          "embedded": null,
+          "external_id": "CAPEC-163",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "capec",
+          "stix_id": null,
+          "update": false,
+          "url": null,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "GroupingAdd",
+      "op": "mutation",
+      "root": "groupingAdd",
+      "seq": 7,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": 100,
+          "content": "<p>some content : Paradise Ransomware</p>",
+          "context": "malware-analysis",
+          "created": "2025-06-26T14:59:43.780Z",
+          "createdBy": "identity--072d8aaa-93a9-5ded-89e4-1ad87d8b91c6",
+          "customFieldValues": null,
+          "description": "description",
+          "embedded": null,
+          "externalReferences": [
+            "709d0a80-a6b6-5597-9ae8-7cd4656149d5"
+          ],
+          "files": null,
+          "filesMarkings": null,
+          "lang": null,
+          "modified": "2025-06-26T15:14:12.529Z",
+          "name": "grouping STIX 2.0",
+          "noTriggerImport": null,
+          "objectLabel": [
+            "8651b296-b51f-5b6a-b88d-56ac56428d65"
+          ],
+          "objectMarking": [
+            "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+          ],
+          "objectOrganization": null,
+          "objects": [
+            "malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714",
+            "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a"
+          ],
+          "revoked": false,
+          "stix_id": "grouping--3f78a876-9216-5111-92d8-6871301f6e9e",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_aliases": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "grouping--3f78a876-9216-5111-92d8-6871301f6e9e",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

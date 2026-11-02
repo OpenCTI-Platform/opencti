@@ -1,0 +1,24 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000003",
+  "objects": [
+    {
+      "type": "ipv4-addr",
+      "spec_version": "2.1",
+      "id": "ipv4-addr--5fe1c920-25c1-5a3b-9022-73f905ca383e",
+      "value": "94.26.83.138",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "created_by_ref": "identity--7394aa4a-05b5-5d92-9876-2e077b642ef8",
+      "x_opencti_description": "Traffic seen on port 56003",
+      "x_opencti_labels": [
+        "botnet_cc",
+        "PureHVNC",
+        "PureRAT",
+        "RAT"
+      ],
+      "x_opencti_score": 50
+    }
+  ]
+}

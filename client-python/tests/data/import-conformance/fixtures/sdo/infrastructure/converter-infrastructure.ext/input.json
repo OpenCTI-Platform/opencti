@@ -1,0 +1,52 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "infrastructure--ae4b2f9c-3e7d-5a1f-8b9c-2d4e6f8a0b1c",
+      "spec_version": "2.1",
+      "type": "infrastructure",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Infrastructure",
+          "is_inferred": false
+        }
+      },
+      "created": "2025-08-01T14:00:00.000Z",
+      "modified": "2025-08-01T16:00:00.000Z",
+      "revoked": false,
+      "confidence": 90,
+      "labels": [
+        "ryuk"
+      ],
+      "object_marking_refs": [
+        "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+      ],
+      "created_by_ref": "identity--18fe5225-fee1-5627-ad3e-20c14435b024",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "description": "spear phishing",
+          "external_id": "CAPEC-163"
+        }
+      ],
+      "name": "Infrastructure Stix 2.0",
+      "description": "C2 server infrastructure",
+      "infrastructure_types": [
+        "command-and-control"
+      ],
+      "aliases": [
+        "C2-Infra-Alpha"
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-pre-attack",
+          "phase_name": "launch"
+        }
+      ],
+      "first_seen": "2025-06-01T00:00:00.000Z",
+      "last_seen": "2025-08-01T00:00:00.000Z"
+    }
+  ]
+}

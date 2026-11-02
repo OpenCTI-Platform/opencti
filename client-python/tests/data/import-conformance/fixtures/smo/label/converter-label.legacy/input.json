@@ -1,0 +1,15 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "label--0008ca88-56ff-5e8e-a0a8-1734b84cdd01",
+      "type": "label",
+      "spec_version": "2.0",
+      "x_opencti_id": "ac88f87e-ce89-46aa-a68e-fc863117d1cd",
+      "x_opencti_type": "Label",
+      "value": "small",
+      "color": "#3fb64a"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "task--8788511e-974c-571d-9a47-381299785038",
+      "spec_version": "2.1",
+      "type": "task",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sdo",
+          "type": "Task",
+          "files": [
+            {
+              "name": "ipv4_example.json",
+              "uri": "/storage/get/import/Task/d4e02a21-0dda-4295-be80-3c81503b69c8/ipv4_example.json",
+              "version": "2025-07-02T15:47:23.032Z",
+              "mime_type": "application/json",
+              "object_marking_refs": []
+            }
+          ],
+          "is_inferred": false,
+          "granted_refs": [
+            "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
+          ],
+          "granted_refs_ids": [
+            null
+          ],
+          "assignee_ids": [
+            "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+          ],
+          "participant_ids": [
+            "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+          ]
+        }
+      },
+      "created": "2025-06-26T17:55:28.987Z",
+      "modified": "2025-07-02T15:46:34.373Z",
+      "revoked": false,
+      "confidence": 100,
+      "labels": [
+        "ryuk"
+      ],
+      "object_marking_refs": [
+        "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+      ],
+      "name": "task STIX 2.0",
+      "description": "Description",
+      "due_date": "2025-06-27T22:00:00.000Z",
+      "object_refs": [
+        "case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763"
+      ]
+    }
+  ]
+}

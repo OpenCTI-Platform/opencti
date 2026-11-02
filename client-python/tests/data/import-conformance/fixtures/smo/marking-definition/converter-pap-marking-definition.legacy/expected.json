@@ -1,0 +1,43 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "MarkingDefinitionAdd",
+      "op": "mutation",
+      "root": "markingDefinitionAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": "2026-03-12T16:20:23.380Z",
+          "definition": "pap:green",
+          "definition_type": "pap",
+          "modified": null,
+          "stix_id": "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1",
+          "update": false,
+          "x_opencti_color": "#2e7d32",
+          "x_opencti_order": 2,
+          "x_opencti_stix_ids": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

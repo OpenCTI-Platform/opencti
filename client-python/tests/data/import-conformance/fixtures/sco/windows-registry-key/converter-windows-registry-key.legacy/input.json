@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "windows-registry-key--20000000-0000-4000-8000-000000000051",
+      "type": "windows-registry-key",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000051",
+      "x_opencti_type": "Windows-Registry-Key",
+      "defanged": false,
+      "x_opencti_score": 40,
+      "x_opencti_description": "COM hijacking",
+      "x_opencti_labels": [
+        "apt"
+      ],
+      "key": "HKCU\\Software\\Classes\\CLSID\\{84DA0A92}"
+    }
+  ]
+}

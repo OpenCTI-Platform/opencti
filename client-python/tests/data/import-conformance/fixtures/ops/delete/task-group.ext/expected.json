@@ -1,0 +1,24 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "GroupDelete",
+      "op": "mutation",
+      "root": "groupEdit",
+      "seq": 1,
+      "sub": "delete",
+      "variables": {
+        "id": "group--20000000-0000-4000-8000-000000000a09"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "group--20000000-0000-4000-8000-000000000a09",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

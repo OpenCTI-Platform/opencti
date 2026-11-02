@@ -1,0 +1,52 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "Text": {
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "noTriggerImport": null,
+          "value": "v=spf1 redirect=spf.hostens.com"
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": [
+          "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+        ],
+        "objectOrganization": [],
+        "stix_id": "text--20000000-0000-4000-8000-000000000054",
+        "type": "Text",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "text--20000000-0000-4000-8000-000000000054",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

@@ -1,0 +1,12 @@
+{
+  "bundle_error": null,
+  "calls": [],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "label--90000000-0000-4000-8000-000000000911",
+      "outcome": "KeyError"
+    }
+  ],
+  "logged_errors": []
+}

@@ -1,0 +1,261 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "A - Completely reliable"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "reliability_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "A - Completely reliable",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "internal-report"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "report_types_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "internal-report",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 6,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "report"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 7,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "report",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 8,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "spear phishing",
+          "embedded": null,
+          "external_id": "CAPEC-163",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "capec",
+          "stix_id": null,
+          "update": false,
+          "url": null,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ReportAdd",
+      "op": "mutation",
+      "root": "reportAdd",
+      "seq": 9,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": 100,
+          "content": null,
+          "created": "2025-06-26T14:32:10.000Z",
+          "createdBy": "identity--072d8aaa-93a9-5ded-89e4-1ad87d8b91c6",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "0c38a734-3150-468f-bf38-8dc1f937a1b3"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "Report"
+            },
+            {
+              "field_name": "x_opencti_workflow_id",
+              "value": "b29268cc-bb75-4f28-96c9-4cb48e549dff"
+            },
+            {
+              "field_name": "x_opencti_files",
+              "value": [
+                {
+                  "mime_type": "application/json",
+                  "name": "ipv4_example.json",
+                  "object_marking_refs": [
+                    "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                  ],
+                  "uri": "/storage/get/import/Report/0c38a734-3150-468f-bf38-8dc1f937a1b3/ipv4_example.json",
+                  "version": "2025-06-26T14:33:39.655Z"
+                }
+              ]
+            },
+            {
+              "field_name": "x_opencti_reliability",
+              "value": "A - Completely reliable"
+            }
+          ],
+          "description": "description",
+          "embedded": null,
+          "externalReferences": [
+            "709d0a80-a6b6-5597-9ae8-7cd4656149d5"
+          ],
+          "files": null,
+          "filesMarkings": null,
+          "lang": null,
+          "modified": "2025-06-26T14:36:51.467Z",
+          "name": "Report STIX 2.0",
+          "noTriggerImport": null,
+          "objectAssignee": null,
+          "objectLabel": [
+            "570ef527-534d-5fc7-b491-d80bae450801"
+          ],
+          "objectMarking": [
+            "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+          ],
+          "objectOrganization": null,
+          "objectParticipant": null,
+          "objects": [
+            "threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd",
+            "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a"
+          ],
+          "published": "2025-06-26T14:32:10.000Z",
+          "report_types": [
+            "internal-report"
+          ],
+          "revoked": false,
+          "stix_id": "report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_reliability": "A - Completely reliable",
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": "b29268cc-bb75-4f28-96c9-4cb48e549dff"
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

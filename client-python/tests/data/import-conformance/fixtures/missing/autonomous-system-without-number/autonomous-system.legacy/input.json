@@ -1,0 +1,12 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000906",
+  "objects": [
+    {
+      "type": "autonomous-system",
+      "spec_version": "2.1",
+      "id": "autonomous-system--90000000-0000-4000-8000-000000000906",
+      "name": "AS without number"
+    }
+  ]
+}

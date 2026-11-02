@@ -1,0 +1,23 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+      "type": "relationship",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "id": "b4ee072e-1b2a-4e8b-bfed-fb34f3011de2",
+          "type": "uses",
+          "opencti_operation": "unshare",
+          "sharing_organization_ids": [
+            "10000000-0000-4000-8000-000000000b01"
+          ],
+          "sharing_direct_container": false
+        }
+      },
+      "source_ref": "f9a9c290-1231-4d34-b9c7-3e0b3bd72a1f",
+      "target_ref": "c834b9b5-85e3-4e3f-8c9d-1d2a4fb13245"
+    }
+  ]
+}

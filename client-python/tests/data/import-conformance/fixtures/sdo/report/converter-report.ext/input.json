@@ -1,0 +1,61 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f",
+      "spec_version": "2.1",
+      "type": "report",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Report",
+          "files": [
+            {
+              "name": "ipv4_example.json",
+              "uri": "/storage/get/import/Report/0c38a734-3150-468f-bf38-8dc1f937a1b3/ipv4_example.json",
+              "version": "2025-06-26T14:33:39.655Z",
+              "mime_type": "application/json",
+              "object_marking_refs": [
+                "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+              ]
+            }
+          ],
+          "is_inferred": false,
+          "workflow_id": "b29268cc-bb75-4f28-96c9-4cb48e549dff",
+          "content": "<p>some content for my report about &nbsp;Disco Team Threat Actor Group</p>",
+          "content_mapping": "eyJkaXNjbyB0ZWFtIHRocmVhdCBhY3RvciBncm91cCI6InRocmVhdC1hY2N0b3ItLWZkNmIwZTZmLTk2ZTAtNTY4ZC1iYTI0LThhMTQwZDA0MjhjZCJ9",
+          "reliability": "A - Completely reliable"
+        }
+      },
+      "created": "2025-06-26T14:32:10.000Z",
+      "modified": "2025-06-26T14:36:51.467Z",
+      "revoked": false,
+      "confidence": 100,
+      "labels": [
+        "report"
+      ],
+      "object_marking_refs": [
+        "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+      ],
+      "created_by_ref": "identity--072d8aaa-93a9-5ded-89e4-1ad87d8b91c6",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "description": "spear phishing",
+          "external_id": "CAPEC-163"
+        }
+      ],
+      "name": "Report STIX 2.0",
+      "description": "description",
+      "report_types": [
+        "internal-report"
+      ],
+      "published": "2025-06-26T14:32:10.000Z",
+      "object_refs": [
+        "threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd",
+        "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a"
+      ]
+    }
+  ]
+}

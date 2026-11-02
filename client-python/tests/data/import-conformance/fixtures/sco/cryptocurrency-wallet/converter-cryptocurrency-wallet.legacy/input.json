@@ -1,0 +1,17 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "cryptocurrency-wallet--20000000-0000-4000-8000-000000000041",
+      "type": "cryptocurrency-wallet",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000041",
+      "x_opencti_type": "Cryptocurrency-Wallet",
+      "defanged": false,
+      "x_opencti_score": 90,
+      "value": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
+      "score": 90
+    }
+  ]
+}

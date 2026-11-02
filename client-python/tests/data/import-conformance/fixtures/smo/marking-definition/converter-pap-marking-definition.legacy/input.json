@@ -1,0 +1,21 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1",
+      "type": "marking-definition",
+      "spec_version": "2.0",
+      "x_opencti_id": "d69d35e4-d4dc-4a6a-a7a9-580c362b71b9",
+      "x_opencti_type": "Marking-Definition",
+      "created": "2026-03-12T16:20:23.380Z",
+      "name": "PAP:GREEN",
+      "definition_type": "pap",
+      "definition": {
+        "pap": "pap:green"
+      },
+      "x_opencti_order": 2,
+      "x_opencti_color": "#2e7d32"
+    }
+  ]
+}

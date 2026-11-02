@@ -1,0 +1,17 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "deleteoperation--20000000-0000-4000-8000-000000000a03",
+      "type": "deleteoperation",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "id": "10000000-0000-4000-8000-000000000a03",
+          "type": "DeleteOperation",
+          "opencti_operation": "restore"
+        }
+      }
+    }
+  ]
+}

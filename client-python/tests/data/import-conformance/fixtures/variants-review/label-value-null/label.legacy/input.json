@@ -1,0 +1,12 @@
+{
+  "type": "bundle",
+  "id": "bundle--b0000000-0000-4000-8000-000000000009",
+  "objects": [
+    {
+      "type": "label",
+      "id": "label--b0000000-0000-4000-8000-000000000001",
+      "value": null,
+      "color": "#ffffff"
+    }
+  ]
+}

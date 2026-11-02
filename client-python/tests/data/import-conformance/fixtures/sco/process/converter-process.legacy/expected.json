@@ -1,0 +1,55 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "Process": {
+          "command_line": "cmd.exe /c whoami",
+          "created_time": "2026-01-01T00:00:00.000Z",
+          "cwd": "C:\\Windows\\System32",
+          "embedded": null,
+          "environment_variables": null,
+          "files": null,
+          "filesMarkings": null,
+          "is_hidden": false,
+          "noTriggerImport": null,
+          "pid": 1234
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "process--20000000-0000-4000-8000-000000000037",
+        "type": "Process",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "process--20000000-0000-4000-8000-000000000037",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

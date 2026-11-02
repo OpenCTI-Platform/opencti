@@ -1,0 +1,24 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "StixSightingRelationshipEditDraftRemove",
+      "op": "mutation",
+      "root": "stixSightingRelationshipEdit",
+      "seq": 1,
+      "sub": "removeFromDraft",
+      "variables": {
+        "id": "sighting--22799cbd-e9b5-5b7c-8733-5c2a5cc49ebe"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "sighting--22799cbd-e9b5-5b7c-8733-5c2a5cc49ebe",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

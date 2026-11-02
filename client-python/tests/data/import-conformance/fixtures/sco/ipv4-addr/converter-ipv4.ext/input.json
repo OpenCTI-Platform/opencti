@@ -1,0 +1,32 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "ipv4-addr--20000000-0000-4000-8000-000000000020",
+      "spec_version": "2.1",
+      "type": "ipv4-addr",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "IPv4-Addr",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "labels": [
+            "stix 2.0"
+          ],
+          "description": "Malicious IP",
+          "score": 70,
+          "created_by_ref": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb"
+        }
+      },
+      "defanged": false,
+      "object_marking_refs": [
+        "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+      ],
+      "value": "198.51.100.1"
+    }
+  ]
+}

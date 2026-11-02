@@ -1,0 +1,24 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "WorkspaceDelete",
+      "op": "mutation",
+      "root": "workspaceDelete",
+      "seq": 1,
+      "sub": null,
+      "variables": {
+        "id": "workspace--20000000-0000-4000-8000-000000000a06"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "workspace--20000000-0000-4000-8000-000000000a06",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

@@ -1,0 +1,33 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "StixSightingRelationshipEdit",
+      "op": "mutation",
+      "root": "stixSightingRelationshipEdit",
+      "seq": 1,
+      "sub": "fieldPatch",
+      "variables": {
+        "id": "11cad6c5-98f1-4491-899a-15b7789e1492",
+        "input": [
+          {
+            "key": "description",
+            "operation": "replace",
+            "value": [
+              "Updated description"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "sighting--22799cbd-e9b5-5b7c-8733-5c2a5cc49ebe",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

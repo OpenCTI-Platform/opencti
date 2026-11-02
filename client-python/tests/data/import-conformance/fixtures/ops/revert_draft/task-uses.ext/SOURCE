@@ -1,0 +1,1 @@
+C: buildBundleElement(uses, REMOVE_FROM_DRAFT), opencti-graphql src/manager/taskManager.js

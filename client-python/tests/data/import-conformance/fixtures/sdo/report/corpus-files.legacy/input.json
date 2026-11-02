@@ -1,0 +1,32 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000104",
+  "objects": [
+    {
+      "type": "report",
+      "spec_version": "2.1",
+      "id": "report--e83715aa-789c-5705-8b03-28c232a58f44",
+      "created": "2026-07-21T09:36:45.849885Z",
+      "modified": "2026-07-21T09:36:45.849885Z",
+      "name": "DarkComet Creator",
+      "published": "2012-07-11T00:00:00Z",
+      "object_refs": [
+        "identity--b7403ffd-634d-52ec-964d-bb755241c27c"
+      ],
+      "external_references": [
+        {
+          "source_name": "Cyber Campaign Collections",
+          "url": "https://github.com/CyberMonitor/APT_CyberCriminal_Campagin_Collections/tree/master/2012/2012.07.11.DarkComet_Creator"
+        }
+      ],
+      "x_opencti_files": [
+        {
+          "name": "dark-comet-syrian-spy-tool.pdf",
+          "data": "JVBERi0xLjQgY29uZm9ybWFuY2UgZml4dHVyZQo=",
+          "mime_type": "application/pdf",
+          "no_trigger_import": true
+        }
+      ]
+    }
+  ]
+}

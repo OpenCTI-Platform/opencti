@@ -1,0 +1,18 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "autonomous-system--20000000-0000-4000-8000-000000000025",
+      "type": "autonomous-system",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000025",
+      "x_opencti_type": "Autonomous-System",
+      "defanged": false,
+      "x_opencti_score": 30,
+      "number": 15169,
+      "name": "GOOGLE",
+      "rir": "ARIN"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "user-account--20000000-0000-4000-8000-000000000035",
+      "spec_version": "2.1",
+      "type": "user-account",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "User-Account",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension"
+        }
+      },
+      "defanged": false,
+      "user_id": "1001",
+      "account_login": "admin",
+      "account_type": "unix",
+      "display_name": "Root Admin",
+      "is_service_account": false,
+      "is_privileged": true,
+      "is_disabled": false,
+      "account_created": "2025-01-01T00:00:00.000Z"
+    }
+  ]
+}

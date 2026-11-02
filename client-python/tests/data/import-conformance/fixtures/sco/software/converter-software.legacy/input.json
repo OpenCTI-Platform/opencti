@@ -1,0 +1,22 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "software--20000000-0000-4000-8000-000000000034",
+      "type": "software",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000034",
+      "x_opencti_type": "Software",
+      "defanged": false,
+      "name": "Cobalt Strike",
+      "cpe": "cpe:2.3:a:cobaltstrike:beacon:4.0:*:*:*:*:*:*:*",
+      "languages": [
+        "en"
+      ],
+      "vendor": "HelpSystems",
+      "version": "4.0",
+      "x_opencti_product": "Cobalt Strike Beacon"
+    }
+  ]
+}

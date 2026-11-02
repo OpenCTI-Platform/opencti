@@ -1,0 +1,24 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "PlaybookDelete",
+      "op": "mutation",
+      "root": "playbookDelete",
+      "seq": 1,
+      "sub": null,
+      "variables": {
+        "id": "playbook--20000000-0000-4000-8000-000000000a08"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "playbook--20000000-0000-4000-8000-000000000a08",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

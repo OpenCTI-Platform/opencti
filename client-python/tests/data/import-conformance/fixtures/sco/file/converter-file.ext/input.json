@@ -1,0 +1,36 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "file--20000000-0000-4000-8000-000000000024",
+      "spec_version": "2.1",
+      "type": "file",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "StixFile",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "score": 90,
+          "additional_names": [
+            "trojan.exe"
+          ]
+        }
+      },
+      "defanged": false,
+      "object_marking_refs": [
+        "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+      ],
+      "hashes": {
+        "MD5": "d41d8cd98f00b204e9800998ecf8427e",
+        "SHA-256": "e3b0c44298fc1c149afbf4c8996fb924"
+      },
+      "size": 1024,
+      "name": "malware.exe",
+      "mime_type": "application/x-executable"
+    }
+  ]
+}

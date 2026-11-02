@@ -1,0 +1,49 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "grouping--3f78a876-9216-5111-92d8-6871301f6e9e",
+      "type": "grouping",
+      "spec_version": "2.0",
+      "x_opencti_id": "2076a71c-a480-424f-8058-cb5c798e4360",
+      "x_opencti_type": "Grouping",
+      "x_opencti_files": [
+        {
+          "name": "file_example (2).json",
+          "uri": "/storage/get/import/Grouping/2076a71c-a480-424f-8058-cb5c798e4360/file_example (2).json",
+          "mime_type": "application/json",
+          "version": "2025-06-26T14:59:43.780Z",
+          "object_marking_refs": [
+            "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+          ]
+        }
+      ],
+      "created": "2025-06-26T14:59:43.780Z",
+      "modified": "2025-06-26T15:14:12.529Z",
+      "revoked": false,
+      "confidence": 100,
+      "labels": [
+        "ryuk"
+      ],
+      "object_marking_refs": [
+        "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+      ],
+      "created_by_ref": "identity--072d8aaa-93a9-5ded-89e4-1ad87d8b91c6",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "description": "spear phishing",
+          "external_id": "CAPEC-163"
+        }
+      ],
+      "name": "grouping STIX 2.0",
+      "description": "description",
+      "context": "malware-analysis",
+      "object_refs": [
+        "malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714",
+        "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a"
+      ]
+    }
+  ]
+}

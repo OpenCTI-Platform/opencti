@@ -1,0 +1,61 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "OrganizationAdd",
+      "op": "mutation",
+      "root": "organizationAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": null,
+          "contact_information": null,
+          "created": "2025-01-01T00:00:00.000Z",
+          "customFieldValues": null,
+          "description": null,
+          "embedded": null,
+          "externalReferences": [],
+          "files": null,
+          "filesMarkings": null,
+          "lang": null,
+          "modified": "2025-01-01T00:00:00.000Z",
+          "name": "Review identity",
+          "noTriggerImport": null,
+          "objectLabel": [],
+          "objectMarking": null,
+          "revoked": null,
+          "roles": null,
+          "stix_id": "identity--b0000000-0000-4000-8000-000000000001",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_aliases": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_organization_type": null,
+          "x_opencti_reliability": null,
+          "x_opencti_score": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "identity--b0000000-0000-4000-8000-000000000001",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

@@ -1,0 +1,52 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "BankAccount": {
+          "account_number": "0532013000",
+          "bic": "COBADEFFXXX",
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "iban": "DE89370400440532013000",
+          "noTriggerImport": null
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "bank-account--20000000-0000-4000-8000-000000000042",
+        "type": "Bank-Account",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "bank-account--20000000-0000-4000-8000-000000000042",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

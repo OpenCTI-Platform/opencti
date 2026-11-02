@@ -1,0 +1,103 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "EmailMessage": {
+          "attribute_date": null,
+          "body": null,
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "is_multipart": false,
+          "message_id": null,
+          "noTriggerImport": null,
+          "received_lines": null,
+          "subject": "Invoice"
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "email-message--30000000-0000-4000-8000-000000000006",
+        "type": "Email-Message",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    },
+    {
+      "files": [],
+      "name": "StixRefRelationshipAdd",
+      "op": "mutation",
+      "root": "stixRefRelationshipAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "createdBy": null,
+          "fromId": "b8359dd5-c1f8-512e-99f9-98891380fea9",
+          "modified": null,
+          "objectMarking": null,
+          "relationship_type": "from",
+          "start_time": null,
+          "stix_id": null,
+          "stop_time": null,
+          "toId": "email-addr--30000000-0000-4000-8000-000000000007",
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "StixRefRelationshipAdd",
+      "op": "mutation",
+      "root": "stixRefRelationshipAdd",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "createdBy": null,
+          "fromId": "b8359dd5-c1f8-512e-99f9-98891380fea9",
+          "modified": null,
+          "objectMarking": null,
+          "relationship_type": "to",
+          "start_time": null,
+          "stix_id": null,
+          "stop_time": null,
+          "toId": "email-addr--30000000-0000-4000-8000-000000000008",
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "email-message--30000000-0000-4000-8000-000000000006",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

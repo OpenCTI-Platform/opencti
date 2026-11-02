@@ -1,0 +1,45 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "external-reference--20000000-0000-4000-8000-000000000a14",
+      "type": "external-reference",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "id": "10000000-0000-4000-8000-000000000a14",
+          "type": "External-Reference",
+          "opencti_operation": "patch",
+          "opencti_field_patch": [
+            {
+              "key": "description",
+              "value": [
+                "Updated description"
+              ],
+              "operation": "replace"
+            },
+            {
+              "key": "x_opencti_files",
+              "value": [
+                {
+                  "name": "evidence.txt",
+                  "data": "Y29uZm9ybWFuY2UgZXZpZGVuY2U=",
+                  "mime_type": "text/plain",
+                  "object_marking_refs": [
+                    "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+                  ],
+                  "no_trigger_import": true
+                },
+                {
+                  "name": "no-data.txt",
+                  "mime_type": "text/plain"
+                }
+              ],
+              "operation": "add"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

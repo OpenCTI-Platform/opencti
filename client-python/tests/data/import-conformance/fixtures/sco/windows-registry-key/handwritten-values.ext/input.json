@@ -1,0 +1,35 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "windows-registry-key--30000000-0000-4000-8000-000000000101",
+      "spec_version": "2.1",
+      "type": "windows-registry-key",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Windows-Registry-Key",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "score": 40
+        }
+      },
+      "key": "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+      "values": [
+        {
+          "name": "Updater",
+          "data": "C:\\Users\\Public\\updater.exe",
+          "data_type": "REG_SZ"
+        },
+        {
+          "name": "Loader",
+          "data": "rundll32.exe loader.dll,Start",
+          "data_type": "REG_EXPAND_SZ"
+        }
+      ]
+    }
+  ]
+}

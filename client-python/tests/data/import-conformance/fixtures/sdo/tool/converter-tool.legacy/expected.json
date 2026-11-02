@@ -1,0 +1,211 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "denial-of-service"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "tool_types_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "denial-of-service",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "ryuk"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "ryuk",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "KillChainPhaseAdd",
+      "op": "mutation",
+      "root": "killChainPhaseAdd",
+      "seq": 6,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "kill_chain_name": "mitre-pre-attack",
+          "modified": null,
+          "phase_name": "launch",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_order": 0
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 7,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "spear phishing",
+          "embedded": null,
+          "external_id": "CAPEC-163",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "capec",
+          "stix_id": null,
+          "update": false,
+          "url": null,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ToolAdd",
+      "op": "mutation",
+      "root": "toolAdd",
+      "seq": 8,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "confidence": 100,
+          "created": "2025-08-01T15:23:49.755Z",
+          "createdBy": "identity--18fe5225-fee1-5627-ad3e-20c14435b024",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "c914c155-5672-432d-9904-c7981d81caa5"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "Tool"
+            }
+          ],
+          "description": "description",
+          "embedded": null,
+          "externalReferences": [
+            "709d0a80-a6b6-5597-9ae8-7cd4656149d5"
+          ],
+          "files": null,
+          "filesMarkings": null,
+          "killChainPhases": [
+            "935e7ccc-0885-5d8a-a1a5-884217a41cb7"
+          ],
+          "lang": null,
+          "modified": "2025-08-01T15:29:11.399Z",
+          "name": "Tool Stix 2.0",
+          "noTriggerImport": null,
+          "objectLabel": [
+            "8651b296-b51f-5b6a-b88d-56ac56428d65"
+          ],
+          "objectMarking": [
+            "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+          ],
+          "objectOrganization": null,
+          "revoked": false,
+          "stix_id": "tool--a8bdbff3-16b4-5cd2-b112-ee7a7b1f359c",
+          "tool_types": [
+            "denial-of-service"
+          ],
+          "tool_version": "2",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "tool--a8bdbff3-16b4-5cd2-b112-ee7a7b1f359c",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

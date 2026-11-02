@@ -1,0 +1,23 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "type": "report",
+      "spec_version": "2.1",
+      "id": "report--30000000-0000-4000-8000-000000000022",
+      "name": "r",
+      "published": "2020-01-01T00:00:00.000Z",
+      "description": 5
+    },
+    {
+      "type": "malware",
+      "spec_version": "2.1",
+      "id": "malware--30000000-0000-4000-8000-000000000020",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z",
+      "name": "M",
+      "is_family": true
+    }
+  ]
+}
