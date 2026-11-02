@@ -167,6 +167,18 @@ describe('useDashboardVariables', () => {
     expect(new URLSearchParams(window.location.search).has('variables')).toBe(false);
   });
 
+  it('writes the values restored from this browser into the URL, without the deleted variables', () => {
+    window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ gone: 'x', [sector.id]: 'Finance' }));
+    renderHook(() => useDashboardVariables('ws-1', [sector]));
+    expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${sector.id}:Finance`);
+  });
+
+  it('leaves the URL untouched when the local values are ignored', () => {
+    window.localStorage.setItem('dashboard-variables-user-1-ws-1', JSON.stringify({ [sector.id]: 'Finance' }));
+    renderHook(() => useDashboardVariables('ws-1', [sector], { ignoreLocalValues: true }));
+    expect(window.location.search).toBe('');
+  });
+
   describe('resetValues', () => {
     const other = { ...country, defaultValue: 'FR' };
     const STORAGE_KEY = 'dashboard-variables-user-1-ws-1';
