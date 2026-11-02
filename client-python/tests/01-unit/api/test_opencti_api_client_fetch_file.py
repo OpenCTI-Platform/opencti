@@ -120,8 +120,7 @@ class TestFetchOpenctiFileById:
         )
 
     def test_passes_file_id_with_special_characters_unchanged(self, api_client):
-        """A file id that looks like a path (with spaces/subfolders) must be
-        forwarded as-is, with no accidental encoding."""
+        """Keep subfolders and encode other characters (#19480)."""
         file_id = "import/Artifact/some-id/my file (v2).bin"
 
         with patch.object(
@@ -130,7 +129,7 @@ class TestFetchOpenctiFileById:
             api_client.fetch_opencti_file_by_id(file_id, binary=True, serialize=True)
 
         mocked_fetch.assert_called_once_with(
-            f"http://localhost:4000/storage/get/{file_id}",
+            "http://localhost:4000/storage/get/import/Artifact/some-id/my%20file%20%28v2%29.bin",
             binary=True,
             serialize=True,
         )
@@ -166,3 +165,53 @@ class TestFetchOpenctiFileById:
 
         new_url = mocked_fetch.call_args[0][0]
         assert new_url == legacy_url
+
+    def test_fetch_file_encodes_spaces_and_hash(self, api_client):
+        """Encode spaces and hash characters while keeping subfolders (#19480)."""
+        mock_response = MagicMock()
+        mock_response.ok = True
+        mock_response.text = "text-data"
+
+        with patch.object(
+            api_client.session, "get", return_value=mock_response
+        ) as mocked_get:
+            result = api_client.fetch_opencti_file_by_id(
+                "import/Domain-Name/x/zz hash test #1.txt"
+            )
+
+        assert result == "text-data"
+        assert mocked_get.call_args[0][0] == (
+            "http://localhost:4000/storage/get/import/Domain-Name/x/zz%20hash%20test%20%231.txt"
+        )
+
+    def test_fetch_file_encodes_question_mark_and_percent(self, api_client):
+        """Encode question marks and percent signs in file ids (#19480)."""
+        mock_response = MagicMock()
+        mock_response.ok = True
+        mock_response.text = "text-data"
+
+        with patch.object(
+            api_client.session, "get", return_value=mock_response
+        ) as mocked_get:
+            result = api_client.fetch_opencti_file_by_id("a?b%c.txt")
+
+        assert result == "text-data"
+        assert mocked_get.call_args[0][0] == (
+            "http://localhost:4000/storage/get/a%3Fb%25c.txt"
+        )
+
+    def test_fetch_file_encodes_plain_id_unchanged(self, api_client):
+        """Leave a plain file id and its subfolders unchanged (#19480)."""
+        mock_response = MagicMock()
+        mock_response.ok = True
+        mock_response.text = "text-data"
+
+        with patch.object(
+            api_client.session, "get", return_value=mock_response
+        ) as mocked_get:
+            result = api_client.fetch_opencti_file_by_id("import/Report/id/report.pdf")
+
+        assert result == "text-data"
+        assert mocked_get.call_args[0][0] == (
+            "http://localhost:4000/storage/get/import/Report/id/report.pdf"
+        )
