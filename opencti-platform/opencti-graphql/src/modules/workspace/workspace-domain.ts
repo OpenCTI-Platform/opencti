@@ -33,7 +33,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../pub
 import { createInternalObject, editInternalObject } from '../../domain/internalObject';
 import { checkDashboardConfigurationImport, convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
 import { withWorkspaceManifestLock } from './workspace-variables-domain';
-import { preserveServerOwnedManifestKeys, validateManifestVariables } from './workspace-variables-utils';
+import { preserveServerOwnedManifestKeys, stripServerOwnedManifestKeys, validateManifestVariables } from './workspace-variables-utils';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
@@ -367,8 +367,10 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
 // Preserve the legacy metadata input until a separate change addresses API compatibility.
 export const duplicateWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceDuplicateInput) => {
   const authorizedMembers = initializeAuthorizedMembers([], user);
-  // The manifest comes from the client: its dashboard variables go through the same validation as the typed API
-  const workspaceToCreate = { ...input, manifest: validateManifestVariables(input.manifest), restricted_members: authorizedMembers };
+  // The manifest comes from the client: its dashboard variables go through the same validation as the typed API.
+  // Only a dashboard holds variables: duplicated into another kind of workspace, they are dropped.
+  const manifest = input.type === 'dashboard' ? validateManifestVariables(input.manifest) : stripServerOwnedManifestKeys(input.manifest);
+  const workspaceToCreate = { ...input, manifest, restricted_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
   const sanitizeElement = { ...input, manifest: undefined };
   await publishUserAction({

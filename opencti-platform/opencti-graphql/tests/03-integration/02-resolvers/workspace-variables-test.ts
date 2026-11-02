@@ -234,6 +234,16 @@ describe('Dashboard variables API', () => {
     expect(data.workspaceDuplicate.variables).toEqual([{ id: variable.id, name: 'Type', defaultValue: 'Malware', usedInWidgetIds: ['widget-1'] }]);
   });
 
+  it('should drop the variables when duplicating into an investigation', async () => {
+    const variable = { id: '11111111-1111-4111-8111-111111111111', name: 'Type', type: 'entityType', restriction: { mode: 'none' }, defaultValue: 'Malware' };
+    const manifest = toB64({ widgets: {}, config: {}, variables: [variable], presets: [] });
+    const { data } = await queryAsAdminWithSuccess({ query: DUPLICATE, variables: { input: { type: 'investigation', name: 'Variables duplicate investigation', manifest } } });
+    createdIds.push(data.workspaceDuplicate.id);
+    const duplicated = fromB64((await readWorkspace(data.workspaceDuplicate.id)).manifest);
+    expect(duplicated.variables).toBeUndefined();
+    expect(duplicated.presets).toBeUndefined();
+  });
+
   it('should refuse to duplicate a dashboard with invalid variables', async () => {
     const forged = Array.from({ length: 51 }, (_, i) => ({ id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`, name: `v${i}`, type: 'text', restriction: { mode: 'none' }, defaultValue: 'x' }));
     const manifest = toB64({ widgets: {}, config: {}, variables: forged });
