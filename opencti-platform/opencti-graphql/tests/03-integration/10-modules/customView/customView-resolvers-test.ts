@@ -823,4 +823,19 @@ describe('CustomView and dashboard variables', () => {
     createdIds.push(imported.data.customViewConfigurationImport.id);
     expect(await readStoredManifest(imported.data.customViewConfigurationImport.id)).not.toHaveProperty('variables');
   });
+
+  it('should refuse to import a widget using dashboard variables', async () => {
+    const created = await queryAsAdminWithSuccess({
+      query: CREATE_CUSTOM_VIEW_QUERY,
+      variables: { input: { name: 'Custom view refusing variables', manifest: DASHBOARD_MANIFEST, targetEntityType: ENTITY_TYPE_INTRUSION_SET } },
+    });
+    const customViewId = created.data.customViewAdd.id;
+    createdIds.push(customViewId);
+    const before = await readStoredManifest(customViewId);
+    await queryAsAdminWithError({
+      query: IMPORT_WIDGET_CUSTOM_VIEW_QUERY,
+      variables: { id: customViewId, input: { file: createUploadFile('./tests/data/dashboard-variables/', 'widget-with-variable-token.json'), manifest: DASHBOARD_MANIFEST } },
+    }, 'A widget using dashboard variables cannot be imported into a custom view', 'FUNCTIONAL_ERROR');
+    expect(await readStoredManifest(customViewId)).toEqual(before);
+  });
 });
