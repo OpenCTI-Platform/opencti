@@ -113,11 +113,12 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### Telemetry
 
-| Parameter                                 | Environment variable                         | Default value | Description                             |
-|:------------------------------------------|:---------------------------------------------|:--------------|:----------------------------------------|
-| app:telemetry:metrics:enabled             | APP__TELEMETRY__METRICS__ENABLED             | `false`       | Enable the metrics collection           |
-| app:telemetry:metrics:exporter_otlp       | APP__TELEMETRY__METRICS__EXPORTER_OTLP       |               | Port to expose the OTLP endpoint        |
-| app:telemetry:metrics:exporter_prometheus | APP__TELEMETRY__METRICS__EXPORTER_PROMETHEUS | 14269         | Port to expose the Prometheus endpoint  |
+| Parameter                                      | Environment variable                              | Default value | Description                                                                                                    |
+|:-----------------------------------------------|:--------------------------------------------------|:--------------|:---------------------------------------------------------------------------------------------------------------|
+| app:telemetry:metrics:enabled                  | APP__TELEMETRY__METRICS__ENABLED                  | `false`       | Enable the metrics collection                                                                                  |
+| app:telemetry:metrics:exporter_otlp            | APP__TELEMETRY__METRICS__EXPORTER_OTLP            |               | Port to expose the OTLP endpoint                                                                               |
+| app:telemetry:metrics:exporter_prometheus      | APP__TELEMETRY__METRICS__EXPORTER_PROMETHEUS      | 14269         | Port to expose the Prometheus endpoint                                                                         |
+| app:telemetry:metrics:exporter_prometheus_host | APP__TELEMETRY__METRICS__EXPORTER_PROMETHEUS_HOST | `0.0.0.0`     | IPv4 address the Prometheus endpoint listens on (`127.0.0.1` keeps it local); IPv6 addresses are not supported |
 
 For a detailed list of exposed metrics, please refer to the [Telemetry](../deployment/telemetry.md) page.
 
