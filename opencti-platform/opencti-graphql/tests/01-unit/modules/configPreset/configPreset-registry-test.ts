@@ -456,7 +456,7 @@ describe('Config preset registry', () => {
         allowed_markings: [amber, red].sort((a, b) => a.standard_id.localeCompare(b.standard_id)),
         // A default marking that no longer exists is left out
         default_marking: [{ entity_type: 'GLOBAL', values: [amber] }],
-        max_shareable_markings: [{ type: 'TLP', value: amber }, { type: 'PAP', value: 'none' }],
+        max_shareable_markings: [{ type: 'TLP', value: amber }, { type: 'PAP', value: 'none' }, { type: 'Deleted', value: 'none' }],
       });
       expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|-group-id|-role-id|tlp-amber-id|deleted-marking-id/);
     });
