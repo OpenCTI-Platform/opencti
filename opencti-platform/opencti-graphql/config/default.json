@@ -83,7 +83,8 @@
       "metrics": {
         "enabled": false,
         "exporter_otlp": "",
-        "exporter_prometheus": 14269
+        "exporter_prometheus": 14269,
+        "exporter_prometheus_host": "0.0.0.0"
       }
     },
     "health_access_key": "ChangeMe",
