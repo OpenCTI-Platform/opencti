@@ -11,7 +11,7 @@ import { buildNewsFeedBlogSeeAllUrl, NEWS_FEED_BLOG_POST_TYPE } from '../../../u
 import NewsFeedBlogPostCard from './NewsFeedBlogPostCard';
 import type { NewsFeedBlogPostsQuery, NewsFeedBlogPostsQuery$variables } from './__generated__/NewsFeedBlogPostsQuery.graphql';
 
-// The Hub provisions the latest blog posts only, this is a safety net and not a pagination.
+// The Hub provisions the latest blogposts only, this is a safety net and not a pagination.
 const MAX_BLOG_POSTS = 50;
 
 const newsFeedBlogPostsQuery = graphql`

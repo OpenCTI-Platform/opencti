@@ -89,13 +89,13 @@ const NewsFeedToastManager: FunctionComponent = () => {
   const hiddenToasts = toasts.slice(MAX_VISIBLE_TOASTS);
   const isOnlyBlogPostHidden = hiddenToasts.length > 0 && hiddenToasts.every((t) => t.news_feed_type === NEWS_FEED_BLOG_POST_TYPE);
   const isOnlyResourceHidden = hiddenToasts.every((t) => t.news_feed_type !== NEWS_FEED_BLOG_POST_TYPE);
-  // The blog posts live on the Filigran blog, the resources on the XTM Hub.
+  // The blogposts live on the Filigran blog, the resources on the XTM Hub.
   const hubLibraryLink = xtmHubUrl ? `${xtmHubUrl}/app` : undefined;
   const overflowLink = isOnlyBlogPostHidden ? buildNewsFeedBlogSeeAllUrl(settings?.id, xtmHubUrl) : hubLibraryLink;
   let overflowMessage = t_i18n('(+{count}) Click to view all the new items', { values: { count: hiddenCount } });
   let overflowTooltip = t_i18n('View all');
   if (isOnlyBlogPostHidden) {
-    overflowMessage = t_i18n('(+{count}) Click to view all the new blog posts', { values: { count: hiddenCount } });
+    overflowMessage = t_i18n('(+{count}) Click to view all the new blogposts', { values: { count: hiddenCount } });
     overflowTooltip = t_i18n('See all');
   } else if (isOnlyResourceHidden) {
     overflowMessage = t_i18n('(+{count}) Click to view all the new resources on the Hub', { values: { count: hiddenCount } });

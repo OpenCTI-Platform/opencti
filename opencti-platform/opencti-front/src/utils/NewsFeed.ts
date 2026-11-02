@@ -61,7 +61,7 @@ const FILIGRAN_BLOG_URL = 'https://filigran.io/blog';
 const FILIGRAN_STAGING_BLOG_URL = 'https://staging.filigran.io/blog';
 
 /**
- * Link of the "See all" button of the blog posts: the Filigran blog (staging blog when the platform is
+ * Link of the "See all" button of the blogposts: the Filigran blog (staging blog when the platform is
  * linked to a staging XTM Hub), tagged with the UTM of the news feed. No `platform_id`: this link
  * does not go through the Hub redirect, so it has no redirect telemetry.
  */

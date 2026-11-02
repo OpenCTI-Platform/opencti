@@ -162,17 +162,17 @@ describe('NewsFeedToastManager', () => {
     expect(screen.getByRole('link', { name: 'View all on XTM Hub' })).toHaveAttribute('href', `${HUB_URL}/app`);
   });
 
-  describe('overflow banner of the blog posts', () => {
+  describe('overflow banner of the blogposts', () => {
     const emitMany = (types: string[]) => types.forEach((type, i) => emitAdded({ id: `item-${i}`, news_feed_type: type }));
 
-    it('does not talk about the resources of the hub when only blog posts are hidden', () => {
+    it('does not talk about the resources of the hub when only blogposts are hidden', () => {
       renderManager();
       emitMany(Array(7).fill('BLOG_POST'));
-      expect(screen.getByText('(+2) Click to view all the new blog posts')).toBeInTheDocument();
+      expect(screen.getByText('(+2) Click to view all the new blogposts')).toBeInTheDocument();
       expect(screen.queryByText(/new resources on the Hub/)).not.toBeInTheDocument();
     });
 
-    it('links the banner to the Filigran blog when only blog posts are hidden', () => {
+    it('links the banner to the Filigran blog when only blogposts are hidden', () => {
       renderManager();
       emitMany(Array(7).fill('BLOG_POST'));
       const url = new URL(screen.getByRole('link', { name: 'See all' }).getAttribute('href') as string);
@@ -186,10 +186,10 @@ describe('NewsFeedToastManager', () => {
     it('displays the blog banner even when the hub url is not configured', () => {
       renderManager({ settings: { id: 'settings-id-1', xtm_hub_registration_status: 'registered' } });
       emitMany(Array(7).fill('BLOG_POST'));
-      expect(screen.getByText('(+2) Click to view all the new blog posts')).toBeInTheDocument();
+      expect(screen.getByText('(+2) Click to view all the new blogposts')).toBeInTheDocument();
     });
 
-    it('uses a neutral message when blog posts and resources are hidden together', () => {
+    it('uses a neutral message when blogposts and resources are hidden together', () => {
       renderManager();
       emitMany([...Array(5).fill('RESOURCE_PLAYBOOK'), 'BLOG_POST', 'RESOURCE_PLAYBOOK']);
       expect(screen.getByText('(+2) Click to view all the new items')).toBeInTheDocument();

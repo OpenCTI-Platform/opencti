@@ -116,17 +116,17 @@ describe('NewsFeedPage', () => {
     expect(screen.getByRole('tab', { name: /Settings/ })).toBeInTheDocument();
   });
 
-  it('does not render the blog posts tab when the platform does not support the blog posts', () => {
+  it('does not render the blogposts tab when the platform does not support the blogposts', () => {
     renderPage();
     expect(screen.queryByRole('tab', { name: /Blogpost/ })).not.toBeInTheDocument();
   });
 
-  it('renders the blog posts tab when the platform supports the blog posts', () => {
+  it('renders the blogposts tab when the platform supports the blogposts', () => {
     renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed_types: ['BLOG_POST'] } });
     expect(screen.getByRole('tab', { name: /Blogpost/ })).toBeInTheDocument();
   });
 
-  it('displays the blog posts when the blog posts tab is selected', async () => {
+  it('displays the blogposts when the blogposts tab is selected', async () => {
     const { user } = renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed_types: ['BLOG_POST'] } });
     await user.click(screen.getByRole('tab', { name: /Blogpost/ }));
     expect(screen.getByTestId('news-feed-blog-posts')).toBeInTheDocument();
@@ -185,19 +185,19 @@ describe('NewsFeedPage', () => {
     expect(getBadge()).not.toBeInTheDocument();
   });
 
-  it('displays the unread blog posts count on the blog posts tab only', () => {
+  it('displays the unread blogposts count on the blogposts tab only', () => {
     renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 2, unreadBlogPostsCount: 5 });
     expect(getBlogPostsBadge()).toHaveTextContent('5');
     expect(getBadge()).toHaveTextContent('2');
   });
 
-  it('does not count the blog posts on the news feed tab', () => {
+  it('does not count the blogposts on the news feed tab', () => {
     renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 0, unreadBlogPostsCount: 5 });
     expect(getBadge()).not.toBeInTheDocument();
     expect(getBlogPostsBadge()).toHaveTextContent('5');
   });
 
-  it('hides the blog posts badge when there is no unread blog post', () => {
+  it('hides the blogposts badge when there is no unread blogpost', () => {
     renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 3, unreadBlogPostsCount: 0 });
     expect(getBlogPostsBadge()).not.toBeInTheDocument();
   });

@@ -287,7 +287,7 @@ const NewsFeed: FunctionComponent = () => {
         operator: 'eq',
         mode: 'or',
       },
-      // the blog posts have their own tab
+      // the blogposts have their own tab
       {
         key: 'news_feed_type',
         values: [NEWS_FEED_BLOG_POST_TYPE],

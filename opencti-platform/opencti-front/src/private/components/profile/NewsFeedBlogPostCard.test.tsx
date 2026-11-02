@@ -53,7 +53,7 @@ describe('NewsFeedBlogPostCard', () => {
     });
 
     it('renders a long title entirely, without truncation', () => {
-      const longTitle = 'A very long blog post title '.repeat(12).trim();
+      const longTitle = 'A very long blogpost title '.repeat(12).trim();
       renderCard(buildItem({ title: longTitle }));
       expect(screen.getByText(longTitle)).toBeInTheDocument();
     });

@@ -91,7 +91,7 @@ const NewsFeedPage: FunctionComponent = () => {
     return () => sub.dispose();
   }, [shouldSubscribeToNewsFeed, handleNewNewsFeedNumber]);
 
-  // Resources and blog posts are counted, and read, independently: each tab shows its own unread count.
+  // Resources and blogposts are counted, and read, independently: each tab shows its own unread count.
   const unreadResourcesCount = shouldSubscribeToNewsFeed ? (liveCounts.resources ?? data.myUnreadResourcesCount ?? 0) : 0;
   const unreadBlogPostsCount = shouldSubscribeToNewsFeed ? (liveCounts.blogPosts ?? data.myUnreadBlogPostsCount ?? 0) : 0;
 
@@ -116,7 +116,7 @@ const NewsFeedPage: FunctionComponent = () => {
     data.settings,
   );
 
-  // The blog posts tab only exists when the XTM Hub provisions blog posts for this platform version.
+  // The blogposts tab only exists when the XTM Hub provisions blogposts for this platform version.
   const isBlogPostAvailable = settingsFragmentData.xtm_hub_available_news_feed_types?.includes(NEWS_FEED_BLOG_POST_TYPE) ?? false;
   const displayedTab = activeTab === 'blog-posts' && !isBlogPostAvailable ? 'news-feed' : activeTab;
 

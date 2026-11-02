@@ -173,7 +173,7 @@ describe('News feed', () => {
 
     it('should notify with the unread count for the created item user_id', async () => {
       mockCreateInternalObject.mockResolvedValue({ id: 'new-id', user_id: mockUser.id });
-      // blog posts count first, then resources count
+      // blogposts count first, then resources count
       mockElCount.mockResolvedValueOnce(1).mockResolvedValueOnce(2);
 
       await addNewsFeed(mockContext, mockUser, baseInput);
@@ -298,7 +298,7 @@ describe('News feed', () => {
       expect(filters.filters.some((f: { key: unknown }) => f.key === 'news_feed_type' || (Array.isArray(f.key) && f.key[0] === 'news_feed_type'))).toBe(false);
     });
 
-    it('should only count the blog posts for the blog post category', async () => {
+    it('should only count the blogposts for the blogpost category', async () => {
       mockElCount.mockResolvedValue(1);
 
       await myUnreadNewsFeedsCount(mockContext, mockUser, null, NewsFeedCategory.BlogPost);
@@ -317,7 +317,7 @@ describe('News feed', () => {
       );
     });
 
-    it('should count everything but the blog posts for the resource category', async () => {
+    it('should count everything but the blogposts for the resource category', async () => {
       mockElCount.mockResolvedValue(1);
 
       await myUnreadNewsFeedsCount(mockContext, mockUser, null, NewsFeedCategory.Resource);
@@ -440,7 +440,7 @@ describe('News feed', () => {
       );
     });
 
-    it('should only mark the blog posts as read for the blog post category', async () => {
+    it('should only mark the blogposts as read for the blogpost category', async () => {
       mockFullEntitiesList.mockResolvedValue([]);
 
       await markAllNewsFeedItemsAsRead(mockContext, mockUser, NewsFeedCategory.BlogPost);
@@ -511,7 +511,7 @@ describe('News feed', () => {
       );
     });
 
-    it('should never clean up the blog posts, whatever their publication date', async () => {
+    it('should never clean up the blogposts, whatever their publication date', async () => {
       mockElPaginate.mockResolvedValue({ edges: [] });
 
       await cleanOldNewsFeedItems(mockContext, mockUser, cutoffDate);

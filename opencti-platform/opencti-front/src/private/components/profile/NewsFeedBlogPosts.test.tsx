@@ -56,14 +56,14 @@ describe('NewsFeedBlogPosts', () => {
     mockUseQueryLoading.mockReturnValue([{ fake: 'query-ref' }, mockLoadQuery]);
   });
 
-  it('displays a card for each blog post', () => {
+  it('displays a card for each blogpost', () => {
     renderBlogPosts();
     expect(screen.getAllByTestId('blog-post-card')).toHaveLength(2);
     expect(screen.getByText('Title of post-1')).toBeInTheDocument();
     expect(screen.getByText('Title of post-2')).toBeInTheDocument();
   });
 
-  it('displays an empty message when there is no blog post', () => {
+  it('displays an empty message when there is no blogpost', () => {
     renderBlogPosts({ edges: [] });
     expect(screen.queryByTestId('blog-post-card')).not.toBeInTheDocument();
     expect(screen.getByText('No results')).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe('NewsFeedBlogPosts', () => {
     expect(screen.queryByText('No results')).not.toBeInTheDocument();
   });
 
-  it('asks only the blog posts of the connected user, the most recent first', () => {
+  it('asks only the blogposts of the connected user, the most recent first', () => {
     renderBlogPosts();
     const [, variables] = mockUseQueryLoading.mock.calls[0];
     expect(variables).toMatchObject({ orderBy: 'creation_date', orderMode: 'desc' });
@@ -102,7 +102,7 @@ describe('NewsFeedBlogPosts', () => {
     expect(mockCommitMarkAllAsRead).toHaveBeenCalledWith({ variables: {} });
   });
 
-  it('reloads the blog posts when an item is added or deleted', () => {
+  it('reloads the blogposts when an item is added or deleted', () => {
     renderBlogPosts();
     expect(subscriptionCallbacks).toHaveLength(2);
     act(() => subscriptionCallbacks.forEach((onNext) => onNext()));
@@ -138,7 +138,7 @@ describe('NewsFeedBlogPosts', () => {
       expect(url.origin).toBe('https://staging.filigran.io');
     });
 
-    it('is still displayed when there is no blog post', () => {
+    it('is still displayed when there is no blogpost', () => {
       renderBlogPosts({ edges: [] });
       expect(screen.getByRole('link', { name: /See all/ })).toBeInTheDocument();
     });

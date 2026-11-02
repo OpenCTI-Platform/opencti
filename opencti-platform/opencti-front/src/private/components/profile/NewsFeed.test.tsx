@@ -113,7 +113,7 @@ describe('NewsFeed', () => {
     );
   });
 
-  it('leaves the blog posts to their own tab', () => {
+  it('leaves the blogposts to their own tab', () => {
     renderNewsFeed();
     expect(dataTableProps?.contextFilters?.filters).toContainEqual(
       expect.objectContaining({ key: 'news_feed_type', values: ['BLOG_POST'], operator: 'not_eq' }),

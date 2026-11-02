@@ -13,7 +13,7 @@ import { BUS_TOPICS, logApp } from '../../../../config/conf';
 import { ALREADY_DELETED_ERROR } from '../../../../config/errors';
 import { promiseMap } from '../../../../utils/promiseUtils';
 
-// Blog posts and resources are read independently: each one has its own tab in the news feed page.
+// Blogposts and resources are read independently: each one has its own tab in the news feed page.
 const categoryFilters = (category?: NewsFeedCategory | null) => {
   if (category === NewsFeedCategory.BlogPost) {
     return [{ key: ['news_feed_type'], values: [NewsFeedItemType.BLOG_POST] }];
@@ -151,8 +151,8 @@ export const cleanOldNewsFeedItems = async (
         values: [cutoffDate.toISOString()],
         operator: FilterOperator.Lt,
       },
-      // The creation date of a blog post is its publication date, it can be older than the cutoff while the post is
-      // still live: only the XTM Hub removes the blog posts (when it drops them).
+      // The creation date of a blogpost is its publication date, it can be older than the cutoff while the post is
+      // still live: only the XTM Hub removes the blogposts (when it drops them).
       { key: ['news_feed_type'], values: [NewsFeedItemType.BLOG_POST], operator: FilterOperator.NotEq },
     ],
     filterGroups: [],
