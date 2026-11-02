@@ -669,10 +669,17 @@ export const retryElOperations = async (
 
 // The OpenSearch client sends _source as a query string parameter, where an { includes, excludes }
 // object is lost (sent as an empty _source): it goes in the body, as the Elasticsearch client does.
+// Only when it lists the fields to return (includes, the base data reads): OpenSearch rebuilds a
+// filtered _source and loses the order of the keys of its objects, which some objects keep meaning
+// in (the options of a connector contract). An excludes alone only lightens the answer: it is dropped,
+// and OpenSearch returns the whole _source as stored.
 export const toOpenSearchQuery = (query: any) => {
   const { _source, ...rest } = query;
   if (!_source || typeof _source !== 'object' || Array.isArray(_source)) {
     return query;
+  }
+  if (!_source.includes?.length) {
+    return rest;
   }
   return { ...rest, body: { ...rest.body, _source } };
 };

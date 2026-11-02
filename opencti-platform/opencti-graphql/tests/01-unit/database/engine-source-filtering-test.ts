@@ -52,6 +52,12 @@ describe('engine: _source filtering', () => {
     expect(toOpenSearchQuery(query)).toEqual({ index: 'opencti_*', size: 10, body: { query: { match_all: {} }, _source: SOURCE } });
   });
 
+  it('should drop an excludes alone for OpenSearch, which would lose the order of the keys', () => {
+    const query = { index: 'opencti_*', size: 10, _source: { excludes: ['rel_*'] }, body: { query: { match_all: {} } } };
+
+    expect(toOpenSearchQuery(query)).toEqual({ index: 'opencti_*', size: 10, body: { query: { match_all: {} } } });
+  });
+
   it('should keep a _source the query string carries as is', () => {
     const disabled = { index: 'opencti_*', _source: false, body: {} };
     const fields = { index: 'opencti_*', _source: ['internal_id'], body: {} };
