@@ -53,7 +53,8 @@ describe('check createWorkerPool', () => {
       outOfMemoryError: () => FunctionalError('out of memory'),
     });
     try {
-      const json = { items: Array.from({ length: 300000 }, (_, i) => ({ type: 'domain', value: `value-${i}` })) };
+      // About 100 MB of distinct strings: far above the 8 MB heap on every platform
+      const json = { items: Array.from({ length: 500000 }, (_, i) => ({ type: 'domain', value: `${i}`.padEnd(200, '.') })) };
       await expect(pool.run({ path: '$.items[?(@.type == \'domain\')].value', json }, 30000)).rejects.toMatchObject({
         message: 'out of memory',
         extensions: { code: 'FUNCTIONAL_ERROR' },
