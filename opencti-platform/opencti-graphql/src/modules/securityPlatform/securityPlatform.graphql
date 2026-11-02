@@ -148,7 +148,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 
 # Ordering

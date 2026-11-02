@@ -350,11 +350,10 @@ const syncManagerInstance = (syncId) => {
   // the generator is suspended, bytes are not read from the socket,
   // TCP receive buffer fills up, and flow control throttles the server.
   const streamEvents = async function* (sseUri, syncElement) {
-    const { ssl_verify: ssl = false } = syncElement;
     const token = await decryptSynchronizerCredential(syncElement.token);
     const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
     abortController = new AbortController();
-    const streamClient = getHttpClient({ headers, rejectUnauthorized: ssl, responseType: 'stream' });
+    const streamClient = getHttpClient({ headers, rejectUnauthorized: syncElement.ssl_verify, responseType: 'stream' });
     const response = await streamClient.get(sseUri, { signal: abortController.signal });
     const queue = [];
     const parser = createParser({
@@ -424,12 +423,11 @@ const syncManagerInstance = (syncId) => {
         }
       };
       const synchronized = sync.synchronized ?? false;
-      const { ssl_verify: ssl = false } = sync;
       const token = await decryptSynchronizerCredential(sync.token);
       const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
       const httpClientOptions = {
         headers: headers,
-        rejectUnauthorized: ssl,
+        rejectUnauthorized: sync.ssl_verify,
         responseType: 'arraybuffer',
         timeout: FILE_FETCH_TIMEOUT,
       };

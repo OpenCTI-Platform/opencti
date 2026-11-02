@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 import useAuth from './useAuth';
-import useEnterpriseEdition, { isEnterpriseEditionFromXtmOne } from './useEnterpriseEdition';
+import useEnterpriseEdition, { isEnterpriseEditionFromFiligranLicense, isEnterpriseEditionFromXtmOne } from './useEnterpriseEdition';
 
 vi.mock('./useAuth', () => ({ default: vi.fn() }));
 
@@ -29,6 +29,15 @@ describe('useEnterpriseEdition', () => {
   it('is disabled once no license grants it any more', () => {
     mockEnterpriseEdition({ license_validated: false, license_source: 'OPENCTI_LICENSE' });
     expect(useEnterpriseEdition()).toBe(false);
+  });
+});
+
+describe('isEnterpriseEditionFromFiligranLicense', () => {
+  it('tells a Filigran license pasted in OpenCTI from the other license forms', () => {
+    expect(isEnterpriseEditionFromFiligranLicense({ license_source: 'FILIGRAN_LICENSE' })).toBe(true);
+    expect(isEnterpriseEditionFromFiligranLicense({ license_source: 'XTM_ONE_LICENSE' })).toBe(false);
+    expect(isEnterpriseEditionFromFiligranLicense({ license_source: 'OPENCTI_LICENSE' })).toBe(false);
+    expect(isEnterpriseEditionFromFiligranLicense(undefined)).toBe(false);
   });
 });
 

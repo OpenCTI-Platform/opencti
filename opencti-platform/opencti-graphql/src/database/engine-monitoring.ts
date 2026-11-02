@@ -1,7 +1,6 @@
 // region Engine health monitoring CRON
-import { Client as ElkClient } from '@elastic/elasticsearch';
 import { isFeatureEnabled, logApp } from '../config/conf';
-import { engine, oebp } from './engine';
+import { engine, isElkEngine, oebp } from './engine';
 
 const HEALTH_MONITOR_INTERVAL_MS = 60_000; // 1 minute
 let healthMonitorInterval: NodeJS.Timeout | null = null;
@@ -9,7 +8,7 @@ let healthMonitorInterval: NodeJS.Timeout | null = null;
 const elGetClusterHealth = async () => {
   try {
     // 1. Cluster health
-    const healthResult = engine instanceof ElkClient
+    const healthResult = isElkEngine(engine)
       ? await engine.cluster.health()
       : await engine.cluster.health();
     const health = oebp(healthResult);
@@ -26,7 +25,7 @@ const elGetClusterHealth = async () => {
     });
 
     // 2. Node stats (JVM heap, CPU, OS memory)
-    const nodesStatsResult = engine instanceof ElkClient
+    const nodesStatsResult = isElkEngine(engine)
       ? await engine.nodes.stats({ metric: ['jvm', 'os', 'process'] as any })
       : await engine.nodes.stats({ metric: 'jvm,os,process' } as any);
     const nodesStats = oebp(nodesStatsResult);
@@ -54,7 +53,7 @@ const elGetClusterHealth = async () => {
     }
 
     // 3. Thread pool stats (queue sizes, rejections)
-    const threadPoolResult = engine instanceof ElkClient
+    const threadPoolResult = isElkEngine(engine)
       ? await engine.cat.threadPool({ format: 'json', h: 'node_name,name,active,queue,rejected,completed' as any })
       : await engine.cat.threadPool({ format: 'json', h: ['node_name', 'name', 'active', 'queue', 'rejected', 'completed'] } as any);
     const threadPools = oebp(threadPoolResult) as any[];
