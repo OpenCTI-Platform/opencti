@@ -428,6 +428,13 @@ describe('check safeRenderClient error handling and worker termination detection
     ).rejects.toThrow(/timeout after 100ms/i);
   });
 
+  it('should report a timeout as a functional error', async () => {
+    // The template is user input: the timeout is logged as a warning, not as a platform error
+    await expect(
+      safeRenderClient('<% while(true) {} %>', {}, { timeout: 100 }),
+    ).rejects.toMatchObject({ extensions: { code: 'FUNCTIONAL_ERROR' } });
+  });
+
   it('should preserve worker error when worker fails before timeout', async () => {
     // Template that causes a worker error
     const template = '<%= nonExistentVariable.property %>';
