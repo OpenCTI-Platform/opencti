@@ -113,6 +113,8 @@ Each attribute in an Entity offers several customization options:
 
 ![Mandatory attributes and default values](./assets/mandatory_and_default_attributes.png)
 
+The custom fields attached to the entity type are listed below the attributes, with their own mandatory and default value settings. Read the [custom fields page](custom-fields.md#attach-a-custom-field-to-an-entity-type) for full details.
+
 
 ### Confidence scale configuration
 

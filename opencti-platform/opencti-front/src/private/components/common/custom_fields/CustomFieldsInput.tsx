@@ -52,10 +52,8 @@ export const customFieldDefinitionsForEntityTypeQuery = graphql`
   }
 `;
 
-// Isolates the useLazyLoadQuery call so it can be conditionally mounted (feature-flag gated)
-// without violating the Rules of Hooks. Meant to be rendered inside a <Suspense> boundary and
-// only when the CUSTOM_FIELDS feature flag is enabled: the query field itself throws server-side
-// (no softFail) when the flag is disabled, so it must never be called in that case.
+// Isolates the useLazyLoadQuery call so it can be conditionally mounted without violating the
+// Rules of Hooks. Meant to be rendered inside a <Suspense> boundary.
 export const CustomFieldsLoader: FunctionComponent<{
   entityType: string;
   onLoaded: (definitions: CustomFieldDef[]) => void;
