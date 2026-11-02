@@ -78,13 +78,7 @@ const resolveGroup = async (context: AuthContext, user: AuthUser, configuration:
   const fields: Record<string, unknown> = Object.fromEntries(GROUP_FIELDS.map((key) => [key, configuration[key]]));
   fields.default_dashboard = dashboard?.id;
   fields.default_marking = configuration.default_marking.map(({ entity_type, values }) => ({ entity_type, values: resolveAll(values) }));
-  fields.max_shareable_markings = configuration.max_shareable_markings.flatMap(({ type, value }) => {
-    if (value === 'none') {
-      return [{ type, value }];
-    }
-    const id = resolve(value);
-    return id ? [{ type, value: id }] : [];
-  });
+  fields.max_shareable_markings = configuration.max_shareable_markings.map(({ type, value }) => ({ type, value: (value === 'none' ? undefined : resolve(value)) ?? 'none' }));
   return {
     fields,
     roleIds: roles.map(({ id }) => id),

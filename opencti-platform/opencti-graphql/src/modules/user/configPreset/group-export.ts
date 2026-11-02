@@ -63,11 +63,9 @@ export const getGroupConfigPresetConfiguration = async (
     roles: [...roles].sort(byName).map((role) => ({ standard_id: role.standard_id, name: role.name })),
     allowed_markings: allowedMarkings.map(toMarkingReference).sort((a, b) => a.standard_id.localeCompare(b.standard_id)),
     default_marking: (group.default_marking ?? []).map(({ entity_type, values }) => ({ entity_type, values: toReferences(values) })),
-    max_shareable_markings: (group.max_shareable_markings ?? []).flatMap<GroupImportConfiguration['max_shareable_markings'][number]>(({ type, value }) => {
-      if (value === 'none') {
-        return [{ type, value: 'none' }];
-      }
-      return toReferences([value]).map((reference) => ({ type, value: reference }));
+    max_shareable_markings: (group.max_shareable_markings ?? []).map<GroupImportConfiguration['max_shareable_markings'][number]>(({ type, value }) => {
+      const [reference] = value === 'none' ? [] : toReferences([value]);
+      return { type, value: reference ?? 'none' };
     }),
   };
 };

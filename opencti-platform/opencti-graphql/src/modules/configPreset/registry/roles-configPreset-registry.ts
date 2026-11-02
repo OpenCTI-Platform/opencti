@@ -33,9 +33,9 @@ const toRoleItem = (role: BasicStoreEntityRole): ConfigPresetItemDefinition => (
 
 const rolesImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
-    const name = typeof item.configuration.name === 'string' ? item.configuration.name : item.id;
-    const base = { label: name, translatable: false };
-    if (roleStandardId(name) !== item.id) {
+    const name = typeof item.configuration.name === 'string' && item.configuration.name.trim() ? item.configuration.name : undefined;
+    const base = { label: name ?? item.id, translatable: false };
+    if (name !== undefined && roleStandardId(name) !== item.id) {
       return { ...base, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the role does not match its name' };
     }
     const result = await importRole(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.roleIds });

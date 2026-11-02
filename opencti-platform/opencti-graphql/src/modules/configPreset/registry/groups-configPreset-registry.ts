@@ -55,9 +55,9 @@ const toGroupItems = async (context: AuthContext, user: AuthUser, groups: BasicS
 
 const groupsImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
-    const name = typeof item.configuration.name === 'string' ? item.configuration.name : item.id;
-    const base = { label: name, translatable: false };
-    if (groupStandardId(name) !== item.id) {
+    const name = typeof item.configuration.name === 'string' && item.configuration.name.trim() ? item.configuration.name : undefined;
+    const base = { label: name ?? item.id, translatable: false };
+    if (name !== undefined && groupStandardId(name) !== item.id) {
       return { ...base, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the group does not match its name' };
     }
     const isRoleCreated = (standardId: string) => plan.created.has(configPresetPlanKey(ROLES_FAMILY_ID, standardId));

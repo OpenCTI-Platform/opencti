@@ -218,3 +218,10 @@ describe('Branding import (compute)', () => {
     expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
   });
 });
+
+describe('Roles and groups import (compute)', () => {
+  it.each(['roles', 'groups'])('fails an item of %s whose name is blank, without failing the whole computation', async (type) => {
+    const results = await Promise.all(['', '   '].map((name) => compute(type, 'some-id', { name })));
+    results.forEach((computed) => expect(computed).toMatchObject({ status: 'failed', label: 'some-id' }));
+  });
+});

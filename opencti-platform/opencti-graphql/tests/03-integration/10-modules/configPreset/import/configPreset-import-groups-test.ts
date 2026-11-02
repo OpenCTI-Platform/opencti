@@ -156,7 +156,7 @@ describe('Config preset import: groups', () => {
       status: 'CREATED',
       reason: 'Markings not found: PAP:UNKNOWN\nDefault dashboard not found: Missing dashboard',
     }]);
-    expect(await configurationOf(GROUP_NAME)).toMatchObject({ allowed_markings: [tlpGreen], max_shareable_markings: [], default_dashboard: null });
+    expect(await configurationOf(GROUP_NAME)).toMatchObject({ allowed_markings: [tlpGreen], max_shareable_markings: [{ type: 'PAP', value: 'none' }], default_dashboard: null });
   });
 
   it('fails a group whose role is neither on the platform nor in the bundle', async () => {

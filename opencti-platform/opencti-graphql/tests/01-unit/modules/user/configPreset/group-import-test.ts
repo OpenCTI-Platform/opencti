@@ -167,7 +167,7 @@ describe('importGroup create', () => {
     expect(result.reason).toEqual('Markings not found: TLP:AMBER\nDefault dashboard not found: SOC overview');
     const created = vi.mocked(addGroup).mock.calls[0][2];
     expect(created).not.toHaveProperty('default_dashboard');
-    expect(created).toMatchObject({ default_marking: [{ entity_type: 'GLOBAL', values: [] }], max_shareable_markings: [{ type: 'PAP', value: 'none' }] });
+    expect(created).toMatchObject({ default_marking: [{ entity_type: 'GLOBAL', values: [] }], max_shareable_markings: [{ type: 'TLP', value: 'none' }, { type: 'PAP', value: 'none' }] });
     expect(groupAddRelation).toHaveBeenCalledTimes(2);
     expect(groupAddRelation).toHaveBeenCalledWith(context, user, 'created-id', { toId: PAP_RED.id, relationship_type: 'accesses-to' });
   });

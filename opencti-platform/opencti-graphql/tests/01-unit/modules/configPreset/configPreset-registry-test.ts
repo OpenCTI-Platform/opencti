@@ -454,7 +454,7 @@ describe('Config preset registry', () => {
         default_dashboard: null,
         roles: [{ standard_id: administratorRole.standard_id, name: 'Administrator' }],
         allowed_markings: [amber, red].sort((a, b) => a.standard_id.localeCompare(b.standard_id)),
-        // A marking that no longer exists is left out
+        // A default marking that no longer exists is left out
         default_marking: [{ entity_type: 'GLOBAL', values: [amber] }],
         max_shareable_markings: [{ type: 'TLP', value: amber }, { type: 'PAP', value: 'none' }],
       });
