@@ -4168,13 +4168,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/x-date-pickers@npm:9.16.0":
-  version: 9.16.0
-  resolution: "@mui/x-date-pickers@npm:9.16.0"
+"@mui/x-date-pickers@npm:9.17.0":
+  version: 9.17.0
+  resolution: "@mui/x-date-pickers@npm:9.17.0"
   dependencies:
     "@babel/runtime": "npm:^7.29.7 || ^8.0.0"
     "@mui/utils": "npm:^9.5.0"
-    "@mui/x-internals": "npm:9.16.0"
+    "@mui/x-internals": "npm:9.17.0"
     "@types/react-transition-group": "npm:^4.4.12"
     clsx: "npm:^2.1.1"
     prop-types: "npm:^15.8.1"
@@ -4212,22 +4212,21 @@ __metadata:
       optional: true
     moment-jalaali:
       optional: true
-  checksum: 10c0/600473e139d910eaea0a45e8bee02c21cc0b2445fa5a53439330dadff56d752aa284a285cab354563a95eab15ea30d52c8e43c3c6e37f8130158d592fa7a3170
+  checksum: 10c0/8db5537dd2fcd9497785dc44b90efb6a363af04c03f2d55839331f42e72e74ad285b5b9aba550f98ae588a6d95b919a8c159323c3f7b6f5080627e7f938e62e1
   languageName: node
   linkType: hard
 
-"@mui/x-internals@npm:9.16.0":
-  version: 9.16.0
-  resolution: "@mui/x-internals@npm:9.16.0"
+"@mui/x-internals@npm:9.17.0":
+  version: 9.17.0
+  resolution: "@mui/x-internals@npm:9.17.0"
   dependencies:
     "@babel/runtime": "npm:^7.29.7 || ^8.0.0"
     "@base-ui/utils": "npm:^0.5.0"
     "@mui/utils": "npm:^9.5.0"
-    reselect: "npm:^5.3.0"
   peerDependencies:
     react: ^17.0.0 || ^18.0.0 || ^19.0.0
     react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/0e6771e17bbdce3fd811e13323b770c8a9136ccc4eb549de7f3884e107d7e4ee712c30a89ba4db133fe0ab30d546da8d421ced838f2a2adeb7a4ece67dbe2237
+  checksum: 10c0/3a0104cb50bbf434e1b5e8af4b9a98954cf55951f9665af2a4e605b301c1dca1e8ed0fb19998fe733e4bf03ed871e0a3d4ef66507c8662e97aa0f2397057a2f4
   languageName: node
   linkType: hard
 
@@ -18045,7 +18044,7 @@ __metadata:
     "@mui/icons-material": "npm:9.5.0"
     "@mui/lab": "npm:9.0.0-beta.10"
     "@mui/material": "npm:9.5.0"
-    "@mui/x-date-pickers": "npm:9.16.0"
+    "@mui/x-date-pickers": "npm:9.17.0"
     "@playwright/test": "npm:1.64.1"
     "@rjsf/core": "npm:6.11.0"
     "@rjsf/mui": "npm:6.11.0"
