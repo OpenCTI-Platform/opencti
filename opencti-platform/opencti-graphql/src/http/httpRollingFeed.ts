@@ -40,19 +40,34 @@ const errorConverter = (e: any) => {
 };
 
 // Leading characters that spreadsheet engines evaluate as a formula (CWE-1236, OWASP CSV injection)
-const CSV_FORMULA_PREFIXES = ['=', '+', '-', '@', '\t', '\r'];
-const CSV_PLAIN_NUMBER = /^[+-]?\d+(\.\d+)?$/;
+const CSV_FORMULA_PREFIXES = ['=', '+', '-', '@', '＝', '＋', '－', '＠'];
+// Spreadsheets split cells on their own list separator, whatever the feed separator is
+const CSV_SPREADSHEET_DELIMITERS = [',', ';', '\t', '|'];
+// Without letters there is no cell reference, function or DDE call (e.g. a phone number or a negative latitude)
+const CSV_SAFE_VALUE = /^[+-]?[\d\s().,eE+-]*$/;
+
+const isCsvFormula = (data: string) => {
+  if (data.startsWith('\t') || data.startsWith('\r')) return true;
+  // Leading spaces can be trimmed on import
+  const trimmedData = data.trimStart();
+  return CSV_FORMULA_PREFIXES.some((prefix) => trimmedData.startsWith(prefix)) && !CSV_SAFE_VALUE.test(trimmedData);
+};
 
 export const escapeCsvField = (separator: string, data: string) => {
-  // Plain numbers (e.g. a negative latitude) cannot carry a formula and are kept as is
-  const isFormula = CSV_FORMULA_PREFIXES.some((prefix) => data.startsWith(prefix)) && !CSV_PLAIN_NUMBER.test(data);
+  const isFormula = isCsvFormula(data);
   // A leading single quote makes the spreadsheet read the cell as text
   const value = isFormula ? `'${data}` : data;
-  if (isFormula || value.includes('"') || value.includes(separator) || value.includes('\n') || value.includes('\r')) {
+  const hasSpreadsheetDelimiter = CSV_SPREADSHEET_DELIMITERS.some((delimiter) => value.includes(delimiter));
+  if (isFormula || hasSpreadsheetDelimiter || value.includes('"') || value.includes(separator) || value.includes('\n') || value.includes('\r')) {
     const escapedData = value.replaceAll('"', '""');
     return `"${escapedData}"`;
   }
   return value;
+};
+
+export const buildCsvHeader = (feed: BasicStoreEntityFeed): string => {
+  const separator = feed.separator ?? ',';
+  return feed.feed_attributes.map((a) => escapeCsvField(separator, a.attribute)).join(separator);
 };
 
 const neighborKey = (relType: string, targetType: string) => `${relType}:${targetType}`;
@@ -331,7 +346,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       const elements = R.take(SIZE_LIMIT, paginateElements); // Due to pagination, number of results can be slightly superior
       const neighborsMap = await resolveNeighborsForFeed(context, user, elements, feed);
       if (feed.include_header) {
-        res.write(`${feed.feed_attributes.map((a) => a.attribute).join(feed.separator)}\r\n`);
+        res.write(`${buildCsvHeader(feed)}\r\n`);
       }
 
       const lines = buildCsvLines(elements, feed, neighborsMap);

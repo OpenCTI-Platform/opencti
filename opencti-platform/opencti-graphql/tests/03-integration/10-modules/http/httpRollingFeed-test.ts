@@ -149,7 +149,7 @@ test"`];
     neighborsMap.set('test-id', entityNeighbors);
 
     const resultLines = buildCsvLines(elements, neighborFeed, neighborsMap);
-    expect(resultLines).toEqual(['CSV test;WannaCry|NotPetya']);
+    expect(resultLines).toEqual(['CSV test;"WannaCry|NotPetya"']);
   });
 
   it('should use first-match strategy when configured', () => {
