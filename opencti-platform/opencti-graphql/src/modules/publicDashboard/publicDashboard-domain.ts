@@ -7,7 +7,7 @@ import { createEntity, deleteElementById, loadEntity, updateAttribute } from '..
 import { type BasicStoreEntityWorkspace } from '../workspace/workspace-types';
 import { isNotEmptyField } from '../../database/utils';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
 import {
   type EditInput,
   type FilterGroup,
@@ -35,6 +35,7 @@ import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, St
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
 import { buildDashboardDateVariableIds, buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
+import { applyPublicationTimeRange, buildPublicationVariableValues, toPublicationTimeZone } from './publicDashboard-publication';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
@@ -147,21 +148,23 @@ export const getAllowedMarkings = async (
 /**
  * Creates the private manifest by resolving saved filter references
  * (filters_id, dynamicFrom_id, dynamicTo_id) into inline filters,
- * then dashboard variable tokens into their default values.
+ * then dashboard variable tokens into the values frozen at publication.
+ * Date variables are shifted in `timeZone` (UTC when undefined).
  */
 const createPrivateManifest = async (
   context: AuthContext,
   user: AuthUser,
   parsedManifest: any,
+  variableValues: ReadonlyMap<string, string>,
+  timeZone?: string,
 ) => {
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const widgetDefinitions = Object.values(parsedManifest.widgets);
     await Promise.all(widgetDefinitions.map((widget: any) => resolveSavedFiltersInDataSelection(context, user, widget)));
     // Variable values are frozen at publication: the private manifest never holds a token.
     // A token without value would otherwise reach the queries as a literal (with not_eq, matching everything).
-    const variableValues = buildDashboardVariableDefaultValues(parsedManifest.variables);
     const dateVariableIds = buildDashboardDateVariableIds(parsedManifest.variables);
-    const { widgets, unresolved } = resolveDashboardVariablesInWidgets(parsedManifest.widgets, variableValues, { dateVariableIds });
+    const { widgets, unresolved } = resolveDashboardVariablesInWidgets(parsedManifest.widgets, variableValues, { dateVariableIds, timeZone });
     if (unresolved.length > 0) {
       throw FunctionalError('Cannot publish this dashboard, some widgets use dashboard variables without value', { variableIds: unresolved });
     }
@@ -252,7 +255,18 @@ export const addPublicDashboard = async (
     refresh_interval: dashboardRefreshInterval,
   };
 
-  const privateManifest = await createPrivateManifest(context, user, parsedManifest);
+  // The author chooses the values frozen in the published dashboard: variable values, time range, and the time zone
+  // the date variables were shown in. Without the feature, the defaults of the dashboard are published as before.
+  let variableValues = buildDashboardVariableDefaultValues(parsedManifest.variables);
+  let timeZone: string | undefined;
+  if (isFeatureEnabled('DASHBOARD_VARIABLES')) {
+    variableValues = buildPublicationVariableValues(parsedManifest.variables, input.variable_values);
+    // Before both manifests are built: the public page opens on the published range
+    parsedManifest.config = applyPublicationTimeRange(parsedManifest.config, input.time_range);
+    timeZone = toPublicationTimeZone(input.time_zone);
+  }
+
+  const privateManifest = await createPrivateManifest(context, user, parsedManifest, variableValues, timeZone);
   const publicManifest = createPublicManifest(parsedManifest);
 
   // Create publicDashboard

@@ -8,6 +8,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboa
 import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { fromB64, toB64 } from '../../../src/utils/base64';
 import { addSavedFilter, deleteSavedFilter } from '../../../src/modules/savedFilter/savedFilter-domain';
+import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 
 const LIST_QUERY = gql`
   query publicDashboards(
@@ -1460,10 +1461,34 @@ describe('Public dashboards and dashboard variables', () => {
     await queryAsAdmin({ query: UPDATE_PRIVATE_DASHBOARD_QUERY, variables: { id: dashboardId, input: { key: 'manifest', value: toB64(manifest) } } });
     return dashboardId;
   };
-  const publish = (dashboardId, uriKey) => queryAsAdmin({
+  const publish = (dashboardId, uriKey, extraInput = {}) => queryAsAdmin({
     query: CREATE_QUERY,
-    variables: { input: { name: uriKey, uri_key: uriKey, dashboard_id: dashboardId, enabled: true } },
+    variables: { input: { name: uriKey, uri_key: uriKey, dashboard_id: dashboardId, enabled: true, ...extraInput } },
   });
+  const READ_MANIFESTS_QUERY = gql`
+    query PublicDashboardTestManifests($id: String!) {
+      publicDashboard(id: $id) {
+        id
+        public_manifest
+        private_manifest
+      }
+    }
+  `;
+  const readManifests = async (publicDashboardId) => {
+    const read = await queryAsAdmin({ query: READ_MANIFESTS_QUERY, variables: { id: publicDashboardId } });
+    return { publicManifest: fromB64(read.data.publicDashboard.public_manifest), privateManifest: fromB64(read.data.publicDashboard.private_manifest) };
+  };
+  const publishedValues = (privateManifest) => privateManifest.widgets['variable-widget'].dataSelection[0].filters.filters[0].values;
+  const readVariableId = async (dashboardId) => {
+    const read = await queryAsAdmin({ query: READ_DASHBOARD_MANIFEST_QUERY, variables: { id: dashboardId } });
+    return fromB64(read.data.workspace.manifest).variables[0].id;
+  };
+  const publishAndRead = async (dashboardId, uriKey, extraInput) => {
+    const published = await publish(dashboardId, uriKey, extraInput);
+    expect(published.errors).toBeUndefined();
+    extraPublicDashboardIds.push(published.data.publicDashboardAdd.id);
+    return readManifests(published.data.publicDashboardAdd.id);
+  };
 
   afterAll(async () => {
     for (let i = 0; i < extraPublicDashboardIds.length; i += 1) {
@@ -1499,6 +1524,62 @@ describe('Public dashboards and dashboard variables', () => {
     const privateManifest = fromB64(read.data.publicDashboard.private_manifest);
     expect(privateManifest.variables).toBeUndefined();
     expect(privateManifest.presets).toBeUndefined();
+  });
+
+  it('should freeze the provided variable values in the private manifest', async () => {
+    const dashboardId = await createDashboardWithVariableWidget('Dashboard variables provided', 'eq', true);
+    const variableId = await readVariableId(dashboardId);
+    const { privateManifest } = await publishAndRead(dashboardId, 'public-dashboard-variables-provided', { variable_values: [{ variable_id: variableId, value: 'Report' }] });
+    expect(publishedValues(privateManifest)).toEqual(['Report']);
+    expect(JSON.stringify(privateManifest)).not.toContain('$var:');
+  });
+
+  it('should publish one dashboard twice with two different values', async () => {
+    const dashboardId = await createDashboardWithVariableWidget('Dashboard variables twice', 'eq', true);
+    const variableId = await readVariableId(dashboardId);
+    const first = await publishAndRead(dashboardId, 'public-dashboard-variables-first', { variable_values: [{ variable_id: variableId, value: 'Malware' }] });
+    const second = await publishAndRead(dashboardId, 'public-dashboard-variables-second', { variable_values: [{ variable_id: variableId, value: 'Report' }] });
+    expect(publishedValues(first.privateManifest)).toEqual(['Malware']);
+    expect(publishedValues(second.privateManifest)).toEqual(['Report']);
+  });
+
+  it('should refuse an unknown variable or an invalid value', async () => {
+    const dashboardId = await createDashboardWithVariableWidget('Dashboard variables refused', 'eq', true);
+    const variableId = await readVariableId(dashboardId);
+    const unknown = await publish(dashboardId, 'public-dashboard-variables-unknown', { variable_values: [{ variable_id: ORPHAN_VARIABLE_ID, value: 'Report' }] });
+    if (unknown.data?.publicDashboardAdd) extraPublicDashboardIds.push(unknown.data.publicDashboardAdd.id);
+    expect(unknown.errors?.[0].message).toEqual('Unknown dashboard variable');
+    const invalid = await publish(dashboardId, 'public-dashboard-variables-invalid', { variable_values: [{ variable_id: variableId, value: `$var:${variableId}` }] });
+    if (invalid.data?.publicDashboardAdd) extraPublicDashboardIds.push(invalid.data.publicDashboardAdd.id);
+    expect(invalid.errors?.[0].message).toEqual('Invalid dashboard variable value');
+  });
+
+  it('should write the provided time range in both manifests', async () => {
+    const dashboardId = await createDashboardWithVariableWidget('Dashboard variables time range', 'eq', true);
+    const { publicManifest, privateManifest } = await publishAndRead(dashboardId, 'public-dashboard-variables-time-range', {
+      time_range: { relative_date: 'days-7', start_date: '2026-01-01T00:00:00+01:00', end_date: null },
+      time_zone: 'Europe/Paris',
+    });
+    const expected = expect.objectContaining({ relativeDate: 'days-7', startDate: null, endDate: null });
+    expect(publicManifest.config).toEqual(expected);
+    expect(privateManifest.config).toEqual(expected);
+  });
+
+  it('should ignore the new fields when the feature flag is disabled', async () => {
+    const dashboardId = await createDashboardWithVariableWidget('Dashboard variables flag off', 'eq', true);
+    const variableId = await readVariableId(dashboardId);
+    const previous = [...ENABLED_FEATURE_FLAGS];
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
+    try {
+      const { privateManifest } = await publishAndRead(dashboardId, 'public-dashboard-variables-flag-off', {
+        variable_values: [{ variable_id: variableId, value: 'Report' }],
+        time_range: { relative_date: 'days-7' },
+      });
+      expect(publishedValues(privateManifest)).toEqual(['Malware']);
+      expect(privateManifest.config.relativeDate).toBeUndefined();
+    } finally {
+      ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previous);
+    }
   });
 
   it.each(['eq', 'not_eq'])('should refuse to publish a widget using a variable without value (%s)', async (operator) => {
