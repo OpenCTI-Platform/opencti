@@ -1,8 +1,8 @@
-import type { DashboardTimeRange } from './dashboardTimeRange';
+import { RELATIVE_DATE_OPTIONS, type DashboardTimeRange } from './dashboardTimeRange';
 import { isStrictIsoDate } from './dashboardVariablesResolution';
 
-// The values of the relative time select (DashboardRelativeDateSelect), `none` aside: it is stored as null.
-export const RELATIVE_DATE_VALUES: readonly string[] = ['days-1', 'days-7', 'months-1', 'months-3', 'months-6', 'years-1'];
+// `none` aside: it is stored as null.
+const RELATIVE_DATE_VALUES: readonly string[] = RELATIVE_DATE_OPTIONS.map(({ value }) => value);
 
 export const TIME_RANGE_PARAM = 'timeRange';
 const ABSOLUTE_RANGE_SEPARATOR = '..';
