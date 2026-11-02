@@ -2,6 +2,17 @@ import type { DashboardConfig } from './dashboard-types';
 
 export type DashboardDateField = 'startDate' | 'endDate' | 'relativeDate';
 
+// The relative dates a dashboard offers, in the order of the select. A value outside this list is refused when read
+// back from the browser or the URL.
+export const RELATIVE_DATE_OPTIONS: readonly { value: string; label: string }[] = [
+  { value: 'days-1', label: 'Last 24 hours' },
+  { value: 'days-7', label: 'Last 7 days' },
+  { value: 'months-1', label: 'Last month' },
+  { value: 'months-3', label: 'Last 3 months' },
+  { value: 'months-6', label: 'Last 6 months' },
+  { value: 'years-1', label: 'Last year' },
+];
+
 export interface DashboardTimeRange {
   startDate: string | null;
   endDate: string | null;
