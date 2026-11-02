@@ -54,7 +54,7 @@ import { generateCreateMessage } from '../database/data-changes';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
-import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
+import { EVENT_CURRENT_VERSION, sanitizeStreamEventOrigin } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { extractStixRepresentative } from '../database/stix-representative';
 import { doYield } from '../utils/eventloop-utils';
@@ -298,14 +298,13 @@ const createSseMiddleware = () => {
       }
       if (event) {
         message += 'data: ';
+        // Only publish the stream origin attributes
+        const sanitized = event.origin ? { ...event, origin: sanitizeStreamEventOrigin(event.origin) } : event;
         const isDataTopic = eventId && topic !== 'heartbeat' && topic !== 'consumer_metrics';
         if (isDataTopic && req.user && !isUserHasCapability(req.user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-          const filtered = { ...event };
-          delete filtered.data.extensions[STIX_EXT_OCTI].granted_refs;
-          message += JSON.stringify(filtered);
-        } else {
-          message += JSON.stringify(event);
+          delete sanitized.data.extensions[STIX_EXT_OCTI].granted_refs;
         }
+        message += JSON.stringify(sanitized);
         message += '\n';
       }
       message += '\n';
