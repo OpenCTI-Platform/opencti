@@ -59,6 +59,8 @@ export interface ConfigPresetImportPlan {
   roleIds?: Set<string>;
   // The standard ids of the groups the earlier items of a dry run would create
   groupIds?: Set<string>;
+  // Whether the roles the earlier items of a dry run would create or overwrite give sensitive rights, by standard id
+  roleSensitiveRights?: Map<string, boolean>;
 }
 
 export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`;

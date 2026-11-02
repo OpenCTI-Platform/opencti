@@ -17,7 +17,7 @@ vi.mock('../../../../../src/modules/configImport/configImport-sensitive', async 
 import { findRoleById, roleAddRelation, roleCapabilities, roleDeleteRelation, roleEditField } from '../../../../../src/modules/user/user-domain';
 import { addRole } from '../../../../../src/domain/grant';
 import { fullEntitiesList } from '../../../../../src/database/middleware-loader';
-import { importRole, roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
+import { importRole, roleConfigurationGrantsSensitiveRights, roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
 import { isConfigImportSensitiveChangeAllowed } from '../../../../../src/modules/configImport/configImport-sensitive';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
 import { generateStandardId } from '../../../../../src/schema/identifier';
@@ -237,5 +237,17 @@ describe('importRole protected sensitive configuration', () => {
     withRoles([existingRole('Administrator')]);
     await importRole(context, user, roleConfiguration({ name: 'Administrator' }), { mode: ConfigImportMode.Copy, dryRun: true });
     expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'roles', roleStandardId('Administrator (1)'));
+  });
+});
+
+describe('roleConfigurationGrantsSensitiveRights', () => {
+  it.each([
+    ['the bypass capability', roleStandardId('Analyst'), { capabilities: ['BYPASS'] }, true],
+    ['the management of sensitive configuration', roleStandardId('Analyst'), { can_manage_sensitive_config: true }, true],
+    ['the Administrator role, which always keeps the bypass capability', roleStandardId('Administrator'), { name: 'Administrator', capabilities: [] }, true],
+    ['none of them', roleStandardId('Analyst'), {}, false],
+  ])('tells a role with %s', (_, standardId, overrides, expected) => {
+    const configuration = roleConfiguration(overrides) as Parameters<typeof roleConfigurationGrantsSensitiveRights>[1];
+    expect(roleConfigurationGrantsSensitiveRights(standardId, configuration)).toBe(expected);
   });
 });

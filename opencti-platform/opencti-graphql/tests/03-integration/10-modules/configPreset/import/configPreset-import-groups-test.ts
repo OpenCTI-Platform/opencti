@@ -159,6 +159,26 @@ describe('Config preset import: groups', () => {
     expect(await configurationOf(GROUP_NAME)).toMatchObject({ allowed_markings: [tlpGreen], max_shareable_markings: [{ type: 'PAP', value: 'none' }], default_dashboard: null });
   });
 
+  it('says in the dry run that a group gives sensitive rights when the same import creates its role with the bypass capability', async () => {
+    const roleId = roleStandardId(ROLE_NAME);
+    const files = {
+      ...groupBundle(groupConfiguration()),
+      'dependencies.json': JSON.stringify({ 'securityAccess.groups': { [groupStandardId(GROUP_NAME)]: { [roleId]: 'security_access/roles/role.json' } } }),
+      'security_access/roles/role.json': itemFile('securityAccess.roles', roleId, {
+        name: ROLE_NAME,
+        description: '',
+        can_manage_sensitive_config: false,
+        capabilities: ['BYPASS'],
+        capabilities_in_draft: [],
+      }),
+    };
+    const results = await importData(await uploadZip(await buildZip(files)), [{ type: 'groups' }], true);
+    expect(results).toEqual([
+      { type: 'roles', key: roleId, status: 'CREATED', reason: 'Grants sensitive rights' },
+      { type: 'groups', key: groupStandardId(GROUP_NAME), status: 'CREATED', reason: 'Grants sensitive rights' },
+    ]);
+  });
+
   it('fails a group whose role is neither on the platform nor in the bundle', async () => {
     const results = await importData(await uploadZip(await buildZip(groupBundle(groupConfiguration()))), [{ type: 'groups' }]);
     expect(results).toEqual([{ type: 'groups', key: groupStandardId(GROUP_NAME), status: 'FAILED', reason: `Roles could not be imported: ${ROLE_NAME}` }]);

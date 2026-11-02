@@ -4,7 +4,7 @@ import { fullEntitiesList, pageEntitiesConnection } from '../../../database/midd
 import { ENTITY_TYPE_ROLE } from '../../../schema/internalObject';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { type BasicStoreEntityRole, getRoleConfigPresetConfiguration } from '../../user/configPreset/role-export';
-import { importRole, roleStandardId } from '../../user/configPreset/role-import';
+import { importRole, roleConfigurationGrantsSensitiveRights, roleStandardId } from '../../user/configPreset/role-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
@@ -41,6 +41,10 @@ const rolesImporter: ConfigPresetImporter = {
     const result = await importRole(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.roleIds });
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(ROLES_FAMILY_ID, item.id));
+    }
+    const keepsIdentity = result.status === 'overwritten' || (result.status === 'created' && !result.exists);
+    if (keepsIdentity && result.configuration) {
+      plan.roleSensitiveRights?.set(item.id, roleConfigurationGrantsSensitiveRights(item.id, result.configuration));
     }
     return { ...base, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason };
   },

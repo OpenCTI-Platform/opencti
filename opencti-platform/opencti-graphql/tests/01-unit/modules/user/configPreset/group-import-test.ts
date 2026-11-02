@@ -281,6 +281,24 @@ describe('importGroup Administrators group', () => {
 });
 
 describe('importGroup sensitive rights', () => {
+  it('reads in a dry run the rights of a role the same import creates', async () => {
+    withPlatform({ roles: [] });
+    const options = { mode: ConfigImportMode.Overwrite, dryRun: true, isRoleCreated: () => true };
+    const sensitive = await importGroup(context, user, groupConfiguration(), { ...options, isRoleSensitive: () => true });
+    expect(sensitive).toMatchObject({ status: 'created', reason: 'Grants sensitive rights' });
+    const notSensitive = await importGroup(context, user, groupConfiguration(), { ...options, isRoleSensitive: () => false });
+    expect(notSensitive.reason).toBeUndefined();
+  });
+
+  it('reads in a dry run the rights a role overwritten by the same import will have, not its current ones', async () => {
+    vi.mocked(roleCapabilities).mockResolvedValue([{ name: 'BYPASS' }] as never);
+    const overwritten = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true, isRoleSensitive: () => false });
+    expect(overwritten.reason).toBeUndefined();
+    vi.mocked(roleCapabilities).mockResolvedValue([]);
+    const granted = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true, isRoleSensitive: () => true });
+    expect(granted.reason).toEqual('Grants sensitive rights');
+  });
+
   it('says so when the group gets a role with the bypass capability', async () => {
     vi.mocked(roleCapabilities).mockImplementation(async (_ctx, _user, roleId) => (roleId === analystRole.id ? [{ name: 'BYPASS' }] : []) as never);
     const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true });

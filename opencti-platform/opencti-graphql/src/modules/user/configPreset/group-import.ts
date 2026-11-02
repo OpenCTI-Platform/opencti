@@ -23,6 +23,8 @@ import { type GroupImportConfiguration, groupImportSchema, type GroupMarkingRefe
 export interface GroupImportOptions extends ConfigImportOptions {
   reservedIds?: Set<string>;
   isRoleCreated?: (standardId: string) => boolean;
+  // In a dry run, whether a role the same import creates or overwrites will give sensitive rights; undefined when the import does not write it
+  isRoleSensitive?: (standardId: string) => boolean | undefined;
 }
 
 export type GroupImportCode = 'invalid' | 'role_missing' | 'exists' | 'name_conflict' | 'sensitive_config';
@@ -147,11 +149,23 @@ const withAdministratorRole = async (context: AuthContext, user: AuthUser, group
   return { roles: [...roles, administratorRole], administratorRoleKept: true };
 };
 
-const grantsSensitiveRights = async (context: AuthContext, user: AuthUser, roles: BasicStoreEntityRole[], currentIds: string[]) => {
-  const added = roles.filter(({ id }) => !currentIds.includes(id));
-  for (let i = 0; i < added.length; i += 1) {
-    if (added[i].can_manage_sensitive_config || (await roleCapabilities(context, user, added[i].id)).some(({ name }) => name === BYPASS)) {
-      return true;
+const grantsSensitiveRights = async (
+  context: AuthContext,
+  user: AuthUser,
+  references: string[],
+  roles: BasicStoreEntityRole[],
+  currentIds: string[],
+  isRoleSensitive: (standardId: string) => boolean | undefined,
+) => {
+  for (let i = 0; i < references.length; i += 1) {
+    const role = roles.find(({ standard_id }) => standard_id === references[i]);
+    if (!role || !currentIds.includes(role.id)) {
+      // The rights the same import gives the role first, then the ones it has on the platform
+      const planned = isRoleSensitive(references[i]);
+      const sensitive = planned ?? (!!role && (!!role.can_manage_sensitive_config || (await roleCapabilities(context, user, role.id)).some(({ name }) => name === BYPASS)));
+      if (sensitive) {
+        return true;
+      }
     }
   }
   return false;
@@ -171,7 +185,7 @@ export const importGroup = async (
   configuration: unknown,
   options: GroupImportOptions,
 ): Promise<GroupImportResult> => {
-  const { mode, dryRun = false, reservedIds, isRoleCreated = () => false } = options;
+  const { mode, dryRun = false, reservedIds, isRoleCreated = () => false, isRoleSensitive = () => undefined } = options;
   const parsed = groupImportSchema.safeParse(configuration);
   if (!parsed.success) {
     return refused('invalid', configImportValidationReason(parsed.error), false);
@@ -199,10 +213,12 @@ export const importGroup = async (
   const { roles: groupRoles, administratorRoleKept } = await withAdministratorRole(context, user, targetId, found);
   const resolved = await resolveGroup(context, user, parsed.data, groupRoles);
   const currentIds = target ? await currentRoleIds(context, user, target.id) : [];
+  // The roles of the bundle, the ones the same import creates included, and the Administrator role the Administrators group keeps
+  const references = [...new Set([...parsed.data.roles.map(({ standard_id }) => standard_id), ...groupRoles.map(({ standard_id }) => standard_id)])];
   const reason = joinConfigImportReasons([
     name !== parsed.data.name ? `Added as "${name}"` : undefined,
     administratorRoleKept ? ADMINISTRATOR_ROLE_KEPT_REASON : undefined,
-    (await grantsSensitiveRights(context, user, groupRoles, currentIds)) ? SENSITIVE_RIGHTS_REASON : undefined,
+    (await grantsSensitiveRights(context, user, references, groupRoles, currentIds, isRoleSensitive)) ? SENSITIVE_RIGHTS_REASON : undefined,
     resolved.missingMarkings.length > 0 ? `Markings not found: ${resolved.missingMarkings.join(', ')}` : undefined,
     resolved.missingDashboard ? `Default dashboard not found: ${resolved.missingDashboard}` : undefined,
     ...assignmentReasons(parsed.data, target),

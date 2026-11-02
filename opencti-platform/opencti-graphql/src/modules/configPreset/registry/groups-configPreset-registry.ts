@@ -61,7 +61,8 @@ const groupsImporter: ConfigPresetImporter = {
       return { ...base, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the group does not match its name' };
     }
     const isRoleCreated = (standardId: string) => plan.created.has(configPresetPlanKey(ROLES_FAMILY_ID, standardId));
-    const result = await importGroup(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.groupIds, isRoleCreated });
+    const isRoleSensitive = (standardId: string) => plan.roleSensitiveRights?.get(standardId);
+    const result = await importGroup(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.groupIds, isRoleCreated, isRoleSensitive });
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(GROUPS_FAMILY_ID, item.id));
     }

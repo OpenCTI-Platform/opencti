@@ -530,11 +530,11 @@ describe('Config preset registry', () => {
       });
     });
 
-    it('exports the values that are not set as null, to keep a stable file shape', async () => {
+    it('exports a policy that is not set with the value the platform applies, so that it replaces the policy of the target', async () => {
       const file = await exportConfigPresetItem(context, user, findFamily('policies'), await findItem('policies', 'policies'));
       expect(file.configuration).toEqual({
-        ...Object.fromEntries(Object.keys(passwordPolicy).map((key) => [key, null])),
-        view_all_users: null,
+        ...Object.fromEntries(Object.keys(passwordPolicy).map((key) => [key, 0])),
+        view_all_users: false,
         platform_organization: null,
       });
     });

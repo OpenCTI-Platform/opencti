@@ -68,6 +68,10 @@ const grantsSensitiveRights = (configuration: RoleImportConfiguration, existing?
   return grantsBypass || grantsSensitiveConfig;
 };
 
+export const roleConfigurationGrantsSensitiveRights = (standardId: string, configuration: RoleImportConfiguration) => {
+  return withAdministratorBypass(standardId, configuration).configuration.capabilities.includes(BYPASS) || !!configuration.can_manage_sensitive_config;
+};
+
 const capabilityNames = async (context: AuthContext, user: AuthUser, roleId: string, relationshipType: string) => {
   return (await roleCapabilities(context, user, roleId, relationshipType)).map(({ name }) => name);
 };
