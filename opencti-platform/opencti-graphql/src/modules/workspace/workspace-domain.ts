@@ -333,14 +333,16 @@ export const workspaceImportConfiguration = async (context: AuthContext, user: A
   checkDashboardConfigurationImport('dashboard', parsedData);
   const authorizedMembers = initializeAuthorizedMembers([], user);
   const { manifest } = parsedData.configuration;
-  // Manifest ids must be rewritten for filters
-  const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');
+  // Dashboard variables of an imported file go through the same validation as the typed API, before any id
+  // is resolved: a malformed variable never reaches the conversion.
+  const validatedManifest = validateManifestVariables(manifest);
+  // Manifest ids must be rewritten for filters and variables
+  const generatedManifest = await convertDashboardManifestIds(context, user, validatedManifest, 'stix');
   const mappedData = {
     type: parsedData.type,
     openCTI_version: parsedData.openCTI_version,
     name: parsedData.configuration.name,
-    // Dashboard variables of an imported file go through the same validation as the typed API
-    manifest: validateManifestVariables(generatedManifest),
+    manifest: generatedManifest,
     restricted_members: authorizedMembers,
   };
   const importWorkspaceCreation = await createEntity(context, user, mappedData, ENTITY_TYPE_WORKSPACE);

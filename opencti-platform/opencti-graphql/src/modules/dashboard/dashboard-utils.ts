@@ -161,9 +161,9 @@ export const importDashboardWidgetConfiguration = async (
 export const convertDashboardManifestIds = async (
   context: AuthContext,
   user: AuthUser,
-  manifest: string,
+  manifest: string | null | undefined,
   from: 'internal' | 'stix',
-): Promise<string> => {
+): Promise<string | null | undefined> => {
   const parsedManifest = fromB64(manifest ?? '{}');
   const hasWidgets = parsedManifest && isNotEmptyField(parsedManifest.widgets);
   const hasVariables = parsedManifest && Array.isArray(parsedManifest.variables) && parsedManifest.variables.length > 0;
