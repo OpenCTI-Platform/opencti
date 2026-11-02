@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@analytics/google-analytics": "1.1.0",
-    "@cfworker/json-schema": "4.1.1",
+    "@cfworker/json-schema": "4.1.4",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.1",
     "@filigran/chatbot": "3.15.1",
