@@ -1,5 +1,4 @@
 import conf from '../config/conf';
-import { FunctionalError } from '../config/errors';
 import type { WorkerRequest } from './safeEjs.worker';
 import { createWorkerPool } from './workerPool';
 
@@ -13,8 +12,7 @@ const pool = createWorkerPool<WorkerRequest, string>({
     codeRangeSizeMb: conf.get('safe_ejs:resource_limits:code_range_size_mb') ?? 10,
     stackSizeMb: conf.get('safe_ejs:resource_limits:stack_size_mb') ?? 4,
   },
-  // The template comes from the user: a timeout is reported as a functional error, not a platform failure
-  timeoutError: (timeout) => FunctionalError(`Rendering timeout after ${timeout}ms`, { timeout }),
+  timeoutError: (timeout) => new Error(`Rendering timeout after ${timeout}ms`),
 });
 
 export const renderInPool = (request: WorkerRequest, timeout: number): Promise<string> => pool.run(request, timeout);

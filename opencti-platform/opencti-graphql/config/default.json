@@ -412,8 +412,9 @@
     }
   },
   "json_path": {
-    "timeout": 5000,
+    "timeout": 60000,
     "idle_pool_size": 2,
+    "max_pool_size": 4,
     "max_queries_per_worker": 10000,
     "resource_limits": {
       "max_old_generation_size_mb": 512,

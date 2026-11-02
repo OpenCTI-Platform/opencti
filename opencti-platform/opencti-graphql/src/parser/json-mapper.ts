@@ -65,9 +65,29 @@ const format = (value: string | string[], def: AttributeDefinition, attribute: S
   return formatValue(value, def.type, attribute);
 };
 
+// The base document of one mapping execution. An independent path does not depend on the record:
+// it is evaluated once per execution instead of once per record, and its result is reused.
+interface MappingBase {
+  json: JSON;
+  independentResults: Map<string, Promise<unknown>>;
+}
+
+const queryRecordOrBase = (base: MappingBase, record: JSON, path: string, independent: boolean | undefined, wrap: boolean) => {
+  if (independent !== true) {
+    return queryJsonPath({ path, json: record, wrap, flatten: true });
+  }
+  const key = JSON.stringify([path, wrap]);
+  let result = base.independentResults.get(key);
+  if (!result) {
+    result = queryJsonPath({ path, json: base.json, wrap, flatten: true });
+    base.independentResults.set(key, result);
+  }
+  return result;
+};
+
 const extractComplexPathFromJson = async (
   sandbox: SafeEjsSandbox,
-  base: JSON,
+  base: MappingBase,
   metaData: Record<string, any>,
   record: JSON,
   attribute: ComplexAttributePath,
@@ -77,13 +97,7 @@ const extractComplexPathFromJson = async (
   const data: any = { ...metaData };
   for (let i = 0; i < (variables ?? []).length; i += 1) {
     const variable = (variables ?? [])[i];
-    const onBase = variable.independent === true;
-    data[variable.variable] = await queryJsonPath({
-      path: variable.path,
-      json: onBase ? base : record,
-      wrap: attrDef?.multiple ?? false,
-      flatten: true,
-    });
+    data[variable.variable] = await queryRecordOrBase(base, record, variable.path, variable.independent, attrDef?.multiple ?? false);
   }
   data.patternFromValue = (k: string, value: string) => {
     try {
@@ -119,19 +133,12 @@ const extractComplexPathFromJson = async (
 };
 
 const extractSimpleMultiPathFromJson = async (
-  base: JSON,
+  base: MappingBase,
   record: JSON,
   attribute: SimpleAttributePath,
   attrDef: AttributeDefinition,
 ) => {
-  const { path } = attribute;
-  const onBase = attribute.independent === true;
-  const val = await queryJsonPath({
-    path,
-    json: onBase ? base : record,
-    wrap: attrDef.multiple ?? false,
-    flatten: true,
-  }) as string | string[];
+  const val = await queryRecordOrBase(base, record, attribute.path, attribute.independent, attrDef.multiple ?? false) as string | string[];
   if (Array.isArray(val)) {
     const formattedValues = val.map((value) => {
       const formatedData = format(value, attrDef, attribute);
@@ -150,7 +157,7 @@ const extractSimpleMultiPathFromJson = async (
 };
 
 const extractSimpleIdentifierFromJson = async (
-  base: JSON,
+  base: MappingBase,
   record: JSON,
   attribute: SimpleAttributePath,
   attrDef: AttributeDefinition,
@@ -159,7 +166,7 @@ const extractSimpleIdentifierFromJson = async (
   return Array.isArray(value) ? value.join('-') : value;
 };
 
-const extractIdentifierFromJson = async (base: JSON, record: JSON, identifier: string, attrDef: AttributeDefinition) => {
+const extractIdentifierFromJson = async (base: MappingBase, record: JSON, identifier: string, attrDef: AttributeDefinition) => {
   const identifiers = identifier.split(',');
   const values = [];
   for (let i = 0; i < identifiers.length; i += 1) {
@@ -186,7 +193,7 @@ const orderedIdentifiersCombinations = <T>(arrays: T[][]): T[][] => {
   return result;
 };
 
-const extractTargetIdentifierFromJson = async (base: JSON, record: JSON, identifier: string, attrDef: AttributeDefinition): Promise<string[]> => {
+const extractTargetIdentifierFromJson = async (base: MappingBase, record: JSON, identifier: string, attrDef: AttributeDefinition): Promise<string[]> => {
   const identifiers = identifier.split(',');
   const arrayOfMappedIdentifiers = [];
   for (let i = 0; i < identifiers.length; i += 1) {
@@ -199,7 +206,7 @@ const extractTargetIdentifierFromJson = async (base: JSON, record: JSON, identif
 
 const handleDirectAttribute = async (
   sandbox: SafeEjsSandbox,
-  base: JSON,
+  base: MappingBase,
   metaData: Record<string, any>,
   attribute: RepresentationAttribute,
   input: Record<string, InputType>,
@@ -241,7 +248,7 @@ const handleDirectAttribute = async (
 const handleBasedOnAttribute = async (
   context: AuthContext,
   user: AuthUser,
-  base: JSON,
+  base: MappingBase,
   attribute: BasedRepresentationAttribute,
   input: Record<string, InputType>,
   record: JSON,
@@ -409,6 +416,7 @@ const jsonMappingExecution = async (
   };
 
   const baseJson = typeof data === 'string' ? JSON.parse(data) : data;
+  const mappingBase: MappingBase = { json: baseJson, independentResults: new Map() };
   const baseArray = [baseJson]; // Wrapping in array for base JSON to have JsonPath base array compatibility
   for (let index = 0; index < baseArray.length; index += 1) {
     const element = baseArray[index];
@@ -416,7 +424,7 @@ const jsonMappingExecution = async (
     const dataVars: any = { ...variables };
     for (let indexVar = 0; indexVar < (mapper.variables ?? []).length; indexVar += 1) {
       const variable = (mapper.variables ?? [])[indexVar];
-      dataVars[variable.name] = await extractComplexPathFromJson(ejsSandbox, baseJson, {}, element, variable.path);
+      dataVars[variable.name] = await extractComplexPathFromJson(ejsSandbox, mappingBase, {}, element, variable.path);
     }
     // endregion
     // region representations
@@ -451,21 +459,21 @@ const jsonMappingExecution = async (
                 if (hashesNames.includes(attribute.key)) {
                   const definitionHash = (attributeDef as ObjectAttribute).mappings.find((definition) => (definition.name === attribute.key));
                   if (definitionHash) {
-                    await handleDirectAttribute(ejsSandbox, baseJson, dataVars, attribute, input, baseDatum, attributeDef, hashesNames);
+                    await handleDirectAttribute(ejsSandbox, mappingBase, dataVars, attribute, input, baseDatum, attributeDef, hashesNames);
                   }
                 } else {
-                  await handleDirectAttribute(ejsSandbox, baseJson, dataVars, attribute, input, baseDatum, attributeDef, []);
+                  await handleDirectAttribute(ejsSandbox, mappingBase, dataVars, attribute, input, baseDatum, attributeDef, []);
                 }
               } else {
                 throw UnsupportedError('Unknown schema for attribute:', { attribute });
               }
             } else if (attribute.mode === 'base') {
               if (refDef) {
-                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, refDef, results, refEntities, representation, chosenMarkings);
+                await handleBasedOnAttribute(context, user, mappingBase, attribute, input, baseDatum, refDef, results, refEntities, representation, chosenMarkings);
               } else if (attribute.key === 'from') {
-                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, fromRef, results, refEntities, representation, chosenMarkings);
+                await handleBasedOnAttribute(context, user, mappingBase, attribute, input, baseDatum, fromRef, results, refEntities, representation, chosenMarkings);
               } else if (attribute.key === 'to') {
-                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, toRef, results, refEntities, representation, chosenMarkings);
+                await handleBasedOnAttribute(context, user, mappingBase, attribute, input, baseDatum, toRef, results, refEntities, representation, chosenMarkings);
               } else {
                 throw UnsupportedError('Unknown schema for attribute:', { attribute });
               }
@@ -496,7 +504,7 @@ const jsonMappingExecution = async (
           } else {
             input.standard_id = generateStandardId(entity_type, input);
             if (representation.identifier) {
-              const identifier = await extractIdentifierFromJson(baseJson, baseDatum, representation.identifier, idType);
+              const identifier = await extractIdentifierFromJson(mappingBase, baseDatum, representation.identifier, idType);
               input.__identifier = identifier ? identifier.trim() : identifier;
             } else {
               input.__identifier = uuidv4();

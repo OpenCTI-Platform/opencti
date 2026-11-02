@@ -10,9 +10,13 @@ export interface WorkerPoolOptions {
   // Bundled file name of the worker, resolved next to the build output
   workerFile: string;
   idlePoolSize: number;
+  // Maximum number of workers running at once: tasks beyond it wait for a free worker. Unbounded if not set.
+  maxPoolSize?: number;
   maxTasksPerWorker: number;
   resourceLimits: ResourceLimits;
   timeoutError: (timeout: number) => Error;
+  // Error reported when a task exceeds the worker resource limits. A generic worker error if not set.
+  outOfMemoryError?: () => Error;
 }
 
 export interface WorkerPool<Request, Result> {
@@ -26,13 +30,19 @@ interface PooledWorker {
   retired: boolean;
 }
 
+interface WaitingTask {
+  resolve: (pooled: PooledWorker) => void;
+  reject: (reason: Error) => void;
+}
+
 // A worker handles one task at a time: a timeout then terminates exactly the task that hung,
 // and never a bystander sharing the same thread.
 export const createWorkerPool = <Request, Result>(poolOptions: WorkerPoolOptions): WorkerPool<Request, Result> => {
-  const { workerFile, idlePoolSize, maxTasksPerWorker, resourceLimits, timeoutError } = poolOptions;
+  const { workerFile, idlePoolSize, maxPoolSize = Infinity, maxTasksPerWorker, resourceLimits, timeoutError, outOfMemoryError } = poolOptions;
   let shuttingDown = false;
   const idleWorkers: PooledWorker[] = [];
   const activeWorkers = new Set<PooledWorker>();
+  const waitingTasks: WaitingTask[] = [];
 
   const resolveWorkerUrl = () => {
     const isProduction = import.meta.url.endsWith('.mjs');
@@ -62,13 +72,20 @@ export const createWorkerPool = <Request, Result>(poolOptions: WorkerPoolOptions
     return pooled;
   };
 
-  const acquireWorker = (): PooledWorker => {
+  const acquireWorker = (): Promise<PooledWorker> => {
     if (shuttingDown) {
-      throw new Error(`Worker pool ${workerFile} is shutting down`);
+      return Promise.reject(new Error(`Worker pool ${workerFile} is shutting down`));
     }
-    const available = idleWorkers.pop() ?? spawnWorker();
-    activeWorkers.add(available);
-    return available;
+    const idle = idleWorkers.pop();
+    if (idle || activeWorkers.size < maxPoolSize) {
+      const available = idle ?? spawnWorker();
+      activeWorkers.add(available);
+      return Promise.resolve(available);
+    }
+    // Every worker is busy: the task waits for the first one to be released, in arrival order
+    return new Promise((resolve, reject) => {
+      waitingTasks.push({ resolve, reject });
+    });
   };
 
   const discardWorker = (pooled: PooledWorker) => {
@@ -76,22 +93,37 @@ export const createWorkerPool = <Request, Result>(poolOptions: WorkerPoolOptions
     void pooled.worker.terminate().catch(() => {});
   };
 
-  // Returns the worker to the pool, or retires it once it has run enough tasks that its heap budget
-  // can no longer be read as a per-task limit.
-  const releaseWorker = (pooled: PooledWorker) => {
-    if (pooled.retired) {
-      return;
-    }
-    if (pooled.tasks >= maxTasksPerWorker || idleWorkers.length >= idlePoolSize) {
+  // Hands the worker to the oldest waiting task, or returns it to the pool. A worker that cannot be reused
+  // is discarded, or retired once it has run enough tasks that its heap budget can no longer be read as a
+  // per-task limit; a waiting task then gets a fresh worker in its place.
+  const releaseWorker = (pooled: PooledWorker, reusable: boolean) => {
+    activeWorkers.delete(pooled);
+    const canReuse = reusable && !pooled.retired && pooled.tasks < maxTasksPerWorker;
+    if (!canReuse) {
       discardWorker(pooled);
+    }
+    const waiting = waitingTasks.shift();
+    if (waiting) {
+      try {
+        const next = canReuse ? pooled : spawnWorker();
+        activeWorkers.add(next);
+        waiting.resolve(next);
+      } catch (error) {
+        waiting.reject(error as Error);
+      }
       return;
     }
-    idleWorkers.push(pooled);
+    if (canReuse && idleWorkers.length < idlePoolSize) {
+      idleWorkers.push(pooled);
+    } else if (canReuse) {
+      discardWorker(pooled);
+    }
   };
 
   const run = async (request: Request, timeout: number): Promise<Result> => {
+    const pooled = await acquireWorker();
+    // The budget starts once the task has a worker: time spent waiting for one is not counted
     const deadline = performance.now() + timeout;
-    const pooled = acquireWorker();
     pooled.tasks += 1;
     const { worker } = pooled;
     let settled = false;
@@ -106,9 +138,13 @@ export const createWorkerPool = <Request, Result>(poolOptions: WorkerPoolOptions
         settle(() => reject(new Error(message.error || 'Unknown worker error')));
       }
     };
-    const onError = (error: Error) => {
+    const onError = (error: Error & { code?: string }) => {
       poisoned = true;
-      settle(() => reject(new Error(`Worker error: ${error.message}`, { cause: error })));
+      if (outOfMemoryError && error.code === 'ERR_WORKER_OUT_OF_MEMORY') {
+        settle(() => reject(outOfMemoryError()));
+      } else {
+        settle(() => reject(new Error(`Worker error: ${error.message}`, { cause: error })));
+      }
     };
     const onExit = (code: number) => {
       poisoned = true;
@@ -144,17 +180,13 @@ export const createWorkerPool = <Request, Result>(poolOptions: WorkerPoolOptions
       });
     } finally {
       cleanUp();
-      activeWorkers.delete(pooled);
-      if (poisoned) {
-        discardWorker(pooled);
-      } else {
-        releaseWorker(pooled);
-      }
+      releaseWorker(pooled, !poisoned);
     }
   };
 
   const shutdown = async () => {
     shuttingDown = true;
+    waitingTasks.splice(0, waitingTasks.length).forEach((waiting) => waiting.reject(new Error(`Worker pool ${workerFile} is shutting down`)));
     const pooled = [...idleWorkers.splice(0, idleWorkers.length), ...activeWorkers];
     await Promise.all(pooled.map(async (worker) => {
       retireWorker(worker);
