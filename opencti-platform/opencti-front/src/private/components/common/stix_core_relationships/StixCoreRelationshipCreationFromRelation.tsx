@@ -63,6 +63,11 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
           id
           entity_type
         }
+        ... on StixRelationship {
+          representative {
+            main
+          }
+        }
         ... on AttackPattern {
           name
         }
@@ -144,6 +149,11 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
         ... on BasicRelationship {
           id
           entity_type
+        }
+        ... on StixRelationship {
+          representative {
+            main
+          }
         }
         ... on AttackPattern {
           name
