@@ -10,7 +10,7 @@ podman compose up -d
 Will start:
 - elasticsearch + Kibana (`opencti-dev-elasticsearch` & `opencti-dev-kibana`)
 - rabbitMq (`opencti-dev-rabbitmq`)
-- Silo, S3 object storage (`opencti-dev-minio`)
+- RustFS, S3 object storage (`opencti-dev-minio`), console on http://localhost:9001/rustfs/console/. When moving from Silo, the files already uploaded in the dev stack are not carried over, and the former anonymous volume of `opencti-dev-minio` is no longer used: note its name before the upgrade with `docker inspect -f '{{range .Mounts}}{{.Name}}{{end}}' opencti-dev-minio`, then remove it with `docker volume rm <name>`.
 - Redis + redis insight (`opencti-dev-redis` & `opencti-dev-redis-insight`)
 - [Fake smtp server](#fake-smtp-server) (`opencti-dev-smtp`)
 

@@ -10,7 +10,7 @@ The `opencti-graphql` module is the core API server for the OpenCTI platform. It
 - GraphQL API requests (Apollo Server)
 - Data persistence (ElasticSearch/OpenSearch)
 - Message queuing (RabbitMQ)
-- File storage (S3, served by Silo in the development stack)
+- File storage (S3, served by RustFS in the development stack)
 - Cache (Redis)
 - Authentication & Authorization
 
@@ -22,7 +22,7 @@ The `opencti-graphql` module is the core API server for the OpenCTI platform. It
 - **API**: GraphQL (Apollo Server)
 - **Database**: ElasticSearch or OpenSearch
 - **Messaging**: RabbitMQ
-- **Object Storage**: S3 compatible (Silo, a MinIO fork, in the development stack)
+- **Object Storage**: S3 compatible (RustFS in the development stack)
 - **Cache**: Redis
 
 ### Key Directories

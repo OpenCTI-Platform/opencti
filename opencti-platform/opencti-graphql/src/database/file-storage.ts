@@ -37,7 +37,7 @@ import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
 import { isModuleActivated } from './cluster-module';
 import { getDraftFilePrefix, isDraftFile } from './draft-utils';
-import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpload } from './raw-file-storage';
+import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpload, storageConfKey } from './raw-file-storage';
 import { promiseMap } from '../utils/promiseUtils';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { pushAll } from '../utils/arrayUtil';
@@ -45,8 +45,8 @@ import { getEntitiesMapFromCache } from './cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 
-// Minio configuration
-const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
+// Object storage configuration
+const excludedFiles = conf.get(storageConfKey('excluded_files')) || ['.DS_Store'];
 export const defaultValidationMode = conf.get('app:validation_mode');
 
 export const specialTypesExtensions = {

@@ -434,7 +434,7 @@
     "max_runtime_resolutions": 5000,
     "max_concurrency": 4
   },
-  "minio": {
+  "s3": {
     "bucket_name": "opencti-bucket",
     "bucket_region": "us-east-1",
     "endpoint": "localhost",

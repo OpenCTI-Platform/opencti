@@ -446,9 +446,9 @@ ElasticSearch is also a JAVA process. In order to setup the JAVA memory allocati
 
 Redis has a very small footprint on keys but will consume memory for the stream. By default the size of the stream is limited to 2 millions which represents a memory footprint around `8 GB`. You can find more information in the [Redis docker hub](https://hub.docker.com/_/redis).
 
-#### S3 bucket / Silo
+#### S3 bucket / RustFS
 
-Silo, the community-maintained fork of MinIO, is a small process and does not require a high amount of memory. More information is available in the [Silo documentation](https://silo.pgsty.com/docs/).
+RustFS is a small process and does not require a high amount of memory. More information is available in the [RustFS documentation](https://docs.rustfs.com/). To move an existing Silo or MinIO deployment to RustFS, see the [object storage migration guide](breaking-changes/s3-object-storage-rustfs.md).
 
 #### RabbitMQ
 

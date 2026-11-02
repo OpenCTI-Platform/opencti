@@ -89,7 +89,7 @@ You should have:
 - redis
 - redis insight
 - rabbitmq
-- silo (S3 object storage)
+- rustfs (S3 object storage)
 
 #### Start backend
 

@@ -91,16 +91,6 @@
       allowedVersions: '<4.4',
       description: 'Keep rabbitmq docker image at version 4.3.x',
     },
-    {
-      matchDatasources: [
-        'docker',
-      ],
-      matchPackageNames: [
-        'pgsty/silo',
-      ],
-      versioning: 'regex:^RELEASE\\.(?<patch>\\d{4})-(?<build>\\d{2})-(?<revision>\\d{2})T\\d{2}-\\d{2}-\\d{2}Z$',
-      description: 'Read the date-based RELEASE tags of the silo docker image as patch versions',
-    },
     // sticks to MIT version of apexcharts
     {
       matchDepNames: [

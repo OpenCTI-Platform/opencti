@@ -53,9 +53,9 @@ For the RabbitMQ cluster, you will need a TCP load balancer on top of the nodes 
     
     OpenCTI is also compatible with Amazon MQ, CloudAMQP and AWS / GCP / Azure native services based on the AMQP protocol.
 
-#### S3 bucket / Silo
+#### S3 bucket / RustFS
 
-[Silo](https://github.com/pgsty/silo), the community-maintained fork of MinIO, is an open source server able to serve S3 buckets. It can be deployed in cluster mode and is compatible with several storage backends. OpenCTI is compatible with any tool following the S3 standard.
+[RustFS](https://rustfs.com) is an open source server able to serve S3 buckets. It can be deployed in cluster mode (distributed, with erasure coding). OpenCTI is compatible with any tool following the S3 standard.
 
 ## Platform
 

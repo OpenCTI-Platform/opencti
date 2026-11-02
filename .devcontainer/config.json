@@ -108,7 +108,7 @@
     "max_pagination_result": 5000,
     "max_concurrency": 2
   },
-  "minio": {
+  "s3": {
     "bucket_name": "opencti-bucket",
     "endpoint": "minio",
     "port": 9000,
