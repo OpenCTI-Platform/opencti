@@ -289,7 +289,7 @@ const ContainerMappingContentComponent: FunctionComponent<
     setRemovedEntities([...removedEntities, removedEntity.id]);
   };
 
-  const contentMappingData = deserializeObjectB64(content_mapping);
+  const contentMappingData: Record<string, string> = deserializeObjectB64(content_mapping);
   const mappedStrings = Object.keys(contentMappingData);
   const mappedStringsCount = countMappingMatch(mappedStrings);
 
@@ -516,7 +516,7 @@ const ContainerMappingContentComponent: FunctionComponent<
         paginationOptions={paginationOptions}
         onAdd={addMapping}
         enableReferences={enableReferences}
-        containerStixCoreObjects={Object.values(contentMappingData).map((c) => ({ node: { id: c as string } }))}
+        containerStixCoreObjects={Object.values(contentMappingData).map((c) => ({ node: { id: c } }))}
       />
     </>
   );
