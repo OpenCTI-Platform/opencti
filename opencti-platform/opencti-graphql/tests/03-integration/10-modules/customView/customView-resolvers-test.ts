@@ -8,6 +8,7 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../../../../src/modules/case/fee
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_CUSTOM_VIEW, type StoreEntityCustomView } from '../../../../src/modules/customView/customView-types';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
+import { ENABLED_FEATURE_FLAGS } from '../../../../src/config/conf';
 import { fileToReadStream } from '../../../../src/database/file-storage';
 import { redisClearTelemetryGauge, redisGetTelemetry } from '../../../../src/database/redis';
 import { TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED, TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED } from '../../../../src/manager/telemetryManager';
@@ -837,5 +838,26 @@ describe('CustomView and dashboard variables', () => {
       variables: { id: customViewId, input: { file: createUploadFile('./tests/data/dashboard-variables/', 'widget-with-variable-token.json'), manifest: DASHBOARD_MANIFEST } },
     }, 'A widget using dashboard variables cannot be imported into a custom view', 'FUNCTIONAL_ERROR');
     expect(await readStoredManifest(customViewId)).toEqual(before);
+  });
+
+  it('should still import a widget using dashboard variables when the feature flag is disabled', async () => {
+    const created = await queryAsAdminWithSuccess({
+      query: CREATE_CUSTOM_VIEW_QUERY,
+      variables: { input: { name: 'Custom view flag off', manifest: DASHBOARD_MANIFEST, targetEntityType: ENTITY_TYPE_INTRUSION_SET } },
+    });
+    const customViewId = created.data.customViewAdd.id;
+    createdIds.push(customViewId);
+    const previous = [...ENABLED_FEATURE_FLAGS];
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
+    try {
+      const result = await queryAsAdminWithSuccess({
+        query: IMPORT_WIDGET_CUSTOM_VIEW_QUERY,
+        variables: { id: customViewId, input: { file: createUploadFile('./tests/data/dashboard-variables/', 'widget-with-variable-token.json'), manifest: DASHBOARD_MANIFEST } },
+      });
+      const widgets = fromB64(result.data.customViewWidgetConfigurationImport.manifest).widgets;
+      expect(Object.keys(widgets).length).toEqual(Object.keys(fromB64(DASHBOARD_MANIFEST).widgets).length + 1);
+    } finally {
+      ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previous);
+    }
   });
 });

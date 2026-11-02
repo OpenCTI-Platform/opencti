@@ -2,8 +2,8 @@ import { FunctionalError } from '../../config/errors';
 import type { PublicDashboardTimeRangeInput, PublicDashboardVariableValueInput } from '../../generated/graphql';
 import { buildDashboardVariableDefaultValues, isStrictIsoDate, isValidDashboardVariableValue, isValidTimeZone } from '../dashboard/dashboard-variables-resolution';
 
-// The relative dates offered by the time filters of a dashboard (DashboardRelativeDateSelect).
-const RELATIVE_DATES: ReadonlySet<string> = new Set(['days-1', 'days-7', 'months-1', 'months-3', 'months-6', 'years-1']);
+// A relative date as the front computes it (computeRelativeDate): the select offers a few, an imported dashboard may hold others.
+const RELATIVE_DATE_REGEXP = /^(days|months|years)-\d+$/;
 
 /**
  * Values frozen in a public dashboard, keyed by variable id: the default of each variable, replaced by the value the
@@ -49,7 +49,7 @@ export const applyPublicationTimeRange = (
   const startDate = range.start_date ?? null;
   const endDate = range.end_date ?? null;
   const isValidDate = (date: string | null) => date === null || isStrictIsoDate(date);
-  if ((relativeDate !== null && !RELATIVE_DATES.has(relativeDate)) || !isValidDate(startDate) || !isValidDate(endDate)) {
+  if ((relativeDate !== null && !RELATIVE_DATE_REGEXP.test(relativeDate)) || !isValidDate(startDate) || !isValidDate(endDate)) {
     throw FunctionalError('Invalid public dashboard time range');
   }
   if (relativeDate !== null) {

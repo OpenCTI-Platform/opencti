@@ -44,7 +44,8 @@ describe('PublicDashboardPublishedValues', () => {
   it('should show the time range and the used variables only', () => {
     renderSection(dashboard('dashboard-1', 'Finance'));
     expect(screen.getByText('Published values')).toBeDefined();
-    expect(screen.getByLabelText('Start date')).toBeDefined();
+    // The date picker labels both its hidden input and its field group: the group is the one to look for
+    expect(screen.getByRole('group', { name: 'Start date' })).toBeDefined();
     expect(screen.getByLabelText('Sector name')).toBeDefined();
     expect(screen.queryByLabelText('Unused variable')).toBeNull();
   });

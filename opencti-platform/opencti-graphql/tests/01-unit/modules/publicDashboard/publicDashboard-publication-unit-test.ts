@@ -78,8 +78,13 @@ describe('applyPublicationTimeRange', () => {
     expect(applyPublicationTimeRange(config, { relative_date: 'days-7' })).toEqual({ ...config, relativeDate: 'days-7' });
   });
 
+  it('should accept a relative date the time filters do not offer', () => {
+    expect(applyPublicationTimeRange({}, { relative_date: 'days-30' })).toEqual({ relativeDate: 'days-30', startDate: null, endDate: null });
+  });
+
   it.each([
-    { relative_date: 'days-2' },
+    { relative_date: 'weeks-2' },
+    { relative_date: 'days-' },
     { start_date: '2026/01/01' },
     { end_date: '2026-02-30' },
   ])('should refuse an unknown relative date or a malformed date (%o)', (range) => {
