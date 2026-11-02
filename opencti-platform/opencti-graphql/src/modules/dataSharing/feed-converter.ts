@@ -13,6 +13,7 @@ const convertFeedToStix = (instance: StoreEntityFeed): StixFeed => {
     separator: instance.separator,
     rolling_time: instance.rolling_time,
     include_header: instance.include_header,
+    neutralize_formulas: instance.neutralize_formulas,
     feed_types: instance.feed_types,
     feed_date_attribute: instance.feed_date_attribute,
     feed_attributes: instance.feed_attributes,

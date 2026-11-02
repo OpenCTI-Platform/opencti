@@ -27,6 +27,7 @@ export interface StoreEntityFeed extends StoreEntity {
   separator: string;
   rolling_time: number;
   include_header: boolean;
+  neutralize_formulas?: boolean;
   feed_public: boolean;
   feed_public_user_id?: string | null;
   feed_types: string[];
@@ -41,6 +42,7 @@ export interface StixFeed extends StixObject {
   separator: string;
   rolling_time: number;
   include_header: boolean;
+  neutralize_formulas?: boolean;
   feed_types: string[];
   feed_date_attribute: string;
   feed_attributes: FeedAttributeDefinition[];

@@ -20,6 +20,7 @@ type Feed {
   rolling_time: Int!
   feed_date_attribute: String
   include_header: Boolean!
+  neutralize_formulas: Boolean
   feed_types: [String!]!
   feed_attributes: [FeedAttribute!]!
   feed_public: Boolean
@@ -47,6 +48,7 @@ input FeedAddInput {
   feed_date_attribute: String!
   rolling_time: Int!
   include_header: Boolean!
+  neutralize_formulas: Boolean
   feed_types: [String!]!
   feed_public: Boolean
   feed_public_user_id: String
