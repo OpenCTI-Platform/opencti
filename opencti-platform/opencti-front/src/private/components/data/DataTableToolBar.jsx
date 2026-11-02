@@ -3114,7 +3114,7 @@ class DataTableToolBar extends Component {
                             </Grid>
                           )}
                           {actionsInputs[i]?.field === WORKFLOW_TRANSITION_FIELD && actionsInputs[i]?.values?.[0]?.requirements && (
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                               <MassTransitionInputs
                                 key={actionsInputs[i].values[0].value}
                                 requirements={actionsInputs[i].values[0].requirements}
@@ -3123,7 +3123,7 @@ class DataTableToolBar extends Component {
                             </Grid>
                           )}
                           {actionsInputs[i]?.field === 'x_opencti_workflow_id' && this.state.workflowBypass && (
-                            <Grid item xs={12}>
+                            <Grid size={12}>
                               <FdsSwitch
                                 checked={actionsInputs[i]?.options?.applyTransitionActions ?? true}
                                 label={t('Apply transition actions')}
