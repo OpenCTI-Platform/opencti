@@ -49,9 +49,8 @@ The **User Merge** capability reassigns data ownership, entity associations, col
 
 ## 2. GraphQL API Reference & Parameter Specification
 
-All queries and mutations require the `BYPASS` capability and the `MERGE_USERS` feature flag:
+All queries and mutations require the `BYPASS` capability:
 * `@auth(for: [BYPASS])`
-* `@ff(flags: ["MERGE_USERS"])`
 
 ---
 
@@ -373,22 +372,12 @@ query PlatformAtRest {
 Run the query twice, a few minutes apart. Identical counts and unchanged `updated_at` values confirm
 the platform is idle rather than merely slow.
 
-### 3.2 Feature Flag Enablement
-
-Ensure the `MERGE_USERS` feature flag is enabled in the platform configuration:
-
-```bash
-APP__ENABLED_DEV_FEATURES='["MERGE_USERS"]'
-```
-
-Verify that the GraphQL schema exposes the `userMerge` mutation and queries.
-
-### 3.3 Operator Account Safeguards
+### 3.2 Operator Account Safeguards
 
 * **Capability Requirement**: The operator executing the GraphQL requests must hold the `BYPASS` capability (Platform Administrator).
 * **Identity Guard**: **The operator account must NOT be one of the source accounts being merged.** An operator cannot merge themselves away without terminating their own session mid-batch.
 
-### 3.4 Mandatory Snapshot & Backup
+### 3.3 Mandatory Snapshot & Backup
 
 > [!CAUTION]
 > **OpenCTI does not have an automated rollback mechanism.**
@@ -400,7 +389,7 @@ Create a restorable snapshot of:
 
 Verify that the snapshot completed successfully before launching the first merge.
 
-### 3.5 Reverse Proxy & Network Timeout Settings
+### 3.4 Reverse Proxy & Network Timeout Settings
 
 The dry-run only counts: it returns in seconds, even for an account named in millions of documents. The real run rewrites every document naming the source, so its duration follows the activity of the account, not the size of the platform. Estimated on a platform of 550M documents:
 
