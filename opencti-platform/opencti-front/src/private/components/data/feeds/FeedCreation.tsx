@@ -123,7 +123,6 @@ interface FeedAddInput {
   feed_date_attribute: string;
   rolling_time: number;
   include_header: boolean;
-  neutralize_formulas: boolean;
   feed_types: string[];
   feed_public: boolean;
   feed_public_user_id?: FieldOption | null;
@@ -403,7 +402,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     filters: feed.filters,
     rolling_time: feed.rolling_time,
     include_header: feed.include_header,
-    neutralize_formulas: feed.neutralize_formulas ?? true,
     feed_types: feed.feed_types,
     authorized_members: feed.authorized_members,
     feed_attributes: feed.feed_attributes,
@@ -417,7 +415,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     filters: '',
     rolling_time: 60,
     include_header: true,
-    neutralize_formulas: true,
     feed_types: [],
     authorized_members: [],
     feed_attributes: [],
@@ -585,13 +582,6 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         type="checkbox"
                         name="include_header"
                         label={t_i18n('Include headers in the feed')}
-                        containerstyle={{ marginTop: 20 }}
-                      />
-                      <Field
-                        component={SwitchField}
-                        type="checkbox"
-                        name="neutralize_formulas"
-                        label={t_i18n('Neutralize spreadsheet formulas')}
                         containerstyle={{ marginTop: 20 }}
                       />
                       <Box sx={{
@@ -878,7 +868,6 @@ const FeedCreationFragment = createFragmentContainer(FeedCreation, {
       filters
       rolling_time
       include_header
-      neutralize_formulas
       feed_types
       feed_date_attribute
       separator
