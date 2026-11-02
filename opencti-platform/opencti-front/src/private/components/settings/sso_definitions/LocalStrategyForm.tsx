@@ -8,6 +8,7 @@ import { InfoOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
+import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
@@ -15,7 +16,7 @@ import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import { Icon, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import type { LocalStrategyFormQuery } from './__generated__/LocalStrategyFormQuery.graphql';
-import type { LocalStrategyFormMutation } from './__generated__/LocalStrategyFormMutation.graphql';
+import type { LocalAuthLockoutFinalAction, LocalStrategyFormMutation } from './__generated__/LocalStrategyFormMutation.graphql';
 
 const localStrategyFormQuery = graphql`
   query LocalStrategyFormQuery {
@@ -34,6 +35,7 @@ const localStrategyFormQuery = graphql`
       password_policy_validity_days
       local_auth_lockout_enabled
       local_auth_lockout_max_attempts
+      local_auth_lockout_final_action
       local_auth_lockout_window
       local_auth_lockout_duration
       local_auth_lockout_max_duration
@@ -73,6 +75,7 @@ const localStrategyFormMutation = graphql`
         password_policy_validity_days
         local_auth_lockout_enabled
         local_auth_lockout_max_attempts
+        local_auth_lockout_final_action
         local_auth_lockout_window
         local_auth_lockout_duration
         local_auth_lockout_max_duration
@@ -86,7 +89,10 @@ type Translate = (message: string, options?: { values: Record<string, number> })
 // Upper bounds of the lockout policy, mirrored from setting-auth.ts
 const LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
 const LOCKOUT_WINDOW_LIMIT = 1440; // minutes, the window is capped to 24h
-const LOCKOUT_MAX_DURATION_LIMIT = 180; // minutes, locks are capped to 3h
+const LOCKOUT_MAX_DURATION_LIMIT = 10800; // seconds, locks are capped to 3h
+
+// Action applied once the max attempts are reached, mirrored from the LocalAuthLockoutFinalAction enum
+const LOCKOUT_FINAL_ACTIONS = ['temporary', 'permanent'];
 
 // Lockout values are only checked when the lockout is enabled, as their fields are hidden otherwise
 // A cleared field holds '', which is read as missing rather than as NaN
@@ -114,6 +120,7 @@ const localStrategyValidation = (t_i18n: Translate) => Yup.object().shape({
   password_policy_validity_days: Yup.number(),
   local_auth_lockout_enabled: Yup.boolean(),
   local_auth_lockout_max_attempts: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_ATTEMPTS_LIMIT),
+  local_auth_lockout_final_action: Yup.string().oneOf(LOCKOUT_FINAL_ACTIONS),
   local_auth_lockout_window: lockoutNumberSchema(t_i18n, LOCKOUT_WINDOW_LIMIT),
   local_auth_lockout_duration: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_DURATION_LIMIT),
   local_auth_lockout_max_duration: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_DURATION_LIMIT)
@@ -170,6 +177,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
     local_auth_lockout_enabled: settings.local_auth_lockout_enabled ?? false,
     // The back end always returns a value, falling back to its own defaults
     local_auth_lockout_max_attempts: settings.local_auth_lockout_max_attempts ?? '',
+    local_auth_lockout_final_action: settings.local_auth_lockout_final_action ?? 'temporary',
     local_auth_lockout_window: settings.local_auth_lockout_window ?? '',
     local_auth_lockout_duration: settings.local_auth_lockout_duration ?? '',
     local_auth_lockout_max_duration: settings.local_auth_lockout_max_duration ?? '',
@@ -185,6 +193,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
       ? {
           local_auth_lockout_enabled: true,
           local_auth_lockout_max_attempts: Number(values.local_auth_lockout_max_attempts),
+          local_auth_lockout_final_action: values.local_auth_lockout_final_action as LocalAuthLockoutFinalAction,
           local_auth_lockout_window: Number(values.local_auth_lockout_window),
           local_auth_lockout_duration: Number(values.local_auth_lockout_duration),
           local_auth_lockout_max_duration: Number(values.local_auth_lockout_max_duration),
@@ -334,7 +343,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                 component={SwitchField}
                 type="checkbox"
                 name="local_auth_lockout_enabled"
-                label={t_i18n('Temporarily lock accounts after repeated failed login attempts')}
+                label={t_i18n('Lock accounts after repeated failed login attempts')}
               />
               {values.local_auth_lockout_enabled && (
                 <>
@@ -344,9 +353,19 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                     variant="outlined"
                     className="mt-5"
                     name="local_auth_lockout_max_attempts"
-                    label={t_i18n('Number of failed login attempts before lock')}
+                    label={t_i18n('Maximum number of failed login attempts')}
                     fullWidth
                   />
+                  <Field
+                    component={SelectFieldFds}
+                    className="mt-5"
+                    name="local_auth_lockout_final_action"
+                    label={t_i18n('Action when the maximum number of failed login attempts is reached')}
+                    fullWidth
+                  >
+                    <SelectItem value="temporary">{t_i18n('Lock until the failed login attempts counter is reset')}</SelectItem>
+                    <SelectItem value="permanent">{t_i18n('Lock until an administrator unlocks the account')}</SelectItem>
+                  </Field>
                   <Field
                     component={TextField}
                     type="number"
@@ -362,7 +381,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                     variant="outlined"
                     className="mt-5"
                     name="local_auth_lockout_duration"
-                    label={t_i18n('First lock duration (minutes)')}
+                    label={t_i18n('First lock duration (seconds)')}
                     fullWidth
                     infoTooltip={(
                       <Tooltip>
@@ -375,7 +394,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                             size="sm"
                           />
                         </TooltipTrigger>
-                        <TooltipContent>{t_i18n('The lock duration increases exponentially with each new lock, up to the maximum lock duration')}</TooltipContent>
+                        <TooltipContent>{t_i18n('The lock duration doubles with each failed login attempt, up to the maximum lock duration')}</TooltipContent>
                       </Tooltip>
                     )}
                   />
@@ -385,7 +404,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                     variant="outlined"
                     className="mt-5"
                     name="local_auth_lockout_max_duration"
-                    label={t_i18n('Maximum lock duration (minutes)')}
+                    label={t_i18n('Maximum lock duration (seconds)')}
                     fullWidth
                   />
                 </>

@@ -12,6 +12,7 @@ import {
   LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT,
   updateLocalAuth,
 } from '../../../src/domain/setting-auth';
+import { LocalAuthLockoutFinalAction } from '../../../src/generated/graphql';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 
@@ -50,9 +51,10 @@ const user = { id: 'admin' } as AuthUser;
 const LOCKOUT_INPUT = {
   local_auth_lockout_enabled: true,
   local_auth_lockout_max_attempts: 3,
+  local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Permanent,
   local_auth_lockout_window: 60,
-  local_auth_lockout_duration: 10,
-  local_auth_lockout_max_duration: 120,
+  local_auth_lockout_duration: 10, // seconds
+  local_auth_lockout_max_duration: 120, // seconds
 };
 
 // The lockout policy is validated against the settings stored in the database
@@ -77,6 +79,13 @@ describe('updateLocalAuth - lockout policy', () => {
     vi.mocked(isFeatureEnabled).mockReturnValue(false);
     await updateLocalAuth(context, user, 'settings-id', { enabled: true, ...LOCKOUT_INPUT, local_auth_lockout_duration: 500 });
     expect(patchSentToDatabase()).toEqual({ local_auth: { enabled: true } });
+  });
+
+  it('should patch the final action alone, checked against the stored policy', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    mockStoredSettings({ local_auth_lockout_duration: 20, local_auth_lockout_max_duration: 60 });
+    await updateLocalAuth(context, user, 'settings-id', { enabled: true, local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Permanent });
+    expect(patchSentToDatabase()).toEqual({ local_auth: { enabled: true }, local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Permanent });
   });
 
   it('should validate the input against the stored policy', async () => {

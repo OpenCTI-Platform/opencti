@@ -1,5 +1,5 @@
 import type { BasicStoreEntity } from './store';
-import type { XtmHubRegistrationStatus, CguStatus, SmtpAuthType } from '../generated/graphql';
+import type { XtmHubRegistrationStatus, CguStatus, SmtpAuthType, LocalAuthLockoutFinalAction } from '../generated/graphql';
 import type { GroupsMapping, OrganizationsMapping, UserInfoMapping } from '../modules/authenticationProvider/authenticationProvider-types';
 
 export interface BasicStoreSettingsMessage {
@@ -101,6 +101,7 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   password_policy_validity_days?: number;
   local_auth_lockout_enabled?: boolean;
   local_auth_lockout_max_attempts?: number;
+  local_auth_lockout_final_action?: LocalAuthLockoutFinalAction;
   local_auth_lockout_window?: number;
   local_auth_lockout_duration?: number;
   local_auth_lockout_max_duration?: number;
