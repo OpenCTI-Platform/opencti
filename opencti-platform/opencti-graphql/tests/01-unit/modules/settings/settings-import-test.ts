@@ -6,10 +6,21 @@ vi.mock('../../../../src/domain/settings', () => ({
   settingsEditField: vi.fn(),
 }));
 vi.mock('../../../../src/modules/theme/theme-domain', () => ({ findById: vi.fn() }));
+vi.mock('../../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
+vi.mock('../../../../src/enterprise-edition/ee', () => ({ isEnterpriseEdition: vi.fn() }));
+vi.mock('../../../../src/modules/user/user-domain', () => ({ adjustAllUsersPasswordValidUntil: vi.fn(), clearAllUsersPasswordValidUntil: vi.fn() }));
+vi.mock('../../../../src/modules/configImport/configImport-sensitive', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/configImport/configImport-sensitive')>()),
+  isConfigImportSensitiveChangeAllowed: vi.fn(),
+}));
 
 import { getSettings, getSettingsFromDatabase, settingsEditField } from '../../../../src/domain/settings';
 import { findById } from '../../../../src/modules/theme/theme-domain';
-import { importMessage, importPlatformConfiguration, importWhitemark } from '../../../../src/modules/settings/settings-import';
+import { storeLoadById } from '../../../../src/database/middleware-loader';
+import { isEnterpriseEdition } from '../../../../src/enterprise-edition/ee';
+import { adjustAllUsersPasswordValidUntil, clearAllUsersPasswordValidUntil } from '../../../../src/modules/user/user-domain';
+import { importMessage, importPlatformConfiguration, importWhitemark, importPolicies } from '../../../../src/modules/settings/settings-import';
+import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/configImport/configImport-sensitive';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { CUSTOM_THEME_ID } from '../../../utils/configPresetBundle';
@@ -172,6 +183,105 @@ describe('importPlatformConfiguration', () => {
 
   it('refuses an invalid configuration, without writing', async () => {
     expect(await importPlatformConfiguration(context, user, { platform_favicon: '/favicon.ico' }, overwrite)).toMatchObject({ status: 'failed', code: 'invalid', reason: expect.stringContaining('platform_favicon') });
+    expect(settingsEditField).not.toHaveBeenCalled();
+  });
+});
+
+describe('importPolicies', () => {
+  const organization = { standard_id: 'identity--11111111-2222-4333-8444-555555555555', name: 'Filigran' };
+  const policies = (overrides: Record<string, unknown> = {}) => ({
+    view_all_users: false,
+    password_policy_min_length: 12,
+    password_policy_max_length: 0,
+    password_policy_min_symbols: 1,
+    password_policy_min_numbers: 1,
+    password_policy_min_words: 0,
+    password_policy_min_lowercase: 1,
+    password_policy_min_uppercase: 1,
+    password_policy_validity_days: 90,
+    platform_organization: organization,
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    vi.mocked(getSettings).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 30 } as never);
+    vi.mocked(isEnterpriseEdition).mockResolvedValue(true);
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(true);
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'organization-id', ...organization } as never);
+  });
+
+  it('writes the policies and the main organization of this platform, by internal id, with one call', async () => {
+    const result = await importPolicies(context, user, policies(), overwrite);
+    expect(result).toMatchObject({ status: 'overwritten', exists: true, reason: undefined });
+    expect(storeLoadById).toHaveBeenCalledWith(context, user, organization.standard_id, 'Organization');
+    expect(settingsEditField).toHaveBeenCalledTimes(1);
+    expect(settingsEditField).toHaveBeenCalledWith(context, user, 'settings-id', expect.arrayContaining([
+      { key: 'view_all_users', value: [false] },
+      { key: 'password_policy_min_length', value: [12] },
+      { key: 'password_policy_validity_days', value: [90] },
+      { key: 'platform_organization', value: ['organization-id'] },
+    ]));
+  });
+
+  it('moves the expiration date of the users when the validity of the passwords changes, and clears it when the policy is disabled', async () => {
+    await importPolicies(context, user, policies(), overwrite);
+    expect(adjustAllUsersPasswordValidUntil).toHaveBeenCalledWith(context, 30, 90);
+    await importPolicies(context, user, policies({ password_policy_validity_days: 0 }), overwrite);
+    expect(clearAllUsersPasswordValidUntil).toHaveBeenCalledWith(context);
+  });
+
+  it('leaves the expiration dates of the users untouched when the validity does not change or is not set', async () => {
+    await importPolicies(context, user, policies({ password_policy_validity_days: 30 }), overwrite);
+    await importPolicies(context, user, policies({ password_policy_validity_days: null }), overwrite);
+    expect(adjustAllUsersPasswordValidUntil).not.toHaveBeenCalled();
+    expect(clearAllUsersPasswordValidUntil).not.toHaveBeenCalled();
+  });
+
+  it('leaves out and reports a main organization that is not on this platform, and never creates it', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(undefined as never);
+    const result = await importPolicies(context, user, policies(), overwrite);
+    expect(result).toMatchObject({ status: 'overwritten', reason: 'Main organization not found: Filigran' });
+    expect(vi.mocked(settingsEditField).mock.calls[0][3]).not.toContainEqual(expect.objectContaining({ key: 'platform_organization' }));
+  });
+
+  it('leaves out and reports the main organization on a platform that is not Enterprise Edition', async () => {
+    vi.mocked(isEnterpriseEdition).mockResolvedValue(false);
+    const result = await importPolicies(context, user, policies(), overwrite);
+    expect(result).toMatchObject({ status: 'overwritten', reason: 'The main organization requires the Enterprise Edition' });
+    expect(storeLoadById).not.toHaveBeenCalled();
+    expect(vi.mocked(settingsEditField).mock.calls[0][3]).not.toContainEqual(expect.objectContaining({ key: 'platform_organization' }));
+  });
+
+  it('leaves out and reports the main organization to a user who cannot manage the sensitive configuration, and writes the rest', async () => {
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
+    const result = await importPolicies(context, user, policies(), overwrite);
+    expect(result).toMatchObject({ status: 'overwritten', reason: 'Requires the right to manage the sensitive configuration' });
+    expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'platform_organization');
+    expect(storeLoadById).not.toHaveBeenCalled();
+    const input = vi.mocked(settingsEditField).mock.calls[0][3];
+    expect(input).not.toContainEqual(expect.objectContaining({ key: 'platform_organization' }));
+    expect(input).toContainEqual({ key: 'password_policy_min_length', value: [12] });
+  });
+
+  it('does not write on a dry run', async () => {
+    expect(await importPolicies(context, user, policies(), dryRun)).toMatchObject({ status: 'overwritten' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+    expect(adjustAllUsersPasswordValidUntil).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['an unknown key', { otp_mandatory: true }],
+    ['a negative length', { password_policy_min_length: -1 }],
+    ['a length that is not an integer', { password_policy_min_length: 1.5 }],
+  ])('refuses %s, without writing', async (_, overrides) => {
+    expect(await importPolicies(context, user, policies(overrides), overwrite)).toMatchObject({ status: 'failed', code: 'invalid' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+  });
+
+  it('skips policies with only null values, and any mode but overwrite', async () => {
+    const empty = Object.fromEntries(Object.keys(policies()).map((key) => [key, null]));
+    expect(await importPolicies(context, user, empty, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
+    expect(await importPolicies(context, user, policies(), { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'skipped', code: 'not_overwrite' });
     expect(settingsEditField).not.toHaveBeenCalled();
   });
 });

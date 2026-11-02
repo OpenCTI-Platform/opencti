@@ -9,6 +9,7 @@ import { RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT } from '../..
 import { BYPASS, CAPABILITIES_IN_DRAFT_NAMES, ROLE_ADMINISTRATOR } from '../../../utils/access';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../../configImport/configImport-types';
 import { configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../../configImport/configImport-utils';
+import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../../configImport/configImport-sensitive';
 import { findRoleById, roleAddRelation, roleCapabilities, roleDeleteRelation, roleEditField } from '../user-domain';
 import type { BasicStoreEntityRole } from './role-export';
 import { type RoleImportConfiguration, roleImportSchema } from './role-import-schema';
@@ -18,7 +19,7 @@ export interface RoleImportOptions extends ConfigImportOptions {
   reservedIds?: Set<string>;
 }
 
-export type RoleImportCode = 'invalid' | 'unknown_capability' | 'exists' | 'name_conflict';
+export type RoleImportCode = 'invalid' | 'unknown_capability' | 'exists' | 'name_conflict' | 'sensitive_config';
 
 export type RoleImportResult = ConfigImportResult<RoleImportConfiguration, RoleImportCode> & {
   role?: BasicStoreEntityRole;
@@ -51,8 +52,8 @@ const capabilitiesReason = async (context: AuthContext, user: AuthUser, { capabi
   return undefined;
 };
 
-const BYPASS_KEPT_REASON = 'The Administrator role keeps the bypass capability';
-const SENSITIVE_RIGHTS_REASON = 'Grants sensitive rights';
+export const BYPASS_KEPT_REASON = 'The Administrator role keeps the bypass capability';
+export const SENSITIVE_RIGHTS_REASON = 'Grants sensitive rights';
 
 const withAdministratorBypass = (standardId: string, configuration: RoleImportConfiguration) => {
   if (standardId !== roleStandardId(ROLE_ADMINISTRATOR) || configuration.capabilities.includes(BYPASS)) {
@@ -128,6 +129,9 @@ export const importRole = async (
   }
   const target = isCopy ? undefined : existing;
   const targetId = roleStandardId(name);
+  if (!(await isConfigImportSensitiveChangeAllowed(context, user, 'roles', targetId))) {
+    return refused('sensitive_config', CONFIG_IMPORT_SENSITIVE_REASON, !!existing, parsed.data);
+  }
   const { configuration: role, bypassKept } = withAdministratorBypass(targetId, { ...parsed.data, name });
   const current = target ? { role: target, capabilities: await capabilityNames(context, user, target.id, RELATION_HAS_CAPABILITY) } : undefined;
   const reason = joinConfigImportReasons([

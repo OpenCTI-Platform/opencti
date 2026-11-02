@@ -9,12 +9,15 @@ import { generateStandardId } from '../../../schema/identifier';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../../schema/internalObject';
 import { RELATION_ACCESSES_TO, RELATION_HAS_ROLE } from '../../../schema/internalRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
-import { SYSTEM_USER } from '../../../utils/access';
+import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from '../../../utils/access';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../../configImport/configImport-types';
 import { configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../../configImport/configImport-utils';
+import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../../configImport/configImport-sensitive';
 import { ENTITY_TYPE_WORKSPACE } from '../../workspace/workspace-types';
-import { findRoleById } from '../user-domain';
+import { findRoleById, roleCapabilities } from '../user-domain';
 import type { BasicStoreEntityGroup } from './group-export';
+import type { BasicStoreEntityRole } from './role-export';
+import { roleStandardId, SENSITIVE_RIGHTS_REASON } from './role-import';
 import { type GroupImportConfiguration, groupImportSchema, type GroupMarkingReference } from './group-import-schema';
 
 export interface GroupImportOptions extends ConfigImportOptions {
@@ -22,7 +25,7 @@ export interface GroupImportOptions extends ConfigImportOptions {
   isRoleCreated?: (standardId: string) => boolean;
 }
 
-export type GroupImportCode = 'invalid' | 'role_missing' | 'exists' | 'name_conflict';
+export type GroupImportCode = 'invalid' | 'role_missing' | 'exists' | 'name_conflict' | 'sensitive_config';
 
 export type GroupImportResult = ConfigImportResult<GroupImportConfiguration, GroupImportCode> & {
   group?: BasicStoreEntityGroup;
@@ -47,6 +50,9 @@ const GROUP_FIELDS = [
 
 const NEW_USERS_REASON = 'New users join this group automatically';
 const INTEGRATION_USERS_REASON = 'New integration users join this group automatically';
+const ADMINISTRATOR_ROLE_KEPT_REASON = 'The Administrators group keeps the Administrator role';
+
+const ADMINISTRATORS_GROUP = 'Administrators';
 
 interface ResolvedGroup {
   fields: Record<string, unknown>;
@@ -72,7 +78,6 @@ const resolveGroup = async (context: AuthContext, user: AuthUser, configuration:
   const fields: Record<string, unknown> = Object.fromEntries(GROUP_FIELDS.map((key) => [key, configuration[key]]));
   fields.default_dashboard = dashboard?.id;
   fields.default_marking = configuration.default_marking.map(({ entity_type, values }) => ({ entity_type, values: resolveAll(values) }));
-  // A maximum that is not on this platform is left out: the members can then share any marking of this type
   fields.max_shareable_markings = configuration.max_shareable_markings.flatMap(({ type, value }) => {
     if (value === 'none') {
       return [{ type, value }];
@@ -136,6 +141,28 @@ const overwriteGroup = async (context: AuthContext, user: AuthUser, existing: Ba
   return (await findGroupById(context, user, existing.id)) as BasicStoreEntityGroup;
 };
 
+// The Administrator role is never removed from the Administrators group: an import must not take the bypass away from the administrators
+const withAdministratorRole = async (context: AuthContext, user: AuthUser, groupId: string, roles: BasicStoreEntityRole[]) => {
+  if (groupId !== groupStandardId(ADMINISTRATORS_GROUP)) {
+    return { roles, administratorRoleKept: false };
+  }
+  const administratorRole = await findRoleById(context, user, roleStandardId(ROLE_ADMINISTRATOR)) as BasicStoreEntityRole | undefined;
+  if (!administratorRole || roles.some(({ id }) => id === administratorRole.id)) {
+    return { roles, administratorRoleKept: false };
+  }
+  return { roles: [...roles, administratorRole], administratorRoleKept: true };
+};
+
+const grantsSensitiveRights = async (context: AuthContext, user: AuthUser, roles: BasicStoreEntityRole[], currentIds: string[]) => {
+  const added = roles.filter(({ id }) => !currentIds.includes(id));
+  for (let i = 0; i < added.length; i += 1) {
+    if (added[i].can_manage_sensitive_config || (await roleCapabilities(context, user, added[i].id)).some(({ name }) => name === BYPASS)) {
+      return true;
+    }
+  }
+  return false;
+};
+
 // The automatic assignments are imported as they are, and shown in the preview when the group does not have them yet
 const assignmentReasons = (configuration: GroupImportConfiguration, existing?: BasicStoreEntityGroup) => [
   configuration.default_assignation && !existing?.default_assignation ? NEW_USERS_REASON : undefined,
@@ -170,16 +197,25 @@ export const importGroup = async (
     return refused('name_conflict', 'Group name already exists', !!existing, parsed.data);
   }
   const target = isCopy ? undefined : existing;
-  const resolved = await resolveGroup(context, user, parsed.data, roles.filter((role): role is BasicStoreEntity => !!role));
+  const targetId = groupStandardId(name);
+  if (!(await isConfigImportSensitiveChangeAllowed(context, user, 'groups', targetId))) {
+    return refused('sensitive_config', CONFIG_IMPORT_SENSITIVE_REASON, !!existing, parsed.data);
+  }
+  const found = roles.filter((role): role is BasicStoreEntityRole => !!role);
+  const { roles: groupRoles, administratorRoleKept } = await withAdministratorRole(context, user, targetId, found);
+  const resolved = await resolveGroup(context, user, parsed.data, groupRoles);
+  const currentIds = target ? await currentRoleIds(context, user, target.id) : [];
   const reason = joinConfigImportReasons([
     name !== parsed.data.name ? `Added as "${name}"` : undefined,
+    administratorRoleKept ? ADMINISTRATOR_ROLE_KEPT_REASON : undefined,
+    (await grantsSensitiveRights(context, user, groupRoles, currentIds)) ? SENSITIVE_RIGHTS_REASON : undefined,
     resolved.missingMarkings.length > 0 ? `Markings not found: ${resolved.missingMarkings.join(', ')}` : undefined,
     resolved.missingDashboard ? `Default dashboard not found: ${resolved.missingDashboard}` : undefined,
     ...assignmentReasons(parsed.data, target),
   ]);
   const result: GroupImportResult = { status: target ? 'overwritten' : 'created', exists: !!existing, configuration: parsed.data, reason };
   if (dryRun) {
-    reservedIds?.add(groupStandardId(name));
+    reservedIds?.add(targetId);
     return result;
   }
   return { ...result, group: target ? await overwriteGroup(context, user, target, resolved) : await createGroup(context, user, name, resolved) };

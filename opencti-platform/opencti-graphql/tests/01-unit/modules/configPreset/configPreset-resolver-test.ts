@@ -150,6 +150,14 @@ describe('Config preset exportable types query', () => {
         })),
         itemsPageInfo: onePage(2),
       },
+      {
+        key: 'policies',
+        label: 'Policies',
+        description: 'Password policy, users visibility and main organization',
+        group: { key: 'securityAccess', label: 'Security & Access' },
+        items: [staticItem('policies', 'Policies')],
+        itemsPageInfo: onePage(1),
+      },
     ]);
   });
 
@@ -165,7 +173,7 @@ describe('Config preset exportable types query', () => {
   it('lists the messages set on the platform and hides the category when none is set', async () => {
     // No message is set in the default settings of these tests: the category is not returned
     const none = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
-    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'roles', 'groups']);
+    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'roles', 'groups', 'policies']);
 
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id, platform_login_message: 'Welcome' }] as never);
     const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
@@ -225,6 +233,7 @@ describe('Config preset exportable types query', () => {
       ['hiddenEntityTypes', 'dataModel'],
       ['roles', 'securityAccess'],
       ['groups', 'securityAccess'],
+      ['policies', 'securityAccess'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);

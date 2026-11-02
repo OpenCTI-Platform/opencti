@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../../../src/modules/user/user-domain', () => ({ findRoleById: vi.fn() }));
+vi.mock('../../../../../src/modules/user/user-domain', () => ({ findRoleById: vi.fn(), roleCapabilities: vi.fn() }));
 vi.mock('../../../../../src/domain/grant', () => ({ addGroup: vi.fn() }));
 vi.mock('../../../../../src/domain/group', () => ({
   findById: vi.fn(),
@@ -11,14 +11,19 @@ vi.mock('../../../../../src/domain/group', () => ({
 }));
 vi.mock('../../../../../src/database/middleware-loader', () => ({ fullEntitiesThroughRelationsToList: vi.fn(), storeLoadById: vi.fn() }));
 vi.mock('../../../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
+vi.mock('../../../../../src/modules/configImport/configImport-sensitive', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/modules/configImport/configImport-sensitive')>()),
+  isConfigImportSensitiveChangeAllowed: vi.fn(),
+}));
 
-import { findRoleById } from '../../../../../src/modules/user/user-domain';
+import { findRoleById, roleCapabilities } from '../../../../../src/modules/user/user-domain';
 import { addGroup } from '../../../../../src/domain/grant';
 import { findById as findGroupById, groupAddRelation, groupAllowedMarkings, groupDeleteRelation, groupEditField } from '../../../../../src/domain/group';
 import { fullEntitiesThroughRelationsToList, storeLoadById } from '../../../../../src/database/middleware-loader';
 import { getEntitiesMapFromCache } from '../../../../../src/database/cache';
 import { groupStandardId, importGroup } from '../../../../../src/modules/user/configPreset/group-import';
 import { roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
+import { isConfigImportSensitiveChangeAllowed } from '../../../../../src/modules/configImport/configImport-sensitive';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 
@@ -91,6 +96,8 @@ const withRelations = (roles: { id: string }[], markings: { id: string }[]) => {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(true);
+  vi.mocked(roleCapabilities).mockResolvedValue([]);
   vi.mocked(addGroup).mockImplementation(async (_ctx: unknown, _user: unknown, group: Record<string, unknown>) => ({ id: 'created-id', ...group }));
   withPlatform();
   withRelations([], []);
@@ -232,5 +239,65 @@ describe('importGroup copy', () => {
     const second = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Copy, dryRun: true, reservedIds });
     expect([first.reason, second.reason]).toEqual(['Added as "Analysts (1)"', 'Added as "Analysts (2)"']);
     expectNothingWritten();
+  });
+});
+
+describe('importGroup protected sensitive configuration', () => {
+  it('refuses a protected group to a user who cannot manage the sensitive configuration, without writing', async () => {
+    withPlatform({ groups: [existingGroup('Administrators')] });
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
+    const result = await importGroup(context, user, groupConfiguration({ name: 'Administrators' }), { mode: ConfigImportMode.Overwrite });
+    expect(result).toMatchObject({ status: 'failed', code: 'sensitive_config', reason: 'Requires the right to manage the sensitive configuration', exists: true });
+    expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'groups', groupStandardId('Administrators'));
+    expectNothingWritten();
+  });
+});
+
+describe('importGroup Administrators group', () => {
+  const administratorRole = { id: 'administrator-internal-id', standard_id: roleStandardId('Administrator'), name: 'Administrator' };
+  const administrators = existingGroup('Administrators');
+
+  it('never removes the Administrator role from the Administrators group', async () => {
+    withPlatform({ groups: [administrators], roles: [analystRole, administratorRole] });
+    withRelations([administratorRole], []);
+    const result = await importGroup(context, user, groupConfiguration({ name: 'Administrators' }), { mode: ConfigImportMode.Overwrite });
+    expect(result.reason).toEqual('The Administrators group keeps the Administrator role');
+    expect(groupDeleteRelation).not.toHaveBeenCalledWith(context, user, administrators.id, undefined, administratorRole.id, 'has-role');
+    expect(groupAddRelation).toHaveBeenCalledWith(context, user, administrators.id, { toId: analystRole.id, relationship_type: 'has-role' });
+  });
+
+  it('leaves the roles of any other group as the bundle has them', async () => {
+    withPlatform({ groups: [existingGroup('Analysts')], roles: [analystRole, administratorRole] });
+    withRelations([administratorRole], []);
+    await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite });
+    expect(groupDeleteRelation).toHaveBeenCalledWith(context, user, 'Analysts-internal-id', undefined, administratorRole.id, 'has-role');
+  });
+
+  it('does not keep it in a copy of the Administrators group', async () => {
+    withPlatform({ groups: [administrators], roles: [analystRole, administratorRole] });
+    await importGroup(context, user, groupConfiguration({ name: 'Administrators' }), { mode: ConfigImportMode.Copy });
+    expect(groupAddRelation).not.toHaveBeenCalledWith(context, user, 'created-id', { toId: administratorRole.id, relationship_type: 'has-role' });
+  });
+});
+
+describe('importGroup sensitive rights', () => {
+  it('says so when the group gets a role with the bypass capability', async () => {
+    vi.mocked(roleCapabilities).mockImplementation(async (_ctx, _user, roleId) => (roleId === analystRole.id ? [{ name: 'BYPASS' }] : []) as never);
+    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result.reason).toEqual('Grants sensitive rights');
+  });
+
+  it('says so when the group gets a role that manages the sensitive configuration', async () => {
+    withPlatform({ roles: [{ ...analystRole, can_manage_sensitive_config: true } as typeof analystRole] });
+    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result.reason).toEqual('Grants sensitive rights');
+  });
+
+  it('says nothing of a sensitive role the group already has', async () => {
+    withPlatform({ groups: [existingGroup('Analysts')] });
+    withRelations([analystRole], [TLP_AMBER]);
+    vi.mocked(roleCapabilities).mockResolvedValue([{ name: 'BYPASS' }] as never);
+    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result.reason).toBeUndefined();
   });
 });

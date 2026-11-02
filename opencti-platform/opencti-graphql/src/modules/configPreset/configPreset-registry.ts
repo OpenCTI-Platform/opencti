@@ -9,6 +9,7 @@ import { whitemarkFamily } from './registry/whitemark-configPreset-registry';
 import { isEnterpriseEditionUpToDate } from '../../enterprise-edition/ee';
 import { rolesFamily } from './registry/roles-configPreset-registry';
 import { groupsFamily } from './registry/groups-configPreset-registry';
+import { policiesFamily } from './registry/policies-configPreset-registry';
 
 export { BRANDING_FAMILY_ID } from './registry/branding-configPreset-registry';
 
@@ -22,6 +23,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   hiddenEntityTypesFamily,
   rolesFamily,
   groupsFamily,
+  policiesFamily,
 ];
 
 // How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.

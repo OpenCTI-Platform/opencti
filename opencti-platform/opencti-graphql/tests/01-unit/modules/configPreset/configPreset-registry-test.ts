@@ -27,7 +27,7 @@ vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => ({
   roleCapabilities: vi.fn(),
 }));
 
-import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, topEntitiesList } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
 import { CONFIG_PRESET_FAMILIES, configPresetItemFilePath, exportConfigPresetItem } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -122,6 +122,7 @@ describe('Config preset registry', () => {
         group: 'securityAccess',
         itemIds: [administratorsGroup.standard_id, analystsGroup.standard_id],
       },
+      { id: 'policies', label: 'Policies', description: 'Password policy, users visibility and main organization', group: 'securityAccess', itemIds: ['policies'] },
     ]);
   });
 
@@ -145,6 +146,7 @@ describe('Config preset registry', () => {
       ['Analyst', false],
       ['Administrators', false],
       ['Analysts', false],
+      ['Policies', true],
     ]);
   });
 
@@ -167,6 +169,7 @@ describe('Config preset registry', () => {
       `security_access/roles/${analystRole.standard_id}.json`,
       `security_access/groups/${administratorsGroup.standard_id}.json`,
       `security_access/groups/${analystsGroup.standard_id}.json`,
+      'security_access/policies.json',
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -499,6 +502,41 @@ describe('Config preset registry', () => {
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('policies', () => {
+    const passwordPolicy = {
+      password_policy_min_length: 12,
+      password_policy_max_length: 64,
+      password_policy_min_symbols: 1,
+      password_policy_min_numbers: 2,
+      password_policy_min_words: 0,
+      password_policy_min_lowercase: 1,
+      password_policy_min_uppercase: 1,
+      password_policy_validity_days: 90,
+    };
+
+    it('exports the policies and the main organization by standard id, never the messages nor the authentication', async () => {
+      withSettings({ ...passwordPolicy, view_all_users: false, platform_organization: 'organization-id' });
+      const organization = { id: 'organization-id', standard_id: 'identity--11111111-2222-4333-8444-555555555555', name: 'Filigran' };
+      vi.mocked(storeLoadById).mockResolvedValueOnce(organization as never);
+      const file = await exportConfigPresetItem(context, user, findFamily('policies'), await findItem('policies', 'policies'));
+      expect(file).toMatchObject({ type: 'securityAccess.policies', id: 'policies' });
+      expect(file.configuration).toEqual({
+        ...passwordPolicy,
+        view_all_users: false,
+        platform_organization: { standard_id: organization.standard_id, name: 'Filigran' },
+      });
+    });
+
+    it('exports the values that are not set as null, to keep a stable file shape', async () => {
+      const file = await exportConfigPresetItem(context, user, findFamily('policies'), await findItem('policies', 'policies'));
+      expect(file.configuration).toEqual({
+        ...Object.fromEntries(Object.keys(passwordPolicy).map((key) => [key, null])),
+        view_all_users: null,
+        platform_organization: null,
+      });
     });
   });
 

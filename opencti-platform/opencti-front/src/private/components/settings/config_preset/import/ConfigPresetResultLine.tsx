@@ -63,7 +63,14 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'Group name already exists': return t_i18n('Group name already exists');
     case 'New users join this group automatically': return t_i18n('New users join this group automatically');
     case 'New integration users join this group automatically': return t_i18n('New integration users join this group automatically');
+    case 'The main organization requires the Enterprise Edition': return t_i18n('The main organization requires the Enterprise Edition');
+    case 'Requires the right to manage the sensitive configuration': return t_i18n('Requires the right to manage the sensitive configuration');
+    case 'The Administrators group keeps the Administrator role': return t_i18n('The Administrators group keeps the Administrator role');
     default: break;
+  }
+  const missingOrganization = reason.match(/^Main organization not found: (.+)$/)?.[1];
+  if (missingOrganization) {
+    return t_i18n('Main organization not found: {name}', { values: { name: missingOrganization } });
   }
   const missingRoles = reason.match(/^Roles could not be imported: (.+)$/)?.[1];
   if (missingRoles) {
@@ -104,7 +111,6 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   return reason;
 };
 
-// An item can have several reasons, one per line: each is translated
 const translateReasons = (t_i18n: Translate, reason: string) => reason.split('\n').map((part) => translateReason(t_i18n, part)).join(' · ');
 
 // The result of an item of an import: its status and the reason

@@ -46,6 +46,10 @@ describe('ConfigPresetResultLine', () => {
     ['Roles could not be imported: Analyst', 'Roles could not be imported: Analyst'],
     ['Markings not found: TLP:AMBER, PAP:RED', 'Markings not found: TLP:AMBER, PAP:RED'],
     ['Default dashboard not found: SOC overview', 'Default dashboard not found: SOC overview'],
+    ['The main organization requires the Enterprise Edition', 'The main organization requires the Enterprise Edition'],
+    ['Main organization not found: Filigran', 'Main organization not found: Filigran'],
+    ['Requires the right to manage the sensitive configuration', 'Requires the right to manage the sensitive configuration'],
+    ['The Administrators group keeps the Administrator role', 'The Administrators group keeps the Administrator role'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();

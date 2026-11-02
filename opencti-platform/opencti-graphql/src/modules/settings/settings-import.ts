@@ -1,11 +1,17 @@
 import type { z } from 'zod';
 import { getSettings, getSettingsFromDatabase, settingsEditField } from '../../domain/settings';
+import { storeLoadById } from '../../database/middleware-loader';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { AuthContext, AuthUser } from '../../types/user';
+import type { BasicStoreEntity } from '../../types/store';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportValidationReason } from '../configImport/configImport-utils';
+import { configImportValidationReason, joinConfigImportReasons } from '../configImport/configImport-utils';
+import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../configImport/configImport-sensitive';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { findById as findThemeById } from '../theme/theme-domain';
-import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_WHITEMARK_FIELDS } from './settings-export';
-import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema } from './settings-import-schema';
+import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_WHITEMARK_FIELDS, SETTINGS_POLICIES_FIELDS } from './settings-export';
+import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema, policiesConfigurationSchema} from './settings-import-schema';
+import { adjustAllUsersPasswordValidUntil, clearAllUsersPasswordValidUntil } from '../user/user-domain';
 
 export type SettingsImportCode = 'invalid' | 'unknown_message' | 'not_overwrite' | 'nothing_to_import' | 'unchanged' | 'default_theme_missing';
 
@@ -129,4 +135,58 @@ export const importPlatformConfiguration = async (
     await writeSettings(context, user, input);
   }
   return { status: 'overwritten', exists: true, configuration: parsed.data };
+};
+
+const ORGANIZATION_REQUIRES_EE_REASON = 'The main organization requires the Enterprise Edition';
+
+const propagatePasswordValidity = async (context: AuthContext, oldDays: number, newDays: number) => {
+  if (newDays <= 0) {
+    await clearAllUsersPasswordValidUntil(context);
+  } else if (newDays !== oldDays) {
+    await adjustAllUsersPasswordValidUntil(context, oldDays, newDays);
+  }
+};
+
+export const importPolicies = async (
+  context: AuthContext,
+  user: AuthUser,
+  configuration: unknown,
+  { mode, dryRun = false }: ConfigImportOptions,
+): Promise<SettingsImportResult> => {
+  const parsed = policiesConfigurationSchema.safeParse(configuration);
+  if (!parsed.success) {
+    return failed('invalid', configImportValidationReason(parsed.error));
+  }
+  if (mode !== ConfigImportMode.Overwrite) {
+    return skipped('not_overwrite', 'Already exists', parsed.data);
+  }
+  const { platform_organization: organizationReference } = parsed.data;
+  if (isNothingToImport(parsed.data, SETTINGS_POLICIES_FIELDS) && !organizationReference) {
+    return skipped('nothing_to_import', 'Nothing to import', parsed.data);
+  }
+  const input: { key: string; value: unknown[] }[] = toInput(parsed.data, SETTINGS_POLICIES_FIELDS);
+  let organizationReason: string | undefined;
+  if (organizationReference) {
+    if (!(await isEnterpriseEdition(context))) {
+      organizationReason = ORGANIZATION_REQUIRES_EE_REASON;
+    } else if (!(await isConfigImportSensitiveChangeAllowed(context, user, 'platform_organization'))) {
+      organizationReason = CONFIG_IMPORT_SENSITIVE_REASON;
+    } else {
+      const organization = await storeLoadById<BasicStoreEntity>(context, user, organizationReference.standard_id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+      if (organization) {
+        input.push({ key: 'platform_organization', value: [organization.id] });
+      } else {
+        organizationReason = `Main organization not found: ${organizationReference.name}`;
+      }
+    }
+  }
+  if (!dryRun && input.length > 0) {
+    const settings = await getSettings(context) as unknown as { id: string; password_policy_validity_days?: number };
+    await writeSettings(context, user, input);
+    const validity = parsed.data.password_policy_validity_days;
+    if (validity !== null && validity !== undefined) {
+      await propagatePasswordValidity(context, Number(settings.password_policy_validity_days ?? 0), validity);
+    }
+  }
+  return { status: 'overwritten', exists: true, configuration: parsed.data, reason: joinConfigImportReasons([organizationReason]) };
 };

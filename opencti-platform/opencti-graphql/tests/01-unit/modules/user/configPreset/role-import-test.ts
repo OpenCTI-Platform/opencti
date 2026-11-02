@@ -9,11 +9,16 @@ vi.mock('../../../../../src/modules/user/user-domain', () => ({
 }));
 vi.mock('../../../../../src/domain/grant', () => ({ addRole: vi.fn() }));
 vi.mock('../../../../../src/database/middleware-loader', () => ({ fullEntitiesList: vi.fn() }));
+vi.mock('../../../../../src/modules/configImport/configImport-sensitive', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/modules/configImport/configImport-sensitive')>()),
+  isConfigImportSensitiveChangeAllowed: vi.fn(),
+}));
 
 import { findRoleById, roleAddRelation, roleCapabilities, roleDeleteRelation, roleEditField } from '../../../../../src/modules/user/user-domain';
 import { addRole } from '../../../../../src/domain/grant';
 import { fullEntitiesList } from '../../../../../src/database/middleware-loader';
 import { importRole, roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
+import { isConfigImportSensitiveChangeAllowed } from '../../../../../src/modules/configImport/configImport-sensitive';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
 import { generateStandardId } from '../../../../../src/schema/identifier';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
@@ -51,6 +56,7 @@ const withRoles = (roles: ReturnType<typeof existingRole>[], capabilities: Recor
 
 beforeEach(() => {
   vi.resetAllMocks();
+  vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(true);
   vi.mocked(fullEntitiesList).mockResolvedValue(PLATFORM_CAPABILITIES.map((name) => ({ name })) as never);
   vi.mocked(addRole).mockImplementation(async (_ctx, _user, role) => ({ id: 'created-id', ...role }));
   withRoles([]);
@@ -214,5 +220,22 @@ describe('importRole sensitive rights', () => {
     const configuration = roleConfiguration({ name: 'Administrator', capabilities: ['BYPASS'], capabilities_in_draft: [], can_manage_sensitive_config: true });
     const result = await importRole(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
     expect(result).toMatchObject({ status: 'overwritten', reason: undefined });
+  });
+});
+
+describe('importRole protected sensitive configuration', () => {
+  it('refuses a protected role to a user who cannot manage the sensitive configuration, without writing', async () => {
+    withRoles([existingRole('Administrator')]);
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
+    const result = await importRole(context, user, roleConfiguration({ name: 'Administrator' }), { mode: ConfigImportMode.Overwrite });
+    expect(result).toMatchObject({ status: 'failed', code: 'sensitive_config', reason: 'Requires the right to manage the sensitive configuration', exists: true });
+    expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'roles', roleStandardId('Administrator'));
+    expectNothingWritten();
+  });
+
+  it('checks the role a copy creates, under its free name', async () => {
+    withRoles([existingRole('Administrator')]);
+    await importRole(context, user, roleConfiguration({ name: 'Administrator' }), { mode: ConfigImportMode.Copy, dryRun: true });
+    expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'roles', roleStandardId('Administrator (1)'));
   });
 });
