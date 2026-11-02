@@ -131,8 +131,8 @@ describe('managed connector token encryption', () => {
 
   it('should keep serving the cached token when the user holds several Composer tokens', async () => {
     expect(await readToken()).toBe('public-key-1|plaintext-1');
-    // Connectors sharing a user can each create a token with the same name: the first one found is not the cached one
-    userTokens.unshift({ id: 'token-other', name: 'Composer managed token' });
+    // A stale user cache can leave several tokens with this connector's token name: the first one found is not the cached one
+    userTokens.unshift({ id: 'token-other', name: 'Composer managed token connector-a' });
 
     expect(await readToken()).toBe('public-key-1|plaintext-1');
     expect(await readToken()).toBe('public-key-1|plaintext-1');
@@ -143,7 +143,7 @@ describe('managed connector token encryption', () => {
   it('should regenerate the token when the cache holds a value written before the record format', async () => {
     expect(await readToken()).toBe('public-key-1|plaintext-1');
     // Before the fix, the bare encrypted token was cached, whatever the key it was encrypted with
-    redisStore.set('composer:catalog-x:token:user-1', 'previous-public-key|plaintext-1');
+    redisStore.set('composer:connector:connector-a:token:user-1', 'previous-public-key|plaintext-1');
 
     expect(await readToken()).toBe('public-key-1|plaintext-2');
     expect(mockRevokeUserTokenByAdmin).toHaveBeenCalledWith(context, expect.anything(), 'user-1', 'token-1');
