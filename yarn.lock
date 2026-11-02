@@ -2019,18 +2019,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/chatbot-legacy@npm:@filigran/chatbot@1.1.2":
-  version: 1.1.2
-  resolution: "@filigran/chatbot@npm:1.1.2"
+"@filigran/chatbot-legacy@npm:@filigran/chatbot@3.16.1":
+  version: 3.16.1
+  resolution: "@filigran/chatbot@npm:3.16.1"
   dependencies:
-    "@microsoft/fetch-event-source": "npm:2.0.1"
-    "@ts-stack/markdown": "npm:1.5.0"
-    device-detector-js: "npm:3.0.3"
-    lodash: "npm:4.17.23"
-    solid-element: "npm:1.9.1"
-    solid-js: "npm:1.9.11"
-    uuid: "npm:13.0.0"
-  checksum: 10c0/7211a53b73de63b205bfbcdb9b2e16e08ebfdcd5047a49a142c117afd4c33635f24ff29adc640f330d1ae0066a4a33b684ae70d0b7e3c8db4c194fbbec5ad9e0
+    remark-parse: "npm:^11.0.0"
+    unified: "npm:^11.0.0"
+  peerDependencies:
+    react: ">=18"
+    react-dom: ">=18"
+    react-markdown: ">=10"
+    remark-breaks: ">=4"
+    remark-gfm: ">=4"
+  checksum: 10c0/1e319b6f08ac4439810b6803ffa14eec85ce6e82148fb062b88a7fe8653db5f62b8889fa3f657eccabed28618829c7da06b0ff520420209c9c895230f6e71d4b
   languageName: node
   linkType: hard
 
@@ -3767,13 +3768,6 @@ __metadata:
     "@types/geojson": "npm:^7946.0.16"
     pbf: "npm:^5.1.2"
   checksum: 10c0/62cf2e714c819f9448302d922e9fd415c5182fd208d1a3e38cb453641aea7d8b740c3d9225dec4594435d4952a9ca0aee87fd538aecd3698572bb6e7598ac17f
-  languageName: node
-  linkType: hard
-
-"@microsoft/fetch-event-source@npm:2.0.1":
-  version: 2.0.1
-  resolution: "@microsoft/fetch-event-source@npm:2.0.1"
-  checksum: 10c0/38c69e9b9990e6cee715c7bbfa2752f943b42575acadb36facf19bb831f1520c469f854277439154258e0e1dc8650cc85038230d1f451e3f6b62e8faeaa1126c
   languageName: node
   linkType: hard
 
@@ -7107,15 +7101,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ts-stack/markdown@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@ts-stack/markdown@npm:1.5.0"
-  dependencies:
-    tslib: "npm:^2.3.0"
-  checksum: 10c0/2cb7bcdb4af96eeeeb1cbfde5bfdef9bd23884c59eae1b5612880379793d979affeb5f23e0e0b21b878ed8065f39719239161786ee0a3e9ea4978508723f1561
-  languageName: node
-  linkType: hard
-
 "@tufjs/canonical-json@npm:2.0.0":
   version: 2.0.0
   resolution: "@tufjs/canonical-json@npm:2.0.0"
@@ -10301,13 +10286,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"component-register@npm:^0.8.7":
-  version: 0.8.8
-  resolution: "component-register@npm:0.8.8"
-  checksum: 10c0/ab1e83cbe155a95d3babde03255dfc8f41f7765ea32cb60fab7e9e463d4f1edec40eaaa44d56cdf62a832adb1712703c7ccd2f563149769b3875fe6d9596d305
-  languageName: node
-  linkType: hard
-
 "compress-commons@npm:^6.0.0, compress-commons@npm:^6.0.2":
   version: 6.0.2
   resolution: "compress-commons@npm:6.0.2"
@@ -10677,7 +10655,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csstype@npm:^3.0.2, csstype@npm:^3.1.0, csstype@npm:^3.1.3, csstype@npm:^3.2.2, csstype@npm:^3.2.3":
+"csstype@npm:^3.0.2, csstype@npm:^3.1.3, csstype@npm:^3.2.2, csstype@npm:^3.2.3":
   version: 3.2.3
   resolution: "csstype@npm:3.2.3"
   checksum: 10c0/cd29c51e70fa822f1cecd8641a1445bed7063697469d35633b516e60fe8c1bde04b08f6c5b6022136bb669b64c63d4173af54864510fbb4ee23281801841a3ce
@@ -11321,13 +11299,6 @@ __metadata:
   version: 1.1.0
   resolution: "detect-node-es@npm:1.1.0"
   checksum: 10c0/e562f00de23f10c27d7119e1af0e7388407eb4b06596a25f6d79a360094a109ff285de317f02b090faae093d314cf6e73ac3214f8a5bb3a0def5bece94557fbe
-  languageName: node
-  linkType: hard
-
-"device-detector-js@npm:3.0.3":
-  version: 3.0.3
-  resolution: "device-detector-js@npm:3.0.3"
-  checksum: 10c0/421d333d151b9c8205d1db61247603a4ecbdff5f627d72f1acbd98b17fc07b7a076bcde6f5d3e07727f17593ccf448462917cece6555646cfc9c0422a1692dbd
   languageName: node
   linkType: hard
 
@@ -15886,7 +15857,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.18.1, lodash@npm:^4.0.1, lodash@npm:^4.17.15, lodash@npm:^4.17.21":
+"lodash@npm:^4.0.1, lodash@npm:^4.17.15, lodash@npm:^4.17.21":
   version: 4.18.1
   resolution: "lodash@npm:4.18.1"
   checksum: 10c0/757228fc68805c59789e82185135cf85f05d0b2d3d54631d680ca79ec21944ec8314d4533639a14b8bcfbd97a517e78960933041a5af17ecb693ec6eecb99a27
@@ -18031,7 +18002,7 @@ __metadata:
     "@eslint/js": "npm:10.0.1"
     "@faker-js/faker": "npm:10.6.0"
     "@filigran/chatbot": "npm:3.15.1"
-    "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
+    "@filigran/chatbot-legacy": "npm:@filigran/chatbot@3.16.1"
     "@filigran/design-system": "npm:1.3.0"
     "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
@@ -21096,22 +21067,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"seroval-plugins@npm:~1.5.0":
-  version: 1.5.6
-  resolution: "seroval-plugins@npm:1.5.6"
-  peerDependencies:
-    seroval: ^1.0
-  checksum: 10c0/35a09f943976b146196eeed11b574b85f76f9fbbff709de682510b5790a65a45262dce3f669e1ef08082cde70cc756bd3c3e2c24d18fad2fc9e2a6641f6f2ede
-  languageName: node
-  linkType: hard
-
-"seroval@npm:~1.5.0":
-  version: 1.5.6
-  resolution: "seroval@npm:1.5.6"
-  checksum: 10c0/47e4fb25305bf05fdf300cac6b0d4aaaaf1e12f15c819195afcdf512d88901a3f1f7754ac5a2de740cc0bb04e912c653fbf0129fb3e4c81ce12809e6aa5815e3
-  languageName: node
-  linkType: hard
-
 "serve-static@npm:^2.2.0":
   version: 2.2.1
   resolution: "serve-static@npm:2.2.1"
@@ -21402,28 +21357,6 @@ __metadata:
     ip-address: "npm:^10.1.1"
     smart-buffer: "npm:^4.2.0"
   checksum: 10c0/9ac7f4329ed064585975206d9582119a1f168b249dd6119a939f839e0ea7a590d4fdccff9a4112f13b478177207959096f70224f021eaeb3ce69bc8129f80ef4
-  languageName: node
-  linkType: hard
-
-"solid-element@npm:1.9.1":
-  version: 1.9.1
-  resolution: "solid-element@npm:1.9.1"
-  dependencies:
-    component-register: "npm:^0.8.7"
-  peerDependencies:
-    solid-js: ^1.9.3
-  checksum: 10c0/aeb580873e7bf618f948d65994ce86ddb39ed677aec49a20ee597c63a41d3a584fc1fa4b39c95ca0106d10119a1ffbcfdc893de74b8016aec707632fe2fe8444
-  languageName: node
-  linkType: hard
-
-"solid-js@npm:1.9.11":
-  version: 1.9.11
-  resolution: "solid-js@npm:1.9.11"
-  dependencies:
-    csstype: "npm:^3.1.0"
-    seroval: "npm:~1.5.0"
-    seroval-plugins: "npm:~1.5.0"
-  checksum: 10c0/78b55d47b11a9f65410f78d3bd604b96540557b396681c08df02ad5cad800b2ea9ddbfceab832055b5fbddd3072d925cefda25616d8f380e70292a264ceb8854
   languageName: node
   linkType: hard
 
@@ -22385,7 +22318,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0, tslib@npm:^2.5.0, tslib@npm:^2.6.2, tslib@npm:^2.6.3, tslib@npm:^2.8.0, tslib@npm:^2.8.1, tslib@npm:~2.8.0":
+"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.4.0, tslib@npm:^2.5.0, tslib@npm:^2.6.2, tslib@npm:^2.6.3, tslib@npm:^2.8.0, tslib@npm:^2.8.1, tslib@npm:~2.8.0":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
