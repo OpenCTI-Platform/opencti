@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { RELATIVE_DATE_OPTIONS } from './dashboardTimeRange';
 import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange, writeStoredTimeRange, writeTimeRangeParam } from './dashboardTimeRangeStorage';
 
 const key = dashboardTimeRangeStorageKey('user-1', 'ws-1');
@@ -45,6 +46,11 @@ describe('dashboard time range storage', () => {
     window.history.replaceState(null, '', '/?variables=a:b');
     writeTimeRangeParam({ startDate: null, endDate: null, relativeDate: 'days-1' });
     expect(new URLSearchParams(window.location.search).get('variables')).toBe('a:b');
+  });
+
+  it.each(RELATIVE_DATE_OPTIONS.map(({ value }) => value))('accepts back every relative date of the select: %s', (relativeDate) => {
+    writeTimeRangeParam({ startDate: null, endDate: null, relativeDate });
+    expect(parseTimeRangeParam(window.location.search)).toEqual({ startDate: null, endDate: null, relativeDate });
   });
 
   it.each(['?timeRange=weeks-2', '?timeRange=2024/01/01..', '?timeRange=', '?other=1'])('ignores %s', (search) => {
