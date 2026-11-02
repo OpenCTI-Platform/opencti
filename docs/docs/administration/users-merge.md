@@ -1,27 +1,6 @@
-# User Merge Operational Runbook
+# Merging users
 
-This document defines the operational procedure for executing user account merges on an OpenCTI platform. It is intended for platform administrators operating under maintenance conditions.
-
----
-
-## Table of Contents
-
-1. [Overview & Guiding Principles](#1-overview--guiding-principles)
-2. [GraphQL API Reference & Parameter Specification](#2-graphql-api-reference--parameter-specification)
-   * [2.1 Mutations](#21-mutations)
-     * [`userMerge`](#mutation-usermerge)
-     * [`userMergeDeleteSource`](#mutation-usermergedeletesource)
-   * [2.2 Queries](#22-queries)
-     * [`userMergeCoverage`](#query-usermergecoverage)
-     * [`userMergeJournal`](#query-usermergejournal)
-     * [`userMergeSourceDeletionReadiness`](#query-usermergesourcedeletionreadiness)
-   * [2.3 Input Options & Enumerations](#23-input-options--enumerations)
-3. [Mandatory Preconditions](#3-mandatory-preconditions)
-4. [Per-User Merge Procedure](#4-per-user-merge-procedure)
-5. [Source Account Deletion Procedure](#5-source-account-deletion-procedure)
-6. [Incident Response & Recovery Guide](#6-incident-response--recovery-guide)
-7. [Closing the Batch & Restoring Traffic](#7-closing-the-batch--restoring-traffic)
-8. [GraphQL Operations Cheatsheet](#8-graphql-operations-cheatsheet)
+This page defines the operational procedure for executing user account merges on an OpenCTI platform. It is intended for platform administrators operating under maintenance conditions.
 
 ---
 
@@ -38,12 +17,13 @@ The **User Merge** capability reassigns data ownership, entity associations, col
 * **Never Delete the Source Account via Settings → Users**: Merging an account disables it and marks it with `merged_into`. Deleting it through the standard web UI is rejected by the platform to avoid running cascades that destroy transferred dashboards and triggers. Source account deletion must be conducted exclusively through the dedicated, gated `userMergeDeleteSource` mutation.
 * **Strict Idempotency**: All merge handlers are strictly idempotent. If an execution is interrupted, re-running the merge on the same pair is a safe no-op on already applied data.
 
-> [!WARNING]
-> **The platform must be at rest for the whole batch.** A write that changes what the merge plans
-> between its dry pass and its real pass (an ingestion, a worker, a scheduled task, a user action)
-> makes the real pass refuse, with nothing written. A write on a document the real pass is rewriting
-> aborts it half applied, and the merge has to be run again. [Section 3.1](#31-platform-at-rest)
-> lists what to stop and how to check.
+!!! warning
+
+    **The platform must be at rest for the whole batch.** A write that changes what the merge plans
+    between its dry pass and its real pass (an ingestion, a worker, a scheduled task, a user action)
+    makes the real pass refuse, with nothing written. A write on a document the real pass is rewriting
+    aborts it half applied, and the merge has to be run again. [Section 3.1](#31-platform-at-rest)
+    lists what to stop and how to check.
 
 ---
 
@@ -318,17 +298,18 @@ them in the configuration, then restart the platform.
 on: they only read Elasticsearch and write to Redis. `CATALOG_MANAGER__ENABLED` only writes when a new
 connector catalog ships, then patches managed connectors: disable it too for a strictly frozen window.
 
-> [!IMPORTANT]
-> **Leave `HISTORY_MANAGER__ENABLED` and `ACTIVITY_MANAGER__ENABLED` on.**
->
-> Both only ever append to `opencti_history`; neither updates an existing record, so neither can
-> conflict with the rewrites. And the activity manager is the sole writer of the audit trace the
-> merge itself emits (`merges user <source> into user <target>`). Disabling it would run the batch
-> with no record that it happened.
->
-> Records written during the window are not rewritten either: the history payload handler cuts at the
-> start of the first real merge on the pair, so the traces the merge produces are left as they are
-> instead of being erased by a later pass.
+!!! warning
+
+    **Leave `HISTORY_MANAGER__ENABLED` and `ACTIVITY_MANAGER__ENABLED` on.**
+
+    Both only ever append to `opencti_history`; neither updates an existing record, so neither can
+    conflict with the rewrites. And the activity manager is the sole writer of the audit trace the
+    merge itself emits (`merges user <source> into user <target>`). Disabling it would run the batch
+    with no record that it happened.
+
+    Records written during the window are not rewritten either: the history payload handler cuts at the
+    start of the first real merge on the pair, so the traces the merge produces are left as they are
+    instead of being erased by a later pass.
 
 #### Verifying the platform is at rest
 
@@ -379,9 +360,10 @@ the platform is idle rather than merely slow.
 
 ### 3.3 Mandatory Snapshot & Backup
 
-> [!CAUTION]
-> **OpenCTI does not have an automated rollback mechanism.**
-> Merges write partial documents across live Elasticsearch indices. A snapshot is your only recovery path in the event of an unrecoverable operational mistake.
+!!! danger
+
+    **OpenCTI does not have an automated rollback mechanism.**
+    Merges write partial documents across live Elasticsearch indices. A snapshot is your only recovery path in the event of an unrecoverable operational mistake.
 
 Create a restorable snapshot of:
 1. **Elasticsearch / OpenSearch cluster indices** (all indices, including `opencti_internal_objects`, `opencti_history`, `opencti_deleted_objects`).
@@ -398,7 +380,7 @@ The dry-run only counts: it returns in seconds, even for an account named in mil
 | Ordinary user | up to a few hundred thousand | under a minute |
 | Very active user | about 5M | 5 to 15 minutes |
 
-* The real run is synchronous. A run longer than the **reverse proxy read timeout** (Nginx, AWS ALB, Cloudflare, often 60 seconds) answers a 504 while it keeps running server-side, and so does one longer than `app:request_timeout` (20 minutes by default). Raising the proxy timeout (`proxy_read_timeout`) avoids the error, but do not rely on the HTTP response: follow the run in the journal (section 4.4), and apply [section 6.1](#61-incident-1-http-504--client-disconnection--timeout) on a timeout.
+* The real run is synchronous. A run longer than the **reverse proxy read timeout** (Nginx, AWS ALB, Cloudflare, often 60 seconds) answers a 504 while it keeps running server-side, and so does one longer than `app:request_timeout` (20 minutes by default). Raising the proxy timeout (`proxy_read_timeout`) avoids the error, but do not rely on the HTTP response: follow the run in the journal (section 4.4), and apply [section 6.1](#61-incident-1-http-504-client-disconnection-timeout) on a timeout.
 * The `count` values of the dry-run report give the order of magnitude in advance.
 
 ---
@@ -527,11 +509,12 @@ Deleting the source account is an irreversible operation and must **only** be ex
 
 ### 5.1 Check Deletion Readiness
 
-> [!IMPORTANT]
-> **Delete the source within 30 days of the merge.** The deletion gate reads the start of the first
-> real merge on the pair from the merge journal, which expires after 30 days. Past that, the merge's
-> own traces count as pending and the gate refuses; the only way out is a new real run, which
-> rewrites those traces.
+!!! warning
+
+    **Delete the source within 30 days of the merge.** The deletion gate reads the start of the first
+    real merge on the pair from the merge journal, which expires after 30 days. Past that, the merge's
+    own traces count as pending and the gate refuses; the only way out is a new real run, which
+    rewrites those traces.
 
 Query the deletion gate before attempting deletion:
 
@@ -555,19 +538,20 @@ The deletion gate enforces three mandatory conditions:
 
 If `allowed` is `false`, review `blockers`. Re-run the merge if changes are still planned.
 
-> [!CAUTION]
-> **Never delete a merged source account through Settings → Users.**
->
-> The merge disables the source, it does not delete it, so the account remains listed with its
-> ordinary delete button. That button runs four cascades — triggers and digests, workspaces,
-> notifications, public dashboard sharing — which all select by a reference to the account being
-> deleted. After a complete merge they find nothing. If the merge missed a reference, they **delete**
-> the trigger or the dashboard that carries it, and those objects now belong to the target. A gap a
-> re-run would repair becomes a permanent loss.
->
-> The platform refuses that button on any account carrying `merged_into`. Do not work around the
-> refusal by clearing the field unless you have run the readiness query first and it answered
-> `allowed: true` (see 5.3).
+!!! danger
+
+    **Never delete a merged source account through Settings → Users.**
+
+    The merge disables the source, it does not delete it, so the account remains listed with its
+    ordinary delete button. That button runs four cascades — triggers and digests, workspaces,
+    notifications, public dashboard sharing — which all select by a reference to the account being
+    deleted. After a complete merge they find nothing. If the merge missed a reference, they **delete**
+    the trigger or the dashboard that carries it, and those objects now belong to the target. A gap a
+    re-run would repair becomes a permanent loss.
+
+    The platform refuses that button on any account carrying `merged_into`. Do not work around the
+    refusal by clearing the field unless you have run the readiness query first and it answered
+    `allowed: true` (see 5.3).
 
 ### 5.2 Execute Permanent Deletion
 
@@ -606,9 +590,10 @@ Between steps 2 and 3 the account is deletable by anyone with the rights, and th
 
 ### 6.1 Incident 1: HTTP 504 / Client Disconnection / Timeout
 
-> [!IMPORTANT]
-> **DO NOT RE-LAUNCH THE MERGE IMMEDIATELY.**
-> Neither Node.js nor Apollo cancels an in-flight mutation when a client disconnects. The merge is continuing server-side.
+!!! warning
+
+    **DO NOT RE-LAUNCH THE MERGE IMMEDIATELY.**
+    Neither Node.js nor Apollo cancels an in-flight mutation when a client disconnects. The merge is continuing server-side.
 
 **Procedure**:
 1. Retrieve the latest journal entries without specifying a `mergeId`:
@@ -656,7 +641,7 @@ If the backend server process crashed or was restarted while a merge was writing
 
 **Error Message**: `Merge blocked by unacknowledged alerts, nothing was written`
 
-* **Root Cause**: A handler detected a change of exposure or of rights management (see [section 2.3](#23-input-options--enumerations)): a public endpoint served with a wider access, or authorized members moving to a target that cannot manage them.
+* **Root Cause**: A handler detected a change of exposure or of rights management (see [section 2.3](#23-input-options-enumerations)): a public endpoint served with a wider access, or authorized members moving to a target that cannot manage them.
 * **Resolution**: Review the dry-run alerts. If the security change is intended, pass `acknowledgeExposureChange: true` in `options`.
 
 ---
