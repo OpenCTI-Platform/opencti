@@ -476,6 +476,7 @@ interface BasicStoreEntityFeed extends BasicStoreEntity {
   entity_type: 'Feed';
   rolling_time: number;
   include_header: boolean;
+  neutralize_formulas?: boolean;
   feed_public: boolean;
   feed_types: Array<string>;
   feed_date_attribute: string;
