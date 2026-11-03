@@ -49,7 +49,7 @@ const SettingsIngestionHealth = ({ settings }: SettingsIngestionHealthProps) => 
   const ingestion_health_settings = useFragment(settingsIngestionHealthFragment, settings);
   const [commitEdit, isSaving] = useApiMutation<SettingsIngestionHealthEditMutation>(settingsIngestionHealthEdit);
   const isEnterpriseEdition = useEnterpriseEdition();
-  // Null when the user is not allowed: the backend resolves every field otherwise
+  // Null when the user is not allowed: checked before rendering this component
   if (!ingestion_health_settings) return null;
   const { notification_delay: notificationDelay, disabled_health_checks: disabledHealthChecks } = ingestion_health_settings;
 
