@@ -2,11 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../../src/domain/settings', () => ({
   getSettings: vi.fn(),
+  getSettingsFromDatabase: vi.fn(),
   settingsEditField: vi.fn(),
 }));
 vi.mock('../../../../src/modules/theme/theme-domain', () => ({ findById: vi.fn() }));
 
-import { getSettings, settingsEditField } from '../../../../src/domain/settings';
+import { getSettings, getSettingsFromDatabase, settingsEditField } from '../../../../src/domain/settings';
 import { findById } from '../../../../src/modules/theme/theme-domain';
 import { importMessage, importPlatformConfiguration, importWhitemark } from '../../../../src/modules/settings/settings-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
@@ -21,6 +22,7 @@ const dryRun = { mode: ConfigImportMode.Overwrite, dryRun: true };
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(getSettings).mockResolvedValue({ id: 'settings-id' } as never);
+  vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id' } as never);
   vi.mocked(findById).mockResolvedValue(undefined as never);
 });
 
@@ -39,6 +41,20 @@ describe('importMessage', () => {
   it('skips a message with only null values', async () => {
     expect(await importMessage(context, user, 'login', { platform_login_message: null }, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
     expect(settingsEditField).not.toHaveBeenCalled();
+  });
+
+  it('skips a whitemark the platform already has, and one that is off on a platform where it is not set', async () => {
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', platform_whitemark: true } as never);
+    expect(await importWhitemark(context, user, { platform_whitemark: true }, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id' } as never);
+    expect(await importWhitemark(context, user, { platform_whitemark: false }, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+  });
+
+  it('writes a whitemark that differs from the one of the platform', async () => {
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', platform_whitemark: true } as never);
+    expect(await importWhitemark(context, user, { platform_whitemark: false }, overwrite)).toMatchObject({ status: 'overwritten' });
+    expect(settingsEditField).toHaveBeenCalledTimes(1);
   });
 
   it('has no copy and no add: any mode but overwrite leaves it as it is', async () => {
@@ -65,6 +81,7 @@ describe('importWhitemark', () => {
   it('writes the whitemark, whether it is on or off', async () => {
     expect(await importWhitemark(context, user, { platform_whitemark: true }, overwrite)).toMatchObject({ status: 'overwritten', exists: true });
     expect(settingsEditField).toHaveBeenLastCalledWith(context, user, 'settings-id', [{ key: 'platform_whitemark', value: [true] }]);
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', platform_whitemark: true } as never);
     await importWhitemark(context, user, { platform_whitemark: false }, overwrite);
     expect(settingsEditField).toHaveBeenLastCalledWith(context, user, 'settings-id', [{ key: 'platform_whitemark', value: [false] }]);
   });
@@ -117,6 +134,20 @@ describe('importPlatformConfiguration', () => {
   it('skips a configuration with nothing to import and no default theme', async () => {
     expect(await importPlatformConfiguration(context, user, { platform_title: null, default_theme: null }, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
     expect(settingsEditField).not.toHaveBeenCalled();
+  });
+
+  it('skips a configuration the platform already has, theme included', async () => {
+    vi.mocked(findById).mockResolvedValue({ id: 'theme-internal-id' } as never);
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', platform_title: 'Title', platform_theme: 'theme-internal-id' } as never);
+    expect(await importPlatformConfiguration(context, user, { platform_title: 'Title', default_theme: defaultTheme }, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
+    expect(await importPlatformConfiguration(context, user, { platform_title: 'Other', default_theme: defaultTheme }, overwrite)).toMatchObject({ status: 'overwritten' });
+    expect(settingsEditField).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not take a default theme that the import creates for a theme the platform has', async () => {
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', platform_title: 'Title' } as never);
+    const isThemeCreated = () => true;
+    expect(await importPlatformConfiguration(context, user, { platform_title: 'Title', default_theme: defaultTheme }, { ...dryRun, isThemeCreated })).toMatchObject({ status: 'overwritten' });
   });
 
   it('fails when the default theme is not on the platform, unless a dry run is told the import creates it', async () => {

@@ -7,6 +7,7 @@ vi.mock('../../../../../src/enterprise-edition/ee', async (importOriginal) => ({
 }));
 vi.mock('../../../../../src/domain/settings', () => ({
   getSettings: vi.fn(),
+  getSettingsFromDatabase: vi.fn(async () => ({})),
   settingsEditField: vi.fn(),
   getPlatformDefaultTheme: vi.fn(),
 }));
@@ -86,6 +87,14 @@ describe('Import of the whitemark (compute)', () => {
 
   it('imports it on a platform that has the Enterprise Edition', async () => {
     expect(await compute(whitemark(), 'whitemark', { platform_whitemark: true })).toMatchObject({ status: 'overwritten' });
+  });
+
+  it('shows the value of the bundle: on, or off when it is off or not set', async () => {
+    const fields = async (configuration: Record<string, unknown>) => (await compute(whitemark(), 'whitemark', configuration)).fields;
+    expect(await fields({ platform_whitemark: true })).toEqual([{ key: 'platform_whitemark', value: 'true' }]);
+    expect(await fields({ platform_whitemark: false })).toEqual([{ key: 'platform_whitemark', value: 'false' }]);
+    expect(await fields({ platform_whitemark: null })).toEqual([{ key: 'platform_whitemark', value: 'false' }]);
+    expect(await fields({ platform_whitemark: 'yes' })).toEqual([]);
   });
 
   it('skips it, with the reason, on a platform without the Enterprise Edition', async () => {

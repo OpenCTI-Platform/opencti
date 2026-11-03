@@ -10,6 +10,7 @@ vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
 }));
 vi.mock('../../../../src/domain/settings', () => ({
   getSettings: vi.fn(),
+  getSettingsFromDatabase: vi.fn(async () => ({})),
   settingsEditField: vi.fn(),
   getPlatformDefaultTheme: vi.fn(),
 }));

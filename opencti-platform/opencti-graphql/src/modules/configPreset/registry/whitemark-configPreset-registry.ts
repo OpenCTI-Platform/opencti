@@ -22,7 +22,9 @@ const whitemarkImporter: ConfigPresetImporter = {
     if (item.id !== WHITEMARK_ITEM_ID) {
       return { ...label, exists: true, conflict: false, status: 'failed', reason: 'Unexpected item id' };
     }
-    return toComputedItem(label, await importWhitemark(context, user, item.configuration, { mode, dryRun: true }));
+    const result = await importWhitemark(context, user, item.configuration, { mode, dryRun: true });
+    // The preview shows the value of the bundle: the setting is on, or off (a setting that is not set is off)
+    return toComputedItem(label, result, result.configuration ? [{ key: 'platform_whitemark', value: String(result.configuration.platform_whitemark === true) }] : []);
   },
   apply: async (context, user, item, computed, mode) => {
     return toAppliedStatus(await importWhitemark(context, user, item.configuration, { mode }), computed);

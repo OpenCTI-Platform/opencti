@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import { getSettings, settingsEditField } from '../../domain/settings';
+import { getSettings, getSettingsFromDatabase, settingsEditField } from '../../domain/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { configImportValidationReason } from '../configImport/configImport-utils';
@@ -37,6 +37,14 @@ const toInput = (configuration: Record<string, unknown>, keys: string[]) => {
     .map((key) => ({ key, value: [configuration[key]] }));
 };
 
+// What the platform has already is not written again, so nothing is shown nor audited for it. A boolean that is off is the same as one that is not set.
+const isSameValue = (current: unknown, value: unknown) => current === value || (value === false && (current === null || current === undefined));
+
+const isUnchanged = async (context: AuthContext, input: { key: string; value: unknown[] }[]) => {
+  const current = (await getSettingsFromDatabase(context)) as unknown as Record<string, unknown>;
+  return input.every(({ key, value }) => isSameValue(current[key], value[0]));
+};
+
 const writeSettings = async (context: AuthContext, user: AuthUser, input: { key: string; value: unknown[] }[]) => {
   await settingsEditField(context, user, (await getSettings(context)).id, input);
 };
@@ -60,8 +68,12 @@ const importFields = async (
   if (isNothingToImport(parsed.data, keys)) {
     return skipped('nothing_to_import', 'Nothing to import', parsed.data);
   }
+  const input = toInput(parsed.data, keys);
+  if (await isUnchanged(context, input)) {
+    return skipped('nothing_to_import', 'Nothing to import', parsed.data);
+  }
   if (!dryRun) {
-    await writeSettings(context, user, toInput(parsed.data, keys));
+    await writeSettings(context, user, input);
   }
   return { status: 'overwritten', exists: true, configuration: parsed.data };
 };
@@ -107,6 +119,11 @@ export const importPlatformConfiguration = async (
     if (theme) {
       input.push({ key: 'platform_theme', value: [theme.id] });
     }
+  }
+  // A default theme that this import creates is a change
+  const createsTheme = !!defaultTheme && !input.some(({ key }) => key === 'platform_theme');
+  if (!createsTheme && await isUnchanged(context, input)) {
+    return skipped('nothing_to_import', 'Nothing to import', parsed.data);
   }
   if (!dryRun) {
     await writeSettings(context, user, input);
