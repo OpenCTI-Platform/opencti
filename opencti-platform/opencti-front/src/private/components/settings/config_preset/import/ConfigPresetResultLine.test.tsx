@@ -36,6 +36,13 @@ describe('ConfigPresetResultLine', () => {
     expect(screen.getByText(text)).toBeInTheDocument();
   });
 
+  it('says an item the platform has already as it is, without a status that would read as if it was ignored', () => {
+    testRender(<ConfigPresetResultLine label="Banner" status="SKIPPED" reason="Already up to date" />);
+    expect(screen.getByText('Banner')).toBeInTheDocument();
+    expect(screen.getByText('Already up to date')).toBeInTheDocument();
+    expect(screen.queryByText('Skipped')).not.toBeInTheDocument();
+  });
+
   it('shows an unknown status as is, and no reason when there is none', () => {
     testRender(<ConfigPresetResultLine label="Item" status="SOMETHING" reason={null} />);
     expect(screen.getByText('SOMETHING')).toBeInTheDocument();

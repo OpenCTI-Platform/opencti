@@ -32,12 +32,16 @@ const STATUS_SEVERITIES = {
   FAILED: 'critical',
 } as const;
 
+// An item the platform has as it is: skipped, but said without the status, which would read as if something was ignored
+export const ALREADY_UP_TO_DATE = 'Already up to date';
+
 type Translate = ReturnType<typeof useFormatter>['t_i18n'];
 
 // The reasons are sentences of the backend (the API exposes them as text), so they are matched here to be translated
 const translateReason = (t_i18n: Translate, reason: string) => {
   switch (reason) {
     case 'Already exists': return t_i18n('Already exists');
+    case ALREADY_UP_TO_DATE: return t_i18n('Already up to date');
     case 'Nothing to import': return t_i18n('Nothing to import');
     case 'Unexpected item id': return t_i18n('Unexpected item id');
     case 'Unknown message': return t_i18n('Unknown message');
@@ -77,10 +81,12 @@ const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = (
     <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
       {isDone && <CheckCircleOutlined aria-hidden data-testid="config-preset-result-tick" fontSize="small" style={{ color: theme.palette.success.main }} />}
       {label && <Text variant="content-base">{label}</Text>}
-      <Chip
-        label={known ? t_i18n(STATUS_LABELS[status as ConfigPresetResultStatus]) : status}
-        severity={known ? STATUS_SEVERITIES[status as ConfigPresetResultStatus] : 'neutral'}
-      />
+      {reason !== ALREADY_UP_TO_DATE && (
+        <Chip
+          label={known ? t_i18n(STATUS_LABELS[status as ConfigPresetResultStatus]) : status}
+          severity={known ? STATUS_SEVERITIES[status as ConfigPresetResultStatus] : 'neutral'}
+        />
+      )}
       {reason && <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{translateReason(t_i18n, reason)}</Text>}
     </div>
   );

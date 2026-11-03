@@ -1005,6 +1005,13 @@ describe('ConfigPresetImportWizard', () => {
       expect(within(screen.getByTestId('config-preset-import-item-messages-banner')).queryByText(/Created|Overwritten|Skipped|Failed|Nothing to import/)).not.toBeInTheDocument();
     });
 
+    it('says that an item the platform has already is up to date, without a status', async () => {
+      await renderPreview(session(), [{ type: 'messages', key: 'banner', status: 'SKIPPED', reason: 'Already up to date' }]);
+      const banner = within(screen.getByTestId('config-preset-import-item-messages-banner'));
+      expect(banner.getByText('Already up to date')).toBeInTheDocument();
+      expect(banner.queryByText('Skipped')).not.toBeInTheDocument();
+    });
+
     it('shows that an item with no choice is overwritten', async () => {
       await renderPreview(session(), simulated);
       expect(within(screen.getByTestId('config-preset-import-item-messages-banner')).getByText('Overwritten')).toBeInTheDocument();
