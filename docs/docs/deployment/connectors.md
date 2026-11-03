@@ -311,6 +311,45 @@ Change the `config.yml` content according to the parameters of the platform and 
 $ python3 misp.py
 ```
 
+## Connector identity and logo
+
+Every connector that exists in the connectors catalog is shown with the logo and the title of its catalog entry, however it was deployed: in Integrations > Deployed (cards and list) and on the connector page, which also describes the catalog entry and links to it under "About this connector".
+
+### How a connector is recognised
+
+The platform looks for the catalog entry of a connector in this order and stops at the first answer:
+
+1. **Deployment from the catalog**: a connector deployed through the composer carries its catalog entry.
+2. **Catalog entry chosen by hand** on the connector page (see below).
+3. **Slug reported by the connector**: at registration, the Python client (`pycti`) reports the slug it finds next to the connector entry point, in `__metadata__/connector_manifest.json` (source checkout) or in the `.connector_version.json` stamp written into the published connector images. A connector registering without a slug never erases the slug already known for it.
+4. **Connector name**: the name is compared with the catalog entries of the same connector type (an analysis connector also with the import file entries, since it runs an import file image, as `ImportDocumentAnalysis` does), ignoring case, punctuation, the word "connector", publisher prefixes such as "Abuse.ch" and parenthesised suffixes such as "(KEV)". A name equal to the title of an entry or to its slug (the name of its image, `opencti/connector-<slug>`, as in `export-file-txt`) designates that entry; otherwise a name that contains a title, or is contained in one, designates the entries of that title, provided the contained text has at least five letters or digits (so "S3 backups" does not designate "S3"). The match is accepted only when exactly one catalog entry matches.
+
+When the platform is not sure, it keeps the generic icon of the connector type rather than showing a wrong logo. The connector page tells how the entry was found: "Reported by the connector", "Identified by name" or "Chosen by hand".
+
+![Connector page of a self-deployed connector identified by its name](assets/connector-identity/connector-name-1440.png)
+
+### Choose the catalog entry by hand
+
+Users with the "Manage connector state" capability can link a self-deployed connector to its catalog entry:
+
+1. Open the connector from Integrations > Deployed.
+2. In "About this connector", click "Identify connector" (or "Change catalog entry" when an entry was already found).
+3. Search the catalog, select the entry (the entries of the connector type are listed first) and click "Save".
+
+![Identify connector dialog with the chosen catalog entry](assets/connector-identity/identify-dialog-preview-1440.png)
+
+The choice is stored on the connector, apart from the registration data: it is kept when the connector restarts, re-registers or is renamed. "Use automatic identification" in the same dialog removes it and returns to the automatic order above. Connectors deployed through the composer and built-in connectors take their identity from the platform and cannot be changed.
+
+### Custom images
+
+An image built outside the connectors repository is recognised by name only. To report its catalog entry, write a `.connector_version.json` file in the directory of the connector entry point (or one of its four parent directories):
+
+```json
+{ "version": "6.9.0", "slug": "my-connector" }
+```
+
+Use the slug of the catalog entry, as shown in the URL of its catalog page. The file is only read when it carries a version.
+
 ## Connectors status
 
 The connector status can be displayed in the dedicated section of the platform available in Data > Ingestion > Connectors. You will be able to see the statistics of the RabbitMQ queue of the connector:
