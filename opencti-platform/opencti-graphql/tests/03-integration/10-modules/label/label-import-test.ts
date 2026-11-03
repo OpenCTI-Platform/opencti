@@ -6,8 +6,9 @@ import { getLabelStandardId, importLabel } from '../../../../src/modules/label/l
 import { labelsFamily } from '../../../../src/modules/configPreset/registry/labels-configPreset-registry';
 import { exportConfigPresetItem } from '../../../../src/modules/configPreset/configPreset-registry';
 
-const VALUE_A = 'Config preset label A';
-const VALUE_B = 'Config preset label B';
+// One word: the search is an OR of the words of the term, and the word "label" matches the entity type of every label
+const VALUE_A = 'ConfigPresetLabelA';
+const VALUE_B = 'ConfigPresetLabelB';
 const mode = ConfigImportMode.Overwrite;
 
 describe('Label import and export (configuration preset)', () => {
@@ -53,7 +54,7 @@ describe('Label import and export (configuration preset)', () => {
   it('lists, searches and resolves the labels through the family, by value', async () => {
     const idA = getLabelStandardId(VALUE_A);
     const idB = getLabelStandardId(VALUE_B);
-    const page = await labelsFamily.listItems(testContext, ADMIN_USER, { first: 10, search: 'Config preset label' });
+    const page = await labelsFamily.listItems(testContext, ADMIN_USER, { first: 10, search: 'ConfigPresetLabel' });
     expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([[idA, VALUE_A, false], [idB, VALUE_B, false]]);
     expect(page.pageInfo.globalCount).toBe(2);
     expect((await labelsFamily.listItems(testContext, ADMIN_USER, { ids: [idB] })).edges.map(({ node }) => node.id)).toEqual([idB]);
