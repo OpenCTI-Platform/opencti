@@ -46,25 +46,6 @@ describe('check createWorkerPool', () => {
     }
   });
 
-  it('reports a worker out of memory with the configured error', async () => {
-    const pool = createWorkerPool<JsonPathQuery, any>({ ...poolOptions, outOfMemoryError: () => FunctionalError('out of memory') });
-    // A process-wide --max-old-space-size (NODE_OPTIONS) overrides the worker heap limit: the out-of-memory
-    // error is emitted directly, so the test does not depend on how the process was started
-    vi.spyOn(Worker.prototype, 'postMessage').mockImplementationOnce(function emitOutOfMemory(this: Worker) {
-      this.emit('error', Object.assign(new Error('Worker terminated due to reaching memory limit'), { code: 'ERR_WORKER_OUT_OF_MEMORY' }));
-    });
-    try {
-      await expect(pool.run(query(1), 5000)).rejects.toMatchObject({
-        message: 'out of memory',
-        extensions: { code: 'FUNCTIONAL_ERROR' },
-      });
-      // The worker that ran out of memory is replaced
-      expect(await pool.run(query(2), 5000)).toEqual(['2']);
-    } finally {
-      await pool.shutdown();
-    }
-  });
-
   it('terminates a worker that stays idle longer than idleTimeout', async () => {
     const pool = createWorkerPool<JsonPathQuery, any>({ ...poolOptions, idleTimeout: 200 });
     const postMessageSpy = vi.spyOn(Worker.prototype, 'postMessage');

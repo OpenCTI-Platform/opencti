@@ -7,22 +7,20 @@ import { createWorkerPool } from './workerPool';
 const pool = createWorkerPool<JsonPathQuery, any>({
   workerFile: 'jsonPath.worker.mjs',
   idlePoolSize: conf.get('json_path:idle_pool_size') ?? 2,
-  // Each worker can hold a copy of the document up to its heap limit: the bound keeps the total under control
+  // Each worker holds a copy of the document it filters: the bound keeps the number of copies under control
   maxPoolSize: conf.get('json_path:max_pool_size') ?? 4,
   maxTasksPerWorker: conf.get('json_path:max_queries_per_worker') ?? 10000,
   // A worker that copied a large document keeps that memory while idle: it is given back after a quiet period
   idleTimeout: conf.get('json_path:idle_timeout') ?? 60000,
+  // The worker heap is not capped: a document that fits in the main thread must also fit in its copy.
+  // A per-worker cap would be ignored anyway when the process runs with --max-old-space-size (NODE_OPTIONS in the images).
   resourceLimits: {
-    maxOldGenerationSizeMb: conf.get('json_path:resource_limits:max_old_generation_size_mb') ?? 512,
     maxYoungGenerationSizeMb: conf.get('json_path:resource_limits:max_young_generation_size_mb') ?? 32,
     codeRangeSizeMb: conf.get('json_path:resource_limits:code_range_size_mb') ?? 10,
     stackSizeMb: conf.get('json_path:resource_limits:stack_size_mb') ?? 4,
   },
   // The path comes from the user's mapper or feed: a timeout is reported as a functional error, not a platform failure
   timeoutError: (timeout) => FunctionalError(`JSONPath evaluation timeout after ${timeout}ms`, { timeout }),
-  outOfMemoryError: () => FunctionalError(
-    'JSONPath evaluation ran out of memory: the document is too large for this filter, increase json_path:resource_limits:max_old_generation_size_mb',
-  ),
 });
 
 // jsonpath-plus evaluates `?(...)` filters and `(...)` selectors as code: they run in the worker pool, with a timeout.

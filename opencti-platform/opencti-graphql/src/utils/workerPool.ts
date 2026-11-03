@@ -17,8 +17,6 @@ export interface WorkerPoolOptions {
   idleTimeout?: number;
   resourceLimits: ResourceLimits;
   timeoutError: (timeout: number) => Error;
-  // Error reported when a task exceeds the worker resource limits. A generic worker error if not set.
-  outOfMemoryError?: () => Error;
 }
 
 export interface WorkerPool<Request, Result> {
@@ -41,7 +39,7 @@ interface WaitingTask {
 // A worker handles one task at a time: a timeout then terminates exactly the task that hung,
 // and never a bystander sharing the same thread.
 export const createWorkerPool = <Request, Result>(poolOptions: WorkerPoolOptions): WorkerPool<Request, Result> => {
-  const { workerFile, idlePoolSize, maxPoolSize = Infinity, maxTasksPerWorker, idleTimeout, resourceLimits, timeoutError, outOfMemoryError } = poolOptions;
+  const { workerFile, idlePoolSize, maxPoolSize = Infinity, maxTasksPerWorker, idleTimeout, resourceLimits, timeoutError } = poolOptions;
   let shuttingDown = false;
   const idleWorkers: PooledWorker[] = [];
   const activeWorkers = new Set<PooledWorker>();
@@ -156,13 +154,9 @@ export const createWorkerPool = <Request, Result>(poolOptions: WorkerPoolOptions
         settle(() => reject(new Error(message.error || 'Unknown worker error')));
       }
     };
-    const onError = (error: Error & { code?: string }) => {
+    const onError = (error: Error) => {
       poisoned = true;
-      if (outOfMemoryError && error.code === 'ERR_WORKER_OUT_OF_MEMORY') {
-        settle(() => reject(outOfMemoryError()));
-      } else {
-        settle(() => reject(new Error(`Worker error: ${error.message}`, { cause: error })));
-      }
+      settle(() => reject(new Error(`Worker error: ${error.message}`, { cause: error })));
     };
     const onExit = (code: number) => {
       poisoned = true;

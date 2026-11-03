@@ -418,7 +418,6 @@
     "idle_timeout": 60000,
     "max_queries_per_worker": 10000,
     "resource_limits": {
-      "max_old_generation_size_mb": 512,
       "max_young_generation_size_mb": 32,
       "code_range_size_mb": 10,
       "stack_size_mb": 4
