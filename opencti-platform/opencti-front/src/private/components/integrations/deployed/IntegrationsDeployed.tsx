@@ -42,7 +42,7 @@ interface IntegrationsDeployedContentProps {
   data: IntegrationsData;
   connectorsListData: ConnectorsListQuery['response'] | null;
   connectorsStateData: ConnectorsStateQuery['response'] | null;
-  logosBySlug: Map<string, string>;
+  logosByConnectorId: Map<string, string>;
   onConnectorsChange: () => void;
   alertsSlot?: HTMLElement | null;
 }
@@ -51,7 +51,7 @@ const IntegrationsDeployedContent = ({
   data,
   connectorsListData,
   connectorsStateData,
-  logosBySlug,
+  logosByConnectorId,
   onConnectorsChange,
   alertsSlot,
 }: IntegrationsDeployedContentProps) => {
@@ -69,7 +69,7 @@ const IntegrationsDeployedContent = ({
     connectorsStateData,
     feedsData,
     formsData,
-    logosBySlug,
+    logosByConnectorId,
     isConnectorUpdateEnabled,
     isIngestionHealthEnabled,
   });
@@ -356,7 +356,7 @@ const IntegrationsDeployed = ({
     = useQueryLoader<ConnectorsStateQuery>(connectorsStateQuery);
   const [connectorsLogosRef, loadConnectorsLogos]
     = useQueryLoader<ConnectorsLogosQuery>(connectorsLogosQuery);
-  const [logosBySlug, setLogosBySlug] = useState<Map<string, string>>(
+  const [logosByConnectorId, setLogosByConnectorId] = useState<Map<string, string>>(
     new Map(),
   );
 
@@ -387,7 +387,7 @@ const IntegrationsDeployed = ({
       data={data}
       connectorsListData={connectorsListData}
       connectorsStateData={connectorsStateData}
-      logosBySlug={logosBySlug}
+      logosByConnectorId={logosByConnectorId}
       onConnectorsChange={onConnectorsChange}
       alertsSlot={alertsSlot}
     />
@@ -410,7 +410,7 @@ const IntegrationsDeployed = ({
                     <Suspense fallback={null}>
                       <ConnectorsLogos
                         queryRef={connectorsLogosRef}
-                        onLoaded={setLogosBySlug}
+                        onLoaded={setLogosByConnectorId}
                       />
                     </Suspense>
                   )}
