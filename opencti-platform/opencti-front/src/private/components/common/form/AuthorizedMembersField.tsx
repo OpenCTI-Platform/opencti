@@ -453,9 +453,8 @@ const AuthorizedMembersField = ({
                         dynamicAuthorOrgLabel={dynamicAuthorOrgLabel}
                         includeBundleOrganizationDynamicOption={includeBundleOrganizationDynamicOption}
                       />
-                      {value?.find(
-                        (a) => a.value === values.newAccessMember?.value,
-                      ) && (
+                      {/* Same check as the Add button: a member restricted to other groups is another rule, not a duplicate */}
+                      {doesNewMemberAlreadyExist(values) && (
                         <FormHelperText style={{ position: 'absolute' }}>
                           {t_i18n('Access already granted')}
                         </FormHelperText>

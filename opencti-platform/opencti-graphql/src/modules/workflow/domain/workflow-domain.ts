@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { LRUCache } from 'lru-cache';
 import conf, { booleanConf, logApp, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
-import { FunctionalError } from '../../../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../../../config/errors';
 import { getEntitiesListFromCache } from '../../../database/cache';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
@@ -19,7 +19,7 @@ import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { SYSTEM_USER, WORKFLOW_MANAGER_USER, isBypassUser } from '../../../utils/access';
+import { AccessOperation, SYSTEM_USER, WORKFLOW_MANAGER_USER, isBypassUser, validateUserAccessOperation } from '../../../utils/access';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { now } from '../../../utils/format';
 import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
@@ -44,7 +44,7 @@ import {
   type WorkflowSerializedTransition,
   type WorkflowValidationError,
 } from '../types/workflow-types';
-import { extractAllStatesFromDefinition, extractCanonicalStateIds, validateWorkflowDefinitionData } from '../workflow-validation';
+import { extractCanonicalStateIds, findInstancesBlockingStateRemoval, validateWorkflowDefinitionData } from '../workflow-validation';
 import { computeStateOrder } from './workflow-ordering';
 import { isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
@@ -206,6 +206,7 @@ const notifyWorkflowTransitionComment = async (
 
 interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
   currentState: string;
+  completed?: boolean;
   history: string;
   pendingStatus?: string | null;
   pendingError?: string | null;
@@ -889,43 +890,20 @@ export const publishWorkflowDefinition = async (
       }
 
       if (oldDef && newDef) {
-        const oldStates = extractAllStatesFromDefinition(oldDef);
-        const newStates = extractAllStatesFromDefinition(newDef);
-        const removedStates = [...oldStates].filter((s) => !newStates.has(s));
-
-        if (removedStates.length > 0) {
-          // Ending states (no outgoing transitions) are safe to remove even with active instances.
-          const statesWithOutgoingTransitions = new Set<string>();
-          for (const transition of (oldDef.transitions ?? [])) {
-            const fromStates = Array.isArray(transition.from) ? transition.from : [transition.from];
-            for (const s of fromStates) {
-              if (s && s !== '*') statesWithOutgoingTransitions.add(s);
-            }
-          }
-          const nonEndingRemovedStates = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
-
-          if (nonEndingRemovedStates.length > 0) {
-            // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
-            // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
-            // Instead, we filter by currentState in ES and post-filter by workflow_id.
-            const instancesInRemovedStates = await fullEntitiesList<any>(executionContext, executionUser, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
-              filters: {
-                mode: FilterMode.And,
-                filters: [
-                  { key: ['currentState'], values: nonEndingRemovedStates, operator: FilterOperator.Eq, mode: FilterMode.Or },
-                ],
-                filterGroups: [],
-              },
-            });
-            const conflictingInstances = instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionEntity.id);
-
-            if (conflictingInstances.length > 0) {
-              throw FunctionalError(
-                'Cannot publish workflow: the following statuses are in use and cannot be removed. Move all items out of those statuses first.',
-                { removedStates: nonEndingRemovedStates, entityType: ENTITY_TYPE_STATUS_TEMPLATE },
-              );
-            }
-          }
+        // Same rule as validation (shared function): instances in a removed non-ending state block the
+        // removal, ending states and completed instances do not.
+        const { states: blockingStates, instances: blockingInstances } = await findInstancesBlockingStateRemoval(
+          executionContext,
+          executionUser,
+          oldDef,
+          newDef,
+          workflowDefinitionEntity.id,
+        );
+        if (blockingInstances.length > 0) {
+          throw FunctionalError(
+            'Cannot publish workflow: the following statuses are in use and cannot be removed. Move all items out of those statuses first.',
+            { removedStates: blockingStates, entityType: ENTITY_TYPE_STATUS_TEMPLATE },
+          );
         }
 
         // Same guard as validation's STATUS_IN_USE, re-checked here against the correct baseline
@@ -1272,7 +1250,7 @@ export const getAllowedTransitions = async (
   },
 ): Promise<Array<{
   event: string;
-  toState: string;
+  toState: string | null;
   toStatus: BasicWorkflowStatus | null;
   comment?: string;
   actions: string[];
@@ -1281,6 +1259,12 @@ export const getAllowedTransitions = async (
 }>> => {
   const entity = options?.entity ?? await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
+    return [];
+  }
+
+  // View access alone isn't enough to trigger a transition: a view-only user (e.g. restricted by
+  // an authorized-members group restriction) must not see any transition as available.
+  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
     return [];
   }
 
@@ -1293,6 +1277,9 @@ export const getAllowedTransitions = async (
 
   const effectiveEntityId = entity.internal_id || entity.id;
   const instanceEntity = options?.instanceEntity ?? await findWorkflowInstanceEntity(context, user, effectiveEntityId);
+  if (instanceEntity?.completed) {
+    return [];
+  }
   const currentStateId = instanceEntity?.currentState ?? definitionData.initialState;
 
   const definition = WorkflowFactory.createDefinition(definitionData);
@@ -1317,7 +1304,7 @@ export const getAllowedTransitions = async (
       }
       return {
         event: transition.event,
-        toState: transition.to,
+        toState: transition.to ?? null,
         toStatus: statuses.find((status) => status.scope === scope && status.template_id === transition.to) ?? null,
         comment: transition.comment,
         actions: transition.actionTypes || [],
@@ -1356,6 +1343,13 @@ export const triggerWorkflowEvent = async (
     throw FunctionalError('Entity not found', { entityId });
   }
 
+  // View access alone isn't enough to trigger a transition: mirrors the check in
+  // getAllowedTransitions, which only hides transitions from the UI and does not itself
+  // prevent a view-only user from calling this mutation directly.
+  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
+    throw ForbiddenAccess();
+  }
+
   // 2. Fetch its EntitySetting to get the workflow configuration
   const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
   const definitionData = await getDefinitionData(context, user, entitySetting);
@@ -1374,6 +1368,10 @@ export const triggerWorkflowEvent = async (
     const executionUser = bypassDraftUser(user);
 
     const instanceEntity = await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+
+    if (instanceEntity.completed) {
+      return { success: false, reason: 'Workflow has already completed' };
+    }
 
     // 3. Lock check: reject new events while a transition is already pending
     if (instanceEntity.pendingStatus === 'pending') {
@@ -1452,12 +1450,19 @@ export const triggerWorkflowEvent = async (
 
       // Collect the onEnter actions of the target state so phase 2 can replay them.
       const toStateId = targetTransitionForSync?.to ?? instance.getCurrentState();
-      const targetStateDef = definitionData.states?.find((s: any) => s.statusId === toStateId);
+      // A null `to` only completes the workflow when paired with `validateDraft` (see
+      // workflow-validation.ts) - otherwise it's a stale orphaned reference (e.g. a status
+      // deleted after this definition was published, before that validation gate existed).
+      const completesWorkflow = targetTransitionForSync != null
+        && targetTransitionForSync.to == null
+        && serializedTransitions.some((action) => action.type === 'validateDraft');
+      const targetStateDef = completesWorkflow ? undefined : definitionData.states?.find((s: any) => s.statusId === toStateId);
       const serializedOnEnterActions: WorkflowActionConfig[] = targetStateDef?.onEnter ?? [];
 
       const pendingTransition: WorkflowPendingTransition = {
         event: eventName,
         toState: toStateId,
+        ...(completesWorkflow ? { completesWorkflow: true } : {}),
         triggeredBy: user.id,
         triggeredAt: new Date().toISOString(),
         runtimeParams,
@@ -1498,12 +1503,14 @@ export const triggerWorkflowEvent = async (
       user_id: user.id,
       timestamp: new Date().toISOString(),
       event: eventName,
+      ...(result.workflowCompleted ? { completed: true } : {}),
       ...(comment ? { comment } : {}),
     });
 
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'currentState', value: [newState] },
       { key: 'history', value: [JSON.stringify(history)] },
+      ...(result.workflowCompleted ? [{ key: 'completed', value: [true] }] : []),
       // The transition re-projects the status, ending any kept external write.
       ...(instanceEntity.pendingStatus ? [] : [{ key: 'pendingError', value: [null] }]),
     ]);

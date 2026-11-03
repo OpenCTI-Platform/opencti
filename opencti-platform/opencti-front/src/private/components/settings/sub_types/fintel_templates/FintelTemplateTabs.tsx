@@ -1,7 +1,7 @@
 import { Box, Tab, Tabs } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFintelTemplateContext } from '@components/settings/sub_types/fintel_templates/FintelTemplateContext';
 import { useFormatter } from '../../../../../components/i18n';
 import { FintelTemplateTabs_template$key } from './__generated__/FintelTemplateTabs_template.graphql';

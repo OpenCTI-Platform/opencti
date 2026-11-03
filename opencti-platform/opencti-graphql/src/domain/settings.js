@@ -37,6 +37,7 @@ import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
+import { checkDateDisplayInput } from '../utils/dateDisplay';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
 
 export const getMemoryStatistics = () => {
@@ -154,6 +155,7 @@ export const getSettings = async (context) => {
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_theme: platformTheme,
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
+    platform_bootstrap_wizard_enabled: nconf.get('app:bootstrap_wizard:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
@@ -234,6 +236,8 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'platform_favicon',
   'platform_email',
   'platform_language',
+  'platform_date_format',
+  'platform_time_format',
   'platform_whitemark',
   'platform_login_message',
   'platform_banner_text',
@@ -298,7 +302,14 @@ const buildAuthorizedSettingsKeys = (user) => {
   return allowed;
 };
 
+// The bootstrap status is written by setPlatformBootstrapStatus only, whatever the capabilities of the caller
+const PLATFORM_BOOTSTRAP_STATUS_KEY = 'platform_bootstrap_status';
+const PLATFORM_BOOTSTRAP_STATUSES = ['pending', 'completed'];
+
 export const settingsEditField = async (context, user, settingsId, input) => {
+  if (input.some((i) => i.key === PLATFORM_BOOTSTRAP_STATUS_KEY)) {
+    throw ForbiddenAccess('The platform bootstrap status cannot be edited');
+  }
   const hasBypassCapability = isUserHasCapability(user, BYPASS);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB) || hasBypassCapability;
   const allowedKeys = buildAuthorizedSettingsKeys(user);
@@ -329,6 +340,8 @@ export const settingsEditField = async (context, user, settingsId, input) => {
       throw UnsupportedError(`Invalid CGU status, expected one of ${validStatuses.join(', ')}`);
     }
   }
+
+  checkDateDisplayInput(data, 'platform_date_format', 'platform_time_format');
 
   const ipWhitelist = data.find((inputData) => inputData.key === 'platform_ip_whitelist');
   if (ipWhitelist && Array.isArray(ipWhitelist.value) && ipWhitelist.value.length > 0) {
@@ -533,28 +546,28 @@ export const getCriticalAlerts = async (context, user) => {
   return [];
 };
 
-// region config preset
-// Allowlists of the Settings fields a configuration preset carries. Anything not listed here
-// (credentials, license, providers, theme, branding) never leaves the platform through a preset.
-export const CONFIG_PRESET_PLATFORM_FIELDS = ['platform_title', 'platform_favicon', 'platform_language'];
-export const CONFIG_PRESET_MESSAGES_FIELDS = [
-  'platform_banner_text',
-  'platform_banner_level',
-  'platform_login_message',
-  'platform_consent_message',
-  'platform_consent_confirm_text',
-  'platform_no_access_message',
-];
-
-const pickConfigPresetFields = (settings, fields) => Object.fromEntries(fields.map((field) => [field, settings[field] ?? null]));
-
-export const getPlatformConfigPresetConfiguration = async (context) => {
+// The default theme of the platform, undefined when none is set or it no longer exists
+export const getPlatformDefaultTheme = async (context, user) => {
   const settings = await getSettingsFromDatabase(context);
-  return pickConfigPresetFields(settings, CONFIG_PRESET_PLATFORM_FIELDS);
+  return settings.platform_theme ? findThemeById(context, user, settings.platform_theme) : undefined;
 };
 
-export const getMessagesConfigPresetConfiguration = async (context) => {
-  const settings = await getSettingsFromDatabase(context);
-  return pickConfigPresetFields(settings, CONFIG_PRESET_MESSAGES_FIELDS);
+// The only writer of platform_bootstrap_status
+export const setPlatformBootstrapStatus = async (context, user, status) => {
+  if (!PLATFORM_BOOTSTRAP_STATUSES.includes(status)) {
+    throw UnsupportedError(`Invalid platform bootstrap status, expected one of ${PLATFORM_BOOTSTRAP_STATUSES.join(', ')}`);
+  }
+  const settings = await getSettings(context);
+  const data = [{ key: PLATFORM_BOOTSTRAP_STATUS_KEY, value: [status] }];
+  await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, data);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${PLATFORM_BOOTSTRAP_STATUS_KEY}\` for \`platform settings\``,
+    context_data: { id: settings.id, entity_type: ENTITY_TYPE_SETTINGS, input: data },
+  });
+  const updatedSettings = await getSettings(context);
+  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };
-// endregion

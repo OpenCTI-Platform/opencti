@@ -72,7 +72,7 @@ import {
   VisibilityOutlined,
   WebAssetOutlined,
   WifiTetheringOutlined,
-  WorkOutline,
+  WorkOutlined,
   WorkspacesOutlined,
 } from '@mui/icons-material';
 import {
@@ -115,6 +115,7 @@ import {
   VectorRadius,
 } from 'mdi-material-ui';
 import TableViewIcon from '@mui/icons-material/TableView';
+import { type BuiltInIntegrationKind, getBuiltInIntegration } from '@components/integrations/available/builtInIntegrations';
 import { itemColor } from '../utils/Colors';
 
 const iconSelector = (
@@ -146,6 +147,12 @@ const iconSelector = (
         ...overrideStyle,
       };
   }
+
+  // Ingestions take the icon of their kind in the Integrations menu
+  const integrationIcon = (kind: BuiltInIntegrationKind) => {
+    const IntegrationIcon = getBuiltInIntegration(kind)?.icon ?? AutoAwesomeMotion;
+    return <IntegrationIcon style={style} fontSize={fontSize} role="img" aria-label={type ?? undefined} />;
+  };
 
   switch (type?.toLowerCase()) {
     case 'restricted':
@@ -193,6 +200,18 @@ const iconSelector = (
       return <TableViewIcon style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'connector':
       return <ExtensionOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    case 'sync':
+      return integrationIcon('sync');
+    case 'ingestionrss':
+      return integrationIcon('rss');
+    case 'ingestioncsv':
+      return integrationIcon('csv');
+    case 'ingestionjson':
+      return integrationIcon('json');
+    case 'ingestiontaxii':
+      return integrationIcon('taxii');
+    case 'ingestiontaxiicollection':
+      return integrationIcon('taxii-push');
     case 'marking-definition':
       return (
         <CenterFocusStrongOutlined
@@ -331,7 +350,7 @@ const iconSelector = (
     case 'statustemplate':
       return <FactCheckOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'case':
-      return <WorkOutline style={style} fontSize={fontSize} role="img" aria-label={type} />;
+      return <WorkOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'case-incident':
       return (
         <BriefcaseEyeOutline style={style} fontSize={fontSize} role="img" aria-label={type} />

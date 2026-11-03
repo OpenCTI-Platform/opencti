@@ -249,9 +249,15 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   return (
     // Around the whole page: the Create widget entry point lives in the header.
     <DashboardVariablesProvider variables={variableDefinitions}>
-      <Stack gap={2}>
+      <Stack sx={{
+        gap: 2,
+      }}
+      >
         {!noToolbar && (
-          <Stack gap={1}>
+          <Stack sx={{
+            gap: 1,
+          }}
+          >
             <WorkspaceHeader
               handleAddWidget={handleAddWidget}
               handleImportWidget={handleImportWidget}

@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from './Theme';
 import { useFormatter } from './i18n';
 import Tag from './common/tag/Tag';

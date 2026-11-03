@@ -27,6 +27,10 @@ export const widgetSavedFiltersSelectionQuery = graphql`
             entity_type
             access_right
             member_id
+            groups_restriction {
+              id
+              name
+            }
           }
         }
       }

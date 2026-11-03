@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Box, Tooltip, Typography } from '@mui/material';
 import { IconButton } from '@filigran/design-system';
 import { OpenInNewOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';

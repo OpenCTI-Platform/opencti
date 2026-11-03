@@ -86,10 +86,16 @@ const IngestionCatalogConnectorComponent = ({
         ]}
       />
 
-      <Stack gap={2}>
+      <Stack sx={{
+        gap: 2,
+      }}
+      >
         <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
 
-        <Stack gap={4}>
+        <Stack sx={{
+          gap: 4,
+        }}
+        >
           <IngestionCatalogConnectorHeader
             connector={connector}
             isEnterpriseEdition={isEnterpriseEdition}

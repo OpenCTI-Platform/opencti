@@ -16,10 +16,7 @@ type RevisionsPayload = {
 };
 
 const setDocumentHidden = (hidden: boolean) => {
-  Object.defineProperty(document, 'hidden', {
-    configurable: true,
-    get: () => hidden,
-  });
+  vi.spyOn(document, 'hidden', 'get').mockReturnValue(hidden);
 };
 
 const mockFetchSequence = (steps: Array<RevisionsPayload | Error>) => {

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { DateTime } from 'luxon';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { DateTime, Settings } from 'luxon';
 
 // Mock cache and conf to keep tests pure/unit
 vi.mock('../../../../src/database/cache');
@@ -52,8 +52,15 @@ describe('isPasswordExpired', () => {
 // --- computePasswordValidUntilFromPolicy ---
 
 describe('computePasswordValidUntilFromPolicy', () => {
+  const originalNow = Settings.now;
+
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    Settings.defaultZone = 'system';
+    Settings.now = originalNow;
   });
 
   it('returns null when password_policy_validity_days is 0', async () => {
@@ -70,13 +77,25 @@ describe('computePasswordValidUntilFromPolicy', () => {
 
   it('returns a date approximately now + N days when policy is set', async () => {
     mockGetEntityFromCache.mockResolvedValue({ password_policy_validity_days: 20 } as any);
-    const before = DateTime.now().plus({ days: 20 }).toUTC();
+    const before = DateTime.utc().plus({ days: 20 });
     const result = await computePasswordValidUntilFromPolicy(makeContext());
-    const after = DateTime.now().plus({ days: 20 }).toUTC();
+    const after = DateTime.utc().plus({ days: 20 });
 
     expect(result).not.toBeNull();
     const resultDate = DateTime.fromISO(result!);
     expect(resultDate >= before.minus({ seconds: 1 })).toBe(true);
     expect(resultDate <= after.plus({ seconds: 1 })).toBe(true);
+  });
+
+  it('returns exactly now + N * 24h even when a DST change falls within the period', async () => {
+    // Europe/Paris switches from UTC+2 to UTC+1 on 2026-10-25, between now and now + 20 days
+    const fixedNow = DateTime.fromISO('2026-10-20T10:00:00Z').toMillis();
+    Settings.defaultZone = 'Europe/Paris';
+    Settings.now = () => fixedNow;
+    mockGetEntityFromCache.mockResolvedValue({ password_policy_validity_days: 20 } as any);
+
+    const result = await computePasswordValidUntilFromPolicy(makeContext());
+
+    expect(DateTime.fromISO(result!).toMillis()).toBe(fixedNow + 20 * 24 * 60 * 60 * 1000);
   });
 });

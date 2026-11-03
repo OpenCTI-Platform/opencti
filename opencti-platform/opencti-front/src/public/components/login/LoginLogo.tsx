@@ -1,6 +1,6 @@
 import { graphql } from 'relay-runtime';
 import { useFragment } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { LoginLogoFragment$key } from './__generated__/LoginLogoFragment.graphql';
 import logoDark from '../../../static/images/logo_text_dark.png';
 import logoLight from '../../../static/images/logo_text_light.png';

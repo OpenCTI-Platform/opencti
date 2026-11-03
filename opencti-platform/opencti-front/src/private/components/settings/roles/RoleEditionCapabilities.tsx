@@ -170,7 +170,13 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             </ListItemIcon>
             <ListItemText
               primary={(
-                <Stack alignItems="center" direction="row" gap={1}>
+                <Stack
+                  direction="row"
+                  sx={{
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
                   {t_i18n('Allow modification of sensitive configuration')}
                   <DangerZoneChip />
                 </Stack>

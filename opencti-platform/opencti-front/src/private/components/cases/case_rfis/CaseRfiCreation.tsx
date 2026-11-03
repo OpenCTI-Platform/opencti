@@ -43,6 +43,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseRfiAddInput, CaseRfiCreationCaseMutation } from './__generated__/CaseRfiCreationCaseMutation.graphql';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 const caseRfiMutation = graphql`
   mutation CaseRfiCreationCaseMutation($input: CaseRfiAddInput!) {
@@ -157,11 +158,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
-          id: value,
-          access_right: accessRight,
-          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
-        })),
+        authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };
     commit({

@@ -42,6 +42,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 export const reportCreationMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
@@ -166,11 +167,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       externalReferences: values.externalReferences.map(({ value }) => value),
       ...filesInput,
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
-          id: value,
-          access_right: accessRight,
-          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
-        })),
+        authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };
     commit({

@@ -1,25 +1,22 @@
 import { Field } from 'formik';
 import React, { FunctionComponent, ReactElement } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import type { ComboboxChangeMeta } from '@filigran/design-system';
 import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ItemIcon from '../../../../components/ItemIcon';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface RelationFieldProps {
   name: string;
@@ -46,7 +43,6 @@ const ReferenceField: FunctionComponent<RelationFieldProps> = ({
   onInputChange,
   value,
 }): ReactElement => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   return (
     <Field
@@ -67,10 +63,10 @@ const ReferenceField: FunctionComponent<RelationFieldProps> = ({
       onChange={onChange}
       renderOption={(option: FieldOption) => (
         <>
-          <div className={classes.icon} style={{ color: option.color }}>
+          <OptionIcon style={{ color: option.color }}>
             <ItemIcon type={option.type} />
-          </div>
-          <div className={classes.text}>{option.label}</div>
+          </OptionIcon>
+          <OptionText>{option.label}</OptionText>
         </>
       )}
     />

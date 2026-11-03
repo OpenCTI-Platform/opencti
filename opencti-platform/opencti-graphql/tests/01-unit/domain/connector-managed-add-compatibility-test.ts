@@ -64,11 +64,12 @@ vi.mock('../../../src/config/conf', async () => {
 });
 vi.mock('../../../src/enterprise-edition/ee', () => ({ checkEnterpriseEdition: vi.fn() }));
 vi.mock('../../../src/modules/catalog/catalog-repository', () => ({
+  findCatalogByCatalogId: vi.fn(),
   findLatestCompatibleCatalogContractByImageName: vi.fn(),
   findCatalogContractsByImageName: vi.fn(),
 }));
 
-import { findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../../../src/modules/catalog/catalog-repository';
+import { findCatalogByCatalogId, findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../../../src/modules/catalog/catalog-repository';
 import { managedConnectorAdd, managedConnectorEdit } from '../../../src/modules/connector/connector-domain';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { createOnTheFlyUser } from '../../../src/modules/user/user-domain';
@@ -83,9 +84,34 @@ const input = {
   manager_contract_configuration: [],
 } as any;
 
+describe('connector-domain.ts — managedConnectorAdd catalog validation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should reject an unknown catalog', async () => {
+    vi.mocked(findCatalogByCatalogId).mockResolvedValue(undefined as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, { ...input, catalog_id: 'test' })).rejects.toThrow('Catalog not found');
+    expect(findCatalogByCatalogId).toHaveBeenCalledWith(fakeContext, fakeUser, 'test');
+    expect(findLatestCompatibleCatalogContractByImageName).not.toHaveBeenCalled();
+  });
+
+  it('should only look for the contract in the given catalog', async () => {
+    vi.mocked(findCatalogByCatalogId).mockResolvedValue({ catalog_id: 'catalog-id' } as never);
+    vi.mocked(findLatestCompatibleCatalogContractByImageName).mockResolvedValue(undefined as never);
+    vi.mocked(findCatalogContractsByImageName).mockResolvedValue([] as never);
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, input)).rejects.toThrow('Target contract not found');
+    expect(findLatestCompatibleCatalogContractByImageName).toHaveBeenCalledWith(fakeContext, fakeUser, 'opencti/connector-test', 'catalog-id');
+    expect(findCatalogContractsByImageName).toHaveBeenCalledWith(fakeContext, fakeUser, 'opencti/connector-test', 'catalog-id');
+  });
+});
+
 describe('connector-domain.ts — managedConnectorAdd contract compatibility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(findCatalogByCatalogId).mockResolvedValue({ catalog_id: 'catalog-id' } as never);
   });
 
   it('should reject a connector whose contracts are all incompatible with the platform version', async () => {
@@ -116,6 +142,7 @@ describe('connector-domain.ts — managedConnectorAdd input validation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(storeLoadById).mockReset();
+    vi.mocked(findCatalogByCatalogId).mockResolvedValue({ catalog_id: 'catalog-id' } as never);
     vi.mocked(findLatestCompatibleCatalogContractByImageName).mockResolvedValue({ contract_id: 'test-1.0.0', manager_supported: true } as never);
     vi.mocked(fullEntitiesList).mockResolvedValue([manager] as never);
   });

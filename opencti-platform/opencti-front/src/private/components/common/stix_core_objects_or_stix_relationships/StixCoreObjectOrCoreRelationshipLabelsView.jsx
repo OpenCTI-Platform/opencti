@@ -6,7 +6,6 @@ import { Add } from '@mui/icons-material';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import { Box, Stack } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { Label as MdiLabel } from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
@@ -25,22 +24,7 @@ import LabelCreation from '../../settings/labels/LabelCreation';
 import CommitMessage from '../form/CommitMessage';
 import Label from '../../../../components/common/label/Label';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
-
 const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const {
     sx,
@@ -166,7 +150,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
       >
         {t_i18n('Labels')}
       </Label>
-      <div className={classes.objectLabel} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px' }}>
         <FieldOrEmpty source={labels}>
           {map(
             (label) => (
@@ -284,13 +268,13 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                 openCreate={isLabelManager ? handleOpenCreate : undefined}
                 renderOption={(option) => (
                   <>
-                    <div
-                      className={classes.icon}
+                    <Box
+                      sx={{ paddingTop: '4px', display: 'inline-block' }}
                       style={{ color: option.color }}
                     >
                       <MdiLabel />
-                    </div>
-                    <div className={classes.text}>{option.label}</div>
+                    </Box>
+                    <Box sx={{ display: 'inline-block', flexGrow: 1, marginLeft: '10px' }}>{option.label}</Box>
                   </>
                 )}
               />

@@ -47,7 +47,7 @@ const DataComponentDetails: FunctionComponent<DataComponentDetailsProps> = ({
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -56,7 +56,7 @@ const DataComponentDetails: FunctionComponent<DataComponentDetailsProps> = ({
             </FieldOrEmpty>
           </Grid>
           <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
-          <Grid item xs={12}>
+          <Grid size={12}>
             <DataComponentDataSource dataComponent={data} />
             <DataComponentAttackPatterns dataComponent={data} />
           </Grid>

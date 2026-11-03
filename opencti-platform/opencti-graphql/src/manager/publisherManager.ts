@@ -62,7 +62,8 @@ export async function processNotificationData(
   data: NotificationData[],
   usersMap: Map<string, AuthUser>,
 ) {
-  const generatedContent: Record<string, NotificationContentEvent[]> = {};
+  // Keyed by element names: without prototype, a name such as constructor or __proto__ does not resolve to an inherited property
+  const generatedContent: Record<string, NotificationContentEvent[]> = Object.create(null);
 
   for (let i = 0; i < data.length; i += 1) {
     const { notification_id, instance, type, message } = data[i];

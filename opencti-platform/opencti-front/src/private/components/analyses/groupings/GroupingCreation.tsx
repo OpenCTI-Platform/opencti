@@ -39,6 +39,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { GroupingCreationMutation, GroupingCreationMutation$variables } from './__generated__/GroupingCreationMutation.graphql';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 const groupingMutation = graphql`
   mutation GroupingCreationMutation($input: GroupingAddInput!) {
@@ -148,11 +149,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
-          id: value,
-          access_right: accessRight,
-          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
-        })),
+        authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };
     commit({

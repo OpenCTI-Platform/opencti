@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  areCustomFieldAliasesValid,
+  buildCustomFieldNameSuffix,
   buildCustomFieldValueAddInputEntry,
   buildCustomFieldValueEntry,
   buildCustomFieldValuesAddInput,
@@ -329,5 +331,29 @@ describe('getTaskTargetedTypes', () => {
     expect(getTaskTargetedTypes(true, [], ['Malware'], ['Stix-Domain-Object'])).toEqual(['Malware']);
     expect(getTaskTargetedTypes(true, [], [], ['Case-Incident'])).toEqual(['Case-Incident']);
     expect(getTaskTargetedTypes(true, [], [], undefined)).toEqual([]);
+  });
+});
+
+describe('buildCustomFieldNameSuffix', () => {
+  it.each([
+    ['Closing reason', 'closing_reason'],
+    ['Priorité métier', 'priorite_metier'],
+    ['  Risk -- score!  ', 'risk_score'],
+    ['2nd analyst', 'nd_analyst'],
+    ['', ''],
+  ])('suggests the technical name of %j', (label, expected) => {
+    expect(buildCustomFieldNameSuffix(label)).toBe(expected);
+  });
+});
+
+describe('areCustomFieldAliasesValid', () => {
+  it('accepts no alias and aliases formatted as STIX custom properties', () => {
+    expect(areCustomFieldAliasesValid(undefined)).toBe(true);
+    expect(areCustomFieldAliasesValid([])).toBe(true);
+    expect(areCustomFieldAliasesValid(['x_priority', 'x_source_2'])).toBe(true);
+  });
+
+  it.each([['Hello'], ['priority'], ['x_Priority'], ['x_prio-rity'], ['x_']])('rejects the alias %s', (alias) => {
+    expect(areCustomFieldAliasesValid(['x_priority', alias])).toBe(false);
   });
 });

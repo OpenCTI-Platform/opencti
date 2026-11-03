@@ -19,7 +19,7 @@ import { decryptIngestionCredential } from './ingestion-common';
 import { userAlreadyExists } from '../user/user-domain';
 import { loadCreator } from '../../database/members';
 import type { BasicStoreEntityIngestionCsv } from './ingestion-types';
-import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-checks';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-resolvers';
 
 const ingestionCsvResolvers: Resolvers = {
   Query: {

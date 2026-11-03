@@ -6,14 +6,14 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
 import { CheckCircleOutlined, DeleteOutlined, ExtensionOutlined, RefreshOutlined, WarningOutlined } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
-import withStyles from '@mui/styles/withStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { v4 as uuid } from 'uuid';
 import { ListItemButton } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import ListItem from '@mui/material/ListItem';
+import Box from '@mui/material/Box';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -62,27 +62,10 @@ const stixCoreObjectEnrichmentLinesAskJob = graphql`
   }
 `;
 
-const styles = (theme) => ({
-  noResult: {
-    color: theme.palette.text.primary,
-    fontSize: 15,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-  tooltip: {
-    maxWidth: 600,
-  },
-});
-
 const StixCoreObjectEnrichment = ({
   stixCoreObject,
   connectorsForImport,
   relay,
-  classes,
   t,
   nsdt,
 }) => {
@@ -177,7 +160,7 @@ const StixCoreObjectEnrichment = ({
                   </Security>
                 )}
               >
-                <ListItemButton classes={{ root: classes.item }}>
+                <ListItemButton>
                   <Tooltip
                     title={
                       connector.active
@@ -221,7 +204,7 @@ const StixCoreObjectEnrichment = ({
                     <Tooltip
                       title={messageToDisplay}
                       key={uuid()}
-                      classes={{ tooltip: classes.tooltip }}
+                      slotProps={{ tooltip: { sx: { maxWidth: 600 } } }}
                     >
                       <ListItem
                         dense={true}
@@ -240,7 +223,7 @@ const StixCoreObjectEnrichment = ({
                           </Security>
                         )}
                       >
-                        <ListItemButton classes={{ root: classes.nested }}>
+                        <ListItemButton sx={{ paddingLeft: theme.spacing(4) }}>
                           <ListItemIcon>
                             {isFail && (
                               <WarningOutlined
@@ -278,9 +261,9 @@ const StixCoreObjectEnrichment = ({
           );
         })
       ) : (
-        <div className={classes.noResult}>
+        <Box sx={{ color: theme.palette.text.primary, fontSize: 15 }}>
           {t('No connectors for this type of entity')}
-        </div>
+        </Box>
       )}
     </List>
   );
@@ -373,7 +356,4 @@ const StixCoreObjectEnrichmentLinesFragment = createRefetchContainer(
   stixCoreObjectEnrichmentLinesQuery,
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectEnrichmentLinesFragment);
+export default inject18n(StixCoreObjectEnrichmentLinesFragment);

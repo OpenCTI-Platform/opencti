@@ -262,6 +262,21 @@ export const CUSTOM_FIELD_PREFIX = 'x_opencti_cf_';
 export const isCustomFieldAttribute = (attribute?: string | null): boolean => (
   !!attribute && attribute.startsWith(CUSTOM_FIELD_PREFIX)
 );
+// An alias matches a STIX custom property at ingestion, the only properties read being the ones starting
+// with "x_": it must be "x_" followed by lowercase letters, numbers and underscores (as checked backend-side).
+const CUSTOM_FIELD_ALIAS_REGEX = /^x_[a-z0-9_]+$/;
+export const areCustomFieldAliasesValid = (aliases?: readonly (string | undefined)[] | null): boolean => (
+  (aliases ?? []).every((alias) => !!alias && CUSTOM_FIELD_ALIAS_REGEX.test(alias))
+);
+// The technical name suggested from a label: lowercase, accents removed, any other character replaced
+// by an underscore, starting with a letter (e.g. "Closing reason" gives "closing_reason").
+export const buildCustomFieldNameSuffix = (label: string): string => label
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '_')
+  .replace(/^[^a-z]+/, '')
+  .replace(/_+$/, '');
 // ----------------------------------------------------------------------------------------------------------------------
 // Widgets integration (attribute widget & list/custom-attributes widget columns)
 // Minimal shape needed from a CustomFieldDefinition to build a widget column / resolve its rendering.

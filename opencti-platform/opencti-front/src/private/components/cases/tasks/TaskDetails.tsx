@@ -69,13 +69,13 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
     <div style={{ height: '100%' }} data-testid="task-details-page">
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown source={data.description} limit={300} />
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Due Date')}
             </Label>

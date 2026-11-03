@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { frameBox, measureGraphPanels, ScreenRect } from './graphFraming';
+import { frameBox, GRAPH_PANEL_SELECTOR, measureGraphPanels, ScreenRect } from './graphFraming';
 
 const size = { width: 1000, height: 600 };
 const options = { padding: 20, maxZoom: 6 };
@@ -80,13 +80,13 @@ describe('frameBox', () => {
 describe('measureGraphPanels', () => {
   it('measures the floating panels relative to the canvas', () => {
     const viewport = document.createElement('div');
-    viewport.innerHTML = '<canvas></canvas><div data-graph-panel></div><div class="MuiDrawer-paperAnchorRight"></div><div></div>';
+    viewport.innerHTML = '<canvas></canvas><div data-graph-panel></div><div class="MuiDrawer-root MuiDrawer-anchorRight MuiDrawer-docked"><div class="MuiDrawer-paper"></div></div><div></div>';
     const rect = (left: number, top: number, width: number, height: number) => () => ({
       left, top, right: left + width, bottom: top + height, width, height, x: left, y: top, toJSON: () => ({}),
     }) as DOMRect;
     const canvas = viewport.querySelector('canvas') as HTMLCanvasElement;
     canvas.getBoundingClientRect = rect(100, 50, 1000, 600);
-    const [panel, drawer] = Array.from(viewport.querySelectorAll<HTMLElement>('[data-graph-panel], .MuiDrawer-paperAnchorRight'));
+    const [panel, drawer] = Array.from(viewport.querySelectorAll<HTMLElement>(GRAPH_PANEL_SELECTOR));
     panel.getBoundingClientRect = rect(112, 62, 40, 150);
     drawer.getBoundingClientRect = rect(860, 50, 240, 600);
     expect(measureGraphPanels(viewport, canvas)).toEqual([

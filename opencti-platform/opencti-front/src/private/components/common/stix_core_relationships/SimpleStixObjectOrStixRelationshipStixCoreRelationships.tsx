@@ -4,7 +4,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
-import makeStyles from '@mui/styles/makeStyles';
 import {
   SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery,
   SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables,
@@ -13,24 +12,8 @@ import { useFormatter } from '../../../../components/i18n';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines, {
   simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery,
 } from './SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines';
-import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Card from '../../../../components/common/card/Card';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    height: 50,
-    minHeight: 50,
-    maxHeight: 50,
-    paddingRight: 0,
-  },
-  itemIcon: {
-    marginRight: 0,
-    color: theme.palette.primary.main,
-  },
-}));
 
 interface SimpleStixObjectOrStixRelationshipStixCoreRelationshipsProps {
   stixObjectOrStixRelationshipId: string;
@@ -44,7 +27,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
   relationshipType,
 }: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsProps) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const dataColumns = {
     relationship_type: {
       label: 'Relationship type',
@@ -92,7 +74,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
                 dense={true}
                 divider={true}
               >
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <ListItemIcon sx={{ marginRight: 0, color: 'primary.main' }}>
                   <Skeleton
                     animation="wave"
                     variant="circular"

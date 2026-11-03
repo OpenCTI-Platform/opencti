@@ -37,11 +37,22 @@ const ExternalReferenceHeaderComponent = ({
   const displayPopoverMenu = canDelete || enableEnrollPlaybook;
 
   return (
-    <Stack direction="row" justifyContent="space-between" marginBottom={3}>
+    <Stack
+      direction="row"
+      sx={{
+        justifyContent: 'space-between',
+        marginBottom: 3,
+      }}
+    >
       <TitleMainEntity>
         {truncate(externalReference.source_name, 80)}
       </TitleMainEntity>
-      <Stack direction="row" gap={1}>
+      <Stack
+        direction="row"
+        sx={{
+          gap: 1,
+        }}
+      >
         {enableEnrollPlaybook
           && (
             <StixCoreObjectEnrollPlaybook

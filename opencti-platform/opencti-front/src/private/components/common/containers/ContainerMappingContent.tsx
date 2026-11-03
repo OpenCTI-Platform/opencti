@@ -438,11 +438,13 @@ const ContainerMappingContentComponent: FunctionComponent<
     <>
       <Grid
         container
-        alignItems="stretch"
         columnSpacing={2}
-        mb={2}
+        sx={{
+          alignItems: 'stretch',
+          mb: 2,
+        }}
       >
-        <Grid item xs={6} sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Grid sx={{ display: 'flex', flexDirection: 'column' }} size={6}>
           <StixCoreObjectMappableContent
             containerData={containerData}
             handleTextSelection={handleTextSelection}
@@ -454,7 +456,7 @@ const ContainerMappingContentComponent: FunctionComponent<
           />
         </Grid>
 
-        <Grid item xs={6} sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Grid sx={{ display: 'flex', flexDirection: 'column' }} size={6}>
           <Card>
             <ContainerStixCoreObjectsMappingHeader
               suggestedMappingData={suggestedMappingData}

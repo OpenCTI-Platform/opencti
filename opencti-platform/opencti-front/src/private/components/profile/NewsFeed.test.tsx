@@ -56,7 +56,7 @@ const renderNewsFeed = () => testRender(<NewsFeed />, {
 const renderColumn = (columnId: string, data: Record<string, unknown>, helpers: Record<string, unknown> = {}) => {
   const column = dataTableProps?.dataColumns[columnId];
   return testRender(
-    <>{column?.render?.(data, { fldt: (date: string) => `formatted-${date}`, ...helpers })}</>,
+    <>{column?.render?.(data, { ftdt: (date: string) => `formatted-${date}`, ...helpers })}</>,
     { userContext: createMockUserContext({ settings: { id: SETTINGS_ID, platform_xtmhub_url: HUB_URL } }) },
   );
 };

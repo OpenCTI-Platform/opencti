@@ -13,7 +13,7 @@ import useDeletion from 'src/utils/hooks/useDeletion';
 import DeleteDialog from 'src/components/DeleteDialog';
 import StixCoreObjectFileExport, { BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import ListItem from '@mui/material/ListItem';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Drawer from '@components/common/drawer/Drawer';
 import StixCoreObjectContentFilesDissemination from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
 import { useFormatter } from '../../../../components/i18n';

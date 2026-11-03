@@ -139,13 +139,13 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown source={position.description} limit={300} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Latitude')}
             </Label>
@@ -156,7 +156,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Longitude')}
             </Label>
@@ -167,7 +167,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Street address')}
             </Label>
@@ -178,7 +178,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Postal code')}
             </Label>
@@ -186,7 +186,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               <ExpandableMarkdown source={position.postal_code} limit={300} />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('City')}
             </Label>
@@ -200,7 +200,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               ))}
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Country')}
             </Label>
@@ -214,7 +214,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               ))}
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Region')}
             </Label>
@@ -228,7 +228,7 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
               ))}
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('entity_Administrative-Area')}
             </Label>

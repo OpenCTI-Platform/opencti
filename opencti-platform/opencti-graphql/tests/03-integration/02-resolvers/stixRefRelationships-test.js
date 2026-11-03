@@ -3,7 +3,8 @@ import gql from 'graphql-tag';
 import { now } from 'moment';
 import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { createRelation } from '../../../src/database/middleware';
+import { createRelation, createRelationRaw } from '../../../src/database/middleware';
+import { fullRelationsList } from '../../../src/database/middleware-loader';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
@@ -217,6 +218,17 @@ describe('StixRefRelationship added again on a single ref', () => {
       }
     }
   `;
+  const FILE_MARKINGS_QUERY = gql`
+    query StixFileMarkings($id: String!) {
+      stixCyberObservable(id: $id) {
+        objectMarking {
+          id
+        }
+      }
+    }
+  `;
+  const TLP_GREEN = 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da';
+  const TLP_AMBER = 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82';
   const ANSSI = 'identity--7b82b010-b1c0-4dae-981f-7756374a17df';
   const JOHN_DOE = 'identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f';
   let directoryAId;
@@ -365,5 +377,64 @@ describe('StixRefRelationship added again on a single ref', () => {
     const input = { fromId: fileId, toId: ANSSI, relationship_type: 'created-by' };
     await expect(createRelation(testContext, ADMIN_USER, input, { restore: true })).rejects.toThrow('Cant add another relation on single ref');
     expect((await loadFileRefs()).createdById).toEqual(createdById);
+  });
+
+  const countAuthorRelations = async () => (await fullRelationsList(testContext, ADMIN_USER, 'created-by', { fromId: fileId })).length;
+
+  it('should replace the author the same way when the ref is created without event', async () => {
+    // Without event the from of a multiple ref is resolved without its refs; a single ref must still see its current target
+    await addRef(JOHN_DOE, 'created-by');
+    const { createdById } = await loadFileRefs();
+    const input = { fromId: fileId, toId: ANSSI, relationship_type: 'created-by' };
+    await createRelationRaw(testContext, ADMIN_USER, input, { publishStreamEvent: false });
+    const authorRelations = await fullRelationsList(testContext, ADMIN_USER, 'created-by', { fromId: fileId });
+    expect(authorRelations).toHaveLength(1);
+    const { createdById: newAuthorId } = await loadFileRefs();
+    expect(newAuthorId).toBeDefined();
+    expect(newAuthorId).not.toEqual(createdById);
+    expect(authorRelations[0].toId).toEqual(newAuthorId);
+  });
+
+  it('should keep the author without event when the same one is added again', async () => {
+    await addRef(ANSSI, 'created-by');
+    const { createdById } = await loadFileRefs();
+    const input = { fromId: fileId, toId: ANSSI, relationship_type: 'created-by' };
+    const result = await createRelationRaw(testContext, ADMIN_USER, input, { publishStreamEvent: false });
+    expect(result.isCreation).toBe(false);
+    expect(await countAuthorRelations()).toBe(1);
+    expect((await loadFileRefs()).createdById).toEqual(createdById);
+  });
+
+  it('should never let a restoration without event overwrite the current author', async () => {
+    const { createdById } = await loadFileRefs();
+    const input = { fromId: fileId, toId: JOHN_DOE, relationship_type: 'created-by' };
+    await expect(createRelationRaw(testContext, ADMIN_USER, input, { restore: true, publishStreamEvent: false })).rejects.toThrow('Cant add another relation on single ref');
+    expect(await countAuthorRelations()).toBe(1);
+    expect((await loadFileRefs()).createdById).toEqual(createdById);
+  });
+
+  it('should create a multiple ref without event, then find it again', async () => {
+    // Multiple refs without event take the light resolution of the from
+    await addRef(ANSSI, 'created-by');
+    expect((await loadFileRefs()).createdById).toBeDefined();
+    const input = { fromId: fileId, toId: TLP_GREEN, relationship_type: 'object-marking' };
+    const created = await createRelationRaw(testContext, ADMIN_USER, input, { publishStreamEvent: false });
+    expect(created.isCreation).toBe(true);
+    expect(created.event).toBeUndefined();
+    // Light resolution: the file has an author, which only the full resolution of the from would carry
+    expect(created.element.from.createdBy).toBeUndefined();
+    const markingRelations = await fullRelationsList(testContext, ADMIN_USER, 'object-marking', { fromId: fileId });
+    expect(markingRelations).toHaveLength(1);
+    const { data } = await queryAsAdminWithSuccess({ query: FILE_MARKINGS_QUERY, variables: { id: fileId } });
+    expect(data.stixCyberObservable.objectMarking.map((m) => m.id)).toEqual([markingRelations[0].toId]);
+    const again = await createRelationRaw(testContext, ADMIN_USER, input, { publishStreamEvent: false });
+    expect(again.isCreation).toBeFalsy();
+    expect(await fullRelationsList(testContext, ADMIN_USER, 'object-marking', { fromId: fileId })).toHaveLength(1);
+  });
+
+  it('should check the commit references of a multiple ref created without event', async () => {
+    const input = { fromId: fileId, toId: TLP_AMBER, relationship_type: 'object-marking' };
+    const opts = { publishStreamEvent: false, references: ['external-reference--00000000-0000-4000-8000-000000000000'] };
+    await expect(createRelationRaw(testContext, ADMIN_USER, input, opts)).rejects.toThrow('Cant find element references for commit');
   });
 });

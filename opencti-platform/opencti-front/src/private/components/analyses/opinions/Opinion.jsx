@@ -1,7 +1,6 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import OpinionDetails from './OpinionDetails';
 import OpinionEdition from './OpinionEdition';
@@ -12,16 +11,7 @@ import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../uti
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
-
 const OpinionComponent = ({ opinion, enableReferences }) => {
-  const classes = useStyles();
   return (
     <>
       <CollaborativeSecurity
@@ -47,25 +37,25 @@ const OpinionComponent = ({ opinion, enableReferences }) => {
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        sx={{ marginBottom: '20px' }}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <OpinionDetails opinion={opinion} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixDomainObjectOverview stixDomainObject={opinion} displayOpinions={false} />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <ContainerStixObjectsOrStixRelationships
             container={opinion}
             isSupportParticipation={true}
             enableReferences={enableReferences}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={opinion.id} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <StixCoreObjectLatestHistory
             stixCoreObjectId={opinion.id}
             isSupportParticipation={true}

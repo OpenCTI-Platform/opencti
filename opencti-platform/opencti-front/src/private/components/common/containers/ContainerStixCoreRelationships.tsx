@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { AutoFix } from 'mdi-material-ui';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import {
   stixCoreRelationshipsFragment,
   stixCoreRelationshipsLinesFragment,

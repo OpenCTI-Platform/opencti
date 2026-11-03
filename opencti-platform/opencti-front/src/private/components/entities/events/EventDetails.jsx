@@ -20,25 +20,31 @@ class EventDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
           <Grid container={true} spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Label>
                 {t('Description')}
               </Label>
               <ExpandableMarkdown source={event.description} limit={400} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('Event types')}
               </Label>
               <FieldOrEmpty source={event.event_types}>
-                <Stack direction="row" gap={1} flexWrap="wrap">
+                <Stack
+                  direction="row"
+                  sx={{
+                    gap: 1,
+                    flexWrap: 'wrap',
+                  }}
+                >
                   {event.event_types?.map((eventType) => (
                     <ItemOpenVocab key="type" small={true} type="event_type_ov" value={eventType} />
                   ))}
                 </Stack>
               </FieldOrEmpty>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('Start date')}
               </Label>

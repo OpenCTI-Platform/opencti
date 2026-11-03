@@ -74,7 +74,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
   return (
     <>
       <Grid container={true} spacing={3}>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -100,7 +100,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
           </Typography>
           {fldt(data.created)}
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -132,7 +132,7 @@ const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({
             </>
           )}
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={data}

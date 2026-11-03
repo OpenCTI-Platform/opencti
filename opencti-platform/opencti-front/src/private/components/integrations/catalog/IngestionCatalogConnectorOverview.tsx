@@ -1,6 +1,6 @@
 import Button from '@common/button/Button';
 import { Launch } from 'mdi-material-ui';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { IngestionConnector } from '@components/integrations/catalog/types';
 import IngestionCatalogCompatibilityAlert from '@components/integrations/catalog/IngestionCatalogCompatibilityAlert';
 import { LibraryBooksOutlined } from '@mui/icons-material';

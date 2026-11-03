@@ -87,14 +87,20 @@ const ReportDetails = ({ report }) => {
     <div style={{ height: '100%' }} data-testid="report-overview">
       <Card title={t_i18n('Entity details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>{t_i18n('Description')}</Label>
             <ExpandableMarkdown source={reportData.description} limit={400} />
           </Grid>
-          <Grid item xs={6} ref={ref}>
+          <Grid ref={ref} size={6}>
             <Label>{t_i18n('Report types')}</Label>
             <FieldOrEmpty source={reportData.report_types}>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
                 {reportData.report_types?.map((reportType) => (
                   <Tag
                     key={reportType}
@@ -106,11 +112,7 @@ const ReportDetails = ({ report }) => {
             <Label sx={{ mt: 2 }}>{t_i18n('Publication date')}</Label>
             {fldt(reportData.published)}
           </Grid>
-          <Grid
-            item
-            xs={6}
-            style={{ minHeight: 200, maxHeight: height }}
-          >
+          <Grid style={{ minHeight: 200, maxHeight: height }} size={6}>
             <StixRelationshipsHorizontalBars
               config={{
                 startDate: null,

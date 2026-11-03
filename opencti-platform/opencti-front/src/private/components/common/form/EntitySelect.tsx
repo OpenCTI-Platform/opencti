@@ -11,7 +11,7 @@ import {
 } from '@filigran/design-system';
 import React, { Suspense, useEffect, useTransition } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { EntitySelectSearchQuery, FilterMode, FilterOperator } from './__generated__/EntitySelectSearchQuery.graphql';
 import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 import Loader from '../../../../components/Loader';

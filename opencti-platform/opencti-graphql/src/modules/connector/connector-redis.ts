@@ -1,4 +1,5 @@
 import { getClientBase } from '../../database/redis';
+import type { ConnectorInfoError } from './connector-types';
 
 export interface ConnectorHealthMetrics {
   restart_count: number;
@@ -77,5 +78,29 @@ export const redisGetConnectorsHeartbeats = async (): Promise<Map<string, string
 
 export const redisDeleteConnectorHeartbeat = async (connectorId: string) => {
   await getClientBase().zrem(CONNECTOR_HEARTBEATS_KEY, connectorId);
+};
+// endregion
+
+// region connector errors
+// Errors reported on ping are transient and kept out of Elasticsearch: each explicit list replaces the previous one,
+// and expires 10 minutes after the last ping that sent it.
+export const CONNECTOR_ERRORS_TTL_SECONDS = 600;
+export const connectorErrorsKey = (connectorId: string) => `connector-${connectorId}-errors`;
+
+export const redisSetConnectorErrors = async (connectorId: string, errors: ConnectorInfoError[]) => {
+  if (errors.length === 0) {
+    await getClientBase().del(connectorErrorsKey(connectorId));
+    return;
+  }
+  await getClientBase().set(connectorErrorsKey(connectorId), JSON.stringify(errors), 'EX', CONNECTOR_ERRORS_TTL_SECONDS);
+};
+
+export const redisGetConnectorErrors = async (connectorId: string): Promise<ConnectorInfoError[]> => {
+  const rawErrors = await getClientBase().get(connectorErrorsKey(connectorId));
+  return rawErrors ? JSON.parse(rawErrors) : [];
+};
+
+export const redisDeleteConnectorErrors = async (connectorId: string) => {
+  await getClientBase().del(connectorErrorsKey(connectorId));
 };
 // endregion

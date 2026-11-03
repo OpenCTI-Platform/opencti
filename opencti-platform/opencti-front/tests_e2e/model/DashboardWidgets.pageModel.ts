@@ -88,12 +88,12 @@ export default class DashboardWidgetsPageModel {
   /**
    * Jumps to one step of the widget config stepper.
    * Scoped to the dialog and exact, otherwise 'Filters' also matches the 'Clear filters' and
-   * 'Validate filters' buttons of the filter step itself. MUI marks the current step with
-   * `aria-current="step"` AND disables its button, so clicking it would hang: no-op instead.
+   * 'Validate filters' buttons of the filter step itself. The steps are tabs: MUI marks the
+   * current one with `aria-selected="true"` AND disables it, so clicking it would hang: no-op instead.
    */
   async goToStep(step: 'Visualization' | 'Perspective' | 'Filters' | 'Parameters') {
-    const stepButton = this.page.getByRole('dialog').getByRole('button', { name: step, exact: true });
-    if (await stepButton.getAttribute('aria-current') === 'step') return;
+    const stepButton = this.page.getByRole('dialog').getByRole('tab', { name: step, exact: true });
+    if (await stepButton.getAttribute('aria-selected') === 'true') return;
     await stepButton.click();
   }
 

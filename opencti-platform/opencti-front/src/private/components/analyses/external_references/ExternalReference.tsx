@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import ExternalReferenceOverview from './ExternalReferenceOverview';
 import ExternalReferenceDetails from './ExternalReferenceDetails';
 import ExternalReferenceEdition from './ExternalReferenceEdition';
@@ -13,16 +13,9 @@ import { ExternalReference_externalReference$data } from './__generated__/Extern
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+});
 
 interface ExternalReferenceComponentProps {
   externalReference: ExternalReference_externalReference$data;
@@ -38,10 +31,9 @@ interface ExternalReferenceComponentProps {
 const ExternalReferenceComponent: FunctionComponent<
   ExternalReferenceComponentProps
 > = ({ externalReference, connectorsImport }) => {
-  const classes = useStyles();
   const overviewLayoutCustomization = useOverviewLayoutCustomization('External-Reference');
   return (
-    <div className={classes.container} data-testid="external-reference-details-page">
+    <Container data-testid="external-reference-details-page">
       <ExternalReferenceHeader
         externalReference={externalReference}
         EditComponent={(
@@ -54,25 +46,25 @@ const ExternalReferenceComponent: FunctionComponent<
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        sx={{ marginBottom: '20px' }}
       >
         {overviewLayoutCustomization.map(({ key, width }) => {
           switch (key) {
             case 'basicInformation':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <ExternalReferenceOverview externalReference={externalReference} />
                 </Grid>
               );
             case 'details':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <ExternalReferenceDetails externalReference={externalReference} />
                 </Grid>
               );
             case 'linkedObjects':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <ExternalReferenceStixCoreObjects
                     externalReference={externalReference}
                   />
@@ -80,7 +72,7 @@ const ExternalReferenceComponent: FunctionComponent<
               );
             case 'uploadedFiles':
               return (
-                <Grid key={key} item xs={width}>
+                <Grid key={key} size={width}>
                   <ExternalReferenceFileImportViewer
                     externalReference={externalReference}
                     connectorsImport={connectorsImport}
@@ -93,7 +85,7 @@ const ExternalReferenceComponent: FunctionComponent<
         })
         }
       </Grid>
-    </div>
+    </Container>
   );
 };
 

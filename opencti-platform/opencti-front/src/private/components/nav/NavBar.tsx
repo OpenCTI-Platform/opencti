@@ -1,5 +1,5 @@
 import { Navbar, NavbarItem, NavbarSeparator, NavbarSubmenu, NavbarSubmenuItem, ProductSwitcher } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { useState } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { Link, useLocation } from 'react-router';

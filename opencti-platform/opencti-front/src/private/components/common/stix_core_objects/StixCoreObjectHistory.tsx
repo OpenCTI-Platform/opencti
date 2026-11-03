@@ -110,10 +110,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           marginBottom: 0,
         }}
       >
-        <Grid
-          item
-          xs={withoutRelations ? 12 : 6}
-        >
+        <Grid size={withoutRelations ? 12 : 6}>
           {objectsQueryRef && (
             <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
               <StixCoreObjectHistoryLines
@@ -133,7 +130,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           )}
         </Grid>
         {!withoutRelations && (
-          <Grid item xs={6}>
+          <Grid size={6}>
             {relationsQueryRef && (
               <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
                 <StixCoreObjectHistoryLines

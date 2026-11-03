@@ -1,5 +1,5 @@
 import Dialog from '@common/dialog/Dialog';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import { Stack } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import * as R from 'ramda';
@@ -796,7 +796,12 @@ const StixDomainPanel = ({
       open={true}
       onClose={onClose}
       title={(
-        <Stack direction="row" justifyContent="space-between">
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'space-between',
+          }}
+        >
           <span>{t_i18n('Create an entity')}</span>
           {!isFromBulkRelation && (
             <BulkTextModalButton

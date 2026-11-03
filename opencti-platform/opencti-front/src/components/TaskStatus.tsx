@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../components/Theme';
 import { State } from '@components/data/connectors/__generated__/ConnectorWorks_data.graphql';
 import Tag from '@common/tag/Tag';

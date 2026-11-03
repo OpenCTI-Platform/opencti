@@ -12,7 +12,7 @@ import { insertNode } from 'src/utils/store';
 import useApiMutation from '../../utils/hooks/useApiMutation';
 import useAuth from '../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNSHAREFILTERS } from '../../utils/hooks/useGranted';
-import { type AuthorizedMemberOption } from '../../utils/authorizedMembers';
+import { authorizedMembersToInput } from '../../utils/authorizedMembers';
 import { type AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import getSavedFilterScopeFilter from './getSavedFilterScopeFilter';
 import SavedFilterSharingSection from './SavedFilterSharingSection';
@@ -38,6 +38,10 @@ const savedFilterCreateDialogMutation = graphql`
         entity_type
         access_right
         member_id
+        groups_restriction {
+          id
+          name
+        }
       }
     }
   }
@@ -84,12 +88,8 @@ const SavedFilterCreateDialog = ({ isOpen, onClose, setCurrentSavedFilter }: Sav
   };
 
   const handleSubmitSaveFilter = (values: SavedFilterFormValues) => {
-    const restrictedMembers = values.authorized_members
-      ? values.authorized_members.map((m: AuthorizedMemberOption) => ({
-          id: m.value,
-          access_right: m.accessRight,
-        }))
-      : undefined;
+    // No members given: undefined, so the backend applies its default access
+    const restrictedMembers = values.authorized_members ? authorizedMembersToInput(values.authorized_members) : undefined;
 
     commit({
       variables: {

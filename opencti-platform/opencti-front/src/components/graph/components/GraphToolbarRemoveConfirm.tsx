@@ -238,7 +238,12 @@ const GraphToolbarRemoveConfirm = ({
             variant="outlined"
             style={{ marginTop: 20 }}
           >
-            <Stack spacing={1} pl={1}>
+            <Stack
+              spacing={1}
+              sx={{
+                pl: 1,
+              }}
+            >
               <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
               <Checkbox
                 label={t_i18n('Delete the element if no other containers contain it')}

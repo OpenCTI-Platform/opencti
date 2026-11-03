@@ -87,7 +87,13 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   };
 
   return (
-    <Stack sx={{ pr: '200px', pb: 4 }} gap={2}>
+    <Stack
+      sx={{
+        gap: 2,
+        pr: '200px',
+        pb: 4,
+      }}
+    >
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Customization') },

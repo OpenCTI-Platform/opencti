@@ -1,7 +1,7 @@
 import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUp from '@mui/icons-material/KeyboardArrowUp';
-import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import { ChipOwnProps } from '@mui/material/Chip';
 import { useTheme } from '@mui/material/styles';
 import React, { CSSProperties, forwardRef } from 'react';
 import Button from '@common/button/Button';

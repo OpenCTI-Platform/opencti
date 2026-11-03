@@ -28,6 +28,7 @@ import Dialog from 'src/components/common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { MESSAGING$ } from 'src/relay/environment';
+import { EMPTY_VALUE } from 'src/utils/String';
 
 const smtpConfigurationQuery = graphql`
   query SmtpConfigurationQuery{
@@ -81,12 +82,12 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
 
   const renderBoolean = (value: boolean | null | undefined) => (
     value === null || value === undefined
-      ? <ItemBoolean status={null} neutralLabel="-" />
+      ? EMPTY_VALUE
       : <ItemBoolean status={!!value} label={value ? t_i18n('Yes') : t_i18n('No')} />
   );
 
   const renderText = (value: string | number | null | undefined) => (
-    <ItemBoolean status={null} neutralLabel={value !== null && value !== undefined && value !== '' ? String(value) : '-'} />
+    value !== null && value !== undefined && value !== '' ? String(value) : EMPTY_VALUE
   );
 
   const handleFormCompleted = () => {
@@ -222,7 +223,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
                   <TableRow>
                     <TableCell>{t_i18n('Password')}</TableCell>
                     <TableCell>
-                      <ItemBoolean status={null} neutralLabel={smtpConfiguration ? '••••••••' : '-'} />
+                      {smtpConfiguration ? <ItemBoolean status={null} neutralLabel="••••••••" /> : EMPTY_VALUE}
                     </TableCell>
                   </TableRow>
                 </>
@@ -236,7 +237,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
                   <TableRow>
                     <TableCell>{t_i18n('OAuth client ID')}</TableCell>
                     <TableCell>
-                      <ItemBoolean status={null} neutralLabel={smtpConfiguration ? '••••••••' : '-'} />
+                      {smtpConfiguration ? <ItemBoolean status={null} neutralLabel="••••••••" /> : EMPTY_VALUE}
                     </TableCell>
                   </TableRow>
                   <TableRow>

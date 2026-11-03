@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -16,40 +14,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import SearchInput from '../../../../components/SearchInput';
 import { Stack } from '@mui/material';
-import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 import { onActivationKey } from '../../../../utils/domEvent';
-
-const styles = (theme) => ({
-  paper: {
-    margin: 0,
-    padding: 15,
-    borderRadius: 4,
-  },
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  itemHead: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-  },
-  bodyItem: bodyItemStyle,
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-});
 
 const inlineStylesHeaders = {
   iconSort: {
@@ -198,7 +163,7 @@ class StixCyberObservableEntities extends Component {
 
   render() {
     const { sortBy, orderAsc, searchTerm, relationReversed } = this.state;
-    const { classes, t, entityId, defaultStartTime, defaultStopTime } = this.props;
+    const { t, entityId, defaultStartTime, defaultStopTime } = this.props;
     const paginationOptions = {
       fromOrToId: entityId,
       search: searchTerm,
@@ -210,7 +175,12 @@ class StixCyberObservableEntities extends Component {
         <Card
           title={t('Relations')}
           action={(
-            <Stack direction="row" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+              }}
+            >
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <StixCoreRelationshipCreationFromEntity
                   paginationOptions={paginationOptions}
@@ -234,7 +204,7 @@ class StixCyberObservableEntities extends Component {
         >
           <List style={{ marginTop: -10 }}>
             <ListItem
-              classes={{ root: classes.itemHead }}
+              sx={{ paddingLeft: '10px', textTransform: 'uppercase' }}
               divider={false}
               style={{ paddingTop: 0 }}
               secondaryAction={<> &nbsp; </>}
@@ -287,14 +257,10 @@ class StixCyberObservableEntities extends Component {
 StixCyberObservableEntities.propTypes = {
   entityId: PropTypes.string,
   relationship_type: PropTypes.string,
-  classes: PropTypes.object,
   t: PropTypes.func,
   navigate: PropTypes.func,
   defaultStartTime: PropTypes.string,
   defaultStopTime: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableEntities);
+export default inject18n(StixCyberObservableEntities);

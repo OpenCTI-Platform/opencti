@@ -6,7 +6,7 @@ import StixCyberObservableCreation from '../../observations/stix_cyber_observabl
 import { PaginationOptions } from '../../../../components/list_lines';
 import { Menu, MenuItem } from '@mui/material';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../../../components/Theme';
 
 interface StixCoreRelationshipCreationHeaderButtonsProps {

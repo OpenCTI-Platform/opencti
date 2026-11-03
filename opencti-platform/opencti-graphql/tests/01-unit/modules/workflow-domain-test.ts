@@ -1796,6 +1796,55 @@ describe('Workflow Domain', () => {
       .rejects.toThrow('Cannot publish workflow: the following statuses are in use and cannot be removed');
   });
 
+  it('should not block publishing on completed instances sitting in a removed non-ending state (same rule as validation)', async () => {
+    // state-b has an outgoing transition (non-ending), like the source status of the terminal "Validate"
+    // transition: instances completed through it keep that status as their current state.
+    const publishedVersion = {
+      id: 'pub-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        initialState: 'state-a',
+        states: [{ statusId: 'state-a' }, { statusId: 'state-b' }, { statusId: 'state-c' }],
+        transitions: [
+          { from: 'state-a', to: 'state-b', event: 'proceed' },
+          { from: 'state-b', to: 'state-c', event: 'complete' },
+        ],
+      }),
+      validation_errors: [],
+    };
+    const draftVersion = {
+      id: 'draft-1',
+      timestamp: '2024-01-02T00:00:00Z',
+      createdBy: 'user-1',
+      content: JSON.stringify({
+        initialState: 'state-a',
+        states: [{ statusId: 'state-a' }, { statusId: 'state-c' }],
+        transitions: [{ from: 'state-a', to: 'state-c', event: 'skip' }],
+      }),
+      validation_errors: [],
+    };
+
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: publishedVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion, publishedVersion],
+    });
+
+    // The only instance in state-b is completed: it can no longer move, so it must not block the removal.
+    (fullEntitiesList as any).mockImplementation(async (_context: unknown, _user: unknown, entityTypes: string[]) => {
+      if (entityTypes.includes('WorkflowInstance')) {
+        return [{ id: 'instance-1', workflow_id: 'workflow-id', currentState: 'state-b', completed: true }];
+      }
+      return [];
+    });
+
+    await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).resolves.toBeDefined();
+  });
+
   it('should throw when publishing removes an ending state whose status is still assigned to an entity (regression: draft compared against published, not itself)', async () => {
     // Regression for the case where validateWorkflowDefinitionData's own "old" definition lookup
     // resolves to the same draft being published (old === new), which would silently miss this.

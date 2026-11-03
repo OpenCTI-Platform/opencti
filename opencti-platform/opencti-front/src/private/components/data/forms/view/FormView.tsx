@@ -8,16 +8,15 @@ import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import React, { ComponentProps, FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { useNavigate, useParams } from 'react-router';
 import * as Yup from 'yup';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import TextField from '../../../../../components/TextField';
-import type { Theme } from '../../../../../components/Theme';
 import Card from '../../../../../components/common/card/Card';
 import MarkdownField from '../../../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../../../components/i18n';
@@ -40,58 +39,69 @@ import { FormViewQuery } from './__generated__/FormViewQuery.graphql';
 import TextareaField from '../../../../../components/TextareaField';
 import { Checkbox } from '@filigran/design-system';
 
-// Styles
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    margin: 0,
-    padding: '0 0 50px 0',
-  },
-  section: {
-    marginTop: 30,
-  },
-  sectionTitle: {
-    marginBottom: 15,
-    fontWeight: 500,
-  },
-  submitButton: {
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 0 50px 0',
+});
+
+const Section = styled('div')({
+  marginTop: 30,
+});
+
+const SectionTitle = styled(Typography)({
+  marginBottom: 15,
+  fontWeight: 500,
+});
+
+const SubmitButton = styled(Button)({
+  '&&': {
     marginTop: 20,
     float: 'right',
   },
-  pollingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100vh',
-  },
-  pollingLoader: {
-    marginBottom: 20,
-  },
-  draftCheckbox: {
-    marginTop: 20,
-    marginLeft: 0,
-  },
-  fieldGroup: {
-    marginBottom: 20,
-    padding: 15,
-    border: '1px solid rgba(255, 255, 255, 0.12)',
-    borderRadius: 4,
-    position: 'relative',
-  },
-  deleteButton: {
-    position: 'absolute',
-    top: 5,
-    right: 5,
-  },
-  addButton: {
+});
+
+const PollingContainer = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100vh',
+});
+
+const FieldGroup = styled('div')({
+  marginBottom: 20,
+  padding: 15,
+  border: '1px solid rgba(255, 255, 255, 0.12)',
+  borderRadius: 4,
+  position: 'relative',
+});
+
+const DeleteButton = styled(IconButton)({
+  position: 'absolute',
+  top: 5,
+  right: 5,
+});
+
+const AddButton = styled(Button)({
+  '&&': {
     marginTop: 10,
     marginBottom: 20,
   },
-  parsedField: {
+});
+
+const ParsedTextareaField = styled(TextareaField)({
+  '&&': {
     width: '100%',
     marginTop: 20,
   },
-}));
+});
+
+const ParsedTextField = styled((props: ComponentProps<typeof TextField>) => <TextField {...props} />)({
+  '&&': {
+    width: '100%',
+    marginTop: 20,
+  },
+});
 
 export const formViewQuery = graphql`
   query FormViewQuery($id: ID!) {
@@ -142,7 +152,6 @@ interface FormInitialValues {
 }
 
 const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedded = false, onSuccess }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
@@ -163,17 +172,17 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
   if (!form) {
     return (
-      <div className={classes.container}>
+      <Container>
         <Alert severity="error">{t_i18n('Form not found')}</Alert>
-      </div>
+      </Container>
     );
   }
 
   if (!form.active) {
     return (
-      <div className={classes.container}>
+      <Container>
         <Alert severity="warning">{t_i18n('This form is currently inactive')}</Alert>
-      </div>
+      </Container>
     );
   }
 
@@ -533,8 +542,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
   if (submitted && (pollingEntityId || pollingEntityType)) {
     return (
-      <div className={classes.pollingContainer} style={embedded ? { height: '400px' } : undefined}>
-        <CircularProgress size={60} className={classes.pollingLoader} />
+      <PollingContainer style={embedded ? { height: '400px' } : undefined}>
+        <CircularProgress size={60} sx={{ marginBottom: '20px' }} />
         <Typography variant="h6" gutterBottom>
           {pollingTimeout ? t_i18n('Processing is taking longer than expected...') : t_i18n('Creating entities...')}
         </Typography>
@@ -543,12 +552,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
             ? t_i18n('Redirecting you to the dashboard...')
             : t_i18n('Please wait while we process your submission.')}
         </Typography>
-      </div>
+      </PollingContainer>
     );
   }
 
   return (
-    <div className={classes.container}>
+    <Container>
       {!embedded && (
         <Breadcrumbs
           elements={[
@@ -600,10 +609,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
             return (
               <Form noValidate>
                 {/* Main Entity Fields */}
-                <div className={classes.section}>
-                  <Typography variant="h6" className={classes.sectionTitle}>
+                <Section>
+                  <SectionTitle variant="h6">
                     {t_i18n(schema.mainEntityType || 'Main Entity')}
-                  </Typography>
+                  </SectionTitle>
                   {(() => {
                     if (schema.mainEntityLookup) {
                       return (
@@ -630,8 +639,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         <>
                           {schema.mainEntityParseField === 'textarea' ? (
                             <Field
-                              component={TextareaField}
-                              className={`${classes.parsedField} mt-5`}
+                              component={ParsedTextareaField}
+                              className="mt-5"
                               name="mainEntityParsed"
                               placeholder={t_i18n(schema.mainEntityParseMode === 'line'
                                 ? 'Enter values separated by new lines'
@@ -641,8 +650,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                             />
                           ) : (
                             <Field
-                              component={TextField}
-                              className={classes.parsedField}
+                              component={ParsedTextField}
                               name="mainEntityParsed"
                               placeholder={t_i18n(schema.mainEntityParseMode === 'line'
                                 ? 'Enter values separated by new lines'
@@ -680,17 +688,16 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           {({ remove, push }) => (
                             <>
                               {(values.mainEntityGroups as unknown as Record<string, unknown>[])?.map((group, index) => (
-                                <div key={index} className={classes.fieldGroup}>
+                                <FieldGroup key={index}>
                                   {index > 0 && (
-                                    <IconButton
+                                    <DeleteButton
                                       aria-label={t_i18n('Delete')}
-                                      className={classes.deleteButton}
                                       onClick={() => remove(index)}
                                       size="small"
                                       color="primary"
                                     >
                                       <DeleteIcon />
-                                    </IconButton>
+                                    </DeleteButton>
                                   )}
                                   <Typography variant="subtitle2" gutterBottom>
                                     {`${t_i18n(schema.mainEntityType)} ${index + 1}`}
@@ -708,10 +715,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                   {index < ((values.mainEntityGroups as unknown as Record<string, unknown>[])?.length || 1) - 1 && (
                                     <Divider style={{ marginTop: 15 }} />
                                   )}
-                                </div>
+                                </FieldGroup>
                               ))}
-                              <Button
-                                className={classes.addButton}
+                              <AddButton
                                 onClick={() => {
                                   const newGroup: Record<string, unknown> = {};
                                   mainEntityFields.forEach((field) => {
@@ -732,7 +738,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 size="small"
                               >
                                 {t_i18n('Add')} {t_i18n(schema.mainEntityType)}
-                              </Button>
+                              </AddButton>
                             </>
                           )}
                         </FieldArray>
@@ -751,7 +757,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       />
                     );
                   })()}
-                </div>
+                </Section>
 
                 {/* Additional Entities */}
                 {schema.additionalEntities && schema.additionalEntities.length > 0 && (
@@ -760,10 +766,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       // Find fields for this additional entity
                       const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
                       return (
-                        <div key={additionalEntity.id} className={classes.section}>
-                          <Typography variant="h6" className={classes.sectionTitle}>
+                        <Section key={additionalEntity.id}>
+                          <SectionTitle variant="h6">
                             {additionalEntity.label || `${t_i18n('Additional Entity')} - ${t_i18n(additionalEntity.entityType)}`}
-                          </Typography>
+                          </SectionTitle>
                           {(() => {
                             if (additionalEntity.lookup) {
                               return (
@@ -791,8 +797,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 <>
                                   {additionalEntity.parseField === 'textarea' ? (
                                     <Field
-                                      component={TextareaField}
-                                      className={`${classes.parsedField} mt-5`}
+                                      component={ParsedTextareaField}
+                                      className="mt-5"
                                       name={fieldName}
                                       placeholder={t_i18n(additionalEntity.parseMode === 'line'
                                         ? 'Enter values separated by new lines'
@@ -802,8 +808,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                     />
                                   ) : (
                                     <Field
-                                      component={TextField}
-                                      className={classes.parsedField}
+                                      component={ParsedTextField}
                                       name={fieldName}
                                       placeholder={t_i18n(additionalEntity.parseMode === 'line'
                                         ? 'Enter values separated by new lines'
@@ -843,17 +848,16 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                   {({ remove, push }) => (
                                     <>
                                       {(values[groupsFieldName] as unknown as Record<string, unknown>[])?.map((group, index) => (
-                                        <div key={index} className={classes.fieldGroup}>
+                                        <FieldGroup key={index}>
                                           {index >= minAmount && (
-                                            <IconButton
+                                            <DeleteButton
                                               aria-label={t_i18n('Delete')}
-                                              className={classes.deleteButton}
                                               onClick={() => remove(index)}
                                               size="small"
                                               color="primary"
                                             >
                                               <DeleteIcon />
-                                            </IconButton>
+                                            </DeleteButton>
                                           )}
                                           <Typography variant="subtitle2" gutterBottom>
                                             {additionalEntity.label || additionalEntity.entityType} {index + 1}
@@ -871,10 +875,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                           {index < ((values[groupsFieldName] as unknown as Record<string, unknown>[])?.length || 1) - 1 && (
                                             <Divider style={{ marginTop: 15 }} />
                                           )}
-                                        </div>
+                                        </FieldGroup>
                                       ))}
-                                      <Button
-                                        className={classes.addButton}
+                                      <AddButton
                                         onClick={() => {
                                           const newGroup: Record<string, unknown> = {};
                                           entityFields.forEach((field) => {
@@ -895,7 +898,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                         size="small"
                                       >
                                         {t_i18n('Add')} {additionalEntity.label || additionalEntity.entityType}
-                                      </Button>
+                                      </AddButton>
                                     </>
                                   )}
                                 </FieldArray>
@@ -915,7 +918,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               />
                             );
                           })()}
-                        </div>
+                        </Section>
                       );
                     })}
                   </>
@@ -931,9 +934,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
                   return (
                     <>
-                      <Typography variant="h6" className={classes.sectionTitle} style={{ marginTop: 30 }}>
+                      <SectionTitle variant="h6" style={{ marginTop: 30 }}>
                         {t_i18n('Relationships')}
-                      </Typography>
+                      </SectionTitle>
                       {relationshipsWithFields.map((relationship) => {
                         // Find the entities involved
                         const fromEntityLabel = relationship.fromEntity === 'main_entity'
@@ -943,7 +946,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           ? schema.mainEntityType
                           : schema.additionalEntities?.find((e) => e.id === relationship.toEntity)?.label || relationship.toEntity;
                         return (
-                          <div key={relationship.id} className={classes.section}>
+                          <Section key={relationship.id}>
                             <Typography variant="subtitle1" style={{ marginBottom: 10 }}>
                               {`${fromEntityLabel} → ${t_i18n(`relationship_${relationship.relationshipType}`)} → ${toEntityLabel}`}
                             </Typography>
@@ -957,7 +960,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               fieldPrefix={`relationship_${relationship.id}`}
                               getFieldKey={(field) => `relationship_${relationship.id}_${field.name}`}
                             />
-                          </div>
+                          </Section>
                         );
                       })}
                     </>
@@ -965,7 +968,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                 })()}
                 {isDraft && <Divider style={{ marginTop: 40 }} />}
                 <FormControlLabel
-                  className={classes.draftCheckbox}
+                  sx={{ marginTop: '20px', marginLeft: 0 }}
                   style={{ marginBottom: showDraftSection ? 12 : undefined }}
                   control={(
                     <Checkbox
@@ -979,9 +982,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                 />
                 {showDraftSection && (
                   <>
-                    <Typography variant="h5" className={classes.sectionTitle} style={{ marginTop: 0 }}>
+                    <SectionTitle variant="h5" style={{ marginTop: 0 }}>
                       {t_i18n('Draft')}
-                    </Typography>
+                    </SectionTitle>
                     {showDraftName && (
                       <div style={{ marginTop: 20 }}>
                         <Field
@@ -1059,20 +1062,19 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     )}
                   </>
                 )}
-                <Button
-                  className={classes.submitButton}
+                <SubmitButton
                   type="submit"
                   disabled={isSubmitting || !isValid}
                 >
                   {isSubmitting ? t_i18n('Submitting...') : t_i18n('Submit')}
-                </Button>
+                </SubmitButton>
                 <div style={{ clear: 'both' }} />
               </Form>
             );
           }}
         </Formik>
       </Card>
-    </div>
+    </Container>
   );
 };
 

@@ -106,6 +106,27 @@ describe('Filtering utils', () => {
 
     expect(() => checkFiltersValidity(filterGroup)).not.toThrow();
   });
+
+  describe('incorrect filter keys', () => {
+    // A bad key is a mistake of the caller, not a failure of the platform: it is a client error (400)
+    // carried by the BAD_USER_INPUT_ERROR code so that it is not logged like an unexpected technical error.
+    it.each([
+      { title: 'a key not existing in any schema definition', key: 'labels', message: 'Incorrect filter keys not existing in any schema definition' },
+      { title: 'a key containing invalid characters', key: "name.']; ctx._source.value = true; //", message: 'Incorrect filter keys containing invalid characters' },
+    ])('should throw a bad user input error for $title', ({ key, message }) => {
+      const filterGroup = { mode: 'and', filters: [{ key: [key], values: ['x'] }], filterGroups: [] } as FilterGroup;
+      let thrown: any;
+      try {
+        checkFiltersValidity(filterGroup);
+      } catch (e) {
+        thrown = e;
+      }
+      expect(thrown.message).toEqual(message);
+      expect(thrown.extensions.code).toEqual('BAD_USER_INPUT_ERROR');
+      expect(thrown.extensions.data.http_status).toEqual(400);
+      expect(thrown.extensions.data.keys).toEqual([key]);
+    });
+  });
 });
 
 describe('booleanTrueFilter', () => {

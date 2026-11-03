@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { DateTime } from 'luxon';
+import bcrypt from 'bcryptjs';
 import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
 import { updateAttribute } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
@@ -12,6 +13,7 @@ import {
   checkPasswordInlinePolicy,
   generatePasswordFromPolicy,
   isSensitiveChangesAllowed,
+  login,
 } from '../../../../src/modules/user/user-domain';
 import { addUserToken, generateSecureToken } from '../../../../src/modules/user/user-domain';
 import { testContext } from '../../../utils/testQuery';
@@ -810,5 +812,29 @@ describe('authenticateUserByToken', () => {
     await expect(
       authenticateUserByToken(mockContext, mockReq, 'notokens-plaintext'),
     ).rejects.toThrow('Cannot identify user with token');
+  });
+});
+
+describe('login', () => {
+  const prototype = Object.prototype as Record<string, unknown>;
+
+  beforeEach(() => {
+    vi.mocked(elLoadBy).mockReset();
+  });
+
+  it('should log in a user with the password matching its own hash', async () => {
+    const user = { id: 'local-user', user_email: 'local@test.com', password: bcrypt.hashSync('local-password', 4) };
+    vi.mocked(elLoadBy).mockResolvedValue(user as any);
+    await expect(login('local@test.com', 'local-password')).resolves.toBe(user);
+  });
+
+  it('should refuse a user without its own password even when one is set on the object prototype', async () => {
+    vi.mocked(elLoadBy).mockResolvedValue({ id: 'service-account', user_email: 'service@test.com' } as any);
+    prototype.password = bcrypt.hashSync('inherited-password', 4);
+    try {
+      await expect(login('service@test.com', 'inherited-password')).rejects.toThrow('Bad login or password');
+    } finally {
+      delete prototype.password;
+    }
   });
 });

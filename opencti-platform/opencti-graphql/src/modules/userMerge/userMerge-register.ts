@@ -158,7 +158,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
    */
   row('user.email-and-sso-identifier', RETAIN, 'User', 'user_email / SSO identifier'),
   row('user.identity-fields', RETAIN, 'User', 'user_email / name / firstname / lastname / external / account_status'),
-  row('user.ui-preferences', RETAIN, 'User', 'theme / language / bookmarks / default_dashboard / default_time_field / unit_system / UI preferences'),
+  row('user.ui-preferences', RETAIN, 'User', 'theme / language / bookmarks / default_dashboard / default_time_field / unit_system / date_format / time_format / UI preferences'),
   row('user.personal-notifiers', RETAIN, 'User', 'personal_notifiers'),
   row('user-account.user-id', RETAIN, 'User-Account', 'user_id'),
 

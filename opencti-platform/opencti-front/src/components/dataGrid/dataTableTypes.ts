@@ -2,7 +2,7 @@
 import type { Dispatch, MutableRefObject, ReactNode, SetStateAction } from 'react';
 import React from 'react';
 import { GraphQLTaggedNode } from 'react-relay';
-import { PopoverProps } from '@mui/material/Popover/Popover';
+import { PopoverProps } from '@mui/material/Popover';
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
 import { OperationType } from 'relay-runtime';
 import type { LocalStorage } from '../../utils/hooks/useLocalStorageModel';
