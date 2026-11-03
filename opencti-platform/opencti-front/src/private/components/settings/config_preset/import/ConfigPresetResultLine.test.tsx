@@ -23,6 +23,7 @@ describe('ConfigPresetResultLine', () => {
     ['Unknown message', 'Unknown message'],
     ['The standard id of the theme does not match its id', 'The standard id of the theme does not match its id'],
     ['The standard id of the theme is required to overwrite it', 'The standard id of the theme is required to overwrite it'],
+    ['Requires Enterprise Edition', 'Requires Enterprise Edition'],
     ['Built-in theme', 'Built-in theme'],
     ['Theme already exists', 'Theme already exists'],
     ['Theme name already exists', 'Theme name already exists'],
@@ -33,6 +34,18 @@ describe('ConfigPresetResultLine', () => {
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();
+  });
+
+  it('says an item the platform has already as it is, without a status that would read as if it was ignored', () => {
+    testRender(<ConfigPresetResultLine label="Banner" status="SKIPPED" reason="Already up to date" code="unchanged" />);
+    expect(screen.getByText('Banner')).toBeInTheDocument();
+    expect(screen.getByText('Already up to date')).toBeInTheDocument();
+    expect(screen.queryByText('Skipped')).not.toBeInTheDocument();
+  });
+
+  it('keeps the status of a skipped item that is not unchanged, whatever its reason says', () => {
+    testRender(<ConfigPresetResultLine label="Banner" status="SKIPPED" reason="Already up to date" code="not_overwrite" />);
+    expect(screen.getByText('Skipped')).toBeInTheDocument();
   });
 
   it('shows an unknown status as is, and no reason when there is none', () => {

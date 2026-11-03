@@ -127,6 +127,16 @@ describe('configPresetSelection', () => {
     expect(buildConfigPresetSelections(types, {})).toEqual([]);
   });
 
+  it('never sends a locked type, whatever the selection and its count say', () => {
+    const locked = { key: 'whitemark', itemsPageInfo: { globalCount: 1 }, lockedByEnterpriseEdition: true };
+    const selection: ConfigPresetSelection = { whitemark: { mode: 'all', ids: [] }, platform: { mode: 'all', ids: [] } };
+    expect(buildConfigPresetSelections([platform, locked], selection)).toEqual([{ type: 'platform', items: null }]);
+    expect(buildConfigPresetSelections([platform, { ...locked, lockedByEnterpriseEdition: false }], selection)).toEqual([
+      { type: 'platform', items: null },
+      { type: 'whitemark', items: null },
+    ]);
+  });
+
   it('adds the import mode of the items of a type to its selection, and only the types that have one', () => {
     const selection: ConfigPresetSelection = {
       platform: { mode: 'all', ids: [] },

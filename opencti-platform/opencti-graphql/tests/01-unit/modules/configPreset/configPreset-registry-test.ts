@@ -79,8 +79,13 @@ describe('Config preset registry', () => {
         itemIds: [otherCustomTheme.standard_id, customTheme.standard_id],
       },
       { id: 'messages', label: 'Messages', description: 'Banner, login and consent messages', group: 'platformSettings', itemIds: ['banner', 'login', 'consent', 'noAccess'] },
+      { id: 'whitemark', label: 'Remove Filigran logos', description: '', group: 'platformSettings', itemIds: ['whitemark'] },
       { id: 'hiddenEntityTypes', label: 'Hidden entity types', description: 'Entity types hidden in the platform', group: 'dataModel', itemIds: ['hiddenEntityTypes'] },
     ]);
+  });
+
+  it('marks as requiring the Enterprise Edition the families of an Enterprise Edition setting only', () => {
+    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark']);
   });
 
   it('translates the static labels only, never a theme name', async () => {
@@ -93,6 +98,7 @@ describe('Config preset registry', () => {
       ['Login message', true],
       ['Consent message', true],
       ['No access message', true],
+      ['Remove Filigran logos', true],
       ['Hidden entity types', true],
     ]);
   });
@@ -110,6 +116,7 @@ describe('Config preset registry', () => {
       'platform_settings/messages/login.json',
       'platform_settings/messages/consent.json',
       'platform_settings/messages/noAccess.json',
+      'platform_settings/whitemark.json',
       'data_model/hidden_entity_types.json',
     ]);
     expect(new Set(paths).size).toBe(paths.length);
@@ -159,6 +166,29 @@ describe('Config preset registry', () => {
         expect(item.dependsOn).toEqual([]);
         expect(await item.exporter(context, user)).toEqual({ platform_title: 'Only title', platform_favicon: null, platform_language: null, default_theme: null });
       }
+    });
+  });
+
+  describe('whitemark', () => {
+    it('exports the whitemark setting alone', async () => {
+      const family = findFamily('whitemark');
+      const item = await findItem('whitemark', 'whitemark');
+      expect(await exportConfigPresetItem(context, user, family, item)).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'platformSettings.whitemark',
+        id: 'whitemark',
+        configuration: { platform_whitemark: true },
+      });
+    });
+
+    it.each([[true, true], [false, false], [undefined, null], [null, null]])('lists the whitemark %s as enabled: %s, a setting that is not set being neither', async (platformWhitemark, isEnabled) => {
+      withSettings({ platform_whitemark: platformWhitemark });
+      expect((await findItem('whitemark', 'whitemark')).isEnabled).toBe(isEnabled);
+    });
+
+    it('exports a whitemark that is not set as null, to keep a stable file shape', async () => {
+      withSettings({ platform_whitemark: undefined });
+      expect(await (await findItem('whitemark', 'whitemark')).exporter(context, user)).toEqual({ platform_whitemark: null });
     });
   });
 

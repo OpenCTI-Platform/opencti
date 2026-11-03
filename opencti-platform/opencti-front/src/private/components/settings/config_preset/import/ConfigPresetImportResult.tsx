@@ -27,7 +27,7 @@ export const ConfigPresetImportProgress: FunctionComponent<ConfigPresetImportPro
         <Text variant="content-base">{t_i18n('{processed} of {total} items processed', { values: { processed: results.length, total: session.total } })}</Text>
       )}
       {results.map((result) => (
-        <ConfigPresetResultLine key={`${result.type}/${result.key}`} label={resultLabel(result)} status={result.status} reason={result.reason} />
+        <ConfigPresetResultLine key={`${result.type}/${result.key}`} label={resultLabel(result)} status={result.status} reason={result.reason} code={result.code} />
       ))}
     </div>
   );

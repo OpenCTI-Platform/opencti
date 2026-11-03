@@ -1,13 +1,13 @@
 import type { z } from 'zod';
-import { getSettings, settingsEditField } from '../../domain/settings';
+import { getSettings, getSettingsFromDatabase, settingsEditField } from '../../domain/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { configImportValidationReason } from '../configImport/configImport-utils';
 import { findById as findThemeById } from '../theme/theme-domain';
-import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS } from './settings-export';
-import { messageConfigurationSchemas, platformConfigurationSchema } from './settings-import-schema';
+import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_WHITEMARK_FIELDS } from './settings-export';
+import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema } from './settings-import-schema';
 
-export type SettingsImportCode = 'invalid' | 'unknown_message' | 'not_overwrite' | 'nothing_to_import' | 'default_theme_missing';
+export type SettingsImportCode = 'invalid' | 'unknown_message' | 'not_overwrite' | 'nothing_to_import' | 'unchanged' | 'default_theme_missing';
 
 export type SettingsImportResult<TConfiguration = Record<string, unknown>> = ConfigImportResult<TConfiguration, SettingsImportCode>;
 
@@ -37,6 +37,14 @@ const toInput = (configuration: Record<string, unknown>, keys: string[]) => {
     .map((key) => ({ key, value: [configuration[key]] }));
 };
 
+// What the platform has already is not written again, so nothing is shown nor audited for it. A boolean that is off is the same as one that is not set.
+const isSameValue = (current: unknown, value: unknown) => current === value || (value === false && (current === null || current === undefined));
+
+const isUnchanged = async (context: AuthContext, input: { key: string; value: unknown[] }[]) => {
+  const current = (await getSettingsFromDatabase(context)) as unknown as Record<string, unknown>;
+  return input.every(({ key, value }) => isSameValue(current[key], value[0]));
+};
+
 const writeSettings = async (context: AuthContext, user: AuthUser, input: { key: string; value: unknown[] }[]) => {
   await settingsEditField(context, user, (await getSettings(context)).id, input);
 };
@@ -60,8 +68,12 @@ const importFields = async (
   if (isNothingToImport(parsed.data, keys)) {
     return skipped('nothing_to_import', 'Nothing to import', parsed.data);
   }
+  const input = toInput(parsed.data, keys);
+  if (await isUnchanged(context, input)) {
+    return skipped('unchanged', 'Already up to date', parsed.data);
+  }
   if (!dryRun) {
-    await writeSettings(context, user, toInput(parsed.data, keys));
+    await writeSettings(context, user, input);
   }
   return { status: 'overwritten', exists: true, configuration: parsed.data };
 };
@@ -73,6 +85,11 @@ export const importMessage = (context: AuthContext, user: AuthUser, messageId: s
   }
   const id = messageId as keyof typeof SETTINGS_MESSAGES_FIELDS;
   return importFields(context, user, messageConfigurationSchemas[id], SETTINGS_MESSAGES_FIELDS[id], configuration, options);
+};
+
+// The Enterprise Edition is not checked here but by the family that carries the whitemark (requiresEnterpriseEdition)
+export const importWhitemark = (context: AuthContext, user: AuthUser, configuration: unknown, options: ConfigImportOptions) => {
+  return importFields(context, user, whitemarkConfigurationSchema, SETTINGS_WHITEMARK_FIELDS, configuration, options);
 };
 
 // Title, favicon and language, and the default theme: the theme is found by its standard id on this platform, and set by its internal id
@@ -102,6 +119,11 @@ export const importPlatformConfiguration = async (
     if (theme) {
       input.push({ key: 'platform_theme', value: [theme.id] });
     }
+  }
+  // A default theme that this import creates is a change
+  const createsTheme = !!defaultTheme && !input.some(({ key }) => key === 'platform_theme');
+  if (!createsTheme && await isUnchanged(context, input)) {
+    return skipped('unchanged', 'Already up to date', parsed.data);
   }
   if (!dryRun) {
     await writeSettings(context, user, input);

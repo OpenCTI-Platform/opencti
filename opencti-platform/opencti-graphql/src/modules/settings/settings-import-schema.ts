@@ -20,6 +20,10 @@ export const platformConfigurationSchema = z.strictObject({
   default_theme: z.strictObject({ standard_id: z.string().regex(THEME_STANDARD_ID_PATTERN, 'Must be a theme standard id'), name: z.string().max(MAX_SHORT_LENGTH) }).nullish(),
 });
 
+export const whitemarkConfigurationSchema = z.strictObject({
+  platform_whitemark: z.boolean().nullish(),
+});
+
 export const messageConfigurationSchemas = {
   banner: z.strictObject({ platform_banner_text: text, platform_banner_level: z.enum(BANNER_LEVELS).nullish() }),
   login: z.strictObject({ platform_login_message: text }),

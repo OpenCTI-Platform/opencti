@@ -14,6 +14,8 @@ interface ConfigPresetResultLineProps {
   status: ConfigPresetResultStatus | string;
   // The English sentence of the backend: translated when it is a known one, shown as is otherwise
   reason?: string | null;
+  // The code of the importer behind the reason: what the line shows depends on it, not on the text
+  code?: string | null;
   // The item went well: a tick leads the line
   isDone?: boolean;
 }
@@ -32,12 +34,16 @@ const STATUS_SEVERITIES = {
   FAILED: 'critical',
 } as const;
 
+// An item the platform has as it is: skipped, but said without the status, which would read as if something was ignored
+export const CODE_UNCHANGED = 'unchanged';
+
 type Translate = ReturnType<typeof useFormatter>['t_i18n'];
 
 // The reasons are sentences of the backend (the API exposes them as text), so they are matched here to be translated
 const translateReason = (t_i18n: Translate, reason: string) => {
   switch (reason) {
     case 'Already exists': return t_i18n('Already exists');
+    case 'Already up to date': return t_i18n('Already up to date');
     case 'Nothing to import': return t_i18n('Nothing to import');
     case 'Unexpected item id': return t_i18n('Unexpected item id');
     case 'Unknown message': return t_i18n('Unknown message');
@@ -46,6 +52,7 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'Built-in theme': return t_i18n('Built-in theme');
     case 'Theme already exists': return t_i18n('Theme already exists');
     case 'Theme name already exists': return t_i18n('Theme name already exists');
+    case 'Requires Enterprise Edition': return t_i18n('Requires Enterprise Edition');
     default: break;
   }
   const copyName = reason.match(/^Added as "(.+)"$/)?.[1];
@@ -68,7 +75,7 @@ const translateReason = (t_i18n: Translate, reason: string) => {
 };
 
 // The result of an item of an import: its status and the reason
-const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = ({ label, status, reason, isDone = false }) => {
+const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = ({ label, status, reason, code, isDone = false }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const known = status in STATUS_LABELS;
@@ -76,10 +83,12 @@ const ConfigPresetResultLine: FunctionComponent<ConfigPresetResultLineProps> = (
     <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
       {isDone && <CheckCircleOutlined aria-hidden data-testid="config-preset-result-tick" fontSize="small" style={{ color: theme.palette.success.main }} />}
       {label && <Text variant="content-base">{label}</Text>}
-      <Chip
-        label={known ? t_i18n(STATUS_LABELS[status as ConfigPresetResultStatus]) : status}
-        severity={known ? STATUS_SEVERITIES[status as ConfigPresetResultStatus] : 'neutral'}
-      />
+      {code !== CODE_UNCHANGED && (
+        <Chip
+          label={known ? t_i18n(STATUS_LABELS[status as ConfigPresetResultStatus]) : status}
+          severity={known ? STATUS_SEVERITIES[status as ConfigPresetResultStatus] : 'neutral'}
+        />
+      )}
       {reason && <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{translateReason(t_i18n, reason)}</Text>}
     </div>
   );

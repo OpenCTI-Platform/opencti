@@ -6,6 +6,12 @@ vi.mock('../../../../../src/modules/theme/theme-domain', async (importOriginal) 
   checkExistingTheme: vi.fn(),
 }));
 
+vi.mock('../../../../../src/domain/settings', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/domain/settings')>()),
+  getSettingsFromDatabase: vi.fn(),
+}));
+
+import { getSettingsFromDatabase } from '../../../../../src/domain/settings';
 import { findById, checkExistingTheme } from '../../../../../src/modules/theme/theme-domain';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportPlan } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
@@ -39,6 +45,8 @@ beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(findById).mockResolvedValue(undefined as never);
   vi.mocked(checkExistingTheme).mockResolvedValue(false);
+  // A platform that has none of the settings of the bundle
+  vi.mocked(getSettingsFromDatabase).mockResolvedValue({} as never);
 });
 
 describe('Messages import (compute)', () => {

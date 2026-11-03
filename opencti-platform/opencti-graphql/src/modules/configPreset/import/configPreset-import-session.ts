@@ -28,6 +28,8 @@ export interface ConfigPresetImportItemResult {
   key: string;
   status: ConfigPresetImportResultStatus;
   reason: string | null;
+  // The code of the importer behind the reason; absent in a session stored before the codes were kept
+  code?: string | null;
   // The name of the item and whether the UI translates it; absent in a session stored before the names were kept: the key
   label?: string;
   translatable?: boolean;

@@ -7,7 +7,7 @@ import { type HiddenEntityTypesImportConfiguration, hiddenEntityTypesImportSchem
 import { ENTITY_TYPE_ENTITY_SETTING, type BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { getAvailableSettings } from './entitySetting-utils';
 
-export type HiddenEntityTypesImportCode = 'invalid' | 'not_overwrite' | 'cannot_be_hidden' | 'nothing_to_import';
+export type HiddenEntityTypesImportCode = 'invalid' | 'not_overwrite' | 'cannot_be_hidden' | 'unchanged';
 
 export type HiddenEntityTypesImportResult = ConfigImportResult<HiddenEntityTypesImportConfiguration, HiddenEntityTypesImportCode>;
 
@@ -56,7 +56,7 @@ export const importHiddenEntityTypes = async (
   const toHide = entitySettings.filter((entitySetting) => wanted.has(entitySetting.target_type) && !entitySetting.platform_hidden_type);
   const toShow = entitySettings.filter((entitySetting) => !wanted.has(entitySetting.target_type) && entitySetting.platform_hidden_type);
   if (toHide.length === 0 && toShow.length === 0) {
-    return refused('skipped', 'nothing_to_import', 'Nothing to import', parsed.data);
+    return refused('skipped', 'unchanged', 'Already up to date', parsed.data);
   }
   if (!dryRun) {
     if (toHide.length > 0) {
