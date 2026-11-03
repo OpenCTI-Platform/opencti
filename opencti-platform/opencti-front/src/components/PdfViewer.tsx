@@ -24,6 +24,7 @@ const PdfViewer = ({ pdf }: PdfViewerProps) => {
     >
       <Document
         file={pdf}
+        suspense={false}
         loading={<Loader />}
         onLoadSuccess={({ numPages }) => setNbPages(numPages)}
       >
