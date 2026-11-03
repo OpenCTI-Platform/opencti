@@ -39,7 +39,8 @@ esbuild.build({
         'script/script-clean-relations.js',
         'script/script-insert-dataset.js',
         'script/script-wait-for-api.js',
-        'src/utils/safeEjs.worker.ts'
+        'src/utils/safeEjs.worker.ts',
+        'src/utils/jsonPath.worker.ts'
     ],
     entryNames: '[name]',
     bundle: true,

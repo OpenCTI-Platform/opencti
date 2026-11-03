@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { Worker } from 'worker_threads';
 import jsonMappingExecution from '../../../src/parser/json-mapper';
 import { JsonMapperRepresentationType } from '../../../src/modules/internal/jsonMapper/jsonMapper-types';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
@@ -148,5 +149,45 @@ describe('JSON mapper extractWithRegexp', () => {
     // Pattern has 3 groups; groupIndex 99 is out of range
     const objects = await jsonMappingExecution(testContext, ADMIN_USER, data, makeMapper('extractWithRegexp("(.*)( - )([A-Z][0-9]{1,})", 99, name)'));
     expect(objects[0].name).toBe('CobaltStrike - T1059');
+  });
+});
+
+describe('JSON mapper independent paths', () => {
+  it('should evaluate an independent filter once per mapping execution', async () => {
+    const source = "$.meta[?(@.k == 'source')].v";
+    const mapper = {
+      type: 'jsonMapper',
+      name: 'independent-test',
+      variables: [],
+      representations: [{
+        id: 'rep1',
+        type: JsonMapperRepresentationType.Entity,
+        target: { entity_type: ENTITY_TYPE_MALWARE, path: '$.items[*]' },
+        identifier: undefined,
+        attributes: [
+          {
+            key: 'name',
+            mode: 'complex',
+            complex_path: {
+              variables: [{ variable: 'name', path: '$.name' }, { variable: 'source', path: source, independent: true }],
+              formula: 'name + " (" + source + ")"',
+            },
+          },
+          { key: 'description', mode: 'simple', attr_path: { path: source, independent: true } },
+          { key: 'is_family', mode: 'simple', default_values: ['true'] },
+        ],
+      }],
+    };
+    const data = JSON.stringify({ meta: [{ k: 'source', v: 'feed' }], items: [{ name: 'Sliver' }, { name: 'Emotet' }, { name: 'Qakbot' }] });
+    const postMessageSpy = vi.spyOn(Worker.prototype, 'postMessage');
+    try {
+      const objects = await jsonMappingExecution(testContext, ADMIN_USER, data, mapper);
+      expect(objects.map((o) => o.name)).toEqual(['Sliver (feed)', 'Emotet (feed)', 'Qakbot (feed)']);
+      expect(objects.map((o) => o.description)).toEqual(['feed', 'feed', 'feed']);
+      // The filter does not depend on the record: the document goes to the worker once, not once per record and attribute
+      expect(postMessageSpy).toHaveBeenCalledTimes(1);
+    } finally {
+      postMessageSpy.mockRestore();
+    }
   });
 });
