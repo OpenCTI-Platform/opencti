@@ -11,8 +11,9 @@ vi.mock('../../../../../src/domain/settings', () => ({
   getPlatformDefaultTheme: vi.fn(),
 }));
 
+import { isEnterpriseEditionUpToDate } from '../../../../../src/enterprise-edition/ee';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
-import { computeConfigPresetItem } from '../../../../../src/modules/configPreset/import/configPreset-import-domain';
+import { computeConfigPresetItem, computeConfigPresetItems } from '../../../../../src/modules/configPreset/import/configPreset-import-domain';
 import { CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import type { ConfigPresetBundleItem, ConfigPresetComputedItem } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import type { ConfigPresetFamilyDefinition } from '../../../../../src/modules/configPreset/configPreset-types';
@@ -110,5 +111,25 @@ describe('Import of the whitemark (compute)', () => {
     expect(await compute(whitemark(), 'whitemark', { platform_whitemark: 'yes' })).toMatchObject({ status: 'skipped' });
     enterpriseEdition.enabled = true;
     expect(await compute(whitemark(), 'whitemark', { platform_whitemark: 'yes' })).toMatchObject({ status: 'failed' });
+  });
+});
+
+describe('Import of a family that requires the Enterprise Edition (several items)', () => {
+  const whitemarkItem = (id: string): ConfigPresetBundleItem => ({ type: 'whitemark', id, path: `${id}.json`, configuration: {} });
+
+  it('reads the platform once for the items of a family, which all get the same answer', async () => {
+    enterpriseEdition.enabled = false;
+    vi.mocked(isEnterpriseEditionUpToDate).mockClear();
+    const results = await computeConfigPresetItems(context, user, [whitemarkItem('first'), whitemarkItem('second')]);
+    expect(results.map(({ computed }) => computed.status)).toEqual(['skipped', 'skipped']);
+    expect(isEnterpriseEditionUpToDate).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the availability it is given, without reading the platform', async () => {
+    enterpriseEdition.enabled = true;
+    vi.mocked(isEnterpriseEditionUpToDate).mockClear();
+    const results = await computeConfigPresetItems(context, user, [whitemarkItem('first')], { availability: new Map([['whitemark', false]]) });
+    expect(results[0].computed.status).toBe('skipped');
+    expect(isEnterpriseEditionUpToDate).not.toHaveBeenCalled();
   });
 });

@@ -120,9 +120,15 @@ export const readConfigPresetImportBundle = async (context: AuthContext, user: A
   return readConfigPresetBundle(await loadConfigPresetImportZip(context, user, fileId));
 };
 
+// Whether the platform can use each family of the items, by family id. Read once for a computation, so that its items and its types agree
+const getConfigPresetFamiliesAvailability = async (context: AuthContext, items: ConfigPresetBundleItem[]) => {
+  const families = CONFIG_PRESET_FAMILIES.filter((family) => items.some((item) => item.type === family.id));
+  return new Map(await Promise.all(families.map(async (family) => [family.id, await isConfigPresetFamilyAvailable(context, family)] as const)));
+};
+
 // What the importer of the family decides for an item. A family that requires the Enterprise Edition skips its items on a platform
-// without it. The platform is read at each call: a license applied since the preview is taken into account by the next
-// computation, and the real import computes before it writes.
+// without it. Without isAvailable the platform is read at each call: the real import computes each item just before it writes it,
+// and a license applied since the preview is taken into account.
 export const computeConfigPresetItem = async (
   context: AuthContext,
   user: AuthUser,
@@ -130,10 +136,11 @@ export const computeConfigPresetItem = async (
   item: ConfigPresetBundleItem,
   plan: ConfigPresetImportPlan,
   mode: ConfigImportMode,
+  isAvailable?: boolean,
 ): Promise<ConfigPresetComputedItem> => {
   // The importer of a family the platform cannot import is never called: it may read through domain functions that refuse without
   // the Enterprise Edition, and what it would validate or find is of no use. The item is named after its family.
-  if (!(await isConfigPresetFamilyAvailable(context, family))) {
+  if (!(isAvailable ?? await isConfigPresetFamilyAvailable(context, family))) {
     return { label: family.label, translatable: true, exists: false, conflict: false, status: 'skipped', reason: CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED };
   }
   return family.importer!.compute(context, user, item, plan, mode);
@@ -141,18 +148,20 @@ export const computeConfigPresetItem = async (
 
 // compute of every item, required dependencies first: reads only, the plan records what would be created
 // modes: the mode of each item, OVERWRITE for the items that have none (the preview, the dependencies)
+// availability: the families the platform can use, when the caller has read it already
 export const computeConfigPresetItems = async (
   context: AuthContext,
   user: AuthUser,
   items: ConfigPresetBundleItem[],
-  { modes = new Map() }: { modes?: Map<string, ConfigImportMode> } = {},
+  { modes = new Map(), availability }: { modes?: Map<string, ConfigImportMode>; availability?: Map<string, boolean> } = {},
 ): Promise<{ item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[]> => {
+  const familiesAvailability = availability ?? await getConfigPresetFamiliesAvailability(context, items);
   const plan: ConfigPresetImportPlan = { created: new Set(), themeNames: new Set(), releasedThemeNames: new Set() };
   const results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[] = [];
   for (let i = 0; i < items.length; i += 1) {
     const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === items[i].type)!;
     const mode = configPresetImportMode(modes, items[i].type, items[i].id);
-    results.push({ item: items[i], computed: await computeConfigPresetItem(context, user, family, items[i], plan, mode) });
+    results.push({ item: items[i], computed: await computeConfigPresetItem(context, user, family, items[i], plan, mode, familiesAvailability.get(family.id)) });
   }
   return results;
 };
@@ -162,19 +171,19 @@ export const configPresetImportPreview = async (context: AuthContext, user: Auth
   const bundle = await readConfigPresetImportBundle(context, user, fileId);
   const keys: ConfigPresetItemKey[] = bundle.items;
   const ordered = resolveBundleDependencies(bundle, keys);
-  const results = await computeConfigPresetItems(context, user, ordered);
+  const availability = await getConfigPresetFamiliesAvailability(context, ordered);
+  const results = await computeConfigPresetItems(context, user, ordered, { availability });
   const defaultThemeId = bundle.items.find((item) => item.type === 'platform')?.configuration.default_theme as { standard_id?: string } | null | undefined;
   const families = CONFIG_PRESET_FAMILIES.filter((family) => results.some(({ item }) => item.type === family.id));
-  const availability = await Promise.all(families.map((family) => isConfigPresetFamilyAvailable(context, family)));
-  const types = families.map((family, index) => ({
+  const types = families.map((family) => ({
     key: family.id,
     label: family.label,
     description: family.description,
     group: { key: family.group.id, label: family.group.label },
-    lockedByEnterpriseEdition: !availability[index],
+    lockedByEnterpriseEdition: !availability.get(family.id),
     modes: family.importModes ?? [CONFIG_PRESET_DEFAULT_IMPORT_MODE],
     // The items of a family the platform cannot import are not shown: the dialog shows the type as locked
-    items: !availability[index] ? [] : results.filter(({ item }) => item.type === family.id).map(({ item, computed }) => {
+    items: !availability.get(family.id) ? [] : results.filter(({ item }) => item.type === family.id).map(({ item, computed }) => {
       const dependencyPaths = Object.values(bundle.dependencies[configPresetFamilyType(family)]?.[item.id] ?? {});
       return {
         key: item.id,

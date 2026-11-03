@@ -31,7 +31,7 @@ import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/er
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
-import { checkEnterpriseEditionUpToDate } from '../enterprise-edition/ee';
+import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
@@ -323,7 +323,9 @@ export const settingsEditField = async (context, user, settingsId, input) => {
 
   const data = hasSetXTMHubCapability ? completeXTMHubDataForRegistration(user, input) : input;
 
+  // The settings are read from the database: they know a license that the cache of this node does not yet
   const settings = await getSettings(context);
+  let isLicenseActivated = false;
   const enterpriseLicense = data.find((inputData) => inputData.key === 'enterprise_license');
   if (enterpriseLicense && enterpriseLicense.value?.length > 0) {
     const license = enterpriseLicense.value[0];
@@ -332,14 +334,16 @@ export const settingsEditField = async (context, user, settingsId, input) => {
       if (!info.license_validated) {
         throw UnsupportedError('Invalid license');
       }
+      isLicenseActivated = true;
     }
   }
-  // Removing the Filigran logos is an Enterprise Edition feature: turning it on needs the license, turning it off never does
-  // A license just activated may not be in the cache of this node yet, which a bundle import that follows its preview would hit
+  // Removing the Filigran logos is an Enterprise Edition feature: turning it on needs the license (or one given by the same edit),
+  // turning it off never does
   // Every edit of the key counts: with a repeated key the last one is the one that is written
   const whitemarks = data.filter((inputData) => inputData.key === 'platform_whitemark');
-  if (whitemarks.some((whitemark) => whitemark.value?.some((value) => value === true || value === 'true'))) {
-    await checkEnterpriseEditionUpToDate(context);
+  if (whitemarks.some((whitemark) => whitemark.value?.some((value) => value === true || value === 'true'))
+    && !isLicenseActivated && !isEnterpriseEditionFromSettings(settings)) {
+    throw UnsupportedError('Enterprise edition is not enabled');
   }
   const cguStatus = data.find((inputData) => inputData.key === 'filigran_chatbot_ai_cgu_status');
   if (cguStatus && cguStatus.value) {

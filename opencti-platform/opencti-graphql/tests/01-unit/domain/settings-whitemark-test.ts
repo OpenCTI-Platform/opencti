@@ -3,10 +3,10 @@ import type { AuthContext, AuthUser } from '../../../src/types/user';
 
 const settings = { id: 'settings-id', internal_id: 'settings-id', platform_theme: undefined };
 
-vi.mock('../../../src/enterprise-edition/ee', () => ({
-  checkEnterpriseEditionUpToDate: vi.fn(),
-  isEnterpriseEdition: vi.fn(),
-  isEnterpriseEditionFromSettings: vi.fn(),
+vi.mock('../../../src/modules/settings/licensing', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/modules/settings/licensing')>()),
+  getEnterpriseEditionInfo: vi.fn(),
+  decodeLicensePem: vi.fn(),
 }));
 vi.mock('../../../src/database/middleware', () => ({
   createEntity: vi.fn(),
@@ -29,45 +29,60 @@ vi.mock('../../../src/modules/xtm/one/xtm-one', () => ({
   refreshXtmLicenseProof: vi.fn(),
 }));
 
-const { checkEnterpriseEditionUpToDate } = await import('../../../src/enterprise-edition/ee');
+const { decodeLicensePem, getEnterpriseEditionInfo } = await import('../../../src/modules/settings/licensing');
 const { loadEntity, updateAttribute } = await import('../../../src/database/middleware');
 const { getClusterInformation } = await import('../../../src/database/cluster-module');
 const { settingsEditField } = await import('../../../src/domain/settings');
-const { UnsupportedError } = await import('../../../src/config/errors');
 
 const context = { source: 'test' } as AuthContext;
 const bypassUser = { id: 'user-id', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
+
+const enterpriseEdition = (enabled: boolean) => vi.mocked(getEnterpriseEditionInfo).mockReturnValue({ license_validated: enabled } as never);
+const turnOn = (value: unknown = true) => settingsEditField(context, bypassUser, 'settings-id', [{ key: 'platform_whitemark', value: [value] }]);
 
 describe('settingsEditField, the whitemark', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(loadEntity).mockResolvedValue(settings as never);
     vi.mocked(getClusterInformation).mockResolvedValue({ info: {}, modules: [] } as never);
+    enterpriseEdition(false);
   });
 
   it('refuses to turn the whitemark on without the Enterprise Edition, and writes nothing', async () => {
-    vi.mocked(checkEnterpriseEditionUpToDate).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
-    await expect(settingsEditField(context, bypassUser, 'settings-id', [{ key: 'platform_whitemark', value: [true] }]))
-      .rejects.toThrow('Enterprise edition is not enabled');
+    await expect(turnOn()).rejects.toThrow('Enterprise edition is not enabled');
     expect(updateAttribute).not.toHaveBeenCalled();
   });
 
-  it.each([[true], ['true']])('checks the Enterprise Edition for the value %s', async (value) => {
-    vi.mocked(checkEnterpriseEditionUpToDate).mockResolvedValue(undefined);
-    await settingsEditField(context, bypassUser, 'settings-id', [{ key: 'platform_whitemark', value: [value] }]);
-    expect(checkEnterpriseEditionUpToDate).toHaveBeenCalledWith(context);
+  it.each([[true], ['true']])('turns the whitemark on with the Enterprise Edition (%s)', async (value) => {
+    enterpriseEdition(true);
+    await turnOn(value);
     expect(updateAttribute).toHaveBeenCalledTimes(1);
   });
 
+  it('turns the whitemark on with the license given by the same edit, which is not saved yet', async () => {
+    vi.mocked(decodeLicensePem).mockReturnValue({ license_validated: true } as never);
+    await settingsEditField(context, bypassUser, 'settings-id', [
+      { key: 'enterprise_license', value: ['pem'] },
+      { key: 'platform_whitemark', value: [true] },
+    ]);
+    expect(updateAttribute).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses the whitemark with an invalid license in the same edit, and writes nothing', async () => {
+    vi.mocked(decodeLicensePem).mockReturnValue({ license_validated: false } as never);
+    await expect(settingsEditField(context, bypassUser, 'settings-id', [
+      { key: 'enterprise_license', value: ['pem'] },
+      { key: 'platform_whitemark', value: [true] },
+    ])).rejects.toThrow('Invalid license');
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
   it.each([[false], ['false']])('lets the whitemark be turned off without the Enterprise Edition (%s)', async (value) => {
-    vi.mocked(checkEnterpriseEditionUpToDate).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
-    await settingsEditField(context, bypassUser, 'settings-id', [{ key: 'platform_whitemark', value: [value] }]);
-    expect(checkEnterpriseEditionUpToDate).not.toHaveBeenCalled();
+    await turnOn(value);
     expect(updateAttribute).toHaveBeenCalledTimes(1);
   });
 
   it('refuses a whitemark turned on by a repeated key, whatever its position, and writes nothing', async () => {
-    vi.mocked(checkEnterpriseEditionUpToDate).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
     await expect(settingsEditField(context, bypassUser, 'settings-id', [
       { key: 'platform_whitemark', value: ['false'] },
       { key: 'platform_whitemark', value: ['true'] },
@@ -80,9 +95,7 @@ describe('settingsEditField, the whitemark', () => {
   });
 
   it('does not look at the Enterprise Edition for another setting', async () => {
-    vi.mocked(checkEnterpriseEditionUpToDate).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
     await settingsEditField(context, bypassUser, 'settings-id', [{ key: 'platform_title', value: ['My platform'] }]);
-    expect(checkEnterpriseEditionUpToDate).not.toHaveBeenCalled();
     expect(updateAttribute).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,14 +1,9 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as cache from '../../../src/database/cache';
 import * as middlewareLoader from '../../../src/database/middleware-loader';
 import * as licensing from '../../../src/modules/settings/licensing';
-import {
-  checkEnterpriseEdition,
-  checkEnterpriseEditionUpToDate,
-  isEnterpriseEdition,
-  isEnterpriseEditionFromSettings,
-  isEnterpriseEditionUpToDate,
-} from '../../../src/enterprise-edition/ee';
+import * as xtmOne from '../../../src/modules/xtm/one/xtm-one';
+import { checkEnterpriseEdition, isEnterpriseEdition, isEnterpriseEditionFromSettings, isEnterpriseEditionUpToDate } from '../../../src/enterprise-edition/ee';
 
 describe('ee: isEnterpriseEditionFromSettings()', () => {
   it('should return true when valid_enterprise_edition is true', () => {
@@ -47,6 +42,10 @@ describe('ee: isEnterpriseEdition()', () => {
 });
 
 describe('ee: isEnterpriseEditionUpToDate()', () => {
+  beforeEach(() => {
+    vi.spyOn(xtmOne, 'refreshXtmLicenseProof').mockResolvedValue(undefined);
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
@@ -59,6 +58,21 @@ describe('ee: isEnterpriseEditionUpToDate()', () => {
 
     expect(await isEnterpriseEdition({} as any)).toBe(false);
     expect(await isEnterpriseEditionUpToDate({} as any)).toBe(true);
+  });
+
+  it('refreshes the XTM license proof before it derives the Enterprise Edition, as the cache does', async () => {
+    const order: string[] = [];
+    vi.spyOn(xtmOne, 'refreshXtmLicenseProof').mockImplementation(async () => {
+      order.push('refresh');
+    });
+    vi.spyOn(middlewareLoader, 'topEntitiesList').mockResolvedValue([{}] as any);
+    vi.spyOn(licensing, 'getEnterpriseEditionInfo').mockImplementation(() => {
+      order.push('derive');
+      return { license_validated: true } as any;
+    });
+
+    await isEnterpriseEditionUpToDate({} as any);
+    expect(order).toEqual(['refresh', 'derive']);
   });
 
   it('should be false when the license of the database is not valid', async () => {
@@ -90,39 +104,5 @@ describe('ee: checkEnterpriseEdition()', () => {
     vi.spyOn(cache, 'getEntityFromCache').mockResolvedValue({ valid_enterprise_edition: false } as any);
 
     await expect(checkEnterpriseEdition({} as any)).rejects.toThrow('Enterprise edition is not enabled');
-  });
-});
-
-describe('ee: checkEnterpriseEditionUpToDate()', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  const cacheSays = (valid: boolean) => vi.spyOn(cache, 'getEntityFromCache').mockResolvedValue({ valid_enterprise_edition: valid } as any);
-  const databaseSays = (valid: boolean) => {
-    vi.spyOn(middlewareLoader, 'topEntitiesList').mockResolvedValue([{ enterprise_license: 'pem' }] as any);
-    vi.spyOn(licensing, 'getEnterpriseEditionInfo').mockReturnValue({ license_validated: valid } as any);
-  };
-
-  it('does not read the database when the cache says yes', async () => {
-    cacheSays(true);
-    const read = vi.spyOn(middlewareLoader, 'topEntitiesList');
-
-    await expect(checkEnterpriseEditionUpToDate({} as any)).resolves.toBeUndefined();
-    expect(read).not.toHaveBeenCalled();
-  });
-
-  it('accepts a license the cache of the node does not know yet', async () => {
-    cacheSays(false);
-    databaseSays(true);
-
-    await expect(checkEnterpriseEditionUpToDate({} as any)).resolves.toBeUndefined();
-  });
-
-  it('refuses when the cache and the database both say no', async () => {
-    cacheSays(false);
-    databaseSays(false);
-
-    await expect(checkEnterpriseEditionUpToDate({} as any)).rejects.toThrow('Enterprise edition is not enabled');
   });
 });
