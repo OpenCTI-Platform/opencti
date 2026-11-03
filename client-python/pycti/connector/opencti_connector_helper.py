@@ -826,7 +826,9 @@ class ListenQueue(threading.Thread):
             self._set_draft_id("")
             if work_id:
                 try:
-                    self.helper.api.work.to_processed(work_id, str(e), True)
+                    self.helper.api.work.to_processed(
+                        work_id, _format_work_error(e), True
+                    )
                 except Exception:  # pylint: disable=broad-except
                     self.helper.metric.inc("error_count")
                     self.helper.connector_logger.error(
