@@ -13,6 +13,7 @@ import { isNotEmptyField } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { isMultipleAttribute, isObjectAttribute } from '../schema/schema-attributes';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import { checkDraftInContext } from './httpServer-draft';
 import type { BasicStoreBase, BasicStoreEntityFeed, BasicStoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import { FilterMode, FilterOperator } from '../generated/graphql';
@@ -301,6 +302,11 @@ const initHttpRollingFeeds = (app: Express.Application) => {
           throw ForbiddenAccess();
         }
       }
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used to resolve entities
+      // below. Without this guard a caller could forge an `opencti-draft-id` header and
+      // leak staged content from a draft they don't have access to.
+      await checkDraftInContext(context);
       // User is available or feed is public
       const user = context.user ?? SYSTEM_USER;
       const filters = feed.filters ? JSON.parse(feed.filters) : undefined;
