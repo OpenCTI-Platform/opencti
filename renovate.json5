@@ -24,6 +24,10 @@
   updateNotScheduled: false,
   // only rebase when there is a conflict; avoids unnecessary CI runs on every base branch change, can be removed when number of open PR is low
   rebaseWhen: 'conflicted',
+  // run `yarn dedupe --strategy highest` after each update, so that yarn.lock keeps a single copy of a package when one version satisfies every range
+  postUpdateOptions: [
+    'yarnDedupeHighest',
+  ],
   vulnerabilityAlerts: {
     // as we don't rely on Renovate to be informed of dependency security advisories,
     // vulnerabilityAlerts is disabled since it can cause problems by skipping minimumReleaseAge, schedule and others constraints
