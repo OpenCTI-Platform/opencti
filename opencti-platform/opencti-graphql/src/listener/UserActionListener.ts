@@ -63,6 +63,8 @@ export interface UserImportActionContextData extends ElementContextData {
 // The import of a configuration preset: the report of the import is the file, linked to no entity
 export interface ConfigPresetImportSummary {
   counts: Record<'created' | 'overwritten' | 'skipped' | 'failed', number>;
+  // The type of a partial import (the items of one type taken from the bundle), absent for the import of the wizard
+  type?: string;
 }
 export interface UserConfigPresetImportActionContextData {
   // The report of the import, null when it could not be written

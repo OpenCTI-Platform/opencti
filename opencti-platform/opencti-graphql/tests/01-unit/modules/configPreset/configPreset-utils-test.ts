@@ -82,6 +82,16 @@ describe('Config preset import activity message', () => {
     expect(message).toEqual('imports a configuration preset (created: 1, overwritten: 2, skipped: 3, failed: 4), report `import-report.json`');
   });
 
+  it('names the type and the bundle of a partial import, which writes no report', () => {
+    const message = buildConfigPresetImportMessage({
+      file_id: null,
+      path: '',
+      file_name: 'bundle.zip',
+      input: { type: 'branding', counts: { created: 2, overwritten: 0, skipped: 1, failed: 0 } },
+    });
+    expect(message).toEqual('imports the `branding` items of the configuration bundle `bundle.zip` (created: 2, overwritten: 0, skipped: 1, failed: 0)');
+  });
+
   it('says so when the report could not be written', () => {
     const message = buildConfigPresetImportMessage({
       file_id: null,
