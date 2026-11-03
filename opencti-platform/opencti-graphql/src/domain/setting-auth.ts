@@ -77,7 +77,7 @@ const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuth
   // Validate the values the settings will hold once patched (a null input falls back to the default)
   // Stored values are read from the database, as the settings cache can lag behind a previous update
   const storedSettings = await loadEntity<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
-  const effectiveValue = (key: 'local_auth_lockout_max_attempts' | 'local_auth_lockout_admin_max_attempts' | 'local_auth_lockout_window' | 'local_auth_lockout_duration'): number => {
+  const effectiveValue = (key: Exclude<LocalAuthLockoutKey, 'local_auth_lockout_enabled' | 'local_auth_lockout_final_action'>): number => {
     const value = Object.hasOwn(patch, key) ? input[key] : storedSettings?.[key];
     return value ?? LOCAL_AUTH_LOCKOUT_DEFAULTS[key];
   };
