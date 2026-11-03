@@ -23,7 +23,7 @@ vi.mock('../../../src/modules/form/form-bundle-builder', () => ({
 }));
 
 const mockContext: any = {};
-const mockUser: any = { id: 'user-1', capabilities: [] };
+const mockUser: any = { id: 'user-1', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] };
 
 describe('planSubmission', () => {
   it('orchestrates the builder pipeline with the right arguments and returns their results as the plan (bundle-population itself is mocked, not exercised)', async () => {

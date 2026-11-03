@@ -79,6 +79,8 @@ interface AuthContext {
   user: AuthUser | undefined;
   draft_context?: string | undefined;
   workId?: string;
+  form_submission?: boolean; // the request is the import of a verified Form Intake submission
+  real_authentication_id?: string; // owner of the credential when the request impersonates an applicant (worker)
   batch?: Record<string, any>;
   changeDraftContext?: (draftId: string) => void;
   eventId?: string | undefined;
