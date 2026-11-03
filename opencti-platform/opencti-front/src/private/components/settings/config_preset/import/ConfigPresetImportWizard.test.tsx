@@ -355,6 +355,17 @@ describe('ConfigPresetImportWizard', () => {
         expect(checkbox('Messages (0/1)')).toHaveAttribute('data-state', 'unchecked');
       });
 
+      it('keeps the preview that is shown when the reload that follows a license change fails', async () => {
+        const rendered = await renderPreview(session(), [], previewWithWhitemark);
+        await act(async () => {
+          enterpriseEdition.activate();
+        });
+        await waitFor(() => expect(operationNames(rendered)).toContain('ConfigPresetImportPreviewQuery'));
+        await reject(rendered, 'ConfigPresetImportPreviewQuery', 'elastic down');
+        expect(screen.queryByText('This configuration bundle cannot be imported')).not.toBeInTheDocument();
+        expect(checkbox('Messages (1/1)')).toBeInTheDocument();
+      });
+
       it('is selected like any type, with no gate, on a platform that has the Enterprise Edition', async () => {
         enterpriseEdition.enabled = true;
         const rendered = await openPreview(session(), previewWithWhitemarkUnlocked);

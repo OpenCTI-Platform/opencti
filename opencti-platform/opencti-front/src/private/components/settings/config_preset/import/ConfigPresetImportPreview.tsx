@@ -6,6 +6,7 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
+import { handleError } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { ConfigPresetImportPreviewQuery, ConfigPresetImportPreviewQuery$data } from './__generated__/ConfigPresetImportPreviewQuery.graphql';
 import { ConfigPresetImportPreviewSaveMutation } from './__generated__/ConfigPresetImportPreviewSaveMutation.graphql';
@@ -197,8 +198,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           const reason = getConfigPresetErrorReason(err);
           if (reason === 'file_missing') {
             onFileMissing();
-          } else {
+          } else if (!hasLoadedRef.current) {
             setError(reason ?? 'error');
+          } else {
+            // A reload that fails (after a license change) leaves the preview that is shown: the error is only notified
+            handleError(err);
           }
         }
       });
@@ -257,9 +261,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const isImportedItem = (typeKey: string, itemKey: string) => (forced[typeKey] ?? []).includes(itemKey) || isConfigPresetItemSelected(selection, typeKey, itemKey);
 
   // The selection and the modes are saved together, after a short delay
-  const scheduleSave = (nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes, nextTypes = types) => {
+  const scheduleSave = (nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes) => {
     revisionRef.current += 1;
-    pendingRef.current = buildConfigPresetSelections(nextTypes, nextSelection, nextImportModes, getConfigPresetForcedItems(nextTypes, nextSelection));
+    pendingRef.current = buildConfigPresetSelections(types, nextSelection, nextImportModes, getConfigPresetForcedItems(types, nextSelection));
     if (timerRef.current !== null) {
       window.clearTimeout(timerRef.current);
     }
