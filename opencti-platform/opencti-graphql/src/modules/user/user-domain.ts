@@ -188,7 +188,6 @@ import { memoize } from '../../utils/memoize';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
-export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 const PROTECTED_USER_ATTRIBUTES = [apiTokens.name, 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];

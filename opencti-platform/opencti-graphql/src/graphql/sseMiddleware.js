@@ -3,7 +3,6 @@ import * as jsonpatch from 'fast-json-patch';
 import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
-import { TAXIIAPI } from '../modules/user/user-domain';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
@@ -37,6 +36,7 @@ import {
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   OTPValidationStatus,
   SYSTEM_USER,
+  TAXIIAPI,
 } from '../utils/access';
 import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
