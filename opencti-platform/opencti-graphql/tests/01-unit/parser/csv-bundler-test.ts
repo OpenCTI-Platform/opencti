@@ -44,3 +44,36 @@ describe('csv-bundler: worker expectations tracking', () => {
     expect(message).toMatchObject({ work_id: 'work--1' });
   });
 });
+
+describe('csv-bundler: stopping the feed during a run', () => {
+  const baseOpts = {
+    workId: 'work--1',
+    applicantUser: { id: 'user--1', internal_id: 'user--1' } as any,
+    entity: undefined,
+    csvMapper: {} as any,
+    connectorId: 'connector--1',
+  };
+
+  beforeEach(() => {
+    pushBundleToWorkerMock.mockClear();
+  });
+
+  it('sends nothing and reports the run as aborted when the feed is stopped', async () => {
+    const isStopped = vi.fn(async () => true);
+
+    const result = await generateAndSendBundleProcess({} as any, ['line1'], { ...baseOpts, isStopped });
+
+    expect(isStopped).toHaveBeenCalled();
+    expect(pushBundleToWorkerMock).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ aborted: true, bundleCount: 0, objectCount: 0 });
+  });
+
+  it('sends the bundle when the feed is still running', async () => {
+    const isStopped = vi.fn(async () => false);
+
+    const result = await generateAndSendBundleProcess({} as any, ['line1'], { ...baseOpts, isStopped });
+
+    expect(pushBundleToWorkerMock).toHaveBeenCalledTimes(1);
+    expect(result).toMatchObject({ aborted: false, bundleCount: 1 });
+  });
+});

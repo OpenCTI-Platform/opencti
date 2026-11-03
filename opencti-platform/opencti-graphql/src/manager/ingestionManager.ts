@@ -15,7 +15,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from '../modules/ingestion/ingestion-types';
 import { findAllTaxiiIngestion, patchTaxiiIngestion } from '../modules/ingestion/ingestion-taxii-domain';
 import { TaxiiVersion } from '../generated/graphql';
-import { fetchCsvFromUrl, findAllCsvIngestion, patchCsvIngestion, resolveCsvMapperParsed } from '../modules/ingestion/ingestion-csv-domain';
+import { fetchCsvFromUrl, findAllCsvIngestion, findById as findCsvIngestionById, patchCsvIngestion, resolveCsvMapperParsed } from '../modules/ingestion/ingestion-csv-domain';
 import { type CsvBundlerIngestionOpts, generateAndSendBundleProcess, removeHeaderFromFullFile } from '../parser/csv-bundler';
 import { reportExpectation, updateExpectationsNumber } from '../domain/work';
 import { findById as findUserById } from '../modules/user/user-domain';
@@ -28,7 +28,7 @@ import { mergeIngestionJsonState } from '../modules/ingestion/ingestion-json-dom
 import { FEED_REQUEST_TIMEOUT } from '../modules/ingestion/ingestion-common';
 import { buildRssReportsBundle, rssDataParser, type RssGetter, rssHttpGetter } from '../modules/ingestion/ingestion-rss-utils';
 import { computeTaxiiNextState, handleConfidenceToScoreTransformation, taxiiHttpGet, type TaxiiResponseData } from '../modules/ingestion/ingestion-taxii-utils';
-import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
+import { executeJsonQuery, findAllJsonIngestion, findById as findJsonIngestionById, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
 import { runningIngestionsFilters } from '../modules/ingestion/ingestion-common';
 import { createWorkForIngestion, pushBundleToConnectorQueue, updateBuiltInConnectorInfo } from './ingestionManager/ingestionManagerPushToQueue';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManager/ingestionManagerConfiguration';
@@ -258,6 +258,24 @@ export const taxiiExecutor = async (context: AuthContext) => {
 };
 // endregion
 
+/**
+ * Build a check that re-reads the feed and answers true once it has been stopped (or deleted),
+ * so a run in progress stops pushing bundles. A failed read keeps the run going.
+ */
+export const buildIngestionStopCheck = (
+  context: AuthContext,
+  loadIngestion: (context: AuthContext, user: AuthUser, id: string) => Promise<{ ingestion_running?: boolean | null } | undefined | null>,
+  ingestionId: string,
+) => async () => {
+  try {
+    const current = await loadIngestion(context, SYSTEM_USER, ingestionId);
+    return !current || current.ingestion_running !== true;
+  } catch (e) {
+    logApp.warn('[OPENCTI-MODULE] INGESTION - Cannot read the feed running state', { cause: e, ingestionId });
+    return false;
+  }
+};
+
 // region Csv ingestion
 export const processCsvLines = async (
   context: AuthContext,
@@ -288,15 +306,21 @@ export const processCsvLines = async (
       entity: undefined, // TODO is it possible to ingest in entity context ?
       csvMapper: csvMapperParsed,
       connectorId: connectorIdFromIngestId(ingestion.id),
+      isStopped: buildIngestionStopCheck(context, findCsvIngestionById, ingestion.internal_id),
     };
 
     // start UI count, import of file = 1 operation.
     await updateExpectationsNumber(context, ingestionUser, work.id, 1);
-    const { bundleCount, objectCount } = await generateAndSendBundleProcess(context, csvLines, bundlerOpts);
+    const { bundleCount, objectCount, aborted } = await generateAndSendBundleProcess(context, csvLines, bundlerOpts);
     objectsInBundleCount = objectCount;
     await reportExpectation(context, ingestionUser, work.id);// csv file ends = 1 operation done.
 
     logApp.info(`[OPENCTI-MODULE] INGESTION Csv - Sent: ${bundleCount} bundles for ${objectsInBundleCount} objects.`);
+    if (aborted) {
+      // The feed was stopped during the run: keep the previous state so the next run ingests the whole file again.
+      logApp.info(`[OPENCTI-MODULE] INGESTION Csv - ${ingestion.name} stopped during the run, state not advanced.`);
+      return { isUnchangedData, objectsInBundleCount };
+    }
     const state = { current_state_hash: hashedIncomingData, added_after_start: utcDate(addedLast).toISOString(), last_execution_date: now() };
     await patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state });
@@ -377,26 +401,34 @@ export const jsonExecutor = async (context: AuthContext) => {
         ingestionLogger.info('Feed execution started', { uri: ingestion.uri });
         try {
           logApp.info(`[OPENCTI-MODULE] Executing Json ingestion for ${ingestion.name}`);
-          const { objects, variables, nextExecutionState } = await executeJsonQuery(context, ingestion, {
+          const { objects, variables, nextExecutionState, aborted } = await executeJsonQuery(context, ingestion, {
             timeout: FEED_REQUEST_TIMEOUT,
+            isStopped: buildIngestionStopCheck(context, findJsonIngestionById, ingestion.internal_id),
           });
-          logApp.info(`[OPENCTI-MODULE] Json ingestion execution for ${objects.length} items`);
-          // Push the bundle to absorption queue if required
-          if (objects.length > 0) {
-            const bundle: StixBundle = {
-              id: `bundle--${uuidv4()}`,
-              spec_version: '2.1',
-              type: 'bundle',
-              objects,
-            };
-            await pushBundleToConnectorQueue(context, ingestion, bundle);
+          if (aborted) {
+            // The feed was stopped between two pages: push nothing and keep the previous state,
+            // so the pages not fetched yet are not skipped at the next run.
+            logApp.info(`[OPENCTI-MODULE] INGESTION Json - ${ingestion.name} stopped during the run, nothing pushed, state not advanced.`);
+            ingestionLogger.info('Feed execution stopped: the feed is no longer running', { itemCount: 0 });
+          } else {
+            logApp.info(`[OPENCTI-MODULE] Json ingestion execution for ${objects.length} items`);
+            // Push the bundle to absorption queue if required
+            if (objects.length > 0) {
+              const bundle: StixBundle = {
+                id: `bundle--${uuidv4()}`,
+                spec_version: '2.1',
+                type: 'bundle',
+                objects,
+              };
+              await pushBundleToConnectorQueue(context, ingestion, bundle);
+            }
+            // Save new state for next execution
+            const ingestionState = mergeIngestionJsonState(ingestion.query_attributes, variables, nextExecutionState);
+            const state = { ingestion_json_state: ingestionState, last_execution_date: now(), last_execution_status: 'success' };
+            await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
+            await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
+            await ingestionLogger.success('Feed execution succeeded', { itemCount: objects.length });
           }
-          // Save new state for next execution
-          const ingestionState = mergeIngestionJsonState(ingestion.query_attributes, variables, nextExecutionState);
-          const state = { ingestion_json_state: ingestionState, last_execution_date: now(), last_execution_status: 'success' };
-          await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, state);
-          await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id, { state: ingestionState });
-          await ingestionLogger.success('Feed execution succeeded', { itemCount: objects.length });
         } catch (e) {
           logApp.warn('[OPENCTI-MODULE] INGESTION - Json ingestion execution', { cause: e, name: ingestion.name });
           await ingestionLogger.error('Feed execution failed', buildIngestionErrorMeta(e as Error))
