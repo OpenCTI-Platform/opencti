@@ -377,11 +377,13 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       {preview.ignored.length > 0 && (
         <Alert severity="info" title={t_i18n('Some files of the bundle cannot be imported')} description={preview.ignored.join(', ')} />
       )}
+      {/* While Apply waits for the save, a change would be saved after the import is sent, when the session is no longer a draft */}
       <ConfigPresetSelectionAccordion
         types={types}
         selection={selection}
         forced={forced}
         expandTypes
+        disabled={isStarting}
         onSelectionChange={handleSelectionChange}
         renderTypeActions={(type) => {
           // From two items in conflict that are imported: with one, its own choice is enough, and an item that is not imported has none
@@ -395,6 +397,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
               purpose="Apply to all"
               modes={type.modes}
               value={sharedConfigImportMode(importModes, type.key, conflictKeys)}
+              disabled={isStarting}
               onChange={(mode) => handleTypeImportModeChange(type.key, conflictKeys, mode)}
             />
           );
@@ -415,6 +418,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                 description={isSingletonConfigPresetType(type) ? t_i18n(type.description) : undefined}
                 selection={selection}
                 forced={forced}
+                disabled={isStarting}
                 onSelectionChange={handleSelectionChange}
                 statusSlot={(hasChoice || (result && isResultShown(result, hasChoice))) ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
@@ -424,6 +428,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                         purpose="When it already exists"
                         modes={type.modes}
                         value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
+                        disabled={isStarting}
                         onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
                       />
                     )}
