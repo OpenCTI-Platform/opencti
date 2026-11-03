@@ -16,6 +16,7 @@ import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedC
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 import { loadFile } from '../../../src/database/file-storage';
 import { downloadFile, getFileContent } from '../../../src/database/raw-file-storage';
+import { internalLoadById } from '../../../src/database/middleware-loader';
 
 vi.mock('../../../src/http/httpAuthenticatedContext', () => ({
   createAuthenticatedContext: vi.fn(),
@@ -41,6 +42,11 @@ vi.mock('../../../src/database/file-storage', async (importOriginal) => {
 vi.mock('../../../src/database/raw-file-storage', async (importOriginal) => {
   const actual: object = await importOriginal();
   return { ...actual, downloadFile: vi.fn(), getFileContent: vi.fn() };
+});
+
+vi.mock('../../../src/database/middleware-loader', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, internalLoadById: vi.fn() };
 });
 
 vi.mock('../../../src/listener/UserActionListener', async (importOriginal) => {
@@ -594,6 +600,25 @@ describe('httpPlatform: storage routes file resolution', () => {
 
     expect(getFileContent).toHaveBeenCalledWith(storedId);
     expect(res.send).toHaveBeenCalledWith(expect.stringContaining('<h1>title</h1>'));
+  });
+
+  // filename is what Express gives for the embedded loader: the markdown url decoded once (UI), or twice encoded (pdf export).
+  it.each([
+    { case: 'name with double quotes from the UI', stored: ['x%22q%22.png'], filename: 'x%22q%22.png' },
+    { case: 'name with double quotes from the pdf export', stored: ['x%22q%22.png'], filename: 'x%2522q%2522.png' },
+    { case: 'name with spaces from the pdf export', stored: ['my file.png'], filename: 'my%20file.png' },
+    { case: 'twin name with a literal %20', stored: ['twin a b.png', 'twin a%20b.png'], filename: 'twin a%20b.png' },
+  ])('should serve the stored embedded image for $case', async ({ stored, filename }) => {
+    const entityId = '11111111-1111-1111-1111-111111111111';
+    const storedIds = stored.map((name) => `embedded/Report/${entityId}/${name}`);
+    mockStoredFiles(storedIds, 'image/png');
+    vi.mocked(internalLoadById).mockResolvedValue({ entity_type: 'Report' } as any);
+    const res = buildResponse();
+
+    await handleStorageViewEmbedded({ params: { 0: 'dashboard/analyses/reports', 1: entityId, 2: '', 3: filename } }, res);
+
+    expect(res.status).not.toHaveBeenCalledWith(503);
+    expect(downloadFile).toHaveBeenCalledExactlyOnceWith(storedIds.at(-1));
   });
 
   it('should return 503 when no stored file matches', async () => {

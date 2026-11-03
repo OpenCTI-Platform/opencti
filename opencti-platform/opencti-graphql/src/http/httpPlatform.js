@@ -202,16 +202,7 @@ export const handleStorageView = async (req, res) => {
 // -- Embedded file loader
 export const handleStorageViewEmbedded = async (req, res) => {
   try {
-    const [_, id, __, rawFilename] = Object.values(req.params);
-
-    // Embedded markdown links can carry percent-encoded filenames (spaces, parentheses, etc.).
-    let filename = rawFilename;
-    try {
-      filename = decodeURIComponent(rawFilename);
-    } catch {
-      // keep raw filename
-    }
-
+    const [_, id, __, filename] = Object.values(req.params);
     const context = await createAuthenticatedContext(req, res, 'storage_view_embedded');
     if (!context.user) {
       res.sendStatus(403);
@@ -221,9 +212,8 @@ export const handleStorageViewEmbedded = async (req, res) => {
     // so validate the draft context explicitly before it is used to resolve entities/files.
     await checkDraftInContext(context);
     const element = await internalLoadById(context, context.user, id);
-
-    const file = `embedded/${element.entity_type}/${id}/${filename}`;
-    const data = await loadFile(context, context.user, file);
+    // Same resolution as the storage routes: the pdf export encodes the markdown url a second time.
+    const data = await loadStorageFile(context, context.user, [`embedded/${element.entity_type}/${id}`, filename]);
     await publishFileRead(context, context.user, data);
     res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
     res.set('Content-Security-Policy', 'sandbox');
