@@ -1,6 +1,6 @@
 import { getBaseUrl, getPlatformHttpProxyAgent } from '../../config/conf';
 import type { Request } from 'express';
-import { allowInsecureRequests, buildEndSessionUrl, customFetch, discovery as oidcDiscovery, fetchUserInfo, skipSubjectCheck } from 'openid-client';
+import { allowInsecureRequests, buildEndSessionUrl, ClientSecretBasic, customFetch, discovery as oidcDiscovery, fetchUserInfo, skipSubjectCheck } from 'openid-client';
 import type { CustomFetch } from 'openid-client';
 import { fetch } from 'undici';
 import type { AuthenticateOptions, StrategyOptionsWithRequest, VerifyFunctionWithRequest } from 'openid-client/passport';
@@ -31,6 +31,10 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
 
   const issuer = new URL(conf.issuer);
   const customFetchImpl = conf.use_proxy ? buildProxiedFetch(issuer) : undefined;
+  // openid-client v6 ignores token_endpoint_auth_method in metadata and defaults to client_secret_post
+  const clientAuthentication = extraConf.token_endpoint_auth_method === 'client_secret_basic'
+    ? ClientSecretBasic(client_secret)
+    : undefined;
 
   const config = await oidcDiscovery(
     issuer,
@@ -39,7 +43,7 @@ export const createOpenIdStrategy = async (logger: AuthenticationProviderLogger,
       ...extraConf,
       client_secret,
     },
-    undefined,
+    clientAuthentication,
     {
       [customFetch]: customFetchImpl,
       execute: [allowInsecureRequests],
