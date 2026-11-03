@@ -12,7 +12,6 @@ const makeConnector = (overrides: Record<string, unknown> = {}) => ({
   updated_at: '2026-01-01T00:00:00.000Z',
   is_managed: false,
   manager_contract_excerpt: null,
-  catalog_identity: null,
   ...overrides,
 });
 
@@ -39,24 +38,27 @@ const renderIntegrations = ({
   queues = [],
   feeds = {},
   forms = [],
-  logosByConnectorId = new Map<string, string>(),
+  logosBySlug = new Map<string, string>(),
   isConnectorUpdateEnabled = true,
+  isIngestionHealthEnabled = true,
 }: {
   connectors?: unknown[];
   states?: unknown[];
   queues?: { name: string; messages: unknown; message_stats?: { ack_details?: { rate?: unknown } } | null }[];
   feeds?: Record<string, unknown>;
   forms?: unknown[];
-  logosByConnectorId?: Map<string, string>;
+  logosBySlug?: Map<string, string>;
   isConnectorUpdateEnabled?: boolean;
+  isIngestionHealthEnabled?: boolean;
 } = {}) => {
   const props = {
     connectorsListData: { connectors },
     connectorsStateData: { connectors: states, rabbitMQMetrics: { queues } },
     feedsData: { ...emptyFeeds, ...feeds },
     formsData: { forms: { pageInfo: { globalCount: forms.length }, edges: forms.map((node) => ({ node })) } },
-    logosByConnectorId,
+    logosBySlug,
     isConnectorUpdateEnabled,
+    isIngestionHealthEnabled,
   } as unknown as HookProps;
   return renderHook(() => useDeployedIntegrations(props));
 };
@@ -70,8 +72,9 @@ describe('useDeployedIntegrations', () => {
       connectorsStateData: null,
       feedsData: null,
       formsData: null,
-      logosByConnectorId: new Map(),
+      logosBySlug: new Map(),
       isConnectorUpdateEnabled: true,
+      isIngestionHealthEnabled: true,
     }));
     expect(withNullData.current).toEqual([]);
   });
@@ -79,13 +82,9 @@ describe('useDeployedIntegrations', () => {
   describe('registered connectors', () => {
     it('maps a connector with its live state and logo', () => {
       const { result } = renderIntegrations({
-        connectors: [makeConnector({
-          is_managed: true,
-          manager_contract_excerpt: { slug: 'my-connector', title: 'Contract title' },
-          catalog_identity: { slug: 'my-connector', title: 'Contract title', source: 'composer' },
-        })],
+        connectors: [makeConnector({ manager_contract_excerpt: { slug: 'my-connector', title: 'Contract title' } })],
         states: [makeState({ active: true })],
-        logosByConnectorId: new Map([['connector-1', 'data:image/png;base64,logo']]),
+        logosBySlug: new Map([['my-connector', 'data:image/png;base64,logo']]),
       });
       expect(result.current).toHaveLength(1);
       const item = result.current[0];
@@ -94,38 +93,10 @@ describe('useDeployedIntegrations', () => {
       expect(item.name).toBe('My Connector');
       expect(item.description).toBe('Contract title');
       expect(item.logo).toBe('data:image/png;base64,logo');
-      expect(item.identitySource).toBe('composer');
       expect(item.status).toBe('active');
       expect(item.detailUrl).toBe('/dashboard/integrations/connectors/connector-1');
-      expect(item.searchText).toBe('my connector external_import contract title');
+      expect(item.searchText).toBe('my connector external_import');
       expect(item.connector?.active).toBe(true);
-    });
-
-    it('shows the catalog entry of a self-deployed connector, however it was identified', () => {
-      const { result } = renderIntegrations({
-        connectors: [
-          makeConnector({ id: 'reported-1', name: 'Feed A', catalog_identity: { slug: 'urlhaus', title: 'URLhaus', source: 'reported' } }),
-          makeConnector({ id: 'name-1', name: 'Abuse.ch ThreatFox', catalog_identity: { slug: 'threatfox', title: 'ThreatFox', source: 'name' } }),
-          makeConnector({ id: 'manual-1', name: 'Feed C', catalog_identity: { slug: 'urlhaus', title: 'URLhaus', source: 'manual' } }),
-        ],
-        // Logos are per connector: two connectors of one entry can resolve different contract versions.
-        logosByConnectorId: new Map([['reported-1', '/logo/urlhaus.png'], ['name-1', '/logo/threatfox.png'], ['manual-1', '/logo/urlhaus-v2.png']]),
-      });
-      const byId = new Map(result.current.map((item) => [item.id, item]));
-      expect(byId.get('reported-1')).toMatchObject({ logo: '/logo/urlhaus.png', description: 'URLhaus', identitySource: 'reported' });
-      expect(byId.get('name-1')).toMatchObject({ logo: '/logo/threatfox.png', description: 'ThreatFox', identitySource: 'name' });
-      expect(byId.get('manual-1')).toMatchObject({ logo: '/logo/urlhaus-v2.png', description: 'URLhaus', identitySource: 'manual' });
-      expect(byId.get('name-1')?.searchText).toBe('abuse.ch threatfox external_import threatfox');
-    });
-
-    it('keeps the generic icon of a connector without a catalog entry', () => {
-      const { result } = renderIntegrations({
-        connectors: [makeConnector()],
-        logosByConnectorId: new Map([['my-connector', 'data:image/png;base64,logo']]),
-      });
-      expect(result.current[0].logo).toBeUndefined();
-      expect(result.current[0].description).toBeUndefined();
-      expect(result.current[0].identitySource).toBeUndefined();
     });
 
     it('prefers the connector title over its technical name', () => {
@@ -158,12 +129,51 @@ describe('useDeployedIntegrations', () => {
       expect(result.current.map((item) => item.id)).toEqual(['connector-1']);
     });
 
-    it('reports an inactive status when the connector state is inactive', () => {
+    it('reports an active status for a connector that cannot be stopped, whatever its heartbeat', () => {
       const { result } = renderIntegrations({
         connectors: [makeConnector()],
         states: [makeState({ active: false })],
       });
+      expect(result.current[0].status).toBe('active');
+    });
+
+    it('reports an active status for a managed connector that is not stopped on purpose', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector()],
+        states: [makeState({ active: false, manager_current_status: 'starting', manager_requested_status: 'starting' })],
+      });
+      expect(result.current[0].status).toBe('active');
+    });
+
+    it('reports an inactive status for a managed connector stopped on purpose', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector()],
+        states: [makeState({ manager_current_status: 'stopped', manager_requested_status: 'stopped' })],
+      });
       expect(result.current[0].status).toBe('inactive');
+    });
+
+    describe('without the ingestion health', () => {
+      const statusOf = (state: Record<string, unknown>) => {
+        const { result } = renderIntegrations({ connectors: [makeConnector()], states: [makeState(state)], isIngestionHealthEnabled: false });
+        return result.current[0].status;
+      };
+
+      it('reports an inactive status for a connector without heartbeat', () => {
+        expect(statusOf({ active: false })).toBe('inactive');
+        expect(statusOf({ active: true })).toBe('active');
+      });
+
+      it('reports an inactive status for a managed connector that is not started', () => {
+        expect(statusOf({ active: true, manager_current_status: 'started', manager_requested_status: 'started' })).toBe('active');
+        expect(statusOf({ active: true, manager_current_status: 'stopped', manager_requested_status: 'stopped' })).toBe('inactive');
+        expect(statusOf({ active: true, manager_current_status: 'exited', manager_requested_status: 'exited' })).toBe('inactive');
+      });
+
+      it('reports a processing status for a managed connector starting or stopping', () => {
+        expect(statusOf({ manager_current_status: 'stopped', manager_requested_status: 'starting' })).toBe('processing');
+        expect(statusOf({ manager_current_status: 'started', manager_requested_status: 'stopping' })).toBe('processing');
+      });
     });
 
     it('keeps backend-computed update metadata on the deployed connector item', () => {
@@ -191,7 +201,6 @@ describe('useDeployedIntegrations', () => {
         states: [makeState({ manager_current_status: 'stopped', manager_requested_status: 'starting' })],
       });
       expect(result.current[0].status).toBe('processing');
-      expect(result.current[0].statusLabel).toBe('starting');
     });
 
     it('sums push and listen queue messages per connector', () => {
