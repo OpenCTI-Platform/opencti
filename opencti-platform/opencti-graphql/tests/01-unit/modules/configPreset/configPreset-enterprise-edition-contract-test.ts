@@ -6,7 +6,7 @@ const FILE_ID = vi.hoisted(() => 'config_preset/import/bundle.zip');
 const bundle = vi.hoisted(() => ({ items: [] as { type: string; id: string; path: string; configuration: Record<string, unknown> }[] }));
 vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/enterprise-edition/ee')>()),
-  isEnterpriseEdition: vi.fn(async () => enterpriseEdition.enabled),
+  isEnterpriseEditionUpToDate: vi.fn(async () => enterpriseEdition.enabled),
 }));
 vi.mock('../../../../src/domain/settings', () => ({
   getSettings: vi.fn(),

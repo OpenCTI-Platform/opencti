@@ -10,7 +10,7 @@ import unzipper from 'unzipper';
 const enterpriseEdition = vi.hoisted(() => ({ enabled: true }));
 vi.mock('../../../../../src/enterprise-edition/ee', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/enterprise-edition/ee')>()),
-  isEnterpriseEdition: vi.fn(async () => enterpriseEdition.enabled),
+  isEnterpriseEditionUpToDate: vi.fn(async () => enterpriseEdition.enabled),
 }));
 vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/database/middleware-loader')>()),
