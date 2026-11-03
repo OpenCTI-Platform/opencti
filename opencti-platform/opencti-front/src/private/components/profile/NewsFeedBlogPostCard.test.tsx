@@ -141,6 +141,16 @@ describe('NewsFeedBlogPostCard', () => {
       expect(document.querySelector('img')).not.toBeInTheDocument();
     });
 
+    it('displays the image again when its url changes after a failure', () => {
+      const { rerender } = renderCard(buildItem());
+      fireEvent.error(screen.getByRole('img', { name: 'Cover of the article' }));
+      expect(document.querySelector('img')).not.toBeInTheDocument();
+
+      const correctedMetadata = [...withoutMetadata('image_url'), { key: 'image_url', value: 'https://filigran.io/images/corrected.png' }];
+      rerender(<NewsFeedBlogPostCard item={buildItem({ metadata: correctedMetadata })} />);
+      expect(screen.getByRole('img', { name: 'Cover of the article' })).toHaveAttribute('src', 'https://filigran.io/images/corrected.png');
+    });
+
     it('renders no description when there is none', () => {
       renderCard(buildItem({ metadata: withoutMetadata('description') }));
       expect(screen.queryByText('How the two platforms exchange threat intelligence.')).not.toBeInTheDocument();

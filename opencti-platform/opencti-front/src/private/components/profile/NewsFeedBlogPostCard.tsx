@@ -35,11 +35,13 @@ const titleSx = {
 
 const NewsFeedBlogPostCard: FunctionComponent<NewsFeedBlogPostCardProps> = ({ item }) => {
   const { t_i18n, fsd } = useFormatter();
-  const [isImageBroken, setIsImageBroken] = useState(false);
+  // The url of the image that failed to load: a corrected url sent later by the Hub gets a new chance.
+  const [brokenImageUrl, setBrokenImageUrl] = useState<string | null>(null);
 
   // Every metadata but the url path is optional, and comes from an external source: nothing is trusted.
   const href = useXTMHubResourceLink(getNewsFeedMetadataValue(item.metadata, 'url_path'));
   const imageUrl = toSafeHttpUrl(getNewsFeedMetadataValue(item.metadata, 'image_url') ?? null);
+  const isImageBroken = imageUrl !== null && imageUrl === brokenImageUrl;
   const imageAlt = getNewsFeedMetadataValue(item.metadata, 'image_alt') ?? '';
   const description = getNewsFeedMetadataValue(item.metadata, 'description');
   const authors = parseNewsFeedAuthorNames(getNewsFeedMetadataValue(item.metadata, 'author_names'));
@@ -60,7 +62,7 @@ const NewsFeedBlogPostCard: FunctionComponent<NewsFeedBlogPostCardProps> = ({ it
           src={imageUrl}
           alt={imageAlt}
           loading="lazy"
-          onError={() => setIsImageBroken(true)}
+          onError={() => setBrokenImageUrl(imageUrl)}
           style={{ display: 'block', width: '100%', height: 150, objectFit: 'cover' }}
         />
       )}

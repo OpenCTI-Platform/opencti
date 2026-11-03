@@ -121,8 +121,8 @@ const newsFeedItemDeletedSubscription = graphql`
 `;
 
 const markAllNewsFeedItemsAsReadMutation = graphql`
-  mutation NewsFeedMarkAllAsReadMutation {
-    markAllNewsFeedItemsAsRead(category: RESOURCE)
+  mutation NewsFeedMarkAllAsReadMutation($category: NewsFeedCategory) {
+    markAllNewsFeedItemsAsRead(category: $category)
   }
 `;
 
@@ -161,16 +161,18 @@ interface NewsFeedComponentProps {
   helpers: UseLocalStorageHelpers;
   contextFilters: FilterGroup;
   onNewItem: () => void;
+  markBlogPostsAsRead: boolean;
 }
 
-const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef, helpers, contextFilters, onNewItem }) => {
+const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef, helpers, contextFilters, onNewItem, markBlogPostsAsRead }) => {
   const { t_i18n } = useFormatter();
 
   const [commitMarkAllAsRead] = useMutation(markAllNewsFeedItemsAsReadMutation);
 
   useEffect(() => {
-    commitMarkAllAsRead({ variables: {} });
-  }, [commitMarkAllAsRead]);
+    // Without the blogpost tab, nothing else can mark the blogposts as read: do it here, so the badge cannot stay on.
+    commitMarkAllAsRead({ variables: { category: markBlogPostsAsRead ? null : 'RESOURCE' } });
+  }, [commitMarkAllAsRead, markBlogPostsAsRead]);
 
   const subConfig = useMemo(() => ({
     subscription: newsFeedItemSubscription,
@@ -259,7 +261,12 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
   );
 };
 
-const NewsFeed: FunctionComponent = () => {
+interface NewsFeedProps {
+  // true when the blogpost tab is not available: this tab then marks every unread item as read, not only the resources.
+  markBlogPostsAsRead?: boolean;
+}
+
+const NewsFeed: FunctionComponent<NewsFeedProps> = ({ markBlogPostsAsRead = false }) => {
   const { me } = useAuth();
 
   const {
@@ -319,6 +326,7 @@ const NewsFeed: FunctionComponent = () => {
         helpers={helpers}
         contextFilters={contextFilters}
         onNewItem={handleNewItem}
+        markBlogPostsAsRead={markBlogPostsAsRead}
       />
     </Suspense>
   ) : (

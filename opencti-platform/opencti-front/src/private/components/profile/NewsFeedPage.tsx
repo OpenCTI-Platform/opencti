@@ -168,7 +168,7 @@ const NewsFeedPage: FunctionComponent = () => {
         </TabsList>
       </Tabs>
       <div style={{ marginTop: 20 }}>
-        {displayedTab === 'news-feed' && <NewsFeed />}
+        {displayedTab === 'news-feed' && <NewsFeed markBlogPostsAsRead={!isBlogPostAvailable} />}
         {displayedTab === 'blog-posts' && <NewsFeedBlogPosts />}
         {displayedTab === 'settings' && (
           <Stack spacing={3} sx={{ width: '50%' }}>

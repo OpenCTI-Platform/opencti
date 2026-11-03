@@ -44,7 +44,9 @@ vi.mock('@common/card/Card', () => ({
 }));
 
 vi.mock('./NewsFeed', () => ({
-  default: () => <div data-testid="news-feed-list" />,
+  default: ({ markBlogPostsAsRead }: { markBlogPostsAsRead?: boolean }) => (
+    <div data-testid="news-feed-list" data-mark-blog-posts-as-read={String(!!markBlogPostsAsRead)} />
+  ),
 }));
 
 vi.mock('./NewsFeedBlogPosts', () => ({
@@ -124,6 +126,16 @@ describe('NewsFeedPage', () => {
   it('renders the blogposts tab when the platform supports the blogposts', () => {
     renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed_types: ['BLOG_POST'] } });
     expect(screen.getByRole('tab', { name: /Blogpost/ })).toBeInTheDocument();
+  });
+
+  it('makes the news feed mark the blogposts as read when the blogposts tab is not available', () => {
+    renderPage();
+    expect(screen.getByTestId('news-feed-list')).toHaveAttribute('data-mark-blog-posts-as-read', 'true');
+  });
+
+  it('keeps the blogposts unread on the news feed when the blogposts tab is available', () => {
+    renderPage({ settings: BLOG_POST_SETTINGS });
+    expect(screen.getByTestId('news-feed-list')).toHaveAttribute('data-mark-blog-posts-as-read', 'false');
   });
 
   it('displays the blogposts when the blogposts tab is selected', async () => {
