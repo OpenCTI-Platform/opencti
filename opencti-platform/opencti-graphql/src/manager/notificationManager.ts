@@ -696,46 +696,61 @@ export const collectDigestContent = async (
   return acc;
 };
 
+// Sends one digest to each of its users: the events of its live triggers during its last period
+const handleDigestNotification = async (context: AuthContext, baseDate: Moment, digest: ResolvedDigest) => {
+  const { trigger, users } = digest;
+  const { period, trigger_ids: triggerIds, notifiers, internal_id: notification_id, trigger_type: type } = trigger;
+  const fromDate = baseDate.clone().subtract(1, period).toDate();
+  // Read the range in batches and only keep the events related to this digest (bounded by MAX_DIGEST_CONTENT_SIZE)
+  const { content: digestContent, truncated, byteSize } = await collectDigestContent(fromDate, baseDate.toDate(), triggerIds);
+  if (truncated) {
+    logApp.warn('[OPENCTI-MODULE] Digest content truncated, memory budget reached', { notification_id, period, kept: digestContent.length, byteSize, maxByteSize: MAX_DIGEST_CONTENT_SIZE });
+  }
+  if (digestContent.length > 0) {
+    // Range of results must filtered to keep only data related to the digest
+    // And related to the users participating to the digest
+    for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
+      const user = users[userIndex];
+      const userNotifications = digestContent.filter((d) => d.targets
+        .map((t) => t.user.user_id).includes(user.internal_id));
+      if (userNotifications.length > 0) {
+        const version = EVENT_NOTIFICATION_VERSION;
+        const target = convertToNotificationUser(user, notifiers);
+        const dataPromises = userNotifications.map(async (n) => {
+          const userTarget = n.targets.find((t) => t.user.user_id === user.internal_id);
+          // A knowledge event carries a STIX object: its message is computed for the user.
+          // An activity event carries the activity context instead: its message was computed when it matched, as the live alert uses it
+          const message = 'extensions' in n.data
+            ? await generateNotificationMessageForInstance(context, user, n.data)
+            : (userTarget?.message ?? '');
+          return ({
+            notification_id: n.notification_id,
+            type: userTarget?.type ?? type,
+            instance: n.data,
+            message,
+            origin: n.origin,
+            streamMessage: n.streamMessage,
+          });
+        });
+        const data = await Promise.all(dataPromises);
+        const digestEvent: DigestEvent = { version, notification_id, type, target, data };
+        await storeNotificationEvent(context, digestEvent);
+      }
+    }
+  }
+};
+
 export const handleDigestNotifications = async (context: AuthContext) => {
   const baseDate = utcDate().startOf('minutes');
   // Get digest that need to be executed
   const digestNotifications = await getDigestNotifications(context, baseDate);
-  // Iter on each digest and generate the output
+  // Iter on each digest and generate the output: a failing digest is logged, the others are still sent
   for (let index = 0; index < digestNotifications.length; index += 1) {
-    const { trigger, users } = digestNotifications[index];
-    const { period, trigger_ids: triggerIds, notifiers, internal_id: notification_id, trigger_type: type } = trigger;
-    const fromDate = baseDate.clone().subtract(1, period).toDate();
-    // Read the range in batches and only keep the events related to this digest (bounded by MAX_DIGEST_CONTENT_SIZE)
-    const { content: digestContent, truncated, byteSize } = await collectDigestContent(fromDate, baseDate.toDate(), triggerIds);
-    if (truncated) {
-      logApp.warn('[OPENCTI-MODULE] Digest content truncated, memory budget reached', { notification_id, period, kept: digestContent.length, byteSize, maxByteSize: MAX_DIGEST_CONTENT_SIZE });
-    }
-    if (digestContent.length > 0) {
-      // Range of results must filtered to keep only data related to the digest
-      // And related to the users participating to the digest
-      for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
-        const user = users[userIndex];
-        const userNotifications = digestContent.filter((d) => d.targets
-          .map((t) => t.user.user_id).includes(user.internal_id));
-        if (userNotifications.length > 0) {
-          const version = EVENT_NOTIFICATION_VERSION;
-          const target = convertToNotificationUser(user, notifiers);
-          const dataPromises = userNotifications.map(async (n) => {
-            const userTarget = n.targets.find((t) => t.user.user_id === user.internal_id);
-            return ({
-              notification_id: n.notification_id,
-              type: userTarget?.type ?? type,
-              instance: n.data,
-              message: await generateNotificationMessageForInstance(context, user, n.data),
-              origin: n.origin,
-              streamMessage: n.streamMessage,
-            });
-          });
-          const data = await Promise.all(dataPromises);
-          const digestEvent: DigestEvent = { version, notification_id, type, target, data };
-          await storeNotificationEvent(context, digestEvent);
-        }
-      }
+    const digest = digestNotifications[index];
+    try {
+      await handleDigestNotification(context, baseDate, digest);
+    } catch (e) {
+      logApp.error('[OPENCTI-MODULE] Notification manager digest error', { cause: e, manager: 'NOTIFICATION_MANAGER', notification_id: digest.trigger.internal_id });
     }
   }
 };
