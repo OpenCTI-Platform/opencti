@@ -1,27 +1,28 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { onSessionPresenceClose, onSessionPresenceConnect, registerSessionPresence, unregisterSessionPresence } from '../../../src/http/sessionPresence';
-import * as cache from '../../../src/database/cache';
-import * as session from '../../../src/database/session';
-import * as listener from '../../../src/listener/UserActionListener';
-import { getStoppingState } from '../../../src/config/conf';
+import { registerSessionPresence, unregisterSessionPresence } from '../../../../src/modules/session/session-presence-domain';
+import { onSessionPresenceClose, onSessionPresenceConnect } from '../../../../src/modules/session/session-presence-ws';
+import * as cache from '../../../../src/database/cache';
+import * as session from '../../../../src/database/session';
+import * as listener from '../../../../src/listener/UserActionListener';
+import { getStoppingState } from '../../../../src/config/conf';
 
 const GRACE_PERIOD = vi.hoisted(() => 30000);
 
-vi.mock('../../../src/database/cache', () => ({
+vi.mock('../../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
 }));
 
-vi.mock('../../../src/database/session', () => ({
+vi.mock('../../../../src/database/session', () => ({
   findSessionByRawId: vi.fn(),
   killSessionByRawId: vi.fn(),
   getSessionMiddleware: vi.fn(),
 }));
 
-vi.mock('../../../src/listener/UserActionListener', () => ({
+vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
 }));
 
-vi.mock('../../../src/config/conf', async (importOriginal: any) => {
+vi.mock('../../../../src/config/conf', async (importOriginal: any) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -37,7 +38,7 @@ vi.mock('../../../src/config/conf', async (importOriginal: any) => {
   };
 });
 
-vi.mock('../../../src/utils/access', () => ({
+vi.mock('../../../../src/utils/access', () => ({
   executionContext: vi.fn().mockReturnValue('mock-context'),
   SYSTEM_USER: { id: 'system-user' },
 }));
