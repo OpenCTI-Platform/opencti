@@ -79,7 +79,8 @@ export const sanitizeReferer = (refererToSanitize: string | undefined, req?: Req
     // Normalize the base (lowercase host, default port removed) so it compares with the resolved URL
     const base = new URL(getBaseUrl(req)).toString().replace(/\/$/, '');
     const resolvedUrl = new URL(refererToSanitize, base).toString();
-    if (resolvedUrl === base || resolvedUrl.startsWith(`${base}/`)) {
+    // Accept the base itself, or the base followed by a path, a query or a hash
+    if (resolvedUrl === base || ['/', '?', '#'].some((separator) => resolvedUrl.startsWith(`${base}${separator}`))) {
       // same domain URL accept the redirection
       if (refererToSanitize.startsWith('/') && !refererToSanitize.startsWith('//')) {
         // in case of relative URL, keep relative.

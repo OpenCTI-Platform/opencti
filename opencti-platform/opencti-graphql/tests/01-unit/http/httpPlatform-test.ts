@@ -167,6 +167,24 @@ describe('httpPlatform: sanitizeReferer function', () => {
       expect(sanitizeReferer('https://cti.example.com/some/path')).toBe('https://cti.example.com/some/path');
     });
   });
+
+  describe('When base url has a base path', () => {
+    beforeEach(() => {
+      vi.spyOn(conf, 'getBaseUrl').mockReturnValue('https://cti.example.com/opencti');
+    });
+
+    it('should keep the query string of a referer on the base path root', () => {
+      expect(sanitizeReferer('/opencti?tab=1')).toBe('/opencti?tab=1');
+    });
+
+    it('should keep the hash of a referer on the base path root', () => {
+      expect(sanitizeReferer('/opencti#section')).toBe('/opencti#section');
+    });
+
+    it('should reject a referer outside the base path that shares its prefix', () => {
+      expect(sanitizeReferer('https://cti.example.com/opencti-evil')).toBe('/');
+    });
+  });
 });
 
 describe('httpPlatform: /logout redirect', () => {
