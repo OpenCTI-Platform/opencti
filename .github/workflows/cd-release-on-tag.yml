@@ -415,7 +415,7 @@ jobs:
           ls -la "${ARCHIVE}"
           tar -tzf "${ARCHIVE}" > /tmp/tar-content.txt
           ERRORS=0
-          for EXPECTED in opencti/build/back.mjs opencti/package.json opencti/.yarnrc.yml opencti/src/__generated__/opencti-manifest.json opencti/worker/worker.py opencti/connectors/manifest.json opencti/public/index.html; do
+          for EXPECTED in opencti/build/back.js opencti/package.json opencti/.yarnrc.yml opencti/src/__generated__/opencti-manifest.json opencti/worker/worker.py opencti/connectors/manifest.json opencti/public/index.html; do
             if ! grep -qx "${EXPECTED}" /tmp/tar-content.txt; then
               echo "::error::Missing in tarball: ${EXPECTED}"
               ERRORS=1
