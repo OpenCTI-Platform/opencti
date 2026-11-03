@@ -1,5 +1,6 @@
 import { GroupsOrdering } from '../../../generated/graphql';
-import { findAllGroups, findGroupPaginated } from '../../../domain/group';
+import { batchMarkingsForGroups, findAllGroups, findGroupPaginated } from '../../../domain/group';
+import { BUILT_IN_MARKING_STANDARD_IDS } from '../../markingDefinition/configPreset/marking-import';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { batchRolesForGroups } from '../../user/user-domain';
@@ -8,10 +9,11 @@ import { groupStandardId, importGroup } from '../../user/configPreset/group-impo
 import type { BasicStoreEntityRole } from '../../user/configPreset/role-export';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
-import { configPresetPlanKey, configPresetTargets } from '../import/configPreset-import-types';
+import { configPresetCreated, configPresetPlanKey, configPresetTargets } from '../import/configPreset-import-types';
 import {
   buildConfigPresetConnection,
   namedItemIdentity,
+  MARKINGS_FAMILY_ID,
   ROLES_FAMILY_ID,
   securityAccessGroup,
   standardIdListArgs,
@@ -24,12 +26,20 @@ export const GROUPS_FAMILY_ID = 'groups';
 const groupsArgs = (ids?: string[] | null, excludedIds?: string[] | null) => ({ orderBy: GroupsOrdering.Name, ...standardIdListArgs(ids, excludedIds) });
 
 const toGroupItems = async (context: AuthContext, user: AuthUser, groups: BasicStoreEntityGroup[]): Promise<ConfigPresetItemDefinition[]> => {
-  const groupsRoles = await batchRolesForGroups(context, user, groups.map(({ id }) => id)) as BasicStoreEntityRole[][];
+  const [groupsRoles, groupsMarkings] = await Promise.all([
+    batchRolesForGroups(context, user, groups.map(({ id }) => id)) as Promise<BasicStoreEntityRole[][]>,
+    batchMarkingsForGroups(context, user, groups) as Promise<{ standard_id: string }[][]>,
+  ]);
   return groups.map((group, index) => ({
     id: group.standard_id,
     label: group.name,
     translatable: false,
-    dependsOn: groupsRoles[index].map((role) => ({ type: ROLES_FAMILY_ID, id: role.standard_id })),
+    dependsOn: [
+      ...groupsRoles[index].map((role) => ({ type: ROLES_FAMILY_ID, id: role.standard_id })),
+      ...groupsMarkings[index]
+        .filter(({ standard_id }) => !BUILT_IN_MARKING_STANDARD_IDS.includes(standard_id))
+        .map((marking) => ({ type: MARKINGS_FAMILY_ID, id: marking.standard_id })),
+    ],
     exporter: async (ctx, usr) => getGroupConfigPresetConfiguration(ctx, usr, group, groupsRoles[index]),
   }));
 };
@@ -42,7 +52,9 @@ const groupsImporter: ConfigPresetImporter = {
     }
     const plannedRoles = new Map([...(plan.roleSensitiveRights ?? [])].map(([standardId, grantsSensitiveRights]) => [standardId, { grantsSensitiveRights }]));
     const roleTargets = configPresetTargets(plan, ROLES_FAMILY_ID);
-    const result = await importGroup(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.groupIds, plannedRoles, roleTargets });
+    const plannedMarkings = configPresetCreated(plan, MARKINGS_FAMILY_ID);
+    const options = { mode, dryRun: true, reservedIds: plan.groupIds, plannedRoles, roleTargets, plannedMarkings };
+    const result = await importGroup(context, user, item.configuration, options);
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(GROUPS_FAMILY_ID, item.id));
     }

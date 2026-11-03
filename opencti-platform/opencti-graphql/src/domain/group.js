@@ -3,6 +3,7 @@ import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAtt
 import {
   fullEntitiesList,
   fullEntitiesThroughRelationsFromList,
+  fullRelationsList,
   fullEntitiesThroughRelationsToList,
   topEntitiesList,
   pageEntitiesConnection,
@@ -80,6 +81,24 @@ export const findDefaultIngestionGroups = async (context, user) => {
 
 export const groupAllowedMarkings = async (context, user, groupId) => {
   return fullEntitiesThroughRelationsToList(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+};
+
+export const batchMarkingsForGroups = async (context, user, groups) => {
+  if (groups.length === 0) {
+    return [];
+  }
+  const [relations, markings] = await Promise.all([
+    fullRelationsList(context, user, RELATION_ACCESSES_TO, { fromId: groups.map(({ id }) => id), toTypes: [ENTITY_TYPE_MARKING_DEFINITION] }),
+    getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION),
+  ]);
+  return groups.map((group) => {
+    const ids = [
+      ...relations.filter(({ fromId }) => fromId === group.id).map(({ toId }) => toId),
+      ...(group.default_marking ?? []).flatMap(({ values }) => values ?? []),
+      ...(group.max_shareable_markings ?? []).map(({ value }) => value).filter((value) => value !== 'none'),
+    ];
+    return R.uniq(ids).map((id) => markings.get(id)).filter((marking) => !!marking);
+  });
 };
 
 export const groupNotShareableMarkingTypes = (group) => group.max_shareable_markings?.filter(({ value }) => value === 'none')

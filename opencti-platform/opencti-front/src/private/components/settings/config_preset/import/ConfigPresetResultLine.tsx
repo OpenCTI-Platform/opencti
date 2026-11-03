@@ -59,6 +59,11 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'The Administrator role keeps the bypass capability': return t_i18n('The Administrator role keeps the bypass capability');
     case 'Grants sensitive rights': return t_i18n('Grants sensitive rights');
     case 'Removes sensitive rights': return t_i18n('Removes sensitive rights');
+    case 'Built-in marking': return t_i18n('Built-in marking');
+    case 'Marking already exists': return t_i18n('Marking already exists');
+    case 'The standard id of the marking does not match its definition': return t_i18n('The standard id of the marking does not match its definition');
+    case 'The order of the marking changes': return t_i18n('The order of the marking changes');
+    case 'Groups that get new markings automatically get this one': return t_i18n('Groups that get new markings automatically get this one');
     case 'The expiration date of the users\' passwords changes': return t_i18n('The expiration date of the users\' passwords changes');
     case 'The standard id of the group does not match its name': return t_i18n('The standard id of the group does not match its name');
     case 'Group already exists': return t_i18n('Group already exists');

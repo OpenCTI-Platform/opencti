@@ -4,6 +4,7 @@ import { buildPagination } from '../../../../src/database/utils';
 import { ALL_THEMES } from './configPreset-themes-fixtures';
 import { ALL_ROLES } from './configPreset-roles-fixtures';
 import { ALL_GROUPS, GROUP_ALLOWED_MARKINGS, GROUP_ROLE_RELATIONS } from './configPreset-groups-fixtures';
+import { ALL_MARKINGS } from './configPreset-markings-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -11,11 +12,13 @@ interface ListingArgs {
 }
 
 // The entities of the fixtures, by entity type
-const FIXTURE_ENTITIES: Record<string, { id: string; name: string }[]> = {
+const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?: string }[]> = {
   Theme: ALL_THEMES,
   Role: ALL_ROLES,
   Group: ALL_GROUPS,
+  'Marking-Definition': ALL_MARKINGS,
 };
+const labelOf = (entity: { name?: string; definition?: string }) => entity.name ?? entity.definition ?? '';
 
 // The eq / not_eq filters and the search the families send, applied like the engine does, sorted by name
 const listLikeTheEngine = (type: string | undefined, args: ListingArgs = {}) => {
@@ -25,8 +28,8 @@ const listLikeTheEngine = (type: string | undefined, args: ListingArgs = {}) => 
       const matches = values.map(String).includes(String((entity as unknown as Record<string, unknown>)[key[0]]));
       return operator === 'not_eq' ? !matches : matches;
     }))
-    .filter((entity) => !args.search || entity.name.toLowerCase().includes(args.search.toLowerCase()))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .filter((entity) => !args.search || labelOf(entity).toLowerCase().includes(args.search.toLowerCase()))
+    .sort((a, b) => labelOf(a).localeCompare(labelOf(b)));
 };
 
 // For a test that mocks fullEntitiesList, pageEntitiesConnection and storeLoadById of the middleware loader:
@@ -38,7 +41,7 @@ export const mockConfigPresetLoaders = (otherEntities: unknown[] = []) => {
   vi.mocked(pageEntitiesConnection).mockImplementation(async (_ctx, _user, types, args) => {
     const first = args?.first ?? 500;
     const entities = listLikeTheEngine(types?.[0], args as never) ?? [];
-    return buildPagination(first, args?.after, entities.slice(0, first).map((node) => ({ node, sort: [node.name] })), entities.length) as never;
+    return buildPagination(first, args?.after, entities.slice(0, first).map((node) => ({ node, sort: [labelOf(node)] })), entities.length) as never;
   });
   vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => {
     return Object.values(FIXTURE_ENTITIES).flat().find((entity) => entity.id === id) as never;

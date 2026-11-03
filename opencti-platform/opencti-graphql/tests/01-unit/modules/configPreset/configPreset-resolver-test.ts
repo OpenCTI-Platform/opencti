@@ -22,6 +22,16 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
+// The markings of a group are read from the cache
+vi.mock('../../../../src/database/cache', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../../../src/database/cache')>();
+  const { ALL_MARKINGS } = await import('./configPreset-markings-fixtures');
+  const markings = new Map(ALL_MARKINGS.flatMap((marking) => [[marking.id, marking], [marking.standard_id, marking]]));
+  return {
+    ...original,
+    getEntitiesMapFromCache: vi.fn(async (ctx, usr, type) => (type === 'Marking-Definition' ? markings : original.getEntitiesMapFromCache(ctx, usr, type))),
+  };
+});
 vi.mock('../../../../src/modules/configPreset/export/configPreset-export-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/configPreset/export/configPreset-export-domain')>()),
   configPresetExport: vi.fn(),
@@ -39,6 +49,7 @@ import { builtInTheme, customTheme, otherCustomTheme } from './configPreset-them
 import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
 import { administratorRole, analystRole } from './configPreset-roles-fixtures';
 import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
+import { customMarking, papRed } from './configPreset-markings-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -128,6 +139,15 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(1),
       },
       {
+        key: 'markings',
+        label: 'Markings',
+        description: 'Marking definitions, their colors and orders',
+        group: { key: 'securityAccess', label: 'Security & Access' },
+        // The markings by definition, without the built-in ones
+        items: [customMarking, papRed].map((marking) => ({ key: marking.standard_id, label: marking.definition, translatable: false, dependsOn: [], isDefault: false })),
+        itemsPageInfo: onePage(2),
+      },
+      {
         key: 'roles',
         label: 'Roles',
         description: 'Roles and their capabilities',
@@ -173,7 +193,7 @@ describe('Config preset exportable types query', () => {
   it('lists the messages set on the platform and hides the category when none is set', async () => {
     // No message is set in the default settings of these tests: the category is not returned
     const none = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
-    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'roles', 'groups', 'policies']);
+    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'markings', 'roles', 'groups', 'policies']);
 
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id, platform_login_message: 'Welcome' }] as never);
     const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
@@ -231,6 +251,7 @@ describe('Config preset exportable types query', () => {
       ['branding', 'platformSettings'],
       ['whitemark', 'platformSettings'],
       ['hiddenEntityTypes', 'dataModel'],
+      ['markings', 'securityAccess'],
       ['roles', 'securityAccess'],
       ['groups', 'securityAccess'],
       ['policies', 'securityAccess'],

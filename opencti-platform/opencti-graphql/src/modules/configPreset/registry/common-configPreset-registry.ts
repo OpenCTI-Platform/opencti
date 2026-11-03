@@ -14,6 +14,7 @@ export const securityAccessGroup = { id: 'securityAccess', label: 'Security & Ac
 // The families the items of another family depend on (the roles of a group, the default theme of the platform):
 // their ids are shared here, so that registries do not import each other
 export const ROLES_FAMILY_ID = 'roles';
+export const MARKINGS_FAMILY_ID = 'markings';
 export const BRANDING_FAMILY_ID = 'branding';
 
 // The search does not apply to static items: their label is a source string the UI translates,

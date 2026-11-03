@@ -27,6 +27,8 @@ export interface GroupImportOptions extends ConfigImportOptions {
   plannedRoles?: Map<string, { grantsSensitiveRights: boolean }>;
   // The standard id each role of the bundle is written under by the same import, by its bundle id (the copy of a role imported as COPY)
   roleTargets?: Map<string, string | null>;
+  // In a dry run, the standard ids of the markings the same import creates
+  plannedMarkings?: Set<string>;
 }
 
 export type GroupImportCode = 'invalid' | 'role_missing' | 'exists' | 'name_conflict' | 'sensitive_config';
@@ -58,6 +60,8 @@ const ADMINISTRATOR_ROLE_KEPT_REASON = 'The Administrators group keeps the Admin
 
 const ADMINISTRATORS_GROUP = 'Administrators';
 
+type BasicStoreMarking = BasicStoreEntity & { definition: string; definition_type: string; x_opencti_order: number };
+
 interface ResolvedGroup {
   fields: Record<string, unknown>;
   roleIds: string[];
@@ -66,16 +70,31 @@ interface ResolvedGroup {
   missingDashboard?: string;
 }
 
-const resolveGroup = async (context: AuthContext, user: AuthUser, configuration: GroupImportConfiguration, roles: BasicStoreEntity[]): Promise<ResolvedGroup> => {
-  const markings = await getEntitiesMapFromCache<BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+const loadMarkings = async (context: AuthContext, user: AuthUser, references: GroupMarkingReference[]) => {
+  const cached = await getEntitiesMapFromCache<BasicStoreMarking>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const uncached = [...new Set(references.map(({ standard_id }) => standard_id).filter((standardId) => !cached.get(standardId)))];
+  const loaded = await Promise.all(uncached.map((standardId) => storeLoadById<BasicStoreMarking>(context, user, standardId, ENTITY_TYPE_MARKING_DEFINITION)));
+  return (standardId: string) => cached.get(standardId) ?? loaded[uncached.indexOf(standardId)];
+};
+
+const resolveGroup = async (
+  context: AuthContext,
+  user: AuthUser,
+  configuration: GroupImportConfiguration,
+  roles: BasicStoreEntity[],
+  plannedMarkings: Set<string>,
+): Promise<ResolvedGroup> => {
+  const shareable = configuration.max_shareable_markings.flatMap(({ value }) => (value === 'none' ? [] : [value]));
+  const findMarking = await loadMarkings(context, user, [...configuration.allowed_markings, ...configuration.default_marking.flatMap(({ values }) => values), ...shareable]);
   const missingMarkings = new Set<string>();
-  const resolve = (reference: GroupMarkingReference) => {
-    const marking = markings.get(reference.standard_id);
-    if (!marking) {
+  const resolveMarking = (reference: GroupMarkingReference) => {
+    const marking = findMarking(reference.standard_id);
+    if (!marking && !plannedMarkings.has(reference.standard_id)) {
       missingMarkings.add(reference.definition);
     }
-    return marking?.id;
+    return marking;
   };
+  const resolve = (reference: GroupMarkingReference) => resolveMarking(reference)?.id;
   const resolveAll = (references: GroupMarkingReference[]) => references.map(resolve).filter((id): id is string => !!id);
   const { default_dashboard: dashboardReference } = configuration;
   const dashboard = dashboardReference ? await storeLoadById<BasicStoreEntity>(context, user, dashboardReference.standard_id, ENTITY_TYPE_WORKSPACE) : undefined;
@@ -83,7 +102,7 @@ const resolveGroup = async (context: AuthContext, user: AuthUser, configuration:
   fields.default_dashboard = dashboard?.id;
   fields.default_marking = await Promise.all(configuration.default_marking.map(async ({ entity_type, values }) => ({
     entity_type,
-    values: (await cleanMarkings(context, resolveAll(values)) as BasicStoreEntity[]).map(({ id }) => id),
+    values: (await cleanMarkings(context, values.map(resolveMarking).filter((marking) => !!marking)) as BasicStoreEntity[]).map(({ id }) => id),
   })));
   fields.max_shareable_markings = configuration.max_shareable_markings.map(({ type, value }) => ({ type, value: (value === 'none' ? undefined : resolve(value)) ?? 'none' }));
   return {
@@ -114,8 +133,6 @@ const replaceRelations = async (context: AuthContext, user: AuthUser, groupId: s
     await groupDeleteRelation(context, user, groupId, undefined, removed[i], relationshipType);
   }
 };
-
-type BasicStoreMarking = BasicStoreEntity & { definition: string };
 
 interface CurrentGroupRelations {
   roles: BasicStoreEntityRole[];
@@ -208,7 +225,7 @@ export const importGroup = async (
   configuration: unknown,
   options: GroupImportOptions,
 ): Promise<GroupImportResult> => {
-  const { mode, dryRun = false, reservedIds, plannedRoles = new Map(), roleTargets = new Map() } = options;
+  const { mode, dryRun = false, reservedIds, plannedRoles = new Map(), roleTargets = new Map(), plannedMarkings = new Set<string>() } = options;
   const parsed = groupImportSchema.safeParse(configuration);
   if (!parsed.success) {
     return refused('invalid', configImportValidationReason(parsed.error), false);
@@ -242,7 +259,7 @@ export const importGroup = async (
   }
   const found = roles.filter((role): role is BasicStoreEntityRole => !!role);
   const { roles: groupRoles, administratorRoleKept } = await withAdministratorRole(context, user, targetId, found);
-  const resolved = await resolveGroup(context, user, parsed.data, groupRoles);
+  const resolved = await resolveGroup(context, user, parsed.data, groupRoles, dryRun ? plannedMarkings : new Set());
   const current = target ? await currentRelations(context, user, target.id) : { roles: [], markings: [] };
   const currentIds = idsOf(current.roles);
   const removedRoles = current.roles.filter(({ id }) => !resolved.roleIds.includes(id));

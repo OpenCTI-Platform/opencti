@@ -7,6 +7,7 @@ import { messagesFamily } from './registry/messages-configPreset-registry';
 import { hiddenEntityTypesFamily } from './registry/hiddenEntityTypes-configPreset-registry';
 import { whitemarkFamily } from './registry/whitemark-configPreset-registry';
 import { isEnterpriseEditionUpToDate } from '../../enterprise-edition/ee';
+import { markingsFamily } from './registry/markings-configPreset-registry';
 import { rolesFamily } from './registry/roles-configPreset-registry';
 import { groupsFamily } from './registry/groups-configPreset-registry';
 import { policiesFamily } from './registry/policies-configPreset-registry';
@@ -21,6 +22,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   messagesFamily,
   whitemarkFamily,
   hiddenEntityTypesFamily,
+  markingsFamily,
   rolesFamily,
   groupsFamily,
   policiesFamily,

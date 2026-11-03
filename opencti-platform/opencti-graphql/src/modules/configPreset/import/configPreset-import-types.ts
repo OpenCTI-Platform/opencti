@@ -72,6 +72,12 @@ export const recordConfigPresetTarget = (plan: ConfigPresetImportPlan, type: str
   plan.targets?.set(configPresetPlanKey(type, id), target);
 };
 
+// The bundle ids of the items of one family the import creates
+export const configPresetCreated = (plan: ConfigPresetImportPlan, type: string) => {
+  const prefix = configPresetPlanKey(type, '');
+  return new Set([...plan.created].filter((key) => key.startsWith(prefix)).map((key) => key.slice(prefix.length)));
+};
+
 // The targets of the items of one family, by bundle id
 export const configPresetTargets = (plan: ConfigPresetImportPlan, type: string) => {
   const prefix = configPresetPlanKey(type, '');

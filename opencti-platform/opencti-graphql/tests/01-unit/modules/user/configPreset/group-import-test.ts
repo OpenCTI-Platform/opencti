@@ -176,6 +176,23 @@ describe('importGroup create', () => {
     expect(vi.mocked(addGroup).mock.calls[0][2]).toMatchObject({ default_marking: [{ entity_type: 'GLOBAL', values: [TLP_AMBER.id, PAP_RED.id] }] });
   });
 
+  it('accepts on a dry run a marking the same import creates', async () => {
+    withPlatform({ markings: [PAP_RED] });
+    const configuration = groupConfiguration({ allowed_markings: [markingReference(TLP_AMBER), markingReference(PAP_RED)] });
+    const plannedMarkings = new Set([TLP_AMBER.standard_id]);
+    const result = await importGroup(context, user, configuration, { mode: ConfigImportMode.Add, dryRun: true, plannedMarkings });
+    expect(result).toMatchObject({ status: 'created', reason: undefined });
+  });
+
+  it('reads from the database a marking the cache does not have yet, as one the same import has just created', async () => {
+    withPlatform({ markings: [] });
+    vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => ([TLP_AMBER, dashboard].find((entity) => entity.standard_id === id)) as never);
+    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Add });
+    expect(result.reason).toBeUndefined();
+    expect(groupAddRelation).toHaveBeenCalledWith(context, user, 'created-id', { toId: TLP_AMBER.id, relationship_type: 'accesses-to' });
+    expect(vi.mocked(addGroup).mock.calls[0][2]).toMatchObject({ default_marking: [{ entity_type: 'GLOBAL', values: [TLP_AMBER.id] }] });
+  });
+
   it('leaves out and reports the markings and the dashboard that are not on this platform', async () => {
     withPlatform({ markings: [PAP_RED], dashboards: [] });
     const configuration = groupConfiguration({ allowed_markings: [markingReference(TLP_AMBER), markingReference(PAP_RED)] });
