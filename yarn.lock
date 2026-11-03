@@ -15061,10 +15061,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:6.2.13, jose@npm:^6.2.12":
-  version: 6.2.13
-  resolution: "jose@npm:6.2.13"
-  checksum: 10c0/a7a175057fd42e129200026320d535deba5c869e764bdb130d4aecb7cc2a22c07eab2bf9fc848188b45b89d95f8e0ba4ce01a8259a4fa45c84bec34f66f2918e
+"jose@npm:6.2.14":
+  version: 6.2.14
+  resolution: "jose@npm:6.2.14"
+  checksum: 10c0/3db121220793e391c24803edae1ede848e7a67e2c3d37f9864f3e3e245c4b2d318f176d17f0f8ab02be07e210a3db5453612c8d5716af2deeaaa4e5d50e70641
   languageName: node
   linkType: hard
 
@@ -15072,6 +15072,13 @@ __metadata:
   version: 4.15.9
   resolution: "jose@npm:4.15.9"
   checksum: 10c0/4ed4ddf4a029db04bd167f2215f65d7245e4dc5f36d7ac3c0126aab38d66309a9e692f52df88975d99429e357e5fd8bab340ff20baab544d17684dd1d940a0f4
+  languageName: node
+  linkType: hard
+
+"jose@npm:^6.2.12":
+  version: 6.2.13
+  resolution: "jose@npm:6.2.13"
+  checksum: 10c0/a7a175057fd42e129200026320d535deba5c869e764bdb130d4aecb7cc2a22c07eab2bf9fc848188b45b89d95f8e0ba4ce01a8259a4fa45c84bec34f66f2918e
   languageName: node
   linkType: hard
 
@@ -18308,7 +18315,7 @@ __metadata:
     ioredis: "npm:5.11.1"
     ipaddr.js: "npm:2.5.0"
     jiti: "npm:2.7.0"
-    jose: "npm:6.2.13"
+    jose: "npm:6.2.14"
     js-deep-equals: "npm:2.1.1"
     jsonpath-plus: "npm:11.2.2"
     jwt-decode: "npm:4.0.0"
