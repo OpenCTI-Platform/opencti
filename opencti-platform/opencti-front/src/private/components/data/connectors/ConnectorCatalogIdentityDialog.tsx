@@ -106,7 +106,7 @@ const ConnectorCatalogIdentityForm: FunctionComponent<ConnectorCatalogIdentityFo
 
   return (
     <>
-      <Stack gap={2}>
+      <Stack sx={{ gap: 2 }}>
         <Combobox<CatalogOption>
           options={options}
           value={selected}
@@ -117,7 +117,7 @@ const ConnectorCatalogIdentityForm: FunctionComponent<ConnectorCatalogIdentityFo
             ? t_i18n('Connectors of this type')
             : t_i18n('Other connectors'))}
           renderOption={(option) => (
-            <Stack direction="row" alignItems="center" gap={1} sx={{ minWidth: 0 }}>
+            <Stack direction="row" sx={{ alignItems: 'center', gap: 1, minWidth: 0 }}>
               <CatalogLogo logo={option.logo} connectorType={option.connector_type} size={LOGO_SIZE} />
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{option.title}</span>
             </Stack>
@@ -136,10 +136,10 @@ const ConnectorCatalogIdentityForm: FunctionComponent<ConnectorCatalogIdentityFo
         {selected && (
           <Stack
             direction="row"
-            gap={2}
-            alignItems="center"
             data-testid="catalog-identity-preview"
             sx={{
+              alignItems: 'center',
+              gap: 2,
               padding: 2,
               borderRadius: 1,
               border: `1px solid ${theme.palette.divider}`,

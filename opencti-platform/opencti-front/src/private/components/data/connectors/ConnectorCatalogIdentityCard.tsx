@@ -51,7 +51,7 @@ const ConnectorCatalogIdentityCard: FunctionComponent<ConnectorCatalogIdentityCa
     return (
       <Box sx={{ marginBottom: '20px' }}>
         <Card title={t_i18n('About this connector')}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+          <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
               {t_i18n('This connector is not linked to a catalog entry.')}
             </Typography>
@@ -78,9 +78,9 @@ const ConnectorCatalogIdentityCard: FunctionComponent<ConnectorCatalogIdentityCa
           />
         )}
       >
-        <Stack gap={1.5}>
+        <Stack sx={{ gap: 1.5 }}>
           {(showTitle || identity.short_description) && (
-            <Stack gap={0.5}>
+            <Stack sx={{ gap: 0.5 }}>
               {showTitle && (
                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
                   {identity.title}
@@ -93,7 +93,7 @@ const ConnectorCatalogIdentityCard: FunctionComponent<ConnectorCatalogIdentityCa
               )}
             </Stack>
           )}
-          <Stack direction="row" gap={1} flexWrap="wrap">
+          <Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
             <Button
               variant="secondary"
               size="small"
