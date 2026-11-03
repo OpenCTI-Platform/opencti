@@ -1,4 +1,3 @@
-import { URL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import express from 'express';
 import passport from 'passport';
@@ -11,7 +10,7 @@ import validator from 'validator';
 import ZipEncrypted from 'archiver-zip-encrypted';
 import { create as createContentDisposition } from 'content-disposition';
 import { printSchema } from 'graphql';
-import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
+import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE } from '../config/conf';
 import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { checkIpWhitelistForRequest } from './ipWhitelistMiddleware';
 import { getXtmJwks } from '../domain/xtm-auth';
@@ -30,7 +29,7 @@ import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
+import { extractRefererPathFromReq, extractSafeRedirectFromReq, sanitizeReferer, setCookieError, decodeOidcState } from './httpUtils';
 import {
   getChatbotConfig,
   getChatbotAgents,
@@ -52,29 +51,6 @@ import { AuthenticationProviderError } from '../modules/authenticationProvider/p
 import { buildDefaultHelmetParameters, buildPublicHelmetParameters } from './httpUtils';
 
 const publicDir = DEV_MODE ? '../opencti-front/dist' : 'public';
-
-export const sanitizeReferer = (refererToSanitize) => {
-  // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
-  // Ternary Operator (?): Defaults if basePath is undefined, null, "" (empty string), 0, etc (falsy values).
-  // basePath is trimmed in '../config/conf.js' to prevent a user from setting it to something like '       '
-  // NOTE: Do NOT use Nullish Coalescing (??): Would only default if basePath is undefined or null.
-  // It might be set to an empty string and would fail to set properly in base2return var in next line
-  const base2return = basePath ? basePath : '/';
-  // In some odd configurations refererToSanitize will be the string('undefined') versus value(undefined)
-  if (!refererToSanitize || refererToSanitize === 'undefined') return base2return;
-  const base = getBaseUrl();
-  const resolvedUrl = new URL(refererToSanitize, base).toString();
-  if (resolvedUrl === base || resolvedUrl.startsWith(`${base}/`)) {
-    // same domain URL accept the redirection
-    if (refererToSanitize.startsWith('/') && !refererToSanitize.startsWith('//')) {
-      // in case of relative URL, keep relative.
-      return refererToSanitize;
-    }
-    return resolvedUrl;
-  }
-  logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
-  return base2return;
-};
 
 const publishFileDownload = async (executeContext, auth, file) => {
   const { filename, entity_id } = file.metaData;
@@ -419,7 +395,7 @@ const createApp = async (app, schema) => {
   // Logout
   app.get(`${basePath}/logout`, async (req, res) => {
     try {
-      const referer = extractRefererPathFromReq(req) ?? (basePath || '/');
+      const referer = extractSafeRedirectFromReq(req);
       const provider = req.session.session_provider;
       const { user } = req.session;
       if (user) {
@@ -567,7 +543,7 @@ const createApp = async (app, schema) => {
       // 2. OIDC (v6): referer is encoded in the OAuth state query parameter
       // 3. Fallback: session-based referer (backward compatibility)
       const referer = req.body?.RelayState ?? decodeOidcState(req.query?.state)?.referer ?? req.session.referer;
-      const sanitizedReferer = sanitizeReferer(referer) ?? (basePath || '/');
+      const sanitizedReferer = sanitizeReferer(referer, req);
       res.redirect(sanitizedReferer);
     }
   });
