@@ -118,9 +118,6 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
           sx={{ zIndex: 2 }}
           title={t_i18n('The user\'s Max Confidence Level overrides Max Confidence Level inherited from user\'s groups')}
         >
-          {/* top: -4px nudges the 20px icon up to the optical centre of the FDS Switch's
-              12px / 18px label text, which centres against the switch button rather than
-              the icon. */}
           <InformationOutline
             fontSize="small"
             color="primary"
