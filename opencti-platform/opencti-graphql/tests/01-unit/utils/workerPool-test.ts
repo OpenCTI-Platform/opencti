@@ -47,15 +47,14 @@ describe('check createWorkerPool', () => {
   });
 
   it('reports a worker out of memory with the configured error', async () => {
-    const pool = createWorkerPool<JsonPathQuery, any>({
-      ...poolOptions,
-      resourceLimits: { ...poolOptions.resourceLimits, maxOldGenerationSizeMb: 8, maxYoungGenerationSizeMb: 4 },
-      outOfMemoryError: () => FunctionalError('out of memory'),
+    const pool = createWorkerPool<JsonPathQuery, any>({ ...poolOptions, outOfMemoryError: () => FunctionalError('out of memory') });
+    // A process-wide --max-old-space-size (NODE_OPTIONS) overrides the worker heap limit: the out-of-memory
+    // error is emitted directly, so the test does not depend on how the process was started
+    vi.spyOn(Worker.prototype, 'postMessage').mockImplementationOnce(function emitOutOfMemory(this: Worker) {
+      this.emit('error', Object.assign(new Error('Worker terminated due to reaching memory limit'), { code: 'ERR_WORKER_OUT_OF_MEMORY' }));
     });
     try {
-      // About 100 MB of distinct strings: far above the 8 MB heap on every platform
-      const json = { items: Array.from({ length: 500000 }, (_, i) => ({ type: 'domain', value: `${i}`.padEnd(200, '.') })) };
-      await expect(pool.run({ path: '$.items[?(@.type == \'domain\')].value', json }, 30000)).rejects.toMatchObject({
+      await expect(pool.run(query(1), 5000)).rejects.toMatchObject({
         message: 'out of memory',
         extensions: { code: 'FUNCTIONAL_ERROR' },
       });
