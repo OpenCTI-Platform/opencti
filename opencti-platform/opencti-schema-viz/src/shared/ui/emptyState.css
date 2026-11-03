@@ -1,0 +1,17 @@
+.sv-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--spacing) * 2);
+  padding: calc(var(--spacing) * 6) calc(var(--spacing) * 4);
+  text-align: center;
+}
+
+.sv-empty__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--spacing) * 3);
+  max-width: var(--container-xs);
+  color: var(--sv-text-muted);
+}

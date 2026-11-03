@@ -1,0 +1,113 @@
+.sv-handle.react-flow__handle {
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.sv-node {
+  width: 100%;
+  height: 100%;
+  color: var(--sv-text);
+  cursor: pointer;
+  transition: border-color 120ms, box-shadow 120ms;
+}
+
+.sv-node__label {
+  font-family: var(--font-content-compact-bold);
+  font-size: var(--text-content-compact-bold);
+  font-weight: var(--font-weight-content-compact-bold);
+  line-height: var(--leading-content-compact-bold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sv-node__label.sv-mono { font-family: var(--font-content-code); font-weight: var(--font-weight-content-code); }
+
+.sv-entity-node {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing) * 3);
+  padding: 0 calc(var(--spacing) * 3);
+  border: 1px solid var(--sv-border-strong);
+  border-left: calc(var(--spacing) * 1) solid var(--sv-type-color);
+  border-radius: var(--radius-sm);
+  background: var(--sv-surface-panel);
+}
+
+.sv-entity-node:hover { border-color: var(--sv-type-color); }
+.sv-entity-node.is-abstract { border-style: dashed; border-left-style: solid; }
+.sv-entity-node.is-neighbor { background: var(--sv-surface-canvas); }
+
+.sv-node.is-selected {
+  border-color: var(--sv-accent);
+  box-shadow: 0 0 0 calc(var(--spacing) * 1) var(--sv-surface-selected);
+}
+
+.sv-node__icon { display: inline-flex; color: var(--sv-type-color); flex-shrink: 0; }
+
+.sv-node__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.sv-node__meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Zoomed out: only the name, larger, so the map stays readable. */
+.sv-entity-node.is-compact .sv-node__label,
+.sv-relationship-node.is-compact .sv-node__label { font-size: var(--text-title-md); }
+
+.sv-relationship-node {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing) * 2);
+  padding: 0 calc(var(--spacing) * 4);
+  border: 1px solid var(--sv-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--sv-surface-panel);
+}
+
+.sv-relationship-node .sv-node__label { flex: 1; }
+.sv-relationship-node.is-abstract { border-style: dashed; }
+.sv-relationship-node__icon { color: var(--sv-type-color); flex-shrink: 0; }
+
+.sv-group-node {
+  display: flex;
+  flex-direction: column;
+  padding: 0 calc(var(--spacing) * 2) calc(var(--spacing) * 2);
+  border: 1px dashed var(--sv-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--sv-surface-canvas);
+  cursor: default;
+}
+
+.sv-group-node.is-ref { border-color: var(--sv-edge-ref); }
+
+.sv-group-node__header {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing) * 1);
+  height: calc(var(--spacing) * 9.5);
+}
+
+.sv-group-node__relation { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.sv-group-node__items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--spacing) * 0.5);
+}
+
+/* Focus mode: what is not related to the selection steps back. */
+.react-flow__node.is-dimmed { opacity: 0.28; }
+.react-flow__node.is-dimmed:hover { opacity: 0.8; }

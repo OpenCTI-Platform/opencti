@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Log rotation audit files written by `yarn generate` (backend logger)
+.support
+telemetry
