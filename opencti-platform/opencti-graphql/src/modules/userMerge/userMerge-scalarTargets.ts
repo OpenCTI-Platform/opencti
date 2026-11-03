@@ -1,6 +1,6 @@
 import { UnsupportedError } from '../../config/errors';
 import { type DiscoveredUserAttribute, discoverUserIdAttributes } from './userMerge-scalarDiscovery';
-import { USER_MERGE_SCALAR_COMPLEMENTS, USER_MERGE_SCALAR_DISPOSITIONS, type UserMergeScalarExclusion } from './userMerge-scalarRules';
+import { USER_MERGE_SCALAR_DISPOSITIONS, type UserMergeScalarExclusion } from './userMerge-scalarRules';
 
 /**
  * How the value sits in the document, which decides the rewrite script.
@@ -129,10 +129,6 @@ export const resolveUserMergeScalarTargets = (): UserMergeScalarResolution => {
         targets.push(target);
       });
     });
-  });
-  USER_MERGE_SCALAR_COMPLEMENTS.forEach((complement) => {
-    const { id, registerRow, entityTypes, path, shape, nestedRoot, condition, unexpectedAtRest } = complement;
-    targets.push({ id, registerRow, entityTypes, path, shape, nestedRoot, condition, unexpectedAtRest });
   });
   return { targets, excluded, unassigned };
 };
