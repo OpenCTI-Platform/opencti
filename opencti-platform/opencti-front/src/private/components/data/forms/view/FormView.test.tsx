@@ -381,6 +381,26 @@ describe('FormView submission into a draft', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
+  it('keeps the submit button disabled while it checks the draft, so a second click cannot create a second draft', async () => {
+    useGrantedSpy.mockImplementation((capabilities: string[]) => !capabilities.includes(useGrantedModule.BYPASS));
+    const { relayEnv, user } = testRender(<FormView />, { userContext: mockUserContext });
+    await resolveAndWait(relayEnv, defaultMockForm);
+    const isFormSubmit = (operation: { request: { node: { params: { name: string } } } }) => operation.request.node.params.name === 'FormViewMutation';
+    await user.type(screen.getByRole('textbox', { name: /Name/ }), 'My report');
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+    await waitFor(() => {
+      relayEnv.mock.resolveMostRecentOperation({ data: { formSubmit: { success: true, message: null, entityId: 'draft-id' } } });
+    });
+    await waitFor(() => {
+      expect(relayEnv.mock.getMostRecentOperation().request.node.params.name).toBe('FormViewDraftCheckQuery');
+    });
+    // The draft check is still pending
+    const button = await screen.findByRole('button', { name: 'Submitting...' });
+    expect(button.hasAttribute('disabled')).toBe(true);
+    await user.click(button);
+    expect(relayEnv.mock.getAllOperations().filter(isFormSubmit)).toHaveLength(0);
+  });
+
   it('offers to close the dialog, and to submit again, once the submission is confirmed', async () => {
     const { user, onSuccess } = await submitForm(null, vi.fn(), true);
     await screen.findByText('Your submission has been sent and is being processed.');

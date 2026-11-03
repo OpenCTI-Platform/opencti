@@ -169,6 +169,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const [submitted, setSubmitted] = useState(false);
   // A submission into a draft the user cannot open: confirm it instead of navigating to a page that does not exist for them
   const [submittedToDraft, setSubmittedToDraft] = useState(false);
+  const [isCheckingDraft, setIsCheckingDraft] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [pollingEntityId, setPollingEntityId] = useState<string | null>(null);
   const [pollingEntityType, setPollingEntityType] = useState<string | null>(null);
@@ -521,6 +522,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
   // The draft of the submission is opened only when the user can load its page, else the submission is confirmed
   const openDraftOrConfirm = async (draftId?: string) => {
+    setIsCheckingDraft(true); // the submission is done but the form stays on screen until the check answers
     const result = draftId
       ? await fetchQuery(relayEnvironment, draftCheckQuery, { id: draftId }).toPromise().catch(() => null) as { draftWorkspace?: { id: string } | null } | null
       : null;
@@ -529,6 +531,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       navigate(`/dashboard/data/import/draft/${draftId}`);
     } else {
       setSubmittedToDraft(true);
+      setIsCheckingDraft(false);
     }
   };
 
@@ -1110,9 +1113,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                   )}
                   <SubmitButton
                     type="submit"
-                    disabled={isSubmitting || isSubmitInFlight || !isValid}
+                    disabled={isSubmitting || isSubmitInFlight || isCheckingDraft || !isValid}
                   >
-                    {isSubmitting || isSubmitInFlight ? t_i18n('Submitting...') : t_i18n('Submit')}
+                    {isSubmitting || isSubmitInFlight || isCheckingDraft ? t_i18n('Submitting...') : t_i18n('Submit')}
                   </SubmitButton>
                   <div style={{ clear: 'both' }} />
                 </Form>
