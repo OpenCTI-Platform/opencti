@@ -53,6 +53,12 @@ describe('Labels import (registry)', () => {
     expect(await family.importer!.compute(context, user, item({}), plan, ConfigImportMode.Overwrite)).toMatchObject({ status: 'failed', label: aptId, reason: 'value: Invalid input' });
   });
 
+  it('leaves a blank value to the module, which refuses it, instead of failing to derive its id', async () => {
+    vi.mocked(importLabel).mockResolvedValue({ status: 'failed', code: 'invalid', reason: 'value: Label value is required', exists: false });
+    expect(await family.importer!.compute(context, user, item({ value: '  ' }), plan, ConfigImportMode.Overwrite)).toMatchObject({ status: 'failed', reason: 'value: Label value is required' });
+    expect(importLabel).toHaveBeenCalledOnce();
+  });
+
   it('applies through the module, reports a status that differs from the computed one, and throws on a failure', async () => {
     const configuration = { value: 'APT', color: '#ff0000' };
     vi.mocked(importLabel).mockResolvedValueOnce({ status: 'created', exists: false });
