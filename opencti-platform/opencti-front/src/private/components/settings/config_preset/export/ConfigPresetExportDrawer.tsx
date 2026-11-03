@@ -36,6 +36,7 @@ export const configPresetExportDrawerQuery = graphql`
         label
         translatable
         isDefault
+        isEnabled
         dependsOn {
           type
           key

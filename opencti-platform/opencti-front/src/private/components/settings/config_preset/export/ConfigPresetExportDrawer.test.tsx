@@ -271,6 +271,14 @@ describe('ConfigPresetExportDrawer', () => {
       expect(within(screen.getByRole('button', { name: GATE })).getByText('Remove Filigran logos')).toBeInTheDocument();
     });
 
+    it.each([
+      [true, 'Enabled'],
+      [false, 'Disabled'],
+    ])('shows under its label whether it is on or off once the platform has the Enterprise Edition (%s)', async (isEnabled, label) => {
+      await renderOpenDrawer(vi.fn(), [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos', { isEnabled })], { description: '' })]);
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
+
     it('opens the license dialog instead of being selected', async () => {
       const { user } = await renderOpenDrawer(vi.fn(), [...catalog, lockedType()]);
       await user.click(screen.getByRole('button', { name: GATE }));

@@ -37,7 +37,7 @@ import ConfigPresetImportMessages from './ConfigPresetImportMessages';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 import { translateConfigPresetEntityTypes } from '../configPresetEntityTypes';
 import useConfigPresetLockedTypes from '../useConfigPresetLockedTypes';
-import ConfigPresetSelectionAccordion, { describeType } from '../ConfigPresetSelectionAccordion';
+import ConfigPresetSelectionAccordion, { describeEnabled, describeType } from '../ConfigPresetSelectionAccordion';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
 const SAVE_DELAY_MS = 500;
@@ -428,13 +428,13 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           const keepsDefaultTheme = hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
           const hiddenTypes = isImportedItem(type.key, item.key) && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
           // A setting that is on or off: the value of the bundle is shown under its name, whether or not it is imported
-          const whitemark = type.key === 'whitemark' ? item.fields.find(({ key }) => key === 'platform_whitemark')?.value : null;
+          const whitemark = type.key === 'whitemark' ? item.fields.find(({ key }) => key === 'platform_whitemark')?.value : undefined;
           return (
             <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
               <ConfigPresetItemRow
                 typeKey={type.key}
                 item={item}
-                description={isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined}
+                description={whitemark ? describeEnabled(t_i18n, whitemark === 'true') : (isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined)}
                 selection={selection}
                 forced={forced}
                 disabled={isStarting}
@@ -458,11 +458,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
               {keepsDefaultTheme && (
                 <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
                   {t_i18n('The platform keeps its current default theme.')}
-                </Text>
-              )}
-              {whitemark && (
-                <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
-                  {whitemark === 'true' ? t_i18n('Enabled') : t_i18n('Disabled')}
                 </Text>
               )}
               {hiddenTypes && (
