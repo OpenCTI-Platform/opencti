@@ -60,6 +60,7 @@ enum Capabilities {
   KNOWLEDGE_KNUPDATE_KNMERGE
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS
+  KNOWLEDGE_KNFORMINTAKE
   KNOWLEDGE_KNUPLOAD
   KNOWLEDGE_KNASKIMPORT
   KNOWLEDGE_KNGETEXPORT
@@ -1097,10 +1098,17 @@ enum BackgroundTasksOrdering {
   _score
 }
 
+type BackgroundTaskContextOptions {
+  includeNeighbours: Boolean
+  applyTransitionActions: Boolean
+  eventName: String
+}
+
 type BackgroundTaskContext {
   field: String
   type: BackgroundTaskContextType
   values: [String]!
+  options: BackgroundTaskContextOptions
 }
 
 type BackgroundTaskAction {
@@ -1191,6 +1199,11 @@ type BackgroundTaskConnection {
 
 input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
+  applyTransitionActions: Boolean
+  eventName: String
+  comment: String
+  shareOrganizationIds: [String!]
+  unshareOrganizationIds: [String!]
 }
 
 input BackgroundTaskContextInput {
@@ -1302,6 +1315,7 @@ type PlatformEE {
 enum PlatformEESource {
   OPENCTI_LICENSE
   XTM_ONE_LICENSE
+  FILIGRAN_LICENSE
 }
 
 enum PlatformCriticalAlertType {
@@ -8991,6 +9005,8 @@ type Query {
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
   workflowDefinitionPublished(entityType: String!): Boolean
+  workflowStatuses(entityType: String!): [Status!]!
+  workflowMassTransitions(entityType: String!, entityIds: [String!], filters: String, search: String, excludedIds: [String!]): [WorkflowTransition!]!
   workflowInstance(entityId: String!): WorkflowInstance
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
   workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]!
@@ -9008,6 +9024,7 @@ type Query {
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
+  ingestionHealthSettings: IngestionHealthSettings
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
   catalogsRevisions: [CatalogRevision!]!
@@ -9855,6 +9872,7 @@ type Mutation {
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
+  ingestionHealthSettingsEdit(input: IngestionHealthSettingsInput!): IngestionHealthSettings
   languageAdd(input: LanguageAddInput!): Language
   languageDelete(id: ID!): ID
   languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language
@@ -10903,14 +10921,33 @@ enum IngestionHealthCheckSeverity {
 type IngestionHealthCheck {
   health_check_code: String!
   health_check_message: String
+  health_check_metadata: JSON
   health_check_kind: IngestionHealthCheckKind!
   health_check_severity: IngestionHealthCheckSeverity!
+}
+
+type IngestionHealthCheckSetting {
+  health_check_code: String!
+  health_check_label: String!
+  health_check_kind: IngestionHealthCheckKind!
+  enabled: Boolean!
+}
+
+type IngestionHealthSettings {
+  notification_delay: Int!
+  disabled_health_checks: [String!]!
+  health_checks: [IngestionHealthCheckSetting!]!
 }
 
 type IngestionHealth {
   status: IngestionHealthStatus!
   status_since: DateTime!
   healthChecks: [IngestionHealthCheck!]!
+}
+
+input IngestionHealthSettingsInput {
+  notification_delay: Int
+  disabled_health_checks: [String!]
 }
 
 type Catalog implements InternalObject & BasicObject {
@@ -11589,7 +11626,6 @@ type NotificationCount {
 type NotificationEvent {
   message: String!
   instance_id: String
-  entity_internal_id: String
   operation: String!
   entity_type: String
 }
@@ -16570,6 +16606,7 @@ input FormAddInput {
 input FormSubmissionInput {
   formId: String!
   values: String!
+  files: [Upload!]
 }
 
 type FormSubmissionResponse {
