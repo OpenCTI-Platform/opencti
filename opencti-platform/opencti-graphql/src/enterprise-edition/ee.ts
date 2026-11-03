@@ -29,3 +29,11 @@ export const checkEnterpriseEdition = async (context: AuthContext) => {
     throw UnsupportedError('Enterprise edition is not enabled');
   }
 };
+
+// For the actions that follow a license activation, such as turning the whitemark on: the cache is asked first, and the database only
+// when the cache says no, which is the node that is behind. A refusal is as strict as checkEnterpriseEdition's: both must say no.
+export const checkEnterpriseEditionUpToDate = async (context: AuthContext) => {
+  if (!(await isEnterpriseEdition(context)) && !(await isEnterpriseEditionUpToDate(context))) {
+    throw UnsupportedError('Enterprise edition is not enabled');
+  }
+};

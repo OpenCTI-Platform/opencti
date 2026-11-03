@@ -4,7 +4,7 @@ import type { AuthContext, AuthUser } from '../../../src/types/user';
 const settings = { id: 'settings-id', internal_id: 'settings-id', platform_theme: undefined };
 
 vi.mock('../../../src/enterprise-edition/ee', () => ({
-  checkEnterpriseEdition: vi.fn(),
+  checkEnterpriseEditionUpToDate: vi.fn(),
   isEnterpriseEdition: vi.fn(),
   isEnterpriseEditionFromSettings: vi.fn(),
 }));
@@ -29,7 +29,7 @@ vi.mock('../../../src/modules/xtm/one/xtm-one', () => ({
   refreshXtmLicenseProof: vi.fn(),
 }));
 
-const { checkEnterpriseEdition } = await import('../../../src/enterprise-edition/ee');
+const { checkEnterpriseEditionUpToDate } = await import('../../../src/enterprise-edition/ee');
 const { loadEntity, updateAttribute } = await import('../../../src/database/middleware');
 const { getClusterInformation } = await import('../../../src/database/cluster-module');
 const { settingsEditField } = await import('../../../src/domain/settings');
@@ -46,28 +46,28 @@ describe('settingsEditField, the whitemark', () => {
   });
 
   it('refuses to turn the whitemark on without the Enterprise Edition, and writes nothing', async () => {
-    vi.mocked(checkEnterpriseEdition).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
+    vi.mocked(checkEnterpriseEditionUpToDate).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
     await expect(settingsEditField(context, bypassUser, 'settings-id', [{ key: 'platform_whitemark', value: [true] }]))
       .rejects.toThrow('Enterprise edition is not enabled');
     expect(updateAttribute).not.toHaveBeenCalled();
   });
 
   it.each([[true], ['true']])('checks the Enterprise Edition for the value %s', async (value) => {
-    vi.mocked(checkEnterpriseEdition).mockResolvedValue(undefined);
+    vi.mocked(checkEnterpriseEditionUpToDate).mockResolvedValue(undefined);
     await settingsEditField(context, bypassUser, 'settings-id', [{ key: 'platform_whitemark', value: [value] }]);
-    expect(checkEnterpriseEdition).toHaveBeenCalledWith(context);
+    expect(checkEnterpriseEditionUpToDate).toHaveBeenCalledWith(context);
     expect(updateAttribute).toHaveBeenCalledTimes(1);
   });
 
   it.each([[false], ['false']])('lets the whitemark be turned off without the Enterprise Edition (%s)', async (value) => {
-    vi.mocked(checkEnterpriseEdition).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
+    vi.mocked(checkEnterpriseEditionUpToDate).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
     await settingsEditField(context, bypassUser, 'settings-id', [{ key: 'platform_whitemark', value: [value] }]);
-    expect(checkEnterpriseEdition).not.toHaveBeenCalled();
+    expect(checkEnterpriseEditionUpToDate).not.toHaveBeenCalled();
     expect(updateAttribute).toHaveBeenCalledTimes(1);
   });
 
   it('refuses a whitemark turned on by a repeated key, whatever its position, and writes nothing', async () => {
-    vi.mocked(checkEnterpriseEdition).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
+    vi.mocked(checkEnterpriseEditionUpToDate).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
     await expect(settingsEditField(context, bypassUser, 'settings-id', [
       { key: 'platform_whitemark', value: ['false'] },
       { key: 'platform_whitemark', value: ['true'] },
@@ -80,9 +80,9 @@ describe('settingsEditField, the whitemark', () => {
   });
 
   it('does not look at the Enterprise Edition for another setting', async () => {
-    vi.mocked(checkEnterpriseEdition).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
+    vi.mocked(checkEnterpriseEditionUpToDate).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
     await settingsEditField(context, bypassUser, 'settings-id', [{ key: 'platform_title', value: ['My platform'] }]);
-    expect(checkEnterpriseEdition).not.toHaveBeenCalled();
+    expect(checkEnterpriseEditionUpToDate).not.toHaveBeenCalled();
     expect(updateAttribute).toHaveBeenCalledTimes(1);
   });
 });
