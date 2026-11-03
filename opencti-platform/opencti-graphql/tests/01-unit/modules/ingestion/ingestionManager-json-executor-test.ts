@@ -134,6 +134,20 @@ describe('Ingestion manager - jsonExecutor', () => {
     expect(patchJsonIngestionMock).not.toHaveBeenCalled();
   });
 
+  it('should answer the feed running state through the stop check', async () => {
+    const { buildIngestionStopCheck } = await import('../../../../src/manager/ingestionManager');
+
+    const running = buildIngestionStopCheck({} as any, async () => ({ ingestion_running: true }), 'json-internal--1');
+    const stopped = buildIngestionStopCheck({} as any, async () => ({ ingestion_running: false }), 'json-internal--1');
+    const deleted = buildIngestionStopCheck({} as any, async () => undefined, 'json-internal--1');
+    const unreadable = buildIngestionStopCheck({} as any, async () => { throw new Error('read failed'); }, 'json-internal--1');
+
+    await expect(running()).resolves.toBe(false);
+    await expect(stopped()).resolves.toBe(true);
+    await expect(deleted()).resolves.toBe(true);
+    await expect(unreadable()).resolves.toBe(false);
+  });
+
   it('should catch query errors, log them and update the last execution date and status', async () => {
     executeJsonQueryMock.mockRejectedValue(new Error('Remote server unreachable'));
 
