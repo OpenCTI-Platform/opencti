@@ -343,6 +343,18 @@ describe('ConfigPresetImportWizard', () => {
         expect((operation(rendered, 'ConfigPresetImportPreviewSaveMutation').request.variables.selections as { type: string }[]).map(({ type }) => type)).toEqual(['platform', 'branding', 'whitemark']);
       });
 
+      it('comes selected once a license is activated, even when its group was cleared before, as in the export', async () => {
+        const rendered = await renderPreview(session(), [], previewWithWhitemark);
+        await rendered.user.click(checkbox('Platform settings (4/4)'));
+        await act(async () => {
+          enterpriseEdition.activate();
+        });
+        await waitFor(() => expect(operationNames(rendered)).toContain('ConfigPresetImportPreviewQuery'));
+        await resolve(rendered, 'ConfigPresetImportPreviewQuery', { Query: () => ({ configPresetImportPreview: previewWithWhitemarkUnlocked }) });
+        expect(whitemarkRow().getByRole('checkbox')).toHaveAttribute('data-state', 'checked');
+        expect(checkbox('Messages (0/1)')).toHaveAttribute('data-state', 'unchecked');
+      });
+
       it('is selected like any type, with no gate, on a platform that has the Enterprise Edition', async () => {
         enterpriseEdition.enabled = true;
         const rendered = await openPreview(session(), previewWithWhitemarkUnlocked);

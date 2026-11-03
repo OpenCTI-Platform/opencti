@@ -1,9 +1,8 @@
 import React, { useSyncExternalStore } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
-import { CONFIG_PRESET_LICENSE_MAX_RETRIES } from '../useConfigPresetLicenseRetry';
 import ConfigPresetExportDrawer from './ConfigPresetExportDrawer';
 
 // The Enterprise Edition of the platform, which can change while the drawer is open (a license activated from it)
@@ -290,58 +289,23 @@ describe('ConfigPresetExportDrawer', () => {
       expect(screen.getByRole('checkbox', { name: 'Messages' })).toHaveAttribute('data-state', 'unchecked');
       expect(await exportedTypes(rendered)).toEqual(['platform', 'hiddenEntityTypes', 'whitemark']);
     });
-  });
 
-  describe('a type still locked by the backend on a platform the front end knows has the license', () => {
-    const STALE_TITLE = 'The Enterprise Edition license is not taken into account yet, click to try again';
-    const staleType = () => type('whitemark', 'Remove Filigran logos', [], { lockedByEnterpriseEdition: true });
-    const resolveCatalog = async (rendered: Awaited<ReturnType<typeof renderOpenDrawer>>, types: unknown[]) => {
+    it('comes checked once a license is activated, even when its group was cleared before, as in the import', async () => {
+      const rendered = await renderOpenDrawer(vi.fn(), [...catalog, lockedType()]);
+      await rendered.user.click(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' }));
+      await act(async () => {
+        enterpriseEdition.activate();
+      });
       await act(async () => {
         rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
-          Query: () => ({ configPresetExportableTypes: types }),
+          Query: () => ({ configPresetExportableTypes: [...catalog, unlockedType()] }),
         }));
       });
-    };
-
-    it('says the license is not taken into account yet, instead of offering to activate it', async () => {
-      const rendered = await renderOpenDrawer(vi.fn(), [...catalog, staleType()]);
-      await act(async () => {
-        enterpriseEdition.activate();
-      });
-      await resolveCatalog(rendered, [...catalog, staleType()]);
-      expect(screen.queryByRole('button', { name: 'Activate the Enterprise Edition to export this item' })).not.toBeInTheDocument();
-      // The row lets the pointer through to the tooltip: the events of its content reach it
-      fireEvent.mouseOver(screen.getByText('Remove Filigran logos'));
-      expect(await screen.findByText(STALE_TITLE)).toBeInTheDocument();
-    });
-
-    it('reads the catalog again when the row is clicked, after the automatic attempts', async () => {
-      const rendered = await renderOpenDrawer(vi.fn(), [...catalog, staleType()]);
-      await act(async () => {
-        enterpriseEdition.activate();
-      });
-      // The backend keeps answering locked, with the same catalog: the load of the license, then each automatic attempt
-      for (let attempt = 0; attempt <= CONFIG_PRESET_LICENSE_MAX_RETRIES; attempt += 1) {
-        await resolveCatalog(rendered, [...catalog, staleType()]);
-        if (attempt < CONFIG_PRESET_LICENSE_MAX_RETRIES) {
-          await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().length).toBeGreaterThan(0), { timeout: 4000 });
-        }
-      }
-      await rendered.user.click(screen.getByRole('button', { name: `Remove Filigran logos. ${STALE_TITLE}` }));
-      await resolveCatalog(rendered, [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { lockedByEnterpriseEdition: false })]);
+      // Only the type that was locked is checked again: what the user cleared stays cleared, and what is in another group is untouched
       expect(await screen.findByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'checked');
-    }, 15000);
-
-    it('reads the catalog again until the backend has taken the license into account', async () => {
-      const rendered = await renderOpenDrawer(vi.fn(), [...catalog, staleType()]);
-      await act(async () => {
-        enterpriseEdition.activate();
-      });
-      await resolveCatalog(rendered, [...catalog, staleType()]);
-      // The retry asks for the catalog again after a delay, and this time the backend has the license
-      await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().length).toBeGreaterThan(0), { timeout: 4000 });
-      await resolveCatalog(rendered, [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { lockedByEnterpriseEdition: false })]);
-      expect(await screen.findByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'checked');
+      expect(screen.getByRole('checkbox', { name: 'Platform configuration' })).toHaveAttribute('data-state', 'unchecked');
+      expect(screen.getByRole('checkbox', { name: 'Messages' })).toHaveAttribute('data-state', 'unchecked');
+      expect(await exportedTypes(rendered)).toEqual(['hiddenEntityTypes', 'whitemark']);
     });
   });
 

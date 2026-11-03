@@ -6,7 +6,6 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import { onActivationKey } from '../../../../utils/domEvent';
 import EEChip from '../../common/entreprise_edition/EEChip';
 import EETooltip from '../../common/entreprise_edition/EETooltip';
 import type { Theme } from '../../../../components/Theme';
@@ -95,22 +94,16 @@ export interface ConfigPresetAccordionType {
   readonly lockedByEnterpriseEdition?: boolean;
 }
 
-// A type the platform cannot use: one row that stays unchecked, with the chip, and opens the license dialog. When the front end knows the
-// platform has the license, the backend has not taken it into account yet: the row says so, and reads the types again when it is clicked.
-const ConfigPresetLockedTypeRow: FunctionComponent<{ type: ConfigPresetAccordionType; title?: string; onRetry?: () => void }> = ({ type, title, onRetry }) => {
+// A type the platform cannot use: one row that stays unchecked, with the chip, and opens the license dialog
+const ConfigPresetLockedTypeRow: FunctionComponent<{ type: ConfigPresetAccordionType; title?: string }> = ({ type, title }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const retryTitle = t_i18n('The Enterprise Edition license is not taken into account yet, click to try again');
-  // The row is the one button: named after the type, and its checkbox is out of the way of assistive tech, as in the gate of the license
-  const retryProps = isEnterpriseEdition && onRetry
-    ? { role: 'button', tabIndex: 0, 'aria-label': `${t_i18n(type.label)}. ${retryTitle}`, onClick: onRetry, onKeyDown: onActivationKey(onRetry) }
-    : {};
-  // The whole row is the button (it opens the license dialog, or reads again): its disabled checkbox and chip let the row's pointer cursor through
+  // The whole row opens the license dialog: its disabled checkbox and chip let the row's pointer cursor through instead of showing their own
   return (
-    <EETooltip title={isEnterpriseEdition ? 'The Enterprise Edition license is not taken into account yet, click to try again' : title}>
-      <div style={{ cursor: !isEnterpriseEdition || onRetry ? 'pointer' : undefined }} {...retryProps}>
-        <div aria-hidden={retryProps.role ? true : undefined} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), pointerEvents: 'none' }}>
+    <EETooltip title={title}>
+      <div style={{ cursor: isEnterpriseEdition ? undefined : 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), pointerEvents: 'none' }}>
           <Checkbox label={t_i18n(type.label)} description={t_i18n(type.description)} checked={false} disabled />
           <EEChip feature={t_i18n(type.label)} size="sm" clickable={false} />
         </div>
@@ -135,8 +128,6 @@ interface ConfigPresetSelectionAccordionProps<T extends ConfigPresetAccordionTyp
   expandTypes?: boolean;
   // The tooltip of a type that needs the Enterprise Edition the platform does not have yet, which opens the license dialog
   lockedTitle?: string;
-  // Reads the types again: what a locked row does when clicked on a platform that has the license, which the backend has not taken into account yet
-  onLockedRetry?: () => void;
 }
 
 // The groups, types and items of a bundle with their checkboxes, counts and chevrons: shared by the export drawer and the import preview
@@ -151,7 +142,6 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
   renderTypeActions,
   expandTypes = false,
   lockedTitle,
-  onLockedRetry,
 }: ConfigPresetSelectionAccordionProps<T>) => {
   const { t_i18n } = useFormatter();
   const isLocked = (type: T) => !!type.lockedByEnterpriseEdition;
@@ -179,7 +169,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
             {group.types.map((type) => {
               // Nothing of the type is listed, checked or counted until the platform has the license
               if (isLocked(type)) {
-                return <ConfigPresetLockedTypeRow key={type.key} type={type} title={lockedTitle} onRetry={onLockedRetry} />;
+                return <ConfigPresetLockedTypeRow key={type.key} type={type} title={lockedTitle} />;
               }
               // A type whose only item has the key of the type is one row, not a type with an item of the same name below it
               if (isSingletonConfigPresetType(type)) {

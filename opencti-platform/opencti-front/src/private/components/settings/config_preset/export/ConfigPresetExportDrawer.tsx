@@ -1,4 +1,4 @@
-import React, { FunctionComponent, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, Suspense, useCallback, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import { Input, Text } from '@filigran/design-system';
 import { DownloadOutlined } from '@mui/icons-material';
@@ -11,13 +11,12 @@ import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import type { Theme } from '../../../../../components/Theme';
 import { APP_BASE_PATH } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { ConfigPresetExportDrawerQuery } from './__generated__/ConfigPresetExportDrawerQuery.graphql';
 import { ConfigPresetExportDrawerMutation } from './__generated__/ConfigPresetExportDrawerMutation.graphql';
-import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems } from '../configPresetSelection';
+import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems, toggleConfigPresetTypes } from '../configPresetSelection';
 import ConfigPresetExportItems from './ConfigPresetExportItems';
 import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
-import useConfigPresetLicenseRetry from '../useConfigPresetLicenseRetry';
+import useConfigPresetLockedTypes from '../useConfigPresetLockedTypes';
 
 const BUNDLE_NAME_MAX_LENGTH = 80;
 
@@ -63,13 +62,16 @@ type ExportableTypes = ConfigPresetExportDrawerQuery['response']['configPresetEx
 interface ConfigPresetExportContentProps {
   types: ExportableTypes;
   onClose: () => void;
-  onLockedRetry: () => void;
+  onReload: () => void;
 }
 
-const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProps> = ({ types, onClose, onLockedRetry }) => {
+const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProps> = ({ types, onClose, onReload }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  // The selection starts with every item checked. The catalog is first the cached one, then the network one, and a license activated while
+  // the drawer is open adds the types that need it: they come checked, the rest of the selection is kept
   const [selection, setSelection] = useState<ConfigPresetSelection>(() => selectAllConfigPresetItems(types));
+  useConfigPresetLockedTypes(types, onReload, (usable) => setSelection((current) => toggleConfigPresetTypes(current, usable, true)));
   const [bundleName, setBundleName] = useState('');
   // The type whose items are managed in the sub-view, when it has more items than its first page
   const [managedTypeKey, setManagedTypeKey] = useState<string | null>(null);
@@ -113,7 +115,6 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
           onSelectionChange={setSelection}
           onManageType={setManagedTypeKey}
           lockedTitle="Activate the Enterprise Edition to export this item"
-          onLockedRetry={onLockedRetry}
         />
         <Input
           label={t_i18n('Bundle name')}
@@ -143,28 +144,19 @@ interface ConfigPresetExportFormProps {
 
 const ConfigPresetExportForm: FunctionComponent<ConfigPresetExportFormProps> = ({ queryRef, onClose, onReload }) => {
   const { configPresetExportableTypes } = usePreloadedQuery(configPresetExportDrawerQuery, queryRef);
-  const retryLocked = useConfigPresetLicenseRetry(configPresetExportableTypes, onReload);
   // A type without item has nothing to check: it is not shown, and neither is a group left without type. A type the platform cannot use
   // (it needs the Enterprise Edition the platform does not have) is shown, locked.
   const types = configPresetExportableTypes.filter((type) => type.items.length > 0 || type.lockedByEnterpriseEdition);
-  // The selection starts with every item checked: the content is remounted when the catalog changes, as the cached catalog is first
-  // rendered and then replaced by the network one. A type that was locked is not part of the key: a license activated while the drawer
-  // is open adds its items to the catalog, and the selection made until then is kept (it comes checked, as the selection holds every type).
-  const lockedKeysRef = useRef(new Set<string>());
-  configPresetExportableTypes.forEach((type) => type.lockedByEnterpriseEdition && lockedKeysRef.current.add(type.key));
-  const catalogKey = types.filter((type) => !lockedKeysRef.current.has(type.key)).flatMap((type) => type.items.map((item) => `${type.key}/${item.key}`)).join(',');
-  return <ConfigPresetExportContent key={catalogKey} types={types} onClose={onClose} onLockedRetry={retryLocked} />;
+  return <ConfigPresetExportContent types={types} onClose={onClose} onReload={onReload} />;
 };
 
 // The drawer content is only mounted while it is open, so the catalog is loaded on demand
-// and read again when a license is activated, which adds the types that need it
 const ConfigPresetExportLoader: FunctionComponent<{ onClose: () => void }> = ({ onClose }) => {
-  const isEnterpriseEdition = useEnterpriseEdition();
   const [queryRef, loadQuery] = useQueryLoader<ConfigPresetExportDrawerQuery>(configPresetExportDrawerQuery);
   const reload = useCallback(() => loadQuery({}, { fetchPolicy: 'store-and-network' }), [loadQuery]);
   useEffect(() => {
     reload();
-  }, [reload, isEnterpriseEdition]);
+  }, [reload]);
   if (!queryRef) {
     return <Loader variant={LoaderVariant.inElement} />;
   }
