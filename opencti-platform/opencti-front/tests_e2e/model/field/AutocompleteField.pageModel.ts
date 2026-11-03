@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 
 export default class AutocompleteFieldPageModel {
   private readonly inputLocator: Locator;
@@ -18,7 +18,32 @@ export default class AutocompleteFieldPageModel {
     await this.inputLocator.click();
     await this.inputLocator.fill(option);
     const list = this.page.getByRole('listbox', { name: this.label });
-    return list.getByText(option, { exact: true }).click();
+    const target = list.getByText(option, { exact: true });
+    try {
+      await target.waitFor({ state: 'visible', timeout: 15000 });
+    } catch {
+      // Options are refreshed by a single fire-and-forget search per input change, so a response
+      // that came back without the option (data not indexed yet) is never re-issued on its own.
+      await expect(async () => {
+        await this.inputLocator.fill('');
+        await this.inputLocator.fill(option);
+        await expect(target).toBeVisible({ timeout: 5000 });
+      }).toPass({ timeout: 60000, intervals: [1000] });
+    }
+    // The option can already be visible in the previous (unfiltered) list while the search for the
+    // typed text is still in flight; its response then reorders the rows under the pointer and the
+    // click selects a neighbour (e.g. "OrgC Analyst group" for "Analyst group"). Wait for the list
+    // to stop changing before clicking.
+    let previous = '';
+    await expect.poll(async () => {
+      const current = (await list.getByRole('option').allInnerTexts()).join('|');
+      const settled = current === previous;
+      previous = current;
+      return settled;
+    }, { intervals: [700], timeout: 15000 }).toBe(true);
+    await target.click();
+    // A single-select input shows the picked label: fail on a wrong pick instead of silently adding it.
+    if (!this.multiple) await expect(this.inputLocator).toHaveValue(option);
   }
 
   getOption(option: string) {

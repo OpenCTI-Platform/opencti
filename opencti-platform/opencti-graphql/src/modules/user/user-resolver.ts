@@ -1,3 +1,4 @@
+import { DateFormat, TimeFormat } from '../../generated/graphql';
 import type { EditContext, EditInput, InternalRelationshipAddInput, Resolvers, UnitSystem } from '../../generated/graphql';
 import type { AuthContext } from '../../types/user';
 import { ENTITY_TYPE_USER, type BasicStoreEntityUser } from './user-types';
@@ -113,6 +114,8 @@ const userResolvers: Resolvers = {
   MeUser: {
     language: (current) => current.language ?? 'auto',
     unit_system: (current) => (current.unit_system ?? 'auto') as UnitSystem,
+    date_format: (current) => (current.date_format ?? DateFormat.Auto) as DateFormat,
+    time_format: (current) => (current.time_format ?? TimeFormat.Auto) as TimeFormat,
     submenu_show_icons: (current) => current.submenu_show_icons ?? false,
     submenu_auto_collapse: (current) => current.submenu_auto_collapse ?? true,
     monochrome_labels: (current) => current.monochrome_labels ?? false,

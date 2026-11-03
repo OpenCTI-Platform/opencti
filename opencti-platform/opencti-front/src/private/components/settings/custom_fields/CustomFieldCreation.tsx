@@ -4,19 +4,20 @@ import { Field, Form, Formik } from 'formik';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import InputAdornment from '@mui/material/InputAdornment';
 import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxHelperText, ComboboxInput, ComboboxLabel } from '@filigran/design-system';
 import * as Yup from 'yup';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import TextareaField from '../../../../components/TextareaField';
 import ComboboxFieldComponent from '../../../../components/ComboboxField';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { commitMutation, defaultCommitMutation, handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { CustomFieldDefinitionAddInput } from './__generated__/CustomFieldCreationMutation.graphql';
 import { CustomFieldsLinesPaginationQuery$variables } from './__generated__/CustomFieldsLinesPaginationQuery.graphql';
+import { areCustomFieldAliasesValid, buildCustomFieldNameSuffix } from '../../../../utils/customFields';
 
 export const CUSTOM_FIELD_NAME_PREFIX = 'x_opencti_cf_';
 
@@ -49,9 +50,10 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
       .required(t_i18n('This field is required'))
       .matches(/^[a-z][a-z0-9_]*$/, t_i18n('Only lowercase letters, numbers and underscores, starting with a letter')),
     label: Yup.string().required(t_i18n('This field is required')),
-    aliases: Yup.array().of(Yup.string()),
+    aliases: Yup.array().of(Yup.string())
+      .test('alias-format', t_i18n('An alias must start with x_ and contain only lowercase letters, numbers and underscores'), (aliases) => areCustomFieldAliasesValid(aliases)),
     field_type: Yup.string().required(t_i18n('This field is required')),
-    description: Yup.string().nullable(),
+    description: Yup.string().trim().required(t_i18n('This field is required')),
     min_value: Yup.number().nullable(),
     max_value: Yup.number().nullable()
       .when('min_value', ([minValue], schema) => (minValue != null
@@ -65,6 +67,9 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
 
   const initialValues = {
     nameSuffix: '',
+    // The technical name follows the label until it is edited manually. Kept in the form values (never sent),
+    // so that any new form starts over, whatever the way the drawer was closed.
+    isNameSuffixEdited: false,
     label: '',
     aliases: [] as string[],
     field_type: '',
@@ -87,7 +92,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
       label: values.label,
       aliases: values.aliases,
       field_type: values.field_type,
-      description: values.description || undefined,
+      description: values.description,
       min_value: values.field_type === 'integer' && values.min_value !== null && String(values.min_value) !== '' ? Number(values.min_value) : undefined,
       max_value: values.field_type === 'integer' && values.max_value !== null && String(values.max_value) !== '' ? Number(values.max_value) : undefined,
       select_options: (values.field_type === 'select' || values.field_type === 'multi_select') ? values.select_options : undefined,
@@ -136,6 +141,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                 name="field_type"
                 label={t_i18n('Field type')}
                 fullWidth={true}
+                required
                 containerstyle={{ width: '100%' }}
               >
                 <SelectItem value="" disabled>{t_i18n('Select a type')}</SelectItem>
@@ -155,7 +161,11 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                     name="label"
                     label={t_i18n('Label')}
                     fullWidth={true}
+                    required
                     className="mt-5"
+                    onChange={(_: string, value: string) => {
+                      if (!values.isNameSuffixEdited) setFieldValue('nameSuffix', buildCustomFieldNameSuffix(value));
+                    }}
                   />
                   <Field
                     component={TextField}
@@ -163,13 +173,12 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                     name="nameSuffix"
                     label={t_i18n('Technical name')}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
+                    required
+                    // Once emptied, the technical name follows the label again
+                    onChange={(_: string, value: string) => setFieldValue('isNameSuffixEdited', value !== '')}
+                    className="mt-5"
+                    // The prefix is shown in the helper text, so that the field keeps the design system layout
                     helperText={`${t_i18n('Full technical name')}: ${CUSTOM_FIELD_NAME_PREFIX}${values.nameSuffix || '...'}`}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">{CUSTOM_FIELD_NAME_PREFIX}</InputAdornment>
-                      ),
-                    }}
                   />
                   <Field
                     component={ComboboxFieldComponent<string>}
@@ -180,6 +189,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                     allowCustomValue
                     createValueFromInput={(input: string) => input}
                     placeholder={t_i18n('Type and press Enter to add items')}
+                    helperText={t_i18n('When an entity ingested contains the alias field, it will be used to populate the value of the custom field you create')}
                     className="mt-5"
                   />
                   {values.field_type === 'integer' && (
@@ -219,7 +229,7 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                             error={Boolean(selectOptionsError)}
                             className="mt-5"
                           >
-                            <ComboboxLabel>{t_i18n('Select options')}</ComboboxLabel>
+                            <ComboboxLabel required>{t_i18n('Select options')}</ComboboxLabel>
                             <ComboboxField>
                               <ComboboxChips aria-label={t_i18n('Select options')} />
                               <ComboboxInput
@@ -240,14 +250,12 @@ const CustomFieldCreation: FunctionComponent<CustomFieldCreationProps> = ({
                     </>
                   )}
                   <Field
-                    component={TextField}
-                    variant="outlined"
+                    component={TextareaField}
                     name="description"
                     label={t_i18n('Description')}
-                    fullWidth={true}
-                    multiline={true}
+                    required
                     rows={2}
-                    style={{ marginTop: 20 }}
+                    className="mt-5"
                   />
                 </>
               )}

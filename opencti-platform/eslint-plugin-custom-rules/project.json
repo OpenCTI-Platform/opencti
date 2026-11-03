@@ -1,0 +1,28 @@
+{
+  "name": "eslint-plugin-custom-rules",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "opencti-platform/eslint-plugin-custom-rules",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/eslint-plugin-custom-rules",
+        "command": "yarn check-ts && yarn lint && yarn knip --dependencies"
+      },
+      "metadata": {
+        "description": "Check TS, lint and check the declared dependencies of the custom ESLint rules"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "opencti-platform/eslint-plugin-custom-rules",
+        "command": "yarn test"
+      },
+      "metadata": {
+        "description": "Run the tests of the custom ESLint rules"
+      }
+    }
+  }
+}

@@ -1,11 +1,8 @@
-import { useEffect, useState } from 'react';
-import { fetchQuery, useRelayEnvironment } from 'react-relay';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
-import { vocabularySearchQuery } from '@components/settings/VocabularyQuery';
-import type { VocabularyCategory, VocabularyQuery } from '@components/settings/__generated__/VocabularyQuery.graphql';
 import { useFormatter } from '../../../i18n';
 import useVariableValueLabels from '../useVariableValueLabels';
 import type { ValueInputProps } from '../DashboardVariableValueInput';
+import useVocabularyNames from './useVocabularyNames';
 
 interface SelectOption {
   value: string;
@@ -50,22 +47,6 @@ export const BooleanValueInput = (props: ValueInputProps) => {
 };
 
 export const VocabularyValueInput = (props: ValueInputProps) => {
-  const environment = useRelayEnvironment();
-  const [names, setNames] = useState<string[]>([]);
-  const category = props.variable.vocabularyCategory;
-
-  useEffect(() => {
-    if (!category) return undefined;
-    const subscription = fetchQuery<VocabularyQuery>(
-      environment,
-      vocabularySearchQuery,
-      { category: category as VocabularyCategory },
-      { fetchPolicy: 'store-or-network' },
-    ).subscribe({
-      next: (data) => setNames((data.vocabularies?.edges ?? []).map(({ node }) => node.name)),
-    });
-    return () => subscription.unsubscribe();
-  }, [environment, category]);
-
+  const names = useVocabularyNames(props.variable.vocabularyCategory);
   return <OptionsSelect {...props} options={names.map((name) => ({ value: name, label: name }))} />;
 };

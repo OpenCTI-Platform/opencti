@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { filter, map, pathOr, pipe, union } from 'ramda';
 import { Field } from 'formik';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import ComboboxField from '../../../../components/ComboboxField';
 import IdentityCreation from '../identities/IdentityCreation';
@@ -11,18 +11,17 @@ import { canUse } from '../../../../utils/authorizedMembers';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
 
-const useStyles = makeStyles((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')(({ theme }) => ({
+  paddingTop: 4,
+  display: 'inline-block',
+  color: theme.palette.primary.main,
 }));
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 const CreatedByField = (props) => {
   const {
@@ -38,7 +37,6 @@ const CreatedByField = (props) => {
     defaultCreatedBy,
     clearable = false,
   } = props;
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
@@ -144,10 +142,10 @@ const CreatedByField = (props) => {
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(option) => (
           <>
-            <div className={classes.icon}>
+            <OptionIcon>
               <ItemIcon type={option.type} />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
           </>
         )}
       />

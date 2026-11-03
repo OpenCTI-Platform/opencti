@@ -1,4 +1,4 @@
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { Field } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
 import { ComboboxChangeMeta } from '@filigran/design-system';
@@ -12,18 +12,15 @@ import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import ItemIcon from '../../../../components/ItemIcon';
 import { FieldOption } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
 });
 
 interface ObjectLabelFieldProps {
@@ -49,7 +46,6 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   onChange,
   disabled,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const [labelCreation, setLabelCreation] = useState(false);
@@ -104,10 +100,10 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
         onChange={onChange}
         renderOption={(option: FieldOption) => (
           <>
-            <div className={classes.icon} style={{ color: option.color }}>
+            <OptionIcon style={{ color: option.color }}>
               <ItemIcon type="Label" color={option.color} />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
           </>
         )}
       />

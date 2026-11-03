@@ -1,8 +1,6 @@
-import type { FileHandle } from 'fs/promises';
-import { z } from 'zod';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { updateAttribute } from '../../database/middleware';
-import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import { type EditInput, FilterMode, FilterOperator, type QueryThemesArgs, type ThemeAddInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -11,9 +9,8 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityTheme, type StoreEntityTheme } from './theme-types';
 import { FunctionalError } from '../../config/errors';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
-import { extractContentFrom } from '../../utils/fileToContent';
 import { SYSTEM_USER } from '../../utils/access';
-import { DARK_DEFAULTS, LIGHT_DEFAULTS } from './theme-constants';
+import { BUILT_IN_THEME_STANDARD_IDS, DARK_DEFAULTS, FILIGRAN_DARK_THEME_NAME, FILIGRAN_LIGHT_THEME_NAME, LIGHT_DEFAULTS } from './theme-constants';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityTheme>(context, user, id, ENTITY_TYPE_THEME);
@@ -21,6 +18,10 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 
 export const findThemePaginated = async (context: AuthContext, user: AuthUser, args: QueryThemesArgs) => {
   return pageEntitiesConnection<BasicStoreEntityTheme>(context, user, [ENTITY_TYPE_THEME], args);
+};
+
+export const findAllThemes = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityTheme> = {}) => {
+  return fullEntitiesList<BasicStoreEntityTheme>(context, user, [ENTITY_TYPE_THEME], args);
 };
 
 /**
@@ -32,7 +33,7 @@ export const findThemePaginated = async (context: AuthContext, user: AuthUser, a
  * @param excludeThemeId Optional theme id to exclude from the match (e.g. the theme being renamed).
  * @returns True when another theme already uses the given name.
  */
-const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string, excludeThemeId?: string) => {
+export const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string, excludeThemeId?: string) => {
   const filters = {
     mode: FilterMode.And,
     filters: [{ key: ['name'], values: [themeName], operator: FilterOperator.Eq }],
@@ -42,7 +43,8 @@ const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeNam
   return themes.edges.some((edge) => edge.node.name === themeName && edge.node.id !== excludeThemeId);
 };
 
-export const addTheme = async (context: AuthContext, user: AuthUser, input: ThemeAddInput) => {
+// standard_id is not part of ThemeAddInput: only internal callers (built-in seeding) set it.
+export const addTheme = async (context: AuthContext, user: AuthUser, input: ThemeAddInput & { standard_id?: string }) => {
   const themeFound = await checkExistingTheme(context, user, input.name);
 
   if (themeFound) {
@@ -66,6 +68,7 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
     theme_login_aside_gradient_end: input.theme_login_aside_gradient_end ?? null,
     theme_login_aside_image: input.theme_login_aside_image ?? null,
     built_in: input.built_in ?? false,
+    ...(input.standard_id ? { standard_id: input.standard_id } : {}),
   };
 
   return createInternalObject<StoreEntityTheme>(context, user, themeToCreate, ENTITY_TYPE_THEME);
@@ -76,7 +79,8 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
 
   // Create Filigran Dark theme
   const darkThemeInput = {
-    name: 'Filigran Dark',
+    name: FILIGRAN_DARK_THEME_NAME,
+    standard_id: BUILT_IN_THEME_STANDARD_IDS[FILIGRAN_DARK_THEME_NAME],
     theme_background: DARK_DEFAULTS.theme_background,
     theme_paper: DARK_DEFAULTS.theme_paper,
     theme_nav: DARK_DEFAULTS.theme_nav,
@@ -98,7 +102,8 @@ export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER)
 
   // Create Filigran Light theme
   const lightThemeInput = {
-    name: 'Filigran Light',
+    name: FILIGRAN_LIGHT_THEME_NAME,
+    standard_id: BUILT_IN_THEME_STANDARD_IDS[FILIGRAN_LIGHT_THEME_NAME],
     theme_background: LIGHT_DEFAULTS.theme_background,
     theme_paper: LIGHT_DEFAULTS.theme_paper,
     theme_nav: LIGHT_DEFAULTS.theme_nav,
@@ -162,41 +167,4 @@ export const fieldPatchTheme = async (context: AuthContext, user: AuthUser, them
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_THEME].EDIT_TOPIC, element, user);
-};
-
-const themeImportSchema = z.object({
-  name: z.string().min(1, 'Theme name is required'),
-  theme_background: z.string().min(1, 'Background color is required'),
-  theme_paper: z.string().min(1, 'Paper color is required'),
-  theme_nav: z.string().min(1, 'Nav color is required'),
-  theme_primary: z.string().min(1, 'Primary color is required'),
-  theme_secondary: z.string().min(1, 'Secondary color is required'),
-  theme_accent: z.string().min(1, 'Accent color is required'),
-  theme_text_color: z.string().min(1, 'Text color is required'),
-  theme_logo: z.string().optional().default(''),
-  theme_logo_collapsed: z.string().optional().default(''),
-  theme_logo_login: z.string().optional().default(''),
-  theme_login_aside_color: z.string().nullable().optional().default(null),
-  theme_login_aside_gradient_start: z.string().nullable().optional().default(null),
-  theme_login_aside_gradient_end: z.string().nullable().optional().default(null),
-  theme_login_aside_image: z.string().nullable().optional().default(null),
-});
-
-export const themeImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
-  const parsedData = await extractContentFrom(file);
-
-  const validationResult = themeImportSchema.safeParse(parsedData);
-
-  if (!validationResult.success) {
-    const errors = validationResult.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
-    throw FunctionalError('Invalid theme file', errors);
-  }
-
-  const themeFound = await checkExistingTheme(context, user, validationResult.data.name);
-
-  if (themeFound) {
-    throw FunctionalError('Theme name already exists', { name: validationResult.data.name });
-  }
-
-  return addTheme(context, user, validationResult.data);
 };

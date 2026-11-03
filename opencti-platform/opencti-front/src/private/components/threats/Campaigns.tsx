@@ -114,11 +114,7 @@ const Campaigns = () => {
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <Grid
-                      item
-                      xs={3}
-                      key={idx}
-                    >
+                    <Grid key={idx} size={3}>
                       <GenericAttackCardDummy />
                     </Grid>
                   ))}

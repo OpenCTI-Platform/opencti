@@ -124,7 +124,12 @@ const AttackPatternsMatrixColumnsElement = ({
         position: 'relative',
       }}
     >
-      <Typography variant="body2" fontSize={10}>
+      <Typography
+        variant="body2"
+        sx={{
+          fontSize: 10,
+        }}
+      >
         {attackPattern.name}
       </Typography>
 

@@ -32,7 +32,7 @@ import { decryptIngestionCredential } from './ingestion-common';
 import { connectorIdFromIngestId } from '../../domain/connector';
 import { loadCreator } from '../../database/members';
 import type { BasicStoreEntityIngestionJson } from './ingestion-types';
-import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-checks';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-resolvers';
 
 const ingestionJsonResolvers: Resolvers = {
   Query: {

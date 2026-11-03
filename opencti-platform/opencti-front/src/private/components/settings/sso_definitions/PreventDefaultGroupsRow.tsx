@@ -61,7 +61,13 @@ const PreventDefaultGroupsRow = ({ fieldName }: PreventDefaultGroupsRowProps) =>
           />
         ))}
         {platformDefaultGroups.length === 0 && (
-          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              fontStyle: 'italic',
+            }}
+          >
             {t_i18n('No default groups configured')}
           </Typography>
         )}

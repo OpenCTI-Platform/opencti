@@ -46,7 +46,7 @@ import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import type { BasicStoreObject, StoreCommon } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import { SYSTEM_USER } from '../utils/access';
-import { safeRender } from '../utils/safeEjs';
+import { createSafeEjsSandbox, type SafeEjsSandbox } from '../utils/safeEjs';
 import { computeDefaultValue, formatValue, handleDefaultMarkings, handleRefEntities, type InputType } from './csv-mapper';
 import { getCustomFieldAttributeDefinitions, moveCustomFieldValuesToInput } from '../modules/customField/custom-field-attributes';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
@@ -66,6 +66,7 @@ const format = (value: string | string[], def: AttributeDefinition, attribute: S
 };
 
 const extractComplexPathFromJson = async (
+  sandbox: SafeEjsSandbox,
   base: JSON,
   metaData: Record<string, any>,
   record: JSON,
@@ -108,7 +109,7 @@ const extractComplexPathFromJson = async (
     }
     return defaultValue;
   };
-  const val = await safeRender(`<?- ${formula} ?>`, data, {
+  const val = await sandbox.safeRender(`<?- ${formula} ?>`, data, {
     delimiter: '?',
     async: true,
     maxExecutedStatementCount: 10000,
@@ -193,6 +194,7 @@ const extractTargetIdentifierFromJson = (base: JSON, record: JSON, identifier: s
 };
 
 const handleDirectAttribute = async (
+  sandbox: SafeEjsSandbox,
   base: JSON,
   metaData: Record<string, any>,
   attribute: RepresentationAttribute,
@@ -220,7 +222,7 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.mode === 'complex' && attribute.complex_path) {
-    const computedValue: InputType | null | undefined = await extractComplexPathFromJson(base, metaData, record, attribute.complex_path, definition);
+    const computedValue: InputType | null | undefined = await extractComplexPathFromJson(sandbox, base, metaData, record, attribute.complex_path, definition);
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
@@ -362,6 +364,7 @@ const jsonMappingExecution = async (
 
   const finalObjects: StixObject[] = [];
   const seenIds = new Set<string>();
+  const ejsSandbox = createSafeEjsSandbox();
 
   const processInput = (representation: JsonMapperRepresentation, input: any) => {
     let stixObject: StixObject | undefined;
@@ -409,7 +412,7 @@ const jsonMappingExecution = async (
     const dataVars: any = { ...variables };
     for (let indexVar = 0; indexVar < (mapper.variables ?? []).length; indexVar += 1) {
       const variable = (mapper.variables ?? [])[indexVar];
-      dataVars[variable.name] = await extractComplexPathFromJson(baseJson, {}, element, variable.path);
+      dataVars[variable.name] = await extractComplexPathFromJson(ejsSandbox, baseJson, {}, element, variable.path);
     }
     // endregion
     // region representations
@@ -444,10 +447,10 @@ const jsonMappingExecution = async (
                 if (hashesNames.includes(attribute.key)) {
                   const definitionHash = (attributeDef as ObjectAttribute).mappings.find((definition) => (definition.name === attribute.key));
                   if (definitionHash) {
-                    await handleDirectAttribute(baseJson, dataVars, attribute, input, baseDatum, attributeDef, hashesNames);
+                    await handleDirectAttribute(ejsSandbox, baseJson, dataVars, attribute, input, baseDatum, attributeDef, hashesNames);
                   }
                 } else {
-                  await handleDirectAttribute(baseJson, dataVars, attribute, input, baseDatum, attributeDef, []);
+                  await handleDirectAttribute(ejsSandbox, baseJson, dataVars, attribute, input, baseDatum, attributeDef, []);
                 }
               } else {
                 throw UnsupportedError('Unknown schema for attribute:', { attribute });

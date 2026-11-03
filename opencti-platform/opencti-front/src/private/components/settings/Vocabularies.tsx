@@ -4,7 +4,7 @@ import { graphql } from 'react-relay';
 import { ShortTextOutlined } from '@mui/icons-material';
 import VocabularyPopover from '@components/settings/attributes/VocabularyPopover';
 import { VocabulariesLinesPaginationQuery, VocabulariesLinesPaginationQuery$variables } from '@components/settings/__generated__/VocabulariesLinesPaginationQuery.graphql';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';

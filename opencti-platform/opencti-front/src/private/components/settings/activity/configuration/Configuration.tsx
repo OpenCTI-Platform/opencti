@@ -17,7 +17,6 @@ import React, { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import { Form, Formik } from 'formik';
 import { graphql, usePreloadedQuery, PreloadedQuery } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@common/button/IconButton';
 import List from '@mui/material/List';
 import Grid from '@mui/material/Grid';
@@ -25,7 +24,7 @@ import { Delete } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Alert from '@mui/material/Alert';
-import { useTheme } from '@mui/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import type { Theme } from '../../../../../components/Theme';
@@ -46,18 +45,10 @@ import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnecte
 import { FieldOption } from '../../../../../utils/field';
 import Card from '../../../../../components/common/card/Card';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  alert: {
-    width: '100%',
-    marginBottom: 20,
-  },
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 50px 0',
+});
 
 export const configurationQuery = graphql`
   query ConfigurationQuery {
@@ -96,7 +87,6 @@ interface ConfigurationComponentProps {
 const ConfigurationComponent: FunctionComponent<
   ConfigurationComponentProps
 > = ({ queryRef }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -137,14 +127,14 @@ const ConfigurationComponent: FunctionComponent<
           </span>
         )}
       >
-        <div className={classes.container}>
+        <Container>
           <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Configuration'), current: true }]} />
           <Grid container={true} spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Card title={t_i18n('Extended activity logging')}>
                 <Alert
                   icon={false}
-                  classes={{ root: classes.alert, message: classes.message }}
+                  sx={{ width: '100%', marginBottom: '20px' }}
                   severity="info"
                   variant="outlined"
                   style={{ position: 'relative' }}
@@ -163,12 +153,7 @@ const ConfigurationComponent: FunctionComponent<
                       return (
                         <Form style={{ margin: `${theme.spacing(1)} 0` }}>
                           <Grid container={true} spacing={0}>
-                            <Grid
-                              key="users"
-                              item
-                              xs={4}
-                              style={{ padding: 4 }}
-                            >
+                            <Grid key="users" style={{ padding: 4 }} size={4}>
                               <CreatorField
                                 name="users"
                                 label={t_i18n('Add a user')}
@@ -176,12 +161,7 @@ const ConfigurationComponent: FunctionComponent<
                                 containerStyle={{ width: '100%' }}
                               />
                             </Grid>
-                            <Grid
-                              key="groups"
-                              item
-                              xs={4}
-                              style={{ padding: 4 }}
-                            >
+                            <Grid key="groups" style={{ padding: 4 }} size={4}>
                               <GroupField
                                 name="groups"
                                 label={t_i18n('Add a group')}
@@ -189,12 +169,7 @@ const ConfigurationComponent: FunctionComponent<
                                 onChange={onChangeData(resetForm)}
                               />
                             </Grid>
-                            <Grid
-                              key="organizations"
-                              item
-                              xs={4}
-                              style={{ padding: 4 }}
-                            >
+                            <Grid key="organizations" style={{ padding: 4 }} size={4}>
                               <ObjectOrganizationField
                                 alert={false}
                                 name="organizations"
@@ -213,7 +188,6 @@ const ConfigurationComponent: FunctionComponent<
                 <List
                   component="nav"
                   aria-labelledby="nested-list-subheader"
-                  className={classes.root}
                 >
                   {(settings.activity_listeners ?? []).map((listener) => {
                     return (
@@ -239,16 +213,14 @@ const ConfigurationComponent: FunctionComponent<
                             </IconButton>
                           )}
                         >
-                          <ListItemButton
-                            classes={{ root: classes.item }}
-                          >
-                            <ListItemIcon classes={{ root: classes.itemIcon }}>
+                          <ListItemButton>
+                            <ListItemIcon>
                               <ItemIcon type={listener.entity_type} />
                             </ListItemIcon>
                             <ListItemText
                               primary={(
                                 <div>
-                                  <div className={classes.name}>{listener.name}</div>
+                                  <div>{listener.name}</div>
                                 </div>
                               )}
                             />
@@ -261,7 +233,7 @@ const ConfigurationComponent: FunctionComponent<
               </Card>
             </Grid>
           </Grid>
-        </div>
+        </Container>
       </Security>
     </div>
   );

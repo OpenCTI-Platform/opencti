@@ -59,8 +59,9 @@ export function TagsOverflow<T>({
       <Stack
         ref={measureContainerRef}
         direction="row"
-        gap={`${gapPx}px`}
+        aria-hidden="true"
         sx={{
+          gap: `${gapPx}px`,
           position: 'absolute',
           visibility: 'hidden',
           pointerEvents: 'none',
@@ -70,7 +71,6 @@ export function TagsOverflow<T>({
           flexWrap: 'nowrap',
           flexDirection: isRTL ? 'row-reverse' : 'row',
         }}
-        aria-hidden="true"
       >
         {items.map((item) => (
           <div key={getKey(item)} data-tag-item>
@@ -91,8 +91,8 @@ export function TagsOverflow<T>({
       <Stack
         ref={visibleContainerRef}
         direction="row"
-        gap={`${gapPx}px`}
         sx={{
+          gap: `${gapPx}px`,
           flex: 1,
           minWidth: 0,
           maxWidth,

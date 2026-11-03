@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import { graphql } from 'react-relay';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -9,14 +7,6 @@ import ThreatActorGroupEditionContainer from './ThreatActorGroupEditionContainer
 import { ThreatActorGroupEditionOverviewFocus } from './ThreatActorGroupEditionOverview';
 import Loader from '../../../../components/Loader';
 import EditEntityControlledDial from '../../../../components/EditEntityControlledDial';
-
-const styles = () => ({
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-});
 
 export const ThreatActorGroupEditionQuery = graphql`
   query ThreatActorGroupEditionContainerQuery($id: String!) {
@@ -62,11 +52,7 @@ class ThreatActorGroupEdition extends Component {
 
 ThreatActorGroupEdition.propTypes = {
   threatActorGroupId: PropTypes.string,
-  theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(ThreatActorGroupEdition);
+export default inject18n(ThreatActorGroupEdition);

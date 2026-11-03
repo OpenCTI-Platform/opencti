@@ -1,6 +1,6 @@
-import { PropsWithChildren, ReactNode } from 'react';
-import { useTheme } from '@mui/styles';
-import { Stack, SxProps, Card as CardMui, CardActionArea, StackProps } from '@mui/material';
+import { CSSProperties, PropsWithChildren, ReactNode } from 'react';
+import { useTheme } from '@mui/material/styles';
+import { Stack, SxProps, Card as CardMui, CardActionArea } from '@mui/material';
 import CardTitle from './CardTitle';
 import { Theme } from '../../Theme';
 import { Link } from 'react-router';
@@ -11,7 +11,7 @@ export interface CardProps extends PropsWithChildren {
   padding?: 'none' | 'small' | 'medium' | 'horizontal' | 'default';
   sx?: SxProps;
   titleSx?: SxProps;
-  titleAlignItems?: StackProps['alignItems'];
+  titleAlignItems?: CSSProperties['alignItems'];
   fullHeight?: boolean;
   onClick?: () => void;
   to?: string;

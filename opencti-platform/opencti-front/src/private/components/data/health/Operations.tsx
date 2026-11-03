@@ -30,7 +30,7 @@ const operationsQuery = graphql`
 `;
 
 const Operations = () => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, ftdt } = useFormatter();
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Operations | Health | Data'));
@@ -130,7 +130,7 @@ const Operations = () => {
       percentWidth: 11,
       isSortable: false,
       render: (row: OperationRow) => (
-        <>{row.last_run_date ? fldt(row.last_run_date) : '-'}</>
+        <>{row.last_run_date ? ftdt(row.last_run_date, 'long') : '-'}</>
       ),
     },
     last_execution_time: {

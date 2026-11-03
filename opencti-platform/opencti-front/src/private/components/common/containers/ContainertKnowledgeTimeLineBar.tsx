@@ -4,7 +4,6 @@ import { RelationManyToMany, CalendarMultiselectOutline } from 'mdi-material-ui'
 import Tooltip from '@mui/material/Tooltip';
 import Drawer from '@mui/material/Drawer';
 import Divider from '@mui/material/Divider';
-import { makeStyles } from '@mui/styles';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -16,16 +15,6 @@ import { Stack } from '@mui/material';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../../utils/hooks/useDraftContext';
 import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  bottomNav: {
-    zIndex: 1,
-    display: 'flex',
-    overflow: 'hidden',
-  },
-}));
 
 interface ContentKnowledgeTimeLineBarProps {
   handleTimeLineSearch: (search: string) => void;
@@ -64,7 +53,6 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
   handleSwitchFilterGlobalMode,
 }) => {
   const { filterKeysSchema } = useAuth().schema;
-  const classes = useStyles();
   const draftContext = useDraftContext();
   const { t_i18n } = useFormatter();
   const [navOpen, setNavOpen] = useState(
@@ -91,7 +79,6 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
         <Drawer
           anchor="bottom"
           variant="permanent"
-          classes={{ paper: classes.bottomNav }}
           slotProps={{
             paper: {
               variant: 'elevation',
@@ -99,7 +86,12 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
               // Layer 1, like every other tab-scoped bar; on the same node as
               // the input aliases so the search field inside resolves here.
               className: fdsLayerClass(RIGHT_BAR_LAYER),
-              sx: { ...layerInputVars },
+              sx: {
+                ...layerInputVars,
+                zIndex: 1,
+                display: 'flex',
+                overflow: 'hidden',
+              },
               style: {
                 paddingLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
                 bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
@@ -117,9 +109,9 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
           >
             <Stack
               direction="row"
-              alignItems="center"
-              gap={1}
               sx={{
+                alignItems: 'center',
+                gap: 1,
                 minHeight: 50,
               }}
             >

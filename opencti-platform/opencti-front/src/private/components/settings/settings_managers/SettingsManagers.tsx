@@ -5,7 +5,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 // fds:keep-mui the library ButtonGroupItem is a 36x36 glyph-only square; this filter needs labelled segments with counts (LIBRARY-FEEDBACK #63)
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { useState } from 'react';
 import Button from '../../../../components/common/button/Button';
 import Card from '../../../../components/common/card/Card';

@@ -221,6 +221,7 @@ export const transformCustomFieldValueAddInput = async (
 ): Promise<CustomFieldValue[]> => {
   const customFieldDefinitionsForEntity = await getCustomFieldDefinitionsForEntityType(context, user, entityType);
   const resultCustomFieldValues: CustomFieldValue[] = [];
+  const inputNameByFieldId = new Map<string, string>();
   for (let i = 0; i < customFieldValueAddInput.length; i++) {
     const currentCustomField = customFieldValueAddInput[i];
     const customFieldDefinition = customFieldDefinitionsForEntity
@@ -228,9 +229,14 @@ export const transformCustomFieldValueAddInput = async (
         || d.aliases?.some((a) => a === currentCustomField.field_name));
     // Drop custom field add input not in configured custom fields of the entity type
     if (customFieldDefinition) {
+      const inputNameOfSameField = inputNameByFieldId.get(customFieldDefinition.id);
+      if (inputNameOfSameField !== undefined && inputNameOfSameField !== currentCustomField.field_name) {
+        continue;
+      }
       const customFieldValue = extractCustomFieldValueFromAddInputValue(currentCustomField.value, customFieldDefinition);
       if (customFieldValue) {
         resultCustomFieldValues.push(customFieldValue);
+        inputNameByFieldId.set(customFieldDefinition.id, currentCustomField.field_name);
       }
     }
   }

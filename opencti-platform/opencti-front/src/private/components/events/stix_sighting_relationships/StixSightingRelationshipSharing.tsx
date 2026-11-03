@@ -154,7 +154,13 @@ const StixSightingRelationshipSharing: FunctionComponent<
         </Label>
 
         {!isEnterpriseEdition && <EEChip />}
-        <Stack direction="row" gap={1} flexWrap="wrap">
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1,
+            flexWrap: 'wrap',
+          }}
+        >
           {edges.map((edge) => (
             <Tooltip key={edge.id} title={edge.name}>
               <Tag

@@ -1,5 +1,5 @@
 import { graphql, useFragment } from 'react-relay';
-import { Box, Grid2 as Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { AutoFix, Database, GraphOutline } from 'mdi-material-ui';
 import { useTheme } from '@mui/material/styles';
 import { SettingsSuggestOutlined } from '@mui/icons-material';

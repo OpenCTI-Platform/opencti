@@ -457,7 +457,13 @@ export const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
         )}
       </Formik>
       {typeof handleDelete === 'function' && (
-        <Stack direction="row" alignSelf="flex-end" sx={{ mt: 3 }}>
+        <Stack
+          direction="row"
+          sx={{
+            alignSelf: 'flex-end',
+            mt: 3,
+          }}
+        >
           <Button
             intent="destructive"
             onClick={handleDelete}

@@ -95,7 +95,12 @@ const FlowNode = ({ icon: Icon, value, label, to }: FlowNodeProps) => {
       >
         <Icon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
       </Box>
-      <Stack alignItems="center" gap={0.5}>
+      <Stack
+        sx={{
+          alignItems: 'center',
+          gap: 0.5,
+        }}
+      >
         <Typography
           component="div"
           sx={{
@@ -126,9 +131,9 @@ const FlowNode = ({ icon: Icon, value, label, to }: FlowNodeProps) => {
       <Stack
         component={Link}
         to={to}
-        alignItems="center"
-        gap={1}
         sx={{
+          alignItems: 'center',
+          gap: 1,
           flexShrink: 0,
           textDecoration: 'none',
           color: 'inherit',
@@ -143,7 +148,13 @@ const FlowNode = ({ icon: Icon, value, label, to }: FlowNodeProps) => {
     );
   }
   return (
-    <Stack alignItems="center" gap={1} sx={{ flexShrink: 0 }}>
+    <Stack
+      sx={{
+        alignItems: 'center',
+        gap: 1,
+        flexShrink: 0,
+      }}
+    >
       {content}
     </Stack>
   );
@@ -211,15 +222,32 @@ const FlowRibbon = ({ deployedCount, metrics }: FlowRibbonProps) => {
 
   // Read/write rates share one "Operations" node: two compact stacked rows.
   const operationsValue = (
-    <Stack alignItems="flex-start" gap={0.5}>
+    <Stack
+      sx={{
+        alignItems: 'flex-start',
+        gap: 0.5,
+      }}
+    >
       <Tooltip title={t_i18n('Read operations')}>
-        <Stack direction="row" alignItems="center" gap={0.5}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
           <DownloadOutlined sx={{ fontSize: 11, color: theme.palette.primary.main }} />
           <Box component="span" sx={{ fontSize: 11, lineHeight: 1 }}>{safeValue(metrics.readOperations, '/s')}</Box>
         </Stack>
       </Tooltip>
       <Tooltip title={t_i18n('Write operations')}>
-        <Stack direction="row" alignItems="center" gap={0.5}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
           <UploadOutlined sx={{ fontSize: 11, color: theme.palette.primary.main }} />
           <Box component="span" sx={{ fontSize: 11, lineHeight: 1 }}>{safeValue(metrics.writeOperations, '/s')}</Box>
         </Stack>
@@ -246,8 +274,8 @@ const FlowRibbon = ({ deployedCount, metrics }: FlowRibbonProps) => {
   return (
     <Stack
       direction="row"
-      alignItems="flex-start"
       sx={{
+        alignItems: 'flex-start',
         marginTop: 2.5,
         paddingTop: 2.5,
         paddingInline: 1,

@@ -1,123 +1,106 @@
 import React, { memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
-import makeStyles from '@mui/styles/makeStyles';
-import type { Theme } from '../../../../../../../components/Theme';
+import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
 import ItemIcon from '../../../../../../../components/ItemIcon';
 import { truncate } from '../../../../../../../utils/String';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  node: {
-    position: 'relative',
-    width: 200,
-    height: 200,
-    lineHeight: '200px',
-    whiteSpace: 'nowrap',
-    textAlign: 'center',
-    fontSize: 10,
-    margin: 10,
-    '&::before': {
-      position: 'absolute',
-      content: '""',
-      top: 0,
-      left: 0,
-      height: '100%',
-      width: '100%',
-      transform: 'rotate(45deg)',
-      boxShadow: '0px 0px 12px gray',
-    },
-    '&::after': {
-      position: 'absolute',
-      content: '""',
-      top: 10,
-      left: 10,
-      height: 'calc(100% - 22px)', /* -22px is 2 * 10px gap on either side - 2px border on either side */
-      width: 'calc(100% - 22px)', /* -22px is 2 * 10px gap on either side - 2px border on either side */
-      border: `1px solid ${theme.palette.primary.main}`,
-      transform: 'rotate(45deg)',
-    },
-  },
-  handleTop: {
-    top: -50,
-  },
-  handleRight: {
-    right: -50,
-  },
-  handleBottom: {
-    bottom: -50,
-  },
-  handleLeft: {
-    left: -50,
-  },
-  adversary: {
+const Node = styled('div')(({ theme }) => ({
+  position: 'relative',
+  width: 200,
+  height: 200,
+  lineHeight: '200px',
+  whiteSpace: 'nowrap',
+  textAlign: 'center',
+  fontSize: 10,
+  margin: 10,
+  '&::before': {
     position: 'absolute',
-    top: -85,
-    left: 88,
+    content: '""',
+    top: 0,
+    left: 0,
+    height: '100%',
+    width: '100%',
+    transform: 'rotate(45deg)',
+    boxShadow: '0px 0px 12px gray',
   },
-  infrastructure: {
+  '&::after': {
     position: 'absolute',
+    content: '""',
     top: 10,
-    right: -5,
-  },
-  victimology: {
-    position: 'absolute',
-    top: 110,
-    left: 88,
-  },
-  capabilities: {
-    position: 'absolute',
-    top: 10,
-    left: -5,
+    left: 10,
+    height: 'calc(100% - 22px)', /* -22px is 2 * 10px gap on either side - 2px border on either side */
+    width: 'calc(100% - 22px)', /* -22px is 2 * 10px gap on either side - 2px border on either side */
+    border: `1px solid ${theme.palette.primary.main}`,
+    transform: 'rotate(45deg)',
   },
 }));
 
+const HandleTop = styled(Handle)({
+  '&&': {
+    top: -50,
+  },
+});
+
+const HandleRight = styled(Handle)({
+  '&&': {
+    right: -50,
+  },
+});
+
+const HandleBottom = styled(Handle)({
+  '&&': {
+    bottom: -50,
+  },
+});
+
+const HandleLeft = styled(Handle)({
+  '&&': {
+    left: -50,
+  },
+});
+
 const NodeDiamond = ({ data }: NodeProps) => {
-  const classes = useStyles();
   return (
-    <div className={classes.node}>
+    <Node>
       {truncate(data.name, 25, false)}
-      <div className={classes.adversary}>
+      <Box sx={{ position: 'absolute', top: -85, left: 88 }}>
         <ItemIcon type="threats" />
-      </div>
-      <div className={classes.infrastructure}>
+      </Box>
+      <Box sx={{ position: 'absolute', top: 10, right: -5 }}>
         <ItemIcon type="Infrastructure" />
-      </div>
-      <div className={classes.victimology}>
+      </Box>
+      <Box sx={{ position: 'absolute', top: 110, left: 88 }}>
         <ItemIcon type="victimology" />
-      </div>
-      <div className={classes.capabilities}>
+      </Box>
+      <Box sx={{ position: 'absolute', top: 10, left: -5 }}>
         <ItemIcon type="Attack-Pattern" />
-      </div>
-      <Handle
+      </Box>
+      <HandleTop
         id="adversary"
-        className={classes.handleTop}
         type="source"
         position={Position.Top}
         isConnectable={false}
       />
-      <Handle
+      <HandleRight
         id="infrastructure"
-        className={classes.handleRight}
         type="source"
         position={Position.Right}
         isConnectable={false}
       />
-      <Handle
+      <HandleBottom
         id="victimology"
-        className={classes.handleBottom}
         type="source"
         position={Position.Bottom}
         isConnectable={false}
       />
-      <Handle
+      <HandleLeft
         id="capabilities"
-        className={classes.handleLeft}
         type="source"
         position={Position.Left}
         isConnectable={false}
       />
-    </div>
+    </Node>
   );
 };
 

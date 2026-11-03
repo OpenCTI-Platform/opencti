@@ -3,7 +3,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Field, Form, Formik } from 'formik';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ThreatActorGroupEditionOverviewFocus, ThreatActorGroupMutationRelationAdd, ThreatActorGroupMutationRelationDelete } from './ThreatActorGroupEditionOverview';
 import { useFormatter } from '../../../../components/i18n';
 

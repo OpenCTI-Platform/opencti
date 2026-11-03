@@ -63,7 +63,7 @@ const DraftWorksComponent: FunctionComponent<
       label: 'Start time',
       percentWidth: 20,
       isSortable: false,
-      render: ({ timestamp }, h) => defaultRender(h.nsdt(timestamp)),
+      render: ({ timestamp }, h) => defaultRender(h.ftdt(timestamp)),
     },
     status: {
       id: 'Status',

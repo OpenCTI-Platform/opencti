@@ -8,10 +8,9 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import fileDownload from 'js-file-download';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import React, { Component } from 'react';
 import { fetchQuery, graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
@@ -20,21 +19,8 @@ import { deleteNode } from '../../../../utils/store';
 import Drawer from '../../common/drawer/Drawer';
 import SyncEdition from './SyncEdition';
 
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const Container = styled('div')({
+  margin: 0,
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -244,9 +230,9 @@ class SyncPopover extends Component {
   }
 
   render() {
-    const { classes, t, syncId, running } = this.props;
+    const { t, syncId, running } = this.props;
     return (
-      <div className={classes.container}>
+      <Container>
         <IconButton
           aria-label={t('Open menu')}
           onClick={this.handleOpen.bind(this)}
@@ -382,7 +368,7 @@ class SyncPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </Container>
     );
   }
 }
@@ -391,9 +377,8 @@ SyncPopover.propTypes = {
   syncId: PropTypes.string,
   running: PropTypes.bool,
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   onDeleteComplete: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(SyncPopover);
+export default inject18n(SyncPopover);

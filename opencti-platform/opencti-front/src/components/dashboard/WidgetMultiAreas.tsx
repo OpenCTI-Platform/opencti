@@ -1,4 +1,4 @@
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import React, { useMemo } from 'react';

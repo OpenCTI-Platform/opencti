@@ -151,7 +151,7 @@ const StixDomainObjectOverview = ({
           )}
         </Grid>
         <Grid container={true} spacing={3}>
-          <Grid item xs={6}>
+          <Grid size={6}>
             {stixDomainObject.objectMarking && (
               <>
                 <Label>{t_i18n('Marking')}</Label>
@@ -177,7 +177,7 @@ const StixDomainObjectOverview = ({
             {(displayConfidence || displayReliability) && (
               <Grid container={true} columnSpacing={1}>
                 {displayReliability && (
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label sx={{ mt: 2 }}>
                       {t_i18n('Reliability')}
                       {isReliabilityOfSource && (
@@ -195,7 +195,7 @@ const StixDomainObjectOverview = ({
                   </Grid>
                 )}
                 {displayConfidence && (
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label sx={{ marginTop: 2 }}>
                       {t_i18n('Confidence level')}
                     </Label>
@@ -217,7 +217,7 @@ const StixDomainObjectOverview = ({
             </Label>
             {fldt(stixDomainObject.modified)}
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             {withPattern && (
               <>
                 <Label>

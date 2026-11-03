@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import { ChipOwnProps } from '@mui/material/Chip';
 import React, { FunctionComponent } from 'react';
 import { PreloadedQuery } from 'react-relay';
 import { FilterSearchContext, FiltersRestrictions } from '../utils/filters/filtersUtils';

@@ -1,0 +1,35 @@
+{
+  "name": "eslint-plugin-custom-rules",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.ts",
+  "exports": "./lib/index.ts",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "check-ts": "tsc -b",
+    "knip": "knip",
+    "lint": "eslint --quiet --cache --config eslint.config.ts",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@stylistic/eslint-plugin": "5.10.0",
+    "@types/node": "22.20.5",
+    "@typescript-eslint/parser": "8.72.0",
+    "eslint": "10.13.0",
+    "eslint-import-resolver-typescript": "4.4.5",
+    "eslint-plugin-import": "2.32.0",
+    "globals": "17.13.0",
+    "jiti": "2.7.0",
+    "knip": "6.42.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  },
+  "peerDependencies": {
+    "eslint": ">=7"
+  }
+}

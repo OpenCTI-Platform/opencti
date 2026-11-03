@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import Button from '@common/button/Button';
 import Tag from '@common/tag/Tag';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../../utils/hooks/useGranted';

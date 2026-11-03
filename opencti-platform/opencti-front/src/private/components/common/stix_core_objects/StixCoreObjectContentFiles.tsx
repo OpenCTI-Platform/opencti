@@ -31,7 +31,8 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { Stack, useTheme } from '@mui/material';
+import { Stack } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useTopBanner from '../../../../utils/hooks/useTopBanner';
@@ -272,7 +273,12 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
         title={t_i18n('Files')}
         actions={(
           <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-            <Stack direction="row" gap={1}>
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+              }}
+            >
               <FileUploader
                 entityId={stixCoreObjectId}
                 onUploadSuccess={onFileChange}

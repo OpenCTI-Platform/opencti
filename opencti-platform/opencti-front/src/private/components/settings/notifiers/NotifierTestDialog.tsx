@@ -3,32 +3,17 @@ import Dialog from '@common/dialog/Dialog';
 import { DialogActions } from '@mui/material';
 import { Chip, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { Theme } from '../../../../components/Theme';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    width: 400,
-    marginBottom: 10,
-  },
-  success: {
-    backgroundColor: theme.palette.success.main,
-    borderColor: theme.palette.success.main,
-    color: theme.palette.common.white,
-  },
-  error: {
-    backgroundColor: theme.palette.error.main,
-    borderColor: theme.palette.error.main,
-    color: theme.palette.common.white,
-  },
-}));
+const Container = styled('div')({
+  width: 400,
+  marginBottom: 10,
+});
 
 export const notifierTestQuery = graphql`
   query NotifierTestDialogQuery($input: NotifierTestInput!) {
@@ -74,8 +59,6 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
   onTest,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
-
   const [target, setTarget] = useState('default_notification');
   return (
     <Dialog
@@ -83,7 +66,7 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
       onClose={onClose}
       title={t_i18n('Testing notifier')}
     >
-      <div className={classes.container}>
+      <Container>
         {/* The bare `Typography` label becomes `SelectLabel`, so the visible text is actually ASSOCIATED with the
             field instead of merely sitting above it. */}
         <Select value={target} onValueChange={setTarget}>
@@ -101,8 +84,8 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
             </SelectItem>
           </SelectContent>
         </Select>
-      </div>
-      <div className={classes.container}>
+      </Container>
+      <Container>
         {!queryRef && <Typography>Result</Typography>}
         <React.Suspense
           fallback={(
@@ -114,7 +97,7 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
         >
           {queryRef && <NotifierTestResult queryRef={queryRef} />}
         </React.Suspense>
-      </div>
+      </Container>
       <DialogActions>
         <Button
           onClick={() => onTest(target)}

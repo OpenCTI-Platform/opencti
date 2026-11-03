@@ -1,4 +1,4 @@
-import conf, { booleanConf } from '../../config/conf';
+import conf, { booleanConf, logApp } from '../../config/conf';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { autoUpgradeManagedConnectors } from '../connector/connector-domain';
 import { synchronizeCatalogs } from './sync/catalog-sync-domain';
@@ -22,17 +22,28 @@ const resolveCatalogSyncRemoteTimeoutMs = () => {
 
 export const isCatalogManagerEnabled = () => CATALOG_MANAGER_ENABLED;
 
-const catalogManagerHandler = async () => {
+let isSyncCompleteUntilRestart = false;
+
+export const catalogManagerHandler = async () => {
+  if (isSyncCompleteUntilRestart) {
+    logApp.debug('[OPENCTI-MODULE] Embedded catalogs already synchronized, skipping catalog synchronization until restart', { module: 'catalog' });
+    return;
+  }
   const context = executionContext('catalog_manager');
   // Sync catalogs to ES
-  const synchronizedCatalogIds = await synchronizeCatalogs(context, SYSTEM_USER, {
+  const { synchronizedCatalogIds, isEmbeddedOnlySyncComplete } = await synchronizeCatalogs(context, SYSTEM_USER, {
     remoteCatalogTimeoutMs: resolveCatalogSyncRemoteTimeoutMs(),
   });
   // TODO Replace this cross-module call with a catalog-synchronized event once
   // manager initialization guarantees that subscribers start before runOnStart handlers.
   // Process every successfully synchronized catalog so a previous partial
   // connector auto-upgrade is retried even when the manifest itself is unchanged.
-  await autoUpgradeManagedConnectors(context, SYSTEM_USER, synchronizedCatalogIds);
+  const { hasErrors } = await autoUpgradeManagedConnectors(context, SYSTEM_USER, synchronizedCatalogIds);
+  // A failed connector auto-upgrade keeps the next runs going so it gets retried.
+  isSyncCompleteUntilRestart = isEmbeddedOnlySyncComplete && !hasErrors;
+  if (isSyncCompleteUntilRestart) {
+    logApp.info('[OPENCTI-MODULE] Embedded catalogs synchronized, skipping the next catalog synchronizations until restart', { module: 'catalog' });
+  }
 };
 
 const CATALOG_MANAGER_DEFINITION: ManagerDefinition = {

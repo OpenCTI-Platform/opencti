@@ -81,7 +81,7 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
     await graph.clickNode(fixture.malware.id);
     await expect(graph.getSelectionSummary(1)).toBeVisible();
     await page.mouse.move(5, 5);
-    await expectGraphScreenshot(page, graph.getCanvas(), 'knowledge-graph-focus.png', [page.locator('.MuiDrawer-paperAnchorRight')]);
+    await expectGraphScreenshot(page, graph.getCanvas(), 'knowledge-graph-focus.png', [page.locator('.MuiDrawer-anchorRight .MuiDrawer-paper')]);
     await graph.runToolbarAction('Layered layout (by entity category)');
   });
 

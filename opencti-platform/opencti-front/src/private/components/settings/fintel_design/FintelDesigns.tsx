@@ -22,7 +22,7 @@ import Alert from '../../../../components/Alert';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import Tag from '@common/tag/Tag';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import FintelDesignPopover from '@components/settings/fintel_design/FintelDesignPopover';
 import FintelDesignDeletion from '@components/settings/fintel_design/FintelDesignDeletion';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';

@@ -17,7 +17,13 @@ const IngestionCatalogCardDeployButton = ({ deploymentCount = 0, deployedTo, onC
   const { t_i18n } = useFormatter();
 
   return (
-    <Stack direction="row" alignItems="center" gap={1}>
+    <Stack
+      direction="row"
+      sx={{
+        alignItems: 'center',
+        gap: 1,
+      }}
+    >
       <DeployedCountChip count={deploymentCount} to={deployedTo} />
       <DisabledReasonTooltip reason={disabled ? disabledReason : null}>
         <Button

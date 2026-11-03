@@ -24,7 +24,7 @@ import StixCyberObservableCreation from '@components/observations/stix_cyber_obs
 import { type StixCoreResultsType } from '../utils/querySearchEntityByText';
 import { getRelationsFromOneEntityToAny, RelationsDataFromEntity, RelationsToEntity } from '../../../../../utils/Relation';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../../utils/fdsLayer';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
 import { v4 as uuid } from 'uuid';
 

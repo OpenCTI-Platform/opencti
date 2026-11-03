@@ -41,7 +41,13 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participan
   };
   return (
     <FieldOrEmpty source={participants}>
-      <Stack direction="row" gap={1} flexWrap="wrap">
+      <Stack
+        direction="row"
+        sx={{
+          gap: 1,
+          flexWrap: 'wrap',
+        }}
+      >
         {participants.map((participant) => (
           <Tooltip key={participant.id} title={participant.name}>
             <Tag

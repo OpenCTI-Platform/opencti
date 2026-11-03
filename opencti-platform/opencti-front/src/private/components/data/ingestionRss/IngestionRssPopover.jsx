@@ -7,34 +7,19 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Slide from '@mui/material/Slide';
 import ToggleButton from '@mui/material/ToggleButton';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import React, { Component } from 'react';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer, fetchQuery } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import IngestionRssEdition, { ingestionRssMutationFieldPatch } from './IngestionRssEdition';
-import { fetchQuery } from '../../../../relay/environment';
 import fileDownload from 'js-file-download';
 import stopEvent from '../../../../utils/domEvent';
 
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
+const Container = styled('div')({
+  margin: 0,
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -242,9 +227,9 @@ class IngestionRssPopover extends Component {
   }
 
   render() {
-    const { classes, t, ingestionRssId, running, showStartStop } = this.props;
+    const { t, ingestionRssId, running, showStartStop } = this.props;
     return (
-      <div className={classes.container}>
+      <Container>
         <ToggleButton
           onClick={this.handleOpen.bind(this)}
           aria-label={t('Open menu')}
@@ -396,7 +381,7 @@ class IngestionRssPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </Container>
     );
   }
 }
@@ -406,7 +391,6 @@ IngestionRssPopover.propTypes = {
   running: PropTypes.bool,
   showStartStop: PropTypes.bool,
   paginationOptions: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   onDeleteComplete: PropTypes.func,
 };
@@ -415,4 +399,4 @@ IngestionRssPopover.defaultProps = {
   showStartStop: true,
 };
 
-export default compose(inject18n, withStyles(styles))(IngestionRssPopover);
+export default inject18n(IngestionRssPopover);

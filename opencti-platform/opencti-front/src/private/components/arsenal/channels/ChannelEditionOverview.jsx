@@ -281,7 +281,13 @@ const ChannelEditionOverviewComponent = (props) => {
             fieldPatch={editor.fieldPatch}
             enableReferences={enableReferences}
           />
-          <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
+          <Stack
+            sx={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              gap: 2,
+            }}
+          >
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}

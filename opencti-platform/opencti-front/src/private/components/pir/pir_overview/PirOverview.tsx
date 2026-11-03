@@ -14,7 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import PirThreatMap from './pir_threat_map/PirThreatMap';
 import { pirHistoryFilterGroup } from '../pir-history-utils';
@@ -84,17 +85,23 @@ const PirOverviewComponent = ({
 
   return (
     <Grid container spacing={3}>
-      <Grid size={{ xs: 12 }} container direction="column" spacing={3}>
-        <PirOverviewDetails data={pir} dataStream={dataRedis} />
-        <PirOverviewCounts data={pir} />
+      <Grid size={{ xs: 12 }}>
+        <Stack spacing={3} useFlexGap>
+          <PirOverviewDetails data={pir} dataStream={dataRedis} />
+          <PirOverviewCounts data={pir} />
+        </Stack>
       </Grid>
-      <Grid size={{ xs: 6 }} container direction="column" spacing={3}>
-        <PirOverviewHistory dataHistory={dataHistory} dataPir={pir} />
+      <Grid size={{ xs: 6 }}>
+        <Stack spacing={3} useFlexGap>
+          <PirOverviewHistory dataHistory={dataHistory} dataPir={pir} />
+        </Stack>
       </Grid>
-      <Grid size={{ xs: 6 }} container direction="column" spacing={3}>
-        <PirThreatMap data={dataThreatMap} />
-        <PirOverviewTopSources data={pir} />
-        <PirOverviewCountFlagged data={pir} />
+      <Grid size={{ xs: 6 }}>
+        <Stack spacing={3} useFlexGap>
+          <PirThreatMap data={dataThreatMap} />
+          <PirOverviewTopSources data={pir} />
+          <PirOverviewCountFlagged data={pir} />
+        </Stack>
       </Grid>
     </Grid>
   );

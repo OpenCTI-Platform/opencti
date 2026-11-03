@@ -193,7 +193,7 @@ describe('StixCoreObjectFileExportForm FINTEL PDF export', () => {
     await user.click(await screen.findByRole('option', { name: 'Generate FINTEL from template' }));
 
     if (reselectPdf) {
-      await user.click(screen.getByRole('button', { name: 'Format' }));
+      await user.click(screen.getByRole('tab', { name: 'Format' }));
       await user.click(screen.getByRole('button', { name: 'PDF' }));
     }
 

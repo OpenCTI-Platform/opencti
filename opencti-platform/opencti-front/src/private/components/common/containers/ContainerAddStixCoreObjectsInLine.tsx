@@ -259,7 +259,12 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
     : ({ onOpen }: { onOpen: () => void }) => <ControlledDial title={t_i18n('Add observable')} onOpen={onOpen} />;
 
   const buttons = (
-    <Stack direction="row" gap={1}>
+    <Stack
+      direction="row"
+      sx={{
+        gap: 1,
+      }}
+    >
       {showSDOCreation && (
         <Button
           disableElevation

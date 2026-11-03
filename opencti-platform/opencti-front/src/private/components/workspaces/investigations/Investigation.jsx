@@ -1,28 +1,25 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import InvestigationGraph, { investigationGraphQuery } from './InvestigationGraph';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
-const styles = (theme) => ({
-  container: {
-    width: '100%',
-    height: '100%',
-    marginTop: theme.spacing(1),
-    padding: 0,
-  },
-});
+const Container = styled('div')(({ theme }) => ({
+  width: '100%',
+  height: '100%',
+  marginTop: theme.spacing(1),
+  padding: 0,
+}));
 
 class InvestigationComponent extends Component {
   render() {
-    const { classes, workspace } = this.props;
+    const { workspace } = this.props;
     return (
-      <div className={classes.container} id="container">
+      <Container id="container">
         <QueryRenderer
           query={investigationGraphQuery}
           variables={{ id: workspace.id }}
@@ -41,14 +38,13 @@ class InvestigationComponent extends Component {
             return <Loader />;
           }}
         />
-      </div>
+      </Container>
     );
   }
 }
 
 InvestigationComponent.propTypes = {
   workspace: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
 };
 
@@ -69,4 +65,4 @@ const Investigation = createFragmentContainer(InvestigationComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Investigation);
+export default inject18n(Investigation);

@@ -1,5 +1,5 @@
 import { Box, Stack, SxProps } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { PropsWithChildren } from 'react';
 import { Theme } from '../../../components/Theme';
 import logoFiligranBaselineDark from '../../../static/images/logo_filigran_baseline_dark.svg';
@@ -11,6 +11,7 @@ import { LoginRootPublicQuery$data } from '../../__generated__/LoginRootPublicQu
 import LoginLogo from './LoginLogo';
 import { hasCustomColor } from '../../../utils/theme';
 import { getLoginAsideType } from '../../../private/components/settings/themes/theme-utils';
+import { mergeSx } from '../../../utils/sx';
 
 const LogoBaseline = () => {
   const theme = useTheme<Theme>();
@@ -116,18 +117,29 @@ const LoginLayout = ({ settings, children }: LoginLayoutProps) => {
   return (
     <>
       <SystemBanners settings={settings} />
-      <Stack data-testid="login-page" direction="row" height="100%">
+      <Stack
+        data-testid="login-page"
+        direction="row"
+        sx={{
+          height: '100%',
+        }}
+      >
         <Stack
-          flex={1}
-          sx={contentSx}
-          justifyContent="center"
-          alignItems="center"
-          gap={4}
+          sx={mergeSx({
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 4,
+          }, contentSx)}
         >
           <LoginLogo data={settings} />
           {children}
         </Stack>
-        <Box flex={1} sx={asideSx}>
+        <Box
+          sx={mergeSx({
+            flex: 1,
+          }, asideSx)}
+        >
           {loginAsideType === '' && <LogoFiligran />}
           {!isWhitemarkEnable && <LogoBaseline />}
         </Box>

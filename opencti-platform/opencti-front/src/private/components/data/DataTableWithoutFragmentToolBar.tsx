@@ -37,8 +37,10 @@ const DataTableWithoutFragmentToolBar = ({
               fontSize: '12px',
               marginBottom: '1px',
             }}
-            color="inherit"
             variant="subtitle1"
+            sx={{
+              color: 'inherit',
+            }}
           >
             <strong>{numberOfElements}</strong> {t_i18n('selected')}{' '}
           </Typography>
