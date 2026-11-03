@@ -24,7 +24,7 @@ import GroupField, { groupsQuery } from '../../common/form/GroupField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../../common/form/PasswordPolicies';
 import UserConfidenceLevelField from './edition/UserConfidenceLevelField';
-import { Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 
 const userMutation = graphql`
   mutation UserCreationMutation($input: UserAddInput!) {
@@ -165,13 +165,21 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
               <Form>
                 <Stack sx={{ gap: 2.5 }}>
                   {hasSetAccess && (
-                    <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="user_service_account"
-                      label={t_i18n('This user is a service account')}
-                      tooltip={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}
-                    />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="user_service_account"
+                        label={t_i18n('This user is a service account')}
+                      />
+                      <Tooltip title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}>
+                        <InformationOutline
+                          fontSize="small"
+                          color="primary"
+                          sx={{ position: 'relative', top: '-4px' }}
+                        />
+                      </Tooltip>
+                    </Box>
                   )}
                   <Field
                     component={TextField}
@@ -241,21 +249,23 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     style={fieldSpacingContainerStyle}
                     showConfidence={true}
                   />
-                  <Field
-                    component={SwitchField}
-                    type="checkbox"
-                    name="prevent_default_groups"
-                    label={(
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <>{t_i18n('Don\'t add the user to the default groups')}</>
-                        <Tooltip
-                          title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
-                        >
-                          <InformationOutline style={{ marginLeft: 10 }} fontSize="small" color="primary" />
-                        </Tooltip>
-                      </div>
-                    )}
-                  />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="prevent_default_groups"
+                      label={t_i18n('Don\'t add the user to the default groups')}
+                    />
+                    <Tooltip
+                      title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        sx={{ position: 'relative', top: '-4px' }}
+                      />
+                    </Tooltip>
+                  </Box>
                   <Field
                     component={SelectFieldFds}
                     variant="outlined"

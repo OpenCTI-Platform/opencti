@@ -45,7 +45,7 @@ const SwitchField = (props) => {
   }, []);
 
   const labelNode = tooltip ? (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
+    <div style={{ display: 'flex' }}>
       <span>{label}</span>
       <Tooltip title={t_i18n(tooltip)}>
         <InformationOutline
