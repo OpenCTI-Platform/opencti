@@ -59,6 +59,7 @@ import { buildFilterEventContext } from '../manager/playbookManager/playbookMana
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
+import { checkDraftInContext } from '../http/httpServer-draft';
 import { EVENT_CURRENT_VERSION, sanitizeStreamEventOrigin } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { extractStixRepresentative } from '../database/stix-representative';
@@ -97,10 +98,13 @@ const createBroadcastClient = (channel) => {
   };
 };
 
-const authenticate = async (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   try {
     const context = await createAuthenticatedContext(req, res, 'stream');
     if (context.user) {
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used by the stream processor.
+      await checkDraftInContext(context);
       req.context = context;
       req.userId = context.user.id;
       req.user = context.user;
@@ -195,6 +199,9 @@ export const authenticateForPublic = async (req, res, next) => {
     sendErrorStatus(req, res, 401);
   } else {
     try {
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used by the stream processor.
+      await checkDraftInContext(context);
       const user = collection?.stream_public
         ? await resolvePublicUser(context, collection.stream_public_user_id)
         : context.user;
