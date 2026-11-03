@@ -1,4 +1,4 @@
-import type { IncomingMessage } from 'node:http';
+import type { Request } from 'express';
 import type { AuthUser, UserOrigin } from '../../types/user';
 
 export type PresenceOrigin = Partial<UserOrigin> & { ip?: string };
@@ -8,8 +8,9 @@ export interface PresenceConnection {
   connectionId: string;
 }
 
-// WebSocket upgrade request, once parsed by the session middleware
-export type SessionRequest = IncomingMessage & {
+// WebSocket upgrade request, given the express request API by the http server
+// and parsed by the session middleware
+export type SessionRequest = Request & {
   sessionID?: string;
   session?: { user?: AuthUser };
 };

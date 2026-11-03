@@ -4,6 +4,8 @@ import { onSessionPresenceClose, onSessionPresenceConnect } from '../../../../sr
 import * as cache from '../../../../src/database/cache';
 import * as session from '../../../../src/database/session';
 import * as listener from '../../../../src/listener/UserActionListener';
+import * as redis from '../../../../src/database/redis';
+import * as userDomain from '../../../../src/modules/user/user-domain';
 import { getStoppingState } from '../../../../src/config/conf';
 
 const GRACE_PERIOD = vi.hoisted(() => 30000);
@@ -22,6 +24,14 @@ vi.mock('../../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(),
 }));
 
+vi.mock('../../../../src/database/redis', () => ({
+  getClusterInstances: vi.fn(),
+}));
+
+vi.mock('../../../../src/modules/user/user-domain', () => ({
+  userWithOrigin: vi.fn((req, user) => ({ ...user, origin: { socket: 'query', ip: req.ip, user_id: user.id } })),
+}));
+
 vi.mock('../../../../src/config/conf', async (importOriginal: any) => {
   const actual = await importOriginal();
   return {
@@ -34,7 +44,7 @@ vi.mock('../../../../src/config/conf', async (importOriginal: any) => {
       }),
     },
     getStoppingState: vi.fn(() => false),
-    logApp: { ...actual.logApp, error: vi.fn() },
+    logApp: { ...actual.logApp, error: vi.fn(), warn: vi.fn() },
   };
 });
 
@@ -61,6 +71,10 @@ const storeSession = (sessionData: unknown) => {
   vi.mocked(session.findSessionByRawId).mockResolvedValue(sessionData);
 };
 
+const runPlatformNodes = (count: number) => {
+  vi.mocked(redis.getClusterInstances).mockResolvedValue(Array.from({ length: count }, (_, i) => ({ id: `node-${i}` })) as any);
+};
+
 describe('session presence', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -68,6 +82,7 @@ describe('session presence', () => {
     vi.mocked(getStoppingState).mockReturnValue(false);
     enablePresence(true);
     storeSession({ user: USER });
+    runPlatformNodes(1);
   });
 
   afterEach(() => {
@@ -172,6 +187,17 @@ describe('session presence', () => {
     expect(listener.publishUserAction).not.toHaveBeenCalled();
   });
 
+  it('should not logout while several platform nodes are running', async () => {
+    runPlatformNodes(2);
+    const sessionId = nextSessionId();
+    const connectionId = registerSessionPresence(sessionId, ORIGIN);
+    unregisterSessionPresence(sessionId, connectionId);
+
+    await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+    expect(listener.publishUserAction).not.toHaveBeenCalled();
+  });
+
   it('should not publish a logout for a session already logged out or expired', async () => {
     storeSession(null);
     const sessionId = nextSessionId();
@@ -198,11 +224,11 @@ describe('session presence', () => {
 
     const buildContext = (readyState = OPEN) => {
       const socket = { readyState, OPEN };
-      const request = { socket: { remoteAddress: '10.0.0.1' } };
+      const request = { ip: '10.0.0.1' };
       return { extra: { socket, request } } as any;
     };
 
-    it('should track an authenticated socket until it closes', async () => {
+    it('should track an authenticated socket until it closes, with the origin of an explicit logout', async () => {
       const sessionId = nextSessionId();
       mockSessionMiddleware(sessionId, { user: USER });
       const ctx = buildContext();
@@ -212,14 +238,9 @@ describe('session presence', () => {
       await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
 
       expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
+      expect(userDomain.userWithOrigin).toHaveBeenCalledWith(ctx.extra.request, USER);
       const { user } = vi.mocked(listener.publishUserAction).mock.calls[0][0];
-      expect(user.origin).toMatchObject({
-        socket: 'query',
-        ip: '10.0.0.1',
-        user_id: USER.id,
-        group_ids: ['group-id'],
-        organization_ids: [],
-      });
+      expect(user.origin).toEqual({ socket: 'query', ip: '10.0.0.1', user_id: USER.id });
     });
 
     it('should logout a tab opened before the feature was enabled', async () => {
