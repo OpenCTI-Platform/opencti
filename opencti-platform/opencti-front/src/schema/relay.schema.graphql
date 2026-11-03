@@ -17814,6 +17814,7 @@ type ConfigPresetExportableItem {
   translatable: Boolean!
   dependsOn: [ConfigPresetItemReference!]!
   isDefault: Boolean!
+  isEnabled: Boolean
 }
 
 type ConfigPresetExportableItemEdge {

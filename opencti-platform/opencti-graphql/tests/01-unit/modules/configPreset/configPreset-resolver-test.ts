@@ -197,7 +197,7 @@ describe('Config preset exportable types query', () => {
       ['whitemark', 'platformSettings'],
       ['hiddenEntityTypes', 'dataModel'],
     ]);
-    expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false }]);
+    expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
     listItems.mockRestore();
   });

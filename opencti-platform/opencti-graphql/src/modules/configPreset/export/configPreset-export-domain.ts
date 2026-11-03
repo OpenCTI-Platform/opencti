@@ -34,6 +34,7 @@ const toExportableItem = (item: ConfigPresetItemDefinition): ConfigPresetExporta
   translatable: item.translatable,
   dependsOn: (item.dependsOn ?? []).map(({ type, id }) => ({ type, key: id })),
   isDefault: item.isDefault ?? false,
+  isEnabled: item.isEnabled ?? null,
 });
 
 const findConfigPresetFamily = (type: string) => {

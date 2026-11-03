@@ -181,6 +181,11 @@ describe('Config preset registry', () => {
       });
     });
 
+    it.each([[true, true], [false, false], [undefined, false]])('lists the whitemark %s as enabled: %s, a setting that is not set being off', async (platformWhitemark, isEnabled) => {
+      withSettings({ platform_whitemark: platformWhitemark });
+      expect((await findItem('whitemark', 'whitemark')).isEnabled).toBe(isEnabled);
+    });
+
     it('exports a whitemark that is not set as null, to keep a stable file shape', async () => {
       withSettings({ platform_whitemark: undefined });
       expect(await (await findItem('whitemark', 'whitemark')).exporter(context, user)).toEqual({ platform_whitemark: null });

@@ -9,11 +9,13 @@ export const WHITEMARK_FAMILY_ID = 'whitemark';
 const WHITEMARK_ITEM_ID = 'whitemark';
 const WHITEMARK_LABEL = 'Remove Filigran logos';
 
-const getWhitemarkItems = async (_context: AuthContext): Promise<ConfigPresetItemDefinition[]> => [{
+const getWhitemarkItems = async (context: AuthContext): Promise<ConfigPresetItemDefinition[]> => [{
   id: WHITEMARK_ITEM_ID,
   label: WHITEMARK_LABEL,
   translatable: true,
-  exporter: (context) => getWhitemarkConfigPresetConfiguration(context),
+  // A setting that is not set is off
+  isEnabled: (await getWhitemarkConfigPresetConfiguration(context)).platform_whitemark === true,
+  exporter: (exportContext) => getWhitemarkConfigPresetConfiguration(exportContext),
 }];
 
 const whitemarkImporter: ConfigPresetImporter = {

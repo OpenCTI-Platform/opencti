@@ -15,6 +15,8 @@ type ConfigPresetExportableItem {
     dependsOn: [ConfigPresetItemReference!]!
     # The item is the platform default (the default theme).
     isDefault: Boolean!
+    # A setting that is on or off: whether it is on, shown under its label. Null for an item that is not one.
+    isEnabled: Boolean
 }
 
 type ConfigPresetExportableItemEdge {
