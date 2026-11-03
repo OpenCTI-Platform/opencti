@@ -1046,7 +1046,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cfworker/json-schema@npm:4.1.1, @cfworker/json-schema@npm:^4.0.2":
+"@cfworker/json-schema@npm:4.1.4":
+  version: 4.1.4
+  resolution: "@cfworker/json-schema@npm:4.1.4"
+  checksum: 10c0/8fa7698f6f8f1a218c1545fc33e0a181d977c60d3d48c41a43e802cdfa5276b1c1c4f9e9ba66219505035048e5090358db6ea200e2a8b7c1acdbf5bc2294c2bc
+  languageName: node
+  linkType: hard
+
+"@cfworker/json-schema@npm:^4.0.2":
   version: 4.1.1
   resolution: "@cfworker/json-schema@npm:4.1.1"
   checksum: 10c0/b5253486d346b7de6feec9c73954f612b11019dacb9023d710a5666df2f5fc145dd88b6b913c88726c6d97e2e258a515fa2cab177f58b18da6bac3738cbc4739
@@ -18025,7 +18032,7 @@ __metadata:
   resolution: "opencti-front@workspace:opencti-platform/opencti-front"
   dependencies:
     "@analytics/google-analytics": "npm:1.1.0"
-    "@cfworker/json-schema": "npm:4.1.1"
+    "@cfworker/json-schema": "npm:4.1.4"
     "@emotion/react": "npm:11.14.0"
     "@emotion/styled": "npm:11.14.1"
     "@eslint/js": "npm:10.0.1"
