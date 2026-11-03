@@ -122,6 +122,18 @@ describe('Ingestion manager - jsonExecutor', () => {
     expect(patchJsonIngestionMock).toHaveBeenCalledTimes(1);
   });
 
+  it('should push nothing and keep the previous state when the feed was stopped during the run', async () => {
+    executeJsonQueryMock.mockResolvedValue({ objects: stixObjects, variables: { offset: 10 }, nextExecutionState: { offset: 5 }, aborted: true });
+
+    const { jsonExecutor } = await import('../../../../src/manager/ingestionManager');
+
+    await expect(jsonExecutor({} as any)).resolves.toBeUndefined();
+
+    expect(executeJsonQueryMock).toHaveBeenCalledWith(expect.anything(), jsonIngestion, expect.objectContaining({ isStopped: expect.any(Function) }));
+    expect(pushBundleToConnectorQueueMock).not.toHaveBeenCalled();
+    expect(patchJsonIngestionMock).not.toHaveBeenCalled();
+  });
+
   it('should catch query errors, log them and update the last execution date and status', async () => {
     executeJsonQueryMock.mockRejectedValue(new Error('Remote server unreachable'));
 

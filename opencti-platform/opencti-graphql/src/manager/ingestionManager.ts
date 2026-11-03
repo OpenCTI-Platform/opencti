@@ -306,7 +306,7 @@ export const processCsvLines = async (
       entity: undefined, // TODO is it possible to ingest in entity context ?
       csvMapper: csvMapperParsed,
       connectorId: connectorIdFromIngestId(ingestion.id),
-      isStopped: buildIngestionStopCheck(context, findCsvIngestionById, ingestion.internal_id),
+      isStopped: buildIngestionStopCheck(context, (ctx, user, id) => findCsvIngestionById(ctx, user, id), ingestion.internal_id),
     };
 
     // start UI count, import of file = 1 operation.
@@ -403,7 +403,7 @@ export const jsonExecutor = async (context: AuthContext) => {
           logApp.info(`[OPENCTI-MODULE] Executing Json ingestion for ${ingestion.name}`);
           const { objects, variables, nextExecutionState, aborted } = await executeJsonQuery(context, ingestion, {
             timeout: FEED_REQUEST_TIMEOUT,
-            isStopped: buildIngestionStopCheck(context, findJsonIngestionById, ingestion.internal_id),
+            isStopped: buildIngestionStopCheck(context, (ctx, user, id) => findJsonIngestionById(ctx, user, id), ingestion.internal_id),
           });
           if (aborted) {
             // The feed was stopped between two pages: push nothing and keep the previous state,
