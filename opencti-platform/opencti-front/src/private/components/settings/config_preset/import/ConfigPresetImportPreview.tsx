@@ -165,6 +165,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const revisionRef = useRef(session.revision);
   const pendingRef = useRef<ReturnType<typeof buildConfigPresetSelections> | null>(null);
   const timerRef = useRef<number | null>(null);
+  // The saves sent and not answered yet: Apply waits for them too, not only for the one still in its delay
+  const inFlightRef = useRef<Promise<void> | null>(null);
   const commitSaveRef = useRef(commitSave);
   commitSaveRef.current = commitSave;
 
@@ -206,11 +208,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       timerRef.current = null;
     }
     if (!pendingRef.current) {
-      return Promise.resolve();
+      return inFlightRef.current ?? Promise.resolve();
     }
     const selections = pendingRef.current;
     pendingRef.current = null;
-    return new Promise((resolve) => {
+    const previous = inFlightRef.current;
+    const sent = new Promise<void>((resolve) => {
       commitSaveRef.current({
         variables: { file_id: session.file_id, selections, revision: revisionRef.current },
         onCompleted: () => resolve(),
@@ -222,6 +225,14 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         },
       });
     });
+    const answered = previous ? Promise.all([previous, sent]).then(() => undefined) : sent;
+    inFlightRef.current = answered;
+    answered.then(() => {
+      if (inFlightRef.current === answered) {
+        inFlightRef.current = null;
+      }
+    });
+    return answered;
   }, [session.file_id]);
 
   // A pending save is sent on close
@@ -366,11 +377,13 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       {preview.ignored.length > 0 && (
         <Alert severity="info" title={t_i18n('Some files of the bundle cannot be imported')} description={preview.ignored.join(', ')} />
       )}
+      {/* While Apply waits for the save, a change would be saved after the import is sent, when the session is no longer a draft */}
       <ConfigPresetSelectionAccordion
         types={types}
         selection={selection}
         forced={forced}
         expandTypes
+        disabled={isStarting}
         onSelectionChange={handleSelectionChange}
         renderTypeActions={(type) => {
           // From two items in conflict that are imported: with one, its own choice is enough, and an item that is not imported has none
@@ -384,6 +397,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
               purpose="Apply to all"
               modes={type.modes}
               value={sharedConfigImportMode(importModes, type.key, conflictKeys)}
+              disabled={isStarting}
               onChange={(mode) => handleTypeImportModeChange(type.key, conflictKeys, mode)}
             />
           );
@@ -404,6 +418,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                 description={isSingletonConfigPresetType(type) ? t_i18n(type.description) : undefined}
                 selection={selection}
                 forced={forced}
+                disabled={isStarting}
                 onSelectionChange={handleSelectionChange}
                 statusSlot={(hasChoice || (result && isResultShown(result, hasChoice))) ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
@@ -413,6 +428,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                         purpose="When it already exists"
                         modes={type.modes}
                         value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
+                        disabled={isStarting}
                         onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
                       />
                     )}
