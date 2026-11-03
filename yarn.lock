@@ -22798,7 +22798,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unrs-resolver@npm:1.13.0":
+"unrs-resolver@npm:^1.7.11":
   version: 1.13.0
   resolution: "unrs-resolver@npm:1.13.0"
   dependencies:
