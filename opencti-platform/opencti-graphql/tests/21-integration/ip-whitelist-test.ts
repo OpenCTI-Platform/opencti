@@ -5,6 +5,8 @@ import { ADMIN_USER, queryInitPlatformAsAdmin, queryInitPlatformAsUser, queryIni
 import { getSettings, settingsEditField } from '../../src/domain/settings';
 import { resetCacheForEntity } from '../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../src/schema/internalObject';
+import { ipMatchesWhitelist } from '../../src/http/ipWhitelistMiddleware';
+import { awaitUntilCondition } from '../utils/testQueryHelper';
 
 // ─── GraphQL Queries ─────────────────────────────────────────────────────────
 
@@ -30,14 +32,23 @@ const PUBLIC_SETTINGS_QUERY = print(gql`
 
 let settingsId: string;
 
-const enableWhitelist = async (ips: string[], exclusionIds: string[] = []) => {
-  const input = [
-    { key: 'platform_ip_whitelist_enabled', value: ['true'] },
-    { key: 'platform_ip_whitelist', value: ips },
-    { key: 'platform_ip_whitelist_exclusion_ids', value: exclusionIds },
-  ];
-  await settingsEditField(testContext, ADMIN_USER, settingsId, input);
-  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+// The queries are answered by the platform started in the global setup, another process: resetCacheForEntity only
+// resets the cache of this test process, and the platform refreshes its settings cache when the edit event reaches it,
+// asynchronously. Each edit therefore waits until the platform applies it, observed on a request that no exclusion
+// covers (an anonymous one), before the test asserts on it.
+const SETTINGS_PROPAGATION_BUDGET_MS = 10_000;
+const TEST_CLIENT_IPS = ['127.0.0.1', '::1'];
+
+const isAnonymousRequestBlocked = async () => {
+  const result = await queryInitPlatformAsAnonymous(ME_QUERY);
+  return result.errors?.[0]?.extensions?.code === 'IP_FORBIDDEN';
+};
+
+const awaitAnonymousRequestBlocked = async (blocked: boolean) => {
+  await awaitUntilCondition(isAnonymousRequestBlocked, SETTINGS_PROPAGATION_BUDGET_MS, {
+    expectToBeTrue: blocked,
+    message: `the platform did not apply the IP allow list edit (anonymous request expected ${blocked ? 'blocked' : 'allowed'})`,
+  });
 };
 
 const disableWhitelist = async () => {
@@ -48,6 +59,24 @@ const disableWhitelist = async () => {
   ];
   await settingsEditField(testContext, ADMIN_USER, settingsId, input);
   resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+  await awaitAnonymousRequestBlocked(false);
+};
+
+// Applied from a disabled allow list, so that waiting for the anonymous request to be blocked proves this edit
+// (not an earlier one with other exclusions) is the one the platform holds. The edits are applied in order.
+const enableWhitelist = async (ips: string[], exclusionIds: string[] = []) => {
+  await disableWhitelist();
+  const input = [
+    { key: 'platform_ip_whitelist_enabled', value: ['true'] },
+    { key: 'platform_ip_whitelist', value: ips },
+    { key: 'platform_ip_whitelist_exclusion_ids', value: exclusionIds },
+  ];
+  await settingsEditField(testContext, ADMIN_USER, settingsId, input);
+  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+  const blocksTestClient = ips.length > 0 && !TEST_CLIENT_IPS.some((ip) => ipMatchesWhitelist(ip, ips));
+  if (blocksTestClient) {
+    await awaitAnonymousRequestBlocked(true);
+  }
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
