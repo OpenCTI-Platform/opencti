@@ -7,6 +7,7 @@ import type { IngestionHealthSummary_ingestionHealth$key } from '@components/int
 import { HealthIssue, readHealthIssue, readHealthStatus } from '@components/integrations/deployed/IngestionHealthSummary';
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
+import { ConnectorCatalogIdentitySource } from '@components/data/connectors/utils/connectorCatalogIdentity';
 import { computeConnectorStatus, type IntegrationStatus } from '../../../../utils/Connector';
 
 // Mirrors the backend: every built-in feed registers a technical queue
@@ -26,6 +27,8 @@ export interface DeployedIntegrationItem {
   name: string;
   description?: string | null;
   logo?: string;
+  // How the catalog entry behind the logo and the description was found
+  identitySource?: ConnectorCatalogIdentitySource;
   status: DeployedIntegrationStatus;
   running?: boolean;
   messagesCount: number | null;
@@ -59,7 +62,7 @@ interface UseDeployedIntegrationsProps {
   connectorsStateData?: ConnectorsStateQuery['response'] | null;
   feedsData?: IngestionFeedsData | null;
   formsData?: IngestionFeedsFormsData | null;
-  logosBySlug: Map<string, string>;
+  logosByConnectorId: Map<string, string>;
   // Connector update detection is part of the decoupled versions (DECOUPLING_VERSIONS feature flag)
   isConnectorUpdateEnabled: boolean;
   // A connector is stopped under other conditions with the ingestion health (INGESTION_HEALTH feature flag): see computeConnectorStatus
@@ -92,7 +95,7 @@ const useDeployedIntegrations = ({
   connectorsStateData,
   feedsData,
   formsData,
-  logosBySlug,
+  logosByConnectorId,
   isConnectorUpdateEnabled,
   isIngestionHealthEnabled,
 }: UseDeployedIntegrationsProps): DeployedIntegrationItem[] => {
@@ -149,14 +152,15 @@ const useDeployedIntegrations = ({
         manager_requested_status: state?.manager_requested_status,
         active: state?.active,
       }, isIngestionHealthEnabled);
-      const logoSlug = connector.manager_contract_excerpt?.slug;
+      const identity = connector.catalog_identity;
       items.push({
         id: connector.id,
         kind: 'connector',
         sectionKey: connector.connector_type ?? 'UNKNOWN',
         name: connector.title ?? connector.name,
-        description: connector.manager_contract_excerpt?.title,
-        logo: logoSlug ? logosBySlug.get(logoSlug) : undefined,
+        description: identity?.title,
+        logo: logosByConnectorId.get(connector.id),
+        identitySource: identity?.source,
         status: integrationStatus,
         messagesCount: queueMessagesByConnector.get(connector.id) ?? 0,
         throughputRate: queueRateByConnector.get(connector.id) ?? null,
@@ -168,7 +172,7 @@ const useDeployedIntegrations = ({
         hasNewerIncompatibleVersion: isConnectorUpdateEnabled && !!connector.has_newer_incompatible_version,
         isManaged: !!connector.is_managed,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
-        searchText: buildSearchText([connector.title, connector.name, connector.connector_type]),
+        searchText: buildSearchText([connector.title, connector.name, connector.connector_type, identity?.title]),
         ingestionHealth: state?.ingestionHealth,
         connector: merged,
       });
@@ -288,7 +292,7 @@ const useDeployedIntegrations = ({
       healthIssue: readHealthIssue(item.ingestionHealth),
       healthStatus: readHealthStatus(item.ingestionHealth),
     }));
-  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug, isConnectorUpdateEnabled, isIngestionHealthEnabled]);
+  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosByConnectorId, isConnectorUpdateEnabled, isIngestionHealthEnabled]);
 };
 
 export default useDeployedIntegrations;

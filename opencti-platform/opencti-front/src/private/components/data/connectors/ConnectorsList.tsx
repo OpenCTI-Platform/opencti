@@ -20,6 +20,11 @@ export const connectorsListQuery = graphql`
         title
         slug
       }
+      catalog_identity {
+        slug
+        title
+        source
+      }
     }
   }
 `;
