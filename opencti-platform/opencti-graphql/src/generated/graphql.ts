@@ -4663,6 +4663,7 @@ export type ConfigPresetImportItem = {
   exists: Scalars['Boolean']['output'];
   fields: Array<ConfigPresetImportField>;
   isDefault: Scalars['Boolean']['output'];
+  isEnabled?: Maybe<Scalars['Boolean']['output']>;
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
   translatable: Scalars['Boolean']['output'];
@@ -4692,6 +4693,7 @@ export type ConfigPresetImportPreview = {
 
 export type ConfigPresetImportResult = {
   __typename?: 'ConfigPresetImportResult';
+  code?: Maybe<Scalars['String']['output']>;
   group: ConfigPresetExportableGroup;
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
@@ -45012,6 +45014,7 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
   exists?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['ConfigPresetImportField']>, ParentType, ContextType>;
   isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  isEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -45033,6 +45036,7 @@ export type ConfigPresetImportPreviewResolvers<ContextType = any, ParentType ext
 }>;
 
 export type ConfigPresetImportResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportResult'] = ResolversParentTypes['ConfigPresetImportResult']> = ResolversObject<{
+  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

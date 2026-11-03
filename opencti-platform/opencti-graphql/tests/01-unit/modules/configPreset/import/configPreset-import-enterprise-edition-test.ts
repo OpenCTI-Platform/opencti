@@ -89,12 +89,13 @@ describe('Import of the whitemark (compute)', () => {
     expect(await compute(whitemark(), 'whitemark', { platform_whitemark: true })).toMatchObject({ status: 'overwritten' });
   });
 
-  it('shows the value of the bundle: on, or off when it is off or not set', async () => {
-    const fields = async (configuration: Record<string, unknown>) => (await compute(whitemark(), 'whitemark', configuration)).fields;
-    expect(await fields({ platform_whitemark: true })).toEqual([{ key: 'platform_whitemark', value: 'true' }]);
-    expect(await fields({ platform_whitemark: false })).toEqual([{ key: 'platform_whitemark', value: 'false' }]);
-    expect(await fields({ platform_whitemark: null })).toEqual([{ key: 'platform_whitemark', value: 'false' }]);
-    expect(await fields({ platform_whitemark: 'yes' })).toEqual([]);
+  it('shows the value of the bundle: on or off, and nothing when the bundle does not set it', async () => {
+    const isEnabled = async (configuration: Record<string, unknown>) => (await compute(whitemark(), 'whitemark', configuration)).isEnabled;
+    expect(await isEnabled({ platform_whitemark: true })).toBe(true);
+    expect(await isEnabled({ platform_whitemark: false })).toBe(false);
+    expect(await isEnabled({ platform_whitemark: null })).toBeNull();
+    expect(await isEnabled({})).toBeNull();
+    expect(await isEnabled({ platform_whitemark: 'yes' })).toBeNull();
   });
 
   it('skips it, with the reason, on a platform without the Enterprise Edition', async () => {

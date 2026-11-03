@@ -17855,6 +17855,7 @@ type ConfigPresetImportItem {
   exists: Boolean!
   conflict: Boolean!
   fields: [ConfigPresetImportField!]!
+  isEnabled: Boolean
   dependsOn: [ConfigPresetItemReference!]!
 }
 
@@ -17918,6 +17919,7 @@ type ConfigPresetImportResult {
   key: String!
   status: ConfigPresetImportResultStatus!
   reason: String
+  code: String
   label: String!
   translatable: Boolean!
   type_label: String!

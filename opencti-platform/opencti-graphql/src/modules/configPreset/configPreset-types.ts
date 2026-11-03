@@ -31,8 +31,8 @@ export interface ConfigPresetItemDefinition {
   fileName?: string;
   // The platform default (the default theme)
   isDefault?: boolean;
-  // A setting that is on or off: whether it is on, shown under its label
-  isEnabled?: boolean;
+  // A setting that is on or off: whether it is on, shown under its label; null when it is not set
+  isEnabled?: boolean | null;
   // Items exported with this one, whatever the selection
   dependsOn?: ConfigPresetItemReference[];
   // Returns the allowlisted configuration of the item, never secrets

@@ -33,6 +33,8 @@ export interface ConfigPresetBundleItem {
 export interface ConfigPresetComputedItem {
   status: ConfigImportStatus;
   reason?: string;
+  // Why, for the UI to tell apart without reading the reason: the code of the module that decided it
+  code?: string;
   label: string;
   // True when the label is a static string the UI translates
   translatable: boolean;
@@ -42,6 +44,8 @@ export interface ConfigPresetComputedItem {
   conflict: boolean;
   // The values the preview shows of the item, when it shows some
   fields?: ConfigPresetImportField[];
+  // A setting that is on or off: whether the bundle turns it on, shown under its label; null when the bundle does not set it
+  isEnabled?: boolean | null;
 }
 
 // What the import would create, shared by the items of one import: `<type>/<bundle id>`

@@ -367,16 +367,26 @@ describe('ConfigPresetImportWizard', () => {
       });
 
       it.each([
-        ['on', 'true', 'Enabled'],
-        ['off', 'false', 'Disabled'],
-      ])('shows its value under its name when it is %s in the bundle', async (_, value, label) => {
+        ['on', true, 'Enabled'],
+        ['off', false, 'Disabled'],
+      ])('shows its value under its name when it is %s in the bundle', async (_, isEnabled, label) => {
         enterpriseEdition.enabled = true;
         const withValue = {
           ...preview,
-          types: [...preview.types, previewType('whitemark', 'Remove Filigran logos', [previewItem('whitemark', 'Remove Filigran logos', { fields: [{ key: 'platform_whitemark', value }] })])],
+          types: [...preview.types, previewType('whitemark', 'Remove Filigran logos', [previewItem('whitemark', 'Remove Filigran logos', { isEnabled })])],
         };
         await openPreview(session(), withValue);
         expect(whitemarkRow().getByText(label)).toBeInTheDocument();
+      });
+
+      it('shows nothing under its name when the bundle does not set it', async () => {
+        enterpriseEdition.enabled = true;
+        const withoutValue = {
+          ...preview,
+          types: [...preview.types, previewType('whitemark', 'Remove Filigran logos', [previewItem('whitemark', 'Remove Filigran logos', { isEnabled: null })])],
+        };
+        await openPreview(session(), withoutValue);
+        expect(whitemarkRow().queryByText(/Enabled|Disabled/)).not.toBeInTheDocument();
       });
 
       it('is selected like any type, with no gate, on a platform that has the Enterprise Edition', async () => {
@@ -1001,12 +1011,12 @@ describe('ConfigPresetImportWizard', () => {
     });
 
     it('shows nothing for an item that has nothing to change on the platform', async () => {
-      await renderPreview(session(), [{ type: 'messages', key: 'banner', status: 'SKIPPED', reason: 'Nothing to import' }]);
+      await renderPreview(session(), [{ type: 'messages', key: 'banner', status: 'SKIPPED', reason: 'Nothing to import', code: 'nothing_to_import' }]);
       expect(within(screen.getByTestId('config-preset-import-item-messages-banner')).queryByText(/Created|Overwritten|Skipped|Failed|Nothing to import/)).not.toBeInTheDocument();
     });
 
     it('says that an item the platform has already is up to date, without a status', async () => {
-      await renderPreview(session(), [{ type: 'messages', key: 'banner', status: 'SKIPPED', reason: 'Already up to date' }]);
+      await renderPreview(session(), [{ type: 'messages', key: 'banner', status: 'SKIPPED', reason: 'Already up to date', code: 'unchanged' }]);
       const banner = within(screen.getByTestId('config-preset-import-item-messages-banner'));
       expect(banner.getByText('Already up to date')).toBeInTheDocument();
       expect(banner.queryByText('Skipped')).not.toBeInTheDocument();

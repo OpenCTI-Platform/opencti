@@ -37,10 +37,15 @@ describe('ConfigPresetResultLine', () => {
   });
 
   it('says an item the platform has already as it is, without a status that would read as if it was ignored', () => {
-    testRender(<ConfigPresetResultLine label="Banner" status="SKIPPED" reason="Already up to date" />);
+    testRender(<ConfigPresetResultLine label="Banner" status="SKIPPED" reason="Already up to date" code="unchanged" />);
     expect(screen.getByText('Banner')).toBeInTheDocument();
     expect(screen.getByText('Already up to date')).toBeInTheDocument();
     expect(screen.queryByText('Skipped')).not.toBeInTheDocument();
+  });
+
+  it('keeps the status of a skipped item that is not unchanged, whatever its reason says', () => {
+    testRender(<ConfigPresetResultLine label="Banner" status="SKIPPED" reason="Already up to date" code="not_overwrite" />);
+    expect(screen.getByText('Skipped')).toBeInTheDocument();
   });
 
   it('shows an unknown status as is, and no reason when there is none', () => {

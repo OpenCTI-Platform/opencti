@@ -9,12 +9,14 @@ export const WHITEMARK_FAMILY_ID = 'whitemark';
 const WHITEMARK_ITEM_ID = 'whitemark';
 const WHITEMARK_LABEL = 'Remove Filigran logos';
 
+// On or off as the setting says it, null when it is not set: an unset setting is neither, the import leaves the platform as it is
+const toIsEnabled = (value: unknown) => (typeof value === 'boolean' ? value : null);
+
 const getWhitemarkItems = async (context: AuthContext): Promise<ConfigPresetItemDefinition[]> => [{
   id: WHITEMARK_ITEM_ID,
   label: WHITEMARK_LABEL,
   translatable: true,
-  // A setting that is not set is off
-  isEnabled: (await getWhitemarkConfigPresetConfiguration(context)).platform_whitemark === true,
+  isEnabled: toIsEnabled((await getWhitemarkConfigPresetConfiguration(context)).platform_whitemark),
   exporter: (exportContext) => getWhitemarkConfigPresetConfiguration(exportContext),
 }];
 
@@ -25,8 +27,8 @@ const whitemarkImporter: ConfigPresetImporter = {
       return { ...label, exists: true, conflict: false, status: 'failed', reason: 'Unexpected item id' };
     }
     const result = await importWhitemark(context, user, item.configuration, { mode, dryRun: true });
-    // The preview shows the value of the bundle: the setting is on, or off (a setting that is not set is off)
-    return toComputedItem(label, result, result.configuration ? [{ key: 'platform_whitemark', value: String(result.configuration.platform_whitemark === true) }] : []);
+    // The preview shows the value of the bundle: on, off, or nothing when it does not set it
+    return { ...toComputedItem(label, result), isEnabled: toIsEnabled(result.configuration?.platform_whitemark) };
   },
   apply: async (context, user, item, computed, mode) => {
     return toAppliedStatus(await importWhitemark(context, user, item.configuration, { mode }), computed);

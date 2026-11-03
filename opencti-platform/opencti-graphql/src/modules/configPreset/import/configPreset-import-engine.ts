@@ -47,12 +47,13 @@ const toResult = (
   item: ConfigPresetBundleItem,
   status: ConfigImportStatus,
   reason?: string,
-  naming?: { label: string; translatable: boolean },
+  naming?: { label: string; translatable: boolean; code?: string },
 ): ConfigPresetImportItemResult => ({
   type: item.type,
   key: item.id,
   status: RESULT_STATUSES[status],
   reason: reason ?? null,
+  code: naming?.code ?? null,
   label: naming?.label ?? item.id,
   translatable: naming?.translatable ?? false,
 });

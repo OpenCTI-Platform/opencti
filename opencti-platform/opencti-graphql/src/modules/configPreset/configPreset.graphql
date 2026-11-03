@@ -15,7 +15,7 @@ type ConfigPresetExportableItem {
     dependsOn: [ConfigPresetItemReference!]!
     # The item is the platform default (the default theme).
     isDefault: Boolean!
-    # A setting that is on or off: whether it is on, shown under its label. Null for an item that is not one.
+    # A setting that is on or off: whether it is on, shown under its label. Null for an item that is not one, or a setting that is not set.
     isEnabled: Boolean
 }
 
@@ -68,6 +68,8 @@ type ConfigPresetImportItem {
     # The item conflicts with one of the platform: it exists, or another one has its name. The dialog offers a choice of what to do with it.
     conflict: Boolean!
     fields: [ConfigPresetImportField!]!
+    # A setting that is on or off: whether the bundle turns it on, shown under its label. Null for an item that is not one, or a setting the bundle does not set.
+    isEnabled: Boolean
     # Items imported with this one, whatever the selection.
     dependsOn: [ConfigPresetItemReference!]!
 }
@@ -144,6 +146,8 @@ type ConfigPresetImportResult {
     key: String!
     status: ConfigPresetImportResultStatus!
     reason: String
+    # Why, as a code the UI can rely on (the reason is the text to display): unchanged, nothing_to_import... Null when the importer gives none.
+    code: String
     # The name of the item, and whether the UI translates it; the key for a result stored before the names were kept.
     label: String!
     translatable: Boolean!

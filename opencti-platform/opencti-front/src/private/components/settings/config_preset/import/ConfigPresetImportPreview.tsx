@@ -68,6 +68,7 @@ const configPresetImportPreviewQuery = graphql`
           isDefault
           exists
           conflict
+          isEnabled
           fields {
             key
             value
@@ -104,6 +105,7 @@ interface SimulatedResult {
   readonly key: string;
   readonly status: string;
   readonly reason?: string | null;
+  readonly code?: string | null;
 }
 
 // A row shows what the import would do unless there is nothing to say: an item that is created as it is, one that has nothing to
@@ -112,7 +114,7 @@ const isResultShown = (result: SimulatedResult, hasChoice: boolean) => {
   if (result.status === 'CREATED' && !result.reason) {
     return false;
   }
-  if (result.status === 'SKIPPED' && result.reason === 'Nothing to import') {
+  if (result.status === 'SKIPPED' && result.code === 'nothing_to_import') {
     return false;
   }
   return !(result.status === 'OVERWRITTEN' && hasChoice);
@@ -427,14 +429,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           // The platform points to a theme by its standard id: a copy of the default theme is another theme, the default stays the one it is
           const keepsDefaultTheme = hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
           const hiddenTypes = isImportedItem(type.key, item.key) && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
-          // A setting that is on or off: the value of the bundle is shown under its name, whether or not it is imported
-          const whitemark = type.key === 'whitemark' ? item.fields.find(({ key }) => key === 'platform_whitemark')?.value : undefined;
           return (
             <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
               <ConfigPresetItemRow
                 typeKey={type.key}
                 item={item}
-                description={whitemark ? describeEnabled(t_i18n, whitemark === 'true') : (isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined)}
+                description={typeof item.isEnabled === 'boolean' ? describeEnabled(t_i18n, item.isEnabled) : (isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined)}
                 selection={selection}
                 forced={forced}
                 disabled={isStarting}
@@ -451,7 +451,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                         onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
                       />
                     )}
-                    {result && isResultShown(result, hasChoice) && <ConfigPresetResultLine status={result.status} reason={result.reason} />}
+                    {result && isResultShown(result, hasChoice) && <ConfigPresetResultLine status={result.status} reason={result.reason} code={result.code} />}
                   </div>
                 ) : undefined}
               />

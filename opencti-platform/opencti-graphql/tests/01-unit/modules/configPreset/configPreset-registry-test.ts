@@ -181,7 +181,7 @@ describe('Config preset registry', () => {
       });
     });
 
-    it.each([[true, true], [false, false], [undefined, false]])('lists the whitemark %s as enabled: %s, a setting that is not set being off', async (platformWhitemark, isEnabled) => {
+    it.each([[true, true], [false, false], [undefined, null], [null, null]])('lists the whitemark %s as enabled: %s, a setting that is not set being neither', async (platformWhitemark, isEnabled) => {
       withSettings({ platform_whitemark: platformWhitemark });
       expect((await findItem('whitemark', 'whitemark')).isEnabled).toBe(isEnabled);
     });

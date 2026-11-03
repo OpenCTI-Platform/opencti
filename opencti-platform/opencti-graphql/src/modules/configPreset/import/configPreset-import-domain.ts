@@ -193,6 +193,7 @@ export const configPresetImportPreview = async (context: AuthContext, user: Auth
         exists: computed.exists,
         conflict: computed.conflict,
         fields: computed.fields ?? [],
+        isEnabled: computed.isEnabled ?? null,
         dependsOn: bundle.items
           .filter((dependency) => dependencyPaths.includes(dependency.path))
           .map((dependency) => ({ type: dependency.type, key: dependency.id })),
