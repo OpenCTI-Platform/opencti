@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import React, { ComponentProps, FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { fetchQuery, graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader, useRelayEnvironment } from 'react-relay';
 import { useNavigate, useParams } from 'react-router';
 import * as Yup from 'yup';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
@@ -137,6 +137,16 @@ const entityCheckQuery = graphql`
   }
 `;
 
+// What the draft page loads: draftWorkspace alone is not enough (e.g. its workflow needs Create / Update knowledge)
+const draftCheckQuery = graphql`
+  query FormViewDraftCheckQuery($id: String!) {
+    draftWorkspace(id: $id) {
+      id
+      ...DraftRootFragment
+    }
+  }
+`;
+
 interface FormViewInnerProps {
   queryRef: PreloadedQuery<FormViewQuery>;
   embedded?: boolean;
@@ -157,6 +167,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
+  // A submission into a draft the user cannot open: confirm it instead of navigating to a page that does not exist for them
+  const [submittedToDraft, setSubmittedToDraft] = useState(false);
+  const [isCheckingDraft, setIsCheckingDraft] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [pollingEntityId, setPollingEntityId] = useState<string | null>(null);
   const [pollingEntityType, setPollingEntityType] = useState<string | null>(null);
@@ -164,7 +177,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
   const isBypass = useGranted([BYPASS]);
-  const { isForcedImportToDraft } = useImportAccess();
+  const { isForcedFormSubmissionToDraft } = useImportAccess();
+  const relayEnvironment = useRelayEnvironment();
   const pendingStore = useIntakePendingStore();
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
@@ -416,7 +430,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   }, [schema, isBypass, draftPolicy]);
 
   // Initialize isDraft based on schema settings or import context override
-  const [isDraft, setIsDraft] = useState(isForcedImportToDraft || schema.isDraftByDefault || false);
+  const [isDraft, setIsDraft] = useState(isForcedFormSubmissionToDraft || schema.isDraftByDefault || false);
   const deferredCreation = useMemo(() => ({ ...pendingStore, toDraft: isDraft }), [pendingStore, isDraft]);
 
   const validationSchema = React.useMemo(() => {
@@ -506,6 +520,21 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     };
   }, [pollingEntityId, pollingEntityType, navigate, isConnectorReader, onSuccess]);
 
+  // The draft of the submission is opened only when the user can load its page, else the submission is confirmed
+  const openDraftOrConfirm = async (draftId?: string) => {
+    setIsCheckingDraft(true); // the submission is done but the form stays on screen until the check answers
+    const result = draftId
+      ? await fetchQuery(relayEnvironment, draftCheckQuery, { id: draftId }).toPromise().catch(() => null) as { draftWorkspace?: { id: string } | null } | null
+      : null;
+    if (result?.draftWorkspace?.id) {
+      if (onSuccess) onSuccess(); // Close dialog before navigating
+      navigate(`/dashboard/data/import/draft/${draftId}`);
+    } else {
+      setSubmittedToDraft(true);
+      setIsCheckingDraft(false);
+    }
+  };
+
   const handleSubmit = async (values: Record<string, string | string[] | { value: string } | { value: string }[]>, { setSubmitting }: FormikHelpers<Record<string, unknown>>) => {
     setSubmitError(null);
     try {
@@ -524,13 +553,11 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           if (response?.formSubmit?.success) {
             setSubmitted(true);
             setSubmitting(false);
-            if (response.formSubmit.entityId) {
-              if (isDraft) {
-                navigate(`/dashboard/data/import/draft/${response.formSubmit.entityId}`);
-              } else {
-                setPollingEntityId(response.formSubmit.entityId);
-                setPollingEntityType(schema.mainEntityType || 'StixDomainObject');
-              }
+            if (isDraft) {
+              openDraftOrConfirm(response.formSubmit.entityId);
+            } else if (response.formSubmit.entityId) {
+              setPollingEntityId(response.formSubmit.entityId);
+              setPollingEntityType(schema.mainEntityType || 'StixDomainObject');
             }
           } else {
             setSubmitError(response?.formSubmit?.message || 'Submission failed');
@@ -547,6 +574,18 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       setSubmitting(false);
     }
   };
+
+  if (submittedToDraft) {
+    return (
+      <Container>
+        <Alert severity="success">{t_i18n('Your submission has been sent and is being processed.')}</Alert>
+        <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+          <Button onClick={() => setSubmittedToDraft(false)}>{t_i18n('Submit again')}</Button>
+          {embedded && onSuccess && <Button variant="secondary" onClick={onSuccess}>{t_i18n('Close')}</Button>}
+        </div>
+      </Container>
+    );
+  }
 
   if (submitted && (pollingEntityId || pollingEntityType)) {
     return (
@@ -984,7 +1023,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       <Checkbox
                         checked={isDraft}
                         onCheckedChange={(checked) => setIsDraft(checked === true)}
-                        disabled={isSubmitting || isForcedImportToDraft || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
+                        disabled={isSubmitting || isForcedFormSubmissionToDraft || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
                         style={{ marginRight: 10 }}
                       />
                     )}
@@ -1074,9 +1113,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                   )}
                   <SubmitButton
                     type="submit"
-                    disabled={isSubmitting || isSubmitInFlight || !isValid}
+                    disabled={isSubmitting || isSubmitInFlight || isCheckingDraft || !isValid}
                   >
-                    {isSubmitting || isSubmitInFlight ? t_i18n('Submitting...') : t_i18n('Submit')}
+                    {isSubmitting || isSubmitInFlight || isCheckingDraft ? t_i18n('Submitting...') : t_i18n('Submit')}
                   </SubmitButton>
                   <div style={{ clear: 'both' }} />
                 </Form>
