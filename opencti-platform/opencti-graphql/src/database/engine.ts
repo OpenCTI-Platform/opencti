@@ -454,12 +454,11 @@ export const searchEngineInit = async (): Promise<boolean> => {
     ...(region ? AwsSigv4Signer({
       region,
       service: conf.get('opensearch:service') || 'es',
-      getCredentials: () => {
-        const credentialsProvider = defaultProvider({
-          roleAssumerWithWebIdentity: getRoleAssumerWithWebIdentity({ region }),
-        });
-        return credentialsProvider();
-      },
+      // One provider for the whole client, created once here (no AWS call at creation): the SigV4 signer
+      // asks for credentials before each request, and the provider memoizes them instead of calling STS every time.
+      getCredentials: defaultProvider({
+        roleAssumerWithWebIdentity: getRoleAssumerWithWebIdentity({ region }),
+      }),
     }) : {}),
   };
   // Select the client: forced, AWS SigV4 or detected from the server (see engine-detection.ts)
