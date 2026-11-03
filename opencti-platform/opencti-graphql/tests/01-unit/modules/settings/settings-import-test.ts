@@ -45,9 +45,9 @@ describe('importMessage', () => {
 
   it('skips a whitemark the platform already has, and one that is off on a platform where it is not set', async () => {
     vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', platform_whitemark: true } as never);
-    expect(await importWhitemark(context, user, { platform_whitemark: true }, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
+    expect(await importWhitemark(context, user, { platform_whitemark: true }, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date' });
     vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id' } as never);
-    expect(await importWhitemark(context, user, { platform_whitemark: false }, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
+    expect(await importWhitemark(context, user, { platform_whitemark: false }, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
     expect(settingsEditField).not.toHaveBeenCalled();
   });
 
@@ -139,7 +139,7 @@ describe('importPlatformConfiguration', () => {
   it('skips a configuration the platform already has, theme included', async () => {
     vi.mocked(findById).mockResolvedValue({ id: 'theme-internal-id' } as never);
     vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', platform_title: 'Title', platform_theme: 'theme-internal-id' } as never);
-    expect(await importPlatformConfiguration(context, user, { platform_title: 'Title', default_theme: defaultTheme }, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
+    expect(await importPlatformConfiguration(context, user, { platform_title: 'Title', default_theme: defaultTheme }, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
     expect(await importPlatformConfiguration(context, user, { platform_title: 'Other', default_theme: defaultTheme }, overwrite)).toMatchObject({ status: 'overwritten' });
     expect(settingsEditField).toHaveBeenCalledTimes(1);
   });

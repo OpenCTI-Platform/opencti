@@ -201,7 +201,7 @@ describe('Config preset import: apply', () => {
     const output = await importData(await upload(validBundleFiles()), ALL);
     expect(resultOf(output, CUSTOM_THEME_ID)?.status).toEqual('OVERWRITTEN');
     // The platform has the banner already: nothing to write
-    expect(resultOf(output, 'banner')).toMatchObject({ status: 'SKIPPED', reason: 'Nothing to import' });
+    expect(resultOf(output, 'banner')).toMatchObject({ status: 'SKIPPED', reason: 'Already up to date' });
     expect(await customThemes()).toHaveLength(1);
   });
 

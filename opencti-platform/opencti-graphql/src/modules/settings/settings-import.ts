@@ -7,7 +7,7 @@ import { findById as findThemeById } from '../theme/theme-domain';
 import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_WHITEMARK_FIELDS } from './settings-export';
 import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema } from './settings-import-schema';
 
-export type SettingsImportCode = 'invalid' | 'unknown_message' | 'not_overwrite' | 'nothing_to_import' | 'default_theme_missing';
+export type SettingsImportCode = 'invalid' | 'unknown_message' | 'not_overwrite' | 'nothing_to_import' | 'unchanged' | 'default_theme_missing';
 
 export type SettingsImportResult<TConfiguration = Record<string, unknown>> = ConfigImportResult<TConfiguration, SettingsImportCode>;
 
@@ -70,7 +70,7 @@ const importFields = async (
   }
   const input = toInput(parsed.data, keys);
   if (await isUnchanged(context, input)) {
-    return skipped('nothing_to_import', 'Nothing to import', parsed.data);
+    return skipped('unchanged', 'Already up to date', parsed.data);
   }
   if (!dryRun) {
     await writeSettings(context, user, input);
@@ -123,7 +123,7 @@ export const importPlatformConfiguration = async (
   // A default theme that this import creates is a change
   const createsTheme = !!defaultTheme && !input.some(({ key }) => key === 'platform_theme');
   if (!createsTheme && await isUnchanged(context, input)) {
-    return skipped('nothing_to_import', 'Nothing to import', parsed.data);
+    return skipped('unchanged', 'Already up to date', parsed.data);
   }
   if (!dryRun) {
     await writeSettings(context, user, input);
