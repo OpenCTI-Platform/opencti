@@ -266,6 +266,11 @@ describe('ConfigPresetExportDrawer', () => {
       expect(within(screen.getByRole('button', { name: GATE })).getByRole('checkbox', { hidden: true })).toHaveAttribute('data-state', 'unchecked');
     });
 
+    it('is shown with its label alone when it has no description', async () => {
+      await renderOpenDrawer(vi.fn(), [...catalog, type('whitemark', 'Remove Filigran logos', [], { lockedByEnterpriseEdition: true, description: '' })]);
+      expect(within(screen.getByRole('button', { name: GATE })).getByText('Remove Filigran logos')).toBeInTheDocument();
+    });
+
     it('opens the license dialog instead of being selected', async () => {
       const { user } = await renderOpenDrawer(vi.fn(), [...catalog, lockedType()]);
       await user.click(screen.getByRole('button', { name: GATE }));

@@ -110,7 +110,7 @@ describe('Config preset exportable types query', () => {
       {
         key: 'whitemark',
         label: 'Remove Filigran logos',
-        description: 'Whitemark',
+        description: '',
         group: platformSettings,
         items: [staticItem('whitemark', 'Remove Filigran logos')],
         itemsPageInfo: onePage(1),

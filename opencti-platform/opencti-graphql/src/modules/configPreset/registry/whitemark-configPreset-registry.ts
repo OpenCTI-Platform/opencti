@@ -36,7 +36,8 @@ export const whitemarkFamily: ConfigPresetFamilyDefinition = {
   ...staticFamily({
     id: WHITEMARK_FAMILY_ID,
     label: WHITEMARK_LABEL,
-    description: 'Whitemark',
+    // Nothing to add to the label: the preview shows the value of the setting under it
+    description: '',
     group: platformSettingsGroup,
     directory: 'platform_settings',
   }, getWhitemarkItems),

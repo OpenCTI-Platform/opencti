@@ -37,7 +37,7 @@ import ConfigPresetImportMessages from './ConfigPresetImportMessages';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 import { translateConfigPresetEntityTypes } from '../configPresetEntityTypes';
 import useConfigPresetLockedTypes from '../useConfigPresetLockedTypes';
-import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
+import ConfigPresetSelectionAccordion, { describeType } from '../ConfigPresetSelectionAccordion';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
 const SAVE_DELAY_MS = 500;
@@ -434,7 +434,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
               <ConfigPresetItemRow
                 typeKey={type.key}
                 item={item}
-                description={isSingletonConfigPresetType(type) ? t_i18n(type.description) : undefined}
+                description={isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined}
                 selection={selection}
                 forced={forced}
                 disabled={isStarting}

@@ -79,7 +79,7 @@ describe('Config preset registry', () => {
         itemIds: [otherCustomTheme.standard_id, customTheme.standard_id],
       },
       { id: 'messages', label: 'Messages', description: 'Banner, login and consent messages', group: 'platformSettings', itemIds: ['banner', 'login', 'consent', 'noAccess'] },
-      { id: 'whitemark', label: 'Remove Filigran logos', description: 'Whitemark', group: 'platformSettings', itemIds: ['whitemark'] },
+      { id: 'whitemark', label: 'Remove Filigran logos', description: '', group: 'platformSettings', itemIds: ['whitemark'] },
       { id: 'hiddenEntityTypes', label: 'Hidden entity types', description: 'Entity types hidden in the platform', group: 'dataModel', itemIds: ['hiddenEntityTypes'] },
     ]);
   });

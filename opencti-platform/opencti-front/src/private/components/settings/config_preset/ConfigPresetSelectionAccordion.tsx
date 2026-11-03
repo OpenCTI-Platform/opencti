@@ -94,6 +94,9 @@ export interface ConfigPresetAccordionType {
   readonly lockedByEnterpriseEdition?: boolean;
 }
 
+// A type may have no description: the translation of an empty text is an error
+export const describeType = (t_i18n: (text: string) => string, type: { readonly description: string }) => (type.description ? t_i18n(type.description) : undefined);
+
 // A type the platform cannot use: one row that stays unchecked, with the chip, and opens the license dialog
 const ConfigPresetLockedTypeRow: FunctionComponent<{ type: ConfigPresetAccordionType; title?: string }> = ({ type, title }) => {
   const { t_i18n } = useFormatter();
@@ -104,7 +107,7 @@ const ConfigPresetLockedTypeRow: FunctionComponent<{ type: ConfigPresetAccordion
     <EETooltip title={title}>
       <div style={{ cursor: isEnterpriseEdition ? undefined : 'pointer' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), pointerEvents: 'none' }}>
-          <Checkbox label={t_i18n(type.label)} description={t_i18n(type.description)} checked={false} disabled />
+          <Checkbox label={t_i18n(type.label)} description={describeType(t_i18n, type)} checked={false} disabled />
           <EEChip feature={t_i18n(type.label)} size="sm" clickable={false} />
         </div>
       </div>
@@ -180,7 +183,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
                   <Checkbox
                     key={type.key}
                     label={t_i18n(type.label)}
-                    description={t_i18n(type.description)}
+                    description={describeType(t_i18n, type)}
                     checked={typeState(type)}
                     disabled={disabled}
                     onCheckedChange={(checked) => toggleType(type, checked === true)}
@@ -192,7 +195,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
                   <div key={type.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Checkbox
                       label={typeLabel(type)}
-                      description={t_i18n(type.description)}
+                      description={describeType(t_i18n, type)}
                       checked={typeState(type)}
                       onCheckedChange={(checked) => toggleType(type, checked === true)}
                     />
@@ -206,7 +209,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
                 <ConfigPresetExpandableRow
                   key={type.key}
                   label={typeLabel(type)}
-                  description={t_i18n(type.description)}
+                  description={describeType(t_i18n, type)}
                   checked={typeState(type)}
                   disabled={disabled || isEmpty(type)}
                   actions={renderTypeActions?.(type)}
