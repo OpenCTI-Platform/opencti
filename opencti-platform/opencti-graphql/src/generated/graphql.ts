@@ -1861,9 +1861,9 @@ export type BackgroundTaskContextOptionsInput = {
   comment?: InputMaybe<Scalars['String']['input']>;
   eventName?: InputMaybe<Scalars['String']['input']>;
   includeNeighbours?: InputMaybe<Scalars['Boolean']['input']>;
+  investigationId?: InputMaybe<Scalars['String']['input']>;
   shareOrganizationIds?: InputMaybe<Array<Scalars['String']['input']>>;
   unshareOrganizationIds?: InputMaybe<Array<Scalars['String']['input']>>;
-  investigationId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export enum BackgroundTaskContextType {
