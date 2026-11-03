@@ -102,12 +102,11 @@ export const unregisterSessionPresence = (sessionId: string, connectionId: strin
   pendingLogouts.set(sessionId, pendingLogout);
 };
 
-// graphql-ws hooks, the presence must never prevent the socket from being used
+// graphql-ws hooks, the presence must never prevent the socket from being used.
+// Connections are tracked even when the feature is disabled: the setting is only read before a logout,
+// so enabling it also covers the tabs already open.
 export const onSessionPresenceConnect = async (ctx: Context<Record<string, unknown> | undefined, Extra>) => {
   try {
-    if (!(await isSessionPresenceEnabled())) {
-      return;
-    }
     const { socket } = ctx.extra;
     const request = ctx.extra.request as SessionRequest;
     const session = await getSessionMiddleware();

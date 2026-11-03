@@ -221,17 +221,29 @@ describe('session presence', () => {
       });
     });
 
-    it('should not track sockets when the feature is disabled', async () => {
+    it('should logout a tab opened before the feature was enabled', async () => {
+      enablePresence(false);
+      const sessionId = nextSessionId();
+      mockSessionMiddleware(sessionId, { user: USER });
+      const ctx = buildContext();
+
+      await onSessionPresenceConnect(ctx);
+      enablePresence(true);
+      onSessionPresenceClose(ctx);
+      await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
+
+      expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
+    });
+
+    it('should not logout a tracked tab while the feature is disabled', async () => {
       enablePresence(false);
       mockSessionMiddleware(nextSessionId(), { user: USER });
       const ctx = buildContext();
 
       await onSessionPresenceConnect(ctx);
       onSessionPresenceClose(ctx);
-      enablePresence(true);
       await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
 
-      expect(session.getSessionMiddleware).not.toHaveBeenCalled();
       expect(session.killSessionByRawId).not.toHaveBeenCalled();
     });
 
