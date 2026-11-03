@@ -106,10 +106,13 @@ interface SimulatedResult {
   readonly reason?: string | null;
 }
 
-// A row shows what the import would do unless there is nothing to say: an item that is created as it is, or one that is overwritten
-// and has its choice (the choice says it)
+// A row shows what the import would do unless there is nothing to say: an item that is created as it is, one that has nothing to
+// change on the platform, or one that is overwritten and has its choice (the choice says it)
 const isResultShown = (result: SimulatedResult, hasChoice: boolean) => {
   if (result.status === 'CREATED' && !result.reason) {
+    return false;
+  }
+  if (result.status === 'SKIPPED' && result.reason === 'Nothing to import') {
     return false;
   }
   return !(result.status === 'OVERWRITTEN' && hasChoice);
@@ -424,6 +427,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           // The platform points to a theme by its standard id: a copy of the default theme is another theme, the default stays the one it is
           const keepsDefaultTheme = hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
           const hiddenTypes = isImportedItem(type.key, item.key) && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
+          // A setting that is on or off: the value of the bundle is shown under its name, whether or not it is imported
+          const whitemark = type.key === 'whitemark' ? item.fields.find(({ key }) => key === 'platform_whitemark')?.value : null;
           return (
             <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
               <ConfigPresetItemRow
@@ -453,6 +458,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
               {keepsDefaultTheme && (
                 <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
                   {t_i18n('The platform keeps its current default theme.')}
+                </Text>
+              )}
+              {whitemark && (
+                <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
+                  {whitemark === 'true' ? t_i18n('Enabled') : t_i18n('Disabled')}
                 </Text>
               )}
               {hiddenTypes && (

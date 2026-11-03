@@ -366,6 +366,19 @@ describe('ConfigPresetImportWizard', () => {
         expect(checkbox('Messages (1/1)')).toBeInTheDocument();
       });
 
+      it.each([
+        ['on', 'true', 'Enabled'],
+        ['off', 'false', 'Disabled'],
+      ])('shows its value under its name when it is %s in the bundle', async (_, value, label) => {
+        enterpriseEdition.enabled = true;
+        const withValue = {
+          ...preview,
+          types: [...preview.types, previewType('whitemark', 'Remove Filigran logos', [previewItem('whitemark', 'Remove Filigran logos', { fields: [{ key: 'platform_whitemark', value }] })])],
+        };
+        await openPreview(session(), withValue);
+        expect(whitemarkRow().getByText(label)).toBeInTheDocument();
+      });
+
       it('is selected like any type, with no gate, on a platform that has the Enterprise Edition', async () => {
         enterpriseEdition.enabled = true;
         const rendered = await openPreview(session(), previewWithWhitemarkUnlocked);
@@ -985,6 +998,11 @@ describe('ConfigPresetImportWizard', () => {
       expect(within(platform).getByText('Default theme Import theme could not be imported')).toBeInTheDocument();
       // Not selected, not shown
       expect(within(screen.getByTestId('config-preset-import-item-messages-banner')).queryByText('Overwritten')).not.toBeInTheDocument();
+    });
+
+    it('shows nothing for an item that has nothing to change on the platform', async () => {
+      await renderPreview(session(), [{ type: 'messages', key: 'banner', status: 'SKIPPED', reason: 'Nothing to import' }]);
+      expect(within(screen.getByTestId('config-preset-import-item-messages-banner')).queryByText(/Created|Overwritten|Skipped|Failed|Nothing to import/)).not.toBeInTheDocument();
     });
 
     it('shows that an item with no choice is overwritten', async () => {
