@@ -170,7 +170,7 @@ import { pushAll } from '../../utils/arrayUtil';
 import { USER_MERGED_INTO_FIELD } from '../userMerge/userMerge-types';
 import { verifyXtmJwt, isOwnIssuer } from '../../domain/xtm-auth';
 import { getSettings } from '../../domain/settings';
-import { clearLocalAuthLockout, isLocalAuthLockedError, loadLocalAuthLockout } from '../../domain/local-auth-lockout';
+import { clearLocalAuthLockout, isLocalAuthLockedError, loadLocalAuthLockout, releaseLocalAuthAttempt } from '../../domain/local-auth-lockout';
 import {
   EnvStrategyType,
   getConfigurationAdminEmail,
@@ -1898,20 +1898,36 @@ const isAccountDisabled = (user: BasicStoreEntityUser) => {
   return !!user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date));
 };
 
+// The permanent final action of the lockout sets the account to Locked, which kills its sessions and rejects its API tokens.
+// Service accounts are never locked, so that their connectors keep working, and external users neither,
+// as it would also block their real login. The admin from configuration logs in with a local password, so it is locked.
+export const lockAccountAfterFailedAttempts = async (user: Pick<BasicStoreEntityUser, 'id' | 'account_status' | 'user_service_account' | 'external'>) => {
+  const isLockable = !user.user_service_account && (!user.external || user.id === OPENCTI_ADMIN_UUID);
+  if (!isLockable || user.account_status !== ACCOUNT_STATUS_ACTIVE) {
+    return;
+  }
+  const context = executionContext('local_auth_lockout');
+  await userEditField(context, SYSTEM_USER, user.id, [{ key: 'account_status', value: [ACCOUNT_STATUS_LOCKED] }]);
+};
+
 export const login = async (email: string, password: string) => {
   // Undefined when the local authentication lockout is disabled
   const lockout = await loadLocalAuthLockout(email);
   // The attempt is counted before the password is checked, and during a lock the password is not even checked
-  const failure = await lockout?.recordAttempt() ?? AuthenticationFailure();
+  const attempt = await lockout?.recordAttempt();
   const user = await getUserByEmail(email);
   const dbPassword = user ? getOwnPasswordHash(user) : undefined;
   // With the lockout, an inactive or expired account is rejected without checking its password.
   // The failure is counted like a wrong password, so that the account cannot be told apart from an unknown email.
-  const isPasswordChecked = !!user && !(lockout && isAccountDisabled(user));
+  // A service account has no password to check.
+  const isPasswordChecked = !!user && !!dbPassword && !(lockout && isAccountDisabled(user));
   if (!user || !dbPassword || !isPasswordChecked || !bcrypt.compareSync(password, dbPassword)) {
-    throw failure;
+    if (user && attempt?.locksAccount) {
+      await lockAccountAfterFailedAttempts(user);
+    }
+    throw attempt?.failure ?? AuthenticationFailure();
   }
-  // The caller clears the lockout once the login is fully accepted (IP whitelist, local auth enabled, API access)
+  // The caller clears the lockout once the login is fully accepted (IP whitelist, local auth enabled, API access, MFA)
   return user;
 };
 
@@ -2031,8 +2047,11 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
       await checkIpWhitelistOnLogin(context, user);
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
       // The local lockout never blocks other providers. The session clears the lockout of the user email,
-      // but the counter is keyed on what was typed, which can be another identifier (LDAP uid)
-      await clearLocalAuthLockout(input.email);
+      // but the counter is keyed on what was typed, which can be another identifier (LDAP uid).
+      // With MFA, only a valid MFA code clears it.
+      if (!loggedUser.otp_activated) {
+        await clearLocalAuthLockout(input.email);
+      }
       break;
     }
   }
@@ -2054,6 +2073,11 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
     if (user && (isLocalAuthEnabled || user.id === OPENCTI_ADMIN_UUID)) {
       await checkIpWhitelistOnLogin(context, user);
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
+      // The right password still waits for its MFA code: its attempt is lifted, but the counter is kept
+      // until a valid MFA code, otherwise logging in again would reset it between MFA guesses
+      if (loggedUser.otp_activated) {
+        await releaseLocalAuthAttempt(input.email);
+      }
     }
   }
   if (loggedUser) {
@@ -2079,7 +2103,7 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   });
   // User cannot be authenticated in any providers
   logAuthInfo('User cannot be authenticated in any providers', EnvStrategyType.STRATEGY_LOCAL, { username: input.email });
-  // A local lock is returned as is, so that the login form can show the remaining minutes.
+  // A local lock is returned as is, so that the login form can show it with the remaining time.
   // Only when the local auth is the only form login: otherwise the email can belong to another provider, never blocked by the local lock
   if (isLocalAuthEnabled && formProviders.length === 0 && isLocalAuthLockedError(localError)) {
     throw localError;
@@ -2091,10 +2115,20 @@ export const otpUserLogin = async (req: OtpSessionRequest, user: AuthUser, { cod
   if (!user.otp_activated) {
     throw AuthenticationFailure();
   }
+  // A failed MFA code counts like a failed password, so that the second factor cannot be brute-forced
+  const lockout = await loadLocalAuthLockout(user.user_email);
+  const attempt = await lockout?.recordAttempt();
   const { valid } = await totp.verify({ secret: user.otp_secret!, token: code });
   if (!valid) {
-    throw AuthenticationFailure();
+    if (attempt?.locksAccount) {
+      const lockedUser = await getUserByEmail(user.user_email);
+      if (lockedUser) {
+        await lockAccountAfterFailedAttempts(lockedUser);
+      }
+    }
+    throw attempt?.failure ?? AuthenticationFailure();
   }
+  await lockout?.clear();
   req.session.user.otp_validated = valid;
   req.session.save();
   return valid;
@@ -2476,8 +2510,11 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // Password expiration is enforced after login by the frontend guard on /change-password.
   validateUser(logged!, settings, { skipForcePasswordCheck: true });
-  // Any accepted session login (local, LDAP, SSO, certificate or headers) resets the local lockout
-  await clearLocalAuthLockout(logged!.user_email);
+  // Any accepted session login (local, LDAP, SSO, certificate or headers) resets the local lockout.
+  // With MFA, only a valid MFA code resets it (otpUserLogin)
+  if (!logged!.otp_activated) {
+    await clearLocalAuthLockout(logged!.user_email);
+  }
   const numberOfKilledSessions = await killUserSessionsOverLimit(logged!.id, settings.platform_session_max_concurrent);
   // Regenerate the session id before binding the identity, preventing session fixation.
   // The referer is kept as the auth callback still reads it from the session as a redirect fallback
