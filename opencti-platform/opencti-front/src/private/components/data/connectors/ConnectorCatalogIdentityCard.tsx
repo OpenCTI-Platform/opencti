@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { Link } from 'react-router';
 import Box from '@mui/material/Box';
 import { Stack, Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';

@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'reac
 import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import { Stack, Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxHelperText, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
