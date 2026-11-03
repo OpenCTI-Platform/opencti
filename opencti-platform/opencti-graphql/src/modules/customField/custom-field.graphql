@@ -70,7 +70,7 @@ type CustomFieldDefinitionEdge {
 
 # Queries
 type Query {
-  customFieldDefinition(id: String!): CustomFieldDefinition @auth(for: [KNOWLEDGE]) @ff(flags: ["CUSTOM_FIELDS"])
+  customFieldDefinition(id: String!): CustomFieldDefinition @auth(for: [KNOWLEDGE])
   customFieldDefinitions(
     first: Int
     after: ID
@@ -78,11 +78,11 @@ type Query {
     orderMode: OrderingMode
     search: String
     filters: FilterGroup
-  ): CustomFieldDefinitionConnection @auth(for: [KNOWLEDGE]) @ff(flags: ["CUSTOM_FIELDS"])
+  ): CustomFieldDefinitionConnection @auth(for: [KNOWLEDGE])
   # Read-only, available to any user with knowledge access (unlike customFieldDefinitions which is admin-only).
   # Used by entity creation/edition forms to render the custom fields applicable to a given entity type.
-  customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection @auth(for: [KNOWLEDGE]) @ff(flags: ["CUSTOM_FIELDS"])
-  customFieldStixFilterKeys(entityType: String): [String!] @auth(for: [KNOWLEDGE]) @ff(flags: ["CUSTOM_FIELDS"])
+  customFieldDefinitionsForEntityType(entityType: String!): CustomFieldDefinitionConnection @auth(for: [KNOWLEDGE])
+  customFieldStixFilterKeys(entityType: String): [String!] @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
@@ -103,10 +103,10 @@ input CustomFieldDefinitionAddInput {
 }
 
 type Mutation {
-  customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
-  customFieldDefinitionDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
-  customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
-  customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
-  customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
-  customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION]) @ff(flags: ["CUSTOM_FIELDS"])
+  customFieldDefinitionAdd(input: CustomFieldDefinitionAddInput!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinitionDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinitionFieldPatch(id: ID!, input: [EditInput!]!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinitionAddEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinitionUpdateEntityType(id: ID!, entityType: String!, mandatory: Boolean!, default_value: String): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  customFieldDefinitionRemoveEntityType(id: ID!, entityType: String!): CustomFieldDefinition @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
