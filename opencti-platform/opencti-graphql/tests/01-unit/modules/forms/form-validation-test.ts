@@ -95,6 +95,20 @@ describe('validateFormSubmission — mainEntityLookup', () => {
     const schema = baseSchema({ mainEntityLookup: true, fields: [] });
     expect(() => validateFormSubmission(schema, { mainEntityLookup: 'some-id' })).not.toThrow();
   });
+
+  it('passes when only a pending (created on submission) object is provided', () => {
+    const schema = baseSchema({ mainEntityLookup: true, fields: [] });
+    expect(() => validateFormSubmission(schema, { mainEntityLookupPending: [{ entityType: 'Malware', input: { name: 'M' } }] })).not.toThrow();
+  });
+
+  it('passes a required additional lookup satisfied only by a pending object', () => {
+    const schema = baseSchema({
+      fields: [],
+      additionalEntities: [makeAdditionalEntity('ent-1', 'Identity', { lookup: true, minAmount: 1 })],
+    });
+    expect(() => validateFormSubmission(schema, { 'additional_ent-1_lookup': [] })).toThrow();
+    expect(() => validateFormSubmission(schema, { 'additional_ent-1_lookup_pending': [{ entityType: 'Identity', input: { name: 'I' } }] })).not.toThrow();
+  });
 });
 
 // ─── Multiple / multiple mode ─────────────────────────────────────────────────
