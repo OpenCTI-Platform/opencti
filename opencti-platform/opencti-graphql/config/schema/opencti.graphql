@@ -1031,10 +1031,16 @@ enum BackgroundTasksOrdering {
   last_execution_date
   _score
 }
+type BackgroundTaskContextOptions {
+  includeNeighbours: Boolean
+  applyTransitionActions: Boolean
+  eventName: String
+}
 type BackgroundTaskContext {
   field: String
   type: BackgroundTaskContextType
   values: [String]!
+  options: BackgroundTaskContextOptions
 }
 type BackgroundTaskAction {
   type: BackgroundTaskActionType
@@ -1129,6 +1135,11 @@ type BackgroundTaskConnection {
 
 input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
+  applyTransitionActions: Boolean
+  eventName: String
+  comment: String
+  shareOrganizationIds: [String!]
+  unshareOrganizationIds: [String!]
 }
 
 input BackgroundTaskContextInput {
