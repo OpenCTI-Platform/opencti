@@ -1314,6 +1314,7 @@ type PlatformEE {
 enum PlatformEESource {
   OPENCTI_LICENSE
   XTM_ONE_LICENSE
+  FILIGRAN_LICENSE
 }
 
 enum PlatformCriticalAlertType {
