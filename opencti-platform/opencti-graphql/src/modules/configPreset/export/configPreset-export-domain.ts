@@ -21,6 +21,7 @@ import { allFilesForPaths } from '../../internal/document/document-domain';
 import { CONFIG_PRESET_EXPORT_PATH } from '../../internal/document/document-types';
 import { type ConfigPresetExportSummary, publishUserAction } from '../../../listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../manager/telemetryManager';
+import { CONFIG_PRESET_IMPORT_MAX_ENTRIES } from '../import/configPreset-import-bundle';
 import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemFilePath, exportConfigPresetItem, isConfigPresetFamilyAvailable } from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import { buildConfigPresetFileName, CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE, sanitizeBundleName } from '../configPreset-utils';
@@ -289,6 +290,11 @@ export const configPresetExport = async (
     throw UnsupportedError('Cannot export configuration presets in draft');
   }
   const families = await addConfigPresetDependencies(context, user, await resolveConfigPresetSelections(context, user, selections));
+  // The zip holds the items and the metadata and dependencies files: past the limit of the import, the platform could not read its own export
+  const entriesCount = families.reduce((count, family) => count + family.items.length, 2);
+  if (entriesCount > CONFIG_PRESET_IMPORT_MAX_ENTRIES) {
+    throw FunctionalError('The export holds too many items to be imported back, select fewer items', { limit: CONFIG_PRESET_IMPORT_MAX_ENTRIES, count: entriesCount });
+  }
   const generatedAt = new Date();
   const fileName = buildConfigPresetFileName(generatedAt);
   // Each export in its own folder, like support packages

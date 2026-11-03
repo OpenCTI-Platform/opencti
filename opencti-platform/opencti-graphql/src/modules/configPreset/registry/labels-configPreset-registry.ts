@@ -33,8 +33,8 @@ const labelsImporter: ConfigPresetImporter = {
   compute: async (context, user, item, _plan, mode) => {
     const value = typeof item.configuration.value === 'string' ? item.configuration.value : item.id;
     const label = { label: value, translatable: false };
-    // The bundle id of a label is its standard id: the one of its value
-    if (typeof item.configuration.value === 'string' && getLabelStandardId(item.configuration.value) !== item.id) {
+    // The bundle id of a label is its standard id: the one of its value. A blank value has none: the module refuses it
+    if (typeof item.configuration.value === 'string' && item.configuration.value.trim() !== '' && getLabelStandardId(item.configuration.value) !== item.id) {
       return { ...label, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the label does not match its value' };
     }
     return toComputedItem(label, await importLabel(context, user, item.configuration, { mode, dryRun: true }));
