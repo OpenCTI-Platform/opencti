@@ -98,7 +98,7 @@
     "axios": "1.20.0",
     "bcryptjs": "3.0.3",
     "bluebird": "3.7.2",
-    "body-parser": "2.2.2",
+    "body-parser": "2.4.0",
     "bytes": "3.1.2",
     "canonicalize": "2.1.0",
     "compression": "1.8.2",
@@ -178,7 +178,7 @@
     "winston-daily-rotate-file": "5.0.0",
     "ws": "8.21.3",
     "xml2js": "0.6.2",
-    "zod": "4.3.6"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
