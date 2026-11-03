@@ -44,7 +44,7 @@ It uses **Relay** for data fetching and **Material UI** for styling.
 - **Relay Compiler**: Essential for GraphQL fragment generation.
 
 ### Commands
-Before running commands, ensure `.yarnrc.yml` is present (copy from parent).
+The front is a workspace of the repository-root Yarn project: `yarn install` from the root installs it, `yarn workspaces focus opencti-front` installs it alone.
 
 ```bash
 # Installation
@@ -75,7 +75,6 @@ yarn test:e2e     # E2E (Playwright)
 > - [Forms & Validation](frontend/patterns/forms-validation.md)
 > - [Styling](frontend/patterns/styling-mui.md)
 > - [Components](frontend/patterns/components.md)
-> - [Navigation and placement](frontend/patterns/navigation.md)
 > - [Graph badges and node actions](frontend/patterns/graph-badges.md)
 
 ## Common Issues
