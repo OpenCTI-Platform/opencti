@@ -17,6 +17,7 @@ const authenticationGlobalSettingsQuery = graphql`
       id
       otp_mandatory
       platform_session_max_concurrent
+      platform_session_presence_enabled
     }
   }
 `;
@@ -28,6 +29,7 @@ const authenticationGlobalSettingsMutation = graphql`
         id
         otp_mandatory
         platform_session_max_concurrent
+        platform_session_presence_enabled
       }
     }
   }
@@ -36,6 +38,7 @@ const authenticationGlobalSettingsMutation = graphql`
 const validationSchema = Yup.object().shape({
   otp_mandatory: Yup.boolean(),
   platform_session_max_concurrent: Yup.number().nullable(),
+  platform_session_presence_enabled: Yup.boolean(),
 });
 
 const AuthenticationGlobalSettingsContent = () => {
@@ -66,6 +69,7 @@ const AuthenticationGlobalSettingsContent = () => {
   const initialValues = {
     otp_mandatory: settings.otp_mandatory ?? false,
     platform_session_max_concurrent: settings.platform_session_max_concurrent ?? 0,
+    platform_session_presence_enabled: settings.platform_session_presence_enabled,
   };
 
   return (
@@ -102,6 +106,17 @@ const AuthenticationGlobalSettingsContent = () => {
                 label={t_i18n('Max concurrent sessions (0 equals no maximum)')}
                 fullWidth
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value !== '' ? value : '0')}
+              />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="platform_session_presence_enabled"
+                label={t_i18n('Logout when the last tab is closed')}
+                containerstyle={{ marginTop: 20 }}
+                onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                tooltip={t_i18n(
+                  'When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported on a platform running several nodes.',
+                )}
               />
             </Card>
           </Grid>

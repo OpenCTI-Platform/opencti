@@ -82,6 +82,13 @@ const subscribeFn = (request: RequestParameters, variables: Variables) => {
     // Lazy creation of the subscription client to connect only after auth
     subscriptionClient = createClient({
       url: subscriptionUrl,
+      // Never give up reconnecting: the socket is also the presence of the tab for the platform
+      // (logout when the last tab is closed), a tab without socket would silently stop being tracked.
+      retryAttempts: Infinity,
+      // Exponential backoff with jitter, capped to keep reconnecting promptly after a long outage
+      retryWait: (retries) => new Promise((resolve) => {
+        setTimeout(resolve, Math.min(1000 * 2 ** retries, 10000) + Math.floor(Math.random() * 2700 + 300));
+      }),
     });
   }
   const client = subscriptionClient;
