@@ -58,12 +58,14 @@ For example, with **ISO 8601 (YYYY-MM-DD)** and **Hours, minutes and seconds (HH
 
 Keep in mind that:
 
-- **HH:mm** and **HH:mm:ss** always use a 24-hour clock, whatever the language. With **Default**, the clock follows the language.
+- The time is always displayed on a 24-hour clock with **HH:mm**, **HH:mm:ss**, or **ISO 8601**. The clock follows the language only when both settings are **Default**.
 - Times are displayed in the time zone of the browser. With ISO 8601, the offset at the end of the date tells which time zone it is.
 - When a date is too long for its cell, it is cut with an ellipsis; hover the cell to read it in full in a tooltip.
 - An invalid date is displayed as `-`.
 
 These settings apply to all tables and lists: entity and relationship lists, ingestions, audit logs, alerts, news feed, support packages, health operations, connector works, user history, deployed integrations and coverage. They do not change dates displayed outside table cells, such as the history and activity timelines, tooltips and detail panels, enrichment logs, or the names of support package files.
+
+The **Due Date** column, for example in the Tasks list, is an exception: it keeps its date displayed in the language of the user, without time.
 
 #### Override for a user
 
