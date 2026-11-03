@@ -2,9 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { type IngestionLogEntry, redisGetIngestionLogHistory } from '../../../../src/database/redis';
 import {
   buildHealthTransitionMessage,
+  formatHealthCheckMessage,
   buildIngestionHealthContext,
   computeHealthTransition,
-  HEALTH_NOTIFICATION_DELAY_MS,
+  DEFAULT_HEALTH_NOTIFICATION_DELAY_MS,
   computeIngestionHealthChecks,
   computeIngestionHealthPatch,
   isRuntimeCheckEnabled,
@@ -17,7 +18,9 @@ import {
   HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_REGISTRY,
   HEALTH_CHECK_USER_MISSING,
+  HEALTH_CHECK_USER_MISSING_CAPABILITY,
   HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
+  type HealthCheckCode,
   type HealthCheckIngestor,
   type HealthCheckUser,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-registry';
@@ -33,7 +36,7 @@ vi.mock('../../../../src/database/redis', async (importActual) => ({
 
 const EVALUATED_AT = '2026-10-13T12:00:00.000Z';
 const PREVIOUS_SINCE = '2026-10-12T08:00:00.000Z';
-const SERVICE_ACCOUNT = { internal: false, user_service_account: true };
+const SERVICE_ACCOUNT = { internal: false, user_service_account: true, hasCapability: () => true };
 const CONTEXT = { evaluatedAt: EVALUATED_AT, pingingConnectorsIds: new Set<string>(), user: SERVICE_ACCOUNT };
 const USER_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_MISSING, health_check_metadata: {} };
 const HEARTBEAT_MISSING: StoredHealthCheck = { health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING, health_check_metadata: {} };
@@ -231,6 +234,7 @@ describe('heartbeat check', () => {
     expect(toGraphqlIngestionHealth(patch?.ingestion_health, CONNECTOR.entity_type)?.healthChecks).toEqual([{
       health_check_code: HEALTH_CHECK_HEARTBEAT_MISSING,
       health_check_message: 'No heartbeat received',
+      health_check_metadata: {},
       health_check_kind: IngestionHealthCheckKind.Runtime,
       health_check_severity: IngestionHealthCheckSeverity.Blocking,
     }]);
@@ -257,6 +261,14 @@ describe('isRuntimeCheckEnabled', () => {
     expect(isRuntimeCheckEnabled(FEED, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
     expect(isRuntimeCheckEnabled(SYNC, { ...CONTEXT, ...NOT_PINGING })).toBe(false);
   });
+
+  it('should be false when the only runtime check enabled for the ingestion is disabled on the platform: nothing to read', () => {
+    expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: [HEALTH_CHECK_HEARTBEAT_MISSING] })).toBe(false);
+    const failingFeed = { ...FEED, last_execution_status: 'error' };
+    expect(isRuntimeCheckEnabled(failingFeed, { ...CONTEXT, ...NOT_PINGING, disabledHealthChecks: [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED] })).toBe(false);
+    // Another check disabled: still read
+    expect(isRuntimeCheckEnabled(CONNECTOR, { ...CONTEXT, ...PINGING, disabledHealthChecks: [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED] })).toBe(true);
+  });
 });
 
 describe('execution failed check', () => {
@@ -265,13 +277,20 @@ describe('execution failed check', () => {
   const FAILED_SYNC = { ...SYNC, last_execution_status: 'error' };
   // The details of the failure, read from the ingestion logs: absent when they hold none
   const failedWith = (meta?: Record<string, unknown>) => ({ ...CONTEXT, ...NOT_PINGING, runtimeData: meta ? { [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: meta } : {} });
+  const graphqlCheckOf = (meta?: Record<string, unknown>, ingestor = FAILED_FEED) => {
+    return toGraphqlHealthChecks(computeIngestionHealthChecks(ingestor, failedWith(meta)), ingestor.entity_type)[0];
+  };
+  // The message as shown once its placeholders are filled, as the front does after translating it
   const messageOf = (meta?: Record<string, unknown>, ingestor = FAILED_FEED) => {
-    return toGraphqlHealthChecks(computeIngestionHealthChecks(ingestor, failedWith(meta)), ingestor.entity_type)[0]?.health_check_message;
+    const check = graphqlCheckOf(meta, ingestor);
+    return formatHealthCheckMessage(check.health_check_message ?? '', check.health_check_metadata ?? {});
   };
 
-  it('should flag a feed or sync whose last execution failed, with the details of the failure', () => {
-    expect(computeIngestionHealthChecks(FAILED_FEED, failedWith(NOT_FOUND)))
-      .toEqual([{ health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: NOT_FOUND }]);
+  it('should flag a feed or sync whose last execution failed, with the details of the failure and their description', () => {
+    expect(computeIngestionHealthChecks(FAILED_FEED, failedWith(NOT_FOUND))).toEqual([{
+      health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
+      health_check_metadata: { ...NOT_FOUND, failure_description: 'HTTP 404 Not Found' },
+    }]);
   });
 
   it('should flag it without details when the logs hold none', () => {
@@ -312,6 +331,22 @@ describe('execution failed check', () => {
   it('should name a sync in the message', () => {
     expect(messageOf(NOT_FOUND, FAILED_SYNC)).toBe('Sync execution failed: HTTP 404 Not Found');
     expect(messageOf(undefined, FAILED_SYNC)).toBe('Sync execution failed');
+  });
+
+  // The front translates the message before filling it: the details must stay out of the text to translate
+  it.each([
+    ['a feed', FAILED_FEED, 'Feed execution failed: {failure_description}'],
+    ['a sync', FAILED_SYNC, 'Sync execution failed: {failure_description}'],
+  ])('should give the message of %s as a template, the description of the failure in the metadata', (_, ingestor, template) => {
+    const check = graphqlCheckOf(NOT_FOUND, ingestor);
+    expect(check.health_check_message).toBe(template);
+    expect(check.health_check_metadata).toEqual({ ...NOT_FOUND, failure_description: 'HTTP 404 Not Found' });
+  });
+
+  it('should give the message without placeholder nor description in the metadata when no details are known', () => {
+    const check = graphqlCheckOf(undefined);
+    expect(check.health_check_message).toBe('Feed execution failed');
+    expect(check.health_check_metadata).toEqual({});
   });
 });
 
@@ -416,9 +451,40 @@ describe('computeIngestionHealthChecks', () => {
   });
 });
 
+describe('disabled health checks', () => {
+  // A pinging connector without user nor heartbeat: fails USER_MISSING and HEARTBEAT_MISSING
+  const FAILING = { ...CONNECTOR, connector_user_id: null };
+  const contextWith = (disabledHealthChecks?: HealthCheckCode[]) => ({ ...CONTEXT, ...PINGING, user: undefined, disabledHealthChecks });
+
+  it('should evaluate every check when none is disabled', () => {
+    expect(computeIngestionHealthChecks(FAILING, contextWith())).toEqual([USER_MISSING, HEARTBEAT_MISSING]);
+    expect(computeIngestionHealthChecks(FAILING, contextWith([]))).toEqual([USER_MISSING, HEARTBEAT_MISSING]);
+  });
+
+  it('should not report a disabled check, even when it fails', () => {
+    expect(computeIngestionHealthChecks(FAILING, contextWith([HEALTH_CHECK_HEARTBEAT_MISSING]))).toEqual([USER_MISSING]);
+  });
+
+  it('should keep reporting the checks still enabled', () => {
+    expect(computeIngestionHealthChecks(FAILING, contextWith([HEALTH_CHECK_USER_MISSING]))).toEqual([HEARTBEAT_MISSING]);
+  });
+
+  it('should report nothing when every failing check is disabled', () => {
+    expect(computeIngestionHealthChecks(FAILING, contextWith([HEALTH_CHECK_USER_MISSING, HEALTH_CHECK_HEARTBEAT_MISSING]))).toEqual([]);
+  });
+
+  it('should drop a failure stored before its check was disabled: the status is computed again without it', () => {
+    const current = { ingestion_health: { status: IngestionHealthStatus.Critical, status_since: PREVIOUS_SINCE, health_checks: [USER_MISSING, HEARTBEAT_MISSING] } };
+    const context = contextWith([HEALTH_CHECK_HEARTBEAT_MISSING]);
+    const patch = computeIngestionHealthPatch(current, computeIngestionHealthChecks(FAILING, context), context);
+    expect(patch?.ingestion_health?.health_checks).toEqual([USER_MISSING]);
+    expect(patch?.ingestion_health?.status).toBe(IngestionHealthStatus.Degraded);
+  });
+});
+
 describe('user not service account check', () => {
-  const REGULAR_USER = { internal: false, user_service_account: false };
-  const INTERNAL_USER = { internal: true, user_service_account: false };
+  const REGULAR_USER = { internal: false, user_service_account: false, hasCapability: () => true };
+  const INTERNAL_USER = { internal: true, user_service_account: false, hasCapability: () => true };
   const checksFor = (ingestor: HealthCheckIngestor, user?: HealthCheckUser) => computeIngestionHealthChecks(ingestor, { ...CONTEXT, ...NOT_PINGING, user });
   const NOT_SERVICE_ACCOUNT: StoredHealthCheck = { health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, health_check_metadata: {} };
 
@@ -456,9 +522,47 @@ describe('user not service account check', () => {
     expect(toGraphqlIngestionHealth(patch?.ingestion_health, CONNECTOR.entity_type)?.healthChecks).toEqual([{
       health_check_code: HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
       health_check_message: 'User is not a service account',
+      health_check_metadata: {},
       health_check_kind: IngestionHealthCheckKind.Configuration,
       health_check_severity: IngestionHealthCheckSeverity.Advisory,
     }]);
+  });
+});
+
+describe('user missing capability check', () => {
+  const WITHOUT_CAPABILITY = { internal: false, user_service_account: true, hasCapability: () => false };
+  const checksFor = (ingestor: HealthCheckIngestor, user?: HealthCheckUser) => computeIngestionHealthChecks(ingestor, { ...CONTEXT, ...NOT_PINGING, user });
+  const CONNECTOR_WITH_USER = { ...CONNECTOR, connector_user_id: 'user-id' };
+  const CONNECTORAPI_DESCRIPTION = 'Connectors API usage: register, ping, export push ...';
+
+  it('should flag a connector whose user lacks CONNECTORAPI, with the description of the capability in the message', () => {
+    const checks = checksFor(CONNECTOR_WITH_USER, WITHOUT_CAPABILITY);
+    const metadata = { capability: 'CONNECTORAPI', capability_description: CONNECTORAPI_DESCRIPTION };
+    expect(checks).toEqual([{ health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY, health_check_metadata: metadata }]);
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_metadata).toEqual(metadata);
+    expect(toGraphqlHealthChecks(checks, CONNECTOR.entity_type)[0].health_check_message).toBe('User lacks required capability: "{capability_description}"');
+  });
+
+  it('should ask the user for CONNECTORAPI only', () => {
+    const hasCapability = vi.fn(() => true);
+    checksFor(CONNECTOR_WITH_USER, { ...SERVICE_ACCOUNT, hasCapability });
+    expect(hasCapability).toHaveBeenCalledWith('CONNECTORAPI');
+  });
+
+  it('should not flag a connector whose user has the capability', () => {
+    expect(checksFor(CONNECTOR_WITH_USER, SERVICE_ACCOUNT)).toEqual([]);
+  });
+
+  it('should not judge a feed: no capability is required', () => {
+    expect(checksFor({ ...FEED, user_id: 'user-id' }, WITHOUT_CAPABILITY)).toEqual([]);
+  });
+
+  it('should not judge an internal user', () => {
+    expect(checksFor(CONNECTOR_WITH_USER, { ...WITHOUT_CAPABILITY, internal: true })).toEqual([]);
+  });
+
+  it('should not judge a missing user: reported by USER_MISSING only', () => {
+    expect(checksFor({ ...CONNECTOR, connector_user_id: 'deleted-user-id' })).toEqual([USER_MISSING]);
   });
 });
 
@@ -475,6 +579,7 @@ describe('toGraphqlIngestionHealth', () => {
       healthChecks: [{
         health_check_code: HEALTH_CHECK_USER_MISSING,
         health_check_message: 'User is missing',
+        health_check_metadata: {},
         health_check_kind: IngestionHealthCheckKind.Configuration,
         health_check_severity: IngestionHealthCheckSeverity.Advisory,
       }],
@@ -492,8 +597,8 @@ describe('computeHealthTransition', () => {
   const SINCE = '2026-10-13T11:00:00.000Z';
   const OLD_EVENT = '2026-10-13T10:00:00.000Z';
   const at = (ms: number) => new Date(new Date(SINCE).getTime() + ms).toISOString();
-  const AFTER_DELAY = at(HEALTH_NOTIFICATION_DELAY_MS);
-  const BEFORE_DELAY = at(HEALTH_NOTIFICATION_DELAY_MS - 1);
+  const AFTER_DELAY = at(DEFAULT_HEALTH_NOTIFICATION_DELAY_MS);
+  const BEFORE_DELAY = at(DEFAULT_HEALTH_NOTIFICATION_DELAY_MS - 1);
   const { Critical, Degraded, Healthy, Unknown } = IngestionHealthStatus;
   // last_event_status absent: no event published yet
   const health = (status: IngestionHealthStatus, last_event_status?: IngestionHealthStatus, last_event_date = OLD_EVENT): StoredIngestionHealth => (
@@ -518,6 +623,37 @@ describe('computeHealthTransition', () => {
     });
   });
 
+  describe('already notified', () => {
+    it.each(Object.values(IngestionHealthStatus))('should not report %s again when the last event published already reports it, even notified at its start with a delay of 0', (status) => {
+      expect(computeHealthTransition(health(status, status, SINCE), AFTER_DELAY)).toBeNull();
+      expect(computeHealthTransition(health(status, status, SINCE), at(1), 0)).toBeNull();
+    });
+  });
+
+  describe('configured delay', () => {
+    const MINUTE = 60 * 1000;
+
+    it('should report with a delay shorter than the default what the default still defers', () => {
+      const evaluatedAt = at(2 * MINUTE);
+      expect(computeHealthTransition(health(IngestionHealthStatus.Degraded), evaluatedAt)).toBeNull();
+      expect(computeHealthTransition(health(IngestionHealthStatus.Degraded), evaluatedAt, MINUTE)).toBe(HealthTransition.Degraded);
+    });
+
+    it('should defer with a delay longer than the default what the default reports', () => {
+      expect(computeHealthTransition(health(IngestionHealthStatus.Critical), AFTER_DELAY)).toBe(HealthTransition.Critical);
+      expect(computeHealthTransition(health(IngestionHealthStatus.Critical), AFTER_DELAY, 2 * DEFAULT_HEALTH_NOTIFICATION_DELAY_MS)).toBeNull();
+    });
+
+    it('should report at the start of the status with a delay of 0', () => {
+      expect(computeHealthTransition(health(IngestionHealthStatus.Critical), SINCE, 0)).toBe(HealthTransition.Critical);
+    });
+
+    it('should apply the default delay when none is given', () => {
+      expect(computeHealthTransition(health(IngestionHealthStatus.Critical), BEFORE_DELAY, undefined)).toBeNull();
+      expect(computeHealthTransition(health(IngestionHealthStatus.Critical), AFTER_DELAY, undefined)).toBe(HealthTransition.Critical);
+    });
+  });
+
   describe('failure', () => {
     it.each([
       [Critical, HealthTransition.Critical],
@@ -531,7 +667,7 @@ describe('computeHealthTransition', () => {
 
     it.each([Critical, Degraded])('should not report %s again when the last event published already reports it, whatever its date', (status) => {
       expect(computeHealthTransition(health(status, status, OLD_EVENT), AFTER_DELAY)).toBeNull();
-      expect(computeHealthTransition(health(status, status, AFTER_DELAY), at(10 * HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
+      expect(computeHealthTransition(health(status, status, AFTER_DELAY), at(10 * DEFAULT_HEALTH_NOTIFICATION_DELAY_MS))).toBeNull();
     });
   });
 
@@ -559,13 +695,13 @@ describe('computeHealthTransition', () => {
   // Replays periods as the ingestion health manager does, through computeIngestionHealthPatch. Returns the published events.
   describe('scenarios over periods', () => {
     const MINUTE = 60 * 1000;
-    const DELAY_MINUTES = HEALTH_NOTIFICATION_DELAY_MS / MINUTE;
+    const DELAY_MINUTES = DEFAULT_HEALTH_NOTIFICATION_DELAY_MS / MINUTE;
     const checksOf = (status: IngestionHealthStatus): StoredHealthCheck[] => {
       if (status === Critical) return [HEARTBEAT_MISSING];
       if (status === Degraded) return [USER_MISSING];
       return [];
     };
-    const run = (steps: [number, IngestionHealthStatus][]) => {
+    const run = (steps: [number, IngestionHealthStatus][], notificationDelay = DEFAULT_HEALTH_NOTIFICATION_DELAY_MS) => {
       let current: IngestionHealthFields = {};
       const events: [number, HealthTransition][] = [];
       steps.forEach(([minute, status]) => {
@@ -574,7 +710,7 @@ describe('computeHealthTransition', () => {
         const runtimeData = status === Healthy ? { [HEALTH_CHECK_HEARTBEAT_MISSING]: evaluatedAt } : {};
         const patch = computeIngestionHealthPatch(current, checksOf(status), { ...CONTEXT, ...PINGING, evaluatedAt, runtimeData });
         let next = patch ? patch.ingestion_health : current.ingestion_health;
-        const transition = computeHealthTransition(next, evaluatedAt);
+        const transition = computeHealthTransition(next, evaluatedAt, notificationDelay);
         if (transition) {
           events.push([minute, transition]);
           next = next ? markHealthNotified(next, evaluatedAt) : next;
@@ -665,6 +801,16 @@ describe('computeHealthTransition', () => {
       ]);
     });
 
+    // Notified in the period the status starts: the event is at its start, and must count as notified at the next periods
+    it('should report each status change once at its first period with a delay of 0, and never again while it lasts', () => {
+      expect(run([...minutes(0, 10, Degraded), ...minutes(11, 20, Critical), ...minutes(21, 30, Healthy), ...minutes(31, 40, Critical)], 0)).toEqual([
+        [0, HealthTransition.Degraded],
+        [11, HealthTransition.Critical],
+        [21, HealthTransition.Recovered],
+        [31, HealthTransition.Critical],
+      ]);
+    });
+
     it('should report a recovery once: a failure never notified after it does not report it again', () => {
       expect(run([...minutes(0, 10, Critical), ...minutes(11, 20, Healthy), ...minutes(21, 22, Critical), ...minutes(23, 40, Healthy)])).toEqual([
         [DELAY_MINUTES, HealthTransition.Critical],
@@ -690,5 +836,27 @@ describe('buildHealthTransitionMessage', () => {
   it('should ignore the checks unknown to the registry', () => {
     expect(buildHealthTransitionMessage(element, HealthTransition.Critical, [OTHER_CHECK]))
       .toBe('reports `My connector` (Connector) as critical');
+  });
+
+  it('should fill the placeholders of the check messages from their metadata', () => {
+    const missingCapability = {
+      health_check_code: HEALTH_CHECK_USER_MISSING_CAPABILITY,
+      health_check_metadata: { capability: 'CONNECTORAPI', capability_description: 'Connectors API usage: register, ping, export push ...' },
+    };
+    expect(buildHealthTransitionMessage(element, HealthTransition.Critical, [missingCapability]))
+      .toBe('reports `My connector` (Connector) as critical: User lacks required capability: "Connectors API usage: register, ping, export push ..."');
+  });
+
+  it('should fill the description of a failed execution from its metadata', () => {
+    const metadata = { http_status: 404, http_status_text: 'Not Found', failure_description: 'HTTP 404 Not Found' };
+    const executionFailed = { health_check_code: HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, health_check_metadata: metadata };
+    expect(buildHealthTransitionMessage({ name: 'My feed', entity_type: 'IngestionRss' }, HealthTransition.Critical, [executionFailed]))
+      .toBe('reports `My feed` (IngestionRss) as critical: Feed execution failed: HTTP 404 Not Found');
+  });
+});
+
+describe('formatHealthCheckMessage', () => {
+  it('should keep a placeholder without value', () => {
+    expect(formatHealthCheckMessage('{known} and {unknown}', { known: 'value' })).toBe('value and {unknown}');
   });
 });

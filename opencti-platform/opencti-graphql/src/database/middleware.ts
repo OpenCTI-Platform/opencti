@@ -163,7 +163,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -247,6 +247,7 @@ import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDelet
 import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
+import { isCreateOnlyFormImport } from '../modules/form/form-submission-context';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -3085,24 +3086,20 @@ export const updateAttribute = async <T extends StoreObject>(
   let finalInputs = inputs;
   const customFieldValuesInputs = inputs.filter((inputData) => inputData.key === customFieldValues.name);
   if (customFieldValuesInputs.length > 0) {
-    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      const normalizedInputs: EditInput[] = [];
-      for (let i = 0; i < customFieldValuesInputs.length; i += 1) {
-        const customFieldValuesInput = customFieldValuesInputs[i];
-        const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
-        normalizedInputs.push({ ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) });
-      }
-      // Several inputs, or the removal of some multi_select options, are applied on the current values into a single replace
-      const isFolded = normalizedInputs.length > 1 || isCustomFieldOptionsRemove(normalizedInputs[0]);
-      const currentValues = (initial as Record<string, any>).custom_field_values ?? [];
-      const customFieldValuesInput = isFolded
-        ? { key: customFieldValues.name, operation: EditOperation.Replace, value: foldCustomFieldValuesInputs(currentValues, normalizedInputs) }
-        : normalizedInputs[0];
-      await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
-      finalInputs = [...inputs.filter((inputData) => inputData.key !== customFieldValues.name), customFieldValuesInput];
-    } else {
-      throw FunctionalError('Custom fields feature is not enabled', { id, type });
+    const normalizedInputs: EditInput[] = [];
+    for (let i = 0; i < customFieldValuesInputs.length; i += 1) {
+      const customFieldValuesInput = customFieldValuesInputs[i];
+      const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
+      normalizedInputs.push({ ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) });
     }
+    // Several inputs, or the removal of some multi_select options, are applied on the current values into a single replace
+    const isFolded = normalizedInputs.length > 1 || isCustomFieldOptionsRemove(normalizedInputs[0]);
+    const currentValues = (initial as Record<string, any>).custom_field_values ?? [];
+    const customFieldValuesInput = isFolded
+      ? { key: customFieldValues.name, operation: EditOperation.Replace, value: foldCustomFieldValuesInputs(currentValues, normalizedInputs) }
+      : normalizedInputs[0];
+    await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
+    finalInputs = [...inputs.filter((inputData) => inputData.key !== customFieldValues.name), customFieldValuesInput];
   }
   // Continue update
   const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, finalInputs, opts);
@@ -3308,10 +3305,8 @@ const validateEntityAndRelationCreation = async (
     });
     // Custom field values are validated on the final values (default values included).
     // Mandatory ones follow the same rules as mandatory standard attributes: bypassable.
-    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
-      await validateCustomFieldValues(context, user, input.custom_field_values ?? [], type, { checkMandatory: !isAllowedToBypassMandatory });
-    }
+    const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
+    await validateCustomFieldValues(context, user, input.custom_field_values ?? [], type, { checkMandatory: !isAllowedToBypassMandatory });
   }
 };
 
@@ -3589,13 +3584,11 @@ export const createRelationRaw = async (
   // endregion
 
   // region custom field values handling
-  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-    const rawInputCustomFieldValues = input.customFieldValues ?? [];
-    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
-    // Only keep empty custom fields values if it came from input
-    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
-      (input as any).custom_field_values = customFieldValuesFromInput;
-    }
+  const rawInputCustomFieldValues = input.customFieldValues ?? [];
+  const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
+  // Only keep empty custom fields values if it came from input
+  if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+    (input as any).custom_field_values = customFieldValuesFromInput;
   }
   delete input.customFieldValues;
   // endregion
@@ -3712,6 +3705,10 @@ export const createRelationRaw = async (
       // If upsert come from a rule, do a specific upsert.
       if (fromRule) {
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, fromRule, locks: participantIds });
+      }
+      // A form submission without Create / Update knowledge only creates: the existing relationship is used as it is
+      if (isCreateOnlyFormImport(context, user)) {
+        return { element: existingRelationship, event: null, isCreation: false };
       }
       // If not upsert the element
       return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
@@ -3925,6 +3922,7 @@ const internalCreateEntityRaw = async (
 ) => {
   // region confidence control
   const input = { ...rawInput };
+  const isInputConfidenceMissing = isEmptyField(rawInput.confidence);
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input as ObjectWithConfidence, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // authorized_members renaming
@@ -3935,13 +3933,11 @@ const internalCreateEntityRaw = async (
   // endregion
 
   // region custom field values handling
-  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-    const rawInputCustomFieldValues = input.customFieldValues ?? [];
-    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
-    // Only keep empty custom fields values if it came from input
-    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
-      (input as any).custom_field_values = customFieldValuesFromInput;
-    }
+  const rawInputCustomFieldValues = input.customFieldValues ?? [];
+  const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
+  // Only keep empty custom fields values if it came from input
+  if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+    (input as any).custom_field_values = customFieldValuesFromInput;
   }
   delete input.customFieldValues;
   // endregion
@@ -4013,6 +4009,11 @@ const internalCreateEntityRaw = async (
     // If existing entities have been found and type is a STIX Core Object
     let dataMessage;
     if (existingEntities.length > 0) {
+      // An input without confidence must not replace the existing confidence with the user's max confidence
+      // The user's max confidence still controls the upsert of the other attributes
+      if (isInputConfidenceMissing) {
+        delete resolvedInput.confidence;
+      }
       // We need to filter what we found with the user rights
       const filteredEntities = await userFilterStoreElements(context, user, existingEntities) as BasicStoreEntity[];
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
@@ -4039,6 +4040,11 @@ const internalCreateEntityRaw = async (
         }
         // If upsert come from a rule, do a specific upsert.
         return await upsertEntityRule(context, user, filteredEntities[0], input, { ...opts, fromRule, locks: participantIds });
+      }
+      // A form submission without Create / Update knowledge only creates: the existing entity is used as it is, never upserted nor merged
+      if (isCreateOnlyFormImport(context, user)) {
+        const existing = R.find((e) => e.standard_id === standardId, filteredEntities) ?? filteredEntities[0];
+        return { element: existing, event: null, isCreation: false };
       }
       if (filteredEntities.length === 1) {
         const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true, elementAlreadyResolved: true };

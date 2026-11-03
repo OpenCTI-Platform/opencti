@@ -5,6 +5,7 @@ import Button from '@common/button/Button';
 import IngestionHealthBanner from '@components/data/connectors/IngestionHealthBanner';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useHealthCheckMessage from './useHealthCheckMessage';
 import type { ConnectorHealthAlerts_ingestionHealth$key } from './__generated__/ConnectorHealthAlerts_ingestionHealth.graphql';
 
 const connectorHealthAlertsFragment = graphql`
@@ -14,6 +15,7 @@ const connectorHealthAlertsFragment = graphql`
     healthChecks {
       health_check_code
       health_check_message
+      health_check_metadata
       health_check_kind
       health_check_severity
     }
@@ -71,6 +73,7 @@ interface ConnectorHealthAlertsProps {
 // Health issues of one connector or feed, split by severity (critical, then degraded)
 const ConnectorHealthAlerts = ({ ingestionHealth, subject = 'connector' }: ConnectorHealthAlertsProps) => {
   const theme = useTheme();
+  const { getHealthCheckMessage } = useHealthCheckMessage();
   const { isFeatureEnable } = useHelper();
   const data = useFragment(connectorHealthAlertsFragment, ingestionHealth ?? null);
   // Nothing to flag: not evaluated yet, healthy or unknown. The checks of an unknown status are not issues of this platform version
@@ -81,7 +84,7 @@ const ConnectorHealthAlerts = ({ ingestionHealth, subject = 'connector' }: Conne
   const degraded: string[] = [];
   data.healthChecks.forEach((check) => {
     const isCritical = check.health_check_kind === 'runtime' && check.health_check_severity === 'blocking';
-    (isCritical ? critical : degraded).push(check.health_check_message ?? check.health_check_code);
+    (isCritical ? critical : degraded).push(getHealthCheckMessage(check));
   });
   if (critical.length === 0 && degraded.length === 0) return null;
 

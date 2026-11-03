@@ -98,6 +98,14 @@ const preserveIndicatorLifecycleAndValidityMetadata = (updatePatch, resolvedElem
   delete updatePatch.decay_history;
 };
 
+// An input without confidence keeps the existing confidence: confidenceLevelToApply only controls the upsert
+// An element without confidence still receives one, as in a standard update
+const applyConfidenceForUpsert = (updatePatch, resolvedElement, basePatch, confidenceLevelToApply) => {
+  if (isNotEmptyField(basePatch.confidence) || isEmptyField(resolvedElement.confidence)) {
+    updatePatch.confidence = confidenceLevelToApply;
+  }
+};
+
 export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch, confidenceForUpsert) => {
   const updatePatch = { ...basePatch };
   const { confidenceLevelToApply, isConfidenceMatch } = confidenceForUpsert;
@@ -163,7 +171,7 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
         },
       );
       preserveIndicatorLifecycleAndValidityMetadata(updatePatch, resolvedElement);
-      updatePatch.confidence = confidenceLevelToApply;
+      applyConfidenceForUpsert(updatePatch, resolvedElement, basePatch, confidenceLevelToApply);
       return updatePatch;
     }
     // Guard for decay-excluded indicators: when the score is unchanged, preserve valid_until,
@@ -254,7 +262,7 @@ export const buildUpdatePatchForUpsert = (user, resolvedElement, type, basePatch
     }
   }
   // region confidence control / upsert
-  updatePatch.confidence = confidenceLevelToApply;
+  applyConfidenceForUpsert(updatePatch, resolvedElement, basePatch, confidenceLevelToApply);
   // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
   // endregion
   return updatePatch;
