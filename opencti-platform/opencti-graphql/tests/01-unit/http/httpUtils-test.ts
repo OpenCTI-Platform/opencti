@@ -6,6 +6,7 @@ import {
   buildPublicHelmetParameters,
   buildRateLimiterOptions,
   clientErrorResponse,
+  computeInlineScriptHashes,
   decodeOidcState,
   encodeOidcState,
   isClientRequestError,
@@ -205,6 +206,51 @@ describe('buildHelmetParameters coverage', () => {
       },
       xFrameOptions: { action: 'deny' },
     });
+  });
+
+  it('should allow inline scripts by hash only when inline scripts are disallowed', () => {
+    vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(false);
+    vi.spyOn(httpConfig, 'isInlineScriptAllowed').mockReturnValue(false);
+    const hashes = ["'sha256-hNdQLxkNyhjABlKUw4/L82RTAEgWfMpVz1sQ1M6DSCE='"];
+
+    const publicDirectives = buildPublicHelmetParameters(hashes).contentSecurityPolicy as { directives: Record<string, unknown> };
+    expect(publicDirectives.directives.scriptSrc).toStrictEqual(["'self'", ...hashes]);
+    const defaultDirectives = buildDefaultHelmetParameters(hashes).contentSecurityPolicy as { directives: Record<string, unknown> };
+    expect(defaultDirectives.directives.scriptSrc).toStrictEqual(["'self'", ...hashes]);
+  });
+
+  it('should ignore the hashes when inline scripts are allowed', () => {
+    vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(false);
+    vi.spyOn(httpConfig, 'isInlineScriptAllowed').mockReturnValue(true);
+    const hashes = ["'sha256-hNdQLxkNyhjABlKUw4/L82RTAEgWfMpVz1sQ1M6DSCE='"];
+
+    const defaultDirectives = buildDefaultHelmetParameters(hashes).contentSecurityPolicy as { directives: Record<string, unknown> };
+    expect(defaultDirectives.directives.scriptSrc).toStrictEqual(["'self'", "'unsafe-inline'"]);
+  });
+});
+
+describe('httpUtils: computeInlineScriptHashes', () => {
+  it('should hash each inline script and skip the scripts with a src', () => {
+    const html = `<head>
+      <script>window.BASE_PATH = ""</script>
+      <script type="module" crossorigin src="./assets/index.js"></script>
+      <SCRIPT type="text/javascript">window.BASE_PATH = ""</SCRIPT>
+    </head>`;
+    expect(computeInlineScriptHashes(html)).toStrictEqual([
+      "'sha256-hNdQLxkNyhjABlKUw4/L82RTAEgWfMpVz1sQ1M6DSCE='",
+      "'sha256-hNdQLxkNyhjABlKUw4/L82RTAEgWfMpVz1sQ1M6DSCE='",
+    ]);
+  });
+
+  it('should hash multi-line scripts byte for byte', () => {
+    const content = '\n  self.MonacoEnvironment = {};\n';
+    expect(computeInlineScriptHashes(`<script>${content}</script>`)).toStrictEqual([
+      "'sha256-0pHuNCBLPhL7QR3NcQseY7Y6qyDv8jzW7p238rW218E='",
+    ]);
+  });
+
+  it('should return no hash when the page has no inline script', () => {
+    expect(computeInlineScriptHashes('<script src="./a.js"></script>')).toStrictEqual([]);
   });
 });
 

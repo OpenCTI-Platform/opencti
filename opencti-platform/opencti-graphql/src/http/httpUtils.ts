@@ -13,6 +13,7 @@ import {
   getRateProtectionTimeWindowMs,
   getRateProtectionUserAgentSkipPrefixes,
   isDevMode,
+  isInlineScriptAllowed,
   isUnsecureHttpResourceAllowed,
 } from './httpConfig';
 import type { HelmetOptions } from 'helmet';
@@ -117,8 +118,25 @@ export const decodeOidcState = (state: string | undefined) => {
 
 // Region helmet configuration
 
-const buildScriptSrc = () => {
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
+/**
+ * Hash the inline <script> elements of a page, in the format of a CSP source ('sha256-...').
+ * Scripts with a src attribute are skipped: 'self' covers them.
+ */
+export const computeInlineScriptHashes = (html: string): string[] => {
+  const inlineScripts = html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/gi);
+  return Array.from(inlineScripts, ([, content]) => {
+    const hash = crypto.createHash('sha256').update(content, 'utf8').digest('base64');
+    return `'sha256-${hash}'`;
+  });
+};
+
+const buildScriptSrc = (inlineScriptHashes: string[]) => {
+  const scriptSrc = ["'self'"];
+  if (isInlineScriptAllowed()) {
+    scriptSrc.push("'unsafe-inline'");
+  } else {
+    scriptSrc.push(...inlineScriptHashes);
+  }
   if (isDevMode()) {
     scriptSrc.push("'unsafe-eval'");
   }
@@ -158,7 +176,7 @@ const buildObjectSrc = () => {
   return objectSrc;
 };
 
-export const buildPublicHelmetParameters = (): HelmetOptions => {
+export const buildPublicHelmetParameters = (inlineScriptHashes: string[] = []): HelmetOptions => {
   const ancestorsFromConfig = getPublicAuthorizedDomainsFromConfiguration();
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
   const allowedFrameSrc = ["'self'"];
@@ -171,7 +189,7 @@ export const buildPublicHelmetParameters = (): HelmetOptions => {
       useDefaults: true,
       directives: {
         defaultSrc: ["'none'"],
-        scriptSrc: buildScriptSrc(),
+        scriptSrc: buildScriptSrc(inlineScriptHashes),
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrcAttr: ["'none'"],
         fontSrc: ["'self'", 'data:'],
@@ -191,7 +209,7 @@ export const buildPublicHelmetParameters = (): HelmetOptions => {
   return helmetConfiguration;
 };
 
-export const buildDefaultHelmetParameters = (): HelmetOptions => {
+export const buildDefaultHelmetParameters = (inlineScriptHashes: string[] = []): HelmetOptions => {
   const helmetConfiguration: HelmetOptions = {
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     crossOriginEmbedderPolicy: false,
@@ -201,7 +219,7 @@ export const buildDefaultHelmetParameters = (): HelmetOptions => {
       useDefaults: true,
       directives: {
         defaultSrc: ["'none'"],
-        scriptSrc: buildScriptSrc(),
+        scriptSrc: buildScriptSrc(inlineScriptHashes),
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrcAttr: ["'none'"],
         fontSrc: ["'self'", 'data:'],
