@@ -1,4 +1,4 @@
-import { Worker } from 'worker_threads';
+import { Worker, type WorkerOptions } from 'worker_threads';
 import * as path from 'path';
 import conf from '../config/conf';
 import type { WorkerReply, WorkerRequest } from './safeEjs.worker';
@@ -32,7 +32,8 @@ const resolveWorkerPath = () => {
 };
 
 const spawnWorker = (): PooledWorker => {
-  const worker = new Worker(resolveWorkerPath(), { resourceLimits: RESOURCE_LIMITS });
+  const options: WorkerOptions = Object.assign(Object.create(null), { resourceLimits: RESOURCE_LIMITS });
+  const worker = new Worker(resolveWorkerPath(), options);
   // An idle worker must never hold the platform open on shutdown. A render in flight keeps the
   // event loop alive through its own timeout timer.
   worker.unref();
