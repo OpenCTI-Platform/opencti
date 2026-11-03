@@ -54,6 +54,7 @@ import { generateCreateMessage } from '../database/data-changes';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
+import { checkDraftInContext } from '../http/httpServer-draft';
 import { EVENT_CURRENT_VERSION, sanitizeStreamEventOrigin } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { extractStixRepresentative } from '../database/stix-representative';
@@ -92,10 +93,13 @@ const createBroadcastClient = (channel) => {
   };
 };
 
-const authenticate = async (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   try {
     const context = await createAuthenticatedContext(req, res, 'stream');
     if (context.user) {
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used by the stream processor.
+      await checkDraftInContext(context);
       req.context = context;
       req.userId = context.user.id;
       req.user = context.user;
@@ -176,7 +180,7 @@ const computeUserAndCollection = async (req, res, { context, user, id }) => {
   return { streamFilters, collection };
 };
 
-const authenticateForPublic = async (req, res, next) => {
+export const authenticateForPublic = async (req, res, next) => {
   const context = await createAuthenticatedContext(req, res, 'stream_authenticate');
   const user = context.user ?? SYSTEM_USER;
   req.context = context;
@@ -194,6 +198,15 @@ const authenticateForPublic = async (req, res, next) => {
     res.statusMessage = 'You are not authenticated, please check your credentials';
     sendErrorStatus(req, res, 401);
   } else {
+    try {
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used by the stream processor.
+      await checkDraftInContext(context);
+    } catch (e) {
+      res.statusMessage = e.message ?? 'Draft context error';
+      sendErrorStatus(req, res, 500);
+      return;
+    }
     req.collection = collection;
     req.streamFilters = streamFilters;
     next();
