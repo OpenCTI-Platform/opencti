@@ -200,6 +200,8 @@ describe('Config preset import: apply', () => {
     await importData(await upload(validBundleFiles()), ALL);
     const output = await importData(await upload(validBundleFiles()), ALL);
     expect(resultOf(output, CUSTOM_THEME_ID)?.status).toEqual('OVERWRITTEN');
+    // The platform has the banner already: nothing to write
+    expect(resultOf(output, 'banner')).toMatchObject({ status: 'SKIPPED', reason: 'Nothing to import' });
     expect(await customThemes()).toHaveLength(1);
   });
 
@@ -214,6 +216,8 @@ describe('Config preset import: apply', () => {
 
     it('adds the themes that exist as copies under a free name with COPY, and leaves the existing theme and the default theme alone', async () => {
       await importData(await upload(validBundleFiles()), ALL);
+      // The banner changed since: the one of the bundle has something to overwrite again
+      await settingsEditField(testContext, ADMIN_USER, (await getSettings(testContext)).id, [{ key: 'platform_banner_text', value: ['Changed'] }]);
       const output = await importData(await upload(validBundleFiles()), BRANDING('COPY'));
       expect(resultOf(output, CUSTOM_THEME_ID)).toMatchObject({ status: 'CREATED', reason: 'Added as "Import test theme (1)"' });
       // The mode of a theme does not change what the other items do
