@@ -103,10 +103,13 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
       .filter((f) => isNotEmptyField(f))
       .flatMap((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)));
     // IDs from list of PIRs to listen.
+    // A configuration stored through the API, an import or an older version can hold a
+    // non-array inPirFilters: ignore it instead of breaking the whole resolved filters cache.
     const playbookInPirFilterIds = configurations
       .map((config) => config.inPirFilters)
-      .map((f) => (f ?? []).map((i: { value: string }) => i.value))
-      .flat();
+      .filter((f): f is { value?: unknown }[] => Array.isArray(f))
+      .flatMap((f) => f.map((i) => i?.value))
+      .filter((value): value is string => typeof value === 'string' && value.length > 0);
     pushAll(filteringIds, playbookFilterIds);
     pushAll(filteringIds, playbookInPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {

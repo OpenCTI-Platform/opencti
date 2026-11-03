@@ -17,6 +17,22 @@ const instanceOfPlaybookListenPIR = {
   entity_type: 'Playbook',
 } as unknown as BasicStoreCommon;
 
+const buildPlaybookListenPIR = (inPirFilters: unknown) => ({
+  playbook_definition: JSON.stringify({
+    nodes: [
+      {
+        id: 'id1',
+        name: 'Listen PIR events',
+        position: { x: 0, y: 0 },
+        component_id: 'PLAYBOOK_DATA_STREAM_PIR',
+        configuration: JSON.stringify({ inPirFilters, create: true, update: false, delete: false }),
+      },
+    ],
+    links: [],
+  }),
+  entity_type: 'Playbook',
+} as unknown as BasicStoreCommon);
+
 describe('Cache Manager', () => {
   describe('Function extractResolvedFiltersFromInstance()', () => {
     describe('Specific case of playbooks', () => {
@@ -36,6 +52,21 @@ describe('Cache Manager', () => {
         const expectedResult: any[] = ['id2'];
         const result = extractResolvedFiltersFromInstance(instanceOfPlaybookListenPIR);
         expect(result).toEqual(expectedResult);
+      });
+
+      it.each([
+        ['a string', 'some-pir-id'],
+        ['an object', { value: 'some-pir-id' }],
+        ['a number', 42],
+        ['null', null],
+      ])('should ignore inPirFilters when it is %s instead of throwing', async (_label, inPirFilters) => {
+        expect(() => extractResolvedFiltersFromInstance(buildPlaybookListenPIR(inPirFilters))).not.toThrow();
+        expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR(inPirFilters))).toEqual([]);
+      });
+
+      it('should keep valid PIR ids and skip malformed entries of an inPirFilters array', async () => {
+        const result = extractResolvedFiltersFromInstance(buildPlaybookListenPIR([{ value: 'id2' }, 'id3', null, { label: 'no value' }, { value: 'id4' }]));
+        expect(result).toEqual(['id2', 'id4']);
       });
     });
   });
