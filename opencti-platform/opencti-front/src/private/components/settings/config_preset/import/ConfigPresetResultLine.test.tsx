@@ -46,10 +46,17 @@ describe('ConfigPresetResultLine', () => {
     ['Roles could not be imported: Analyst', 'Roles could not be imported: Analyst'],
     ['Markings not found: TLP:AMBER, PAP:RED', 'Markings not found: TLP:AMBER, PAP:RED'],
     ['Default dashboard not found: SOC overview', 'Default dashboard not found: SOC overview'],
+    ['Roles removed: Hunter', 'Roles removed: Hunter'],
+    ['Markings removed: PAP:RED', 'Markings removed: PAP:RED'],
+    ['Capabilities removed: EXPLORE', 'Capabilities removed: EXPLORE'],
+    ['Capabilities in draft removed: KNOWLEDGE_KNUPDATE', 'Capabilities in draft removed: KNOWLEDGE_KNUPDATE'],
     ['The main organization requires the Enterprise Edition', 'The main organization requires the Enterprise Edition'],
     ['Main organization not found: Filigran', 'Main organization not found: Filigran'],
     ['Requires the right to manage the sensitive configuration', 'Requires the right to manage the sensitive configuration'],
     ['The Administrators group keeps the Administrator role', 'The Administrators group keeps the Administrator role'],
+    ['Removes sensitive rights', 'Removes sensitive rights'],
+    ['Sets the main organization: Filigran', 'Sets the main organization: Filigran'],
+    ["The expiration date of the users' passwords changes", "The expiration date of the users' passwords changes"],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();
@@ -67,7 +74,7 @@ describe('ConfigPresetResultLine', () => {
     expect(screen.getByText('Skipped')).toBeInTheDocument();
   });
 
-  it('translates each reason of an item that has several, one per line', () => {
+  it('translates each reason of an item that has several, and shows them on one line', () => {
     testRender(<ConfigPresetResultLine label="Group" status="CREATED" reason={'Added as "SOC (1)"\nMarkings not found: PAP:RED'} />);
     expect(screen.getByText('Added as "SOC (1)" · Markings not found: PAP:RED')).toBeInTheDocument();
   });

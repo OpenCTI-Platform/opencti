@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute } from '../database/middleware';
 import {
+  fullEntitiesList,
   fullEntitiesThroughRelationsFromList,
   fullEntitiesThroughRelationsToList,
   topEntitiesList,
@@ -54,6 +55,10 @@ export const findGroupPaginated = async (context, user, args) => {
     return pageEntitiesConnection(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
   }
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_GROUP], args);
+};
+
+export const findAllGroups = (context, user, args = {}) => {
+  return fullEntitiesList(context, user, [ENTITY_TYPE_GROUP], args);
 };
 
 export const findDefaultIngestionGroups = async (context, user) => {

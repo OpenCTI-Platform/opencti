@@ -1,28 +1,22 @@
-import { FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
-import { FunctionalError } from '../../../config/errors';
-import { fullEntitiesList, pageEntitiesConnection } from '../../../database/middleware-loader';
-import { ENTITY_TYPE_ROLE } from '../../../schema/internalObject';
+import { RolesOrdering } from '../../../generated/graphql';
 import { ConfigImportMode } from '../../configImport/configImport-types';
+import { findAllRoles, findRoles } from '../../user/user-domain';
 import { type BasicStoreEntityRole, getRoleConfigPresetConfiguration } from '../../user/configPreset/role-export';
-import { importRole, roleConfigurationGrantsSensitiveRights, roleStandardId } from '../../user/configPreset/role-import';
+import { importRole, roleStandardId } from '../../user/configPreset/role-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
-import { buildConfigPresetConnection, securityAccessGroup } from './common-configPreset-registry';
+import {
+  buildConfigPresetConnection,
+  namedItemIdentity,
+  ROLES_FAMILY_ID,
+  securityAccessGroup,
+  standardIdListArgs,
+  toAppliedStatus,
+  toComputedItem,
+} from './common-configPreset-registry';
 
-export const ROLES_FAMILY_ID = 'roles';
-
-const rolesArgs = (ids?: string[] | null, excludedIds?: string[] | null) => {
-  const filters = [
-    ...(ids ? [{ key: ['standard_id'], values: ids }] : []),
-    ...(excludedIds && excludedIds.length > 0 ? [{ key: ['standard_id'], values: excludedIds, operator: FilterOperator.NotEq }] : []),
-  ];
-  return {
-    orderBy: 'name',
-    orderMode: OrderingMode.Asc,
-    filters: { mode: FilterMode.And, filters, filterGroups: [] },
-  };
-};
+const rolesArgs = (ids?: string[] | null, excludedIds?: string[] | null) => ({ orderBy: RolesOrdering.Name, ...standardIdListArgs(ids, excludedIds) });
 
 const toRoleItem = (role: BasicStoreEntityRole): ConfigPresetItemDefinition => ({
   id: role.standard_id,
@@ -33,27 +27,22 @@ const toRoleItem = (role: BasicStoreEntityRole): ConfigPresetItemDefinition => (
 
 const rolesImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
-    const name = typeof item.configuration.name === 'string' && item.configuration.name.trim() ? item.configuration.name : undefined;
-    const base = { label: name ?? item.id, translatable: false };
-    if (name !== undefined && roleStandardId(name) !== item.id) {
-      return { ...base, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the role does not match its name' };
+    const { label, failed } = namedItemIdentity(item, roleStandardId, 'The standard id of the role does not match its name');
+    if (failed) {
+      return failed;
     }
     const result = await importRole(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.roleIds });
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(ROLES_FAMILY_ID, item.id));
     }
-    const keepsIdentity = result.status === 'overwritten' || (result.status === 'created' && !result.exists);
-    if (keepsIdentity && result.configuration) {
-      plan.roleSensitiveRights?.set(item.id, roleConfigurationGrantsSensitiveRights(item.id, result.configuration));
+    if (result.targetId) {
+      plan.roleTargets?.set(item.id, result.targetId);
+      plan.roleSensitiveRights?.set(result.targetId, !!result.grantsSensitiveRights);
     }
-    return { ...base, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason };
+    return toComputedItem(label, result);
   },
   apply: async (context, user, item, computed, mode) => {
-    const result = await importRole(context, user, item.configuration, { mode });
-    if (result.status !== 'created' && result.status !== 'overwritten') {
-      throw FunctionalError(result.reason ?? 'Role cannot be imported');
-    }
-    return result.status === computed.status ? undefined : result.status;
+    return toAppliedStatus(await importRole(context, user, item.configuration, { mode }), computed);
   },
 };
 
@@ -70,15 +59,15 @@ export const rolesFamily: ConfigPresetFamilyDefinition = {
     if (ids?.length === 0) {
       return buildConfigPresetConnection(args, [], 0, false);
     }
-    const page = await pageEntitiesConnection<BasicStoreEntityRole>(context, user, [ENTITY_TYPE_ROLE], { first, after, search, ...rolesArgs(ids, excludedIds) });
-    const edges = page.edges.map(({ cursor, node }) => ({ cursor, node: toRoleItem(node) }));
+    const page = await findRoles(context, user, { first, after, search, ...rolesArgs(ids, excludedIds) });
+    const edges = page.edges.map(({ cursor, node }) => ({ cursor, node: toRoleItem(node as BasicStoreEntityRole) }));
     return buildConfigPresetConnection(args, edges, page.pageInfo.globalCount, page.pageInfo.hasNextPage);
   },
   resolveItems: async (context, user, ids, excludedIds) => {
     if (ids?.length === 0) {
       return [];
     }
-    const roles = await fullEntitiesList<BasicStoreEntityRole>(context, user, [ENTITY_TYPE_ROLE], rolesArgs(ids, excludedIds));
-    return roles.map(toRoleItem);
+    const roles = await findAllRoles(context, user, rolesArgs(ids, excludedIds));
+    return (roles as BasicStoreEntityRole[]).map(toRoleItem);
   },
 };

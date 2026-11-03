@@ -1,17 +1,21 @@
 import type { z } from 'zod';
 import { getSettings, getSettingsFromDatabase, settingsEditField } from '../../domain/settings';
 import { storeLoadById } from '../../database/middleware-loader';
+import { getEntityFromCache } from '../../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import type { BasicStoreSettings } from '../../types/settings';
+import { SYSTEM_USER } from '../../utils/access';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportValidationReason, joinConfigImportReasons } from '../configImport/configImport-utils';
-import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../configImport/configImport-sensitive';
+import { configImportReasonValue, configImportValidationReason, joinConfigImportReasons } from '../configImport/configImport-utils';
+import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../user/configPreset/sensitive-config-import';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { findById as findThemeById } from '../theme/theme-domain';
+import { propagatePasswordValidityChange } from '../user/user-domain';
 import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_WHITEMARK_FIELDS, SETTINGS_POLICIES_FIELDS } from './settings-export';
-import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema, policiesConfigurationSchema} from './settings-import-schema';
-import { adjustAllUsersPasswordValidUntil, clearAllUsersPasswordValidUntil } from '../user/user-domain';
+import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema, policiesConfigurationSchema } from './settings-import-schema';
 
 export type SettingsImportCode = 'invalid' | 'unknown_message' | 'not_overwrite' | 'nothing_to_import' | 'unchanged' | 'default_theme_missing';
 
@@ -138,14 +142,8 @@ export const importPlatformConfiguration = async (
 };
 
 const ORGANIZATION_REQUIRES_EE_REASON = 'The main organization requires the Enterprise Edition';
-
-const propagatePasswordValidity = async (context: AuthContext, oldDays: number, newDays: number) => {
-  if (newDays <= 0) {
-    await clearAllUsersPasswordValidUntil(context);
-  } else if (newDays !== oldDays) {
-    await adjustAllUsersPasswordValidUntil(context, oldDays, newDays);
-  }
-};
+const ORGANIZATION_SET_REASON = 'Sets the main organization';
+const PASSWORD_VALIDITY_REASON = 'The expiration date of the users\' passwords changes';
 
 export const importPolicies = async (
   context: AuthContext,
@@ -165,6 +163,7 @@ export const importPolicies = async (
     return skipped('nothing_to_import', 'Nothing to import', parsed.data);
   }
   const input: { key: string; value: unknown[] }[] = toInput(parsed.data, SETTINGS_POLICIES_FIELDS);
+  const current = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   let organizationReason: string | undefined;
   if (organizationReference) {
     if (!(await isEnterpriseEdition(context))) {
@@ -175,18 +174,23 @@ export const importPolicies = async (
       const organization = await storeLoadById<BasicStoreEntity>(context, user, organizationReference.standard_id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
       if (organization) {
         input.push({ key: 'platform_organization', value: [organization.id] });
+        if (organization.id !== current.platform_organization) {
+          organizationReason = `${ORGANIZATION_SET_REASON}: ${configImportReasonValue(organizationReference.name)}`;
+        }
       } else {
-        organizationReason = `Main organization not found: ${organizationReference.name}`;
+        organizationReason = `Main organization not found: ${configImportReasonValue(organizationReference.name)}`;
       }
     }
   }
+  const oldValidity = Number(current.password_policy_validity_days ?? 0);
+  const validity = parsed.data.password_policy_validity_days;
+  const validityChanges = validity !== null && validity !== undefined && validity !== oldValidity;
   if (!dryRun && input.length > 0) {
-    const settings = await getSettings(context) as unknown as { id: string; password_policy_validity_days?: number };
     await writeSettings(context, user, input);
-    const validity = parsed.data.password_policy_validity_days;
-    if (validity !== null && validity !== undefined) {
-      await propagatePasswordValidity(context, Number(settings.password_policy_validity_days ?? 0), validity);
+    if (validityChanges) {
+      await propagatePasswordValidityChange(context, oldValidity, validity);
     }
   }
-  return { status: 'overwritten', exists: true, configuration: parsed.data, reason: joinConfigImportReasons([organizationReason]) };
+  const reason = joinConfigImportReasons([organizationReason, validityChanges ? PASSWORD_VALIDITY_REASON : undefined]);
+  return { status: 'overwritten', exists: true, configuration: parsed.data, reason };
 };

@@ -35,10 +35,17 @@ const compute = (
   return family.importer!.compute(context, user, item, plan, mode);
 };
 
-const apply = (type: string, id: string, configuration: Record<string, unknown>, computed: ConfigPresetComputedItem, mode: ConfigImportMode = ConfigImportMode.Overwrite) => {
+const apply = (
+  type: string,
+  id: string,
+  configuration: Record<string, unknown>,
+  computed: ConfigPresetComputedItem,
+  mode: ConfigImportMode = ConfigImportMode.Overwrite,
+  plan: ConfigPresetImportPlan = { created: new Set() },
+) => {
   const family = CONFIG_PRESET_FAMILIES.find((candidate) => candidate.id === type)!;
   const item: ConfigPresetBundleItem = { type, id, path: `${id}.json`, configuration };
-  return family.importer!.apply(context, user, item, computed, mode);
+  return family.importer!.apply(context, user, item, computed, mode, plan);
 };
 
 beforeEach(() => {

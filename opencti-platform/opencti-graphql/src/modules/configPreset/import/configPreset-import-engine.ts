@@ -157,7 +157,7 @@ const realImport = async (
   }
   logApp.info('[CONFIG PRESET] Import started', { user_id: user.id, file_id: fileId, total: items.length });
   const importContext = context;
-  const plan: ConfigPresetImportPlan = { created: new Set() };
+  const plan: ConfigPresetImportPlan = { created: new Set(), roleTargets: new Map() };
   const modes = configPresetImportModes(selections);
   const results: ConfigPresetImportItemResult[] = [];
   // Why the import stopped before the end, when it did: a lost lock, or an unexpected error between two items
@@ -190,7 +190,7 @@ const realImport = async (
           computed = await computeConfigPresetItem(importContext, runUser, family, item, plan, mode);
           result = toResult(item, computed.status, computed.reason, computed);
           if (computed.status !== 'failed' && computed.status !== 'skipped') {
-            const applied = await importer.apply(importContext, runUser, item, computed, mode);
+            const applied = await importer.apply(importContext, runUser, item, computed, mode, plan);
             if (applied) {
               result = toResult(item, applied, computed.reason, computed);
             }

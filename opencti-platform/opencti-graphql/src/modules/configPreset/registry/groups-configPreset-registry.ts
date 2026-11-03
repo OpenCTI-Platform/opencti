@@ -1,79 +1,54 @@
-import { FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
-import { FunctionalError } from '../../../config/errors';
-import { fullEntitiesList, fullRelationsList, pageEntitiesConnection } from '../../../database/middleware-loader';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../../schema/internalObject';
-import { RELATION_HAS_ROLE } from '../../../schema/internalRelationship';
+import { GroupsOrdering } from '../../../generated/graphql';
+import { findAllGroups, findGroupPaginated } from '../../../domain/group';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import type { BasicStoreRelation } from '../../../types/store';
 import { ConfigImportMode } from '../../configImport/configImport-types';
+import { batchRolesForGroups } from '../../user/user-domain';
 import { type BasicStoreEntityGroup, getGroupConfigPresetConfiguration } from '../../user/configPreset/group-export';
 import { groupStandardId, importGroup } from '../../user/configPreset/group-import';
 import type { BasicStoreEntityRole } from '../../user/configPreset/role-export';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey } from '../import/configPreset-import-types';
-import { buildConfigPresetConnection, securityAccessGroup } from './common-configPreset-registry';
-import { ROLES_FAMILY_ID } from './roles-configPreset-registry';
+import {
+  buildConfigPresetConnection,
+  namedItemIdentity,
+  ROLES_FAMILY_ID,
+  securityAccessGroup,
+  standardIdListArgs,
+  toAppliedStatus,
+  toComputedItem,
+} from './common-configPreset-registry';
 
 export const GROUPS_FAMILY_ID = 'groups';
 
-const groupsArgs = (ids?: string[] | null, excludedIds?: string[] | null) => {
-  const filters = [
-    ...(ids ? [{ key: ['standard_id'], values: ids }] : []),
-    ...(excludedIds && excludedIds.length > 0 ? [{ key: ['standard_id'], values: excludedIds, operator: FilterOperator.NotEq }] : []),
-  ];
-  return {
-    orderBy: 'name',
-    orderMode: OrderingMode.Asc,
-    filters: { mode: FilterMode.And, filters, filterGroups: [] },
-  };
-};
+const groupsArgs = (ids?: string[] | null, excludedIds?: string[] | null) => ({ orderBy: GroupsOrdering.Name, ...standardIdListArgs(ids, excludedIds) });
 
 const toGroupItems = async (context: AuthContext, user: AuthUser, groups: BasicStoreEntityGroup[]): Promise<ConfigPresetItemDefinition[]> => {
-  if (groups.length === 0) {
-    return [];
-  }
-  const [relations, roles] = await Promise.all([
-    fullRelationsList<BasicStoreRelation>(context, user, RELATION_HAS_ROLE, { fromId: groups.map(({ id }) => id), toTypes: [ENTITY_TYPE_ROLE] }),
-    fullEntitiesList<BasicStoreEntityRole>(context, user, [ENTITY_TYPE_ROLE]),
-  ]);
-  const rolesById = new Map(roles.map((role) => [role.id, role]));
-  return groups.map((group) => {
-    const groupRoles = relations
-      .filter(({ fromId }) => fromId === group.id)
-      .map(({ toId }) => rolesById.get(toId))
-      .filter((role): role is BasicStoreEntityRole => !!role);
-    return {
-      id: group.standard_id,
-      label: group.name,
-      translatable: false,
-      dependsOn: groupRoles.map((role) => ({ type: ROLES_FAMILY_ID, id: role.standard_id })),
-      exporter: async (ctx, usr) => getGroupConfigPresetConfiguration(ctx, usr, group, groupRoles),
-    };
-  });
+  const groupsRoles = await batchRolesForGroups(context, user, groups.map(({ id }) => id)) as BasicStoreEntityRole[][];
+  return groups.map((group, index) => ({
+    id: group.standard_id,
+    label: group.name,
+    translatable: false,
+    dependsOn: groupsRoles[index].map((role) => ({ type: ROLES_FAMILY_ID, id: role.standard_id })),
+    exporter: async (ctx, usr) => getGroupConfigPresetConfiguration(ctx, usr, group, groupsRoles[index]),
+  }));
 };
 
 const groupsImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
-    const name = typeof item.configuration.name === 'string' && item.configuration.name.trim() ? item.configuration.name : undefined;
-    const base = { label: name ?? item.id, translatable: false };
-    if (name !== undefined && groupStandardId(name) !== item.id) {
-      return { ...base, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the group does not match its name' };
+    const { label, failed } = namedItemIdentity(item, groupStandardId, 'The standard id of the group does not match its name');
+    if (failed) {
+      return failed;
     }
-    const isRoleCreated = (standardId: string) => plan.created.has(configPresetPlanKey(ROLES_FAMILY_ID, standardId));
-    const isRoleSensitive = (standardId: string) => plan.roleSensitiveRights?.get(standardId);
-    const result = await importGroup(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.groupIds, isRoleCreated, isRoleSensitive });
+    const plannedRoles = new Map([...(plan.roleSensitiveRights ?? [])].map(([standardId, grantsSensitiveRights]) => [standardId, { grantsSensitiveRights }]));
+    const result = await importGroup(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.groupIds, plannedRoles, roleTargets: plan.roleTargets });
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(GROUPS_FAMILY_ID, item.id));
     }
-    return { ...base, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason };
+    return toComputedItem(label, result);
   },
-  apply: async (context, user, item, computed, mode) => {
-    const result = await importGroup(context, user, item.configuration, { mode });
-    if (result.status !== 'created' && result.status !== 'overwritten') {
-      throw FunctionalError(result.reason ?? 'Group cannot be imported');
-    }
-    return result.status === computed.status ? undefined : result.status;
+  apply: async (context, user, item, computed, mode, plan) => {
+    return toAppliedStatus(await importGroup(context, user, item.configuration, { mode, roleTargets: plan.roleTargets }), computed);
   },
 };
 
@@ -90,8 +65,8 @@ export const groupsFamily: ConfigPresetFamilyDefinition = {
     if (ids?.length === 0) {
       return buildConfigPresetConnection(args, [], 0, false);
     }
-    const page = await pageEntitiesConnection<BasicStoreEntityGroup>(context, user, [ENTITY_TYPE_GROUP], { first, after, search, ...groupsArgs(ids, excludedIds) });
-    const items = await toGroupItems(context, user, page.edges.map(({ node }) => node));
+    const page = await findGroupPaginated(context, user, { first, after, search, ...groupsArgs(ids, excludedIds) });
+    const items = await toGroupItems(context, user, page.edges.map(({ node }) => node as BasicStoreEntityGroup));
     const edges = page.edges.map(({ cursor }, index) => ({ cursor, node: items[index] }));
     return buildConfigPresetConnection(args, edges, page.pageInfo.globalCount, page.pageInfo.hasNextPage);
   },
@@ -99,6 +74,6 @@ export const groupsFamily: ConfigPresetFamilyDefinition = {
     if (ids?.length === 0) {
       return [];
     }
-    return toGroupItems(context, user, await fullEntitiesList<BasicStoreEntityGroup>(context, user, [ENTITY_TYPE_GROUP], groupsArgs(ids, excludedIds)));
+    return toGroupItems(context, user, await findAllGroups(context, user, groupsArgs(ids, excludedIds)) as BasicStoreEntityGroup[]);
   },
 };

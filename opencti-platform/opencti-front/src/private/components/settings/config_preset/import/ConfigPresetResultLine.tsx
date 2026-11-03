@@ -58,6 +58,8 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'Role name already exists': return t_i18n('Role name already exists');
     case 'The Administrator role keeps the bypass capability': return t_i18n('The Administrator role keeps the bypass capability');
     case 'Grants sensitive rights': return t_i18n('Grants sensitive rights');
+    case 'Removes sensitive rights': return t_i18n('Removes sensitive rights');
+    case 'The expiration date of the users\' passwords changes': return t_i18n('The expiration date of the users\' passwords changes');
     case 'The standard id of the group does not match its name': return t_i18n('The standard id of the group does not match its name');
     case 'Group already exists': return t_i18n('Group already exists');
     case 'Group name already exists': return t_i18n('Group name already exists');
@@ -67,6 +69,10 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'Requires the right to manage the sensitive configuration': return t_i18n('Requires the right to manage the sensitive configuration');
     case 'The Administrators group keeps the Administrator role': return t_i18n('The Administrators group keeps the Administrator role');
     default: break;
+  }
+  const mainOrganization = reason.match(/^Sets the main organization: (.+)$/)?.[1];
+  if (mainOrganization) {
+    return t_i18n('Sets the main organization: {name}', { values: { name: mainOrganization } });
   }
   const missingOrganization = reason.match(/^Main organization not found: (.+)$/)?.[1];
   if (missingOrganization) {
@@ -80,6 +86,14 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   if (missingMarkings) {
     return t_i18n('Markings not found: {markings}', { values: { markings: missingMarkings } });
   }
+  const removedRoles = reason.match(/^Roles removed: (.+)$/)?.[1];
+  if (removedRoles) {
+    return t_i18n('Roles removed: {roles}', { values: { roles: removedRoles } });
+  }
+  const removedMarkings = reason.match(/^Markings removed: (.+)$/)?.[1];
+  if (removedMarkings) {
+    return t_i18n('Markings removed: {markings}', { values: { markings: removedMarkings } });
+  }
   const missingDashboard = reason.match(/^Default dashboard not found: (.+)$/)?.[1];
   if (missingDashboard) {
     return t_i18n('Default dashboard not found: {name}', { values: { name: missingDashboard } });
@@ -91,6 +105,14 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   const draftCapabilities = reason.match(/^Capabilities not available in draft: (.+)$/)?.[1];
   if (draftCapabilities) {
     return t_i18n('Capabilities not available in draft: {capabilities}', { values: { capabilities: draftCapabilities } });
+  }
+  const removedCapabilities = reason.match(/^Capabilities removed: (.+)$/)?.[1];
+  if (removedCapabilities) {
+    return t_i18n('Capabilities removed: {capabilities}', { values: { capabilities: removedCapabilities } });
+  }
+  const removedDraftCapabilities = reason.match(/^Capabilities in draft removed: (.+)$/)?.[1];
+  if (removedDraftCapabilities) {
+    return t_i18n('Capabilities in draft removed: {capabilities}', { values: { capabilities: removedDraftCapabilities } });
   }
   const copyName = reason.match(/^Added as "(.+)"$/)?.[1];
   if (copyName) {

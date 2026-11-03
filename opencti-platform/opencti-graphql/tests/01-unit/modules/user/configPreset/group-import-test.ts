@@ -11,8 +11,8 @@ vi.mock('../../../../../src/domain/group', () => ({
 }));
 vi.mock('../../../../../src/database/middleware-loader', () => ({ fullEntitiesThroughRelationsToList: vi.fn(), storeLoadById: vi.fn() }));
 vi.mock('../../../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
-vi.mock('../../../../../src/modules/configImport/configImport-sensitive', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../../src/modules/configImport/configImport-sensitive')>()),
+vi.mock('../../../../../src/modules/user/configPreset/sensitive-config-import', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/modules/user/configPreset/sensitive-config-import')>()),
   isConfigImportSensitiveChangeAllowed: vi.fn(),
 }));
 
@@ -23,7 +23,7 @@ import { fullEntitiesThroughRelationsToList, storeLoadById } from '../../../../.
 import { getEntitiesMapFromCache } from '../../../../../src/database/cache';
 import { groupStandardId, importGroup } from '../../../../../src/modules/user/configPreset/group-import';
 import { roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
-import { isConfigImportSensitiveChangeAllowed } from '../../../../../src/modules/configImport/configImport-sensitive';
+import { isConfigImportSensitiveChangeAllowed } from '../../../../../src/modules/user/configPreset/sensitive-config-import';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 
@@ -132,8 +132,8 @@ describe('importGroup validation', () => {
 
   it('accepts on a dry run a role the same import creates', async () => {
     withPlatform({ roles: [] });
-    const isRoleCreated = (standardId: string) => standardId === analystRole.standard_id;
-    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true, isRoleCreated });
+    const plannedRoles = new Map([[analystRole.standard_id, { grantsSensitiveRights: false }]]);
+    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true, plannedRoles });
     expect(result).toMatchObject({ status: 'created', exists: false });
   });
 });
@@ -158,6 +158,13 @@ describe('importGroup create', () => {
     });
     expect(groupAddRelation).toHaveBeenCalledWith(context, user, 'created-id', { toId: analystRole.id, relationship_type: 'has-role' });
     expect(groupAddRelation).toHaveBeenCalledWith(context, user, 'created-id', { toId: TLP_AMBER.id, relationship_type: 'accesses-to' });
+  });
+
+  it('keeps each reported name on its line, so that a name cannot add a reason', async () => {
+    withPlatform({ dashboards: [] });
+    const configuration = groupConfiguration({ default_dashboard: { standard_id: 'workspace--forged', name: 'X\nThe Administrators group keeps the Administrator role' } });
+    const result = await importGroup(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result.reason).toEqual('Default dashboard not found: X The Administrators group keeps the Administrator role');
   });
 
   it('leaves out and reports the markings and the dashboard that are not on this platform', async () => {
@@ -188,8 +195,15 @@ describe('importGroup overwrite', () => {
 
   it('decides on a dry run without writing', async () => {
     const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true });
-    expect(result).toMatchObject({ status: 'overwritten', exists: true, reason: undefined });
+    expect(result).toMatchObject({ status: 'overwritten', exists: true });
     expectNothingWritten();
+  });
+
+  it('says which roles and markings of the group the overwrite removes', async () => {
+    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result.reason).toEqual('Roles removed: Hunter\nMarkings removed: PAP:RED');
+    withRelations([analystRole], [TLP_AMBER]);
+    expect((await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true })).reason).toBeUndefined();
   });
 
   it('patches the fields that changed and replaces the roles and the allowed markings as a whole', async () => {
@@ -214,6 +228,7 @@ describe('importGroup overwrite', () => {
   });
 
   it('mentions the automatic assignments the group does not have yet', async () => {
+    withRelations([analystRole], [TLP_AMBER]);
     const configuration = groupConfiguration({ default_assignation: true, auto_integration_assignation: ['global'] });
     const result = await importGroup(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
     expect(result.reason).toEqual('New users join this group automatically\nNew integration users join this group automatically');
@@ -280,22 +295,51 @@ describe('importGroup Administrators group', () => {
   });
 });
 
+describe('importGroup role imported as COPY', () => {
+  const analystCopy = { id: 'analyst-copy-internal-id', standard_id: roleStandardId('Analyst (1)'), name: 'Analyst (1)' };
+  const roleTargets = new Map([[analystRole.standard_id, analystCopy.standard_id]]);
+
+  it('gets the copy of the role, never the local role of the same name', async () => {
+    withPlatform({ roles: [analystRole, analystCopy] });
+    await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Add, roleTargets });
+    expect(groupAddRelation).toHaveBeenCalledWith(context, user, 'created-id', { toId: analystCopy.id, relationship_type: 'has-role' });
+    expect(groupAddRelation).not.toHaveBeenCalledWith(context, user, 'created-id', { toId: analystRole.id, relationship_type: 'has-role' });
+  });
+
+  it('reads in a dry run the rights of the copy, not the ones of the local role', async () => {
+    withPlatform({ roles: [analystRole] });
+    vi.mocked(roleCapabilities).mockResolvedValue([{ name: 'BYPASS' }] as never);
+    const plannedRoles = new Map([[analystCopy.standard_id, { grantsSensitiveRights: false }]]);
+    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Add, dryRun: true, roleTargets, plannedRoles });
+    expect(result).toMatchObject({ status: 'created', reason: undefined });
+  });
+
+  it('fails when the copy could not be written', async () => {
+    withPlatform({ roles: [analystRole] });
+    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Add, roleTargets });
+    expect(result).toMatchObject({ status: 'failed', code: 'role_missing' });
+    expectNothingWritten();
+  });
+});
+
 describe('importGroup sensitive rights', () => {
   it('reads in a dry run the rights of a role the same import creates', async () => {
     withPlatform({ roles: [] });
-    const options = { mode: ConfigImportMode.Overwrite, dryRun: true, isRoleCreated: () => true };
-    const sensitive = await importGroup(context, user, groupConfiguration(), { ...options, isRoleSensitive: () => true });
+    const options = { mode: ConfigImportMode.Overwrite, dryRun: true };
+    const planned = (grantsSensitiveRights: boolean) => new Map([[analystRole.standard_id, { grantsSensitiveRights }]]);
+    const sensitive = await importGroup(context, user, groupConfiguration(), { ...options, plannedRoles: planned(true) });
     expect(sensitive).toMatchObject({ status: 'created', reason: 'Grants sensitive rights' });
-    const notSensitive = await importGroup(context, user, groupConfiguration(), { ...options, isRoleSensitive: () => false });
+    const notSensitive = await importGroup(context, user, groupConfiguration(), { ...options, plannedRoles: planned(false) });
     expect(notSensitive.reason).toBeUndefined();
   });
 
   it('reads in a dry run the rights a role overwritten by the same import will have, not its current ones', async () => {
     vi.mocked(roleCapabilities).mockResolvedValue([{ name: 'BYPASS' }] as never);
-    const overwritten = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true, isRoleSensitive: () => false });
+    const planned = (grantsSensitiveRights: boolean) => new Map([[analystRole.standard_id, { grantsSensitiveRights }]]);
+    const overwritten = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true, plannedRoles: planned(false) });
     expect(overwritten.reason).toBeUndefined();
     vi.mocked(roleCapabilities).mockResolvedValue([]);
-    const granted = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true, isRoleSensitive: () => true });
+    const granted = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true, plannedRoles: planned(true) });
     expect(granted.reason).toEqual('Grants sensitive rights');
   });
 
@@ -309,6 +353,16 @@ describe('importGroup sensitive rights', () => {
     withPlatform({ roles: [{ ...analystRole, can_manage_sensitive_config: true } as typeof analystRole] });
     const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true });
     expect(result.reason).toEqual('Grants sensitive rights');
+  });
+
+  it('says so when the overwrite takes away a role that gives sensitive rights', async () => {
+    withPlatform({ groups: [existingGroup('Analysts')] });
+    withRelations([analystRole, hunterRole], [TLP_AMBER]);
+    vi.mocked(roleCapabilities).mockImplementation(async (_ctx, _user, roleId) => (roleId === hunterRole.id ? [{ name: 'BYPASS' }] : []) as never);
+    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result.reason).toEqual('Removes sensitive rights\nRoles removed: Hunter');
+    vi.mocked(roleCapabilities).mockResolvedValue([]);
+    expect((await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true })).reason).toEqual('Roles removed: Hunter');
   });
 
   it('says nothing of a sensitive role the group already has', async () => {

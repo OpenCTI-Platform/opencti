@@ -9,16 +9,16 @@ vi.mock('../../../../../src/modules/user/user-domain', () => ({
 }));
 vi.mock('../../../../../src/domain/grant', () => ({ addRole: vi.fn() }));
 vi.mock('../../../../../src/database/middleware-loader', () => ({ fullEntitiesList: vi.fn() }));
-vi.mock('../../../../../src/modules/configImport/configImport-sensitive', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../../src/modules/configImport/configImport-sensitive')>()),
+vi.mock('../../../../../src/modules/user/configPreset/sensitive-config-import', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/modules/user/configPreset/sensitive-config-import')>()),
   isConfigImportSensitiveChangeAllowed: vi.fn(),
 }));
 
 import { findRoleById, roleAddRelation, roleCapabilities, roleDeleteRelation, roleEditField } from '../../../../../src/modules/user/user-domain';
 import { addRole } from '../../../../../src/domain/grant';
 import { fullEntitiesList } from '../../../../../src/database/middleware-loader';
-import { importRole, roleConfigurationGrantsSensitiveRights, roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
-import { isConfigImportSensitiveChangeAllowed } from '../../../../../src/modules/configImport/configImport-sensitive';
+import { importRole, roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
+import { isConfigImportSensitiveChangeAllowed } from '../../../../../src/modules/user/configPreset/sensitive-config-import';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
 import { generateStandardId } from '../../../../../src/schema/identifier';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
@@ -125,9 +125,16 @@ describe('importRole overwrite', () => {
 
   it('decides on a dry run without writing', async () => {
     const result = await importRole(context, user, roleConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true });
-    expect(result).toMatchObject({ status: 'overwritten', exists: true, reason: undefined });
+    expect(result).toMatchObject({ status: 'overwritten', exists: true });
     expect(result.role).toBeUndefined();
     expectNothingWritten();
+  });
+
+  it('says which capabilities of the role the overwrite removes', async () => {
+    const result = await importRole(context, user, roleConfiguration({ capabilities_in_draft: [] }), { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result.reason).toEqual('Capabilities removed: EXPLORE\nCapabilities in draft removed: KNOWLEDGE_KNUPDATE');
+    const same = roleConfiguration({ capabilities: ['KNOWLEDGE', 'EXPLORE'] });
+    expect((await importRole(context, user, same, { mode: ConfigImportMode.Overwrite, dryRun: true })).reason).toBeUndefined();
   });
 
   it('patches the fields that changed and replaces the capabilities as a whole', async () => {
@@ -194,7 +201,8 @@ describe('importRole sensitive rights', () => {
     withRoles([administrator], { [administrator.id]: { 'has-capability': ['BYPASS'], 'has-capability-in-draft': [] } });
     const configuration = roleConfiguration({ name: 'Administrator', capabilities: ['KNOWLEDGE'], capabilities_in_draft: [] });
     const result = await importRole(context, user, configuration, { mode: ConfigImportMode.Overwrite });
-    expect(result).toMatchObject({ status: 'overwritten', reason: 'The Administrator role keeps the bypass capability' });
+    // The bundle takes away its management of the sensitive configuration, not its bypass capability
+    expect(result).toMatchObject({ status: 'overwritten', reason: 'The Administrator role keeps the bypass capability\nRemoves sensitive rights' });
     expect(roleDeleteRelation).not.toHaveBeenCalled();
     expect(roleAddRelation).toHaveBeenCalledWith(context, user, administrator.id, expect.objectContaining({ toId: generateStandardId('Capability', { name: 'KNOWLEDGE' }) }));
   });
@@ -210,7 +218,7 @@ describe('importRole sensitive rights', () => {
     ['the management of sensitive configuration', { can_manage_sensitive_config: true }],
   ])('imports %s, and says so when the role does not have it yet', async (_, overrides) => {
     const analyst = existingRole('Analyst');
-    withRoles([analyst], { [analyst.id]: { 'has-capability': ['KNOWLEDGE'], 'has-capability-in-draft': [] } });
+    withRoles([analyst], { [analyst.id]: { 'has-capability': [], 'has-capability-in-draft': [] } });
     const result = await importRole(context, user, roleConfiguration(overrides), { mode: ConfigImportMode.Overwrite });
     expect(result).toMatchObject({ status: 'overwritten', reason: 'Grants sensitive rights' });
   });
@@ -240,14 +248,43 @@ describe('importRole protected sensitive configuration', () => {
   });
 });
 
-describe('roleConfigurationGrantsSensitiveRights', () => {
+describe('importRole grantsSensitiveRights', () => {
   it.each([
-    ['the bypass capability', roleStandardId('Analyst'), { capabilities: ['BYPASS'] }, true],
-    ['the management of sensitive configuration', roleStandardId('Analyst'), { can_manage_sensitive_config: true }, true],
-    ['the Administrator role, which always keeps the bypass capability', roleStandardId('Administrator'), { name: 'Administrator', capabilities: [] }, true],
-    ['none of them', roleStandardId('Analyst'), {}, false],
-  ])('tells a role with %s', (_, standardId, overrides, expected) => {
-    const configuration = roleConfiguration(overrides) as Parameters<typeof roleConfigurationGrantsSensitiveRights>[1];
-    expect(roleConfigurationGrantsSensitiveRights(standardId, configuration)).toBe(expected);
+    ['the bypass capability', {}, { capabilities: ['BYPASS'] }, true],
+    ['the management of sensitive configuration', {}, { can_manage_sensitive_config: true }, true],
+    ['the Administrator role, which always keeps the bypass capability', {}, { name: 'Administrator', capabilities: [] }, true],
+    ['a management of sensitive configuration left untouched, read on the platform', { can_manage_sensitive_config: true }, { can_manage_sensitive_config: null }, true],
+    ['none of them', {}, {}, false],
+  ])('tells a role with %s', async (_, existing, overrides, expected) => {
+    const configuration = roleConfiguration(overrides);
+    withRoles([existingRole(configuration.name as string, existing)]);
+    const result = await importRole(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result.grantsSensitiveRights).toBe(expected);
+  });
+
+  it('tells the rights of a copy, under the standard id of the copy', async () => {
+    withRoles([existingRole('Analyst')]);
+    const result = await importRole(context, user, roleConfiguration({ capabilities: ['BYPASS'] }), { mode: ConfigImportMode.Copy, dryRun: true });
+    expect(result).toMatchObject({ status: 'created', reason: 'Added as "Analyst (1)"\nGrants sensitive rights', targetId: roleStandardId('Analyst (1)'), grantsSensitiveRights: true });
+  });
+});
+
+describe('importRole removes sensitive rights', () => {
+  const admins = existingRole('Platform admins', { can_manage_sensitive_config: true });
+
+  it.each([
+    ['the bypass capability', { capabilities: ['KNOWLEDGE'] }],
+    ['the management of sensitive configuration', { capabilities: ['BYPASS'], can_manage_sensitive_config: false }],
+  ])('says so when the overwrite takes away %s', async (_, overrides) => {
+    withRoles([admins], { [admins.id]: { 'has-capability': ['BYPASS'], 'has-capability-in-draft': [] } });
+    const configuration = roleConfiguration({ name: 'Platform admins', capabilities_in_draft: [], can_manage_sensitive_config: true, ...overrides });
+    const result = await importRole(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result.reason).toContain('Removes sensitive rights');
+  });
+
+  it('says nothing when the role keeps them, a management of sensitive configuration left untouched included', async () => {
+    withRoles([admins], { [admins.id]: { 'has-capability': ['BYPASS'], 'has-capability-in-draft': [] } });
+    const configuration = roleConfiguration({ name: 'Platform admins', capabilities: ['BYPASS'], capabilities_in_draft: [], can_manage_sensitive_config: null });
+    expect((await importRole(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true })).reason).toBeUndefined();
   });
 });

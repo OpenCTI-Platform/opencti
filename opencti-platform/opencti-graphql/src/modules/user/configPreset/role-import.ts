@@ -8,8 +8,8 @@ import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../../../schema/intern
 import { RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT } from '../../../schema/internalRelationship';
 import { BYPASS, CAPABILITIES_IN_DRAFT_NAMES, ROLE_ADMINISTRATOR } from '../../../utils/access';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../../configImport/configImport-types';
-import { configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../../configImport/configImport-utils';
-import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../../configImport/configImport-sensitive';
+import { configImportReasonValue, configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../../configImport/configImport-utils';
+import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from './sensitive-config-import';
 import { findRoleById, roleAddRelation, roleCapabilities, roleDeleteRelation, roleEditField } from '../user-domain';
 import type { BasicStoreEntityRole } from './role-export';
 import { type RoleImportConfiguration, roleImportSchema } from './role-import-schema';
@@ -23,6 +23,9 @@ export type RoleImportCode = 'invalid' | 'unknown_capability' | 'exists' | 'name
 
 export type RoleImportResult = ConfigImportResult<RoleImportConfiguration, RoleImportCode> & {
   role?: BasicStoreEntityRole;
+  // The standard id the role is written under: its own, or the one of its copy
+  targetId?: string;
+  grantsSensitiveRights?: boolean;
 };
 
 const refused = (code: RoleImportCode, reason: string, exists: boolean, configuration?: RoleImportConfiguration): RoleImportResult => {
@@ -43,17 +46,18 @@ const capabilitiesReason = async (context: AuthContext, user: AuthUser, { capabi
   const known = new Set((await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_CAPABILITY])).map(({ name }) => name));
   const unknown = capabilities.filter((name) => !known.has(name));
   if (unknown.length > 0) {
-    return `Unknown capabilities: ${unknown.join(', ')}`;
+    return `Unknown capabilities: ${configImportReasonValue(unknown.join(', '))}`;
   }
   const notInDraft = inDraft.filter((name) => !CAPABILITIES_IN_DRAFT_NAMES.includes(name));
   if (notInDraft.length > 0) {
-    return `Capabilities not available in draft: ${notInDraft.join(', ')}`;
+    return `Capabilities not available in draft: ${configImportReasonValue(notInDraft.join(', '))}`;
   }
   return undefined;
 };
 
 export const BYPASS_KEPT_REASON = 'The Administrator role keeps the bypass capability';
 export const SENSITIVE_RIGHTS_REASON = 'Grants sensitive rights';
+export const REMOVES_SENSITIVE_RIGHTS_REASON = 'Removes sensitive rights';
 
 const withAdministratorBypass = (standardId: string, configuration: RoleImportConfiguration) => {
   if (standardId !== roleStandardId(ROLE_ADMINISTRATOR) || configuration.capabilities.includes(BYPASS)) {
@@ -62,14 +66,23 @@ const withAdministratorBypass = (standardId: string, configuration: RoleImportCo
   return { configuration: { ...configuration, capabilities: [...configuration.capabilities, BYPASS] }, bypassKept: true };
 };
 
-const grantsSensitiveRights = (configuration: RoleImportConfiguration, existing?: { role: BasicStoreEntityRole; capabilities: string[] }) => {
+const addsSensitiveRights = (configuration: RoleImportConfiguration, existing?: { role: BasicStoreEntityRole; capabilities: string[] }) => {
   const grantsBypass = configuration.capabilities.includes(BYPASS) && !existing?.capabilities.includes(BYPASS);
   const grantsSensitiveConfig = !!configuration.can_manage_sensitive_config && !existing?.role.can_manage_sensitive_config;
   return grantsBypass || grantsSensitiveConfig;
 };
 
-export const roleConfigurationGrantsSensitiveRights = (standardId: string, configuration: RoleImportConfiguration) => {
-  return withAdministratorBypass(standardId, configuration).configuration.capabilities.includes(BYPASS) || !!configuration.can_manage_sensitive_config;
+const removesSensitiveRights = (configuration: RoleImportConfiguration, existing?: { role: BasicStoreEntityRole; capabilities: string[] }) => {
+  if (!existing) {
+    return false;
+  }
+  const removesBypass = existing.capabilities.includes(BYPASS) && !configuration.capabilities.includes(BYPASS);
+  const removesSensitiveConfig = !!existing.role.can_manage_sensitive_config && configuration.can_manage_sensitive_config === false;
+  return removesBypass || removesSensitiveConfig;
+};
+
+const configurationGrantsSensitiveRights = (configuration: RoleImportConfiguration, existing?: BasicStoreEntityRole) => {
+  return configuration.capabilities.includes(BYPASS) || !!(configuration.can_manage_sensitive_config ?? existing?.can_manage_sensitive_config);
 };
 
 const capabilityNames = async (context: AuthContext, user: AuthUser, roleId: string, relationshipType: string) => {
@@ -137,13 +150,29 @@ export const importRole = async (
     return refused('sensitive_config', CONFIG_IMPORT_SENSITIVE_REASON, !!existing, parsed.data);
   }
   const { configuration: role, bypassKept } = withAdministratorBypass(targetId, { ...parsed.data, name });
-  const current = target ? { role: target, capabilities: await capabilityNames(context, user, target.id, RELATION_HAS_CAPABILITY) } : undefined;
+  const current = target ? {
+    role: target,
+    capabilities: await capabilityNames(context, user, target.id, RELATION_HAS_CAPABILITY),
+    inDraft: await capabilityNames(context, user, target.id, RELATION_HAS_CAPABILITY_IN_DRAFT),
+  } : undefined;
+  const removed = (current?.capabilities ?? []).filter((capability) => !role.capabilities.includes(capability));
+  const removedInDraft = (current?.inDraft ?? []).filter((capability) => !role.capabilities_in_draft.includes(capability));
   const reason = joinConfigImportReasons([
-    name !== parsed.data.name ? `Added as "${name}"` : undefined,
+    name !== parsed.data.name ? `Added as "${configImportReasonValue(name)}"` : undefined,
     bypassKept ? BYPASS_KEPT_REASON : undefined,
-    grantsSensitiveRights(role, current) ? SENSITIVE_RIGHTS_REASON : undefined,
+    addsSensitiveRights(role, current) ? SENSITIVE_RIGHTS_REASON : undefined,
+    removesSensitiveRights(role, current) ? REMOVES_SENSITIVE_RIGHTS_REASON : undefined,
+    removed.length > 0 ? `Capabilities removed: ${configImportReasonValue(removed.join(', '))}` : undefined,
+    removedInDraft.length > 0 ? `Capabilities in draft removed: ${configImportReasonValue(removedInDraft.join(', '))}` : undefined,
   ]);
-  const result: RoleImportResult = { status: target ? 'overwritten' : 'created', exists: !!existing, configuration: parsed.data, reason };
+  const result: RoleImportResult = {
+    status: target ? 'overwritten' : 'created',
+    exists: !!existing,
+    configuration: parsed.data,
+    reason,
+    targetId,
+    grantsSensitiveRights: configurationGrantsSensitiveRights(role, target),
+  };
   if (dryRun) {
     reservedIds?.add(targetId);
     return result;

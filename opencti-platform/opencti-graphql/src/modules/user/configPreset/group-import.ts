@@ -11,20 +11,21 @@ import { RELATION_ACCESSES_TO, RELATION_HAS_ROLE } from '../../../schema/interna
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from '../../../utils/access';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../../configImport/configImport-types';
-import { configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../../configImport/configImport-utils';
-import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../../configImport/configImport-sensitive';
+import { configImportReasonValue, configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../../configImport/configImport-utils';
+import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from './sensitive-config-import';
 import { ENTITY_TYPE_WORKSPACE } from '../../workspace/workspace-types';
 import { findRoleById, roleCapabilities } from '../user-domain';
 import type { BasicStoreEntityGroup } from './group-export';
 import type { BasicStoreEntityRole } from './role-export';
-import { roleStandardId, SENSITIVE_RIGHTS_REASON } from './role-import';
+import { REMOVES_SENSITIVE_RIGHTS_REASON, roleStandardId, SENSITIVE_RIGHTS_REASON } from './role-import';
 import { type GroupImportConfiguration, groupImportSchema, type GroupMarkingReference } from './group-import-schema';
 
 export interface GroupImportOptions extends ConfigImportOptions {
   reservedIds?: Set<string>;
-  isRoleCreated?: (standardId: string) => boolean;
-  // In a dry run, whether a role the same import creates or overwrites will give sensitive rights; undefined when the import does not write it
-  isRoleSensitive?: (standardId: string) => boolean | undefined;
+  // In a dry run, the roles the same import creates or overwrites under their own standard id, and whether they will give sensitive rights
+  plannedRoles?: Map<string, { grantsSensitiveRights: boolean }>;
+  // The standard id each role of the bundle is written under by the same import, by its bundle id (the copy of a role imported as COPY)
+  roleTargets?: Map<string, string>;
 }
 
 export type GroupImportCode = 'invalid' | 'role_missing' | 'exists' | 'name_conflict' | 'sensitive_config';
@@ -110,13 +111,22 @@ const replaceRelations = async (context: AuthContext, user: AuthUser, groupId: s
   }
 };
 
-const currentRoleIds = async (context: AuthContext, user: AuthUser, groupId: string) => {
-  return (await fullEntitiesThroughRelationsToList(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE)).map(({ id }) => id);
+type BasicStoreMarking = BasicStoreEntity & { definition: string };
+
+interface CurrentGroupRelations {
+  roles: BasicStoreEntityRole[];
+  markings: BasicStoreMarking[];
+}
+
+const currentRelations = async (context: AuthContext, user: AuthUser, groupId: string): Promise<CurrentGroupRelations> => {
+  const [roles, markings] = await Promise.all([
+    fullEntitiesThroughRelationsToList<BasicStoreEntityRole>(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE),
+    groupAllowedMarkings(context, user, groupId) as Promise<BasicStoreMarking[]>,
+  ]);
+  return { roles, markings };
 };
 
-const currentMarkingIds = async (context: AuthContext, user: AuthUser, groupId: string) => {
-  return ((await groupAllowedMarkings(context, user, groupId)) as BasicStoreEntity[]).map(({ id }) => id);
-};
+const idsOf = (entities: BasicStoreEntity[]) => entities.map(({ id }) => id);
 
 const createGroup = async (context: AuthContext, user: AuthUser, name: string, resolved: ResolvedGroup): Promise<BasicStoreEntityGroup> => {
   const group = await addGroup(context, user, { name, ...Object.fromEntries(definedFields(resolved.fields)) });
@@ -125,15 +135,15 @@ const createGroup = async (context: AuthContext, user: AuthUser, name: string, r
   return group;
 };
 
-const overwriteGroup = async (context: AuthContext, user: AuthUser, existing: BasicStoreEntityGroup, resolved: ResolvedGroup) => {
+const overwriteGroup = async (context: AuthContext, user: AuthUser, existing: BasicStoreEntityGroup, resolved: ResolvedGroup, current: CurrentGroupRelations) => {
   const input: EditInput[] = definedFields(resolved.fields)
     .filter(([key, value]) => JSON.stringify(existing[key as keyof BasicStoreEntityGroup] ?? null) !== JSON.stringify(value))
     .map(([key, value]) => ({ key, value: Array.isArray(value) ? value : [value] }));
   if (input.length > 0) {
     await groupEditField(context, user, existing.id, input);
   }
-  await replaceRelations(context, user, existing.id, await currentRoleIds(context, user, existing.id), resolved.roleIds, RELATION_HAS_ROLE);
-  await replaceRelations(context, user, existing.id, await currentMarkingIds(context, user, existing.id), resolved.markingIds, RELATION_ACCESSES_TO);
+  await replaceRelations(context, user, existing.id, idsOf(current.roles), resolved.roleIds, RELATION_HAS_ROLE);
+  await replaceRelations(context, user, existing.id, idsOf(current.markings), resolved.markingIds, RELATION_ACCESSES_TO);
   return (await findGroupById(context, user, existing.id)) as BasicStoreEntityGroup;
 };
 
@@ -149,23 +159,42 @@ const withAdministratorRole = async (context: AuthContext, user: AuthUser, group
   return { roles: [...roles, administratorRole], administratorRoleKept: true };
 };
 
+const isSensitiveRole = async (context: AuthContext, user: AuthUser, role: BasicStoreEntityRole, plannedRoles: Map<string, { grantsSensitiveRights: boolean }>) => {
+  const planned = plannedRoles.get(role.standard_id)?.grantsSensitiveRights;
+  return planned ?? (!!role.can_manage_sensitive_config || (await roleCapabilities(context, user, role.id)).some(({ name }) => name === BYPASS));
+};
+
 const grantsSensitiveRights = async (
   context: AuthContext,
   user: AuthUser,
   references: string[],
   roles: BasicStoreEntityRole[],
   currentIds: string[],
-  isRoleSensitive: (standardId: string) => boolean | undefined,
+  plannedRoles: Map<string, { grantsSensitiveRights: boolean }>,
 ) => {
   for (let i = 0; i < references.length; i += 1) {
     const role = roles.find(({ standard_id }) => standard_id === references[i]);
     if (!role || !currentIds.includes(role.id)) {
       // The rights the same import gives the role first, then the ones it has on the platform
-      const planned = isRoleSensitive(references[i]);
-      const sensitive = planned ?? (!!role && (!!role.can_manage_sensitive_config || (await roleCapabilities(context, user, role.id)).some(({ name }) => name === BYPASS)));
+      const planned = plannedRoles.get(references[i])?.grantsSensitiveRights;
+      const sensitive = planned ?? (!!role && (await isSensitiveRole(context, user, role, plannedRoles)));
       if (sensitive) {
         return true;
       }
+    }
+  }
+  return false;
+};
+
+const removesSensitiveRights = async (
+  context: AuthContext,
+  user: AuthUser,
+  removedRoles: BasicStoreEntityRole[],
+  plannedRoles: Map<string, { grantsSensitiveRights: boolean }>,
+) => {
+  for (let i = 0; i < removedRoles.length; i += 1) {
+    if (await isSensitiveRole(context, user, removedRoles[i], plannedRoles)) {
+      return true;
     }
   }
   return false;
@@ -185,15 +214,16 @@ export const importGroup = async (
   configuration: unknown,
   options: GroupImportOptions,
 ): Promise<GroupImportResult> => {
-  const { mode, dryRun = false, reservedIds, isRoleCreated = () => false, isRoleSensitive = () => undefined } = options;
+  const { mode, dryRun = false, reservedIds, plannedRoles = new Map(), roleTargets = new Map() } = options;
   const parsed = groupImportSchema.safeParse(configuration);
   if (!parsed.success) {
     return refused('invalid', configImportValidationReason(parsed.error), false);
   }
-  const roles = await Promise.all(parsed.data.roles.map(({ standard_id }) => findRoleById(context, user, standard_id)));
-  const missingRoles = parsed.data.roles.filter(({ standard_id }, index) => !roles[index] && !(dryRun && isRoleCreated(standard_id)));
+  const targetOf = (standardId: string) => roleTargets.get(standardId) ?? standardId;
+  const roles = await Promise.all(parsed.data.roles.map(({ standard_id }) => findRoleById(context, user, targetOf(standard_id))));
+  const missingRoles = parsed.data.roles.filter(({ standard_id }, index) => !roles[index] && !(dryRun && plannedRoles.has(targetOf(standard_id))));
   if (missingRoles.length > 0) {
-    return refused('role_missing', `Roles could not be imported: ${missingRoles.map(({ name }) => name).join(', ')}`, false, parsed.data);
+    return refused('role_missing', `Roles could not be imported: ${configImportReasonValue(missingRoles.map(({ name }) => name).join(', '))}`, false, parsed.data);
   }
   const existing = await findGroupById(context, user, groupStandardId(parsed.data.name)) as BasicStoreEntityGroup | undefined;
   if (existing && mode === ConfigImportMode.Add) {
@@ -212,15 +242,20 @@ export const importGroup = async (
   const found = roles.filter((role): role is BasicStoreEntityRole => !!role);
   const { roles: groupRoles, administratorRoleKept } = await withAdministratorRole(context, user, targetId, found);
   const resolved = await resolveGroup(context, user, parsed.data, groupRoles);
-  const currentIds = target ? await currentRoleIds(context, user, target.id) : [];
-  // The roles of the bundle, the ones the same import creates included, and the Administrator role the Administrators group keeps
-  const references = [...new Set([...parsed.data.roles.map(({ standard_id }) => standard_id), ...groupRoles.map(({ standard_id }) => standard_id)])];
+  const current = target ? await currentRelations(context, user, target.id) : { roles: [], markings: [] };
+  const currentIds = idsOf(current.roles);
+  const removedRoles = current.roles.filter(({ id }) => !resolved.roleIds.includes(id));
+  const removedMarkings = current.markings.filter(({ id }) => !resolved.markingIds.includes(id)).map(({ definition }) => definition);
+  const references = [...new Set([...parsed.data.roles.map(({ standard_id }) => targetOf(standard_id)), ...groupRoles.map(({ standard_id }) => standard_id)])];
   const reason = joinConfigImportReasons([
-    name !== parsed.data.name ? `Added as "${name}"` : undefined,
+    name !== parsed.data.name ? `Added as "${configImportReasonValue(name)}"` : undefined,
     administratorRoleKept ? ADMINISTRATOR_ROLE_KEPT_REASON : undefined,
-    (await grantsSensitiveRights(context, user, references, groupRoles, currentIds, isRoleSensitive)) ? SENSITIVE_RIGHTS_REASON : undefined,
-    resolved.missingMarkings.length > 0 ? `Markings not found: ${resolved.missingMarkings.join(', ')}` : undefined,
-    resolved.missingDashboard ? `Default dashboard not found: ${resolved.missingDashboard}` : undefined,
+    (await grantsSensitiveRights(context, user, references, groupRoles, currentIds, plannedRoles)) ? SENSITIVE_RIGHTS_REASON : undefined,
+    (await removesSensitiveRights(context, user, removedRoles, plannedRoles)) ? REMOVES_SENSITIVE_RIGHTS_REASON : undefined,
+    resolved.missingMarkings.length > 0 ? `Markings not found: ${configImportReasonValue(resolved.missingMarkings.join(', '))}` : undefined,
+    resolved.missingDashboard ? `Default dashboard not found: ${configImportReasonValue(resolved.missingDashboard)}` : undefined,
+    removedRoles.length > 0 ? `Roles removed: ${configImportReasonValue(removedRoles.map(({ name }) => name).join(', '))}` : undefined,
+    removedMarkings.length > 0 ? `Markings removed: ${configImportReasonValue(removedMarkings.join(', '))}` : undefined,
     ...assignmentReasons(parsed.data, target),
   ]);
   const result: GroupImportResult = { status: target ? 'overwritten' : 'created', exists: !!existing, configuration: parsed.data, reason };
@@ -228,5 +263,5 @@ export const importGroup = async (
     reservedIds?.add(targetId);
     return result;
   }
-  return { ...result, group: target ? await overwriteGroup(context, user, target, resolved) : await createGroup(context, user, name, resolved) };
+  return { ...result, group: target ? await overwriteGroup(context, user, target, resolved, current) : await createGroup(context, user, name, resolved) };
 };

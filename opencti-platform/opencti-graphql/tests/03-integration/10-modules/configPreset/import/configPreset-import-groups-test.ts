@@ -134,7 +134,9 @@ describe('Config preset import: groups', () => {
     await groupAddRelation(testContext, ADMIN_USER, group.id, { toId: MARKING_TLP_AMBER, relationship_type: 'accesses-to' });
     const fileId = await uploadZip(await buildZip(groupBundle(groupConfiguration())));
     const dry = await importData(fileId, [{ type: 'groups' }], true);
-    expect(dry).toEqual([{ type: 'groups', key: groupStandardId(GROUP_NAME), status: 'OVERWRITTEN', reason: null }]);
+    // The preview says what the overwrite removes from the group
+    const reason = `Roles removed: ${PREFIX} other role\nMarkings removed: TLP:AMBER`;
+    expect(dry).toEqual([{ type: 'groups', key: groupStandardId(GROUP_NAME), status: 'OVERWRITTEN', reason }]);
     expect((await configurationOf(GROUP_NAME)).description).toEqual('Before');
 
     expect(await importData(fileId, [{ type: 'groups' }])).toEqual(dry);

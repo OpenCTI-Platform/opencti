@@ -5,14 +5,19 @@ export const configImportValidationReason = (error: { issues: { path: PropertyKe
 
 const MAX_COPIES = 100;
 
-// The name itself when it is free, else the first free `name (n)`; undefined when the first copies are all taken
-export const freeConfigImportName = async (name: string, isTaken: (candidate: string) => Promise<boolean>) => {
+// The name itself when it is free, else the first free `name (n)`; undefined when the first copies are all taken.
+export const freeConfigImportName = async (
+  name: string,
+  isTaken: (candidate: string) => Promise<boolean>,
+  { maxLength }: { maxLength?: number } = {},
+) => {
   if (!(await isTaken(name))) {
     return name;
   }
   for (let copy = 1; copy <= MAX_COPIES; copy += 1) {
-    const candidate = `${name} (${copy})`;
-    // The next candidate depends on this answer
+    const suffix = ` (${copy})`;
+    const base = maxLength ? name.slice(0, maxLength - suffix.length) : name;
+    const candidate = `${base}${suffix}`;
     if (!(await isTaken(candidate))) {
       return candidate;
     }
@@ -20,9 +25,12 @@ export const freeConfigImportName = async (name: string, isTaken: (candidate: st
   return undefined;
 };
 
-// An item can have several reasons (the name of its copy, what the import grants, what it leaves out): one per line, the front translates each
+// An item can have several reasons (the name of its copy, what the import grants, what it leaves out), joined with this separator.
+// The front splits on it, translates each reason and shows them on one line, separated by ' · '
 export const CONFIG_IMPORT_REASON_SEPARATOR = '\n';
 export const joinConfigImportReasons = (reasons: (string | undefined)[]) => {
   const present = reasons.filter((reason): reason is string => !!reason);
   return present.length > 0 ? present.join(CONFIG_IMPORT_REASON_SEPARATOR) : undefined;
 };
+
+export const configImportReasonValue = (value: string) => value.replace(/[\r\n]+/g, ' ');

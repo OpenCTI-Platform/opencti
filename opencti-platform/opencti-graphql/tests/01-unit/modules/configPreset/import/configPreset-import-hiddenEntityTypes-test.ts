@@ -54,11 +54,11 @@ describe('Hidden entity types import (registry)', () => {
 
   it('applies through the module, reports a status that differs from the computed one, and throws on a failure', async () => {
     vi.mocked(importHiddenEntityTypes).mockResolvedValueOnce({ status: 'overwritten', exists: true });
-    expect(await family.importer!.apply(context, user, item({ hidden_entity_types: [] }), { ...computed, status: 'overwritten' }, ConfigImportMode.Overwrite)).toBeUndefined();
+    expect(await family.importer!.apply(context, user, item({ hidden_entity_types: [] }), { ...computed, status: 'overwritten' }, ConfigImportMode.Overwrite, plan)).toBeUndefined();
     expect(importHiddenEntityTypes).toHaveBeenCalledWith(context, user, { hidden_entity_types: [] }, { mode: ConfigImportMode.Overwrite });
     vi.mocked(importHiddenEntityTypes).mockResolvedValueOnce({ status: 'skipped', code: 'unchanged', exists: true });
-    expect(await family.importer!.apply(context, user, item({ hidden_entity_types: [] }), { ...computed, status: 'overwritten' }, ConfigImportMode.Overwrite)).toBe('skipped');
+    expect(await family.importer!.apply(context, user, item({ hidden_entity_types: [] }), { ...computed, status: 'overwritten' }, ConfigImportMode.Overwrite, plan)).toBe('skipped');
     vi.mocked(importHiddenEntityTypes).mockResolvedValueOnce({ status: 'failed', code: 'cannot_be_hidden', reason: 'Entity types that cannot be hidden: Missing', exists: true });
-    await expect(family.importer!.apply(context, user, item({ hidden_entity_types: ['Missing'] }), computed, ConfigImportMode.Overwrite)).rejects.toThrow('Entity types that cannot be hidden: Missing');
+    await expect(family.importer!.apply(context, user, item({ hidden_entity_types: ['Missing'] }), computed, ConfigImportMode.Overwrite, plan)).rejects.toThrow('Entity types that cannot be hidden: Missing');
   });
 });

@@ -483,6 +483,19 @@ export const batchRolesForUsers = async (context: AuthContext, user: AuthUser, u
   });
 };
 
+export const batchRolesForGroups = async (context: AuthContext, user: AuthUser, groupIds: string[], opts: EntityOptions<BasicStoreEntity> = {}) => {
+  if (groupIds.length === 0) {
+    return [];
+  }
+  const groupsRoles = await fullRelationsList(context, user, RELATION_HAS_ROLE, { fromId: groupIds, toTypes: [ENTITY_TYPE_ROLE] });
+  const roleIds = uniq(groupsRoles.map(({ toId }) => toId));
+  const roles = roleIds.length > 0 ? await fullEntitiesList(context, user, [ENTITY_TYPE_ROLE], { ...opts, ids: roleIds }) : [];
+  return groupIds.map((groupId) => {
+    const idRoles = groupsRoles.filter(({ fromId }) => fromId === groupId).map(({ toId }) => toId);
+    return roles.filter((role) => idRoles.includes(role.internal_id));
+  });
+};
+
 export const computeAvailableMarkings = <T extends BasicStoreEntityMarkingDefinition>(userMarkings: BasicStoreEntityMarkingDefinition[], allMarkings: T[]) => {
   const computedMarkings = [];
   for (let index = 0; index < userMarkings.length; index += 1) {
@@ -568,8 +581,12 @@ export const findRoleById = (context: AuthContext, user: AuthUser, roleId: strin
   return storeLoadById<BasicStoreEntity>(context, user, roleId, ENTITY_TYPE_ROLE);
 };
 
-export const findRoles = (context: AuthContext, user: AuthUser, args: QueryRolesArgs) => {
+export const findRoles = (context: AuthContext, user: AuthUser, args: QueryRolesArgs | EntityOptions<BasicStoreEntity>) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_ROLE], args);
+};
+
+export const findAllRoles = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntity> = {}) => {
+  return fullEntitiesList(context, user, [ENTITY_TYPE_ROLE], args);
 };
 
 export const findCapabilities = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntity>, relationship_type: string = RELATION_HAS_CAPABILITY) => {
@@ -962,6 +979,15 @@ export const adjustAllUsersPasswordValidUntil = async (_context: AuthContext, ol
     });
   }
   await publishCacheResetEvent(ENTITY_TYPE_USER);
+};
+
+// A change of the password validity of the platform, for every local user: a disabled policy clears the expiration dates, another duration moves them
+export const propagatePasswordValidityChange = async (context: AuthContext, oldDays: number, newDays: number) => {
+  if (newDays <= 0) {
+    await clearAllUsersPasswordValidUntil(context);
+  } else if (newDays !== oldDays) {
+    await adjustAllUsersPasswordValidUntil(context, oldDays, newDays);
+  }
 };
 
 type MailTargetUser = Omit<AuthUser, 'organizations' | 'account_lock_after_date'> & {

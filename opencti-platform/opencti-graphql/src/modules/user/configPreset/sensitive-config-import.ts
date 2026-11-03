@@ -1,6 +1,6 @@
-import { getProtectedSensitiveConfig } from '../../domain/settings';
-import type { AuthContext, AuthUser } from '../../types/user';
-import { isSensitiveChangesAllowed } from '../user/user-domain';
+import { getProtectedSensitiveConfig } from '../../../domain/settings';
+import type { AuthContext, AuthUser } from '../../../types/user';
+import { isSensitiveChangesAllowed } from '../user-domain';
 
 export type ConfigImportSensitiveType = 'roles' | 'groups' | 'platform_organization';
 
@@ -13,9 +13,9 @@ export const isConfigImportSensitiveChangeAllowed = async (context: AuthContext,
     return true;
   }
   const config = await getProtectedSensitiveConfig(context, user);
-  const typeConfig = config[type] as { enabled: boolean; protected_ids?: string[] } | undefined;
-  if (!config.enabled || !typeConfig?.enabled) {
+  const typeConfig = config[type];
+  if (!config.enabled || !typeConfig.enabled) {
     return true;
   }
-  return standardId !== undefined && !(typeConfig.protected_ids ?? []).includes(standardId);
+  return standardId !== undefined && !typeConfig.protected_ids.includes(standardId);
 };

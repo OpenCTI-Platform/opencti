@@ -59,8 +59,11 @@ export interface ConfigPresetImportPlan {
   roleIds?: Set<string>;
   // The standard ids of the groups the earlier items of a dry run would create
   groupIds?: Set<string>;
-  // Whether the roles the earlier items of a dry run would create or overwrite give sensitive rights, by standard id
+  // Whether the roles the earlier items of a dry run would create or overwrite give sensitive rights, by the standard id they are written under
   roleSensitiveRights?: Map<string, boolean>;
+  // The standard id each role of the bundle is written under, by its bundle id: its own, or the one of its copy when imported as COPY.
+  // The groups of the same import use it, so that a group gets the role of the bundle and never the local one of the same name
+  roleTargets?: Map<string, string>;
 }
 
 export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`;
@@ -71,7 +74,15 @@ export interface ConfigPresetImporter {
   // Writes the item, with one domain call when it can: an importer that needs several (the hidden entity types hide, then show) can leave
   // its item half written, and the error then makes it failed.
   // Returns the status when it differs from the computed one (a theme created by another import since compute is overwritten).
-  apply: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, computed: ConfigPresetComputedItem, mode: ConfigImportMode) => Promise<ConfigImportStatus | void>;
+  // The plan is the one compute recorded this item and the earlier ones in (the role a group gets)
+  apply: (
+    context: AuthContext,
+    user: AuthUser,
+    item: ConfigPresetBundleItem,
+    computed: ConfigPresetComputedItem,
+    mode: ConfigImportMode,
+    plan: ConfigPresetImportPlan,
+  ) => Promise<ConfigImportStatus | void>;
 }
 
 // Content of metadata.json

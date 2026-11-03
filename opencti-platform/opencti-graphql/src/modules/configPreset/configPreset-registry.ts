@@ -11,7 +11,7 @@ import { rolesFamily } from './registry/roles-configPreset-registry';
 import { groupsFamily } from './registry/groups-configPreset-registry';
 import { policiesFamily } from './registry/policies-configPreset-registry';
 
-export { BRANDING_FAMILY_ID } from './registry/branding-configPreset-registry';
+export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
 
 // In registry order, the categories of the spec table: Platform settings (platform, branding, messages, whitemark), then Data model, then Security & Access.
 // Each family is defined in its own file under registry/.

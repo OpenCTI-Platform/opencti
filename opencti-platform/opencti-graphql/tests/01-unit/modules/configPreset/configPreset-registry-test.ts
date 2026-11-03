@@ -39,7 +39,7 @@ import { papRed, tlpAmber } from './configPreset-markings-fixtures';
 import { roleCapabilities } from '../../../../src/modules/user/user-domain';
 
 const context = { source: 'test' } as AuthContext;
-const user = { id: 'admin-id' } as AuthUser;
+const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
 
 // A Settings entity carrying, next to the exportable fields, values that must never be exported
 const storedSettings = {
@@ -483,6 +483,7 @@ describe('Config preset registry', () => {
         [analystsGroup.standard_id, [{ type: 'roles', id: analystRole.standard_id }]],
       ]);
       expect(fullRelationsList).toHaveBeenCalledTimes(1);
+      expect(fullEntitiesList).toHaveBeenCalledWith(context, user, ['Role'], { ids: [administratorRole.id, analystRole.id] });
     });
 
     it('applies search, ids and excluded ids to the groups', async () => {
