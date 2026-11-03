@@ -2417,6 +2417,19 @@ type ConfigPresetItemReference {
   type: String!
 }
 
+type ConfigPresetPartialImportOutput {
+  counts: ConfigPresetImportCounts!
+  results: [ConfigPresetImportResult!]!
+}
+
+type ConfigPresetPartialImportPreview {
+  bundle_name: String
+  default_mode: ConfigImportMode!
+  generated_at: String!
+  openCTI_version: String!
+  type: ConfigPresetImportType
+}
+
 input ConfigPresetSelectionInput {
   excluded_items: [ID!]
   item_modes: [ConfigPresetItemModeInput!]
@@ -9288,6 +9301,8 @@ type Mutation {
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
   configPresetImportSessionSave(file_id: ID!, revision: Int!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportSession!
   configPresetImportUpload(file: Upload!): File!
+  configPresetPartialImport(file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, type: ID!): ConfigPresetPartialImportOutput!
+  configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview!
   connectorJWT: String!
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
   contactUsXtmHub(message: String!): Success!

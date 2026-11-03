@@ -4809,6 +4809,21 @@ export type ConfigPresetItemReference = {
   type: Scalars['String']['output'];
 };
 
+export type ConfigPresetPartialImportOutput = {
+  __typename?: 'ConfigPresetPartialImportOutput';
+  counts: ConfigPresetImportCounts;
+  results: Array<ConfigPresetImportResult>;
+};
+
+export type ConfigPresetPartialImportPreview = {
+  __typename?: 'ConfigPresetPartialImportPreview';
+  bundle_name?: Maybe<Scalars['String']['output']>;
+  default_mode: ConfigImportMode;
+  generated_at: Scalars['String']['output'];
+  openCTI_version: Scalars['String']['output'];
+  type?: Maybe<ConfigPresetImportType>;
+};
+
 export type ConfigPresetSelectionInput = {
   excluded_items?: InputMaybe<Array<Scalars['ID']['input']>>;
   item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
@@ -17833,6 +17848,8 @@ export type Mutation = {
   configPresetImportSessionClear: Scalars['Boolean']['output'];
   configPresetImportSessionSave: ConfigPresetImportSession;
   configPresetImportUpload: File;
+  configPresetPartialImport: ConfigPresetPartialImportOutput;
+  configPresetPartialImportPreview: ConfigPresetPartialImportPreview;
   connectorJWT: Scalars['String']['output'];
   connectorMigrateToManaged: ManagedConnector;
   contactUsXtmHub: Success;
@@ -18664,6 +18681,20 @@ export type MutationConfigPresetImportSessionSaveArgs = {
 
 export type MutationConfigPresetImportUploadArgs = {
   file: Scalars['Upload']['input'];
+};
+
+
+export type MutationConfigPresetPartialImportArgs = {
+  file: Scalars['Upload']['input'];
+  item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
+  items: Array<Scalars['ID']['input']>;
+  type: Scalars['ID']['input'];
+};
+
+
+export type MutationConfigPresetPartialImportPreviewArgs = {
+  file: Scalars['Upload']['input'];
+  type: Scalars['ID']['input'];
 };
 
 
@@ -41727,6 +41758,8 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetItemMode: ResolverTypeWrapper<ConfigPresetItemMode>;
   ConfigPresetItemModeInput: ConfigPresetItemModeInput;
   ConfigPresetItemReference: ResolverTypeWrapper<ConfigPresetItemReference>;
+  ConfigPresetPartialImportOutput: ResolverTypeWrapper<Omit<ConfigPresetPartialImportOutput, 'results'> & { results: Array<ResolversTypes['ConfigPresetImportResult']> }>;
+  ConfigPresetPartialImportPreview: ResolverTypeWrapper<ConfigPresetPartialImportPreview>;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
@@ -42952,6 +42985,8 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetItemMode: ConfigPresetItemMode;
   ConfigPresetItemModeInput: ConfigPresetItemModeInput;
   ConfigPresetItemReference: ConfigPresetItemReference;
+  ConfigPresetPartialImportOutput: Omit<ConfigPresetPartialImportOutput, 'results'> & { results: Array<ResolversParentTypes['ConfigPresetImportResult']> };
+  ConfigPresetPartialImportPreview: ConfigPresetPartialImportPreview;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
   ConnectorConfig: ConnectorConfig;
@@ -45490,6 +45525,19 @@ export type ConfigPresetItemModeResolvers<ContextType = any, ParentType extends 
 export type ConfigPresetItemReferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetItemReference'] = ResolversParentTypes['ConfigPresetItemReference']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetPartialImportOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetPartialImportOutput'] = ResolversParentTypes['ConfigPresetPartialImportOutput']> = ResolversObject<{
+  counts?: Resolver<ResolversTypes['ConfigPresetImportCounts'], ParentType, ContextType>;
+  results?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetPartialImportPreviewResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetPartialImportPreview'] = ResolversParentTypes['ConfigPresetPartialImportPreview']> = ResolversObject<{
+  bundle_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  default_mode?: Resolver<ResolversTypes['ConfigImportMode'], ParentType, ContextType>;
+  generated_at?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  openCTI_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<Maybe<ResolversTypes['ConfigPresetImportType']>, ParentType, ContextType>;
 }>;
 
 export type ConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Connector'] = ResolversParentTypes['Connector']> = ResolversObject<{
@@ -50184,6 +50232,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   configPresetImportSessionClear?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, Partial<MutationConfigPresetImportSessionClearArgs>>;
   configPresetImportSessionSave?: Resolver<ResolversTypes['ConfigPresetImportSession'], ParentType, ContextType, RequireFields<MutationConfigPresetImportSessionSaveArgs, 'file_id' | 'revision' | 'selections'>>;
   configPresetImportUpload?: Resolver<ResolversTypes['File'], ParentType, ContextType, RequireFields<MutationConfigPresetImportUploadArgs, 'file'>>;
+  configPresetPartialImport?: Resolver<ResolversTypes['ConfigPresetPartialImportOutput'], ParentType, ContextType, RequireFields<MutationConfigPresetPartialImportArgs, 'file' | 'items' | 'type'>>;
+  configPresetPartialImportPreview?: Resolver<ResolversTypes['ConfigPresetPartialImportPreview'], ParentType, ContextType, RequireFields<MutationConfigPresetPartialImportPreviewArgs, 'file' | 'type'>>;
   connectorJWT?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   connectorMigrateToManaged?: Resolver<ResolversTypes['ManagedConnector'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType, RequireFields<MutationContactUsXtmHubArgs, 'message'>>;
@@ -56521,6 +56571,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfigPresetImportType?: ConfigPresetImportTypeResolvers<ContextType>;
   ConfigPresetItemMode?: ConfigPresetItemModeResolvers<ContextType>;
   ConfigPresetItemReference?: ConfigPresetItemReferenceResolvers<ContextType>;
+  ConfigPresetPartialImportOutput?: ConfigPresetPartialImportOutputResolvers<ContextType>;
+  ConfigPresetPartialImportPreview?: ConfigPresetPartialImportPreviewResolvers<ContextType>;
   Connector?: ConnectorResolvers<ContextType>;
   ConnectorConfig?: ConnectorConfigResolvers<ContextType>;
   ConnectorConfiguration?: ConnectorConfigurationResolvers<ContextType>;

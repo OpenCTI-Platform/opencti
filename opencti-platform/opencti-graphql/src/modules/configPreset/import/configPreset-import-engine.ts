@@ -59,6 +59,42 @@ const toResult = (
   translatable: naming?.translatable ?? false,
 });
 
+// Computes then writes one item of the bundle and returns its result. An item of a family the platform cannot apply (Enterprise Edition)
+// is skipped, so it never reaches apply. An error of the item, whether it is read or written, fails this item and is not thrown: the
+// next items go on. Only a refused bundle is thrown, it stops the import. Shared by every import that writes items of a bundle
+// (the wizard, the partial import).
+export const importConfigPresetItem = async (
+  context: AuthContext,
+  user: AuthUser,
+  item: ConfigPresetBundleItem,
+  plan: ConfigPresetImportPlan,
+  mode: ConfigImportMode,
+): Promise<ConfigPresetImportItemResult> => {
+  const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === item.type)!;
+  let computed: ConfigPresetComputedItem | undefined;
+  try {
+    computed = await computeConfigPresetItem(context, user, family, item, plan, mode);
+    if (computed.status === 'failed' || computed.status === 'skipped') {
+      return toResult(item, computed.status, computed.reason, computed);
+    }
+    const applied = await family.importer!.apply(context, user, item, computed, mode, plan);
+    return toResult(item, applied || computed.status, computed.reason, computed);
+  } catch (err) {
+    // A bundle that cannot be read to the end (an attachment above the extracted size limit) stops the import: the next items would be
+    // read the same way. Thrown to the caller, which stops: the wizard fails the remaining items, a partial import too
+    if ((err as { extensions?: { data?: { reason?: string } } }).extensions?.data?.reason === CONFIG_PRESET_REASON_BUNDLE_REFUSED) {
+      throw err;
+    }
+    // The item was not written (a theme, a role): the items that depend on it fail with it
+    const key = configPresetPlanKey(item.type, item.id);
+    plan.created.delete(key);
+    if (plan.targets?.has(key)) {
+      plan.targets.set(key, null);
+    }
+    return toResult(item, 'failed', err instanceof Error ? err.message : String(err), computed);
+  }
+};
+
 const COUNT_KEYS: Record<ConfigPresetImportResultStatus, keyof ConfigPresetImportCounts> = {
   CREATED: 'created',
   OVERWRITTEN: 'overwritten',
@@ -66,7 +102,7 @@ const COUNT_KEYS: Record<ConfigPresetImportResultStatus, keyof ConfigPresetImpor
   FAILED: 'failed',
 };
 
-const countResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImportCounts => {
+export const countConfigPresetImportResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImportCounts => {
   const counts: ConfigPresetImportCounts = { created: 0, overwritten: 0, skipped: 0, failed: 0 };
   results.forEach(({ status }) => {
     counts[COUNT_KEYS[status]] += 1;
@@ -180,35 +216,7 @@ const realImport = async (
           throw FunctionalError('The user who started the import no longer has the right to import');
         }
         const runUser = { ...cachedUser, origin: user.origin } as AuthUser;
-        const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === item.type)!;
-        const importer = family.importer!;
-        const mode = configPresetImportMode(modes, item.type, item.id);
-        let computed: ConfigPresetComputedItem | undefined;
-        let result: ConfigPresetImportItemResult;
-        // An error of the item, whether it is read or written, fails this item and never the next ones
-        try {
-          // An item of a family the platform cannot apply is skipped here, so it never reaches apply
-          computed = await computeConfigPresetItem(importContext, runUser, family, item, plan, mode);
-          result = toResult(item, computed.status, computed.reason, computed);
-          if (computed.status !== 'failed' && computed.status !== 'skipped') {
-            const applied = await importer.apply(importContext, runUser, item, computed, mode, plan);
-            if (applied) {
-              result = toResult(item, applied, computed.reason, computed);
-            }
-          }
-        } catch (err) {
-          // A bundle that cannot be read to the end stops the import: the next items would be read the same way
-          if ((err as { extensions?: { data?: { reason?: string } } }).extensions?.data?.reason === CONFIG_PRESET_REASON_BUNDLE_REFUSED) {
-            throw err;
-          }
-          // The item was not written (a theme, a role): the items that depend on it fail with it
-          const key = configPresetPlanKey(item.type, item.id);
-          plan.created.delete(key);
-          if (plan.targets?.has(key)) {
-            plan.targets.set(key, null);
-          }
-          result = toResult(item, 'failed', err instanceof Error ? err.message : String(err), computed);
-        }
+        const result = await importConfigPresetItem(importContext, runUser, item, plan, configPresetImportMode(modes, item.type, item.id));
         results.push(result);
         await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ITEM_PROCESSED', { result });
         await updateConfigPresetImportRunning(user, startedAt, results.length);
@@ -246,7 +254,7 @@ const realImport = async (
       logApp.warn('[CONFIG PRESET] The platform bootstrap status could not be set to completed', { cause: err });
     }
   }
-  const counts = countResults(results);
+  const counts = countConfigPresetImportResults(results);
   const report = await writeConfigPresetImportReport(importContext, user, fileId, {
     user_id: user.id,
     started_at: startedAt,

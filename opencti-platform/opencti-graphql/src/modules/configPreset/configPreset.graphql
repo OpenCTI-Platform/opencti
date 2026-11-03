@@ -218,6 +218,22 @@ type ConfigPresetImportRunning {
     last_finished_at: DateTime
 }
 
+# The preview of a partial import: the items of one type in a full bundle, with what already exists.
+type ConfigPresetPartialImportPreview {
+    bundle_name: String
+    openCTI_version: String!
+    generated_at: String!
+    # Null when the bundle holds no item of the type
+    type: ConfigPresetImportType
+    # The mode of an item in conflict that has none: COPY when the type offers it, a partial import adds to the platform
+    default_mode: ConfigImportMode!
+}
+
+type ConfigPresetPartialImportOutput {
+    results: [ConfigPresetImportResult!]!
+    counts: ConfigPresetImportCounts!
+}
+
 extend type Query {
     configPresetExportableTypes: [ConfigPresetExportableType!]! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Items of one type, by page; ids, the keys of the items, keeps only those items, excludedIds removes those.
@@ -268,4 +284,10 @@ extend type Mutation {
     configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # From an interrupted import: back to the selection, with the file and the selection kept.
     configPresetImportSessionBackToSelection: ConfigPresetImportSession! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Partial import, from the screen of one type (the themes...): the full bundle is sent with each call, read in memory and never stored,
+    # so the wizard session is never touched. Any type with an importer can be imported this way.
+    # The preview reads only: the items of the type in the bundle.
+    configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Imports the given items of the type, and the items of the same type they depend on; an item without mode takes the default_mode of the preview.
+    configPresetPartialImport(file: Upload!, type: ID!, items: [ID!]!, item_modes: [ConfigPresetItemModeInput!]): ConfigPresetPartialImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }
