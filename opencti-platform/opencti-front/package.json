@@ -53,7 +53,7 @@
     "@mui/icons-material": "9.5.0",
     "@mui/lab": "9.0.0-beta.10",
     "@mui/material": "9.5.0",
-    "@mui/x-date-pickers": "9.16.0",
+    "@mui/x-date-pickers": "9.17.0",
     "@rjsf/core": "6.11.0",
     "@rjsf/mui": "6.11.0",
     "@rjsf/utils": "6.11.0",
