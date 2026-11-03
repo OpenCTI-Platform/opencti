@@ -7104,13 +7104,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tokenizer/inflate@npm:^0.5.1":
-  version: 0.5.1
-  resolution: "@tokenizer/inflate@npm:0.5.1"
+"@tokenizer/inflate@npm:^0.6.0":
+  version: 0.6.0
+  resolution: "@tokenizer/inflate@npm:0.6.0"
   dependencies:
     debug: "npm:^4.4.3"
+    strtok3: "npm:^10.6.2"
     token-types: "npm:^6.1.2"
-  checksum: 10c0/52b5b2137a515e8e6eb18c0d6989c0aadb2e1a068e1b976627aaa2e0b2fcc736e993e4a017646603d09a66a57ae7c4b9de4fb00953d72a0d32590dcc2574232e
+  checksum: 10c0/f663f4e3fd7d024a8ec036c4f5d43695ce940373c8f888b233a9d99a626bc9b5fe54edd2a2c67116bcc555184c895b338d043c67f03eb286442b4ceac340bab4
   languageName: node
   linkType: hard
 
@@ -12840,15 +12841,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-type@npm:22.2.0":
-  version: 22.2.0
-  resolution: "file-type@npm:22.2.0"
+"file-type@npm:22.3.0":
+  version: 22.3.0
+  resolution: "file-type@npm:22.3.0"
   dependencies:
-    "@tokenizer/inflate": "npm:^0.5.1"
-    strtok3: "npm:^10.5.0"
+    "@tokenizer/inflate": "npm:^0.6.0"
+    strtok3: "npm:^10.6.3"
     token-types: "npm:^6.1.2"
     uint8array-extras: "npm:^1.6.0"
-  checksum: 10c0/fa7b025090a604116fdeb25ba740be8c859f8bd89a9c263e637cda7b11f47d9c5e341c4fd4e492137d3d212ab4cc7a4c06e204720a801a501c1f1af3c5b8c60a
+  checksum: 10c0/0b592d008da7acb89a79d91d90c9b07a367f3246da323c156180378a933f97045c27428047b167a8913d65818686181b7ca10781d5d9ef8d39c8f62dd765d484
   languageName: node
   linkType: hard
 
@@ -18292,7 +18293,7 @@ __metadata:
     express-rate-limit: "npm:8.7.2"
     express-session: "npm:1.19.0"
     fast-json-patch: "npm:3.1.1"
-    file-type: "npm:22.2.0"
+    file-type: "npm:22.3.0"
     form-data: "npm:4.0.6"
     github-api: "npm:3.4.0"
     globals: "npm:17.13.0"
@@ -21879,12 +21880,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strtok3@npm:^10.3.4, strtok3@npm:^10.5.0":
+"strtok3@npm:^10.3.4":
   version: 10.6.2
   resolution: "strtok3@npm:10.6.2"
   dependencies:
     "@tokenizer/token": "npm:^0.3.0"
   checksum: 10c0/23d5a836b58d1b23f5eaff18afeeca628dbd13f22f69433e6438f83d09d1f7bdab9b9081d0fa69d5e1dcd01a1e7a5c763cc6cfbfb78951a3036464d5d8826e1d
+  languageName: node
+  linkType: hard
+
+"strtok3@npm:^10.6.2, strtok3@npm:^10.6.3":
+  version: 10.6.3
+  resolution: "strtok3@npm:10.6.3"
+  dependencies:
+    "@tokenizer/token": "npm:^0.3.0"
+  checksum: 10c0/b0782803b9648489de25b7e820cd9b3a9a00ad47ab87d2704a1495c4c42b10f1c44d369a1c2c34976ed43630a776d5afa755dd665226182d5b20ad42d5b0115c
   languageName: node
   linkType: hard
 
