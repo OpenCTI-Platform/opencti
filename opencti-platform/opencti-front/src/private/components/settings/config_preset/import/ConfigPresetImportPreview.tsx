@@ -165,6 +165,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const revisionRef = useRef(session.revision);
   const pendingRef = useRef<ReturnType<typeof buildConfigPresetSelections> | null>(null);
   const timerRef = useRef<number | null>(null);
+  // The saves sent and not answered yet: Apply waits for them too, not only for the one still in its delay
+  const inFlightRef = useRef<Promise<void> | null>(null);
   const commitSaveRef = useRef(commitSave);
   commitSaveRef.current = commitSave;
 
@@ -206,11 +208,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       timerRef.current = null;
     }
     if (!pendingRef.current) {
-      return Promise.resolve();
+      return inFlightRef.current ?? Promise.resolve();
     }
     const selections = pendingRef.current;
     pendingRef.current = null;
-    return new Promise((resolve) => {
+    const previous = inFlightRef.current;
+    const sent = new Promise<void>((resolve) => {
       commitSaveRef.current({
         variables: { file_id: session.file_id, selections, revision: revisionRef.current },
         onCompleted: () => resolve(),
@@ -222,6 +225,14 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         },
       });
     });
+    const answered = previous ? Promise.all([previous, sent]).then(() => undefined) : sent;
+    inFlightRef.current = answered;
+    answered.then(() => {
+      if (inFlightRef.current === answered) {
+        inFlightRef.current = null;
+      }
+    });
+    return answered;
   }, [session.file_id]);
 
   // A pending save is sent on close
