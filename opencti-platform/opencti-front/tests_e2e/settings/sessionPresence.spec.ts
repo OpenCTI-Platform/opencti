@@ -65,7 +65,14 @@ test.describe('Logout when the last tab is closed', { tag: ['@ce'] }, () => {
 
   let settingsId: string;
 
-  test.beforeEach(async ({ request }) => {
+  // The admin session stored for every spec must survive while the feature is on: `page` keeps a tab
+  // open on it until the feature is turned off again, as Playwright closes `page` after `afterEach`.
+  // Opening that tab also cancels the logout pending since the previous spec closed its last page.
+  test.beforeEach(async ({ page, request }) => {
+    const presence = waitForPresence(page);
+    await page.goto('/dashboard');
+    await expect(new DashboardPage(page).getPage()).toBeVisible();
+    await presence;
     settingsId = (await getSettings(request)).id;
     await patchSettings(request, settingsId, 'platform_session_presence_enabled', 'true');
   });
@@ -74,7 +81,7 @@ test.describe('Logout when the last tab is closed', { tag: ['@ce'] }, () => {
     await patchSettings(request, settingsId, 'platform_session_presence_enabled', 'false');
   });
 
-  test('should logout a session only once all its tabs are closed', async ({ browser }, testInfo) => {
+  test('should logout a session only once all its tabs are closed', async ({ browser, page }, testInfo) => {
     const { context: session, tab: firstTab } = await openSession(browser, testInfo);
     const { context: otherSession } = await openSession(browser, testInfo);
     const secondTab = await openTab(session);
@@ -88,6 +95,8 @@ test.describe('Logout when the last tab is closed', { tag: ['@ce'] }, () => {
     await secondTab.close();
     await expect.poll(() => isSessionAlive(session), { timeout: GRACE_PERIOD + SETTLE_DELAY, intervals: [2000] }).toBe(false);
     expect(await isSessionAlive(otherSession)).toBe(true);
+    // The admin session shared by the other specs is untouched as well
+    expect(await isSessionAlive(page.context())).toBe(true);
 
     await session.close();
     await otherSession.close();
