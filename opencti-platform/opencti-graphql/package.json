@@ -152,7 +152,7 @@
     "openid-client": "6.8.8",
     "openid-clientv5": "npm:openid-client@5.7.1",
     "opentelemetry-node-metrics": "3.0.0",
-    "otplib": "13.5.0",
+    "otplib": "13.6.0",
     "passport": "0.7.0",
     "passport-facebook": "3.0.0",
     "passport-github": "1.1.0",
