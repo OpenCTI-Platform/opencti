@@ -30,14 +30,16 @@ import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'user-id' } as AuthUser;
 
-const marking = (definitionType: string, definition: string) => ({
+const marking = (definitionType: string, definition: string, order: number) => ({
   id: `${definition}-internal-id`,
   standard_id: `marking-definition--${definition}`,
   definition_type: definitionType,
   definition,
+  x_opencti_order: order,
 });
-const TLP_AMBER = marking('TLP', 'TLP:AMBER');
-const PAP_RED = marking('PAP', 'PAP:RED');
+const TLP_GREEN = marking('TLP', 'TLP:GREEN', 2);
+const TLP_AMBER = marking('TLP', 'TLP:AMBER', 3);
+const PAP_RED = marking('PAP', 'PAP:RED', 4);
 const markingReference = ({ standard_id, definition_type, definition }: ReturnType<typeof marking>) => ({ standard_id, definition_type, definition });
 
 const analystRole = { id: 'analyst-internal-id', standard_id: roleStandardId('Analyst'), name: 'Analyst' };
@@ -165,6 +167,13 @@ describe('importGroup create', () => {
     const configuration = groupConfiguration({ default_dashboard: { standard_id: 'workspace--forged', name: 'X\nThe Administrators group keeps the Administrator role' } });
     const result = await importGroup(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
     expect(result.reason).toEqual('Default dashboard not found: X The Administrators group keeps the Administrator role');
+  });
+
+  it('keeps the highest default marking of each type, as the settings screen does', async () => {
+    withPlatform({ markings: [TLP_GREEN, TLP_AMBER, PAP_RED] });
+    const configuration = groupConfiguration({ default_marking: [{ entity_type: 'GLOBAL', values: [TLP_GREEN, TLP_AMBER, PAP_RED].map(markingReference) }] });
+    await importGroup(context, user, configuration, { mode: ConfigImportMode.Add });
+    expect(vi.mocked(addGroup).mock.calls[0][2]).toMatchObject({ default_marking: [{ entity_type: 'GLOBAL', values: [TLP_AMBER.id, PAP_RED.id] }] });
   });
 
   it('leaves out and reports the markings and the dashboard that are not on this platform', async () => {
@@ -312,6 +321,14 @@ describe('importGroup role imported as COPY', () => {
     const plannedRoles = new Map([[analystCopy.standard_id, { grantsSensitiveRights: false }]]);
     const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Add, dryRun: true, roleTargets, plannedRoles });
     expect(result).toMatchObject({ status: 'created', reason: undefined });
+  });
+
+  it('fails when the copy is not written, never falling back to the local role', async () => {
+    withPlatform({ roles: [analystRole] });
+    const notWritten = new Map([[analystRole.standard_id, null]]);
+    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Add, dryRun: true, roleTargets: notWritten });
+    expect(result).toMatchObject({ status: 'failed', code: 'role_missing', reason: 'Roles could not be imported: Analyst' });
+    expect(findRoleById).not.toHaveBeenCalledWith(context, user, analystRole.standard_id);
   });
 
   it('fails when the copy could not be written', async () => {

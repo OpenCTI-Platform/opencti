@@ -8,7 +8,7 @@ import { groupStandardId, importGroup } from '../../user/configPreset/group-impo
 import type { BasicStoreEntityRole } from '../../user/configPreset/role-export';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
-import { configPresetPlanKey } from '../import/configPreset-import-types';
+import { configPresetPlanKey, configPresetTargets } from '../import/configPreset-import-types';
 import {
   buildConfigPresetConnection,
   namedItemIdentity,
@@ -41,14 +41,15 @@ const groupsImporter: ConfigPresetImporter = {
       return failed;
     }
     const plannedRoles = new Map([...(plan.roleSensitiveRights ?? [])].map(([standardId, grantsSensitiveRights]) => [standardId, { grantsSensitiveRights }]));
-    const result = await importGroup(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.groupIds, plannedRoles, roleTargets: plan.roleTargets });
+    const roleTargets = configPresetTargets(plan, ROLES_FAMILY_ID);
+    const result = await importGroup(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.groupIds, plannedRoles, roleTargets });
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(GROUPS_FAMILY_ID, item.id));
     }
     return toComputedItem(label, result);
   },
   apply: async (context, user, item, computed, mode, plan) => {
-    return toAppliedStatus(await importGroup(context, user, item.configuration, { mode, roleTargets: plan.roleTargets }), computed);
+    return toAppliedStatus(await importGroup(context, user, item.configuration, { mode, roleTargets: configPresetTargets(plan, ROLES_FAMILY_ID) }), computed);
   },
 };
 

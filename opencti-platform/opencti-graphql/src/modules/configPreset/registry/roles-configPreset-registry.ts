@@ -5,7 +5,7 @@ import { type BasicStoreEntityRole, getRoleConfigPresetConfiguration } from '../
 import { importRole, roleStandardId } from '../../user/configPreset/role-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
-import { configPresetPlanKey } from '../import/configPreset-import-types';
+import { configPresetPlanKey, recordConfigPresetTarget } from '../import/configPreset-import-types';
 import {
   buildConfigPresetConnection,
   namedItemIdentity,
@@ -36,8 +36,10 @@ const rolesImporter: ConfigPresetImporter = {
       plan.created.add(configPresetPlanKey(ROLES_FAMILY_ID, item.id));
     }
     if (result.targetId) {
-      plan.roleTargets?.set(item.id, result.targetId);
+      recordConfigPresetTarget(plan, ROLES_FAMILY_ID, item.id, result.targetId);
       plan.roleSensitiveRights?.set(result.targetId, !!result.grantsSensitiveRights);
+    } else if (mode === ConfigImportMode.Copy) {
+      recordConfigPresetTarget(plan, ROLES_FAMILY_ID, item.id, null);
     }
     return toComputedItem(label, result);
   },

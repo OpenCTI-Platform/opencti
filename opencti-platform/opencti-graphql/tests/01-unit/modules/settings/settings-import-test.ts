@@ -9,7 +9,6 @@ vi.mock('../../../../src/modules/theme/theme-domain', () => ({ findById: vi.fn()
 vi.mock('../../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
 vi.mock('../../../../src/enterprise-edition/ee', () => ({ isEnterpriseEdition: vi.fn() }));
 vi.mock('../../../../src/modules/user/user-domain', () => ({ propagatePasswordValidityChange: vi.fn() }));
-vi.mock('../../../../src/database/cache', () => ({ getEntityFromCache: vi.fn() }));
 vi.mock('../../../../src/modules/user/configPreset/sensitive-config-import', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/user/configPreset/sensitive-config-import')>()),
   isConfigImportSensitiveChangeAllowed: vi.fn(),
@@ -20,7 +19,6 @@ import { findById } from '../../../../src/modules/theme/theme-domain';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { isEnterpriseEdition } from '../../../../src/enterprise-edition/ee';
 import { propagatePasswordValidityChange } from '../../../../src/modules/user/user-domain';
-import { getEntityFromCache } from '../../../../src/database/cache';
 import { importMessage, importPlatformConfiguration, importWhitemark, importPolicies } from '../../../../src/modules/settings/settings-import';
 import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/user/configPreset/sensitive-config-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
@@ -206,7 +204,7 @@ describe('importPolicies', () => {
   });
 
   beforeEach(() => {
-    vi.mocked(getEntityFromCache).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 90 } as never);
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 90 } as never);
     vi.mocked(isEnterpriseEdition).mockResolvedValue(true);
     vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(true);
     vi.mocked(storeLoadById).mockResolvedValue({ id: 'organization-id', ...organization } as never);
@@ -226,7 +224,7 @@ describe('importPolicies', () => {
   });
 
   it('moves the expiration date of the users when the validity of the passwords changes, the policy being disabled included', async () => {
-    vi.mocked(getEntityFromCache).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 30 } as never);
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 30 } as never);
     await importPolicies(context, user, policies(), overwrite);
     expect(propagatePasswordValidityChange).toHaveBeenCalledWith(context, 30, 90);
     await importPolicies(context, user, policies({ password_policy_validity_days: 0 }), overwrite);
@@ -237,16 +235,16 @@ describe('importPolicies', () => {
     await importPolicies(context, user, policies(), overwrite);
     await importPolicies(context, user, policies({ password_policy_validity_days: null }), overwrite);
     // A default policy imported on a platform that has the default one too
-    vi.mocked(getEntityFromCache).mockResolvedValue({ id: 'settings-id' } as never);
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id' } as never);
     await importPolicies(context, user, policies({ password_policy_validity_days: 0 }), overwrite);
     expect(propagatePasswordValidityChange).not.toHaveBeenCalled();
   });
 
   it('says in the preview that it sets the main organization and changes the expiration date of the passwords', async () => {
-    vi.mocked(getEntityFromCache).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 30 } as never);
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 30 } as never);
     const result = await importPolicies(context, user, policies(), dryRun);
     expect(result.reason).toEqual("Sets the main organization: Filigran\nThe expiration date of the users' passwords changes");
-    vi.mocked(getEntityFromCache).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 90, platform_organization: 'organization-id' } as never);
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 90, platform_organization: 'organization-id' } as never);
     expect((await importPolicies(context, user, policies(), dryRun)).reason).toBeUndefined();
   });
 

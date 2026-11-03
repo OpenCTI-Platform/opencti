@@ -1,13 +1,10 @@
 import type { z } from 'zod';
 import { getSettings, getSettingsFromDatabase, settingsEditField } from '../../domain/settings';
 import { storeLoadById } from '../../database/middleware-loader';
-import { getEntityFromCache } from '../../database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
-import type { BasicStoreSettings } from '../../types/settings';
-import { SYSTEM_USER } from '../../utils/access';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
+import type { BasicStoreSettings } from '../../types/settings';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { configImportReasonValue, configImportValidationReason, joinConfigImportReasons } from '../configImport/configImport-utils';
 import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../user/configPreset/sensitive-config-import';
@@ -163,7 +160,7 @@ export const importPolicies = async (
     return skipped('nothing_to_import', 'Nothing to import', parsed.data);
   }
   const input: { key: string; value: unknown[] }[] = toInput(parsed.data, SETTINGS_POLICIES_FIELDS);
-  const current = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const current = await getSettingsFromDatabase(context) as unknown as BasicStoreSettings;
   let organizationReason: string | undefined;
   if (organizationReference) {
     if (!(await isEnterpriseEdition(context))) {

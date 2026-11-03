@@ -81,8 +81,12 @@ const removesSensitiveRights = (configuration: RoleImportConfiguration, existing
   return removesBypass || removesSensitiveConfig;
 };
 
+export const isSensitiveRole = ({ capabilities, can_manage_sensitive_config }: { capabilities: string[]; can_manage_sensitive_config?: boolean | null }) => {
+  return capabilities.includes(BYPASS) || !!can_manage_sensitive_config;
+};
+
 const configurationGrantsSensitiveRights = (configuration: RoleImportConfiguration, existing?: BasicStoreEntityRole) => {
-  return configuration.capabilities.includes(BYPASS) || !!(configuration.can_manage_sensitive_config ?? existing?.can_manage_sensitive_config);
+  return isSensitiveRole({ ...configuration, can_manage_sensitive_config: configuration.can_manage_sensitive_config ?? existing?.can_manage_sensitive_config });
 };
 
 const capabilityNames = async (context: AuthContext, user: AuthUser, roleId: string, relationshipType: string) => {

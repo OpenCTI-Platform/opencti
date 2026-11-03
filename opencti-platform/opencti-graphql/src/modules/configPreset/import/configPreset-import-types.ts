@@ -61,12 +61,22 @@ export interface ConfigPresetImportPlan {
   groupIds?: Set<string>;
   // Whether the roles the earlier items of a dry run would create or overwrite give sensitive rights, by the standard id they are written under
   roleSensitiveRights?: Map<string, boolean>;
-  // The standard id each role of the bundle is written under, by its bundle id: its own, or the one of its copy when imported as COPY.
-  // The groups of the same import use it, so that a group gets the role of the bundle and never the local one of the same name
-  roleTargets?: Map<string, string>;
+  // `<type>/<bundle id>` -> the standard id the item is written under (its copy when imported as COPY), null when the copy is not written.
+  // The items that depend on it use it, so that they get the item of the bundle and never the local one with its bundle id
+  targets?: Map<string, string | null>;
 }
 
 export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`;
+
+export const recordConfigPresetTarget = (plan: ConfigPresetImportPlan, type: string, id: string, target: string | null) => {
+  plan.targets?.set(configPresetPlanKey(type, id), target);
+};
+
+// The targets of the items of one family, by bundle id
+export const configPresetTargets = (plan: ConfigPresetImportPlan, type: string) => {
+  const prefix = configPresetPlanKey(type, '');
+  return new Map([...(plan.targets ?? [])].filter(([key]) => key.startsWith(prefix)).map(([key, target]) => [key.slice(prefix.length), target]));
+};
 
 export interface ConfigPresetImporter {
   // Reads only: finds the existing item, validates, decides the result and records in the plan what it would create

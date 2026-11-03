@@ -9,7 +9,8 @@ import { generateStandardId } from '../../../schema/identifier';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../../schema/internalObject';
 import { RELATION_ACCESSES_TO, RELATION_HAS_ROLE } from '../../../schema/internalRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
-import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from '../../../utils/access';
+import { ROLE_ADMINISTRATOR, SYSTEM_USER } from '../../../utils/access';
+import { cleanMarkings } from '../../../utils/markingDefinition-utils';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../../configImport/configImport-types';
 import { configImportReasonValue, configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../../configImport/configImport-utils';
 import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from './sensitive-config-import';
@@ -17,7 +18,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../../workspace/workspace-types';
 import { findRoleById, roleCapabilities } from '../user-domain';
 import type { BasicStoreEntityGroup } from './group-export';
 import type { BasicStoreEntityRole } from './role-export';
-import { REMOVES_SENSITIVE_RIGHTS_REASON, roleStandardId, SENSITIVE_RIGHTS_REASON } from './role-import';
+import { isSensitiveRole, REMOVES_SENSITIVE_RIGHTS_REASON, roleStandardId, SENSITIVE_RIGHTS_REASON } from './role-import';
 import { type GroupImportConfiguration, groupImportSchema, type GroupMarkingReference } from './group-import-schema';
 
 export interface GroupImportOptions extends ConfigImportOptions {
@@ -25,7 +26,7 @@ export interface GroupImportOptions extends ConfigImportOptions {
   // In a dry run, the roles the same import creates or overwrites under their own standard id, and whether they will give sensitive rights
   plannedRoles?: Map<string, { grantsSensitiveRights: boolean }>;
   // The standard id each role of the bundle is written under by the same import, by its bundle id (the copy of a role imported as COPY)
-  roleTargets?: Map<string, string>;
+  roleTargets?: Map<string, string | null>;
 }
 
 export type GroupImportCode = 'invalid' | 'role_missing' | 'exists' | 'name_conflict' | 'sensitive_config';
@@ -80,7 +81,10 @@ const resolveGroup = async (context: AuthContext, user: AuthUser, configuration:
   const dashboard = dashboardReference ? await storeLoadById<BasicStoreEntity>(context, user, dashboardReference.standard_id, ENTITY_TYPE_WORKSPACE) : undefined;
   const fields: Record<string, unknown> = Object.fromEntries(GROUP_FIELDS.map((key) => [key, configuration[key]]));
   fields.default_dashboard = dashboard?.id;
-  fields.default_marking = configuration.default_marking.map(({ entity_type, values }) => ({ entity_type, values: resolveAll(values) }));
+  fields.default_marking = await Promise.all(configuration.default_marking.map(async ({ entity_type, values }) => ({
+    entity_type,
+    values: (await cleanMarkings(context, resolveAll(values)) as BasicStoreEntity[]).map(({ id }) => id),
+  })));
   fields.max_shareable_markings = configuration.max_shareable_markings.map(({ type, value }) => ({ type, value: (value === 'none' ? undefined : resolve(value)) ?? 'none' }));
   return {
     fields,
@@ -159,9 +163,18 @@ const withAdministratorRole = async (context: AuthContext, user: AuthUser, group
   return { roles: [...roles, administratorRole], administratorRoleKept: true };
 };
 
-const isSensitiveRole = async (context: AuthContext, user: AuthUser, role: BasicStoreEntityRole, plannedRoles: Map<string, { grantsSensitiveRights: boolean }>) => {
+const givesSensitiveRights = async (context: AuthContext, user: AuthUser, role: BasicStoreEntityRole, plannedRoles: Map<string, { grantsSensitiveRights: boolean }>) => {
   const planned = plannedRoles.get(role.standard_id)?.grantsSensitiveRights;
-  return planned ?? (!!role.can_manage_sensitive_config || (await roleCapabilities(context, user, role.id)).some(({ name }) => name === BYPASS));
+  return planned ?? isSensitiveRole({ ...role, capabilities: (await roleCapabilities(context, user, role.id)).map(({ name }) => name) });
+};
+
+const anyGivesSensitiveRights = async (
+  context: AuthContext,
+  user: AuthUser,
+  roles: BasicStoreEntityRole[],
+  plannedRoles: Map<string, { grantsSensitiveRights: boolean }>,
+) => {
+  return (await Promise.all(roles.map((role) => givesSensitiveRights(context, user, role, plannedRoles)))).some((sensitive) => sensitive);
 };
 
 const grantsSensitiveRights = async (
@@ -172,32 +185,13 @@ const grantsSensitiveRights = async (
   currentIds: string[],
   plannedRoles: Map<string, { grantsSensitiveRights: boolean }>,
 ) => {
-  for (let i = 0; i < references.length; i += 1) {
-    const role = roles.find(({ standard_id }) => standard_id === references[i]);
-    if (!role || !currentIds.includes(role.id)) {
-      // The rights the same import gives the role first, then the ones it has on the platform
-      const planned = plannedRoles.get(references[i])?.grantsSensitiveRights;
-      const sensitive = planned ?? (!!role && (await isSensitiveRole(context, user, role, plannedRoles)));
-      if (sensitive) {
-        return true;
-      }
-    }
+  const found = references.map((reference) => roles.find(({ standard_id }) => standard_id === reference));
+  // A role the same import creates is not on the platform yet: only the plan knows its rights
+  if (references.some((reference, index) => !found[index] && plannedRoles.get(reference)?.grantsSensitiveRights)) {
+    return true;
   }
-  return false;
-};
-
-const removesSensitiveRights = async (
-  context: AuthContext,
-  user: AuthUser,
-  removedRoles: BasicStoreEntityRole[],
-  plannedRoles: Map<string, { grantsSensitiveRights: boolean }>,
-) => {
-  for (let i = 0; i < removedRoles.length; i += 1) {
-    if (await isSensitiveRole(context, user, removedRoles[i], plannedRoles)) {
-      return true;
-    }
-  }
-  return false;
+  const gained = found.filter((role): role is BasicStoreEntityRole => !!role && !currentIds.includes(role.id));
+  return anyGivesSensitiveRights(context, user, gained, plannedRoles);
 };
 
 // The automatic assignments are imported as they are, and shown in the preview when the group does not have them yet
@@ -219,9 +213,16 @@ export const importGroup = async (
   if (!parsed.success) {
     return refused('invalid', configImportValidationReason(parsed.error), false);
   }
-  const targetOf = (standardId: string) => roleTargets.get(standardId) ?? standardId;
-  const roles = await Promise.all(parsed.data.roles.map(({ standard_id }) => findRoleById(context, user, targetOf(standard_id))));
-  const missingRoles = parsed.data.roles.filter(({ standard_id }, index) => !roles[index] && !(dryRun && plannedRoles.has(targetOf(standard_id))));
+  // null: the copy of the role is not written, the local role with its standard id is another role
+  const targetOf = (standardId: string) => (roleTargets.has(standardId) ? roleTargets.get(standardId) ?? null : standardId);
+  const roles = await Promise.all(parsed.data.roles.map(({ standard_id }) => {
+    const target = targetOf(standard_id);
+    return target ? findRoleById(context, user, target) : undefined;
+  }));
+  const missingRoles = parsed.data.roles.filter(({ standard_id }, index) => {
+    const target = targetOf(standard_id);
+    return !roles[index] && !(dryRun && target && plannedRoles.has(target));
+  });
   if (missingRoles.length > 0) {
     return refused('role_missing', `Roles could not be imported: ${configImportReasonValue(missingRoles.map(({ name }) => name).join(', '))}`, false, parsed.data);
   }
@@ -246,12 +247,12 @@ export const importGroup = async (
   const currentIds = idsOf(current.roles);
   const removedRoles = current.roles.filter(({ id }) => !resolved.roleIds.includes(id));
   const removedMarkings = current.markings.filter(({ id }) => !resolved.markingIds.includes(id)).map(({ definition }) => definition);
-  const references = [...new Set([...parsed.data.roles.map(({ standard_id }) => targetOf(standard_id)), ...groupRoles.map(({ standard_id }) => standard_id)])];
+  const references = [...new Set([...parsed.data.roles.map(({ standard_id }) => targetOf(standard_id) ?? standard_id), ...groupRoles.map(({ standard_id }) => standard_id)])];
   const reason = joinConfigImportReasons([
     name !== parsed.data.name ? `Added as "${configImportReasonValue(name)}"` : undefined,
     administratorRoleKept ? ADMINISTRATOR_ROLE_KEPT_REASON : undefined,
     (await grantsSensitiveRights(context, user, references, groupRoles, currentIds, plannedRoles)) ? SENSITIVE_RIGHTS_REASON : undefined,
-    (await removesSensitiveRights(context, user, removedRoles, plannedRoles)) ? REMOVES_SENSITIVE_RIGHTS_REASON : undefined,
+    (await anyGivesSensitiveRights(context, user, removedRoles, plannedRoles)) ? REMOVES_SENSITIVE_RIGHTS_REASON : undefined,
     resolved.missingMarkings.length > 0 ? `Markings not found: ${configImportReasonValue(resolved.missingMarkings.join(', '))}` : undefined,
     resolved.missingDashboard ? `Default dashboard not found: ${configImportReasonValue(resolved.missingDashboard)}` : undefined,
     removedRoles.length > 0 ? `Roles removed: ${configImportReasonValue(removedRoles.map(({ name }) => name).join(', '))}` : undefined,

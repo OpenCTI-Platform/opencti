@@ -163,7 +163,7 @@ export const computeConfigPresetItems = async (
     roleIds: new Set(),
     groupIds: new Set(),
     roleSensitiveRights: new Map(),
-    roleTargets: new Map(),
+    targets: new Map(),
   };
   const results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[] = [];
   for (let i = 0; i < items.length; i += 1) {
