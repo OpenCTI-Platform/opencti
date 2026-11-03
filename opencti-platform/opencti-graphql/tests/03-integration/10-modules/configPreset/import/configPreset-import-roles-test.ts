@@ -109,7 +109,7 @@ describe('Config preset import: roles', () => {
     await addRole(testContext, ADMIN_USER, { name: ROLE_NAME, description: 'Before', capabilities: ['EXPLORE', 'KNOWLEDGE'], capabilitiesInDraft: [] });
     const fileId = await upload(rolesBundle(roleConfiguration()));
     const dry = await importData(fileId, [{ type: 'roles' }], true);
-    expect(dry).toEqual([{ type: 'roles', key: roleStandardId(ROLE_NAME), status: 'OVERWRITTEN', reason: null }]);
+    expect(dry).toEqual([{ type: 'roles', key: roleStandardId(ROLE_NAME), status: 'OVERWRITTEN', reason: 'Capabilities removed: EXPLORE' }]);
     expect((await configurationOf(ROLE_NAME)).capabilities).toEqual(['EXPLORE', 'KNOWLEDGE']);
 
     expect(await importData(fileId, [{ type: 'roles' }])).toEqual(dry);
