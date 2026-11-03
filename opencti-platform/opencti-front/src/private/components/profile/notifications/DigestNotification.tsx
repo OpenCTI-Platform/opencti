@@ -70,8 +70,9 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
       globalCount={events ? events.length : 0}
       variant={DataTableVariant.inline}
       icon={({ operation }) => (iconSelector(operation))}
-      getComputeLink={({ instance_id, entity_type }: { instance_id: string | undefined; entity_type: string | null | undefined }) => {
-        return computeNotificationLink(instance_id ?? '', entity_type);
+      getComputeLink={({ instance_id, entity_internal_id, entity_type }: { instance_id: string | undefined; entity_internal_id: string | null | undefined; entity_type: string | null | undefined }) => {
+        // The internal id survives a rename; notifications sent before it existed only carry instance_id
+        return computeNotificationLink(entity_internal_id ?? instance_id ?? '', entity_type);
       }}
     />
   );
