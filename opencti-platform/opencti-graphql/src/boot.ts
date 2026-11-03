@@ -1,5 +1,5 @@
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
-import platformInit, { checkFeatureFlags } from './initialization';
+import platformInit, { checkFeatureFlags, checkTlsVerification } from './initialization';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
@@ -9,6 +9,7 @@ import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
 import { startPlatformHealthMonitor, stopPlatformHealthMonitor } from './telemetry/platformHealthMetrics';
 import { shutdownSafeEjsPool } from './utils/safeEjs.pool';
+import { shutdownJsonPathPool } from './utils/jsonPath.client';
 
 // region platform start and stop
 // Track the in-flight startup so a shutdown signal received while the platform is still
@@ -35,6 +36,7 @@ const doPlatformStart = async () => {
       throw livenessError;
     }
     checkFeatureFlags();
+    checkTlsVerification();
     // Check all dependencies access
     try {
       await checkSystemDependencies();
@@ -98,6 +100,8 @@ export const platformStop = async () => {
   await shutdownModules();
   // Shutdown the safe-ejs worker pool
   await shutdownSafeEjsPool();
+  // Shutdown the JSONPath worker pool
+  await shutdownJsonPathPool();
   // Shutdown the redis clients
   shutdownRedisClients();
   logApp.info(`[OPENCTI] Platform stopped ${new Date().getTime() - stopTime} ms`);

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { buildUpdatePatchForUpsert } from '../../../src/utils/upsert-utils';
+import { buildUpdatePatchForUpsert, generateAttributesInputsForUpsert } from '../../../src/utils/upsert-utils';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
+import { testContext } from '../../utils/testQuery';
 
 const makeUser = () => ({
   id: 'test-user',
@@ -98,5 +99,30 @@ describe('buildUpdatePatchForUpsert - indicator confidence gating', () => {
     expect(result.decay_history).toEqual(incomingPatch.decay_history);
     expect(result.decay_next_reaction_date).toBe(incomingPatch.decay_next_reaction_date);
     expect(result.confidence).toBe(80);
+  });
+
+  describe('on a synchronized upsert with a lower confidence', () => {
+    const synchronizedContext = { ...testContext, synchronizedUpsert: true };
+    const existingIndicator = {
+      entity_type: ENTITY_TYPE_INDICATOR,
+      standard_id: 'indicator--existing',
+      confidence: 80,
+      x_opencti_score: 80,
+    };
+    const lowerConfidence = { confidenceLevelToApply: 30, isConfidenceMatch: false, isConfidenceUpper: false };
+
+    it('should keep the existing confidence when the input has no confidence', () => {
+      const result = buildUpdatePatchForUpsert(makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, { x_opencti_main_observable_type: 'IPv4-Addr' }, lowerConfidence);
+      expect(result).not.toHaveProperty('confidence');
+      const inputs = generateAttributesInputsForUpsert(synchronizedContext, makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, result, lowerConfidence);
+      expect(inputs.find((i) => i.key === 'confidence')).toBeUndefined();
+    });
+
+    it('should apply the input confidence when the input has a confidence', () => {
+      const result = buildUpdatePatchForUpsert(makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, { confidence: 20 }, { ...lowerConfidence, confidenceLevelToApply: 20 });
+      expect(result.confidence).toBe(20);
+      const inputs = generateAttributesInputsForUpsert(synchronizedContext, makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, result, lowerConfidence);
+      expect(inputs.find((i) => i.key === 'confidence')).toEqual({ key: 'confidence', value: [20] });
+    });
   });
 });

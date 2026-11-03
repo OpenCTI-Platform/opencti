@@ -120,6 +120,11 @@ if (externalConfigurationFile) {
 nconf.file(environment, configurationFile);
 nconf.file('default', resolveEnvFile('default'));
 
+// Global TLS certificate verification, fallback for every outgoing TLS connection
+// that does not define its own reject_unauthorized option.
+// Disabled by default for now, it will be enabled by default in an upcoming version.
+export const TLS_REJECT_UNAUTHORIZED = booleanConf('tls:reject_unauthorized', false);
+
 // Setup SSO/SAML auth_payload_body_size
 // Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html
 export const AUTH_PAYLOAD_BODY_SIZE = nconf.get('app:auth_payload_body_size') ?? null;
@@ -486,7 +491,7 @@ export const getPlatformHttpProxies = () => {
   if (https) {
     agents['https:'] = {
       build: () => new HttpsProxyAgent(https, {
-        rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
+        rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', TLS_REJECT_UNAUTHORIZED),
         ...configureCA(proxyCA),
       }),
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
@@ -495,7 +500,7 @@ export const getPlatformHttpProxies = () => {
       build: () => new ProxyAgent({
         uri: https,
         proxyTls: {
-          rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
+          rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', TLS_REJECT_UNAUTHORIZED),
           ...configureCA(proxyCA),
         },
       }),
@@ -594,9 +599,6 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 // a special flag name allows to enable all feature flags at once
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
-
-// Custom fields feature flag (use isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) to check activation)
-export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
 
 // User merge feature flag (use isFeatureEnabled(MERGE_USERS_FEATURE_FLAG) to check activation)
 export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';

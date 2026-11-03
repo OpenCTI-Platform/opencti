@@ -338,6 +338,72 @@ describe('ConfigPresetImportWizard', () => {
       expect(realApplies(rendered)).toHaveLength(1);
     });
 
+    it('waits for a save already sent by its delay before sending the import', async () => {
+      const rendered = await renderPreview();
+      vi.useFakeTimers();
+      fireEvent.click(checkbox('Messages (1/1)'));
+      // The 500 ms delay ends before Apply: the save is sent and its answer is not in yet
+      await act(async () => {
+        vi.advanceTimersByTime(501);
+      });
+      vi.useRealTimers();
+      expect(operationNames(rendered)).toContain('ConfigPresetImportPreviewSaveMutation');
+      await resolveSimulation(rendered);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      expect(realApplies(rendered)).toHaveLength(0);
+      expect(screen.getByRole('button', { name: 'Apply' })).toBeDisabled();
+      await resolve(rendered, 'ConfigPresetImportPreviewSaveMutation', {});
+      await waitFor(() => expect(realApplies(rendered)).toHaveLength(1));
+    });
+
+    it('waits for every save in flight, not only the last one, before sending the import', async () => {
+      const rendered = await renderPreview();
+      const saves = () => rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportPreviewSaveMutation');
+      vi.useFakeTimers();
+      // Two saves sent by their delay, neither answered
+      fireEvent.click(checkbox('Messages (1/1)'));
+      await act(async () => {
+        vi.advanceTimersByTime(501);
+      });
+      fireEvent.click(checkbox('Messages (0/1)'));
+      await act(async () => {
+        vi.advanceTimersByTime(501);
+      });
+      vi.useRealTimers();
+      expect(saves()).toHaveLength(2);
+      const [first, second] = saves();
+      await resolveSimulation(rendered);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      // The second save is answered first: the first one is still in flight
+      await act(async () => {
+        rendered.relayEnv.mock.resolve(second, MockPayloadGenerator.generate(second, {}));
+      });
+      await act(async () => {});
+      expect(realApplies(rendered)).toHaveLength(0);
+      await act(async () => {
+        rendered.relayEnv.mock.resolve(first, MockPayloadGenerator.generate(first, {}));
+      });
+      await waitFor(() => expect(realApplies(rendered)).toHaveLength(1));
+    });
+
+    it('disables the selection and the modes while Apply waits for the save', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(checkbox('Messages (1/1)'));
+      await resolveSimulation(rendered);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
+      expect(screen.getByRole('combobox', { name: 'Existing theme: When it already exists' })).toBeEnabled();
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      // A change now would be saved after the import is sent, when the session is no longer a draft
+      expect(checkbox('Messages (0/1)')).toBeDisabled();
+      expect(checkbox('Platform configuration')).toBeDisabled();
+      expect(within(screen.getByTestId('config-preset-import-item-branding-theme--2')).getByRole('checkbox')).toBeDisabled();
+      expect(screen.getByRole('combobox', { name: 'Existing theme: When it already exists' })).toBeDisabled();
+      await resolve(rendered, 'ConfigPresetImportPreviewSaveMutation', {});
+      await waitFor(() => expect(realApplies(rendered)).toHaveLength(1));
+    });
+
     it('applies once the save is answered, even when the save failed', async () => {
       const rendered = await renderPreview();
       await rendered.user.click(checkbox('Messages (1/1)'));

@@ -1837,6 +1837,7 @@ export type BackgroundTaskConnectionEdge = {
 export type BackgroundTaskContext = {
   __typename?: 'BackgroundTaskContext';
   field?: Maybe<Scalars['String']['output']>;
+  options?: Maybe<BackgroundTaskContextOptions>;
   type?: Maybe<BackgroundTaskContextType>;
   values: Array<Maybe<Scalars['String']['output']>>;
 };
@@ -1848,8 +1849,20 @@ export type BackgroundTaskContextInput = {
   values: Array<InputMaybe<Scalars['String']['input']>>;
 };
 
+export type BackgroundTaskContextOptions = {
+  __typename?: 'BackgroundTaskContextOptions';
+  applyTransitionActions?: Maybe<Scalars['Boolean']['output']>;
+  eventName?: Maybe<Scalars['String']['output']>;
+  includeNeighbours?: Maybe<Scalars['Boolean']['output']>;
+};
+
 export type BackgroundTaskContextOptionsInput = {
+  applyTransitionActions?: InputMaybe<Scalars['Boolean']['input']>;
+  comment?: InputMaybe<Scalars['String']['input']>;
+  eventName?: InputMaybe<Scalars['String']['input']>;
   includeNeighbours?: InputMaybe<Scalars['Boolean']['input']>;
+  shareOrganizationIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  unshareOrganizationIds?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 export enum BackgroundTaskContextType {
@@ -2494,6 +2507,7 @@ export enum Capabilities {
   KnowledgeKnaskimport = 'KNOWLEDGE_KNASKIMPORT',
   KnowledgeKndissemination = 'KNOWLEDGE_KNDISSEMINATION',
   KnowledgeKnenrichment = 'KNOWLEDGE_KNENRICHMENT',
+  KnowledgeKnformintake = 'KNOWLEDGE_KNFORMINTAKE',
   KnowledgeKngetexport = 'KNOWLEDGE_KNGETEXPORT',
   KnowledgeKngetexportKnaskexport = 'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
   KnowledgeKnparticipate = 'KNOWLEDGE_KNPARTICIPATE',
@@ -10497,6 +10511,7 @@ export type FormEdge = {
 };
 
 export type FormSubmissionInput = {
+  files?: InputMaybe<Array<Scalars['Upload']['input']>>;
   formId: Scalars['String']['input'];
   values: Scalars['String']['input'];
 };
@@ -14348,6 +14363,7 @@ export type IngestionHealthCheck = {
   health_check_code: Scalars['String']['output'];
   health_check_kind: IngestionHealthCheckKind;
   health_check_message?: Maybe<Scalars['String']['output']>;
+  health_check_metadata?: Maybe<Scalars['JSON']['output']>;
   health_check_severity: IngestionHealthCheckSeverity;
 };
 
@@ -14356,10 +14372,30 @@ export enum IngestionHealthCheckKind {
   Runtime = 'runtime'
 }
 
+export type IngestionHealthCheckSetting = {
+  __typename?: 'IngestionHealthCheckSetting';
+  enabled: Scalars['Boolean']['output'];
+  health_check_code: Scalars['String']['output'];
+  health_check_kind: IngestionHealthCheckKind;
+  health_check_label: Scalars['String']['output'];
+};
+
 export enum IngestionHealthCheckSeverity {
   Advisory = 'advisory',
   Blocking = 'blocking'
 }
+
+export type IngestionHealthSettings = {
+  __typename?: 'IngestionHealthSettings';
+  disabled_health_checks: Array<Scalars['String']['output']>;
+  health_checks: Array<IngestionHealthCheckSetting>;
+  notification_delay: Scalars['Int']['output'];
+};
+
+export type IngestionHealthSettingsInput = {
+  disabled_health_checks?: InputMaybe<Array<Scalars['String']['input']>>;
+  notification_delay?: InputMaybe<Scalars['Int']['input']>;
+};
 
 export enum IngestionHealthStatus {
   Critical = 'critical',
@@ -17825,6 +17861,7 @@ export type Mutation = {
   ingestionCsvFieldPatch?: Maybe<IngestionCsv>;
   ingestionCsvResetState?: Maybe<IngestionCsv>;
   ingestionCsvTester?: Maybe<CsvMapperTestResult>;
+  ingestionHealthSettingsEdit?: Maybe<IngestionHealthSettings>;
   ingestionJsonAdd?: Maybe<IngestionJson>;
   ingestionJsonAddInputFromImport: IngestionJsonAddInputFromImport;
   ingestionJsonDelete?: Maybe<Scalars['ID']['output']>;
@@ -19258,6 +19295,11 @@ export type MutationIngestionCsvResetStateArgs = {
 
 export type MutationIngestionCsvTesterArgs = {
   input: IngestionCsvAddInput;
+};
+
+
+export type MutationIngestionHealthSettingsEditArgs = {
+  input: IngestionHealthSettingsInput;
 };
 
 
@@ -25389,6 +25431,7 @@ export type Query = {
   ingestionCsv?: Maybe<IngestionCsv>;
   ingestionCsvLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestionCsvs?: Maybe<IngestionCsvConnection>;
+  ingestionHealthSettings?: Maybe<IngestionHealthSettings>;
   ingestionJson?: Maybe<IngestionJson>;
   ingestionJsonLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestionJsons?: Maybe<IngestionJsonConnection>;
@@ -25646,6 +25689,8 @@ export type Query = {
   workflowDefinition?: Maybe<WorkflowSchema>;
   workflowDefinitionPublished?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  workflowMassTransitions: Array<WorkflowTransition>;
+  workflowStatuses: Array<Status>;
   works?: Maybe<WorkConnection>;
   workspace?: Maybe<Workspace>;
   workspaces?: Maybe<WorkspaceConnection>;
@@ -28908,6 +28953,20 @@ export type QueryWorkflowDefinitionPublishedArgs = {
 
 export type QueryWorkflowInstanceArgs = {
   entityId: Scalars['String']['input'];
+};
+
+
+export type QueryWorkflowMassTransitionsArgs = {
+  entityIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  entityType: Scalars['String']['input'];
+  excludedIds?: InputMaybe<Array<Scalars['String']['input']>>;
+  filters?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryWorkflowStatusesArgs = {
+  entityType: Scalars['String']['input'];
 };
 
 
@@ -41201,6 +41260,7 @@ export type ResolversTypes = ResolversObject<{
   BackgroundTaskConnectionEdge: ResolverTypeWrapper<Omit<BackgroundTaskConnectionEdge, 'node'> & { node: ResolversTypes['BackgroundTask'] }>;
   BackgroundTaskContext: ResolverTypeWrapper<BackgroundTaskContext>;
   BackgroundTaskContextInput: BackgroundTaskContextInput;
+  BackgroundTaskContextOptions: ResolverTypeWrapper<BackgroundTaskContextOptions>;
   BackgroundTaskContextOptionsInput: BackgroundTaskContextOptionsInput;
   BackgroundTaskContextType: BackgroundTaskContextType;
   BackgroundTaskError: ResolverTypeWrapper<BackgroundTaskError>;
@@ -41654,7 +41714,10 @@ export type ResolversTypes = ResolversObject<{
   IngestionHealth: ResolverTypeWrapper<IngestionHealth>;
   IngestionHealthCheck: ResolverTypeWrapper<IngestionHealthCheck>;
   IngestionHealthCheckKind: IngestionHealthCheckKind;
+  IngestionHealthCheckSetting: ResolverTypeWrapper<IngestionHealthCheckSetting>;
   IngestionHealthCheckSeverity: IngestionHealthCheckSeverity;
+  IngestionHealthSettings: ResolverTypeWrapper<IngestionHealthSettings>;
+  IngestionHealthSettingsInput: IngestionHealthSettingsInput;
   IngestionHealthStatus: IngestionHealthStatus;
   IngestionJson: ResolverTypeWrapper<BasicStoreEntityIngestionJson>;
   IngestionJsonAddInput: IngestionJsonAddInput;
@@ -42431,6 +42494,7 @@ export type ResolversParentTypes = ResolversObject<{
   BackgroundTaskConnectionEdge: Omit<BackgroundTaskConnectionEdge, 'node'> & { node: ResolversParentTypes['BackgroundTask'] };
   BackgroundTaskContext: BackgroundTaskContext;
   BackgroundTaskContextInput: BackgroundTaskContextInput;
+  BackgroundTaskContextOptions: BackgroundTaskContextOptions;
   BackgroundTaskContextOptionsInput: BackgroundTaskContextOptionsInput;
   BackgroundTaskError: BackgroundTaskError;
   BankAccount: Omit<BankAccount, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -42807,6 +42871,9 @@ export type ResolversParentTypes = ResolversObject<{
   IngestionHeader: IngestionHeader;
   IngestionHealth: IngestionHealth;
   IngestionHealthCheck: IngestionHealthCheck;
+  IngestionHealthCheckSetting: IngestionHealthCheckSetting;
+  IngestionHealthSettings: IngestionHealthSettings;
+  IngestionHealthSettingsInput: IngestionHealthSettingsInput;
   IngestionJson: BasicStoreEntityIngestionJson;
   IngestionJsonAddInput: IngestionJsonAddInput;
   IngestionJsonAddInputFromImport: IngestionJsonAddInputFromImport;
@@ -44074,8 +44141,15 @@ export type BackgroundTaskConnectionEdgeResolvers<ContextType = any, ParentType 
 
 export type BackgroundTaskContextResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTaskContext'] = ResolversParentTypes['BackgroundTaskContext']> = ResolversObject<{
   field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  options?: Resolver<Maybe<ResolversTypes['BackgroundTaskContextOptions']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['BackgroundTaskContextType']>, ParentType, ContextType>;
   values?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+}>;
+
+export type BackgroundTaskContextOptionsResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTaskContextOptions'] = ResolversParentTypes['BackgroundTaskContextOptions']> = ResolversObject<{
+  applyTransitionActions?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  eventName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  includeNeighbours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
 }>;
 
 export type BackgroundTaskErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTaskError'] = ResolversParentTypes['BackgroundTaskError']> = ResolversObject<{
@@ -48226,7 +48300,21 @@ export type IngestionHealthCheckResolvers<ContextType = any, ParentType extends 
   health_check_code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   health_check_kind?: Resolver<ResolversTypes['IngestionHealthCheckKind'], ParentType, ContextType>;
   health_check_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  health_check_metadata?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   health_check_severity?: Resolver<ResolversTypes['IngestionHealthCheckSeverity'], ParentType, ContextType>;
+}>;
+
+export type IngestionHealthCheckSettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealthCheckSetting'] = ResolversParentTypes['IngestionHealthCheckSetting']> = ResolversObject<{
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  health_check_code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  health_check_kind?: Resolver<ResolversTypes['IngestionHealthCheckKind'], ParentType, ContextType>;
+  health_check_label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type IngestionHealthSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealthSettings'] = ResolversParentTypes['IngestionHealthSettings']> = ResolversObject<{
+  disabled_health_checks?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  health_checks?: Resolver<Array<ResolversTypes['IngestionHealthCheckSetting']>, ParentType, ContextType>;
+  notification_delay?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type IngestionJsonResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionJson'] = ResolversParentTypes['IngestionJson']> = ResolversObject<{
@@ -49785,6 +49873,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ingestionCsvFieldPatch?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvFieldPatchArgs, 'id' | 'input'>>;
   ingestionCsvResetState?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<MutationIngestionCsvResetStateArgs, 'id'>>;
   ingestionCsvTester?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationIngestionCsvTesterArgs, 'input'>>;
+  ingestionHealthSettingsEdit?: Resolver<Maybe<ResolversTypes['IngestionHealthSettings']>, ParentType, ContextType, RequireFields<MutationIngestionHealthSettingsEditArgs, 'input'>>;
   ingestionJsonAdd?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<MutationIngestionJsonAddArgs, 'input'>>;
   ingestionJsonAddInputFromImport?: Resolver<ResolversTypes['IngestionJsonAddInputFromImport'], ParentType, ContextType, RequireFields<MutationIngestionJsonAddInputFromImportArgs, 'file'>>;
   ingestionJsonDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationIngestionJsonDeleteArgs, 'id'>>;
@@ -51687,6 +51776,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionCsv?: Resolver<Maybe<ResolversTypes['IngestionCsv']>, ParentType, ContextType, RequireFields<QueryIngestionCsvArgs, 'id'>>;
   ingestionCsvLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionCsvLogsArgs, 'id'>>;
   ingestionCsvs?: Resolver<Maybe<ResolversTypes['IngestionCsvConnection']>, ParentType, ContextType, Partial<QueryIngestionCsvsArgs>>;
+  ingestionHealthSettings?: Resolver<Maybe<ResolversTypes['IngestionHealthSettings']>, ParentType, ContextType>;
   ingestionJson?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<QueryIngestionJsonArgs, 'id'>>;
   ingestionJsonLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionJsonLogsArgs, 'id'>>;
   ingestionJsons?: Resolver<Maybe<ResolversTypes['IngestionJsonConnection']>, ParentType, ContextType, Partial<QueryIngestionJsonsArgs>>;
@@ -51944,6 +52034,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   workflowDefinition?: Resolver<Maybe<ResolversTypes['WorkflowSchema']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionArgs, 'entityType'>>;
   workflowDefinitionPublished?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryWorkflowDefinitionPublishedArgs, 'entityType'>>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType, RequireFields<QueryWorkflowInstanceArgs, 'entityId'>>;
+  workflowMassTransitions?: Resolver<Array<ResolversTypes['WorkflowTransition']>, ParentType, ContextType, RequireFields<QueryWorkflowMassTransitionsArgs, 'entityType'>>;
+  workflowStatuses?: Resolver<Array<ResolversTypes['Status']>, ParentType, ContextType, RequireFields<QueryWorkflowStatusesArgs, 'entityType'>>;
   works?: Resolver<Maybe<ResolversTypes['WorkConnection']>, ParentType, ContextType, Partial<QueryWorksArgs>>;
   workspace?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<QueryWorkspaceArgs, 'id'>>;
   workspaces?: Resolver<Maybe<ResolversTypes['WorkspaceConnection']>, ParentType, ContextType, Partial<QueryWorkspacesArgs>>;
@@ -55851,6 +55943,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   BackgroundTaskConnection?: BackgroundTaskConnectionResolvers<ContextType>;
   BackgroundTaskConnectionEdge?: BackgroundTaskConnectionEdgeResolvers<ContextType>;
   BackgroundTaskContext?: BackgroundTaskContextResolvers<ContextType>;
+  BackgroundTaskContextOptions?: BackgroundTaskContextOptionsResolvers<ContextType>;
   BackgroundTaskError?: BackgroundTaskErrorResolvers<ContextType>;
   BankAccount?: BankAccountResolvers<ContextType>;
   BasicObject?: BasicObjectResolvers<ContextType>;
@@ -56129,6 +56222,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IngestionHeader?: IngestionHeaderResolvers<ContextType>;
   IngestionHealth?: IngestionHealthResolvers<ContextType>;
   IngestionHealthCheck?: IngestionHealthCheckResolvers<ContextType>;
+  IngestionHealthCheckSetting?: IngestionHealthCheckSettingResolvers<ContextType>;
+  IngestionHealthSettings?: IngestionHealthSettingsResolvers<ContextType>;
   IngestionJson?: IngestionJsonResolvers<ContextType>;
   IngestionJsonAddInputFromImport?: IngestionJsonAddInputFromImportResolvers<ContextType>;
   IngestionJsonConnection?: IngestionJsonConnectionResolvers<ContextType>;
