@@ -746,6 +746,7 @@
   "Notes about this entity": "Note su questa entità",
   "Notification content": "Contenuto della notifica",
   "Notification delay (in minute)": "Ritardo nella notifica (in minuti)",
+  "Notification entity internal id": "ID interno dell'entità di notifica",
   "Notification entity type": "Tipo di entità di notifica",
   "Notification event message": "Messaggio evento di notifica",
   "Notification events": "Eventi di notifica",
