@@ -12,6 +12,7 @@ import signal
 import tempfile
 import threading
 from typing import Any, Dict, Optional, Tuple, Union
+from urllib.parse import quote
 
 import requests
 
@@ -835,7 +836,9 @@ class OpenCTIApiClient:
         :return: returns either the file content as text, bytes, base64-encoded string, or None on failure
         :rtype: str, bytes, or None
         """
-        fetch_uri = f"{self.base_url}/storage/get/{file_id}"
+        # The file id keeps the uploaded file name as is: encode it so that a
+        # reserved character such as "#" or "?" is not read as a URL delimiter.
+        fetch_uri = f"{self.base_url}/storage/get/{quote(file_id, safe='/')}"
         return self.fetch_opencti_file(fetch_uri, binary=binary, serialize=serialize)
 
     def health_check(self):
