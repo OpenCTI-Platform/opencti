@@ -120,6 +120,7 @@
   "A result with this external link already exists in this security coverage": "この外部リンクの結果はこのセキュリティカバレッジに既に存在します",
   "A result with this name already exists in this security coverage": "この名前の結果はこのセキュリティカバレッジに既に存在します",
   "A selection cannot hold more than 200 values": "選択に含められる値は200個までです",
+  "A URL or an external ID is required": "URL または外部 ID が必要です",
   "A value cannot reference another variable": "値は他の変数を参照できません",
   "A value that the bundle does not carry is left as it is.": "バンドルに含まれていない値は、そのまま残されます。",
   "A variable with this name already exists": "この名前の変数は既に存在します",
