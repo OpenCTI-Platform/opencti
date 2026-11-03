@@ -286,7 +286,7 @@ describe('Config preset import: apply', () => {
         expect(await getPlatformHiddenEntityTypes(testContext, ADMIN_USER)).toEqual(['Malware']);
         // The platform is now what the bundle says: nothing left to import
         const again = await importData(await upload(hiddenEntityTypesBundle(['Malware'])), HIDDEN);
-        expect(resultOf(again, 'hiddenEntityTypes')).toMatchObject({ status: 'SKIPPED', reason: 'Nothing to import' });
+        expect(resultOf(again, 'hiddenEntityTypes')).toMatchObject({ status: 'SKIPPED', reason: 'Already up to date' });
       } finally {
         await restoreHiddenEntityTypes(hiddenBefore);
       }
