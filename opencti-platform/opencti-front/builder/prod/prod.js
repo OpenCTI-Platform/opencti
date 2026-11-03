@@ -1,6 +1,7 @@
 const esbuild = require("esbuild");
 const { cp, rename, rm, readdir, writeFile } = require("node:fs/promises")
 const { RelayPlugin } = require("../plugin/esbuild-relay");
+const { PdfjsLegacyPlugin } = require("../plugin/esbuild-pdfjs-legacy");
 
 // Define args options
 const keep = process.argv.slice(2).includes('--keep');
@@ -10,7 +11,7 @@ const buildPath = "./builder/prod/build";
 (async () => {
   await esbuild.build({
       logLevel: "info",
-      plugins: [RelayPlugin],
+      plugins: [RelayPlugin, PdfjsLegacyPlugin],
       entryPoints: ["src/front.tsx"],
       publicPath: '/',
       bundle: true,
