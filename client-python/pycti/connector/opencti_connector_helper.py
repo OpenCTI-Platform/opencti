@@ -1909,6 +1909,62 @@ def _parse_criticity(value) -> int:
     return value
 
 
+# Standard errors from this criticity on are reported as critical work errors (logging.ERROR)
+_WORK_ERROR_CRITICAL_THRESHOLD = 40
+# Platform codes the OpenCTI front end classifies, see the critical and warning
+# allowlists of opencti-front parseWorkErrors.tsx
+_WORK_ERROR_CRITICAL_NAME = "INTERNAL_SERVER_ERROR"
+_WORK_ERROR_WARNING_NAME = "VALIDATION_ERROR"
+
+
+def _error_text(error: BaseException) -> str:
+    try:
+        return str(error)
+    # A broken __str__ must never prevent the work from being closed
+    except Exception:  # pylint: disable=broad-except
+        return type(error).__name__
+
+
+def _format_work_error(error: BaseException) -> str:
+    """Build the message reporting a failed message processing as a work error.
+
+    A standard connector error (one with a non-empty string ``code`` and an
+    integer ``criticity``, such as the connectors SDK errors) is reported as a
+    JSON object that the OpenCTI front end classifies: ``parseWorkErrors.tsx``
+    in opencti-front reads its ``name`` and checks it against its critical and
+    warning allowlists. A criticity of ERROR (40) or above is reported as
+    ``INTERNAL_SERVER_ERROR`` (Critical), a lower one as ``VALIDATION_ERROR``
+    (Warning). The connector's own code is kept in the message, as
+    ``[<code>] <text>``, because the front end shows the platform code in its
+    Code column.
+
+    Any other exception is reported as its text, as before.
+
+    :param error: the exception raised while processing the message
+    :type error: BaseException
+    :return: the message to report with ``work.to_processed``
+    :rtype: str
+    """
+    try:
+        code = getattr(error, "code", None)
+        if not isinstance(code, str) or not code.strip():
+            return _error_text(error)
+        criticity = _parse_criticity(getattr(error, "criticity", None))
+        # Only "name" is sent: the front end reads doc_code first, and a connector
+        # code there would leave the error unclassified
+        name = (
+            _WORK_ERROR_CRITICAL_NAME
+            if criticity >= _WORK_ERROR_CRITICAL_THRESHOLD
+            else _WORK_ERROR_WARNING_NAME
+        )
+        return json.dumps(
+            {"name": name, "error_message": f"[{code.strip()}] {str(error)}"}
+        )
+    # Classifying an error must never prevent reporting it
+    except Exception:  # pylint: disable=broad-except
+        return _error_text(error)
+
+
 def _sanitize_connector_error(error) -> Optional[Dict]:
     try:
         code = error.get("code")
