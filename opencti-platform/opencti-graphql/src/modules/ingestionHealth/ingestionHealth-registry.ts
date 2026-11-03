@@ -5,7 +5,7 @@ import { durationInMs } from '../../utils/format';
 import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_JSON, ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_TAXII } from '../ingestion/ingestion-types';
 import { redisGetConnectorsHeartbeats } from '../connector/connector-redis';
 import { redisGetIngestionLogHistory } from '../../database/redis';
-import { findCapabilityDescription } from '../../database/data-initialization';
+import { findCapabilityDescription } from '../../schema/capabilities';
 
 export const HEALTH_CHECK_USER_MISSING = 'USER_MISSING';
 export const HEALTH_CHECK_USER_MISSING_CAPABILITY = 'USER_MISSING_CAPABILITY';

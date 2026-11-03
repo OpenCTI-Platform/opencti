@@ -15,13 +15,13 @@ import { SettingsIngestionHealthEditMutation, IngestionHealthSettingsInput } fro
 
 const settingsIngestionHealthFragment = graphql`
   fragment SettingsIngestionHealth_settings on IngestionHealthSettings {
-      notification_delay
-      disabled_health_checks
-      health_checks {
-        health_check_code
-        health_check_label
-        health_check_kind
-        enabled
+    notification_delay
+    disabled_health_checks
+    health_checks {
+      health_check_code
+      health_check_label
+      health_check_kind
+      enabled
     }
   }
 `;

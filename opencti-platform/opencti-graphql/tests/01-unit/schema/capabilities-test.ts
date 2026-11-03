@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findCapabilityDescription } from '../../../src/database/data-initialization';
+import { findCapabilityDescription } from '../../../src/schema/capabilities';
 
 describe('findCapabilityDescription', () => {
   it('should find the description of a root capability', () => {

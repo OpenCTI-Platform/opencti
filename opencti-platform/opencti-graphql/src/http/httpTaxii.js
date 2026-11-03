@@ -10,7 +10,7 @@ import { basePath, getBaseUrl, logApp } from '../config/conf';
 import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR, UnsupportedError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../modules/dataSharing/taxiiCollection-domain';
-import { executionContext, isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import { executionContext, isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER, TAXIIAPI } from '../utils/access';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -20,7 +20,6 @@ import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
 import { handleConfidenceToScoreTransformation } from '../modules/ingestion/ingestion-taxii-utils';
 import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
-import { TAXIIAPI } from '../modules/user/user-domain';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { pushBundleToConnectorQueue } from '../manager/ingestionManager/ingestionManagerPushToQueue';
 
