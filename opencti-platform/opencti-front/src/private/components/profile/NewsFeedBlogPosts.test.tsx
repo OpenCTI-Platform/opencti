@@ -63,6 +63,21 @@ describe('NewsFeedBlogPosts', () => {
     expect(screen.getByText('Title of post-2')).toBeInTheDocument();
   });
 
+  it('displays an info alert about the number of blogposts shown, starting with an info icon', () => {
+    renderBlogPosts();
+    const alert = screen.getByRole('status');
+    expect(alert).toHaveTextContent('The news feed shows the latest six blogposts');
+    // the icon comes before the text
+    const firstElement = alert.querySelector('svg, p');
+    expect(firstElement?.tagName.toLowerCase()).toBe('svg');
+    expect(firstElement).toHaveClass('lucide-info');
+  });
+
+  it('displays the info alert even when there is no blogpost', () => {
+    renderBlogPosts({ edges: [] });
+    expect(screen.getByText('The news feed shows the latest six blogposts')).toBeInTheDocument();
+  });
+
   it('displays an empty message when there is no blogpost', () => {
     renderBlogPosts({ edges: [] });
     expect(screen.queryByTestId('blog-post-card')).not.toBeInTheDocument();

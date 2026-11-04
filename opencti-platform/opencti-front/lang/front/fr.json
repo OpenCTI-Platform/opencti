@@ -5173,6 +5173,7 @@
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "Le niveau de confiance maximal est actuellement défini au niveau de l'utilisateur. Il remplace le niveau de confiance maximal des groupes d'utilisateurs.",
   "The Max Confidence Level is currently inherited from...": "Le niveau de confiance maximum est actuellement hérité du groupe {link}.",
   "The min value cannot be greater than max value": "La valeur min ne peut pas être supérieure à la valeur max",
+  "The news feed shows the latest six blogposts": "Le flux d'actualités affiche les six derniers articles de blog",
   "The NLQ model didn't find filters corresponding to your question": "Le modèle NLQ n'a pas trouvé de filtres correspondant à votre question",
   "The number of results should be lower than": "Le nombre de résultats doit être inférieur à",
   "The number of results should be lower than 100": "Le nombre de résultats doit être inférieur à 100",

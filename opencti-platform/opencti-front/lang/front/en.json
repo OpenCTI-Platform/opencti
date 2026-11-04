@@ -5173,6 +5173,7 @@
   "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.": "The Max Confidence Level is currently defined at the user level. It overrides Max Confidence Level from user's groups.",
   "The Max Confidence Level is currently inherited from...": "The Max Confidence Level is currently inherited from the group {link}.",
   "The min value cannot be greater than max value": "The min value cannot be greater than max value",
+  "The news feed shows the latest six blogposts": "The news feed shows the latest six blogposts",
   "The NLQ model didn't find filters corresponding to your question": "The NLQ model didn't find filters corresponding to your question",
   "The number of results should be lower than": "The number of results should be lower than",
   "The number of results should be lower than 100": "The number of results should be lower than 100",

@@ -1,3 +1,4 @@
+import { Alert } from '@filigran/design-system';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import React, { FunctionComponent, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery, useSubscription } from 'react-relay';
@@ -96,6 +97,8 @@ const NewsFeedBlogPostsComponent: FunctionComponent<NewsFeedBlogPostsComponentPr
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 24 }}>
+      {/* the design system info alert starts with the info icon */}
+      <Alert severity="info" title={t_i18n('The news feed shows the latest six blogposts')} />
       {blogPosts.length === 0 ? (
         // same empty state as the news feed datatable
         <DataTableSearchEmptyState rawSearchTerm={undefined} />
