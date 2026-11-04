@@ -49,8 +49,9 @@ const logoutAbandonedSession = async (sessionId: string, origin: PresenceOrigin)
     return;
   }
   const session = await findSessionByRawId(sessionId);
-  // A tab may have reconnected while the session was fetched
-  if (!session?.user || sessionConnections.has(sessionId)) {
+  // While the checks above were awaited, a tab may have reconnected (it is still open),
+  // or reconnected and closed again (a newer logout is pending, with its own grace period)
+  if (!session?.user || sessionConnections.has(sessionId) || pendingLogouts.has(sessionId)) {
     return;
   }
   await killSessionByRawId(sessionId);

@@ -7,6 +7,10 @@ import * as listener from '../../../../src/listener/UserActionListener';
 import * as redis from '../../../../src/database/redis';
 import * as userDomain from '../../../../src/modules/user/user-domain';
 import { getStoppingState } from '../../../../src/config/conf';
+import '../../../../src/modules/attributes/internalObject-registrationAttributes';
+import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
+import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
+import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
 
 const GRACE_PERIOD = vi.hoisted(() => 30000);
 
@@ -48,7 +52,8 @@ vi.mock('../../../../src/config/conf', async (importOriginal: any) => {
   };
 });
 
-vi.mock('../../../../src/utils/access', () => ({
+vi.mock('../../../../src/utils/access', async (importOriginal: any) => ({
+  ...(await importOriginal()),
   executionContext: vi.fn().mockReturnValue('mock-context'),
   SYSTEM_USER: { id: 'system-user' },
 }));
@@ -196,6 +201,43 @@ describe('session presence', () => {
     await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
     expect(session.killSessionByRawId).not.toHaveBeenCalled();
     expect(listener.publishUserAction).not.toHaveBeenCalled();
+  });
+
+  it('should only publish context data fields that the activity index maps', async () => {
+    // The mapping of the context data is strict: an unknown field makes the indexing of the event fail
+    const sessionId = nextSessionId();
+    const connectionId = registerSessionPresence(sessionId, ORIGIN);
+    unregisterSessionPresence(sessionId, connectionId);
+
+    await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
+    const contextData = vi.mocked(listener.publishUserAction).mock.calls[0][0].context_data as object;
+    const contextDataAttribute = schemaAttributesDefinition.getAttribute(ENTITY_TYPE_ACTIVITY, 'context_data') as ObjectAttribute;
+    const mappedFields = contextDataAttribute.mappings.map(({ name }) => name);
+    expect(Object.keys(contextData)).toEqual(['reason']);
+    Object.keys(contextData).forEach((field) => expect(mappedFields).toContain(field));
+  });
+
+  it('should wait for the new grace period when a tab comes back and closes again during the checks', async () => {
+    let resolveSession: (value: unknown) => void = () => {};
+    vi.mocked(session.findSessionByRawId).mockReturnValueOnce(new Promise((resolve) => {
+      resolveSession = resolve;
+    }));
+    const sessionId = nextSessionId();
+    const firstConnectionId = registerSessionPresence(sessionId, ORIGIN);
+    unregisterSessionPresence(sessionId, firstConnectionId);
+    // The first grace period ends: its logout now waits for the session store
+    await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
+    expect(session.findSessionByRawId).toHaveBeenCalledOnce();
+
+    // Meanwhile a tab reconnects and closes again, starting a new grace period
+    const secondConnectionId = registerSessionPresence(sessionId, ORIGIN);
+    unregisterSessionPresence(sessionId, secondConnectionId);
+    resolveSession({ user: USER });
+    await vi.advanceTimersByTimeAsync(GRACE_PERIOD - 1);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
   });
 
   it('should not publish a logout for a session already logged out or expired', async () => {
