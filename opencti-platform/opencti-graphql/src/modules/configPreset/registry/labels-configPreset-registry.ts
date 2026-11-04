@@ -31,7 +31,7 @@ const toLabelItem = (label: BasicStoreEntityLabel): ConfigPresetItemDefinition =
 
 const labelsImporter: ConfigPresetImporter = {
   compute: async (context, user, item, _plan, mode) => {
-    const value = typeof item.configuration.value === 'string' ? item.configuration.value : item.id;
+    const value = typeof item.configuration.value === 'string' ? item.configuration.value.trim() : item.id;
     const label = { label: value, translatable: false };
     // The bundle id of a label is its standard id: the one of its value
     const mismatch = checkStandardId(item, label, [item.configuration.value], ([labelValue]) => getLabelStandardId(labelValue), 'The standard id of the label does not match its value');

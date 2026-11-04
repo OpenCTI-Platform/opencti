@@ -37,6 +37,11 @@ describe('Labels import (registry)', () => {
     expect(result).toMatchObject({ label: 'APT', translatable: false, status: 'overwritten', exists: true, conflict: true });
   });
 
+  it('names the item by its value as the import writes it, without the surrounding spaces', async () => {
+    vi.mocked(importLabel).mockResolvedValue({ status: 'created', exists: false });
+    expect(await family.importer!.compute(context, user, item({ value: '  APT ' }), plan, ConfigImportMode.Overwrite)).toMatchObject({ label: 'APT' });
+  });
+
   it('reports a label that does not exist as created, without conflict', async () => {
     vi.mocked(importLabel).mockResolvedValue({ status: 'created', exists: false });
     expect(await family.importer!.compute(context, user, item({ value: 'APT' }), plan, ConfigImportMode.Overwrite)).toMatchObject({ status: 'created', exists: false, conflict: false });
