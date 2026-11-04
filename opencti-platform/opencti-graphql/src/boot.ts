@@ -8,6 +8,7 @@ import { checkSystemDependencies } from './boot-utils';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
 import { shutdownSafeEjsPool } from './utils/safeEjs.pool';
+import { shutdownJsonPathPool } from './utils/jsonPath.client';
 
 // region platform start and stop
 export const platformStart = async () => {
@@ -77,6 +78,8 @@ export const platformStop = async () => {
   await shutdownModules();
   // Shutdown the safe-ejs worker pool
   await shutdownSafeEjsPool();
+  // Shutdown the JSONPath worker pool
+  await shutdownJsonPathPool();
   // Shutdown the redis clients
   shutdownRedisClients();
   logApp.info(`[OPENCTI] Platform stopped ${new Date().getTime() - stopTime} ms`);

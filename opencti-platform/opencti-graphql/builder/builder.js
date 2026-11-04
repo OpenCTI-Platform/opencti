@@ -28,7 +28,8 @@ if (scriptName) {
     'src/lock/child-lock.manager.ts',
     'script/script-clean-relations.js',
     'script/script-insert-dataset.js',
-    'src/utils/safeEjs.worker.ts'
+    'src/utils/safeEjs.worker.ts',
+    'src/utils/jsonPath.worker.ts'
   ]);
 }
 
