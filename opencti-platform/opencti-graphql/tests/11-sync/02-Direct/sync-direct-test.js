@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import { createReadStream } from 'node:fs';
 import {
@@ -8,16 +8,28 @@ import {
   DATA_FILE_TEST,
   executeExternalQuery,
   FIFTEEN_MINUTES,
+  FIVE_MINUTES,
+  ONE_MINUTE,
   SYNC_DIRECT_START_REMOTE_URI,
   SYNC_TEST_REMOTE_URI,
   testContext,
 } from '../../utils/testQuery';
-import { checkPostSyncContent, checkPreSyncContent, REPORT_QUERY, SYNC_CREATION_QUERY, SYNC_START_QUERY, UPLOADED_FILE_SIZE } from '../sync-utils';
+import {
+  checkPostSyncContent,
+  checkPreSyncContent,
+  REPORT_QUERY,
+  SYNC_CREATION_QUERY,
+  SYNC_START_QUERY,
+  UPLOADED_FILE_SIZE,
+  waitForRemotePlatform,
+  waitForRemoteSync,
+} from '../sync-utils';
 import { SYSTEM_USER } from '../../../src/utils/access';
-import { wait } from '../../../src/database/utils';
 import { stixCoreObjectImportPush } from '../../../src/domain/stixCoreObject';
 
 describe('Database sync direct', () => {
+  beforeAll(() => waitForRemotePlatform(SYNC_DIRECT_START_REMOTE_URI), FIVE_MINUTES + ONE_MINUTE);
+
   it(
     'Should direct sync succeed',
     async () => {
@@ -48,8 +60,14 @@ describe('Database sync direct', () => {
       // Start the sync
       const syncId = synchronizer.synchronizerAdd.id;
       await executeExternalQuery(client, SYNC_DIRECT_START_REMOTE_URI, SYNC_START_QUERY, { id: syncId });
-      // Wait 2 min sync to consume all the stream
-      await wait(120000);
+      // Wait for the sync to consume all the stream, the uploaded file being the last change
+      const isReportFileSynced = async () => {
+        const remoteReport = await executeExternalQuery(client, SYNC_DIRECT_START_REMOTE_URI, REPORT_QUERY, {
+          id: 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7',
+        });
+        return (remoteReport?.report?.importFiles?.edges?.length ?? 0) > 0;
+      };
+      await waitForRemoteSync(SYNC_DIRECT_START_REMOTE_URI, objectMap, relMap, isReportFileSynced);
       // Post check
       await checkPostSyncContent(SYNC_DIRECT_START_REMOTE_URI, objectMap, relMap, initStixReport);
       // Check file availability

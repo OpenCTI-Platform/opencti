@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'node:path';
@@ -9,13 +9,15 @@ import {
   DATA_FILE_TEST,
   executeExternalQuery,
   FIFTEEN_MINUTES,
+  FIVE_MINUTES,
+  ONE_MINUTE,
   SYNC_LIVE_EVENTS_SIZE,
   SYNC_RESTORE_START_REMOTE_URI,
   SYNC_TEST_REMOTE_URI,
   testContext,
 } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import { checkPostSyncContent, checkPreSyncContent, REPORT_QUERY, UPLOADED_FILE_SIZE } from '../sync-utils';
+import { checkPostSyncContent, checkPreSyncContent, REPORT_QUERY, UPLOADED_FILE_SIZE, waitForRemotePlatform } from '../sync-utils';
 
 const backupFiles = async () => {
   const BACKUP_CONFIG = {
@@ -82,6 +84,8 @@ const restoreFile = async () => {
 };
 
 describe('Database sync backup/restore', () => {
+  beforeAll(() => waitForRemotePlatform(SYNC_RESTORE_START_REMOTE_URI), FIVE_MINUTES + ONE_MINUTE);
+
   it(
     'Should backup/restore sync succeed',
     async () => {

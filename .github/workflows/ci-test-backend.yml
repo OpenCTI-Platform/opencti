@@ -87,13 +87,10 @@ jobs:
          docker network create runner-docker-network
          docker compose  --profile "backend" --profile "ci-test-api-sync" up -d
 
-    - name: Wait for OpenCTI sync instances to start
-      run: |
-          set -eux
-          ./scripts/ci/wait-for-url-200.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
-          ./scripts/ci/wait-for-url-200.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
-          ./scripts/ci/wait-for-url-200.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
-          ./scripts/ci/wait-for-url-200.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
+    # The sync instances keep booting while the first test files run: only the sync tests use them,
+    # and each of these tests waits for its own instance (see waitForRemotePlatform in tests/11-sync/sync-utils.js)
+    - name: Wait for the search engine to start
+      run: ./scripts/ci/wait-for-url-200.sh "http://localhost:9200/_cluster/health?wait_for_status=yellow" 120 2
 
     - name: Start backend test (aka yarn test:ci-integration-sync)
       run: |

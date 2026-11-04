@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, FIFTEEN_MINUTES, PYTHON_PATH, SYNC_RAW_START_REMOTE_URI, testContext } from '../../utils/testQuery';
+import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, FIFTEEN_MINUTES, FIVE_MINUTES, ONE_MINUTE, PYTHON_PATH, SYNC_RAW_START_REMOTE_URI, testContext } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import { checkPostSyncContent, checkPreSyncContent, INDICATOR_NUMBERS, LABEL_NUMBERS, MALWARE_NUMBERS, VOCABULARY_NUMBERS } from '../sync-utils';
+import { checkPostSyncContent, checkPreSyncContent, INDICATOR_NUMBERS, LABEL_NUMBERS, MALWARE_NUMBERS, VOCABULARY_NUMBERS, waitForRemotePlatform } from '../sync-utils';
 import { elAggregationCount } from '../../../src/database/engine';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
 import { writeTestDataToFile } from '../../utils/testOutput';
@@ -40,6 +40,8 @@ const LIST_QUERY = gql`
 `;
 
 describe('Database sync raw', () => {
+  beforeAll(() => waitForRemotePlatform(SYNC_RAW_START_REMOTE_URI), FIVE_MINUTES + ONE_MINUTE);
+
   it(
     'Should python raw sync succeed',
     async () => {
