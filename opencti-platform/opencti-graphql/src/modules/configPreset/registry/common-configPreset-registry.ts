@@ -87,6 +87,22 @@ export const toComputedItem = (
   fields?: ConfigPresetImportField[],
 ): ConfigPresetComputedItem => ({ ...label, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason, code: result.code, fields });
 
+// A family whose bundle id is the standard id of its content: the item fails when its id is not the one of its values.
+// A blank or missing value has no standard id (deriving it throws and would abort the preview): no mismatch is reported,
+// the module refuses the item as invalid
+export const checkStandardId = (
+  item: ConfigPresetBundleItem,
+  label: Pick<ConfigPresetComputedItem, 'label' | 'translatable'>,
+  values: unknown[],
+  getStandardId: (values: string[]) => string,
+  reason: string,
+): ConfigPresetComputedItem | undefined => {
+  if (!values.every((value): value is string => typeof value === 'string' && value.trim() !== '') || getStandardId(values) === item.id) {
+    return undefined;
+  }
+  return { ...label, exists: false, conflict: false, status: 'failed', reason };
+};
+
 // What an importer returns once a module has written an item: a failure is an error that makes the item failed,
 // and a status other than the computed one is reported
 export const toAppliedStatus = (result: ConfigImportResult, computed: ConfigPresetComputedItem) => {
