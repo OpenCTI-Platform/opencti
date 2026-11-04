@@ -12,7 +12,7 @@ import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../../../src/schema/stixMetaObj
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import { getKillChainPhaseStandardId, importKillChainPhase } from '../../../../src/modules/killChainPhase/killChainPhase-import';
 import { killChainPhaseImportSchema } from '../../../../src/modules/killChainPhase/killChainPhase-import-schema';
-import { getKillChainPhaseConfigPresetConfiguration } from '../../../../src/modules/killChainPhase/killChainPhase-export';
+import { exportKillChainPhase } from '../../../../src/modules/killChainPhase/killChainPhase-export';
 import type { BasicStoreEntityKillChainPhase } from '../../../../src/modules/killChainPhase/killChainPhase-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
@@ -58,7 +58,7 @@ describe('Kill chain phase import schema', () => {
   });
 
   it('is the format of the export, so an export imports back as is, an order of 0 included', () => {
-    const configuration = getKillChainPhaseConfigPresetConfiguration({ ...stored, x_opencti_order: 0, creator_id: ['secret'] } as BasicStoreEntityKillChainPhase);
+    const configuration = exportKillChainPhase({ ...stored, x_opencti_order: 0, creator_id: ['secret'] } as BasicStoreEntityKillChainPhase);
     expect(configuration).toEqual({ ...names, x_opencti_order: 0 });
     expect(killChainPhaseImportSchema.safeParse(configuration).success).toBe(true);
   });

@@ -1,6 +1,6 @@
 import { FilterMode, FilterOperator, KillChainPhasesOrdering, OrderingMode } from '../../../generated/graphql';
 import { findAllKillChainPhases, findKillChainPhasePaginated } from '../../../domain/killChainPhase';
-import { getKillChainPhaseConfigPresetConfiguration } from '../../killChainPhase/killChainPhase-export';
+import { exportKillChainPhase } from '../../killChainPhase/killChainPhase-export';
 import { getKillChainPhaseStandardId, importKillChainPhase } from '../../killChainPhase/killChainPhase-import';
 import type { BasicStoreEntityKillChainPhase } from '../../killChainPhase/killChainPhase-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
@@ -27,7 +27,7 @@ const toKillChainPhaseItem = (phase: BasicStoreEntityKillChainPhase): ConfigPres
   id: phase.standard_id,
   label: `${phase.kill_chain_name}: ${phase.phase_name}`,
   translatable: false,
-  exporter: async () => getKillChainPhaseConfigPresetConfiguration(phase),
+  exporter: async () => exportKillChainPhase(phase),
 });
 
 const killChainPhasesImporter: ConfigPresetImporter = {
