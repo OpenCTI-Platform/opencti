@@ -45,6 +45,7 @@
     "ioredis": "5.11.1",
     "json5": "2.2.3",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
+    "monaco-editor/dompurify": "3.4.17",
     "openid-clientv5": "patch:openid-client@5.7.1#./patch/openid-client.patch",
     "openid-clientv5/jose": "5.10.0",
     "react-relay": "patch:react-relay@21.0.1#./patch/react-relay.patch"
