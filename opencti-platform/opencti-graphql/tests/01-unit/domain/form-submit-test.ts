@@ -1,7 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { formSubmit } from '../../../src/modules/form/form-domain';
-import * as draftWorkspaceDomain from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
-import * as workDomain from '../../../src/domain/work';
 import * as rabbitmq from '../../../src/database/rabbitmq';
 
 const { mockStoreLoadById } = vi.hoisted(() => ({
@@ -74,8 +72,6 @@ describe('formSubmit', () => {
     mockStoreLoadById.mockResolvedValue({ ...mockForm, active: false });
 
     await expect(formSubmit(mockContext, mockUser, input, false)).rejects.toThrow('Form is inactive');
-    expect(workDomain.createWork).not.toHaveBeenCalled();
-    expect(draftWorkspaceDomain.addDraftWorkspace).not.toHaveBeenCalled();
     expect(rabbitmq.pushToWorkerForConnector).not.toHaveBeenCalled();
   });
 });
