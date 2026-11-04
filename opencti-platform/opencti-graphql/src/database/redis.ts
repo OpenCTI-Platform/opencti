@@ -591,15 +591,6 @@ export const redisDeleteWorkTouchedElements = async (workIds: Array<string>) => 
 };
 
 /**
- * Read the event type, the investigation id and the internal id of the enriched entity stored
- * when the work was initialized. Each field is null when the work has none.
- */
-export const redisGetWorkTrackingInfo = async (workId: string) => {
-  const [eventType, investigationId, enrichedEntityId] = await getClientBase().hmget(workId, 'event_type', 'investigation_id', 'enriched_entity_id');
-  return { eventType, investigationId, enrichedEntityId };
-};
-
-/**
  * Delete the work hashes together with their touched elements sets.
  */
 export const redisDeleteWorks = async (internalIds: Array<string>) => {

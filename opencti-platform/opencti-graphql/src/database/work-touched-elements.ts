@@ -1,47 +1,11 @@
-import { LRUCache } from 'lru-cache';
 import type { AuthContext } from '../types/user';
 import type { BaseEvent, CreatedRef, StreamDataEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { redisAddWorkTouchedElements, redisGetWorkTouchedElements, redisGetWorkTrackingInfo } from './redis';
+import { redisAddWorkTouchedElements, redisGetWorkTouchedElements } from './redis';
 import { logApp } from '../config/conf';
 import { WORK_INVESTIGATION_STATUS_TO_REVIEW } from '../modules/workspace/workspace-types';
-
-// How the touched elements of a work are tracked. enrichedEntityId is the internal id of the
-// enriched entity, used to keep only the refs concerning it; null when the work has none.
-type WorkTracking = {
-  isTracked: boolean;
-  enrichedEntityId: string | null;
-};
-
-// Cache used to avoid making a read inside Redis for each element of a work to know
-// if the work is an enrichment triggered from an investigation or not.
-const workTrackedCache = new LRUCache<string, WorkTracking>({ max: 5000, ttl: 60 * 60 * 1000 });
-
-/**
- * Empty the work tracked cache. Tests only.
- */
-export const resetWorkTrackedCache = () => workTrackedCache.clear();
-
-/**
- * Tell whether and how the touched elements of a work are tracked, reading redis once per work.
- * Only enrichment works triggered from an investigation are tracked.
- */
-const resolveWorkTracking = async (workId: string) => {
-  const cached = workTrackedCache.get(workId);
-  if (cached !== undefined) {
-    return cached;
-  }
-  // A work type, investigation and enriched entity never change, so the cache needs no invalidation
-  const { eventType, investigationId, enrichedEntityId } = await redisGetWorkTrackingInfo(workId);
-  const tracking = {
-    isTracked: eventType === CONNECTOR_INTERNAL_ENRICHMENT && !!investigationId,
-    enrichedEntityId,
-  };
-  workTrackedCache.set(workId, tracking);
-  return tracking;
-};
 
 /**
  * Tell whether a created ref is to record: it must start or end on the enriched entity, and not point
@@ -61,15 +25,12 @@ const isTrackedRef = (ref: CreatedRef, enrichedEntityId: string | null) => {
  * @param createdRefs the ref relationships created with the event element
  */
 export const trackWorkTouchedElement = async (context: AuthContext, event: BaseEvent, createdRefs: CreatedRef[] = []) => {
-  const { workId } = context;
-  if (!workId || (event.type !== 'create' && event.type !== 'update')) {
+  const { workId, trackWorkTouchedIds, enrichedEntityId } = context;
+  const shouldTrack = trackWorkTouchedIds && enrichedEntityId && workId;
+  if (!shouldTrack || (event.type !== 'create' && event.type !== 'update')) {
     return;
   }
   try {
-    const { isTracked, enrichedEntityId } = await resolveWorkTracking(workId);
-    if (!isTracked) {
-      return;
-    }
     const elementId = (event as StreamDataEvent).data?.extensions?.[STIX_EXT_OCTI]?.id;
     if (!elementId) {
       return;
@@ -93,18 +54,12 @@ const INVESTIGATION_STATUS_COMPLETION_SCRIPT = `
   ctx._source.investigation_status = "${WORK_INVESTIGATION_STATUS_TO_REVIEW}";`;
 
 type CompletedWork = {
-  id?: string;
-  internal_id?: string;
+  internal_id: string;
   event_type?: string;
   investigation_id?: string;
   investigation_status?: string;
   touched_ids?: string[];
 };
-
-/**
- * Tell whether a work is an enrichment work, the only kind whose touched elements are tracked.
- */
-const isEnrichmentWork = (work: CompletedWork) => work.event_type === CONNECTOR_INTERNAL_ENRICHMENT;
 
 /**
  * Tell whether a completion puts a work of an investigation to review: at its first completion, and again at
@@ -125,11 +80,11 @@ const isWorkToReview = (work: CompletedWork, touchedIds: string[]) => {
  * @param work the work as loaded before the update, with its investigation fields and persisted touched ids
  */
 export const buildEnrichmentCompletion = async (work: CompletedWork) => {
-  const workId = work.internal_id ?? work.id;
-  if (!workId || !isEnrichmentWork(work)) {
+  const trackWorkTouchedIds = work.event_type === CONNECTOR_INTERNAL_ENRICHMENT && !!work.investigation_id;
+  if (!trackWorkTouchedIds) {
     return { source: '', params: {} };
   }
-  const touched = await redisGetWorkTouchedElements(workId);
+  const touched = await redisGetWorkTouchedElements(work.internal_id);
   const statusSource = isWorkToReview(work, touched.touched_ids) ? INVESTIGATION_STATUS_COMPLETION_SCRIPT : '';
   return {
     source: TOUCHED_IDS_COMPLETION_SCRIPT + statusSource,

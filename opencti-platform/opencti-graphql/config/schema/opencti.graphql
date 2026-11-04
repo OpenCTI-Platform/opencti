@@ -820,7 +820,7 @@ type Work {
   errors: [WorkMessage]
   tracking: WorkTracking
   draft_context: String
-  touchedElements(first: Int = 100): [StixObjectOrStixRelationship]
+  touchedElements(first: Int = 100): [StixObjectOrStixRelationship] @auth(for: [KNOWLEDGE])
   investigation_status: WorkInvestigationStatus
 }
 type WorkEdge {
