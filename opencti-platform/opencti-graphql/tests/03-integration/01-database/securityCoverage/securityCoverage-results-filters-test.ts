@@ -95,13 +95,16 @@ describe('Security coverage results: filters on coverage_information', () => {
     await expect(rels(coverage([{ key: 'unknown', values: ['a'] }]))).rejects.toThrow();
     await expect(rels(coverage([score('not_eq', '20')]))).rejects.toThrow();
   });
-  it('combines with fromId, toTypes and search', async () => {
+  it('combines with fromId, toTypes, updated_at and search', async () => {
     const lowScore = coverage([score('lt', '20')]).filters;
     const withFilters = (...filters: object[]) => ({ mode: 'and', filterGroups: [], filters: [...lowScore, ...filters] });
     const fromB = { key: ['fromId'], values: [resultB.id] };
     const toAttackPattern = { key: ['toTypes'], values: ['Attack-Pattern'] };
+    const recent = { key: ['updated_at'], operator: 'within', values: ['now-7d', 'now'] };
     expect(await rels(withFilters(fromB))).toEqual(['r3', 'r4']);
     expect(await rels(withFilters(fromB, toAttackPattern))).toEqual(['r3', 'r4']);
+    expect(await rels(withFilters(fromB, toAttackPattern, recent))).toEqual(['r3', 'r4']);
+    expect(await rels(withFilters(fromB, toAttackPattern, recent, { key: ['toId'], values: [targetIds.charlie] }))).toEqual(['r3']);
     const noFilters = { mode: 'and', filterGroups: [], filters: [] };
     expect(await rels(noFilters, { search: 'charlie' })).toEqual(['r3']);
     expect(await rels(noFilters, { search: 'kilo' })).toEqual(['r1', 'r2']);
