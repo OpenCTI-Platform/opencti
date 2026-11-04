@@ -3,7 +3,7 @@ import { getPlatformDefaultTheme } from '../../../domain/settings';
 import { FunctionalError } from '../../../config/errors';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { findAllThemes, findThemePaginated } from '../../theme/theme-domain';
-import { getThemeConfigPresetConfiguration } from '../../theme/theme-export';
+import { exportTheme } from '../../theme/theme-export';
 import { THEME_STANDARD_ID_PATTERN } from '../../theme/theme-import-schema';
 import { importTheme } from '../../theme/theme-import';
 import type { BasicStoreEntityTheme } from '../../theme/theme-types';
@@ -35,7 +35,7 @@ const toThemeItem = (theme: BasicStoreEntityTheme, defaultThemeId: string | unde
   label: theme.name,
   translatable: false,
   isDefault: theme.standard_id === defaultThemeId,
-  exporter: async () => getThemeConfigPresetConfiguration(theme),
+  exporter: async () => exportTheme(theme),
 });
 
 const brandingImporter: ConfigPresetImporter = {
