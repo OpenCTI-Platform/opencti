@@ -98,4 +98,18 @@ describe('StixCoreObjectsField - deferred creation', () => {
     if (deferCreation) await expect(createOption).rejects.toThrow();
     else expect(await createOption).toBeInTheDocument();
   });
+
+  // The "+" opens a dialog with no type to create when every target type is uncreatable in a form
+  it.each([
+    { types: ['Observed-Data'], deferCreation: false, expected: true },
+    { types: ['Observed-Data'], deferCreation: true, expected: false },
+    { types: ['Attack-Pattern', 'Observed-Data'], deferCreation: true, expected: true },
+  ])('should show the create button: $expected (types: $types, form: $deferCreation)', ({ types, deferCreation, expected }) => {
+    testRender(
+      <Formik initialValues={{ observed: [] }} onSubmit={() => {}}>
+        <StixCoreObjectsField name="observed" types={types} multiple deferCreation={deferCreation} />
+      </Formik>,
+    );
+    expect(!!screen.queryByRole('button', { name: 'Create' })).toBe(expected);
+  });
 });
