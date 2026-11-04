@@ -8,6 +8,7 @@ export interface WorkerRequest {
   data: Data;
   options?: SafeRenderOptions;
   useJsonEscape?: boolean;
+  usePlainTextEscape?: boolean;
 }
 
 export interface WorkerReply {
@@ -26,16 +27,24 @@ export const customEscapeFunction = (value: any): string => {
     : result;
 };
 
+// No escaping at all: for plain-text output (e.g. an email subject), where HTML entities would show up literally.
+export const plainTextEscapeFunction = (value: unknown): string => {
+  return value === null || value === undefined ? '' : String(value);
+};
+
 // The worker stays alive and renders one request at a time, so the pool can hand it to the next
 // caller instead of paying for a thread per template.
 const executeRequest = async (request: WorkerRequest) => {
-  const { template, data, options, useJsonEscape } = request;
+  const { template, data, options, useJsonEscape, usePlainTextEscape } = request;
 
   // Add escape function if needed
   const safeEjsOptions = { ...options };
   if (useJsonEscape) {
     // Recreate the escape function for JSON stringification
     safeEjsOptions.escape = customEscapeFunction;
+  } else if (usePlainTextEscape) {
+    // Recreate the escape function for plain text (no HTML escaping); useJsonEscape wins if both are set
+    safeEjsOptions.escape = plainTextEscapeFunction;
   }
 
   // Use the core logic from safeEjs (await in case it returns a Promise)
