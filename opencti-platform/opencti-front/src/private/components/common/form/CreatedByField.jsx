@@ -119,6 +119,14 @@ const CreatedByField = (props) => {
     }
   };
 
+  // The server also matches aliases: the default label-only filter would hide those hits
+  const filterOptions = (options, inputValue) => {
+    const needle = inputValue.trim().toLowerCase();
+    if (!needle) return options;
+    return options.filter((option) => [option.label, ...(option.entity?.x_opencti_aliases ?? [])]
+      .some((candidate) => candidate?.toLowerCase().includes(needle)));
+  };
+
   const handleOpenIdentityCreation = () => {
     setIdentityCreation(true);
   };
@@ -139,6 +147,7 @@ const CreatedByField = (props) => {
         clearable={clearable}
         noOptionsText={t_i18n('No available options')}
         options={identities.sort((a, b) => a.label.localeCompare(b.label))}
+        filterOptions={filterOptions}
         onInputChange={handleSearch}
         onFocusInput={searchIdentities}
         openCreate={isDeferredMode ? undefined : handleOpenIdentityCreation}
