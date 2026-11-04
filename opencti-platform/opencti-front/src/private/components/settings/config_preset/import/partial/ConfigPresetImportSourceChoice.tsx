@@ -9,7 +9,8 @@ import type { Theme } from '../../../../../../components/Theme';
 export type ConfigPresetImportSource = 'file' | 'bundle';
 
 interface ConfigPresetImportSourceChoiceProps {
-  value: ConfigPresetImportSource;
+  // null until the user chooses
+  value: ConfigPresetImportSource | null;
   onChange: (source: ConfigPresetImportSource) => void;
   // The import the screen already had, already translated (a theme file...)
   fileLabel: string;
@@ -58,7 +59,8 @@ const ConfigPresetImportSourceChoice: FunctionComponent<ConfigPresetImportSource
   const theme = useTheme<Theme>();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }}>
-      <Text variant="title-sm">{t_i18n('Import source')}</Text>
+      <Text variant="title-sm">{t_i18n('Choose the import method')}</Text>
+      <Text variant="content-base">{t_i18n('Select one of the two options below, then click Next.')}</Text>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing(2) }}>
         <SourceCard
           icon={<DescriptionOutlined fontSize="small" aria-hidden />}

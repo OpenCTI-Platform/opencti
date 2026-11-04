@@ -1,31 +1,70 @@
-import React, { FormEvent, FunctionComponent, useState } from 'react';
+import React, { FormEvent, FunctionComponent, useEffect, useState } from 'react';
 import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
 import { DialogActions, Tooltip } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import IconButton from '@common/button/IconButton';
 import Button from '@common/button/Button';
-import Dialog from '@common/dialog/Dialog';
 import { type FileRejection, FileSelect } from '@filigran/design-system';
 import { FileUploadOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import { insertNode } from '../../../../utils/store';
-import ConfigPresetPartialImport from '../config_preset/import/partial/ConfigPresetPartialImport';
-import ConfigPresetImportSourceChoice, { type ConfigPresetImportSource } from '../config_preset/import/partial/ConfigPresetImportSourceChoice';
+import ConfigPresetPartialImportDialog, { type ConfigPresetFileImportStepProps } from '../config_preset/import/partial/ConfigPresetPartialImportDialog';
 import useConfigPresetPartialImportAccess from '../config_preset/import/partial/useConfigPresetPartialImportAccess';
 import { ThemeImporterImportMutation } from './__generated__/ThemeImporterImportMutation.graphql';
 import { ThemeManagerQuery$variables } from './__generated__/ThemeManagerQuery.graphql';
 
 const importMutation = graphql`
   mutation ThemeImporterImportMutation($file: Upload!) {
-    themeImport(file: $file) { id }
+    themeImport(file: $file) { id name }
   }
 `;
 
 // The configuration preset type of the themes
 const THEMES_CONFIG_PRESET_TYPE = 'branding';
+
+interface ThemeFileImportStepProps extends ConfigPresetFileImportStepProps {
+  importing: boolean;
+  importThemeFile: (file: File, onImported: (name: string) => void) => void;
+}
+
+// The second step of the dialog for a theme file: the file, then the import
+const ThemeFileImportStep: FunctionComponent<ThemeFileImportStepProps> = ({ importing, importThemeFile, onBack, onImported, onBusyChange }) => {
+  const { t_i18n } = useFormatter();
+  const [themeFile, setThemeFile] = useState<File | null>(null);
+  useEffect(() => {
+    onBusyChange(importing);
+  }, [importing]);
+  // Unmounted (back, or the dialog closed): no longer busy
+  useEffect(() => () => onBusyChange(false), []);
+  const rejectionMessage = (rejections: FileRejection[]) => (
+    rejections[0].reason === 'accept' ? t_i18n('This file is not in the specified format') : t_i18n('This file is too large')
+  );
+  return (
+    <>
+      <FileSelect
+        value={themeFile}
+        triggerLabel={t_i18n('Select a theme file')}
+        placeholder={t_i18n('No file selected.')}
+        accept=".json,application/json"
+        rejectionMessage={rejectionMessage}
+        disabled={importing}
+        data-testid="import-theme-file"
+        onValueChange={(value) => setThemeFile(value instanceof File ? value : null)}
+      />
+      <DialogActions>
+        <Button variant="secondary" onClick={onBack} disabled={importing}>{t_i18n('Back')}</Button>
+        <Button
+          onClick={() => themeFile && importThemeFile(themeFile, onImported)}
+          disabled={!themeFile || importing}
+          data-testid="import-theme-submit"
+        >
+          {t_i18n('Import')}
+        </Button>
+      </DialogActions>
+    </>
+  );
+};
 
 interface ThemeImporterProps {
   handleRefetch: () => Disposable;
@@ -40,13 +79,8 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme<Theme>();
   const canImportFromBundle = useConfigPresetPartialImportAccess();
   const [open, setOpen] = useState(false);
-  const [source, setSource] = useState<ConfigPresetImportSource>('file');
-  const [themeFile, setThemeFile] = useState<File | null>(null);
-  // The import from the bundle runs: it must not be unmounted before its result
-  const [bundleBusy, setBundleBusy] = useState(false);
 
   const [commit, importing] = useApiMutation<ThemeImporterImportMutation>(
     importMutation,
@@ -57,7 +91,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
     },
   );
 
-  const importThemeFile = (file: File, onImported?: () => void) => {
+  const importThemeFile = (file: File, onImported?: (name: string) => void) => {
     commit({
       variables: { file },
       updater: (store: RecordSourceSelectorProxy) => {
@@ -68,9 +102,9 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
           'themeImport',
         );
       },
-      onCompleted: () => {
+      onCompleted: (data) => {
         handleRefetch();
-        onImported?.();
+        onImported?.(data.themeImport?.name ?? file.name);
       },
     });
   };
@@ -90,23 +124,6 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
 
     importThemeFile(file);
   };
-
-  const closeDialog = () => {
-    setOpen(false);
-    setSource('file');
-    setThemeFile(null);
-  };
-  const busy = importing || bundleBusy;
-  // Dismissal by the user (close button, escape, backdrop, cancel): refused while an import runs, so that its result is not lost
-  const handleClose = () => {
-    if (!busy) {
-      closeDialog();
-    }
-  };
-
-  const rejectionMessage = (rejections: FileRejection[]) => (
-    rejections[0].reason === 'accept' ? t_i18n('This file is not in the specified format') : t_i18n('This file is too large')
-  );
 
   // Without the partial import (not a BYPASS user, or the CONFIG_PRESET flag off), the theme file import stays as it is
   if (!canImportFromBundle) {
@@ -140,58 +157,20 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
           <FileUploadOutlined fontSize="small" />
         </IconButton>
       </Tooltip>
-      <Dialog
+      <ConfigPresetPartialImportDialog
         open={open}
-        onClose={handleClose}
+        onClose={() => setOpen(false)}
         title={t_i18n('Import a theme')}
-        showCloseButton={!busy}
-      >
-        <div style={{ marginBottom: theme.spacing(3) }}>
-          <ConfigPresetImportSourceChoice
-            value={source}
-            onChange={setSource}
-            fileLabel={t_i18n('Import a theme file')}
-            fileDescription={t_i18n('A theme exported as a JSON file')}
-            bundleDescription={t_i18n('Select the themes to import from a full configuration bundle (zip)')}
-            disabled={busy}
-          />
-        </div>
-        {source === 'bundle' && (
-          <ConfigPresetPartialImport
-            type={THEMES_CONFIG_PRESET_TYPE}
-            itemsLabel={t_i18n('themes')}
-            onImported={onThemesImported}
-            onBusyChange={setBundleBusy}
-            onClose={handleClose}
-          />
+        type={THEMES_CONFIG_PRESET_TYPE}
+        itemsLabel={t_i18n('themes')}
+        fileLabel={t_i18n('Import a theme file')}
+        fileDescription={t_i18n('A theme exported as a JSON file')}
+        bundleDescription={t_i18n('Select the themes to import from a full configuration bundle (zip)')}
+        onBundleImported={onThemesImported}
+        renderFileImport={(stepProps) => (
+          <ThemeFileImportStep {...stepProps} importing={importing} importThemeFile={importThemeFile} />
         )}
-        {source === 'file' && (
-          <>
-            <div>
-              <FileSelect
-                value={themeFile}
-                triggerLabel={t_i18n('Select a theme file')}
-                placeholder={t_i18n('No file selected.')}
-                accept=".json,application/json"
-                rejectionMessage={rejectionMessage}
-                disabled={importing}
-                data-testid="import-theme-file"
-                onValueChange={(value) => setThemeFile(value instanceof File ? value : null)}
-              />
-            </div>
-            <DialogActions>
-              <Button variant="secondary" onClick={handleClose} disabled={importing}>{t_i18n('Cancel')}</Button>
-              <Button
-                onClick={() => themeFile && importThemeFile(themeFile, closeDialog)}
-                disabled={!themeFile || importing}
-                data-testid="import-theme-submit"
-              >
-                {t_i18n('Import')}
-              </Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+      />
     </>
   );
 };
