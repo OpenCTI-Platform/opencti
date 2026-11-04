@@ -106,7 +106,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('session.key', INVALIDATE, 'User session', 'sess:{sessionId}'),
   row('session.platform-sessions', INVALIDATE, 'User session', 'platform_sessions'),
   row('sso.session-and-refresh-token', INVALIDATE, 'SSO session / refresh token', 'external subject, session, refresh token'),
-  row('user.password', INVALIDATE, 'User', 'password / password_valid_until'),
+  row('user.password', INVALIDATE, 'User', 'password / password_valid_until / password_history'),
   row('user.administration-fields', INVALIDATE, 'User', 'administrated_organizations / user_confidence_level / user_service_account'),
   row('user.account-status', INVALIDATE, 'User', 'account_status / account_lock_after_date'),
   row('user.otp', INVALIDATE, 'User', 'otp_secret / otp_qr / otp_activated'),
