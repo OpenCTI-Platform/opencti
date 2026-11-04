@@ -109,6 +109,15 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(2),
       },
       {
+        // No message is set in the default settings of these tests: the category is listed without item
+        key: 'messages',
+        label: 'Messages',
+        description: 'Banner, login and consent messages',
+        group: platformSettings,
+        items: [],
+        itemsPageInfo: onePage(0),
+      },
+      {
         key: 'whitemark',
         label: 'Remove Filigran logos',
         description: '',
@@ -145,10 +154,11 @@ describe('Config preset exportable types query', () => {
     });
   });
 
-  it('lists the messages set on the platform and hides the category when none is set', async () => {
-    // No message is set in the default settings of these tests: the category is not returned
+  it('lists the messages set on the platform, and the category without item when none is set', async () => {
+    // No message is set in the default settings of these tests: the category has no item
     const none = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
-    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'labels']);
+    const noMessages = (none.data?.configPresetExportableTypes as { key: string; items: unknown[]; itemsPageInfo: unknown }[]).find((type) => type.key === 'messages');
+    expect(noMessages).toMatchObject({ items: [], itemsPageInfo: onePage(0) });
 
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id, platform_login_message: 'Welcome' }] as never);
     const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
@@ -170,7 +180,7 @@ describe('Config preset exportable types query', () => {
     const result = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
     expect(result.errors).toBeUndefined();
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
-    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['whitemark', true], ['hiddenEntityTypes', false], ['labels', false]]);
+    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false], ['labels', false]]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
@@ -204,6 +214,7 @@ describe('Config preset exportable types query', () => {
     expect(types.map(({ key, group }) => [key, group.key])).toEqual([
       ['platform', 'platformSettings'],
       ['branding', 'platformSettings'],
+      ['messages', 'platformSettings'],
       ['whitemark', 'platformSettings'],
       ['hiddenEntityTypes', 'dataModel'],
       ['labels', 'taxonomy'],

@@ -60,15 +60,12 @@ const findAvailableConfigPresetFamily = async (context: AuthContext, type: strin
 
 const NO_ITEMS_PAGE_INFO = { startCursor: '', endCursor: '', hasNextPage: false, hasPreviousPage: false, globalCount: 0 };
 
-// A family the platform cannot export is listed without its items, and its items are never read: the dialog shows it as locked
+// A family the platform cannot export is listed without its items, and its items are never read: the dialog shows it as locked.
+// A family with nothing to export is listed too, with no item: the dialog shows it disabled, so that the user knows it can be exported.
 export const findConfigPresetExportableTypes = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetExportableType[]> => {
-  const types = await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family): Promise<ConfigPresetExportableType | null> => {
+  return Promise.all(CONFIG_PRESET_FAMILIES.map(async (family): Promise<ConfigPresetExportableType> => {
     const isAvailable = await isConfigPresetFamilyAvailable(context, family);
     const page = isAvailable ? await family.listItems(context, user, { first: CONFIG_PRESET_FIRST_PAGE_SIZE }) : null;
-    // A category with nothing to export on this platform (no message set) is not shown, but a category the platform cannot export is
-    if (page && page.pageInfo.globalCount === 0) {
-      return null;
-    }
     return {
       key: family.id,
       label: family.label,
@@ -79,7 +76,6 @@ export const findConfigPresetExportableTypes = async (context: AuthContext, user
       itemsPageInfo: page?.pageInfo ?? NO_ITEMS_PAGE_INFO,
     };
   }));
-  return types.filter((type): type is ConfigPresetExportableType => type !== null);
 };
 
 export const findConfigPresetExportableItems = async (
