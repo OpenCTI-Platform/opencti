@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import * as JSONPath from 'jsonpath-plus';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionJson, type DataParam, ENTITY_TYPE_INGESTION_JSON, type StoreEntityIngestionJson } from './ingestion-types';
@@ -31,6 +30,7 @@ import { isEmptyField, isNotEmptyField, wait } from '../../database/utils';
 import { findById as findJsonMapperById } from '../internal/jsonMapper/jsonMapper-domain';
 import { SYSTEM_USER } from '../../utils/access';
 import jsonMappingExecution from '../../parser/json-mapper';
+import { queryJsonPath } from '../../utils/jsonPath.client';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -41,16 +41,16 @@ interface JsonQueryFetchOpts {
 }
 
 const getValueFromPath = (path: string, json: any) => {
-  return JSONPath.JSONPath({ path, json, wrap: false, flatten: true });
+  return queryJsonPath({ path, json, wrap: false, flatten: true });
 };
-const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, requestData: Record<string, any>, withDefault = true) => {
+const buildQueryObject = async (queryParamsAttributes: Array<DataParam> | undefined, requestData: Record<string, any>, withDefault = true) => {
   const params: Record<string, object | string> = {};
   if (queryParamsAttributes) {
     for (let attrIndex = 0; attrIndex < queryParamsAttributes.length; attrIndex += 1) {
       const queryParamsAttribute = queryParamsAttributes[attrIndex];
       let attrValue;
       if (queryParamsAttribute.type === 'data') {
-        let valueFromPath = getValueFromPath(queryParamsAttribute.from, requestData);
+        let valueFromPath = await getValueFromPath(queryParamsAttribute.from, requestData);
         if (queryParamsAttribute.data_operation === 'count' && valueFromPath) {
           valueFromPath = Array.isArray(valueFromPath) ? valueFromPath.length : 1;
         }
@@ -102,7 +102,7 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
     headers[h.name] = h.value;
   }
   // Prepare headers
-  const variables = isEmptyField(ingestion.ingestion_json_state) ? buildQueryObject(ingestion.query_attributes, {}) : ingestion.ingestion_json_state;
+  const variables = isEmptyField(ingestion.ingestion_json_state) ? await buildQueryObject(ingestion.query_attributes, {}) : ingestion.ingestion_json_state;
   const headerVariables = filterVariablesForAttributes(ingestion.query_attributes ?? [], variables, 'header');
   Object.entries(headerVariables).forEach(([k, v]) => {
     headers[k] = String(v);
@@ -147,10 +147,10 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const ingestionUser = ingestion.user_id ? platformUsers.get(ingestion.user_id) : null;
   let objects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, requestData, jsonMapperParsed);
-  let nextExecutionState = buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
+  let nextExecutionState = await buildQueryObject(ingestion.query_attributes, { ...requestData, ...responseHeaders }, false);
   // region Try to paginate with next page style
   if (ingestion.pagination_with_sub_page && isNotEmptyField(ingestion.pagination_with_sub_page_attribute_path)) {
-    let url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData);
+    let url = await getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, requestData);
     while (isNotEmptyField(url) && (maxResults === 0 || objects.length < maxResults)) {
       logApp.info(`> Sub query: ${url}`);
       await wait(100); // Wait 100 ms between 2 calls
@@ -159,13 +159,13 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
         url,
         data: ingestion.body,
       });
-      const paginationVariables = buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
+      const paginationVariables = await buildQueryObject(ingestion.query_attributes, { ...paginationData, ...responseHeaders }, false);
       nextExecutionState = { ...nextExecutionState, ...paginationVariables };
       const paginationObjects = await jsonMappingExecution(context, ingestionUser || SYSTEM_USER, paginationData, jsonMapperParsed);
       if (paginationObjects.length > 0) {
         objects = objects.concat(paginationObjects);
       }
-      url = getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData);
+      url = await getValueFromPath(ingestion.pagination_with_sub_page_attribute_path, paginationData);
     }
   }
   // endregion
