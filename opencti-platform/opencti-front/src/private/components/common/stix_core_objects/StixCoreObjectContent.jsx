@@ -686,6 +686,7 @@ class StixCoreObjectContentComponent extends Component {
                   }
                 >
                   <Document
+                    suspense={false}
                     onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
                     loading={<Loader variant="inElement" />}
                     file={currentUrl}
