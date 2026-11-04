@@ -18,8 +18,8 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { checkDraftInContext } from './httpServer-draft';
 import type { BasicStoreBase, BasicStoreEntityFeed, BasicStoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import { FilterMode, FilterOperator } from '../generated/graphql';
-import { fullRelationsList } from '../database/middleware-loader';
+import { FilterMode } from '../generated/graphql';
+import { buildConnectionRoleFilter, fullRelationsList } from '../database/middleware-loader';
 import type { FilterGroupWithNested, FiltersWithNested } from '../database/middleware-loader';
 import { elFindByIds } from '../database/engine';
 import { READ_RELATIONSHIPS_INDICES } from '../database/utils';
@@ -93,7 +93,7 @@ export const resolveNeighborsForFeed = async (
       values: [],
       nested: [
         { key: 'internal_id', values: elementIds },
-        { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+        buildConnectionRoleFilter(relType, 'from'),
       ],
     };
     const toTypeFilter: FiltersWithNested = {
@@ -101,7 +101,7 @@ export const resolveNeighborsForFeed = async (
       values: [],
       nested: [
         { key: 'types', values: [targetType] },
-        { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+        buildConnectionRoleFilter(relType, 'to'),
       ],
     };
     const filtersFrom: FilterGroupWithNested = {
@@ -115,7 +115,7 @@ export const resolveNeighborsForFeed = async (
       values: [],
       nested: [
         { key: 'internal_id', values: elementIds },
-        { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+        buildConnectionRoleFilter(relType, 'to'),
       ],
     };
     const fromTypeFilter: FiltersWithNested = {
@@ -123,7 +123,7 @@ export const resolveNeighborsForFeed = async (
       values: [],
       nested: [
         { key: 'types', values: [targetType] },
-        { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+        buildConnectionRoleFilter(relType, 'from'),
       ],
     };
     const filtersTo: FilterGroupWithNested = {

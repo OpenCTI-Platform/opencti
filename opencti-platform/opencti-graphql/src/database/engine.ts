@@ -87,6 +87,7 @@ import {
   ID_STANDARD,
   IDS_STIX,
   isAbstract,
+  REF_RELATION_ID_FIELDS,
   REL_INDEX_PREFIX,
 } from '../schema/general';
 import { isModifiedObject, isUpdatedAtObject } from '../schema/fieldDataAdapter';
@@ -1616,10 +1617,7 @@ const REL_DEFAULT_FETCH = [
   RELATION_SAMPLE,
   RELATION_PARTICIPATE_TO,
   RELATION_IN_PIR,
-].flatMap((relationType) => [
-  `${buildRefRelationKey(relationType, ID_INTERNAL)}.keyword`,
-  `${buildRefRelationKey(relationType, ID_INFERRED)}.keyword`,
-]);
+].flatMap((relationType) => REF_RELATION_ID_FIELDS.map((field) => buildRefRelationSearchKey(relationType, field)));
 const REL_COUNT_SCRIPT_FIELD = {
   script: {
     lang: 'painless',

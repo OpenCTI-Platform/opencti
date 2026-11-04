@@ -193,6 +193,7 @@ import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2
 import { convertStoreToStix } from './stix-common-converter';
 import {
   buildAggregationRelationFilter,
+  buildConnectionRoleFilter,
   buildEntityFilters,
   buildThingsFilters,
   type EntityFilters,
@@ -3470,7 +3471,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [from.internal_id] },
-              { key: 'role', values: [`${relationshipType}_from`] },
+              buildConnectionRoleFilter(relationshipType, 'from'),
             ],
             values: [],
           },
@@ -3478,7 +3479,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [to.internal_id] },
-              { key: 'role', values: [`${relationshipType}_to`] },
+              buildConnectionRoleFilter(relationshipType, 'to'),
             ],
             values: [],
           },
