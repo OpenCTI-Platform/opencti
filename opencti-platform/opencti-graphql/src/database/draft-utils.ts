@@ -7,6 +7,7 @@ import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_
 import { EditOperation } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, DraftChange, InternalEditInput } from '../types/store';
+import { asArray } from '../utils/arrayUtil';
 
 export const getDraftFilePrefix = (draftId: string): string => {
   return `draft/${draftId}/`;
@@ -132,17 +133,10 @@ export const buildUpdateFieldPatch = (rawUpdatePatch: string): InternalEditInput
   return resultFieldPatch;
 };
 
-// Some resolved inputs can carry a non-array value/previous (e.g. a single scalar) depending on their origin.
-// Coerce to an array defensively so downstream consolidation logic never crashes with a "map is not a function" error.
-const asArray = (value: unknown): any[] => {
-  if (value === undefined || value === null) {
-    return [];
-  }
-  return Array.isArray(value) ? value : [value];
-};
-
 export const getConsolidatedUpdatePatch = (currentUpdatePatch: UpdatePatch, updatedInputsResolved: InternalEditInput[]): UpdatePatch => {
   const newUpdatePatch = currentUpdatePatch;
+  // Some resolved inputs can carry a non-array value/previous (e.g. a single scalar) depending on their origin.
+  // Coerce to an array defensively so downstream consolidation logic never crashes with a "map is not a function" error.
   const nonResolvedInput = updatedInputsResolved
     .map((i) => {
       return {

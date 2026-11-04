@@ -4,7 +4,10 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -22,6 +25,7 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -40,6 +44,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { CaseRfiAddInput, CaseRfiCreationCaseMutation } from './__generated__/CaseRfiCreationCaseMutation.graphql';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 const caseRfiMutation = graphql`
   mutation CaseRfiCreationCaseMutation($input: CaseRfiAddInput!) {
@@ -109,6 +114,8 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  // Form Intake: nothing is created on the fly, there is no entity to map yet
+  const { isDeferredMode } = useDeferredCreation();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const canEditAuthorizedMembers = useGranted([KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]);
@@ -136,6 +143,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: CaseRfiAddInput = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
@@ -152,12 +160,8 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
-      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
-          id: value,
-          access_right: accessRight,
-          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
-        })),
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && !isDeferredMode && values.authorized_members && {
+        authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };
     commit({
@@ -212,6 +216,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   }
   return (
     <Formik<FormikCaseRfiAddInput>
+      entityType={CASE_RFI_TYPE}
       initialValues={initialValues}
       validationSchema={validator}
       onSubmit={onSubmit}
@@ -267,10 +272,12 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}
           />
-          <CaseTemplateField
-            onChange={setFieldValue}
-            containerStyle={fieldSpacingContainerStyle}
-          />
+          {!isDeferredMode && (
+            <CaseTemplateField
+              onChange={setFieldValue}
+              containerStyle={fieldSpacingContainerStyle}
+            />
+          )}
           <ConfidenceField
             entityType="Case-Rfi"
             containerStyle={fieldSpacingContainerStyle}
@@ -340,7 +347,8 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          {isEnterpriseEdition && (
+          <CustomFieldValuesCreation />
+          {isEnterpriseEdition && !isDeferredMode && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >
@@ -378,7 +386,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
             >
               {t_i18n('Create')}
             </Button>
-            {values.content.length > 0 && (
+            {!isDeferredMode && values.content.length > 0 && (
               <Button
                 onClick={() => {
                   setMapAfter(true);

@@ -35,6 +35,8 @@ Map the GraphQL Query/Mutation fields to the functions in `<name>-domain.ts`.
 ### Step 7 — Create Module Definition (`<name>.ts`)
 Implement `ModuleDefinition` interface.
 Define attributes, relations, and register the definition using `registerDefinition`.
+If the module is behind a feature flag, set `featureFlag: <FLAG_CONSTANT>` on **each**
+attribute and nested mapping — see the `add-feature-flag` skill.
 
 ### Step 8a — Create GraphQL Registration File (`<name>-graphql.ts`)
 Create a `<name>-graphql.ts` file in the module folder that imports the module schema/resolvers and calls `registerGraphqlSchema(...)`.

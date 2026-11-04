@@ -6,8 +6,8 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import { Link } from 'react-router';
 import { KeyboardArrowRight } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -19,25 +19,7 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 import { Checkbox } from '@filigran/design-system';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  bodyItem: bodyItemStyle,
-  itemIconDisabled: {
-    color: theme.palette.grey[700],
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-}));
+const BodyItem = styled('div')(bodyItemStyle);
 
 const EntitiesStixDomainObjectLineComponent = ({
   dataColumns,
@@ -50,18 +32,17 @@ const EntitiesStixDomainObjectLineComponent = ({
   onToggleShiftEntity,
   index,
 }) => {
-  const classes = useStyles();
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const link = `${resolveLink(node.entity_type)}/${node.id}`;
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       component={Link}
       to={link}
     >
       <ListItemIcon
-        classes={{ root: classes.itemIcon }}
+        sx={{ color: 'primary.main' }}
         style={{ minWidth: 40 }}
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, node, event)
@@ -75,38 +56,33 @@ const EntitiesStixDomainObjectLineComponent = ({
           }
         />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <ItemEntityType entityType={node.entity_type} />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               {getMainRepresentative(node)}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               {node.createdBy?.name ?? EMPTY_VALUE}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.creator.width }}
             >
               {(node.creators ?? []).map((c) => c?.name).join(', ')}
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <StixCoreObjectLabels
@@ -114,15 +90,13 @@ const EntitiesStixDomainObjectLineComponent = ({
                 labels={node.objectLabel}
                 onClick={onLabelClick}
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
-              {fd(node.created_at)}
-            </div>
-            <div
-              className={classes.bodyItem}
+              {ftd(node.created_at)}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <ItemMarkings
@@ -130,11 +104,11 @@ const EntitiesStixDomainObjectLineComponent = ({
                 markingDefinitions={node.objectMarking ?? []}
                 limit={1}
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRight />
       </ListItemIcon>
     </ListItemButton>
@@ -371,29 +345,27 @@ export const EntitiesStixDomainObjectLine = createFragmentContainer(
 );
 
 export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
-  const classes = useStyles();
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       divider={true}
       style={{ minWidth: 40 }}
     >
       <ListItemIcon
-        classes={{ root: classes.itemIconDisabled }}
+        sx={{ color: 'grey.700' }}
         style={{ minWidth: 40 }}
       >
         <Checkbox
           disabled={true}
         />
       </ListItemIcon>
-      <ListItemIcon classes={{ root: classes.itemIcon }}>
+      <ListItemIcon sx={{ color: 'primary.main' }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={(
           <div>
-            <div
-              className={classes.bodyItem}
+            <BodyItem
               style={{ width: dataColumns.entity_type.width }}
             >
               <Skeleton
@@ -402,9 +374,8 @@ export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.name.width }}
             >
               <Skeleton
@@ -413,9 +384,8 @@ export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.createdBy.width }}
             >
               <Skeleton
@@ -424,9 +394,8 @@ export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.creator.width }}
             >
               <Skeleton
@@ -435,9 +404,8 @@ export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectLabel.width }}
             >
               <Skeleton
@@ -446,9 +414,8 @@ export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
                 width="90%"
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.created_at.width }}
             >
               <Skeleton
@@ -457,9 +424,8 @@ export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
                 width={140}
                 height="100%"
               />
-            </div>
-            <div
-              className={classes.bodyItem}
+            </BodyItem>
+            <BodyItem
               style={{ width: dataColumns.objectMarking.width }}
             >
               <Skeleton
@@ -468,11 +434,11 @@ export const EntitiesStixDomainObjectLineDummy = ({ dataColumns }) => {
                 width={100}
                 height="100%"
               />
-            </div>
+            </BodyItem>
           </div>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRight />
       </ListItemIcon>
     </ListItem>

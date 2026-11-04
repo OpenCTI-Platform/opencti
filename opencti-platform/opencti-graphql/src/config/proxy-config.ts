@@ -1,8 +1,5 @@
 import nconf from 'nconf';
-import { booleanConf, loadCert, logApp } from './conf';
-
-// Default configuration constants
-const DEFAULT_HTTPS_PROXY_REJECT_UNAUTHORIZED = true;
+import { booleanConf, loadCert, logApp, TLS_REJECT_UNAUTHORIZED } from './conf';
 
 export type ConfigAdapter = {
   get(key: string): any;
@@ -185,17 +182,17 @@ export const getProxyConfigurationForContract = (
     config.HTTPS_CA_CERTIFICATES = caCertValue;
   }
 
-  const rejectUnauthorized = String(configAdapter.booleanConf('https_proxy_reject_unauthorized', DEFAULT_HTTPS_PROXY_REJECT_UNAUTHORIZED));
+  const rejectUnauthorized = String(configAdapter.booleanConf('https_proxy_reject_unauthorized', TLS_REJECT_UNAUTHORIZED));
   config.HTTPS_PROXY_REJECT_UNAUTHORIZED = rejectUnauthorized;
 
   proxyConfigCache.set(configAdapter, config);
   return config;
 };
 
-export const injectProxyConfiguration = (
-  existingConfig: Array<{ key: string; value: string }>,
+export const injectProxyConfiguration = <T extends { key: string }>(
+  existingConfig: Array<T>,
   configAdapter: ConfigAdapter = defaultConfigAdapter,
-): Array<{ key: string; value: string }> => {
+): Array<T | { key: string; value: string }> => {
   const proxyConfig = getProxyConfigurationForContract(configAdapter);
   const filteredConfig = existingConfig.filter(
     (item) => !['HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_CA_CERTIFICATES', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'].includes(item.key),

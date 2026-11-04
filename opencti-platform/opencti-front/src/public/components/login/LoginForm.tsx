@@ -105,10 +105,12 @@ const LoginForm = () => {
               className="mt-4"
             />
             <Stack
-              mt={3}
               direction="row"
-              alignItems="center"
-              justifyContent="space-between"
+              sx={{
+                mt: 3,
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
             >
               <Button
                 variant="tertiary"

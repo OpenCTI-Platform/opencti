@@ -7,7 +7,10 @@ import { GraphNode, GraphLink, LibGraphProps, GraphState, OctiGraphPositions } f
 import { useFormatter } from '../i18n';
 import useGraphParser, { ObjectToParse } from './utils/useGraphParser';
 import { computeTimeRangeInterval, computeTimeRangeValues, GraphTimeRange } from './utils/graphTimeRange';
-import { graphStateToLocalStorage } from './utils/graphUtils';
+import { graphStateToLocalStorage, normalizeGraphStateParams } from './utils/graphUtils';
+import { readLegendOpen, writeLegendOpen } from './utils/graphLegendPreference';
+import { readHiddenNodeIds, writeHiddenNodeIds } from './utils/graphHiddenNodes';
+import { UserContext } from '../../utils/hooks/useAuth';
 
 type Setter<T> = Dispatch<SetStateAction<T>>;
 
@@ -18,6 +21,10 @@ interface GraphContextValue {
   // --- DOM references
   graphRef2D: MutableRefObject<GraphRef2D | undefined>;
   graphRef3D: MutableRefObject<GraphRef3D | undefined>;
+  /** Element holding the canvas and the panels floating over it. */
+  viewportRef: MutableRefObject<HTMLDivElement | null>;
+  /** The toolbar docked under the graph, which can cover the bottom of the canvas. */
+  toolbarRef: MutableRefObject<HTMLDivElement | null>;
   // --- data of the graph pass as props
   graphData: LibGraphProps['graphData'];
   setGraphData: Setter<LibGraphProps['graphData']>;
@@ -31,11 +38,18 @@ interface GraphContextValue {
   setGraphState: Setter<GraphState>;
   // --- utils data derived from raw data.
   stixCoreObjectTypes: string[];
+  /** Relationship types drawn, for the legend. */
+  relationshipTypes: string[];
   markingDefinitions: { id: string; definition: string }[];
   creators: { id: string; name: string }[];
   timeRange: GraphTimeRange;
+  // --- view state never saved
+  isFullscreen: boolean;
+  setIsFullscreen: Setter<boolean>;
   // --- misc
   context?: string;
+  /** Name of what the graph shows, for the exported image. */
+  title?: string;
 }
 
 const GraphContext = createContext<GraphContextValue | undefined>(undefined);
@@ -46,22 +60,27 @@ interface GraphProviderProps {
   localStorageKey?: string;
   context?: string;
   positions?: OctiGraphPositions;
+  title?: string;
 }
 
-export const GraphProvider = ({
+const GraphStateProvider = ({
   children,
   context,
   localStorageKey,
   objects,
   positions,
+  title,
 }: GraphProviderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const { buildGraphData, buildCorrelationData } = useGraphParser();
+  const userId = useContext(UserContext).me?.id;
 
   const graphRef2D = useRef<GraphRef2D | undefined>(undefined);
   const graphRef3D = useRef<GraphRef3D | undefined>(undefined);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
 
   const DEFAULT_STATE: GraphState = {
     mode3D: false,
@@ -80,6 +99,13 @@ export const GraphProvider = ({
     selectedNodes: [],
     isAddRelationOpen: false,
     isExpandOpen: false,
+    layoutMode: null,
+    layoutCentreId: null,
+    hiddenNodeIds: [],
+    collapsedEntityTypes: [],
+    disabledRelationshipTypes: [],
+    showLegend: readLegendOpen(userId),
+    highlightedPath: null,
   };
 
   const [graphState, setGraphState] = useState<GraphState>(() => {
@@ -87,8 +113,13 @@ export const GraphProvider = ({
     const params = localStorageKey
       ? buildViewParamsFromUrlAndStorage(navigate, location, localStorageKey)
       : {};
-    return { ...DEFAULT_STATE, ...params };
+    return {
+      ...DEFAULT_STATE,
+      ...normalizeGraphStateParams(params),
+      hiddenNodeIds: localStorageKey ? readHiddenNodeIds(localStorageKey) : [],
+    };
   });
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     if (localStorageKey) {
@@ -99,11 +130,28 @@ export const GraphProvider = ({
   }, [graphState]);
 
   useEffect(() => {
-    // On selection change, reset relationship select mode.
-    setGraphState((oldState) => ({
-      ...oldState,
-      selectRelationshipMode: null,
-    }));
+    if (localStorageKey) writeHiddenNodeIds(localStorageKey, graphState.hiddenNodeIds ?? []);
+  }, [graphState.hiddenNodeIds]);
+
+  useEffect(() => {
+    writeLegendOpen(userId, graphState.showLegend !== false);
+  }, [graphState.showLegend]);
+
+  useEffect(() => {
+    // On selection change, reset relationship select mode, and the highlighted path unless both
+    // of its ends are still selected.
+    setGraphState((oldState) => {
+      const path = oldState.highlightedPath;
+      const selectedIds = oldState.selectedNodes.map((n) => n.id);
+      const keepPath = !!path && path.nodeIds.length > 0
+        && selectedIds.includes(path.nodeIds[0])
+        && selectedIds.includes(path.nodeIds[path.nodeIds.length - 1]);
+      return {
+        ...oldState,
+        selectRelationshipMode: null,
+        highlightedPath: keepPath ? path : null,
+      };
+    });
   }, [graphState.selectedNodes]);
 
   const [rawPositions, setRawPositions] = useState(positions ?? {});
@@ -153,6 +201,19 @@ export const GraphProvider = ({
       .filter((v, i, a) => a.indexOf(v) === i);
   }, [graphData?.nodes]);
 
+  // Dynamically compute all relationship types drawn, as the legend counts them: the labelled links
+  // and the nested relationships drawn as nodes, not the unlabelled connectors of nested and
+  // correlation links.
+  const relationshipTypes = useMemo(() => {
+    return [...new Set([
+      ...(graphData?.links ?? [])
+        .filter(({ label }) => !!label)
+        .map(({ relationship_type, entity_type }) => relationship_type || entity_type),
+      ...(graphData?.nodes ?? []).map(({ relationship_type }) => relationship_type),
+    ].filter((type) => !!type))]
+      .sort((a, b) => t_i18n(`relationship_${a}`).localeCompare(t_i18n(`relationship_${b}`)));
+  }, [graphData?.links, graphData?.nodes]);
+
   // Dynamically compute all marking definitions in graphData.
   const markingDefinitions = useMemo(() => {
     return [...(graphData?.nodes ?? []), ...(graphData?.links ?? [])]
@@ -172,13 +233,19 @@ export const GraphProvider = ({
   const value = useMemo<GraphContextValue>(() => ({
     graphRef2D,
     graphRef3D,
+    viewportRef,
+    toolbarRef,
     graphData,
     stixCoreObjectTypes,
+    relationshipTypes,
     markingDefinitions,
     creators,
     graphState,
     timeRange,
     context,
+    title,
+    isFullscreen,
+    setIsFullscreen,
     rawPositions,
     rawObjects,
     setRawObjects,
@@ -189,6 +256,8 @@ export const GraphProvider = ({
     graphData,
     graphState,
     rawPositions,
+    isFullscreen,
+    title,
   ]);
 
   return (
@@ -196,6 +265,16 @@ export const GraphProvider = ({
       {children}
     </GraphContext.Provider>
   );
+};
+
+/**
+ * Kept mounted from one graph to the next (a route change in place), the provider starts over with
+ * the view parameters and the hidden entities stored for the new graph: those of the previous graph
+ * are neither drawn on it nor stored under its key.
+ */
+export const GraphProvider = (props: GraphProviderProps) => {
+  const { localStorageKey } = props;
+  return <GraphStateProvider key={localStorageKey} {...props} />;
 };
 
 export const useGraphContext = () => {

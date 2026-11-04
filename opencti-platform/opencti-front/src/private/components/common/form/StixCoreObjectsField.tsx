@@ -1,6 +1,5 @@
 import React, { useState, FunctionComponent, useCallback, useRef, useMemo } from 'react';
 import * as R from 'ramda';
-import { v4 as uuidv4 } from 'uuid';
 import { Field, useFormikContext } from 'formik';
 import { graphql } from 'react-relay';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -9,7 +8,7 @@ import Popover from '@mui/material/Popover';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import IconButton from '@common/button/IconButton';
 import ItemIcon from '../../../../components/ItemIcon';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -20,10 +19,10 @@ import useAttributes from '../../../../utils/hooks/useAttributes';
 import { displayEntityTypeForTranslation } from '../../../../utils/String';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import type { Theme } from '../../../../components/Theme';
 import { FieldOption } from '../../../../utils/field';
-import { DeferredCreationContext } from '../../../../utils/hooks/useDeferredCreation';
+import { DeferredCreationContext, FORM_UNCREATABLE_TYPES, useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import { Checkbox } from '@filigran/design-system';
+import { buildPendingOptions, PendingCreationOption } from './pendingOptions';
 
 export const stixCoreObjectsFieldSearchQuery = graphql`
   query StixCoreObjectsFieldSearchQuery($search: String, $types: [String]) {
@@ -202,40 +201,21 @@ export const stixCoreObjectsFieldSearchQuery = graphql`
   }
 `;
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
-  createOption: {
-    fontStyle: 'italic',
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 const CREATE_OPTION_VALUE = '__create_new_entity__';
 
-/** Marker prefix used to identify pending-creation entities in the field value. */
-export const PENDING_ENTITY_PREFIX = '__pending__:';
-
-interface StixCoreObjectOption {
-  label: string;
-  value: string;
-  type: string;
+interface StixCoreObjectOption extends PendingCreationOption {
   isCreateOption?: boolean;
-  /** True when the entity has not yet been created – will be built in the draft bundle. */
-  isPendingCreation?: boolean;
-  /** Raw mutation input captured during deferred creation. Present only when isPendingCreation=true. */
-  pendingInputData?: { entityType: string; input: Record<string, unknown> };
 }
 
 interface StixCoreObjectsFieldProps {
@@ -249,10 +229,10 @@ interface StixCoreObjectsFieldProps {
   types?: string[] | null;
   disableCreation?: boolean;
   /**
-   * When true (and the user has draft-only permissions), entity creation on the fly
-   * is deferred: the creation form is shown but the mutation is intercepted and the
-   * entity data is stored locally. The entity is only created when the form intake is
-   * submitted (as part of the draft STIX bundle).
+   * When true, entity creation on the fly is deferred: the creation form is shown but the
+   * creation mutation is intercepted and the entity data is kept locally. The entity is only
+   * created when the form intake is submitted. A field inside a creation dialog that is already
+   * deferred defers as well, without this prop.
    */
   deferCreation?: boolean;
 }
@@ -279,7 +259,6 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   disableCreation = false,
   deferCreation = false,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: entityTypes, stixCyberObservableTypes, stixDomainObjectTypes } = useAttributes();
   const { setFieldValue, values } = useFormikContext<Record<string, unknown>>();
@@ -298,44 +277,48 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   const entityCreatedSuccessfully = React.useRef(false);
 
   /**
-   * In deferred mode, holds the raw mutation `input` captured by useApiMutation so that
-   * handleClose / handleSCOEntityCreated can build a pending-creation option from it.
+   * In deferred mode, holds the raw mutation inputs captured by useApiMutation (one per
+   * created object, a bulk creation captures one per name) so that handleClose /
+   * handleSCOEntityCreated can build the pending-creation options from them.
    */
-  const deferredCapturedRef = useRef<Record<string, unknown> | null>(null);
+  const deferredCapturedRef = useRef<Record<string, unknown>[]>([]);
 
   /**
-   * Context value provided to the SDO / SCO creation dialogs when deferCreation=true.
-   * useApiMutation will call captureInput() instead of dispatching the real mutation.
+   * Context value provided to the SDO / SCO creation dialogs when the creation is deferred.
+   * useApiMutation will call captureInput() instead of dispatching the real mutation;
+   * the pending store of the enclosing form (labels, external references) is kept.
    */
+  const parentDeferredContext = useDeferredCreation();
+  // A field inside a creation dialog of a form (e.g. the entities of an observed data) defers as well
+  const isDeferred = deferCreation || parentDeferredContext.isDeferredMode;
   const deferredContextValue = useMemo(() => ({
-    isDeferredMode: deferCreation,
+    ...parentDeferredContext,
+    isDeferredMode: isDeferred,
     captureInput: (input: Record<string, unknown>) => {
-      deferredCapturedRef.current = input;
+      deferredCapturedRef.current.push(input);
     },
-  }), [deferCreation]);
+  }), [isDeferred, parentDeferredContext]);
 
   /**
-   * Build a pending-creation option from captured deferred input data.
-   * Falls back to currentSearchTerm when the input does not carry a `name`.
-   *
-   * For SDO mutations, capturedInput.name is the entity name.
-   * For SCO mutations, capturedInput has no `name`; we use currentSearchTerm
-   * (the value typed by the user, e.g. an IP address) as the display label.
+   * Turns the inputs captured in deferred mode into pending-creation options, selects them
+   * in the field and returns whether there were any.
    */
-  const buildPendingOption = useCallback((capturedInput: Record<string, unknown>): StixCoreObjectOption => {
-    const entityName = (capturedInput.name as string | undefined) || currentSearchTerm || 'New Entity';
-    const pendingId = `${PENDING_ENTITY_PREFIX}${uuidv4()}`;
-    return {
-      label: entityName,
-      value: pendingId,
-      type: createEntityType || '',
-      isPendingCreation: true,
-      pendingInputData: {
-        entityType: createEntityType || '',
-        input: capturedInput,
-      },
-    };
-  }, [createEntityType, currentSearchTerm]);
+  const applyDeferredCapture = useCallback(() => {
+    const capturedInputs = deferredCapturedRef.current;
+    if (!isDeferred || capturedInputs.length === 0) return false;
+    const newOptions = buildPendingOptions(capturedInputs, createEntityType, currentSearchTerm);
+    setStixCoreObjects((prev) => [...newOptions, ...prev.filter((o) => !o.isCreateOption)]);
+    const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
+    if (multiple) {
+      setFieldValue(name, [...(Array.isArray(currentValue) ? currentValue : []), ...newOptions]);
+    } else {
+      setFieldValue(name, newOptions[newOptions.length - 1]);
+    }
+    deferredCapturedRef.current = [];
+    // A creation dialog may close more than once (resetForm calls onReset, then onCompleted): the next close must keep the selection
+    entityCreatedSuccessfully.current = true;
+    return true;
+  }, [isDeferred, createEntityType, currentSearchTerm, values, name, multiple, setFieldValue]);
 
   const handleOpenSearchScope = (event: React.MouseEvent<HTMLElement>) => setAnchorElSearchScope(event.currentTarget);
   const handleCloseSearchScope = () => setAnchorElSearchScope(null);
@@ -361,13 +344,16 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
     return types ?? searchScope[name] ?? [];
   }, [types, searchScope, name]);
 
+  // Whether at least one of the target types can be created here (a form cannot create every type)
+  const fieldTargetTypes = getTargetTypes();
+  const hasCreatableType = fieldTargetTypes.length === 0
+    || fieldTargetTypes.some((t) => (isDomainObjectType(t) || isObservableType(t)) && !(isDeferred && FORM_UNCREATABLE_TYPES.includes(t)));
+
   const shouldShowCreateOption = useCallback((resultsCount: number) => {
     if (disabled || disableCreation) return false;
     if (resultsCount >= 10) return false;
-    const targetTypes = getTargetTypes();
-    if (targetTypes.length === 0) return true;
-    return targetTypes.some((t) => isDomainObjectType(t) || isObservableType(t));
-  }, [disabled, disableCreation, getTargetTypes, isDomainObjectType, isObservableType]);
+    return hasCreatableType;
+  }, [disabled, disableCreation, hasCreatableType]);
 
   const getCreationType = useCallback(() => {
     const targetTypes = getTargetTypes();
@@ -475,18 +461,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
 
   const handleSCOEntityCreated = useCallback((createdObservable?: CreatedEntity | null) => {
     // --- Deferred creation path ---
-    const capturedInput = deferredCapturedRef.current;
-    if (deferCreation && capturedInput) {
-      const newOption = buildPendingOption(capturedInput);
-      setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
-      const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
-      if (multiple) {
-        setFieldValue(name, [...(Array.isArray(currentValue) ? currentValue : []), newOption]);
-      } else {
-        setFieldValue(name, newOption);
-      }
-      deferredCapturedRef.current = null;
-      entityCreatedSuccessfully.current = true;
+    if (applyDeferredCapture()) {
       setOpenSCOCreation(false);
       setCreateEntityType(null);
       setValueBeforeCreate(null);
@@ -554,7 +529,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           setStixCoreObjects(finalResults);
         });
     }
-  }, [buildPendingOption, currentSearchTerm, deferCreation, getCreationType, multiple, name, searchScope, setFieldValue, shouldShowCreateOption, t_i18n, types, values]);
+  }, [applyDeferredCapture, currentSearchTerm, getCreationType, multiple, name, searchScope, setFieldValue, shouldShowCreateOption, t_i18n, types, values]);
 
   const searchStixCoreObjects = useCallback((event: React.SyntheticEvent | null, newInputValue?: string, reason?: string) => {
     const searchValue = newInputValue ?? '';
@@ -653,7 +628,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
         }}
         endAdornment={(
           <InputAdornment position="end" style={{ position: 'absolute', right: 8 }}>
-            {!disableCreation && (
+            {!disableCreation && hasCreatableType && (
               <IconButton onClick={handleOpenCreation} size="small" disabled={disabled} title={t_i18n('Create')} aria-label={t_i18n('Create')}>
                 <Add fontSize="small" color="primary" />
               </IconButton>
@@ -706,26 +681,25 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           if (option.isCreateOption) {
             return (
               <li {...innerProps} key={option.value}>
-                <div className={classes.icon}>
+                <OptionIcon>
                   <ItemIcon type="Add" />
-                </div>
-                <div className={`${classes.text} ${classes.createOption}`}>
+                </OptionIcon>
+                <OptionText sx={{ fontStyle: 'italic' }}>
                   {option.label}
-                </div>
+                </OptionText>
               </li>
             );
           }
           return (
             <li {...innerProps} key={option.value}>
-              <div className={classes.icon}>
+              <OptionIcon>
                 <ItemIcon type={option.type} />
-              </div>
-              <div className={classes.text}>{option.label}</div>
+              </OptionIcon>
+              <OptionText>{option.label}</OptionText>
             </li>
           );
         }}
         isOptionEqualToValue={(option: StixCoreObjectOption, value: FieldOption) => option.value === value.value}
-        classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
 
       <DeferredCreationContext.Provider value={deferredContextValue}>
@@ -734,17 +708,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           open={openSDOCreation}
           handleClose={() => {
             // Deferred path: mutation was intercepted, input was captured
-            const capturedInput = deferredCapturedRef.current;
-            if (deferCreation && capturedInput) {
-              const newOption = buildPendingOption(capturedInput);
-              setStixCoreObjects((prev) => [newOption, ...prev.filter((o) => !o.isCreateOption)]);
-              const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
-              if (multiple) {
-                setFieldValue(name, [...(Array.isArray(currentValue) ? currentValue : []), newOption]);
-              } else {
-                setFieldValue(name, newOption);
-              }
-              deferredCapturedRef.current = null;
+            if (applyDeferredCapture()) {
               setOpenSDOCreation(false);
               setCreateEntityType(null);
               setValueBeforeCreate(null);

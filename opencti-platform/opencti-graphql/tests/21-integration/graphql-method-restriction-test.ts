@@ -1,16 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import axios from 'axios';
 import { API_URI } from '../utils/testQuery';
 
 describe('GraphQL HTTP method restriction integration', () => {
   it('should reject standard GET GraphQL requests with 405 and Allow: POST', async () => {
-    const response = await axios.get(`${API_URI}/graphql`, {
-      params: { query: '{ __typename }' },
-      validateStatus: () => true,
-    });
+    const response = await fetch(`${API_URI}/graphql?${new URLSearchParams({ query: '{ __typename }' })}`);
 
     expect(response.status).toBe(405);
-    expect(response.headers.allow?.split(',').map((m: any) => m.trim())).toContain('POST');
-    expect(response.data?.name).toBe('MethodNotAllowedError');
+    expect(response.headers.get('allow')?.split(',').map((m) => m.trim())).toContain('POST');
+    expect((await response.json() as { name?: string }).name).toBe('MethodNotAllowedError');
   });
 });

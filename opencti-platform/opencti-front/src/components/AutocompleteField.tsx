@@ -1,7 +1,7 @@
 import React, { ReactNode, useCallback } from 'react';
 import IconButton from '@common/button/IconButton';
 import { Add } from '@mui/icons-material';
-import { Autocomplete, AutocompleteProps, AutocompleteValue, TextField, TextFieldProps } from '@mui/material';
+import { Autocomplete, AutocompleteProps, AutocompleteRenderValue, AutocompleteRenderValueGetItemProps, AutocompleteValue, TextField, TextFieldProps } from '@mui/material';
 import { FieldProps, useField } from 'formik';
 import { FieldOption } from '../utils/field';
 import { truncate } from '../utils/String';
@@ -58,7 +58,7 @@ const AutocompleteField = <
     getOptionLabel,
     endAdornment,
     disabled,
-    renderTags,
+    renderValue,
   } = muiProps;
 
   const [, meta] = useField(name);
@@ -81,7 +81,7 @@ const AutocompleteField = <
     setFieldTouched(name, true);
   }, [setFieldTouched]);
 
-  const defaultOptionToValue = (option: Value, value: Value) => {
+  const defaultOptionToValue = (option: Value, value: Value | string) => {
     const optionVal = typeof option === 'object' ? option.value : option;
     const valueVal = typeof value === 'object' ? value.value : value;
     return optionVal === valueVal;
@@ -93,12 +93,15 @@ const AutocompleteField = <
       : truncate(option, optionLength);
   };
 
-  const defaultRenderTags: MuiProps['renderTags'] = (values, getTagProps) => (
+  const defaultRenderValue = (
+    values: AutocompleteRenderValue<Value, true, FSolo>,
+    getItemProps: AutocompleteRenderValueGetItemProps<true>,
+  ) => (
     values.map((option, index) => {
       const { label, value, color } = getOptionData(option);
       return (
         <Tag
-          {...getTagProps({ index })}
+          {...getItemProps({ index })}
           // a chip row inside a select field is ONE tab stop; the delete
           // buttons must not each add another
           deleteTabIndex={-1}
@@ -111,7 +114,7 @@ const AutocompleteField = <
     })
   );
 
-  const getOptionData = (option: Value) => {
+  const getOptionData = (option: Value | string) => {
     return typeof option === 'object' && option !== null
       ? { label: option.label, value: option.value, color: option.color }
       : { label: String(option), value: String(option), color: undefined };
@@ -121,14 +124,16 @@ const AutocompleteField = <
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
   const fieldProps = fieldToAutocomplete({
     ...muiProps,
-    renderInput: ({ inputProps: { value, ...inputProps }, InputProps, ...params }) => (
+    renderInput: ({ slotProps: { htmlInput: { value, ...htmlInput }, input, inputLabel }, ...params }) => (
       <TextField
-        {...{ ...params, inputProps }}
+        {...params}
         {...textfieldprops}
         slotProps={{
+          inputLabel,
+          htmlInput,
           input: {
-            ...InputProps,
-            endAdornment: endAdornment ?? InputProps.endAdornment,
+            ...input,
+            endAdornment: endAdornment ?? input.endAdornment,
           },
         }}
         value={value}
@@ -159,7 +164,8 @@ const AutocompleteField = <
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}
-        renderTags={renderTags ?? defaultRenderTags}
+        // Chips only for a multiple value: a single value set here would render as a chip too.
+        renderValue={renderValue ?? (fieldProps.multiple ? defaultRenderValue as MuiProps['renderValue'] : undefined)}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}

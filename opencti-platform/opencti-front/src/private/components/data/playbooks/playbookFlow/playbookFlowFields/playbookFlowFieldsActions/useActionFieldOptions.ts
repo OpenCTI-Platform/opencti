@@ -16,8 +16,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { useFormatter } from '../../../../../../../components/i18n';
 import { FieldOption } from '../../../../../../../utils/field';
 import { PlaybookUpdateAction } from './playbookAction-types';
+import type { CustomFieldDefinition } from '../../../../../common/custom_fields/useCustomFieldDefinitions';
 
-const useActionFieldOptions = () => {
+const useActionFieldOptions = (customFieldDefinitions: CustomFieldDefinition[] = []) => {
   const { t_i18n } = useFormatter();
 
   return (action: PlaybookUpdateAction) => {
@@ -59,6 +60,12 @@ const useActionFieldOptions = () => {
         { label: t_i18n('Indicator types'), value: 'indicator_types' },
         { label: t_i18n('Platforms'), value: 'x_mitre_platforms' },
       ];
+    }
+    // As other attributes, a single value custom field is set by replace, a multi_select also accepts add
+    if (action.op === 'replace' || action.op === 'remove') {
+      fieldOptions = [...fieldOptions, ...customFieldDefinitions.map((d) => ({ label: d.label, value: d.name }))];
+    } else if (action.op === 'add') {
+      fieldOptions = [...fieldOptions, ...customFieldDefinitions.filter((d) => d.field_type === 'multi_select').map((d) => ({ label: d.label, value: d.name }))];
     }
     return fieldOptions;
   };

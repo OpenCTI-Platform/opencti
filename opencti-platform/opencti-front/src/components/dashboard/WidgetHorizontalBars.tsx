@@ -1,6 +1,6 @@
 import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router';
 import { ApexOptions } from 'apexcharts';
 import { horizontalBarsChartOptions } from '../../utils/Charts';

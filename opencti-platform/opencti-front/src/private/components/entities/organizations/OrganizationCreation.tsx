@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -146,6 +149,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     const allNames = splitMultilines(values.name);
     const variables: OrganizationCreationMutation$variables[] = allNames.map((name) => ({
       input: {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
@@ -194,6 +198,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
 
   return (
     <Formik<OrganizationAddInput>
+      entityType={ORGANIZATION_TYPE}
       initialValues={initialValues}
       validationSchema={organizationValidator}
       validateOnChange={false}
@@ -327,6 +332,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
                 : undefined
               }
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

@@ -1,6 +1,7 @@
 import Button from 'src/components/common/button/Button';
 import { Box } from '@mui/material';
 import { Field } from 'formik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
 import TextField from 'src/components/TextField';
 import MarkdownField, { MarkdownImagesController } from 'src/components/fields/markdownField/MarkdownField';
 import PeriodicityField from 'src/components/fields/PeriodicityField';
@@ -8,7 +9,7 @@ import SwitchField from 'src/components/fields/SwitchField';
 import FormButtonContainer from 'src/components/common/form/FormButtonContainer';
 import { useFormatter } from 'src/components/i18n';
 import { SecurityCoverageFormValues, SecurityCoverageMode } from './SecurityCoverageCreation-types';
-import { CoverageInformationFieldAdd } from 'src/private/components/common/form/CoverageInformationField';
+import CoverageInformationField from '../../../common/form/CoverageInformationField';
 import CreatedByField from 'src/private/components/common/form/CreatedByField';
 import ObjectLabelField from 'src/private/components/common/form/ObjectLabelField';
 import ObjectMarkingField from 'src/private/components/common/form/ObjectMarkingField';
@@ -103,10 +104,9 @@ const CoverageDetailsStep = ({
       />
       {mode === SecurityCoverageMode.MANUAL && (
         <>
-          <CoverageInformationFieldAdd
+          <Field
+            component={CoverageInformationField}
             name="coverage_information"
-            values={values.coverage_information}
-            setFieldValue={setFieldValue}
           />
           <Field
             component={TextField}
@@ -134,6 +134,7 @@ const CoverageDetailsStep = ({
         style={fieldSpacingContainerStyle}
         setFieldValue={setFieldValue}
       />
+      <CustomFieldValuesCreation />
       <FormButtonContainer>
         <Button
           variant="secondary"

@@ -21,13 +21,13 @@ const SettingsOrganizationDetails: FunctionComponent<
   return (
     <Card title={t_i18n('Basic information')}>
       <Grid container={true} spacing={2}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Label>
             {t_i18n('Description')}
           </Label>
           <ExpandableMarkdown source={organization.description} limit={400} />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Label>
             {t_i18n('Organization type')}
           </Label>

@@ -18,6 +18,7 @@ import React, { useState } from 'react';
 import type { Theme } from '../../../../../components/Theme';
 import { itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
+import { onActivationKey } from '../../../../../utils/domEvent';
 
 interface PirThreatMapLegendProps {
   entityTypes: string[];
@@ -56,6 +57,11 @@ const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) 
           }}
           key={type}
           onClick={() => toggleType(type)}
+          role="button"
+          tabIndex={0}
+          // Opacity alone shows whether the type is on the map: expose it too
+          aria-pressed={!disabledTypes.includes(type)}
+          onKeyDown={onActivationKey(() => toggleType(type))}
         >
           <div
             style={{

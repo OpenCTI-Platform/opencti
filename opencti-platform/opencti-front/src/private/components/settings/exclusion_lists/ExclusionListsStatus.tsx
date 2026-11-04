@@ -60,7 +60,7 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={4}>
+      <Grid size={4}>
         <Card title={t_i18n('Status')} sx={statusSx}>
           <ItemBoolean
             neutralLabel="In progress"
@@ -76,7 +76,7 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
           )}
         </Card>
       </Grid>
-      <Grid item xs={4}>
+      <Grid size={4}>
         <Card
           title={t_i18n('Last modification date')}
           sx={statusSx}
@@ -85,7 +85,7 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
           <UpdateOutlined color="primary" style={{ fontSize: 40 }} />
         </Card>
       </Grid>
-      <Grid item xs={4}>
+      <Grid size={4}>
         <Card
           title={t_i18n('Current cache version date')}
           sx={statusSx}

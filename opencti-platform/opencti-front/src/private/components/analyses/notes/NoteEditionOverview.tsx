@@ -20,6 +20,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
 import SliderField from '../../../../components/fields/SliderField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 
@@ -280,6 +281,12 @@ const NoteEditionOverviewComponent: FunctionComponent<NoteEditionOverviewProps> 
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={note.entity_type}
+            entityId={note.id}
+            values={note.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+          />
         </Form>
       )}
     </Formik>
@@ -292,6 +299,7 @@ const NoteEditionOverview = createFragmentContainer(
     note: graphql`
       fragment NoteEditionOverview_note on Note {
         id
+        ...CustomFieldValuesEdition_values @relay(mask: false)
         created
         attribute_abstract
         entity_type

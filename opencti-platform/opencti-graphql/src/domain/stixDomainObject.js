@@ -38,7 +38,6 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE } from '../schema/stixRef
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
-import { validateCustomFieldValues } from '../modules/customField/custom-field-validator';
 import { checkScore, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -51,7 +50,7 @@ import { isUserHasCapability, SETTINGS_SET_ACCESSES, validateMarking } from '../
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
-import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
+import { paginatedForExportContext, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
@@ -175,6 +174,10 @@ export const getFintelTemplates = async (context, user, stixDomainObject) => {
 };
 
 // region export
+export const stixDomainObjectsExportFiles = async (context, user, exportContext, { first }) => {
+  return paginatedForExportContext(context, user, exportContext, { first });
+};
+
 export const stixDomainObjectsExportAsk = async (context, user, args) => {
   const { exportContext, format, exportType, contentMaxMarkings, selectedIds, fileMarkings } = args;
   const { search, orderBy, orderMode, filters } = args;
@@ -332,11 +335,6 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   const createdByKey = input.find((inputData) => inputData.key === INPUT_CREATED_BY);
   if (createdByKey && createdByKey.value?.length > 0) {
     await validateCreatedBy(context, user, createdByKey.value[0]);
-  }
-  // Validate custom field values against their definitions (mandatory / min-max / select options)
-  const customFieldValuesInput = input.find((inputData) => inputData.key === 'custom_field_values');
-  if (customFieldValuesInput) {
-    await validateCustomFieldValues(context, user, customFieldValuesInput.value ?? [], stixDomainObject.entity_type);
   }
   // Start the element edition
   const { element: updatedElem } = await updateAttribute(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);

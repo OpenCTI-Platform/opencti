@@ -54,7 +54,14 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
           cursor: canCreate ? 'pointer' : undefined,
         }}
       >
-        <Stack direction="row" gap={1.5} alignItems="flex-start" sx={{ width: '100%' }}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1.5,
+            alignItems: 'flex-start',
+            width: '100%',
+          }}
+        >
           <Box
             sx={{
               height: 56,
@@ -136,9 +143,12 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
                 (configuration import) must not bubble up to it. */}
             <Stack
               direction="row"
-              alignItems="center"
               onClick={(event) => event.stopPropagation()}
-              sx={{ marginLeft: 'auto', flexShrink: 0 }}
+              sx={{
+                alignItems: 'center',
+                marginLeft: 'auto',
+                flexShrink: 0,
+              }}
             >
               {isImportableBuiltInKind(definition.kind) && (
                 <>

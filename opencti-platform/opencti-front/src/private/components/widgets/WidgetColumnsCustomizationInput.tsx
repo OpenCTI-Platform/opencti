@@ -3,7 +3,7 @@ import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import { AccordionDetails, Box, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material';
 import { Checkbox, IconButton } from '@filigran/design-system';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import type { Theme } from 'src/components/Theme';
 import { useFormatter } from 'src/components/i18n';
@@ -16,6 +16,7 @@ type WidgetConfigColumnsCustomizationProps = {
   defaultColumns: WidgetColumn[];
   value?: WidgetColumn[];
   onChange: (columns: WidgetColumn[]) => void;
+  isAvailableColumnsLoading?: boolean;
 };
 
 const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCustomizationProps> = ({
@@ -23,6 +24,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
   defaultColumns,
   value = [],
   onChange,
+  isAvailableColumnsLoading = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -31,6 +33,7 @@ const WidgetColumnsCustomizationInput: FunctionComponent<WidgetConfigColumnsCust
     availableColumns,
     value,
     onChange,
+    isAvailableColumnsLoading,
   );
 
   return (

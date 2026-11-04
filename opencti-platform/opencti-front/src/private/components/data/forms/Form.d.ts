@@ -66,6 +66,25 @@ export interface FormFieldAttribute {
   isReadOnly?: boolean; // Whether this field is read-only (not editable by user)
 }
 
+export interface EntitySettings {
+  edges: ReadonlyArray<{
+    node: {
+      id?: string;
+      target_type: string;
+      mandatoryAttributes?: ReadonlyArray<string>;
+      attributesDefinitions?: ReadonlyArray<{
+        type: string;
+        name: string;
+        label?: string | null;
+        mandatory: boolean;
+        multiple?: boolean | null;
+        upsert?: boolean;
+        defaultValues?: ReadonlyArray<{ id: string; name: string }> | null;
+      }>;
+    };
+  }>;
+}
+
 export interface AdditionalEntity {
   id: string;
   entityType: string; // Entity type

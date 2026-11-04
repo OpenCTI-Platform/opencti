@@ -77,6 +77,14 @@ For instance:
 ```
 Will be accessible with the following link: `#my-super-section` (all lowercase, spaces replaced by dashes, and special characters removed).
 
+#### Images
+
+Add images next to the pages (e.g. in `usage/assets/`) and link them relatively, as usual.
+
+When the documentation is built, the images used by pages are not copied into each version: they are renamed after their
+content hash (e.g. `audit-3f9a1c2b7e.png`) and stored once at https://docs.opencti.io/shared-assets/, shared by all
+versions (see `hooks/shared_assets.py`). An updated image gets a new name, so older versions keep showing the previous one.
+
 #### Documentation page not accessible from the sidebar
 
 Make sure to add new documentation pages in the `mkdocs.yml` file under the `nav` section.
@@ -94,12 +102,17 @@ List existing versions with:
 mike list
 ```
 
+Deploy **without** `mike deploy --push`, then publish the shared images with `scripts/publish_shared_assets.py --push`,
+which pushes the version and its images together. With `mike deploy --push` alone, the version would go live with
+missing images.
+
 ### Deploy and update the current version
 
 With the right version number (eg. 5.7.X):
 
 ```sh
-mike deploy --push [version]
+mike deploy [version]
+python scripts/publish_shared_assets.py --push
 ```
 
 ### Deploy a new stable version
@@ -107,5 +120,59 @@ mike deploy --push [version]
 With the right version number (eg. 5.7.X), update the `latest` tag:
 
 ```sh
-mike deploy --push --update-aliases [version] latest
+mike deploy --update-aliases [version] latest
+python scripts/publish_shared_assets.py --push
+```
+
+### Use a feature flag on existing documentation page
+
+#### On existing page with a part that should not be published yet
+
+On the top of markdown page, enable macro and then use `flag` macro
+
+```
+---
+render_macros: true
+---
+
+# Here normal md title
+
+{%- if flag("MY_FEATURE_FLAG") %}
+Here is all documentation under feature flag.
+Will not be published.
+{%- endif %}
+
+```
+
+> [!WARNING]
+> With `render_macros: true`, the **whole page** is processed by Jinja, code blocks included: any `{{`, `{%` or `{#` breaks the build (`on_undefined: strict`).
+> Wrap such content in `{% raw %}` … `{% endraw %}`. 
+To render locally with your feature flag:
+
+```sh
+export APP__ENABLED_DEV_FEATURES='["MY_FEATURE_FLAG"]'
+mkdocs build
+mkdocs serve
+# unset APP__ENABLED_DEV_FEATURES // to remove it
+```
+
+#### For full new pages that should not be published yet
+
+You can use the `feature-flags`, all documentation inside is excluded from the publication.
+See also `/docs/feature-flags/feature_under_ff_doc_example.md`
+
+```sh
+mkdocs build
+mkdocs serve
+```
+
+And then open the page with direct URL such as `http://127.0.0.1:8000/feature-flags/feature_under_ff_doc_example/`.
+The URL should be displayed in the `mkdocs serve` logs.
+
+
+If you want to see the published site only:
+
+```sh
+mkdocs build
+mkdocs serve --clean
 ```

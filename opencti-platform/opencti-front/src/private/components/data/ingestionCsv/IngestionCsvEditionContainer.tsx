@@ -1,6 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import IngestionCsvEdition from '@components/data/ingestionCsv/IngestionCsvEdition';
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -35,7 +35,6 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
   return (
     <Drawer
       title={t_i18n('Update a CSV Feed')}
-      variant={open == null ? DrawerVariant.update : undefined}
       onClose={handleClose}
       open={open}
     >

@@ -44,7 +44,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
   };
   return (
     <Grid container={true} spacing={2}>
-      <Grid item xs={6}>
+      <Grid size={6}>
         <Card title={t_i18n('Visibility')}>
           <EntitySettingVisibility
             entitySetting={entitySetting}
@@ -52,7 +52,7 @@ const EntitySettingSettings = ({ entitySettingsData }: EntitySettingSettingsProp
           />
         </Card>
       </Grid>
-      <Grid item xs={6}>
+      <Grid size={6}>
         <Card title={t_i18n('References')}>
           <EntitySettingReferences
             entitySetting={entitySetting}

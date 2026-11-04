@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pushAll, unshiftAll } from '../../../src/utils/arrayUtil';
+import { asArray, pushAll, unshiftAll } from '../../../src/utils/arrayUtil';
 
 describe('Array utilities: pushAll', () => {
   it('should push all elements from a normal array', () => {
@@ -203,5 +203,35 @@ describe('Array utilities: unshiftAll', () => {
     expect(target[1]).toBe(obj2);
     expect(target[2]).toBe(obj3);
     expect(result).toEqual(3);
+  });
+});
+
+describe('Array utilities: asArray', () => {
+  it('should return an array unchanged', () => {
+    const value = [1, 2];
+    expect(asArray(value)).toBe(value);
+  });
+
+  it('should wrap a single value', () => {
+    expect(asArray('a')).toEqual(['a']);
+    expect(asArray({ id: 1 })).toEqual([{ id: 1 }]);
+  });
+
+  it('should return an empty array for null and undefined', () => {
+    expect(asArray(null)).toEqual([]);
+    expect(asArray(undefined)).toEqual([]);
+    expect(asArray(null, { falsyAsEmpty: true })).toEqual([]);
+  });
+
+  it('should keep falsy values by default', () => {
+    expect(asArray('')).toEqual(['']);
+    expect(asArray(0)).toEqual([0]);
+    expect(asArray(false)).toEqual([false]);
+  });
+
+  it('should return an empty array for falsy values with falsyAsEmpty', () => {
+    expect(asArray('', { falsyAsEmpty: true })).toEqual([]);
+    expect(asArray(0, { falsyAsEmpty: true })).toEqual([]);
+    expect(asArray(false, { falsyAsEmpty: true })).toEqual([]);
   });
 });

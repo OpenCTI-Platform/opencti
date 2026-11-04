@@ -128,7 +128,7 @@ const IpWhitelistSettingsContent = () => {
   return (
     <>
       <Grid container spacing={3} style={{ marginBottom: 20 }}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Card title={t_i18n('IP access allow list')}>
             <Formik
               onSubmit={() => {}}

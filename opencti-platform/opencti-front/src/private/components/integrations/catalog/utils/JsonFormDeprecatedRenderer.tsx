@@ -82,7 +82,13 @@ export const JsonFormDeprecatedRenderer = (props: ControlProps) => {
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Stack direction="row" alignItems="center" spacing={1}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: 'center',
+        }}
+      >
         <Typography component="label" variant="subtitle2" sx={{ fontSize: '11px' }}>
           {label}
         </Typography>

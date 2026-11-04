@@ -4,8 +4,6 @@ import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import Label from '../../../../components/common/label/Label';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
 const HiddenTypesChipList = ({
   hiddenTypes = [],
 }: {

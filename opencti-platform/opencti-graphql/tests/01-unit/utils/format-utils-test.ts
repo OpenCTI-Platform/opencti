@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { buildPeriodFromDates, checkScore, computeRangeIntersection } from '../../../src/utils/format';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { buildPeriodFromDates, checkScore, computeRangeIntersection, durationInMs, sinceNowInMs } from '../../../src/utils/format';
 
 describe('computeRangeIntersection tests', () => {
   it('should return the overlapping window when the two ranges intersect', () => {
@@ -94,5 +94,38 @@ describe('computeRangeIntersection period semantics', () => {
       buildPeriodFromDates(day(2), day(2)),
       buildPeriodFromDates(null, null),
     )).toEqual({ start: day(2), end: day(2) });
+  });
+});
+
+describe('durationInMs tests', () => {
+  it('should return the milliseconds elapsed from the first date to the second', () => {
+    expect(durationInMs('2026-10-13T12:00:00.000Z', '2026-10-13T12:05:00.000Z')).toEqual(5 * 60 * 1000);
+  });
+
+  it('should be negative when the first date is after the second', () => {
+    expect(durationInMs('2026-10-13T12:00:10.000Z', '2026-10-13T12:00:00.000Z')).toEqual(-10_000);
+  });
+
+  it('should compare instants whatever their timezone', () => {
+    expect(durationInMs('2026-10-13T14:00:00.000+02:00', '2026-10-13T12:00:00.000Z')).toEqual(0);
+  });
+});
+
+describe('sinceNowInMs tests', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-13T12:00:00.000Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should return the milliseconds elapsed since the date', () => {
+    expect(sinceNowInMs('2026-10-13T11:58:30.000Z')).toEqual(90_000);
+  });
+
+  it('should be negative for a date in the future', () => {
+    expect(sinceNowInMs('2026-10-13T12:00:10.000Z')).toEqual(-10_000);
   });
 });

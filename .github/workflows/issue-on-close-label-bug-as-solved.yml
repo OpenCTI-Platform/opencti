@@ -5,7 +5,7 @@ on:
 
 jobs:
   label-bug-as-solved:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     if: github.event.issue.state_reason == 'completed'
     permissions:
       issues: write

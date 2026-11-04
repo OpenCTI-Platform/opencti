@@ -124,6 +124,8 @@ You can also export individual widgets from a Custom View using the **Export wid
 3. Upload the `.json` file previously exported from another instance.
 4. The view is created in a **disabled** state. Review the configuration and enable it when ready.
 
+You can also select custom views from the XTM Hub by clicking the **Import from Hub** button. This button is only displayed when the platform can reach the XTM Hub.
+
 !!! warning
     Imported views are always created as **disabled** and **non-default**. You must explicitly enable them after reviewing the configuration.
 

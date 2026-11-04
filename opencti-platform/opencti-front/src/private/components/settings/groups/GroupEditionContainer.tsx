@@ -128,7 +128,6 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
       context={editContext}
       onClose={handleClose}
       open={open}
-      disabled={disabled}
       controlledDial={UpdateGroupControlledDial}
     >
       <Box sx={{
@@ -138,7 +137,6 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
         minHeight: 0,
         overflowY: 'auto',
         overflowX: 'hidden',
-        scrollbarWidth: 'none',
       }}
       >
         {/* The fill context exists only for Members, whose list must scroll inside

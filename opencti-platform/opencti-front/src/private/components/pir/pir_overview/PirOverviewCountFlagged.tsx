@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { PirOverviewCountFlaggedFragment$key } from './__generated__/PirOverviewCountFlaggedFragment.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import PirRelationshipsMultiAreaChart from '../PirRelationshipsMultiAreaChart';

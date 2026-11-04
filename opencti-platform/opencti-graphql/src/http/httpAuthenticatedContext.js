@@ -1,6 +1,14 @@
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { authenticateUserFromRequest, userWithOrigin, batchCreator, batchCreators, batchRolesForUsers, batchUserEffectiveConfidenceLevel, batchUserTokens } from '../domain/user';
+import {
+  authenticateUserFromRequest,
+  userWithOrigin,
+  batchCreator,
+  batchCreators,
+  batchRolesForUsers,
+  batchUserEffectiveConfidenceLevel,
+  batchUserTokens,
+} from '../modules/user/user-domain';
 import { isNotEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
 import { batchLoader } from '../database/middleware';
@@ -15,6 +23,7 @@ import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_US
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
 import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
+import { computeConnectorsUpdateStatus } from '../modules/connector/connector-domain';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -39,6 +48,7 @@ export const computeLoaders = (executeContext, user) => {
     isSubAttachPatternBatchLoader: batchLoader(batchIsSubAttackPattern, executeContext, user),
     subAttackPatternsBatchLoader: batchLoader(batchSubAttackPatterns, executeContext, user),
     coursesOfActionBatchLoader: batchLoader(batchCoursesOfAction, executeContext, user),
+    connectorUpdateStatusBatchLoader: batchLoader(computeConnectorsUpdateStatus, executeContext, user),
   };
 };
 
@@ -100,6 +110,8 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
       if (!Object.keys(req.headers).some((k) => k === 'opencti-draft-id')) {
         executeContext.draft_context = user.draft_context;
       }
+      // The origin of the context user is rebuilt, keep who really authenticated when an applicant is impersonated
+      executeContext.real_authentication_id = user.origin?.real_authentication_id;
       executeContext.user = userWithOrigin(req, user);
       // If full sync needs to be done : used only by bypass user (worker)
       executeContext.synchronizedUpsert = user.origin?.synchronized_upsert === true || (req.headers['synchronized-upsert'] === 'true' && isBypassUser(user));

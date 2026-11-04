@@ -1,7 +1,7 @@
 import { Drawer, SxProps, Toolbar } from '@mui/material';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { graphql, useFragment } from 'react-relay';
 import { useFintelTemplateContext } from '@components/settings/sub_types/fintel_templates/FintelTemplateContext';
 import { useParams } from 'react-router';

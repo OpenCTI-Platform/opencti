@@ -19,7 +19,7 @@ const renderSettings = (props: Partial<React.ComponentProps<typeof NewsFeedSetti
 };
 
 /** The global switch is always the first one, per type switches follow in order. */
-const getSwitches = () => screen.getAllByRole('checkbox');
+const getSwitches = () => screen.getAllByRole('switch');
 
 describe('NewsFeedSettings', () => {
   it('renders the global toggle', () => {

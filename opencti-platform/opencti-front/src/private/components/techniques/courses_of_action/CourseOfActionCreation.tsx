@@ -4,7 +4,10 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import CustomFileUploader from '@components/common/files/CustomFileUploader';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { CoursesOfActionLinesPaginationQuery$variables } from '@components/techniques/__generated__/CoursesOfActionLinesPaginationQuery.graphql';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -113,6 +116,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
     },
   ) => {
     const input: CourseOfActionCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
@@ -162,6 +166,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
 
   return (
     <Formik<CourseOfActionAddInput>
+      entityType={COURSE_OF_ACTION_TYPE}
       initialValues={initialValues}
       validationSchema={courseOfActionValidator}
       validateOnChange={true}
@@ -229,6 +234,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           <FormButtonContainer>
             <Button
               variant="secondary"

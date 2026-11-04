@@ -2,7 +2,7 @@ import React, { FunctionComponent, useEffect } from 'react';
 import * as R from 'ramda';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import type { PreloadedQuery } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Chart from '../../common/charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
 import { radarChartOptions } from '../../../../utils/Charts';

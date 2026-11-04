@@ -6,6 +6,7 @@ import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION, type StixIngestionTaxiiCollecti
 import { convertIngestionTaxiiCollectionToStix } from './ingestion-converter';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { authorizedMembers } from '../../schema/attribute-definition';
+import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 
 const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection, StixIngestionTaxiiCollection> = {
   type: {
@@ -42,6 +43,7 @@ const INGESTION_DEFINITION: ModuleDefinition<StoreEntityIngestionTaxiiCollection
       isFilterable: true,
     },
     authorizedMembers,
+    ...ingestionHealthAttributes,
   ],
   relations: [],
   representative: (stix: StixIngestionTaxiiCollection) => {

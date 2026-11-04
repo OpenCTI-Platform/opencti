@@ -14,8 +14,8 @@ To access investigations, navigate to the top right corner of the toolbar:
 ## Perform investigation
 
 ### Select / search entity 
-When selecting (or searching) an entity, all the entities that you have selected (or matching your searched), will still be "coloured". The other entities will be overlayed, to emphasis your selection (or search).
-The entity that you are currently seeing in the right panel is the one with the **blue solid line** while the ones with **blue dotted line** are the other that you have selected but not viewed in the right panel.
+When selecting (or searching) an entity, the entities you have selected (or those matching your search) and their direct neighbours stay at full strength, while the rest of the graph fades, to emphasise your selection (or search).
+Selected entities are circled with a halo and their names are written on a coloured pill; the entity you are currently seeing in the right panel has the strongest halo.
 In addition, the right panel will have now a counter of the amount of selected entities to help you understand the amount of selected (or matching your search). 
 
 ![select entities in graph](assets/Select-entities-in-graph.png)
@@ -34,7 +34,9 @@ On each node, we'll notice a bullet with a number inside, serving as a visual in
 ![Investigation workspace](assets/investigation-workspace.png)
 
 ### Expansion
-To incorporate these linked entities into the graph, we just have to expand the nodes. Utilize the button with a 4-arrows logo in the mentioned menu, or double-click on the entity directly. This action opens a new window where we can choose the types of entities and relationships we wish to expand.
+To incorporate these linked entities into the graph, we just have to expand the nodes. Utilize the button with a 4-arrows logo in the mentioned menu, double-click on the entity directly, or right-click the entity and choose **Expand this entity** in its context menu. This action opens a new window where we can choose the types of entities and relationships we wish to expand.
+
+The investigation graph shares the layouts, legend, hover cards, keyboard shortcuts and exports of every graph of the platform: see [Work with graphs](graphs.md).
 
 ![Investigation expand entity](assets/investigation-expand-entity.png)
 
@@ -69,7 +71,7 @@ We can create a relationship between entities directly within our investigation.
 
 Users have the capability to export investigations, providing a way to share, document, or archive their findings.
 
-- PDF and image formats: Users can export investigations in either PDF or image format, offering flexibility in sharing and documentation.
+- PDF and image formats: the header of the investigation exports it as a PDF, and the toolbar of its graph as a high-resolution image (see [Work with graphs](graphs.md#export)).
 - STIX bundle: The platform allows the export of the entire content of an investigation graph as a STIX bundle. In the STIX format, all objects within the investigation graph are automatically aggregated into a Report object.
 
 ![Investigation export](assets/investigation-export.png)

@@ -47,6 +47,7 @@ import {
   stixCoreRelationshipsPaginated,
   findUnknownStixCoreObjects,
   cleanInconsistency,
+  stixCoreObjectsExportFiles,
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
 import { distributionRelations, stixLoadByIdStringify } from '../database/middleware';
@@ -54,7 +55,7 @@ import { worksForSource } from '../domain/work';
 import { BUS_TOPICS } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_LABELS } from '../schema/general';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
-import { connectorsForEnrichment } from '../database/repository';
+import { connectorsForEnrichment } from '../modules/connector/connector-domain';
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../domain/stix';
 import { stixCoreObjectOptions } from '../schema/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
@@ -88,11 +89,7 @@ const stixCoreObjectResolvers = {
       return stixCoreObjectsDistribution(context, context.user, args);
     },
     stixCoreObjectsMultiDistribution: (_, args, context) => stixCoreObjectsMultiDistribution(context, context.user, args),
-    stixCoreObjectsExportFiles: (_, { exportContext, first }, context) => {
-      const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
-      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
-    },
+    stixCoreObjectsExportFiles: (_, { exportContext, first }, context) => stixCoreObjectsExportFiles(context, context.user, exportContext, { first }),
     stixCoreObjectAnalysis: (_, { id, contentSource, contentType }, context) => stixCoreAnalysis(context, context.user, id, contentSource, contentType),
     stixCoreObjectAskAiActivity: (_, args, context) => aiActivity(context, context.user, args),
     stixCoreObjectAskAiForecast: (_, args, context) => aiForecast(context, context.user, args),
@@ -100,7 +97,7 @@ const stixCoreObjectResolvers = {
   },
   StixCoreObjectsOrdering: stixCoreObjectOptions.StixCoreObjectsOrdering,
   StixCoreObject: {
-    // eslint-disable-next-line
+
     __resolveType(obj) {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());

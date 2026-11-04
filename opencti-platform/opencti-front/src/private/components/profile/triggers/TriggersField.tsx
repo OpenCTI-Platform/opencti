@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { union } from 'ramda';
 import { Field } from 'formik';
 import { CampaignOutlined } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import type { ComboboxChangeMeta } from '@filigran/design-system';
 import ComboboxField from '../../../../components/ComboboxField';
@@ -15,19 +15,16 @@ import { TriggerType } from './__generated__/TriggerLine_node.graphql';
 import { TriggersQueriesSearchKnowledgeQuery$data } from './__generated__/TriggersQueriesSearchKnowledgeQuery.graphql';
 import { FieldOption } from '../../../../utils/field';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-}));
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface TriggersFieldProps {
   name: string;
@@ -75,7 +72,6 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   paginationOptions,
   recipientId,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [triggerCreation, setTriggerCreation] = useState(false);
   const [triggers, setTriggers] = useState<
@@ -157,10 +153,10 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(option: FieldOption) => (
           <>
-            <div className={classes.icon} style={{ color: option.color }}>
+            <OptionIcon style={{ color: option.color }}>
               <CampaignOutlined />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
           </>
         )}
       />

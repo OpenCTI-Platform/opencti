@@ -71,6 +71,7 @@ const SettingsOrganizationUserCreation = ({
   paginationOptions,
   organization,
   variant,
+  allGrantableGroups = false,
 }) => {
   const { me, settings } = useAuth();
   const { t_i18n } = useFormatter();
@@ -239,7 +240,8 @@ const SettingsOrganizationUserCreation = ({
                   label={t_i18n('Add a group')}
                   multiple={true}
                   containerStyle={{ width: '100%' }}
-                  predefinedGroups={convertGrantableGroups(organization)}
+                  // The groups query returns the grantable groups of every administrated organization
+                  predefinedGroups={allGrantableGroups ? undefined : convertGrantableGroups(organization)}
                   style={fieldSpacingContainerStyle}
                 />
               )}

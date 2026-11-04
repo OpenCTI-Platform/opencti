@@ -13,7 +13,7 @@ import { elDeleteElements, elIndexElements } from '../../../../src/database/engi
 import { patchAttribute } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
 import type { BasicStoreEntityAuthenticationProvider } from '../../../../src/modules/authenticationProvider/authenticationProvider-types';
-import { sessionLogin } from '../../../../src/domain/user';
+import { sessionLogin } from '../../../../src/modules/user/user-domain';
 import type { AuthContext } from '../../../../src/types/user';
 import type Express from 'express';
 
@@ -569,6 +569,7 @@ describe('Provider coverage', () => {
         headers: { 'x-forwarded-for': '127.0.0.1' },
         header: (_: string) => undefined,
         session: {
+          regenerate: (callback: (err: unknown) => void) => callback(null),
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore see user#sessionAuthenticateUser there is a session.save() there
           save: () => {},

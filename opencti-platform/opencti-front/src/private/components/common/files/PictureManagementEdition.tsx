@@ -4,11 +4,10 @@ import { FormikConfig } from 'formik/dist/types';
 import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-mui';
 import Button from '@common/button/Button';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { pictureManagementUtilsMutation } from './PictureManagementUtils';
 import { PictureManagementUtils_node$data } from './__generated__/PictureManagementUtils_node.graphql';
@@ -16,17 +15,10 @@ import { PictureManagementUtilsMutation, StixDomainObjectFileEditInput } from '.
 import SwitchField from '../../../../components/fields/SwitchField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+const Buttons = styled('div')({
+  marginTop: 20,
+  textAlign: 'right',
+});
 
 interface PictureManagementEditionProps {
   picture: PictureManagementUtils_node$data;
@@ -43,7 +35,6 @@ interface PictureManagementEditionFormValues {
 
 const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps> = ({ picture, entityId, handleClose }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const [commit] = useApiMutation<PictureManagementUtilsMutation>(
     pictureManagementUtilsMutation,
   );
@@ -113,15 +104,15 @@ const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps>
             label={t_i18n('In Carousel')}
             containerstyle={fieldSpacingContainerStyle}
           />
-          <div className={classes.buttons}>
+          <Buttons>
             <Button
               onClick={submitForm}
               disabled={isSubmitting || !isValid}
-              classes={{ root: classes.button }}
+              sx={{ marginLeft: 2 }}
             >
               {t_i18n('Update')}
             </Button>
-          </div>
+          </Buttons>
         </Form>
       )}
     </Formik>

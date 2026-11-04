@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { afterAll, describe, it, expect } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { elLoadById } from '../../../src/database/engine';
 import { MEMBER_ACCESS_ALL } from '../../../src/utils/access';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
@@ -332,5 +332,54 @@ describe('Saved Filter Resolver', () => {
       const savedFilter = await elLoadById(testContext, ADMIN_USER, createdFilterId);
       expect(savedFilter).toBeUndefined();
     });
+  });
+});
+
+describe('Saved filters and dashboard variables', () => {
+  const TOKEN_FILTERS = JSON.stringify({ mode: 'and', filters: [{ key: ['createdBy'], values: ['$var:11111111-1111-4111-8111-111111111111'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+  const PLAIN_FILTERS = JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+  let savedFilterId: string;
+
+  afterAll(async () => {
+    if (savedFilterId) await queryAsAdmin({ query: DELETE_SAVED_FILTER_MUTATION, variables: { id: savedFilterId } });
+  });
+
+  it('should reject a dashboard variable token on creation', async () => {
+    await queryAsAdminWithError(
+      { query: CREATE_SAVED_FILTER_MUTATION, variables: { input: { name: 'with variable', filters: TOKEN_FILTERS, scope: 'Report' } } },
+      'Dashboard variables cannot be used in a saved filter',
+      'FUNCTIONAL_ERROR',
+    );
+  });
+
+  // A JSON escape hides the token from a check on the raw string, JSON.parse restores it
+  const ESCAPED_TOKEN_FILTERS = '{"mode":"and","filters":[{"key":["createdBy"],"values":["\\u0024var:11111111-1111-4111-8111-111111111111"],"operator":"eq","mode":"or"}],"filterGroups":[]}';
+
+  it('should reject a dashboard variable token hidden behind a JSON escape', async () => {
+    const escapedTokenFilters = ESCAPED_TOKEN_FILTERS;
+    expect(JSON.parse(escapedTokenFilters).filters[0].values[0]).toEqual('$var:11111111-1111-4111-8111-111111111111');
+    await queryAsAdminWithError(
+      { query: CREATE_SAVED_FILTER_MUTATION, variables: { input: { name: 'with escaped variable', filters: escapedTokenFilters, scope: 'Report' } } },
+      'Dashboard variables cannot be used in a saved filter',
+      'FUNCTIONAL_ERROR',
+    );
+  });
+
+  it('should reject a dashboard variable token on edition', async () => {
+    const { data } = await queryAsAdminWithSuccess({ query: CREATE_SAVED_FILTER_MUTATION, variables: { input: { name: 'plain', filters: PLAIN_FILTERS, scope: 'Report' } } });
+    savedFilterId = data.savedFilterAdd.id;
+    await queryAsAdminWithError(
+      { query: EDIT_SAVED_FILTER_MUTATION, variables: { id: savedFilterId, input: [{ key: 'filters', value: [TOKEN_FILTERS] }] } },
+      'Dashboard variables cannot be used in a saved filter',
+      'FUNCTIONAL_ERROR',
+    );
+  });
+
+  it('should reject a dashboard variable token hidden behind a JSON escape on edition', async () => {
+    await queryAsAdminWithError(
+      { query: EDIT_SAVED_FILTER_MUTATION, variables: { id: savedFilterId, input: [{ key: 'filters', value: [ESCAPED_TOKEN_FILTERS] }] } },
+      'Dashboard variables cannot be used in a saved filter',
+      'FUNCTIONAL_ERROR',
+    );
   });
 });

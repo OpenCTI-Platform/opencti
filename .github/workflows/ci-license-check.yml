@@ -11,7 +11,7 @@ on:
 jobs:
   license-check:
     name: License check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
 
       - name: OpenCTI checkout

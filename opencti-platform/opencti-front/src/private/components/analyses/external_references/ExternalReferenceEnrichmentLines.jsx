@@ -6,13 +6,12 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@common/button/IconButton';
 import { CheckCircle, Delete, Extension, Refresh, Warning } from '@mui/icons-material';
 import CircularProgress from '@mui/material/CircularProgress';
-import withStyles from '@mui/styles/withStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { v4 as uuid } from 'uuid';
 import { ListItemButton } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import ListItem from '@mui/material/ListItem';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -65,30 +64,19 @@ const externalReferenceEnrichmentLinesAskJob = graphql`
   }
 `;
 
-const styles = (theme) => ({
-  noResult: {
-    top: 10,
-    left: 16,
-    right: 0,
-    position: 'absolute',
-    color: theme.palette.text.primary,
-    fontSize: 15,
-    zIndex: -5,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  nested: {
-    paddingLeft: theme.spacing(4),
-  },
-  tooltip: {
-    maxWidth: 600,
-  },
-});
+const NoResult = styled('div')(({ theme }) => ({
+  top: 10,
+  left: 16,
+  right: 0,
+  position: 'absolute',
+  color: theme.palette.text.primary,
+  fontSize: 15,
+  zIndex: -5,
+}));
 
 const ExternalReferenceEnrichment = (props) => {
   const theme = useTheme();
-  const { externalReference, connectorsForImport, relay, classes, t, nsdt } = props;
+  const { externalReference, connectorsForImport, relay, t, nsdt } = props;
   const { id } = externalReference;
   const file = externalReference.importFiles
     && externalReference.importFiles.edges.length > 0
@@ -181,9 +169,7 @@ const ExternalReferenceEnrichment = (props) => {
                   </Security>
                 )}
               >
-                <ListItemButton
-                  classes={{ root: classes.item }}
-                >
+                <ListItemButton>
                   <Tooltip
                     title={
                       connector.active
@@ -227,7 +213,7 @@ const ExternalReferenceEnrichment = (props) => {
                     <Tooltip
                       title={messageToDisplay}
                       key={uuid()}
-                      classes={{ tooltip: classes.tooltip }}
+                      slotProps={{ tooltip: { sx: { maxWidth: 600 } } }}
                     >
                       <ListItem
                         dense={true}
@@ -244,7 +230,7 @@ const ExternalReferenceEnrichment = (props) => {
                         )}
                       >
                         <ListItemButton
-                          classes={{ root: classes.nested }}
+                          sx={{ paddingLeft: theme.spacing(4) }}
                         >
                           <ListItemIcon>
                             {isFail && (
@@ -283,9 +269,9 @@ const ExternalReferenceEnrichment = (props) => {
           );
         })
       ) : (
-        <div className={classes.noResult}>
+        <NoResult>
           {t('No connectors for this type of entity')}
-        </div>
+        </NoResult>
       )}
     </List>
   );
@@ -339,7 +325,4 @@ const ExternalReferenceEnrichmentLinesFragment = createRefetchContainer(
   externalReferenceEnrichmentLinesQuery,
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(ExternalReferenceEnrichmentLinesFragment);
+export default inject18n(ExternalReferenceEnrichmentLinesFragment);

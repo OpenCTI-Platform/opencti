@@ -1,5 +1,5 @@
 import { Combobox, ComboboxChips, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import React, { FunctionComponent, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import { entitySettingPatch } from '../sub_types/entity_setting/EntitySettingSettings';
@@ -10,18 +10,14 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import HiddenTypesIndicator from './HiddenTypesIndicator';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  // The library owns each row's markup (checkbox + label); indenting a sub-type
-  // row before its checkbox means padding the whole row, matched via the marker
-  // the renderOption drops on child rows only.
-  content: {
-    '& [role="option"]:has([data-hidden-subtype])': {
-      paddingLeft: 32,
-    },
+// The library owns each row's markup (checkbox + label); indenting a sub-type
+// row before its checkbox means padding the whole row, matched via the marker
+// the renderOption drops on child rows only.
+const Content = styled(ComboboxContent)({
+  '& [role="option"]:has([data-hidden-subtype])': {
+    paddingLeft: 32,
   },
-}));
+});
 
 export const groups = new Map<string, string[]>([
   ['Analysis', ['Report', 'Grouping', 'Malware-Analysis', 'Security-Coverage', 'Note', 'External-Reference']],
@@ -88,7 +84,6 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
   initialValues,
   handleChange,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
@@ -220,7 +215,7 @@ const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
             <ComboboxTrigger />
           </ComboboxControls>
         </ComboboxField>
-        <ComboboxContent className={classes.content} listAriaLabel={t_i18n('Hidden entity types')} />
+        <Content listAriaLabel={t_i18n('Hidden entity types')} />
       </Combobox>
     </div>
   );

@@ -2,9 +2,12 @@ import { useMemo } from 'react';
 import { v5 as uuidv5 } from 'uuid';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
+import type { IngestionHealthChip_ingestionHealth$key } from '@components/data/connectors/__generated__/IngestionHealthChip_ingestionHealth.graphql';
+import type { IngestionHealthSummary_ingestionHealth$key } from '@components/integrations/deployed/__generated__/IngestionHealthSummary_ingestionHealth.graphql';
+import { HealthIssue, readHealthIssue, readHealthStatus } from '@components/integrations/deployed/IngestionHealthSummary';
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
-import { computeConnectorStatus } from '../../../../utils/Connector';
+import { computeConnectorStatus, type IntegrationStatus } from '../../../../utils/Connector';
 
 // Mirrors the backend: every built-in feed registers a technical queue
 // connector whose id is derived from the ingestion id (uuid v5 in the OpenCTI
@@ -12,7 +15,7 @@ import { computeConnectorStatus } from '../../../../utils/Connector';
 const OPENCTI_NAMESPACE = 'b639ff3b-00eb-42ed-aa36-a8dd6f8fb4cf';
 export const connectorIdFromIngestId = (id: string) => uuidv5(id, OPENCTI_NAMESPACE);
 
-export type DeployedIntegrationStatus = 'active' | 'inactive' | 'processing';
+export type DeployedIntegrationStatus = IntegrationStatus;
 
 export interface DeployedIntegrationItem {
   id: string;
@@ -24,19 +27,29 @@ export interface DeployedIntegrationItem {
   description?: string | null;
   logo?: string;
   status: DeployedIntegrationStatus;
-  statusLabel: string;
   running?: boolean;
   messagesCount: number | null;
   // Current bundles/second consumed from the integration queues (RabbitMQ ack
   // rate); null when the queue never had traffic or is not resolvable.
   throughputRate: number | null;
   lastRunDate: string | null;
+  // Last heartbeat received from a connector (null for feeds)
+  lastSeenAt: string | null;
   updatedAt: string | null;
+  updateAvailable: boolean;
+  latestCompatibleVersion: string | null;
+  hasNewerIncompatibleVersion: boolean;
   isManaged: boolean;
   uri?: string | null;
   userName?: string | null;
   detailUrl: string;
   searchText: string;
+  // Ingestion health (connectors, feeds and syncs; forms have none)
+  ingestionHealth?: (IngestionHealthChip_ingestionHealth$key & IngestionHealthSummary_ingestionHealth$key) | null;
+  // Derived from ingestionHealth: null when healthy or not evaluated
+  healthIssue?: HealthIssue | null;
+  // Derived from ingestionHealth, for the health facet: null when not evaluated
+  healthStatus?: string | null;
   // Raw merged connector record, needed by connector row actions
   connector?: ConnectorsListQuery['response']['connectors'][number] & Partial<ConnectorsStateQuery['response']['connectors'][number]>;
 }
@@ -47,6 +60,10 @@ interface UseDeployedIntegrationsProps {
   feedsData?: IngestionFeedsData | null;
   formsData?: IngestionFeedsFormsData | null;
   logosBySlug: Map<string, string>;
+  // Connector update detection is part of the decoupled versions (DECOUPLING_VERSIONS feature flag)
+  isConnectorUpdateEnabled: boolean;
+  // A connector is stopped under other conditions with the ingestion health (INGESTION_HEALTH feature flag): see computeConnectorStatus
+  isIngestionHealthEnabled: boolean;
 }
 
 const toSafeNumber = (value: unknown): number => {
@@ -57,7 +74,6 @@ const toSafeNumber = (value: unknown): number => {
 const feedStatus = (running: boolean | null | undefined) => {
   return {
     status: (running ? 'active' : 'inactive') as DeployedIntegrationStatus,
-    statusLabel: running ? 'active' : 'inactive',
   };
 };
 
@@ -77,6 +93,8 @@ const useDeployedIntegrations = ({
   feedsData,
   formsData,
   logosBySlug,
+  isConnectorUpdateEnabled,
+  isIngestionHealthEnabled,
 }: UseDeployedIntegrationsProps): DeployedIntegrationItem[] => {
   return useMemo(() => {
     const items: DeployedIntegrationItem[] = [];
@@ -126,19 +144,11 @@ const useDeployedIntegrations = ({
       if (feedTwinConnectorIds.has(connector.id)) continue;
       const state = connectorsStateData?.connectors?.find((s) => s.id === connector.id);
       const merged = { ...connector, ...state };
-      const { status, label, processing } = computeConnectorStatus({
+      const { integrationStatus } = computeConnectorStatus({
         manager_current_status: state?.manager_current_status,
         manager_requested_status: state?.manager_requested_status,
         active: state?.active,
-      });
-      let itemStatus: DeployedIntegrationStatus;
-      if (processing) {
-        itemStatus = 'processing';
-      } else if (status === 'active') {
-        itemStatus = 'active';
-      } else {
-        itemStatus = 'inactive';
-      }
+      }, isIngestionHealthEnabled);
       const logoSlug = connector.manager_contract_excerpt?.slug;
       items.push({
         id: connector.id,
@@ -147,15 +157,19 @@ const useDeployedIntegrations = ({
         name: connector.title ?? connector.name,
         description: connector.manager_contract_excerpt?.title,
         logo: logoSlug ? logosBySlug.get(logoSlug) : undefined,
-        status: itemStatus,
-        statusLabel: label,
+        status: integrationStatus,
         messagesCount: queueMessagesByConnector.get(connector.id) ?? 0,
         throughputRate: queueRateByConnector.get(connector.id) ?? null,
         lastRunDate: null,
-        updatedAt: connector.updated_at,
+        lastSeenAt: (state?.last_seen_at as string | null | undefined) ?? null,
+        updatedAt: null,
+        updateAvailable: isConnectorUpdateEnabled && !!connector.update_available,
+        latestCompatibleVersion: isConnectorUpdateEnabled ? (connector.latest_compatible_version ?? null) : null,
+        hasNewerIncompatibleVersion: isConnectorUpdateEnabled && !!connector.has_newer_incompatible_version,
         isManaged: !!connector.is_managed,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
         searchText: buildSearchText([connector.title, connector.name, connector.connector_type]),
+        ingestionHealth: state?.ingestionHealth,
         connector: merged,
       });
     }
@@ -175,12 +189,17 @@ const useDeployedIntegrations = ({
         messagesCount: toSafeNumber(node.queue_messages),
         throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.current_state_date as string | null) ?? null,
+        lastSeenAt: null,
         updatedAt: null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         uri: node.uri,
         userName: node.user?.name,
         detailUrl: `/dashboard/integrations/feeds/sync/${node.id}`,
         searchText: buildSearchText([node.name, node.uri, builtInLabel('sync')]),
+        ingestionHealth: node.ingestionHealth,
       });
     }
 
@@ -195,6 +214,7 @@ const useDeployedIntegrations = ({
         last_execution_date?: string | null;
         updated_at?: string | null;
         user?: { readonly name: string } | null;
+        ingestionHealth?: DeployedIntegrationItem['ingestionHealth'];
       },
     ) => {
       items.push({
@@ -208,12 +228,17 @@ const useDeployedIntegrations = ({
         messagesCount: feedQueueMessages(node.id),
         throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.last_execution_date as string | null) ?? null,
+        lastSeenAt: null,
         updatedAt: (node.updated_at as string | null) ?? null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         uri: node.uri,
         userName: node.user?.name,
         detailUrl: `/dashboard/integrations/feeds/${kind}/${node.id}`,
         searchText: buildSearchText([node.name, node.description, node.uri, builtInLabel(kind)]),
+        ingestionHealth: node.ingestionHealth,
       });
     };
 
@@ -247,15 +272,23 @@ const useDeployedIntegrations = ({
         messagesCount: feedQueueMessages(node.id),
         throughputRate: feedQueueRate(node.id),
         lastRunDate: null,
+        lastSeenAt: null,
         updatedAt: (node.updated_at as string | null) ?? null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         detailUrl: `/dashboard/integrations/feeds/form/${node.id}`,
         searchText: buildSearchText([node.name, node.description, builtInLabel('form')]),
       });
     }
 
-    return items;
-  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug]);
+    return items.map((item) => ({
+      ...item,
+      healthIssue: readHealthIssue(item.ingestionHealth),
+      healthStatus: readHealthStatus(item.ingestionHealth),
+    }));
+  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug, isConnectorUpdateEnabled, isIngestionHealthEnabled]);
 };
 
 export default useDeployedIntegrations;

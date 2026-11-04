@@ -17,11 +17,9 @@ import React, { ReactNode } from 'react';
 import type { WidgetHost } from '../../utils/widget/widget';
 import useGranted, { SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from 'src/utils/hooks/useGranted';
 import useEnterpriseEdition from 'src/utils/hooks/useEnterpriseEdition';
-import WidgetRenderContent from 'src/components/dashboard/WidgetRenderContent';
+import WidgetRenderContent, { type WidgetRenderGuards } from 'src/components/dashboard/WidgetRenderContent';
 
-interface AuditsWidgetRenderContentParams {
-  isMissingHostEntity: boolean;
-  isMissingSavedFilters: boolean;
+interface AuditsWidgetRenderContentParams extends WidgetRenderGuards {
   queryRef: unknown;
   host?: WidgetHost;
   children: ReactNode;
@@ -33,19 +31,17 @@ interface AuditsWidgetRenderContentParams {
  * or wraps the children in a Suspense boundary when the queryRef is ready.
  */
 const AuditsWidgetRenderContent = ({
-  isMissingHostEntity,
-  isMissingSavedFilters,
   queryRef,
   host,
   children,
+  ...renderGuards
 }: AuditsWidgetRenderContentParams) => {
   const isGrantedToSettings = useGranted([SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]);
   const isEnterpriseEdition = useEnterpriseEdition();
 
   return (
     <WidgetRenderContent
-      isMissingHostEntity={isMissingHostEntity}
-      isMissingSavedFilters={isMissingSavedFilters}
+      {...renderGuards}
       isGranted={isGrantedToSettings && isEnterpriseEdition}
       queryRef={queryRef}
       host={host}

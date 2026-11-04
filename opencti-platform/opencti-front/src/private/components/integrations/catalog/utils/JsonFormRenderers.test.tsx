@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, beforeAll } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { JsonForms } from '@jsonforms/react';
 import { materialRenderers } from '@jsonforms/material-renderers';
 import testRender from '../../../../../utils/tests/test-render';
@@ -34,6 +34,31 @@ const schema = {
 const uischema = {
   type: 'VerticalLayout',
   elements: Object.keys(schema.properties).map((key) => ({ type: 'Control', scope: `#/properties/${key}` })),
+};
+
+// An array option whose items are restricted to an enum, from the Google DTM contract, and a free one.
+const arraySchema = {
+  type: 'object',
+  properties: {
+    GOOGLE_DTM_ALERT_TYPE: { type: 'array', default: [], items: { type: 'string', enum: ['Document', 'Email', 'Forum Post'] } },
+    CONNECTOR_SCOPE: { type: 'array', default: [], items: { type: 'string' } },
+  },
+};
+
+const renderArrayField = (key: keyof typeof arraySchema.properties, data: Record<string, string[]> = {}) => {
+  let lastData: Record<string, unknown> = data;
+  const result = testRender(
+    <JsonForms
+      schema={arraySchema}
+      uischema={{ type: 'Control', scope: `#/properties/${key}` }}
+      data={data}
+      renderers={renderers}
+      onChange={({ data: next }) => {
+        lastData = next;
+      }}
+    />,
+  );
+  return { ...result, getData: () => lastData };
 };
 
 describe('the connector configuration renderers', () => {
@@ -90,5 +115,40 @@ describe('the connector configuration renderers', () => {
     expect(field).not.toBeNull();
     // DOCUMENT_POSITION_FOLLOWING: the description comes after the field.
     expect(field!.compareDocumentPosition(description) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('offers the enum values of an array option and lets several of them be picked', async () => {
+    const { user, getData } = renderArrayField('GOOGLE_DTM_ALERT_TYPE');
+
+    await user.click(screen.getByRole('combobox'));
+    const options = await screen.findAllByRole('option');
+    expect(options.map((option) => option.textContent)).toEqual(['Document', 'Email', 'Forum Post']);
+
+    await user.click(screen.getByRole('option', { name: 'Document' }));
+    await user.click(screen.getByRole('combobox'));
+    await user.click(await screen.findByRole('option', { name: 'Forum Post' }));
+    // JsonForms reports the data after the render
+    await waitFor(() => expect(getData().GOOGLE_DTM_ALERT_TYPE).toEqual(['Document', 'Forum Post']));
+  });
+
+  it('does not add a value outside the enum of an array option', async () => {
+    const { user, getData } = renderArrayField('GOOGLE_DTM_ALERT_TYPE');
+
+    await user.type(screen.getByRole('combobox'), 'Foo{Enter}');
+    expect(screen.queryByText('Foo')).not.toBeInTheDocument();
+    await waitFor(() => expect(getData().GOOGLE_DTM_ALERT_TYPE ?? []).toEqual([]));
+  });
+
+  it('keeps showing a stored value outside the enum, so it can be removed', () => {
+    renderArrayField('GOOGLE_DTM_ALERT_TYPE', { GOOGLE_DTM_ALERT_TYPE: ['Foo'] });
+
+    expect(screen.getByText('Foo')).toBeInTheDocument();
+  });
+
+  it('still adds a typed value to an array option without enum', async () => {
+    const { user, getData } = renderArrayField('CONNECTOR_SCOPE');
+
+    await user.type(screen.getByRole('combobox'), 'indicator{Enter}');
+    await waitFor(() => expect(getData().CONNECTOR_SCOPE).toEqual(['indicator']));
   });
 });

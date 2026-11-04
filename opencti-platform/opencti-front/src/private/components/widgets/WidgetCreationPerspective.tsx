@@ -126,10 +126,10 @@ const WidgetCreationPerspective = () => {
     <Grid
       container={true}
       spacing={3}
-      style={{ marginTop: 20, marginBottom: 20 }}
+      style={{ marginTop: 44, marginBottom: 20 }}
     >
       {getCurrentIsEntities() && (
-        <Grid item xs={xs}>
+        <Grid size={xs}>
           <Card
             data-testid="entities-widget-perspective"
             padding="none"
@@ -158,7 +158,7 @@ const WidgetCreationPerspective = () => {
         </Grid>
       )}
       {getCurrentIsRelationships() && (
-        <Grid item xs={xs}>
+        <Grid size={xs}>
           <Card
             data-testid="relationships-widget-perspective"
             padding="none"
@@ -189,7 +189,7 @@ const WidgetCreationPerspective = () => {
         </Grid>
       )}
       {getCurrentIsAudits() && (
-        <Grid item xs={xs}>
+        <Grid size={xs}>
           <Card
             data-testid="audits-widget-perspective"
             padding="none"

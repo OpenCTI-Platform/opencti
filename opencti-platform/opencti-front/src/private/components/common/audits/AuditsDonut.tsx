@@ -153,7 +153,7 @@ const AuditsDonut: FunctionComponent<AuditsDonutProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsDonutDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsDonutDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -176,8 +176,7 @@ const AuditsDonut: FunctionComponent<AuditsDonutProps> = ({
       showPreviewTag={isPreviewMode}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

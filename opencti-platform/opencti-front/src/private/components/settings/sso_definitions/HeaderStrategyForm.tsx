@@ -3,7 +3,7 @@ import { Paper, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/desig
 import { Field, FieldArray, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { Add, Delete } from '@mui/icons-material';

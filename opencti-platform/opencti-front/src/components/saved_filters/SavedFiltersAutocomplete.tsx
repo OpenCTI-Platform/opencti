@@ -106,6 +106,16 @@ const SavedFiltersAutocomplete = ({
     return isOwner ? MY_FILTERS_GROUP_LABEL : t_i18n('Shared with me');
   };
 
+  // The input is controlled and shows the selected filter's label, which the
+  // library uses as filter text: only the current saved filter was listed, so
+  // switching to another one required clearing first. While the input still
+  // shows that label, list everything; narrow only on text the user typed.
+  const filterOptions = (allOptions: SavedFiltersAutocompleteOptionType[], text: string) => {
+    const needle = text.trim().toLowerCase();
+    if (!needle || text === value?.label) return allOptions;
+    return allOptions.filter((option) => option.label.toLowerCase().includes(needle));
+  };
+
   return (
     <>
       <Combobox<SavedFiltersAutocompleteOptionType>
@@ -118,6 +128,7 @@ const SavedFiltersAutocomplete = ({
         isOptionDisabled={(option) => !!option.disabled}
         inputValue={inputValue}
         options={options ?? []}
+        filterOptions={filterOptions}
         groupBy={(option) => handleFiltersGroupBy(option.isOwner)}
         getOptionLabel={(option) => option?.label ?? ''}
         onValueChange={(next) => onChange?.(next as SavedFiltersAutocompleteOptionType)}

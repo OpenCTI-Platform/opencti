@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import TurndownService from 'turndown';
-import { rssDataParser } from '../../../src/manager/ingestionManager';
+import { rssDataParser } from '../../../src/modules/ingestion/ingestion-rss-utils';
 
 describe('Rss parsing testing', () => {
   it('should oracleRss 2.0 parsed correctly', async () => {

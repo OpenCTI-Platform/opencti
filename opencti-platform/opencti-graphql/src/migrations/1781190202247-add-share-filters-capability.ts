@@ -3,9 +3,10 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { createRelation } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../schema/internalObject';
-import { roleCapabilities } from '../domain/user';
+import { roleCapabilities } from '../modules/user/user-domain';
 import { generateStandardId } from '../schema/identifier';
-import { createCapabilities, SHARE_FILTERS_CAPABILITY } from '../database/data-initialization';
+import { createCapabilities } from '../database/data-initialization';
+import { SHARE_FILTERS_CAPABILITY } from '../schema/capabilities';
 import type { BasicCapabilityEntity } from '../types/store';
 
 const message = '[MIGRATION] Add KNOWLEDGE_KNSHAREFILTERS capability and grant to roles with KNOWLEDGE';

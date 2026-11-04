@@ -38,7 +38,10 @@ const RuleListItemProgressBar = ({ taskEnable, work }: RuleListItemProgressBarPr
 
   return (
     <div>
-      <Stack gap={1}>
+      <Stack sx={{
+        gap: 1,
+      }}
+      >
         <Label>
           {getLabel()}
         </Label>

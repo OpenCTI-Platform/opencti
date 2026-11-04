@@ -1,4 +1,4 @@
-import { parentPort, workerData } from 'worker_threads';
+import { parentPort } from 'worker_threads';
 import type { Data } from 'ejs';
 import { safeRender } from './safeEjs';
 import type { SafeRenderOptions } from './safeEjs';
@@ -26,9 +26,10 @@ export const customEscapeFunction = (value: any): string => {
     : result;
 };
 
-// Main worker execution
-const executeWorker = async () => {
-  const { template, data, options, useJsonEscape } = workerData as WorkerRequest;
+// The worker stays alive and renders one request at a time, so the pool can hand it to the next
+// caller instead of paying for a thread per template.
+const executeRequest = async (request: WorkerRequest) => {
+  const { template, data, options, useJsonEscape } = request;
 
   // Add escape function if needed
   const safeEjsOptions = { ...options };
@@ -38,20 +39,27 @@ const executeWorker = async () => {
   }
 
   // Use the core logic from safeEjs (await in case it returns a Promise)
-  const result = await safeRender(template, data, safeEjsOptions);
-  // Send result back to main thread
-  const message: WorkerReply = {
-    success: true,
-    result,
-  };
-  parentPort?.postMessage(message);
+  try {
+    return await safeRender(template, data, safeEjsOptions);
+  } finally {
+    // Yield a full event-loop turn before replying, on success and on failure alike: setImmediate
+    // only fires once the microtask queue has drained, so a template that left an endless microtask
+    // loop running (even one that then threw) hits its own render timeout here instead of starving
+    // the next render on this reused worker.
+    await new Promise<void>((resolve) => setImmediate(resolve));
+  }
 };
 
-executeWorker().catch((error) => {
-  // Send error back to main thread
-  const message: WorkerReply = {
-    success: false,
-    error: error instanceof Error ? error.message : 'Unknown error',
-  };
-  parentPort?.postMessage(message);
+parentPort?.on('message', (request: WorkerRequest) => {
+  executeRequest(request)
+    .then((result) => {
+      parentPort?.postMessage({ success: true, result } satisfies WorkerReply);
+    })
+    .catch((error) => {
+      const message: WorkerReply = {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+      parentPort?.postMessage(message);
+    });
 });

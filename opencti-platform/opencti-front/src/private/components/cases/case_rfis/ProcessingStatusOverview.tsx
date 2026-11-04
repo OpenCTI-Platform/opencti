@@ -68,7 +68,7 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
   const userCanAction = data.requestAccessConfiguration?.isUserCanAction;
   const disabledTooltip = draftContext ? t_i18n('Not available in draft') : t_i18n('You need to be able to edit the RFI and share knowledge');
   return (
-    <Grid item xs={12} style={{ marginBottom: 20 }}>
+    <Grid style={{ marginBottom: 20 }} size={12}>
       <Typography
         variant="h3"
         gutterBottom={true}

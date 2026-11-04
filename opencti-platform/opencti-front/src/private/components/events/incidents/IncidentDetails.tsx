@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { IncidentDetails_incident$data, IncidentDetails_incident$key } from './__generated__/IncidentDetails_incident.graphql';
@@ -15,6 +16,10 @@ import Tag from '../../../../components/common/tag/Tag';
 const incidentDetailsFragment = graphql`
   fragment IncidentDetails_incident on Incident {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     first_seen
     last_seen
     objective
@@ -103,13 +108,13 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
     <div style={{ height: '100%' }} data-testid="incident-details-page">
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown source={incident.description} limit={400} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Incident type')}
             </Label>
@@ -131,7 +136,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             </Label>
             {fldt(incident.first_seen)}
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Severity')}
             </Label>
@@ -165,7 +170,8 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
             </Label>
             <ExpandableMarkdown source={incident.objective} limit={100} />
           </Grid>
-          <Grid item xs={6}>
+          <CustomFieldValuesDisplay entityType={incident.entity_type} values={incident.customFieldValues ?? []} />
+          <Grid size={6}>
             <StixCoreObjectsDonut
               dataSelection={entitiesDataSelection}
               parameters={{ title: t_i18n('Entities distribution') }}
@@ -176,7 +182,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               host={undefined}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <StixCoreObjectsDonut
               dataSelection={observablesDataSelection}
               parameters={{ title: t_i18n('Observables distribution') }}

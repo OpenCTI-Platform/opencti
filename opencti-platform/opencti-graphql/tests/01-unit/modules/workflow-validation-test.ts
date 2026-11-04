@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as middlewareLoader from '../../../src/database/middleware-loader';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
+import { WORKFLOW_ROLE_FILTER, WORKFLOW_USER_FILTER } from '../../../src/utils/filtering/filtering-constants';
 
 vi.mock('../../../src/database/middleware-loader', () => ({
   storeLoadById: vi.fn().mockResolvedValue(null),
@@ -29,6 +30,15 @@ vi.mock('../../../src/schema/schemaUtils', () => ({
   getParentTypes: vi.fn().mockReturnValue([]),
   getAttributes: vi.fn().mockReturnValue(new Map()),
 }));
+
+// the custom fields definitions come from the cache, unavailable in unit tests
+vi.mock('../../../src/modules/customField/custom-field-stix-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/modules/customField/custom-field-stix-utils')>();
+  return {
+    ...actual,
+    getCustomFieldsStixFilterTesters: vi.fn().mockResolvedValue({ custom_field_test: vi.fn() }),
+  };
+});
 
 const mockContext = {} as any;
 const mockUser = {
@@ -87,7 +97,7 @@ describe('Workflow Validation', () => {
             filters: {
               mode: 'and',
               filters: [
-                { key: 'status', values: ['active'], operator: 'eq' },
+                { key: 'priority', values: ['P1'], operator: 'eq' },
               ],
               filterGroups: [],
             },
@@ -158,6 +168,30 @@ describe('Workflow Validation', () => {
     const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
     expect(errors.length).toBeGreaterThan(0);
     expect(errors.some((e) => e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
+  });
+
+  it('should not return an unlinked-transition error when a null to completes the workflow via validateDraft', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }],
+      transitions: [
+        { from: 'existing-state', to: null, event: 'complete', syncActions: [{ type: 'validateDraft' }] },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'DraftWorkspace');
+    expect(errors.some((e) => e.type === 'UNLINKED_TRANSITION')).toBe(false);
+  });
+
+  it('should still return an unlinked-transition error for a null to without validateDraft (an orphaned reference)', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }],
+      transitions: [
+        { from: 'existing-state', to: null, event: 'test' },
+      ],
+    };
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors.some((e) => e.type === 'UNLINKED_TRANSITION' && e.message.includes('Transition test should be linked to at least one status'))).toBe(true);
   });
 
   it('should return error if filter operator is invalid', async () => {
@@ -237,7 +271,7 @@ describe('Workflow Validation', () => {
           conditions: {
             filters: {
               mode: 'and',
-              filters: [{ key: 'status', values: ['active'] }],
+              filters: [{ key: 'priority', values: ['P1'] }],
               filterGroups: [
                 {
                   mode: 'or',
@@ -252,6 +286,46 @@ describe('Workflow Validation', () => {
     };
     const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Incident');
     expect(errors).toEqual([]);
+  });
+
+  describe('filter keys', () => {
+    const definitionWithFilter = (filter: Record<string, unknown>) => ({
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [{
+        from: 'existing-state',
+        to: 'in-progress',
+        event: 'test',
+        conditions: { filters: { mode: 'and', filters: [{ operator: 'eq', mode: 'or', values: ['x'], ...filter }], filterGroups: [] } },
+      }],
+    });
+    const validate = (filter: Record<string, unknown>) => validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definitionWithFilter(filter)), 'Incident');
+
+    it.each([
+      ['created_at'],
+      ['regardingOf'],
+      ['entity.confidence'],
+    ])('should reject unsupported filter key %s', async (key) => {
+      const errors = await validate({ key });
+      expect(errors.some((e) => e.type === 'UNSUPPORTED_FILTER_KEY')).toBe(true);
+    });
+
+    it.each([
+      [WORKFLOW_USER_FILTER],
+      [WORKFLOW_ROLE_FILTER],
+      ['name'],
+      ['objectParticipant'],
+      ['custom_field_test'],
+    ])('should accept supported filter key %s', async (key) => {
+      expect(await validate({ key })).toEqual([]);
+    });
+
+    it('should reject an unsupported key in a nested filter group', async () => {
+      const definition = definitionWithFilter({ key: 'priority' });
+      definition.transitions[0].conditions.filters.filterGroups = [{ mode: 'or', filters: [{ key: 'created_at', values: ['x'] }], filterGroups: [] }] as any;
+      const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), 'Incident');
+      expect(errors.some((e) => e.type === 'UNSUPPORTED_FILTER_KEY')).toBe(true);
+    });
   });
 
   it('should return error for missing filter key', async () => {
@@ -637,6 +711,47 @@ describe('Workflow Validation', () => {
     );
 
     // Ending states can be removed even when instances are in them
+    expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(false);
+  });
+
+  it('should not flag completed instances sitting in a removed non-ending state (same rule as publish)', async () => {
+    vi.mocked(middlewareLoader.storeLoadById).mockReset();
+    vi.mocked(middlewareLoader.fullEntitiesList).mockReset();
+
+    // state-b has an outgoing transition (non-ending), like the source status of a terminal "Validate".
+    vi.mocked(middlewareLoader.storeLoadById).mockResolvedValue({
+      id: 'existing-workflow',
+      draft_version: {
+        id: 'v1', timestamp: '', createdBy: '',
+        content: JSON.stringify({
+          initialState: 'state-a',
+          states: [{ statusId: 'state-a' }, { statusId: 'state-b' }, { statusId: 'state-c' }],
+          transitions: [
+            { from: 'state-a', to: 'state-b', event: 'proceed' },
+            { from: 'state-b', to: 'state-c', event: 'complete' },
+          ],
+        }),
+        validation_errors: [],
+      },
+    } as any);
+
+    vi.mocked(middlewareLoader.fullEntitiesList).mockImplementation(
+      async (_context: any, _user: any, entityTypes: any): Promise<any> => {
+        if (entityTypes.includes('WorkflowInstance')) {
+          return [{ id: 'instance-1', workflow_id: 'existing-workflow', currentState: 'state-b', completed: true }];
+        }
+        return [];
+      },
+    );
+
+    const updated = {
+      initialState: 'state-a',
+      states: [{ statusId: 'state-a' }, { statusId: 'state-c' }],
+      transitions: [{ from: 'state-a', to: 'state-c', event: 'skip' }],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(updated), 'Incident', 'existing-workflow');
+
     expect(errors.some((e) => e.type === 'STATE_IN_USE')).toBe(false);
   });
 

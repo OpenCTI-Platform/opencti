@@ -32,7 +32,7 @@ import {
   type PendingOperationEnvelope,
 } from '../database/sequencer/sequencer-pending-intents';
 import { DatabaseError, EngineShardsError, MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR } from '../config/errors';
-import { authenticateUserByUserId, userWithOrigin } from '../domain/user';
+import { authenticateUserByUserId, userWithOrigin } from '../modules/user/user-domain';
 import { computeLoaders } from '../http/httpAuthenticatedContext';
 import { reportWorkProgress } from '../domain/work';
 import { chunkWorkProgress, type ChunkWorkFields } from './chunkIntakeWork';

@@ -1,8 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
+import { Combobox, ComboboxChips, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger, Input } from '@filigran/design-system';
 import { representationLabel } from '@components/data/jsonMapper/representations/RepresentationUtils';
 import { getBasedOnRepresentations, getInfoForRef } from '@components/data/jsonMapper/representations/attributes/AttributeUtils';
-import makeStyles from '@mui/styles/makeStyles';
 import { FieldProps } from 'formik';
 import { JsonMapperFormData } from '@components/data/jsonMapper/JsonMapper';
 import JsonMapperRepresentationDialogOption from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationDialogOption';
@@ -10,14 +9,14 @@ import JsonMapperRepresentationAttributeOptions from '@components/data/jsonMappe
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
 import { JsonMapperRepresentationFormData } from '@components/data/jsonMapper/representations/Representation';
 import { SchemaAttribute } from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributesForm';
-import { useTheme } from '@mui/styles';
+import Box from '@mui/material/Box';
+import { styled, useTheme } from '@mui/material/styles';
 import { isEmptyField } from '../../../../../../utils/utils';
 import useAuth from '../../../../../../utils/hooks/useAuth';
 import { resolveTypesForRelationship, resolveTypesForRelationshipRef } from '../../../../../../utils/Relation';
 import { useFormatter } from '../../../../../../components/i18n';
 import { isStixCoreObjects } from '../../../../../../utils/stixTypeUtils';
 import type { Theme } from '../../../../../../components/Theme';
-import { Input } from '@filigran/design-system';
 
 export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
 
@@ -29,27 +28,19 @@ interface JsonMapperRepresentationAttributeRefFormProps
   handleErrors: (key: string, value: string | null) => void;
 }
 
+const Container = styled('div')({
+  width: '100%',
+  display: 'inline-grid',
+  gridTemplateColumns: '2fr 3fr 50px',
+  alignItems: 'center',
+  marginTop: '10px',
+  gap: '10px',
+});
+
 const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
   JsonMapperRepresentationAttributeRefFormProps
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
   const theme = useTheme<Theme>();
-  // Deprecated - https://mui.com/system/styles/basics/
-  // Do not use it for new code.
-  const useStyles = makeStyles(() => ({
-    container: {
-      width: '100%',
-      display: 'inline-grid',
-      gridTemplateColumns: '2fr 3fr 50px',
-      alignItems: 'center',
-      marginTop: '10px',
-      gap: '10px',
-    },
-    redStar: {
-      color: theme.palette.designSystem.tertiary.red[400],
-      marginLeft: '5px',
-    },
-  }));
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const { name, value } = field;
@@ -197,10 +188,10 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
   };
 
   return (
-    <div className={classes.container} style={{ border: `1px solid ${theme.palette.divider}`, padding: 10 }}>
+    <Container style={{ border: `1px solid ${theme.palette.divider}`, padding: 10 }}>
       <div>
         {label}
-        {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
+        {schemaAttribute.mandatory && <Box component="span" sx={{ color: theme.palette.designSystem.tertiary.red[400], marginLeft: '5px' }}>*</Box>}
       </div>
       <div>
         <Combobox<JsonMapperRepresentationFormData>
@@ -274,7 +265,7 @@ const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
           });
         })()}
       </>
-    </div>
+    </Container>
   );
 };
 

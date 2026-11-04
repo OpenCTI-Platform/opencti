@@ -10,7 +10,7 @@ import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInp
 import { FieldProps } from 'formik';
 import { OverrideFormData } from '@components/settings/users/edition/UserEditionConfidence';
 import ConfidenceField from '@components/common/form/ConfidenceField';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import useDeletion from '../../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../../components/DeleteDialog';

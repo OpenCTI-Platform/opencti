@@ -9,6 +9,7 @@ export const KNOWLEDGE_UPDATE = 'KNUPDATE';
 export const KNOWLEDGE_FRONTEND_EXPORT = 'KNFRONTENDEXPORT';
 export const KNOWLEDGE_COLLABORATION = 'KNPARTICIPATE';
 export const KNOWLEDGE_SHARE_FILTERS = 'KNSHAREFILTERS';
+export const KNOWLEDGE_FORM_INTAKE = 'KNFORMINTAKE';
 
 export const ID_INTERNAL = 'internal_id';
 export const ID_INFERRED = 'inferred_id';

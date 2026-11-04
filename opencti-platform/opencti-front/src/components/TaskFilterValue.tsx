@@ -7,8 +7,10 @@ import { FilterValuesContentQuery } from './__generated__/FilterValuesContentQue
 import { useFormatter } from './i18n';
 import { entityTypesFilters, filterOperatorsWithIcon, useFilterDefinition } from '../utils/filters/filtersUtils';
 import { displayEntityTypeForTranslation, truncate } from '../utils/String';
-import ImbricatedFilterGroupDisplay from './filters/ImbricatedFilterGroupDisplay';
+import FilterGroupSummaryButton from './filters/FilterGroupSummaryButton';
 import { FilterGroup } from '../utils/filters/filtersHelpers-types';
+import { useOptionalDashboardVariableDefinitions } from './dashboard/DashboardVariablesContext';
+import { getVariableTokenLabel } from './dashboard/dashboardVariableTokenLabel';
 
 /**
  * The task detail was the last screen mixing shapes: a MUI pill here next to the library Chip
@@ -36,12 +38,14 @@ const TaskFilterValue = ({
   entityTypes?: string[];
 }) => {
   const { t_i18n } = useFormatter();
+  // In a dashboard (dynamic filter tooltip of a widget filter), a variable token is shown under the variable name.
+  const variables = useOptionalDashboardVariableDefinitions();
   const { filtersRepresentatives } = usePreloadedQuery<FilterValuesContentQuery>(
     filterValuesContentQuery,
     queryRef,
   );
   const filtersRepresentativesMap = new Map(
-    (filtersRepresentatives ?? []).map((n) => [n?.id, n]),
+    (filtersRepresentatives ?? []).map((n) => [n?.representativeId, n]),
   );
   const globalFilterMode = t_i18n(filters.mode.toUpperCase());
   return (
@@ -80,7 +84,7 @@ const TaskFilterValue = ({
           );
         }
         const values = currentFilter.values.map(
-          (o) => formatValue(`${filtersRepresentativesMap.get(o)?.value ?? o}`),
+          (o) => getVariableTokenLabel(o, variables, t_i18n)?.label ?? formatValue(`${filtersRepresentativesMap.get(o)?.value ?? o}`),
         );
         const localFilterMode = t_i18n((currentFilter.mode ?? 'or').toUpperCase());
         const joined = truncate(values.join(` ${localFilterMode} `), 40);
@@ -101,11 +105,14 @@ const TaskFilterValue = ({
       })}
       {filters.filterGroups
         && filters.filterGroups.length > 0 && (
-        <ImbricatedFilterGroupDisplay
+        <FilterGroupSummaryButton
           filtersRepresentativesMap={filtersRepresentativesMap}
           filterObj={filters}
-          filterMode={filters.mode}
+          showOnlyFilterGroups
           filterStyle={CHIP_STYLE}
+          buttonLabel={t_i18n('Filters are not fully displayed')}
+          dialogTitle={t_i18n('Imbricated filter groups')}
+          dialogDescription={t_i18n('This filter group contains nested filter groups. The full content is displayed below for reference. It can be edited directly from the filters line on the entity page.')}
         />
       )}
     </>

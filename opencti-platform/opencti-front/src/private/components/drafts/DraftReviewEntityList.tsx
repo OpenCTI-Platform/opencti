@@ -13,6 +13,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps, DataTableVariant } from '../../../components/dataGrid/dataTableTypes';
 import { useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import type { CustomFieldStoredValue } from '../../../utils/customFields';
 
 const draftReviewEntityFragment = graphql`
   fragment DraftReviewEntityList_node on StixCoreObject {
@@ -25,6 +26,18 @@ const draftReviewEntityFragment = graphql`
     draftVersion {
       draft_operation
       draft_updates_patch
+    }
+    ... on StixDomainObject {
+      customFieldValues {
+        field_id
+        field_name
+        int_value
+        string_value
+        boolean_value
+        date_value
+        select_value
+        select_values
+      }
     }
   }
 `;
@@ -103,6 +116,8 @@ export interface DraftEntitySelection {
   representative_main: string | null | undefined;
   draft_operation: string | null | undefined;
   draft_updates_patch: string | null | undefined;
+  // Custom field values of the draft version, the final state of the custom field changes
+  custom_field_values?: readonly CustomFieldStoredValue[] | null;
 }
 
 interface DraftReviewEntityListProps {
@@ -208,6 +223,7 @@ const DraftReviewEntityList: FunctionComponent<DraftReviewEntityListProps> = ({
               representative_main: node.representative?.main,
               draft_operation: node.draftVersion?.draft_operation ?? null,
               draft_updates_patch: node.draftVersion?.draft_updates_patch ?? null,
+              custom_field_values: node.customFieldValues,
             });
           }}
         />

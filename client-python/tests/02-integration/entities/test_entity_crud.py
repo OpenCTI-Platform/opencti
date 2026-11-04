@@ -1,12 +1,12 @@
-from pytest_cases import fixture, parametrize_with_cases
+import pytest
 
 from tests.cases.entities import EntityTestCases
-from tests.utils import compare_values, is_filters_empty
+from tests.utils import case_id, cases_of, compare_values, is_filters_empty
 
 
-@fixture
-@parametrize_with_cases("entity", cases=EntityTestCases)
-def entity_class(entity):
+@pytest.fixture(params=cases_of(EntityTestCases), ids=case_id)
+def entity_class(request, api_client):
+    entity = request.param(api_client)
     entity.setup()
     yield entity
     entity.teardown()

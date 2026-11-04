@@ -11,16 +11,28 @@ import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConne
 import { publishUserAction } from '../../listener/UserActionListener';
 import { logApp } from '../../config/conf';
 import { pushBundleToWorker } from '../../database/rabbitmq';
-import { createWork } from '../../domain/work';
+import { redisDeleteWorks } from '../../database/redis';
+import { createWork, updateProcessedTime } from '../../domain/work';
 import { ConnectorPriorityGroup, ConnectorType, type DraftWorkspaceAddInput, FilterMode, type FormSubmissionInput, type MemberAccessInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
 import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
-import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
+import { addDraftWorkspace, deleteDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
 import { validateFormSubmission } from './form-validation';
+import {
+  countPendingLabels,
+  getPendingMainEntityAuthor,
+  getPendingUploadCopies,
+  readUploads,
+  resolvePendingFieldRefs,
+  validatePendingPayload,
+  validatePendingRoots,
+} from './form-pending';
+import { canUpdateKnowledgeIn, checkFormSubmissionAccess } from './form-submission-context';
 import { buildAdditionalEntities, buildMainStixEntities, buildRelationships, wrapInContainerOrPush } from './form-bundle-builder';
 
 export { completeEntity } from './form-entity-builder';
@@ -244,6 +256,7 @@ export const resolveMainEntityAuthorFromValues = (
     resolveIn(values)
     || resolveIn(values.mainEntityFields)
     || resolveIn(Array.isArray(values.mainEntityGroups) ? values.mainEntityGroups[0] : undefined)
+    || getPendingMainEntityAuthor(values)
     || null
   );
 };
@@ -410,18 +423,94 @@ export const resolveAuthorizedMembersForDraft = (
   return Array.from(authorizedMembersMap.values());
 };
 
-// Submit a form and convert to STIX bundle
-export const formSubmit = async (
-  context: AuthContext,
+export interface DraftPlan {
+  draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean };
+}
+
+export const buildDraftPlan = (
+  formName: string,
+  schema: FormSchemaDefinition,
+  values: Record<string, any>,
   user: AuthUser,
-  input: FormSubmissionInput,
-  isDraft: boolean = false,
-): Promise<any> => {
-  const form = await findById(context, user, input.formId);
-  if (!form) {
-    throw FunctionalError('Form not found', { id: input.formId });
+  isBypass: boolean = false,
+): DraftPlan => {
+  let createdBy: string | null = null;
+  const {
+    finalDraftName,
+    finalDraftDescription,
+    finalDraftAssignees,
+    finalDraftParticipants,
+  } = resolveDraftFieldDefaults(formName, values, schema.draftDefaults, isBypass);
+
+  // Apply draft defaults for author
+  const canOverrideDraftAuthor = isBypass || (schema.draftDefaults?.author?.isEditable !== false);
+  const isAuthorRequired = schema.draftDefaults?.author?.isRequired === true;
+  const hasExplicitDraftAuthor = Object.hasOwn(values, 'draftAuthor');
+  if (canOverrideDraftAuthor && values.draftAuthor) {
+    createdBy = normalizeOptionId(values.draftAuthor) || null;
+  } else if (canOverrideDraftAuthor && hasExplicitDraftAuthor && !isAuthorRequired && schema.draftDefaults?.author?.type !== 'main_entity_author') {
+    // User explicitly cleared the field; it's editable and not required → honour the opt-out
+    // Exception: main_entity_author type — empty means "inherit from main entity", not opt-out
+    createdBy = null;
+  } else if (schema.draftDefaults?.author) {
+    if (schema.draftDefaults.author.type === 'static') {
+      createdBy = schema.draftDefaults.author.defaultValue || null;
+    } else if (schema.draftDefaults.author.type === 'main_entity_author') {
+      createdBy = resolveMainEntityAuthorFromValues(schema, values);
+    } else if (schema.draftDefaults.author.type === 'none') {
+      createdBy = null;
+    }
   }
 
+  // Apply explicit authorized members from form submission
+  // Bypass users can always override; non-bypass users can override when the field is editable
+  const canOverrideAuthorizedMembers = isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
+  // AUTHOR-type authorized-member rules ("author's org") must resolve even when the
+  // "Draft Author" section itself is left unconfigured, so fall back to the main
+  // entity's author in that case only - not when the admin set type 'none' or the
+  // submitter explicitly opted out, which must keep excluding that org.
+  const authorForAuthorizedMembers = createdBy
+    ?? (!schema.draftDefaults?.author ? resolveMainEntityAuthorFromValues(schema, values) : null);
+  let authorized_members: MemberAccessInput[] = [];
+  if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
+    authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, authorForAuthorizedMembers);
+  } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
+    authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, authorForAuthorizedMembers);
+  }
+
+  const draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean } = {
+    name: finalDraftName,
+  };
+  if (finalDraftDescription.length > 0) draftInput.description = finalDraftDescription;
+  if (finalDraftAssignees.length > 0) draftInput.objectAssignee = finalDraftAssignees;
+  if (finalDraftParticipants.length > 0) draftInput.objectParticipant = finalDraftParticipants;
+  if (createdBy) draftInput.createdBy = createdBy;
+  if (authorized_members.length > 0) draftInput.authorized_members = authorized_members;
+  // Form intake configuration must override customization mandatory attributes.
+  draftInput.bypassMandatoryAttributes = true;
+
+  return { draftInput };
+};
+
+export type SubmissionPlan
+  = | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: true; draftPlan: DraftPlan }
+    | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: false; draftPlan: null };
+
+// planSubmission is the decision step: it resolves the submitted form values into the concrete
+// STIX bundle and (when applicable) draft-workspace input that commitSubmission will persist.
+// It performs no observable writes (no work item, no queue push, no draft workspace, no patch,
+// no telemetry) — that boundary is what makes it safe to call speculatively/repeatedly without
+// side effects on the platform. It is NOT a pure, input-only function though: entity/relationship
+// materialization still needs read access to existing platform data (loadFormEntity/storeLoadById
+// lookups, the pattern-conversion bridge) and generates a fresh bundle id, so replaying it with
+// the same input is not guaranteed to be deterministic or replayable offline.
+export const planSubmission = async (
+  context: AuthContext,
+  user: AuthUser,
+  form: BasicStoreEntityForm,
+  input: FormSubmissionInput,
+  isDraft: boolean,
+): Promise<SubmissionPlan> => {
   // eslint-disable-next-line no-useless-assignment
   let values = {} as Record<string, any>;
   try {
@@ -432,7 +521,6 @@ export const formSubmit = async (
 
   const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
 
-  // Enforce draft settings from schema
   let finalIsDraft = isDraft;
   if (schema.isDraftByDefault === true) {
     if (schema.allowDraftOverride === false) {
@@ -442,6 +530,15 @@ export const formSubmit = async (
 
   const isBypass = isUserHasCapability(user, BYPASS);
   validateFormSubmission(schema, values, isBypass);
+  validatePendingPayload(values, input.files?.length ?? 0, schema);
+  if (!isBypass) {
+    // A submission that creates no draft is imported in the current draft of the applicant, if any (see commitSubmission)
+    const toDraft = finalIsDraft || !!getDraftContext(context, user); // '' once the applicant left a draft
+    checkFormSubmissionAccess(user, toDraft, { pendingLabels: countPendingLabels(values) });
+  }
+  validatePendingRoots(schema, values);
+  const uploads = await readUploads(input.files, getPendingUploadCopies(values, schema));
+  values = resolvePendingFieldRefs(values, schema, uploads);
   const bundle: any = {
     type: 'bundle',
     id: `bundle--${uuidv4()}`,
@@ -450,104 +547,145 @@ export const formSubmit = async (
   };
 
   const { mainEntityType } = schema;
-
-  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass);
-
-  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass);
-
+  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass, uploads);
+  const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass, uploads);
   await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
   wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
-  logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length, bundle });
 
+  let draftPlan: DraftPlan | null = null;
+  if (finalIsDraft) {
+    try {
+      draftPlan = buildDraftPlan(form.name, schema, values, user, isBypass);
+    } catch (error) {
+      // Preserve the same error surface as commitSubmission's queue-push failures below,
+      // since draft-plan building was part of that single try/catch before the split.
+      logApp.error('[FORM] Error sending bundle to connector queue', { error });
+      throw FunctionalError('Failed to process form submission', { cause: error });
+    }
+  }
+
+  if (finalIsDraft) {
+    if (!draftPlan) {
+      throw FunctionalError('Failed to process form submission', { cause: new Error('Missing draft plan for a draft submission') });
+    }
+    return { bundle, mainEntityStixId, finalIsDraft: true, draftPlan };
+  }
+  return { bundle, mainEntityStixId, finalIsDraft: false, draftPlan: null };
+};
+
+export interface SubmissionResult {
+  success: boolean;
+  bundleId: string;
+  message: string;
+  entityId: string | undefined;
+}
+
+// Best effort: the submission failed, nothing must be imported for it. The push may still have reached the queue
+// (a broker error after it accepted the message): the live state of the work is deleted first, so the worker skips such
+// a bundle (WORK_NOT_ALIVE) and its binding to the applicant and the draft can no longer be used. Then the work is closed
+// in error (as a connector does when it fails) and the draft created for this submission is deleted.
+const rollbackFailedSubmission = async (context: AuthContext, draftId: string | null, workId: string | undefined) => {
+  if (workId) {
+    try {
+      await redisDeleteWorks([workId]);
+    } catch (cleanupError) {
+      logApp.error('[FORM] Cannot end the work of a failed submission', { workId, cause: cleanupError });
+    }
+    try {
+      await updateProcessedTime(context, SYSTEM_USER, workId, 'Form submission failed before the bundle was sent to the worker', true);
+    } catch (cleanupError) {
+      logApp.error('[FORM] Cannot close the work of a failed submission', { workId, cause: cleanupError });
+    }
+  }
+  if (draftId) {
+    try {
+      await deleteDraftWorkspace(bypassDraftContext(context), SYSTEM_USER, draftId);
+    } catch (cleanupError) {
+      logApp.error('[FORM] Cannot delete the draft of a failed submission', { draftId, cause: cleanupError });
+    }
+  }
+};
+
+export const commitSubmission = async (
+  context: AuthContext,
+  user: AuthUser,
+  formId: string,
+  plan: SubmissionPlan,
+): Promise<SubmissionResult> => {
+  const { bundle, mainEntityStixId, finalIsDraft, draftPlan } = plan;
   try {
-    const connectorId = connectorIdFromIngestId(form.id);
+    logApp.info('[FORM] STIX Bundle generated', { bundleId: bundle.id, objectCount: bundle.objects.length });
+    const connectorId = connectorIdFromIngestId(formId);
     const connector = { internal_id: connectorId, connector_type: ConnectorType.ExternalImport };
     const workName = `Form submission @ ${now()}`;
-    const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now() });
-
     const stixBundle = JSON.stringify(bundle);
     const content = Buffer.from(stixBundle, 'utf-8').toString('base64');
 
-    let draftId = null;
-    if (finalIsDraft) {
-      let createdBy: string | null = null;
-      const {
-        finalDraftName,
-        finalDraftDescription,
-        finalDraftAssignees,
-        finalDraftParticipants,
-      } = resolveDraftFieldDefaults(form.name, values, schema.draftDefaults, isBypass);
-
-      // Apply draft defaults for author
-      const canOverrideDraftAuthor = isBypass || (schema.draftDefaults?.author?.isEditable !== false);
-      const isAuthorRequired = schema.draftDefaults?.author?.isRequired === true;
-      const hasExplicitDraftAuthor = Object.hasOwn(values, 'draftAuthor');
-      if (canOverrideDraftAuthor && values.draftAuthor) {
-        createdBy = normalizeOptionId(values.draftAuthor) || null;
-      } else if (canOverrideDraftAuthor && hasExplicitDraftAuthor && !isAuthorRequired && schema.draftDefaults?.author?.type !== 'main_entity_author') {
-        // User explicitly cleared the field; it's editable and not required → honour the opt-out
-        // Exception: main_entity_author type — empty means "inherit from main entity", not opt-out
-        createdBy = null;
-      } else if (schema.draftDefaults?.author) {
-        if (schema.draftDefaults.author.type === 'static') {
-          createdBy = schema.draftDefaults.author.defaultValue || null;
-        } else if (schema.draftDefaults.author.type === 'main_entity_author') {
-          createdBy = resolveMainEntityAuthorFromValues(schema, values);
-        } else if (schema.draftDefaults.author.type === 'none') {
-          createdBy = null;
-        }
+    // The draft and the work are created before the bundle is sent: if one step fails, the ones already done must not stay behind
+    let createdDraftId: string | null = null;
+    let workId: string | undefined;
+    try {
+      if (finalIsDraft && draftPlan) {
+        const draft = await addDraftWorkspace(context, SYSTEM_USER, draftPlan.draftInput);
+        createdDraftId = draft.id;
+        // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
+        await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
       }
-
-      // Apply explicit authorized members from form submission
-      // Bypass users can always override; non-bypass users can override when the field is editable
-      const canOverrideAuthorizedMembers = isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
-      let authorized_members: MemberAccessInput[] = [];
-      if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, createdBy);
-      } else if (schema.draftDefaults?.authorizedMembers?.enabled && schema.draftDefaults.authorizedMembers.defaults) {
-        authorized_members = resolveAuthorizedMembersForDraft(user, schema.draftDefaults.authorizedMembers.defaults, createdBy);
-      }
-
-      const draftInput: DraftWorkspaceAddInput & { bypassMandatoryAttributes?: boolean } = {
-        name: finalDraftName,
-      };
-      if (finalDraftDescription.length > 0) draftInput.description = finalDraftDescription;
-      if (finalDraftAssignees.length > 0) draftInput.objectAssignee = finalDraftAssignees;
-      if (finalDraftParticipants.length > 0) draftInput.objectParticipant = finalDraftParticipants;
-      if (createdBy) draftInput.createdBy = createdBy;
-      if (authorized_members.length > 0) draftInput.authorized_members = authorized_members;
-      // Form intake configuration must override customization mandatory attributes.
-      draftInput.bypassMandatoryAttributes = true;
-
-      const draft = await addDraftWorkspace(context, SYSTEM_USER, draftInput);
-      draftId = draft.id;
-      // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
-      await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
+      // A submission that creates no draft is imported where it was made: in the current draft of the applicant, or in main
+      const draftId = createdDraftId ?? (getDraftContext(context, user) || null);
+      // The work is bound to the applicant, the form and the draft: the import is only allowed to write for this submission
+      const formSubmission = { applicant_id: user.id, form_id: formId, draft_id: draftId };
+      const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now(), formSubmission });
+      workId = work.id;
+      await pushBundleToWorker(context, SYSTEM_USER, connectorId, {
+        type: 'bundle',
+        applicant_id: user.id,
+        content,
+        work_id: work.id,
+        // An empty id (not null) makes the worker send an empty draft header: a missing header would make the API fall back
+        // to the draft the applicant is in at import time, which may no longer be the one of the submission
+        draft_id: draftId ?? '',
+        // Without Create / Update knowledge, an existing object is not force merged (and not upserted, see isCreateOnlyFormImport)
+        update: canUpdateKnowledgeIn(user, draftId !== null),
+        no_split: true,
+      });
+    } catch (error) {
+      await rollbackFailedSubmission(context, createdDraftId, workId);
+      throw error;
     }
-    await pushBundleToWorker(context, SYSTEM_USER, connectorId, {
-      type: 'bundle',
-      applicant_id: user.id,
-      content,
-      work_id: work.id,
-      draft_id: draftId,
-      update: true,
-      no_split: true,
-    });
 
-    logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });
-
+    logApp.info('[FORM] Bundle sent to connector queue', { formId, workId, bundleId: bundle.id });
     await addFormIntakeSubmittedCount();
 
     return {
       success: true,
       bundleId: bundle.id,
       message: 'Form submitted successfully and sent for processing',
-      entityId: finalIsDraft ? draftId : mainEntityStixId,
+      entityId: finalIsDraft ? createdDraftId ?? undefined : mainEntityStixId,
     };
   } catch (error) {
     logApp.error('[FORM] Error sending bundle to connector queue', { error });
     throw FunctionalError('Failed to process form submission', { cause: error });
   }
+};
+
+// Submit a form and convert to STIX bundle
+export const formSubmit = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: FormSubmissionInput,
+  isDraft: boolean = false,
+): Promise<SubmissionResult> => {
+  const form = await findById(context, user, input.formId);
+  if (!form) {
+    throw FunctionalError('Form not found', { id: input.formId });
+  }
+  if (form.active === false) {
+    throw FunctionalError('Form is inactive', { id: input.formId });
+  }
+
+  const plan = await planSubmission(context, user, form, input, isDraft);
+  return commitSubmission(context, user, form.id, plan);
 };
 
 export const generateFormExportConfiguration = async (

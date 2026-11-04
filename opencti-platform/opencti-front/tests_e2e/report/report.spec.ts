@@ -29,7 +29,7 @@ const TEST_PDF_PATH = fileURLToPath(new URL('assets/report.test.pdf', import.met
  * Delete report.
  * Check deletion.
  */
-test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page }) => {
+test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page }) => {
   await fakeDate(page, 'April 1 2024 12:00:00');
   const leftNavigation = new LeftBarPage(page);
   const reportPage = new ReportPage(page);
@@ -78,6 +78,8 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
   await reportForm.publicationDateField.clear();
   await expect(page.getByText('This field is required')).toBeVisible();
   await reportForm.publicationDateField.fill('2023-12-05');
+  // A partly typed date is validated when the field loses the focus.
+  await page.keyboard.press('Tab');
   await expect(page.getByText('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).toBeVisible();
   await reportForm.publicationDateField.fill('2023-12-05 12:00:00 AM');
   await expect(page.getByText('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).toBeHidden();
@@ -225,7 +227,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
   await reportForm.publicationDateField.getClearButton().click();
   // The mask coming back is the proof the field is empty AND still a working
   // date field; matched as a pattern because the mask follows the locale.
-  await expect(reportForm.publicationDateField.getInput()).toHaveValue(/Y{4}.*M{2}.*D{2}/);
+  await expect(reportForm.publicationDateField.getSections()).toHaveText(/Y{4}.*M{2}.*D{2}/);
   // Re-picking on a cleared field: the calendar opens on the frozen clock's
   // month (April 2024), so this is deterministic and leaves a valid value.
   await reportForm.publicationDateField.pickDay('25');
@@ -238,7 +240,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
   // endregion
 
   await reportDetailsPage.getEditButton().click();
-  await reportForm.publicationDateField.fill('2023-12-25 18:00 PM');
+  await reportForm.publicationDateField.fill('2023-12-25 06:00:00 PM');
   await reportForm.getUpdateTitle().click();
   await reportForm.getCloseButton().click();
   publicationDate = reportDetailsPage.getTextForHeading('Publication date', 'December 25, 2023');
@@ -350,7 +352,7 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
  * Delete report by background task.
  * Check deletion.
  */
-test('Report live entities creation and relationships', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group1'] }, async ({ page }) => {
+test('Report live entities creation and relationships', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, async ({ page }) => {
   const leftNavigation = new LeftBarPage(page);
   // const toolbar = new ToolbarPageModel(page);
   const reportPage = new ReportPage(page);

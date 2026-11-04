@@ -1,5 +1,8 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
@@ -151,6 +154,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     const allNames = splitMultilines(values.name);
     const variables: EventCreationMutation$variables[] = allNames.map((name) => {
       const input: EventCreationMutation$variables['input'] = {
+        ...getCustomFieldValues(values),
         ...buildCreationFilesInput(values.file ? [values.file] : []),
         name,
         description: values.description,
@@ -199,6 +203,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
 
   return (
     <Formik<EventAddInput>
+      entityType={EVENT_TYPE}
       initialValues={initialValues}
       validationSchema={eventValidator}
       validateOnChange={false}
@@ -338,6 +343,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
                 : undefined
               }
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 variant="secondary"

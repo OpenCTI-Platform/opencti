@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../relay/environment';
 import Loader from '../../components/Loader';
 import ErrorNotFound from '../../components/ErrorNotFound';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import { useComputeLink } from '../../utils/hooks/useAppData';
 
 export const stixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery = graphql`
@@ -12,6 +12,11 @@ export const stixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery = gra
   ) {
     stixObjectOrStixRelationship(id: $id) {
       ... on StixCoreObject {
+        id
+        parent_types
+        entity_type
+      }
+      ... on ExternalReference {
         id
         parent_types
         entity_type
@@ -89,20 +94,12 @@ export const stixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery = gra
   }
 `;
 
-const useStyles = makeStyles({
-  container: {
-    margin: 0,
-    padding: 0,
-  },
-});
-
 const StixObjectOrStixRelationship = () => {
-  const classes = useStyles();
   const { id } = useParams();
   const computeLink = useComputeLink();
 
   return (
-    <div className={classes.container}>
+    <Box sx={{ margin: 0, padding: 0 }}>
       <QueryRenderer
         query={stixObjectOrStixRelationshipStixObjectOrStixRelationshipQuery}
         variables={{ id }}
@@ -120,7 +117,7 @@ const StixObjectOrStixRelationship = () => {
           return <Loader />;
         }}
       />
-    </div>
+    </Box>
   );
 };
 

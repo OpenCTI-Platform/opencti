@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import DataTableWithoutFragmentToolBar from '@components/data/DataTableWithoutFragmentToolBar';
 import type { DataTableProps } from './dataTableTypes';
 import DataTableComponent from './components/DataTableComponent';

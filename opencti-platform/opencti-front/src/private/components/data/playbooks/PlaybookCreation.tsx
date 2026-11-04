@@ -22,7 +22,7 @@ import { useNavigate } from 'react-router';
 import ToggleButton from '@mui/material/ToggleButton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { FileUploadOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FormikConfig } from 'formik/dist/types';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import Drawer, { DrawerControlledDialType } from '../../common/drawer/Drawer';

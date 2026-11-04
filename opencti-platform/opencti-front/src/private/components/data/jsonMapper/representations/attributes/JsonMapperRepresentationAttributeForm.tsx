@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import JsonMapperRepresentationAttributeOptions from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationAttributeOptions';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, FieldProps } from 'formik';
 import JsonMapperRepresentationDialogOption from '@components/data/jsonMapper/representations/attributes/JsonMapperRepresentationDialogOption';
 import { JsonMapperRepresentationAttributeFormData } from '@components/data/jsonMapper/representations/attributes/Attribute';
@@ -9,7 +8,8 @@ import { useFormatter } from '../../../../../../components/i18n';
 import { isEmptyField } from '../../../../../../utils/utils';
 import TextField from '../../../../../../components/TextField';
 import JsonMapperRepresentionAttributeSelectedConfigurations from './JsonMapperRepresentionAttributeSelectedConfigurations';
-import { useTheme } from '@mui/styles';
+import Box from '@mui/material/Box';
+import { styled, useTheme } from '@mui/material/styles';
 import { Theme } from '../../../../../../components/Theme';
 
 export type RepresentationAttributeForm = JsonMapperRepresentationAttributeFormData | undefined;
@@ -21,27 +21,19 @@ interface JsonMapperRepresentationAttributeFormProps
   handleErrors: (key: string, value: string | null) => void;
 }
 
+const Container = styled('div')({
+  width: '100%',
+  display: 'inline-grid',
+  gridTemplateColumns: '2fr 3fr 50px',
+  alignItems: 'center',
+  marginTop: '10px',
+  gap: '10px',
+});
+
 const JsonMapperRepresentationAttributeForm: FunctionComponent<
   JsonMapperRepresentationAttributeFormProps
 > = ({ form, field, schemaAttribute, label, handleErrors }) => {
   const theme = useTheme<Theme>();
-  // Deprecated - https://mui.com/system/styles/basics/
-  // Do not use it for new code.
-  const useStyles = makeStyles(() => ({
-    container: {
-      width: '100%',
-      display: 'inline-grid',
-      gridTemplateColumns: '2fr 3fr 50px',
-      alignItems: 'center',
-      marginTop: '10px',
-      gap: '10px',
-    },
-    redStar: {
-      color: theme.palette.designSystem.tertiary.red[400],
-      marginLeft: '5px',
-    },
-  }));
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const { name, value } = field;
@@ -72,10 +64,10 @@ const JsonMapperRepresentationAttributeForm: FunctionComponent<
   }, [errors]);
 
   return (
-    <div className={classes.container}>
+    <Container>
       <div>
         {label}
-        {schemaAttribute.mandatory && <span className={classes.redStar}>*</span>}
+        {schemaAttribute.mandatory && <Box component="span" sx={{ color: theme.palette.designSystem.tertiary.red[400], marginLeft: '5px' }}>*</Box>}
       </div>
       {/** <div>
         <Field
@@ -120,7 +112,7 @@ const JsonMapperRepresentationAttributeForm: FunctionComponent<
         }
       </div>
       <JsonMapperRepresentionAttributeSelectedConfigurations configuration={value?.attr_path?.configuration} />
-    </div>
+    </Container>
   );
 };
 

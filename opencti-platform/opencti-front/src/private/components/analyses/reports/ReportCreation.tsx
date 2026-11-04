@@ -4,7 +4,10 @@ import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Dra
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -22,6 +25,7 @@ import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -39,6 +43,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { ReportCreationMutation, ReportCreationMutation$variables } from './__generated__/ReportCreationMutation.graphql';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 export const reportCreationMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
@@ -107,6 +112,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   inputValue,
 }) => {
   const { t_i18n } = useFormatter();
+  // Form Intake: nothing is created on the fly, there is no entity to map yet
+  const { isDeferredMode } = useDeferredCreation();
   const navigate = useNavigate();
   const [mapAfter, setMapAfter] = useState<boolean>(false);
   const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
@@ -147,6 +154,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     const filesInput = buildCreationFilesInput(values.file ? [values.file] : []);
 
     const input: ReportCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       name: values.name,
       description: values.description,
       content: values.content,
@@ -161,12 +169,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       ...filesInput,
-      ...(isEnterpriseEdition && canEditAuthorizedMembers && values.authorized_members && {
-        authorized_members: values.authorized_members.map(({ value, accessRight, groupsRestriction }) => ({
-          id: value,
-          access_right: accessRight,
-          groups_restriction_ids: groupsRestriction ? groupsRestriction.map((g) => g.value) : [],
-        })),
+      ...(isEnterpriseEdition && canEditAuthorizedMembers && !isDeferredMode && values.authorized_members && {
+        authorized_members: authorizedMembersToInput(values.authorized_members),
       }),
     };
     commit({
@@ -218,6 +222,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   }
   return (
     <Formik<ReportAddInput>
+      entityType={REPORT_TYPE}
       initialValues={initialValues}
       validationSchema={reportValidator}
       validateOnChange={true}
@@ -334,7 +339,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
-          {isEnterpriseEdition && (
+          <CustomFieldValuesCreation />
+          {isEnterpriseEdition && !isDeferredMode && (
             <Security
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >
@@ -372,7 +378,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             >
               {t_i18n('Create')}
             </Button>
-            {values.content.length > 0 && (
+            {!isDeferredMode && values.content.length > 0 && (
               <Button
                 onClick={() => {
                   setMapAfter(true);

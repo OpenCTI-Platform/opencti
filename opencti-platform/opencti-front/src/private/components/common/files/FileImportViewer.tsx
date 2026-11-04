@@ -56,7 +56,7 @@ const FileImportViewerComponent: FunctionComponent<
   const canDisplayUploadFileButton = !draftContext || currentAccessRight.canEdit;
 
   return (
-    <Grid item xs={6}>
+    <Grid size={6}>
       <Card
         padding="horizontal"
         title={t_i18n('Uploaded files')}

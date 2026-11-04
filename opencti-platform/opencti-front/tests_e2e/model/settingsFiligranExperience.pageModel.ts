@@ -14,6 +14,10 @@ export default class SettingsFiligranExperiencePage {
     await leftBarPage.getSubItem('Filigran Experience');
   }
 
+  async goto() {
+    await this.page.goto(this.pageUrl);
+  }
+
   getPage(name: string) {
     return this.page.getByTestId(name);
   }

@@ -58,7 +58,10 @@ const BulkTextModal = ({
       onClose={onClose}
       title={title || t_i18n('Create multiple entities')}
     >
-      <Stack gap={2}>
+      <Stack sx={{
+        gap: 2,
+      }}
+      >
         <Alert severity="info" variant="outlined">
           <Typography variant="body2">
             {t_i18n('If you are adding more than {limit} values, please upload them through', { values: { limit: MAX_LINES } })} <a href="/dashboard/data/import">{t_i18n('Imports')}</a>

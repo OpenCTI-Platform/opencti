@@ -152,7 +152,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
 
   return (
     <Grid container={true} spacing={3}>
-      <Grid item xs={6}>
+      <Grid size={6}>
         <Card
           title={t_i18n('Status')}
           sx={{
@@ -184,7 +184,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           )}
         </Card>
       </Grid>
-      <Grid item xs={3}>
+      <Grid size={3}>
         <Card
           title={t_i18n('Indexed files')}
           sx={{
@@ -201,7 +201,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           />
         </Card>
       </Grid>
-      <Grid item xs={3}>
+      <Grid size={3}>
         <Card
           title={t_i18n('Volume indexed')}
           sx={{
@@ -218,7 +218,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           />
         </Card>
       </Grid>
-      <Grid item xs={4}>
+      <Grid size={4}>
         <DangerZoneBlock
           type="file_indexing"
           displayTitle={false}
@@ -226,7 +226,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           component={({ disabled, style, title }) => (
             <Card title={title} sx={style}>
               <Grid container={true} spacing={3}>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>
                     {t_i18n('Engine')}
                   </Label>
@@ -251,7 +251,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                     </Button>
                   )}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>
                     {t_i18n('Indexing')}
                   </Label>
@@ -265,13 +265,13 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                     {t_i18n('Reset')}
                   </Button>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>
                     {t_i18n('Indexing manager start')}
                   </Label>
                   {fldt(managerConfiguration?.last_run_start_date)}
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Label>
                     {t_i18n('Last indexation')}
                   </Label>
@@ -282,10 +282,10 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           )}
         />
       </Grid>
-      <Grid item xs={4}>
+      <Grid size={4}>
         <Card title={t_i18n('Information')}>
           <Grid container={true} spacing={3}>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t_i18n('Total files in S3')}
               </Label>
@@ -293,7 +293,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                 {n(totalFiles)}
               </span>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t_i18n('Files volumes in S3')}
               </Label>
@@ -301,7 +301,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
                 {b(dataToIndex)}
               </span>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Label>
                 {t_i18n('S3 volume by file type')}
               </Label>
@@ -365,7 +365,7 @@ const FileIndexingMonitoringComponent: FunctionComponent<FileIndexingMonitoringC
           </Grid>
         </Card>
       </Grid>
-      <Grid item xs={4}>
+      <Grid size={4}>
         <FileIndexingConfiguration
           managerConfiguration={managerConfiguration}
         />

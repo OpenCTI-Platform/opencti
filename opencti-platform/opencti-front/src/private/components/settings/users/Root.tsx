@@ -4,7 +4,7 @@ import { graphql, PreloadedQuery, useLazyLoadQuery, usePreloadedQuery, useQueryL
 import Box from '@mui/material/Box';
 import { Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 import type { RootUserQuery, RootUserQuery$variables } from './__generated__/RootUserQuery.graphql';
 import type { RootUserEditionQuery } from './__generated__/RootUserEditionQuery.graphql';
@@ -103,6 +103,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const theme = useTheme<Theme>();
 
   useSubscription(subConfig);
@@ -126,7 +127,13 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
             { label: data.name || data.user_email, current: true },
           ]}
           />
-          <Stack direction="row" alignItems="center" marginBottom={3}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              marginBottom: 3,
+            }}
+          >
             <TitleMainEntity sx={{ flex: 1 }}>
               {data.name}
             </TitleMainEntity>
@@ -151,10 +158,12 @@ const RootUserComponent = ({ queryRef, userId, refetch }: RootUserComponentProps
                   )}
                 </PopoverMenu>
               )}
-              <ConvertUser
-                userId={data.id}
-                userServiceAccount={data.user_service_account ?? false}
-              />
+              {hasSetAccess && (
+                <ConvertUser
+                  userId={data.id}
+                  userServiceAccount={data.user_service_account ?? false}
+                />
+              )}
               <UserDeletionDialog
                 userId={data.id}
                 isOpen={openDelete}

@@ -26,7 +26,13 @@ const renderOpenVocabList = (
   const types = data[attribute] as string[] | undefined;
   return (
     <FieldOrEmpty source={types}>
-      <Stack direction="row" flexWrap="wrap" gap={1}>
+      <Stack
+        direction="row"
+        sx={{
+          flexWrap: 'wrap',
+          gap: 1,
+        }}
+      >
         {types?.map((type) => (
           <ItemOpenVocab
             key={type}

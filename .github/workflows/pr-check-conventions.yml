@@ -12,7 +12,7 @@ jobs:
   check-pr-title-convention:
     name: Check that PR title follows convention
     if: ${{ github.event.pull_request.user.login != 'renovate[bot]' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:
@@ -30,7 +30,7 @@ jobs:
 
   check-signed-commits:
     name: Check signed commits in PR
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:

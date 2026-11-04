@@ -19,7 +19,7 @@ on:
 jobs:
   mui-regression:
     name: MUI regression gate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       # Full history: the gate diffs against the merge base with the target
       # branch, which a shallow clone cannot resolve.
@@ -27,12 +27,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Check for MUI regressions
-        run: node fds-migration/scripts/check-mui-regression.mjs --base origin/${{ github.base_ref }}
+        env:
+          BASE_REF: ${{ github.base_ref || 'master' }}
+        run: node fds-migration/scripts/check-mui-regression.mjs --base "origin/$BASE_REF"
 
       # Runs whatever the verdict was: on a red gate this is the context the
       # author needs, and printing it only on success would hide it exactly

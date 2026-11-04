@@ -3,8 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema } from './database/engine';
 import { initializeBucket } from './database/raw-file-storage';
-import { enforceQueuesConsistency, initializeInternalQueues } from './database/rabbitmq';
-import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
+import { enforceQueuesConsistency, initializeInternalQueues } from './modules/connector/connector-rabbitmq';
+import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION, TLS_REJECT_UNAUTHORIZED } from './config/conf';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
@@ -21,7 +21,7 @@ import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initializeAuthenticationProviders } from './modules/authenticationProvider/providers';
-import { initializeAdminUser } from './domain/user';
+import { initializeAdminUser } from './modules/user/user-domain';
 import type { BasicStoreEntityMigrationStatus } from './types/store';
 import type { AuthContext } from './types/user';
 
@@ -32,6 +32,13 @@ const PLATFORM_LOCK_ID = 'platform_init_lock';
 export const checkFeatureFlags = () => {
   if (ENABLED_FEATURE_FLAGS.length > 0) {
     logApp.info(`[FEATURE-FLAG] Activated features still in development: ${ENABLED_FEATURE_FLAGS}`);
+  }
+};
+
+export const checkTlsVerification = () => {
+  if (!TLS_REJECT_UNAUTHORIZED) {
+    logApp.warn('[OPENCTI] TLS certificate verification is disabled for the outgoing connections that do not set their own option (tls:reject_unauthorized=false). '
+      + 'It will be enabled by default in an upcoming version: set TLS__REJECT_UNAUTHORIZED=true to opt in now.');
   }
 };
 

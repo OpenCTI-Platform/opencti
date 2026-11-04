@@ -31,7 +31,7 @@ const StixDomainObjectVictimology = ({
   return (
     <>
       <Grid container={true} spacing={3} rowSpacing={6}>
-        <Grid item xs={6} style={gridItemSize}>
+        <Grid style={gridItemSize} size={6}>
           <EntityStixCoreRelationshipsHorizontalBars
             title={t_i18n('Victimology (sectors)')}
             fromId={stixDomainObjectId}
@@ -41,7 +41,7 @@ const StixDomainObjectVictimology = ({
             isTo={true}
           />
         </Grid>
-        <Grid item xs={6} style={gridItemSize}>
+        <Grid style={gridItemSize} size={6}>
           <EntityStixCoreRelationshipsHorizontalBars
             title={t_i18n('Victimology (regions)')}
             fromId={stixDomainObjectId}
@@ -51,7 +51,7 @@ const StixDomainObjectVictimology = ({
             isTo={true}
           />
         </Grid>
-        <Grid item xs={6} style={gridItemSize}>
+        <Grid style={gridItemSize} size={6}>
           <EntityStixCoreRelationshipsHorizontalBars
             title={t_i18n('Victimology (countries)')}
             fromId={stixDomainObjectId}
@@ -61,7 +61,7 @@ const StixDomainObjectVictimology = ({
             isTo={true}
           />
         </Grid>
-        <Grid item xs={6} style={gridItemSize}>
+        <Grid style={gridItemSize} size={6}>
           <StixDomainObjectVictimologyMap
             title={t_i18n('Victimology (countries)')}
             stixDomainObjectId={stixDomainObjectId}

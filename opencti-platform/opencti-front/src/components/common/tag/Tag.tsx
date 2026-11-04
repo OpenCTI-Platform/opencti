@@ -6,6 +6,8 @@ export interface TagProps {
   label?: string | number | null;
   color?: string | null;
   onClick?: (e: React.MouseEvent) => void;
+  /** Middle click: browsers fire it as auxclick, never as click. */
+  onAuxClick?: (e: React.MouseEvent) => void;
   onDelete?: (e: React.MouseEvent) => void;
   /** Accessible name for the delete button. Defaults, in the library, to an
    *  untranslated `Remove ${label}` — pass a translated string. */
@@ -31,6 +33,7 @@ const Tag = ({
   label,
   color,
   onClick,
+  onAuxClick,
   onDelete,
   deleteLabel,
   deleteTabIndex,
@@ -59,6 +62,7 @@ const Tag = ({
       color={color ?? undefined}
       startIcon={icon}
       onClick={onClick}
+      onAuxClick={onAuxClick}
       // the library's handler takes no event; the wrapper's callers expect one
       onDelete={onDelete ? () => onDelete({} as React.MouseEvent) : undefined}
       deleteLabel={deleteLabel}

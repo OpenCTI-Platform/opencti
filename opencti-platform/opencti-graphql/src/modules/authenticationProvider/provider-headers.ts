@@ -6,9 +6,9 @@ import { createMapper } from './mappings-utils';
 import { handleProviderLogin } from './providers';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { AuthType, EnvStrategyType, HEADERS_STRATEGY_IDENTIFIER, type ProviderConfiguration } from './providers-configuration';
-import { sessionAuthenticateUser } from '../../domain/user';
+import { sessionAuthenticateUser } from '../user/user-domain';
 import type { Request, Response } from 'express';
-import { extractRefererPathFromReq, setCookieError } from '../../http/httpUtils';
+import { extractSafeRedirectFromReq, setCookieError } from '../../http/httpUtils';
 
 export const HEADERS_PROVIDER_NAME = 'Headers';
 export let HEADERS_PROVIDER: ProviderConfiguration | undefined = undefined;
@@ -19,7 +19,7 @@ export const registerHeadersStrategy = async (context: AuthContext) => {
   const handleHeadersAuthenticationRequest = async (req: Request, res: Response) => {
     const settings = await getSettings(context) as unknown as BasicStoreSettings;
     const headerStrategy = settings.headers_auth;
-    const redirect = extractRefererPathFromReq(req) ?? '/';
+    const redirect = extractSafeRedirectFromReq(req);
     const isActivated = headerStrategy?.enabled;
     if (!isActivated) {
       setCookieError(res, 'Headers authentication is not available');

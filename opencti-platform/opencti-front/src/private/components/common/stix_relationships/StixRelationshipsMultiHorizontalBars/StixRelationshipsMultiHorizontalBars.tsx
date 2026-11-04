@@ -1,4 +1,4 @@
-import React, { CSSProperties, FunctionComponent, Suspense, useState } from 'react';
+import React, { CSSProperties, FunctionComponent, useState } from 'react';
 import type { PreloadedQuery } from 'react-relay';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import ApexCharts from 'apexcharts';
@@ -9,11 +9,9 @@ import type { DashboardConfig } from '../../../../../components/dashboard/dashbo
 import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
-import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import useDashboardViz from '../../../../../components/dashboard/useDashboardViz';
 import { computeWidgetFiltersForSelection } from '../../../../../components/dashboard/dashboardVizUtils';
-import WidgetNoHostEntity from '../../../../../components/dashboard/WidgetNoHostEntity';
-import WidgetNoSavedFilters from '../../../../../components/dashboard/WidgetNoSavedFilters';
+import WidgetRenderContent from '../../../../../components/dashboard/WidgetRenderContent';
 import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
 import type {
   StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery,
@@ -523,7 +521,7 @@ const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsM
     ? stixRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery
     : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<MultiHorizontalBarsQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<MultiHorizontalBarsQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -547,33 +545,19 @@ const StixRelationshipsMultiHorizontalBars: FunctionComponent<StixRelationshipsM
     }
   }
 
-  const renderContent = () => {
-    if (isMissingHostEntity) {
-      return <WidgetNoHostEntity host={host} />;
-    }
-
-    if (isMissingSavedFilters) {
-      return <WidgetNoSavedFilters />;
-    }
-
-    if (!queryRef) {
-      return <Loader variant={LoaderVariant.inElement} />;
-    }
-
-    return (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <StixRelationshipsMultiHorizontalBarsComponent
-          queryRef={queryRef}
-          parameters={parameters}
-          finalField={finalField}
-          queryToCall={queryToCall}
-          subSelection={subSelection}
-          finalSubDistributionField={finalSubDistributionField}
-          onMounted={setChart}
-        />
-      </Suspense>
-    );
-  };
+  const renderContent = () => (
+    <WidgetRenderContent {...renderGuards} queryRef={queryRef} host={host}>
+      <StixRelationshipsMultiHorizontalBarsComponent
+        queryRef={queryRef!}
+        parameters={parameters}
+        finalField={finalField}
+        queryToCall={queryToCall}
+        subSelection={subSelection}
+        finalSubDistributionField={finalSubDistributionField}
+        onMounted={setChart}
+      />
+    </WidgetRenderContent>
+  );
 
   return (
     <WidgetContainer

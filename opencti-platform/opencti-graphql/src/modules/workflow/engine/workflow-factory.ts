@@ -4,6 +4,34 @@ import type { ConditionValidator, Context, SideEffect } from '../types/workflow-
 import { WorkflowDefinition } from './workflow-definition';
 import { WorkflowInstance } from './workflow-instance';
 import { FilterMode, FilterOperator, type Filter, type FilterGroup } from '../../../generated/graphql';
+import { stixLoadById, stixLoadByIds } from '../../../database/middleware';
+import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../utils/filtering/filtering-stix/stix-filtering';
+import { buildResolutionMapForFilterGroup, extractFilterGroupValuesToResolveForCache } from '../../../utils/filtering/filtering-resolution';
+import { SYSTEM_USER } from '../../../utils/access';
+import { logApp } from '../../../config/conf';
+import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
+import {
+  FILTER_KEYS_WITH_ME_VALUE,
+  ME_FILTER_VALUE,
+  WORKFLOW_CONTEXT_FILTER_KEYS,
+  WORKFLOW_ORGANIZATION_FILTER,
+  WORKFLOW_ROLE_FILTER,
+  WORKFLOW_USER_FILTER,
+} from '../../../utils/filtering/filtering-constants';
+import type { FilterResolutionMap } from '../../../utils/filtering/filtering-resolution';
+
+// What entity attribute filters are evaluated against: the entity as stix and the resolved filter values.
+interface EntityFilterInput {
+  stixEntity: any;
+  resolutionMap: FilterResolutionMap;
+}
+
+// Per workflow context cache, shared by all the transitions evaluated with that context
+// (allowed transitions listing evaluates every transition of the current state with the same context).
+interface EntityFilterCache {
+  stixEntity?: Promise<any>;
+  resolvedValues: Map<string, Promise<any>>;
+}
 
 /**
  * Utility factory to create workflow definitions and instances from various sources.
@@ -17,17 +45,68 @@ export class WorkflowFactory {
     const ctxUser = (ctx as any).triggeringUser ?? (ctx as any).user;
     if (key === 'workflow_group') {
       return (ctxUser?.groups || []).map((g: any) => g.id);
-    } else if (key === 'workflow_organization') {
+    } else if (key === WORKFLOW_ORGANIZATION_FILTER) {
       return (ctxUser?.organizations || []).map((o: any) => o.id);
-    } else if (key === 'workflow_role') {
+    } else if (key === WORKFLOW_ROLE_FILTER) {
       return (ctxUser?.roles || []).map((r: any) => r.name);
-    } else if (key === 'workflow_user') {
+    } else if (key === WORKFLOW_USER_FILTER) {
       return (ctxUser?.id || ctxUser?.internal_id || null);
-    } else if (key === 'name') {
-      return ctx.entity.name;
-    } else {
-      return key.split('.').reduce((acc, part) => acc && acc[part], ctx);
     }
+    return ctx.entity.name;
+  }
+
+  private static isContextFilter(filter: Filter): boolean {
+    const keys = Array.isArray(filter.key) ? filter.key : [filter.key];
+    return keys.every((k) => WORKFLOW_CONTEXT_FILTER_KEYS.includes(k));
+  }
+
+  private static entityFilterCaches = new WeakMap<object, EntityFilterCache>();
+
+  private static getEntityFilterCache(ctx: Context): EntityFilterCache {
+    let cache = this.entityFilterCaches.get(ctx);
+    if (!cache) {
+      cache = { resolvedValues: new Map() };
+      this.entityFilterCaches.set(ctx, cache);
+    }
+    return cache;
+  }
+
+  // Stix filtering expects array keys; the frontend may store a plain string.
+  // Context filters are kept as stored: their evaluator reads string and array keys differently.
+  private static normalizeFilterGroup(group: FilterGroup): FilterGroup {
+    return {
+      ...group,
+      filters: group.filters.map((f) => (this.isContextFilter(f) || Array.isArray(f.key) ? f : { ...f, key: [f.key] })),
+      filterGroups: group.filterGroups.map((g) => this.normalizeFilterGroup(g)),
+    };
+  }
+
+  private static hasEntityFilter(group: FilterGroup): boolean {
+    return group.filters.some((f) => !this.isContextFilter(f)) || group.filterGroups.some((g) => this.hasEntityFilter(g));
+  }
+
+  // Loads the entity as stix and the filter values to resolve (labels, markings, authors...), once per workflow context.
+  // Workflow filters are not part of the platform "Resolved-Filters" cache (streams, triggers, playbooks), so they are loaded here.
+  // Loaded as SYSTEM_USER so the condition reflects the entity itself, not what the caller can see.
+  private static async loadEntityFilterInput(ctx: Context, filters: FilterGroup): Promise<EntityFilterInput | undefined> {
+    const cache = this.getEntityFilterCache(ctx);
+    if (!cache.stixEntity) {
+      const entityId = ctx.entity?.internal_id ?? ctx.entity?.id;
+      cache.stixEntity = stixLoadById(ctx.context, SYSTEM_USER, entityId);
+    }
+    const missingIds = extractFilterGroupValuesToResolveForCache(filters).filter((id) => !cache.resolvedValues.has(id));
+    if (missingIds.length > 0) {
+      const loading = stixLoadByIds(ctx.context, SYSTEM_USER, missingIds) as Promise<any[]>;
+      missingIds.forEach((id) => {
+        cache.resolvedValues.set(id, loading.then((entities) => entities.find((e) => e.extensions[STIX_EXT_OCTI].id === id)));
+      });
+    }
+    const stixEntity = await cache.stixEntity;
+    if (!stixEntity) return undefined;
+    const resolvedEntries = await Promise.all([...cache.resolvedValues].map(async ([id, value]) => [id, await value] as const));
+    const resolutionCache = new Map(resolvedEntries.filter(([, value]) => value));
+    const resolutionMap = await buildResolutionMapForFilterGroup(ctx.context, SYSTEM_USER, filters, resolutionCache);
+    return { stixEntity, resolutionMap };
   }
 
   /**
@@ -38,21 +117,33 @@ export class WorkflowFactory {
     if (!filters) return [];
 
     // We return a single validator that evaluates the entire recursive tree
+    const normalizedFilters = this.normalizeFilterGroup(filters);
+    const hasEntityFilter = this.hasEntityFilter(normalizedFilters);
     const rootValidator = async (ctx: TContext): Promise<boolean> => {
-      return this.evaluateFilterGroup(ctx, filters);
+      let entityFilterInput: EntityFilterInput | undefined;
+      if (hasEntityFilter) {
+        try {
+          entityFilterInput = await this.loadEntityFilterInput(ctx, normalizedFilters);
+        } catch (error) {
+          logApp.warn('[WORKFLOW] Condition entity cannot be loaded, entity filters considered as not matching', { cause: error });
+        }
+      }
+      return this.evaluateFilterGroup(ctx, normalizedFilters, entityFilterInput);
     };
 
     return [rootValidator];
   }
 
-  private static evaluateFilterGroup<TContext extends Context>(ctx: TContext, group: FilterGroup): boolean {
+  private static async evaluateFilterGroup<TContext extends Context>(ctx: TContext, group: FilterGroup, entityFilterInput?: EntityFilterInput): Promise<boolean> {
     const { mode, filters, filterGroups } = group;
 
     // Evaluate individual filters in this group
-    const filterResults = filters.map((f) => this.evaluateFilter(ctx, f));
+    const filterResults = await Promise.all(filters.map((f) => (this.isContextFilter(f)
+      ? this.evaluateFilter(ctx, f)
+      : this.evaluateEntityFilter(ctx, f, entityFilterInput))));
 
     // Recursively evaluate nested filter groups
-    const groupResults = filterGroups.map((g) => this.evaluateFilterGroup(ctx, g));
+    const groupResults = await Promise.all(filterGroups.map((g) => this.evaluateFilterGroup(ctx, g, entityFilterInput)));
 
     const allResults = [...filterResults, ...groupResults];
 
@@ -61,6 +152,22 @@ export class WorkflowFactory {
     return mode === FilterMode.And
       ? allResults.every((res) => res === true)
       : allResults.some((res) => res === true);
+  }
+
+  private static async evaluateEntityFilter<TContext extends Context>(ctx: TContext, filter: Filter, entityFilterInput?: EntityFilterInput): Promise<boolean> {
+    if (!entityFilterInput) return false;
+    // @me is the user triggering the transition, not the SYSTEM_USER used for the evaluation
+    const ctxUser = ctx.triggeringUser ?? ctx.user;
+    const values = filter.key.some((k) => FILTER_KEYS_WITH_ME_VALUE.includes(k))
+      ? filter.values.map((v) => (v === ME_FILTER_VALUE ? ctxUser?.id : v))
+      : filter.values;
+    const filterGroup: FilterGroup = { mode: FilterMode.And, filters: [{ ...filter, values }], filterGroups: [] };
+    try {
+      return await isStixMatchFilterGroup_MockableForUnitTests(ctx.context, SYSTEM_USER, entityFilterInput.stixEntity, filterGroup, entityFilterInput.resolutionMap);
+    } catch (error) {
+      logApp.warn('[WORKFLOW] Condition filter cannot be evaluated, considered as not matching', { cause: error, key: filter.key });
+      return false;
+    }
   }
 
   private static evaluateFilter<TContext extends Context>(ctx: TContext, filter: Filter): boolean {

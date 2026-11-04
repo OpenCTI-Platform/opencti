@@ -202,7 +202,7 @@ describe('User Token behavior', () => {
         // Good
       }
     } catch {
-      // queryInitPlatformAsAnonymous uses axios. If server returns 4xx/5xx, it throws.
+      // queryInitPlatformAsAnonymous throws if the server returns 4xx/5xx.
       // We expect some failure.
       expect(true).toBe(true);
     }

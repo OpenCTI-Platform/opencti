@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   systemChecker,
   domainChecker,
@@ -9,6 +9,7 @@ import {
   ipv4Checker,
   cpeChecker,
   cleanupIndicatorPattern,
+  extractObservablesFromIndicatorPattern,
 } from '../../../src/utils/syntax';
 
 describe('Regex Pattern Tests', () => {
@@ -218,5 +219,25 @@ describe('cleanupIndicatorPattern - STIX pattern normalization', () => {
 
     // 'windows-pebinary-ext' must stay quoted (contains hyphens)
     expect(normalized).toContain(".'windows-pebinary-ext'");
+  });
+});
+
+describe('extractObservablesFromIndicatorPattern - prototype pollution', () => {
+  afterEach(() => {
+    delete (Object.prototype as Record<string, unknown>).polluted;
+  });
+
+  it('should still unflatten nested pattern keys', () => {
+    const observables = extractObservablesFromIndicatorPattern("[file:hashes.'SHA-256' = 'abc123']");
+    expect(observables).toEqual([{ type: 'StixFile', hashes: { 'SHA-256': 'abc123' } }]);
+  });
+
+  it.each([
+    "[file:hashes.'__proto__'.polluted = 'yes']",
+    "[file:hashes.constructor.prototype.polluted = 'yes']",
+  ])('should not pollute the object prototype from pattern %s', (pattern) => {
+    const observables = extractObservablesFromIndicatorPattern(pattern);
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(observables).toEqual([{ type: 'StixFile' }]);
   });
 });

@@ -10,7 +10,7 @@ interface workspaceToExport {
 }
 
 const WorkspaceExportHandlerQuery = graphql`
-    query workspaceExportHandlerQuery($id: String!) {
+  query workspaceExportHandlerQuery($id: String!) {
         workspace(id: $id) {
             toConfigurationExport
         }

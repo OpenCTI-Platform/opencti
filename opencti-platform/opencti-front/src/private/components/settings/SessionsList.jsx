@@ -8,8 +8,8 @@ import ListItemText from '@mui/material/ListItemText';
 import { interval } from 'rxjs';
 import IconButton from '@common/button/IconButton';
 import { createRefetchContainer, graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { commitMutation } from '../../../relay/environment';
 import { FIVE_SECONDS, timestamp } from '../../../utils/Time';
 import { userSessionKillMutation } from './users/User';
@@ -20,59 +20,51 @@ import useDeletion from '../../../utils/hooks/useDeletion';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const useStyles = makeStyles((theme) => ({
-  item: {},
-  itemNested: {
-    paddingLeft: theme.spacing(4),
-  },
-  name: {
-    width: '20%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  email: {
-    width: '70%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: '#a5a5a5',
-    fontSize: 12,
-  },
-  created: {
-    width: '50%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  ttl: {
-    width: '40%',
-    height: 20,
-    lineHeight: '20px',
-    float: 'left',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: '#a5a5a5',
-    fontSize: 12,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-}));
+const UserName = styled('div')({
+  width: '20%',
+  height: 20,
+  lineHeight: '20px',
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+});
+
+const UserEmail = styled('div')({
+  width: '70%',
+  height: 20,
+  lineHeight: '20px',
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  color: '#a5a5a5',
+  fontSize: 12,
+});
+
+const SessionCreated = styled('div')({
+  width: '50%',
+  height: 20,
+  lineHeight: '20px',
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+});
+
+const SessionTtl = styled('div')({
+  width: '40%',
+  height: 20,
+  lineHeight: '20px',
+  float: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  color: '#a5a5a5',
+  fontSize: 12,
+});
 
 const SessionsListComponent = ({ relay, data, keyword }) => {
-  const classes = useStyles();
   const { t_i18n, nsdt } = useFormatter();
   const [sessionToKill, setSessionToKill] = useState(null);
   const deletion = useDeletion({});
@@ -122,7 +114,6 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
       <List
         component="nav"
         aria-labelledby="nested-list-subheader"
-        className={classes.root}
       >
         {sessions.map((session) => {
           const { user, sessions: userSessions } = session;
@@ -132,7 +123,6 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
           return (
             <div key={session.user.id}>
               <ListItemButton
-                classes={{ root: classes.item }}
                 divider={true}
                 component={Link}
                 to={`/dashboard/settings/accesses/users/${user.id}`}
@@ -143,12 +133,12 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                 <ListItemText
                   primary={(
                     <div>
-                      <div className={classes.name}>{user.name}</div>
-                      <div className={classes.email}>{user.email}</div>
+                      <UserName>{user.name}</UserName>
+                      <UserEmail>{user.email}</UserEmail>
                     </div>
                   )}
                 />
-                <ListItemIcon classes={{ root: classes.goIcon }}>
+                <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
                   &nbsp;
                 </ListItemIcon>
               </ListItemButton>
@@ -156,7 +146,7 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                 {orderedSessions.map((userSession) => (
                   <ListItem
                     key={userSession.id}
-                    classes={{ root: classes.itemNested }}
+                    sx={{ paddingLeft: 4 }}
                     divider={true}
                     secondaryAction={(
                       <IconButton
@@ -174,14 +164,14 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                     <ListItemText
                       primary={(
                         <div>
-                          <div className={classes.created}>
+                          <SessionCreated>
                             {nsdt(userSession.created)}
-                          </div>
-                          <div className={classes.ttl}>
+                          </SessionCreated>
+                          <SessionTtl>
                             {Math.round(userSession.ttl / 60)}{' '}
                             {t_i18n('minutes left')} /{' '}
                             {Math.round(userSession.originalMaxAge / 60)}
-                          </div>
+                          </SessionTtl>
                         </div>
                       )}
                     />

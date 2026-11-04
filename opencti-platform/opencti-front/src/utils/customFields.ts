@@ -1,0 +1,386 @@
+import * as Yup from 'yup';
+import type { CustomFieldsInputQuery$data } from '../private/components/common/custom_fields/__generated__/CustomFieldsInputQuery.graphql';
+import { resolveCustomFieldDefaultValue } from './customFieldDefaults';
+import type { WidgetColumn, WidgetColumnAttributeType } from './widget/widget';
+
+export type CustomFieldDef = NonNullable<NonNullable<CustomFieldsInputQuery$data['customFieldDefinitionsForEntityType']>['edges']>[number]['node'];
+export type CustomFieldValue = string | boolean | string[];
+export type CustomFieldFormValues = Record<string, CustomFieldValue>;
+
+// Shape of a stored custom field value on an entity (matches the CustomFieldValue GraphQL type).
+export interface CustomFieldStoredValue {
+  field_id: string;
+  field_name: string;
+  int_value?: number | null;
+  string_value?: string | null;
+  boolean_value?: boolean | null;
+  date_value?: string | null;
+  select_value?: string | null;
+  select_values?: readonly string[] | null;
+}
+
+export const getCustomFieldSetting = (definition: CustomFieldDef, entityType: string) => (
+  (definition.entity_type_settings ?? []).find((setting) => setting.entity_type === entityType)
+);
+
+// Form state is keyed by definition ID; defaults are configured separately for each entity type.
+export const getCustomFieldsInitialValues = (
+  definitions: readonly CustomFieldDef[],
+  entityType: string,
+): CustomFieldFormValues => Object.fromEntries(
+  definitions.map((def) => {
+    const rawDefaultValue = getCustomFieldSetting(def, entityType)?.default_value ?? null;
+    const defaultValue = def.field_type === 'date' ? resolveCustomFieldDefaultValue(rawDefaultValue) : rawDefaultValue;
+    if (def.field_type === 'boolean') {
+      return [def.id, defaultValue === 'true'];
+    }
+    if (def.field_type === 'multi_select') {
+      return [def.id, defaultValue ? [defaultValue] : []];
+    }
+    return [def.id, defaultValue ?? ''];
+  }),
+);
+
+// Integer values are stored as 32-bit signed integers (GraphQL Int, Elasticsearch integer):
+// without min/max on the definition, these are the bounds.
+const INTEGER_MIN = -2147483648;
+const INTEGER_MAX = 2147483647;
+const getIntegerBounds = (definition: CustomFieldDef) => ({
+  min: definition.min_value ?? INTEGER_MIN,
+  max: definition.max_value ?? INTEGER_MAX,
+});
+
+// Same rules as the creation schema below, for the edition which saves field by field without Yup.
+// An empty input is valid: it clears the value.
+export const getCustomFieldValueError = (
+  definition: CustomFieldDef,
+  rawValue: CustomFieldValue,
+  t_i18n: (key: string) => string,
+): string | undefined => {
+  if (definition.field_type !== 'integer') return undefined;
+  const trimmed = String(rawValue).trim();
+  if (trimmed === '') return undefined;
+  const parsed = Number(trimmed);
+  if (!Number.isInteger(parsed)) return t_i18n('The value must be an integer');
+  const { min, max } = getIntegerBounds(definition);
+  if (parsed < min || parsed > max) {
+    return t_i18n('The value must be between min and max value');
+  }
+  return undefined;
+};
+
+const buildIntegerValidationSchema = (
+  definition: CustomFieldDef,
+  isMandatory: boolean,
+  t_i18n: (key: string) => string,
+) => {
+  const { min, max } = getIntegerBounds(definition);
+  const schema = Yup.number()
+    // An empty input means "no value": only a mandatory field requires one
+    .transform((value, originalValue) => (originalValue === '' || originalValue === null ? undefined : value))
+    .typeError(t_i18n('The value must be an integer'))
+    .integer(t_i18n('The value must be an integer'))
+    .min(min, t_i18n('The value must be between min and max value'))
+    .max(max, t_i18n('The value must be between min and max value'));
+  return isMandatory ? schema.required(t_i18n('This field is required')) : schema.notRequired();
+};
+
+export const buildCustomFieldsValidationSchema = (
+  definitions: readonly CustomFieldDef[],
+  entityType: string,
+  t_i18n: (key: string) => string,
+) => Yup.object().shape(
+  Object.fromEntries(
+    definitions.map((def) => {
+      const isMandatory = getCustomFieldSetting(def, entityType)?.mandatory ?? false;
+      const requiredMessage = t_i18n('This field is required');
+      if (def.field_type === 'integer') {
+        return [def.id, buildIntegerValidationSchema(def, isMandatory, t_i18n)];
+      }
+      if (def.field_type === 'multi_select') {
+        return [def.id, isMandatory ? Yup.array().min(1, requiredMessage) : Yup.array().nullable()];
+      }
+      if (def.field_type === 'boolean') {
+        return [def.id, Yup.boolean().nullable()];
+      }
+      return [def.id, isMandatory ? Yup.string().required(requiredMessage) : Yup.string().nullable()];
+    }),
+  ),
+);
+
+// Reads the current UI value from the entity's stored custom_field_values array.
+export const getCustomFieldCurrentValue = (
+  definition: CustomFieldDef,
+  storedValues: readonly CustomFieldStoredValue[],
+): CustomFieldValue => {
+  const entry = storedValues.find((v) => v.field_id === definition.id);
+  if (!entry) {
+    if (definition.field_type === 'boolean') return false;
+    if (definition.field_type === 'multi_select') return [];
+    return '';
+  }
+  switch (definition.field_type) {
+    case 'integer':
+      return entry.int_value != null ? String(entry.int_value) : '';
+    case 'boolean':
+      return entry.boolean_value ?? false;
+    case 'date':
+      return entry.date_value ?? '';
+    case 'select':
+      return entry.select_value ?? '';
+    case 'multi_select':
+      return entry.select_values ? [...entry.select_values] : [];
+    default:
+      return entry.string_value ?? '';
+  }
+};
+
+const parseCustomFieldRawValue = (definition: CustomFieldDef, rawValue: CustomFieldValue) => {
+  switch (definition.field_type) {
+    case 'integer': {
+      // Number() (unlike parseInt) never truncates: '1e3' is 1000 like for Yup, '1.9' stays 1.9 for validation to reject.
+      // An empty input is "no value" (Number('') would be 0).
+      const trimmed = String(rawValue).trim();
+      const parsed = Number(trimmed);
+      return trimmed === '' || Number.isNaN(parsed) ? undefined : parsed;
+    }
+    case 'boolean':
+      return rawValue === true;
+    case 'multi_select':
+      return Array.isArray(rawValue) ? rawValue : [];
+    default:
+      return String(rawValue);
+  }
+};
+
+// Creation uses field_name and a value array, unlike the typed stored-value shape used by edition.
+export const buildCustomFieldValueAddInputEntry = (
+  definition: CustomFieldDef,
+  rawValue: CustomFieldValue | undefined,
+) => {
+  if (rawValue === undefined || rawValue === '' || (Array.isArray(rawValue) && rawValue.length === 0)) {
+    return undefined;
+  }
+  const parsedValue = parseCustomFieldRawValue(definition, rawValue);
+  return { field_name: definition.name, value: Array.isArray(parsedValue) ? parsedValue : [parsedValue] };
+};
+
+export const buildCustomFieldValuesAddInput = (
+  definitions: readonly CustomFieldDef[],
+  values: CustomFieldFormValues,
+) => definitions
+  .map((def) => buildCustomFieldValueAddInputEntry(def, values[def.id]))
+  .filter((entry) => entry !== undefined);
+
+// CustomFieldsFormik supplies the serialized payload to existing entity-specific submitters.
+// Explicit input builders use this helper; spread-based builders preserve it automatically.
+export const getCustomFieldValues = (values: object): {
+  customFieldValues?: ReturnType<typeof buildCustomFieldValuesAddInput>;
+} => ('customFieldValues' in values
+  ? { customFieldValues: values.customFieldValues as ReturnType<typeof buildCustomFieldValuesAddInput> }
+  : {});
+
+export const buildCustomFieldValueEntry = (
+  definition: CustomFieldDef,
+  rawValue: CustomFieldValue,
+): CustomFieldStoredValue => {
+  const base = { field_id: definition.id, field_name: definition.name };
+  const parsedValue = parseCustomFieldRawValue(definition, rawValue);
+  switch (definition.field_type) {
+    case 'integer':
+      return { ...base, int_value: parsedValue as number };
+    case 'boolean':
+      return { ...base, boolean_value: parsedValue as boolean };
+    case 'date':
+      return { ...base, date_value: parsedValue as string };
+    case 'select':
+      return { ...base, select_value: parsedValue as string };
+    case 'multi_select':
+      return { ...base, select_values: parsedValue as string[] };
+    default:
+      return { ...base, string_value: parsedValue as string };
+  }
+};
+
+// Empty non-boolean values are dropped from the stored array.
+export const isCustomFieldValueSet = (rawValue: CustomFieldValue | number | undefined): boolean => {
+  if (Array.isArray(rawValue)) return rawValue.length > 0;
+  if (typeof rawValue === 'boolean') return true;
+  return (rawValue ?? '') !== '';
+};
+
+// fieldPatch replaces the whole array: retain all unrelated fields without mutating Relay data.
+export const updateCustomFieldValues = (
+  definition: CustomFieldDef,
+  rawValue: CustomFieldValue,
+  storedValues: readonly CustomFieldStoredValue[],
+): CustomFieldStoredValue[] => {
+  const withoutField = storedValues.filter((v) => v.field_id !== definition.id);
+  const entry = buildCustomFieldValueEntry(definition, rawValue);
+  const isValidValue = definition.field_type === 'integer'
+    ? entry.int_value !== undefined
+    : isCustomFieldValueSet(rawValue);
+  return isValidValue ? [...withoutField, entry] : withoutField;
+};
+
+export const getCustomFieldLabel = (
+  value: CustomFieldStoredValue,
+  definitions: readonly CustomFieldDef[],
+): string => {
+  const label = definitions.find((def) => def.id === value.field_id)?.label;
+  if (label !== undefined) return label;
+  const spaced = value.field_name.replace(/_/g, ' ');
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+};
+
+// Inject localization so this helper can be used outside React as well as in any SDO view.
+export const getCustomFieldDisplayValue = (
+  value: CustomFieldStoredValue,
+  { t_i18n, fldt }: { t_i18n: (key: string) => string; fldt: (date: string) => string },
+): string => {
+  if (value.boolean_value !== null && value.boolean_value !== undefined) {
+    return value.boolean_value ? t_i18n('True') : t_i18n('False');
+  }
+  if (value.date_value) {
+    return fldt(value.date_value);
+  }
+  if (value.int_value !== null && value.int_value !== undefined) {
+    return String(value.int_value);
+  }
+  if (value.select_values && value.select_values.length > 0) {
+    return value.select_values.join(', ');
+  }
+  if (value.select_value) {
+    return value.select_value;
+  }
+  return value.string_value ?? '';
+};
+// Prefix enforced backend-side for every custom field technical name (see CUSTOM_FIELD_PREFIX
+// in opencti-graphql/src/modules/customField/custom-field-types.ts). Used to identify a widget
+// column / attribute path as referring to a custom field rather than a built-in schema attribute.
+export const CUSTOM_FIELD_PREFIX = 'x_opencti_cf_';
+export const isCustomFieldAttribute = (attribute?: string | null): boolean => (
+  !!attribute && attribute.startsWith(CUSTOM_FIELD_PREFIX)
+);
+// An alias matches a STIX custom property at ingestion, the only properties read being the ones starting
+// with "x_": it must be "x_" followed by lowercase letters, numbers and underscores (as checked backend-side).
+const CUSTOM_FIELD_ALIAS_REGEX = /^x_[a-z0-9_]+$/;
+export const areCustomFieldAliasesValid = (aliases?: readonly (string | undefined)[] | null): boolean => (
+  (aliases ?? []).every((alias) => !!alias && CUSTOM_FIELD_ALIAS_REGEX.test(alias))
+);
+// The technical name suggested from a label: lowercase, accents removed, any other character replaced
+// by an underscore, starting with a letter (e.g. "Closing reason" gives "closing_reason").
+export const buildCustomFieldNameSuffix = (label: string): string => label
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '_')
+  .replace(/^[^a-z]+/, '')
+  .replace(/_+$/, '');
+// ----------------------------------------------------------------------------------------------------------------------
+// Widgets integration (attribute widget & list/custom-attributes widget columns)
+// Minimal shape needed from a CustomFieldDefinition to build a widget column / resolve its rendering.
+export interface CustomFieldWidgetDefinition {
+  name: string;
+  label: string;
+  field_type: string;
+  entity_types?: readonly string[] | null;
+}
+// Maps a custom field's field_type to the closest existing WidgetColumnAttributeType so widgets
+// reuse their standard renderers (boolean/date/markdown, tags for select values, etc.).
+// Types without a good match (text, integer) are left undefined and rendered as plain text.
+export const mapCustomFieldTypeToWidgetColumnAttributeType = (fieldType: string): WidgetColumnAttributeType | undefined => {
+  switch (fieldType) {
+    case 'boolean':
+      return 'boolean';
+    case 'date':
+      return 'date';
+    case 'markdown':
+      return 'markdown';
+    case 'select':
+      return 'tag';
+    case 'multi_select':
+      return 'tag_list';
+    default:
+      return undefined;
+  }
+};
+// The widget column's `attribute` is the custom field technical name (already unique and prefixed
+// with CUSTOM_FIELD_PREFIX), so no extra identifier is needed to resolve it back to its definition.
+export const customFieldDefinitionToWidgetColumn = (definition: CustomFieldWidgetDefinition): WidgetColumn => ({
+  attribute: definition.name,
+  label: definition.label,
+  attributeType: mapCustomFieldTypeToWidgetColumnAttributeType(definition.field_type),
+});
+// Label of a custom field, read from the filter keys schema of the given entity types (technical name if unknown).
+export const getCustomFieldLabelFromFilterKeysSchema = (
+  filterKeysSchema: Map<string, Map<string, { label: string }>>,
+  entityTypes: readonly string[],
+  name: string,
+): string => entityTypes
+  .map((entityType) => filterKeysSchema.get(entityType)?.get(name)?.label)
+  .find((label) => !!label) ?? name;
+// A definition attached to no entity type cannot hold any value: it is never offered as a column.
+// As in the backend, a relationship type (e.g. targets) inherits the definitions attached to stix-core-relationship.
+export const customFieldDefinitionsToWidgetColumns = (
+  definitions: readonly CustomFieldWidgetDefinition[],
+  entityType?: string,
+  isRelationshipType = false,
+): WidgetColumn[] => {
+  const entityTypes = isRelationshipType && entityType ? [entityType, 'stix-core-relationship'] : [entityType];
+  return definitions
+    .filter((def) => (def.entity_types ?? []).length > 0 && (!entityType || entityTypes.some((type) => (def.entity_types ?? []).includes(type ?? ''))))
+    .map(customFieldDefinitionToWidgetColumn);
+};
+// Extracts the raw, correctly-typed value (string | number | boolean | string[] | undefined) of a
+// custom field from an entity's stored `customFieldValues`, matched by field_name (== WidgetColumn.attribute).
+// Field type doesn'"'"'t need to be known here: exactly one of the typed slots is populated per entry.
+export const getCustomFieldRawValueByFieldName = (
+  customFieldValues: readonly CustomFieldStoredValue[] | null | undefined,
+  fieldName: string,
+): unknown => {
+  const entry = (customFieldValues ?? []).find((v) => v.field_name === fieldName);
+  if (!entry) return undefined;
+  if (entry.boolean_value !== null && entry.boolean_value !== undefined) return entry.boolean_value;
+  if (entry.date_value !== null && entry.date_value !== undefined) return entry.date_value;
+  if (entry.int_value !== null && entry.int_value !== undefined) return entry.int_value;
+  if (entry.select_values && entry.select_values.length > 0) return [...entry.select_values];
+  if (entry.select_value !== null && entry.select_value !== undefined) return entry.select_value;
+  return entry.string_value ?? undefined;
+};
+
+// Custom field definitions carried by every given entity type: as in the platform, a relationship type
+// inherits the custom fields attached to stix-core-relationship.
+export const getCustomFieldDefinitionsOfTypes = <T extends { entity_types?: readonly string[] | null }>(
+  definitions: readonly T[],
+  entityTypes: string[],
+  isRelationship: (entityType: string) => boolean,
+): T[] => definitions.filter((definition) => entityTypes.every((entityType) => {
+  const definitionTypes = definition.entity_types ?? [];
+  return definitionTypes.includes(entityType) || (isRelationship(entityType) && definitionTypes.includes('stix-core-relationship'));
+}));
+
+// Types targeted by a background task: the types of the selected rows for a manual selection (a list filtered
+// on an abstract type holds concrete ones), the filtered types or else the list types when everything is selected
+export const getTaskTargetedTypes = (
+  selectAll: boolean,
+  selectedElements: readonly { entity_type?: string }[],
+  filteredTypes: readonly string[],
+  listTypes?: readonly string[] | null,
+): string[] => {
+  if (!selectAll) {
+    return [...new Set(selectedElements.map((element) => element.entity_type).filter((type): type is string => !!type))];
+  }
+  return [...(filteredTypes.length > 0 ? filteredTypes : (listTypes ?? []))];
+};
+
+// Background task values are strings: one per multi_select option, a single one otherwise
+export const customFieldValueToTaskValues = (value: CustomFieldValue): string[] => (Array.isArray(value)
+  ? [...value]
+  : [String(value)].filter((v) => v !== ''));
+
+export const taskValuesToCustomFieldValue = (fieldType: string, values: readonly string[] | undefined): CustomFieldValue => {
+  if (fieldType === 'multi_select') return [...(values ?? [])];
+  if (fieldType === 'boolean') return values?.[0] === 'true';
+  return values?.[0] ?? '';
+};

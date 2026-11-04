@@ -2,20 +2,13 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pipe, map, pathOr, sortBy, toLower, prop, filter, join, assoc } from 'ramda';
 import { graphql, createPaginationContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import { SectorLine, SectorLineDummy } from './SectorLine';
 import inject18n from '../../../../components/i18n';
 
-const styles = () => ({
-  root: {
-    margin: 0,
-  },
-});
-
 class SectorsLinesComponent extends Component {
   render() {
-    const { data, keyword, classes } = this.props;
+    const { data, keyword } = this.props;
     const sortByNameCaseInsensitive = sortBy(compose(toLower, prop('name')));
     const filterSubsector = (n) => n.isSubSector === false;
     const filterByKeyword = (n) => keyword === ''
@@ -43,7 +36,7 @@ class SectorsLinesComponent extends Component {
       <List
         component="nav"
         aria-labelledby="nested-list-subheader"
-        className={classes.root}
+        sx={{ margin: 0 }}
       >
         {data
           ? map((sector) => {
@@ -68,7 +61,6 @@ class SectorsLinesComponent extends Component {
 }
 
 SectorsLinesComponent.propTypes = {
-  classes: PropTypes.object,
   keyword: PropTypes.string,
   data: PropTypes.object,
 };
@@ -141,4 +133,4 @@ const SectorsLinesFragment = createPaginationContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(SectorsLinesFragment);
+export default inject18n(SectorsLinesFragment);

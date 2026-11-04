@@ -1,37 +1,36 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import Slide from '@mui/material/Slide';
 import DataTableToolBar from './DataTableToolBar';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../utils/hooks/useDraftContext';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 
-const useStyles = makeStyles(() => ({
-  bottomNav: {
-    padding: 0,
-    zIndex: 1,
-    display: 'flex',
-    height: 50,
-    overflow: 'hidden',
-  },
-  bottomNavWithLargePadding: {
-    zIndex: 1100,
-    padding: '0 250px 0 0',
-    display: 'flex',
-    height: 50,
-    overflow: 'hidden',
-  },
-  bottomNavWithMediumPadding: {
-    zIndex: 1100,
-    padding: '0 200px 0 0',
-    display: 'flex',
-    height: 50,
-    overflow: 'hidden',
-  },
-}));
+const bottomNavSx = {
+  padding: 0,
+  zIndex: 1,
+  display: 'flex',
+  height: 50,
+  overflow: 'hidden',
+};
+
+const bottomNavWithLargePaddingSx = {
+  zIndex: 1100,
+  padding: '0 250px 0 0',
+  display: 'flex',
+  height: 50,
+  overflow: 'hidden',
+};
+
+const bottomNavWithMediumPaddingSx = {
+  zIndex: 1100,
+  padding: '0 200px 0 0',
+  display: 'flex',
+  height: 50,
+  overflow: 'hidden',
+};
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -63,23 +62,22 @@ const ToolBar = (props) => {
     search,
     taskScope,
   } = props;
-  const classes = useStyles();
   const theme = useTheme();
   const draftContext = useDraftContext();
   const navOpen = localStorage.getItem('navOpen') === 'true';
   const isOpen = numberOfSelectedElements > 0;
   const posBottom = draftContext ? DRAFT_TOOLBAR_HEIGHT : 0;
 
-  let paperClass;
+  let paperSx;
   switch (variant) {
     case 'large':
-      paperClass = classes.bottomNavWithLargePadding;
+      paperSx = bottomNavWithLargePaddingSx;
       break;
     case 'medium':
-      paperClass = classes.bottomNavWithMediumPadding;
+      paperSx = bottomNavWithMediumPaddingSx;
       break;
     default:
-      paperClass = classes.bottomNav;
+      paperSx = bottomNavSx;
   }
 
   return (
@@ -88,15 +86,17 @@ const ToolBar = (props) => {
         <Drawer
           anchor="bottom"
           variant="persistent"
-          classes={{ paper: paperClass }}
           open={isOpen}
-          PaperProps={{
-            variant: 'elevation',
-            elevation: 1,
-            style: {
-              marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
-              bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
-              zIndex: theme.zIndex.appBar - 2,
+          slotProps={{
+            paper: {
+              variant: 'elevation',
+              elevation: 1,
+              sx: paperSx,
+              style: {
+                marginLeft: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+                bottom: (bannerSettings?.bannerHeightNumber ?? 0) + posBottom,
+                zIndex: theme.zIndex.appBar - 2,
+              },
             },
           }}
         >

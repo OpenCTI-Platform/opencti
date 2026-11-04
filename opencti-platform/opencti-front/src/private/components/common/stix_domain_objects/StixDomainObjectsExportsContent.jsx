@@ -64,8 +64,10 @@ class StixDomainObjectsExportsContentComponent extends Component {
       <>
         <Stack
           direction="row"
-          justifyContent="flex-end"
-          gap={1}
+          sx={{
+            justifyContent: 'flex-end',
+            gap: 1,
+          }}
         >
           <Tooltip
             title={

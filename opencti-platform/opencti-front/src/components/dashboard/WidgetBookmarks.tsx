@@ -1,7 +1,7 @@
 import Grid from '@mui/material/Grid';
 import CardHeader from '@mui/material/CardHeader';
 import Avatar from '@mui/material/Avatar';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import ItemIcon from '../ItemIcon';
 import { resolveLink } from '../../utils/Entity';
 import { useFormatter } from '../i18n';
@@ -41,7 +41,7 @@ const WidgetBookmarks = ({ bookmarks }: WidgetBookmarksProps) => {
           const bookmark = bookmarkEdge.node;
           const link = resolveLink(bookmark.entity_type);
           return (
-            <Grid item xs={4} key={bookmark.id}>
+            <Grid key={bookmark.id} size={4}>
               <Card
                 padding="none"
                 variant="outlined"

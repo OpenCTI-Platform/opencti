@@ -1,6 +1,6 @@
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { FunctionComponent } from 'react';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
+import Drawer from '@components/common/drawer/Drawer';
 import IngestionJsonEdition from '@components/data/ingestionJson/IngestionJsonEdition';
 import { IngestionJsonEditionContainerQuery } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionContainerQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -36,7 +36,6 @@ const IngestionJsonEditionContainer: FunctionComponent<IngestionJsonEditionConta
   return (
     <Drawer
       title={t_i18n('Update a JSON feed')}
-      variant={open == null ? DrawerVariant.update : undefined}
       onClose={handleClose}
       open={open}
     >

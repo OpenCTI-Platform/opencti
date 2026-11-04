@@ -4,7 +4,10 @@ import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import ConfidenceField from '@components/common/form/ConfidenceField';
 import { AttackPatternsLinesPaginationQuery$variables } from '@components/techniques/__generated__/AttackPatternsLinesPaginationQuery.graphql';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -125,6 +128,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
     { setSubmitting, setErrors, resetForm },
   ) => {
     const input: AttackPatternCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
@@ -175,6 +179,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
   );
   return (
     <Formik<AttackPatternAddInput>
+      entityType={ATTACK_PATTERN_TYPE}
       initialValues={initialValues}
       validationSchema={attackPatternValidator}
       validateOnChange={true}
@@ -249,6 +254,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
             values={values.externalReferences}
           />
           <CustomFileUploader setFieldValue={setFieldValue} />
+          <CustomFieldValuesCreation />
           <FormButtonContainer>
             <Button
               variant="secondary"

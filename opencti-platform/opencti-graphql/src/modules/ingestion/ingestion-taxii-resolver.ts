@@ -14,6 +14,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { decryptIngestionCredential } from './ingestion-common';
 import { loadCreator } from '../../database/members';
 import type { BasicStoreEntityIngestionTaxii } from './ingestion-types';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-resolvers';
 
 const ingestionTaxiiResolvers: Resolvers = {
   Query: {
@@ -26,6 +27,7 @@ const ingestionTaxiiResolvers: Resolvers = {
     },
   },
   IngestionTaxii: {
+    ...ingestionHealthFieldResolvers,
     authentication_value: async (ingestionTaxii) => {
       const decrypted = await decryptIngestionCredential(ingestionTaxii.authentication_value);
       return removeAuthenticationCredentials(ingestionTaxii.authentication_type, decrypted);

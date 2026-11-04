@@ -33,9 +33,9 @@ export const handleCatalogLogoViewRequest: RequestHandler = async (req, res) => 
     }
     const extension = file.substring(file.lastIndexOf('.'));
     const mimeType = getMimeTypeFromImageExtension(extension);
-    res.set({ 'Content-Security-Policy': 'sandbox' });
+    res.set('Content-Security-Policy', 'sandbox');
     res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    res.set({ Pragma: 'no-cache' });
+    res.set('Pragma', 'no-cache');
     if (mimeType) {
       res.set('Content-type', mimeType);
     } else {

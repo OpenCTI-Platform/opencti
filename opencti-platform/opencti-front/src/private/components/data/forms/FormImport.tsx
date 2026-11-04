@@ -2,7 +2,7 @@ import React, { BaseSyntheticEvent, FunctionComponent, useRef } from 'react';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
-import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
+import ToggleButton from '@mui/material/ToggleButton';
 import { FormImportMutation } from '@components/data/forms/__generated__/FormImportMutation.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';

@@ -17,7 +17,8 @@ vi.mock('reactflow', () => ({
   },
 }));
 
-vi.mock('@mui/styles', () => ({
+vi.mock('@mui/material/styles', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@mui/material/styles')>()),
   useTheme: () => ({
     palette: {
       chip: { main: '#123456' },

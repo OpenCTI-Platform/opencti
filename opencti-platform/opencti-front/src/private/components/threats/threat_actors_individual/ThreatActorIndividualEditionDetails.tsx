@@ -7,7 +7,7 @@ import {
   ThreatActorIndividualMutationRelationDelete,
   threatActorIndividualRelationAddMutation,
 } from '@components/threats/threat_actors_individual/ThreatActorIndividualEditionOverview';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import { isNone, useFormatter } from '../../../../components/i18n';
 

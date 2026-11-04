@@ -50,6 +50,8 @@ export interface FiltersWithNested extends Filter {
     operator?: FilterOperator;
     mode?: FilterMode;
   }>;
+  // Match the documents having no nested element satisfying all the nested filters
+  negateNested?: boolean;
 }
 
 export interface FilterGroupWithNested extends FilterGroup {
@@ -354,7 +356,7 @@ export const fullEntitiesThoughAggregationConnection = async (context: AuthConte
   const nodeElements = values
     .sort((a: { value: string; label: string }, b: { value: string; label: string }) => a.label.localeCompare(b.label))
     .map((val: { value: string; label: string }) => ({ node: { id: val.value, name: val.label, entity_type: type } }));
-  return buildPagination(0, null, nodeElements, nodeElements.length);
+  return buildPagination<Pick<BasicStoreEntity, 'id' | 'name' | 'entity_type'>>(0, null, nodeElements, nodeElements.length);
 };
 
 export const fullEntitiesList = async <T extends BasicStoreEntity>(

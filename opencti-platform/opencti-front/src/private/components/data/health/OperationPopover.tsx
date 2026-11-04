@@ -235,7 +235,12 @@ const OperationPopover: FunctionComponent<OperationPopoverProps> = ({ operationN
                 </Typography>
               ))
             ) : (
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                }}
+              >
                 {t_i18n('No impact estimated.')}
               </Typography>
             )}

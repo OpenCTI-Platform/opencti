@@ -2,7 +2,7 @@ import React, { BaseSyntheticEvent, FunctionComponent, useRef, useState } from '
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
-import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
+import ToggleButton from '@mui/material/ToggleButton';
 import IngestionTaxiiCollectionCreation from '@components/data/ingestionTaxiiCollection/IngestionTaxiiCollectionCreation';
 import { IngestionTaxiiCollectionImportQuery$data } from '@components/data/ingestionTaxiiCollection/__generated__/IngestionTaxiiCollectionImportQuery.graphql';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';

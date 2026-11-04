@@ -131,7 +131,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsListComponentQuery>({
+  const { renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsListComponentQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -152,8 +152,7 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
       showPreviewTag={isPreviewMode}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

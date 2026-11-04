@@ -11,6 +11,8 @@ import { transformSpecialFields } from '../../../../src/modules/form/form-fields
 import { completeEntity } from '../../../../src/modules/form/form-entity-builder';
 import { buildAdditionalEntities, buildMainStixEntities, buildRelationships, wrapInContainerOrPush } from '../../../../src/modules/form/form-bundle-builder';
 import { SYSTEM_USER } from '../../../../src/utils/access';
+import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../../../../src/schema/schema-relationsRef';
 
 vi.mock('../../../../src/modules/form/form-utils', () => ({
   loadFormEntity: vi.fn(),
@@ -66,7 +68,8 @@ vi.mock('../../../../src/schema/stixCyberObservable', async (importOriginal) => 
   };
 });
 
-vi.mock('../../../../src/utils/syntax', () => ({
+vi.mock('../../../../src/utils/syntax', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/syntax')>()),
   checkObservableSyntax: vi.fn(() => true),
 }));
 
@@ -94,6 +97,10 @@ vi.mock('../../../../src/modules/form/form-entity-builder', () => ({
 
 const context = {} as AuthContext;
 const user = SYSTEM_USER;
+
+// The schema is not registered in this test: the attributes of the pending objects are checked in form-pending-test
+vi.spyOn(schemaAttributesDefinition, 'getAttribute').mockReturnValue({ type: 'string' } as any);
+vi.spyOn(schemaRelationsRefDefinition, 'getRelationRef').mockReturnValue(null);
 
 const makeField = (overrides = {}): any => ({
   id: 'f1',
@@ -502,6 +509,38 @@ describe('buildMainStixEntities', () => {
       await expect(buildMainStixEntities(context, user, schema, values, 'Domain-Name'))
         .rejects.toThrow('Main entity observable is not correctly formatted');
     });
+  });
+});
+
+describe('buildMainStixEntities entity-source adapters', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(isStixCyberObservable).mockReturnValue(false);
+  });
+
+  it('routes to the lookup adapter when schema.mainEntityLookup is set and values.mainEntityLookup is present', async () => {
+    vi.mocked(loadFormEntity).mockResolvedValue({ standard_id: 'report--entity-1' } as any);
+
+    const schema = makeSchema({ mainEntityLookup: true });
+    const values = { mainEntityLookup: 'entity-1' };
+
+    const result = await buildMainStixEntities(context, user, schema, values, 'Report', false);
+
+    expect(result.mainStixEntities).toHaveLength(1);
+    expect(result.mainEntityStixId).toBe('report--entity-1');
+  });
+
+  it('routes to the default adapter when mainEntityLookup is not set and mainEntityMultiple is false', async () => {
+    const schema = makeSchema({
+      mainEntityMultiple: false,
+      fields: [makeField()],
+    });
+    const values = { name: 'Report A' };
+
+    const result = await buildMainStixEntities(context, user, schema, values, 'Report', false);
+
+    expect(result.mainStixEntities).toHaveLength(1);
+    expect(result.mainEntityStixId).toBeDefined();
   });
 });
 

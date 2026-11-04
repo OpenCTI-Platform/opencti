@@ -75,9 +75,9 @@ describe('catalog-http', () => {
     const req = { params: { file: 'abc.png' } } as any;
     const res = buildRes();
     await handleCatalogLogoViewRequest(req, res, vi.fn());
-    expect(res.set).toHaveBeenCalledWith({ 'Content-Security-Policy': 'sandbox' });
+    expect(res.set).toHaveBeenCalledWith('Content-Security-Policy', 'sandbox');
     expect(res.set).toHaveBeenCalledWith('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    expect(res.set).toHaveBeenCalledWith({ Pragma: 'no-cache' });
+    expect(res.set).toHaveBeenCalledWith('Pragma', 'no-cache');
     expect(res.set).toHaveBeenCalledWith('Content-type', 'image/png');
     expect(pipe).toHaveBeenCalledWith(res);
   });

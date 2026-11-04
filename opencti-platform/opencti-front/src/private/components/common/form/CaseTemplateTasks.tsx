@@ -1,7 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
@@ -19,20 +19,16 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { CaseTemplateTasksCreationMutation, TaskTemplateAddInput } from './__generated__/CaseTemplateTasksCreationMutation.graphql';
 import { CaseTemplateTasksSearchQuery$data } from './__generated__/CaseTemplateTasksSearchQuery.graphql';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
 
-}));
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 interface TaskTemplateFieldProps {
   caseTemplateId?: string;
@@ -69,7 +65,6 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
   onChange,
   values,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [tasks, setTasks] = useState<FieldOption[]>([...(values ?? [])]);
   const [openCreation, setOpenCreation] = useState(false);
@@ -145,10 +140,10 @@ const CaseTemplateTasks: FunctionComponent<TaskTemplateFieldProps> = ({
         openCreate={() => setOpenCreation(true)}
         renderOption={(option) => (
           <>
-            <div className={classes.icon} style={{ color: option.color }}>
+            <OptionIcon style={{ color: option.color }}>
               <ItemIcon type="Task" />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
           </>
         )}
       />

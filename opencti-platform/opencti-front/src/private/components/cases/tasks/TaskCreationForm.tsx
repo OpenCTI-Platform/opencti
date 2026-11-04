@@ -1,0 +1,215 @@
+import Button from '@common/button/Button';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
+import { FormikConfig } from 'formik/dist/types';
+import { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
+import { useFormatter } from '../../../../components/i18n';
+import TextField from '../../../../components/TextField';
+import { handleErrorInForm } from '../../../../relay/environment';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import { TaskCreationMutation, TaskCreationMutation$variables } from './__generated__/TaskCreationMutation.graphql';
+
+export const taskAddMutation = graphql`
+  mutation TaskCreationMutation($input: TaskAddInput!) {
+    taskAdd(input: $input) {
+      id
+      representative {
+        main
+      }
+      ...TasksLine_node
+      ... on Task {
+        objects {
+          edges {
+            node {
+              ...Tasks_tasks
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const TASK_TYPE = 'Task';
+interface FormikTaskAddInput {
+  name: string;
+  due_date?: Date | null;
+  description?: string;
+  objectAssignee?: FieldOption[];
+  objectLabel?: FieldOption[];
+  objectMarking: FieldOption[];
+}
+
+interface TaskCreationFormProps {
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+  ) => void;
+  onClose?: () => void;
+  defaultMarkings?: { value: string; label: string }[];
+  inputValue?: string;
+}
+
+export const TaskCreationForm: FunctionComponent<TaskCreationFormProps> = ({
+  updater,
+  onClose,
+  defaultMarkings,
+  inputValue,
+}) => {
+  const { t_i18n } = useFormatter();
+
+  const { mandatoryAttributes } = useIsMandatoryAttribute(
+    TASK_TYPE,
+  );
+  const basicShape = yupShapeConditionalRequired({
+    name: Yup.string().trim().min(2),
+    description: Yup.string().nullable().max(5000, t_i18n('The value is too long')),
+    due_date: Yup.date().nullable(),
+    objectLabel: Yup.array(),
+    objectMarking: Yup.array(),
+    objectAssignee: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  }, mandatoryAttributes);
+  const validator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
+
+  const [commit] = useApiMutation<TaskCreationMutation>(
+    taskAddMutation,
+    undefined,
+    { successMessage: `${t_i18n('entity_Task')} ${t_i18n('successfully created')}` },
+  );
+  const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
+
+  const initialValues: FormikTaskAddInput = {
+    name: inputValue ?? '',
+    description: '',
+    due_date: null,
+    objectAssignee: [],
+    objectMarking: defaultMarkings ?? [],
+  };
+
+  const onSubmit: FormikConfig<FormikTaskAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm, setErrors },
+  ) => {
+    const input: TaskCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
+      ...buildCreationFilesInput(),
+      name: values.name,
+      description: values.description,
+      due_date: values.due_date,
+      objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
+      objectLabel: (values.objectLabel ?? []).map(({ value }) => value),
+      objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
+    };
+    commit({
+      variables: {
+        input,
+      },
+      updater: (store: RecordSourceSelectorProxy) => {
+        if (updater) {
+          updater(store, 'taskAdd');
+        }
+      },
+      onError: (error: Error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+      },
+    });
+  };
+  return (
+    <Formik
+      entityType={TASK_TYPE}
+      initialValues={initialValues}
+      onSubmit={onSubmit}
+      onReset={onClose}
+      validationSchema={validator}
+    >
+      {({ isSubmitting, handleReset, submitForm, setFieldValue, values }) => (
+        <Form>
+          <Field
+            className="mb-5"
+            component={TextField}
+            variant="outlined"
+            name="name"
+            label={t_i18n('Name')}
+            required={(mandatoryAttributes.includes('name'))}
+            fullWidth
+          />
+          <Field
+            component={DateTimePickerField}
+            name="due_date"
+            required={(mandatoryAttributes.includes('due_date'))}
+            textFieldProps={{
+              label: t_i18n('Due Date'),
+              variant: 'outlined',
+              fullWidth: true,
+            }}
+          />
+          <ObjectAssigneeField
+            name="objectAssignee"
+            required={(mandatoryAttributes.includes('objectAssignee'))}
+            style={fieldSpacingContainerStyle}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            required={(mandatoryAttributes.includes('objectLabel'))}
+            style={fieldSpacingContainerStyle}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            required={(mandatoryAttributes.includes('objectMarking'))}
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+          />
+          <Field
+            component={MarkdownField}
+            name="description"
+            label={t_i18n('Description')}
+            required={(mandatoryAttributes.includes('description'))}
+            fullWidth
+            multiline
+            rows="4"
+            style={fieldSpacingContainerStyle}
+            autoPersistOnBlur={false}
+            registerMarkdownImagesController={registerMarkdownImagesController}
+            uploadFileMarkings={(values.objectMarking ?? []).map(({ value }) => value)}
+          />
+          <CustomFieldValuesCreation />
+          <FormButtonContainer>
+            <Button
+              onClick={handleReset}
+              disabled={isSubmitting}
+              variant="secondary"
+            >
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              onClick={submitForm}
+              disabled={isSubmitting}
+            >
+              {t_i18n('Create')}
+            </Button>
+          </FormButtonContainer>
+        </Form>
+      )}
+    </Formik>
+  );
+};

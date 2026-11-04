@@ -91,6 +91,73 @@ describe('parseUpdatesPatch', () => {
     const result = parseUpdatesPatch(patch);
     expect(result).toHaveLength(2);
   });
+
+  it('should build one change per custom field actually modified', () => {
+    const note = (value: string) => ({ field_id: 'cf-note', field_name: 'x_opencti_cf_note', string_value: value });
+    const score = { field_id: 'cf-score', field_name: 'x_opencti_cf_score', int_value: 10 };
+    const tags = { field_id: 'cf-tags', field_name: 'x_opencti_cf_tags', select_values: ['a', 'b'] };
+    const patch = JSON.stringify({
+      custom_field_values: {
+        initial_value: [note('before'), score],
+        replaced_value: [score, note('after'), tags],
+        added_value: [],
+        removed_value: [],
+      },
+    });
+    expect(parseUpdatesPatch(patch)).toEqual([
+      { field: 'x_opencti_cf_note', removed: ['before'], added: ['after'] },
+      { field: 'x_opencti_cf_tags', removed: [], added: ['a, b'] },
+    ]);
+  });
+
+  it('should apply added and removed custom field values', () => {
+    const patch = JSON.stringify({
+      custom_field_values: {
+        initial_value: [{ field_id: 'cf-note', field_name: 'x_opencti_cf_note', string_value: 'before' }],
+        replaced_value: [],
+        added_value: [{ field_id: 'cf-flag', field_name: 'x_opencti_cf_flag', boolean_value: false }],
+        removed_value: [{ field_id: 'cf-note', field_name: 'x_opencti_cf_note' }],
+      },
+    });
+    expect(parseUpdatesPatch(patch)).toEqual([
+      { field: 'x_opencti_cf_note', removed: ['before'], added: [] },
+      { field: 'x_opencti_cf_flag', removed: [], added: ['false'] },
+    ]);
+  });
+
+  it('should show every custom field cleared by a replacement with an empty list', () => {
+    const note = { field_id: 'cf-note', field_name: 'x_opencti_cf_note', string_value: 'before' };
+    const score = { field_id: 'cf-score', field_name: 'x_opencti_cf_score', int_value: 10 };
+    const patch = JSON.stringify({
+      custom_field_values: { initial_value: [note, score], replaced_value: [], added_value: [], removed_value: [] },
+    });
+    // The draft version has no custom field value left
+    expect(parseUpdatesPatch(patch, [])).toEqual([
+      { field: 'x_opencti_cf_note', removed: ['before'], added: [] },
+      { field: 'x_opencti_cf_score', removed: ['10'], added: [] },
+    ]);
+  });
+
+  it('should show a multi_select change whose displayed values look alike', () => {
+    const tags = (selectValues: string[]) => ({ field_id: 'cf-tags', field_name: 'x_opencti_cf_tags', select_values: selectValues });
+    const patch = JSON.stringify({
+      custom_field_values: { initial_value: [tags(['a, b'])], replaced_value: [tags(['a', 'b'])], added_value: [], removed_value: [] },
+    });
+    expect(parseUpdatesPatch(patch)).toEqual([{ field: 'x_opencti_cf_tags', removed: ['a, b'], added: ['a, b'] }]);
+  });
+
+  it('should compare the initial custom field values with the ones of the draft version', () => {
+    const patch = JSON.stringify({
+      custom_field_values: {
+        initial_value: [{ field_id: 'cf-note', field_name: 'x_opencti_cf_note', string_value: 'before' }],
+        replaced_value: [],
+        added_value: [{ field_id: 'cf-note', field_name: 'x_opencti_cf_note', string_value: 'intermediate' }],
+        removed_value: [],
+      },
+    });
+    const draftValues = [{ field_id: 'cf-note', field_name: 'x_opencti_cf_note', string_value: 'after' }];
+    expect(parseUpdatesPatch(patch, draftValues)).toEqual([{ field: 'x_opencti_cf_note', removed: ['before'], added: ['after'] }]);
+  });
 });
 
 describe('buildFieldLabelMap', () => {

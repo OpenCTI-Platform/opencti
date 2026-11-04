@@ -1,8 +1,7 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import type { Theme } from '../../../components/Theme';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
@@ -24,15 +23,6 @@ import { NotifiersSettings$key } from './__generated__/NotifiersSettings.graphql
 import useGranted, { SETTINGS_SETCUSTOMIZATION } from '../../../utils/hooks/useGranted';
 
 const LOCAL_STORAGE_KEY = 'notifiers';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-}));
 
 const notifiersSettingsQuery = graphql`
   query NotifiersSettingsQuery {
@@ -60,7 +50,6 @@ const notifiersSettingsFieldPatchMutation = graphql`
 `;
 
 const Notifiers = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Notifiers | Customization | Settings'));
@@ -119,7 +108,7 @@ const Notifiers = () => {
     paginationOptions,
   );
   return (
-    <div className={classes.container} data-testid="notifiers-page">
+    <Box sx={{ margin: 0, padding: '0 200px 0 0' }} data-testid="notifiers-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Notifiers'), current: true }]} />
       <Card title={t_i18n('Configuration')} sx={{ marginBottom: '20px' }}>
         <FormControlLabel
@@ -181,7 +170,7 @@ const Notifiers = () => {
           </React.Suspense>
         )}
       </ListLines>
-    </div>
+    </Box>
   );
 };
 

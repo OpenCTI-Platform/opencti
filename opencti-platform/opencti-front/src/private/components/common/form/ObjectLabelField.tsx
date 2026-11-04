@@ -1,4 +1,4 @@
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { Field } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
 import { ComboboxChangeMeta } from '@filigran/design-system';
@@ -11,19 +11,18 @@ import LabelCreation from '../../settings/labels/LabelCreation';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import ItemIcon from '../../../../components/ItemIcon';
 import { FieldOption } from '../../../../utils/field';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
+import useGranted, { SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
 });
 
 interface ObjectLabelFieldProps {
@@ -49,8 +48,11 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   onChange,
   disabled,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
+  // Form Intake: the labels are created on submission with the rights of the user (in the draft scope too for a submission
+  // to a draft), do not offer what would fail then
+  const { isDeferredMode, toDraft } = useDeferredCreation();
+  const canCreateLabel = useGranted([SETTINGS_SETLABELS], false, { capabilitiesInDraft: toDraft ? [SETTINGS_SETLABELS] : [] });
 
   const [labelCreation, setLabelCreation] = useState(false);
   const [labels, setLabels] = useState<FieldOption[]>([]);
@@ -100,14 +102,14 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
         onFocusInput={() => searchLabels('')}
         // The label's own colour, straight from the database.
         getChipColor={(option: FieldOption) => option.color}
-        openCreate={() => setLabelCreation(true)}
+        openCreate={isDeferredMode && !canCreateLabel ? undefined : () => setLabelCreation(true)}
         onChange={onChange}
         renderOption={(option: FieldOption) => (
           <>
-            <div className={classes.icon} style={{ color: option.color }}>
+            <OptionIcon style={{ color: option.color }}>
               <ItemIcon type="Label" color={option.color} />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
           </>
         )}
       />

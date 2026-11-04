@@ -1,12 +1,14 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import {
   LocationCreationMutation,
   LocationCreationMutation$data,
   LocationCreationMutation$variables,
 } from '@components/common/location/__generated__/LocationCreationMutation.graphql';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/DynamicCustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -43,7 +45,6 @@ interface LocationCreationFormProps {
   updater: (store: RecordSourceSelectorProxy) => void;
   onReset?: () => void;
   display?: boolean;
-  contextual?: boolean;
   onCompleted?: () => void;
   inputValue: string;
   creationCallback?: (data: LocationCreationMutation$data) => void;
@@ -69,7 +70,6 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
   onlyAuthors,
   onReset,
   onCompleted,
-  contextual,
   creationCallback,
   updater,
 }) => {
@@ -86,6 +86,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
     },
   ) => {
     const input: LocationCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       name: values.name,
       description: values.description,
       type: values.type,
@@ -102,7 +103,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        if (contextual && creationCallback) {
+        if (creationCallback) {
           creationCallback(response);
         }
         if (onCompleted) {
@@ -114,6 +115,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
 
   return (
     <Formik
+      typeField="type"
       enableReinitialize={true}
       initialValues={{
         name: inputValue,
@@ -159,6 +161,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
               <SelectItem key={idx} value={location}>{t_i18n(location)}</SelectItem>
             ))}
           </Field>
+          <CustomFieldValuesCreation />
           <FormButtonContainer>
             <Button
               variant="secondary"
@@ -181,7 +184,6 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
 };
 
 const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
-  contextual,
   display,
   inputValue,
   updater,
@@ -191,24 +193,6 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-
-  const renderClassic = () => {
-    return (
-      <Drawer
-        title={t_i18n('Add a location')}
-        variant={DrawerVariant.create}
-      >
-        {({ onClose }) => (
-          <LocationCreationForm
-            inputValue={inputValue}
-            updater={updater}
-            onCompleted={onClose}
-            onReset={onClose}
-          />
-        )}
-      </Drawer>
-    );
-  };
 
   const renderContextual = () => {
     return (
@@ -235,10 +219,7 @@ const LocationCreation: FunctionComponent<LocationCreationFormProps> = ({
       </div>
     );
   };
-  if (contextual) {
-    return renderContextual();
-  }
-  return renderClassic();
+  return renderContextual();
 };
 
 export default LocationCreation;

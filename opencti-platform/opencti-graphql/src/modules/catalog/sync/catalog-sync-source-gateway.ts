@@ -29,7 +29,8 @@ type CatalogContractDtoV1 = {
   subscription_link: string | null;
   source_code: string | null;
   manager_supported: boolean;
-  support_version: string | null;
+  min_version?: string | null;
+  max_version?: string | null;
   license_type: 'Free' | 'Commercial' | null;
   contact: string | null;
   solution_categories: string[];
@@ -211,14 +212,6 @@ const normalizeConfigSchema = (configSchema: unknown): CatalogContractDtoV0['con
   };
 };
 
-const normalizeSupportVersion = (supportVersion: string | null | undefined): string | null => {
-  if (!supportVersion) {
-    return null;
-  }
-  const normalized = supportVersion.replace(/^\s*>=\s*/, '').trim();
-  return normalized.length > 0 ? normalized : null;
-};
-
 const mapCatalogContractDtoV1ToCatalogContractSyncSource = (contractDto: CatalogContractDtoV1): CatalogContractSyncSource => {
   const playbook_supported = contractDto.additional_properties['playbook_supported'];
   const max_confidence_level = contractDto.additional_properties['max_confidence_level'];
@@ -240,7 +233,9 @@ const mapCatalogContractDtoV1ToCatalogContractSyncSource = (contractDto: Catalog
       typeof max_confidence_level === 'number'
         ? max_confidence_level
         : DEFAULT_MAX_CONFIDENCE,
-    support_version: contractDto.support_version,
+    support_version: null,
+    min_version: contractDto.min_version,
+    max_version: contractDto.max_version,
     subscription_link: contractDto.subscription_link,
     source_code: contractDto.source_code ?? '',
     manager_supported: contractDto.manager_supported,
@@ -279,11 +274,9 @@ const isCatalogDtoWithExplicitSchemaVersion = (
 export const mapCatalogContractDtoToCatalogContractSyncSource = (
   contractDto: CatalogContractDtoV0,
 ): CatalogContractSyncSource => {
-  const normalizedSupportVersion = normalizeSupportVersion(contractDto.support_version);
   return {
     id: `${contractDto.slug}-${contractDto.container_version}`,
     ...contractDto,
-    support_version: normalizedSupportVersion,
   };
 };
 

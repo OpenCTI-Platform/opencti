@@ -37,7 +37,13 @@ const SecurityCoverageMainInfo: FunctionComponent<Props> = ({
   return (
     <Card
       title={(
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <span>{t_i18n('Coverage information')}</span>
           <Tooltip title={t_i18n('Average coverage score from Security Coverage Result(s)')}>
             <InformationOutline fontSize="small" color="primary" />
@@ -50,7 +56,9 @@ const SecurityCoverageMainInfo: FunctionComponent<Props> = ({
         direction="row"
         divider={<Divider orientation="vertical" flexItem />}
         spacing={2}
-        alignItems="center"
+        sx={{
+          alignItems: 'center',
+        }}
       >
         <Stack sx={{ flexGrow: 1 }} spacing={2}>
           <Stack direction="row" spacing={1}>

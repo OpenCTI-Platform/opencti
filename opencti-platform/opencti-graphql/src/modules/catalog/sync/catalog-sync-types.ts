@@ -14,6 +14,8 @@ export type CatalogSyncSourceConfig = {
 
 export type CatalogContractSyncSource = CatalogContract & {
   id: string; // slug-version
+  min_version?: string | null;
+  max_version?: string | null;
 };
 
 export interface CatalogSyncSource {

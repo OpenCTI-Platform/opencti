@@ -383,7 +383,9 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
                     onChange={() => setDestination('content')}
                     value="content"
                     name="destination"
-                    inputProps={{ 'aria-label': 'destination' }}
+                    slotProps={{
+                      input: { 'aria-label': 'destination' },
+                    }}
                   />
                 )}
               >
@@ -403,7 +405,9 @@ const StixCoreObjectAskAI: FunctionComponent<StixCoreObjectAskAiProps> = ({
                     onChange={() => setDestination('file')}
                     value="file"
                     name="destination"
-                    inputProps={{ 'aria-label': 'destination' }}
+                    slotProps={{
+                      input: { 'aria-label': 'destination' },
+                    }}
                   />
                 )}
               >

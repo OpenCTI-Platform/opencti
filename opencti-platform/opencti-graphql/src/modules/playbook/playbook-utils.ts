@@ -249,7 +249,7 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
       stringifiedFilters = JSON.stringify(convertedFilters);
     } else {
       // our stix matching is currently limited, we need to validate the input filters
-      validateFilterGroupForStixMatch(filterGroup);
+      await validateFilterGroupForStixMatch(context, user, filterGroup);
       stringifiedFilters = config.filters;
     }
   }

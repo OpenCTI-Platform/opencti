@@ -240,7 +240,7 @@ const TimeoutLock: React.FunctionComponent = () => {
   return (
     <Dialog
       open={dialogOpen}
-      disableEscapeKeyDown={true}
+      // No onClose: neither Escape nor a backdrop click can dismiss the lock.
       sx={{
         backdropFilter: 'blur(15px)',
         marginTop: `${topBannerHeight + bannerHeightNumber}px`,

@@ -17,6 +17,7 @@ import { RegionEditionOverview_region$key } from './__generated__/RegionEditionO
 import CommitMessage from '../../common/form/CommitMessage';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
@@ -83,6 +84,7 @@ const regionMutationRelationDelete = graphql`
 const regionEditionOverviewFragment = graphql`
   fragment RegionEditionOverview_region on Region {
     id
+    ...CustomFieldValuesEdition_values @relay(mask: false)
     name
     description
     confidence
@@ -308,6 +310,13 @@ const RegionEditionOverviewComponent: FunctionComponent<
             }
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
+          />
+          <CustomFieldValuesEdition
+            entityType={region.entity_type}
+            entityId={region.id}
+            values={region.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
           />
           {enableReferences && (
             <CommitMessage

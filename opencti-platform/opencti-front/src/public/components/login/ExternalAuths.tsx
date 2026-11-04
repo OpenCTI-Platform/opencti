@@ -40,11 +40,13 @@ const ExternalAuths = ({
 
   return (
     <Stack
-      mt={3}
       direction="row"
-      justifyContent="center"
-      flexWrap="wrap"
-      gap={1}
+      sx={{
+        mt: 3,
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        gap: 1,
+      }}
     >
       {authSSOs?.map((value, index) => (
         <ExternalAuthButton

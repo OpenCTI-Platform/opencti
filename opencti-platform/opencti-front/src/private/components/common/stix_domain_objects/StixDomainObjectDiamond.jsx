@@ -1,19 +1,12 @@
 import React, { useCallback } from 'react';
 import { createRefetchContainer, graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import ReactFlow, { addEdge, MarkerType, ReactFlowProvider, useEdgesState, useNodesState } from 'reactflow';
 import nodeTypes from './diamond/types/nodes';
 import edgeTypes from './diamond/types/edges';
 import { ErrorBoundary } from '../../Error';
 import { stixDomainObjectThreatDiamondQuery } from './StixDomainObjectThreatDiamondQuery';
 import { useFormatter } from '../../../../components/i18n';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    overflow: 'hidden',
-  },
-}));
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
@@ -25,7 +18,6 @@ const defaultEdgeOptions = {
 };
 
 const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { stixDomainObject } = data;
   const initialNodes = [
@@ -157,11 +149,11 @@ const StixDomainObjectDiamondComponent = ({ entityLink, data }) => {
     <>
       <ErrorBoundary>
         <div id="container">
-          <div className={classes.container} style={{ width: '100%', height: 1000 }}>
+          <Box sx={{ margin: 0, overflow: 'hidden', width: '100%', height: 1000 }}>
             <ReactFlowProvider>
               <Flow />
             </ReactFlowProvider>
-          </div>
+          </Box>
         </div>
       </ErrorBoundary>
     </>

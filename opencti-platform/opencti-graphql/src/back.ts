@@ -1,7 +1,9 @@
 import './instrumentation';
 
-import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { context, propagation, trace } from '@opentelemetry/api';
+import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
+import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } from '@opentelemetry/core';
+import { BatchSpanProcessor, TracerProvider } from '@opentelemetry/sdk-trace';
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import nconf from 'nconf';
@@ -27,12 +29,12 @@ if (ENABLED_TRACING) {
   const isZipKinExporterSetUp = isNotEmptyField(zipKinUri);
   if (isOtlpExporterSetUp || isZipKinExporterSetUp) {
     const otlpProcessors = isOtlpExporterSetUp ? [
-      new BatchSpanProcessor(new OTLPTraceExporter({ url: otlpUri, headers: {} })),
+      new BatchSpanProcessor({ exporter: new OTLPTraceExporter({ url: otlpUri, headers: {} }) }),
     ] : [];
     const zipkinProcessors = isZipKinExporterSetUp ? [
-      new BatchSpanProcessor(new ZipkinExporter({ url: zipKinUri, headers: {} })),
+      new BatchSpanProcessor({ exporter: new ZipkinExporter({ url: zipKinUri, headers: {} }) }),
     ] : [];
-    const provider = new NodeTracerProvider({
+    const provider = new TracerProvider({
       resource: defaultResource().merge(resourceFromAttributes({
         [ATTR_SERVICE_NAME]: 'opencti-platform',
       })),
@@ -41,7 +43,13 @@ if (ENABLED_TRACING) {
         ...zipkinProcessors,
       ],
     });
-    provider.register();
+    trace.setGlobalTracerProvider(provider);
+    const contextManager = new AsyncLocalStorageContextManager();
+    contextManager.enable();
+    context.setGlobalContextManager(contextManager);
+    propagation.setGlobalPropagator(new CompositePropagator({
+      propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
+    }));
   }
 }
 

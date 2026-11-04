@@ -9,13 +9,20 @@ import { pascalize } from '../database/utils';
 
 export const STIX_PATTERN_TYPE = 'stix';
 
+// Keys are extracted from user provided patterns: walking them would reach and pollute the object prototypes
+const UNSAFE_PATH_KEYS = ['__proto__', 'constructor', 'prototype'];
+
 const unflatten = (data) => {
   const result = {};
 
-  for (const i in data) {
+  for (const i of Object.keys(data)) {
     const keys = i.split('.');
+    if (keys.some((key) => UNSAFE_PATH_KEYS.includes(key))) {
+      continue;
+    }
     keys.reduce((r, e, j) => {
-      return r[e] || (r[e] = Number.isNaN(Number(keys[j + 1])) ? (keys.length - 1 === j ? data[i] : {}) : []);
+      const current = Object.hasOwn(r, e) ? r[e] : undefined;
+      return current || (r[e] = Number.isNaN(Number(keys[j + 1])) ? (keys.length - 1 === j ? data[i] : {}) : []);
     }, result);
   }
   return result;

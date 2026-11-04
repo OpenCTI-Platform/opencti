@@ -4,7 +4,10 @@ import Dialog from '@common/dialog/Dialog';
 import { ThumbsUpDownOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Slider from '@mui/material/Slider';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
@@ -33,6 +36,7 @@ export const stixCoreObjectOpinionsRadarDialogMyOpinionQuery = graphql`
   query StixCoreObjectOpinionsRadarDialogMyOpinionQuery($id: String!) {
     myOpinion(id: $id) {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       standard_id
       opinion
       explanation
@@ -182,6 +186,8 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
             title={myOpinion ? t_i18n('Update opinion') : t_i18n('Create an opinion')}
           >
             <Formik<OpinionAddInput>
+              entityType={OPINION_TYPE}
+              enabled={!myOpinion}
               enableReinitialize={true}
               initialValues={initialValues}
               validationSchema={opinionValidator}
@@ -246,6 +252,15 @@ const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
                     containerStyle={fieldSpacingContainerStyle}
                   />
 
+                  {myOpinion ? (
+                    <CustomFieldValuesEdition
+                      entityType={OPINION_TYPE}
+                      entityId={myOpinion.id}
+                      values={myOpinion.customFieldValues ?? []}
+                      fieldPatch={commitEdition}
+                      enableReferences
+                    />
+                  ) : <CustomFieldValuesCreation />}
                   <DialogActions>
                     <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>
                       {t_i18n('Cancel')}

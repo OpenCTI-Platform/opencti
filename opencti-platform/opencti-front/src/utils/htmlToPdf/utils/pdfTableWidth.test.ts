@@ -1,13 +1,56 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
+import { Worker as ThreadWorker } from 'node:worker_threads';
 import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake/build/pdfmake';
 import fonts from 'pdfmake/build/vfs_fonts';
+// Deliberately not declared: this must stay the copy react-pdf resolves, since pdf.js throws
+// when the API and the worker differ in version. The legacy build is the one that runs on Node.
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { getDocument, OPS, Util } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import setTableFullWidth, { defaultTableLayout, getMaxTableColumnCount, hasWideTable } from './pdfTableWidth';
 import { htmlToPdf, htmlToPdfReport } from '../htmlToPdf';
 
+const workerScripts = new Map<string, Blob>();
+const workerGlobalScope = `
+const { parentPort } = require('node:worker_threads');
+globalThis.self = globalThis;
+globalThis.postMessage = (message, transfer) => parentPort.postMessage(message, transfer);
+globalThis.addEventListener = () => {};
+parentPort.on('message', (data) => globalThis.onmessage({ data }));
+`;
+
+// jsdom has no Worker, and pdfmake inflates PNG images in a blob-URL worker.
+class BlobScriptWorker {
+  onmessage: ((event: { data: unknown }) => void) | null = null;
+
+  private readonly thread: Promise<ThreadWorker>;
+
+  constructor(url: string) {
+    this.thread = workerScripts.get(url)!.text().then((script) => {
+      const thread = new ThreadWorker(`${workerGlobalScope}${script}`, { eval: true });
+      thread.on('message', (data) => this.onmessage?.({ data }));
+      return thread;
+    });
+  }
+
+  postMessage(message: unknown, transfer: ArrayBuffer[] = []) {
+    this.thread.then((thread) => thread.postMessage(message, transfer));
+  }
+
+  terminate() {
+    this.thread.then((thread) => thread.terminate());
+  }
+}
+
 beforeAll(async () => {
+  vi.stubGlobal('Worker', BlobScriptWorker);
+  vi.spyOn(URL, 'createObjectURL').mockImplementation((blob) => {
+    const url = `blob:${randomUUID()}`;
+    workerScripts.set(url, blob as Blob);
+    return url;
+  });
   pdfMake.addVirtualFileSystem(fonts);
   const cjkFonts = ['NotoSansJP-Regular.ttf', 'NotoSansJP-Bold.ttf', 'NotoSansKR-Regular.ttf', 'NotoSansKR-Bold.ttf'];
   pdfMake.addVirtualFileSystem(Object.fromEntries(cjkFonts.map((name) => [name, readFileSync(`public/assets/static/${name}`).toString('base64')])));
@@ -28,7 +71,10 @@ beforeAll(async () => {
   await pdf.getBuffer();
 });
 
-afterAll(() => vi.restoreAllMocks());
+afterAll(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('Utils: setTableFullWidth', () => {
   const prepareTable = (html: string, contentWidth = 515.28) => {
@@ -245,7 +291,7 @@ describe('PDF table layout', () => {
         expect(item.transform[4] + item.width).toBeLessThanOrEqual(width - margin + 0.01);
       });
     } finally {
-      await document.destroy();
+      await document.loadingTask.destroy();
     }
   });
 
@@ -271,7 +317,7 @@ describe('PDF table layout', () => {
         expect(text.map((item) => item.str).join('').replace(/\s/g, '')).toContain(description.replace(/\s/g, ''));
         bottomPositions.push(text.find((item) => item.str === 'EndMarker')!.transform[5]);
       } finally {
-        await document.destroy();
+        await document.loadingTask.destroy();
       }
     }
     expect(bottomPositions[1]).toBeGreaterThan(bottomPositions[0] + 30);
@@ -364,7 +410,7 @@ describe('PDF table layout', () => {
       });
       expect(imageCount).toBe(1);
     } finally {
-      await document.destroy();
+      await document.loadingTask.destroy();
     }
   });
 });

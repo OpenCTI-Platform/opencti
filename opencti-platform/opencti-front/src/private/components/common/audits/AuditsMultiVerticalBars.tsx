@@ -155,7 +155,7 @@ const AuditsMultiVerticalBars: FunctionComponent<AuditsMultiVerticalBarsProps> =
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiVerticalBarsTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -177,8 +177,7 @@ const AuditsMultiVerticalBars: FunctionComponent<AuditsMultiVerticalBarsProps> =
       showPreviewTag={isPreviewMode}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

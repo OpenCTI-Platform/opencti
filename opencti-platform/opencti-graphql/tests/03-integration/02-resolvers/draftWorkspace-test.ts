@@ -13,7 +13,7 @@ import {
   buildStandardUser,
 } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAuthUser } from '../../utils/testQueryHelper';
-import { resolveUserById } from '../../../src/domain/user';
+import { resolveUserById } from '../../../src/modules/user/user-domain';
 import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { buildDraftValidationBundle } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
@@ -22,6 +22,7 @@ import { fileToReadStream } from '../../../src/database/file-storage';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from '../../../src/modules/draftWorkspace/draftStatuses';
 import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { isRuntimeSortEnable } from '../../../src/database/engine';
 
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
     mutation DraftWorkspaceAdd($input: DraftWorkspaceAddInput!) {
@@ -387,13 +388,19 @@ describe('Drafts workspace resolver testing', () => {
     expect(drafts.length).toEqual(0);
   });
 
-  it('should list drafts ordered by createdBy without error', async () => {
+  it('should list drafts ordered by createdBy, or refuse it without runtime sorting', async () => {
     const result = await queryAsAdmin({
       query: LIST_DRAFT_WORKSPACES_QUERY,
       variables: { first: 5, orderBy: 'createdBy', orderMode: 'asc' },
     });
-    expect(result.errors).toBeUndefined();
-    expect(result.data?.draftWorkspaces.edges).toBeDefined();
+    if (isRuntimeSortEnable()) {
+      // Elasticsearch: the sort works
+      expect(result.errors).toBeUndefined();
+      expect(result.data?.draftWorkspaces.edges).toBeDefined();
+    } else {
+      // OpenSearch: the API refuses this sort with an explicit error
+      expect(result.errors?.[0].message).toBe('Runtime mapping is only possible with elastic >=7.12');
+    }
   });
 
   it('should list drafts ordered by objectAssignee without error', async () => {

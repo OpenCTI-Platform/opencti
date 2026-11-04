@@ -9,19 +9,28 @@ import { DataTableVariant } from 'src/components/dataGrid/dataTableTypes';
 import { graphql } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from 'src/utils/hooks/usePreloadedPaginationFragment';
-import { HAS_COVERED_TARGETS_TYPES, SelectedEntities, StixCoreObjectNode } from '../SecurityCoverageCreation-types';
+import { HAS_COVERED_TARGETS_TYPES, SelectedEntities } from '../SecurityCoverageCreation-types';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Button from 'src/components/common/button/Button';
 import { useFormatter } from 'src/components/i18n';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from 'src/utils/filters/filtersUtils';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import { usePaginationLocalStorage } from 'src/utils/hooks/useLocalStorage';
-import useEntityToggle from 'src/utils/hooks/useEntityToggle';
+import useEntityToggle, { UseEntityToggleType } from 'src/utils/hooks/useEntityToggle';
 import { buildCoveredEntitiesFilters, buildEntitiesSelection, INITIAL_VALUES, LOCAL_STORAGE_KEY } from './SelectEntitiesToCoverStep-utils';
 
 interface SelectEntitiesToCoverStepProps {
-  coveredEntity: StixCoreObjectNode;
-  onSelectEntities: (selection: SelectedEntities | null) => void;
+  coveredEntity: { parent_types: readonly string[]; id: string };
+  // Hide the entities already covered by this security coverage result.
+  excludedCoveredResultId?: string;
+  // Hide these entities, for example the ones still being covered by a background task.
+  excludedEntityIds?: string[];
+  // Prevent going to the next step until at least one entity is selected.
+  nextRequiresSelection?: boolean;
+  onNext: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
+  onCreate?: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
+  onCancel?: () => void;
+  isUpdate?: boolean;
 }
 
 export const selectEntitiesToCoverStepLinesQuery = graphql`
@@ -127,20 +136,42 @@ const DATA_COLUMNS = {
   objectMarking: { percentWidth: 15 },
 };
 
-const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEntitiesToCoverStepProps) => {
+const SelectEntitiesToCoverStep = ({
+  coveredEntity,
+  excludedCoveredResultId,
+  excludedEntityIds,
+  nextRequiresSelection = false,
+  onNext,
+  onCreate,
+  onCancel,
+  isUpdate = false,
+}: SelectEntitiesToCoverStepProps) => {
   const { t_i18n } = useFormatter();
 
-  const { viewStorage: { filters, searchTerm }, helpers, paginationOptions } = usePaginationLocalStorage<SelectEntitiesToCoverStepLinesQuery$variables>(
+  const {
+    viewStorage: { filters, searchTerm },
+    helpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<SelectEntitiesToCoverStepLinesQuery$variables>(
     LOCAL_STORAGE_KEY,
     INITIAL_VALUES,
     true,
   );
-  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, HAS_COVERED_TARGETS_TYPES);
-  const { selectedElements, deSelectedElements, selectAll } = useEntityToggle<StixCoreObjectNode>(LOCAL_STORAGE_KEY);
+
+  const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(
+    filters,
+    HAS_COVERED_TARGETS_TYPES,
+  );
+
+  const {
+    selectedElements,
+    deSelectedElements,
+    selectAll,
+  } = useEntityToggle(LOCAL_STORAGE_KEY);
 
   const contextFilters: FilterGroup = {
     mode: 'and',
-    filters: buildCoveredEntitiesFilters(coveredEntity),
+    filters: buildCoveredEntitiesFilters(coveredEntity, excludedCoveredResultId, excludedEntityIds),
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
 
@@ -186,7 +217,27 @@ const SelectEntitiesToCoverStep = ({ coveredEntity, onSelectEntities }: SelectEn
         />
       )}
       <FormButtonContainer>
-        <Button onClick={() => onSelectEntities(selection)}>
+        {onCancel && (
+          <Button
+            variant="tertiary"
+            onClick={() => onCancel()}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+        )}
+        {onCreate && (
+          <Button
+            variant="secondary"
+            onClick={() => onCreate(selection, Object.values(selectedElements))}
+          >
+            {isUpdate ? t_i18n('Update') : t_i18n('Create')}
+          </Button>
+        )}
+        <Button
+          variant={onCreate ? 'primary' : 'secondary'}
+          disabled={nextRequiresSelection && !selection}
+          onClick={() => onNext(selection, Object.values(selectedElements))}
+        >
           {t_i18n('Next')}
         </Button>
       </FormButtonContainer>

@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -25,7 +25,6 @@ import { FormikConfig } from 'formik/dist/types';
 import { fileIndexingConfigurationFieldPatch } from '@components/settings/file_indexing/FileIndexing';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
-import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';
 import SwitchField from '../../../../components/fields/SwitchField';
 import ComboboxField from '../../../../components/ComboboxField';
@@ -36,15 +35,11 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Card from '../../../../components/common/card/Card';
 import { Checkbox } from '@filigran/design-system';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    paddingRight: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
+const Icon = styled('div')(({ theme }) => ({
+  paddingTop: 4,
+  paddingRight: 4,
+  display: 'inline-block',
+  color: theme.palette.primary.main,
 }));
 
 interface FileIndexingConfigurationProps {
@@ -63,7 +58,6 @@ const FileIndexingConfiguration: FunctionComponent<
 > = ({ managerConfiguration }) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: availableEntityTypes } = useAttributes();
-  const classes = useStyles();
   const manager_setting = managerConfiguration?.manager_setting;
   const initialValues = {
     accept_mime_types: manager_setting?.accept_mime_types,
@@ -169,9 +163,9 @@ const FileIndexingConfiguration: FunctionComponent<
               onChange={submitForm}
               renderOption={(option: string) => (
                 <>
-                  <div className={classes.icon}>
+                  <Icon>
                     <ItemIcon type={option} />
-                  </div>
+                  </Icon>
                   <span>{t_i18n(`entity_${option}`)}</span>
                 </>
               )}

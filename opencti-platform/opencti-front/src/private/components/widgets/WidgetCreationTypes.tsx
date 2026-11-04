@@ -39,10 +39,10 @@ const WidgetCreationTypes = () => {
     <Grid
       container={true}
       spacing={3}
-      style={{ marginTop: 20, marginBottom: 20 }}
+      style={{ marginTop: 44, marginBottom: 20 }}
     >
       {visualizationTypes.map((visualizationType) => (
-        <Grid key={visualizationType.key} item xs={4}>
+        <Grid key={visualizationType.key} size={4}>
           <Card
             padding="none"
             aria-label={t_i18n(visualizationType.name)}

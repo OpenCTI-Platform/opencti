@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { findAllUser } from '../domain/user';
+import { findAllUser } from '../modules/user/user-domain';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';

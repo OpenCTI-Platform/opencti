@@ -11,15 +11,11 @@ vi.mock('../../common/stix_core_relationships/StixCoreRelationshipPopover', () =
 vi.mock('./security_coverage_scores/SecurityCoverageScores', () => ({
   default: () => (<></>),
 }));
-// jsdom reports zero size, so react-virtualized's AutoSizer would render no rows.
+// jsdom reports zero size, so AutoSizer would render no rows.
 // Provide a fixed width so the virtualized list mounts its rows during tests.
-vi.mock('react-virtualized', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-virtualized')>();
-  return {
-    ...actual,
-    AutoSizer: ({ children }: { children: (size: { width: number; height: number }) => React.ReactNode }) => children({ width: 1000, height: 570 }),
-  };
-});
+vi.mock('react-virtualized-auto-sizer', () => ({
+  AutoSizer: ({ renderProp }: { renderProp: (size: { width: number; height: number }) => React.ReactNode }) => renderProp({ width: 1000, height: 570 }),
+}));
 
 const buildData = (globalCount: number): SecurityCoverageVulnerabilities_securityCoverage$key => ({
   ' $fragmentType': 'SecurityCoverageVulnerabilities_securityCoverage',

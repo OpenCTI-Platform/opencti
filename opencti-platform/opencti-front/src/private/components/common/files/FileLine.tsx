@@ -15,8 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { PopoverProps } from '@mui/material/Popover';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/material/styles';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
 import moment from 'moment';
 import { isEmpty } from 'ramda';
@@ -34,40 +33,31 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import Box from '@mui/material/Box';
-import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
+import { isBypassUser, KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 import { isNotEmptyField } from '../../../../utils/utils';
 import FileWork from './FileWork';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
+import ItemCreators from 'src/components/ItemCreators';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...otherProps}>{children}</Slide>
 ));
 Transition.displayName = 'TransitionSlide';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  item: {
-    height: 50,
-  },
-  itemNested: {
-    // Same inset as the reference rows above it, not a further 16px.
-    paddingLeft: theme.spacing(2),
-    height: 50,
-  },
-  itemText: {
-    whiteSpace: 'nowrap',
-    marginRight: 10,
-  },
-  fileName: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  // `palette.text.secondary` is wired to the primary ink theme-wide, so MUI's own colour is the wrong one here.
-  fileMeta: {
-    color: 'var(--text-default-secondary)',
-  },
-}));
+const itemSx = {
+  height: 50,
+};
+
+const itemNestedSx = {
+  // Same inset as the reference rows above it, not a further 16px.
+  paddingLeft: 2,
+  height: 50,
+};
+
+const fileNameSx = {
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+};
 
 export const FileLineDeleteMutation = graphql`
   mutation FileLineDeleteMutation($fileName: String) {
@@ -112,7 +102,6 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   onClick,
   isArtifact,
 }) => {
-  const classes = useStyles();
   const { me } = useAuth();
   const draftContext = useDraftContext();
   const { t_i18n, fld } = useFormatter();
@@ -279,16 +268,24 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         secondaryAction={(
           <Stack
             direction="row"
-            alignItems="center"
-            gap={0.5}
+            sx={{
+              alignItems: 'center',
+              gap: 0.5,
+            }}
           >
             {!isProgress && !isFail && !isOutdated && (
-              <Box sx={{ maxWidth: 150 }}>
+              <Box sx={{ width: 100, display: 'flex', justifyContent: 'center' }}>
                 <ItemMarkings
                   markingDefinitions={fileMarkings}
                   limit={1}
                 />
               </Box>
+            )}
+            {isBypassUser(me) && (
+              <ItemCreators
+                creators={file?.metaData?.creator ? [file?.metaData?.creator] : []}
+                maxWidth={60}
+              />
             )}
             {!disableImport && (
               <Tooltip title={t_i18n('Launch an import of this file')}>
@@ -408,7 +405,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         )}
       >
         <ListItemButton
-          classes={{ root: nested ? classes.itemNested : classes.item }}
+          sx={nested ? itemNestedSx : itemSx}
           rel="noopener noreferrer"
           onClick={
             onClick
@@ -434,11 +431,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           </ListItemIcon>
           <Tooltip title={!isFail && !isOutdated ? file?.name : ''}>
             <ListItemText
-              sx={{ maxWidth: '55%' }}
-              classes={{
-                root: classes.itemText,
-                primary: classes.fileName,
-                secondary: `${classes.fileName} ${classes.fileMeta}`,
+              sx={{ maxWidth: '55%', whiteSpace: 'nowrap', marginRight: '10px' }}
+              slotProps={{
+                primary: { sx: fileNameSx },
+                // `palette.text.secondary` is wired to the primary ink theme-wide, so MUI's own colour is the wrong one here.
+                secondary: { sx: { ...fileNameSx, color: 'var(--text-default-secondary)' } },
               }}
               primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
               secondary={(
@@ -532,6 +529,11 @@ const FileLine = createFragmentContainer(FileLineComponent, {
       lastModified
       lastModifiedSinceMin
       metaData {
+        creator_id
+        creator {
+          id
+          name
+        }
         mimetype
         list_filters
         external_reference_id

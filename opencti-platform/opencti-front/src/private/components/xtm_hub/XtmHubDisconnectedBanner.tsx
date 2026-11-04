@@ -26,7 +26,13 @@ const XtmHubDisconnectedBanner = ({ unreachable = false }: XtmHubDisconnectedBan
       }}
     >
       <Stack>
-        <Stack direction="row" spacing={1.5} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{
+            alignItems: 'center',
+          }}
+        >
           <LinkOffOutlinedIcon sx={{ color: '#ffffff' }} fontSize="small" />
           <Text variant="content-base-bold" style={{ color: '#ffffff', fontSize: 15, fontFamily: '"Geologica", sans-serif' }}>
             {t_i18n('XTM Hub is disconnected')}

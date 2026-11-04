@@ -44,6 +44,18 @@ describe('useDashboard', () => {
     });
   });
 
+  describe('reading dashboard variables', () => {
+    it('exposes the manifest variables, or an empty list without any', () => {
+      const variables: DashboardManifest['variables'] = [{ id: 'v1', name: 'Sector', type: 'text', restriction: { mode: 'none' }, defaultValue: 'x' }];
+      const entityWithVariables = { id: 'with', manifest: fakeSerialize({ config: {}, widgets: {}, variables }) };
+      const entityWithout = { id: 'without', manifest: fakeSerialize({ config: {}, widgets: {} }) };
+      const withVariables = renderHook(() => useDashboard({ entity: entityWithVariables }));
+      expect(withVariables.result.current.variables).toStrictEqual(variables);
+      const without = renderHook(() => useDashboard({ entity: entityWithout }));
+      expect(without.result.current.variables).toStrictEqual([]);
+    });
+  });
+
   describe('using handleAddWidget to insert a widget', () => {
     const widget = {
       id: 'cf12d6b4-2884-4c68-9afa-79b2242651f3',

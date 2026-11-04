@@ -59,6 +59,7 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
   let city3InternalId;
   let changeTaxiiFilters;
   let baselines = {};
+  let baselineReportIds = [];
   it('should testing environnement created', async () => {
     // Create a marking
     const marking1Input = {
@@ -96,18 +97,21 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiInternalId = taxii.data.taxiiCollectionAdd.id;
     // Measure baselines by running each sensitive filter before creating test entities.
     // This makes assertions resilient regardless of which tests ran before (test position in the suite).
-    const runBaseline = async (filters) => {
+    const runBaselineIds = async (filters) => {
       await taxiiCollectionEditField(testContext, ADMIN_USER, taxiiInternalId, [{
         key: 'filters', operation: 'replace',
         value: [JSON.stringify(filters)],
       }]);
       const coll = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
       const { edges } = await collectionQuery(testContext, ADMIN_USER, coll, {});
-      return edges.length;
+      return edges.map((e) => e.node.internal_id);
     };
+    const runBaseline = async (filters) => (await runBaselineIds(filters)).length;
+    // Reports already in the index (dataset or earlier suites): which ones depends on the suites that ran before
+    baselineReportIds = await runBaselineIds({ mode: 'and', filters: [{ key: 'entity_type', values: ['Report'] }], filterGroups: [] });
     baselines = {
       // filter: entity_type = Report (used in: 01, 03-or)
-      entityTypeReport: await runBaseline({ mode: 'and', filters: [{ key: 'entity_type', values: ['Report'] }], filterGroups: [] }),
+      entityTypeReport: baselineReportIds.length,
       // filter: entity_type = Report OR name = City2 (used in: 03-or)
       entityTypeReportOrCity2: await runBaseline({ mode: 'or', filters: [{ key: 'entity_type', values: ['Report'] }, { key: 'name', values: ['City2'] }], filterGroups: [] }),
       // filter: confidence=90 OR (confidence=20 AND not City/Position) (used in: 04)
@@ -232,11 +236,10 @@ describe('Complex filters combinations, behavior tested on taxii collections', (
     taxiiCollection = await storeLoadById(testContext, ADMIN_USER, taxiiInternalId, ENTITY_TYPE_TAXII_COLLECTION);
     const { edges: results1 } = await collectionQuery(testContext, ADMIN_USER, taxiiCollection, {});
     edgeIds = results1.map((e) => e.node.internal_id);
-    const edgeNames = results1.map((e) => e.node.name);
     expect(edgeIds.length).toEqual(baselines.entityTypeReport + 1); // baseline reports + the report created by this test
     expect(edgeIds).includes(reportInternalId).toBeTruthy();
-    expect(edgeNames).includes('Report').toBeTruthy();
-    expect(edgeNames).includes('A demo report for testing purposes').toBeTruthy();
+    // every report listed before the test entities were created is still listed
+    expect(edgeIds).toEqual(expect.arrayContaining(baselineReportIds));
     // --- 02. Simple filter with no result --- //
     // entity_type = Position
     await changeTaxiiFilters({

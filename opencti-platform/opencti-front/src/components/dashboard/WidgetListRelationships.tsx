@@ -4,6 +4,7 @@ import { DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
 import ItemIcon from '../ItemIcon';
 import { useComputeLink } from '../../utils/hooks/useAppData';
+import { getCustomFieldWidgetColumn } from './customFieldWidgetColumn';
 
 interface WidgetListRelationshipsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,15 +25,16 @@ const WidgetListRelationships = ({
   const computeLink = useComputeLink();
 
   const buildColumns = useMemo((): DataTableProps['dataColumns'] => {
-    const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
     const percentWidth = 100 / (columns.length ?? 1);
 
     return (
-      columnKeys.reduce<DataTableProps['dataColumns']>(
-        (acc, current) => ({
-          ...acc,
-          [current]: { percentWidth, isSortable: false },
-        }),
+      columns.reduce<DataTableProps['dataColumns']>(
+        (acc, { attribute, label }) => (attribute
+          ? {
+              ...acc,
+              [attribute]: { percentWidth, isSortable: false, ...getCustomFieldWidgetColumn(attribute, label) },
+            }
+          : acc),
         {},
       )
     ) as DataTableProps['dataColumns'];

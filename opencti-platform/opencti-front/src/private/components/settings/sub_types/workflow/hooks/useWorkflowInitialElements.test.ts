@@ -6,7 +6,8 @@ import { SubTypeWorkflowDependenciesQuery$data } from '../../__generated__/SubTy
 import { WorkflowNodeType } from '../utils';
 import { useWorkflowInitialElements } from './useWorkflowInitialElements';
 
-vi.mock('@mui/styles', () => ({
+vi.mock('@mui/material/styles', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@mui/material/styles')>()),
   useTheme: () => ({
     palette: {
       chip: { main: '#00bcd4' },

@@ -183,7 +183,7 @@ const AuditsTreeMap: FunctionComponent<AuditsTreeMapProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsTreeMapDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsTreeMapDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -206,8 +206,7 @@ const AuditsTreeMap: FunctionComponent<AuditsTreeMapProps> = ({
       showPreviewTag={isPreviewMode}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

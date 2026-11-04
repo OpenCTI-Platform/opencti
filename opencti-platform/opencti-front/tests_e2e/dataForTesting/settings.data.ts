@@ -1,3 +1,4 @@
+import { createServer, type Server } from 'node:net';
 import { APIRequestContext } from '@playwright/test';
 import { graphqlQuery } from './query-utils';
 
@@ -74,4 +75,40 @@ export const getThemeIdByName = async (request: APIRequestContext, name: string)
     throw new Error(`Cannot find theme named ${name}: ${JSON.stringify(data.errors ?? data)}`);
   }
   return theme.id;
+};
+
+// A localhost port only one process can listen on: the operating system frees it when its holder
+// exits, killed or not, so the lock never outlives its holder and is never taken over.
+const PLATFORM_THEME_LOCK_PORT = 47813;
+const PLATFORM_THEME_LOCK_RETRY_MS = 250;
+
+const listenOnLockPort = () => new Promise<Server | null>((resolve, reject) => {
+  const server = createServer();
+  server.once('error', (error) => {
+    if ((error as { code?: string }).code === 'EADDRINUSE') resolve(null);
+    else reject(error);
+  });
+  server.listen(PLATFORM_THEME_LOCK_PORT, '127.0.0.1', () => resolve(server));
+});
+
+/**
+ * Waits until no other test file holds the platform theme, takes it, and returns the function
+ * that gives it back. The platform theme colours every page of every test: each test that changes
+ * it, or that compares screenshots, holds it for its own run (never a whole suite, so a waiting
+ * test is never kept beyond its timeout) and local runs, which execute several files at once,
+ * never overlap them.
+ */
+export const acquirePlatformThemeLock = async (): Promise<() => Promise<void>> => {
+  const server = await listenOnLockPort();
+  if (!server) {
+    await new Promise((resolve) => {
+      setTimeout(resolve, PLATFORM_THEME_LOCK_RETRY_MS);
+    });
+    return acquirePlatformThemeLock();
+  }
+  // Held, the lock never keeps a worker alive on its own.
+  server.unref();
+  return () => new Promise<void>((resolve) => {
+    server.close(() => resolve());
+  });
 };

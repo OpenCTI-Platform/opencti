@@ -171,3 +171,14 @@ input[type="file"] {
 .focus-visible {
   outline: 2px solid blue;
 }
+
+/* NLQ split-button caret (SearchInput.jsx): a plain <button>, not a
+   ToggleButton, so it gets no focus ring from the MuiToggleButtonGroup
+   theme override — this reproduces the exact same ring (color supplied
+   per-theme via --nlq-caret-focus-color) so both halves of the split
+   button match when tabbing through them. */
+.nlq-split-caret:focus-visible {
+  outline: none;
+  border-radius: var(--nlq-caret-focus-radius, 4px);
+  box-shadow: 0 0 0 2px var(--nlq-caret-focus-color, currentColor);
+}

@@ -31,6 +31,8 @@ def make_helper(work_api):
     helper._close_run_works = MethodType(
         OpenCTIConnectorHelper._close_run_works, helper
     )
+    # the run's error collection (master) is not the subject here: run the callback as is
+    helper._run_and_collect_errors = lambda message_callback: message_callback()
     return helper
 
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # generate-countries-geojson.sh
 #
-# Generates opencti-front/src/static/geo/countries.json from Natural Earth data.
+# Generates opencti-graphql/static/maps/countries.json from Natural Earth data.
 # Uses the same Natural Earth package that Protomaps uses for its PMTiles boundaries,
 # ensuring country polygons are aligned with the rendered map tiles.
 #
@@ -13,7 +13,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-OUTPUT="$REPO_ROOT/opencti-platform/opencti-front/src/static/geo/countries.json"
+OUTPUT="$REPO_ROOT/opencti-platform/opencti-graphql/static/maps/countries.json"
 
 WORKDIR=$(mktemp -d)
 trap 'rm -rf "$WORKDIR"' EXIT

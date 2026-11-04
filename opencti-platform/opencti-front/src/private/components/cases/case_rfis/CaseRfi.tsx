@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import React, { useRef } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { convertMarkings } from '../../../../utils/edition';
@@ -79,6 +79,7 @@ const caseRfiFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     revoked
     x_opencti_request_access
     requestAccessConfiguration {

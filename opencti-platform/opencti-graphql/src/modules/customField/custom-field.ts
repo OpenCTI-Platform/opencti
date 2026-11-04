@@ -3,6 +3,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { StixCustomFieldDefinition, StoreEntityCustomFieldDefinition } from './custom-field-types';
 import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from './custom-field-types';
 import convertCustomFieldDefinitionToStix from './custom-field-converter';
+import { aliases } from '../../schema/attribute-definition';
 
 const CUSTOM_FIELD_DEFINITION_DEFINITION: ModuleDefinition<StoreEntityCustomFieldDefinition, StixCustomFieldDefinition> = {
   type: {
@@ -19,6 +20,7 @@ const CUSTOM_FIELD_DEFINITION_DEFINITION: ModuleDefinition<StoreEntityCustomFiel
   attributes: [
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'label', label: 'Label', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, multiple: false, upsert: true, isFilterable: true },
+    aliases,
     { name: 'field_type', label: 'Field type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'entity_types', label: 'Entity types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, isFilterable: true },
     // Per-entity-type settings: mandatory / default_value are defined for each entity type the field is attached to (US.2)

@@ -1,0 +1,120 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { commitSubmission } from '../../../src/modules/form/form-domain';
+import { connectorIdFromIngestId } from '../../../src/domain/connector';
+import * as draftWorkspaceDomain from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import * as workDomain from '../../../src/domain/work';
+import * as rabbitmq from '../../../src/database/rabbitmq';
+import * as middleware from '../../../src/database/middleware';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../src/modules/draftWorkspace/draftWorkspace-types';
+import { SYSTEM_USER } from '../../../src/utils/access';
+
+vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-domain');
+vi.mock('../../../src/domain/work');
+vi.mock('../../../src/database/rabbitmq', () => ({ pushBundleToWorker: vi.fn() }));
+vi.mock('../../../src/database/middleware', () => ({ patchAttribute: vi.fn() }));
+vi.mock('../../../src/manager/telemetryManager', () => ({
+  addFormIntakeSubmittedCount: vi.fn().mockResolvedValue(undefined),
+}));
+
+const mockUser: any = { id: 'user-1', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] };
+const mockContext: any = {};
+
+describe('commitSubmission', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(workDomain.createWork).mockResolvedValue({ id: 'work-1' } as any);
+    vi.mocked(draftWorkspaceDomain.addDraftWorkspace).mockResolvedValue({ id: 'draft-1' } as any);
+  });
+
+  it('creates a work item and pushes the bundle without a draft when finalIsDraft is false', async () => {
+    const plan: any = {
+      bundle: { id: 'bundle--1', objects: [] },
+      mainEntityStixId: 'stix-1',
+      finalIsDraft: false,
+      draftPlan: null,
+    };
+
+    const result = await commitSubmission(mockContext, mockUser, 'form-1', plan);
+
+    expect(result.success).toBe(true);
+    expect(result.entityId).toBe('stix-1');
+    const connectorId = connectorIdFromIngestId('form-1');
+    expect(vi.mocked(rabbitmq.pushBundleToWorker)).toHaveBeenCalledWith(
+      mockContext,
+      SYSTEM_USER,
+      connectorId,
+      {
+        type: 'bundle',
+        applicant_id: mockUser.id,
+        content: Buffer.from(JSON.stringify(plan.bundle), 'utf-8').toString('base64'),
+        work_id: 'work-1',
+        draft_id: '',
+        update: true,
+        no_split: true,
+      },
+    );
+  });
+
+  it('never lets a submission without Create / Update knowledge in its destination update existing objects', async () => {
+    const plan: any = { bundle: { id: 'bundle--1', objects: [] }, mainEntityStixId: 'stix-1', finalIsDraft: false, draftPlan: null };
+    const formOnly = { id: 'user-1', capabilities: [{ name: 'KNOWLEDGE_KNFORMINTAKE' }], capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE' }] };
+    await commitSubmission(mockContext, formOnly as any, 'form-1', plan);
+    expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[0][3]).toMatchObject({ draft_id: '', update: false });
+    // the right of the draft scope counts in a draft
+    await commitSubmission({ draft_context: 'draft-current' } as any, formOnly as any, 'form-1', plan);
+    expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[1][3]).toMatchObject({ draft_id: 'draft-current', update: true });
+    // an empty draft context (the applicant left a draft) is main
+    await commitSubmission({ draft_context: '' } as any, formOnly as any, 'form-1', plan);
+    expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[2][3]).toMatchObject({ draft_id: '', update: false });
+  });
+
+  it('binds a submission without a draft to the current draft and never deletes it on a failure', async () => {
+    const plan: any = { bundle: { id: 'bundle--3', objects: [] }, mainEntityStixId: 'stix-1', finalIsDraft: false, draftPlan: null };
+    vi.mocked(rabbitmq.pushBundleToWorker).mockRejectedValueOnce(new Error('broker down'));
+
+    await expect(commitSubmission({ draft_context: 'draft-current' } as any, mockUser, 'form-1', plan)).rejects.toThrow('Failed to process form submission');
+
+    expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[0][3]).toMatchObject({ draft_id: 'draft-current' });
+    expect(vi.mocked(draftWorkspaceDomain.deleteDraftWorkspace)).not.toHaveBeenCalled();
+  });
+
+  it('creates a draft workspace and patches its creator_id when finalIsDraft is true', async () => {
+    const plan: any = {
+      bundle: { id: 'bundle--2', objects: [] },
+      mainEntityStixId: undefined,
+      finalIsDraft: true,
+      draftPlan: { draftInput: { name: 'My Draft', bypassMandatoryAttributes: true } },
+    };
+
+    const result = await commitSubmission(mockContext, mockUser, 'form-1', plan);
+
+    expect(result.entityId).toBe('draft-1');
+    expect(vi.mocked(draftWorkspaceDomain.addDraftWorkspace)).toHaveBeenCalledWith(
+      mockContext,
+      SYSTEM_USER,
+      plan.draftPlan.draftInput,
+    );
+    expect(vi.mocked(middleware.patchAttribute)).toHaveBeenCalledWith(
+      mockContext,
+      SYSTEM_USER,
+      'draft-1',
+      ENTITY_TYPE_DRAFT_WORKSPACE,
+      { creator_id: [mockUser.id] },
+    );
+    const connectorId = connectorIdFromIngestId('form-1');
+    expect(vi.mocked(rabbitmq.pushBundleToWorker)).toHaveBeenCalledWith(
+      mockContext,
+      SYSTEM_USER,
+      connectorId,
+      {
+        type: 'bundle',
+        applicant_id: mockUser.id,
+        content: Buffer.from(JSON.stringify(plan.bundle), 'utf-8').toString('base64'),
+        work_id: 'work-1',
+        draft_id: 'draft-1',
+        update: true,
+        no_split: true,
+      },
+    );
+  });
+});

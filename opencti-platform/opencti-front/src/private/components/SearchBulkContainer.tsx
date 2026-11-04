@@ -85,9 +85,9 @@ const SearchBulkContainer = () => {
       <Grid
         container={true}
         spacing={3}
-        style={{ marginBottom: 20, marginTop: 0 }}
+        style={{ marginBottom: 20, marginTop: 24 }}
       >
-        <Grid item xs={2} style={{ marginTop: -20 }}>
+        <Grid style={{ marginTop: -20 }} size={2}>
           <Textarea
             onChange={handleChangeTextField}
             value={textFieldValue}
@@ -97,7 +97,7 @@ const SearchBulkContainer = () => {
             resize="none"
           />
         </Grid>
-        <Grid item xs={10}>
+        <Grid size={10}>
           <Tabs value={currentTab} onValueChange={handleChangeTab}>
             {/* -24px: inline, the negative utility is absent from the shipped CSS */}
             <div style={{ marginTop: -24 }}>

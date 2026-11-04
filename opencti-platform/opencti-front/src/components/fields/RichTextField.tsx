@@ -4,7 +4,7 @@ import TextFieldAskAI from '@components/common/form/TextFieldAskAI';
 import { FullscreenOutlined } from '@mui/icons-material';
 import FormHelperText from '@mui/material/FormHelperText';
 import InputLabel from '@mui/material/InputLabel';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
 import { CSSProperties, useState } from 'react';
@@ -54,6 +54,8 @@ const RichTextField = ({
   const RichTextEditorInstance = (
     <Box
       sx={{
+        flex: 1,
+        minHeight: 0,
         '& .tiptap-editor-content': {
           // Same surface as the markdown textarea, read from the token so it
           // follows the layer the field is dropped on.
@@ -87,7 +89,7 @@ const RichTextField = ({
   const toolbarEmpty = !label && !askAi && !hasFullScreen && lastSavedValue === undefined;
 
   return (
-    <div style={style}>
+    <div style={{ display: 'flex', flexDirection: 'column', ...style }}>
       {!toolbarEmpty && (
         <div style={{ display: 'flex', alignItems: 'end', height: '24px' }}>
           {label && (

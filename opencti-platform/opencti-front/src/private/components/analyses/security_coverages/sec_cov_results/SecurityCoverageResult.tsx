@@ -1,0 +1,407 @@
+import React, { Suspense, useState } from 'react';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import { graphql, useFragment } from 'react-relay';
+import DataTable from '../../../../../components/dataGrid/DataTable';
+import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../../utils/filters/filtersUtils';
+import { UsePreloadedPaginationFragment } from '../../../../../utils/hooks/usePreloadedPaginationFragment';
+import { DataTableProps } from '../../../../../components/dataGrid/dataTableTypes';
+import { getMainRepresentative } from '../../../../../utils/defaultRepresentatives';
+import Tooltip from '@mui/material/Tooltip';
+import { useFormatter } from '../../../../../components/i18n';
+import IconButton from '@common/button/IconButton';
+import { InfoOutlined } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
+import { useComputeLink } from '../../../../../utils/hooks/useAppData';
+import SecurityCoverageResultFormDrawer from './SecurityCoverageResultFormDrawer';
+import {
+  SecurityCoverageResultLinesPaginationQuery,
+  SecurityCoverageResultLinesPaginationQuery$variables,
+} from './__generated__/SecurityCoverageResultLinesPaginationQuery.graphql';
+import { SecurityCoverageResultLines_data$data } from './__generated__/SecurityCoverageResultLines_data.graphql';
+import { SecurityCoverageResultFragment$data, SecurityCoverageResultFragment$key } from './__generated__/SecurityCoverageResultFragment.graphql';
+
+interface SecurityCoverageResultComponentProps {
+  securityCoverage: SecurityCoverageResultFragment$data;
+}
+
+const fragment = graphql`
+  fragment SecurityCoverageResultFragment on SecurityCoverage {
+    ...SecurityCoverageResultFormDrawerFragment
+    id
+    results {
+      id
+    }
+  }
+`;
+
+const securityCoverageResultLineFragment = graphql`
+    fragment SecurityCoverageResultLine_node on StixCoreRelationship {
+        id
+        standard_id
+        entity_type
+        relationship_type
+        to {
+            ... on StixCoreObject {
+                id
+                draftVersion {
+                    draft_id
+                    draft_operation
+                }
+                standard_id
+                entity_type
+                created_at
+                objectLabel {
+                    id
+                    value
+                    color
+                }
+                createdBy {
+                    ... on Identity {
+                        id
+                        name
+                        entity_type
+                    }
+                }
+                objectMarking {
+                    id
+                    definition_type
+                    definition
+                    x_opencti_order
+                    x_opencti_color
+                }
+                containersNumber {
+                    total
+                }
+            }
+            ... on AttackPattern {
+                name
+                x_mitre_id
+            }
+            ... on Campaign {
+                name
+            }
+            ... on CourseOfAction {
+                name
+            }
+            ... on ObservedData {
+                name
+            }
+            ... on Report {
+                name
+            }
+            ... on Grouping {
+                name
+            }
+            ... on Note {
+                attribute_abstract
+                content
+            }
+            ... on Opinion {
+                opinion
+            }
+            ... on Individual {
+                name
+            }
+            ... on Organization {
+                name
+            }
+            ... on Sector {
+                name
+            }
+            ... on System {
+                name
+            }
+            ... on Indicator {
+                name
+            }
+            ... on Infrastructure {
+                name
+            }
+            ... on IntrusionSet {
+                name
+            }
+            ... on Position {
+                name
+            }
+            ... on City {
+                name
+            }
+            ... on AdministrativeArea {
+                name
+            }
+            ... on Country {
+                name
+            }
+            ... on Region {
+                name
+            }
+            ... on Malware {
+                name
+            }
+            ... on MalwareAnalysis {
+                result_name
+            }
+            ... on ThreatActor {
+                name
+            }
+            ... on Tool {
+                name
+            }
+            ... on Vulnerability {
+                name
+            }
+            ... on Incident {
+                name
+            }
+            ... on Event {
+                name
+            }
+            ... on Channel {
+                name
+            }
+            ... on Narrative {
+                name
+            }
+            ... on Language {
+                name
+            }
+            ... on DataComponent {
+                name
+            }
+            ... on DataSource {
+                name
+            }
+            ... on Case {
+                name
+            }
+            ... on Task {
+                name
+            }
+            ... on SecurityPlatform {
+                name
+            }
+            ...on Artifact {
+                observable_value
+            }
+            ... on Indicator {
+                name
+            }
+        }
+        from {
+            ... on SecurityCoverageResult {
+                id
+                entity_type
+                name
+            }
+        }
+        updated_at
+        coverage_information{
+            coverage_name
+            coverage_score
+        }
+    }
+`;
+
+export const securityCoverageResultLinesFragment = graphql`
+  fragment SecurityCoverageResultLines_data on Query
+  @argumentDefinitions(
+    id: { type: "String!" }
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: created_at }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+    filters: { type: "FilterGroup" }
+  )
+  @refetchable(queryName: "SecurityCoverageResultLinesRefetchQuery") {
+      securityCoverage(id: $id) {
+          id
+          entity_type
+          stixCoreRelationshipsFromResults(
+              search: $search
+              first: $count
+              after: $cursor
+              orderBy: $orderBy
+              orderMode: $orderMode
+              filters: $filters
+          ) @connection(key: "PaginationSecurityCoverageResultLines__stixCoreRelationshipsFromResults") {
+              edges {
+                  node {
+                      id
+                      ...SecurityCoverageResultLine_node
+                  }
+              }
+              pageInfo {
+                  endCursor
+                  hasNextPage
+                  globalCount
+              }
+          }
+        }
+      }
+`;
+
+export const securityCoverageResultLinesQuery = graphql`
+    query SecurityCoverageResultLinesPaginationQuery(
+        $id: String!
+        $search: String
+        $count: Int
+        $cursor: ID
+        $orderBy: StixCoreRelationshipsOrdering
+        $orderMode: OrderingMode
+        $filters: FilterGroup
+    ) {
+        ...SecurityCoverageResultLines_data
+            @arguments(
+                id: $id
+                search: $search
+                count: $count
+                cursor: $cursor
+                orderBy: $orderBy
+                orderMode: $orderMode
+                filters: $filters
+            )
+    }
+`;
+
+const SecurityCoverageResultComponent = ({
+  securityCoverage,
+}: SecurityCoverageResultComponentProps) => {
+  const { id, results } = securityCoverage;
+  const { t_i18n } = useFormatter();
+  const theme = useTheme();
+  const computeLink = useComputeLink();
+  const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
+  const LOCAL_STORAGE_KEY = `container-${id}-security-coverage-result`;
+  const initialValues = {
+    filters: { ...emptyFilterGroup },
+    searchTerm: '',
+    sortBy: 'created_at',
+    orderAsc: false,
+    openExports: false,
+    revoked: false,
+  };
+
+  const {
+    viewStorage: { filters },
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<SecurityCoverageResultLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    {
+      id,
+      ...initialValues,
+    },
+  );
+
+  const userFilters = useBuildEntityTypeBasedFilterContext('stix-core-relationship', filters);
+  const contextFilters = {
+    mode: 'and',
+    filters: [
+      {
+        key: 'fromOrToId',
+        values: (results ?? []).map((r) => r.id),
+        operator: 'eq',
+        mode: 'or',
+      },
+    ],
+    filterGroups: [userFilters],
+  };
+
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: contextFilters,
+  } as unknown as SecurityCoverageResultLinesPaginationQuery$variables;
+
+  const queryRef = useQueryLoading<SecurityCoverageResultLinesPaginationQuery>(
+    securityCoverageResultLinesQuery,
+    queryPaginationOptions,
+  );
+
+  const dataColumns: DataTableProps['dataColumns'] = {
+    to_entity_type: {
+      label: 'Tested entity Type',
+      percentWidth: 12,
+    },
+    to_name: {
+      label: 'Tested entity Name',
+      percentWidth: 22,
+      isSortable: false,
+      render: ({ to, coverage_information }) => (
+        <span style={coverage_information?.length ? {} : { color: theme.palette.text.disabled }}>
+          {to?.x_mitre_id ? `[${to?.x_mitre_id}] ${to?.name}` : getMainRepresentative(to)}
+        </span>
+      ),
+    },
+    to_object_label: {
+      label: 'Tested entity labels',
+      percentWidth: 15,
+    },
+    to_object_marking: {
+      label: 'Tested Entity Marking',
+      percentWidth: 12,
+    },
+    coverage: {},
+    coverage_last_modified_date: {},
+    security_coverage_result_name: {},
+  };
+
+  return (
+    <div data-testid="security-coverage-result-page" style={{ height: '70vh' }} ref={setTableRootRef}>
+      {queryRef && (
+        <DataTable
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          lineFragment={securityCoverageResultLineFragment}
+          preloadedPaginationProps={{
+            linesQuery: securityCoverageResultLinesQuery,
+            linesFragment: securityCoverageResultLinesFragment,
+            queryRef,
+            nodePath: ['securityCoverage', 'stixCoreRelationshipsFromResults', 'pageInfo', 'globalCount'],
+            setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+          } as UsePreloadedPaginationFragment<SecurityCoverageResultLinesPaginationQuery>}
+          entityTypes={['stix-core-relationship']}
+          availableFilterKeys={['toTypes']}
+          resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationshipsFromResults?.edges?.map((n) => n?.node)}
+          dataColumns={dataColumns}
+          getComputeLink={(node) => computeLink({ ...node, from: undefined })}
+          exportContext={{ entity_id: id, entity_type: 'stix-core-relationship' }}
+          contextFilters={contextFilters}
+          rootRef={tableRootRef ?? undefined}
+          additionalHeaderButtons={[
+            <SecurityCoverageResultFormDrawer
+              key="scr-form"
+              data={securityCoverage}
+            />,
+            <Tooltip
+              key="security-coverage-result-global-information-tooltip"
+              title={t_i18n('The Coverage Result Metric shows how much a specific entity was involved in the execution of the AEV scenario.\n Coverage may be partial if some injects were not executed, if placeholders were not resolved or if the platform does not support certain actions')}
+            >
+              <IconButton aria-label={t_i18n('Info')} color="primary" style={{ height: '100%' }}>
+                <InfoOutlined />
+              </IconButton>
+            </Tooltip>,
+          ]}
+        />
+      )}
+    </div>
+  );
+};
+
+interface SecurityCoverageResultProps {
+  data: SecurityCoverageResultFragment$key;
+}
+
+const SecurityCoverageResult = ({ data }: SecurityCoverageResultProps) => {
+  const securityCoverage = useFragment(fragment, data);
+
+  return (
+    <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      <SecurityCoverageResultComponent securityCoverage={securityCoverage} />
+    </Suspense>
+  );
+};
+
+export default SecurityCoverageResult;

@@ -5,13 +5,6 @@ import testRender from '../../../../utils/tests/test-render';
 import TokenResultView from './TokenResultView';
 
 describe('Component: TokenResultView', () => {
-  // Setup clipboard mock
-  Object.assign(navigator, {
-    clipboard: {
-      writeText: vi.fn(),
-    },
-  });
-
   const onClose = vi.fn();
   const token = 'secret-token-123';
 

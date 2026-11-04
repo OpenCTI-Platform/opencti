@@ -37,9 +37,18 @@ const {
 // ---------------------------------------------------------------------------
 vi.mock('../../../../../components/AppIntlProvider', async () => {
   const { IntlProvider } = await import('react-intl');
+  // Messages are not provided here (this mock only needs a valid `intl`
+  // context), so react-intl falls back to the message id for every key.
+  // Silence the resulting MISSING_TRANSLATION warnings, same as the real
+  // AppIntlProvider does.
+  const onError = (err: { code?: string }) => {
+    if (err.code !== 'MISSING_TRANSLATION') {
+      throw err;
+    }
+  };
   return {
-    default: ({ children }: { children: React.ReactNode }) => React.createElement(IntlProvider, { locale: 'en', defaultLocale: 'en' }, children),
-    ConnectedIntlProvider: ({ children }: { children: React.ReactNode }) => React.createElement(IntlProvider, { locale: 'en', defaultLocale: 'en' }, children),
+    default: ({ children }: { children: React.ReactNode }) => React.createElement(IntlProvider, { locale: 'en', defaultLocale: 'en', onError }, children),
+    ConnectedIntlProvider: ({ children }: { children: React.ReactNode }) => React.createElement(IntlProvider, { locale: 'en', defaultLocale: 'en', onError }, children),
   };
 });
 

@@ -29,6 +29,7 @@ Click on the __+__ button to add an empty representation in the list, and click 
 
 Depending on the entity type, the form contains the fields that are either required (input outlined in red) or optional.
 For each field, set the corresponding columns mapping (the letter-based index of the column in the CSV table, as presented in common spreadsheet tools). 
+The [custom fields](custom-fields.md) attached to the entity type are listed with the other fields and can be mapped the same way.
 
 References to other entities should be picked from the list of all the other representations already defined earlier in the mapper.
 

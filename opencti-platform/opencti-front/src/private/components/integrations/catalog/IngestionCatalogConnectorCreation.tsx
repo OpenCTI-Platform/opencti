@@ -3,7 +3,7 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Drawer from '@components/common/drawer/Drawer';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
@@ -44,6 +44,8 @@ import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/JsonFormVerticalLayout';
 import IngestionCatalogUnverifiedDeploymentPopover from '@components/integrations/catalog/IngestionCatalogUnverifiedDeploymentPopover';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
+import IngestionCatalogCompatibilityAlert from '@components/integrations/catalog/IngestionCatalogCompatibilityAlert';
+import { canDeployConnector } from '@components/integrations/catalog/utils/isDeployableConnector';
 import { filterOutDeprecatedProperties, filterOutDeprecatedRequired } from './utils/deprecatedFields';
 
 const ingestionCatalogConnectorCreationMutation = graphql`
@@ -272,7 +274,13 @@ const IngestionCatalogConnectorCreation = ({
         open={open}
         onClose={onClose}
         header={(
-          <Stack direction="row" alignItems="center" gap={1}>
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              gap: 1,
+            }}
+          >
             <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
               <Button
                 variant="secondary"
@@ -321,7 +329,10 @@ const IngestionCatalogConnectorCreation = ({
           </Stack>
         )}
       >
-        <Stack gap={1}>
+        <Stack sx={{
+          gap: 1,
+        }}
+        >
           <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} isVerified={connector.verified} />
 
           <Formik<ManagedConnectorValues>
@@ -339,13 +350,13 @@ const IngestionCatalogConnectorCreation = ({
           >
             {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues, setFieldValue }) => {
               const errors = compiledValidator?.validate(values)?.errors;
-              const canDeployConnector = hasActiveManagers && isEnterpriseEdition;
-              const disableForm = !canDeployConnector;
+              const canDeploy = hasActiveManagers && isEnterpriseEdition && canDeployConnector(connector);
+              const disableForm = !canDeploy;
 
-              const disableCreate = !isValid || isSubmitting || !!errors?.[0];
+              const disableCreate = !canDeploy || !isValid || isSubmitting || !!errors?.[0];
 
               const createConnectorDeployment = () => {
-                if (!canDeployConnector) {
+                if (!canDeploy) {
                   return;
                 }
                 submitConnectorManagementCreation(values, {
@@ -369,6 +380,7 @@ const IngestionCatalogConnectorCreation = ({
                       {t_i18n('Connector deployment requires OpenCTI Enterprise Edition. This configuration is read-only in Community Edition.')}
                     </Alert>
                   )}
+                  <IngestionCatalogCompatibilityAlert connector={connector} />
 
                   <fieldset
                     disabled={disableForm}

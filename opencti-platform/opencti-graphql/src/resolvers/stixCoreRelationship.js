@@ -16,6 +16,7 @@ import {
   stixCoreRelationshipsExportAsk,
   stixCoreRelationshipsMultiTimeSeries,
   stixCoreRelationshipsNumber,
+  stixCoreRelationshipsExportFiles,
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
@@ -35,7 +36,6 @@ import {
   stixCoreObjectsExportPush,
 } from '../domain/stixCoreObject';
 import { numberOfContainersForObject } from '../domain/container';
-import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { loadThroughDenormalized } from './stix';
 import { loadCreators } from '../database/members';
 
@@ -47,11 +47,7 @@ const stixCoreRelationshipResolvers = {
     stixCoreRelationshipsMultiTimeSeries: (_, args, context) => stixCoreRelationshipsMultiTimeSeries(context, context.user, args),
     stixCoreRelationshipsDistribution: (_, args, context) => stixCoreRelationshipsDistribution(context, context.user, args),
     stixCoreRelationshipsNumber: (_, args, context) => stixCoreRelationshipsNumber(context, context.user, args),
-    stixCoreRelationshipsExportFiles: (_, { exportContext, first }, context) => {
-      const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
-      const opts = { first, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
-      return paginatedForPathWithEnrichment(context, context.user, path, exportContext.entity_id, opts);
-    },
+    stixCoreRelationshipsExportFiles: (_, { exportContext, first }, context) => stixCoreRelationshipsExportFiles(context, context.user, exportContext, { first }),
   },
   StixCoreRelationshipsOrdering: stixCoreRelationshipOptions.StixCoreRelationshipsOrdering,
   StixCoreRelationship: {
@@ -90,6 +86,7 @@ const stixCoreRelationshipResolvers = {
       const statusesEdges = await getTypeStatuses(context, context.user, ABSTRACT_STIX_CORE_RELATIONSHIP);
       return statusesEdges.edges.length > 0;
     },
+    customFieldValues: (rel) => rel.custom_field_values ?? [],
     // Figures
     containersNumber: (rel, args, context) => numberOfContainersForObject(context, context.user, { ...args, objectId: rel.id }),
   },

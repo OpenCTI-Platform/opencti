@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Tag from '../../../../components/common/tag/Tag';
 import { Stack } from '@mui/material';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
@@ -16,6 +17,10 @@ import { EMPTY_VALUE } from '../../../../utils/String';
 const InfrastructureDetailsFragment = graphql`
   fragment InfrastructureDetails_infrastructure on Infrastructure {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     name
     description
     infrastructure_types
@@ -83,18 +88,24 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown source={data.description} limit={400} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Infrastructure types')}
             </Label>
             <FieldOrEmpty source={infrastructureTypes}>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
                 {infrastructureTypes.length > 0
                   && infrastructureTypes.map((infrastructureType) => (
                     <Tag
@@ -106,21 +117,22 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
               </Stack>
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('First seen')}
             </Label>
             {data.first_seen ? fldt(data.first_seen) : EMPTY_VALUE}
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Last seen')}
             </Label>
             {data.last_seen ? fldt(data.last_seen) : EMPTY_VALUE}
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <StixCoreObjectKillChainPhasesView killChainPhases={killChainPhases} />
           </Grid>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
         </Grid>
         <br />
         <StixCoreObjectsDonut

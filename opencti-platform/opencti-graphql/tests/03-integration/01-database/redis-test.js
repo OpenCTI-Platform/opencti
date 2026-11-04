@@ -90,7 +90,7 @@ describe('Redis basic and utils', () => {
       setTimeout(() => resolve(), (testTTL + 1) * 1000);
     });
     const expired = await redisGetForgotPasswordOtp(id);
-    expect(expired.hashedOtp).toBeUndefined();
+    expect(expired).toBeNull();
   });
 });
 

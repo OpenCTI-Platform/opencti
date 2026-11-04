@@ -46,7 +46,13 @@ const StixSightingRelationshipHeader = ({
           </TitleMainEntity>
         </Tooltip>
       </div>
-      <Stack direction="row" alignItems="center" gap={1}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
         {canDelete && (
           <PopoverMenu>
             {({ closeMenu }) => (

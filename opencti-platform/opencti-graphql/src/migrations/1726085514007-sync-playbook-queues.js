@@ -2,7 +2,7 @@ import { logApp } from '../config/conf';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
-import { registerConnectorQueues } from '../database/rabbitmq';
+import { registerConnectorQueues } from '../modules/connector/connector-rabbitmq';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 
 const message = '[MIGRATION] Add playbook and sync dedicated queues';

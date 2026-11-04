@@ -3,6 +3,22 @@ from typing import Any, Dict, List
 
 from pycti.connector.opencti_connector import OpenCTIConnector
 
+# Wording of a platform without errors support, from graphql 16 and graphql 17
+_ERRORS_FIELD_REJECTED_MESSAGES = (
+    'Field "errors" is not defined by type "ConnectorInfoInput"',
+    'type "ConnectorInfoInput" not to include unknown field "errors"',
+)
+
+
+def _is_errors_field_rejected(error: ValueError) -> bool:
+    # A non 200 response is raised with its raw JSON body, where quotes are escaped
+    reason = str(error).replace('\\"', '"')
+    return any(message in reason for message in _ERRORS_FIELD_REJECTED_MESSAGES)
+
+
+def _without_errors(connector_info: Dict) -> Dict:
+    return {key: value for key, value in connector_info.items() if key != "errors"}
+
 
 class OpenCTIApiConnector:
     """OpenCTI Connector API class.
@@ -20,6 +36,8 @@ class OpenCTIApiConnector:
         :type api: OpenCTIApiClient
         """
         self.api = api
+        # Learnt on the first rejection: until a restart, errors are no longer sent to this platform
+        self._errors_supported = True
 
     def read(self, connector_id: str) -> Dict:
         """Read the connector and its details.
@@ -135,14 +153,29 @@ class OpenCTIApiConnector:
                 }
             }
            """
-        result = self.api.query(
-            query,
-            {
-                "id": connector_id,
-                "state": json.dumps(connector_state),
-                "connectorInfo": connector_info,
-            },
-        )
+        sends_errors = bool(connector_info) and "errors" in connector_info
+        if sends_errors and not self._errors_supported:
+            connector_info = _without_errors(connector_info)
+            sends_errors = False
+        variables = {
+            "id": connector_id,
+            "state": json.dumps(connector_state),
+            "connectorInfo": connector_info,
+        }
+        try:
+            result = self.api.query(query, variables)
+        except ValueError as e:
+            if not sends_errors or not _is_errors_field_rejected(e):
+                raise
+            # Platforms older than errors support reject the field: the ping itself must still go through.
+            self._errors_supported = False
+            self.api.app_logger.warning(
+                "Platform does not support connector errors, they are no longer sent",
+                {"reason": str(e)},
+            )
+            result = self.api.query(
+                query, {**variables, "connectorInfo": _without_errors(connector_info)}
+            )
         return result["data"]["pingConnector"]
 
     def register(self, connector: OpenCTIConnector) -> Dict:

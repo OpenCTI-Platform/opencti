@@ -1,4 +1,4 @@
-import { connectors } from '../database/repository';
+import { connectors } from '../modules/connector/connector-domain';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { patchAttribute } from '../database/middleware';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';

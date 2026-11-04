@@ -1,10 +1,9 @@
 import * as R from 'ramda';
 import type Express from 'express';
 import nconf from 'nconf';
-import { TAXIIAPI } from '../domain/user';
 import { basePath } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
-import { isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER, TAXIIAPI } from '../utils/access';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -16,6 +15,7 @@ import { isNotEmptyField } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { isMultipleAttribute, isObjectAttribute } from '../schema/schema-attributes';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import { checkDraftInContext } from './httpServer-draft';
 import type { BasicStoreBase, BasicStoreEntityFeed, BasicStoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import { FilterMode, FilterOperator } from '../generated/graphql';
@@ -23,6 +23,7 @@ import { fullRelationsList } from '../database/middleware-loader';
 import type { FilterGroupWithNested, FiltersWithNested } from '../database/middleware-loader';
 import { elFindByIds } from '../database/engine';
 import { READ_RELATIONSHIPS_INDICES } from '../database/utils';
+import { extractStringifiedCustomFieldValueFromStoreEntity } from '../modules/customField/custom-field-validator';
 
 const SIZE_LIMIT = nconf.get('data_sharing:max_csv_feed_result') || 5000;
 
@@ -214,7 +215,7 @@ export const resolveNeighborsForFeed = async (
   return neighborsMap;
 };
 
-export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed, neighborsMap?: NeighborsMap): string[] => {
+export const buildCsvLines = async (context: any, user: any, elements: any[], feed: BasicStoreEntityFeed, neighborsMap?: NeighborsMap): Promise<string[]> => {
   const lines: string[] = [];
   const separator = feed.separator ?? ',';
   for (let index = 0; index < elements.length; index += 1) {
@@ -264,7 +265,12 @@ export const buildCsvLines = (elements: any[], feed: BasicStoreEntityFeed, neigh
               dataElements.push(escapeCsvField(separator, String(data)));
             }
           } else {
-            dataElements.push(escapeCsvField(separator, ''));
+            const customFieldValue = await extractStringifiedCustomFieldValueFromStoreEntity(context, user, element, baseKey);
+            if (customFieldValue) {
+              dataElements.push(escapeCsvField(separator, customFieldValue));
+            } else {
+              dataElements.push(escapeCsvField(separator, ''));
+            }
           }
         }
       }
@@ -285,7 +291,7 @@ export const resolveUserForFeed = async (context: AuthContext, feed: BasicStoreE
 const initHttpRollingFeeds = (app: Express.Application) => {
   app.get(`${basePath}/feeds/:id`, async (req: Express.Request, res: Express.Response) => {
     const { id } = req.params as { id: string };
-    res.set({ 'content-type': 'text/plain; charset=utf-8' });
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     try {
       const context = await createAuthenticatedContext(req, res, 'rolling_feeds');
       const feed = await findFeed(context, SYSTEM_USER, id);
@@ -307,6 +313,11 @@ const initHttpRollingFeeds = (app: Express.Application) => {
           throw ForbiddenAccess();
         }
       }
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used to resolve entities
+      // below. Without this guard a caller could forge an `opencti-draft-id` header and
+      // leak staged content from a draft they don't have access to.
+      await checkDraftInContext(context);
       // User is available or feed is public
       const user = await resolveUserForFeed(context, feed);
       if (feed.feed_public) {
@@ -326,7 +337,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
         res.write(`${feed.feed_attributes.map((a) => a.attribute).join(feed.separator)}\r\n`);
       }
 
-      const lines = buildCsvLines(elements, feed, neighborsMap);
+      const lines = await buildCsvLines(context, context.user, elements, feed, neighborsMap);
       lines.forEach((l) => {
         res.write(l);
         res.write('\r\n');

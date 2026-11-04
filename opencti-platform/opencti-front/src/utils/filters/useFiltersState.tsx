@@ -1,95 +1,33 @@
 import { useMemo, useRef, useState } from 'react';
-import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
-import {
-  handleAddFilterWithEmptyValueUtil,
-  handleAddRepresentationFilterUtil,
-  handleAddSingleValueFilterUtil,
-  handleChangeOperatorFiltersUtil,
-  handleChangeRepresentationFilterUtil,
-  handleRemoveFilterUtil,
-  handleRemoveRepresentationFilterUtil,
-  handleReplaceFilterValuesUtil,
-  handleSwitchLocalModeUtil,
-} from './filtersManageStateUtil';
-import { emptyFilterGroup } from './filtersUtils';
+import { FilterGroup, handleFilterHelpers } from './filtersHelpers-types';
+import createFilterHelpers, { FilterChangeResult, WhenNoFilters } from './createFilterHelpers';
+import { cloneFilterGroup, emptyFilterGroup, ensureFilterIds } from './filtersUtils';
 
+/**
+ * Filter state held in React state only (widgets, dialogs, anything not persisted in the url or
+ * the local storage). The edition semantics come from `createFilterHelpers`, shared with
+ * `usePaginationLocalStorage`; what is specific here is where the filters live.
+ */
 const useFiltersState = (initFilters: FilterGroup | null = emptyFilterGroup, defaultClearFilters: FilterGroup = emptyFilterGroup): [FilterGroup, handleFilterHelpers] => {
-  const [filtersState, setFiltersState] = useState<FilterGroup>(initFilters ?? emptyFilterGroup);
+  const [filtersState, setFiltersState] = useState<FilterGroup>(() => ensureFilterIds(cloneFilterGroup(initFilters ?? emptyFilterGroup)));
 
   const latestAddFilterIdRef = useRef<string | undefined>(undefined);
 
   // Memoize helpers to prevent unnecessary re-renders when filter state changes
-  const helpers: handleFilterHelpers = useMemo(() => ({
-    getLatestAddFilterId: (): string | undefined => {
-      return latestAddFilterIdRef.current;
+  const helpers: handleFilterHelpers = useMemo(() => createFilterHelpers({
+    // The change is computed inside the state updater, so it always sees the latest filters.
+    applyChange: (compute: (filters: FilterGroup) => FilterChangeResult, _whenNoFilters: WhenNoFilters) => {
+      setFiltersState((prevState) => {
+        const result = compute(prevState ?? emptyFilterGroup);
+        if (!result) return prevState;
+        latestAddFilterIdRef.current = result.anchor?.id;
+        return result.filters;
+      });
     },
-    handleAddFilterWithEmptyValue: (filter: Filter) => {
-      latestAddFilterIdRef.current = filter.id;
-      setFiltersState((prevState) => handleAddFilterWithEmptyValueUtil({ filters: prevState ?? emptyFilterGroup, filter }));
-    },
-    handleAddRepresentationFilter: (id: string, value: string | null) => {
-      if (value === null) { // handle clicking on 'no label' in entities list
-        setFiltersState((prevState) => {
-          const findCorrespondingFilter = prevState?.filters.find((f) => id === f.id);
-          if (findCorrespondingFilter && ['objectLabel'].includes(findCorrespondingFilter.key)) {
-            latestAddFilterIdRef.current = id;
-            return handleChangeOperatorFiltersUtil({
-              filters: prevState,
-              id,
-              operator: findCorrespondingFilter.operator === 'not_eq' ? 'not_nil' : 'nil',
-            });
-          }
-          return prevState;
-        });
-      } else {
-        latestAddFilterIdRef.current = undefined;
-        setFiltersState((prevState) => handleAddRepresentationFilterUtil({ filters: prevState, id, value }));
-      }
-    },
-    handleAddSingleValueFilter: (id: string, valueId?: string) => {
+    getLatestAddFilterId: () => latestAddFilterIdRef.current,
+    clearAllFilters: () => {
       latestAddFilterIdRef.current = undefined;
-      setFiltersState((prevState) => handleAddSingleValueFilterUtil({ filters: prevState, id, valueId }));
-    },
-    handleReplaceFilterValues: (id: string, values: string[] | FilterGroup[]) => {
-      latestAddFilterIdRef.current = undefined;
-      setFiltersState((prevState) => handleReplaceFilterValuesUtil({ filters: prevState, id, values }));
-    },
-    handleChangeOperatorFilters: (id: string, operator: string) => {
-      latestAddFilterIdRef.current = undefined;
-      setFiltersState((prevState) => handleChangeOperatorFiltersUtil({ filters: prevState, id, operator }));
-    },
-    handleClearAllFilters: () => {
-      latestAddFilterIdRef.current = undefined;
-      setFiltersState({ ...defaultClearFilters });
-    },
-    handleRemoveFilterById: (id: string) => {
-      latestAddFilterIdRef.current = undefined;
-      setFiltersState((prevState) => handleRemoveFilterUtil({ filters: prevState, id }));
-    },
-    handleRemoveRepresentationFilter: (id: string, value: string | Filter | undefined | null) => {
-      latestAddFilterIdRef.current = undefined;
-      setFiltersState((prevState) => handleRemoveRepresentationFilterUtil({ filters: prevState, id, value }));
-    },
-    handleSwitchGlobalMode: () => {
-      latestAddFilterIdRef.current = undefined;
-      setFiltersState((prevState) => ({
-        ...prevState,
-        mode: prevState.mode === 'and' ? 'or' : 'and',
-      }));
-    },
-    handleSwitchLocalMode: (filter: Filter) => {
-      latestAddFilterIdRef.current = undefined;
-      setFiltersState((prevState) => handleSwitchLocalModeUtil({ filters: prevState, filter }));
-    },
-    handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => {
-      latestAddFilterIdRef.current = undefined;
-      if (oldValue && newValue) {
-        setFiltersState((prevState) => handleChangeRepresentationFilterUtil({ filters: prevState, id, oldValue, newValue }));
-      } else if (oldValue) {
-        setFiltersState((prevState) => handleRemoveRepresentationFilterUtil({ filters: prevState, id, value: oldValue }));
-      } else if (newValue) {
-        setFiltersState((prevState) => handleAddRepresentationFilterUtil({ filters: prevState, id, value: newValue }));
-      }
+      setFiltersState(ensureFilterIds(cloneFilterGroup(defaultClearFilters)));
     },
   }), [defaultClearFilters]);
 

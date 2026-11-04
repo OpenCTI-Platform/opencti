@@ -1,11 +1,38 @@
+import { useMemo, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import SpriteText from 'three-spritetext';
 import { ForceGraphProps } from 'react-force-graph-3d';
 import type { Theme } from '../../Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
+import { useFormatter } from '../../i18n';
+import { buildGraphPalette } from './graphPalette';
+import { type Box, computeLinkCurvatures, computeObstacleBends, type LinkEnds, linkEndsKey } from './graphGeometry';
+import type { LayoutPositions } from './graphLayouts';
+import { type GraphFocus, type GraphPath, neighbourhood } from './graphFocus';
+import {
+  createNodeBoxes,
+  graphLinkLabel,
+  type LevelOfDetail,
+  levelOfDetail,
+  type LinkLabel,
+  type LinkPaintOptions,
+  NODE_RADIUS,
+  type NodeBoxes,
+  type NodePaintOptions,
+  paintGraphLink,
+  paintGraphLinkHitArea,
+  paintGraphNode,
+  paintGraphNodeHitArea,
+  paintLinkLabels,
+} from './graphPainting';
+import { badgesOfNode, type GraphBadge, useGraphBadgeRegistryVersion } from '../badges';
 
-interface PaintOptions {
-  showNbConnectedElements?: boolean;
+export interface GraphHoverTarget {
+  kind: 'node' | 'link';
+  id: string;
+  /** The ends of a link: the two connectors of a nested relationship share its id. */
+  sourceId?: string;
+  targetId?: string;
 }
 
 interface UseGraphPainterArgs {
@@ -13,99 +40,187 @@ interface UseGraphPainterArgs {
   selectedNodes: GraphNode[];
   detailsPreviewSelected: GraphLink | GraphNode | undefined;
   search: string | undefined;
+  /** Links drawn, for the focus on a neighbourhood and the fan-out of parallel links. */
+  links?: readonly GraphLink[];
+  hovered?: GraphHoverTarget | null;
+  highlightedPath?: GraphPath | null;
+  nodeCount?: number;
+  /** Where a deterministic layout puts the nodes: straight links then bend around the nodes on their way. */
+  layoutTargets?: LayoutPositions | null;
 }
+
+/** Room kept between a bent link and a node it passes: the ring, its halo and a little air. */
+const OBSTACLE_CLEARANCE = NODE_RADIUS + 5;
+
+/** A zoom where every detail shows, for callers that do not hand one. */
+const DEFAULT_SCALE = 3;
+
+const STRAIGHT_LINK = { curvature: 0, rotation: 0 };
+
+const endpointId = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end.id : end);
+
+const linkEndsOf = (link: GraphLink): LinkEnds => ({
+  id: link.id,
+  sourceId: endpointId(link.source) ?? link.source_id,
+  targetId: endpointId(link.target) ?? link.target_id,
+});
+
+/** The hover target of a link, telling apart the connectors that share the id of their relationship. */
+export const linkHoverTarget = (link: GraphLink): GraphHoverTarget => ({ kind: 'link', ...linkEndsOf(link) });
+
+/** Whether the hover target designates this link, by its id and, when the target has them, its ends. */
+export const isHoveredLink = (
+  hovered: GraphHoverTarget | null | undefined,
+  link: { id: string; sourceId?: string; targetId?: string },
+) => hovered?.kind === 'link'
+  && hovered.id === link.id
+  && (hovered.sourceId === undefined || hovered.sourceId === link.sourceId)
+  && (hovered.targetId === undefined || hovered.targetId === link.targetId);
 
 const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const badgeRegistryVersion = useGraphBadgeRegistryVersion();
   const {
     selectedLinks = [],
     selectedNodes = [],
     detailsPreviewSelected,
     search,
+    links = [],
+    hovered = null,
+    highlightedPath = null,
+    nodeCount = 0,
+    layoutTargets = null,
   } = args ?? {};
 
-  const DEFAULT_COLOR = '#0fbcff'; // Normally never used (all colors are defined).
+  const palette = useMemo(() => buildGraphPalette(theme), [theme]);
   const colors = {
-    selected: theme.palette.secondary.main ?? DEFAULT_COLOR,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    inferred: theme.palette.warning?.main ?? DEFAULT_COLOR,
-    numbersBackground: theme.palette.background.default ?? DEFAULT_COLOR,
-    text: theme.palette.text?.secondary ?? DEFAULT_COLOR,
-    disabled: theme.palette.background.paper ?? DEFAULT_COLOR,
+    selected: palette.accent,
+    inferred: palette.inferred,
+    disabled: palette.disabled,
   };
+
+  const linkEnds = useMemo(() => links.map(linkEndsOf), [links]);
+  // The ends and the key of each link drawn, computed once per graph rather than at every frame.
+  const linkEndsByLink = useMemo(() => new Map(links.map((link, index) => [link, linkEnds[index]])), [links, linkEnds]);
+  const linkKeys = useMemo(() => new Map(links.map((link, index) => [link, linkEndsKey(linkEnds[index])])), [links, linkEnds]);
+  const endsOf = (link: GraphLink) => linkEndsByLink.get(link) ?? linkEndsOf(link);
+  const keyOf = (link: GraphLink) => linkKeys.get(link) ?? linkEndsKey(endsOf(link));
+  const curvatures = useMemo(() => computeLinkCurvatures(linkEnds), [linkEnds]);
+  const bends = useMemo(
+    () => (layoutTargets ? computeObstacleBends(linkEnds, layoutTargets, OBSTACLE_CLEARANCE, curvatures) : null),
+    [layoutTargets, linkEnds, curvatures],
+  );
+
+  const selectedNodeIds = useMemo(() => new Set(selectedNodes.map((n) => n.id)), [selectedNodes]);
+  const selectedLinkIds = useMemo(() => new Set(selectedLinks.map((l) => l.id)), [selectedLinks]);
+  const pathNodeIds = useMemo(() => new Set(highlightedPath?.nodeIds ?? []), [highlightedPath]);
+  const pathLinkKeys = useMemo(() => new Set(highlightedPath?.linkKeys ?? []), [highlightedPath]);
+
+  /**
+   * What stays at full strength: a highlighted path alone, otherwise the selection and the hovered
+   * element with their direct neighbours. `null` when nothing is focused, so nothing fades.
+   */
+  const focus = useMemo<GraphFocus | null>(() => {
+    if (highlightedPath && highlightedPath.nodeIds.length > 0) {
+      return { nodeIds: pathNodeIds, linkKeys: pathLinkKeys };
+    }
+    const centres = new Set(selectedNodeIds);
+    selectedLinks.forEach((link) => {
+      centres.add(endpointId(link.source) ?? link.source_id);
+      centres.add(endpointId(link.target) ?? link.target_id);
+    });
+    if (hovered?.kind === 'node') centres.add(hovered.id);
+    if (hovered?.kind === 'link') {
+      const link = linkEnds.find((ends) => isHoveredLink(hovered, ends));
+      if (link) {
+        centres.add(link.sourceId);
+        centres.add(link.targetId);
+      }
+    }
+    if (centres.size === 0) return null;
+    const reached = neighbourhood(linkEnds, centres);
+    const linkKeys = new Set(reached.linkKeys);
+    // A selected relationship is drawn selected on each of its links; the hovered link alone.
+    linkEnds.forEach((ends) => {
+      if (selectedLinkIds.has(ends.id) || isHoveredLink(hovered, ends)) linkKeys.add(linkEndsKey(ends));
+    });
+    return { nodeIds: reached.nodeIds, linkKeys };
+  }, [highlightedPath, selectedNodeIds, selectedLinks, hovered, linkEnds, pathNodeIds, pathLinkKeys, selectedLinkIds]);
+
+  const typeLabels = useRef(new Map<string, string>());
+  const typeLabel = (node: GraphNode) => {
+    const key = node.relationship_type ? `relationship_${node.relationship_type}` : `entity_${node.entity_type}`;
+    let label = typeLabels.current.get(key);
+    if (label === undefined) {
+      label = t_i18n(key);
+      typeLabels.current.set(key, label);
+    }
+    return label;
+  };
+
+  const badgeCache = useRef(new WeakMap<GraphNode, { version: number; badges: GraphBadge[] }>());
+  const badgesOf = (node: GraphNode) => {
+    const cached = badgeCache.current.get(node);
+    if (cached && cached.version === badgeRegistryVersion) return cached.badges;
+    const badges = badgesOfNode(node, { t_i18n });
+    badgeCache.current.set(node, { version: badgeRegistryVersion, badges });
+    return badges;
+  };
+
+  // Computed again only when the zoom or the size of the graph changes, not for every element of every frame
+  const detailCache = useRef<{ globalScale: number; nodeCount: number; detail: LevelOfDetail } | null>(null);
+  const detailOf = (globalScale: number): LevelOfDetail => {
+    const cached = detailCache.current;
+    if (cached && cached.globalScale === globalScale && cached.nodeCount === nodeCount) return cached.detail;
+    const detail = levelOfDetail(globalScale, nodeCount);
+    detailCache.current = { globalScale, nodeCount, detail };
+    return detail;
+  };
+
+  /** The options of every node of every frame, updated in place as those of the links. */
+  const nodePaintOptions = useRef<NodePaintOptions>({
+    palette,
+    globalScale: DEFAULT_SCALE,
+    detail: levelOfDetail(DEFAULT_SCALE, 0),
+    visual: { selected: false, preview: false, hovered: false, faded: false, onPath: false },
+  });
+  /** The boxes each node covers, written in place at every frame. */
+  const nodeBoxes = useRef(new WeakMap<GraphNode, NodeBoxes>());
 
   /**
    * Draws a node in canvas.
    *
-   * @param ctx Context of the canvas.
    * @param data Data associated to the node.
-   * @param opts Options to change drawing.
+   * @param ctx Context of the canvas.
+   * @param globalScale Zoom level handed by the library.
+   * @param showConnectedCount Investigations show how many relationships are not drawn yet.
    */
   const nodePaint = (
     data: GraphNode,
     ctx: CanvasRenderingContext2D,
-    opts: PaintOptions = {},
+    globalScale = DEFAULT_SCALE,
+    showConnectedCount = false,
   ) => {
-    const { label, img, x, y, numberOfConnectedElement, color, disabled, isNestedInferred, id } = data;
-    const { showNbConnectedElements } = opts;
-
-    const hasSelection = selectedNodes.length > 0;
-    const previewSelected = detailsPreviewSelected?.id === id;
-    const selected = !!selectedNodes.find((n) => n.id === data.id);
-
-    ctx.globalAlpha = hasSelection && !selected ? 0.3 : 1;
-
-    ctx.beginPath();
-    ctx.fillStyle = disabled ? colors.disabled : color;
-    ctx.arc(x, y, 5, 0, 2 * Math.PI, false);
-    ctx.fill();
-
-    if (previewSelected) {
-      ctx.lineWidth = 0.8;
-      ctx.strokeStyle = colors.selected;
-      ctx.stroke();
-    } else if (selected) {
-      ctx.lineWidth = 0.5;
-      ctx.strokeStyle = colors.selected;
-      ctx.setLineDash([2, 1]);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    } else if (isNestedInferred) {
-      ctx.lineWidth = 0.8;
-      ctx.strokeStyle = colors.inferred;
-      ctx.stroke();
+    const options = nodePaintOptions.current;
+    options.palette = palette;
+    options.globalScale = globalScale;
+    options.detail = detailOf(globalScale);
+    options.visual.selected = selectedNodeIds.has(data.id);
+    options.visual.preview = detailsPreviewSelected?.id === data.id;
+    options.visual.hovered = hovered?.kind === 'node' && hovered.id === data.id;
+    options.visual.faded = focus ? !focus.nodeIds.has(data.id) : false;
+    options.visual.onPath = pathNodeIds.has(data.id);
+    options.badges = badgesOf(data);
+    options.showConnectedCount = showConnectedCount;
+    options.typeLabel = typeLabel(data);
+    let boxes = nodeBoxes.current.get(data);
+    if (!boxes) {
+      boxes = createNodeBoxes();
+      nodeBoxes.current.set(data, boxes);
     }
-
-    const size = 8;
-    ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
-    ctx.font = '4px IBM Plex Sans';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = disabled ? colors.disabled : colors.text;
-    ctx.fillText(label, x, y + 9);
-    ctx.fillStyle = disabled ? colors.disabled : color;
-
-    const validConnectedElements = numberOfConnectedElement === undefined || numberOfConnectedElement > 0;
-    if (showNbConnectedElements && validConnectedElements) {
-      ctx.beginPath();
-      ctx.arc(x + 4, y - 3, 2, 0, 2 * Math.PI, false);
-      ctx.lineWidth = 0.4;
-      ctx.strokeStyle = color;
-      ctx.stroke();
-      ctx.fillStyle = colors.numbersBackground;
-      ctx.fill();
-      ctx.fillStyle = colors.text;
-      let numberLabel = '?';
-      if (numberOfConnectedElement !== undefined) {
-        numberLabel = `${numberOfConnectedElement}`;
-      }
-      if (numberLabel !== '?') {
-        numberLabel = (numberOfConnectedElement ?? 0) > 99 ? '99+' : `${numberLabel}+`;
-      }
-      ctx.font = '1.5px IBM Plex Sans';
-      ctx.fillText(numberLabel, x + 4, y - 2.9);
-    }
+    // Link labels are placed clear of the nodes at every zoom: the emphasised ones are drawn at overview zoom too.
+    paintGraphNode(ctx, data, options, frameNodeBoxes.current, boxes);
   };
 
   /**
@@ -114,22 +229,22 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    * @param data Data of the node.
    * @param color The color to use.
    * @param ctx Context of the canvas.
+   * @param globalScale Zoom level, the label is hit only where it is drawn.
    */
   const nodePointerAreaPaint = (
     data: GraphNode,
     color: string,
     ctx: CanvasRenderingContext2D,
+    globalScale = DEFAULT_SCALE,
   ) => {
-    const { name, x, y } = data;
+    paintGraphNodeHitArea(ctx, data, color, detailOf(globalScale).labels);
+  };
 
-    ctx.beginPath();
-    ctx.fillStyle = color;
-    ctx.arc(x, y, 5, 0, 2 * Math.PI, false);
-    ctx.fill();
-    ctx.font = '4px IBM Plex Sans';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(name, x, y + 10);
+  /** The colour of the relationship itself, whatever is selected or searched: the image export draws it. */
+  const linkBaseColor = (link: GraphLink) => {
+    if (link.isNestedInferred || link.inferred) return colors.inferred;
+    if (link.disabled) return colors.disabled;
+    return palette.link;
   };
 
   /**
@@ -139,17 +254,86 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    * @returns The color for the link.
    */
   const linkColorPaint = (link: GraphLink) => {
-    const selected = !!selectedLinks.find((l) => l.id === link.id);
+    const selected = selectedLinkIds.has(link.id);
 
     if (!selected && search) return colors.disabled;
     if (selected) return colors.selected;
-    if (link.isNestedInferred || link.inferred) return colors.inferred;
-    if (link.disabled) return colors.disabled;
-    return theme.palette.primary.main;
+    return linkBaseColor(link);
+  };
+
+  const bentCurvatures = useMemo(
+    () => (bends ? new Map([...bends].map(([key, curvature]) => [key, { curvature, rotation: 0 }])) : null),
+    [bends],
+  );
+  const curvatureOf = (link: GraphLink) => {
+    const key = keyOf(link);
+    return bentCurvatures?.get(key) ?? curvatures.get(key) ?? STRAIGHT_LINK;
+  };
+  const linkCurvature = (link: GraphLink) => curvatureOf(link).curvature;
+
+  /** Labels collected while the links are drawn, painted over the nodes at the end of the frame. */
+  const frameLabels = useRef<LinkLabel[]>([]);
+  /** The options of every link of every frame, updated in place: the link painter reads them and keeps none. */
+  const linkPaintOptions = useRef<LinkPaintOptions>({
+    palette,
+    globalScale: DEFAULT_SCALE,
+    detail: levelOfDetail(DEFAULT_SCALE, 0),
+    color: '',
+    curvature: 0,
+    rotation: 0,
+    confidence: null,
+    visual: { selected: false, hovered: false, faded: false, onPath: false },
+  });
+  /** What the nodes of the frame cover, which the link labels keep clear of. */
+  const frameNodeBoxes = useRef<Box[]>([]);
+
+  /**
+   * Draws a link: curve, arrowhead and dash; its label is drawn at the end of the frame.
+   *
+   * @param link Link object from the lib of graphs.
+   * @param ctx Context of the canvas.
+   * @param globalScale Zoom level handed by the library.
+   */
+  const linkPaint = (link: GraphLink, ctx: CanvasRenderingContext2D, globalScale = DEFAULT_SCALE) => {
+    const { curvature, rotation } = curvatureOf(link);
+    const selected = selectedLinkIds.has(link.id);
+    const key = keyOf(link);
+    const options = linkPaintOptions.current;
+    options.palette = palette;
+    options.globalScale = globalScale;
+    options.detail = detailOf(globalScale);
+    options.color = link.disabled || (search && !selected) ? palette.textSecondary : linkColorPaint(link);
+    options.curvature = curvature;
+    options.rotation = rotation;
+    options.confidence = link.confidence;
+    options.visual.selected = selected;
+    options.visual.hovered = isHoveredLink(hovered, endsOf(link));
+    options.visual.faded = focus ? !focus.linkKeys.has(key) : false;
+    options.visual.onPath = pathLinkKeys.has(key);
+    const label = paintGraphLink(ctx, link, options);
+    if (label) frameLabels.current.push(label);
+  };
+
+  const linkPointerAreaPaint = (link: GraphLink, color: string, ctx: CanvasRenderingContext2D, globalScale = DEFAULT_SCALE) => {
+    paintGraphLinkHitArea(ctx, link, color, globalScale, curvatureOf(link));
+  };
+
+  /** To call before a frame: forgets the labels of the previous one, reusing the same buffers. */
+  const framePrePaint = () => {
+    frameLabels.current.length = 0;
+    frameNodeBoxes.current.length = 0;
+  };
+
+  /** To call after a frame: draws the link labels that do not overlap. */
+  const framePostPaint = (ctx: CanvasRenderingContext2D, globalScale: number) => {
+    paintLinkLabels(ctx, frameLabels.current, { palette, globalScale, obstacles: frameNodeBoxes.current });
+    frameLabels.current.length = 0;
+    frameNodeBoxes.current.length = 0;
   };
 
   /**
    * Draws link between two nodes.
+   * Kept for the callers drawing the default straight links: the label alone, at mid-link.
    *
    * @param link Link object from the lib of graphs.
    * @param ctx Context of the canvas.
@@ -157,6 +341,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const linkLabelPaint = (
     link: GraphLink,
     ctx: CanvasRenderingContext2D,
+    globalScale = DEFAULT_SCALE,
   ) => {
     const start = link.source;
     const end = link.target;
@@ -164,36 +349,32 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
       link.disabled
       || typeof start !== 'object'
       || typeof end !== 'object'
-      || start.x === undefined
-      || end.x === undefined
-      || start.y === undefined
-      || end.y === undefined) {
+      || !Number.isFinite(start.x)
+      || !Number.isFinite(end.x)
+      || !link.label
+    ) {
       return;
     }
-
-    const textPos = {
-      x: start.x + (end.x - start.x) / 2,
-      y: start.y + (end.y - start.y) / 2,
-    };
-    const relLink = {
-      x: end.x - start.x,
-      y: end.y - start.y,
-    };
-
-    let textAngle = Math.atan2(relLink.y, relLink.x);
-    if (textAngle > Math.PI / 2) textAngle = -(Math.PI - textAngle);
-    if (textAngle < -Math.PI / 2) textAngle = -(-Math.PI - textAngle);
-    const fontSize = 3;
-    ctx.font = `${fontSize}px IBM Plex Sans`;
-    ctx.save();
-    ctx.translate(textPos.x, textPos.y);
-    ctx.rotate(textAngle);
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = colors.text;
-    ctx.fillText(link.label, 0, 0);
-    ctx.restore();
+    const middle = { x: start.x + (end.x - start.x) / 2, y: start.y + (end.y - start.y) / 2 };
+    let angle = Math.atan2(end.y - start.y, end.x - start.x);
+    if (angle > Math.PI / 2) angle -= Math.PI;
+    if (angle < -Math.PI / 2) angle += Math.PI;
+    paintLinkLabels(ctx, [{ text: graphLinkLabel(link), x: middle.x, y: middle.y, angle, priority: 0, emphasised: false }], { palette, globalScale });
   };
+
+  /** The sphere of a node in 3D: the selection accent when selected, as in 2D. */
+  const nodeThreeColor = (node: GraphNode) => {
+    if (selectedNodeIds.has(node.id)) return colors.selected;
+    return node.disabled ? palette.disabled : node.color;
+  };
+
+  /** The label of a node in 3D, in the selection accent when selected. */
+  const nodeThreeLabelColor = (node: GraphNode) => {
+    if (selectedNodeIds.has(node.id)) return colors.selected;
+    return node.disabled ? palette.disabled : palette.textSecondary;
+  };
+  /** The label of a 3D link, drawn apart from its line: it fades with the line when a filter leaves the link out. */
+  const linkThreeLabelColor = (link: GraphLink) => (link.disabled ? palette.disabled : palette.textSecondary);
 
   /**
    * Draws a node for 3D mode.
@@ -202,7 +383,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    */
   const nodeThreePaint = (node: GraphNode) => {
     const sprite = new SpriteText(node.label);
-    sprite.color = colors.text;
+    sprite.color = nodeThreeLabelColor(node);
     sprite.textHeight = 1.5;
     return sprite;
   };
@@ -213,8 +394,8 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    * @param link Link to draw.
    */
   const linkThreePaint = (link: GraphLink) => {
-    const sprite = new SpriteText(link.label);
-    sprite.color = 'lightgrey';
+    const sprite = new SpriteText(graphLinkLabel(link));
+    sprite.color = linkThreeLabelColor(link);
     sprite.textHeight = 1.5;
     return sprite;
   };
@@ -235,10 +416,22 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   };
 
   return {
+    palette,
+    focus,
     nodePaint,
     nodePointerAreaPaint,
     linkLabelPaint,
     linkColorPaint,
+    linkBaseColor,
+    linkPaint,
+    linkPointerAreaPaint,
+    linkCurvature,
+    curvatureOf,
+    framePrePaint,
+    framePostPaint,
+    nodeThreeColor,
+    nodeThreeLabelColor,
+    linkThreeLabelColor,
     nodeThreePaint,
     linkThreePaint,
     linkThreeLabelPosition,

@@ -5,11 +5,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
-import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
-import { ListItemButton, Stack } from '@mui/material';
+import { Box, ListItemButton, Stack } from '@mui/material';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -25,22 +24,9 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useGranted, { BYPASS, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import type { Theme } from '../../../../components/Theme';
 import Card from '../../../../components/common/card/Card';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
 import Label from '../../../../components/common/label/Label';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-}));
 
 const settingsOrganizationFragment = graphql`
   fragment SettingsOrganization_organization on Organization {
@@ -114,7 +100,6 @@ const SettingsOrganization = ({
 }: {
   organizationData: SettingsOrganization_organization$key;
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
@@ -141,8 +126,14 @@ const SettingsOrganization = ({
     .map((orga) => orga?.id)
     .includes(organization.id);
   return (
-    <div className={classes.container}>
-      <Stack direction="row" alignItems="center" marginBottom={3}>
+    <Box sx={{ margin: 0, padding: '0 200px 0 0' }}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          marginBottom: 3,
+        }}
+      >
         <TitleMainEntity sx={{ flex: 1 }}>
           {organization.name}
         </TitleMainEntity>
@@ -157,20 +148,20 @@ const SettingsOrganization = ({
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        sx={{ marginBottom: '20px' }}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <SettingsOrganizationDetails settingsOrganization={organization} />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Card title={t_i18n('More information')}>
             <Grid container={true} spacing={2}>
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <SettingsOrganizationHiddenTypesChipList
                   organizationData={organization}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Parent organizations')}
                 </Label>
@@ -195,7 +186,7 @@ const SettingsOrganization = ({
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Child organizations')}
                 </Label>
@@ -218,7 +209,7 @@ const SettingsOrganization = ({
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Default dashboard')}
                 </Label>
@@ -255,7 +246,7 @@ const SettingsOrganization = ({
                   </List>
                 </FieldOrEmpty>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Label>
                   {t_i18n('Grantable groups by organization administrators')}
                 </Label>
@@ -322,14 +313,14 @@ const SettingsOrganization = ({
             <SettingsOrganizationUsers organization={organization} />
           </>
         ) : (
-          <Grid item xs={12}>
+          <Grid size={12}>
             <EnterpriseEdition
               feature={t_i18n('Organization sharing')}
             />
           </Grid>
         )}
       </Grid>
-    </div>
+    </Box>
   );
 };
 export default SettingsOrganization;

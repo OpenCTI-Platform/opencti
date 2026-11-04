@@ -37,6 +37,22 @@ export const USER_MERGE_TARGET_INDICES = [...READ_PLATFORM_INDICES, INDEX_DELETE
  */
 export const USER_MERGE_SILENT_WRITE = { publishStreamEvent: false };
 
+/**
+ * A merge write on a user leaves the individual joined on its email alone. Any user update
+ * re-aligns it, and on an individual created without first and last name that is a history event
+ * attributed to the source, landing while the merge runs. The individual handler owns that entity.
+ */
+export const USER_MERGE_USER_WRITE = { skipUserIndividualSync: true };
+
+/**
+ * Identifier of the handler that closes the source account.
+ *
+ * Declared next to the contract rather than next to the handler: the registration guard is the
+ * one place that has to name it, and importing the handler module from there would pull the
+ * domain layer into a check that runs before any handler is loaded.
+ */
+export const USER_MERGE_SOURCE_DISABLE_HANDLER = 'source-deactivation';
+
 /** One planned or applied change, as it appears in the report. */
 export interface UserMergePlannedChange {
   /** Register row this change answers for. */
@@ -104,6 +120,20 @@ export interface UserMergeHandlerContext {
    * engine aborts instead, so that shape cannot be written here.
    */
   rights: UserMergeRightsProjection;
+  /**
+   * When the *first* run on this pair began, not when the current one did.
+   *
+   * The merge writes activity traces of its own — the source disablement, and the
+   * "A merged into B" record the requirements ask for. Both name the source by construction, so
+   * a history rewrite that swept indiscriminately would erase the very proof of the operation.
+   * Handlers reading the history index cut on this instead of naming those traces: a structural
+   * boundary covers the ones we have not thought of, and makes a replay a no-op on them.
+   *
+   * Anchoring on the current run would only hide the traces of the run in progress. The deletion
+   * gate runs a fresh dry-run, so the previous merge's own traces would fall back under the cut,
+   * count as references still pending, and the gate could never open.
+   */
+  mergeStartedAt: Date;
 }
 
 export interface UserMergeRightsProjection {

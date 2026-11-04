@@ -13,6 +13,7 @@ export const identitySearchIdentitiesSearchQuery = graphql`
           standard_id
           identity_class
           name
+          x_opencti_aliases
           entity_type
           ... on Organization {
             currentUserAccessRight

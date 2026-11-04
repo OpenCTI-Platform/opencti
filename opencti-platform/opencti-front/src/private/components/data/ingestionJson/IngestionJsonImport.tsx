@@ -2,7 +2,7 @@ import React, { BaseSyntheticEvent, FunctionComponent, useRef, useState } from '
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
-import ToggleButton from '@mui/material/ToggleButton/ToggleButton';
+import ToggleButton from '@mui/material/ToggleButton';
 import { IngestionJsonCreationContainer, IngestionJsonImportedInput } from '@components/data/ingestionJson/IngestionJsonCreation';
 import { IngestionJsonLinesPaginationQuery$variables } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
 import { IngestionJsonImportMutation } from '@components/data/ingestionJson/__generated__/IngestionJsonImportMutation.graphql';

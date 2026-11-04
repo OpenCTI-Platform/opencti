@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
-import { Theme } from '@mui/material/styles/createTheme';
+import { styled, Theme, useTheme } from '@mui/material/styles';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
 import IconButton from '@common/button/IconButton';
 import { Link } from 'react-router';
 import { OpenInNewOutlined } from '@mui/icons-material';
@@ -20,36 +18,13 @@ import { useGraphContext } from '../GraphContext';
 import useGraphInteractions from '../utils/useGraphInteractions';
 import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../utils/fdsLayer';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  drawerPaper: {
-    position: 'fixed',
-    top: '50%',
-    right: 'calc(20px + var(--chatbot-sidebar-width, 0px))',
-    transition: 'right 225ms cubic-bezier(0.4, 0, 0.2, 1)',
-    transform: 'translateY(-50%)',
-    width: 400,
-    maxWidth: 400,
-    height: '60%',
-    maxHeight: '60%',
-    padding: '20px 0 20px 20px',
-    zIndex: 900,
-    borderRadius: 4,
-    border: 'none',
-    backgroundColor: 'var(--bg-elevation-default)',
-    boxShadow: theme.palette.mode === 'light' ? '0 0px 8px 0px rgba(7, 13, 25, .2)' : `0 0px 8px 0px ${theme.palette.background.default}`,
-    gap: '8px',
-  },
-  external: {
-    display: 'flex',
-    flexShrink: 0,
-  },
-}));
+const ExternalLinkContainer = styled('div')({
+  display: 'flex',
+  flexShrink: 0,
+});
 
 const EntitiesDetailsRightsBar = () => {
   const theme = useTheme<Theme>();
-  const classes = useStyles(theme);
   const { t_i18n } = useFormatter();
   const { selectDetailsPreviewObject } = useGraphInteractions();
 
@@ -90,6 +65,16 @@ const EntitiesDetailsRightsBar = () => {
     }
   }, [selectedEntities]);
 
+  // `label` is cut to 20 characters for the canvas, and `name` is the canvas tooltip:
+  // the representative then the date on a second line for an entity, but HTML markup
+  // for a relationship. So a relationship is named after its type instead.
+  const getSelectedObjectName = (entity: GraphNode | GraphLink) => {
+    if (entity.relationship_type) {
+      return t_i18n(`relationship_${entity.relationship_type}`);
+    }
+    return entity.name.split('\n')[0];
+  };
+
   const handleSelectEntity = (value: string) => {
     const entity = selectedEntities.find((el) => el.id === value);
     if (!entity) {
@@ -117,15 +102,37 @@ const EntitiesDetailsRightsBar = () => {
       open={true}
       variant="permanent"
       anchor="right"
-      slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
-      classes={{ paper: classes.drawerPaper }}
+      slotProps={{
+        paper: {
+          className: fdsLayerClass(SURFACE_LAYER),
+          sx: {
+            ...layerInputVars,
+            position: 'fixed',
+            top: '50%',
+            right: 'calc(20px + var(--chatbot-sidebar-width, 0px))',
+            transition: 'right 225ms cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: 'translateY(-50%)',
+            width: 400,
+            maxWidth: 400,
+            height: '60%',
+            maxHeight: '60%',
+            padding: '20px 0 20px 20px',
+            zIndex: 900,
+            borderRadius: '4px',
+            border: 'none',
+            backgroundColor: 'var(--bg-elevation-default)',
+            boxShadow: theme.palette.mode === 'light' ? '0 0px 8px 0px rgba(7, 13, 25, .2)' : `0 0px 8px 0px ${theme.palette.background.default}`,
+            gap: '8px',
+          },
+        },
+      }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
       <Typography
         variant="body1"
         sx={{ textAlign: 'right', paddingRight: '20px' }}
       >
-        {t_i18n('{count} objects selected', {
+        {t_i18n('{count, plural, one {# object selected} other {# objects selected}}', {
           values: {
             count: uniqSelectedEntities.length,
           },
@@ -146,8 +153,7 @@ const EntitiesDetailsRightsBar = () => {
             <SelectContent aria-label={t_i18n('Object')}>
               {uniqSelectedEntities.map((entity) => (
                 <SelectItem key={entity.id} value={entity.id}>
-                  {/* `label` is cut to 20 characters for the canvas; `name` trails the tooltip's date on a second line. */}
-                  {entity.name.split('\n')[0]}
+                  {getSelectedObjectName(entity)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -156,7 +162,7 @@ const EntitiesDetailsRightsBar = () => {
         {/* Need to be handled */}
         {hasOverviewPage && (
           <Tooltip title={t_i18n('Open the entity overview in a separated tab')}>
-            <div className={classes.external}>
+            <ExternalLinkContainer>
               <IconButton
                 aria-label={t_i18n('Open the entity overview in a separated tab')}
                 id="open-entity-in-tab-icon-button"
@@ -167,7 +173,7 @@ const EntitiesDetailsRightsBar = () => {
               >
                 <OpenInNewOutlined fontSize="medium" />
               </IconButton>
-            </div>
+            </ExternalLinkContainer>
           </Tooltip>
         )}
       </div>

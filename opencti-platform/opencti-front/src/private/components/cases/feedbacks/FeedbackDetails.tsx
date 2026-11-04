@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { FeedbackDetails_case$data, FeedbackDetails_case$key } from './__generated__/FeedbackDetails_case.graphql';
@@ -11,6 +12,10 @@ import Label from '../../../../components/common/label/Label';
 const FeedbackDetailsFragment = graphql`
   fragment FeedbackDetails_case on Feedback {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     name
     description
     rating
@@ -52,7 +57,7 @@ const FeedbackDetails: FunctionComponent<FeedbackDetailsProps> = ({
     <div style={{ height: '100%' }} data-testid="feedback-details-page">
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -60,12 +65,13 @@ const FeedbackDetails: FunctionComponent<FeedbackDetailsProps> = ({
               <ExpandableMarkdown source={data.description} limit={300} />
             )}
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Rating')}
             </Label>
             <RatingField rating={data.rating} size="small" readOnly={true} />
           </Grid>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
         </Grid>
       </Card>
     </div>

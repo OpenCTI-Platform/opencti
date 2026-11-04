@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button as MuiButton, ButtonProps as MuiButtonProps } from '@mui/material';
 import { Button as LibButton } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { ButtonColorKey, ButtonIntent, ButtonSize, GradientVariant } from './Button.types';
 import { getColorDefinitions, getGradientColors, getSizeConfig } from './Button.utils';
 import type { Theme } from '../../Theme';
@@ -18,7 +18,9 @@ import {
 
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'extra';
 
-interface BaseButtonProps extends Omit<MuiButtonProps, 'variant' | 'color' | 'size'> {
+interface BaseButtonProps extends Omit<MuiButtonProps, 'variant' | 'color' | 'size' | 'type'> {
+  // MUI types it as any string; both the library button and a native button take these three.
+  type?: 'button' | 'submit' | 'reset';
   variant?: ButtonVariant;
   color?: ButtonColorKey;
   intent?: ButtonIntent;
@@ -99,13 +101,14 @@ const Button: React.FC<CustomButtonProps> = ({
     centerRipple: _centerRipple, TouchRippleProps: _TouchRippleProps,
     touchRippleRef: _touchRippleRef, LinkComponent: _LinkComponent,
     focusVisibleClassName: _focusVisibleClassName, onFocusVisible: _onFocusVisible,
+    nativeButton: _nativeButton,
     loading, loadingIndicator: _loadingIndicator, loadingPosition: _loadingPosition,
     ...rest
   } = props as typeof props & {
     classes?: unknown; disableRipple?: unknown; disableElevation?: unknown;
     disableFocusRipple?: unknown; focusRipple?: unknown; centerRipple?: unknown;
     TouchRippleProps?: unknown; touchRippleRef?: unknown; LinkComponent?: unknown;
-    focusVisibleClassName?: unknown; onFocusVisible?: unknown;
+    focusVisibleClassName?: unknown; onFocusVisible?: unknown; nativeButton?: unknown;
     loading?: boolean | null; loadingIndicator?: unknown; loadingPosition?: unknown;
   };
 

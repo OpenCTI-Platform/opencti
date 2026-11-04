@@ -60,7 +60,6 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
       open={open}
       onClose={handleClose}
       context={role?.editContext}
-      disabled={disabled}
       controlledDial={UpdateRoleControlledDial}
     >
       {role ? (

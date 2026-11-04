@@ -8,7 +8,7 @@ vi.mock('../../../../../src/modules/playbook/playbook-components', () => ({
 
 import * as cache from '../../../../../src/database/cache';
 import * as utils from '../../../../../src/utils/access';
-import * as userDomain from '../../../../../src/domain/user';
+import * as userDomain from '../../../../../src/modules/user/user-domain';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import type { StixBundle, StixObject } from '../../../../../src/types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../../../../src/types/stix-2-1-extensions';
@@ -100,6 +100,35 @@ describe('PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT', () => {
       expect(userDomain.sendEmailToUser).toHaveBeenCalledTimes(1);
       const sendEmailToUserInput = vi.mocked(userDomain.sendEmailToUser).mock.calls[0][2];
       expect(sendEmailToUserInput).toEqual({ target_user_id: MAIN_CREATOR_ID, email_template_id: mockEmail });
+    });
+
+    it('should not send email to service accounts nor accounts past their lock date', async () => {
+      const yesterday = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+      vi.spyOn(cache, 'getEntitiesListFromCache').mockResolvedValue([
+        {
+          id: MAIN_CREATOR_ID,
+          groups: [],
+          organizations: [],
+          user_service_account: false,
+          account_status: ACCOUNT_STATUS_ACTIVE,
+          account_lock_after_date: yesterday,
+        } as unknown as AuthUser,
+        { id: MALWARE_CREATOR_ID, groups: [], organizations: [], user_service_account: true, account_status: ACCOUNT_STATUS_ACTIVE } as unknown as AuthUser,
+        { id: CAMPAIGN_CREATOR_ID, groups: [], organizations: [], user_service_account: false, account_status: ACCOUNT_STATUS_ACTIVE } as unknown as AuthUser,
+      ]);
+
+      await PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT.executor(testExecutor<SendEmailTemplateConfiguration>({
+        mainId: MAIN_ID,
+        bundleObjects: bundleWithMultipleObjects.objects,
+        configuration: {
+          ...playbookNode.configuration,
+          targets: [{ value: 'CREATORS' }],
+          applyToElements: playbookBundleElementsToApply.allElements.value,
+        },
+      }));
+
+      expect(userDomain.sendEmailToUser).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(userDomain.sendEmailToUser).mock.calls[0][2]).toEqual({ target_user_id: CAMPAIGN_CREATOR_ID, email_template_id: mockEmail });
     });
 
     it('should send email for all elements when applyToElements = all-elements', async () => {

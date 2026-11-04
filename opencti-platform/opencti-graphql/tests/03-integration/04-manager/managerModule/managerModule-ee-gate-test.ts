@@ -95,4 +95,40 @@ describe('Manager module: enterprise edition gate', () => {
 
     expect(handler).toHaveBeenCalled();
   });
+
+  it('should run a configured cron handler immediately without retrying the lock', async () => {
+    const lockSpy = vi.spyOn(masterLock, 'lockResources').mockResolvedValue({
+      operation: 'test-op',
+      signal: new AbortController().signal,
+      unlock: vi.fn(),
+    } as any);
+    const handler = vi.fn().mockResolvedValue(undefined);
+    const managerDefinition: ManagerDefinition = {
+      id: 'TEST_RUN_ON_START_MANAGER',
+      label: 'Test run-on-start manager',
+      executionContext: 'test_run_on_start_manager',
+      cronSchedulerHandler: {
+        handler,
+        interval: 60_000,
+        lockKey: 'test_run_on_start_manager_lock',
+        runOnStart: true,
+      },
+      enabledByConfig: true,
+      enabledToStart(): boolean {
+        return this.enabledByConfig;
+      },
+      enabled(): boolean {
+        return this.enabledByConfig;
+      },
+    };
+    registerManager(managerDefinition);
+    const registeredManager = getAllEnabledManagers().find((m) => m.manager.id === managerDefinition.id);
+
+    await registeredManager?.start();
+    await wait(50);
+    await registeredManager?.shutdown();
+
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(lockSpy).toHaveBeenCalledWith(['test_run_on_start_manager_lock'], { retryCount: 0 });
+  });
 });

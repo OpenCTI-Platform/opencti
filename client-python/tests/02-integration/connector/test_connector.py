@@ -1,8 +1,8 @@
 import pika.exceptions
 import pytest
-from pytest_cases import fixture, parametrize_with_cases
 
 from pycti import OpenCTIConnector
+from pycti.connector.opencti_connector_helper import ConnectorInfo
 from tests.cases.connectors import (
     ExternalImportConnector,
     ExternalImportConnectorTest,
@@ -12,13 +12,12 @@ from tests.cases.connectors import (
     InternalImportConnectorTest,
     SimpleConnectorTest,
 )
-from tests.utils import get_connector_id, get_new_work_id
+from tests.utils import case_id, cases_of, get_connector_id, get_new_work_id
 
 
-@fixture
-@parametrize_with_cases("connector", cases=SimpleConnectorTest)
-def simple_connector(connector, api_connector, api_work):
-    connector = OpenCTIConnector(**connector)
+@pytest.fixture(params=cases_of(SimpleConnectorTest), ids=case_id)
+def simple_connector(request, api_connector, api_work):
+    connector = OpenCTIConnector(**request.param())
     api_connector.register(connector)
     yield connector
     # Unregistering twice just to make sure
@@ -56,9 +55,69 @@ def test_register_simple_connector(simple_connector, api_connector, api_work):
     assert test_connector == "", "Connector is still registered"
 
 
-@fixture
-@parametrize_with_cases("data", cases=ExternalImportConnectorTest)
-def external_import_connector_data(data, api_client, api_connector, api_work):
+def read_connector_errors(api_client, connector_id):
+    result = api_client.query(
+        """
+            query GetConnectorErrors($id: String!) {
+                connector(id: $id) {
+                    connector_info {
+                        errors {
+                            code
+                            message
+                            criticity
+                        }
+                    }
+                }
+            }
+        """,
+        {"id": connector_id},
+    )
+    return result["data"]["connector"]["connector_info"]["errors"]
+
+
+@pytest.mark.connectors
+def test_ping_sends_connector_info_errors(simple_connector, api_client, api_connector):
+    connector_id = simple_connector.to_input()["input"]["id"]
+    connector_info = ConnectorInfo()
+    connector_info.add_error("API_UNREACHABLE", "Source API returned 503", 2)
+    connector_info.add_error("RATE_LIMITED", "Too many requests", 0)
+
+    api_connector.ping(connector_id, {}, connector_info.all_details)
+
+    assert read_connector_errors(api_client, connector_id) == [
+        {
+            "code": "API_UNREACHABLE",
+            "message": "Source API returned 503",
+            "criticity": 2,
+        },
+        {"code": "RATE_LIMITED", "message": "Too many requests", "criticity": 0},
+    ]
+
+
+@pytest.mark.connectors
+def test_ping_replaces_errors_and_clears_them_with_an_empty_list(
+    simple_connector, api_client, api_connector
+):
+    connector_id = simple_connector.to_input()["input"]["id"]
+    connector_info = ConnectorInfo()
+    connector_info.add_error("API_UNREACHABLE", "Source API returned 503", 2)
+    api_connector.ping(connector_id, {}, connector_info.all_details)
+
+    connector_info.clear_errors()
+    connector_info.add_error("RATE_LIMITED", "Too many requests", 0)
+    api_connector.ping(connector_id, {}, connector_info.all_details)
+    assert read_connector_errors(api_client, connector_id) == [
+        {"code": "RATE_LIMITED", "message": "Too many requests", "criticity": 0}
+    ]
+
+    connector_info.clear_errors()
+    api_connector.ping(connector_id, {}, connector_info.all_details)
+    assert read_connector_errors(api_client, connector_id) == []
+
+
+@pytest.fixture(params=cases_of(ExternalImportConnectorTest), ids=case_id)
+def external_import_connector_data(request, api_client, api_connector, api_work):
+    data = request.param()
     connector = ExternalImportConnector(data["config"], api_client, data["data"])
     connector.run()
     yield data["data"]
@@ -111,9 +170,9 @@ def test_external_import_connector(
         api_client.stix_domain_object.delete(id=sdo["id"])
 
 
-@fixture
-@parametrize_with_cases("data", cases=InternalEnrichmentConnectorTest)
-def internal_enrichment_connector_data(data, api_client, api_connector, api_work):
+@pytest.fixture(params=cases_of(InternalEnrichmentConnectorTest), ids=case_id)
+def internal_enrichment_connector_data(request, api_client, api_connector, api_work):
+    data = request.param()
     enrichment_connector = InternalEnrichmentConnector(
         data["config"], api_client, data["data"]
     )
@@ -164,9 +223,9 @@ def test_internal_enrichment_connector(
     ), f"Score of {observable['value']} is not 100. Instead {observable['x_opencti_score']}"
 
 
-@fixture
-@parametrize_with_cases("data", cases=InternalImportConnectorTest)
-def internal_import_connector_data(data, api_client, api_connector, api_work):
+@pytest.fixture(params=cases_of(InternalImportConnectorTest), ids=case_id)
+def internal_import_connector_data(request, api_client, api_connector, api_work):
+    data = request.param()
     import_connector = InternalImportConnector(
         data["config"], api_client, data["observable"]
     )

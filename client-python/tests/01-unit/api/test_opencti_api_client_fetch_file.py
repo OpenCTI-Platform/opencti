@@ -119,9 +119,9 @@ class TestFetchOpenctiFileById:
             serialize=False,
         )
 
-    def test_passes_file_id_with_special_characters_unchanged(self, api_client):
-        """A file id that looks like a path (with spaces/subfolders) must be
-        forwarded as-is, with no accidental encoding."""
+    def test_encodes_file_id_but_keeps_its_path_separators(self, api_client):
+        """A file id that looks like a path (with spaces/subfolders) keeps its
+        slashes; the characters of the file name are percent-encoded."""
         file_id = "import/Artifact/some-id/my file (v2).bin"
 
         with patch.object(
@@ -130,9 +130,39 @@ class TestFetchOpenctiFileById:
             api_client.fetch_opencti_file_by_id(file_id, binary=True, serialize=True)
 
         mocked_fetch.assert_called_once_with(
-            f"http://localhost:4000/storage/get/{file_id}",
+            "http://localhost:4000/storage/get/import/Artifact/some-id/my%20file%20%28v2%29.bin",
             binary=True,
             serialize=True,
+        )
+
+    @pytest.mark.parametrize(
+        "file_name, encoded_name",
+        [
+            ("report #1.pdf", "report%20%231.pdf"),
+            ("what?.txt", "what%3F.txt"),
+            ("a&b=c.txt", "a%26b%3Dc.txt"),
+            ("100%.txt", "100%25.txt"),
+        ],
+    )
+    def test_encodes_reserved_characters_of_the_file_name(
+        self, api_client, file_name, encoded_name
+    ):
+        """A '#' or '?' in the file name must not be read as a URL fragment or
+        query: the full file id reaches the platform (issue #19480)."""
+        mock_response = MagicMock()
+        mock_response.ok = True
+        mock_response.text = "text-data"
+
+        with patch.object(
+            api_client.session, "get", return_value=mock_response
+        ) as mocked_get:
+            result = api_client.fetch_opencti_file_by_id(
+                f"import/Domain-Name/some-id/{file_name}"
+            )
+
+        assert result == "text-data"
+        assert mocked_get.call_args[0][0] == (
+            f"http://localhost:4000/storage/get/import/Domain-Name/some-id/{encoded_name}"
         )
 
     @pytest.mark.parametrize(

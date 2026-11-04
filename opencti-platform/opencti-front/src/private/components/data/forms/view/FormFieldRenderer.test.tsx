@@ -5,6 +5,8 @@ import { Formik } from 'formik';
 import FormFieldRenderer from './FormFieldRenderer';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import { BYPASS } from '../../../../../utils/hooks/useGranted';
+import { registerFieldRenderer } from './fieldRenderers/registry';
+import type { FieldRendererContext } from './fieldRenderers/types';
 
 const baseField = {
   id: 'f1',
@@ -97,5 +99,82 @@ describe('FormFieldRenderer - isReadOnly', () => {
 
     // Grid item renders a div with MUI grid classes
     expect(container.firstChild).toBeTruthy();
+  });
+});
+
+describe('FormFieldRenderer - scoped setFieldValue', () => {
+  it('applies the fieldPrefix exactly once when a renderer forwards the fully-qualified name back to a prefixing setter', () => {
+    let capturedContext: FieldRendererContext | undefined;
+    registerFieldRenderer('test-capture-setter', (context) => {
+      capturedContext = context;
+      return <div data-testid="capture-probe" />;
+    });
+
+    // Mimics the wrapper FormView builds for additional entities/relationships: it expects a
+    // *relative* name and re-adds the prefix itself.
+    const prefixingSetFieldValue = vi.fn();
+    const wrappedSetFieldValue = (name: string, value: unknown) => prefixingSetFieldValue(`metadata.${name}`, value);
+
+    const userContext = createMockUserContext({
+      me: { name: 'test-user', user_email: 'test@opencti.io', capabilities: [] },
+    });
+
+    testRender(
+      <Formik initialValues={{ metadata: { labels: [] } }} onSubmit={() => {}}>
+        {() => (
+          <FormFieldRenderer
+            field={{ ...baseField, type: 'test-capture-setter', name: 'labels' }}
+            values={{ metadata: { labels: [] } }}
+            setFieldValue={wrappedSetFieldValue}
+            fieldPrefix="metadata"
+            errors={{}}
+            touched={{}}
+          />
+        )}
+      </Formik>,
+      { userContext },
+    );
+
+    expect(screen.getByTestId('capture-probe')).toBeTruthy();
+
+    // Renderers always call back with the fully-qualified path (matching the Field name).
+    capturedContext?.setFieldValue('metadata.labels', ['new-label']);
+
+    // The prefix must be applied exactly once, not twice.
+    expect(prefixingSetFieldValue).toHaveBeenCalledWith('metadata.labels', ['new-label']);
+  });
+
+  it('forwards the name unchanged when there is no fieldPrefix', () => {
+    let capturedContext: FieldRendererContext | undefined;
+    registerFieldRenderer('test-capture-setter-no-prefix', (context) => {
+      capturedContext = context;
+      return <div data-testid="capture-probe-no-prefix" />;
+    });
+
+    const rawSetFieldValue = vi.fn();
+    const userContext = createMockUserContext({
+      me: { name: 'test-user', user_email: 'test@opencti.io', capabilities: [] },
+    });
+
+    testRender(
+      <Formik initialValues={{ labels: [] }} onSubmit={() => {}}>
+        {() => (
+          <FormFieldRenderer
+            field={{ ...baseField, type: 'test-capture-setter-no-prefix', name: 'labels' }}
+            values={{ labels: [] }}
+            setFieldValue={rawSetFieldValue}
+            errors={{}}
+            touched={{}}
+          />
+        )}
+      </Formik>,
+      { userContext },
+    );
+
+    expect(screen.getByTestId('capture-probe-no-prefix')).toBeTruthy();
+
+    capturedContext?.setFieldValue('labels', ['new-label']);
+
+    expect(rawSetFieldValue).toHaveBeenCalledWith('labels', ['new-label']);
   });
 });

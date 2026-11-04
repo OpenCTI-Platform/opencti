@@ -2,7 +2,7 @@ import { elLoadById } from '../database/engine';
 import { READ_PLATFORM_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { type EntityOptions, storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_REF_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { FunctionalError, MissingReferenceError, UnsupportedError } from '../config/errors';
 import { isStixRefRelationship, RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { pageEntitiesOrRelationsConnection, storeLoadByIdWithRefs, transformPatchToInput, updateAttributeFromLoadedWithRefs, validateCreatedBy } from '../database/middleware';
 import { notify } from '../database/redis';
@@ -65,6 +65,9 @@ export const stixObjectOrRelationshipAddRefRelation = async (
   }
   // Add the relationship with patching
   const to = await findById(context, user, input.toId);
+  if (!to) {
+    throw MissingReferenceError({ input: { toId: input.toId }, doc_code: 'ELEMENT_NOT_FOUND' });
+  }
   const patchedFrom = await patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, input.relationship_type, [input.toId], UPDATE_OPERATION_ADD, opts);
   const { element: refRelation } = await buildRelationData(context, user, { from: patchedFrom, to, relationship_type: input.relationship_type });
   await notify(BUS_TOPICS[type as BusTopicsKeyType].EDIT_TOPIC, refRelation, user);

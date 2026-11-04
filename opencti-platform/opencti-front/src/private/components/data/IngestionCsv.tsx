@@ -1,4 +1,4 @@
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import Alert from '@mui/material/Alert';
 import React, { useContext } from 'react';
 import IngestionCsvLines, { ingestionCsvLinesQuery } from '@components/data/ingestionCsv/IngestionCsvLines';
@@ -21,17 +21,12 @@ import Button from '../../../components/common/button/Button';
 
 const LOCAL_STORAGE_KEY = 'ingestionCsvs';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 0 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 0 50px 0',
+});
 
 const IngestionCsv = () => {
-  const classes = useStyles();
   const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings.platform_xtmhub_url}/redirect/opencti_integrations?platform_id=${settings.id}&integrationType=csv_feed`
@@ -158,19 +153,19 @@ const IngestionCsv = () => {
   };
   if (!platformModuleHelpers.isIngestionManagerEnable()) {
     return (
-      <div className={classes.container}>
+      <Container>
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className={classes.container} data-testid="csv-feeds-page">
+    <Container data-testid="csv-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Integrations') }, { label: t_i18n('Deployed'), link: '/dashboard/integrations/deployed?kind=csv' }, { label: t_i18n('CSV feeds'), current: true }]} />
       {renderLines()}
-    </div>
+    </Container>
   );
 };
 

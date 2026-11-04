@@ -1,4 +1,3 @@
-import { URL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import express from 'express';
 import passport from 'passport';
@@ -11,11 +10,11 @@ import validator from 'validator';
 import ZipEncrypted from 'archiver-zip-encrypted';
 import { create as createContentDisposition } from 'content-disposition';
 import { printSchema } from 'graphql';
-import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
-import { sessionAuthenticateUser, userWithOrigin } from '../domain/user';
+import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE } from '../config/conf';
+import { sessionAuthenticateUser, userWithOrigin } from '../modules/user/user-domain';
 import { checkIpWhitelistForRequest } from './ipWhitelistMiddleware';
 import { getXtmJwks } from '../domain/xtm-auth';
-import { downloadFile, downloadFileRange, downloadLocalFileRange, getFileContent } from '../database/raw-file-storage';
+import { downloadFile, getFileContent } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
 import { DEFAULT_INVALID_CONF_VALUE, executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -26,10 +25,22 @@ import { internalLoadById } from '../database/middleware-loader';
 import { delUserContext } from '../database/redis';
 import { getPlatformHealthStatus, getPlatformUsageMetrics } from '../telemetry/platformHealthMetrics';
 import createSseMiddleware from '../graphql/sseMiddleware';
+import initHttpMaps from './httpMaps';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-import { extractRefererPathFromReq, setCookieError, decodeOidcState } from './httpUtils';
+import { checkDraftInContext } from './httpServer-draft';
+import {
+  extractRefererPathFromReq,
+  extractSafeRedirectFromReq,
+  sanitizeReferer,
+  setCookieError,
+  decodeOidcState,
+  clientErrorResponse,
+  isClientRequestError,
+  logMalformedRequest,
+  isResponseWorthCompressing,
+} from './httpUtils';
 import {
   getChatbotConfig,
   getChatbotAgents,
@@ -40,11 +51,17 @@ import {
   postChatbotMessageSteer,
   postChatbotUpload,
   getChatbotFileDownload,
+  getChatbotArtifact,
+  postChatbotArtifactDownload,
   postAgentMessage,
   postAgentMessageStream,
   getLegacyChatbotProxy,
   postChatbotMessageApprove,
   getChatbotPendingApprovals,
+  getChatbotPrompts,
+  getChatbotQuota,
+  postChatbotMessageFeedback,
+  deleteChatbotMessageFeedback,
 } from './httpChatbotProxy';
 import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
@@ -54,29 +71,6 @@ import { buildDefaultHelmetParameters, buildPublicHelmetParameters } from './htt
 import { CATALOG_LOGO_VIEW_PATH, handleCatalogLogoViewRequest } from '../modules/catalog/catalog-http';
 
 const publicDir = DEV_MODE ? '../opencti-front/dist' : 'public';
-
-export const sanitizeReferer = (refererToSanitize) => {
-  // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
-  // Ternary Operator (?): Defaults if basePath is undefined, null, "" (empty string), 0, etc (falsy values).
-  // basePath is trimmed in '../config/conf.js' to prevent a user from setting it to something like '       '
-  // NOTE: Do NOT use Nullish Coalescing (??): Would only default if basePath is undefined or null.
-  // It might be set to an empty string and would fail to set properly in base2return var in next line
-  const base2return = basePath ? basePath : '/';
-  // In some odd configurations refererToSanitize will be the string('undefined') versus value(undefined)
-  if (!refererToSanitize || refererToSanitize === 'undefined') return base2return;
-  const base = getBaseUrl();
-  const resolvedUrl = new URL(refererToSanitize, base).toString();
-  if (resolvedUrl === base || resolvedUrl.startsWith(`${base}/`)) {
-    // same domain URL accept the redirection
-    if (refererToSanitize.startsWith('/') && !refererToSanitize.startsWith('//')) {
-      // in case of relative URL, keep relative.
-      return refererToSanitize;
-    }
-    return resolvedUrl;
-  }
-  logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
-  return base2return;
-};
 
 const publishFileDownload = async (executeContext, auth, file) => {
   const { filename, entity_id } = file.metaData;
@@ -113,6 +107,166 @@ export const decodeStoragePath = (fileParts = []) => fileParts
     }
   })
   .join('/');
+
+// -- File download
+export const handleStorageGet = async (req, res) => {
+  try {
+    const context = await createAuthenticatedContext(req, res, 'storage_get');
+    if (!context.user) {
+      res.sendStatus(403);
+      return;
+    }
+    // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+    // so validate the draft context explicitly before it is used to resolve the file.
+    await checkDraftInContext(context);
+    const file = decodeStoragePath(req.params.file);
+    const data = await loadFile(context, context.user, file);
+    // If file is attach to a specific instance, we need to contr
+    await publishFileDownload(context, context.user, data);
+    const stream = await downloadFile(data.id);
+    res.attachment(file);
+    stream.pipe(res);
+  } catch (e) {
+    setCookieError(res, e.message);
+    logApp.error('Error getting storage get file', { cause: e });
+    res.status(503).send({ status: 'error', error: e.message });
+  }
+};
+
+// -- File view
+export const handleStorageView = async (req, res) => {
+  try {
+    const context = await createAuthenticatedContext(req, res, 'storage_view');
+    if (!context.user) {
+      res.sendStatus(403);
+      return;
+    }
+    // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+    // so validate the draft context explicitly before it is used to resolve the file.
+    await checkDraftInContext(context);
+    const file = decodeStoragePath(req.params.file);
+    const data = await loadFile(context, context.user, file);
+    await publishFileRead(context, context.user, data);
+    res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
+    res.set('Content-Security-Policy', 'sandbox');
+    res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    if (data.metaData.mimetype === 'text/html') {
+      res.set('Content-type', 'text/html; charset=utf-8');
+    } else {
+      res.set('Content-type', data.metaData.mimetype);
+    }
+    const stream = await downloadFile(data.id);
+    stream.pipe(res);
+  } catch (e) {
+    setCookieError(res, e.message);
+    logApp.error('Error getting storage view file', { cause: e });
+    res.status(503).send({ status: 'error', error: e.message });
+  }
+};
+
+// -- Embedded file loader
+export const handleStorageViewEmbedded = async (req, res) => {
+  try {
+    const [_, id, __, rawFilename] = Object.values(req.params);
+
+    // Embedded markdown links can carry percent-encoded filenames (spaces, parentheses, etc.).
+    let filename = rawFilename;
+    try {
+      filename = decodeURIComponent(rawFilename);
+    } catch {
+      // keep raw filename
+    }
+
+    const context = await createAuthenticatedContext(req, res, 'storage_view_embedded');
+    if (!context.user) {
+      res.sendStatus(403);
+      return;
+    }
+    // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+    // so validate the draft context explicitly before it is used to resolve entities/files.
+    await checkDraftInContext(context);
+    const element = await internalLoadById(context, context.user, id);
+
+    const file = `embedded/${element.entity_type}/${id}/${filename}`;
+    const data = await loadFile(context, context.user, file);
+    await publishFileRead(context, context.user, data);
+    res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
+    res.set('Content-Security-Policy', 'sandbox');
+    res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    if (data.metaData.mimetype === 'text/html') {
+      res.set('Content-type', 'text/html; charset=utf-8');
+    } else {
+      res.set('Content-type', data.metaData.mimetype);
+    }
+
+    const stream = await downloadFile(data.id);
+    stream.pipe(res);
+  } catch (e) {
+    setCookieError(res, e.message);
+    logApp.error('Error getting storage view file', { cause: e });
+    res.status(503).send({ status: 'error', error: e.message });
+  }
+};
+
+// -- Pdf view
+export const handleStorageHtml = async (req, res) => {
+  try {
+    const context = await createAuthenticatedContext(req, res, 'storage_html');
+    if (!context.user) {
+      res.sendStatus(403);
+      return;
+    }
+    // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+    // so validate the draft context explicitly before it is used to resolve the file.
+    await checkDraftInContext(context);
+    const file = decodeStoragePath(req.params.file);
+    const data = await loadFile(context, context.user, file);
+    const { mimetype } = data.metaData;
+    if (mimetype === 'text/markdown') {
+      const markDownData = await getFileContent(file);
+      const html = marked(markDownData);
+      await publishFileRead(context, context.user, data);
+      res.set('Content-Security-Policy', 'sandbox');
+      res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+      res.send(html);
+    } else {
+      res.send('Unsupported file type');
+    }
+  } catch (e) {
+    setCookieError(res, e.message);
+    logApp.error('Error getting html file', { cause: e });
+    res.status(503).send({ status: 'error', error: e.message });
+  }
+};
+
+// -- Encrypted view
+export const handleStorageEncrypted = async (req, res) => {
+  try {
+    const context = await createAuthenticatedContext(req, res, 'storage_encrypted');
+    if (!context.user) {
+      res.sendStatus(403);
+      return;
+    }
+    // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+    // so validate the draft context explicitly before it is used to resolve the file.
+    await checkDraftInContext(context);
+    const file = decodeStoragePath(req.params.file);
+    const data = await loadFile(context, context.user, file);
+    const { metaData: { filename } } = data;
+    await publishFileDownload(context, context.user, data);
+    const archive = ZipEncrypted({ zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
+    archive.append(await downloadFile(file), { name: filename });
+    await archive.finalize();
+    res.attachment(`${filename}.zip`);
+    archive.pipe(res);
+  } catch (e) {
+    setCookieError(res, e.message);
+    logApp.error('Error getting encrypted file', { cause: e });
+    res.status(503).send({ status: 'error', error: e.message });
+  }
+};
 
 export const shouldIncludeHealthDetails = (configAccessKey, detailsQueryParam) => {
   return configAccessKey !== 'public' && String(detailsQueryParam ?? '').toLowerCase() === 'true';
@@ -155,65 +309,14 @@ const createApp = async (app, schema) => {
   });
 
   app.use(compression({
-    filter: (req, res) => res.getHeader('Content-Type') !== 'text/event-stream' && compressionFilter(req, res),
+    filter: (req, res) => isResponseWorthCompressing(res) && compressionFilter(req, res),
   }));
 
   if (ENABLED_UI) {
     // -- Serves frontend assets resources generated by Vite
     app.use(`${basePath}/assets`, express.static(`${publicDir}/assets`));
 
-    // -- Map file serving with Range request support
-    const BUNDLED_MAP_FILE_PATH = nconf.get('app:map_bundled_file_path');
-    app.get(`${basePath}/maps/world.pmtiles`, async (req, res) => {
-      try {
-        // Map file contain no sensitive data and must remain reachable from public dashboards
-        // and export contexts where no authenticated session is available.
-        const rangeHeader = req.headers.range;
-
-        // The custom (S3-backed) file always takes priority when present; otherwise fall
-        // back to the bundled file. There is no separate "mode" setting to keep in sync.
-        const customResult = await downloadFileRange('maps/world.pmtiles', rangeHeader);
-        const usedCustom = !!customResult;
-        const result = customResult ?? await downloadLocalFileRange(BUNDLED_MAP_FILE_PATH, rangeHeader);
-
-        if (!result) {
-          res.sendStatus(404);
-          return;
-        }
-
-        if (result.rangeNotSatisfiable) {
-          res.set('Content-Range', `bytes */${result.totalSize}`);
-          res.sendStatus(416);
-          return;
-        }
-
-        // ETag ensures browser invalidates cached byte ranges when the file changes
-        const etag = result.etag ?? `"${usedCustom ? 'custom' : 'bundled'}-${result.totalSize}"`;
-        const ifNoneMatch = req.headers['if-none-match'];
-        if (ifNoneMatch && ifNoneMatch === etag) {
-          res.sendStatus(304);
-          return;
-        }
-
-        res.set('Content-Type', 'application/octet-stream');
-        res.set('Accept-Ranges', 'bytes');
-        res.set('Cache-Control', 'public, max-age=86400');
-        res.set('ETag', etag);
-        res.set('Access-Control-Expose-Headers', 'Content-Range, Content-Length, ETag');
-        if (result.contentRange) {
-          res.status(206);
-          res.set('Content-Range', result.contentRange);
-          res.set('Content-Length', result.contentLength);
-        } else {
-          res.status(200);
-          res.set('Content-Length', result.totalSize);
-        }
-        result.stream.pipe(res);
-      } catch (e) {
-        logApp.error('Error serving map file', { cause: e });
-        res.status(503).send({ status: 'error', error: e.message });
-      }
-    });
+    initHttpMaps(app);
   }
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
@@ -254,55 +357,10 @@ const createApp = async (app, schema) => {
   });
 
   // -- File download
-  app.get(`${basePath}/storage/get/*file`, async (req, res) => {
-    try {
-      const context = await createAuthenticatedContext(req, res, 'storage_get');
-      if (!context.user) {
-        res.sendStatus(403);
-        return;
-      }
-      const file = decodeStoragePath(req.params.file);
-      const data = await loadFile(context, context.user, file);
-      // If file is attach to a specific instance, we need to contr
-      await publishFileDownload(context, context.user, data);
-      const stream = await downloadFile(data.id);
-      res.attachment(file);
-      stream.pipe(res);
-    } catch (e) {
-      setCookieError(res, e.message);
-      logApp.error('Error getting storage get file', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
-    }
-  });
+  app.get(`${basePath}/storage/get/*file`, handleStorageGet);
 
   // -- File view
-  app.get(`${basePath}/storage/view/*file`, async (req, res) => {
-    try {
-      const context = await createAuthenticatedContext(req, res, 'storage_view');
-      if (!context.user) {
-        res.sendStatus(403);
-        return;
-      }
-      const file = decodeStoragePath(req.params.file);
-      const data = await loadFile(context, context.user, file);
-      await publishFileRead(context, context.user, data);
-      res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
-      res.set({ 'Content-Security-Policy': 'sandbox' });
-      res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-      res.set({ Pragma: 'no-cache' });
-      if (data.metaData.mimetype === 'text/html') {
-        res.set({ 'Content-type': 'text/html; charset=utf-8' });
-      } else {
-        res.set('Content-type', data.metaData.mimetype);
-      }
-      const stream = await downloadFile(data.id);
-      stream.pipe(res);
-    } catch (e) {
-      setCookieError(res, e.message);
-      logApp.error('Error getting storage view file', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
-    }
-  });
+  app.get(`${basePath}/storage/view/*file`, handleStorageView);
 
   // -- Catalog logo view
   app.get(`${basePath}${CATALOG_LOGO_VIEW_PATH}`, handleCatalogLogoViewRequest);
@@ -310,98 +368,13 @@ const createApp = async (app, schema) => {
   // -- embedded loader
   const uuidPattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
   const embeddedFileGetPath = new RegExp(`${basePath}/(.*)/(${uuidPattern})/(.*)embedded/(.*)$`, 'i');
-  app.get(embeddedFileGetPath, async (req, res) => {
-    try {
-      const [_, id, __, rawFilename] = Object.values(req.params);
-
-      // Embedded markdown links can carry percent-encoded filenames (spaces, parentheses, etc.).
-      let filename = rawFilename;
-      try {
-        filename = decodeURIComponent(rawFilename);
-      } catch {
-        // keep raw filename
-      }
-
-      const context = await createAuthenticatedContext(req, res, 'storage_view_embedded');
-      if (!context.user) {
-        res.sendStatus(403);
-        return;
-      }
-      const element = await internalLoadById(context, context.user, id);
-
-      const file = `embedded/${element.entity_type}/${id}/${filename}`;
-      const data = await loadFile(context, context.user, file);
-      await publishFileRead(context, context.user, data);
-      res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
-      res.set({ 'Content-Security-Policy': 'sandbox' });
-      res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-      res.set({ Pragma: 'no-cache' });
-      if (data.metaData.mimetype === 'text/html') {
-        res.set({ 'Content-type': 'text/html; charset=utf-8' });
-      } else {
-        res.set('Content-type', data.metaData.mimetype);
-      }
-
-      const stream = await downloadFile(data.id);
-      stream.pipe(res);
-    } catch (e) {
-      setCookieError(res, e.message);
-      logApp.error('Error getting storage view file', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
-    }
-  });
+  app.get(embeddedFileGetPath, handleStorageViewEmbedded);
 
   // -- Pdf view
-  app.get(`${basePath}/storage/html/*file`, async (req, res) => {
-    try {
-      const context = await createAuthenticatedContext(req, res, 'storage_html');
-      if (!context.user) {
-        res.sendStatus(403);
-        return;
-      }
-      const file = decodeStoragePath(req.params.file);
-      const data = await loadFile(context, context.user, file);
-      const { mimetype } = data.metaData;
-      if (mimetype === 'text/markdown') {
-        const markDownData = await getFileContent(file);
-        const html = marked(markDownData);
-        await publishFileRead(context, context.user, data);
-        res.set({ 'Content-Security-Policy': 'sandbox' });
-        res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-        res.send(html);
-      } else {
-        res.send('Unsupported file type');
-      }
-    } catch (e) {
-      setCookieError(res, e.message);
-      logApp.error('Error getting html file', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
-    }
-  });
+  app.get(`${basePath}/storage/html/*file`, handleStorageHtml);
 
   // -- Encrypted view
-  app.get(`${basePath}/storage/encrypted/*file`, async (req, res) => {
-    try {
-      const context = await createAuthenticatedContext(req, res, 'storage_encrypted');
-      if (!context.user) {
-        res.sendStatus(403);
-        return;
-      }
-      const file = decodeStoragePath(req.params.file);
-      const data = await loadFile(context, context.user, file);
-      const { metaData: { filename } } = data;
-      await publishFileDownload(context, context.user, data);
-      const archive = ZipEncrypted({ zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
-      archive.append(await downloadFile(file), { name: filename });
-      await archive.finalize();
-      res.attachment(`${filename}.zip`);
-      archive.pipe(res);
-    } catch (e) {
-      setCookieError(res, e.message);
-      logApp.error('Error getting encrypted file', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
-    }
-  });
+  app.get(`${basePath}/storage/encrypted/*file`, handleStorageEncrypted);
 
   // -- Client HTTPS Cert login custom strategy
   app.get(`${basePath}/auth/cert`, async (req, res) => {
@@ -428,7 +401,7 @@ const createApp = async (app, schema) => {
   // Logout
   app.get(`${basePath}/logout`, async (req, res) => {
     try {
-      const referer = extractRefererPathFromReq(req) ?? (basePath || '/');
+      const referer = extractSafeRedirectFromReq(req);
       const provider = req.session.session_provider;
       const { user } = req.session;
       if (user) {
@@ -576,7 +549,7 @@ const createApp = async (app, schema) => {
       // 2. OIDC (v6): referer is encoded in the OAuth state query parameter
       // 3. Fallback: session-based referer (backward compatibility)
       const referer = req.body?.RelayState ?? decodeOidcState(req.query?.state)?.referer ?? req.session.referer;
-      const sanitizedReferer = sanitizeReferer(referer) ?? (basePath || '/');
+      const sanitizedReferer = sanitizeReferer(referer, req);
       res.redirect(sanitizedReferer);
     }
   });
@@ -630,8 +603,16 @@ const createApp = async (app, schema) => {
   // prompt (and the `tool_call_id`s a decision must name) back.
   app.post(`${basePath}/chatbot/messages/approve`, postChatbotMessageApprove);
   app.get(`${basePath}/chatbot/conversations/:conversationId/pending-approvals`, getChatbotPendingApprovals);
+  // Composer extras (prompt picker, quota indicator) and persisted thumbs
+  // feedback on an answer.
+  app.get(`${basePath}/chatbot/prompts`, getChatbotPrompts);
+  app.get(`${basePath}/chatbot/quota`, getChatbotQuota);
+  app.post(`${basePath}/chatbot/conversations/:conversationId/messages/:messageId/feedback`, postChatbotMessageFeedback);
+  app.delete(`${basePath}/chatbot/conversations/:conversationId/messages/:messageId/feedback`, deleteChatbotMessageFeedback);
   app.post(`${basePath}/chatbot/upload`, postChatbotUpload);
   app.get(`${basePath}/chatbot/files/:fileId/download`, getChatbotFileDownload);
+  app.get(`${basePath}/chatbot/artifacts/:kind/:artifactId`, getChatbotArtifact);
+  app.post(`${basePath}/chatbot/artifacts/:kind/:artifactId/download`, postChatbotArtifactDownload);
   app.post(`${basePath}/chatbot/agent`, postAgentMessage);
   app.post(`${basePath}/chatbot/agent/stream`, postAgentMessageStream);
   // Legacy Flowise proxy (used when xtm_one_token is NOT set)
@@ -671,6 +652,15 @@ const createApp = async (app, schema) => {
 
   // Error handling
   app.use((err, req, res, _next) => {
+    // graphql-upload patches res.send to wait for the request to close; no-op otherwise. Must
+    // cover the 500 below too, or an unread multipart body holds that answer back the same way.
+    req.resume();
+    if (isClientRequestError(err)) {
+      logMalformedRequest(req, err);
+      const { status, body } = clientErrorResponse(err);
+      res.status(status).send(body);
+      return;
+    }
     logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
     res.status(500).send({ status: 'error', error: DEV_MODE ? err.stack : err.message });
   });

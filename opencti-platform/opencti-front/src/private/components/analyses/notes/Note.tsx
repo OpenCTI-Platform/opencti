@@ -54,6 +54,7 @@ const NoteComponentFragment = graphql`
       }
     }
     workflowEnabled
+    ...WorkflowStatusStixDomainObject_data
     ...NoteDetails_note
     ...ContainerHeader_container
     ...ContainerStixObjectsOrStixRelationships_container
@@ -86,19 +87,19 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <NoteDetails note={note} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixDomainObjectOverview stixDomainObject={note} />
                   </Grid>
                 );
               case 'relatedEntities':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <ContainerStixObjectsOrStixRelationships
                       isSupportParticipation={true}
                       container={note}
@@ -108,7 +109,7 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={note.id}
                     />
@@ -116,7 +117,7 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={note.id}
                     />

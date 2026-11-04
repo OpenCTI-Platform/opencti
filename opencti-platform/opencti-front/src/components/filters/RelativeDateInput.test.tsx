@@ -1,0 +1,150 @@
+import { describe, expect, it, vi } from 'vitest';
+import { screen } from '@testing-library/react';
+import testRender from '../../utils/tests/test-render';
+import RelativeDateInput from './RelativeDateInput';
+import { handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
+
+const makeHelpers = (): handleFilterHelpers => ({
+  handleReplaceFilterValues: vi.fn(),
+} as unknown as handleFilterHelpers);
+
+describe('Component: RelativeDateInput', () => {
+  it('does not commit via handleReplaceFilterValues when only one field of the pair is valid', async () => {
+    const helpers = makeHelpers();
+    const dateInput = ['', ''];
+    const setDateInput = vi.fn();
+
+    const { user } = testRender(
+      <RelativeDateInput
+        filterKey="created_at"
+        helpers={helpers}
+        label="From"
+        valueOrder={0}
+        dateInput={dateInput}
+        setDateInput={setDateInput}
+      />,
+    );
+
+    const input = screen.getByLabelText('From');
+    await user.type(input, 'now-7d');
+    await user.keyboard('{Enter}');
+
+    expect(helpers.handleReplaceFilterValues).not.toHaveBeenCalled();
+  });
+
+  it('commits via handleReplaceFilterValues with the correct values array once both fields are valid', async () => {
+    const helpers = makeHelpers();
+    const dateInput = ['now-7d', ''];
+    const setDateInput = vi.fn();
+
+    const { user } = testRender(
+      <RelativeDateInput
+        filterKey="created_at"
+        helpers={helpers}
+        label="To"
+        valueOrder={1}
+        dateInput={dateInput}
+        setDateInput={setDateInput}
+      />,
+    );
+
+    const input = screen.getByLabelText('To');
+    await user.type(input, 'now');
+    await user.keyboard('{Enter}');
+
+    expect(helpers.handleReplaceFilterValues).toHaveBeenCalledWith('', ['now-7d', 'now']);
+  });
+
+  it('displays a valid absolute date value locale-formatted (not the raw ISO string) while not focused', () => {
+    const helpers = makeHelpers();
+    const isoValue = '2024-01-15T00:00:00.000Z';
+    const dateInput = [isoValue, 'now'];
+    const setDateInput = vi.fn();
+
+    testRender(
+      <RelativeDateInput
+        filterKey="created_at"
+        helpers={helpers}
+        label="From"
+        valueOrder={0}
+        dateInput={dateInput}
+        setDateInput={setDateInput}
+      />,
+    );
+
+    // The picker field is a group of sections; its hidden input mirrors the displayed value.
+    const input = screen.getByRole('group', { name: 'From' }).querySelector('input') as HTMLInputElement;
+    expect(input.value).not.toEqual(isoValue);
+    expect(input.value.length).toBeGreaterThan(0);
+  });
+
+  it('renders exactly one visible textbox and opens the calendar popover from its icon (regression: no duplicate/hidden field)', async () => {
+    const helpers = makeHelpers();
+    const dateInput = ['', 'now'];
+    const setDateInput = vi.fn();
+
+    const { user } = testRender(
+      <RelativeDateInput
+        filterKey="created_at"
+        helpers={helpers}
+        label="From"
+        valueOrder={0}
+        dateInput={dateInput}
+        setDateInput={setDateInput}
+      />,
+    );
+
+    expect(screen.getAllByRole('textbox')).toHaveLength(1);
+    expect(screen.queryByRole('grid')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /open date picker/i }));
+
+    expect(screen.getByRole('grid')).toBeInTheDocument();
+  });
+
+  it('applies the day picked in the calendar opened from a relative value', async () => {
+    const helpers = makeHelpers();
+
+    const { user } = testRender(
+      <RelativeDateInput
+        filterKey="created_at"
+        helpers={helpers}
+        label="From"
+        valueOrder={0}
+        dateInput={['now-1d', 'now']}
+        setDateInput={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: /open date picker/i }));
+    await user.click(screen.getByRole('gridcell', { name: '15' }));
+    await user.click(screen.getByRole('button', { name: 'OK' }));
+
+    // The free-text field commits its draft when the calendar takes the focus, then the picked day.
+    const [, [from, to]] = vi.mocked(helpers.handleReplaceFilterValues).mock.lastCall!;
+    expect(new Date(from as string).getDate()).toBe(15);
+    expect(to).toBe('now');
+  });
+
+  it('focuses the "From" field on open, so a value can be typed right after the operator', () => {
+    testRender(
+      <>
+        <RelativeDateInput filterKey="created_at" label="From" valueOrder={0} dateInput={['', '']} setDateInput={vi.fn()} />
+        <RelativeDateInput filterKey="created_at" label="To" valueOrder={1} dateInput={['', '']} setDateInput={vi.fn()} />
+      </>,
+    );
+
+    expect(screen.getByLabelText('From')).toHaveFocus();
+  });
+
+  it('keeps the focus on the field when it switches from free text to the native date field', () => {
+    const props = { filterKey: 'created_at', label: 'To', valueOrder: 1, setDateInput: vi.fn() };
+    const { rerender } = testRender(<RelativeDateInput {...props} dateInput={['', 'now-7d']} />);
+    expect(screen.getByLabelText('To')).not.toHaveFocus();
+
+    rerender(<RelativeDateInput {...props} dateInput={['', '2026-01-01T00:00:00.000Z']} />);
+
+    // The date field takes the focus on its first section, inside the group its label names.
+    expect(screen.getByRole('group', { name: 'To' })).toContainElement(document.activeElement as HTMLElement);
+  });
+});

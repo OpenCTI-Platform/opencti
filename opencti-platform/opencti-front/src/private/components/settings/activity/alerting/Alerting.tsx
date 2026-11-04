@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { DataColumns } from '../../../../../components/list_lines';
 import { HandleAddFilter, UseLocalStorageHelpers, usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
@@ -11,7 +11,6 @@ import { AlertingPaginationQuery, AlertingPaginationQuery$variables } from './__
 import AlertCreation from './AlertCreation';
 import { AlertingLines_data$key } from './__generated__/AlertingLines_data.graphql';
 import { AlertingLineComponent, AlertingLineDummy } from './AlertingLine';
-import type { Theme } from '../../../../../components/Theme';
 import { emptyFilterGroup } from '../../../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../../components/i18n';
@@ -20,14 +19,10 @@ import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnecte
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'alerting';
 const nbOfRowsToLoad = 50;
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 50px 0',
+});
 
 export const alertingQuery = graphql`
   query AlertingPaginationQuery(
@@ -133,7 +128,6 @@ const Alerting: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Alerting | Activity | Settings'));
-  const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AlertingPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_DATA_SOURCES,
     {
@@ -219,10 +213,10 @@ const Alerting: FunctionComponent = () => {
   };
 
   return (
-    <div className={classes.container} data-testid="alerting-page">
+    <Container data-testid="alerting-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
       {renderLines()}
-    </div>
+    </Container>
   );
 };
 

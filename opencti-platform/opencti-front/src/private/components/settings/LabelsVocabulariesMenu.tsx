@@ -8,16 +8,14 @@ import useGranted, {
   SETTINGS_SETSTATUSTEMPLATES,
   SETTINGS_SETVOCABULARIES,
 } from '../../../utils/hooks/useGranted';
-import useHelper from '../../../utils/hooks/useHelper';
 
 const LabelsVocabulariesMenu: FunctionComponent = () => {
-  const { isFeatureEnable } = useHelper();
   const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
   const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
   const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
   const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
   const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
-  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMIZATION]) && isFeatureEnable('CUSTOM_FIELDS');
+  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const entries: MenuEntry[] = [];
   if (isGrantedToLabels) {
     entries.push({

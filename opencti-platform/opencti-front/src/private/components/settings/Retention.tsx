@@ -1,6 +1,6 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { RetentionLinesPaginationQuery, RetentionLinesPaginationQuery$variables } from '@components/settings/retention/__generated__/RetentionLinesPaginationQuery.graphql';
 import { RetentionLineDummy } from './retention/RetentionLine';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -17,17 +17,12 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 
 const LOCAL_STORAGE_KEY = 'retention';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 50px 0',
+});
 
 const Retention = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Retention | Customization | Settings'));
@@ -81,16 +76,16 @@ const Retention = () => {
   } as DataColumns;
   if (!platformModuleHelpers.isRetentionManagerEnable()) {
     return (
-      <div className={classes.container}>
+      <Container>
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(RETENTION_MANAGER))}
         </Alert>
-      </div>
+      </Container>
     );
   }
   const queryRef = useQueryLoading<RetentionLinesPaginationQuery>(RetentionLinesQuery, paginationOptions);
   return (
-    <div className={classes.container} data-testid="retention-page">
+    <Container data-testid="retention-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Retention'), current: true }]} />
       <ListLines
         dataColumns={dataColumns}
@@ -124,7 +119,7 @@ const Retention = () => {
           </React.Suspense>
         )}
       </ListLines>
-    </div>
+    </Container>
   );
 };
 

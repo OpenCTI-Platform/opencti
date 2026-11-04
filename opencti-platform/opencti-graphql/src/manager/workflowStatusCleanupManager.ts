@@ -48,10 +48,17 @@ export const workflowStatusCleanupHandler = async () => {
       const stillOrphaned = await isStatusOrphaned(context, WORKFLOW_MANAGER_USER, freshStatus);
       if (stillOrphaned) {
         const { element: deleted } = await internalDeleteElementById(context, WORKFLOW_MANAGER_USER, freshStatus.id, ENTITY_TYPE_STATUS);
-        await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, WORKFLOW_MANAGER_USER);
+        try {
+          await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, WORKFLOW_MANAGER_USER);
+        } catch (e) {
+          // The Status is already gone, so no later pass can republish its deletion: subscribers
+          // and other nodes miss this event permanently. Not retriable, unlike the branch below.
+          logApp.error('[OPENCTI-MODULE] Workflow status deletion event publish failed', { cause: e, manager: 'WORKFLOW_STATUS_CLEANUP_MANAGER', id: freshStatus.id });
+        }
       }
     } catch (e) {
-      logApp.error('[OPENCTI-MODULE] Workflow status cleanup error', { cause: e, manager: 'WORKFLOW_STATUS_CLEANUP_MANAGER', id: status.id, errorCount });
+      // Everything up to and including the delete is retried by the next daily pass.
+      logApp.warn('[OPENCTI-MODULE] Workflow status cleanup error', { cause: e, manager: 'WORKFLOW_STATUS_CLEANUP_MANAGER', id: status.id, errorCount });
       errorCount += 1;
     } finally {
       await lock.unlock();

@@ -82,6 +82,42 @@ export const authorizedMembersToOptions = (
     });
 };
 
+export interface MemberAccessInput {
+  id: string;
+  access_right: string;
+  groups_restriction_ids?: string[];
+}
+
+// Only what the conversion reads: some forms type their members without label or with a plain string access right
+interface AuthorizedMemberInputSource {
+  value: string;
+  accessRight: string;
+  groupsRestriction?: ReadonlyArray<{ value: string }> | null;
+}
+
+/**
+ * Transform the Formik field value into the input of the backend mutations.
+ * Members without access are dropped. The groups restriction is kept per member:
+ * an organization restricted to a group and the same organization without restriction are two rules.
+ *
+ * @param authorizedMembers Value of the Formik field.
+ */
+export const authorizedMembersToInput = (
+  authorizedMembers: ReadonlyArray<AuthorizedMemberInputSource> | null | undefined,
+): MemberAccessInput[] => {
+  return (authorizedMembers ?? [])
+    .filter((member) => member.accessRight !== 'none')
+    .map((member) => {
+      return {
+        id: member.value,
+        access_right: member.accessRight,
+        groups_restriction_ids: member.groupsRestriction && member.groupsRestriction.length > 0
+          ? member.groupsRestriction.map((group) => group.value)
+          : undefined,
+      };
+    });
+};
+
 export const useGetCurrentUserAccessRight = (userAccessRight: string | null | undefined) => {
   const canManage = userAccessRight === 'admin';
   const canEdit = canManage || userAccessRight === 'edit';

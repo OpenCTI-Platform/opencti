@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import Card from '@common/card/Card';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -19,25 +20,31 @@ class EventDetailsComponent extends Component {
       <div style={{ height: '100%' }}>
         <Card title={t('Details')}>
           <Grid container={true} spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Label>
                 {t('Description')}
               </Label>
               <ExpandableMarkdown source={event.description} limit={400} />
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('Event types')}
               </Label>
               <FieldOrEmpty source={event.event_types}>
-                <Stack direction="row" gap={1} flexWrap="wrap">
+                <Stack
+                  direction="row"
+                  sx={{
+                    gap: 1,
+                    flexWrap: 'wrap',
+                  }}
+                >
                   {event.event_types?.map((eventType) => (
                     <ItemOpenVocab key="type" small={true} type="event_type_ov" value={eventType} />
                   ))}
                 </Stack>
               </FieldOrEmpty>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Label>
                 {t('Start date')}
               </Label>
@@ -55,6 +62,7 @@ class EventDetailsComponent extends Component {
               </Label>
               <ItemScore score={event.x_opencti_score} />
             </Grid>
+            <CustomFieldValuesDisplay entityType={event.entity_type} values={event.customFieldValues ?? []} />
           </Grid>
         </Card>
       </div>
@@ -72,6 +80,10 @@ const EventDetails = createFragmentContainer(EventDetailsComponent, {
   event: graphql`
     fragment EventDetails_event on Event {
       id
+      entity_type
+      customFieldValues {
+        ...CustomFieldValuesDisplay_values @relay(mask: false)
+      }
       description
       event_types
       start_time

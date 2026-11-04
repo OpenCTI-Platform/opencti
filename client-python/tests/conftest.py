@@ -1,7 +1,6 @@
 import os
 
 import pytest
-from pytest_cases import fixture
 
 from pycti import (
     OpenCTIApiClient,
@@ -12,7 +11,7 @@ from pycti import (
 )
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def api_client(pytestconfig):
     if pytestconfig.getoption("--drone"):
         api_url = os.getenv("OPENCTI_API_URL", "http://opencti:4000")
@@ -32,22 +31,22 @@ def api_client(pytestconfig):
     )
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def api_connector(api_client):
     return OpenCTIApiConnector(api_client)
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def api_work(api_client):
     return OpenCTIApiWork(api_client)
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def api_stix(api_client):
     return OpenCTIStix2(api_client)
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def opencti_splitter():
     return OpenCTIStix2Splitter()
 

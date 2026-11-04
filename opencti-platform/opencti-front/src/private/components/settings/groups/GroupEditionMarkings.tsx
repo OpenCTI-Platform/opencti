@@ -5,13 +5,12 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { Checkbox } from '@filigran/design-system';
-import Alert from '@mui/lab/Alert';
-import makeStyles from '@mui/styles/makeStyles';
+import Alert from '@mui/material/Alert';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import MaxShareableMarkingsSelectField from '@components/common/form/MaxShareableMarkingsSelectField';
 import { MarkingDefinitionsQuerySearchQuery$data } from '@components/settings/__generated__/MarkingDefinitionsQuerySearchQuery.graphql';
-import { useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { GroupEditionMarkings_group$data } from './__generated__/GroupEditionMarkings_group.graphql';
@@ -24,18 +23,15 @@ import { markingDefinitionsLinesSearchQuery } from '../MarkingDefinitionsQuery';
 import type { Theme } from '../../../../components/Theme';
 import MarkingIcon from '../../../../utils/MarkingIcon';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const Icon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
+
+const Text = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
 });
 
 const groupMutationRelationAdd = graphql`
@@ -98,7 +94,6 @@ const GroupEditionMarkingsComponent = ({
 }: {
   group: GroupEditionMarkings_group$data;
 }) => {
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const groupMarkingDefinitions = group.allowed_marking || [];
@@ -315,13 +310,12 @@ const GroupEditionMarkingsComponent = ({
                         getChipColor={(option: FieldOption) => option.color}
                         renderOption={(option: FieldOption) => (
                           <>
-                            <div
-                              className={classes.icon}
+                            <Icon
                               style={{ color: option.color }}
                             >
                               <MarkingIcon theme={theme} color={option.color} />
-                            </div>
-                            <div className={classes.text}>{option.label}</div>
+                            </Icon>
+                            <Text>{option.label}</Text>
                           </>
                         )}
                         onChange={(name: string, values: FieldOption[]) => handleToggleDefaultValues(values)

@@ -6,14 +6,14 @@ import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart'
 import { SxProps } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
-import { Theme } from '@mui/material/styles/createTheme';
+import { Theme } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FunctionComponent } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import { EMPTY_VALUE } from '../../../../utils/String';
@@ -139,7 +139,7 @@ const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indica
         spacing={3}
         style={{ borderColor: 'white', borderWidth: 1 }}
       >
-        <Grid item xs={7}>
+        <Grid size={7}>
           <DecayChart
             currentScore={indicator.x_opencti_score || 0}
             revokeScore={indicator.decay_applied_rule?.decay_revoke_score || 0}
@@ -148,7 +148,7 @@ const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indica
             decayLiveScore={indicator.decayLiveDetails?.live_score}
           />
         </Grid>
-        <Grid item xs={5}>
+        <Grid size={5}>
           <Paper padding={0}>
             <TableContainer>
               <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">

@@ -1,5 +1,83 @@
 import * as Yup from 'yup';
 import { FormSchemaDefinition, FormFieldDefinition } from '../Form.d';
+import { buildErrorMessages } from '../../../../../relay/environment';
+import { RelayError } from '../../../../../relay/relayTypes';
+import { PendingObjectData } from '../../../../../utils/hooks/useDeferredCreation';
+import { createPendingCollector, isPendingId, PendingCollector, PendingOption } from './pendingSubmission';
+
+export interface DraftFieldPolicy {
+  visible: boolean;
+  initialized: boolean;
+  required: boolean;
+  validationRequired: boolean;
+}
+
+export interface DraftPolicy {
+  name: DraftFieldPolicy;
+  description: DraftFieldPolicy;
+  objectAssignee: DraftFieldPolicy;
+  objectParticipant: DraftFieldPolicy;
+  author: DraftFieldPolicy & { clearable: boolean };
+  authorizedMembers: DraftFieldPolicy;
+}
+
+export const computeDraftPolicy = (
+  draftDefaults: FormSchemaDefinition['draftDefaults'] | undefined,
+  isBypass: boolean,
+): DraftPolicy => {
+  const name = draftDefaults?.name;
+  const description = draftDefaults?.description;
+  const objectAssignee = draftDefaults?.objectAssignee;
+  const objectParticipant = draftDefaults?.objectParticipant;
+  const author = draftDefaults?.author;
+  const authorizedMembers = draftDefaults?.authorizedMembers;
+
+  return {
+    name: {
+      visible: !!(name && (isBypass || name.isEditable)),
+      initialized: !!(name && (name.isEditable || isBypass || name.defaultValue)),
+      required: !!name?.isRequired,
+      validationRequired: !isBypass && !!(name?.isEditable && name?.isRequired),
+    },
+    description: {
+      visible: !!(description && (isBypass || description.isEditable)),
+      initialized: !!(description && (description.isEditable || isBypass || description.defaultValue)),
+      required: !!description?.isRequired,
+      validationRequired: !isBypass && !!(description?.isEditable && description?.isRequired),
+    },
+    objectAssignee: {
+      visible: !!(objectAssignee && (isBypass || objectAssignee.isEditable)),
+      initialized: !!(objectAssignee && (objectAssignee.isEditable || isBypass || (objectAssignee.defaults?.length ?? 0) > 0)),
+      required: !!objectAssignee?.isRequired,
+      validationRequired: !isBypass && !!(objectAssignee?.isEditable && objectAssignee?.isRequired),
+    },
+    objectParticipant: {
+      visible: !!(objectParticipant && (isBypass || objectParticipant.isEditable)),
+      initialized: !!(objectParticipant && (objectParticipant.isEditable || isBypass || (objectParticipant.defaults?.length ?? 0) > 0)),
+      required: !!objectParticipant?.isRequired,
+      validationRequired: !isBypass && !!(objectParticipant?.isEditable && objectParticipant?.isRequired),
+    },
+    author: {
+      visible: !!(author && (isBypass || author.isEditable)),
+      // Note: caller (FormView.tsx) special-cases `type === 'static' && defaultValue` in its own
+      // branch before checking `initialized`, so that combination never reaches this clause.
+      initialized: !!(author && (author.isEditable || isBypass)),
+      required: !!(author?.isRequired && author.type !== 'main_entity_author'),
+      validationRequired: !isBypass && !!(
+        author?.isEditable
+        && author?.isRequired
+        && author.type === 'none'
+      ),
+      clearable: author?.type === 'main_entity_author',
+    },
+    authorizedMembers: {
+      visible: !!(authorizedMembers?.enabled && (isBypass || authorizedMembers.isEditable)),
+      initialized: !!authorizedMembers?.enabled,
+      required: !!(authorizedMembers?.enabled && authorizedMembers?.isRequired),
+      validationRequired: !isBypass && !!(authorizedMembers?.enabled && authorizedMembers?.isRequired),
+    },
+  };
+};
 
 const getYupValidationForField = (
   field: FormFieldDefinition,
@@ -358,9 +436,12 @@ export const convertFormSchemaToYupSchema = (
   return Yup.object().shape(shape);
 };
 
+type SubmissionValues = Record<string, string | string[] | null | { value: string } | { value: string }[] | Record<string, unknown> | Record<string, unknown>[]>;
+
 export const formatFormDataForSubmission = (
-  values: Record<string, string | string[] | null | { value: string } | { value: string }[] | Record<string, unknown> | Record<string, unknown>[]>,
+  values: SubmissionValues,
   schema: FormSchemaDefinition,
+  pending: PendingCollector = createPendingCollector(),
 ): Record<string, unknown> => {
   const formattedData: Record<string, unknown> = {};
 
@@ -409,14 +490,18 @@ export const formatFormDataForSubmission = (
     if (field.type === 'objectLabel') {
       // Extract label values from the array of label objects
       if (Array.isArray(value)) {
-        return value.map((l: Record<string, unknown>) => l?.label || l?.value || l).filter((label: unknown) => label);
+        // Existing labels travel by name, a label created in the intake by its pending ref
+        return value.map((l: Record<string, unknown>) => (isPendingId(l?.value) ? pending.refOf(l.value) : l?.label || l?.value || l)).filter((label: unknown) => label);
       }
       return value;
     }
 
     if (field.type === 'externalReferences') {
       if (Array.isArray(value)) {
-        return value.map((l: Record<string, unknown>) => l?.id || l?.value || l).filter((label: unknown) => label);
+        return value.map((l: Record<string, unknown>) => {
+          const id = l?.id || l?.value || l;
+          return isPendingId(id) ? pending.refOf(id) : id;
+        }).filter((label: unknown) => label);
       }
       return value;
     }
@@ -449,15 +534,15 @@ export const formatFormDataForSubmission = (
   // If main entity lookup is enabled, include the selected entities
   if (schema.mainEntityLookup && values.mainEntityLookup) {
     if (schema.mainEntityMultiple) {
-      const lookupArr = values.mainEntityLookup as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } }[];
+      const lookupArr = values.mainEntityLookup as PendingOption[];
       const existingIds = lookupArr.filter((n) => !n.isPendingCreation).map((n) => n.value);
-      const pendingEntities = lookupArr.filter((n) => n.isPendingCreation && n.pendingInputData).map((n) => n.pendingInputData!);
+      const pendingEntities = lookupArr.filter((n) => n.isPendingCreation && n.pendingInputData).map((n) => pending.root(n));
       if (existingIds.length > 0) formattedData.mainEntityLookup = existingIds;
       if (pendingEntities.length > 0) formattedData.mainEntityLookupPending = pendingEntities;
     } else {
-      const single = values.mainEntityLookup as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } };
+      const single = values.mainEntityLookup as PendingOption;
       if (single.isPendingCreation && single.pendingInputData) {
-        formattedData.mainEntityLookupPending = [single.pendingInputData];
+        formattedData.mainEntityLookupPending = [pending.root(single)];
       } else {
         formattedData.mainEntityLookup = single.value;
       }
@@ -528,15 +613,15 @@ export const formatFormDataForSubmission = (
         const lookupValue = values[`additional_${entity.id}_lookup`];
         if (lookupValue) {
           if (entity.multiple) {
-            const lookupArr = lookupValue as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } }[];
+            const lookupArr = lookupValue as PendingOption[];
             const existingIds = lookupArr.filter((n) => !n.isPendingCreation).map((n) => n.value);
-            const pendingEntities = lookupArr.filter((n) => n.isPendingCreation && n.pendingInputData).map((n) => n.pendingInputData!);
+            const pendingEntities = lookupArr.filter((n) => n.isPendingCreation && n.pendingInputData).map((n) => pending.root(n));
             if (existingIds.length > 0) formattedData[`additional_${entity.id}_lookup`] = existingIds;
             if (pendingEntities.length > 0) formattedData[`additional_${entity.id}_lookup_pending`] = pendingEntities;
           } else {
-            const single = lookupValue as { value: string; isPendingCreation?: boolean; pendingInputData?: { entityType: string; input: Record<string, unknown> } };
+            const single = lookupValue as PendingOption;
             if (single.isPendingCreation && single.pendingInputData) {
-              formattedData[`additional_${entity.id}_lookup_pending`] = [single.pendingInputData];
+              formattedData[`additional_${entity.id}_lookup_pending`] = [pending.root(single)];
             } else {
               formattedData[`additional_${entity.id}_lookup`] = single.value;
             }
@@ -737,4 +822,31 @@ export const formatFormDataForSubmission = (
   }
 
   return formattedData;
+};
+
+/**
+ * Payload of the formSubmit mutation: the JSON values (with the pool of the labels and
+ * external references created in the intake) and the files of the objects created in it,
+ * sent as uploads and referenced by index from the values.
+ */
+export const prepareFormSubmission = (
+  values: SubmissionValues,
+  schema: FormSchemaDefinition,
+  getPending: (id: string) => PendingObjectData | undefined,
+): { values: Record<string, unknown>; files: File[] } => {
+  const pending = createPendingCollector(getPending);
+  const formattedData = formatFormDataForSubmission(values, schema, pending);
+  const pool = pending.pooled();
+  if (pool.length > 0) formattedData.pendingObjects = pool;
+  return { values: formattedData, files: pending.files };
+};
+
+/**
+ * The message to show for a failed submission: the GraphQL error message(s) the server answered
+ * (the same ones the platform notifications show), not the Relay wrapper around them.
+ */
+export const getSubmitErrorMessage = (error: Error): string => {
+  const relayError = error as unknown as RelayError;
+  const messages = relayError.res?.errors ? buildErrorMessages(relayError).map(({ text }) => text).filter(Boolean) : [];
+  return messages.length > 0 ? messages.join(' ') : error.message;
 };

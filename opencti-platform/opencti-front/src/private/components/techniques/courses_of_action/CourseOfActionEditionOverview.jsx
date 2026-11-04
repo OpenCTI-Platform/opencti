@@ -16,6 +16,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import CustomFieldValuesEdition from '@components/common/custom_fields/CustomFieldValuesEdition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import TextareaField from '../../../../components/TextareaField';
@@ -328,6 +329,13 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
+          <CustomFieldValuesEdition
+            entityType={courseOfAction.entity_type}
+            entityId={courseOfAction.id}
+            values={courseOfAction.customFieldValues ?? []}
+            fieldPatch={editor.fieldPatch}
+            enableReferences={enableReferences}
+          />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
@@ -348,6 +356,7 @@ export default createFragmentContainer(CourseOfActionEditionOverviewComponent, {
   courseOfAction: graphql`
     fragment CourseOfActionEditionOverview_courseOfAction on CourseOfAction {
       id
+      ...CustomFieldValuesEdition_values @relay(mask: false)
       name
       description
       confidence

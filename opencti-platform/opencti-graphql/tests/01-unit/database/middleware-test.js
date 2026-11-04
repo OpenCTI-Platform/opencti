@@ -551,6 +551,37 @@ describe('middleware upsertElement test', () => {
     });
   });
 
+  describe('middleware buildUpdatePatchForUpsert with confidence', () => {
+    const type = 'Malware';
+    const resolvedElement = { internal_id: 'malware-uuid-internal', standard_id: 'malware--uuid-standard', confidence: 50 };
+
+    it('should keep the existing confidence when the input has no confidence', () => {
+      const confidenceForUpsert = { confidenceLevelToApply: 100, isConfidenceMatch: true };
+      const patch = buildUpdatePatchForUpsert(ADMIN_USER, resolvedElement, type, { description: 'new description' }, confidenceForUpsert);
+      expect(patch.confidence).toBeUndefined();
+      const inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, patch, confidenceForUpsert);
+      expect(inputs.find((i) => i.key === 'confidence')).toBeUndefined();
+      expect(inputs.find((i) => i.key === 'description')).toBeDefined();
+    });
+
+    it('should give a confidence to an element without confidence when the input has no confidence', () => {
+      const confidenceForUpsert = { confidenceLevelToApply: 100, isConfidenceMatch: true };
+      const elementWithoutConfidence = { ...resolvedElement, confidence: null };
+      const patch = buildUpdatePatchForUpsert(ADMIN_USER, elementWithoutConfidence, type, { description: 'new description' }, confidenceForUpsert);
+      expect(patch.confidence).toEqual(100);
+      const inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, elementWithoutConfidence, type, patch, confidenceForUpsert);
+      expect(inputs.find((i) => i.key === 'confidence')).toEqual({ key: 'confidence', value: [100] });
+    });
+
+    it('should apply the controlled confidence when the input has a confidence', () => {
+      const confidenceForUpsert = { confidenceLevelToApply: 80, isConfidenceMatch: true };
+      const patch = buildUpdatePatchForUpsert(ADMIN_USER, resolvedElement, type, { description: 'new description', confidence: 90 }, confidenceForUpsert);
+      expect(patch.confidence).toEqual(80);
+      const inputs = generateAttributesInputsForUpsert(testContext, ADMIN_USER, resolvedElement, type, patch, confidenceForUpsert);
+      expect(inputs.find((i) => i.key === 'confidence')).toEqual({ key: 'confidence', value: [80] });
+    });
+  });
+
   describe('middleware buildUpdatePatchForUpsert with observed data counters', () => {
     const type = 'Observed-Data';
     const confidenceForUpsert = { confidenceLevelToApply: 100, isConfidenceMatch: true };

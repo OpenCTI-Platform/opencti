@@ -1,9 +1,8 @@
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
-import { AccountCircleOutlined, AlarmOnOutlined, CampaignOutlined, NotificationsOutlined } from '@mui/icons-material';
+import { AccountCircleOutlined, CampaignOutlined, NotificationsOutlined } from '@mui/icons-material';
 import AppBar from '@mui/material/AppBar';
 import { Header, HeaderGroup, IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/material/styles';
 import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { Link, useLocation, useNavigate } from 'react-router';
@@ -18,7 +17,7 @@ import { isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { decodeSearchKeyword, handleSearchByFilter, handleSearchByKeyword } from '../../../utils/SearchUtils';
 import Security from '../../../utils/Security';
@@ -35,21 +34,6 @@ import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
 import { useAINLQ } from '../common/ai/AINLQ';
 import TopBarIconLink from './TopBarIconLink';
 import { TOP_BAR_SEARCH_MAX_WIDTH, TOP_BAR_SEARCH_MIN_WIDTH } from './topBarConstants';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  appBar: {
-    zIndex: theme.zIndex.drawer - 1,
-    background: 0,
-    backgroundColor: theme.palette.background.nav,
-    paddingTop: theme.spacing(0.2),
-    borderLeft: 0,
-    borderRight: 0,
-    borderTop: 0,
-    color: theme.palette.text?.primary,
-  },
-}));
 
 const topBarNotificationNumberSubscription = graphql`
   subscription TopBarNotificationNumberSubscription {
@@ -279,7 +263,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               <Security needs={[KNOWLEDGE]}>
                 <>
                   {ee.license_type === 'nfr' && <ItemBoolean label="EE DEV LICENSE" status={false} />}
-                  <Security needs={[KNOWLEDGE_KNASKIMPORT]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT]}>
+                  <Security needs={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}>
                     <UploadImport
                       variant="icon"
                       fontSize="medium"
@@ -289,18 +273,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <TopBarIconLink
-                        aria-label={t_i18n('Triggers')}
-                        to="/dashboard/profile/triggers"
-                        active={location.pathname === '/dashboard/profile/triggers'}
-                        icon={<AlarmOnOutlined fontSize="medium" />}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>{t_i18n('Triggers')}</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TopBarIconLink
-                        aria-label={t_i18n('Alerts')}
+                        aria-label={t_i18n('Notification Center')}
                         to="/dashboard/profile/notifications"
                         active={location.pathname.startsWith('/dashboard/profile/notifications')}
                         icon={<NotificationsOutlined fontSize="medium" />}
@@ -314,7 +287,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                         }}
                       />
                     </TooltipTrigger>
-                    <TooltipContent>{t_i18n('Alerts')}</TooltipContent>
+                    <TooltipContent>{t_i18n('Notification Center')}</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -371,7 +344,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
 
 const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = () => {
   const queryRef = useQueryLoading<TopBarQuery>(topBarQuery, {});
-  const classes = useStyles();
   return (
     <>
       {queryRef && (
@@ -379,7 +351,16 @@ const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = () => {
           fallback={(
             <AppBar
               position="fixed"
-              className={classes.appBar}
+              sx={(theme) => ({
+                zIndex: theme.zIndex.drawer - 1,
+                background: 0,
+                backgroundColor: theme.palette.background.nav,
+                paddingTop: theme.spacing(0.2),
+                borderLeft: '0',
+                borderRight: '0',
+                borderTop: '0',
+                color: theme.palette.text?.primary,
+              })}
               variant="elevation"
               elevation={1}
             />

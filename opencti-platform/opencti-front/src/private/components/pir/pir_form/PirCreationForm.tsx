@@ -84,7 +84,10 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
 
         return (
           <>
-            <Stack gap={2}>
+            <Stack sx={{
+              gap: 2,
+            }}
+            >
               <PirCreationFormStepper
                 step={step}
                 accessibleSteps={accessibleSteps}

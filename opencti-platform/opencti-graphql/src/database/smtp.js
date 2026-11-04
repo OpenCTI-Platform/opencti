@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import { discovery as oidcDiscovery, refreshTokenGrant } from 'openid-client';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, logApp, TLS_REJECT_UNAUTHORIZED } from '../config/conf';
 import { meterManager } from '../config/tracing';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -12,8 +12,12 @@ import { decryptSmtpSecret } from '../modules/smtpConfiguration/smtpConfiguratio
 const SMTP_FORCED_EMAIL = conf.get('smtp:forced_sender_email');
 export const ALLOW_EMAIL_REWRITE = isEmptyField(SMTP_FORCED_EMAIL);
 const USE_SSL = booleanConf('smtp:use_ssl', false);
-const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', false);
+const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', TLS_REJECT_UNAUTHORIZED);
 const SMTP_ENABLE = booleanConf('smtp:enabled', true);
+const SMTP_TIMEOUTS = {
+  connectionTimeout: Number(conf.get('smtp:connection_timeout') ?? 10000),
+  greetingTimeout: Number(conf.get('smtp:greeting_timeout') ?? 10000),
+};
 
 export const SMTP_JSON_CONFIG = {
   smtp_enabled: SMTP_ENABLE,
@@ -36,12 +40,22 @@ const baseSmtpOptions = {
   host: conf.get('smtp:hostname') || 'localhost',
   port: conf.get('smtp:port') || 25,
   secure: USE_SSL,
+  ...SMTP_TIMEOUTS,
   tls: {
     rejectUnauthorized: REJECT_UNAUTHORIZED,
     maxVersion: conf.get('smtp:tls_max_version'),
     minVersion: conf.get('smtp:tls_min_version'),
     ciphers: conf.get('smtp:tls_ciphers'),
   },
+};
+
+const SMTP_TRANSPORT_SELECTORS = {
+  url: undefined,
+  pool: false,
+  sendmail: false,
+  streamTransport: false,
+  jsonTransport: false,
+  SES: undefined,
 };
 
 // OAuth2 caches:
@@ -155,8 +169,9 @@ const buildSmtpOptionsFromDb = (dbConfig) => ({
   host: dbConfig.hostname || 'localhost',
   port: dbConfig.port || 587,
   secure: dbConfig.use_ssl ?? false,
+  ...SMTP_TIMEOUTS,
   tls: {
-    rejectUnauthorized: dbConfig.reject_unauthorized ?? false,
+    rejectUnauthorized: dbConfig.reject_unauthorized ?? TLS_REJECT_UNAUTHORIZED,
   },
 });
 
@@ -192,7 +207,7 @@ const createSmtpTransporter = async () => {
   if (smtpAuth) {
     smtpOptions.auth = smtpAuth;
   }
-  return nodemailer.createTransport(smtpOptions);
+  return nodemailer.createTransport({ ...smtpOptions, ...SMTP_TRANSPORT_SELECTORS });
 };
 
 /**

@@ -5,11 +5,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
-import { useTheme } from '@mui/material/styles';
+import { Theme, useTheme } from '@mui/material/styles';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
 import { graphql, useFragment } from 'react-relay';
-import { Theme } from '@mui/material/styles/createTheme';
 import { NarrativeLine_node$data, NarrativeLine_node$key } from './__generated__/NarrativeLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -112,7 +111,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
   index,
 }) => {
   const theme = useTheme();
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const data = useFragment(narrativeLineFragment, node);
   return (
     <ListItem
@@ -157,10 +156,10 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
               />
             </div>
             <div style={commonTextStyle(theme, dataColumns.created.width)}>
-              {fd(data.created)}
+              {ftd(data.created)}
             </div>
             <div style={commonTextStyle(theme, dataColumns.modified.width)}>
-              {fd(data.modified)}
+              {ftd(data.modified)}
             </div>
           </>
         )}

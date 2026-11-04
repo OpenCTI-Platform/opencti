@@ -20,18 +20,6 @@ vi.mock('react-relay', async (importOriginal) => {
   };
 });
 
-vi.mock('@mui/styles/withStyles', () => ({
-  default: () => (Component: React.ComponentType<Record<string, unknown>>) => {
-    const Wrapped = (props: Record<string, unknown>) => (
-      <Component
-        {...props}
-        classes={{ container: '', gridContainer: '', paper: '' }}
-      />
-    );
-    return Wrapped;
-  },
-}));
-
 vi.mock('../../../../components/i18n', () => ({
   __esModule: true,
   default: (Component: React.ComponentType<object>) => Component,

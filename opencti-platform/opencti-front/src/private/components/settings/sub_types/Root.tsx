@@ -49,7 +49,6 @@ const RootSubType = () => {
   if (!subTypeId) return <ErrorNotFound />;
 
   const { isFeatureEnable } = useHelper();
-  const isCustomFieldsFeatureEnabled = isFeatureEnable('CUSTOM_FIELDS');
 
   return (
     <Suspense fallback={<Loader />}>
@@ -68,7 +67,7 @@ const RootSubType = () => {
             element={(
               <>
                 <EntitySettingAttributesCard />
-                {isCustomFieldsFeatureEnabled && <EntitySettingCustomFields />}
+                <EntitySettingCustomFields />
               </>
             )}
           />

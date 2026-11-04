@@ -248,6 +248,9 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   Capability: 'restricted',
 };
 
+/** The colour family of an entity type (threats, arsenal, techniques...), `null` when it has none. */
+export const itemFamily = (type: string | null | undefined): keyof typeof COLOR_FAMILIES | null => (type ? ENTITY_TYPE_TO_FAMILY[type] ?? null : null);
+
 export const itemColor = (
   type: string | null | undefined,
   reversed: boolean = false,

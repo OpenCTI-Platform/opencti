@@ -51,7 +51,7 @@ vi.mock('../../../../src/modules/workspace/workspace-domain', () => ({
   findAllWorkspaces: vi.fn(),
 }));
 
-vi.mock('../../../../src/domain/user', () => ({
+vi.mock('../../../../src/modules/user/user-domain', () => ({
   bookmarks: vi.fn(),
   checkUserCanShareMarkings: vi.fn(),
 }));

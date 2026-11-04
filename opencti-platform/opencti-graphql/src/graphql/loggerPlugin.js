@@ -4,7 +4,7 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 import conf, { appLogExtendedErrors, booleanConf, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
-import { AUTH_ERRORS, FORBIDDEN_ACCESS, FUNCTIONAL_ERRORS, isMutedError, ValidationError } from '../config/errors';
+import { AUTH_ERRORS, CLIENT_INPUT_ERRORS, FORBIDDEN_ACCESS, FUNCTIONAL_ERRORS, isMutedError, ValidationError } from '../config/errors';
 import { publishUserAction } from '../listener/UserActionListener';
 
 const innerCompute = (inners) => {
@@ -112,6 +112,9 @@ export default {
                 },
               });
             }
+          } else if (CLIENT_INPUT_ERRORS.includes(errorCode)) {
+            // The client already gets the error, nobody has to act on it
+            logApp.info(errorMessage, callMetaData);
           } else if (FUNCTIONAL_ERRORS.includes(errorCode)) {
             // If functional error, log in warning
             logApp.warn(errorMessage, callMetaData);

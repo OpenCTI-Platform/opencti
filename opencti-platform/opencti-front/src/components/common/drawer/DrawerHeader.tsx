@@ -26,13 +26,20 @@ const DrawerHeader = ({ title, onClose, endContent, layer = SURFACE_LAYER }: Dra
       }}
     >
       <Typography
+        id="drawer-title"
         variant="h5"
         style={{ textWrap: 'nowrap' }}
       >
         {title}
       </Typography>
 
-      <Stack direction="row" alignItems="center" gap={1}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
         {endContent}
         <IconButton
           aria-label="Close"

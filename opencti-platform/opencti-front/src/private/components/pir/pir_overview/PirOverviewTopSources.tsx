@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { graphql, useFragment } from 'react-relay';
 import StixCoreObjectsDonut from '../../common/stix_core_objects/StixCoreObjectsDonut';
 import PirRelationshipsDonut from '@components/pir/PirRelationshipsDonut';

@@ -1,31 +1,28 @@
 import React from 'react';
 import { EdgeLabelRenderer, EdgeProps, getBezierPath, useReactFlow } from 'reactflow';
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { useFormatter } from 'src/components/i18n';
-import type { Theme } from '../../../../../../components/Theme';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  edgeButton: {
-    cursor: 'pointer',
-    pointerEvents: 'all',
-    stroke: theme.palette.primary.main,
-    fill: theme.palette.background.default,
-    '&:hover': {
-      fill: theme.palette.background.paper,
-    },
+const EdgeButton = styled('rect')(({ theme }) => ({
+  cursor: 'pointer',
+  pointerEvents: 'all',
+  stroke: theme.palette.primary.main,
+  fill: theme.palette.background.default,
+  '&:hover': {
+    fill: theme.palette.background.paper,
   },
-  edgeButtonText: {
-    pointerEvents: 'none',
-    userSelect: 'none',
-    fill: theme.palette.primary.main,
-  },
-  edgePath: {
-    fill: 'none',
-    stroke: theme.palette.primary.main,
-    strokeWidth: 1,
-  },
+}));
+
+const EdgeButtonText = styled('text')(({ theme }) => ({
+  pointerEvents: 'none',
+  userSelect: 'none',
+  fill: theme.palette.primary.main,
+}));
+
+const EdgePath = styled('path')(({ theme }) => ({
+  fill: 'none',
+  stroke: theme.palette.primary.main,
+  strokeWidth: 1,
 }));
 
 function EdgeLabel({ transform, label }: { transform: string; label: string }) {
@@ -60,7 +57,6 @@ export default function CustomEdge({
   data,
   sourceHandleId,
 }: EdgeProps) {
-  const classes = useStyles();
   const { getEdge } = useReactFlow();
   const [edgePath, edgeCenterX, edgeCenterY] = getBezierPath({
     sourceX,
@@ -72,15 +68,14 @@ export default function CustomEdge({
   });
   return (
     <>
-      <path
+      <EdgePath
         id={id}
         style={style}
-        className={classes.edgePath}
         d={edgePath}
         markerEnd={markerEnd}
       />
       <g transform={`translate(${edgeCenterX}, ${edgeCenterY})`}>
-        <rect
+        <EdgeButton
           onClick={() => data.openConfig(getEdge(id))}
           x={-10}
           y={-10}
@@ -88,11 +83,10 @@ export default function CustomEdge({
           ry={4}
           rx={4}
           height={20}
-          className={classes.edgeButton}
         />
-        <text className={classes.edgeButtonText} y={5} x={-4}>
+        <EdgeButtonText y={5} x={-4}>
           +
-        </text>
+        </EdgeButtonText>
       </g>
       <EdgeLabelRenderer>
         {sourceHandleId && (

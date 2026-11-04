@@ -107,3 +107,15 @@ def compare_values(original_data: Dict, retrieved_data: Dict, exception_keys: Li
             assert (
                 value == compare_data
             ), f"Dict '{value}' does not have the same content as'{compare_data}'"
+
+
+def cases_of(cases_class):
+    return [
+        member.__func__
+        for name, member in vars(cases_class).items()
+        if name.startswith("case_")
+    ]
+
+
+def case_id(case):
+    return case.__name__.removeprefix("case_")

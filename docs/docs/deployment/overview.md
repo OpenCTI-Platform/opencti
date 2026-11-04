@@ -52,6 +52,10 @@ roles on the platform:
 | RabbitMQ                   | >= 3.11            | 1 core    | ≥ 512MB      | Standard                     | ≥ 2GB           |
 | S3 / Silo / MinIO          | >= RELEASE.2023-02 | 1 core    | ≥ 128MB      | SSD                          | ≥ 16GB          |
 
+Elasticsearch 8, Elasticsearch 9 and OpenSearch are supported. The platform detects the engine and its version
+behind `elasticsearch:url` at startup: there is nothing to configure (see [Configuration](configuration.md#elasticsearch)
+and, to move from Elasticsearch 8 to 9, [this migration guide](breaking-changes/elasticsearch-9-support.md)).
+
 
 ### Platform
 

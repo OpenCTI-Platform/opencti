@@ -83,7 +83,8 @@
       "metrics": {
         "enabled": false,
         "exporter_otlp": "",
-        "exporter_prometheus": 14269
+        "exporter_prometheus": 14269,
+        "exporter_prometheus_host": "0.0.0.0"
       }
     },
     "health_access_key": "ChangeMe",
@@ -137,18 +138,21 @@
     },
     "live_stream": {
       "cache_max_size": 5000,
-      "cache_max_time": 2
+      "cache_max_time": 2,
+      "resolution_batch_size": 500
     },
     "exclusion_list": {
       "file_max_size": 10000000
     },
     "performance_logger": false,
     "map_bundled_file_path": "./static/maps/world.pmtiles",
+    "map_countries_bundled_file_path": "./static/maps/countries.json",
     "translations": "{}",
     "reference_attachment": false,
     "python_execution": "native",
     "python_execution_venv": "../../../.python-venv/lib/python3.12/site-packages",
     "artifact_zip_password": "infected",
+    "artifact_zip_max_extracted_size": 104857600,
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",
@@ -159,6 +163,9 @@
       "max_confidence_default": 100
     },
     "trash": {
+      "enabled": true
+    },
+    "bootstrap_wizard": {
       "enabled": true
     },
     "csv_ingestion": {
@@ -174,11 +181,13 @@
     }
   },
   "demo_mode": false,
+  "tls": {
+    "reject_unauthorized": false
+  },
   "http_proxy": "",
   "https_proxy": "",
   "no_proxy": "",
   "https_proxy_ca": [],
-  "https_proxy_reject_unauthorized": false,
   "trust_proxy_addresses": [],
   "relations_deduplication": {
     "past_days": 30,
@@ -244,7 +253,6 @@
     "xtm_one_token": "",
     "openaev_url": "",
     "openaev_token": "",
-    "openaev_reject_unauthorized": false,
     "opengrc_url": "",
     "opengrc_token": "",
     "xtmhub_url": "https://hub.filigran.io",
@@ -326,7 +334,7 @@
     "interval": 60000
   },
   "platform_usage_metrics_manager": {
-    "enabled": true,
+    "enabled": false,
     "lock_key": "platform_usage_metrics_manager_lock"
   },
   "garbage_collection_manager": {
@@ -410,12 +418,39 @@
     "lock_key": "exclusion_list_cache_sync_manager_lock",
     "interval": 10000
   },
+  "ingestion_health_manager": {
+    "enabled": true,
+    "lock_key": "ingestion_health_manager_lock",
+    "interval": 60000
+  },
   "catalog_manager": {
     "enabled": true,
     "lock_key": "catalog_manager_lock",
     "interval": 60000,
     "custom_catalog_refresh_endpoint_uri": null,
     "catalog_sync_remote_timeout": 30000
+  },
+  "safe_ejs": {
+    "idle_pool_size": 2,
+    "max_renders_per_worker": 1000,
+    "resource_limits": {
+      "max_old_generation_size_mb": 50,
+      "max_young_generation_size_mb": 10,
+      "code_range_size_mb": 10,
+      "stack_size_mb": 4
+    }
+  },
+  "json_path": {
+    "timeout": 60000,
+    "idle_pool_size": 2,
+    "max_pool_size": 4,
+    "idle_timeout": 60000,
+    "max_queries_per_worker": 10000,
+    "resource_limits": {
+      "max_young_generation_size_mb": 32,
+      "code_range_size_mb": 10,
+      "stack_size_mb": 4
+    }
   },
   "redis": {
     "mode": "single",
@@ -433,8 +468,7 @@
   "elasticsearch": {
     "index_prefix": "opencti",
     "url": "http://localhost:9200",
-    "engine_selector": "auto",
-    "engine_check": true,
+    "engine_client": "auto",
     "index_creation_pattern": "-000001",
     "max_pagination_result": 5000,
     "default_pagination_result": 500,
@@ -470,12 +504,13 @@
   "smtp": {
     "hostname": "localhost",
     "use_ssl": false,
-    "reject_unauthorized": false,
     "port": 25,
     "username": "",
     "password": "",
     "forced_sender_email": "",
-    "email_max_cc_size": 500
+    "email_max_cc_size": 500,
+    "connection_timeout": 10000,
+    "greeting_timeout": 10000
   },
   "aws": {
     "proxy_enabled": false

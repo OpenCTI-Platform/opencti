@@ -2,10 +2,10 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
-import { Add } from '@mui/icons-material';
-import Fab from '@mui/material/Fab';
-import makeStyles from '@mui/styles/makeStyles';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
@@ -14,7 +14,6 @@ import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import TextField from '../../../../components/TextField';
-import type { Theme } from '../../../../components/Theme';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -24,6 +23,7 @@ import { parse } from '../../../../utils/Time';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
@@ -38,20 +38,6 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import TypesField from '../TypesField';
 import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
 import TextareaField from '../../../../components/TextareaField';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-}));
 
 const indicatorMutation = graphql`
   mutation IndicatorCreationMutation($input: IndicatorAddInput!) {
@@ -116,6 +102,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(INDICATOR_TYPE);
+  const { isDeferredMode } = useDeferredCreation();
   const basicShape = yupShapeConditionalRequired({
     name: Yup.string().trim().min(2),
     indicator_types: Yup.array().nullable(),
@@ -158,6 +145,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
 
   const onSubmit: FormikConfig<IndicatorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const input: IndicatorCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
@@ -230,6 +218,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
 
   return (
     <Formik<IndicatorAddInput>
+      entityType={INDICATOR_TYPE}
       initialValues={initialValues}
       validationSchema={indicatorValidator}
       validateOnChange={true}
@@ -386,14 +375,17 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
             fullWidth={true}
             containerstyle={{ marginTop: 20 }}
           />
-          <Field
-            component={SwitchField}
-            type="checkbox"
-            name="createObservables"
-            label={t_i18n('Create observables from this indicator')}
-            fullWidth={true}
-            containerstyle={{ marginTop: 10 }}
-          />
+          {!isDeferredMode && (
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="createObservables"
+              label={t_i18n('Create observables from this indicator')}
+              fullWidth={true}
+              containerstyle={{ marginTop: 10 }}
+            />
+          )}
+          <CustomFieldValuesCreation />
           <FormButtonContainer>
             <Button
               variant="secondary"
@@ -419,13 +411,6 @@ interface IndicatorCreationProps {
   paginationOptions: IndicatorsLinesPaginationQuery$variables;
   contextual?: boolean;
   display?: boolean;
-  /**
-   * Suppresses the contextual FAB and hands the open state to the caller, so a
-   * host can drive creation from its own control — same contract as
-   * StixCyberObservableCreation. Omitted, the component keeps its own FAB and
-   * its own state, which is what the entity list page still relies on.
-   */
-  speeddial?: boolean;
   open?: boolean;
   handleClose?: () => void;
 }
@@ -434,16 +419,13 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({
   paginationOptions,
   contextual,
   display,
-  speeddial = false,
   open: openProp,
   handleClose: handleCloseProp,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const [localOpen, setLocalOpen] = useState(false);
-  const open = speeddial ? !!openProp : localOpen;
-  const handleOpen = () => setLocalOpen(true);
-  const handleClose = () => (speeddial ? handleCloseProp?.() : setLocalOpen(false));
+  const open = contextual ? !!openProp : localOpen;
+  const handleClose = () => (contextual ? handleCloseProp?.() : setLocalOpen(false));
   const onReset = () => handleClose();
   const CreateIndicatorControlledDial = (props: DrawerControlledDialProps) => (
     <CreateEntityControlledDial entityType="Indicator" {...props} />
@@ -458,18 +440,6 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({
   if (contextual) {
     return (
       <div style={{ visibility: !display ? 'hidden' : 'visible' }}>
-        {!speeddial && (
-          <Fab
-            /* FAB conversion deferred — UX call, owner Sandy, 2026-08-26; see fds-migration/MIGRATION-DECISIONS.md#fab-conversion-deferred */
-            onClick={handleOpen}
-            color="primary"
-            aria-label="Add"
-            className={classes.createButtonContextual}
-            sx={{ zIndex: 1203 }}
-          >
-            <Add />
-          </Fab>
-        )}
         <Dialog
           open={open}
           onClose={handleClose}

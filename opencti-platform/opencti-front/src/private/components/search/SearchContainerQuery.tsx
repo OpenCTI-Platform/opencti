@@ -4,7 +4,7 @@ import { Link, useLocation, useParams } from 'react-router';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Badge from '@mui/material/Badge';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { useFormatter } from '../../../components/i18n';
 import { decodeSearchKeyword } from '../../../utils/SearchUtils';

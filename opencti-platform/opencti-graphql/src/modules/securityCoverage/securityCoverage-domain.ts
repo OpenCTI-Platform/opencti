@@ -41,7 +41,12 @@ import {
 } from './securityCoverageResult/securityCoverageResult-types';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { stixCoreRelationshipsPaginated } from '../../domain/stixCoreObject';
-import { getAverageCoverageInformation, getMostRecentLastCoverageResult, internalCreateSecurityCoverageResult } from './securityCoverageResult/securityCoverageResult-utils';
+import {
+  getAverageCoverageInformation,
+  getMostRecentLastCoverageResult,
+  HAS_COVERED_TARGETS_TYPE,
+  internalCreateSecurityCoverageResult,
+} from './securityCoverageResult/securityCoverageResult-utils';
 import { splitSecurityCoverageInput } from './securityCoverage-utils';
 import { emptyPaginationResult } from '../../database/utils';
 import { createHasCoveredRelTask } from './securityCoverageResult/securityCoverageResult-domain';
@@ -111,8 +116,12 @@ export const addSecurityCoverage = async (
       [INPUT_RESULT_OF]: createdSecurityCoverage.id,
       name: `${securityCoverageResultInput.name ?? ''} Result of ${createdSecurityCoverage.name}`.trim(),
     }, noEnrichOnUpdate);
-    // Manually add the ref here to be able to resolve dynamic attributes in GraphQL response
-    createdSecurityCoverage[RELATION_RESULT_OF] = [result.id];
+    // Manually add the ref here to be able to resolve dynamic attributes in GraphQL response.
+    // On upsert, keep the existing results; the Set avoids a duplicate when the same result is upserted.
+    createdSecurityCoverage[RELATION_RESULT_OF] = Array.from(new Set([
+      ...(createdSecurityCoverage[RELATION_RESULT_OF] ?? []),
+      result.id,
+    ]));
   }
 
   // 3. In case of manual creation, need to create associated has-covered relationships.
@@ -146,7 +155,7 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
   const stixAssessment = convertStoreToStix_2_1(assessment);
   objects.push(stixAssessment);
   const stixAssessmentRefs = stixRefsExtractor(stixAssessment);
-  const refElements = await storeLoadByIdsWithRefs(context, user, stixAssessmentRefs);
+  const refElements = await storeLoadByIdsWithRefs(context, user, stixAssessmentRefs, { type: HAS_COVERED_TARGETS_TYPE });
   for (const element of refElements) {
     const refElement = element;
     const stixRefElement = convertStoreToStix_2_1(refElement);

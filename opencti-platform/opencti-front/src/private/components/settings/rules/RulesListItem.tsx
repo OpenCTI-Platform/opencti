@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Grid2 as Grid, Stack } from '@mui/material';
+import { Grid, Stack } from '@mui/material';
 import DangerZoneBlock from '@components/common/danger_zone/DangerZoneBlock';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -70,7 +70,10 @@ const RulesListItem = ({ rule, task, toggle }: RulesListItemProps) => {
               // `titleSx` lands on the row; the inner text is the flex item to unpin.
               titleSx={{ minWidth: 0, '& > .MuiTypography-root': { minWidth: 0 } }}
             >
-              <Stack gap={2}>
+              <Stack sx={{
+                gap: 2,
+              }}
+              >
                 <div>
                   <Label>
                     {t_i18n('Description')}

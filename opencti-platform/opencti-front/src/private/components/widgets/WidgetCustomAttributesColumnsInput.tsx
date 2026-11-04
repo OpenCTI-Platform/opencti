@@ -5,7 +5,7 @@ import Alert from '@mui/material/Alert';
 import { Checkbox, IconButton, Radio, RadioGroup } from '@filigran/design-system';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Close, DragIndicatorOutlined } from '@mui/icons-material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import type { Theme } from 'src/components/Theme';
 import { useFormatter } from 'src/components/i18n';
@@ -30,6 +30,7 @@ type WidgetCustomAttributesColumnsInputProps = {
   selectedPanelFlex?: number;
   landscapeWarningThreshold?: number;
   landscapeWarningMessage?: string;
+  isAvailableColumnsLoading?: boolean;
 };
 
 type DraggableColumnItemProps = {
@@ -208,6 +209,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
   selectedPanelFlex = 2,
   landscapeWarningThreshold,
   landscapeWarningMessage,
+  isAvailableColumnsLoading = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -222,6 +224,7 @@ const WidgetCustomAttributesColumnsInput: FunctionComponent<WidgetCustomAttribut
     availableColumns,
     value,
     onChange,
+    isAvailableColumnsLoading,
   );
 
   const listSx = {

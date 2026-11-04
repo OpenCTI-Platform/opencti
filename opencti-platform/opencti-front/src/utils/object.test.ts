@@ -39,4 +39,17 @@ describe('Utils: getObjectPropertyWithoutEmptyValues', () => {
     const listPropertyWithNullValues = getObjectPropertyWithoutEmptyValues(object, 'externalReferences.url');
     expect(listPropertyWithNullValues).toEqual(['http://test.com']);
   });
+
+  it('should resolve null subparts as empty only when nullableSubparts is set', () => {
+    const object = {
+      name: 'myReport',
+      createdBy: null,
+      objectLabel: [{ value: 'label1' }, null],
+    };
+
+    expect(() => getObjectPropertyWithoutEmptyValues(object, 'createdBy.name')).toThrow('a subpart is not an object');
+    expect(getObjectPropertyWithoutEmptyValues(object, 'createdBy.name', { nullableSubparts: true })).toEqual('');
+    expect(getObjectPropertyWithoutEmptyValues(object, 'objectLabel.value', { nullableSubparts: true })).toEqual(['label1']);
+    expect(() => getObjectPropertyWithoutEmptyValues(object, 'name.value', { nullableSubparts: true })).toThrow('a subpart is not an object');
+  });
 });

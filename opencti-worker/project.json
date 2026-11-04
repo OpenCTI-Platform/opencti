@@ -6,7 +6,14 @@
   "targets": {
     "install": {
       "executor": "nx:run-commands",
-      "dependsOn": [{ "projects": ["client-python"], "target": "install" }],
+      "dependsOn": [
+        {
+          "projects": [
+            "client-python"
+          ],
+          "target": "install"
+        }
+      ],
       "options": {
         "cwd": "opencti-worker",
         "command": "pip install -r requirements.txt"
@@ -18,7 +25,14 @@
     "dev": {
       "executor": "nx:run-commands",
       "continuous": true,
-      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "dev" }],
+      "dependsOn": [
+        {
+          "projects": [
+            "opencti-graphql"
+          ],
+          "target": "dev"
+        }
+      ],
       "options": {
         "cwd": "opencti-worker/src",
         "command": "python worker.py"
@@ -30,8 +44,8 @@
     "build-ubi9": {
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "opencti-worker",
-        "command": "podman build -f Dockerfile_ubi9 -t opencti/worker:{args.ver}-ubi9 ."
+        "cwd": ".",
+        "command": "podman build -f opencti-worker/Dockerfile_ubi9 -t opencti/worker:{args.ver}-ubi9 ."
       },
       "metadata": {
         "description": "Build the OpenCTI worker UBI9 Docker image"
@@ -39,7 +53,9 @@
     },
     "push-ubi9": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build-ubi9"],
+      "dependsOn": [
+        "build-ubi9"
+      ],
       "options": {
         "cwd": "opencti-worker",
         "command": "podman push opencti/worker:{args.ver}-ubi9"
@@ -51,7 +67,14 @@
     "dev:watch": {
       "executor": "nx:run-commands",
       "continuous": true,
-      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "dev:watch" }],
+      "dependsOn": [
+        {
+          "projects": [
+            "opencti-graphql"
+          ],
+          "target": "dev:watch"
+        }
+      ],
       "options": {
         "cwd": "opencti-worker/src",
         "command": "python worker.py"
@@ -63,7 +86,14 @@
     "dev:watch-with-graphql": {
       "executor": "nx:run-commands",
       "continuous": true,
-      "dependsOn": [{ "projects": ["opencti-graphql"], "target": "dev:watch-with-graphql" }],
+      "dependsOn": [
+        {
+          "projects": [
+            "opencti-graphql"
+          ],
+          "target": "dev:watch-with-graphql"
+        }
+      ],
       "options": {
         "cwd": "opencti-worker/src",
         "command": "python worker.py"

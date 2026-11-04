@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { AlertsLine_node$data } from '@components/profile/__generated__/AlertsLine_node.graphql';
 import { Chip } from '@filigran/design-system';
-import { iconSelector } from './notificationUtils';
+import { computeNotificationLink, iconSelector } from './notificationUtils';
 import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import DataTableWithoutFragment from '../../../../components/dataGrid/DataTableWithoutFragment';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
@@ -71,10 +71,7 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
       variant={DataTableVariant.inline}
       icon={({ operation }) => (iconSelector(operation))}
       getComputeLink={({ instance_id, entity_type }: { instance_id: string | undefined; entity_type: string | null | undefined }) => {
-        if (entity_type === 'DraftWorkspace') {
-          return `/dashboard/data/import/draft/${instance_id}`;
-        }
-        return `/dashboard/id/${instance_id}`;
+        return computeNotificationLink(instance_id ?? '', entity_type);
       }}
     />
   );

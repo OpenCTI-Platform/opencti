@@ -21,7 +21,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { IngestionJsonAttributes, IngestionJsonHeader } from '@components/data/ingestionJson/IngestionJsonCreation';
 import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';

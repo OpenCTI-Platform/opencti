@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { queryAsAdminWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { queryAsAdmin } from '../../../utils/testQueryHelper';
-import { findById as findUserById } from '../../../../src/domain/user';
+import { findById as findUserById } from '../../../../src/modules/user/user-domain';
 import { getClientBase, redisDeleteIngestionLogHistory, redisPushIngestionLog } from '../../../../src/database/redis';
 
 const DELETE_USER_QUERY = gql`

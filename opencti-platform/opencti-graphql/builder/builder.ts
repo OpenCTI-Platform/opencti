@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
 import esbuild from 'esbuild';
 import { copy } from 'esbuild-plugin-copy';
 import importGlobPluginPkg from 'esbuild-plugin-import-glob';
@@ -27,9 +30,16 @@ if (scriptName) {
   entryPoints.push(...BUILD_ENTRY_POINTS);
 }
 
+// safeEjs evaluates the ejs sources inside its sandbox; inline them so the bundle needs no node_modules.
+const ejsDirectory = path.dirname(createRequire(import.meta.url).resolve('ejs'));
+const safeEjsSources = Object.fromEntries(['ejs.js', 'utils.js'].map((file) => [file, fs.readFileSync(path.join(ejsDirectory, file), 'utf8')]));
+
 const buildOptions = {
   logLevel: 'info',
-  define: { 'process.env.NODE_ENV': JSON.stringify(isDev ? 'development' : 'production') },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(isDev ? 'development' : 'production'),
+    __SAFE_EJS_SOURCES__: JSON.stringify(safeEjsSources),
+  },
   plugins: [
     generateEsmPlugin(),
     importGlobPlugin(),

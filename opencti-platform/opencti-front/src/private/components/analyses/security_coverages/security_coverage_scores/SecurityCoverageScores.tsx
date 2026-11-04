@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { Avatar, Tooltip } from '@mui/material';
 import { BugReportOutlined, HourglassEmpty, Person, ShieldOutlined, TrackChangesOutlined } from '@mui/icons-material';
 import Chart from '@components/common/charts/Chart';
@@ -28,45 +27,50 @@ const coverageVocabulariesOrderQuery = graphql`
   }
 `;
 
-const useStyles = makeStyles((theme: Theme) => ({
-  charts: {
-    display: 'flex',
-    gap: theme.spacing(3),
-    flexWrap: 'wrap',
-  },
-  chartItem: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  chart: {
-    position: 'absolute',
-    top: -5,
-    left: -5,
-  },
-  chartContainer: {
-    position: 'relative',
-    overflow: 'hidden',
-    width: 60,
-    height: 60,
-    padding: 4,
-  },
-  iconOverlay: {
-    fontSize: 24,
-    position: 'absolute',
-    top: 22,
-    left: 22,
-  },
-  scoreText: {
-    fontSize: 14,
-    fontWeight: 600,
-    color: theme.palette.text?.primary || '#ffffff',
-  },
-  coverageName: {
-    fontSize: 12,
-    color: theme.palette.text?.secondary || '#999999',
-    textAlign: 'center',
-  },
+const Charts = styled('div')(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(3),
+  flexWrap: 'wrap',
+}));
+
+const ChartItem = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+});
+
+const ChartWrapper = styled('div')({
+  position: 'absolute',
+  top: -5,
+  left: -5,
+});
+
+const ChartContainer = styled('div')({
+  position: 'relative',
+  overflow: 'hidden',
+  width: 60,
+  height: 60,
+  padding: 4,
+});
+
+const ScoreText = styled('div')(({ theme }) => ({
+  fontSize: 14,
+  fontWeight: 600,
+  color: theme.palette.text?.primary || '#ffffff',
+}));
+
+const ScoreIcon = styled(Avatar)({
+  backgroundColor: 'transparent',
+  fontSize: 24,
+  position: 'absolute',
+  top: 22,
+  left: 22,
+});
+
+const CoverageName = styled('div')(({ theme }) => ({
+  fontSize: 12,
+  color: theme.palette.text?.secondary || '#999999',
+  textAlign: 'center',
 }));
 
 interface SecurityCoverageScoresProps {
@@ -77,7 +81,6 @@ interface SecurityCoverageScoresProps {
 const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = ({ coverage_information, variant = 'header' }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const classes = useStyles();
   const genOpts = (score: number | null) => {
     let chartColors = [theme.palette.action?.disabled ?? '#ffffff'];
     let labels = [t_i18n('Unknown')];
@@ -131,16 +134,16 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
     if (isEmptyField(orderedCoverageInformation)) {
       const { options, series } = genOpts(null);
       return (
-        <div className={classes.chartContainer} style={{ width: size, height: size }}>
-          <div className={classes.chart}>
+        <ChartContainer style={{ width: size, height: size }}>
+          <ChartWrapper>
             <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize} />
             <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')} placement="bottom">
-              <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
+              <ScoreIcon sx={{ width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
                 <span style={{ color: theme.palette.text?.primary }}><HourglassEmpty style={{ fontSize: iconSize }} /></span>
-              </Avatar>
+              </ScoreIcon>
             </Tooltip>
-          </div>
-        </div>
+          </ChartWrapper>
+        </ChartContainer>
       );
     }
     return (
@@ -148,16 +151,16 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
         {(orderedCoverageInformation ?? []).map((coverageResult) => {
           const { options, series } = genOpts(coverageResult.coverage_score);
           return (
-            <div key={coverageResult.coverage_name} className={classes.chartContainer} style={{ width: size, height: size, padding: variant === 'matrix' ? 2 : 4 }}>
-              <div className={classes.chart}>
+            <ChartContainer key={coverageResult.coverage_name} style={{ width: size, height: size, padding: variant === 'matrix' ? 2 : 4 }}>
+              <ChartWrapper>
                 <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize} />
                 <Tooltip title={`${coverageResult.coverage_name} ${coverageResult.coverage_score}/100`} placement="bottom">
-                  <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition - 1, fontSize: iconSize - 2 }}>
+                  <ScoreIcon sx={{ width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition - 1, fontSize: iconSize - 2 }}>
                     <span style={{ color: theme.palette.text?.primary }}>{getIconFromName(coverageResult.coverage_name, iconSize)}</span>
-                  </Avatar>
+                  </ScoreIcon>
                 </Tooltip>
-              </div>
-            </div>
+              </ChartWrapper>
+            </ChartContainer>
           );
         })}
       </div>
@@ -168,26 +171,26 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
   if (isEmptyField(orderedCoverageInformation)) {
     const { options, series } = genOpts(null);
     return (
-      <div className={classes.charts}>
-        <div className={classes.chartItem}>
-          <div className={classes.chartContainer}>
-            <div className={classes.chart}>
+      <Charts>
+        <ChartItem>
+          <ChartContainer>
+            <ChartWrapper>
               <Chart options={options} series={series} type="donut" width={70} height={70} />
               <Tooltip title={t_i18n('No executable tests are currently set for this entity, these can be set in OpenAEV')} placement="top">
-                <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 24, height: 24 }} style={{ top: 24, left: 23 }}>
+                <ScoreIcon sx={{ width: 24, height: 24 }} style={{ top: 24, left: 23 }}>
                   <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}><HourglassEmpty style={{ fontSize: 23 }} /></span>
-                </Avatar>
+                </ScoreIcon>
               </Tooltip>
-            </div>
-          </div>
-          <div className={classes.scoreText}>--%</div>
-          <div className={classes.coverageName}>{t_i18n('Empty coverage')}</div>
-        </div>
-      </div>
+            </ChartWrapper>
+          </ChartContainer>
+          <ScoreText>--%</ScoreText>
+          <CoverageName>{t_i18n('Empty coverage')}</CoverageName>
+        </ChartItem>
+      </Charts>
     );
   }
   return (
-    <div className={classes.charts}>
+    <Charts>
       {(orderedCoverageInformation ?? []).map((coverageResult) => {
         const { options, series } = genOpts(coverageResult.coverage_score);
         const warningColor = (theme.palette as { warning?: { main: string } }).warning?.main;
@@ -200,27 +203,27 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
           scoreColor = theme.palette.error.main;
         }
         return (
-          <div key={coverageResult.coverage_name} className={classes.chartItem}>
-            <div className={classes.chartContainer}>
-              <div className={classes.chart}>
+          <ChartItem key={coverageResult.coverage_name}>
+            <ChartContainer>
+              <ChartWrapper>
                 <Chart options={options} series={series} type="donut" width={70} height={70} />
                 <Tooltip title={coverageResult.coverage_name} placement="top">
-                  <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 25, height: 30 }}>
+                  <ScoreIcon sx={{ width: 25, height: 30 }}>
                     <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}>{getIconFromName(coverageResult.coverage_name, 26)}</span>
-                  </Avatar>
+                  </ScoreIcon>
                 </Tooltip>
-              </div>
-            </div>
-            <div className={classes.scoreText} style={{ color: scoreColor }}>
+              </ChartWrapper>
+            </ChartContainer>
+            <ScoreText style={{ color: scoreColor }}>
               {coverageResult.coverage_score}%
-            </div>
-            <div className={classes.coverageName}>
+            </ScoreText>
+            <CoverageName>
               {capitalizeFirstLetter(coverageResult.coverage_name)}
-            </div>
-          </div>
+            </CoverageName>
+          </ChartItem>
         );
       })}
-    </div>
+    </Charts>
   );
 };
 

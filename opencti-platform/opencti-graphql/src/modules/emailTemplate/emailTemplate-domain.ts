@@ -18,7 +18,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { EditInput, EmailTemplateAddInput, QueryEmailTemplatesArgs } from '../../generated/graphql';
 import { type BasicStoreEntityEmailTemplate, ENTITY_TYPE_EMAIL_TEMPLATE, type StoreEntityEmailTemplate } from './emailTemplate-types';
-import { sendEmailToUser } from '../../domain/user';
+import { sendEmailToUser } from '../user/user-domain';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { FunctionalError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';

@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
 import { DataTableColumn, DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
 import type { WidgetColumn } from '../../utils/widget/widget';
+import { getCustomFieldWidgetColumn } from './customFieldWidgetColumn';
 
 interface WidgetListCoreObjectsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,7 +31,12 @@ const WidgetListCoreObjects = ({
           if (!attribute) {
             return acc;
           }
-          acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
+          acc[attribute] = {
+            percentWidth,
+            isSortable: false,
+            ...(label ? { label } : {}),
+            ...getCustomFieldWidgetColumn(attribute, label),
+          };
           return acc;
         },
         {},

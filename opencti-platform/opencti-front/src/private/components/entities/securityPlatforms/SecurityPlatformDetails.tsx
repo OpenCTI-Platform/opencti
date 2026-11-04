@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import { SecurityPlatformDetails_securityPlatform$data } from '@components/entities/securityPlatforms/__generated__/SecurityPlatformDetails_securityPlatform.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -19,7 +20,7 @@ const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetail
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -28,7 +29,7 @@ const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetail
               limit={400}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Security platform type')}
             </Label>
@@ -38,6 +39,7 @@ const SecurityPlatformDetailsComponent: FunctionComponent<SecurityPlatformDetail
               />
             </FieldOrEmpty>
           </Grid>
+          <CustomFieldValuesDisplay entityType={securityPlatform.entity_type} values={securityPlatform.customFieldValues ?? []} />
         </Grid>
       </Card>
     </div>
@@ -50,6 +52,10 @@ const SecurityPlatformDetails = createFragmentContainer(
     securityPlatform: graphql`
       fragment SecurityPlatformDetails_securityPlatform on SecurityPlatform {
         id
+        entity_type
+        customFieldValues {
+          ...CustomFieldValuesDisplay_values @relay(mask: false)
+        }
         description
         security_platform_type
         objectLabel {

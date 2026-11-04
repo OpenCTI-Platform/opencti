@@ -27,10 +27,17 @@ export default class DraftsPage {
     return this.page.getByTestId(name).first();
   }
 
+  /** Clicks a draft's row to open it (UI navigation, avoids racing a pending post-login reload). */
+  async openDraft(name: string) {
+    await this.getDraft(name).click();
+  }
+
   async deleteDraft(name: string) {
-    await this.getDraft(name).getByRole('checkbox').click();
-    // await this.page.getByTestId('delete-draftworkspace-button').click();
-    // await this.page.getByRole('button', { name: 'Delete' }).click();
+    const row = this.getDraft(name);
+    await row.getByRole('button', { name: 'Draft popover of actions' }).click();
+    await this.page.getByRole('menuitem', { name: 'Delete' }).click();
+    await this.page.getByRole('button', { name: 'Confirm' }).click();
+    await expect(row).toHaveCount(0);
   }
 
   getCreateDraftButton() {

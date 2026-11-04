@@ -1,0 +1,127 @@
+/* Custom theme: the tokens a platform theme has no setting for.
+
+   A theme carries seven colours; the library paints from a family of tokens
+   around each of them. useFdsThemeScope writes the seven onto the document root
+   and puts `fds-custom-<setting>` next to `.dark`/`.light` for each one that
+   differs from the library. Every rule below is scoped to one of those classes,
+   so a built-in theme never matches one and keeps the library's own values.
+
+   Each member is its own root moved, never an invented colour: the lightness and
+   the chroma both shift by what the library puts between that root and that member
+   on its own palette, which custom-theme-tokens.test.ts checks. Chroma takes the
+   gentler of a ratio and a shift — equal on the library's palette, so a saturated
+   theme is amplified less and a near-grey one is not forced to take colour. The
+   hue stays the customer's: the library's own palette drifts up to 22 degrees
+   between a surface and its members, and rotating a chosen colour by that much
+   changes it. When the library ships these itself this file goes:
+   fds-migration/LIBRARY-FEEDBACK.md #61.
+
+   The `highlight` family carries a floor — the library's own best surface-to-field
+   step — because its native step at layer 2 is faint enough that a field vanished
+   into its modal.
+
+   The disabled families are left alone on purpose: their greyness is what reads
+   as disabled. `nav` needs no rule — it owns --bg-elevation-heading-layer-0 as an
+   inline value, which wins over the derivation below. */
+
+:root.dark.fds-custom-background {
+  --bg-elevation-highlight-layer-0: oklch(from var(--bg-elevation-default-layer-0) calc(l + 0.096) min(calc(c * 2.279), calc(c + 0.0328)) h);
+  --bg-elevation-hover-layer-0: oklch(from var(--bg-elevation-default-layer-0) calc(l + 0.048) min(calc(c * 1.664), calc(c + 0.017)) h);
+  --bg-elevation-heading-layer-0: var(--bg-elevation-default-layer-0);
+  --border-elevation-subtle-layer-0: oklch(from var(--bg-elevation-default-layer-0) calc(l + 0.1893) min(calc(c * 3.26), calc(c + 0.0579)) h);
+  --border-elevation-subtle-soft-layer-0: oklch(from var(--bg-elevation-default-layer-0) calc(l + 0.2752) min(calc(c * 4.323), calc(c + 0.0852)) h);
+  --border-elevation-default-layer-0: oklch(from var(--bg-elevation-default-layer-0) calc(l + 0.3413) min(calc(c * 6.09), calc(c + 0.1304)) h);
+  --bg-elevation-default-layer-0-gradient: oklch(from var(--bg-elevation-default-layer-0) calc(l + 0.0386) min(calc(c * 1.517), calc(c + 0.0132)) h);
+}
+
+:root.light.fds-custom-background {
+  --bg-elevation-default-layer-0-gradient: oklch(from var(--bg-elevation-default-layer-0) calc(l + 0.0386) max(calc(c * 0), calc(c - 0.0013)) h);
+  --bg-elevation-highlight-layer-0: oklch(from var(--bg-elevation-default-layer-0) calc(l - 0.046) min(calc(c * 2.19), calc(c + 0.0016)) h);
+  --bg-elevation-hover-layer-0: oklch(from var(--bg-elevation-default-layer-0) calc(l - 0.1192) min(calc(c * 3.226), calc(c + 0.003)) h);
+  --bg-elevation-heading-layer-0: var(--bg-elevation-default-layer-0);
+  --border-elevation-subtle-layer-0: oklch(from var(--bg-elevation-default-layer-0) calc(l - 0.1192) min(calc(c * 3.226), calc(c + 0.003)) h);
+  --border-elevation-subtle-soft-layer-0: oklch(from var(--bg-elevation-default-layer-0) calc(l - 0.2869) min(calc(c * 7.743), calc(c + 0.009)) h);
+  --border-elevation-default-layer-0: oklch(from var(--bg-elevation-default-layer-0) calc(l - 0.3738) min(calc(c * 10.433), calc(c + 0.0125)) h);
+}
+
+:root.dark.fds-custom-paper {
+  --bg-elevation-default-layer-2: oklch(from var(--bg-elevation-default-layer-1) calc(l + 0.0453) min(calc(c * 1.37), calc(c + 0.0158)) h);
+  --bg-elevation-highlight-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l + 0.096) min(calc(c * 1.645), calc(c + 0.0275)) h);
+  --bg-elevation-hover-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l + 0.0191) min(calc(c * 1.161), calc(c + 0.0069)) h);
+  --bg-elevation-heading-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l - 0.048) max(calc(c * 0.601), calc(c - 0.017)) h);
+  --border-elevation-subtle-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l + 0.2272) min(calc(c * 2.598), calc(c + 0.0681)) h);
+  --border-elevation-subtle-soft-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l + 0.2272) min(calc(c * 2.598), calc(c + 0.0681)) h);
+  --border-elevation-default-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l + 0.4834) min(calc(c * 2.206), calc(c + 0.0514)) h);
+  --bg-elevation-highlight-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l - 0.096) max(calc(c * 0.666), calc(c - 0.0195)) h);
+  --bg-elevation-hover-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l - 0.0933) max(calc(c * 0.439), calc(c - 0.0328)) h);
+  --bg-elevation-heading-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l - 0.0262) max(calc(c * 0.848), calc(c - 0.0089)) h);
+  --border-elevation-subtle-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l + 0.1819) min(calc(c * 1.897), calc(c + 0.0524)) h);
+  --border-elevation-subtle-soft-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l + 0.438) min(calc(c * 1.611), calc(c + 0.0357)) h);
+  --border-elevation-default-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l + 0.438) min(calc(c * 1.611), calc(c + 0.0357)) h);
+}
+
+:root.light.fds-custom-paper {
+  --bg-elevation-default-layer-2: oklch(from var(--bg-elevation-default-layer-1) calc(l - 0.0323) calc(c + 0.0027) h);
+  --bg-elevation-highlight-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l - 0.046) calc(c + 0.0013) h);
+  --bg-elevation-hover-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l - 0.0783) calc(c + 0.0029) h);
+  --bg-elevation-heading-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l - 0.0323) calc(c + 0.0027) h);
+  --border-elevation-subtle-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l - 0.1578) calc(c + 0.0043) h);
+  --border-elevation-subtle-soft-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l - 0.3255) calc(c + 0.0103) h);
+  --border-elevation-default-layer-1: oklch(from var(--bg-elevation-default-layer-1) calc(l - 0.2418) calc(c + 0.0086) h);
+  --bg-elevation-highlight-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l - 0.046) min(calc(c * 1.097), calc(c + 0.0003)) h);
+  --bg-elevation-hover-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l - 0.1255) min(calc(c * 1.615), calc(c + 0.0016)) h);
+  --bg-elevation-heading-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l - 0.1255) min(calc(c * 1.615), calc(c + 0.0016)) h);
+  --border-elevation-subtle-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l - 0.1255) min(calc(c * 1.615), calc(c + 0.0016)) h);
+  --border-elevation-subtle-soft-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l - 0.2932) min(calc(c * 3.876), calc(c + 0.0076)) h);
+  --border-elevation-default-layer-2: oklch(from var(--bg-elevation-default-layer-2) calc(l - 0.2932) min(calc(c * 3.876), calc(c + 0.0076)) h);
+}
+
+:root.dark.fds-custom-accent {
+  --bg-elevation-highlight-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l - 0.096) max(calc(c * 0.699), calc(c - 0.0252)) h);
+  --bg-elevation-hover-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l - 0.1413) max(calc(c * 0.51), calc(c - 0.0409)) h);
+  --bg-elevation-heading-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l - 0.0578) max(calc(c * 0.839), calc(c - 0.0134)) h);
+  --border-elevation-subtle-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l + 0.0859) min(calc(c * 1.326), calc(c + 0.0272)) h);
+  --border-elevation-subtle-soft-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l + 0.342) min(calc(c * 1.126), calc(c + 0.0105)) h);
+  --border-elevation-default-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l + 0.342) min(calc(c * 1.126), calc(c + 0.0105)) h);
+}
+
+:root.light.fds-custom-accent {
+  --bg-elevation-highlight-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l + 0.046) max(calc(c * 0.912), calc(c - 0.0003)) h);
+  --bg-elevation-hover-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l - 0.0795) min(calc(c * 1.473), calc(c + 0.0014)) h);
+  --bg-elevation-heading-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l - 0.1635) min(calc(c * 2.947), calc(c + 0.0057)) h);
+  --border-elevation-subtle-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l - 0.1635) min(calc(c * 2.947), calc(c + 0.0057)) h);
+  --border-elevation-subtle-soft-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l - 0.2472) min(calc(c * 3.535), calc(c + 0.0074)) h);
+  --border-elevation-default-layer-3: oklch(from var(--bg-elevation-default-layer-3) calc(l - 0.3341) min(calc(c * 4.763), calc(c + 0.0109)) h);
+}
+
+:root.dark.fds-custom-text {
+  --text-default-secondary: oklch(from var(--text-default-primary) calc(l - 0.2032) min(calc(c * 6.455), calc(c + 0.0072)) h);
+  --text-default-disabled: oklch(from var(--text-default-primary) calc(l - 0.2869) min(calc(c * 7.743), calc(c + 0.009)) h);
+}
+
+:root.light.fds-custom-text {
+  --text-default-secondary: oklch(from var(--text-default-primary) calc(l + 0.1972) min(calc(c * 2.381), calc(c + 0.0058)) h);
+  --text-default-disabled: oklch(from var(--text-default-primary) calc(l + 0.288) min(calc(c * 2.633), calc(c + 0.0069)) h);
+}
+
+:root.dark.fds-custom-primary {
+  --color-filigran-brand-secondary: oklch(from var(--color-filigran-brand-primary) calc(l + 0.1049) max(calc(c * 0.525), calc(c - 0.0646)) h);
+  --color-filigran-brand-tertiary: oklch(from var(--color-filigran-brand-primary) calc(l - 0.1285) min(calc(c * 1.03), calc(c + 0.0041)) h);
+}
+
+:root.light.fds-custom-primary {
+  --color-filigran-brand-secondary: oklch(from var(--color-filigran-brand-primary) calc(l + 0.3219) max(calc(c * 0.807), calc(c - 0.0424)) h);
+  --color-filigran-brand-tertiary: oklch(from var(--color-filigran-brand-primary) calc(l - 0.1573) max(calc(c * 0.491), calc(c - 0.1117)) h);
+}
+
+:root.dark.fds-custom-secondary {
+  --color-filigran-tonic-secondary: oklch(from var(--color-filigran-tonic-primary) calc(l + 0.1016) max(calc(c * 0.416), calc(c - 0.0985)) h);
+  --color-filigran-tonic-tertiary: oklch(from var(--color-filigran-tonic-primary) calc(l - 0.2563) max(calc(c * 0.693), calc(c - 0.0518)) h);
+  --color-filigran-tonic-accent: var(--color-filigran-tonic-primary);
+}
+
+:root.light.fds-custom-secondary {
+  --color-filigran-tonic-secondary: oklch(from var(--color-filigran-tonic-primary) calc(l - 0.3608) max(calc(c * 0.377), calc(c - 0.0728)) h);
+  --color-filigran-tonic-tertiary: oklch(from var(--color-filigran-tonic-primary) calc(l + 0.3247) min(calc(c * 1.063), calc(c + 0.0074)) h);
+  --color-filigran-tonic-accent: oklch(from var(--color-filigran-tonic-primary) calc(l - 0.1863) max(calc(c * 0.679), calc(c - 0.0375)) h);
+}

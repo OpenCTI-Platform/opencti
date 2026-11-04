@@ -6,14 +6,13 @@ import { Add, ArrowDropDown, ArrowDropUp, DeleteOutlined, DoubleArrow } from '@m
 import { ListItemButton, Stack } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
-import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Checkbox, Select, SelectContent, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import { useEffect, useState } from 'react';
@@ -61,14 +60,14 @@ import { stixDomainObjectsLinesSearchQuery } from '../../stix_domain_objects/Sti
 import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
+import { onActivationKey } from '../../../../../utils/domEvent';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  container: {
-    margin: 0,
-  },
-  createButton: {
+const Container = styled('div')({
+  margin: 0,
+});
+
+const CreateButton = styled(Button)(({ theme }) => ({
+  '&&': {
     position: 'fixed',
     bottom: 30,
     right: 30,
@@ -77,39 +76,39 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
   },
-  linesContainer: {
-    marginTop: 0,
-  },
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  itemHead: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  bodyItem: {
-    height: '100%',
-    fontSize: 13,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  sortIcon: {
-    // In flow, not absolute: the header cells have no positioned ancestor, and the cell clips with overflow:hidden.
-    verticalAlign: 'middle',
-    margin: '0 0 0 5px',
-    padding: 0,
-  },
 }));
+
+const linesContainerSx = {
+  marginTop: 0,
+};
+
+const itemSx = {
+  paddingLeft: '10px',
+  height: 50,
+};
+
+const itemHeadSx = {
+  paddingLeft: '10px',
+  textTransform: 'uppercase',
+  cursor: 'pointer',
+};
+
+const BodyItem = styled('div')({
+  height: '100%',
+  fontSize: 13,
+});
+
+const Buttons = styled('div')({
+  marginTop: 20,
+  textAlign: 'right',
+});
+
+const sortIconSx = {
+  // In flow, not absolute: the header cells have no positioned ancestor, and the cell clips with overflow:hidden.
+  verticalAlign: 'middle',
+  margin: '0 0 0 5px',
+  padding: 0,
+};
 
 const inlineStylesHeaders = {
   ttype: {
@@ -315,7 +314,6 @@ const WorkbenchFileContentComponent = ({
   const { fieldToCategory, getFieldDefinition } = useVocabularyCategory();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const classes = useStyles();
 
   // region state
   const [currentTab, setCurrentTab] = useState('entities');
@@ -1685,15 +1683,18 @@ const WorkbenchFileContentComponent = ({
   };
   const sortHeader = (field, label, isSortable) => {
     const sortComponent = orderAsc ? (
-      <ArrowDropDown classes={{ root: classes.sortIcon }} />
+      <ArrowDropDown sx={sortIconSx} />
     ) : (
-      <ArrowDropUp classes={{ root: classes.sortIcon }} />
+      <ArrowDropUp sx={sortIconSx} />
     );
     if (isSortable) {
       return (
         <div
           style={inlineStylesHeaders[field]}
           onClick={() => reverseBy(field)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={onActivationKey(() => reverseBy(field))}
         >
           <span>{t_i18n(label)}</span>
           {sortBy === field ? sortComponent : ''}
@@ -1712,15 +1713,18 @@ const WorkbenchFileContentComponent = ({
   };
   const sortHeaderContainer = (field, label, isSortable) => {
     const sortComponent = containerOrderAsc ? (
-      <ArrowDropDown classes={{ root: classes.sortIcon }} />
+      <ArrowDropDown sx={sortIconSx} />
     ) : (
-      <ArrowDropUp classes={{ root: classes.sortIcon }} />
+      <ArrowDropUp sx={sortIconSx} />
     );
     if (isSortable) {
       return (
         <div
           style={inlineStylesHeaders[field]}
           onClick={() => containerReverseBy(field)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={onActivationKey(() => containerReverseBy(field))}
         >
           <span>{t_i18n(label)}</span>
           {containerSortBy === field ? sortComponent : ''}
@@ -2390,22 +2394,22 @@ const WorkbenchFileContentComponent = ({
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
-                    <div className={classes.buttons}>
+                    <Buttons>
                       <Button
                         onClick={handleReset}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
+                        sx={{ marginLeft: 2 }}
                       >
                         {t_i18n('Cancel')}
                       </Button>
                       <Button
                         onClick={submitForm}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
+                        sx={{ marginLeft: 2 }}
                       >
                         {t_i18n('Update')}
                       </Button>
-                    </div>
+                    </Buttons>
                   </Form>
                 )}
               </Formik>
@@ -2669,11 +2673,11 @@ const WorkbenchFileContentComponent = ({
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
-                    <div className={classes.buttons}>
+                    <Buttons>
                       <Button
                         onClick={handleReset}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
+                        sx={{ marginLeft: 2 }}
                       >
                         {t_i18n('Cancel')}
                       </Button>
@@ -2681,11 +2685,11 @@ const WorkbenchFileContentComponent = ({
                         // color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
+                        sx={{ marginLeft: 2 }}
                       >
                         {observableId ? t_i18n('Update') : t_i18n('Add')}
                       </Button>
-                    </div>
+                    </Buttons>
                   </Form>
                 )}
               </Formik>
@@ -2873,12 +2877,12 @@ const WorkbenchFileContentComponent = ({
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
-                    <div className={classes.buttons}>
+                    <Buttons>
                       <Button
                         variant="secondary"
                         onClick={handleReset}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
+                        sx={{ marginLeft: 2 }}
                       >
                         {t_i18n('Cancel')}
                       </Button>
@@ -2886,13 +2890,13 @@ const WorkbenchFileContentComponent = ({
                         startIcon={<DoubleArrow />}
                         onClick={submitForm}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
+                        sx={{ marginLeft: 2 }}
                       >
                         {containerId
                           ? t_i18n('Update and complete')
                           : t_i18n('Add and complete')}
                       </Button>
-                    </div>
+                    </Buttons>
                   </Form>
                 )}
               </Formik>
@@ -2942,9 +2946,9 @@ const WorkbenchFileContentComponent = ({
     );
     return (
       <div style={{ padding: '0 15px 0 15px' }}>
-        <List classes={{ root: classes.linesContainer }}>
+        <List sx={linesContainerSx}>
           <ListItemButton
-            classes={{ root: classes.itemHead }}
+            sx={itemHeadSx}
             divider={false}
             style={{ paddingTop: 0 }}
           >
@@ -2993,13 +2997,13 @@ const WorkbenchFileContentComponent = ({
             return (
               <ListItem
                 key={object.id}
-                classes={{ root: classes.item }}
+                sx={itemSx}
                 divider
                 onClick={(event) => handleToggleContainerSelectObject(object, event)
                 }
               >
                 <ListItemIcon
-                  classes={{ root: classes.itemIcon }}
+                  sx={{ color: 'primary.main' }}
                   style={{ minWidth: 40 }}
                 >
                   <Checkbox
@@ -3013,30 +3017,26 @@ const WorkbenchFileContentComponent = ({
                 <ListItemText
                   primary={(
                     <div>
-                      <div
-                        className={classes.bodyItem}
+                      <BodyItem
                         style={inlineStyles.ttype}
                       >
                         <ItemEntityType showIcon entityType={type} />
                         {secondaryType}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.default_value}
                       >
                         {object.default_value}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.labels}
                       >
                         <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.markings}
                       >
                         <ItemMarkings
@@ -3044,7 +3044,7 @@ const WorkbenchFileContentComponent = ({
                           markingDefinitions={object.markings || []}
                           limit={1}
                         />
-                      </div>
+                      </BodyItem>
                     </div>
                   )}
                 />
@@ -3052,21 +3052,21 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <div className={classes.buttons}>
+        <Buttons>
           <Button
             variant="secondary"
             onClick={handleCloseContainer}
-            classes={{ root: classes.button }}
+            sx={{ marginLeft: 2 }}
           >
             {t_i18n('Cancel')}
           </Button>
           <Button
             onClick={onSubmitContainerContext}
-            classes={{ root: classes.button }}
+            sx={{ marginLeft: 2 }}
           >
             {t_i18n('Update context')}
           </Button>
-        </div>
+        </Buttons>
       </div>
     );
   };
@@ -3167,9 +3167,9 @@ const WorkbenchFileContentComponent = ({
 
     return (
       <div>
-        <List classes={{ root: classes.linesContainer }}>
+        <List sx={linesContainerSx}>
           <ListItem
-            classes={{ root: classes.itemHead }}
+            sx={itemHeadSx}
             divider={false}
             style={{ paddingTop: 0 }}
             secondaryAction={<>&nbsp;</>}
@@ -3220,7 +3220,7 @@ const WorkbenchFileContentComponent = ({
             return (
               <ListItem
                 key={object.id}
-                classes={{ root: classes.item }}
+                sx={itemSx}
                 divider={true}
                 button={object.type !== 'marking-definition'}
                 onClick={
@@ -3239,7 +3239,7 @@ const WorkbenchFileContentComponent = ({
                 )}
               >
                 <ListItemIcon
-                  classes={{ root: classes.itemIcon }}
+                  sx={{ color: 'primary.main' }}
                   style={{ minWidth: 40 }}
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
@@ -3260,30 +3260,26 @@ const WorkbenchFileContentComponent = ({
                   }}
                   primary={(
                     <>
-                      <div
-                        className={classes.bodyItem}
+                      <BodyItem
                         style={inlineStyles.ttype}
                       >
                         <ItemEntityType showIcon entityType={type} />
                         {secondaryType}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.default_value}
                       >
                         {object.default_value || t_i18n('Unknown')}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.labels}
                       >
                         <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.markings}
                       >
                         <ItemMarkings
@@ -3291,9 +3287,8 @@ const WorkbenchFileContentComponent = ({
                           markingDefinitions={object.markings || []}
                           limit={2}
                         />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.in_platform}
                       >
                         {object.default_value ? (
@@ -3304,7 +3299,7 @@ const WorkbenchFileContentComponent = ({
                             label={t_i18n('Not applicable')}
                           />
                         )}
-                      </div>
+                      </BodyItem>
                     </>
                   )}
                 />
@@ -3312,18 +3307,14 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <CreateButton
           onClick={() => handleOpenEntity(null, null)}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButton}
+          variant="primary"
+          startIcon={<Add />}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add entity')}
+        </CreateButton>
         <Drawer
           open={entityStep != null}
           onClose={handleCloseEntity}
@@ -3360,9 +3351,9 @@ const WorkbenchFileContentComponent = ({
     const sortedStixCyberObservables = sort(resolvedStixCyberObservables);
     return (
       <div>
-        <List classes={{ root: classes.linesContainer }}>
+        <List sx={linesContainerSx}>
           <ListItem
-            classes={{ root: classes.itemHead }}
+            sx={itemHeadSx}
             divider={false}
             style={{ paddingTop: 0 }}
             secondaryAction={<>&nbsp;</>}
@@ -3405,7 +3396,7 @@ const WorkbenchFileContentComponent = ({
             return (
               <ListItem
                 key={object.id}
-                classes={{ root: classes.item }}
+                sx={itemSx}
                 divider
                 button={object.type !== 'marking-definition'}
                 onClick={
@@ -3424,7 +3415,7 @@ const WorkbenchFileContentComponent = ({
                 )}
               >
                 <ListItemIcon
-                  classes={{ root: classes.itemIcon }}
+                  sx={{ color: 'primary.main' }}
                   style={{ minWidth: 40 }}
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
@@ -3436,7 +3427,7 @@ const WorkbenchFileContentComponent = ({
                     }
                   />
                 </ListItemIcon>
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <ListItemIcon sx={{ color: 'primary.main' }}>
                   <ItemIcon type={type} />
                 </ListItemIcon>
                 <ListItemText
@@ -3448,8 +3439,7 @@ const WorkbenchFileContentComponent = ({
                   }}
                   primary={(
                     <>
-                      <div
-                        className={classes.bodyItem}
+                      <BodyItem
                         style={inlineStyles.ttype}
                       >
                         <Select
@@ -3474,24 +3464,21 @@ const WorkbenchFileContentComponent = ({
                             ))}
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.default_value}
                       >
                         {object.default_value || t_i18n('Unknown')}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.labels}
                       >
                         <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.markings}
                       >
                         <ItemMarkings
@@ -3499,9 +3486,8 @@ const WorkbenchFileContentComponent = ({
                           markingDefinitions={object.markings || []}
                           limit={2}
                         />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.in_platform}
                       >
                         {object.default_value ? (
@@ -3550,7 +3536,7 @@ const WorkbenchFileContentComponent = ({
                             label={t_i18n('Not applicable')}
                           />
                         )}
-                      </div>
+                      </BodyItem>
                     </>
                   )}
                 />
@@ -3558,18 +3544,14 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <CreateButton
           onClick={() => handleOpenObservable(null, null)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
+          variant="primary"
+          startIcon={<Add />}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add observable')}
+        </CreateButton>
         <Drawer
           open={displayObservable}
           onClose={handleCloseObservable}
@@ -3607,9 +3589,9 @@ const WorkbenchFileContentComponent = ({
     const sortedStixCoreRelationships = sort(resolvedStixCoreRelationships);
     return (
       <>
-        <List classes={{ root: classes.linesContainer }}>
+        <List sx={linesContainerSx}>
           <ListItem
-            classes={{ root: classes.itemHead }}
+            sx={itemHeadSx}
             divider={false}
             style={{ paddingTop: 0 }}
             secondaryAction={<>&nbsp;</>}
@@ -3662,11 +3644,11 @@ const WorkbenchFileContentComponent = ({
               )}
             >
               <ListItemButton
-                classes={{ root: classes.item }}
+                sx={itemSx}
                 onClick={() => handleOpenRelationship(object.id)}
               >
                 <ListItemIcon
-                  classes={{ root: classes.itemIcon }}
+                  sx={{ color: 'primary.main' }}
                   style={{ minWidth: 40 }}
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
@@ -3677,7 +3659,7 @@ const WorkbenchFileContentComponent = ({
                     }
                   />
                 </ListItemIcon>
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <ListItemIcon sx={{ color: 'primary.main' }}>
                   <ItemIcon type={object.relationship_type} />
                 </ListItemIcon>
                 <ListItemText
@@ -3689,29 +3671,25 @@ const WorkbenchFileContentComponent = ({
                   }}
                   primary={(
                     <>
-                      <div
-                        className={classes.bodyItem}
+                      <BodyItem
                         style={inlineStyles.ttype}
                       >
                         {object.ttype}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.default_value}
                       >
                         {object.default_value || t_i18n('Unknown')}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.labels}
                       >
                         <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.markings}
                       >
                         <ItemMarkings
@@ -3719,7 +3697,7 @@ const WorkbenchFileContentComponent = ({
                           markingDefinitions={object.markings || []}
                           limit={2}
                         />
-                      </div>
+                      </BodyItem>
                     </>
                   )}
                 />
@@ -3769,9 +3747,9 @@ const WorkbenchFileContentComponent = ({
     const sortedStixSightings = sort(resolvedStixSightings);
     return (
       <>
-        <List classes={{ root: classes.linesContainer }}>
+        <List sx={linesContainerSx}>
           <ListItem
-            classes={{ root: classes.itemHead }}
+            sx={itemHeadSx}
             divider={false}
             style={{ paddingTop: 0 }}
             secondaryAction={<>&nbsp;</>}
@@ -3824,10 +3802,10 @@ const WorkbenchFileContentComponent = ({
               )}
             >
               <ListItemButton
-                classes={{ root: classes.item }}
+                sx={itemSx}
               >
                 <ListItemIcon
-                  classes={{ root: classes.itemIcon }}
+                  sx={{ color: 'primary.main' }}
                   style={{ minWidth: 40 }}
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
@@ -3838,7 +3816,7 @@ const WorkbenchFileContentComponent = ({
                     }
                   />
                 </ListItemIcon>
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <ListItemIcon sx={{ color: 'primary.main' }}>
                   <ItemIcon type="sighting" />
                 </ListItemIcon>
                 <ListItemText
@@ -3850,29 +3828,25 @@ const WorkbenchFileContentComponent = ({
                   }}
                   primary={(
                     <>
-                      <div
-                        className={classes.bodyItem}
+                      <BodyItem
                         style={inlineStyles.ttype}
                       >
                         {object.ttype}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.default_value}
                       >
                         {object.default_value || t_i18n('Unknown')}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.labels}
                       >
                         <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.markings}
                       >
                         <ItemMarkings
@@ -3880,7 +3854,7 @@ const WorkbenchFileContentComponent = ({
                           markingDefinitions={object.markings || []}
                           limit={2}
                         />
-                      </div>
+                      </BodyItem>
                     </>
                   )}
                 />
@@ -3944,9 +3918,9 @@ const WorkbenchFileContentComponent = ({
     const sortedContainers = sort(resolvedContainers);
     return (
       <div>
-        <List classes={{ root: classes.linesContainer }}>
+        <List sx={linesContainerSx}>
           <ListItem
-            classes={{ root: classes.itemHead }}
+            sx={itemHeadSx}
             divider={false}
             style={{ paddingTop: 0 }}
             secondaryAction={<>&nbsp;</>}
@@ -3979,7 +3953,7 @@ const WorkbenchFileContentComponent = ({
             return (
               <ListItem
                 key={object.id}
-                classes={{ root: classes.item }}
+                sx={itemSx}
                 divider
                 button={object.type !== 'marking-definition'}
                 onClick={() => handleOpenContainer(object.type, object.id)}
@@ -3994,7 +3968,7 @@ const WorkbenchFileContentComponent = ({
                 )}
               >
                 <ListItemIcon
-                  classes={{ root: classes.itemIcon }}
+                  sx={{ color: 'primary.main' }}
                   style={{ minWidth: 40 }}
                   onClick={(event) => handleToggleSelectObject(object, event)}
                 >
@@ -4015,29 +3989,25 @@ const WorkbenchFileContentComponent = ({
                   }}
                   primary={(
                     <>
-                      <div
-                        className={classes.bodyItem}
+                      <BodyItem
                         style={inlineStyles.ttype}
                       >
                         <ItemEntityType showIcon entityType={type} />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.default_value}
                       >
                         {object.default_value || t_i18n('Unknown')}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.labels}
                       >
                         <StixCoreObjectLabels
                           variant="inList"
                           labels={object.labels || []}
                         />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.markings}
                       >
                         <ItemMarkings
@@ -4045,9 +4015,8 @@ const WorkbenchFileContentComponent = ({
                           markingDefinitions={object.markings || []}
                           limit={2}
                         />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
+                      </BodyItem>
+                      <BodyItem
                         style={inlineStyles.in_platform}
                       >
                         {object.default_value ? (
@@ -4100,7 +4069,7 @@ const WorkbenchFileContentComponent = ({
                             label={t_i18n('Not applicable')}
                           />
                         )}
-                      </div>
+                      </BodyItem>
                     </>
                   )}
                 />
@@ -4108,18 +4077,14 @@ const WorkbenchFileContentComponent = ({
             );
           })}
         </List>
-        <Fab
-          // FDS-FAB: stays on MUI. The library ships no floating action
-          // button, so this control has nothing to convert to. Owner: the
-          // button/chip wave. See fds-migration/LIBRARY-FEEDBACK.md
+        <CreateButton
           onClick={() => handleOpenContainer(null, null)}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
+          variant="primary"
+          startIcon={<Add />}
           style={createButtonStyle}
         >
-          <Add />
-        </Fab>
+          {t_i18n('Add container')}
+        </CreateButton>
         <Drawer
           open={containerStep != null}
           onClose={handleCloseContainer}
@@ -4137,7 +4102,7 @@ const WorkbenchFileContentComponent = ({
   // endregion
   const fileName = file.name.replace('.json', '');
   return (
-    <div className={classes.container}>
+    <Container>
       <Breadcrumbs
         elements={[
           { label: t_i18n('Data') },
@@ -4146,7 +4111,14 @@ const WorkbenchFileContentComponent = ({
           { label: fileName, current: true },
         ]}
       />
-      <Stack direction="row" alignItems="center" gap={1} marginBottom={3}>
+      <Stack
+        direction="row"
+        sx={{
+          alignItems: 'center',
+          gap: 1,
+          marginBottom: 3,
+        }}
+      >
         <TitleMainEntity sx={{ flex: 1 }}>
           {fileName}
         </TitleMainEntity>
@@ -4332,7 +4304,7 @@ const WorkbenchFileContentComponent = ({
         submitDelete={handleDeleteObjects}
         submitApplyMarking={onSubmitApplyMarking}
       />
-    </div>
+    </Container>
   );
 };
 

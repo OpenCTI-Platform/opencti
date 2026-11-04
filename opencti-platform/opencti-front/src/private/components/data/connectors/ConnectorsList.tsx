@@ -13,6 +13,9 @@ export const connectorsListQuery = graphql`
       is_managed
       built_in
       updated_at
+      update_available
+      latest_compatible_version
+      has_newer_incompatible_version
       manager_contract_excerpt {
         title
         slug

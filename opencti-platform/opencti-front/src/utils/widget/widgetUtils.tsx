@@ -21,6 +21,7 @@ import React from 'react';
 import type { WidgetDataSelection, WidgetMultiTimeSeries, WidgetParameters } from './widget';
 import { isNotEmptyField } from '../utils';
 import useEntityTranslation from 'src/utils/hooks/useEntityTranslation';
+import { getEntityTypeFromFilters } from '@components/widgets/WidgetCreationParameters.utils';
 
 const widgetVisualizationTypes = [
   {
@@ -256,10 +257,6 @@ export const getCurrentIsRelationships = (type: string) => {
   return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isRelationships ?? false;
 };
 
-export const isWidgetListOrTimeline = (type: string) => {
-  return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'list' || indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'timeline';
-};
-
 /**
  * Returns the time interval to use in a widget.
  */
@@ -377,4 +374,21 @@ export const showEstimationWarningForUniqCount = (dataSelection: WidgetDataSelec
   return dataSelection.some((selection, i) => (
     selection.unique && data[i]?.data.some((d) => d.value > UNIQUE_COUNT_ESTIMATION_THRESHOLD)
   ));
+};
+
+export const checkIfDateAttributeValid = (dataSelection: WidgetDataSelection[]) => {
+  const selectionsValid = dataSelection.map((selection) => {
+    if (!selection.date_attribute) return true;
+    if (selection.perspective === 'entities') {
+      return ['created_at', 'updated_at', 'created', 'modified', 'first_seen', 'last_seen'].includes(selection.date_attribute);
+    } else if (selection.perspective === 'relationships') {
+      const selectedEntityType = getEntityTypeFromFilters(selection.filters);
+      if (selectedEntityType === 'stix-sighting-relationship') {
+        return ['created_at', 'updated_at', 'created', 'modified', 'first_seen', 'last_seen'].includes(selection.date_attribute);
+      }
+      return ['created_at', 'updated_at', 'created', 'modified', 'start_time', 'stop_time'].includes(selection.date_attribute);
+    }
+    return true;
+  });
+  return selectionsValid.every((v) => v);
 };

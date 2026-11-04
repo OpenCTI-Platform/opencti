@@ -3,8 +3,7 @@ import IconButton from '@common/button/IconButton';
 import { ZoomInOutlined, ZoomOutOutlined, SaveOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Slide, { SlideProps } from '@mui/material/Slide';
-import makeStyles from '@mui/styles/makeStyles';
-import { createStyles, useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import type { Theme } from '../../../../components/Theme';
@@ -12,17 +11,6 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../../../utils/hooks/useDraftContext';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>(() => createStyles({
-  bottomNav: {
-    zIndex: 1,
-    display: 'flex',
-    overflow: 'hidden',
-    paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
-  },
-}));
 
 const Transition = React.forwardRef((props: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -51,7 +39,6 @@ const StixCoreObjectContentBar: FunctionComponent<
   const {
     bannerSettings: { bannerHeightNumber },
   } = useAuth();
-  const classes = useStyles({ bannerHeightNumber });
   const enableZoom = handleZoomIn && handleZoomOut && currentZoom;
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -62,11 +49,16 @@ const StixCoreObjectContentBar: FunctionComponent<
     <Drawer
       anchor="bottom"
       variant="permanent"
-      classes={{ paper: classes.bottomNav }}
       slotProps={{
         paper: {
           variant: 'elevation',
           elevation: 1,
+          sx: {
+            zIndex: 1,
+            display: 'flex',
+            overflow: 'hidden',
+            paddingBottom: `${bannerHeightNumber}px`,
+          },
           style: {
             bottom: posBottom,
           },

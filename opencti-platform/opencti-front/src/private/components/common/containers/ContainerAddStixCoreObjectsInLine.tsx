@@ -163,7 +163,6 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
     orderAsc,
     searchTerm,
     filters,
-    numberOfElements,
   } = viewStorage;
   const [containerRef, setRef] = useState<HTMLDivElement | null>(null);
   const [selectedElements, setSelectedElements] = useState<scoEdge[]>(containerStixCoreObjects as scoEdge[]);
@@ -259,7 +258,12 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
     : ({ onOpen }: { onOpen: () => void }) => <ControlledDial title={t_i18n('Add observable')} onOpen={onOpen} />;
 
   const buttons = (
-    <Stack direction="row" gap={1}>
+    <Stack
+      direction="row"
+      sx={{
+        gap: 1,
+      }}
+    >
       {showSDOCreation && (
         <Button
           disableElevation
@@ -303,7 +307,6 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         disableCards={true}
         filters={filters}
         paginationOptions={searchPaginationOptions}
-        numberOfElements={numberOfElements}
         iconExtension={true}
         parametersWithPadding={true}
         disableExport={true}

@@ -61,7 +61,13 @@ const IngestionCsvLogsTab: React.FC<IngestionCsvLogsTabProps> = ({ feedId, feedN
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="flex-end" sx={{ mb: 1 }}>
+      <Stack
+        direction="row"
+        sx={{
+          justifyContent: 'flex-end',
+          mb: 1,
+        }}
+      >
         <Tooltip title={t_i18n('Refresh')}>
           <span>
             <IconButton

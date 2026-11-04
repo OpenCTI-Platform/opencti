@@ -32,6 +32,7 @@ import { extractContentFrom } from '../../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../../utils/version';
 import { convertRepresentationsIds } from '../mapper-utils';
 import { pushAll } from '../../../utils/arrayUtil';
+import { getDynamicTypeAttributeForEntityType } from '../../customField/custom-field-cache';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
 
@@ -173,7 +174,8 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
   ].sort();
 
   // Add attribute definitions
-  types.forEach((type) => {
+  for (let i = 0; i < types.length; i++) {
+    const type = types[i];
     const attributesDef = schemaAttributesDefinition.getAttributes(type);
     const attributes: CsvMapperSchemaAttribute[] = Array.from(attributesDef.values()).flatMap((attribute) => {
       if (INTERNAL_ATTRIBUTES.includes(attribute.name)) return [];
@@ -198,6 +200,11 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
           : undefined,
       }];
     });
+    // Inject custom field values if any exist
+    const customFieldAttributes = await getDynamicTypeAttributeForEntityType(context, user, type);
+    for (const cfAttribute of customFieldAttributes) {
+      attributes.push(cfAttribute as CsvMapperSchemaAttribute);
+    }
     if (isStixCoreRelationship(type) || isStixSightingRelationship(type)) {
       attributes.push({
         name: 'from',
@@ -222,7 +229,7 @@ export const csvMapperSchemaAttributes = async (context: AuthContext, user: Auth
       name: type,
       attributes,
     });
-  });
+  }
   // Add refs definitions
   const refsNames = schemaRelationsRefDefinition.getAllInputNames();
   types.forEach((type) => {

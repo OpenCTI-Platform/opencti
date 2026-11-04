@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
 import { DataComponentDetails_dataComponent$data, DataComponentDetails_dataComponent$key } from './__generated__/DataComponentDetails_dataComponent.graphql';
@@ -13,6 +14,10 @@ import Label from '../../../../components/common/label/Label';
 const DataComponentDetailsFragment = graphql`
   fragment DataComponentDetails_dataComponent on DataComponent {
     id
+    entity_type
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     description
     objectLabel {
       id
@@ -42,7 +47,7 @@ const DataComponentDetails: FunctionComponent<DataComponentDetailsProps> = ({
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -50,7 +55,8 @@ const DataComponentDetails: FunctionComponent<DataComponentDetailsProps> = ({
               <ExpandableMarkdown source={data.description} limit={300} />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={12}>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
+          <Grid size={12}>
             <DataComponentDataSource dataComponent={data} />
             <DataComponentAttackPatterns dataComponent={data} />
           </Grid>

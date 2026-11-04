@@ -169,29 +169,34 @@ export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: s
   return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));
 };
 
-const getMonday = (d: Date): Date => {
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-  return new Date(d.setDate(diff));
-};
-
 export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
-  let startDateParsed = moment.parseZone(startDate);
-  let endDateParsed = moment.parseZone(endDate ?? now());
+  // Elasticsearch aggregates on UTC calendar boundaries and the front-end labels the
+  // emitted instants as UTC: everything here must stay anchored on UTC, never on the
+  // time zone of the platform process.
+  // Weeks are aligned on the ISO monday, as the date_histogram calendar_interval is.
+  const startOfInterval: moment.unitOfTime.StartOf = interval === 'week' ? 'isoWeek' : (interval as moment.unitOfTime.StartOf);
+  let startDateParsed = moment.utc(startDate);
+  let endDateParsed = moment.utc(endDate ?? now());
   let dateFormat;
   switch (interval) {
     case 'year':
       dateFormat = 'YYYY';
       break;
     case 'quarter':
+      // Elasticsearch keys quarter buckets on the quarter start month, so both bounds
+      // must be truncated: a mid-quarter start would never match any key and flatten
+      // the whole series to zero.
+      dateFormat = 'YYYY-MM';
+      startDateParsed = startDateParsed.startOf(startOfInterval);
+      endDateParsed = endDateParsed.startOf(startOfInterval);
+      break;
     case 'month':
       dateFormat = 'YYYY-MM';
       break;
-    /* v8 ignore next */
     case 'week':
       dateFormat = 'YYYY-MM-DD';
-      startDateParsed = moment.parseZone(getMonday(new Date(startDateParsed.format(dateFormat))).toISOString());
-      endDateParsed = moment.parseZone(getMonday(new Date(endDateParsed.format(dateFormat))).toISOString());
+      startDateParsed = startDateParsed.startOf(startOfInterval);
+      endDateParsed = endDateParsed.startOf(startOfInterval);
       break;
     case 'hour':
       dateFormat = 'YYYY-MM-DD HH:mm:ss';
@@ -200,13 +205,13 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
     default:
       dateFormat = 'YYYY-MM-DD';
   }
-  const startFormatDate = new Date(endDateParsed.format(dateFormat));
-  const endFormatDate = new Date(startDateParsed.format(dateFormat));
+  const formattedEndDate = moment.utc(endDateParsed.format(dateFormat), dateFormat);
+  const formattedStartDate = moment.utc(startDateParsed.format(dateFormat), dateFormat);
   const duration: DurationInputArg2 = `${interval}s` as DurationInputArg2;
-  const elementsOfInterval = moment(startFormatDate).diff(moment(endFormatDate), duration);
+  const elementsOfInterval = formattedEndDate.diff(formattedStartDate, duration);
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
-    const workDate = moment(startDateParsed).add(i, duration);
+    const workDate = startDateParsed.clone().add(i, duration);
     // Looking for the value
     let dataValue = 0;
     for (let j = 0; j < data.length; j += 1) {
@@ -214,7 +219,8 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
         dataValue = data[j].value;
       }
     }
-    const intervalDate = moment(workDate).startOf(interval as moment.unitOfTime.StartOf).utc().toISOString();
+    // Cloned: startOf() mutates, and workDate is still needed unmodified above.
+    const intervalDate = workDate.clone().startOf(startOfInterval).toISOString();
     newData[i] = {
       date: intervalDate,
       value: dataValue,
@@ -348,20 +354,26 @@ export const wait = <T> (ms: number, resolveResult?: T): Promise<void | T> => {
 };
 
 // Turn a function call into a potential long running async call
+// lockId scopes the mutual exclusion (default: the execution itself). Two executions of the same work
+// (duplicate messages) must share it, otherwise they run concurrently on the same data.
 export const runFunctionAsLongRunning = async (
   context: AuthContext,
   user: AuthUser,
   functionToRun: () => Promise<void>,
   executionId: string,
+  lockId: string = executionId,
 ): Promise<boolean> => {
   let lock: { unlock: () => any } | undefined;
   try {
     // Try to get the lock in redis
-    lock = await lockResources(executionId, { draftId: getDraftContext(context, user) });
+    lock = await lockResources([lockId], { draftId: getDraftContext(context, user) });
     const currentAsyncCall = await redisGetAsyncCall(executionId);
     // If a call was already processed and is finished, return true
     if (currentAsyncCall && currentAsyncCall !== '0') {
-      await lock?.unlock();
+      // Released once: the catch below must not unlock this handle again
+      const heldLock = lock;
+      lock = undefined;
+      await heldLock?.unlock();
       return true;
     } else {
       // Otherwise, it means that either the rule apply wasn't started yet, or the node processing it went down and that the call couldn't finish.
@@ -374,8 +386,19 @@ export const runFunctionAsLongRunning = async (
         } catch (err: any) {
           logApp.error('[OPENCTI] Error during function run', { cause: err });
         }
-        await redisFinishAsyncCall(executionId);
-        await lock?.unlock();
+        try {
+          await redisFinishAsyncCall(executionId);
+        } catch (err: any) {
+          // Once the call has returned (timeout), nobody else would see this failure
+          logApp.warn('[OPENCTI] Unable to record the end of a long running call', { cause: err, executionId });
+          throw err;
+        } finally {
+          // A lock left behind would block every execution sharing the lock id until the process stops.
+          // Released once: with the child lock process, a second unlock of the same handle never gets an answer.
+          const heldLock = lock;
+          lock = undefined;
+          await heldLock?.unlock();
+        }
       };
       const fullRuleApplyPromise = fullFunctionRun();
       const raceResult = await Promise.race([fullRuleApplyPromise, timeoutPromise]) as { timeout?: boolean };

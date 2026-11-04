@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query vocabularies(
@@ -42,24 +42,34 @@ const READ_QUERY = gql`
   }
 `;
 
+const CREATE_QUERY = gql`
+  mutation VocabularyAdd($input: VocabularyAddInput!) {
+    vocabularyAdd(input: $input) {
+      id
+      name
+      category {
+        key
+        fields {
+          key
+        }
+      }
+    }
+  }
+`;
+
+const UPDATE_QUERY = gql`
+  mutation VocabularyFieldPatch($id: ID!, $input: [EditInput!]!) {
+    vocabularyFieldPatch(id: $id, input: $input) {
+      id
+      name
+    }
+  }
+`;
+
 describe('Vocabulary resolver standard behavior', () => {
   let vocabularyInternalId;
   const vocabularyStixId = 'vocabulary--6fb9161e-bf30-11ed-afa1-0242ac120002';
   it('should vocabulary created', async () => {
-    const CREATE_QUERY = gql`
-      mutation VocabularyAdd($input: VocabularyAddInput!) {
-        vocabularyAdd(input: $input) {
-          id
-          name
-          category {
-            key
-            fields {
-              key
-            }
-          }
-        }
-      }
-    `;
     // Create the vocabulary
     const VOCABULARY_TO_CREATE = {
       input: {
@@ -95,14 +105,6 @@ describe('Vocabulary resolver standard behavior', () => {
     expect(queryResult.data).not.toBeNull();
   });
   it('should update vocabulary', async () => {
-    const UPDATE_QUERY = gql`
-      mutation VocabularyFieldPatch($id: ID!, $input: [EditInput!]!) {
-        vocabularyFieldPatch(id: $id, input: $input) {
-          id
-          name
-        }
-      }
-    `;
     let queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: vocabularyInternalId, input: { key: 'name', value: ['facebookApp'] } },
@@ -115,5 +117,39 @@ describe('Vocabulary resolver standard behavior', () => {
       variables: { id: vocabularyInternalId, input: { key: 'name', value: ['facebook'] } },
     });
     expect(queryResult.data.vocabularyFieldPatch.name).toEqual('facebook');
+  });
+});
+
+describe('Vocabulary resolver closed category behavior', () => {
+  const CATEGORIES_QUERY = gql`
+    query vocabularyCategories {
+      vocabularyCategories {
+        key
+        closed
+      }
+    }
+  `;
+  it('should expose closed categories', async () => {
+    const queryResult = await queryAsAdminWithSuccess({ query: CATEGORIES_QUERY, variables: {} });
+    const categories = queryResult.data.vocabularyCategories;
+    expect(categories.find(({ key }) => key === 'opinion_ov').closed).toEqual(true);
+    expect(categories.find(({ key }) => key === 'account_type_ov').closed).toEqual(false);
+  });
+  it('should not add a new value to a closed category', async () => {
+    await queryAsAdminWithError({
+      query: CREATE_QUERY,
+      variables: { input: { name: 'not-an-opinion', category: 'opinion_ov' } },
+    }, 'This vocabulary category is closed, new values cannot be added', 'FUNCTIONAL_ERROR');
+    const queryResult = await queryAsAdminWithSuccess({ query: LIST_QUERY, variables: { category: 'opinion_ov', first: 50 } });
+    const names = queryResult.data.vocabularies.edges.map(({ node }) => node.name);
+    expect(names).not.toContain('not-an-opinion');
+  });
+  it('should not rename a value of a closed category', async () => {
+    const queryResult = await queryAsAdminWithSuccess({ query: LIST_QUERY, variables: { category: 'opinion_ov', search: 'neutral', first: 10 } });
+    const neutral = queryResult.data.vocabularies.edges.find(({ node }) => node.name === 'neutral').node;
+    await queryAsAdminWithError({
+      query: UPDATE_QUERY,
+      variables: { id: neutral.id, input: { key: 'name', value: ['not-an-opinion'] } },
+    }, 'This vocabulary category is closed, new values cannot be added', 'FUNCTIONAL_ERROR');
   });
 });

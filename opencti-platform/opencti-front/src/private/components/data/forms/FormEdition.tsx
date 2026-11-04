@@ -1,37 +1,21 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
 import { graphql, useFragment, useQueryLoader, usePreloadedQuery, PreloadedQuery } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import Button from '@common/button/Button';
 import { FormEditionFragment_form$key } from '@components/data/forms/__generated__/FormEditionFragment_form.graphql';
 import { FormCreationQuery } from '@components/data/forms/__generated__/FormCreationQuery.graphql';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, handleError } from '../../../../relay/environment';
 import type { Theme } from '../../../../components/Theme';
 import FormSchemaEditor from './FormSchemaEditor';
 import { formCreationQuery } from './FormCreation';
 import type { FormBuilderData, FormFieldAttribute } from './Form.d';
-import { convertFormBuilderDataToSchema, normalizeDraftAuthorizedMembersDefaults } from './FormUtils';
+import { convertFormBuilderDataToSchema, formatFormSchemaMappingError, normalizeDraftAuthorizedMembersDefaults, validateFormSchemaMappings } from './FormUtils';
 import Loader from '../../../../components/Loader';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Input, Textarea } from '@filigran/design-system';
-
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    // No padding here, the drawer already provides it
-  },
-  topFields: {
-    marginBottom: 20,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: 10,
-  },
-}));
 
 export const formEditionFragment = graphql`
   fragment FormEditionFragment_form on Form {
@@ -75,7 +59,6 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
   queryRef,
 }) => {
   const theme = useTheme<Theme>();
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [isSaving, setIsSaving] = useState(false);
   const [formName, setFormName] = useState(form.name);
@@ -161,18 +144,9 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
   const handleSubmit = () => {
     if (!formBuilderData) return;
 
-    // Validate that mainEntityParseFieldMapping is set when fieldMode is parsed
-    if (formBuilderData.mainEntityFieldMode === 'parsed' && !formBuilderData.mainEntityParseFieldMapping) {
-      setValidationError(t_i18n('Map parsed values to attribute is required when using parsed mode'));
-      return;
-    }
-
-    // Validate additionalEntities parseFieldMapping
-    const missingMappings = formBuilderData.additionalEntities
-      .filter((entity) => entity.fieldMode === 'parsed' && !entity.parseFieldMapping)
-      .map((entity) => entity.label);
-    if (missingMappings.length > 0) {
-      setValidationError(t_i18n('Map parsed values to attribute is required for: ') + missingMappings.join(', '));
+    const mappingError = validateFormSchemaMappings(formBuilderData);
+    if (mappingError) {
+      setValidationError(formatFormSchemaMappingError(mappingError, t_i18n));
       return;
     }
 
@@ -231,8 +205,8 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
   }
 
   return (
-    <div className={classes.container}>
-      <div className={classes.topFields}>
+    <div>
+      <Box sx={{ marginBottom: '20px' }}>
         <Input
           label={t_i18n('Name')}
           value={formName}
@@ -255,7 +229,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
           label={t_i18n('Active')}
           style={{ marginTop: 20 }}
         />
-      </div>
+      </Box>
 
       <React.Suspense fallback={<Loader />}>
         <FormSchemaEditor
@@ -271,23 +245,23 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         </div>
       )}
 
-      <div className={classes.buttons}>
+      <Box sx={{ marginTop: '20px', textAlign: 'right' }}>
         <Button
           variant="secondary"
           onClick={handleClose}
           disabled={isSaving}
-          classes={{ root: classes.button }}
+          sx={{ marginLeft: '10px' }}
         >
           {t_i18n('Cancel')}
         </Button>
         <Button
           onClick={handleSubmit}
           disabled={isSaving || !formBuilderData}
-          classes={{ root: classes.button }}
+          sx={{ marginLeft: '10px' }}
         >
           {t_i18n('Update')}
         </Button>
-      </div>
+      </Box>
     </div>
   );
 };

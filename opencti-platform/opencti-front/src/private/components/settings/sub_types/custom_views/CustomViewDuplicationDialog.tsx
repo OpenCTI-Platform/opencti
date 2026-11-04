@@ -1,4 +1,4 @@
-import { FunctionComponent, UIEvent, useMemo, useState } from 'react';
+import { FunctionComponent, UIEvent, useMemo, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
 import Button from '@common/button/Button';
@@ -50,6 +50,7 @@ const CustomViewDuplicationDialog: FunctionComponent<
   handleCloseDuplicate,
 }) => {
   const { t_i18n } = useFormatter();
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
   const customView = useFragment(customViewDuplicationFragment, data);
   const { refetchCustomViews } = useCustomViewsData();
 
@@ -108,11 +109,16 @@ const CustomViewDuplicationDialog: FunctionComponent<
       open={displayDuplicate}
       onClose={handleCloseDuplicate}
       size="small"
+      slotProps={{
+        // MUI's transition mounts asynchronously; focusing on mount would
+        // race the DOM insertion, so wait for it to fully enter instead.
+        transition: { onEntered: () => nameInputRef.current?.focus() },
+      }}
       title={t_i18n('Duplicate the custom view')}
     >
       <Input
+        ref={nameInputRef}
         error={!newName ? t_i18n('This field is required') : undefined}
-        autoFocus
         id="duplicated_dashboard_name"
         label={t_i18n('New name')}
         type="text"

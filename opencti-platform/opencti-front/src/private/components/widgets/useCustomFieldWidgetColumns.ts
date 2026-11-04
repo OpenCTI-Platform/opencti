@@ -1,0 +1,71 @@
+import { useEffect, useMemo, useState } from 'react';
+import { graphql } from 'react-relay';
+import type { WidgetColumn } from '../../../utils/widget/widget';
+import { customFieldDefinitionsToWidgetColumns, type CustomFieldWidgetDefinition } from '../../../utils/customFields';
+import useSchema from '../../../utils/hooks/useSchema';
+import { fetchQuery } from '../../../relay/environment';
+import type { useCustomFieldWidgetColumnsQuery } from './__generated__/useCustomFieldWidgetColumnsQuery.graphql';
+const customFieldWidgetColumnsQuery = graphql`
+  query useCustomFieldWidgetColumnsQuery {
+    customFieldDefinitions(first: 500) {
+      edges {
+        node {
+          id
+          name
+          label
+          field_type
+          entity_types
+        }
+      }
+    }
+  }
+`;
+export interface UseCustomFieldWidgetColumnsResult {
+  columns: WidgetColumn[];
+  // True while the definitions are being fetched so callers relying on
+  // `columns` to validate/clean up an already-selected value can wait instead of wrongly
+  // treating not-yet-loaded custom field columns as unavailable/removed.
+  loading: boolean;
+}
+/**
+ * Centralizes the loading of custom field definitions for widgets (attribute widget available
+ * attributes, list/custom-attributes widget available columns), so callers don't have to each
+ * implement their own fetching strategy.
+ *
+ * Definitions attached to no entity type are never kept. When `entityType` is provided, only the
+ * definitions attached to that entity type are kept (or to stix-core-relationship for a relationship type).
+ */
+const useCustomFieldWidgetColumns = (entityType?: string): UseCustomFieldWidgetColumnsResult => {
+  const { isRelationship } = useSchema();
+  const isRelationshipType = !!entityType && isRelationship(entityType);
+  const [definitions, setDefinitions] = useState<CustomFieldWidgetDefinition[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    fetchQuery<useCustomFieldWidgetColumnsQuery>(customFieldWidgetColumnsQuery, {})
+      .toPromise()
+      .then((data) => {
+        if (isMounted) {
+          const edges = data?.customFieldDefinitions?.edges ?? [];
+          setDefinitions(edges.map((edge) => edge.node));
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setDefinitions([]);
+          setLoading(false);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+  const columns = useMemo(
+    () => customFieldDefinitionsToWidgetColumns(definitions, entityType, isRelationshipType),
+    [definitions, entityType, isRelationshipType],
+  );
+  return { columns, loading };
+};
+export default useCustomFieldWidgetColumns;

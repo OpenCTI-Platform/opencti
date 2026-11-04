@@ -3,6 +3,7 @@ import IconButton from '@common/button/IconButton';
 import React, { useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import { SettingsMessagesLine_settingsMessage$data } from '@components/settings/settings_messages/__generated__/SettingsMessagesLine_settingsMessage.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
@@ -110,6 +111,7 @@ const SettingsMessages = ({
     <>
       <Card
         title={t_i18n('Platform announcement')}
+        data-testid="settings-messages"
         action={(
           <IconButton
             color="primary"
@@ -121,17 +123,28 @@ const SettingsMessages = ({
           </IconButton>
         )}
       >
-        <div ref={ref}>
+        <div ref={ref} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <ColumnsLinesTitles
             dataColumns={dataColumns}
             secondaryAction={true}
           />
-          <SettingsMessagesLines
-            settingsId={settings.id}
-            datas={datas}
-            dataColumns={dataColumns}
-            containerRef={ref}
-          />
+          {datas.length === 0 ? (
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              data-testid="settings-messages-empty"
+              sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 48 }}
+            >
+              {t_i18n('No platform announcement yet')}
+            </Typography>
+          ) : (
+            <SettingsMessagesLines
+              settingsId={settings.id}
+              datas={datas}
+              dataColumns={dataColumns}
+              containerRef={ref}
+            />
+          )}
         </div>
       </Card>
       <SettingsMessageCreation

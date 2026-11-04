@@ -1,6 +1,9 @@
 import Button from '@common/button/Button';
 import FormButtonContainer from '@common/form/FormButtonContainer';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form } from 'formik';
+import Formik from '@components/common/custom_fields/CustomFieldsFormik';
+import CustomFieldValuesCreation from '@components/common/custom_fields/CustomFieldValuesCreation';
+import { getCustomFieldValues } from '../../../../utils/customFields';
 import { FormikConfig } from 'formik/dist/types';
 import { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
@@ -12,6 +15,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
@@ -49,6 +53,7 @@ const FeedbackCreation: FunctionComponent<{
   initialValue?: Partial<FormikFeedbackAddInput>;
 }> = ({ openDrawer, handleCloseDrawer, initialValue }) => {
   const { t_i18n } = useFormatter();
+  const { isDeferredMode } = useDeferredCreation();
   const { me } = useAuth();
   const [commit] = useApiMutation<FeedbackCreationMutation>(
     feedbackMutation,
@@ -73,6 +78,7 @@ const FeedbackCreation: FunctionComponent<{
     { setSubmitting, resetForm },
   ) => {
     const input: FeedbackCreationMutation$variables['input'] = {
+      ...getCustomFieldValues(values),
       ...buildCreationFilesInput(values.file ? [values.file] : []),
       name: values.name,
       description: values.description,
@@ -115,6 +121,7 @@ const FeedbackCreation: FunctionComponent<{
       onClose={handleCloseDrawer}
     >
       <Formik<FormikFeedbackAddInput>
+        entityType={FEEDBACK_TYPE}
         initialValues={initialValues}
         validationSchema={validator}
         onSubmit={onSubmit}
@@ -161,11 +168,13 @@ const FeedbackCreation: FunctionComponent<{
               }}
               style={fieldSpacingContainerStyle}
             />
-            <StixCoreObjectsField
-              name="objects"
-              required={(mandatoryAttributes.includes('objects'))}
-              style={fieldSpacingContainerStyle}
-            />
+            {!isDeferredMode && (
+              <StixCoreObjectsField
+                name="objects"
+                required={(mandatoryAttributes.includes('objects'))}
+                style={fieldSpacingContainerStyle}
+              />
+            )}
             <CustomFileUploader setFieldValue={setFieldValue} />
             <ObjectLabelField
               name="objectLabel"
@@ -174,6 +183,7 @@ const FeedbackCreation: FunctionComponent<{
               setFieldValue={setFieldValue}
               values={values.objectLabel}
             />
+            <CustomFieldValuesCreation />
             <FormButtonContainer>
               <Button
                 onClick={handleReset}

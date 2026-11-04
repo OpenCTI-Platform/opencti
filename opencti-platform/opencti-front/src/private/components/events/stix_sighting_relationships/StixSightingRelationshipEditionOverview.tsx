@@ -11,12 +11,14 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
+import { CustomFieldStoredValue } from '../../../../utils/customFields';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useDynamicSchemaEditionValidation, useIsEnforceReference, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import { buildDate, formatDate } from '../../../../utils/Time';
+import CustomFieldValuesEdition from '../../common/custom_fields/CustomFieldValuesEdition';
 import CommitMessage from '../../common/form/CommitMessage';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -31,6 +33,10 @@ import { StixSightingRelationshipEditionOverviewQuery } from './__generated__/St
 const StixSightingRelationshipEditionOverviewFragment = graphql`
   fragment StixSightingRelationshipEditionOverview_stixSightingRelationship on StixSightingRelationship {
     id
+    is_inferred
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     attribute_count
     x_opencti_negative
     confidence
@@ -82,6 +88,7 @@ const stixSightingRelationshipMutationFieldPatch = graphql`
         references: $references
       ) {
         ...StixSightingRelationshipEditionOverview_stixSightingRelationship
+        ...StixSightingRelationshipOverview_stixSightingRelationship
       }
     }
   }
@@ -160,6 +167,7 @@ interface StixSightingRelationshipAddInput {
   objectMarking: FieldOption[];
   message?: string;
   references?: FieldOption[];
+  custom_field_values?: readonly CustomFieldStoredValue[];
 }
 
 const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixSightingRelationshipEditionOverviewProps, 'queryRef'>> = ({
@@ -377,6 +385,15 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
             }
             disabled={inferred}
           />
+          {!inferred && !stixSightingRelationship.is_inferred && (
+            <CustomFieldValuesEdition
+              entityType={STIX_SIGHTING_TYPE}
+              entityId={stixSightingRelationship.id}
+              values={stixSightingRelationship.customFieldValues ?? []}
+              fieldPatch={editor.fieldPatch}
+              enableReferences={enableReferences}
+            />
+          )}
           <div style={{
             display: 'flex',
             alignItems: 'center',

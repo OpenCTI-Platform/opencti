@@ -1,7 +1,8 @@
 import { dissoc, mergeLeft, pipe, split } from 'ramda';
 import { APP_BASE_PATH } from '../relay/environment';
+import { stringifyFilterGroupForUrl } from './filters/filtersUtils';
 
-const buildParamsFromHistory = (params) => {
+export const buildParamsFromHistory = (params) => {
   let urlParams = pipe(
     dissoc('graphData'),
     dissoc('openTimeField'),
@@ -34,13 +35,13 @@ const buildParamsFromHistory = (params) => {
   if (params.filters) {
     urlParams = {
       ...urlParams,
-      filters: JSON.stringify(params.filters),
+      filters: stringifyFilterGroupForUrl(params.filters),
     };
   }
   if (params.timeLineFilters) {
     urlParams = {
       ...urlParams,
-      timeLineFilters: JSON.stringify(params.timeLineFilters),
+      timeLineFilters: stringifyFilterGroupForUrl(params.timeLineFilters),
     };
   }
   if (params.zoom) {

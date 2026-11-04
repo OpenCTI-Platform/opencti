@@ -2,10 +2,11 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { testContext } from '../../../utils/testQuery';
 import { addGroup, addRole } from '../../../../src/domain/grant';
 import { groupAddRelation } from '../../../../src/domain/group';
-import { addUser, assignGroupToUser, userDelete } from '../../../../src/domain/user';
+import { addUser, assignGroupToUser } from '../../../../src/modules/user/user-domain';
+import { deleteMergeableUser } from './userMerge-testFixtures';
 import { addCaseRfi } from '../../../../src/modules/case/case-rfi/case-rfi-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../../src/modules/case/case-rfi/case-rfi-types';
-import { deleteElementById } from '../../../../src/database/middleware';
+import { createEntity, deleteElementById } from '../../../../src/database/middleware';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../../../src/schema/internalObject';
 import { RELATION_HAS_ROLE } from '../../../../src/schema/internalRelationship';
@@ -74,7 +75,10 @@ describe('userMerge restricted members transfer', () => {
     managerGroupId = managerGroup.id;
     await groupAddRelation(testContext, SYSTEM_USER, managerGroupId, { relationship_type: RELATION_HAS_ROLE, toId: managerRoleId });
     await assignGroupToUser(testContext, SYSTEM_USER, targetId, managerGroup.name);
-    const caseRfi = await addCaseRfi(testContext, SYSTEM_USER, {
+    // Created without a stream event: the history manager would otherwise copy the restricted
+    // members onto a history record a few seconds later, and a record landing between the dry
+    // pass and the real one is one more element for the rights handler, which refuses the merge.
+    const caseRfi = await createEntity(testContext, SYSTEM_USER, {
       name: `${SUFFIX}-case`,
       authorized_members: [
         // Same restriction on both users: the two entries have to collapse into one.
@@ -86,7 +90,7 @@ describe('userMerge restricted members transfer', () => {
         { id: sourceId, access_right: MEMBER_ACCESS_RIGHT_VIEW },
         { id: otherUserId, access_right: MEMBER_ACCESS_RIGHT_ADMIN },
       ],
-    });
+    }, ENTITY_TYPE_CONTAINER_CASE_RFI, { publishStreamEvent: false });
     caseId = caseRfi.id;
   });
 
@@ -94,10 +98,11 @@ describe('userMerge restricted members transfer', () => {
     vi.restoreAllMocks();
     resetUserMergeHandlers();
     registeredHandlers.forEach((handler) => registerUserMergeHandler(handler));
-    await deleteElementById(testContext, SYSTEM_USER, caseId, ENTITY_TYPE_CONTAINER_CASE_RFI);
-    await userDelete(testContext, SYSTEM_USER, sourceId);
-    await userDelete(testContext, SYSTEM_USER, targetId);
-    await userDelete(testContext, SYSTEM_USER, otherUserId);
+    // Silent like its creation, so the stream never carries this case at all.
+    await deleteElementById(testContext, SYSTEM_USER, caseId, ENTITY_TYPE_CONTAINER_CASE_RFI, { publishStreamEvent: false });
+    await deleteMergeableUser(sourceId);
+    await deleteMergeableUser(targetId);
+    await deleteMergeableUser(otherUserId);
     await deleteElementById(testContext, SYSTEM_USER, sharedGroupId, ENTITY_TYPE_GROUP);
     await deleteElementById(testContext, SYSTEM_USER, sourceGroupId, ENTITY_TYPE_GROUP);
     await deleteElementById(testContext, SYSTEM_USER, managerGroupId, ENTITY_TYPE_GROUP);
@@ -173,8 +178,8 @@ describe('userMerge restricted members management gate', () => {
     resetUserMergeHandlers();
     gateRegisteredHandlers.forEach((handler) => registerUserMergeHandler(handler));
     await deleteElementById(testContext, SYSTEM_USER, gateCaseId, ENTITY_TYPE_CONTAINER_CASE_RFI);
-    await userDelete(testContext, SYSTEM_USER, gateSourceId);
-    await userDelete(testContext, SYSTEM_USER, gateTargetId);
+    await deleteMergeableUser(gateSourceId);
+    await deleteMergeableUser(gateTargetId);
     await deleteElementById(testContext, SYSTEM_USER, gateGroupId, ENTITY_TYPE_GROUP);
     await deleteElementById(testContext, SYSTEM_USER, gateRoleId, ENTITY_TYPE_ROLE);
   });

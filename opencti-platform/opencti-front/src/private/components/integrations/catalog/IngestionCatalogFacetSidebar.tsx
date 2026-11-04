@@ -9,10 +9,12 @@ import { getConnectorMetadata, getConnectorTypeIcon, IngestionConnectorType } fr
 import { getUseCaseIcon } from '@components/integrations/catalog/utils/useCaseIcons';
 import {
   CATALOG_DEPLOYMENT_FACETS,
+  CATALOG_MANAGER_SUPPORTED_FACETS,
   CATALOG_STATUS_FACETS,
   CatalogDeploymentFacet,
   CatalogFilterState,
   CatalogStatusFacet,
+  ManagerSupportedFacet,
 } from '@components/integrations/catalog/hooks/useIngestionCatalogFilters';
 import { useFormatter } from '../../../../components/i18n';
 import { paperBg, paperBorder } from '../paperSurface';
@@ -55,10 +57,12 @@ interface FacetCheckboxProps {
   label: string;
   count: number;
   icon?: SvgIconComponent;
+  // Replaces the icon when the value carries its own colour, e.g. a health status dot
+  adornment?: React.ReactNode;
   onToggle: () => void;
 }
 
-export const FacetCheckbox = ({ checked, label, count, icon: Icon, onToggle }: FacetCheckboxProps) => {
+export const FacetCheckbox = ({ checked, label, count, icon: Icon, adornment, onToggle }: FacetCheckboxProps) => {
   const theme = useTheme();
   const isDisabled = count === 0 && !checked;
   return (
@@ -90,7 +94,8 @@ export const FacetCheckbox = ({ checked, label, count, icon: Icon, onToggle }: F
         aria-hidden
         style={{ pointerEvents: 'none', flexShrink: 0 }}
       />
-      {Icon && (
+      {adornment}
+      {!adornment && Icon && (
         <Icon
           sx={{
             fontSize: 15,
@@ -176,6 +181,7 @@ interface IngestionCatalogFacetSidebarProps {
     licenseTypeCounts: Record<string, number>;
     statusCounts: Record<string, number>;
     deploymentCounts: Record<string, number>;
+    managerSupportedCounts: Record<ManagerSupportedFacet, number>;
   };
 }
 
@@ -233,7 +239,13 @@ const IngestionCatalogFacetSidebar = ({
         {/* No 'Filters' title: the sidebar is self-explanatory, the row only
             appears to host the clear action when a filter is active. */}
         {hasActiveFilters && (
-          <Stack direction="row" alignItems="center" justifyContent="flex-end">
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+            }}
+          >
             <Button
               variant="tertiary"
               size="small"
@@ -256,6 +268,27 @@ const IngestionCatalogFacetSidebar = ({
               onToggle={() => onFiltersChange((prev) => ({ ...prev, deployments: toggleValue(prev.deployments, deployment) }))}
             />
           ))}
+        </Box>
+
+        <Box sx={dividedGroupSx}>
+          <FacetGroupLabel>{t_i18n('Deployment')}</FacetGroupLabel>
+          {CATALOG_MANAGER_SUPPORTED_FACETS.map((managerSupported) => {
+            const label = managerSupported === 'managed'
+              ? t_i18n('Managed')
+              : t_i18n('Manual');
+            return (
+              <FacetCheckbox
+                key={managerSupported}
+                checked={filters.managerSupported.includes(managerSupported)}
+                count={facets.managerSupportedCounts[managerSupported] ?? 0}
+                label={label}
+                onToggle={() => onFiltersChange((prev) => ({
+                  ...prev,
+                  managerSupported: toggleValue(prev.managerSupported, managerSupported),
+                }))}
+              />
+            );
+          })}
         </Box>
 
         <Box sx={dividedGroupSx}>

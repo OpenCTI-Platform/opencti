@@ -166,7 +166,7 @@ const AuditsMultiLineChart: FunctionComponent<AuditsMultiLineChartProps> = ({
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiLineChartTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiLineChartTimeSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -189,8 +189,7 @@ const AuditsMultiLineChart: FunctionComponent<AuditsMultiLineChartProps> = ({
       warning={warning}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

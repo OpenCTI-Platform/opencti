@@ -48,7 +48,13 @@ const ProfileOverviewXtmOneMcp = () => {
       </Typography>
       <div style={{ marginTop: 16 }}>
         <Label>{t_i18n('MCP endpoint URL')}</Label>
-        <Stack direction="row" alignItems="center" gap={1}>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
           <pre style={{ flex: 1, minWidth: 0, margin: 0, overflowX: 'auto' }}>{mcpEndpointUrl}</pre>
           <Tooltip title={t_i18n('Copy MCP endpoint URL')}>
             <IconButton
@@ -65,7 +71,13 @@ const ProfileOverviewXtmOneMcp = () => {
       <Typography variant="body2" style={{ marginTop: 16 }}>
         {t_i18n('Authenticate with a personal XTM One API key passed as a bearer token. Your endpoint, connection status and ready-to-copy client configuration are available in your XTM One profile.')}
       </Typography>
-      <Stack direction="row" justifyContent="flex-end" style={{ marginTop: 16 }}>
+      <Stack
+        direction="row"
+        style={{ marginTop: 16 }}
+        sx={{
+          justifyContent: 'flex-end',
+        }}
+      >
         <Button
           variant="secondary"
           endIcon={<OpenInNewOutlined />}

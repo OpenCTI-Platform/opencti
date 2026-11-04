@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, TextField, MenuItem, InputLabel } from '@mui/material';
 import { Field, FieldProps } from 'formik';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import { isEmptyField } from '../../utils/utils';
@@ -101,7 +101,13 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
               <InputLabel variant="outlined" shrink>
                 {label || t_i18n('Periodicity')}
               </InputLabel>
-              <Box display="flex" gap={1} alignItems="flex-end">
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                  alignItems: 'flex-end',
+                }}
+              >
                 <Box style={{ flex: 1 }}>
                   <Input
                     type="number"
@@ -118,11 +124,15 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                   onChange={handleUnitChange}
                   style={{ flex: 1 }}
                   fullWidth
-                  SelectProps={{
-                    MenuProps: {
-                      PaperProps: {
-                        style: {
-                          maxHeight: 200,
+                  slotProps={{
+                    select: {
+                      MenuProps: {
+                        slotProps: {
+                          paper: {
+                            style: {
+                              maxHeight: 200,
+                            },
+                          },
                         },
                       },
                     },
@@ -135,7 +145,10 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                 </TextField>
               </Box>
               {helperText && (
-                <Box mt={1}>
+                <Box sx={{
+                  mt: 1,
+                }}
+                >
                   <small style={{ color: theme.palette.common.lightGrey }}>{helperText}</small>
                 </Box>
               )}

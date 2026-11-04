@@ -1,4 +1,5 @@
 import Grid from '@mui/material/Grid';
+import CustomFieldValuesDisplay from '@components/common/custom_fields/CustomFieldValuesDisplay';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import RelatedContainers from '@components/common/containers/related_containers/RelatedContainers';
@@ -16,6 +17,9 @@ import { Stack } from '@mui/material';
 const CaseRftDetailsFragment = graphql`
   fragment CaseRftDetails_case on CaseRft {
     id
+    customFieldValues {
+      ...CustomFieldValuesDisplay_values @relay(mask: false)
+    }
     name
     entity_type
     description
@@ -68,7 +72,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
     <div style={{ height: '100%' }} data-testid="case-rft-details-page">
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2} sx={{ marginBottom: 2 }}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -76,12 +80,18 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               <ExpandableMarkdown source={data.description} limit={300} />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Request for takedown types')}
             </Label>
             <FieldOrEmpty source={takedownTypes}>
-              <Stack direction="row" flexWrap="wrap" gap={1}>
+              <Stack
+                direction="row"
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 1,
+                }}
+              >
                 {takedownTypes.map((takedownType) => (
                   <Tag
                     key={takedownType}
@@ -91,7 +101,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               </Stack>
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Priority')}
             </Label>
@@ -103,7 +113,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               displayMode="chip"
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Severity')}
             </Label>
@@ -115,6 +125,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               displayMode="chip"
             />
           </Grid>
+          <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
         </Grid>
         <Divider />
         <RelatedContainers

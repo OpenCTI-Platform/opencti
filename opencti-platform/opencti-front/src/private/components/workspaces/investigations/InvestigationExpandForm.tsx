@@ -1,6 +1,6 @@
 import Button from '@common/button/Button';
+import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
-import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
 import { Suspense, useEffect, useState } from 'react';
@@ -68,17 +68,6 @@ const investigationExpandFormRelDistributionQuery = graphql`
     }
   }
 `;
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  fallback: {
-    minHeight: 200,
-    minWidth: 200,
-    display: 'flex',
-    alignItems: 'center',
-  },
-}));
 
 type FormData = {
   entity_types: FieldOption[];
@@ -372,7 +361,12 @@ const InvestigationExpandFormContent = ({
       {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
           <Stack spacing={3} sx={{ p: 3 }}>
-            <Stack direction="row" justifyContent="space-between">
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: 'space-between',
+              }}
+            >
               <Field
                 name="entity_types"
                 component={CheckboxesField}
@@ -415,8 +409,6 @@ const InvestigationExpandFormContent = ({
 
 // Wrapper component that prepares queries.
 const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
-  const classes = useStyles();
-
   // Number of relations grouped by type of relation.
   const [distributionRelQueryRef, loadDistributionRelQuery] = useQueryLoader<InvestigationExpandFormRelDistributionQuery>(
     investigationExpandFormRelDistributionQuery,
@@ -440,9 +432,16 @@ const InvestigationExpandForm = (props: InvestigationExpandFormProps) => {
   }, [props.selectedNodes]);
 
   const Fallback = (
-    <div className={classes.fallback}>
+    <Box
+      sx={{
+        minHeight: 200,
+        minWidth: 200,
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
       <Loader variant={LoaderVariant.inElement} />
-    </div>
+    </Box>
   );
 
   return distributionRelQueryRef

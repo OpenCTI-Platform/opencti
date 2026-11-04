@@ -131,7 +131,7 @@ describe('catalog-sync-domain', () => {
   it('should use embedded source by default', async () => {
     mockFetchSourceCatalog.mockResolvedValue(buildSourceCatalog('embedded-catalog'));
     const result = await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
-    expect(result).toEqual(['embedded-catalog']);
+    expect(result).toEqual({ synchronizedCatalogIds: ['embedded-catalog'], isEmbeddedOnlySyncComplete: true });
     expect(mockFetchSourceCatalog).toHaveBeenCalledWith({ kind: 'embedded', uri: 'embedded' }, undefined);
     expect(mockFindAllCatalogsExcluding).toHaveBeenCalled();
   });
@@ -174,7 +174,8 @@ describe('catalog-sync-domain', () => {
       { kind: 'remote', uri: 'https://catalog.example.org/custom.json' },
       { kind: 'local', filepath: '/tmp/custom-catalog.json', uri: pathToFileURL('/tmp/custom-catalog.json').toString() },
     ]);
-    expect(result).toHaveLength(3);
+    expect(result).toEqual({ synchronizedCatalogIds: expect.any(Array), isEmbeddedOnlySyncComplete: false });
+    expect(result.synchronizedCatalogIds).toHaveLength(3);
   });
 
   it('should ignore custom catalog manager endpoint when decoupling feature is disabled', async () => {
@@ -225,7 +226,7 @@ describe('catalog-sync-domain', () => {
       return buildSourceCatalog('embedded-fallback');
     });
     const result = await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
-    expect(result).toEqual(['embedded-fallback']);
+    expect(result).toEqual({ synchronizedCatalogIds: ['embedded-fallback'], isEmbeddedOnlySyncComplete: false });
     expect(mockFetchSourceCatalog.mock.calls[0][0].kind).toBe('remote');
     expect(mockFetchSourceCatalog.mock.calls[1][0]).toEqual({ kind: 'embedded', uri: 'embedded' });
   });
@@ -246,8 +247,21 @@ describe('catalog-sync-domain', () => {
       return buildSourceCatalog('embedded-catalog');
     });
     const result = await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
-    expect(result).toEqual(['embedded-catalog']);
+    expect(result).toEqual({ synchronizedCatalogIds: ['embedded-catalog'], isEmbeddedOnlySyncComplete: false });
     expect(mockFindAllCatalogsExcluding).not.toHaveBeenCalled();
     expect(mockDeleteCatalogs).not.toHaveBeenCalled();
+  });
+
+  it('should not report an embedded only sync as complete when the embedded source fails', async () => {
+    mockFetchSourceCatalog.mockRejectedValue(new Error('embedded source failure'));
+    const result = await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
+    expect(result).toEqual({ synchronizedCatalogIds: [], isEmbeddedOnlySyncComplete: false });
+  });
+
+  it('should report an embedded only sync as complete when decoupling is enabled without any remote source', async () => {
+    featureFlagState.value = true;
+    mockFetchSourceCatalog.mockResolvedValue(buildSourceCatalog('embedded-catalog'));
+    const result = await synchronizeCatalogs({ source: 'test' } as any, { id: 'user-1' } as any);
+    expect(result).toEqual({ synchronizedCatalogIds: ['embedded-catalog'], isEmbeddedOnlySyncComplete: true });
   });
 });
