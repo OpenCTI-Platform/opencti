@@ -328,6 +328,9 @@ In a digest, pick the event you want with an explicit index: there is no implici
 - A variable whose root is **not** in the list above is left as is, so `$100` or `$foo` stay literal text in the title.
 - A variable with a known root but nothing at that path (an index out of range, a missing property, an empty value) is replaced by an **empty text**.
 - A `.` that is not followed by a property name is not part of the variable: in `$notification.name.` the final dot stays in the title.
+- A property name reads as many letters, digits and `_` as it finds: `$notification.name_x` reads the property `name_x`, which does not exist, so it is replaced by an empty text. Put a space or a punctuation mark right after a variable when text follows it.
+- A list of plain values (for instance the labels) is rendered with its elements joined by `, `. An object is rendered as an empty text: go down to one of its properties instead.
+- A title that already contains a bare word such as `$user`, `$data` or `$content` now renders it as an empty text, because these are known roots. Rewrite the title if you meant the literal word.
 - Variables inside EJS tags (`<% %>`) are never rewritten. Use the regular EJS variables there.
 - `notification_content` groups the events **by entity**, whereas `data` lists the events one by one. In a digest, `$notification_content[1]` and `$data[1]` can therefore concern different events. Use the same root for all the pieces of information that must go together.
 - Only `$user.user_email` is available on `user`. The name of the recipient is not provided to the templates.
