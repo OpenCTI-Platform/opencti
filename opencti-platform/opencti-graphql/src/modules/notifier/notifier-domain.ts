@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 import { BUS_TOPICS } from '../../config/conf';
-import { UnsupportedError } from '../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { internalFindByIds, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -33,6 +33,22 @@ import { authorizedMembers } from '../../schema/attribute-definition';
 
 const ajv = new Ajv();
 
+const parseNotifierConfiguration = (configuration: string): unknown => {
+  try {
+    return JSON.parse(configuration);
+  } catch {
+    throw UnsupportedError('This configuration is invalid', { configuration });
+  }
+};
+
+const isHttpUrl = (url: string) => {
+  try {
+    return ['http:', 'https:'].includes(new URL(url).protocol);
+  } catch {
+    return false;
+  }
+};
+
 const validateNotifier = (notifier: { notifier_connector_id: string; notifier_configuration: string }) => {
   const notifierConnector = BUILTIN_NOTIFIERS_CONNECTORS[notifier.notifier_connector_id];
   if (isEmptyField(notifierConnector) || isEmptyField(notifierConnector.connector_schema)) {
@@ -43,13 +59,16 @@ const validateNotifier = (notifier: { notifier_connector_id: string; notifier_co
   if (isEmptyField(notifier.notifier_configuration)) {
     throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration });
   }
-  const parsedConfiguration = JSON.parse(notifier.notifier_configuration) as unknown;
+  const parsedConfiguration = parseNotifierConfiguration(notifier.notifier_configuration);
   const isValidConfiguration = validate(parsedConfiguration);
   if (!isValidConfiguration) {
     throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration, errors: validate.errors });
   }
   if (notifier.notifier_connector_id === NOTIFIER_CONNECTOR_WEBHOOK) {
     const webhookConfiguration = parsedConfiguration as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
+    if (!isHttpUrl(webhookConfiguration.url)) {
+      throw FunctionalError('The webhook URL must be an http or https URL', { url: webhookConfiguration.url });
+    }
     verifyUri(webhookConfiguration.url);
   }
 };
@@ -74,12 +93,19 @@ export const notifierGet = (context: AuthContext, user: AuthUser, notifierId: st
 };
 
 export const notifierEdit = async (context: AuthContext, user: AuthUser, notifierId: string, input: EditInput[]) => {
-  const getInputValue = (key: string) => input.find((n) => n.key === key)?.value[0] ?? '';
-  const fieldsToValidate = {
-    notifier_configuration: getInputValue('notifier_configuration'),
-    notifier_connector_id: getInputValue('notifier_connector_id'),
-  };
-  validateNotifier(fieldsToValidate);
+  const connectorInput = input.find(({ key }) => key === 'notifier_connector_id');
+  const configurationInput = input.find(({ key }) => key === 'notifier_configuration');
+  if (connectorInput || configurationInput) {
+    // An edited connector or configuration is validated along with the stored one it goes with
+    const notifier = await storeLoadById<BasicStoreEntityNotifier>(context, user, notifierId, ENTITY_TYPE_NOTIFIER);
+    if (!notifier) {
+      throw FunctionalError('Cant find element to update', { id: notifierId, type: ENTITY_TYPE_NOTIFIER });
+    }
+    validateNotifier({
+      notifier_connector_id: connectorInput ? connectorInput.value?.[0] ?? '' : notifier.notifier_connector_id,
+      notifier_configuration: configurationInput ? configurationInput.value?.[0] ?? '' : notifier.notifier_configuration,
+    });
+  }
   const finalInput = input.map(({ key, value }) => {
     const item: { key: string; value: any } = { key, value };
     if (key === authorizedMembers.name) {
