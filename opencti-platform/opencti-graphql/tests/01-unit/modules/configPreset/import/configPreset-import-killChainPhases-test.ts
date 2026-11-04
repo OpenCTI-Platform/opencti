@@ -41,7 +41,7 @@ describe('Kill chain phases import (registry)', () => {
   it('accepts an id computed from the names with their surrounding spaces trimmed, as the platform does', async () => {
     vi.mocked(importKillChainPhase).mockResolvedValue({ status: 'created', exists: false });
     const result = await family.importer!.compute(context, user, item({ kill_chain_name: ' mitre-attack', phase_name: 'execution ' }), plan, ConfigImportMode.Overwrite);
-    expect(result).toMatchObject({ status: 'created', exists: false, conflict: false });
+    expect(result).toMatchObject({ label: 'mitre-attack: execution', status: 'created', exists: false, conflict: false });
   });
 
   it('fails an item whose id is not the standard id of its names, without asking the module', async () => {
@@ -54,6 +54,15 @@ describe('Kill chain phases import (registry)', () => {
     vi.mocked(importKillChainPhase).mockResolvedValue({ status: 'failed', code: 'invalid', reason: 'phase_name: Invalid input', exists: false });
     expect(await family.importer!.compute(context, user, item({ kill_chain_name: 'mitre-attack' }), plan, ConfigImportMode.Overwrite))
       .toMatchObject({ status: 'failed', label: phaseId, reason: 'phase_name: Invalid input' });
+  });
+
+  it.each([
+    ['kill chain name', { kill_chain_name: '  ', phase_name: 'execution' }],
+    ['phase name', { kill_chain_name: 'mitre-attack', phase_name: '' }],
+  ])('leaves a blank %s to the module, which refuses it: the standard id of a blank name cannot be derived', async (_name, configuration) => {
+    vi.mocked(importKillChainPhase).mockResolvedValue({ status: 'failed', code: 'invalid', reason: 'Name is required', exists: false });
+    expect(await family.importer!.compute(context, user, item(configuration), plan, ConfigImportMode.Overwrite)).toMatchObject({ status: 'failed', reason: 'Name is required' });
+    expect(importKillChainPhase).toHaveBeenCalled();
   });
 
   it('applies through the module, reports a status that differs from the computed one, and throws on a failure', async () => {

@@ -5,7 +5,7 @@ import { getKillChainPhaseStandardId, importKillChainPhase } from '../../killCha
 import type { BasicStoreEntityKillChainPhase } from '../../killChainPhase/killChainPhase-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetImporter } from '../import/configPreset-import-types';
-import { buildConfigPresetConnection, taxonomyGroup, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
+import { buildConfigPresetConnection, checkStandardId, taxonomyGroup, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
 
 export const KILL_CHAIN_PHASES_FAMILY_ID = 'killChainPhases';
 
@@ -34,10 +34,17 @@ const killChainPhasesImporter: ConfigPresetImporter = {
   compute: async (context, user, item, _plan, mode) => {
     const { kill_chain_name: killChainName, phase_name: phaseName } = item.configuration;
     const hasNames = typeof killChainName === 'string' && typeof phaseName === 'string';
-    const label = { label: hasNames ? `${killChainName}: ${phaseName}` : item.id, translatable: false };
+    const label = { label: hasNames ? `${killChainName.trim()}: ${phaseName.trim()}` : item.id, translatable: false };
     // The bundle id of a phase is its standard id: the one of its names
-    if (hasNames && getKillChainPhaseStandardId({ kill_chain_name: killChainName.trim(), phase_name: phaseName.trim() }) !== item.id) {
-      return { ...label, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the kill chain phase does not match its names' };
+    const mismatch = checkStandardId(
+      item,
+      label,
+      [killChainName, phaseName],
+      ([chainName, phase]) => getKillChainPhaseStandardId({ kill_chain_name: chainName.trim(), phase_name: phase.trim() }),
+      'The standard id of the kill chain phase does not match its names',
+    );
+    if (mismatch) {
+      return mismatch;
     }
     return toComputedItem(label, await importKillChainPhase(context, user, item.configuration, { mode, dryRun: true }));
   },
