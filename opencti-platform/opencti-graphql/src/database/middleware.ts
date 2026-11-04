@@ -3470,7 +3470,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [from.internal_id] },
-              { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+              { key: 'role', values: [`${relationshipType}_from`] },
             ],
             values: [],
           },
@@ -3478,7 +3478,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [to.internal_id] },
-              { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+              { key: 'role', values: [`${relationshipType}_to`] },
             ],
             values: [],
           },
