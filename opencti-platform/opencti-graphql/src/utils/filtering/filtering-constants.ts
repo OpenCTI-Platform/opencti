@@ -3,6 +3,7 @@ import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { isMetricsName } from '../../modules/metrics/metrics-utils';
 import { CUSTOM_FIELD_PREFIX } from '../../modules/customField/custom-field-types';
+import { FilterOperator } from '../../generated/graphql';
 
 // Resolved-Filters
 // These require special handling when comparing to a stix object as they need to be resolved before comparison
@@ -127,6 +128,17 @@ export const CUSTOM_FIELD_SELECT_VALUES_SUBFILTER = 'select_values';
  */
 export const isCustomFieldFilterKey = (key: string): boolean => {
   return key.startsWith(CUSTOM_FIELD_PREFIX);
+};
+
+// ---- generic nested filter keys (filterable nested attributes, ex: coverage_information)
+// type of their filter definition ('nested' is the type of regardingOf and dynamicRegardingOf)
+export const GENERIC_NESTED_FILTER_TYPE = 'nested_filterable';
+// the filter itself only tells whether the nested elements exist, each sub-filter carries its own operator
+export const GENERIC_NESTED_FILTER_OPERATORS: string[] = [FilterOperator.Eq, FilterOperator.Nil, FilterOperator.NotNil];
+const GENERIC_NESTED_STRING_SUB_FILTER_OPERATORS: string[] = [FilterOperator.Eq, FilterOperator.NotEq];
+const GENERIC_NESTED_NUMERIC_SUB_FILTER_OPERATORS: string[] = [FilterOperator.Eq, FilterOperator.Gt, FilterOperator.Gte, FilterOperator.Lt, FilterOperator.Lte];
+export const getGenericNestedSubFilterOperators = (mapping: { type: string }): string[] => {
+  return mapping.type === 'numeric' ? GENERIC_NESTED_NUMERIC_SUB_FILTER_OPERATORS : GENERIC_NESTED_STRING_SUB_FILTER_OPERATORS;
 };
 
 // for users
