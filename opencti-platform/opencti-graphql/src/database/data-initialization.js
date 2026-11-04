@@ -16,7 +16,7 @@ import { CAPABILITIES } from '../schema/capabilities';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import conf, { CONFIG_PRESET_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { CONFIG_PRESET_FEATURE_FLAG, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, logApp } from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
@@ -305,6 +305,9 @@ export const initializeData = async (context, withMarkings = true) => {
     ...(isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG) ? { platform_bootstrap_status: 'pending' } : {}),
     view_all_users: false,
     local_auth: { enabled: true },
+    // A new platform starts with the local authentication lockout enabled (NIST SP 800-53 AC-7),
+    // existing platforms keep it disabled at upgrade
+    ...(isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) ? { local_auth_lockout_enabled: true } : {}),
     cert_auth: {
       enabled: false,
       description: null,

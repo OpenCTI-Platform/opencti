@@ -56,13 +56,16 @@ export const buildAvailableProviders = async (platformSettings: BasicStoreSettin
   return availableProviders;
 };
 
-// Values returned for the local authentication lockout policy when the settings hold none
+// Values returned for the local authentication lockout policy when the settings hold none.
+// Thresholds and window follow NIST SP 800-53 AC-7: 3 attempts for administrative accounts, 10 for the other users, within 15 minutes
 export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
+  // Existing platforms keep the lockout disabled, new platforms start with it enabled (data initialization)
   local_auth_lockout_enabled: false,
-  local_auth_lockout_max_attempts: 5,
+  local_auth_lockout_max_attempts: 10,
+  local_auth_lockout_admin_max_attempts: 3,
   // Applied once max attempts are reached: a lock for the whole window, or the account set to Locked until an admin unlocks it
   local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Temporary,
-  local_auth_lockout_window: 1440, // minutes, 24h
+  local_auth_lockout_window: 15, // minutes
   local_auth_lockout_duration: 30, // seconds
   local_auth_lockout_max_duration: 10800, // seconds, 3h
 };
@@ -79,6 +82,7 @@ const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuth
   const patch = {
     ...(input.local_auth_lockout_enabled !== undefined && { local_auth_lockout_enabled: input.local_auth_lockout_enabled }),
     ...(input.local_auth_lockout_max_attempts !== undefined && { local_auth_lockout_max_attempts: input.local_auth_lockout_max_attempts }),
+    ...(input.local_auth_lockout_admin_max_attempts !== undefined && { local_auth_lockout_admin_max_attempts: input.local_auth_lockout_admin_max_attempts }),
     // The GraphQL enum already restricts the final action to its allowed values
     ...(input.local_auth_lockout_final_action !== undefined && { local_auth_lockout_final_action: input.local_auth_lockout_final_action }),
     ...(input.local_auth_lockout_window !== undefined && { local_auth_lockout_window: input.local_auth_lockout_window }),
@@ -93,11 +97,12 @@ const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuth
   // Validate the values the settings will hold once patched (a null input falls back to the default)
   // Stored values are read from the database, as the settings cache can lag behind a previous update
   const storedSettings = await loadEntity<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
-  const effectiveValue = (key: 'local_auth_lockout_max_attempts' | 'local_auth_lockout_window' | 'local_auth_lockout_duration' | 'local_auth_lockout_max_duration') => {
+  const effectiveValue = (key: 'local_auth_lockout_max_attempts' | 'local_auth_lockout_admin_max_attempts' | 'local_auth_lockout_window' | 'local_auth_lockout_duration' | 'local_auth_lockout_max_duration') => {
     const value = key in patch ? input[key] : storedSettings?.[key];
     return value ?? LOCAL_AUTH_LOCKOUT_DEFAULTS[key];
   };
   const maxAttempts = effectiveValue('local_auth_lockout_max_attempts');
+  const adminMaxAttempts = effectiveValue('local_auth_lockout_admin_max_attempts');
   const lockoutWindow = effectiveValue('local_auth_lockout_window');
   const duration = effectiveValue('local_auth_lockout_duration');
   const maxDuration = effectiveValue('local_auth_lockout_max_duration');
@@ -106,6 +111,12 @@ const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuth
   }
   if (maxAttempts > LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT) {
     throw FunctionalError(`Lockout max attempts must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`, { local_auth_lockout_max_attempts: maxAttempts });
+  }
+  if (adminMaxAttempts < 1) {
+    throw FunctionalError('Lockout admin max attempts must be greater than or equal to 1', { local_auth_lockout_admin_max_attempts: adminMaxAttempts });
+  }
+  if (adminMaxAttempts > LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT) {
+    throw FunctionalError(`Lockout admin max attempts must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`, { local_auth_lockout_admin_max_attempts: adminMaxAttempts });
   }
   if (lockoutWindow <= 0) {
     throw FunctionalError('Lockout window must be greater than 0', { local_auth_lockout_window: lockoutWindow });

@@ -35,6 +35,7 @@ const localStrategyFormQuery = graphql`
       password_policy_validity_days
       local_auth_lockout_enabled
       local_auth_lockout_max_attempts
+      local_auth_lockout_admin_max_attempts
       local_auth_lockout_final_action
       local_auth_lockout_window
       local_auth_lockout_duration
@@ -75,6 +76,7 @@ const localStrategyFormMutation = graphql`
         password_policy_validity_days
         local_auth_lockout_enabled
         local_auth_lockout_max_attempts
+        local_auth_lockout_admin_max_attempts
         local_auth_lockout_final_action
         local_auth_lockout_window
         local_auth_lockout_duration
@@ -120,6 +122,7 @@ const localStrategyValidation = (t_i18n: Translate) => Yup.object().shape({
   password_policy_validity_days: Yup.number(),
   local_auth_lockout_enabled: Yup.boolean(),
   local_auth_lockout_max_attempts: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_ATTEMPTS_LIMIT),
+  local_auth_lockout_admin_max_attempts: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_ATTEMPTS_LIMIT),
   local_auth_lockout_final_action: Yup.string().oneOf(LOCKOUT_FINAL_ACTIONS),
   local_auth_lockout_window: lockoutNumberSchema(t_i18n, LOCKOUT_WINDOW_LIMIT),
   local_auth_lockout_duration: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_DURATION_LIMIT),
@@ -177,6 +180,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
     local_auth_lockout_enabled: settings.local_auth_lockout_enabled ?? false,
     // The back end always returns a value, falling back to its own defaults
     local_auth_lockout_max_attempts: settings.local_auth_lockout_max_attempts ?? '',
+    local_auth_lockout_admin_max_attempts: settings.local_auth_lockout_admin_max_attempts ?? '',
     local_auth_lockout_final_action: settings.local_auth_lockout_final_action ?? 'temporary',
     local_auth_lockout_window: settings.local_auth_lockout_window ?? '',
     local_auth_lockout_duration: settings.local_auth_lockout_duration ?? '',
@@ -193,6 +197,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
       ? {
           local_auth_lockout_enabled: true,
           local_auth_lockout_max_attempts: Number(values.local_auth_lockout_max_attempts),
+          local_auth_lockout_admin_max_attempts: Number(values.local_auth_lockout_admin_max_attempts),
           local_auth_lockout_final_action: values.local_auth_lockout_final_action as LocalAuthLockoutFinalAction,
           local_auth_lockout_window: Number(values.local_auth_lockout_window),
           local_auth_lockout_duration: Number(values.local_auth_lockout_duration),
@@ -353,7 +358,16 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                     variant="outlined"
                     className="mt-5"
                     name="local_auth_lockout_max_attempts"
-                    label={t_i18n('Maximum number of failed login attempts')}
+                    label={t_i18n('Maximum number of failed login attempts for users')}
+                    fullWidth
+                  />
+                  <Field
+                    component={TextField}
+                    type="number"
+                    variant="outlined"
+                    className="mt-5"
+                    name="local_auth_lockout_admin_max_attempts"
+                    label={t_i18n('Maximum number of failed login attempts for administrators')}
                     fullWidth
                   />
                   <Field

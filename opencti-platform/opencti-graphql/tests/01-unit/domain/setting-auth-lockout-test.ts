@@ -50,7 +50,8 @@ const context = {} as AuthContext;
 const user = { id: 'admin' } as AuthUser;
 const LOCKOUT_INPUT = {
   local_auth_lockout_enabled: true,
-  local_auth_lockout_max_attempts: 3,
+  local_auth_lockout_max_attempts: 5,
+  local_auth_lockout_admin_max_attempts: 3,
   local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Permanent,
   local_auth_lockout_window: 60,
   local_auth_lockout_duration: 10, // seconds
@@ -136,6 +137,7 @@ describe('updateLocalAuth - lockout policy', () => {
 
   it.each([
     ['max attempts', { local_auth_lockout_max_attempts: LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT + 1 }, `Lockout max attempts must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`],
+    ['admin max attempts', { local_auth_lockout_admin_max_attempts: LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT + 1 }, `Lockout admin max attempts must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`],
     ['window', { local_auth_lockout_window: LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT + 1 }, `Lockout window must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT}`],
     ['max duration', { local_auth_lockout_max_duration: LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT + 1 }, `Lockout max duration must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT}`],
   ])('should reject a %s above its upper bound', async (_, lockoutInput, expectedMessage) => {
@@ -150,6 +152,7 @@ describe('updateLocalAuth - lockout policy', () => {
     const boundInput = {
       ...LOCKOUT_INPUT,
       local_auth_lockout_max_attempts: LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT,
+      local_auth_lockout_admin_max_attempts: LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT,
       local_auth_lockout_window: LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT,
       local_auth_lockout_duration: LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT,
       local_auth_lockout_max_duration: LOCAL_AUTH_LOCKOUT_MAX_DURATION_LIMIT,
