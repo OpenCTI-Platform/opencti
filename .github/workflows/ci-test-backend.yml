@@ -75,10 +75,9 @@ jobs:
 
     - name: Set up Docker Compose for backends and sync instances
       env:
-        # Empty for Elasticsearch 8 and OpenSearch: docker-compose.yml then keeps its default image
-        ELASTICSEARCH_IMAGE: ${{ matrix.engine == 'elasticsearch9' && 'elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c' || '' }}
-        # OpenSearch: docker-compose.opensearch.yml replaces the image and the settings of the search engine service
-        COMPOSE_FILE: ${{ matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
+        # Elasticsearch 9 and OpenSearch: a file merged over docker-compose.yml replaces the search engine service
+        # image (and the settings, for OpenSearch). Kept in compose files, where Renovate finds the images.
+        COMPOSE_FILE: ${{ matrix.engine == 'elasticsearch9' && 'docker-compose.yml:docker-compose.elasticsearch9.yml' || matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
       run: |
          set -ex
          cd scripts/ci
@@ -234,10 +233,9 @@ jobs:
 
     - name: Set up Docker Compose for backends and sync instances
       env:
-        # Empty for Elasticsearch 8 and OpenSearch: docker-compose.yml then keeps its default image
-        ELASTICSEARCH_IMAGE: ${{ matrix.engine == 'elasticsearch9' && 'elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c' || '' }}
-        # OpenSearch: docker-compose.opensearch.yml replaces the image and the settings of the search engine service
-        COMPOSE_FILE: ${{ matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
+        # Elasticsearch 9 and OpenSearch: a file merged over docker-compose.yml replaces the search engine service
+        # image (and the settings, for OpenSearch). Kept in compose files, where Renovate finds the images.
+        COMPOSE_FILE: ${{ matrix.engine == 'elasticsearch9' && 'docker-compose.yml:docker-compose.elasticsearch9.yml' || matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
       run: |
          set -eux
          cd scripts/ci

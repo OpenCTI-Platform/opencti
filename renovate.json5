@@ -58,14 +58,28 @@
       allowedVersions: '<3.13',
       description: 'Keep Python docker images and setup-python at version 3.12.x',
     },
+    // Elasticsearch 8 and 9 are both supported: the client is installed twice (@elastic/elasticsearch and its alias
+    // @elastic/elasticsearch-v9, whose package name stays @elastic/elasticsearch) and the CI runs both images.
+    // Each one keeps its own major, read from its current version.
     {
       matchPackageNames: [
         'elasticsearch',
         'kibana',
         '@elastic/elasticsearch',
       ],
+      matchCurrentVersion: '<9',
       allowedVersions: '<9',
-      description: 'Keep Elasticsearch, Kibana and the Elasticsearch client at version 8.x',
+      description: 'Keep Elasticsearch, Kibana and the Elasticsearch client at version 8.x where they are on 8.x',
+    },
+    {
+      matchPackageNames: [
+        'elasticsearch',
+        'kibana',
+        '@elastic/elasticsearch',
+      ],
+      matchCurrentVersion: '>=9',
+      allowedVersions: '<10',
+      description: 'Keep Elasticsearch, Kibana and the Elasticsearch client at version 9.x where they are on 9.x',
     },
     {
       matchPackageNames: [

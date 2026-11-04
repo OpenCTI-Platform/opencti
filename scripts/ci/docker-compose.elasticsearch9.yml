@@ -1,0 +1,5 @@
+# Merged over docker-compose.yml (COMPOSE_FILE) by the backend tests matrix to run against Elasticsearch 9.
+# The service keeps its name and its settings: only the image changes.
+services:
+  elasticsearch:
+    image: elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c
