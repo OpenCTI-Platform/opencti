@@ -34,16 +34,15 @@ const view: GraphViewActions = {
 
 describe('GraphToolbar on a narrow graph', () => {
   beforeEach(() => {
-    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
-      configurable: true,
-      get() {
-        return (this as HTMLElement).hasAttribute('data-toolbar-pinned') ? 120 : 0;
-      },
+    // A spy, not defineProperty: jsdom's own getter lives on this prototype, and
+    // the worker's jsdom is shared with the test files that run after this one.
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function offsetWidth(this: HTMLElement) {
+      return this.hasAttribute('data-toolbar-pinned') ? 120 : 0;
     });
   });
 
   afterEach(() => {
-    delete (HTMLElement.prototype as { offsetWidth?: number }).offsetWidth;
+    vi.restoreAllMocks();
     row.width = 400;
   });
 
