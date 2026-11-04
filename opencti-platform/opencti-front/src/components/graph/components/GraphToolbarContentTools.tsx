@@ -19,6 +19,8 @@ import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './Gra
 import ContainerAddStixCoreObjectsInLine from '../../../private/components/common/containers/ContainerAddStixCoreObjectsInLine';
 import { getRelationshipMainRepresentative } from '../../../utils/defaultRepresentatives';
 import InvestigationEnrichmentTool from '../../../private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentTool';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
 
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery?: GraphQLTaggedNode;
@@ -173,10 +175,12 @@ const GraphToolbarContentTools = ({
             onDelete={removeFromAddPanel}
           />
 
-          <InvestigationEnrichmentTool
-            entity={entity}
-            onExpand={onInvestigationExpand}
-          />
+          <Security needs={[KNOWLEDGE]}>
+            <InvestigationEnrichmentTool
+              entity={entity}
+              onExpand={onInvestigationExpand}
+            />
+          </Security>
         </>
       )}
 
