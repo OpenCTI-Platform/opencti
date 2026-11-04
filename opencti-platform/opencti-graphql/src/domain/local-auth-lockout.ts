@@ -8,6 +8,7 @@ import { AuthenticationFailure } from '../config/errors';
 import { getEntityFromCache } from '../database/cache';
 import { type LocalAuthLockoutTimings, type LocalAuthLockType, redisClearLocalAuthLockout, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt } from '../database/redis';
 import { LocalAuthLockoutFinalAction } from '../generated/graphql';
+import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -69,8 +70,13 @@ const getLockoutTimings = async (): Promise<LocalAuthLockoutTimings | undefined>
   };
 };
 
-// Returns undefined when the lockout is disabled, so that the login keeps its previous behavior
-export const loadLocalAuthLockout = async (email: string) => {
+// Returns undefined when the lockout is disabled, so that the login keeps its previous behavior.
+// The built-in admin (app:admin) is a break-glass account, never locked out: if every administrator gets locked,
+// it is enabled again in the configuration to unlock them
+export const loadLocalAuthLockout = async (email: string, userId?: string) => {
+  if (userId === OPENCTI_ADMIN_UUID) {
+    return undefined;
+  }
   const timings = await getLockoutTimings();
   if (!timings) {
     return undefined;
