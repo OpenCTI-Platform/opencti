@@ -640,6 +640,7 @@
   "Local authentication lockout enabled": "Блокировка локальной аутентификации включена",
   "Local authentication lockout final action": "Итоговое действие блокировки локальной аутентификации",
   "Local authentication lockout max attempts": "Максимальное число попыток до блокировки локальной аутентификации",
+  "Local authentication lockout max attempts for administrative accounts": "Максимальное число попыток до блокировки локальной аутентификации для учетных записей администраторов",
   "Local authentication lockout max duration in seconds": "Максимальная длительность блокировки локальной аутентификации в секундах",
   "Local authentication lockout window in minutes": "Окно блокировки локальной аутентификации в минутах",
   "LocalStrategy": "Местная стратегия",

@@ -640,6 +640,7 @@
   "Local authentication lockout enabled": "로컬 인증 잠금 활성화",
   "Local authentication lockout final action": "로컬 인증 잠금 최종 동작",
   "Local authentication lockout max attempts": "로컬 인증 잠금 전 최대 시도 횟수",
+  "Local authentication lockout max attempts for administrative accounts": "관리자 계정의 로컬 인증 잠금 전 최대 시도 횟수",
   "Local authentication lockout max duration in seconds": "로컬 인증 최대 잠금 시간(초)",
   "Local authentication lockout window in minutes": "로컬 인증 잠금 기간(분)",
   "LocalStrategy": "지역 전략",

@@ -640,6 +640,7 @@
   "Local authentication lockout enabled": "ローカル認証のロックアウトを有効化",
   "Local authentication lockout final action": "ローカル認証ロックアウトの最終動作",
   "Local authentication lockout max attempts": "ローカル認証のロックアウトまでの最大試行回数",
+  "Local authentication lockout max attempts for administrative accounts": "管理者アカウントのローカル認証のロックアウトまでの最大試行回数",
   "Local authentication lockout max duration in seconds": "ローカル認証の最大ロックアウト時間（秒）",
   "Local authentication lockout window in minutes": "ローカル認証のロックアウト期間（分）",
   "LocalStrategy": "地域戦略",

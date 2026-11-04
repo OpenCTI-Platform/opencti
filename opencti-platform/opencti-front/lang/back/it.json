@@ -640,6 +640,7 @@
   "Local authentication lockout enabled": "Blocco dell'autenticazione locale abilitato",
   "Local authentication lockout final action": "Azione finale del blocco dell'autenticazione locale",
   "Local authentication lockout max attempts": "Numero massimo di tentativi prima del blocco dell'autenticazione locale",
+  "Local authentication lockout max attempts for administrative accounts": "Numero massimo di tentativi prima del blocco dell'autenticazione locale per gli account amministratore",
   "Local authentication lockout max duration in seconds": "Durata massima del blocco dell'autenticazione locale in secondi",
   "Local authentication lockout window in minutes": "Finestra di blocco dell'autenticazione locale in minuti",
   "LocalStrategy": "Strategia locale",

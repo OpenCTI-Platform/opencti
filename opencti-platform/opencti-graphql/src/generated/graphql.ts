@@ -15787,6 +15787,7 @@ export type LocalAuthConfig = {
 
 export type LocalAuthConfigInput = {
   enabled: Scalars['Boolean']['input'];
+  local_auth_lockout_admin_max_attempts?: InputMaybe<Scalars['Int']['input']>;
   local_auth_lockout_duration?: InputMaybe<Scalars['Int']['input']>;
   local_auth_lockout_enabled?: InputMaybe<Scalars['Boolean']['input']>;
   local_auth_lockout_final_action?: InputMaybe<LocalAuthLockoutFinalAction>;
@@ -31799,6 +31800,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   id: Scalars['ID']['output'];
   is_authentication_by_env?: Maybe<Scalars['Boolean']['output']>;
   local_auth?: Maybe<LocalAuthConfig>;
+  local_auth_lockout_admin_max_attempts?: Maybe<Scalars['Int']['output']>;
   local_auth_lockout_duration?: Maybe<Scalars['Int']['output']>;
   local_auth_lockout_enabled?: Maybe<Scalars['Boolean']['output']>;
   local_auth_lockout_final_action?: Maybe<LocalAuthLockoutFinalAction>;
@@ -53054,6 +53056,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_authentication_by_env?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   local_auth?: Resolver<Maybe<ResolversTypes['LocalAuthConfig']>, ParentType, ContextType>;
+  local_auth_lockout_admin_max_attempts?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   local_auth_lockout_duration?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   local_auth_lockout_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   local_auth_lockout_final_action?: Resolver<Maybe<ResolversTypes['LocalAuthLockoutFinalAction']>, ParentType, ContextType>;

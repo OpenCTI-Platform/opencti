@@ -251,6 +251,7 @@ const READ_LOCKOUT_QUERY = gql`
       id
       local_auth_lockout_enabled
       local_auth_lockout_max_attempts
+      local_auth_lockout_admin_max_attempts
       local_auth_lockout_final_action
       local_auth_lockout_window
       local_auth_lockout_duration
@@ -269,6 +270,7 @@ const UPDATE_LOCAL_AUTH_QUERY = gql`
         }
         local_auth_lockout_enabled
         local_auth_lockout_max_attempts
+        local_auth_lockout_admin_max_attempts
         local_auth_lockout_final_action
         local_auth_lockout_window
         local_auth_lockout_duration
@@ -284,6 +286,7 @@ describe('Settings resolver local authentication lockout policy', () => {
     enabled: true,
     local_auth_lockout_enabled: null,
     local_auth_lockout_max_attempts: null,
+    local_auth_lockout_admin_max_attempts: null,
     local_auth_lockout_final_action: null,
     local_auth_lockout_window: null,
     local_auth_lockout_duration: null,
@@ -307,9 +310,10 @@ describe('Settings resolver local authentication lockout policy', () => {
     const queryResult = await queryAsAdmin({ query: READ_LOCKOUT_QUERY, variables: {} });
     const { settings } = queryResult.data;
     expect(settings.local_auth_lockout_enabled).toEqual(false);
-    expect(settings.local_auth_lockout_max_attempts).toEqual(5);
+    expect(settings.local_auth_lockout_max_attempts).toEqual(10);
+    expect(settings.local_auth_lockout_admin_max_attempts).toEqual(3);
     expect(settings.local_auth_lockout_final_action).toEqual('temporary');
-    expect(settings.local_auth_lockout_window).toEqual(1440);
+    expect(settings.local_auth_lockout_window).toEqual(15);
     expect(settings.local_auth_lockout_duration).toEqual(30);
     expect(settings.local_auth_lockout_max_duration).toEqual(10800);
   });
@@ -322,6 +326,7 @@ describe('Settings resolver local authentication lockout policy', () => {
           enabled: true,
           local_auth_lockout_enabled: true,
           local_auth_lockout_max_attempts: 3,
+          local_auth_lockout_admin_max_attempts: 2,
           local_auth_lockout_final_action: 'permanent',
           local_auth_lockout_window: 60,
           local_auth_lockout_duration: 10,
@@ -333,6 +338,7 @@ describe('Settings resolver local authentication lockout policy', () => {
     expect(settings.local_auth.enabled).toEqual(true);
     expect(settings.local_auth_lockout_enabled).toEqual(true);
     expect(settings.local_auth_lockout_max_attempts).toEqual(3);
+    expect(settings.local_auth_lockout_admin_max_attempts).toEqual(2);
     expect(settings.local_auth_lockout_final_action).toEqual('permanent');
     expect(settings.local_auth_lockout_window).toEqual(60);
     expect(settings.local_auth_lockout_duration).toEqual(10);
@@ -346,6 +352,7 @@ describe('Settings resolver local authentication lockout policy', () => {
     const settings = queryResult.data.settingsEdit.updateLocalAuth;
     expect(settings.local_auth_lockout_enabled).toEqual(true);
     expect(settings.local_auth_lockout_max_attempts).toEqual(4);
+    expect(settings.local_auth_lockout_admin_max_attempts).toEqual(2);
     expect(settings.local_auth_lockout_final_action).toEqual('permanent');
     expect(settings.local_auth_lockout_window).toEqual(60);
     expect(settings.local_auth_lockout_duration).toEqual(10);
@@ -353,6 +360,8 @@ describe('Settings resolver local authentication lockout policy', () => {
   });
   it.each([
     ['max attempts lower than 1', { local_auth_lockout_max_attempts: 0 }, 'Lockout max attempts must be greater than or equal to 1'],
+    ['admin max attempts lower than 1', { local_auth_lockout_admin_max_attempts: 0 }, 'Lockout admin max attempts must be greater than or equal to 1'],
+    ['admin max attempts above 100', { local_auth_lockout_admin_max_attempts: 101 }, 'Lockout admin max attempts must be lower than or equal to 100'],
     ['window equal to 0', { local_auth_lockout_window: 0 }, 'Lockout window must be greater than 0'],
     ['negative duration', { local_auth_lockout_duration: -5 }, 'Lockout duration must be greater than 0'],
     ['max duration equal to 0', { local_auth_lockout_max_duration: 0 }, 'Lockout max duration must be greater than 0'],
