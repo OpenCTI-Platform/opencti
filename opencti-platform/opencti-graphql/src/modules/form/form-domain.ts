@@ -547,10 +547,10 @@ export const planSubmission = async (
   };
 
   const { mainEntityType } = schema;
-  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass, uploads);
+  const { mainStixEntities, mainEntityStixId, existingMainStixIds } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass, uploads);
   const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass, uploads);
   await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
-  wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
+  wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer, additionalEntitiesMap, existingMainStixIds);
 
   let draftPlan: DraftPlan | null = null;
   if (finalIsDraft) {
