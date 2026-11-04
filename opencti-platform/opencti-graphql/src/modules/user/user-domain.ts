@@ -2004,11 +2004,51 @@ const isAccountDisabled = (user: BasicStoreEntityUser) => {
   return !!user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date));
 };
 
+/**
+ * Checks if the IP whitelist should block this user (undefined for an unknown email).
+ * If blocked, throws an AuthenticationFailure with the IP blocked message.
+ * The middleware will block any subsequent requests from this IP.
+ */
+const checkIpWhitelistOnLogin = async (sourceIp: string | undefined, userId: string | undefined) => {
+  // Global kill switch via configuration file (app:ip_whitelist_enabled)
+  const ipWhitelistConfEnabled = conf.get('app:ip_whitelist_enabled') ?? true;
+  if (!ipWhitelistConfEnabled) return;
+  const context = executionContext('ip-whitelist-login-check');
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  if (!settings?.platform_ip_whitelist_enabled) return;
+  const whitelist = settings.platform_ip_whitelist;
+  if (!whitelist || whitelist.length === 0) return;
+
+  if (!sourceIp) return;
+
+  // If IP matches whitelist, allow
+  if (ipMatchesWhitelist(sourceIp, whitelist)) return;
+
+  // Check exclusion list
+  const exclusionIds = settings.platform_ip_whitelist_exclusion_ids;
+  if (userId && isNotEmptyField(exclusionIds)) {
+    const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    const fullUser = platformUsers.get(userId);
+    if (fullUser && isUserExcluded(fullUser, exclusionIds)) {
+      return;
+    }
+  }
+
+  logApp.warn('[IP_WHITELIST] Login rejected for IP', { ip: sourceIp, user_id: userId });
+  // Use AuthenticationFailure so the error is handled like a login failure
+  // and properly displayed in the login form
+  throw AuthenticationFailure('Your IP address is not allowed to access this platform', { ip_not_allowed: true });
+};
+
+const isIpNotAllowedError = (error: unknown) => {
+  return (error as { extensions?: { data?: { ip_not_allowed?: boolean } } } | undefined)?.extensions?.data?.ip_not_allowed === true;
+};
+
 // The permanent final action of the lockout sets the account to Locked, which kills its sessions and rejects its API tokens.
 // Service accounts are never locked, so that their connectors keep working, and external users neither,
-// as it would also block their real login. The admin from configuration logs in with a local password, so it is locked.
+// as it would also block their real login.
 export const lockAccountAfterFailedAttempts = async (user: Pick<BasicStoreEntityUser, 'id' | 'account_status' | 'user_service_account' | 'external'>) => {
-  const isLockable = !user.user_service_account && (!user.external || user.id === OPENCTI_ADMIN_UUID);
+  const isLockable = !user.user_service_account && !user.external;
   if (!isLockable || user.account_status !== ACCOUNT_STATUS_ACTIVE) {
     return;
   }
@@ -2016,12 +2056,17 @@ export const lockAccountAfterFailedAttempts = async (user: Pick<BasicStoreEntity
   await userEditField(context, SYSTEM_USER, user.id, [{ key: 'account_status', value: [ACCOUNT_STATUS_LOCKED] }]);
 };
 
-export const login = async (email: string, password: string) => {
-  // Undefined when the local authentication lockout is disabled
-  const lockout = await loadLocalAuthLockout(email);
+export const login = async (email: string, password: string, sourceIp?: string) => {
+  const user = await getUserByEmail(email);
+  // Undefined when the local authentication lockout is disabled, and for the built-in admin
+  const lockout = await loadLocalAuthLockout(email, user?.id);
+  // An IP that the whitelist blocks is rejected before the attempt is counted, so that it cannot lock any account.
+  // As the attempt is not counted, the password is not checked either.
+  if (lockout) {
+    await checkIpWhitelistOnLogin(sourceIp, user?.id);
+  }
   // The attempt is counted before the password is checked, and during a lock the password is not even checked
   const attempt = await lockout?.recordAttempt();
-  const user = await getUserByEmail(email);
   const dbPassword = user ? getOwnPasswordHash(user) : undefined;
   // With the lockout, an inactive or expired account is rejected without checking its password.
   // The failure is counted like a wrong password, so that the account cannot be told apart from an unknown email.
@@ -2087,42 +2132,6 @@ export const otpUserDeactivation = async (context: AuthContext, user: AuthUser, 
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
-/**
- * Checks if the IP whitelist should block this user after successful authentication.
- * If blocked, throws an AuthenticationFailure with the IP blocked message.
- * The middleware will block any subsequent requests from this IP.
- */
-const checkIpWhitelistOnLogin = async (context: AuthContext, loggedUser: Pick<AuthUser, 'id'>) => {
-  // Global kill switch via configuration file (app:ip_whitelist_enabled)
-  const ipWhitelistConfEnabled = conf.get('app:ip_whitelist_enabled') ?? true;
-  if (!ipWhitelistConfEnabled) return;
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  if (!settings?.platform_ip_whitelist_enabled) return;
-  const whitelist = settings.platform_ip_whitelist;
-  if (!whitelist || whitelist.length === 0) return;
-
-  const sourceIp = context.req?.ip;
-  if (!sourceIp) return;
-
-  // If IP matches whitelist, allow
-  if (ipMatchesWhitelist(sourceIp, whitelist)) return;
-
-  // Check exclusion list
-  const exclusionIds = settings.platform_ip_whitelist_exclusion_ids;
-  if (isNotEmptyField(exclusionIds)) {
-    const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    const fullUser = platformUsers.get(loggedUser.id);
-    if (fullUser && isUserExcluded(fullUser, exclusionIds)) {
-      return;
-    }
-  }
-
-  logApp.warn('[IP_WHITELIST] Login rejected for IP', { ip: sourceIp, user_id: loggedUser.id });
-  // Use AuthenticationFailure so the error is handled like a login failure
-  // and properly displayed in the login form
-  throw AuthenticationFailure('Your IP address is not allowed to access this platform');
-};
-
 type PassportAuthenticationResult = { user: BasicStoreEntityUser | false | undefined; provider: string };
 export const sessionLogin = async (context: AuthContext, input: UserLoginInput) => {
   // We need to iterate on each provider to find one that validated the credentials
@@ -2150,7 +2159,7 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
     });
     // As soon as credential is validated, stop looking for another provider
     if (user) {
-      await checkIpWhitelistOnLogin(context, user);
+      await checkIpWhitelistOnLogin(context.req?.ip, user.id);
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
       // The local lockout never blocks other providers. The session clears the lockout of the user email,
       // but the counter is keyed on what was typed, which can be another identifier (LDAP uid).
@@ -2174,10 +2183,10 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
           logApp.warn('Token authenticate error', { cause: err, info, provider: LOCAL_STRATEGY_IDENTIFIER });
         }
         resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
-      })({ body });
+      })({ body, ip: context.req?.ip }); // The source IP is checked against the IP whitelist before the lockout counts the attempt
     });
     if (user && (isLocalAuthEnabled || user.id === OPENCTI_ADMIN_UUID)) {
-      await checkIpWhitelistOnLogin(context, user);
+      await checkIpWhitelistOnLogin(context.req?.ip, user.id);
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
       // The right password still waits for its MFA code: its attempt is lifted, but the counter is kept
       // until a valid MFA code, otherwise logging in again would reset it between MFA guesses
@@ -2209,6 +2218,10 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   });
   // User cannot be authenticated in any providers
   logAuthInfo('User cannot be authenticated in any providers', EnvStrategyType.STRATEGY_LOCAL, { username: input.email });
+  // With the lockout, a blocked IP is rejected before the password is checked, so that the user knows why
+  if (isIpNotAllowedError(localError)) {
+    throw localError;
+  }
   // A local lock is returned as is, so that the login form can show it with the remaining time.
   // Only when the local auth is the only form login: otherwise the email can belong to another provider, never blocked by the local lock
   if (isLocalAuthEnabled && formProviders.length === 0 && isLocalAuthLockedError(localError)) {
@@ -2222,7 +2235,7 @@ export const otpUserLogin = async (req: OtpSessionRequest, user: AuthUser, { cod
     throw AuthenticationFailure();
   }
   // A failed MFA code counts like a failed password, so that the second factor cannot be brute-forced
-  const lockout = await loadLocalAuthLockout(user.user_email);
+  const lockout = await loadLocalAuthLockout(user.user_email, user.id);
   const attempt = await lockout?.recordAttempt();
   const { valid } = await totp.verify({ secret: user.otp_secret!, token: code });
   if (!valid) {
@@ -2446,7 +2459,7 @@ export const resolveUserById = async (context: AuthContext, id: string) => {
 
 export const authenticateUserByBasicAuth = async (context: AuthContext, req: OriginRequest, basicAuth: { username: string; password: string }) => {
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const loggedUser = await login(basicAuth.username, basicAuth.password);
+  const loggedUser = await login(basicAuth.username, basicAuth.password, req.ip);
   const user = platformUsers.get(loggedUser.id);
   if (user) {
     if (!isUserHasCapability(user, 'APIACCESS_USEBASICAUTH')) {

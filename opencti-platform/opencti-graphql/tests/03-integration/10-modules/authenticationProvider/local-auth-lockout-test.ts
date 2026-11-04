@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import { v4 as uuid } from 'uuid';
 import type Express from 'express';
-import { ADMIN_API_TOKEN, ADMIN_USER, API_EMAIL, API_PASSWORD, testContext } from '../../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, API_EMAIL, API_PASSWORD, getGroupIdByName, testContext } from '../../../utils/testQuery';
 import * as conf from '../../../../src/config/conf';
 import * as cache from '../../../../src/database/cache';
 import { getClientBase, localAuthLockoutKeys, redisSetForgotPasswordOtp } from '../../../../src/database/redis';
@@ -13,6 +13,7 @@ import { getSettingsFromDatabase } from '../../../../src/domain/settings';
 import { updateLocalAuth } from '../../../../src/domain/setting-auth';
 import {
   addUser,
+  addUserTokenByAdmin,
   authenticateUserByBasicAuth,
   authenticateUserFromRequest,
   getUserByEmail,
@@ -25,6 +26,7 @@ import {
 } from '../../../../src/modules/user/user-domain';
 import { verifyMfa } from '../../../../src/modules/auth/auth-domain';
 import { AuthType, EnvStrategyType, PROVIDERS } from '../../../../src/modules/authenticationProvider/providers-configuration';
+import { TokenDuration } from '../../../../src/generated/graphql';
 import { ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
 import { ENTITY_TYPE_USER } from '../../../../src/modules/user/user-types';
 import { hashSHA256 } from '../../../../src/utils/hash';
@@ -58,10 +60,14 @@ const INACTIVE_USER = { email: 'lockout-inactive@opencti.io', password: 'lockout
 const EXPIRED_USER = { email: 'lockout-expired@opencti.io', password: 'lockout-password' };
 const MFA_USER = { email: 'lockout-mfa@opencti.io', password: 'lockout-password' };
 const EXTERNAL_USER = { email: 'lockout-external@opencti.io', password: 'lockout-password' };
+// A user allowed to use Basic auth and API tokens
+const API_USER = { email: 'lockout-api@opencti.io', password: 'lockout-password' };
 const SERVICE_ACCOUNT_EMAIL = 'lockout-service-account@opencti.io';
 const UNKNOWN_EMAIL = 'lockout-unknown@opencti.io';
 const WRONG_PASSWORD = 'wrong-password';
-const ALL_EMAILS = [LOCKOUT_USER.email, INACTIVE_USER.email, EXPIRED_USER.email, MFA_USER.email, EXTERNAL_USER.email, SERVICE_ACCOUNT_EMAIL, UNKNOWN_EMAIL, API_EMAIL];
+const ALL_EMAILS = [
+  LOCKOUT_USER.email, INACTIVE_USER.email, EXPIRED_USER.email, MFA_USER.email, EXTERNAL_USER.email, API_USER.email, SERVICE_ACCOUNT_EMAIL, UNKNOWN_EMAIL, API_EMAIL,
+];
 
 // region helpers
 const keysOf = (email: string) => localAuthLockoutKeys(hashSHA256(normalizeEmail(email)));
@@ -138,13 +144,16 @@ const buildSessionContext = () => ({
 // A full login through the login form: login() alone counts the attempt, only an accepted login clears the lockout
 const sessionLoginAs = (email: string, password: string) => sessionLogin(buildSessionContext(), { email, password });
 // Settings from the cache with the IP whitelist enabled, the test requests coming from another IP
-const enableIpWhitelist = () => {
+const enableIpWhitelist = (exclusionIds: string[] = []) => {
   const getEntityFromCache = cache.getEntityFromCache;
   vi.spyOn(cache, 'getEntityFromCache').mockImplementation(async (context, user, type) => {
     const entity = await getEntityFromCache(context, user, type);
-    return type === ENTITY_TYPE_SETTINGS ? { ...entity, platform_ip_whitelist_enabled: true, platform_ip_whitelist: ['10.10.10.10'] } : entity;
+    return type === ENTITY_TYPE_SETTINGS
+      ? { ...entity, platform_ip_whitelist_enabled: true, platform_ip_whitelist: ['10.10.10.10'], platform_ip_whitelist_exclusion_ids: exclusionIds }
+      : entity;
   });
 };
+const IP_NOT_ALLOWED = 'Your IP address is not allowed to access this platform';
 // endregion
 
 describe('Local authentication lockout', () => {
@@ -152,6 +161,8 @@ describe('Local authentication lockout', () => {
   let lockoutUserId: string;
   let mfaUserId: string;
   let mfaSecret: string;
+  let apiUserId: string;
+  let apiUserToken: string;
 
   beforeAll(async () => {
     for (const { email, password } of [LOCKOUT_USER, INACTIVE_USER, EXPIRED_USER, MFA_USER]) {
@@ -161,7 +172,12 @@ describe('Local authentication lockout', () => {
     [lockoutUserId, , , mfaUserId] = createdUserIds;
     const externalUser = await addUser(testContext, ADMIN_USER, { user_email: EXTERNAL_USER.email, name: EXTERNAL_USER.email, password: EXTERNAL_USER.password, external: true });
     const serviceAccount = await addUser(testContext, ADMIN_USER, { user_email: SERVICE_ACCOUNT_EMAIL, name: SERVICE_ACCOUNT_EMAIL, user_service_account: true });
-    createdUserIds.push(externalUser.id, serviceAccount.id);
+    const amberGroupId = await getGroupIdByName(AMBER_GROUP.name);
+    const apiUser = await addUser(testContext, ADMIN_USER, { user_email: API_USER.email, name: API_USER.email, password: API_USER.password, groups: [amberGroupId] });
+    apiUserId = apiUser.id;
+    const { plaintext_token } = await addUserTokenByAdmin(testContext, ADMIN_USER, apiUserId, { name: 'lockout-api', duration: TokenDuration.Days_30 });
+    apiUserToken = plaintext_token;
+    createdUserIds.push(externalUser.id, serviceAccount.id, apiUserId);
     await userEditField(testContext, ADMIN_USER, createdUserIds[1], [{ key: 'account_status', value: ['Inactive'] }]);
     await userEditField(testContext, ADMIN_USER, createdUserIds[2], [{ key: 'account_lock_after_date', value: ['2020-01-01T00:00:00.000Z'] }]);
     mfaSecret = totp.generateSecret();
@@ -339,12 +355,12 @@ describe('Local authentication lockout', () => {
     });
 
     it('should reject the API tokens of a locked account', async () => {
-      await failLogin(API_EMAIL, 3);
+      await failLogin(API_USER.email, 3);
       try {
-        const tokenUser = await authenticateUserFromRequest(testContext, buildApiRequest({ authorization: `Bearer ${ADMIN_API_TOKEN}` }));
+        const tokenUser = await authenticateUserFromRequest(testContext, buildApiRequest({ authorization: `Bearer ${apiUserToken}` }));
         expect(tokenUser).toBeUndefined();
       } finally {
-        await userEditField(testContext, ADMIN_USER, ADMIN_USER.id, [{ key: 'account_status', value: ['Active'] }]);
+        await userEditField(testContext, ADMIN_USER, apiUserId, [{ key: 'account_status', value: ['Active'] }]);
       }
     });
 
@@ -392,13 +408,24 @@ describe('Local authentication lockout', () => {
       expect(user.user_email).toEqual(LOCKOUT_USER.email);
     });
 
-    it('should count the attempt when the password is right but the IP is not allowed', async () => {
-      await failLogin(LOCKOUT_USER.email, 1);
+    it('should not count the attempts from an IP that the IP whitelist blocks', async () => {
       enableIpWhitelist();
-      await expect(sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password)).rejects.toThrow('Your IP address is not allowed to access this platform');
+      const compareSpy = vi.spyOn(bcrypt, 'compareSync');
+      await expect(sessionLoginAs(LOCKOUT_USER.email, WRONG_PASSWORD)).rejects.toThrow(IP_NOT_ALLOWED);
+      await expect(sessionLoginAs(UNKNOWN_EMAIL, WRONG_PASSWORD)).rejects.toThrow(IP_NOT_ALLOWED);
+      await expect(authenticateUserByBasicAuth(testContext, buildRequest(), { username: API_USER.email, password: WRONG_PASSWORD })).rejects.toThrow(IP_NOT_ALLOWED);
+      expect(compareSpy).not.toHaveBeenCalled();
       vi.restoreAllMocks();
-      // The rejected login was the second attempt
-      await expectLocked(login(LOCKOUT_USER.email, LOCKOUT_USER.password), 30);
+      // None of the rejected logins was counted: the next failures are the first ones
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 15);
+      await expectLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD), 15);
+      await expectLocked(login(API_USER.email, WRONG_PASSWORD), 15);
+    });
+
+    it('should count the attempts of a user excluded from the IP whitelist', async () => {
+      enableIpWhitelist([lockoutUserId]);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD, '127.0.0.1'), 15);
+      await expect(login(API_USER.email, WRONG_PASSWORD, '127.0.0.1')).rejects.toThrow(IP_NOT_ALLOWED);
     });
 
     it('should count the attempt when the password is right but the local auth is disabled', async () => {
@@ -424,10 +451,28 @@ describe('Local authentication lockout', () => {
     });
   });
 
-  describe('Admin from configuration', () => {
-    it('should lock the admin from configuration like any other user', async () => {
-      await expectLocked(login(API_EMAIL, WRONG_PASSWORD), 15);
-      await expectLocked(login(API_EMAIL, API_PASSWORD), 15);
+  // The built-in admin is a break-glass account, used to unlock the other administrators
+  describe('Built-in admin', () => {
+    it('should never lock the built-in admin', async () => {
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_final_action: 'permanent' });
+      for (let i = 0; i < 5; i += 1) {
+        await expectBadCredentials(login(API_EMAIL, WRONG_PASSWORD));
+      }
+      const user = await login(API_EMAIL, API_PASSWORD);
+      expect(user.id).toEqual(ADMIN_USER.id);
+      expect(await accountStatusOf(API_EMAIL)).toEqual('Active');
+      expect(await getClientBase().exists(keysOf(API_EMAIL).failures, keysOf(API_EMAIL).lock)).toEqual(0);
+    });
+
+    it('should never count the failed MFA codes of the built-in admin', async () => {
+      const secret = totp.generateSecret();
+      const admin = { id: ADMIN_USER.id, user_email: API_EMAIL, otp_activated: true, otp_secret: secret } as AuthUser;
+      const code = await totp.generate({ secret });
+      const wrongCode = `${code.slice(0, 5)}${(Number(code[5]) + 1) % 10}`;
+      for (let i = 0; i < 5; i += 1) {
+        await expectBadCredentials(otpUserLogin({ session: { user: {}, save: () => {} } }, admin, { code: wrongCode }));
+      }
+      expect(await getClientBase().exists(keysOf(API_EMAIL).failures, keysOf(API_EMAIL).lock)).toEqual(0);
     });
   });
 
@@ -441,28 +486,28 @@ describe('Local authentication lockout', () => {
     });
 
     it('should reset the failure counter on a successful Basic auth', async () => {
-      await failLogin(API_EMAIL, 2);
-      const user = await authenticateUserByBasicAuth(testContext, buildRequest(), { username: API_EMAIL, password: API_PASSWORD });
-      expect(user.id).toEqual(ADMIN_USER.id);
-      await expectLocked(login(API_EMAIL, WRONG_PASSWORD), 15);
+      await failLogin(API_USER.email, 2);
+      const user = await authenticateUserByBasicAuth(testContext, buildRequest(), { username: API_USER.email, password: API_USER.password });
+      expect(user.id).toEqual(apiUserId);
+      await expectLocked(login(API_USER.email, WRONG_PASSWORD), 15);
     });
 
     it('should keep API tokens and open sessions working during a temporary lock', async () => {
-      const basicHeader = `Basic ${Buffer.from(`${API_EMAIL}:${API_PASSWORD}`).toString('base64')}`;
+      const basicHeader = `Basic ${Buffer.from(`${API_USER.email}:${API_USER.password}`).toString('base64')}`;
       // Sanity check: Basic auth works before the lock
       const beforeLock = await authenticateUserFromRequest(testContext, buildApiRequest({ authorization: basicHeader }));
-      expect(beforeLock?.id).toEqual(ADMIN_USER.id);
-      // Lock the admin
-      await expectLocked(login(API_EMAIL, WRONG_PASSWORD), 15);
+      expect(beforeLock?.id).toEqual(apiUserId);
+      // Lock the user
+      await expectLocked(login(API_USER.email, WRONG_PASSWORD), 15);
       // Basic auth is blocked
       const basicUser = await authenticateUserFromRequest(testContext, buildApiRequest({ authorization: basicHeader }));
       expect(basicUser).toBeUndefined();
       // Bearer API token still works
-      const tokenUser = await authenticateUserFromRequest(testContext, buildApiRequest({ authorization: `Bearer ${ADMIN_API_TOKEN}` }));
-      expect(tokenUser?.id).toEqual(ADMIN_USER.id);
+      const tokenUser = await authenticateUserFromRequest(testContext, buildApiRequest({ authorization: `Bearer ${apiUserToken}` }));
+      expect(tokenUser?.id).toEqual(apiUserId);
       // Open session still works
-      const sessionUser = await authenticateUserFromRequest(testContext, buildApiRequest({}, { user: { id: ADMIN_USER.id } }));
-      expect(sessionUser?.id).toEqual(ADMIN_USER.id);
+      const sessionUser = await authenticateUserFromRequest(testContext, buildApiRequest({}, { user: { id: apiUserId } }));
+      expect(sessionUser?.id).toEqual(apiUserId);
     });
   });
 

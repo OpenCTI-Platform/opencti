@@ -164,7 +164,7 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
     throw AuthenticationFailure();
   }
   // A failed MFA code counts like a failed password, so that the second factor cannot be brute-forced
-  const lockout = await loadLocalAuthLockout(email);
+  const lockout = await loadLocalAuthLockout(email, userId);
   const attempt = await lockout?.recordAttempt();
   const { valid } = await totp.verify({ secret: mfa_secret, token: input.code });
   if (!valid) {
