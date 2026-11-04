@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { expect } from 'vitest';
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'node:path';
@@ -8,16 +8,13 @@ import {
   createHttpClient,
   DATA_FILE_TEST,
   executeExternalQuery,
-  FIFTEEN_MINUTES,
-  FIVE_MINUTES,
-  ONE_MINUTE,
   SYNC_LIVE_EVENTS_SIZE,
   SYNC_RESTORE_START_REMOTE_URI,
   SYNC_TEST_REMOTE_URI,
   testContext,
 } from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import { checkPostSyncContent, checkPreSyncContent, REPORT_QUERY, UPLOADED_FILE_SIZE, waitForRemotePlatform } from '../sync-utils';
+import { checkPostSyncContent, checkPreSyncContent, REPORT_QUERY, UPLOADED_FILE_SIZE } from '../sync-utils';
 
 const backupFiles = async () => {
   const BACKUP_CONFIG = {
@@ -83,31 +80,23 @@ const restoreFile = async () => {
   );
 };
 
-describe('Database sync backup/restore', () => {
-  beforeAll(() => waitForRemotePlatform(SYNC_RESTORE_START_REMOTE_URI), FIVE_MINUTES + ONE_MINUTE);
-
-  it(
-    'Should backup/restore sync succeed',
-    async () => {
-      const client = createHttpClient();
-      // Pre check
-      const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
-      // Create the backup
-      await backupFiles();
-      // Restore the backup
-      await restoreFile();
-      // Post check
-      await checkPostSyncContent(SYNC_RESTORE_START_REMOTE_URI, objectMap, relMap, initStixReport);
-      // Check file availability
-      const reportData = await executeExternalQuery(client, SYNC_RESTORE_START_REMOTE_URI, REPORT_QUERY, {
-        id: 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7',
-      });
-      const files = reportData.report.importFiles.edges;
-      expect(files.length).toEqual(1);
-      const uploadedFile = R.head(files).node;
-      expect(uploadedFile.name).toEqual(DATA_FILE_TEST);
-      expect(uploadedFile.size).toEqual(UPLOADED_FILE_SIZE);
-    },
-    FIFTEEN_MINUTES,
-  );
-});
+export const syncRestore = async () => {
+  const client = createHttpClient();
+  // Pre check
+  const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
+  // Create the backup
+  await backupFiles();
+  // Restore the backup
+  await restoreFile();
+  // Post check
+  await checkPostSyncContent(SYNC_RESTORE_START_REMOTE_URI, objectMap, relMap, initStixReport);
+  // Check file availability
+  const reportData = await executeExternalQuery(client, SYNC_RESTORE_START_REMOTE_URI, REPORT_QUERY, {
+    id: 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7',
+  });
+  const files = reportData.report.importFiles.edges;
+  expect(files.length).toEqual(1);
+  const uploadedFile = R.head(files).node;
+  expect(uploadedFile.name).toEqual(DATA_FILE_TEST);
+  expect(uploadedFile.size).toEqual(UPLOADED_FILE_SIZE);
+};

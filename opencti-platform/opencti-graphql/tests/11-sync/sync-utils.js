@@ -1,6 +1,7 @@
 import { expect } from 'vitest';
+import { createReadStream } from 'node:fs';
 import { elAggregationCount } from '../../src/database/engine';
-import { ADMIN_USER, createHttpClient, executeExternalQuery, FIVE_MINUTES, testContext } from '../utils/testQuery';
+import { ADMIN_USER, createHttpClient, DATA_FILE_TEST, executeExternalQuery, FIVE_MINUTES, testContext } from '../utils/testQuery';
 import { READ_DATA_INDICES, wait } from '../../src/database/utils';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 import { checkInstanceDiff } from '../utils/testStream';
@@ -8,6 +9,8 @@ import conf, { logApp } from '../../src/config/conf';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../../src/modules/deleteOperation/deleteOperation-types';
 
 import { convertStoreToStix_2_1 } from '../../src/database/stix-2-1-converter';
+import { SYSTEM_USER } from '../../src/utils/access';
+import { stixCoreObjectImportPush } from '../../src/domain/stixCoreObject';
 
 const STAT_QUERY = `query stats {
       about {
@@ -122,9 +125,19 @@ const fetchRemoteStats = async (client, remoteUri) => {
   return { syncObjectMap, syncRelMap };
 };
 
+// The direct and backup/restore syncs check this file on their remote platform
+export const uploadReportFile = async () => {
+  const file = {
+    createReadStream: () => createReadStream('./tests/data/DATA-TEST-STIX2_v2.json'),
+    filename: DATA_FILE_TEST,
+    mimetype: 'application/json',
+  };
+  await stixCoreObjectImportPush(testContext, SYSTEM_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', file);
+};
+
 const POLL_INTERVAL = 5000;
 
-// The sync instances boot while the first test files run (see ci-test-backend.yml): wait for the one under test
+// The sync instances boot while the first test files run (see ci-test-backend.yml)
 export const waitForRemotePlatform = async (remoteUri, timeout = FIVE_MINUTES) => {
   const healthUrl = new URL(`health?health_access_key=${conf.get('app:health_access_key')}`, remoteUri);
   const deadline = Date.now() + timeout;
