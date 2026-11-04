@@ -1,11 +1,17 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { Route, Routes } from 'react-router';
 import testRender from '../../../utils/tests/test-render';
 import { SETTINGS_SETMANAGEXTMHUB, SETTINGS_SUPPORT } from '../../../utils/hooks/useGranted';
 import Root from './Root';
 import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY } from '../RedirectByPath';
+
+// Root lazily imports its pages. A real page pulls in a large module graph
+// that would keep loading, and logging, after the test ends in the shared
+// worker (isolate: false). Stub them so every import settles inside the test.
+vi.mock('./Settings', () => ({ default: () => <div>Settings page</div> }));
+vi.mock('./Experience', () => ({ default: () => <div>Experience page</div> }));
 
 vi.mock('../../../utils/hooks/useSettingsFallbackUrl', () => ({
   default: () => '/dashboard/settings',
@@ -58,6 +64,7 @@ describe('Settings Root permission redirect', () => {
     await waitFor(() => {
       expect(window.location.pathname).toBe('/dashboard/settings');
     });
+    expect(await screen.findByText('Settings page')).toBeInTheDocument();
     expect(sessionStorage.getItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY)).toBeNull();
   });
 });
