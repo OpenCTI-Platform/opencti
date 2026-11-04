@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import { v4 as uuid } from 'uuid';
 import type Express from 'express';
-import { ADMIN_USER, AMBER_GROUP, API_EMAIL, API_PASSWORD, getGroupIdByName, testContext } from '../../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, API_EMAIL, API_PASSWORD, getGroupIdByName, PLATFORM_ADMIN_GROUP, testContext } from '../../../utils/testQuery';
 import * as conf from '../../../../src/config/conf';
 import * as cache from '../../../../src/database/cache';
 import { getClientBase, localAuthLockoutKeys, redisSetForgotPasswordOtp } from '../../../../src/database/redis';
@@ -40,6 +40,7 @@ const WINDOW_SECONDS = 3600;
 const LOCKOUT_POLICY = {
   local_auth_lockout_enabled: true,
   local_auth_lockout_max_attempts: 3,
+  local_auth_lockout_admin_max_attempts: 3,
   local_auth_lockout_final_action: 'temporary',
   local_auth_lockout_window: 60,
   local_auth_lockout_duration: 15,
@@ -49,6 +50,7 @@ const LOCKOUT_POLICY = {
 const RESET_LOCKOUT_POLICY = {
   local_auth_lockout_enabled: null,
   local_auth_lockout_max_attempts: null,
+  local_auth_lockout_admin_max_attempts: null,
   local_auth_lockout_final_action: null,
   local_auth_lockout_window: null,
   local_auth_lockout_duration: null,
@@ -62,11 +64,14 @@ const MFA_USER = { email: 'lockout-mfa@opencti.io', password: 'lockout-password'
 const EXTERNAL_USER = { email: 'lockout-external@opencti.io', password: 'lockout-password' };
 // A user allowed to use Basic auth and API tokens
 const API_USER = { email: 'lockout-api@opencti.io', password: 'lockout-password' };
+// An administrative account: SETTINGS capabilities, through the platform admin group
+const ADMIN_ACCOUNT = { email: 'lockout-admin@opencti.io', password: 'lockout-password' };
 const SERVICE_ACCOUNT_EMAIL = 'lockout-service-account@opencti.io';
 const UNKNOWN_EMAIL = 'lockout-unknown@opencti.io';
 const WRONG_PASSWORD = 'wrong-password';
 const ALL_EMAILS = [
-  LOCKOUT_USER.email, INACTIVE_USER.email, EXPIRED_USER.email, MFA_USER.email, EXTERNAL_USER.email, API_USER.email, SERVICE_ACCOUNT_EMAIL, UNKNOWN_EMAIL, API_EMAIL,
+  LOCKOUT_USER.email, INACTIVE_USER.email, EXPIRED_USER.email, MFA_USER.email, EXTERNAL_USER.email, API_USER.email, ADMIN_ACCOUNT.email,
+  SERVICE_ACCOUNT_EMAIL, UNKNOWN_EMAIL, API_EMAIL,
 ];
 
 // region helpers
@@ -177,7 +182,11 @@ describe('Local authentication lockout', () => {
     apiUserId = apiUser.id;
     const { plaintext_token } = await addUserTokenByAdmin(testContext, ADMIN_USER, apiUserId, { name: 'lockout-api', duration: TokenDuration.Days_30 });
     apiUserToken = plaintext_token;
-    createdUserIds.push(externalUser.id, serviceAccount.id, apiUserId);
+    const platformAdminGroupId = await getGroupIdByName(PLATFORM_ADMIN_GROUP.name);
+    const adminAccount = await addUser(testContext, ADMIN_USER, {
+      user_email: ADMIN_ACCOUNT.email, name: ADMIN_ACCOUNT.email, password: ADMIN_ACCOUNT.password, groups: [platformAdminGroupId],
+    });
+    createdUserIds.push(externalUser.id, serviceAccount.id, apiUserId, adminAccount.id);
     await userEditField(testContext, ADMIN_USER, createdUserIds[1], [{ key: 'account_status', value: ['Inactive'] }]);
     await userEditField(testContext, ADMIN_USER, createdUserIds[2], [{ key: 'account_lock_after_date', value: ['2020-01-01T00:00:00.000Z'] }]);
     mfaSecret = totp.generateSecret();
@@ -448,6 +457,40 @@ describe('Local authentication lockout', () => {
       const compareSpy = vi.spyOn(bcrypt, 'compareSync');
       await expectLocked(login(email, password), 15);
       expect(compareSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  // NIST SP 800-53 AC-7: administrative accounts reach the final action sooner than the other users
+  describe('Administrative accounts', () => {
+    beforeEach(async () => {
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_max_attempts: 5, local_auth_lockout_admin_max_attempts: 2 });
+    });
+
+    it('should apply the administrators threshold to an account with SETTINGS capabilities', async () => {
+      await failLogin(ADMIN_ACCOUNT.email, 1);
+      await expectLocked(login(ADMIN_ACCOUNT.email, WRONG_PASSWORD), WINDOW_SECONDS);
+    });
+
+    it('should apply the users threshold to the other accounts', async () => {
+      await failLogin(LOCKOUT_USER.email, 1);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 30);
+    });
+
+    it('should apply the users threshold to an unknown email', async () => {
+      await failLogin(UNKNOWN_EMAIL, 1);
+      await expectLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD), 30);
+    });
+
+    it('should apply the administrators threshold to the failed MFA codes', async () => {
+      const secret = totp.generateSecret();
+      const adminAccount = await getUserByEmail(ADMIN_ACCOUNT.email);
+      const mfaAdmin = { id: adminAccount?.id, user_email: ADMIN_ACCOUNT.email, otp_activated: true, otp_secret: secret } as AuthUser;
+      const code = await totp.generate({ secret });
+      const wrongCode = `${code.slice(0, 5)}${(Number(code[5]) + 1) % 10}`;
+      const otpLogin = () => otpUserLogin({ session: { user: {}, save: () => {} } }, mfaAdmin, { code: wrongCode });
+      await expectLocked(otpLogin(), 15);
+      await expireLock(ADMIN_ACCOUNT.email);
+      await expectLocked(otpLogin(), WINDOW_SECONDS);
     });
   });
 
