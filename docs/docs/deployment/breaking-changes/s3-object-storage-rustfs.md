@@ -39,7 +39,7 @@ The compose file of [OpenCTI-Platform/docker](https://github.com/OpenCTI-Platfor
 
 !!! note "Already started the new compose file?"
 
-    If you started the stack with the compose file of OpenCTI 7.26XXXX.0 without moving the data, the `minio` service keeps restarting (`docker compose logs minio` shows `Permission denied`) and OpenCTI waits for it. Your data is unchanged: put back the previous definition of the `minio` service, start it again, then follow one of the paths below.
+    If you started the stack with the compose file of OpenCTI 7.26XXXX.0 without moving the data, `docker compose up -d` stops with `dependency failed to start` on the unhealthy `minio` service (`docker compose logs minio` shows `Permission denied`). Containers whose image and settings did not change keep running without object storage; the others, including platform containers recreated with newly pulled images, are left stopped. Your data is unchanged: put back the previous definition of the `minio` service only, run `docker compose up -d`, then follow one of the paths below.
 
 If you start the stack with the OpenSearch variant (`-f docker-compose.opensearch.yml`), with `-p` or with other `-f` options, use the same options for every command below. If you update a clone of OpenCTI-Platform/docker with `git pull`, do the steps that use the current storage (backup, count) before the pull.
 
@@ -79,7 +79,7 @@ Main steps:
 1. Count the objects of the current storage, to compare after the move (for example with the MinIO client: `mc ls --recursive --versions`).
 2. Stop the stack, then back up the storage volume (for example a `tar` archive of the volume made from a temporary container) and check the archive. Keep it out of reach: it holds every stored file and the storage identities.
 3. Keep a copy of the current compose file, then update it to OpenCTI 7.26XXXX.0 or later and pull the new images. Keep your `.env` file: the root credentials are reused as they are.
-4. Give the volume to the RustFS user: the RustFS image runs as uid 10001, and a volume written by MinIO or Silo belongs to root, so RustFS stops at startup with `Permission denied` until then. For example: `docker run --rm -v <volume>:/data alpine chown -R 10001:10001 /data`.
+4. Give the volume to the RustFS user: the RustFS image runs as uid 10001, and a volume written by MinIO or Silo belongs to root, so RustFS stops at startup with `Permission denied` until then. For example: `docker run --rm -v <volume>:/data alpine chown -R 10001:10001 /data`. From this step on, do not start MinIO or Silo on the volume again: the files they write belong to root, and RustFS can read them but not overwrite or delete them.
 5. Start the storage service alone, wait until it is healthy, check that it uses the backed-up volume, and count the objects again: the count must be the same. If it is not, go back before starting anything else.
 6. Start the stack, then check the files: in OpenCTI, download a file attached to an entity and upload a new one. If XTM One runs in the same stack, open a conversation with an attached file.
 
