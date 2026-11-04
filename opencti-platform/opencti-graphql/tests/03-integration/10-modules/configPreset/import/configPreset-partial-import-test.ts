@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { buildZip, CUSTOM_THEME_ID, itemFile, OTHER_THEME_ID, themeConfiguration, validBundleFiles } from '../../../../utils/configPresetBundle';
 import { createUploadFromBuffer, queryAsAdmin, queryAsUserIsExpectedForbidden } from '../../../../utils/testQueryHelper';
@@ -6,6 +6,8 @@ import { ADMIN_USER, testContext, USER_EDITOR } from '../../../../utils/testQuer
 import { getClientBase } from '../../../../../src/database/redis';
 import { getSettings } from '../../../../../src/domain/settings';
 import { addTheme, deleteTheme, findAllThemes, findById as findThemeById } from '../../../../../src/modules/theme/theme-domain';
+import * as userDomain from '../../../../../src/modules/user/user-domain';
+import * as userActionListener from '../../../../../src/listener/UserActionListener';
 
 const PREVIEW_MUTATION = gql`
   mutation ConfigPresetPartialPreview($file: Upload!, $type: ID!) {
@@ -49,6 +51,7 @@ describe('Config preset partial import', () => {
   });
 
   afterEach(async () => {
+    vi.restoreAllMocks();
     const themes = (await customThemes()).filter(({ id }) => !existingThemeIds.has(id));
     for (let i = 0; i < themes.length; i += 1) {
       await deleteTheme(testContext, ADMIN_USER, themes[i].id);
@@ -100,6 +103,31 @@ describe('Config preset partial import', () => {
     const overwritten = await partialImport(validBundleFiles(), [CUSTOM_THEME_ID], [{ key: CUSTOM_THEME_ID, mode: 'OVERWRITE' }]);
     expect(overwritten.errors).toBeUndefined();
     expect(overwritten.data?.configPresetPartialImport.counts).toEqual({ created: 0, overwritten: 1, skipped: 0, failed: 0 });
+  });
+
+  it('stops writing when the user loses BYPASS during the import: the items written keep their result, the others fail, the import is audited', async () => {
+    const realResolve = userDomain.resolveUserByIdFromCache;
+    vi.spyOn(userDomain, 'resolveUserByIdFromCache').mockImplementationOnce(realResolve).mockResolvedValueOnce({ ...ADMIN_USER, capabilities: [] } as never);
+    const publish = vi.spyOn(userActionListener, 'publishUserAction');
+    const { data, errors } = await partialImport(bundleWithTwoThemes(), [CUSTOM_THEME_ID, OTHER_THEME_ID]);
+    expect(errors).toBeUndefined();
+    const output = data?.configPresetPartialImport;
+    expect(output.results.map(({ key, status }: { key: string; status: string }) => `${key}:${status}`)).toEqual([`${CUSTOM_THEME_ID}:CREATED`, `${OTHER_THEME_ID}:FAILED`]);
+    expect(output.results[1].reason).toEqual('The user who started the import no longer has the right to import');
+    expect(output.counts).toEqual({ created: 1, overwritten: 0, skipped: 0, failed: 1 });
+    expect(await findThemeById(testContext, ADMIN_USER, CUSTOM_THEME_ID)).toBeDefined();
+    expect(await findThemeById(testContext, ADMIN_USER, OTHER_THEME_ID)).toBeUndefined();
+    expect(publish).toHaveBeenCalledWith(expect.objectContaining({ event_scope: 'import', context_data: expect.objectContaining({ input: { type: 'branding', counts: output.counts } }) }));
+  });
+
+  it('stops writing when the account of the user is deleted during the import', async () => {
+    vi.spyOn(userDomain, 'resolveUserByIdFromCache').mockResolvedValue(undefined as never);
+    const { data, errors } = await partialImport(bundleWithTwoThemes(), [CUSTOM_THEME_ID, OTHER_THEME_ID]);
+    expect(errors).toBeUndefined();
+    const { results } = data?.configPresetPartialImport ?? {};
+    expect(results.map(({ status }: { status: string }) => status)).toEqual(['FAILED', 'FAILED']);
+    expect(results[0].reason).toEqual('The user who started the import no longer exists');
+    expect(await findThemeById(testContext, ADMIN_USER, CUSTOM_THEME_ID)).toBeUndefined();
   });
 
   it('refuses an unknown item, an unsupported mode, a type without importer and an invalid bundle', async () => {
