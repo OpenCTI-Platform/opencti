@@ -22,7 +22,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from '../modules/indicator/indicator-domain';
-import { FunctionalError } from '../config/errors';
+import { FUNCTIONAL_ERROR, FunctionalError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';
 import {
@@ -385,11 +385,26 @@ const checksumFile = async (hashName, stream) => {
   });
 };
 
-const extractInfectedZipFile = async (file) => {
+export const ARTIFACT_ZIP_MAX_EXTRACTED_SIZE = nconf.get('app:artifact_zip_max_extracted_size') ?? 104857600; // 100MB
+
+export const extractInfectedZipFile = async (file) => {
   const buffer = await streamToBuffer(file.createReadStream());
   const directory = await unzipper.Open.buffer(buffer);
   const newFile = directory.files[0];
-  const extracted = await newFile.buffer(nconf.get('app:artifact_zip_password'));
+  if (newFile.uncompressedSize > ARTIFACT_ZIP_MAX_EXTRACTED_SIZE) {
+    throw FunctionalError('Artifact archive content is too large to be extracted');
+  }
+  // Declared size can be wrong, count the real extracted bytes
+  const chunks = [];
+  let extractedSize = 0;
+  for await (const chunk of newFile.stream(nconf.get('app:artifact_zip_password'))) {
+    extractedSize += chunk.length;
+    if (extractedSize > ARTIFACT_ZIP_MAX_EXTRACTED_SIZE) {
+      throw FunctionalError('Artifact archive content is too large to be extracted');
+    }
+    chunks.push(chunk);
+  }
+  const extracted = Buffer.concat(chunks);
   const mimetype = await fileTypeFromBuffer(extracted);
   return { createReadStream: () => Readable.from(extracted), filename: newFile.path, mimetype: mimetype.mime };
 };
@@ -416,8 +431,11 @@ export const artifactImport = async (context, user, args) => {
   if (!isOfficeMimeType && !isOfficeXmlExtension) {
     try {
       resolvedFile = await extractInfectedZipFile(resolvedFile);
-    } catch {
-      // do nothing
+    } catch (err) {
+      // Not an archive is the usual case, only trace rejected archives
+      if (err?.extensions?.code === FUNCTIONAL_ERROR) {
+        logApp.warn('[ARTIFACT] Archive not extracted, file imported as is', { cause: err, filename: resolvedFile.filename });
+      }
     }
   }
 
