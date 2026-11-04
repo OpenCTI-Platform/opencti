@@ -57,7 +57,7 @@ describe('Kill chain phase import and export (configuration preset)', () => {
 
   it('lists, searches and resolves the phases through the family, by kill chain then by order', async () => {
     await importKillChainPhase(testContext, ADMIN_USER, { ...PHASE_A, x_opencti_order: 9 }, { mode });
-    const page = await killChainPhasesFamily.listItems(testContext, ADMIN_USER, { first: 10, search: CHAIN });
+    const page = await killChainPhasesFamily.listItems(testContext, ADMIN_USER, { first: 10, search: `"${CHAIN}"` });
     expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([
       [idB, `${CHAIN}: Phase B`, false],
       [idA, `${CHAIN}: Phase A`, false],
