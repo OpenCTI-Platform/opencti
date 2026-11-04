@@ -285,6 +285,56 @@ Labels:
     ```
     
 
+# Title variables
+
+The **Title** of the Platform mailer is the subject of the email. In addition to EJS, you can insert notification data in it with `$` variables, without writing any `<% %>` tag.
+
+A variable is a `$` followed by a path into the notification data:
+
+- The first segment is a **root**. The available roots are `notification`, `notification_content`, `content`, `data`, `settings`, `user`, `platform_uri`, `doc_uri` and `url_suffix`. They hold the same data as in the message template.
+- It is followed by any number of `.property` or `[index]` (a non-negative integer, starting at 0).
+- `.length` gives the number of elements of a list, for instance `$data.length`.
+
+| **Variable** | **Value** |
+| --- | --- |
+| `$notification.name` | Name of the trigger |
+| `$notification.trigger_type` | `live` or `digest` |
+| `$notification_content[0].title` | Name of the first entity concerned |
+| `$notification_content[0].events[0].operation` | `create`, `update`, `delete`... |
+| `$notification_content[0].events[0].message` | Message of the event |
+| `$data[0].instance.name`, `$data[0].instance.type` | Name and type of the STIX object of the first event |
+| `$data.length` | Number of events in the email |
+| `$settings.platform_title` | Title of the platform |
+| `$user.user_email` | Email of the recipient |
+
+### Examples
+
+- **Live trigger**, title `[$notification.name] $notification_content[0].events[0].operation - $notification_content[0].title`:
+
+    ```
+    [My trigger] update - APT-X
+    ```
+
+- **Digest**, title `[$notification.name] $data.length events, first: $notification_content[0].title`:
+
+    ```
+    [My digest] 5 events, first: APT-X
+    ```
+
+In a digest, pick the event you want with an explicit index: there is no implicit "first event".
+
+### Rules
+
+- A variable whose root is **not** in the list above is left as is, so `$100` or `$foo` stay literal text in the title.
+- A variable with a known root but nothing at that path (an index out of range, a missing property, an empty value) is replaced by an **empty text**.
+- A `.` that is not followed by a property name is not part of the variable: in `$notification.name.` the final dot stays in the title.
+- Variables inside EJS tags (`<% %>`) are never rewritten. Use the regular EJS variables there.
+- `notification_content` groups the events **by entity**, whereas `data` lists the events one by one. In a digest, `$notification_content[1]` and `$data[1]` can therefore concern different events. Use the same root for all the pieces of information that must go together.
+- Only `$user.user_email` is available on `user`. The name of the recipient is not provided to the templates.
+- The title is plain text and is **not HTML-escaped**: a value such as `R&D` appears as is in the subject, including with `<%= %>`. The title is also normalized: line breaks are replaced by spaces, repeated spaces are collapsed and the title is trimmed.
+
+You can check a title with the **Test** button of the notifier: it sends a test email using a trigger named `[TEST] ...` and example entities, so every variable above has a value.
+
 # Best practices
 
 1. Use `content` for readable summaries and `data` for full STIX object details.

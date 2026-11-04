@@ -18,7 +18,7 @@ These connectors operate based on registered schemas that describe their interac
 
 This notifier connector enables customization of notifications raised within the platform. It's simple to configure, requiring only:
 
-- Title: The title for the platform notification.
+- Title: The title for the platform notification. It can contain `$` variables such as `$notification.name`, see [Title variables](tips-to-create-a-custom-notifier.md#title-variables).
 - Template: Specifies the message template for the notification.
 
 ![Platform email notifier](assets/platform-email-notifier.png)

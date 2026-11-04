@@ -17,7 +17,7 @@ import { NotifierEdition_edition$key } from './__generated__/NotifierEdition_edi
 import { NotifierEditionQuery } from './__generated__/NotifierEditionQuery.graphql';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
-import { uiSchema } from './NotifierUtils';
+import { buildNotifierUiSchema } from './NotifierUtils';
 import notifierValidator from './NotifierValidator';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { convertAuthorizedMembers } from '../../../../utils/edition';
@@ -189,10 +189,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
               }}
             >
               <JsonForm
-                uiSchema={{
-                  ...JSON.parse(data?.notifier_connector?.connector_schema_ui ?? ' {}'),
-                  ...uiSchema,
-                }}
+                uiSchema={buildNotifierUiSchema(data?.notifier_connector?.connector_schema_ui, data?.notifier_connector?.id, t_i18n)}
                 ref={formRef}
                 tagName="div"
                 showErrorList={false}
