@@ -25,6 +25,8 @@ const withExisting = (label?: BasicStoreEntityLabel) => vi.mocked(storeLoadById)
 beforeEach(() => {
   vi.resetAllMocks();
   withExisting(undefined);
+  // Like the domain: a label without color is given the one the platform makes of its value
+  vi.mocked(addLabel).mockImplementation(async (_context, _user, label) => ({ ...stored, value: label.value, color: label.color ?? '#123456' }));
 });
 
 describe('Label identity', () => {
@@ -113,6 +115,27 @@ describe('importLabel', () => {
       ['has a null color', { value: 'APT', color: null }],
     ])('skips it when the configuration %s', async (_name, configuration) => {
       expect(await importLabel(context, user, configuration, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Nothing to import' });
+      expect(labelEditField).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('a label created by someone else since the lookup', () => {
+    // addLabel writes nothing and returns it as it is
+    beforeEach(() => vi.mocked(addLabel).mockResolvedValue({ ...stored, color: '#0000ff' } as never));
+
+    it('gives it the color of the configuration in overwrite mode, as an existing label', async () => {
+      const result = await importLabel(context, user, { value: 'APT', color: '#00ff00' }, { mode: ConfigImportMode.Overwrite });
+      expect(result).toMatchObject({ status: 'overwritten', exists: true });
+      expect(labelEditField).toHaveBeenCalledWith(context, user, stored.id, [{ key: 'color', value: ['#00ff00'] }]);
+    });
+
+    it('refuses it in add mode, without writing', async () => {
+      expect(await importLabel(context, user, { value: 'APT', color: '#00ff00' }, { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists', exists: true });
+      expect(labelEditField).not.toHaveBeenCalled();
+    });
+
+    it('is created as far as the import can tell when it already has the color of the configuration', async () => {
+      expect(await importLabel(context, user, { value: 'APT', color: '#0000FF' }, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'created', exists: false });
       expect(labelEditField).not.toHaveBeenCalled();
     });
   });

@@ -38,21 +38,29 @@ export const importLabel = async (
   if (mode === ConfigImportMode.Copy) {
     return refused('failed', 'copy_unsupported', 'A label has no copy', !!existing, parsed.data);
   }
-  if (!existing) {
-    if (!dryRun) {
-      // addLabel gives a label without color the one it makes of its value
-      await addLabel(context, user, { value, color });
+  // What an import does with a label that exists: add refuses it, overwrite gives it the color of the configuration
+  const importExisting = async (label: BasicStoreEntityLabel): Promise<LabelImportResult> => {
+    if (mode === ConfigImportMode.Add) {
+      return refused('failed', 'exists', 'Label already exists', true, parsed.data);
     }
-    return { status: 'created', exists: false, configuration: parsed.data };
-  }
-  if (mode === ConfigImportMode.Add) {
-    return refused('failed', 'exists', 'Label already exists', true, parsed.data);
-  }
-  if (!color || color.toLowerCase() === existing.color?.toLowerCase()) {
-    return refused('skipped', 'unchanged', 'Nothing to import', true, parsed.data);
+    if (!color || color.toLowerCase() === label.color?.toLowerCase()) {
+      return refused('skipped', 'unchanged', 'Nothing to import', true, parsed.data);
+    }
+    if (!dryRun) {
+      await labelEditField(context, user, label.id, [{ key: 'color', value: [color] }]);
+    }
+    return { status: 'overwritten', exists: true, configuration: parsed.data };
+  };
+  if (existing) {
+    return importExisting(existing);
   }
   if (!dryRun) {
-    await labelEditField(context, user, existing.id, [{ key: 'color', value: [color] }]);
+    // addLabel gives a label without color the one it makes of its value
+    const added = await addLabel(context, user, { value, color });
+    // addLabel writes nothing and returns the label as it is when another one was created since the lookup above: it is an existing label
+    if (color && added.color?.toLowerCase() !== color.toLowerCase()) {
+      return importExisting(added);
+    }
   }
-  return { status: 'overwritten', exists: true, configuration: parsed.data };
+  return { status: 'created', exists: false, configuration: parsed.data };
 };
