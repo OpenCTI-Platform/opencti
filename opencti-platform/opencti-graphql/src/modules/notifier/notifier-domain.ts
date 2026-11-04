@@ -14,9 +14,8 @@ import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
-import { MOCK_NOTIFICATIONS, MOCK_TRIGGERS } from '../../utils/publisher-mock';
+import { buildMockNotificationInput } from '../../utils/publisher-mock';
 import { verifyUri } from '../../utils/uriDenyList';
-import type { BasicStoreEntityTrigger } from '../notification/notification-types';
 import {
   BUILTIN_NOTIFIERS_CONNECTORS,
   DEFAULT_TEAM_DIGEST_MESSAGE,
@@ -157,15 +156,11 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
   }
   const usersFromCache = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const mockTrigger = MOCK_TRIGGERS[notifier.notifier_test_id];
-  const mockNotifications = MOCK_NOTIFICATIONS[notifier.notifier_test_id];
-  if (!mockTrigger || !mockNotifications) {
+  const mockInput = buildMockNotificationInput(notifier.notifier_test_id);
+  if (!mockInput) {
     return `Unknown test notification ${notifier.notifier_test_id}`;
   }
-  // The test notifications are attached to a fake trigger, so templates and `$` variables see its name and type
-  const notificationMap = new Map(
-    mockNotifications.map(({ notification_id }) => [notification_id, { name: mockTrigger.name } as BasicStoreEntityTrigger]),
-  );
+  const { notificationMap, triggers, notifications } = mockInput;
   return internalProcessNotification(
     context,
     settings,
@@ -177,8 +172,8 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
       notifiers: [],
     },
     notifier,
-    mockNotifications,
-    [{ created: (new Date()).toISOString(), ...mockTrigger }] as unknown as BasicStoreEntityTrigger[],
+    notifications,
+    triggers,
     usersFromCache,
   ).catch((error) => {
     return error.message;
