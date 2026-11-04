@@ -3,7 +3,7 @@ import { buildPaginationFromEdges } from '../../../database/utils';
 import { FunctionalError } from '../../../config/errors';
 import type { ConfigImportResult } from '../../configImport/configImport-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition, ConfigPresetListItemsArgs } from '../configPreset-types';
-import type { ConfigPresetComputedItem, ConfigPresetImportField } from '../import/configPreset-import-types';
+import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportField } from '../import/configPreset-import-types';
 
 // Export groups of the spec table; a group is added with its first category
 export const platformSettingsGroup = { id: 'platformSettings', label: 'Platform settings' };
@@ -50,6 +50,22 @@ export const toComputedItem = (
   result: ConfigImportResult,
   fields?: ConfigPresetImportField[],
 ): ConfigPresetComputedItem => ({ ...label, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason, code: result.code, fields });
+
+// A family whose bundle id is the standard id of its content: the item fails when its id is not the one of its values.
+// A blank or missing value has no standard id (deriving it throws and would abort the preview): no mismatch is reported,
+// the module refuses the item as invalid
+export const checkStandardId = (
+  item: ConfigPresetBundleItem,
+  label: Pick<ConfigPresetComputedItem, 'label' | 'translatable'>,
+  values: unknown[],
+  getStandardId: (values: string[]) => string,
+  reason: string,
+): ConfigPresetComputedItem | undefined => {
+  if (!values.every((value): value is string => typeof value === 'string' && value.trim() !== '') || getStandardId(values) === item.id) {
+    return undefined;
+  }
+  return { ...label, exists: false, conflict: false, status: 'failed', reason };
+};
 
 // What an importer returns once a module has written an item: a failure is an error that makes the item failed,
 // and a status other than the computed one is reported

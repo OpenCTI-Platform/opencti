@@ -5,7 +5,7 @@ import { getLabelStandardId, importLabel } from '../../label/label-import';
 import type { BasicStoreEntityLabel } from '../../label/label-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetImporter } from '../import/configPreset-import-types';
-import { buildConfigPresetConnection, taxonomyGroup, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
+import { buildConfigPresetConnection, taxonomyGroup, toAppliedStatus, toComputedItem, checkStandardId } from './common-configPreset-registry';
 
 export const LABELS_FAMILY_ID = 'labels';
 
@@ -33,9 +33,10 @@ const labelsImporter: ConfigPresetImporter = {
   compute: async (context, user, item, _plan, mode) => {
     const value = typeof item.configuration.value === 'string' ? item.configuration.value : item.id;
     const label = { label: value, translatable: false };
-    // The bundle id of a label is its standard id: the one of its value. A blank value has none: the module refuses it
-    if (typeof item.configuration.value === 'string' && item.configuration.value.trim() !== '' && getLabelStandardId(item.configuration.value) !== item.id) {
-      return { ...label, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the label does not match its value' };
+    // The bundle id of a label is its standard id: the one of its value
+    const mismatch = checkStandardId(item, label, [item.configuration.value], ([labelValue]) => getLabelStandardId(labelValue), 'The standard id of the label does not match its value');
+    if (mismatch) {
+      return mismatch;
     }
     return toComputedItem(label, await importLabel(context, user, item.configuration, { mode, dryRun: true }));
   },
