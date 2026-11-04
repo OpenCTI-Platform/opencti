@@ -45,18 +45,16 @@ const InvestigationEnrichmentButton = ({
   if (hasOngoing) {
     badgeColor = 'brand';
     badgeContent = ongoingSize;
-    title = t_i18n(
-      '{count} enrichments in progress',
-      { values: { count: ongoingSize } },
-    );
+    title = ongoingSize === 1
+      ? t_i18n('{count} enrichments in progress', { values: { count: ongoingSize } })
+      : t_i18n('{count} enrichments in progress', { values: { count: ongoingSize } });
   }
   if (hasToReview) {
     badgeColor = 'success';
     badgeContent = toreviewSize;
-    title = t_i18n(
-      '{count} enrichments have results waiting',
-      { values: { count: toreviewSize } },
-    );
+    title = toreviewSize === 1
+      ? t_i18n('{count} enrichment has results waiting', { values: { count: toreviewSize } })
+      : t_i18n('{count} enrichments have results waiting', { values: { count: toreviewSize } });
   }
 
   return (
