@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { DialogActions } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -68,13 +68,16 @@ interface ConfigPresetPartialImportProps {
   itemsLabel: string;
   // After a real import, so that the screen reads its items again
   onImported?: () => void;
+  // While the bundle is read or imported: the dialog must keep this component mounted (no change of source, no dismissal),
+  // otherwise the result of an import that goes on on the server is lost
+  onBusyChange?: (busy: boolean) => void;
   onClose: () => void;
 }
 
 // The partial import of one type from a full configuration bundle, to put in a dialog: the bundle is picked, the items of the type
 // are listed (every one selected), then the selected ones are imported. An item that already exists is added as a copy by default.
 // Generic: any screen can offer it for its own type, the backend imports any type that has an importer.
-const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProps> = ({ type, itemsLabel, onImported, onClose }) => {
+const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProps> = ({ type, itemsLabel, onImported, onBusyChange, onClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [file, setFile] = useState<File | null>(null);
@@ -84,6 +87,12 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
   const [output, setOutput] = useState<Output | null>(null);
   const [commitPreview, previewing] = useApiMutation<ConfigPresetPartialImportPreviewMutation>(configPresetPartialImportPreviewMutation);
   const [commitImport, importing] = useApiMutation<ConfigPresetPartialImportMutation>(configPresetPartialImportMutation);
+  const busy = previewing || importing;
+  useEffect(() => {
+    onBusyChange?.(busy);
+  }, [busy]);
+  // Unmounted (the dialog closed): no longer busy
+  useEffect(() => () => onBusyChange?.(false), []);
 
   const items = preview?.type?.items ?? [];
   const defaultMode = isConfigImportMode(preview?.default_mode ?? '') ? preview?.default_mode as ConfigImportMode : null;
@@ -201,7 +210,7 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
         )}
       </div>
       <DialogActions>
-        <Button variant="secondary" onClick={onClose} disabled={importing}>{t_i18n('Cancel')}</Button>
+        <Button variant="secondary" onClick={onClose} disabled={busy}>{t_i18n('Cancel')}</Button>
         <Button
           onClick={handleImport}
           disabled={!file || selected.size === 0 || previewing || importing}
