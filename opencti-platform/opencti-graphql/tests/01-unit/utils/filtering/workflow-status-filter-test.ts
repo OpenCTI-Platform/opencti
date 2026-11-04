@@ -163,7 +163,8 @@ describe('resolveWorkflowStatusFilter', () => {
     expect(result.filters.filterGroups[0].filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'eq', mode: 'or' }]);
   });
 
-  it('rejects a workflow status filter with a non-equality operator', async () => {
+  it('excludes every entity with a workflow status for a nil workflow status filter', async () => {
+    (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-1' }]);
     const args = {
       filters: {
         mode: 'and',
@@ -172,7 +173,46 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    await expect(resolveWorkflowStatusFilter(mockContext, args)).rejects.toThrow('Workflow status filter only supports equality operators');
+    const result = await resolveWorkflowStatusFilter(mockContext, args);
+
+    expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      [ENTITY_TYPE_WORKFLOW_INSTANCE],
+      expect.objectContaining({
+        filters: expect.objectContaining({
+          filters: [{ key: ['currentState'], values: [], operator: 'not_nil', mode: 'or' }],
+        }),
+      }),
+    );
+    expect(result.filters.filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'not_eq', mode: 'and' }]);
+  });
+
+  it('keeps only entities with a workflow status for a not_nil workflow status filter', async () => {
+    (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-1' }]);
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: [], operator: 'not_nil', mode: 'or' }],
+        filterGroups: [],
+      },
+    };
+
+    const result = await resolveWorkflowStatusFilter(mockContext, args);
+
+    expect(result.filters.filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'eq', mode: 'or' }]);
+  });
+
+  it('rejects a workflow status filter with an unsupported operator', async () => {
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: ['status-template-abc'], operator: 'gt', mode: 'or' }],
+        filterGroups: [],
+      },
+    };
+
+    await expect(resolveWorkflowStatusFilter(mockContext, args)).rejects.toThrow('Workflow status filter only supports equality and empty operators');
     expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
   });
 
