@@ -19,6 +19,7 @@ import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
 import { TAXIIAPI } from '../domain/user';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import { checkDraftInContext } from './httpServer-draft';
 
 const TAXII_REQUEST_ALLOWED_CONTENT_TYPE = ['application/taxii+json', 'application/vnd.oasis.stix+json'];
 const TAXII_VERSION = '2.1';
@@ -40,7 +41,7 @@ const errorConverter = (e) => {
   };
 };
 
-const checkAuthenticationFromRequest = async (req, res) => {
+export const checkAuthenticationFromRequest = async (req, res) => {
   // noinspection UnnecessaryLocalVariableJS
   const context = await createAuthenticatedContext(req, res, 'taxii');
   if (!context.user) {
@@ -50,6 +51,11 @@ const checkAuthenticationFromRequest = async (req, res) => {
   if (!isUserHasCapability(context.user, TAXIIAPI)) {
     throw ForbiddenAccess();
   }
+  // TAXII routes don't go through the GraphQL `checkDraftInContext` middleware,
+  // so validate the draft context explicitly here before it is used further.
+  // Without this guard a caller could forge an `opencti-draft-id` header and
+  // read staged content from a draft they don't have access to.
+  await checkDraftInContext(context);
   return context;
 };
 const rebuildParamsForObject = (id, req) => {
