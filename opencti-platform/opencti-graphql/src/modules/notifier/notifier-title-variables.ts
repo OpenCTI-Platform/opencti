@@ -113,5 +113,5 @@ export const compileTitleVariables = (title: string, data: Record<string, unknow
   return { template, values };
 };
 
-// An email subject must stay on a single line: flatten any line terminator, collapse spaces and trim.
-export const normalizeEmailSubject = (subject: string): string => subject.replace(/\s+/g, ' ').trim();
+// An email subject must stay on a single line: flatten any line terminator (including NEL U+0085), collapse spaces and trim.
+export const normalizeEmailSubject = (subject: string): string => subject.replace(/[\s\u0085]+/g, ' ').trim();

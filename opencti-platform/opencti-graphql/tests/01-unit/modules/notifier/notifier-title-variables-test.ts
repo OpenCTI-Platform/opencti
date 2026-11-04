@@ -54,6 +54,9 @@ describe('compileTitleVariables', () => {
     const d = { notification: { name: '$user.user_email' }, user: { user_email: 'a@b.c' } };
     expect(compileTitleVariables('$notification.name', d).values).toEqual(['$user.user_email']);
   });
+  it('keeps a literal reference to the values array as is', () => {
+    expect(compileTitleVariables('$octi_title_variables[0]', data)).toEqual({ template: '$octi_title_variables[0]', values: [] });
+  });
   it('returns the title unchanged when there is no variable', () => {
     expect(compileTitleVariables('[live] static', data)).toEqual({ template: '[live] static', values: [] });
   });
@@ -62,5 +65,8 @@ describe('compileTitleVariables', () => {
 describe('normalizeEmailSubject', () => {
   it('flattens line terminators, collapses and trims', () => {
     expect(normalizeEmailSubject('\n[live]  X\r\nBcc: evil@x.y  ')).toBe('[live] X Bcc: evil@x.y');
+  });
+  it('flattens the unicode line separators U+2028, U+2029 and U+0085', () => {
+    expect(normalizeEmailSubject('a\u2028b\u2029c\u0085d')).toBe('a b c d');
   });
 });
