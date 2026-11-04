@@ -14,6 +14,7 @@ import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
 import type { StixCoreObject, StixId, StixObject, StixRelationshipObject } from '../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import {
   type BasicStoreEntityDigestTrigger,
   type BasicStoreEntityLiveTrigger,
@@ -108,8 +109,23 @@ export interface DigestEvent extends StreamNotifEvent {
   type: 'digest';
   target: NotificationUser;
   playbook_source?: string;
-  data: Array<{ notification_id: string; instance: StixObject; type: string; message: string; origin?: Partial<UserOrigin>; streamMessage?: string }>;
+  data: Array<{ notification_id: string; instance: StixObject | ActivityNotificationEvent['data']; type: string; message: string; origin?: Partial<UserOrigin>; streamMessage?: string }>;
 }
+
+// The live events a digest gathers: its triggers are either knowledge or activity live triggers
+export type DigestContentEvent = KnowledgeNotificationEvent | ActivityNotificationEvent;
+
+/**
+ * Tell whether the data of a digest event is a STIX object.
+ * A knowledge event carries a STIX object, whose message reads the type of its OpenCTI extension.
+ * An activity event carries the context data of the action instead, which has no such extension.
+ * @param data the data of a knowledge or activity event
+ * @returns true when the data has a STIX type and an OpenCTI extension with a type
+ */
+export const isStixObjectNotificationData = (data: DigestContentEvent['data']): data is StixObject => {
+  const candidate = data as Partial<StixObject>;
+  return typeof candidate.type === 'string' && typeof candidate.extensions?.[STIX_EXT_OCTI]?.type === 'string';
+};
 
 export const isLiveKnowledge = (n: ResolvedTrigger): n is ResolvedLive => {
   return n.trigger.trigger_scope === 'knowledge' && n.trigger.trigger_type === 'live';
@@ -653,12 +669,12 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
   }
 };
 
-interface DigestContentAccumulator { content: Array<KnowledgeNotificationEvent>; byteSize: number; truncated: boolean }
+interface DigestContentAccumulator { content: Array<DigestContentEvent>; byteSize: number; truncated: boolean }
 // Accumulate the digest-matching events of a notification batch into `acc`, bounded by the byte budget.
 // Returns false to stop the range iteration once the cumulative byte budget is reached.
 const collectDigestBatch = (
   acc: DigestContentAccumulator,
-  events: Array<SizedNotifEvent<KnowledgeNotificationEvent>>,
+  events: Array<SizedNotifEvent<DigestContentEvent>>,
   triggerIds: Set<string>,
   maxContentByteSize: number,
 ): boolean => {
@@ -688,7 +704,7 @@ export const collectDigestContent = async (
 ): Promise<DigestContentAccumulator> => {
   const acc: DigestContentAccumulator = { content: [], byteSize: 0, truncated: false };
   const triggerIdsSet = new Set(triggerIds);
-  await fetchRangeNotifications<KnowledgeNotificationEvent>(
+  await fetchRangeNotifications<DigestContentEvent>(
     fromDate,
     toDate,
     (events) => collectDigestBatch(acc, events, triggerIdsSet, maxContentByteSize),
@@ -718,9 +734,9 @@ const handleDigestNotification = async (context: AuthContext, baseDate: Moment, 
         const target = convertToNotificationUser(user, notifiers);
         const dataPromises = userNotifications.map(async (n) => {
           const userTarget = n.targets.find((t) => t.user.user_id === user.internal_id);
-          // A knowledge event carries a STIX object: its message is computed for the user.
-          // An activity event carries the activity context instead: its message was computed when it matched, as the live alert uses it
-          const message = 'extensions' in n.data
+          // A STIX object gets its message computed for the user (the from/to of a relationship may be restricted to them).
+          // Otherwise (activity event) the message is the one computed when the event matched, as the live alert uses it
+          const message = isStixObjectNotificationData(n.data)
             ? await generateNotificationMessageForInstance(context, user, n.data)
             : (userTarget?.message ?? '');
           return ({

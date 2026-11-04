@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ActivityNotificationEvent, KnowledgeNotificationEvent } from '../../../src/manager/notificationManager';
+import type { ActivityNotificationEvent, DigestContentEvent, KnowledgeNotificationEvent } from '../../../src/manager/notificationManager';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import type { BasicStoreEntityTrigger } from '../../../src/modules/notification/notification-types';
 
@@ -23,7 +23,7 @@ vi.mock('../../../src/database/stix-representative', () => ({
   extractStixRepresentativeForUser: vi.fn().mockResolvedValue('repr'),
 }));
 
-import { collectDigestContent, DEFAULT_MAX_DIGEST_CONTENT_SIZE, handleDigestNotifications } from '../../../src/manager/notificationManager';
+import { collectDigestContent, DEFAULT_MAX_DIGEST_CONTENT_SIZE, handleDigestNotifications, isStixObjectNotificationData } from '../../../src/manager/notificationManager';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { storeNotificationEvent } from '../../../src/database/stream/stream-handler';
 import { extractStixRepresentativeForUser } from '../../../src/database/stix-representative';
@@ -46,13 +46,13 @@ const liveEvent = (notificationId: string, userId = 'user-1'): KnowledgeNotifica
 };
 
 // Byte size of an event, mirroring how collectDigestContent measures the retained content.
-const eventBytes = (event: KnowledgeNotificationEvent) => Buffer.byteLength(JSON.stringify(event));
+const eventBytes = (event: DigestContentEvent) => Buffer.byteLength(JSON.stringify(event));
 
 // Wrap events the way rawFetchRangeNotifications delivers them: paired with their stored byte size.
-const sizedBatch = (events: KnowledgeNotificationEvent[]) => events.map((event) => ({ event, byteSize: eventBytes(event) }));
+const sizedBatch = (events: DigestContentEvent[]) => events.map((event) => ({ event, byteSize: eventBytes(event) }));
 
 // Make the mocked fetchRangeNotifications deliver the given batches, honouring an early-stop (false).
-const driveBatches = (batches: KnowledgeNotificationEvent[][]) => {
+const driveBatches = (batches: DigestContentEvent[][]) => {
   fetchRangeNotificationsMock.mockImplementation(async (_start, _end, callback) => {
     for (let i = 0; i < batches.length; i += 1) {
       const shouldContinue = await callback(sizedBatch(batches[i]));
@@ -203,7 +203,7 @@ describe('handleDigestNotifications', () => {
       data: { provider: 'local', username: 'admin@opencti.io' } as unknown as ActivityNotificationEvent['data'],
       origin: {},
     };
-    driveBatches([[loginEvent as unknown as KnowledgeNotificationEvent]]);
+    driveBatches([[loginEvent]]);
     await handleDigestNotifications({} as AuthContext);
     expect(vi.mocked(storeNotificationEvent)).toHaveBeenCalledTimes(1);
     const digestEvent = vi.mocked(storeNotificationEvent).mock.calls[0][1] as unknown as { data: Array<{ type: string; message: string; instance: unknown }> };
@@ -212,6 +212,22 @@ describe('handleDigestNotifications', () => {
       message: '`admin` login from provider `local` ',
       instance: { provider: 'local', username: 'admin@opencti.io' },
     })]);
+    expect(vi.mocked(extractStixRepresentativeForUser)).not.toHaveBeenCalled();
+  });
+
+  it('takes the message from its target when the data has extensions but no OpenCTI one', async () => {
+    const event: ActivityNotificationEvent = {
+      version: '1',
+      type: 'live',
+      notification_id: 'trigger-A',
+      targets: [{ user: { user_id: DIGEST_USER_ID, user_email: '', notifiers: [], user_service_account: false }, type: 'read', message: 'matched message' }],
+      data: { id: 'obj-x', type: 'report', extensions: {} } as unknown as ActivityNotificationEvent['data'],
+      origin: {},
+    };
+    driveBatches([[event]]);
+    await handleDigestNotifications({} as AuthContext);
+    const digestEvent = vi.mocked(storeNotificationEvent).mock.calls[0][1] as unknown as { data: Array<{ message: string }> };
+    expect(digestEvent.data).toEqual([expect.objectContaining({ message: 'matched message' })]);
     expect(vi.mocked(extractStixRepresentativeForUser)).not.toHaveBeenCalled();
   });
 
@@ -233,5 +249,23 @@ describe('handleDigestNotifications', () => {
     driveBatches([[liveEvent('trigger-other', DIGEST_USER_ID)]]);
     await handleDigestNotifications({} as AuthContext);
     expect(vi.mocked(storeNotificationEvent)).not.toHaveBeenCalled();
+  });
+});
+
+describe('isStixObjectNotificationData', () => {
+  it('recognizes a STIX object by the type of its OpenCTI extension', () => {
+    const stix = { id: 'report--1', type: 'report', extensions: { [STIX_EXT_OCTI]: { type: 'Report' } } } as unknown as DigestContentEvent['data'];
+    expect(isStixObjectNotificationData(stix)).toBe(true);
+  });
+
+  it.each([
+    ['the context data of a login', { provider: 'local', username: 'admin@opencti.io' }],
+    ['an activity data with a representative', { id: 'x', representative: { main: 'Report A', secondary: '' } }],
+    ['empty extensions', { id: 'x', type: 'report', extensions: {} }],
+    ['an OpenCTI extension without type', { id: 'x', type: 'report', extensions: { [STIX_EXT_OCTI]: {} } }],
+    ['a null OpenCTI extension', { id: 'x', type: 'report', extensions: { [STIX_EXT_OCTI]: null } }],
+    ['an OpenCTI extension but no STIX type', { id: 'x', extensions: { [STIX_EXT_OCTI]: { type: 'Report' } } }],
+  ])('rejects %s', (_label, data) => {
+    expect(isStixObjectNotificationData(data as unknown as DigestContentEvent['data'])).toBe(false);
   });
 });
