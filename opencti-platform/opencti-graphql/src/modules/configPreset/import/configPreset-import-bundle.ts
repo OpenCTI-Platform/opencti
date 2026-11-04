@@ -17,7 +17,8 @@ import {
 
 // Limits of a bundle, enforced on the bytes really read and never on the sizes declared in the zip
 export const CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE = 50 * 1024 * 1024;
-export const CONFIG_PRESET_IMPORT_MAX_ENTRIES = 1000;
+// One file per item: thousands of labels fit. Not sized from the zip, reading and previewing a bundle costs more than linear in its items
+export const CONFIG_PRESET_IMPORT_MAX_ENTRIES = 10000;
 export const CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE = 5 * 1024 * 1024;
 export const CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE = 50 * 1024 * 1024;
 

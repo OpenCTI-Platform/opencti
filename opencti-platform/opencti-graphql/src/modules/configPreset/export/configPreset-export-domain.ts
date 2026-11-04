@@ -26,6 +26,9 @@ import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemFilePat
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import { buildConfigPresetFileName, CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE, sanitizeBundleName } from '../configPreset-utils';
 
+// The files of the zip that are not items
+const CONFIG_PRESET_FIXED_FILES = [CONFIG_PRESET_METADATA_FILE, CONFIG_PRESET_DEPENDENCIES_FILE];
+
 // The dialog shows a type inline when its first page is its only one
 export const CONFIG_PRESET_FIRST_PAGE_SIZE = 10;
 
@@ -290,8 +293,8 @@ export const configPresetExport = async (
     throw UnsupportedError('Cannot export configuration presets in draft');
   }
   const families = await addConfigPresetDependencies(context, user, await resolveConfigPresetSelections(context, user, selections));
-  // The zip holds the items and the metadata and dependencies files: past the limit of the import, the platform could not read its own export
-  const entriesCount = families.reduce((count, family) => count + family.items.length, 2);
+  // The zip holds the items and its fixed files: past the limit of the import, the platform could not read its own export
+  const entriesCount = families.reduce((count, family) => count + family.items.length, CONFIG_PRESET_FIXED_FILES.length);
   if (entriesCount > CONFIG_PRESET_IMPORT_MAX_ENTRIES) {
     throw FunctionalError('The export holds too many items to be imported back, select fewer items', { limit: CONFIG_PRESET_IMPORT_MAX_ENTRIES, count: entriesCount });
   }

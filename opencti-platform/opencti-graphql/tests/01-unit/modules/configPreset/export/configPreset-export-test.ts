@@ -440,7 +440,7 @@ describe('Config preset export', () => {
     expectNothingWritten();
   });
 
-  it('refuses, before any write, an export the import could not read back: its items and the two metadata files exceed the import limit', async () => {
+  it('refuses, before any write, an export the import could not read back: its items and the fixed files of the zip exceed the import limit', async () => {
     const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!;
     const manyLabels = (count: number) => Array.from({ length: count }, (_, i) => ({ id: `label-${i}`, label: `label-${i}`, translatable: false, exporter: async () => ({}) }));
     const resolveItems = vi.spyOn(labels, 'resolveItems');
