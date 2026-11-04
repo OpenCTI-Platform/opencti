@@ -45,7 +45,7 @@ const InvestigationExpandForm = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting }) => (
+      {({ submitForm, handleReset, isSubmitting, values }) => (
         <Form className="flex flex-col gap-6 min-h-0">
           <DialogBody>
             <Stack spacing={3}>
@@ -108,7 +108,7 @@ const InvestigationExpandForm = ({
             </Button>
             <Button
               onClick={submitForm}
-              disabled={isSubmitting || disabled}
+              disabled={isSubmitting || disabled || (values.entity_types.length === 0 && values.relationship_types.length === 0)}
             >
               {t_i18n('Expand')}
             </Button>

@@ -257,6 +257,7 @@ const GraphToolbarExpandTools = ({
       selectedNodes,
       selectedLinks,
       isExpandOpen,
+      onExpandSubmit,
     },
   } = useGraphContext();
 
@@ -307,6 +308,7 @@ const GraphToolbarExpandTools = ({
       allNewElements.push(...newElements);
     }
     onInvestigationExpand?.(allNewElements);
+    onExpandSubmit?.();
 
     resetForm();
     setRollBackOpen(false);
@@ -339,7 +341,7 @@ const GraphToolbarExpandTools = ({
 
       <Dialog
         open={isExpandOpen}
-        onOpenChange={setIsExpandOpen}
+        onOpenChange={(isOpen) => setIsExpandOpen(isOpen)}
       >
         <DialogContent size="md">
           <DialogTitle>

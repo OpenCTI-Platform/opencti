@@ -99,15 +99,15 @@ const InvestigationEnrichmentExpand = ({
 
   /**
    * Opens the expand of the graph on the enriched entities, to look for data
-   * related to them that the enrichments did not create or update, and marks
-   * the works as reviewed.
+   * related to them that the enrichments did not create or update. The works
+   * are marked as reviewed only if that expand is submitted, not cancelled.
    */
   const openGraphExpand = () => {
     setSelectedNodes(sourceNodes);
     setSelectedLinks(sourceLinks);
-    onDismiss(workIds);
+    onClose();
     onBackToGraph?.();
-    setIsExpandOpen(true);
+    setIsExpandOpen(true, () => onDismiss(workIds));
   };
 
   return (
