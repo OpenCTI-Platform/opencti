@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { createUploadFromTestDataFile, queryAsAdminWithSuccess, queryUnauthenticatedIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { BUILT_IN_THEME_STANDARD_IDS } from '../../../src/modules/theme/theme-constants';
 
 const CREATE_THEME_MUTATION = gql`
   mutation ThemeAdd($input: ThemeAddInput!) {
@@ -523,7 +524,7 @@ describe('Themes resolver testing', () => {
     expect(JSON.stringify(theme.errors)).toContain(invalidKey);
   });
 
-  it('should export a theme as a file the import accepts, without its standard id', async () => {
+  it('should export a theme as a file the import accepts, with its standard id', async () => {
     const input = {
       name: 'Theme to export',
       theme_background: '#1a1a1a',
@@ -538,16 +539,18 @@ describe('Themes resolver testing', () => {
     const created = await queryAsAdminWithSuccess({ query: CREATE_THEME_MUTATION, variables: { input } });
     const themeId = created.data?.themeAdd.id;
     const exported = await queryAsAdminWithSuccess({ query: EXPORT_THEME_QUERY, variables: { id: themeId } });
-    // The fields that are not set are left out, and the standard id is not part of a theme file
-    expect(JSON.parse(exported.data?.theme.toConfigurationExport)).toEqual(input);
+    // The fields that are not set are left out, the standard id comes first
+    const file = JSON.parse(exported.data?.theme.toConfigurationExport);
+    expect(file).toEqual({ standard_id: expect.stringMatching(/^theme--/), ...input });
+    expect(Object.keys(file)[0]).toBe('standard_id');
     await queryAsAdminWithSuccess({ query: DELETE_THEME_MUTATION, variables: { id: themeId } });
   });
 
-  it('should export a built-in theme without its standard id', async () => {
+  it('should export a built-in theme with its standard id, the same on every platform', async () => {
     const exported = await queryAsAdminWithSuccess({ query: EXPORT_THEME_QUERY, variables: { id: darkThemeId } });
     const file = JSON.parse(exported.data?.theme.toConfigurationExport);
     expect(file.name).toBe('Filigran Dark');
-    expect(file).not.toHaveProperty('standard_id');
+    expect(file.standard_id).toBe(BUILT_IN_THEME_STANDARD_IDS['Filigran Dark']);
     expect(file).not.toHaveProperty('built_in');
   });
 });
