@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as middlewareLoader from '../../../../src/database/middleware-loader';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
+import * as workflowDomain from '../../../../src/modules/workflow/domain/workflow-domain';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../../src/modules/workflow/types/workflow-types';
 import * as draftContextUtils from '../../../../src/utils/draftContext';
 import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../../src/utils/filtering/filtering-constants';
 import { resolveWorkflowStatusFilter } from '../../../../src/utils/filtering/workflow-status-filter';
 
 vi.mock('../../../../src/database/middleware-loader');
+vi.mock('../../../../src/modules/workflow/domain/workflow-domain', () => ({ getWorkflowDefaultState: vi.fn() }));
 
 const mockUser: any = { id: 'user-1' };
 const mockContext: any = { user: mockUser };
@@ -14,12 +17,14 @@ describe('resolveWorkflowStatusFilter', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
+    // A published workflow whose initial state none of the tests below filter on, unless stated.
+    (workflowDomain.getWorkflowDefaultState as any).mockResolvedValue({ initialState: 'status-template-initial' });
   });
 
   it('returns args unchanged when there are no filters at all', async () => {
     const args = {};
 
-    const result = await resolveWorkflowStatusFilter(mockContext, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
 
     expect(result).toBe(args);
     expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
@@ -30,7 +35,7 @@ describe('resolveWorkflowStatusFilter', () => {
       filters: { mode: 'and', filters: [{ key: 'name', values: ['foo'], operator: 'eq', mode: 'or' }], filterGroups: [] },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
 
     expect(result).toBe(args);
     expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
@@ -49,7 +54,7 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
 
     expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledWith(
       mockContext,
@@ -79,7 +84,7 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
 
     expect(result.filters.filters).toEqual([
       expect.objectContaining({ key: ['id'], values: ['<no-match>'] }),
@@ -99,7 +104,7 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
 
     expect(result.filters.filters).toEqual([
       expect.objectContaining({ key: 'name' }),
@@ -120,7 +125,7 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
 
     expect(result.filters.mode).toBe('or');
     expect(result.filters.filters).toEqual([
@@ -139,7 +144,7 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
 
     expect(result.filters.filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'not_eq', mode: 'and' }]);
   });
@@ -158,49 +163,93 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
 
     expect(result.filters.filterGroups[0].filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'eq', mode: 'or' }]);
   });
 
-  it('excludes every entity with a workflow status for a nil workflow status filter', async () => {
-    (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-1' }]);
-    const args = {
+  describe('entities without a WorkflowInstance, shown in the initial state', () => {
+    const statusFilterArgs = (operator: string, values: string[]) => ({
       filters: {
         mode: 'and',
-        filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: [], operator: 'nil', mode: 'or' }],
+        filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values, operator, mode: 'or' }],
         filterGroups: [],
       },
-    };
+    });
 
-    const result = await resolveWorkflowStatusFilter(mockContext, args);
+    it('matches no entity for a nil filter: every entity has a status under a published workflow', async () => {
+      const result = await resolveWorkflowStatusFilter(mockContext, statusFilterArgs('nil', []), ENTITY_TYPE_DRAFT_WORKSPACE);
 
-    expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledWith(
-      mockContext,
-      mockUser,
-      [ENTITY_TYPE_WORKFLOW_INSTANCE],
-      expect.objectContaining({
-        filters: expect.objectContaining({
-          filters: [{ key: ['currentState'], values: [], operator: 'not_nil', mode: 'or' }],
+      expect(workflowDomain.getWorkflowDefaultState).toHaveBeenCalledWith(mockContext, mockUser, ENTITY_TYPE_DRAFT_WORKSPACE);
+      expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
+      expect(result.filters.filters).toEqual([{ key: ['id'], values: ['<no-match>'], operator: 'eq', mode: 'or' }]);
+    });
+
+    it('matches every entity for a not_nil filter under a published workflow', async () => {
+      const result = await resolveWorkflowStatusFilter(mockContext, statusFilterArgs('not_nil', []), ENTITY_TYPE_DRAFT_WORKSPACE);
+
+      expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
+      expect(result.filters.filters).toEqual([{ key: ['id'], values: ['<no-match>'], operator: 'not_eq', mode: 'and' }]);
+    });
+
+    it('keeps entities without an instance when filtering on the initial state', async () => {
+      (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-elsewhere' }]);
+
+      const result = await resolveWorkflowStatusFilter(mockContext, statusFilterArgs('eq', ['status-template-initial']), ENTITY_TYPE_DRAFT_WORKSPACE);
+
+      expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        [ENTITY_TYPE_WORKFLOW_INSTANCE],
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            filters: [
+              { key: ['currentState'], values: [], operator: 'not_nil', mode: 'or' },
+              { key: ['currentState'], values: ['status-template-initial'], operator: 'not_eq', mode: 'and' },
+            ],
+          }),
         }),
-      }),
-    );
-    expect(result.filters.filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'not_eq', mode: 'and' }]);
-  });
+      );
+      expect(result.filters.filters).toEqual([{ key: ['id'], values: ['draft-elsewhere'], operator: 'not_eq', mode: 'and' }]);
+    });
 
-  it('keeps only entities with a workflow status for a not_nil workflow status filter', async () => {
-    (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-1' }]);
-    const args = {
-      filters: {
-        mode: 'and',
-        filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: [], operator: 'not_nil', mode: 'or' }],
-        filterGroups: [],
-      },
-    };
+    it('drops entities without an instance when excluding the initial state', async () => {
+      (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-elsewhere' }]);
 
-    const result = await resolveWorkflowStatusFilter(mockContext, args);
+      const result = await resolveWorkflowStatusFilter(mockContext, statusFilterArgs('not_eq', ['status-template-initial']), ENTITY_TYPE_DRAFT_WORKSPACE);
 
-    expect(result.filters.filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'eq', mode: 'or' }]);
+      expect(result.filters.filters).toEqual([{ key: ['id'], values: ['draft-elsewhere'], operator: 'eq', mode: 'or' }]);
+    });
+
+    it('resolves nil and not_nil from the instances when the workflow has no initial state', async () => {
+      (workflowDomain.getWorkflowDefaultState as any).mockResolvedValue({ initialState: null });
+      (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-1' }]);
+
+      const nilResult = await resolveWorkflowStatusFilter(mockContext, statusFilterArgs('nil', []), ENTITY_TYPE_DRAFT_WORKSPACE);
+      const notNilResult = await resolveWorkflowStatusFilter(mockContext, statusFilterArgs('not_nil', []), ENTITY_TYPE_DRAFT_WORKSPACE);
+
+      expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        [ENTITY_TYPE_WORKFLOW_INSTANCE],
+        expect.objectContaining({
+          filters: expect.objectContaining({ filters: [{ key: ['currentState'], values: [], operator: 'not_nil', mode: 'or' }] }),
+        }),
+      );
+      expect(nilResult.filters.filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'not_eq', mode: 'and' }]);
+      expect(notNilResult.filters.filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'eq', mode: 'or' }]);
+    });
+
+    it('ignores instances when the type has no published workflow: no entity shows a status', async () => {
+      (workflowDomain.getWorkflowDefaultState as any).mockResolvedValue(null);
+
+      const eqResult = await resolveWorkflowStatusFilter(mockContext, statusFilterArgs('eq', ['status-template-abc']), ENTITY_TYPE_DRAFT_WORKSPACE);
+      const nilResult = await resolveWorkflowStatusFilter(mockContext, statusFilterArgs('nil', []), ENTITY_TYPE_DRAFT_WORKSPACE);
+
+      expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
+      expect(eqResult.filters.filters).toEqual([{ key: ['id'], values: ['<no-match>'], operator: 'eq', mode: 'or' }]);
+      expect(nilResult.filters.filters).toEqual([{ key: ['id'], values: ['<no-match>'], operator: 'not_eq', mode: 'and' }]);
+    });
   });
 
   it('rejects a workflow status filter with an unsupported operator', async () => {
@@ -212,7 +261,7 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    await expect(resolveWorkflowStatusFilter(mockContext, args)).rejects.toThrow('Workflow status filter only supports equality and empty operators');
+    await expect(resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE)).rejects.toThrow('Workflow status filter only supports equality and empty operators');
     expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
   });
 
@@ -227,7 +276,7 @@ describe('resolveWorkflowStatusFilter', () => {
       },
     };
 
-    const result = await resolveWorkflowStatusFilter(mockContext, args);
+    const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
 
     expect(result.filters.filters[0].values).toHaveLength(5001);
   });
