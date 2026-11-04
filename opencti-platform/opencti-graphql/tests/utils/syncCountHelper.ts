@@ -42,7 +42,10 @@ testCreatedCounter.infrastructure = 1;
 testCreatedCounter['intrusion-set'] = 54;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 4;
-testCreatedCounter.label = 18;
+// Counts for:
+// - 3 created and deleted by investigation-enrichment-test
+// - 3 created and deleted by label-import-test
+testCreatedCounter.label = 21;
 testCreatedCounter.language = 1;
 testCreatedCounter.location = 22;
 testCreatedCounter['mac-addr'] = 1;
@@ -93,7 +96,9 @@ testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
 testUpdatedCounter.indicator = 33;
-testUpdatedCounter.label = 1;
+// Counts for:
+// - 1 updated by label-import-test
+testUpdatedCounter.label = 2;
 testUpdatedCounter['malware-analysis'] = 3;
 testUpdatedCounter.note = 3;
 // Observed data is imported twice by the loader test: the second import is an upsert that increments number_seen (1)
@@ -154,7 +159,10 @@ testDeletedCounter.infrastructure = 1;
 testDeletedCounter['intrusion-set'] = 52;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter['kill-chain-phase'] = 1; // created and deleted by form-submission-test
-testDeletedCounter.label = 5;
+// Counts for:
+// - 3 created and deleted by investigation-enrichment-test
+// - 3 deleted by label-import-test
+testDeletedCounter.label = 8;
 testDeletedCounter.language = 1;
 testDeletedCounter.location = 17;
 testDeletedCounter['mac-addr'] = 1;
