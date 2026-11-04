@@ -8,34 +8,82 @@ import { isStixRelationship } from '../../src/schema/stixRelationship';
 import { STIX_EXT_OCTI } from '../../src/types/stix-2-1-extensions';
 import { EVENT_TYPE_UPDATE } from '../../src/database/utils';
 import { internalLoadById } from '../../src/database/middleware-loader';
+import { fetchStreamInfo } from '../../src/database/stream/stream-handler';
+import { wait } from '../../src/database/utils';
 
-export const fetchStreamEvents = (uri, { from } = {}) => {
+const compareStreamIds = (a, b) => {
+  const [aTime, aSeq] = a.split('-').map(Number);
+  const [bTime, bSeq] = b.split('-').map(Number);
+  return aTime === bTime ? aSeq - bSeq : aTime - bTime;
+};
+
+// Late writers (connectors, workers) can still push events after the previous test files:
+// wait until nothing was appended to the raw stream for stableTime, then return its last event id.
+export const waitForStableStream = async (stableTime = 10000, pollInterval = 1000) => {
+  let { lastEventId } = await fetchStreamInfo();
+  let stableSince = Date.now();
+  while (Date.now() - stableSince < stableTime) {
+    await wait(pollInterval);
+    const info = await fetchStreamInfo();
+    if (info.lastEventId !== lastEventId) {
+      lastEventId = info.lastEventId;
+      stableSince = Date.now();
+    }
+  }
+  return lastEventId;
+};
+
+// Without untilEventId, the stream is closed after idleTimeout ms without a new event.
+// With untilEventId (raw stream only), it is closed as soon as this event, or a heartbeat past it, is received,
+// unless the stream has grown meanwhile; the idle timeout stays as a fallback.
+export const fetchStreamEvents = (uri, { from, untilEventId, idleTimeout = 30000 } = {}) => {
   const extraHeaders = { authorization: generateBasicAuth(), 'last-event-id': from };
   const fetchWithHeaders = (url, init) => fetch(url, { ...init, headers: { ...init.headers, ...extraHeaders } });
   return new Promise((resolve, reject) => {
     let eventNumber = 0;
     const events = [];
     const es = new EventSource(uri, { fetch: fetchWithHeaders });
+    let closed = false;
     const closeEventSource = () => {
-      es.close();
-      resolve(events);
+      if (!closed) {
+        closed = true;
+        es.close();
+        resolve(events);
+      }
+    };
+    let targetEventId = untilEventId;
+    const closeIfTargetReached = async (lastEventId) => {
+      if (!targetEventId || !lastEventId || compareStreamIds(lastEventId, targetEventId) < 0) {
+        return;
+      }
+      const info = await fetchStreamInfo();
+      if (compareStreamIds(info.lastEventId, lastEventId) <= 0) {
+        closeEventSource();
+      } else {
+        targetEventId = info.lastEventId;
+      }
     };
     const handleEvent = (event) => {
+      if (closed) {
+        return;
+      }
       const { type, data, lastEventId, origin } = event;
       eventNumber += 1;
       const currentEventNumber = eventNumber;
       events.push({ type, data: JSON.parse(data), lastEventId, origin });
-      // If no new event for 5 secs, stop the processing
+      // If no new event for idleTimeout ms, stop the processing
       setTimeout(() => {
         if (currentEventNumber === eventNumber) {
           closeEventSource();
         }
-      }, 30000);
+      }, idleTimeout);
+      closeIfTargetReached(lastEventId).catch(reject);
     };
     es.addEventListener('create', (event) => handleEvent(event));
     es.addEventListener('update', (event) => handleEvent(event));
     es.addEventListener('merge', (event) => handleEvent(event));
     es.addEventListener('delete', (event) => handleEvent(event));
+    es.addEventListener('heartbeat', (event) => closeIfTargetReached(event.lastEventId).catch(reject));
     es.addEventListener('error', (err) => reject(err));
   });
 };
