@@ -1055,7 +1055,7 @@ const useSearchEntities = ({
     } else {
       // case 2: build according to the filter type
       // depending on the filter type, fetch the right data and build the options list
-      const filterDefinition: FilterDefinition | undefined = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap);
+      const filterDefinition: FilterDefinition | undefined = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap, parentFilterKey);
       const filterType = filterDefinition?.type ?? 'undefined';
       switch (filterType) {
         case 'vocabulary':

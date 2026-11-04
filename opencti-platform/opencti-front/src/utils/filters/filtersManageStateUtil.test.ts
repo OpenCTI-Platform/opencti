@@ -6,6 +6,7 @@ import {
   handleAddSingleValueFilterUtil,
   handleChangeOperatorFiltersUtil,
   handleChangeRepresentationFilterUtil,
+  handleChangeSubFilterUtil,
   handleRemoveFilterUtil,
   handleRemoveRepresentationFilterUtil,
   handleReplaceFilterValuesUtil,
@@ -271,5 +272,38 @@ describe('filtersUtils tree readers', () => {
     const keysMap = new Map([['Report', new Map([['entity_type', {}]])]]) as never;
     cleanFilters(frozenTree(), helpers, ['Report'], keysMap);
     expect(removed).toEqual(['f-d2', 'f-d3']);
+  });
+});
+
+describe('handleChangeSubFilterUtil', () => {
+  const nestedFilter = { id: 'f1', key: 'coverage_information', operator: 'eq', mode: 'and', values: [{ key: 'coverage_name', operator: 'eq', values: ['detection'] }] };
+  const filters = { mode: 'and', filters: [nestedFilter], filterGroups: [] } as FilterGroup;
+  it('sets the operator of an existing sub-filter and keeps its values', () => {
+    const result = handleChangeSubFilterUtil({ filters, id: 'f1', subKey: 'coverage_name', change: { operator: 'not_eq' } });
+    expect(result.filters[0].values).toEqual([{ key: 'coverage_name', operator: 'not_eq', values: ['detection'] }]);
+    expect(result.filters[0].operator).toEqual('eq');
+  });
+  it('appends a missing sub-filter', () => {
+    const result = handleChangeSubFilterUtil({ filters, id: 'f1', subKey: 'coverage_score', change: { values: ['20'] } });
+    expect(result.filters[0].values[1]).toEqual({ key: 'coverage_score', operator: 'eq', values: ['20'] });
+  });
+  it('does not append a missing sub-filter when the change only carries empty values', () => {
+    const result = handleChangeSubFilterUtil({ filters, id: 'f1', subKey: 'coverage_score', change: { values: [] } });
+    expect(result.filters[0].values).toEqual(nestedFilter.values);
+  });
+  it('still appends a missing sub-filter for an operator change', () => {
+    const result = handleChangeSubFilterUtil({ filters, id: 'f1', subKey: 'coverage_score', change: { operator: 'lt' } });
+    expect(result.filters[0].values[1]).toEqual({ key: 'coverage_score', operator: 'lt', values: [] });
+  });
+  it('switches an empty / not empty parent back to eq, in the same change, when a sub-filter is edited', () => {
+    const nilFilters = { mode: 'and', filters: [{ ...nestedFilter, operator: 'nil', values: [] }], filterGroups: [] } as FilterGroup;
+    const result = handleChangeSubFilterUtil({ filters: nilFilters, id: 'f1', subKey: 'coverage_name', change: { operator: 'not_eq' } });
+    expect(result.filters[0].operator).toEqual('eq');
+    expect(result.filters[0].values).toEqual([{ key: 'coverage_name', operator: 'not_eq', values: [] }]);
+  });
+  it('keeps an empty / not empty parent when the change does nothing', () => {
+    const nilFilters = { mode: 'and', filters: [{ ...nestedFilter, operator: 'nil', values: [] }], filterGroups: [] } as FilterGroup;
+    const result = handleChangeSubFilterUtil({ filters: nilFilters, id: 'f1', subKey: 'coverage_score', change: { values: [] } });
+    expect(result.filters[0].operator).toEqual('nil');
   });
 });

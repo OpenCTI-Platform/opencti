@@ -41,6 +41,7 @@ const buildHelpers = () => ({
   handleRemoveRepresentationFilter: vi.fn(),
   handleRemoveFilterById: vi.fn(),
   handleChangeOperatorFilters: vi.fn(),
+  handleChangeSubFilter: vi.fn(),
   handleAddSingleValueFilter: vi.fn(),
   handleAddRepresentationFilter: vi.fn(),
   handleAddFilterWithEmptyValue: vi.fn(),

@@ -7,6 +7,7 @@ import {
   handleChangeFilterKeyUtil,
   handleChangeOperatorFiltersUtil,
   handleChangeRepresentationFilterUtil,
+  handleChangeSubFilterUtil,
   handleRemoveFilterUtil,
   handleRemoveRepresentationFilterUtil,
   handleReplaceFilterValuesUtil,
@@ -108,6 +109,10 @@ export const createFilterHelpers = (adapter: FilterStateAdapter): handleFilterHe
   ),
   handleChangeOperatorFilters: (id: string, operator: string) => adapter.applyChange(
     (filters) => ({ filters: handleChangeOperatorFiltersUtil({ filters, id, operator }) }),
+    'skip',
+  ),
+  handleChangeSubFilter: (id: string, subKey: string, change: { operator?: string; values?: string[] }) => adapter.applyChange(
+    (filters) => ({ filters: handleChangeSubFilterUtil({ filters, id, subKey, change }) }),
     'skip',
   ),
   handleRemoveFilterById: (id: string) => adapter.applyChange(

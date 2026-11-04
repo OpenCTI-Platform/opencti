@@ -38,6 +38,8 @@ export interface handleFilterHelpers {
   handleRemoveRepresentationFilter: (id: string, valueId: string | Filter | undefined | null) => void;
   handleRemoveFilterById: (id: string) => void;
   handleChangeOperatorFilters: HandleOperatorFilter;
+  /** Merges an operator and/or values into one sub-filter of a nested filter (e.g. coverage_information). */
+  handleChangeSubFilter: (id: string, subKey: string, change: { operator?: string; values?: string[] }) => void;
   handleAddSingleValueFilter: (id: string, valueId?: string) => void;
   handleAddRepresentationFilter: (id: string, valueId: string | null) => void;
   handleAddFilterWithEmptyValue: (filter: Filter, groupId?: string) => void;
