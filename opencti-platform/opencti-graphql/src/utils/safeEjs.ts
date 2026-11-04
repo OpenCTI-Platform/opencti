@@ -51,7 +51,7 @@ const forbiddenProperties = new Set([
   '__defineSetter__',
 ]);
 
-const isForbiddenName = (name: string) => name.includes('\\') || name.startsWith(safeReservedPrefix) || forbiddenProperties.has(name);
+export const isForbiddenName = (name: string) => name.includes('\\') || name.startsWith(safeReservedPrefix) || forbiddenProperties.has(name);
 
 const authorizeGlobals = new Map<string, string | true>([
   ['undefined', true],
