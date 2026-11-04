@@ -15,6 +15,7 @@ import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
 import { ConnectorType } from '../../../src/generated/graphql';
+import { buildWorkerContext } from '../../utils/workContextHelper';
 
 const ENRICHMENT_CONNECTOR_ID = 'aa6d8f3a-1b2c-4d5e-8f90-111111111111';
 const OTHER_ENRICHMENT_CONNECTOR_ID = 'aa6d8f3a-1b2c-4d5e-8f90-222222222222';
@@ -95,7 +96,7 @@ describe('Work touched elements tracking', () => {
     const existing = await newIntrusionSet(testContext, 'Touched existing');
     const unchanged = await newIntrusionSet(testContext, 'Touched unchanged');
     const work = await startWork(enrichment, existing.standard_id, { enrichedEntityId: existing.id });
-    const workerContext = { ...testContext, workId: work.id };
+    const workerContext = await buildWorkerContext(work.id);
 
     const created = await newIntrusionSet(workerContext, 'Touched created');
     await patchAttribute(workerContext, ADMIN_USER, existing.id, ENTITY_TYPE_INTRUSION_SET, { description: 'enriched' });
@@ -117,7 +118,7 @@ describe('Work touched elements tracking', () => {
   it('should record the refs created on the enriched entity, and only those', async () => {
     const enriched = await newIntrusionSet(testContext, 'Touched enriched');
     const work = await startWork(enrichment, enriched.standard_id, { enrichedEntityId: enriched.id });
-    const workerContext = { ...testContext, workId: work.id };
+    const workerContext = await buildWorkerContext(work.id);
     const addedLabel = await newLabel('touched-added');
     const upsertedLabel = await newLabel('touched-upserted');
 
@@ -146,38 +147,41 @@ describe('Work touched elements tracking', () => {
     createdElements.push({ id: report.id, type: ENTITY_TYPE_CONTAINER_REPORT });
     const work = await startWork(enrichment, report.standard_id, { enrichedEntityId: report.id });
 
-    await stixDomainObjectAddRelation({ ...testContext, workId: work.id }, ADMIN_USER, report.id, { toId: ADMIN_USER.id, relationship_type: 'object-assignee' });
+    await stixDomainObjectAddRelation(await buildWorkerContext(work.id), ADMIN_USER, report.id, { toId: ADMIN_USER.id, relationship_type: 'object-assignee' });
 
     expect(await describeTouched(work.id)).toEqual([report.id]);
   });
 
   it('should not record anything for a non enrichment work', async () => {
-    const work = await startWork(importConnector, 'source');
-    await newIntrusionSet({ ...testContext, workId: work.id }, 'Touched by import');
+    const work = await startWork(importConnector, 'source', { enrichedEntityId: 'enriched-entity' });
+    await newIntrusionSet(await buildWorkerContext(work.id), 'Touched by import');
     expect(await redisGetWorkTouchedElements(work.id)).toEqual({ touched_ids: [] });
   });
 
   it('should not record anything for an enrichment work outside an investigation', async () => {
-    const work = await startWork(enrichment, 'source', { investigationId: null });
-    await newIntrusionSet({ ...testContext, workId: work.id }, 'Touched outside investigation');
+    const work = await startWork(enrichment, 'source', { investigationId: null, enrichedEntityId: 'enriched-entity' });
+    await newIntrusionSet(await buildWorkerContext(work.id), 'Touched outside investigation');
     expect(await redisGetWorkTouchedElements(work.id)).toEqual({ touched_ids: [] });
   });
 
   it('should keep concurrent works separate', async () => {
     const target = await newIntrusionSet(testContext, 'Touched concurrent');
-    const workA = await startWork(enrichment, target.standard_id);
-    const workB = await startWork(otherEnrichment, target.standard_id);
+    const workA = await startWork(enrichment, target.standard_id, { enrichedEntityId: target.id });
+    const workB = await startWork(otherEnrichment, target.standard_id, { enrichedEntityId: target.id });
+    const [contextA, contextB] = await Promise.all([buildWorkerContext(workA.id), buildWorkerContext(workB.id)]);
     const [fromA, fromB] = await Promise.all([
-      newIntrusionSet({ ...testContext, workId: workA.id }, 'Touched by A'),
-      newIntrusionSet({ ...testContext, workId: workB.id }, 'Touched by B'),
+      newIntrusionSet(contextA, 'Touched by A'),
+      newIntrusionSet(contextB, 'Touched by B'),
     ]);
     expect((await redisGetWorkTouchedElements(workA.id)).touched_ids).toEqual([fromA.id]);
     expect((await redisGetWorkTouchedElements(workB.id)).touched_ids).toEqual([fromB.id]);
   });
 
   it('should not fail when the work was deleted', async () => {
-    const work = await startWork(enrichment, 'source');
+    const work = await startWork(enrichment, 'source', { enrichedEntityId: 'enriched-entity' });
+    // The context is built while the work is alive, as the worker request started before the deletion
+    const workerContext = await buildWorkerContext(work.id);
     await deleteWork(testContext, ADMIN_USER, work.id);
-    await expect(newIntrusionSet({ ...testContext, workId: work.id }, 'Touched after delete')).resolves.toBeDefined();
+    await expect(newIntrusionSet(workerContext, 'Touched after delete')).resolves.toBeDefined();
   });
 });
