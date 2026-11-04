@@ -117,7 +117,7 @@ export const listLabelsLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEn
 
 // For a test that mocks fullEntitiesList, pageEntitiesConnection and storeLoadById of the middleware loader:
 // the themes and the labels come from the fixtures, any other type listed by fullEntitiesList gets otherEntities
-export const mockThemeLoaders = (otherEntities: unknown[] = []) => {
+export const mockEntityLoaders = (otherEntities: unknown[] = []) => {
   vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, types, args) => {
     if (types?.[0] === 'Label') {
       return listLabelsLikeTheEngine(args as never) as never;

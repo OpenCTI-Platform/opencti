@@ -34,7 +34,7 @@ import { topEntitiesList } from '../../../../src/database/middleware-loader';
 import { buildPaginationFromEdges } from '../../../../src/database/utils';
 import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import { builtInTheme, customLabel, customTheme, mockThemeLoaders, otherCustomTheme, otherLabel } from './configPreset-themes-fixtures';
+import { builtInTheme, customLabel, customTheme, mockEntityLoaders, otherCustomTheme, otherLabel } from './configPreset-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -82,7 +82,7 @@ describe('Config preset exportable types query', () => {
     flags.enabled = true;
     enterpriseEdition.enabled = true;
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id }] as never);
-    mockThemeLoaders();
+    mockEntityLoaders();
   });
 
   it('returns the exportable types to a BYPASS user when the flag is enabled', async () => {
@@ -227,7 +227,7 @@ describe('Config preset exportable items query', () => {
     flags.enabled = true;
     enterpriseEdition.enabled = true;
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: builtInTheme.id }] as never);
-    mockThemeLoaders();
+    mockEntityLoaders();
   });
 
   const queryItems = (variables: Record<string, unknown>, user: unknown = bypassUser) => graphql({

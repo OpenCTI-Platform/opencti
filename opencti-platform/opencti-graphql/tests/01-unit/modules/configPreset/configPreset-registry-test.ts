@@ -14,7 +14,7 @@ import { fullEntitiesList, pageEntitiesConnection, topEntitiesList } from '../..
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
 import { CONFIG_PRESET_FAMILIES, configPresetItemFilePath, exportConfigPresetItem } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import { builtInTheme, customLabel, customTheme, mockThemeLoaders, otherCustomTheme, otherLabel, THEME_FILE_FIELDS } from './configPreset-themes-fixtures';
+import { builtInTheme, customLabel, customTheme, mockEntityLoaders, otherCustomTheme, otherLabel, THEME_FILE_FIELDS } from './configPreset-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id' } as AuthUser;
@@ -57,7 +57,7 @@ describe('Config preset registry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     withSettings({});
-    mockThemeLoaders(entitySettings);
+    mockEntityLoaders(entitySettings);
   });
 
   it('lists the categories of the spec table in registry order, each in its export group', async () => {
