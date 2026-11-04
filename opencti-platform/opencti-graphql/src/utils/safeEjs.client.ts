@@ -5,6 +5,7 @@ import { renderInPool } from './safeEjs.pool';
 export type WorkerOptions = {
   timeout?: number;
   useJsonEscape?: boolean;
+  usePlainTextEscape?: boolean;
 };
 
 export const safeRender = async (template: string, data: Data, options?: SafeRenderOptions & WorkerOptions): Promise<string> => {
@@ -22,7 +23,13 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
   }
 
   try {
-    return await renderInPool({ template, data, options: workerOptions, useJsonEscape: options?.useJsonEscape }, timeout);
+    return await renderInPool({
+      template,
+      data,
+      options: workerOptions,
+      useJsonEscape: options?.useJsonEscape,
+      usePlainTextEscape: options?.usePlainTextEscape,
+    }, timeout);
   } catch (error) {
     // Enhance error messages
     if (!(error instanceof Error)) {
