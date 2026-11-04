@@ -1,10 +1,10 @@
 import { expect } from 'vitest';
 import { elAggregationCount } from '../../src/database/engine';
-import { ADMIN_USER, createHttpClient, executeExternalQuery, testContext } from '../utils/testQuery';
-import { READ_DATA_INDICES } from '../../src/database/utils';
+import { ADMIN_USER, createHttpClient, executeExternalQuery, FIVE_MINUTES, testContext } from '../utils/testQuery';
+import { READ_DATA_INDICES, wait } from '../../src/database/utils';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 import { checkInstanceDiff } from '../utils/testStream';
-import { logApp } from '../../src/config/conf';
+import conf, { logApp } from '../../src/config/conf';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../../src/modules/deleteOperation/deleteOperation-types';
 
 import { convertStoreToStix_2_1 } from '../../src/database/stix-2-1-converter';
@@ -98,7 +98,7 @@ export const checkPreSyncContent = async () => {
   const initStixReport = convertStoreToStix_2_1(initReport);
   return { objectMap, relMap, initStixReport };
 };
-export const checkMapConsistency = (before, after) => {
+const computeMapDifferences = (before, after) => {
   const failedExpects = [];
   after.forEach((value, key) => {
     const compareValue = before.get(key);
@@ -107,16 +107,62 @@ export const checkMapConsistency = (before, after) => {
     if (current !== expected) {
       failedExpects.push({ current, expected });
     }
-    // expect(`${key} - ${value}`).toEqual(`${key} - ${compareValue}`);
   });
+  return failedExpects;
+};
+export const checkMapConsistency = (before, after) => {
+  const failedExpects = computeMapDifferences(before, after);
   expect(failedExpects.length, `checkMapConsistency failed ${JSON.stringify(failedExpects)}`).toEqual(0);
 };
-export const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
-  const client = createHttpClient();
+const fetchRemoteStats = async (client, remoteUri) => {
   const data = await executeExternalQuery(client, remoteUri, STAT_QUERY);
   const { objects, relationships } = data.about.debugStats;
   const syncObjectMap = new Map(objects.map((i) => [i.label, i.value]));
   const syncRelMap = new Map(relationships.map((i) => [i.label, i.value]));
+  return { syncObjectMap, syncRelMap };
+};
+
+const POLL_INTERVAL = 5000;
+
+// The sync instances boot while the first test files run (see ci-test-backend.yml): wait for the one under test
+export const waitForRemotePlatform = async (remoteUri, timeout = FIVE_MINUTES) => {
+  const healthUrl = new URL(`health?health_access_key=${conf.get('app:health_access_key')}`, remoteUri);
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(healthUrl);
+      if (response.ok) {
+        return;
+      }
+    } catch {
+      // Still booting
+    }
+    await wait(POLL_INTERVAL);
+  }
+  throw new Error(`Remote platform ${remoteUri} is not healthy after ${timeout} ms`);
+};
+
+// Poll until the remote platform holds the same content, twice in a row so a transient match does not count.
+// It never asserts: on timeout, checkPostSyncContent reports the remaining differences.
+export const waitForRemoteSync = async (remoteUri, objectMap, relMap, isRemoteReady = async () => true, timeout = FIVE_MINUTES) => {
+  const client = createHttpClient();
+  const deadline = Date.now() + timeout;
+  let consecutiveMatches = 0;
+  while (Date.now() < deadline && consecutiveMatches < 2) {
+    await wait(POLL_INTERVAL);
+    try {
+      const { syncObjectMap, syncRelMap } = await fetchRemoteStats(client, remoteUri);
+      const isSameContent = computeMapDifferences(objectMap, syncObjectMap).length === 0
+        && computeMapDifferences(relMap, syncRelMap).length === 0;
+      consecutiveMatches = isSameContent && await isRemoteReady() ? consecutiveMatches + 1 : 0;
+    } catch {
+      consecutiveMatches = 0;
+    }
+  }
+};
+export const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
+  const client = createHttpClient();
+  const { syncObjectMap, syncRelMap } = await fetchRemoteStats(client, remoteUri);
   checkMapConsistency(objectMap, syncObjectMap);
   checkMapConsistency(relMap, syncRelMap);
   const reportData = await executeExternalQuery(client, remoteUri, REPORT_QUERY, {

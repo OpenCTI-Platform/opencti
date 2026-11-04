@@ -1,10 +1,23 @@
-import { describe, expect, it } from 'vitest';
-import { ADMIN_USER, ADMIN_API_TOKEN, API_URI, FIFTEEN_MINUTES, PYTHON_PATH, SYNC_LIVE_EVENTS_SIZE, SYNC_LIVE_START_REMOTE_URI, testContext } from '../../utils/testQuery';
+import { beforeAll, describe, expect, it } from 'vitest';
+import {
+  ADMIN_USER,
+  ADMIN_API_TOKEN,
+  API_URI,
+  FIFTEEN_MINUTES,
+  FIVE_MINUTES,
+  ONE_MINUTE,
+  PYTHON_PATH,
+  SYNC_LIVE_EVENTS_SIZE,
+  SYNC_LIVE_START_REMOTE_URI,
+  testContext,
+} from '../../utils/testQuery';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { FROM_START, now } from '../../../src/utils/format';
-import { checkPostSyncContent, checkPreSyncContent } from '../sync-utils';
+import { checkPostSyncContent, checkPreSyncContent, waitForRemotePlatform } from '../sync-utils';
 
 describe('Database sync live', () => {
+  beforeAll(() => waitForRemotePlatform(SYNC_LIVE_START_REMOTE_URI), FIVE_MINUTES + ONE_MINUTE);
+
   it(
     'Should python live sync succeed',
     async () => {
