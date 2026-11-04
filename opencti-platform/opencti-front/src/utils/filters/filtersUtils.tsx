@@ -959,17 +959,30 @@ export const getDefaultOperatorFilter = (
 };
 
 /**
- * Get the possible operator for a given key/subkey.
+ * Generic nested keys (e.g. coverage_information) store one operator per sub-filter in their value objects.
+ * The backend gives them the 'nested_filterable' type: regardingOf and dynamicRegardingOf, of type 'nested',
+ * have their own dedicated editor.
+ */
+export const isGenericNestedFilterDefinition = (definition?: FilterDefinition): boolean => {
+  return definition?.type === 'nested_filterable';
+};
+
+/**
+ * Get the possible operator for a given nested filter definition/subkey.
  * Subkeys are nested inside special filter that combine several fields (filter values is not a string[] but object[])
  */
-export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: string): string[] => {
-  if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf') {
+export const getAvailableOperatorForFilterSubKey = (filterDefinition: FilterDefinition, subKey: string): string[] => {
+  if (filterDefinition.filterKey === 'regardingOf' || filterDefinition.filterKey === 'dynamicRegardingOf') {
     if (subKey === 'relationship_type') { // As first element of the filter
       return ['eq', 'not_eq'];
     }
     return [];
   }
-
+  // no frontend rule: the operators sent by the backend, if any, replace the default ones
+  const subFilterOperators = filterDefinition.subFilters?.find((subFilter) => subFilter.filterKey === subKey)?.operators;
+  if (subFilterOperators) {
+    return [...subFilterOperators];
+  }
   return ['eq', 'not_eq', 'nil', 'not_nil'];
 };
 
@@ -1013,6 +1026,11 @@ export const getAvailableOperatorForFilterKey = (
     }
   }
 
+  // no frontend rule: the operators sent by the backend, if any, replace the default ones
+  if (filterDefinition.operators) {
+    return [...filterDefinition.operators, ...changeOperators];
+  }
+
   if (filterDefinition.multiple) {
     return ['eq', 'not_eq', 'only_eq_to', 'not_only_eq_to', 'nil', 'not_nil', ...changeOperators];
   }
@@ -1026,7 +1044,7 @@ export const getAvailableOperatorForFilter = (
   opts?: { isStixFiltering?: boolean },
 ): string[] => {
   const isStixFiltering = opts?.isStixFiltering ?? false;
-  if (filterDefinition && subKey) return getAvailableOperatorForFilterSubKey(filterDefinition.filterKey, subKey);
+  if (filterDefinition && subKey) return getAvailableOperatorForFilterSubKey(filterDefinition, subKey);
   return getAvailableOperatorForFilterKey(filterDefinition, { isStixFiltering });
 };
 
@@ -1184,8 +1202,12 @@ export const useBuildEntityTypeBasedFilterContext = (
 export const getFilterDefinitionFromFilterKeysMap = (
   key: string | string[],
   filterKeysMap: Map<string, FilterDefinition>,
+  parentFilterKey?: string,
 ): FilterDefinition | undefined => {
   const filterKey = getStringFilterKey(key);
+  if (parentFilterKey) {
+    return filterKeysMap.get(parentFilterKey)?.subFilters?.find((subFilter) => subFilter.filterKey === filterKey);
+  }
   if (filterKey === PIR_SCORE_FILTER) {
     return pirScoreFilterDefinition;
   }

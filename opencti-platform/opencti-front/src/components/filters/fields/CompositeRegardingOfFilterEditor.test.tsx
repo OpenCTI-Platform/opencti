@@ -57,6 +57,7 @@ const helpers = {
   handleRemoveRepresentationFilter: vi.fn(),
   handleReplaceFilterValues: vi.fn(),
   handleChangeOperatorFilters: vi.fn(),
+  handleChangeSubFilter: vi.fn(),
 } as unknown as handleFilterHelpers;
 
 const withoutDynamic = {

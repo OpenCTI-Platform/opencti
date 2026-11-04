@@ -3,12 +3,18 @@ import CloseOutlined from '@mui/icons-material/CloseOutlined';
 import Box from '@mui/material/Box';
 import { FunctionComponent, useState } from 'react';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
-import { getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap, useBuildFilterKeysMapFromEntityType } from '../../../utils/filters/filtersUtils';
+import {
+  getDefaultFilterObject,
+  getFilterDefinitionFromFilterKeysMap,
+  isGenericNestedFilterDefinition,
+  useBuildFilterKeysMapFromEntityType,
+} from '../../../utils/filters/filtersUtils';
 import { buildGroupedFilterKeyOptions, GroupedFilterKeyOption, isGroupedFilterKeySelection } from '../../../utils/filters/filterKeyGrouping';
 import { useFormatter } from '../../i18n';
 import FilterChip from '../FilterChip';
 import FilterKeyLabel from '../FilterKeyLabel';
 import FilterValues from '../FilterValues';
+import CompositeNestedFilterEditor from './CompositeNestedFilterEditor';
 import { useFilterEditorContext } from './FilterEditorContext';
 import FilterOperatorSelect from './FilterOperatorSelect';
 import FilterRowCompositeValue from './FilterRowCompositeValue';
@@ -35,8 +41,12 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
   const [inputValues, setInputValues] = useState<FilterEditorInputValue[]>(filter ? [filter as FilterEditorInputValue] : []);
 
   const isDateRangeValue = getFilterDefinitionFromFilterKeysMap(filter.key, filterKeysMap)?.type === 'date' && filter.operator === 'within';
+  const filterDefinition = getFilterDefinitionFromFilterKeysMap(filter.key, filterKeysMap);
+  const isGenericNested = isGenericNestedFilterDefinition(filterDefinition);
   const isCompositeRegardingOf = filter.key === 'regardingOf' || filter.key === 'dynamicRegardingOf';
   const isStandaloneDynamicFilter = filter.key === 'dynamicFrom' || filter.key === 'dynamicTo';
+  // a generic nested filter shows the operator of its first sub-filter here, which also holds empty / not empty
+  const firstNestedSubKey = isGenericNested ? filterDefinition?.subFilters?.[0]?.filterKey : undefined;
 
   // Same rule as CompositeRegardingOfFilterEditor (root chip popover): once a dynamic filter is
   // defined, the relationship type it depends on cannot be emptied or changed anymore.
@@ -51,14 +61,19 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
           filter={filter}
           filterKey={filter.key}
           setInputValues={setInputValues}
-          subKey={isCompositeRegardingOf ? 'relationship_type' : undefined}
+          subKey={isCompositeRegardingOf ? 'relationship_type' : firstNestedSubKey}
           disabled={isRelationshipTypeLocked}
           label={t_i18n('Condition')}
           triggerId={`filter-row-operator-${filter.id}`}
           style={{ width: '100%' }}
         />
       </Box>
-      {!isCompositeRegardingOf && !isStandaloneDynamicFilter && (
+      {isGenericNested && (
+        <Box data-testid="filter-row-value" sx={{ flex: FILTER_ROW_COLUMN_FLEX.value, minWidth: 0 }}>
+          <CompositeNestedFilterEditor {...sharedValueProps} filterKey={filter.key} />
+        </Box>
+      )}
+      {!isGenericNested && !isCompositeRegardingOf && !isStandaloneDynamicFilter && (
         <Box
           data-testid="filter-row-value"
           sx={isDateRangeValue ? { flex: FILTER_ROW_COLUMN_FLEX.value, minWidth: 0, display: 'flex', gap: 1 } : { flex: FILTER_ROW_COLUMN_FLEX.value, minWidth: 0 }}
