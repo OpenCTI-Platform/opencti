@@ -9,9 +9,9 @@ import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PERMISSION_REQUIRED_DIALOG_S
 
 // Root lazily imports its pages. A real page pulls in a large module graph
 // that would keep loading, and logging, after the test ends in the shared
-// worker (isolate: false). Stub them so every import settles inside the test.
+// worker (isolate: false). Stub the one these tests render (Settings) so every
+// import settles inside the test; the mocked Security below never renders Experience.
 vi.mock('./Settings', () => ({ default: () => <div>Settings page</div> }));
-vi.mock('./Experience', () => ({ default: () => <div>Experience page</div> }));
 
 vi.mock('../../../utils/hooks/useSettingsFallbackUrl', () => ({
   default: () => '/dashboard/settings',
