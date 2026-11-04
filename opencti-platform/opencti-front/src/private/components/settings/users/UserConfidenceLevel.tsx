@@ -38,7 +38,7 @@ const MaxConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
             </>
           )}
         >
-          <InformationOutline fontSize="small" color="info" />
+          <InformationOutline fontSize="small" color="info" sx={{ marginLeft: '4px' }} />
         </Tooltip>
       );
     }
@@ -54,7 +54,7 @@ const MaxConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
             </div>
           )}
         >
-          <InformationOutline fontSize="small" color="info" />
+          <InformationOutline fontSize="small" color="info" sx={{ marginLeft: '4px' }} />
         </Tooltip>
       );
     }
@@ -65,7 +65,7 @@ const MaxConfidenceSource: React.FC<UserConfidenceLevelProps> = ({ user }) => {
           sx={{ marginLeft: '4px' }}
           title={t_i18n('The user has BYPASS capability, their max confidence level is set to 100.')}
         >
-          <InformationOutline fontSize="small" color="info" />
+          <InformationOutline fontSize="small" color="info" sx={{ marginLeft: '4px' }} />
         </Tooltip>
       );
     }

@@ -25,6 +25,13 @@ describe('createPendingCollector.root', () => {
     expect(collector.pooled()).toEqual([]);
   });
 
+  it('keeps a date of the input, a date picker value is not a plain object to clean', () => {
+    const published = new Date('2024-03-15T09:00:00.000Z');
+    const collector = createPendingCollector();
+    const root = collector.root(option('__pending__:r', 'Report', { name: 'R', published }));
+    expect(JSON.parse(JSON.stringify(root.input))).toEqual({ name: 'R', published: '2024-03-15T09:00:00.000Z' });
+  });
+
   it('moves the references out of the input into refs, pending labels and external references to the pool', () => {
     const collector = createPendingCollector(getPending);
     const root = collector.root(option('__pending__:m', 'Malware', {

@@ -344,13 +344,16 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
     return types ?? searchScope[name] ?? [];
   }, [types, searchScope, name]);
 
+  // Whether at least one of the target types can be created here (a form cannot create every type)
+  const fieldTargetTypes = getTargetTypes();
+  const hasCreatableType = fieldTargetTypes.length === 0
+    || fieldTargetTypes.some((t) => (isDomainObjectType(t) || isObservableType(t)) && !(isDeferred && FORM_UNCREATABLE_TYPES.includes(t)));
+
   const shouldShowCreateOption = useCallback((resultsCount: number) => {
     if (disabled || disableCreation) return false;
     if (resultsCount >= 10) return false;
-    const targetTypes = getTargetTypes();
-    if (targetTypes.length === 0) return true;
-    return targetTypes.some((t) => (isDomainObjectType(t) || isObservableType(t)) && !(isDeferred && FORM_UNCREATABLE_TYPES.includes(t)));
-  }, [disabled, disableCreation, getTargetTypes, isDomainObjectType, isObservableType, isDeferred]);
+    return hasCreatableType;
+  }, [disabled, disableCreation, hasCreatableType]);
 
   const getCreationType = useCallback(() => {
     const targetTypes = getTargetTypes();
@@ -625,7 +628,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
         }}
         endAdornment={(
           <InputAdornment position="end" style={{ position: 'absolute', right: 8 }}>
-            {!disableCreation && (
+            {!disableCreation && hasCreatableType && (
               <IconButton onClick={handleOpenCreation} size="small" disabled={disabled} title={t_i18n('Create')} aria-label={t_i18n('Create')}>
                 <Add fontSize="small" color="primary" />
               </IconButton>

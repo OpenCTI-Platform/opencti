@@ -680,6 +680,9 @@ export const formSubmit = async (
   if (!form) {
     throw FunctionalError('Form not found', { id: input.formId });
   }
+  if (form.active === false) {
+    throw FunctionalError('Form is inactive', { id: input.formId });
+  }
 
   const plan = await planSubmission(context, user, form, input, isDraft);
   return commitSubmission(context, user, form.id, plan);

@@ -41,7 +41,8 @@ const toIds = (value: unknown): string[] => (Array.isArray(value) ? value : [val
 
 const omit = (input: Record<string, unknown>, keys: string[]) => Object.fromEntries(Object.entries(input).filter(([key]) => !keys.includes(key)));
 
-const isPlainObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof File);
+// Not an array, a File, a Date (date pickers store one): only the objects that can hold files.
+const isPlainObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype;
 
 // Observables carry their attributes and files under their type key (e.g. `IPv4Addr`), the other objects at the top level.
 const fileHolders = (input: Record<string, unknown>) => [input, ...Object.values(input).filter(isPlainObject)];
