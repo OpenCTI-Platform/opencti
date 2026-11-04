@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { buildUpdatePatchForUpsert, generateAttributesInputsForUpsert } from '../../../src/utils/upsert-utils';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { testContext } from '../../utils/testQuery';
+import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 
 const makeUser = () => ({
   id: 'test-user',
@@ -124,5 +126,51 @@ describe('buildUpdatePatchForUpsert - indicator confidence gating', () => {
       const inputs = generateAttributesInputsForUpsert(synchronizedContext, makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, result, lowerConfidence);
       expect(inputs.find((i) => i.key === 'confidence')).toEqual({ key: 'confidence', value: [20] });
     });
+  });
+});
+
+describe('generateAttributesInputsForUpsert - name of an aliased entity', () => {
+  const existingIntrusionSet = {
+    entity_type: ENTITY_TYPE_INTRUSION_SET,
+    name: 'APT-NAME-A',
+    aliases: ['APT-NAME-B'],
+    confidence: 50,
+  };
+  const equalConfidence = { confidenceLevelToApply: 50, isConfidenceMatch: true, isConfidenceUpper: false };
+  const upperConfidence = { confidenceLevelToApply: 80, isConfidenceMatch: true, isConfidenceUpper: true };
+  const nameInput = (context: typeof testContext, element: object, type: string, name: string, confidence: object) => {
+    const inputs = generateAttributesInputsForUpsert(context, makeUser(), element, type, { name }, confidence);
+    return inputs.find((i: { key: string }) => i.key === 'name');
+  };
+
+  it('should not swap the name for one of its aliases at equal confidence', () => {
+    expect(nameInput(testContext, existingIntrusionSet, ENTITY_TYPE_INTRUSION_SET, 'APT-NAME-B', equalConfidence)).toBeUndefined();
+  });
+
+  it('should not swap the name for the same name written differently at equal confidence', () => {
+    expect(nameInput(testContext, existingIntrusionSet, ENTITY_TYPE_INTRUSION_SET, 'apt-name-a', equalConfidence)).toBeUndefined();
+  });
+
+  it('should swap the name for one of its aliases at strictly upper confidence', () => {
+    expect(nameInput(testContext, existingIntrusionSet, ENTITY_TYPE_INTRUSION_SET, 'APT-NAME-B', upperConfidence)).toEqual({ key: 'name', value: ['APT-NAME-B'] });
+  });
+
+  it('should replace the name with an unknown name at equal confidence', () => {
+    expect(nameInput(testContext, existingIntrusionSet, ENTITY_TYPE_INTRUSION_SET, 'APT-NAME-C', equalConfidence)).toEqual({ key: 'name', value: ['APT-NAME-C'] });
+  });
+
+  it('should swap the name for one of its aliases on a synchronized upsert', () => {
+    const synchronizedContext = { ...testContext, synchronizedUpsert: true };
+    expect(nameInput(synchronizedContext, existingIntrusionSet, ENTITY_TYPE_INTRUSION_SET, 'APT-NAME-B', equalConfidence)).toEqual({ key: 'name', value: ['APT-NAME-B'] });
+  });
+
+  it('should protect the name of an identity against its x_opencti_aliases', () => {
+    const existingOrganization = { entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, name: 'ORG-NAME-A', x_opencti_aliases: ['ORG-NAME-B'], confidence: 50 };
+    expect(nameInput(testContext, existingOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION, 'ORG-NAME-B', equalConfidence)).toBeUndefined();
+  });
+
+  it('should replace the name of a non aliased entity at equal confidence', () => {
+    const existingReport = { entity_type: ENTITY_TYPE_CONTAINER_REPORT, name: 'REPORT-NAME-A', confidence: 50 };
+    expect(nameInput(testContext, existingReport, ENTITY_TYPE_CONTAINER_REPORT, 'report-name-a', equalConfidence)).toEqual({ key: 'name', value: ['report-name-a'] });
   });
 });

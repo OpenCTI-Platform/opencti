@@ -5049,8 +5049,13 @@ export const elUpdateEntityConnections = async (context: AuthContext, elements: 
 };
 
 const elUpdateConnectionsOfElement = async (documentId: string, documentBody: any) => {
-  const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
-    + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
+  // A document already carrying the changes is left untouched (noop) instead of being reindexed:
+  // re-running or overlapping propagations then cost a read, not a write, per relationship.
+  const source = 'boolean changed = false; '
+    + 'for (conn in ctx._source.connections) { if (conn.internal_id == params.id) { '
+    + 'for (change in params.changes.entrySet()) { if (conn[change.getKey()] != change.getValue()) { conn[change.getKey()] = change.getValue(); changed = true; } } '
+    + '} } '
+    + "if (!changed) { ctx.op = 'noop'; }";
   return elRawUpdateByQuery({
     index: READ_RELATIONSHIPS_INDICES,
     refresh: true,
