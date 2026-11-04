@@ -14,7 +14,7 @@ import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { MEMBER_ACCESS_RIGHT_VIEW, SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
-import { MOCK_NOTIFICATIONS } from '../../utils/publisher-mock';
+import { MOCK_NOTIFICATIONS, MOCK_TRIGGERS } from '../../utils/publisher-mock';
 import { verifyUri } from '../../utils/uriDenyList';
 import type { BasicStoreEntityTrigger } from '../notification/notification-types';
 import {
@@ -157,11 +157,15 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
   }
   const usersFromCache = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const notificationMap = new Map([
-    ['default_notification_id', { name: 'test' } as BasicStoreEntityTrigger],
-    ['default_notification_id_2', { name: 'test 2' } as BasicStoreEntityTrigger],
-    ['default_activity_id', { name: 'test 2' } as BasicStoreEntityTrigger],
-  ]);
+  const mockTrigger = MOCK_TRIGGERS[notifier.notifier_test_id];
+  const mockNotifications = MOCK_NOTIFICATIONS[notifier.notifier_test_id];
+  if (!mockTrigger || !mockNotifications) {
+    return `Unknown test notification ${notifier.notifier_test_id}`;
+  }
+  // The test notifications are attached to a fake trigger, so templates and `$` variables see its name and type
+  const notificationMap = new Map(
+    mockNotifications.map(({ notification_id }) => [notification_id, { name: mockTrigger.name } as BasicStoreEntityTrigger]),
+  );
   return internalProcessNotification(
     context,
     settings,
@@ -173,8 +177,8 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
       notifiers: [],
     },
     notifier,
-    MOCK_NOTIFICATIONS[notifier.notifier_test_id],
-    [{ created: (new Date()).toISOString() }] as unknown as BasicStoreEntityTrigger[],
+    mockNotifications,
+    [{ created: (new Date()).toISOString(), ...mockTrigger }] as unknown as BasicStoreEntityTrigger[],
     usersFromCache,
   ).catch((error) => {
     return error.message;
