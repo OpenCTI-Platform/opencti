@@ -12,6 +12,7 @@ import {
   CUSTOM_FIELD_SELECT_VALUE_SUBFILTER,
   CUSTOM_FIELD_SELECT_VALUES_SUBFILTER,
   CUSTOM_FIELD_STRING_VALUE_SUBFILTER,
+  getGenericNestedSubFilterOperators,
   ID_SUBFILTER,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
@@ -45,7 +46,7 @@ import {
   WORKFLOW_FILTER,
   X_OPENCTI_WORKFLOW_ID,
 } from './filtering-constants';
-import { ForbiddenAccess, FunctionalError, ResourceNotFoundError, UnsupportedError } from '../../config/errors';
+import { BadUserInputError, ForbiddenAccess, FunctionalError, ResourceNotFoundError, UnsupportedError } from '../../config/errors';
 import { ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI, ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../modules/organization/organization-types';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
@@ -53,9 +54,9 @@ import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey, I
 import { addFilter } from './filtering-utils';
 import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
 import { getPirWithAccessCheck } from '../../modules/pir/pir-checkPirAccess';
-import { authorizedMembers, type ComplexAttribute } from '../../schema/attribute-definition';
+import { authorizedMembers, type ComplexAttribute, type NestedObjectAttribute } from '../../schema/attribute-definition';
 import { isMetricsName } from '../../modules/metrics/metrics-utils';
-import { isObjectAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { isGenericNestedFilterAttribute, isObjectAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../../modules/customField/custom-field-cache';
 import { computeQueryIndices, elFindByIds, elList, elPaginate, ES_MAX_PAGINATION } from '../../database/engine';
 import { keepMostRestrictiveTypes } from '../../schema/schemaUtils';
@@ -68,6 +69,7 @@ import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 import { pushAll } from '../arrayUtil';
+import type { FiltersWithNested } from '../../database/middleware-loader';
 
 export const adaptFilterToRegardingOfFilterKey = async (
   context: AuthContext,
@@ -618,6 +620,43 @@ const adaptFilterForMetricsFilterKeys = async (filter: Filter) => {
   return { newFilter, newFilterGroup: undefined };
 };
 
+/**
+ * Adapts a filter on a filterable nested attribute (ex: coverage_information) into one nested filter:
+ * the values of the sub-filters must all match on the same nested element.
+ * - eq: at least one element matches all the sub-filters
+ * - not_nil: at least one element
+ * - nil: no element
+ * An eq filter without any sub-filter value does not filter, like any filter without value: null is returned.
+ */
+export const adaptFilterToGenericNestedFilterKey = (filter: Filter, attribute: NestedObjectAttribute): FiltersWithNested | null => {
+  const { operator, values } = filter;
+  const base = { key: [attribute.name], values: [], mode: FilterMode.Or, operator: FilterOperator.Eq };
+  if (operator === FilterOperator.Nil) {
+    return { ...base, nested: [], negateNested: true };
+  }
+  if (operator === FilterOperator.NotNil) {
+    return { ...base, nested: [] };
+  }
+  if (operator && operator !== FilterOperator.Eq) {
+    throw BadUserInputError('Unsupported operator on a nested filter key', { key: attribute.name, operator });
+  }
+  const nested = [];
+  for (const subFilter of values as unknown as { key: string; values?: string[]; operator?: FilterOperator }[]) {
+    const mapping = attribute.mappings.find((m) => m.name === subFilter.key && m.isFilterable);
+    if (!mapping) {
+      throw BadUserInputError('Unknown sub-filter key on a nested filter key', { key: attribute.name, subFilterKey: subFilter.key });
+    }
+    const subOperator = subFilter.operator ?? FilterOperator.Eq;
+    if (!getGenericNestedSubFilterOperators(mapping).includes(subOperator)) {
+      throw BadUserInputError('Unsupported sub-filter operator on a nested filter key', { key: attribute.name, subFilterKey: subFilter.key, operator: subOperator });
+    }
+    if (subFilter.values && subFilter.values.length > 0) {
+      nested.push({ key: subFilter.key, values: subFilter.values, operator: subOperator });
+    }
+  }
+  return nested.length > 0 ? { ...base, nested } : null;
+};
+
 // An entity without a value for a custom field has no element for it in custom_field_values.
 // Negative operators are therefore applied as "no element matches the positive operator",
 // so that such entities are returned.
@@ -1000,7 +1039,14 @@ export const completeSpecialFilterKeys = async (
           filterGroups: [],
         });
       } else if (definition.format === 'nested') {
-        finalFilters.push({ key, operator: filter.operator, nested: filter.values, mode: filter.mode, values: [] });
+        if (isGenericNestedFilterAttribute(definition)) {
+          const nestedFilter = adaptFilterToGenericNestedFilterKey(filter, definition);
+          if (nestedFilter) {
+            finalFilters.push(nestedFilter);
+          }
+        } else {
+          finalFilters.push({ key, operator: filter.operator, nested: filter.values, mode: filter.mode, values: [] });
+        }
       } else {
         throw UnsupportedError('Object attribute format is not filterable', { format: definition.format });
       }

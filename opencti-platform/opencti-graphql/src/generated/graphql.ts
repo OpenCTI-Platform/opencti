@@ -10381,6 +10381,7 @@ export type FilterDefinition = {
   filterKey: Scalars['String']['output'];
   label: Scalars['String']['output'];
   multiple: Scalars['Boolean']['output'];
+  operators?: Maybe<Array<Scalars['String']['output']>>;
   subEntityTypes: Array<Scalars['String']['output']>;
   subFilters?: Maybe<Array<FilterDefinition>>;
   type: Scalars['String']['output'];
@@ -47588,6 +47589,7 @@ export type FilterDefinitionResolvers<ContextType = any, ParentType extends Reso
   filterKey?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   multiple?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  operators?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   subEntityTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   subFilters?: Resolver<Maybe<Array<ResolversTypes['FilterDefinition']>>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
