@@ -745,7 +745,8 @@ const handleDigestNotification = async (context: AuthContext, baseDate: Moment, 
             instance: n.data,
             message,
             origin: n.origin,
-            streamMessage: n.streamMessage,
+            // Only a knowledge event has a stream message
+            streamMessage: 'streamMessage' in n ? n.streamMessage : undefined,
           });
         });
         const data = await Promise.all(dataPromises);
