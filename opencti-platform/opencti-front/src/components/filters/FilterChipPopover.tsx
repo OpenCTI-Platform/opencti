@@ -1,9 +1,10 @@
 import Popover from '@mui/material/Popover';
 import { FunctionComponent, useState } from 'react';
 import { Filter, FilterEditorInputValue, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
-import { FilterSearchContext, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import { FilterSearchContext, isGenericNestedFilterDefinition, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import type { WidgetHost } from '../../utils/widget/widget';
 import { FilterRepresentative } from './FiltersModel';
+import CompositeNestedFilterEditor from './fields/CompositeNestedFilterEditor';
 import CompositeRegardingOfFilterEditor from './fields/CompositeRegardingOfFilterEditor';
 import { FilterEditorProvider, useFilterEditorContext } from './fields/FilterEditorContext';
 import FilterOperatorSelect from './fields/FilterOperatorSelect';
@@ -82,6 +83,18 @@ const FilterChipEditor: FunctionComponent<FilterChipEditorProps> = ({
       />
     </>
   );
+
+  if (isGenericNestedFilterDefinition(filterDefinition) && filterDefinition?.subFilters && filterDefinition.subFilters.length > 1) {
+    return (
+      <CompositeNestedFilterEditor
+        filter={filter}
+        filterKey={filterKey}
+        inputValues={inputValues}
+        setInputValues={setInputValues}
+        showFirstOperator
+      />
+    );
+  }
 
   if (filterDefinition?.subFilters && filterDefinition.subFilters.length > 1) {
     return (
