@@ -7,10 +7,8 @@ import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySe
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigImportMode, ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetSelectionInput, ResolversTypes } from '../../../generated/graphql';
-import { resolveUserByIdFromCache } from '../../user/user-domain';
-import { BYPASS, isUserHasCapability } from '../../../utils/access';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
-import { checkConfigPresetImportAccess, configPresetImportMode, configPresetImportModes } from './configPreset-import-utils';
+import { checkConfigPresetImportAccess, configPresetImportMode, configPresetImportModes, reloadConfigPresetImportUser } from './configPreset-import-utils';
 import { computeConfigPresetItem, computeConfigPresetItems, loadConfigPresetImportZip } from './configPreset-import-domain';
 import { readConfigPresetBundle, resolveBundleDependencies } from './configPreset-import-bundle';
 import { writeConfigPresetImportReport } from './configPreset-import-report';
@@ -206,16 +204,8 @@ const realImport = async (
       if (lock.signal.aborted) {
         stopReason = 'Import stopped: lock lost';
       } else {
-        // Re-read before each item: the rights of the user may have changed; the origin is kept for the audit.
-        // The domain functions of the importers check no capability, so BYPASS is checked here: losing it stops the import.
-        const cachedUser = await resolveUserByIdFromCache(importContext, user.id);
-        if (!cachedUser) {
-          throw FunctionalError('The user who started the import no longer exists');
-        }
-        if (!isUserHasCapability(cachedUser, BYPASS)) {
-          throw FunctionalError('The user who started the import no longer has the right to import');
-        }
-        const runUser = { ...cachedUser, origin: user.origin } as AuthUser;
+        // Re-read before each item: losing BYPASS, or the account, stops the import
+        const runUser = await reloadConfigPresetImportUser(importContext, user);
         const result = await importConfigPresetItem(importContext, runUser, item, plan, configPresetImportMode(modes, item.type, item.id));
         results.push(result);
         await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ITEM_PROCESSED', { result });

@@ -13,7 +13,7 @@ import { countConfigPresetImportResults, importConfigPresetItem } from './config
 import { withConfigPresetImportLock } from './configPreset-import-lock';
 import { findConfigPresetImportRunning } from './configPreset-import-running';
 import type { ConfigPresetImportCounts, ConfigPresetImportItemResult } from './configPreset-import-session';
-import { checkConfigPresetImportAccess } from './configPreset-import-utils';
+import { checkConfigPresetImportAccess, reloadConfigPresetImportUser } from './configPreset-import-utils';
 import {
   CONFIG_PRESET_DEFAULT_IMPORT_MODE,
   type ConfigPresetBundle,
@@ -102,6 +102,16 @@ export const configPresetPartialImportModes = (
   }));
 };
 
+// An item that was not processed: the import stopped writing before it
+const toStoppedResult = (item: ConfigPresetBundleItem, reason: string): ConfigPresetImportItemResult => ({
+  type: item.type,
+  key: item.id,
+  status: 'FAILED',
+  reason,
+  label: item.id,
+  translatable: false,
+});
+
 // Reads only: the items of the type in the bundle, with what already exists. Nothing is written, no lock, no audit.
 export const configPresetPartialImportPreview = async (
   context: AuthContext,
@@ -147,14 +157,33 @@ export const configPresetPartialImport = async (
     // The same plan as the real import of the wizard: the items that depend on another one of the type get the one written
     const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map() };
     const results: ConfigPresetImportItemResult[] = [];
+    // Why the import stopped writing, when it did: the remaining items fail with it, the processed ones keep their result
+    let stopReason: string | null = null;
     for (let i = 0; i < items.length; i += 1) {
       const item = items[i];
-      const mode = modes.get(configPresetPlanKey(item.type, item.id))!;
-      // A lost lock aborts its signal: the remaining items are not written
-      results.push(lock.signal.aborted
-        ? { type: item.type, key: item.id, status: 'FAILED', reason: 'Import stopped: lock lost', label: item.id, translatable: false }
-        : await importConfigPresetItem(importContext, user, item, plan, mode));
+      // A lost lock aborts its signal and throws nothing: checked before each item, the item in progress finishes
+      if (!stopReason && lock.signal.aborted) {
+        stopReason = 'Import stopped: lock lost';
+      }
+      // Re-read before each item: a deleted account or a revoked BYPASS stops the writes
+      let runUser: AuthUser | undefined;
+      if (!stopReason) {
+        try {
+          runUser = await reloadConfigPresetImportUser(importContext, user);
+        } catch (err) {
+          stopReason = err instanceof Error ? err.message : String(err);
+        }
+      }
+      if (stopReason || !runUser) {
+        results.push(toStoppedResult(item, stopReason ?? 'Import stopped'));
+      } else {
+        results.push(await importConfigPresetItem(importContext, runUser, item, plan, modes.get(configPresetPlanKey(item.type, item.id))!));
+      }
     }
+    if (stopReason) {
+      logApp.warn('[CONFIG PRESET] Partial import stopped before the end', { user_id: user.id, type: family.id, reason: stopReason });
+    }
+    // Audited whatever the end, for the items already written
     const counts = countConfigPresetImportResults(results);
     // The listeners run in a Promise.all: a failing one never fails the import
     try {
