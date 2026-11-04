@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { assembleTemplateData, processNotificationData } from '../../../src/manager/publisherManager';
 import { compileTitleVariables, TITLE_VARIABLES_DATA_KEY } from '../../../src/modules/notifier/notifier-title-variables';
-import { MOCK_NOTIFICATIONS, MOCK_TRIGGERS } from '../../../src/utils/publisher-mock';
+import { buildMockNotificationInput, MOCK_NOTIFICATIONS, MOCK_TRIGGERS } from '../../../src/utils/publisher-mock';
 import { shutdownSafeEjsPool } from '../../../src/utils/safeEjs.pool';
 import { safeRender } from '../../../src/utils/safeEjs.client';
 import { sanitizeNotificationData } from '../../../src/utils/templateContextSanitizer';
@@ -20,14 +20,14 @@ describe('Test notifier mock data', () => {
     default_activity: 'live',
   };
 
-  // Same preparation as testNotifier, then the same rendering as the email notifier
+  // The very preparation testNotifier does, then the same rendering as the email notifier
   const renderTitle = async (mockId: string, title: string) => {
-    const mockData = MOCK_NOTIFICATIONS[mockId];
-    const notificationMap = new Map(mockData.map(({ notification_id }) => [notification_id, { name: MOCK_TRIGGERS[mockId].name }])) as any;
-    const contentEventMapping = await processNotificationData({} as any, notificationMap, user, mockData, usersMap as any);
+    const input = buildMockNotificationInput(mockId);
+    if (!input) throw new Error(`Unknown mock ${mockId}`);
+    const { notificationMap, triggers, notifications } = input;
+    const contentEventMapping = await processNotificationData({} as any, notificationMap, user, notifications, usersMap as any);
     const content = Object.entries(contentEventMapping).map(([contentTitle, events]) => ({ title: contentTitle, events }));
-    const triggers = [{ created: 'x', ...MOCK_TRIGGERS[mockId] }] as any;
-    const sanitizedData = sanitizeNotificationData(assembleTemplateData(content, triggers, settings, user, mockData));
+    const sanitizedData = sanitizeNotificationData(assembleTemplateData(content, triggers, settings, user, notifications));
     const { template, values } = compileTitleVariables(title, sanitizedData);
     return safeRender(template, { ...sanitizedData, [TITLE_VARIABLES_DATA_KEY]: values }, { usePlainTextEscape: true });
   };
@@ -68,5 +68,11 @@ describe('Test notifier mock data', () => {
     const secondInstance = await renderTitle('default_digest', '$data[1].instance.name');
     expect(secondInstance.trim()).not.toBe('');
     expect(secondInstance).not.toBe(firstInstance);
+  });
+
+  it('should not build an input for an unknown or prototype-inherited test id', () => {
+    ['unknown', 'constructor', '__proto__', 'toString', 'hasOwnProperty'].forEach((testId) => {
+      expect(buildMockNotificationInput(testId)).toBeUndefined();
+    });
   });
 });
