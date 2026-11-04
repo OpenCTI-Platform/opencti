@@ -9,6 +9,8 @@ import {
   findFiltersFromKeys,
   formatFiltersInPirContext,
   getAvailableOperatorForFilter,
+  getFilterDefinitionFromFilterKeysMap,
+  isGenericNestedFilterDefinition,
   getEntityTypeThreeFirstLevelsFilterValues,
   getSelectedOptions,
   isDraftWorkspaceFilterGroup,
@@ -69,6 +71,13 @@ describe('Filters utils', () => {
       expect(removeEmptyFiltersFromList(filtersList)).toEqual([
         { key: 'entity_type', values: ['Report'] },
       ]);
+    });
+  });
+
+  describe('removeEmptyFiltersFromList: nested filters', () => {
+    it('keeps a nested filter whose sub-filters have no value: the backend ignores it', () => {
+      const nested = { key: 'coverage_information', operator: 'eq', values: [{ key: 'coverage_score', operator: 'lt', values: [] }] };
+      expect(removeEmptyFiltersFromList([nested])).toEqual([nested]);
     });
   });
 
@@ -1658,12 +1667,12 @@ describe('getAvailableOperatorForFilter', () => {
     });
 
     it('should allow the default operators on the subKeys of other filters', () => {
-      const filterDefinition = buildFilterDefinition({ filterKey: 'dynamic', type: 'nested' });
+      const filterDefinition = buildFilterDefinition({ filterKey: 'dynamic' });
       expect(getAvailableOperatorForFilter(filterDefinition, 'id')).toEqual(['eq', 'not_eq', 'nil', 'not_nil']);
     });
 
     it('should ignore the stix filtering option', () => {
-      const filterDefinition = buildFilterDefinition({ filterKey: 'dynamic', type: 'nested' });
+      const filterDefinition = buildFilterDefinition({ filterKey: 'dynamic' });
       expect(getAvailableOperatorForFilter(filterDefinition, 'id', { isStixFiltering: true }))
         .toEqual(['eq', 'not_eq', 'nil', 'not_nil']);
     });
@@ -2535,5 +2544,50 @@ describe('getSelectedOptions with dashboard variable tokens', () => {
       { value: 'label-1', type: 'Label', parentTypes: [], group: 'Selected', label: 'APT', color: '#ff0000' },
       { value: token, type: 'deleted', parentTypes: [], group: 'Selected', label: 'deleted', color: undefined },
     ]);
+  });
+
+  describe('generic nested filter keys', () => {
+    // as sent by the backend: a generic nested key and its sub-filters carry their operators
+    const coverageDefinition: FilterDefinition = { filterKey: 'coverage_information', type: 'nested_filterable', label: 'Coverage score', multiple: true, subEntityTypes: [], elementsForFilterValuesSearch: [], operators: ['eq', 'nil', 'not_nil'], subFilters: [
+      { filterKey: 'coverage_name', type: 'vocabulary', label: 'Coverage name', multiple: false, subEntityTypes: [], elementsForFilterValuesSearch: ['coverage_ov'], operators: ['eq', 'not_eq'] },
+      { filterKey: 'coverage_score', type: 'float', label: 'Score', multiple: false, subEntityTypes: [], elementsForFilterValuesSearch: [], operators: ['eq', 'gt', 'gte', 'lt', 'lte'] },
+    ] };
+    it('recognizes a generic nested key by its type, not by its name', () => {
+      expect(isGenericNestedFilterDefinition(coverageDefinition)).toBe(true);
+      expect(isGenericNestedFilterDefinition({ ...coverageDefinition, type: 'nested' })).toBe(false);
+    });
+    it('gives the operators sent by the backend for the key and its sub-filters', () => {
+      const restricted: FilterDefinition = { ...coverageDefinition, operators: ['nil'], subFilters: [
+        { ...coverageDefinition.subFilters![0], operators: ['not_eq'] },
+        { ...coverageDefinition.subFilters![1], operators: ['lt'] },
+      ] };
+      expect(getAvailableOperatorForFilter(restricted)).toEqual(['nil']);
+      expect(getAvailableOperatorForFilter(restricted, 'coverage_name')).toEqual(['not_eq']);
+      expect(getAvailableOperatorForFilter(restricted, 'coverage_score')).toEqual(['lt']);
+    });
+    it('keeps the regardingOf operators', () => {
+      const regardingOf: FilterDefinition = { ...coverageDefinition, filterKey: 'regardingOf', type: 'nested', operators: undefined, subFilters: [
+        { filterKey: 'relationship_type', type: 'string', label: 'Relationship type', multiple: true, subEntityTypes: [], elementsForFilterValuesSearch: [] },
+        { filterKey: 'id', type: 'id', label: 'Entity', multiple: true, subEntityTypes: [], elementsForFilterValuesSearch: [] },
+      ] };
+      expect(getAvailableOperatorForFilter(regardingOf, 'relationship_type')).toEqual(['eq', 'not_eq']);
+      expect(getAvailableOperatorForFilter(regardingOf, 'id')).toEqual([]);
+    });
+    it('keeps the frontend rules over the operators sent by the backend', () => {
+      const date: FilterDefinition = { filterKey: 'created', type: 'date', label: 'Created', multiple: false, subEntityTypes: [], elementsForFilterValuesSearch: [], operators: ['eq'] };
+      expect(getAvailableOperatorForFilter(date)).toEqual(['gt', 'gte', 'lt', 'lte', 'nil', 'not_nil', 'within']);
+      const regardingOf: FilterDefinition = { ...coverageDefinition, filterKey: 'regardingOf', type: 'nested', operators: undefined, subFilters: [
+        { filterKey: 'relationship_type', type: 'string', label: 'Relationship type', multiple: true, subEntityTypes: [], elementsForFilterValuesSearch: [], operators: ['nil'] },
+      ] };
+      expect(getAvailableOperatorForFilter(regardingOf, 'relationship_type')).toEqual(['eq', 'not_eq']);
+    });
+    it('adds the stix filtering operators to the operators sent by the backend', () => {
+      expect(getAvailableOperatorForFilter(coverageDefinition, undefined, { isStixFiltering: true }))
+        .toEqual(['eq', 'nil', 'not_nil', 'has_changed', 'not_has_changed']);
+    });
+    it('finds a sub-filter definition from its parent key', () => {
+      const map = new Map([['coverage_information', coverageDefinition]]);
+      expect(getFilterDefinitionFromFilterKeysMap('coverage_name', map, 'coverage_information')?.type).toEqual('vocabulary');
+    });
   });
 });

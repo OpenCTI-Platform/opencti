@@ -77,11 +77,11 @@ const applyRepresentationChange = (
   let representationToAdd;
   if (checked) {
     // the representation to add = the former values + the added value
-    representationToAdd = { key: subKey, values: [...alreadySelectedValues, value] };
+    representationToAdd = { ...childFilter, key: subKey, values: [...alreadySelectedValues, value] };
   } else {
     const cleanedValues = alreadySelectedValues.filter((val) => val !== value);
     // the representation to add = the former values - the removed value
-    representationToAdd = cleanedValues.length > 0 ? { key: subKey, values: cleanedValues } : undefined;
+    representationToAdd = cleanedValues.length > 0 ? { ...childFilter, key: subKey, values: cleanedValues } : undefined;
   }
   helpers?.handleChangeRepresentationFilter(filter?.id ?? '', childFilter, representationToAdd);
 };

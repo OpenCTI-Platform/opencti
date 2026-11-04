@@ -7,7 +7,15 @@ import { ChipOwnProps } from '@mui/material/Chip';
 import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
-import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmptyShallow, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import {
+  FiltersRestrictions,
+  isFilterEditable,
+  isFilterGroupNotEmptyShallow,
+  isGenericNestedFilterDefinition,
+  isNumericFilter,
+  isRegardingOfFilterWarning,
+  useFilterDefinition,
+} from '../../utils/filters/filtersUtils';
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
@@ -28,6 +36,9 @@ const chipSeverity = (color?: string) => {
   if (color === 'success') return 'low' as const;
   return undefined;
 };
+
+// Operator symbols are not translated.
+const NUMERIC_OPERATOR_SYMBOLS: Record<string, string> = { eq: '=', gt: '>', gte: '≥', lt: '<', lte: '≤' };
 
 interface FilterValuesProps {
   label: string | React.JSX.Element;
@@ -151,6 +162,32 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
 
   // general cases
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
+
+  // generic nested keys (e.g. coverage_information): one operator per sub-filter, shown in the definition order
+  if (isGenericNestedFilterDefinition(filterDefinition)) {
+    const subFilterTexts = (filterDefinition?.subFilters ?? []).flatMap((subFilterDefinition) => {
+      const subFilter = (filterValues as unknown as Filter[]).find((value) => value.key === subFilterDefinition.filterKey);
+      if (!subFilter || subFilter.values.length === 0) {
+        return [];
+      }
+      const subValues = subFilter.values.join(', ');
+      if (isNumericFilter(subFilterDefinition.type)) {
+        return [{ key: subFilterDefinition.filterKey, text: `${NUMERIC_OPERATOR_SYMBOLS[subFilter.operator ?? 'eq'] ?? '='} ${subValues}` }];
+      }
+      return [{ key: subFilterDefinition.filterKey, text: subFilter.operator === 'not_eq' ? `${t_i18n('not')} ${subValues}` : subValues }];
+    });
+    return (
+      <>
+        {filterLabel}{' '}
+        {subFilterTexts.map(({ key, text }, index) => (
+          <Fragment key={key}>
+            {index > 0 && ' '}
+            <span>{text}</span>
+          </Fragment>
+        ))}
+      </>
+    );
+  }
   const values = filterValues.map((id) => {
     const isLocalModeSwitchable = isReadWriteFilter
       && handleSwitchLocalMode

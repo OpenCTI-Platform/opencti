@@ -127,6 +127,30 @@ export const handleChangeOperatorFiltersUtil = ({ filters, id, operator }: Filte
   });
 };
 
+/**
+ * Merges a change (operator and/or values) into the sub-filter `subKey` of a nested filter value,
+ * or appends the sub-filter when it is missing.
+ */
+export const handleChangeSubFilterUtil = ({ filters, id, subKey, change }: FiltersLocalStorageUtilProps<{
+  id: string;
+  subKey: string;
+  change: { operator?: string; values?: string[] };
+}>): FilterGroup => {
+  return updateFilters(filters, (f) => {
+    if (f.id !== id) return f;
+    const subFilterExists = f.values.some((v) => v?.key === subKey);
+    // Clearing a sub-filter that does not exist yet (e.g. a blur on an empty input) must not create an empty one
+    if (!subFilterExists && change.operator === undefined && (change.values ?? []).length === 0) return f;
+    const values = subFilterExists
+      ? f.values.map((v) => (v?.key === subKey ? { ...v, ...change } : v))
+      : [...f.values, { key: subKey, operator: change.operator ?? 'eq', values: change.values ?? [] }];
+    // Editing a sub-filter means the nested filter has values again: an empty / not empty parent is switched back to eq,
+    // in the same change (two successive changes would be lost by the adapters that do not chain them)
+    const operator = ['nil', 'not_nil'].includes(f.operator ?? 'eq') ? 'eq' : f.operator;
+    return { ...f, operator, values };
+  });
+};
+
 export const handleSwitchLocalModeUtil = ({ filters, filter }: FiltersLocalStorageUtilProps<{
   filter: Filter;
 }>): FilterGroup => {

@@ -363,6 +363,7 @@ const rootPrivateQuery = graphql`
           multiple
           subEntityTypes
           elementsForFilterValuesSearch
+          operators
           subFilters {
             filterKey
             label
@@ -370,6 +371,7 @@ const rootPrivateQuery = graphql`
             multiple
             subEntityTypes
             elementsForFilterValuesSearch
+            operators
           }
         }
       }
