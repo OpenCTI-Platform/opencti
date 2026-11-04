@@ -18181,7 +18181,6 @@ __metadata:
     use-analytics: "npm:1.1.0"
     uuid: "npm:14.0.3"
     vite: "npm:8.3.5"
-    vite-plugin-monaco-editor: "npm:1.1.0"
     vite-plugin-relay: "npm:2.2.1"
     vitest: "npm:5.0.5"
     yup: "npm:1.7.1"
@@ -23131,15 +23130,6 @@ __metadata:
     d3-time: "npm:^3.0.0"
     d3-timer: "npm:^3.0.1"
   checksum: 10c0/040f0302ed8f6d949e29e07af9433937d3610f0e9abd1ab4f51a1a566c28c3e42ce7c2263ab6a8bc96b6dfda2a9d099946fe93114d63e7b714a292b8129669c5
-  languageName: node
-  linkType: hard
-
-"vite-plugin-monaco-editor@npm:1.1.0":
-  version: 1.1.0
-  resolution: "vite-plugin-monaco-editor@npm:1.1.0"
-  peerDependencies:
-    monaco-editor: ">=0.33.0"
-  checksum: 10c0/1f0d839c194d79f21f4ef192d19d82e42ed6dbbab580df684db2e4eeb01d1f2e9c572e9e5b50e9887e9028a54514c496ee6db9d68cab579d375d09456d8b91ee
   languageName: node
   linkType: hard
 
