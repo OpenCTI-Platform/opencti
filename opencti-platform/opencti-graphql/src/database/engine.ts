@@ -844,6 +844,11 @@ const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?
   if (includeAuthorities && capabilities.includes(BYPASS)) {
     return [];
   }
+  // Service accounts bypass authorized members restrictions: when documents without authorized members
+  // are accepted too, the filter below would match every document, so it is not sent at all.
+  if (isServiceAccountUser(user) && !excludeEmptyAuthorizedMembers) {
+    return [];
+  }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
   const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: {} } } } } };
@@ -990,30 +995,12 @@ export const buildDataRestrictions = async (
           mustNotHaveOneOf.push(markingId);
         }
       }
-      // If use have marking, he can access to data with no marking && data with according marking
-      const mustNotMarkingTerms = [{
-        terms: {
-          [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: mustNotHaveOneOf,
-        },
-      }];
-      const markingBool = {
-        bool: {
-          should: [
-            {
-              bool: {
-                must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_OBJECT_MARKING) } }],
-              },
-            },
-            {
-              bool: {
-                must_not: mustNotMarkingTerms,
-              },
-            },
-          ],
-          minimum_should_match: 1,
-        },
-      };
-      must.push(markingBool);
+      // If use have marking, he can access to data with no marking && data with according marking.
+      // Data with no marking never matches the terms below, so excluding the forbidden markings is enough,
+      // and nothing is excluded when the user can access every marking.
+      if (mustNotHaveOneOf.length > 0) {
+        must_not.push({ terms: { [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: mustNotHaveOneOf } });
+      }
     }
     // endregion
     // region Handle organization restrictions
