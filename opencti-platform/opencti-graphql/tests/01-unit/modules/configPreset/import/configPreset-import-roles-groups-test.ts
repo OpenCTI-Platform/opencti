@@ -74,4 +74,13 @@ describe('A role imported as COPY and a group of the same import that depends on
       expect(configPresetTargets(plan, 'roles')).toEqual(new Map([[roleItem.id, null]]));
     }));
   });
+
+  it('records that a role whose bundle id is not the standard id of its name is not written, so that its groups never get the local role', async () => {
+    const plan = newPlan();
+    const mismatched = { ...roleItem, configuration: { name: 'Another role' } };
+    const computed = await importerOf('roles').compute(context, user, mismatched, plan, ConfigImportMode.Overwrite);
+    expect(computed).toMatchObject({ status: 'failed', reason: 'The standard id of the role does not match its name' });
+    expect(importRole).not.toHaveBeenCalled();
+    expect(configPresetTargets(plan, 'roles')).toEqual(new Map([[roleItem.id, null]]));
+  });
 });
