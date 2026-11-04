@@ -38,6 +38,39 @@ describe('handleWebhookNotification', () => {
     expect(callArgs.data).toEqual({});
   });
 
+  it('should normalize header names and values copied from a curl command', async () => {
+    const configurationString = JSON.stringify({
+      url: 'https://my-webhook-endpoint.com/test',
+      verb: 'POST',
+      template: '{}',
+      headers: [
+        { attribute: 'Authorization: ', value: 'Bearer token\n' },
+        { attribute: ' X-API-Key', value: 'key' },
+        { attribute: ':', value: 'dropped' },
+      ],
+    });
+    mockedAxiosInstance.mockResolvedValue({ status: 200, data: 'success' });
+
+    await handleWebhookNotification(configurationString, {});
+
+    expect(axios.create).toHaveBeenCalledWith(expect.objectContaining({
+      headers: { Authorization: 'Bearer token', 'X-API-Key': 'key' },
+    }));
+  });
+
+  it('should send the DELETE verb of a notifier saved with a leading space', async () => {
+    const configurationString = JSON.stringify({
+      url: 'https://my-webhook-endpoint.com/test',
+      verb: ' DELETE',
+      template: '{}',
+    });
+    mockedAxiosInstance.mockResolvedValue({ status: 200, data: 'success' });
+
+    await handleWebhookNotification(configurationString, {});
+
+    expect(mockedAxiosInstance.mock.calls[0][0].method).toBe('DELETE');
+  });
+
   it('should call webhook with correct POST payload, headers, and params', async () => {
     const webhookConfiguration = {
       url: 'https://api.filigran.io/v1/ingest',
