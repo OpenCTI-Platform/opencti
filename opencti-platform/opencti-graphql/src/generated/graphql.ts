@@ -2528,6 +2528,7 @@ export enum Capabilities {
   SettingsSetaccesses = 'SETTINGS_SETACCESSES',
   SettingsSetauth = 'SETTINGS_SETAUTH',
   SettingsSetcasetemplates = 'SETTINGS_SETCASETEMPLATES',
+  SettingsSetcustomfields = 'SETTINGS_SETCUSTOMFIELDS',
   SettingsSetcustomization = 'SETTINGS_SETCUSTOMIZATION',
   SettingsSetdissemination = 'SETTINGS_SETDISSEMINATION',
   SettingsSetkillchainphases = 'SETTINGS_SETKILLCHAINPHASES',

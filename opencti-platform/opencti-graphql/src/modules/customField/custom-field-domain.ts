@@ -84,6 +84,10 @@ export const findCustomFieldStixFilterKeys = async (context: AuthContext, user: 
 export const customFieldDefinitionAdd = async (context: AuthContext, user: AuthUser, input: CustomFieldDefinitionAddInput) => {
   // Managing the custom field definitions is an Enterprise Edition feature, their values stay usable
   await checkEnterpriseEdition(context);
+  // A custom field is created detached: the entity type mutations attach it, with Manage customization
+  if (input.entity_types && input.entity_types.length > 0) {
+    throw FunctionalError('Cannot create a custom field definition attached to entity types, use the entity type mutations', { entity_types: input.entity_types });
+  }
   // Validate name starts with the required prefix and matches the allowed format
   if (!CUSTOM_FIELD_NAME_REGEX.test(input.name)) {
     throw ValidationError(
@@ -339,6 +343,12 @@ const editCustomFieldDefinition = async (context: AuthContext, user: AuthUser, c
 export const customFieldDefinitionEdit = async (context: AuthContext, user: AuthUser, customFieldDefinitionId: string, input: EditInput[]) => {
   // Managing the custom field definitions is an Enterprise Edition feature, their values stay usable
   await checkEnterpriseEdition(context);
+  // The entity types are only changed by the entity type mutations, which require Manage customization
+  const entityTypeKeys = ['entity_types', 'entity_type_settings'];
+  const attemptedEntityTypeKeys = input.filter((i) => entityTypeKeys.includes(i.key));
+  if (attemptedEntityTypeKeys.length > 0) {
+    throw FunctionalError('Cannot modify the entity types of a custom field definition, use the entity type mutations', { keys: attemptedEntityTypeKeys.map((i) => i.key) });
+  }
   return editCustomFieldDefinition(context, user, customFieldDefinitionId, input);
 };
 
@@ -362,7 +372,7 @@ export const customFieldDefinitionAddEntityType = async (
     ...currentSettings.filter((setting) => setting.entity_type !== entityType),
     { entity_type: entityType, mandatory, default_value: defaultValue ?? undefined },
   ];
-  return customFieldDefinitionEdit(context, user, customFieldDefinitionId, [
+  return editCustomFieldDefinition(context, user, customFieldDefinitionId, [
     { key: 'entity_types', value: nextTypes, operation: EditOperation.Replace },
     { key: 'entity_type_settings', value: nextSettings, operation: EditOperation.Replace },
   ]);
@@ -414,7 +424,7 @@ export const customFieldDefinitionRemoveEntityType = async (
   }
   const nextTypes = (definition.entity_types ?? []).filter((type) => type !== entityType);
   const nextSettings = (definition.entity_type_settings ?? []).filter((setting) => setting.entity_type !== entityType);
-  const updated = await customFieldDefinitionEdit(context, user, customFieldDefinitionId, [
+  const updated = await editCustomFieldDefinition(context, user, customFieldDefinitionId, [
     { key: 'entity_types', value: nextTypes, operation: EditOperation.Replace },
     { key: 'entity_type_settings', value: nextSettings, operation: EditOperation.Replace },
   ]);

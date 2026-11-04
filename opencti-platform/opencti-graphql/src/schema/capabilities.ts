@@ -23,6 +23,8 @@ export const TAXII_CAPABILITIES: CapabilityDefinition = {
 // Sibling of KNUPDATE on purpose: capabilities are matched by name inclusion, a child of KNUPDATE would imply it.
 export const FORM_INTAKE_CAPABILITY: CapabilityDefinition = { name: KNOWLEDGE_FORM_INTAKE, description: 'Create knowledge via Form Intake', attribute_order: 170 };
 export const SHARE_FILTERS_CAPABILITY: CapabilityDefinition = { name: KNOWLEDGE_SHARE_FILTERS, description: 'Share filters', attribute_order: 950 };
+// Sibling of SETCUSTOMIZATION on purpose: capabilities are matched by name inclusion, a child of SETCUSTOMIZATION would imply it.
+export const CUSTOM_FIELDS_CAPABILITY: CapabilityDefinition = { name: 'SETCUSTOMFIELDS', description: 'Manage custom fields', attribute_order: 3360 };
 const KNOWLEDGE_CAPABILITIES: CapabilityDefinition = {
   name: KNOWLEDGE,
   description: 'Access knowledge',
@@ -68,6 +70,7 @@ export const SETTINGS_CAPABILITIES: CapabilityDefinition = {
     { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
     { name: 'SETDISSEMINATION', description: 'Manage dissemination lists', attribute_order: 3320 },
     { name: 'SETCUSTOMIZATION', description: 'Manage customization', attribute_order: 3350 },
+    CUSTOM_FIELDS_CAPABILITY,
     { name: 'SETLABELS', description: 'Manage labels', attribute_order: 3400 },
     { name: 'SETVOCABULARIES', description: 'Manage vocabularies', attribute_order: 3410 },
     { name: 'SETCASETEMPLATES', description: 'Manage case templates', attribute_order: 3420 },
