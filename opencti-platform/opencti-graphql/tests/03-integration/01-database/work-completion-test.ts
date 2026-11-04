@@ -12,6 +12,7 @@ import { addDraftWorkspace, deleteDraftWorkspace } from '../../../src/modules/dr
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
 import { ConnectorType } from '../../../src/generated/graphql';
+import { buildWorkerContext } from '../../utils/workContextHelper';
 
 const ENRICHMENT_CONNECTOR_ID = 'bb6d8f3a-1b2c-4d5e-8f90-111111111111';
 const IMPORT_CONNECTOR_ID = 'bb6d8f3a-1b2c-4d5e-8f90-333333333333';
@@ -63,8 +64,8 @@ describe('Work completion with touched elements', () => {
   const runEnrichment = async (connectorEntity: any, extraContext: Record<string, unknown> = {}) => {
     const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `Completion target ${Date.now()}` });
     intrusionSetIds.push(target.id);
-    const work = await startWork(connectorEntity, 'Manual enrichment', target.standard_id);
-    const workerContext = { ...testContext, workId: work.id, ...extraContext };
+    const work = await startWork(connectorEntity, 'Manual enrichment', target.standard_id, { enrichedEntityId: target.id });
+    const workerContext = await buildWorkerContext(work.id, extraContext);
     const created = await addIntrusionSet(workerContext, ADMIN_USER, { name: `Completion created ${Date.now()}` });
     intrusionSetIds.push(created.id);
     await patchAttribute(workerContext, ADMIN_USER, target.id, ENTITY_TYPE_INTRUSION_SET, { description: 'enriched' });
@@ -102,7 +103,7 @@ describe('Work completion with touched elements', () => {
     await reportExpectation(testContext, ADMIN_USER, work.id);
     // The first completion keeps the Redis set, so the late write adds to it
     expect([...(await redisGetWorkTouchedElements(work.id)).touched_ids].sort()).toEqual([created.id, target.id].sort());
-    const late = await addIntrusionSet({ ...testContext, workId: work.id }, ADMIN_USER, { name: `Completion late ${Date.now()}` });
+    const late = await addIntrusionSet(await buildWorkerContext(work.id), ADMIN_USER, { name: `Completion late ${Date.now()}` });
     intrusionSetIds.push(late.id);
     await updateProcessedTime(testContext, ADMIN_USER, work.id, 'late connector message');
     const completed: any = await loadWorkById(testContext, ADMIN_USER, work.id);
@@ -140,8 +141,8 @@ describe('Work completion with touched elements', () => {
     const draft = await addDraftWorkspace(testContext, ADMIN_USER, { name: `Enrichment draft ${Date.now()}` });
     const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `Draft target ${Date.now()}` });
     intrusionSetIds.push(target.id);
-    const work = await startWork(enrichment, 'Manual enrichment in draft', target.standard_id, { draftContext: draft.id });
-    const draftWorkerContext = { ...testContext, workId: work.id, draft_context: draft.id };
+    const work = await startWork(enrichment, 'Manual enrichment in draft', target.standard_id, { draftContext: draft.id, enrichedEntityId: target.id });
+    const draftWorkerContext = await buildWorkerContext(work.id, { draft_context: draft.id });
     await addIntrusionSet(draftWorkerContext, ADMIN_USER, { name: `Draft created ${Date.now()}` });
     await updateExpectationsNumber(testContext, ADMIN_USER, work.id, 1);
     await reportExpectation(testContext, ADMIN_USER, work.id);
@@ -169,8 +170,8 @@ describe('Work touched elements in GraphQL', () => {
   it('should expose touched elements filtered by the reader rights', async () => {
     const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `GraphQL target ${Date.now()}` });
     intrusionSetIds.push(target.id);
-    const work = await startWork(enrichment, 'Manual enrichment', target.standard_id);
-    const workerContext = { ...testContext, workId: work.id };
+    const work = await startWork(enrichment, 'Manual enrichment', target.standard_id, { enrichedEntityId: target.id });
+    const workerContext = await buildWorkerContext(work.id);
     const visible = await addIntrusionSet(workerContext, ADMIN_USER, { name: `GraphQL visible ${Date.now()}` });
     const hidden = await addIntrusionSet(workerContext, ADMIN_USER, { name: `GraphQL hidden ${Date.now()}`, objectMarking: [TLP_RED] });
     intrusionSetIds.push(visible.id, hidden.id);
@@ -190,7 +191,7 @@ describe('Work touched elements in GraphQL', () => {
     const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `Ref target ${Date.now()}` });
     intrusionSetIds.push(target.id);
     const work = await startWork(enrichment, 'Manual enrichment', target.standard_id, { enrichedEntityId: target.id });
-    await patchAttribute({ ...testContext, workId: work.id }, ADMIN_USER, target.id, ENTITY_TYPE_INTRUSION_SET, { objectMarking: [TLP_RED] });
+    await patchAttribute(await buildWorkerContext(work.id), ADMIN_USER, target.id, ENTITY_TYPE_INTRUSION_SET, { objectMarking: [TLP_RED] });
     await updateExpectationsNumber(testContext, ADMIN_USER, work.id, 1);
     await reportExpectation(testContext, ADMIN_USER, work.id);
 
@@ -215,8 +216,8 @@ describe('Work touched elements in GraphQL', () => {
   it('should return null touched elements when they were never recorded', async () => {
     const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `Import target ${Date.now()}` });
     intrusionSetIds.push(target.id);
-    const work = await startWork(importConnector, 'Import', target.standard_id);
-    const created = await addIntrusionSet({ ...testContext, workId: work.id }, ADMIN_USER, { name: `Import created ${Date.now()}` });
+    const work = await startWork(importConnector, 'Import', target.standard_id, { enrichedEntityId: target.id });
+    const created = await addIntrusionSet(await buildWorkerContext(work.id), ADMIN_USER, { name: `Import created ${Date.now()}` });
     intrusionSetIds.push(created.id);
     await updateExpectationsNumber(testContext, ADMIN_USER, work.id, 1);
     await reportExpectation(testContext, ADMIN_USER, work.id);
@@ -229,8 +230,8 @@ describe('Work touched elements in GraphQL', () => {
   it('should skip deleted elements', async () => {
     const target = await addIntrusionSet(testContext, ADMIN_USER, { name: `Deleted target ${Date.now()}` });
     intrusionSetIds.push(target.id);
-    const work = await startWork(enrichment, 'Manual enrichment', target.standard_id);
-    const created = await addIntrusionSet({ ...testContext, workId: work.id }, ADMIN_USER, { name: `Deleted created ${Date.now()}` });
+    const work = await startWork(enrichment, 'Manual enrichment', target.standard_id, { enrichedEntityId: target.id });
+    const created = await addIntrusionSet(await buildWorkerContext(work.id), ADMIN_USER, { name: `Deleted created ${Date.now()}` });
     await updateExpectationsNumber(testContext, ADMIN_USER, work.id, 1);
     await reportExpectation(testContext, ADMIN_USER, work.id);
     await deleteElementById(testContext, ADMIN_USER, created.id, ENTITY_TYPE_INTRUSION_SET);

@@ -5,7 +5,6 @@ import {
   redisDeleteWorks,
   redisGetWork,
   redisGetWorkTouchedElements,
-  redisGetWorkTrackingInfo,
   redisInitializeWork,
   WORK_TOUCHED_TTL,
 } from '../../../src/database/redis';
@@ -16,18 +15,27 @@ import {
 const newWorkId = () => `work_redis-touched-test_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
 
 describe('Redis work touched elements', () => {
+  // Read by createGraphqlContext to tell whether and how the touched elements of the work are tracked
   it('should store the event type, the investigation id and the enriched entity id with the work', async () => {
     const workId = newWorkId();
-    await redisInitializeWork(workId, false, 'INTERNAL_ENRICHMENT', 'investigation-1', 'enriched-1');
-    expect(await redisGetWorkTrackingInfo(workId)).toEqual({ eventType: 'INTERNAL_ENRICHMENT', investigationId: 'investigation-1', enrichedEntityId: 'enriched-1' });
-    expect((await redisGetWork(workId)).is_initialized).toEqual('true');
+    await redisInitializeWork(workId, false, undefined, 'INTERNAL_ENRICHMENT', 'investigation-1', 'enriched-1');
+    expect(await redisGetWork(workId)).toEqual(expect.objectContaining({
+      is_initialized: 'true',
+      event_type: 'INTERNAL_ENRICHMENT',
+      investigation_id: 'investigation-1',
+      enriched_entity_id: 'enriched-1',
+    }));
     await redisDeleteWorks([workId]);
   });
 
-  it('should return null tracking info for a work initialized without them', async () => {
+  it('should not store the tracking fields of a work initialized without them', async () => {
     const workId = newWorkId();
     await redisInitializeWork(workId, false);
-    expect(await redisGetWorkTrackingInfo(workId)).toEqual({ eventType: null, investigationId: null, enrichedEntityId: null });
+    const work = await redisGetWork(workId);
+    expect(work.is_initialized).toEqual('true');
+    expect(work).not.toHaveProperty('event_type');
+    expect(work).not.toHaveProperty('investigation_id');
+    expect(work).not.toHaveProperty('enriched_entity_id');
     await redisDeleteWorks([workId]);
   });
 
@@ -67,7 +75,7 @@ describe('Redis work touched elements', () => {
 
   it('should delete the touched set with the work', async () => {
     const workId = newWorkId();
-    await redisInitializeWork(workId, false, 'INTERNAL_ENRICHMENT');
+    await redisInitializeWork(workId, false, undefined, 'INTERNAL_ENRICHMENT');
     await redisAddWorkTouchedElements(workId, ['a']);
     await redisDeleteWorks([workId]);
     expect(await redisGetWorkTouchedElements(workId)).toEqual({ touched_ids: [] });

@@ -13,6 +13,7 @@ import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
 import { ConnectorType } from '../../../src/generated/graphql';
+import { buildWorkerContext } from '../../utils/workContextHelper';
 
 const INV_CONNECTOR_A = 'cc6d8f3a-1b2c-4d5e-8f90-111111111111';
 const INV_CONNECTOR_B = 'cc6d8f3a-1b2c-4d5e-8f90-222222222222';
@@ -501,7 +502,7 @@ describe('Enrichments linked to an investigation', () => {
      * Create an element while processing the work, so that the work touches it.
      */
     const touchUnderWork = async (workId: string) => {
-      const created = await addIntrusionSet({ ...testContext, workId }, ADMIN_USER, { name: `Investigation status touched ${Date.now()}` });
+      const created = await addIntrusionSet(await buildWorkerContext(workId), ADMIN_USER, { name: `Investigation status touched ${Date.now()}` });
       statusIntrusionSetIds.push(created.id);
     };
 
