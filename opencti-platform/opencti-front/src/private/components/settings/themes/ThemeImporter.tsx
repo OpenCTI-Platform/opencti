@@ -45,6 +45,8 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
   const [open, setOpen] = useState(false);
   const [source, setSource] = useState<ConfigPresetImportSource>('file');
   const [themeFile, setThemeFile] = useState<File | null>(null);
+  // The import from the bundle runs: it must not be unmounted before its result
+  const [bundleBusy, setBundleBusy] = useState(false);
 
   const [commit, importing] = useApiMutation<ThemeImporterImportMutation>(
     importMutation,
@@ -89,10 +91,17 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
     importThemeFile(file);
   };
 
-  const handleClose = () => {
+  const closeDialog = () => {
     setOpen(false);
     setSource('file');
     setThemeFile(null);
+  };
+  const busy = importing || bundleBusy;
+  // Dismissal by the user (close button, escape, backdrop, cancel): refused while an import runs, so that its result is not lost
+  const handleClose = () => {
+    if (!busy) {
+      closeDialog();
+    }
   };
 
   const rejectionMessage = (rejections: FileRejection[]) => (
@@ -135,7 +144,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
         open={open}
         onClose={handleClose}
         title={t_i18n('Import a theme')}
-        showCloseButton
+        showCloseButton={!busy}
       >
         <div style={{ marginBottom: theme.spacing(3) }}>
           <ConfigPresetImportSourceChoice
@@ -144,7 +153,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
             fileLabel={t_i18n('Import a theme file')}
             fileDescription={t_i18n('A theme exported as a JSON file')}
             bundleDescription={t_i18n('Select the themes to import from a full configuration bundle (zip)')}
-            disabled={importing}
+            disabled={busy}
           />
         </div>
         {source === 'bundle' && (
@@ -152,6 +161,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
             type={THEMES_CONFIG_PRESET_TYPE}
             itemsLabel={t_i18n('themes')}
             onImported={onThemesImported}
+            onBusyChange={setBundleBusy}
             onClose={handleClose}
           />
         )}
@@ -172,7 +182,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
             <DialogActions>
               <Button variant="secondary" onClick={handleClose} disabled={importing}>{t_i18n('Cancel')}</Button>
               <Button
-                onClick={() => themeFile && importThemeFile(themeFile, handleClose)}
+                onClick={() => themeFile && importThemeFile(themeFile, closeDialog)}
                 disabled={!themeFile || importing}
                 data-testid="import-theme-submit"
               >

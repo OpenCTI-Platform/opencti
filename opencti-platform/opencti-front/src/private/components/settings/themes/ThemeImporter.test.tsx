@@ -1,6 +1,7 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
+import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender from '../../../../utils/tests/test-render';
 import useConfigPresetPartialImportAccess from '../config_preset/import/partial/useConfigPresetPartialImportAccess';
 import ThemeImporter from './ThemeImporter';
@@ -49,5 +50,44 @@ describe('ThemeImporter', () => {
     const [importOperation] = relayEnv.mock.getAllOperations();
     expect(importOperation.request.node.operation.name).toEqual('ThemeImporterImportMutation');
     expect(importOperation.request.variables).toEqual({ file });
+  });
+
+  it('keeps the bundle import mounted while it runs: no change of source, no dismissal, until its result', async () => {
+    (useConfigPresetPartialImportAccess as Mock).mockReturnValue(true);
+    const { user, relayEnv } = renderImporter();
+    const operation = (name: string) => relayEnv.mock.getAllOperations().find((candidate) => candidate.request.node.operation.name === name)!;
+    const resolve = async (name: string, resolvers: Record<string, () => unknown>) => {
+      await waitFor(() => expect(operation(name)).toBeDefined());
+      await act(async () => {
+        relayEnv.mock.resolve(operation(name), MockPayloadGenerator.generate(operation(name), resolvers));
+      });
+    };
+    await user.click(screen.getByTestId('import-theme-btn'));
+    await user.click(screen.getByRole('button', { name: /^Import from bundle platform config/ }));
+    await user.upload(screen.getByTestId('config-preset-partial-import-file'), new File(['zip'], 'bundle.zip', { type: 'application/zip' }));
+    await resolve('ConfigPresetPartialImportPreviewMutation', {
+      ConfigPresetPartialImportPreview: () => ({
+        bundle_name: null,
+        default_mode: 'COPY',
+        type: { key: 'branding', modes: ['OVERWRITE', 'COPY'], items: [{ key: 'theme--a', label: 'Night', translatable: false, exists: false, conflict: false }] },
+      }),
+    });
+    await user.click(screen.getByTestId('config-preset-partial-import-submit'));
+
+    // The import runs on the server
+    expect(screen.getByRole('button', { name: /^Import a theme file/ })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'close' })).not.toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    await resolve('ConfigPresetPartialImportMutation', {
+      ConfigPresetPartialImportOutput: () => ({
+        results: [{ type: 'branding', key: 'theme--a', status: 'CREATED', reason: null, label: 'Night', translatable: false }],
+        counts: { created: 1, overwritten: 0, skipped: 0, failed: 0 },
+      }),
+    });
+    expect(screen.getByTestId('config-preset-partial-import-result')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Import a theme file/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'close' })).toBeInTheDocument();
   });
 });
