@@ -10,7 +10,7 @@ import { configImportReasonValue, configImportValidationReason, joinConfigImport
 import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../user/configPreset/sensitive-config-import';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { findById as findThemeById } from '../theme/theme-domain';
-import { propagatePasswordValidityChange } from '../user/user-domain';
+import { isPasswordPolicySatisfiable, propagatePasswordValidityChange } from '../user/user-domain';
 import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_WHITEMARK_FIELDS, SETTINGS_POLICIES_FIELDS } from './settings-export';
 import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema, policiesConfigurationSchema } from './settings-import-schema';
 
@@ -140,6 +140,7 @@ export const importPlatformConfiguration = async (
 
 const ORGANIZATION_REQUIRES_EE_REASON = 'The main organization requires the Enterprise Edition';
 const ORGANIZATION_SET_REASON = 'Sets the main organization';
+const UNSATISFIABLE_PASSWORD_POLICY_REASON = 'The password policy cannot be satisfied: its maximum length is below what its other rules require';
 const PASSWORD_VALIDITY_REASON = 'The expiration date of the users\' passwords changes';
 
 export const importPolicies = async (
@@ -161,6 +162,11 @@ export const importPolicies = async (
   }
   const input: { key: string; value: unknown[] }[] = toInput(parsed.data, SETTINGS_POLICIES_FIELDS);
   const current = await getSettingsFromDatabase(context) as unknown as BasicStoreSettings;
+  // The policy once imported, a value that is null or absent keeping the one of the platform
+  const policy = { ...current, ...Object.fromEntries(input.map(({ key, value }) => [key, value[0]])) } as BasicStoreSettings;
+  if (!isPasswordPolicySatisfiable(policy)) {
+    return failed('invalid', UNSATISFIABLE_PASSWORD_POLICY_REASON, parsed.data);
+  }
   let organizationReason: string | undefined;
   if (organizationReference) {
     if (!(await isEnterpriseEdition(context))) {
@@ -172,7 +178,7 @@ export const importPolicies = async (
       if (organization) {
         input.push({ key: 'platform_organization', value: [organization.id] });
         if (organization.id !== current.platform_organization) {
-          organizationReason = `${ORGANIZATION_SET_REASON}: ${configImportReasonValue(organizationReference.name)}`;
+          organizationReason = `${ORGANIZATION_SET_REASON}: ${configImportReasonValue(organization.name)}`;
         }
       } else {
         organizationReason = `Main organization not found: ${configImportReasonValue(organizationReference.name)}`;

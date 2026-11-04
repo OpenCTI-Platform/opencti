@@ -196,8 +196,12 @@ const realImport = async (
             }
           }
         } catch (err) {
-          // The theme was not created: the items that depend on it fail with it
-          plan.created.delete(configPresetPlanKey(item.type, item.id));
+          // The item was not written (a theme, a role): the items that depend on it fail with it
+          const key = configPresetPlanKey(item.type, item.id);
+          plan.created.delete(key);
+          if (plan.targets?.has(key)) {
+            plan.targets.set(key, null);
+          }
           result = toResult(item, 'failed', err instanceof Error ? err.message : String(err), computed);
         }
         results.push(result);

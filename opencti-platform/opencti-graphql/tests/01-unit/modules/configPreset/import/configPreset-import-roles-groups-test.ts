@@ -56,13 +56,12 @@ describe('A role imported as COPY and a group of the same import that depends on
     expect(importGroup).toHaveBeenLastCalledWith(context, user, groupItem.configuration, { mode: ConfigImportMode.Overwrite, roleTargets });
   });
 
-  it('records that the copy of a role that fails is not written, and nothing for an overwrite that fails', async () => {
+  it('records that a role that fails is not written, whatever its mode, so that its groups fail with it', async () => {
     vi.mocked(importRole).mockResolvedValue({ status: 'failed', code: 'name_conflict', reason: 'Role name already exists', exists: true });
-    const copyPlan = newPlan();
-    await importerOf('roles').compute(context, user, roleItem, copyPlan, ConfigImportMode.Copy);
-    expect(configPresetTargets(copyPlan, 'roles')).toEqual(new Map([[roleItem.id, null]]));
-    const overwritePlan = newPlan();
-    await importerOf('roles').compute(context, user, roleItem, overwritePlan, ConfigImportMode.Overwrite);
-    expect(overwritePlan.targets!.size).toBe(0);
+    await Promise.all([ConfigImportMode.Copy, ConfigImportMode.Overwrite].map(async (mode) => {
+      const plan = newPlan();
+      await importerOf('roles').compute(context, user, roleItem, plan, mode);
+      expect(configPresetTargets(plan, 'roles')).toEqual(new Map([[roleItem.id, null]]));
+    }));
   });
 });

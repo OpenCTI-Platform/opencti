@@ -55,6 +55,7 @@ describe('ConfigPresetResultLine', () => {
     ['Requires the right to manage the sensitive configuration', 'Requires the right to manage the sensitive configuration'],
     ['The Administrators group keeps the Administrator role', 'The Administrators group keeps the Administrator role'],
     ['Removes sensitive rights', 'Removes sensitive rights'],
+    ['Shareable markings not allowed by the group: TLP:RED', 'Shareable markings not allowed by the group: TLP:RED'],
     ['Built-in marking', 'Built-in marking'],
     ['The order of the marking changes', 'The order of the marking changes'],
     ['Groups that get new markings automatically get this one', 'Groups that get new markings automatically get this one'],

@@ -73,6 +73,9 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'The main organization requires the Enterprise Edition': return t_i18n('The main organization requires the Enterprise Edition');
     case 'Requires the right to manage the sensitive configuration': return t_i18n('Requires the right to manage the sensitive configuration');
     case 'The Administrators group keeps the Administrator role': return t_i18n('The Administrators group keeps the Administrator role');
+    case 'Requires Enterprise Edition': return t_i18n('Requires Enterprise Edition');
+    case 'The password policy cannot be satisfied: its maximum length is below what its other rules require':
+      return t_i18n('The password policy cannot be satisfied: its maximum length is below what its other rules require');
     default: break;
   }
   const mainOrganization = reason.match(/^Sets the main organization: (.+)$/)?.[1];
@@ -98,6 +101,10 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   const removedMarkings = reason.match(/^Markings removed: (.+)$/)?.[1];
   if (removedMarkings) {
     return t_i18n('Markings removed: {markings}', { values: { markings: removedMarkings } });
+  }
+  const notAllowedShareable = reason.match(/^Shareable markings not allowed by the group: (.+)$/)?.[1];
+  if (notAllowedShareable) {
+    return t_i18n('Shareable markings not allowed by the group: {markings}', { values: { markings: notAllowedShareable } });
   }
   const missingDashboard = reason.match(/^Default dashboard not found: (.+)$/)?.[1];
   if (missingDashboard) {

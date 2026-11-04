@@ -67,6 +67,8 @@ interface ResolvedGroup {
   roleIds: string[];
   markingIds: string[];
   missingMarkings: string[];
+  // Maximum shareable markings above the allowed markings of the group: never written, as the settings screen never offers them
+  notAllowedShareableMarkings: string[];
   missingDashboard?: string;
 }
 
@@ -104,8 +106,21 @@ const resolveGroup = async (
     entity_type,
     values: (await cleanMarkings(context, values.map(resolveMarking).filter((marking) => !!marking)) as BasicStoreEntity[]).map(({ id }) => id),
   })));
-  fields.max_shareable_markings = configuration.max_shareable_markings.map(({ type, value }) => ({ type, value: (value === 'none' ? undefined : resolve(value)) ?? 'none' }));
+  // Same rule as the settings screen: a marking is shareable when an allowed marking of its type is at least as high
+  const allowed = configuration.allowed_markings.map(resolveMarking).filter((marking): marking is BasicStoreMarking => !!marking);
+  const isAllowed = (marking: BasicStoreMarking) => allowed.some(({ definition_type, x_opencti_order }) => definition_type === marking.definition_type
+    && x_opencti_order >= marking.x_opencti_order);
+  const notAllowedShareableMarkings: string[] = [];
+  fields.max_shareable_markings = configuration.max_shareable_markings.map(({ type, value }) => {
+    const marking = value === 'none' ? undefined : resolveMarking(value);
+    if (marking && !isAllowed(marking)) {
+      notAllowedShareableMarkings.push(marking.definition);
+      return { type, value: 'none' };
+    }
+    return { type, value: marking?.id ?? 'none' };
+  });
   return {
+    notAllowedShareableMarkings,
     fields,
     roleIds: roles.map(({ id }) => id),
     markingIds: resolveAll(configuration.allowed_markings),
@@ -210,6 +225,15 @@ const grantsSensitiveRights = async (
   const gained = found.filter((role): role is BasicStoreEntityRole => !!role && !currentIds.includes(role.id));
   return anyGivesSensitiveRights(context, user, gained, plannedRoles);
 };
+
+// What the bundle refers to and the platform does not have: left out of the group
+const missingReasons = (resolved: ResolvedGroup) => [
+  resolved.missingMarkings.length > 0 ? `Markings not found: ${configImportReasonValue(resolved.missingMarkings.join(', '))}` : undefined,
+  resolved.missingDashboard ? `Default dashboard not found: ${configImportReasonValue(resolved.missingDashboard)}` : undefined,
+  resolved.notAllowedShareableMarkings.length > 0
+    ? `Shareable markings not allowed by the group: ${configImportReasonValue(resolved.notAllowedShareableMarkings.join(', '))}`
+    : undefined,
+];
 
 // The automatic assignments are imported as they are, and shown in the preview when the group does not have them yet
 const assignmentReasons = (configuration: GroupImportConfiguration, existing?: BasicStoreEntityGroup) => [

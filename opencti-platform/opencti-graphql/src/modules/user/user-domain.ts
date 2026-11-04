@@ -786,7 +786,7 @@ const shuffleInPlace = <T>(elements: T[]) => {
 };
 
 // Generate a random password that satisfies the given password policy
-export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
+const passwordPolicyRequirements = (policy: PasswordInlinePolicy) => {
   const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
   const minUppercase = positive(policy.password_policy_min_uppercase);
   const minLowercase = positive(policy.password_policy_min_lowercase);
@@ -800,8 +800,19 @@ export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
   const minBodyLength = Math.max(requiredCharsCount, wordsCount);
   const minLength = Math.max(positive(policy.password_policy_min_length), minBodyLength + separatorsCount);
   const maxLength = positive(policy.password_policy_max_length);
+  return { minUppercase, minLowercase, minNumbers, separatorsCount, extraSymbolsCount, requiredCharsCount, minLength, maxLength };
+};
+
+// A policy whose maximum length is below the length its other rules require accepts no password
+export const isPasswordPolicySatisfiable = (policy: PasswordInlinePolicy) => {
+  const { minLength, maxLength } = passwordPolicyRequirements(policy);
+  return !(maxLength > 0 && maxLength < minLength);
+};
+
+export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
+  const { minUppercase, minLowercase, minNumbers, separatorsCount, extraSymbolsCount, requiredCharsCount, minLength, maxLength } = passwordPolicyRequirements(policy);
   // Check policy feasibility before allocating anything
-  if (maxLength > 0 && maxLength < minLength) {
+  if (!isPasswordPolicySatisfiable(policy)) {
     throw FunctionalError('Unable to generate a password: password policy cannot be satisfied', { minLength, maxLength });
   }
   let length = Math.max(minLength, GENERATED_PASSWORD_DEFAULT_LENGTH);

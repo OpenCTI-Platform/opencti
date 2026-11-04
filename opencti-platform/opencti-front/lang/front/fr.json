@@ -14,6 +14,8 @@
   "The standard id of the marking does not match its definition": "L'identifiant standard du marquage ne correspond pas à sa définition",
   "The order of the marking changes": "L'ordre du marquage change",
   "Groups that get new markings automatically get this one": "Les groupes qui reçoivent automatiquement les nouveaux marquages reçoivent celui-ci",
+  "The password policy cannot be satisfied: its maximum length is below what its other rules require": "La politique de mot de passe ne peut pas être satisfaite : sa longueur maximale est inférieure à ce qu'exigent ses autres règles",
+  "Shareable markings not allowed by the group: {markings}": "Marquages partageables non autorisés par le groupe : {markings}",
   "“Yes, always” saves a preference for you. That tool will then run without asking — including on scheduled runs nobody is watching — until you revoke it.": "« Oui, toujours » enregistre une préférence pour vous. Cet outil s’exécutera alors sans vous demander votre avis — y compris lors d’exécutions programmées que personne ne surveille — jusqu’à ce que vous révoquiez cette autorisation.",
   "(+{count}) Click to view all the new blogposts": "(+{count}) Cliquez pour voir tous les nouveaux articles de blog",
   "(+{count}) Click to view all the new items": "(+{count}) Cliquez pour voir tous les nouveaux éléments",

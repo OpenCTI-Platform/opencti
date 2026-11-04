@@ -169,6 +169,22 @@ describe('importGroup create', () => {
     expect(result.reason).toEqual('Default dashboard not found: X The Administrators group keeps the Administrator role');
   });
 
+  it('never makes shareable a marking above the allowed markings of the group, and says so', async () => {
+    withPlatform({ markings: [TLP_GREEN, TLP_AMBER, PAP_RED] });
+    const configuration = groupConfiguration({
+      allowed_markings: [markingReference(TLP_GREEN)],
+      max_shareable_markings: [{ type: 'TLP', value: markingReference(TLP_AMBER) }, { type: 'PAP', value: markingReference(PAP_RED) }],
+    });
+    const result = await importGroup(context, user, configuration, { mode: ConfigImportMode.Add });
+    expect(result.reason).toEqual('Shareable markings not allowed by the group: TLP:AMBER, PAP:RED');
+    expect(vi.mocked(addGroup).mock.calls[0][2]).toMatchObject({ max_shareable_markings: [{ type: 'TLP', value: 'none' }, { type: 'PAP', value: 'none' }] });
+    // A lower marking of an allowed type is shareable
+    vi.mocked(addGroup).mockClear();
+    const lower = groupConfiguration({ allowed_markings: [markingReference(TLP_AMBER)], max_shareable_markings: [{ type: 'TLP', value: markingReference(TLP_GREEN) }] });
+    await importGroup(context, user, lower, { mode: ConfigImportMode.Add });
+    expect(vi.mocked(addGroup).mock.calls[0][2]).toMatchObject({ max_shareable_markings: [{ type: 'TLP', value: TLP_GREEN.id }] });
+  });
+
   it('keeps the highest default marking of each type, as the settings screen does', async () => {
     withPlatform({ markings: [TLP_GREEN, TLP_AMBER, PAP_RED] });
     const configuration = groupConfiguration({ default_marking: [{ entity_type: 'GLOBAL', values: [TLP_GREEN, TLP_AMBER, PAP_RED].map(markingReference) }] });

@@ -38,7 +38,8 @@ const rolesImporter: ConfigPresetImporter = {
     if (result.targetId) {
       recordConfigPresetTarget(plan, ROLES_FAMILY_ID, item.id, result.targetId);
       plan.roleSensitiveRights?.set(result.targetId, !!result.grantsSensitiveRights);
-    } else if (mode === ConfigImportMode.Copy) {
+    } else {
+      // A role that is not written: the groups of the same import that depend on it fail, never get the local role of the same name
       recordConfigPresetTarget(plan, ROLES_FAMILY_ID, item.id, null);
     }
     return toComputedItem(label, result);
