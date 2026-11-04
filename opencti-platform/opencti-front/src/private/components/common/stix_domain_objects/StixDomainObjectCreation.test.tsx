@@ -16,6 +16,15 @@ describe('StixDomainObjectCreation', () => {
           speeddial
           handleClose={() => {}}
           stixDomainObjectTypes={['Observed-Data']}
+          inputValue=""
+          creationCallback={() => {}}
+          confidence={undefined}
+          defaultCreatedBy={undefined}
+          defaultMarkingDefinitions={undefined}
+          paginationKey={undefined}
+          paginationOptions={undefined}
+          onCompleted={undefined}
+          isFromBulkRelation={false}
         />
       </DeferredCreationContext.Provider>,
     );
