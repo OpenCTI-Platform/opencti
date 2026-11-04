@@ -71,13 +71,15 @@ interface ConfigPresetPartialImportProps {
   // While the bundle is read or imported: the dialog must keep this component mounted (no change of source, no dismissal),
   // otherwise the result of an import that goes on on the server is lost
   onBusyChange?: (busy: boolean) => void;
+  // Back to the previous step of the dialog, before the import
+  onBack?: () => void;
   onClose: () => void;
 }
 
 // The partial import of one type from a full configuration bundle, to put in a dialog: the bundle is picked, the items of the type
 // are listed (every one selected), then the selected ones are imported. An item that already exists is added as a copy by default.
 // Generic: any screen can offer it for its own type, the backend imports any type that has an importer.
-const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProps> = ({ type, itemsLabel, onImported, onBusyChange, onClose }) => {
+const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProps> = ({ type, itemsLabel, onImported, onBusyChange, onBack, onClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [file, setFile] = useState<File | null>(null);
@@ -211,6 +213,7 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
       </div>
       <DialogActions>
         <Button variant="secondary" onClick={onClose} disabled={busy}>{t_i18n('Cancel')}</Button>
+        {onBack && <Button variant="secondary" onClick={onBack} disabled={busy}>{t_i18n('Back')}</Button>}
         <Button
           onClick={handleImport}
           disabled={!file || selected.size === 0 || previewing || importing}
