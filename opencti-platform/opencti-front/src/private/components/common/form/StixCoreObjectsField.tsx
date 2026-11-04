@@ -345,11 +345,9 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   }, [types, searchScope, name]);
 
   // Whether at least one of the target types can be created here (a form cannot create every type)
-  const hasCreatableType = useMemo(() => {
-    const targetTypes = getTargetTypes();
-    if (targetTypes.length === 0) return true;
-    return targetTypes.some((t) => (isDomainObjectType(t) || isObservableType(t)) && !(isDeferred && FORM_UNCREATABLE_TYPES.includes(t)));
-  }, [getTargetTypes, isDomainObjectType, isObservableType, isDeferred]);
+  const fieldTargetTypes = getTargetTypes();
+  const hasCreatableType = fieldTargetTypes.length === 0
+    || fieldTargetTypes.some((t) => (isDomainObjectType(t) || isObservableType(t)) && !(isDeferred && FORM_UNCREATABLE_TYPES.includes(t)));
 
   const shouldShowCreateOption = useCallback((resultsCount: number) => {
     if (disabled || disableCreation) return false;
