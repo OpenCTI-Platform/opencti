@@ -1,3 +1,4 @@
+import type { BasicStoreEntityTrigger } from '../modules/notification/notification-types';
 import type { StixCoreObject, StixId, StixRelationshipObject } from '../types/stix-2-1-common';
 
 export interface NotificationData {
@@ -68,4 +69,20 @@ export const MOCK_TRIGGERS: Record<string, { name: string; trigger_type: 'live' 
   default_notification: { name: '[TEST] Sample live trigger', trigger_type: 'live' },
   default_digest: { name: '[TEST] Sample digest trigger', trigger_type: 'digest' },
   default_activity: { name: '[TEST] Sample activity trigger', trigger_type: 'live' },
+};
+
+// The input testNotifier gives to the notification processing for a test id: the notifications, the fake trigger
+// they are attached to (so templates and `$` variables see its name and type) and the notification map.
+// Returns undefined when the id is not a known test notification.
+export const buildMockNotificationInput = (testId: string) => {
+  if (!Object.hasOwn(MOCK_TRIGGERS, testId) || !Object.hasOwn(MOCK_NOTIFICATIONS, testId)) {
+    return undefined;
+  }
+  const mockTrigger = MOCK_TRIGGERS[testId];
+  const notifications = MOCK_NOTIFICATIONS[testId];
+  const notificationMap = new Map(
+    notifications.map(({ notification_id }) => [notification_id, { name: mockTrigger.name } as BasicStoreEntityTrigger]),
+  );
+  const triggers = [{ created: (new Date()).toISOString(), ...mockTrigger }] as unknown as BasicStoreEntityTrigger[];
+  return { notificationMap, triggers, notifications };
 };
