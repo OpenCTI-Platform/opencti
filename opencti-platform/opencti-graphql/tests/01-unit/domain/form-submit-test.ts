@@ -737,6 +737,33 @@ describe('formSubmit - deferred creation', () => {
     expect(pushedBundle().objects.find((o: any) => o.name === 'Draft Malware').labels).toEqual(['draft-label']);
   });
 
+  // An existing entity is only referenced: picked alone, there is nothing to import and an empty bundle would leave its work in progress
+  it.each([
+    { isDraft: false, entityId: 'malware--existing', draftCount: 0 },
+    { isDraft: true, entityId: 'draft-1', draftCount: 1 },
+  ])('should not create a work for a submission that only picks an existing entity (isDraft: $isDraft)', async ({ isDraft, entityId, draftCount }) => {
+    vi.mocked(draftWorkspaceDomain.addDraftWorkspace).mockResolvedValue({ id: 'draft-1' } as any);
+    const form = {
+      ...lookupForm,
+      form_schema: JSON.stringify({
+        fields: [],
+        mainEntityType: 'Malware',
+        mainEntityLookup: true,
+        draftDefaults: { author: { type: 'none', isEditable: false }, authorizedMembers: { enabled: true, defaults: [] } },
+      }),
+    };
+    const existing = { internal_id: 'malware-1', standard_id: 'malware--existing', entity_type: 'Malware', name: 'Existing' };
+    mockStoreLoadById.mockImplementation(async (_c: any, _u: any, id: string) => (id === 'form-1' ? form : existing));
+
+    const result = await formSubmit(mockContext, mockUser, { formId: 'form-1', values: JSON.stringify({ mainEntityLookup: 'malware-1' }) }, isDraft);
+
+    expect(result.success).toBe(true);
+    expect(result.entityId).toBe(entityId);
+    expect(draftWorkspaceDomain.addDraftWorkspace).toHaveBeenCalledTimes(draftCount);
+    expect(workDomain.createWork).not.toHaveBeenCalled();
+    expect(rabbitmq.pushBundleToWorker).not.toHaveBeenCalled();
+  });
+
   it('should reject an external reference object sent in a direct field that is not in the pool', async () => {
     mockStoreLoadById.mockResolvedValue({
       id: 'form-1',
