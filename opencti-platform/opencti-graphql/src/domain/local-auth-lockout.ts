@@ -5,13 +5,17 @@
 
 import { ACCOUNT_STATUSES, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
-import { getEntityFromCache } from '../database/cache';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { type LocalAuthLockoutTimings, type LocalAuthLockType, redisClearLocalAuthLockout, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt } from '../database/redis';
 import { LocalAuthLockoutFinalAction } from '../generated/graphql';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_USER } from '../modules/user/user-types';
 import type { BasicStoreSettings } from '../types/settings';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import type { AuthContext, AuthUser } from '../types/user';
+import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
+
+const SETTINGS = 'SETTINGS';
 import { normalizeEmail } from '../utils/email';
 import { hashSHA256 } from '../utils/hash';
 
@@ -52,7 +56,22 @@ export const isLocalAuthLockedError = (error: unknown) => {
   return data?.lock !== undefined;
 };
 
-const getLockoutTimings = async (): Promise<LocalAuthLockoutTimings | undefined> => {
+// An administrative account holds BYPASS or any SETTINGS capability (access to the administration)
+export const isAdministrativeAccount = (user: Pick<AuthUser, 'capabilities'>) => {
+  return (user.capabilities ?? []).some(({ name }) => name === BYPASS || name === SETTINGS || name.startsWith(`${SETTINGS}_`));
+};
+
+// Unknown emails get the users threshold, so that a lock never reveals whether an account exists
+const isAdministrativeUserId = async (context: AuthContext, userId?: string) => {
+  if (!userId) {
+    return false;
+  }
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const user = platformUsers.get(userId);
+  return !!user && isAdministrativeAccount(user);
+};
+
+const getLockoutTimings = async (userId?: string): Promise<LocalAuthLockoutTimings | undefined> => {
   if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
     return undefined;
   }
@@ -61,8 +80,12 @@ const getLockoutTimings = async (): Promise<LocalAuthLockoutTimings | undefined>
   if (!(settings.local_auth_lockout_enabled ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_enabled)) {
     return undefined;
   }
+  // NIST SP 800-53 AC-7: administrative accounts get a lower threshold than the other users
+  const isAdministrative = await isAdministrativeUserId(context, userId);
   return {
-    maxAttempts: settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts,
+    maxAttempts: isAdministrative
+      ? settings.local_auth_lockout_admin_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_admin_max_attempts
+      : settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts,
     windowMs: (settings.local_auth_lockout_window ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window) * MINUTE_MS,
     durationMs: (settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration) * SECOND_MS,
     maxDurationMs: (settings.local_auth_lockout_max_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_duration) * SECOND_MS,
@@ -77,7 +100,7 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
   if (userId === OPENCTI_ADMIN_UUID) {
     return undefined;
   }
-  const timings = await getLockoutTimings();
+  const timings = await getLockoutTimings(userId);
   if (!timings) {
     return undefined;
   }
