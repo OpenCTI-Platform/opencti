@@ -5,6 +5,7 @@ This guide will help you get XTM Composer up and running quickly with OpenCTI.
 ## Prerequisites
 
 Before starting, ensure you have:
+
 - XTM Composer installed (see [Installation Guide](installation.md))
 - Access to an OpenCTI instance
 - OpenCTI API token
@@ -138,7 +139,7 @@ INFO  Manager registered with ID: my-manager-001
 ## Step 6: Verify in OpenCTI
 
 1. Log into your OpenCTI instance
-2. Navigate to **Data > Connectors**
+2. Navigate to **Data > Ingestion** and click on the right menu **Connectors catalog**
 3. You should see your XTM Composer manager listed
 4. Connectors managed by XTM Composer will show the manager ID
 
