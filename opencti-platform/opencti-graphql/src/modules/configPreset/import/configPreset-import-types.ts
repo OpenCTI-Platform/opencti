@@ -46,7 +46,16 @@ export interface ConfigPresetComputedItem {
   fields?: ConfigPresetImportField[];
   // A setting that is on or off: whether the bundle turns it on, shown under its label; null when the bundle does not set it
   isEnabled?: boolean | null;
+  credentials?: ConfigPresetImportCredential[];
 }
+
+export interface ConfigPresetImportCredential {
+  key: string;
+  description: string;
+  required: boolean;
+}
+
+export type ConfigPresetImportCredentials = Map<string, Record<string, string>>;
 
 // What the import would create, shared by the items of one import: `<type>/<bundle id>`
 export interface ConfigPresetImportPlan {
@@ -66,6 +75,8 @@ export interface ConfigPresetImportPlan {
   // `<type>/<bundle id>` -> the standard id the item is written under (its copy when imported as COPY), null when the copy is not written.
   // The items that depend on it use it, so that they get the item of the bundle and never the local one with its bundle id
   targets?: Map<string, string | null>;
+  connectorNames?: Set<string>;
+  credentials?: ConfigPresetImportCredentials;
 }
 
 export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`;

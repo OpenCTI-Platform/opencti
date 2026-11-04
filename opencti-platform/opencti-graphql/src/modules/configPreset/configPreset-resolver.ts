@@ -32,7 +32,9 @@ const configPresetResolvers: Resolvers = {
       const file = await configPresetExport(context, context.user!, selections, bundle_name);
       return file as unknown as ResolversTypes['File'];
     },
-    configPresetImport: (_, { file_id, selections, dry_run }, context) => configPresetImport(context, context.user!, file_id, selections, dry_run ?? false),
+    configPresetImport: (_, { file_id, selections, dry_run, credentials }, context) => {
+      return configPresetImport(context, context.user!, file_id, selections, dry_run ?? false, credentials ?? []);
+    },
     configPresetImportSessionSave: (_, { file_id, selections, revision }, context) => {
       return saveConfigPresetImportSession(context, context.user!, file_id, selections, revision);
     },

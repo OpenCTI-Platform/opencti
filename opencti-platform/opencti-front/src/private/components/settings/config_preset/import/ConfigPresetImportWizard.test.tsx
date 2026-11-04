@@ -38,6 +38,7 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   exists: true,
   conflict: false,
   fields: [],
+  credentials: [],
   dependsOn: [],
   ...overrides,
 });
@@ -108,6 +109,18 @@ const previewWithTwoConflicts = {
   types: preview.types.map((type) => (type.key === 'branding'
     ? { ...type, items: [...type.items, previewItem('theme--3', 'Another theme', { translatable: false, conflict: true })] }
     : type)),
+};
+const previewWithConnector = {
+  ...preview,
+  types: [
+    previewType('connectors', 'Connectors', [
+      previewItem('mitre', 'MITRE', {
+        translatable: false,
+        exists: false,
+        credentials: [{ key: 'MITRE_API_KEY', description: 'The key of the MITRE API', required: true }],
+      }),
+    ], ['OVERWRITE', 'COPY']),
+  ],
 };
 const session = (overrides: Record<string, unknown> = {}) => ({
   status: 'DRAFT',
@@ -448,6 +461,7 @@ describe('ConfigPresetImportWizard', () => {
         file_id: 'config_preset/import/id/bundle.zip',
         selections: [{ type: 'platform', items: null }, { type: 'branding', items: null }],
         dry_run: false,
+        credentials: [],
       });
     });
 
@@ -991,6 +1005,7 @@ describe('ConfigPresetImportWizard', () => {
         file_id: 'config_preset/import/id/bundle.zip',
         selections: [{ type: 'messages', items: ['banner'] }],
         dry_run: true,
+        credentials: [],
       });
     });
 
@@ -1099,6 +1114,45 @@ describe('ConfigPresetImportWizard', () => {
     });
   });
 
+  describe('credentials', () => {
+    const enterCredentials = async (rendered: Rendered) => {
+      await rendered.user.click(screen.getByRole('button', { name: 'Enter the credentials of MITRE' }));
+      await rendered.user.type(screen.getByLabelText(/MITRE_API_KEY/), 'secret-key');
+      await rendered.user.click(screen.getByRole('button', { name: 'Save' }));
+    };
+    const credentials = [{ type: 'connectors', key: 'mitre', values: [{ key: 'MITRE_API_KEY', value: 'secret-key' }] }];
+
+    it('locks an item whose required secrets are not entered, as the license locks a type: it is not imported', async () => {
+      await openPreview(session(), previewWithConnector);
+      expect(screen.getByText('Credentials required')).toBeInTheDocument();
+      expect(screen.queryByRole('checkbox', { name: 'MITRE' })).toBeDisabled();
+    });
+
+    it('selects the item its secrets unlock, and sends them with the expected results and with Apply, never with the save', async () => {
+      const rendered = await openPreview(session(), previewWithConnector);
+      await enterCredentials(rendered);
+      await waitFor(() => expect(checkbox('MITRE')).toHaveAttribute('data-state', 'checked'));
+      await waitFor(() => expect(dryRuns(rendered).at(-1)!.request.variables.credentials).toEqual(credentials));
+      await resolveSimulation(rendered);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      const saves = rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportPreviewSaveMutation');
+      saves.forEach((save) => expect(JSON.stringify(save.request.variables)).not.toContain('secret-key'));
+      if (saves.length > 0) {
+        await resolve(rendered, 'ConfigPresetImportPreviewSaveMutation', {});
+      }
+      await waitFor(() => expect(realApplies(rendered)).toHaveLength(1));
+      expect(realApplies(rendered)[0].request.variables.credentials).toEqual(credentials);
+    });
+
+    it('lets the secrets be changed once entered', async () => {
+      const rendered = await openPreview(session(), previewWithConnector);
+      await enterCredentials(rendered);
+      await rendered.user.click(await screen.findByRole('button', { name: 'Credentials' }));
+      expect(screen.getByLabelText(/MITRE_API_KEY/)).toHaveValue('secret-key');
+    });
+  });
+
   describe('import mode', () => {
     // Only the item that conflicts with the platform has a choice
     const modeSelect = () => screen.getByRole('combobox', { name: 'Existing theme: When it already exists' });
@@ -1176,6 +1230,7 @@ describe('ConfigPresetImportWizard', () => {
         file_id: 'config_preset/import/id/bundle.zip',
         selections: [{ type: 'branding', items: null, item_modes: [{ key: 'theme--2', mode: 'COPY' }] }],
         dry_run: true,
+        credentials: [],
       });
       await resolveSimulation(rendered);
       await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());

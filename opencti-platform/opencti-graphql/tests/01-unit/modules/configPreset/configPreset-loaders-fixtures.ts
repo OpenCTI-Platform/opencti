@@ -5,6 +5,7 @@ import { ALL_THEMES } from './configPreset-themes-fixtures';
 import { ALL_ROLES } from './configPreset-roles-fixtures';
 import { ALL_GROUPS, GROUP_ALLOWED_MARKINGS, GROUP_ROLE_RELATIONS } from './configPreset-groups-fixtures';
 import { ALL_MARKINGS } from './configPreset-markings-fixtures';
+import { ALL_CONNECTORS } from './configPreset-connectors-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -17,6 +18,7 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   Role: ALL_ROLES,
   Group: ALL_GROUPS,
   'Marking-Definition': ALL_MARKINGS,
+  Connector: ALL_CONNECTORS,
 };
 const labelOf = (entity: { name?: string; definition?: string }) => entity.name ?? entity.definition ?? '';
 
@@ -25,7 +27,8 @@ const listLikeTheEngine = (type: string | undefined, args: ListingArgs = {}) => 
   const entities = type ? FIXTURE_ENTITIES[type] : undefined;
   return entities
     ?.filter((entity) => (args.filters?.filters ?? []).every(({ key, values, operator }) => {
-      const matches = values.map(String).includes(String((entity as unknown as Record<string, unknown>)[key[0]]));
+      const value = (entity as unknown as Record<string, unknown>)[key[0]];
+      const matches = values.includes('EXISTS') ? value !== undefined && value !== null : values.map(String).includes(String(value));
       return operator === 'not_eq' ? !matches : matches;
     }))
     .filter((entity) => !args.search || labelOf(entity).toLowerCase().includes(args.search.toLowerCase()))

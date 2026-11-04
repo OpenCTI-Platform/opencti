@@ -95,7 +95,7 @@ import conf, { booleanConf, DECOUPLING_VERSIONS_FEATURE_FLAG, isFeatureEnabled }
 import { findConnectorById, findConnectorManagerById, findConnectorManagers, findConnectors, findManagedConnectors } from './connector-repository';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 
-const sanitizeContainerName = (label: string): string => {
+export const sanitizeContainerName = (label: string): string => {
   let sanitized = label
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .toLowerCase()
@@ -1336,8 +1336,8 @@ export const autoUpgradeManagedConnectors = async (
       for (const managedConnector of managedConnectors) {
         const upgradedSuccessfully = await autoUpgradeManagedConnector(context, user, managedConnector);
         hasErrors ||= !upgradedSuccessfully;
-      };
-    };
+      }
+    }
     if (shouldUpdateReadiness) {
       await redisSetManagedConnectorAutoUpgradeStatus({
         status: hasErrors ? 'failed' : 'ready',

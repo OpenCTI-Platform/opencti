@@ -178,6 +178,14 @@ describe('Config preset exportable types query', () => {
         items: [staticItem('policies', 'Policies')],
         itemsPageInfo: onePage(1),
       },
+      {
+        key: 'connectors',
+        label: 'Connectors',
+        description: 'Managed connectors and their parameters, without their secrets',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [{ key: 'mitre', label: 'MITRE', translatable: false, dependsOn: [], isDefault: false }],
+        itemsPageInfo: onePage(1),
+      },
     ]);
   });
 
@@ -194,7 +202,7 @@ describe('Config preset exportable types query', () => {
     // No message is set in the default settings of these tests: the category is not returned
     const none = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
     expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key))
-      .toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'markings', 'roles', 'groups', 'policies']);
+      .toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'markings', 'roles', 'groups', 'policies', 'connectors']);
 
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id, platform_login_message: 'Welcome' }] as never);
     const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
@@ -218,7 +226,7 @@ describe('Config preset exportable types query', () => {
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['whitemark', true], ['hiddenEntityTypes', false],
-      ['markings', false], ['roles', false], ['groups', false], ['policies', false],
+      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['connectors', true],
     ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
@@ -259,6 +267,7 @@ describe('Config preset exportable types query', () => {
       ['roles', 'securityAccess'],
       ['groups', 'securityAccess'],
       ['policies', 'securityAccess'],
+      ['connectors', 'integrations'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);

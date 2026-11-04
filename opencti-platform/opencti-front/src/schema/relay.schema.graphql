@@ -10238,7 +10238,7 @@ type Mutation {
   configPresetImportUpload(file: Upload!): File!
   configPresetImportSessionSave(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession!
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
-  configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput!
+  configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean, credentials: [ConfigPresetItemCredentialsInput!]): ConfigPresetImportOutput!
   configPresetImportSessionBackToSelection: ConfigPresetImportSession!
 }
 
@@ -17869,6 +17869,12 @@ type ConfigPresetImportField {
   value: String
 }
 
+type ConfigPresetImportCredential {
+  key: String!
+  description: String!
+  required: Boolean!
+}
+
 type ConfigPresetImportItem {
   key: String!
   label: String!
@@ -17877,6 +17883,7 @@ type ConfigPresetImportItem {
   exists: Boolean!
   conflict: Boolean!
   fields: [ConfigPresetImportField!]!
+  credentials: [ConfigPresetImportCredential!]!
   isEnabled: Boolean
   dependsOn: [ConfigPresetItemReference!]!
 }
@@ -18007,6 +18014,17 @@ input ConfigPresetSelectionInput {
   items: [ID!]
   excluded_items: [ID!]
   item_modes: [ConfigPresetItemModeInput!]
+}
+
+input ConfigPresetItemCredentialsInput {
+  type: ID!
+  key: ID!
+  values: [ConfigPresetCredentialInput!]!
+}
+
+input ConfigPresetCredentialInput {
+  key: String!
+  value: String!
 }
 
 input ConfigPresetItemModeInput {
