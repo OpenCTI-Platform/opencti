@@ -54,6 +54,8 @@ const NewsFeedBlogPostCard: FunctionComponent<NewsFeedBlogPostCardProps> = ({ it
     <Card
       padding={0}
       gap={0}
+      // clips the image to the rounded corners of the card
+      style={{ overflow: 'hidden' }}
       // The article is on the Filigran blog: it opens in a new tab, never in the platform.
       onClick={href ? () => window.open(href, '_blank', 'noopener,noreferrer') : undefined}
     >

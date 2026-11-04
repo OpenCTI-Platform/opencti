@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
 import NewsFeed from './NewsFeed';
@@ -190,7 +190,9 @@ describe('NewsFeed', () => {
     renderColumn('tags', { tags: ['CTI', 'MALWARE'] });
     expect(screen.getByText('cti')).toBeInTheDocument();
     expect(screen.getByText('+1')).toBeInTheDocument();
-    expect(screen.getByLabelText('malware')).toBeInTheDocument();
+    // the hidden tags are listed in the tooltip of the "+N" chip
+    fireEvent.focus(screen.getByText('+1').closest('span[tabindex]') as HTMLElement);
+    expect(screen.getAllByText('malware').length).toBeGreaterThan(0);
   });
 
   it('ignores the empty tags of the tags column', () => {

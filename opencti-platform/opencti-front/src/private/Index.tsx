@@ -118,7 +118,6 @@ const Index = ({ settings }: IndexProps) => {
         <Box
           sx={{
             display: 'flex',
-            minWidth: isForcePasswordChangeRoute ? 0 : 1400,
             marginTop: `calc(${topBannerHeight}px + ${bannerHeight})`,
             marginBottom: bannerHeight,
           }}
