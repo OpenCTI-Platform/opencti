@@ -2874,7 +2874,7 @@
   "INTERNAL_IMPORT_FILE": "ファイルインポート",
   "INTERNAL_INGESTION": "データの取り込み",
   "Interval": "インターバル",
-  "Interval adjusted to {interval} to keep the chart responsive.": "グラフの応答性を保つため、間隔を{interval}に調整しました。",
+  "Interval adjusted to {interval} to keep the chart responsive. The first and last intervals may only be partly covered by the selected period.": "グラフの応答性を保つため、間隔を{interval}に調整しました。最初と最後の間隔は、選択した期間に一部しか含まれない場合があります。",
   "Interval between injections (in minutes)": "注射の間隔（分）",
   "Interval must be a positive number": "間隔は正の数でなければならない",
   "Interval must be an integer": "間隔は整数でなければならない",

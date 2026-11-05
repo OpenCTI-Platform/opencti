@@ -2874,7 +2874,7 @@
   "INTERNAL_IMPORT_FILE": "File di importazione",
   "INTERNAL_INGESTION": "Ingestione",
   "Interval": "Intervallo",
-  "Interval adjusted to {interval} to keep the chart responsive.": "Intervallo regolato su {interval} per mantenere il grafico reattivo.",
+  "Interval adjusted to {interval} to keep the chart responsive. The first and last intervals may only be partly covered by the selected period.": "Intervallo regolato su {interval} per mantenere il grafico reattivo. Il primo e l'ultimo intervallo potrebbero essere coperti solo in parte dal periodo selezionato.",
   "Interval between injections (in minutes)": "Intervallo tra le iniezioni (in minuti)",
   "Interval must be a positive number": "L'intervallo deve essere un numero positivo",
   "Interval must be an integer": "L'intervallo deve essere un intero",

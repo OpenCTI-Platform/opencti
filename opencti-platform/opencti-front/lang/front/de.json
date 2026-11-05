@@ -2874,7 +2874,7 @@
   "INTERNAL_IMPORT_FILE": "Dateien importieren",
   "INTERNAL_INGESTION": "Dateneingabe",
   "Interval": "Intervall",
-  "Interval adjusted to {interval} to keep the chart responsive.": "Intervall auf {interval} angepasst, damit das Diagramm reaktionsschnell bleibt.",
+  "Interval adjusted to {interval} to keep the chart responsive. The first and last intervals may only be partly covered by the selected period.": "Intervall auf {interval} angepasst, damit das Diagramm reaktionsschnell bleibt. Das erste und das letzte Intervall werden vom ausgewählten Zeitraum möglicherweise nur teilweise abgedeckt.",
   "Interval between injections (in minutes)": "Intervall zwischen den Injektionen (in Minuten)",
   "Interval must be a positive number": "Intervall muss eine positive Zahl sein",
   "Interval must be an integer": "Intervall muss eine ganze Zahl sein",

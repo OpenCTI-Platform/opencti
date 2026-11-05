@@ -162,7 +162,9 @@ const WidgetTimeSeriesBreakdown = ({
         quarter: t_i18n('Quarter'),
         year: t_i18n('Year'),
       };
-      warnings.push(t_i18n('Interval adjusted to {interval} to keep the chart responsive.', {
+      // The period rarely starts and ends on the bounds of the coarser intervals: the first and the last one
+      // only count the part of them in the period
+      warnings.push(t_i18n('Interval adjusted to {interval} to keep the chart responsive. The first and last intervals may only be partly covered by the selected period.', {
         values: { interval: intervalLabels[coarsenedInterval] ?? coarsenedInterval },
       }));
     }

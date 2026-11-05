@@ -320,7 +320,9 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(props.hasHoverFilter).toBe(false);
     expect(props.tickAmount).toEqual(20);
     const warning = (await findByTestId('widget-warning')).textContent;
-    expect(warning).toContain('Interval adjusted to');
+    expect(warning).toContain('Interval adjusted to Month');
+    // The period does not start nor end on the bounds of a month
+    expect(warning).toContain('The first and last intervals may only be partly covered by the selected period.');
     // Days summed into months stay exact
     expect(warning).not.toContain('Each week');
   });

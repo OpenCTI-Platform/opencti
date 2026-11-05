@@ -2874,7 +2874,7 @@
   "INTERNAL_IMPORT_FILE": "导入文件",
   "INTERNAL_INGESTION": "数据摄取",
   "Interval": "时间间隔",
-  "Interval adjusted to {interval} to keep the chart responsive.": "已将时间间隔调整为{interval}，以保持图表流畅。",
+  "Interval adjusted to {interval} to keep the chart responsive. The first and last intervals may only be partly covered by the selected period.": "已将时间间隔调整为{interval}，以保持图表流畅。第一个和最后一个时间间隔可能仅有部分处于所选时间段内。",
   "Interval between injections (in minutes)": "注射间隔时间（分钟）",
   "Interval must be a positive number": "间隔必须是正数",
   "Interval must be an integer": "间隔必须是整数",
