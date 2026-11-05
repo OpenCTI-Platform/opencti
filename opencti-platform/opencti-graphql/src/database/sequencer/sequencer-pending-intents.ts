@@ -26,7 +26,8 @@ import { getInstanceIds } from '../../schema/identifier';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { sequencerMetrics } from './sequencer-metrics';
 import type { IntentKind, SequencerIntent } from './sequencer-intent';
-import type { AuthUser } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { type IntakeEnvelope, intakeEnvelopeOf } from '../../intake/intake-envelope';
 
 export const PENDING_INTENTS_INDEX = 'opencti_sequencer_pending_intents';
 const PENDING_INTENTS_MAX = Number(conf.get('app:ingestion_sequencer:pending_intents_max') ?? 200000);
@@ -38,7 +39,9 @@ export interface PendingIntentRecord {
   kind: PendingRecordKind;
   type: string;
   input_json: string; // intent: the domain input; operation: the GraphQL operation
-  opts_json: string; // intent: the creation opts; operation: the chunk envelope (writer, work, draft)
+  opts_json: string; // intent: the creation opts; operation: the intake envelope
+  // intent: the intake envelope it was written under (intake-envelope.ts), to rebuild its context
+  envelope_json?: string;
   user_id: string;
   work_id?: string;
   missing_refs: string[]; // the unresolved ids AS GIVEN (stix / standard ids)
@@ -72,6 +75,16 @@ let resubmit: Resubmit | null = null;
 export const registerPendingIntentResubmit = (fn: Resubmit) => {
   resubmit = fn;
 };
+
+// Registered by the chunk intake manager: the context a retained INTENT re-enters the boundary
+// with, rebuilt from its intake envelope by the rules of the HTTP edge (intake-context.ts). Throws
+// as the edge refuses (work deleted, draft closed, writer gone): the record then fails, visible.
+type IntentContext = (record: PendingIntentRecord) => Promise<{ context: AuthContext; user: AuthUser } | null>;
+let intentContext: IntentContext | null = null;
+export const registerPendingIntentContext = (fn: IntentContext) => {
+  intentContext = fn;
+};
+export const pendingIntentContext = (record: PendingIntentRecord) => (intentContext ? intentContext(record) : Promise.resolve(null));
 
 // Registered by the chunk intake manager: re-executes a retained OPERATION in process with a
 // fresh chunk context. applied = landed; handed = the loop retained it as an intent (its own
@@ -183,6 +196,7 @@ export const deferIntents = async (deferrals: { intent: SequencerIntent; missing
         type: intent.type,
         input_json: JSON.stringify(intent.input),
         opts_json: serializeOpts(intent.opts),
+        envelope_json: intent.context ? JSON.stringify(intakeEnvelopeOf(intent.context, intent.user)) : undefined,
         user_id: intent.user.id,
         work_id: intent.context?.workId,
         missing_refs: missing,
@@ -204,14 +218,9 @@ export const deferIntents = async (deferrals: { intent: SequencerIntent; missing
   return true;
 };
 
-// The chunk envelope a retained operation re-executes under (no token: the writer's id).
-export interface PendingOperationEnvelope {
-  user_id?: string;
-  applicant_id?: string;
-  work_id?: string;
-  draft_id?: string;
-  retry_number?: number;
-}
+// The envelope a retained operation re-executes under (no token: the writer's id; the applicant,
+// work, draft, event, playbook, synchronized upsert and previous standard of the push message)
+export type PendingOperationEnvelope = IntakeEnvelope;
 
 export interface PendingOperation {
   operation: { query: string; variables?: Record<string, any>; operationName?: string; object_id?: string | null };
@@ -391,6 +400,7 @@ export const initPendingIntents = async () => {
       type: { type: 'keyword' },
       input_json: { type: 'text', index: false },
       opts_json: { type: 'text', index: false },
+      envelope_json: { type: 'text', index: false },
       user_id: { type: 'keyword' },
       work_id: { type: 'keyword' },
       missing_refs: { type: 'keyword' },

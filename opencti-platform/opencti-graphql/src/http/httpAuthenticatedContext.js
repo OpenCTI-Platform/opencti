@@ -19,11 +19,11 @@ import { batchFileMarkingDefinitions, batchFileWorks } from '../domain/file';
 import { batchGlobalStatusesByType, batchRequestAccessStatusesByType } from '../domain/status';
 import { batchEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
 import { batchIsSubAttackPattern, batchCoursesOfAction, batchSubAttackPatterns } from '../domain/attackPattern';
-import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
-import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { batchContextDataForLog } from '../database/data-changes';
 import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
 import { computeConnectorsUpdateStatus } from '../modules/connector/connector-domain';
+import { applyIntakeHeaders, applyIntakeUser } from '../intake/intake-context-rules';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -81,10 +81,8 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   executeContext.requestAbortSignal = requestAbortSignal;
   const settings = await getEntityFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   executeContext.otp_mandatory = settings?.otp_mandatory ?? false; // Null check fixes 500 error on platform theme selection
-  executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
-  executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
-  executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
-  executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
+  // Work, draft, event, previous standard: the rules shared with the in-process intake
+  applyIntakeHeaders(executeContext, req.headers);
   // POC ingestion sequencer (plan 0009 s9.8.3, option B suffix transport): strip the worker's
   // in-bundle ref marks (||M||) from the GraphQL variables HERE, before variable coercion:
   // the StixRef scalar validation rejects a marked id as an invalid STIX id, so the boundary
@@ -107,22 +105,13 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   try {
     const user = await authenticateUserFromRequest(executeContext, req);
     if (user) {
-      if (!Object.keys(req.headers).some((k) => k === 'opencti-draft-id')) {
-        executeContext.draft_context = user.draft_context;
-      }
-      // The origin of the context user is rebuilt, keep who really authenticated when an applicant is impersonated
-      executeContext.real_authentication_id = user.origin?.real_authentication_id;
-      executeContext.user = userWithOrigin(req, user);
-      // If full sync needs to be done : used only by bypass user (worker)
-      executeContext.synchronizedUpsert = user.origin?.synchronized_upsert === true || (req.headers['synchronized-upsert'] === 'true' && isBypassUser(user));
+      // Draft, user, synchronized upsert, organization, license: the rules shared with the in-process intake
+      applyIntakeUser(executeContext, req.headers, user, userWithOrigin(req, user), settings);
       executeContext.user_otp_validated = true;
       executeContext.user_with_session = isNotEmptyField(req.session?.user);
       if (executeContext.user_with_session) {
         executeContext.user_otp_validated = req.session?.user.otp_validated ?? false;
       }
-      executeContext.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
-      const licenseInfo = getEnterpriseEditionInfo(settings);
-      executeContext.blocked_for_lts_validation = IS_LTS_PLATFORM && !licenseInfo.license_validated;
     }
   } catch (error) {
     logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });

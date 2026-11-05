@@ -14,7 +14,7 @@ import type { Counter, Gauge, Histogram } from '@opentelemetry/api';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { meterManager } from '../config/tracing';
-import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 import { chunkIntakeQueue, consumeChunkIntakeQueue, registerChunkIntakeQueue } from '../database/rabbitmq';
 import { executeChunkOperation, substituteEchoIds, type ChunkOperation } from '../graphql/chunk-executor';
 import { splitEchoIds } from './chunkIntakeEchoes';
@@ -28,20 +28,18 @@ import {
   deferOperation,
   pendingIntentsAccepting,
   registerPendingIntentSettled,
+  registerPendingIntentContext,
   registerPendingOperationExecute,
   type PendingOperationEnvelope,
 } from '../database/sequencer/sequencer-pending-intents';
-import { DatabaseError, EngineShardsError, MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR } from '../config/errors';
-import { authenticateUserByUserId, userWithOrigin } from '../modules/user/user-domain';
-import { computeLoaders } from '../http/httpAuthenticatedContext';
+import { DatabaseError, DRAFT_LOCKED_ERROR, EngineShardsError, MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR, WORK_NOT_ALIVE_ERROR } from '../config/errors';
+import { createIntakeContext } from '../intake/intake-context';
+import { intakeEnvelopeOfMessage, type IntakeEnvelope } from '../intake/intake-envelope';
 import { reportWorkProgress } from '../domain/work';
 import { chunkWorkProgress, type ChunkWorkFields } from './chunkIntakeWork';
-import { getEntityFromCache } from '../database/cache';
 import { isTransitoryError } from '../database/engine';
 import { wait } from '../database/utils';
-import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { BasicStoreSettings } from '../types/settings';
 
 const CHUNK_INTAKE_MANAGER_ID = 'CHUNK_INTAKE_MANAGER';
 const CHUNK_INTAKE_MANAGER_CONTEXT = 'chunk_intake_manager';
@@ -196,18 +194,29 @@ export class ChunkPoisonError extends Error {
   }
 }
 
+// A write the platform refuses before it runs, as the HTTP edge refuses a worker's request: the
+// worker's outcome is kept (pycti import_item_with_retries). A deleted work (WORK_NOT_ALIVE):
+// skipped, nothing reported, the work is gone. A draft no longer open (DRAFT_LOCKED): skipped,
+// each object reported in error. Acked either way: no redelivery can change it.
+export class ChunkRefusedError extends Error {
+  readonly reason: 'work_not_alive' | 'draft_locked';
+
+  constructor(message: string, reason: 'work_not_alive' | 'draft_locked') {
+    super(message);
+    this.name = 'ChunkRefusedError';
+    this.reason = reason;
+  }
+}
+
 // Attempts of currently failing chunks only: cleared on ack or dead-letter, so the map
 // stays tiny (memory-only: a restart resets the count, the cap still bounds the total).
 const transientAttempts = new Map<string, number>();
 
-interface ChunkMessage extends ChunkWorkFields {
+// The envelope of the push message (writer, applicant, work, draft, event, playbook,
+// synchronized, previous standard, retry number: intake-context.ts) and the chunk itself
+interface ChunkMessage extends ChunkWorkFields, IntakeEnvelope {
   v?: number;
   chunk_id?: string;
-  user_id?: string;
-  applicant_id?: string;
-  work_id?: string;
-  draft_id?: string;
-  retry_number?: number;
   operations?: ChunkOperation[];
 }
 
@@ -275,21 +284,25 @@ const registerChunkMetrics = () => {
 // (httpAuthenticatedContext) field for field, minus everything request-shaped: same user
 // resolution, same member-mark strip over the whole chunk, same batch loaders.
 export const createChunkContext = async (message: ChunkMessage, operations: ChunkOperation[], memberIds?: Iterable<string>) => {
-  const context = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT) as any;
-  // Worker origin (sequencer eligibility) is carried by the retry-number header: presence is
-  // what counts, "0" is the legitimate first attempt.
-  const req: any = {
-    headers: {
-      'opencti-retry-number': String(message.retry_number ?? 0),
-      ...(message.work_id ? { 'opencti-work-id': message.work_id } : {}),
-      ...(message.draft_id ? { 'opencti-draft-id': message.draft_id } : {}),
-    },
-    ip: 'chunk-intake',
-    header: () => undefined,
-  };
-  context.req = req;
-  context.workId = message.work_id;
-  context.draft_context = message.draft_id;
+  // The context the worker's request would have had (intake-context.ts): the writer resolved
+  // from the envelope (no token ever travels through the queue), the applicant impersonated,
+  // work alive and draft open checked. Worker origin (sequencer eligibility) is carried by the
+  // retry-number header: presence is what counts, "0" is the legitimate first attempt.
+  let built: { context: AuthContext; user: AuthUser };
+  try {
+    built = await createIntakeContext(intakeEnvelopeOfMessage(message), CHUNK_INTAKE_MANAGER_CONTEXT);
+  } catch (e: any) {
+    const code = e?.extensions?.code;
+    if (code === WORK_NOT_ALIVE_ERROR) {
+      throw new ChunkRefusedError(`Chunk work is no longer alive (${message.work_id})`, 'work_not_alive');
+    }
+    if (code === DRAFT_LOCKED_ERROR) {
+      throw new ChunkRefusedError(`Chunk draft is not open (${message.draft_id}): ${e.message}`, 'draft_locked');
+    }
+    // The writer or the applicant is gone or refused: no redelivery can change that.
+    throw new ChunkPoisonError(`Chunk writer cannot be resolved (${message.applicant_id ?? message.user_id}): ${e.message}`, 'unknown_writer');
+  }
+  const context = built.context as any;
   context.deferMissingRefs = DEFER_MISSING_REFS;
   // ||M|| marks are transport-only: strip them for the WHOLE chunk before any coercion or
   // resolution, exactly as the HTTP edge does for a batched body. The union rides the context
@@ -305,23 +318,7 @@ export const createChunkContext = async (message: ChunkMessage, operations: Chun
   if (memberRefs.size > 0) {
     context.memberRefIds = memberRefs;
   }
-  // The message names the writer (the worker's own user, or the applicant it impersonates):
-  // no token ever travels through the queue.
-  const userId = message.applicant_id || message.user_id;
-  let user: AuthUser;
-  try {
-    user = userId ? await authenticateUserByUserId(context, req, userId) : userWithOrigin(req, SYSTEM_USER);
-  } catch (e: any) {
-    // The writer named by the message is gone or invalid: no redelivery can change that.
-    throw new ChunkPoisonError(`Chunk writer cannot be resolved (${userId}): ${e.message}`, 'unknown_writer');
-  }
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  context.user = user;
-  context.user_otp_validated = true;
-  context.user_with_session = false;
-  context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
-  context.batch = computeLoaders(context, user);
-  return { context: context as AuthContext, user };
+  return { context: context as AuthContext, user: built.user };
 };
 
 // Outcome of one operation: ok, failed with an error, or RETAINED (its hard reference is
@@ -375,13 +372,7 @@ const unresolvedIdsOf = (err: any): string[] => {
   return Array.isArray(ids) ? ids.map(String) : [];
 };
 
-const envelopeOf = (message: ChunkMessage): PendingOperationEnvelope => ({
-  user_id: message.user_id,
-  applicant_id: message.applicant_id,
-  work_id: message.work_id,
-  draft_id: message.draft_id,
-  retry_number: message.retry_number,
-});
+const envelopeOf = (message: ChunkMessage): PendingOperationEnvelope => intakeEnvelopeOfMessage(message);
 
 const reportChunkOutcome = async (
   context: AuthContext,
@@ -425,6 +416,13 @@ const reportChunkWork = async (
 const reportDeadLetteredChunkWork = async (message: ChunkMessage, operations: ChunkOperation[], reason: string) => {
   if (!message.work_id) return;
   const results = operations.map(() => ({ error: `chunk dead-lettered (${reason})` }));
+  await reportChunkWork(executionContext(CHUNK_INTAKE_MANAGER_CONTEXT), SYSTEM_USER, message, operations, results);
+};
+
+// pycti reports each object of a draft no longer open in error, source "Draft in read only"
+const reportRefusedChunkWork = async (message: ChunkMessage, operations: ChunkOperation[], error: string) => {
+  if (!message.work_id) return;
+  const results = operations.map(() => ({ error }));
   await reportChunkWork(executionContext(CHUNK_INTAKE_MANAGER_CONTEXT), SYSTEM_USER, message, operations, results);
 };
 
@@ -634,6 +632,16 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
     chunkSeconds?.record((Date.now() - start) / 1000);
   } catch (e: any) {
     inFlightChunks.delete(attemptKey);
+    if (e instanceof ChunkRefusedError) {
+      logApp.warn('[CHUNK-INTAKE] Chunk refused, acked without execution', { chunk_id: message.chunk_id, reason: e.reason, cause: e.message });
+      chunksCounter?.add(1, { outcome: 'refused', reason: e.reason });
+      transientAttempts.delete(attemptKey);
+      controls.ack();
+      if (e.reason === 'draft_locked') {
+        await reportRefusedChunkWork(message, operations, e.message);
+      }
+      return;
+    }
     if (e instanceof ChunkPoisonError) {
       logApp.error('[CHUNK-INTAKE] Poison chunk, dead lettering', { cause: e, chunk_id: message.chunk_id, reason: e.reason });
       chunksCounter?.add(1, { outcome: 'dead_letter', reason: e.reason });
@@ -670,6 +678,12 @@ const chunkIntakeInitializer = async () => {
     if (!record.work_id || !error) return;
     const settleContext = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT);
     await reportWorkProgress(settleContext, SYSTEM_USER, record.work_id, { count: 0, errors: [{ error, source: 'chunk intake (retained creation)' }] });
+  });
+  // Re-submission of a retained INTENT: the context of its intake envelope (a record written
+  // before the envelope existed keeps the legacy context of the middleware)
+  registerPendingIntentContext(async (record) => {
+    if (!record.envelope_json) return null;
+    return createIntakeContext(JSON.parse(record.envelope_json), CHUNK_INTAKE_MANAGER_CONTEXT);
   });
   // Re-execution of a retained OPERATION: a fresh chunk context (the writer resolved from
   // the envelope, so no SYSTEM_USER divergence after a restart), the same in-process

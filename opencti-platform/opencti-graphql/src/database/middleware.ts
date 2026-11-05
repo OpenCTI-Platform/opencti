@@ -110,7 +110,7 @@ import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
 import { sequencerMetrics } from './sequencer/sequencer-metrics';
 import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
 import { getCurrentStripSink, registerReconcileAssert } from './sequencer/sequencer-pending-refs';
-import { registerPendingIntentResubmit } from './sequencer/sequencer-pending-intents';
+import { pendingIntentContext, registerPendingIntentResubmit } from './sequencer/sequencer-pending-intents';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
@@ -4904,10 +4904,13 @@ registerReconcileAssert(async (record, targetId) => {
 // eligibility: the memory record carries the original user; a rehydrated one (after a
 // restart) re-submits as SYSTEM_USER marked as worker origin (documented divergence).
 registerPendingIntentResubmit(async (record) => {
-  const resubmitContext = executionContext('sequencer_resubmit');
+  // The context of its intake envelope when the intake registered the builder (same rules as the
+  // HTTP edge: applicant, draft, event, synchronized upsert, previous standard, work alive)
+  const rebuilt = await pendingIntentContext(record);
+  const resubmitContext = rebuilt ? rebuilt.context : executionContext('sequencer_resubmit');
   resubmitContext.deferMissingRefs = true;
-  resubmitContext.workId = record.work_id;
-  const resubmitUser: AuthUser = record.user ?? {
+  resubmitContext.workId = rebuilt ? resubmitContext.workId : record.work_id;
+  const resubmitUser: AuthUser = rebuilt?.user ?? record.user ?? {
     ...SYSTEM_USER,
     origin: { ...(SYSTEM_USER.origin ?? {}), call_retry_number: 0 },
   };

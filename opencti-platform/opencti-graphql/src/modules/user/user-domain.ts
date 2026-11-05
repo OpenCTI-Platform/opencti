@@ -2366,6 +2366,22 @@ export const authenticateUserByUserId = async (context: AuthContext, req: Origin
   throw FunctionalError('Cannot identify user with id');
 };
 
+// The writer of an in-process ingestion write (worker-less intake, POC): the worker
+// authenticated with its own token, the intake is a trusted internal identity. The envelope may
+// name a writer (a platform user or an internal one), else the system user writes; either way
+// an applicant in the headers is impersonated by the same rules as over HTTP.
+export const authenticateIntakeWriter = async (context: AuthContext, req: OriginRequest, writerId?: string) => {
+  if (!writerId) {
+    return internalAuthenticateUser(context, req, SYSTEM_USER);
+  }
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const writer = platformUsers.get(writerId) ?? INTERNAL_USERS[writerId];
+  if (!writer) {
+    throw FunctionalError('Cannot identify user with id');
+  }
+  return internalAuthenticateUser(context, req, writer);
+};
+
 const internalAuthenticateUser = async (context: AuthContext, req: OriginRequest, user: AuthUser) => {
   let authenticatedUser = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);

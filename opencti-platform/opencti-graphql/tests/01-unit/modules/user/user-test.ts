@@ -7,6 +7,7 @@ import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { TokenDuration, type UserTokenAddInput } from '../../../../src/generated/graphql';
 import {
+  authenticateIntakeWriter,
   authenticateUserByJWT,
   authenticateUserByToken,
   authenticateUserByUserId,
@@ -17,7 +18,7 @@ import {
 } from '../../../../src/modules/user/user-domain';
 import { addUserToken, generateSecureToken } from '../../../../src/modules/user/user-domain';
 import { testContext } from '../../../utils/testQuery';
-import { isUserHasCapability } from '../../../../src/utils/access';
+import { isUserHasCapability, SYSTEM_USER } from '../../../../src/utils/access';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../../../src/database/cache';
 import { verifyXtmJwt, isOwnIssuer } from '../../../../src/domain/xtm-auth';
 import { elLoadBy } from '../../../../src/database/engine';
@@ -622,6 +623,41 @@ describe('internalAuthenticateUser real identity tracking', () => {
 
     expect(result.id).toBe('normal-user');
     expect(result.origin?.real_authentication_id).toBe('normal-user');
+  });
+});
+
+describe('authenticateIntakeWriter', () => {
+  const mockContext = testContext;
+
+  it('should write as the system user impersonating the applicant when no writer is named', async () => {
+    const applicantUser = buildCachedUser('applicant-user');
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['applicant-user', applicantUser]]) as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue(MOCK_SETTINGS as any);
+    const mockReq = buildMockReq({ headers: { 'opencti-applicant-id': 'applicant-user' } });
+
+    const result = await authenticateIntakeWriter(mockContext, mockReq, undefined);
+
+    expect(result.id).toBe('applicant-user');
+    expect(result.origin?.real_authentication_id).toBe(SYSTEM_USER.id);
+  });
+
+  it('should write as the named writer, a platform or an internal user', async () => {
+    const writer = buildCachedUser('writer-user');
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['writer-user', writer]]) as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue(MOCK_SETTINGS as any);
+
+    expect((await authenticateIntakeWriter(mockContext, buildMockReq(), 'writer-user')).id).toBe('writer-user');
+    expect((await authenticateIntakeWriter(mockContext, buildMockReq(), SYSTEM_USER.id)).id).toBe(SYSTEM_USER.id);
+    await expect(authenticateIntakeWriter(mockContext, buildMockReq(), 'unknown-user')).rejects.toThrow('Cannot identify user with id');
+  });
+
+  it('should refuse a synchronized upsert for a writer without the bypass capability', async () => {
+    const writer = buildCachedUser('writer-user');
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['writer-user', writer]]) as any);
+    vi.mocked(getEntityFromCache).mockResolvedValue(MOCK_SETTINGS as any);
+    const mockReq = buildMockReq({ headers: { 'synchronized-upsert': 'true' } });
+
+    await expect(authenticateIntakeWriter(mockContext, mockReq, 'writer-user')).rejects.toThrow('Cant use synchronized-upsert header without bypass capability');
   });
 });
 
