@@ -32,6 +32,11 @@ describe('getMatrixConfig', () => {
     it('does not allow adding in coverage mode', () => {
       expect(getMatrixConfig(undefined, true).canAdd).toBe(false);
     });
+
+    it('keeps sub-techniques in API order', () => {
+      expect(config.sortSubTechniques).toBe(false);
+      expect(getMatrixConfig('default', false).sortSubTechniques).toBe(false);
+    });
   });
 
   describe('investigation variant', () => {
@@ -51,6 +56,10 @@ describe('getMatrixConfig', () => {
 
     it('has keyboard cells', () => {
       expect(config.keyboardCells).toBe(true);
+    });
+
+    it('sorts sub-techniques', () => {
+      expect(config.sortSubTechniques).toBe(true);
     });
 
     it('uses neutral badge colours', () => {

@@ -13,9 +13,11 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import SecurityCoverageScores from '../../../analyses/security_coverages/security_coverage_scores/SecurityCoverageScores';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 import { useFormatter } from '../../../../../components/i18n';
+import { MatrixConfig } from './attackPatternsMatrixConfig';
 
 interface AttackPatternsMatrixColumnsElementProps {
   attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;
+  config: MatrixConfig;
   handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void;
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
@@ -26,6 +28,7 @@ interface AttackPatternsMatrixColumnsElementProps {
 
 const AttackPatternsMatrixColumnsElement = ({
   attackPattern,
+  config,
   handleOpen,
   attackPatternIdsToOverlap,
   isSecurityPlatform,
@@ -104,8 +107,17 @@ const AttackPatternsMatrixColumnsElement = ({
     return undefined;
   };
 
+  // In keyboard mode the cell is a real button, so it is focusable and opens its menu with Enter or Space.
+  const buttonProps = config.keyboardCells
+    ? { component: 'button' as const, type: 'button' as const }
+    : {};
+  const buttonResetSx = config.keyboardCells
+    ? { font: 'inherit', color: 'inherit', textAlign: 'left', margin: 0, appearance: 'none' } as const
+    : {};
+
   return (
     <Box
+      {...buttonProps}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={(e) => handleOpen(attackPattern, e)}
@@ -122,15 +134,17 @@ const AttackPatternsMatrixColumnsElement = ({
         whiteSpace: 'normal',
         width: '100%',
         position: 'relative',
+        ...buttonResetSx,
       }}
     >
       <Typography
         variant="body2"
+        component={config.keyboardCells ? 'span' : 'p'}
         sx={{
           fontSize: 10,
         }}
       >
-        {attackPattern.name}
+        {config.formatLabel(attackPattern)}
       </Typography>
 
       {isCoverage && attackPattern.isCovered && (
