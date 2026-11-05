@@ -1,7 +1,7 @@
 import { Chip } from '@filigran/design-system';
 import { Dispatch, FunctionComponent, SetStateAction } from 'react';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
-import { useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { NO_VALUES_FILTER_OPERATORS, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../i18n';
 import { useFilterEditorContext } from './FilterEditorContext';
 import FilterOperatorSelect from './FilterOperatorSelect';
@@ -14,19 +14,22 @@ export interface CompositeNestedFilterEditorProps {
   inputValues: FilterEditorInputValue[];
   setInputValues: Dispatch<SetStateAction<FilterEditorInputValue[]>>;
   /**
-   * Whether the operator select of the first sub-filter is displayed. It also carries the empty / not empty
-   * operators of the nested filter itself (see FilterOperatorSelect). The root filter chip popover has no
-   * other place to show it, so it does; the nested filter-group row already displays that same operator
-   * in its own 'Condition' column.
+   * Whether the operator select of the first sub-filter is displayed. For a generic nested key, it also carries
+   * the empty / not empty operators of the nested filter itself (see FilterOperatorSelect). The root filter chip
+   * popover has no other place to show it, so it does; the nested filter-group row already displays that same
+   * operator in its own 'Condition' column.
    */
   showFirstOperator?: boolean;
 }
 
 /**
- * Body of the generic nested filters (e.g. coverage_information): one operator and value editor per
- * sub-filter, separated by a 'WITH' chip. Each sub-filter carries its own operator; the first one also
- * holds the empty / not empty operators of the nested filter.
- * Used by both the root FilterChipPopover and the nested-group FilterRow.
+ * Body of the filters with sub-filters: one operator and value editor per sub-filter, separated by a 'WITH' chip.
+ * - generic nested keys (e.g. coverage_information): each sub-filter carries its own operator; the first one also
+ *   holds the empty / not empty operators of the nested filter. Used by the root FilterChipPopover and the
+ *   nested-group FilterRow.
+ * - regardingOf / dynamicRegardingOf: the operator of the first sub-filter (relationship_type) is the operator of
+ *   the filter, the other sub-filter has none. Used by the root FilterChipPopover (the nested-group FilterRow
+ *   shows them in columns).
  */
 const CompositeNestedFilterEditor: FunctionComponent<CompositeNestedFilterEditorProps> = ({
   filter,
@@ -41,7 +44,14 @@ const CompositeNestedFilterEditor: FunctionComponent<CompositeNestedFilterEditor
 
   const subFilters = filterDefinition?.subFilters ?? [];
   // with 'nil' / 'not_nil' the nested values are not edited
-  const hasSubFilterBlocks = (filter?.operator ?? 'eq') === 'eq';
+  const hasSubFilterBlocks = !NO_VALUES_FILTER_OPERATORS.includes(filter?.operator ?? 'eq');
+  // dynamicRegardingOf: the dynamic filter needs a relationship type, which cannot change anymore once the dynamic filter is defined
+  const hasRelationshipType = filter?.values.some((value) => value.key === 'relationship_type') ?? false;
+  const hasDynamicFilter = filter?.values.some((value) => value.key === 'dynamic') ?? false;
+  const isSubFilterDisabled = (subKey: string) => {
+    if (!subFilters.some((subFilter) => subFilter.filterKey === 'dynamic')) return false;
+    return subKey === 'dynamic' ? !hasRelationshipType : hasRelationshipType && hasDynamicFilter;
+  };
 
   return (
     <div
@@ -74,6 +84,7 @@ const CompositeNestedFilterEditor: FunctionComponent<CompositeNestedFilterEditor
                 filterKey={filterKey}
                 setInputValues={setInputValues}
                 subKey={subFilter.filterKey}
+                disabled={isSubFilterDisabled(subFilter.filterKey)}
               />
             )}
             {hasSubFilterBlocks && (
@@ -83,6 +94,7 @@ const CompositeNestedFilterEditor: FunctionComponent<CompositeNestedFilterEditor
                 inputValues={inputValues}
                 setInputValues={setInputValues}
                 subKey={subFilter.filterKey}
+                disabled={isSubFilterDisabled(subFilter.filterKey)}
               />
             )}
           </div>
