@@ -37,7 +37,6 @@ import { lockResources } from '../../lock/master-lock';
 import { stripServerOwnedManifestKeys } from '../workspace/workspace-variables-utils';
 import { computeDashboardVariablesUsage } from '../dashboard/dashboard-variables-resolution';
 import { fromB64 } from '../../utils/base64';
-import { isFeatureEnabled } from '../../config/conf';
 
 /**
  * Exclusion list: entity types not capable of
@@ -321,7 +320,7 @@ export const customViewImportWidgetConfiguration = async (
   // Dashboard variables do not exist in a custom view: a widget using them would never show data.
   // Checked on the imported widget only, never on the manifest sent by the client.
   const importedWidget = fromB64(updatedManifest).widgets[importedWidgetId];
-  if (isFeatureEnabled('DASHBOARD_VARIABLES') && computeDashboardVariablesUsage({ [importedWidgetId]: importedWidget }).size > 0) {
+  if (computeDashboardVariablesUsage({ [importedWidgetId]: importedWidget }).size > 0) {
     throw FunctionalError('A widget using dashboard variables cannot be imported into a custom view');
   }
   return editInternalObject<StoreEntityCustomView>(

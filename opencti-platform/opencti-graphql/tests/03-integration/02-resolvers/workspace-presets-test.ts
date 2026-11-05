@@ -10,7 +10,6 @@ import {
   queryAsUserWithSuccess,
 } from '../../utils/testQueryHelper';
 import { fromB64, toB64 } from '../../../src/utils/base64';
-import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 
 const CREATE = gql`
@@ -221,17 +220,6 @@ describe('Dashboard presets API', () => {
     }
   });
 
-  it('should hide the API when the feature flag is disabled', async () => {
-    const previous = [...ENABLED_FEATURE_FLAGS];
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-    try {
-      const result = await queryAsAdmin({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Flag off' } } });
-      expect(result.errors?.[0].message).toEqual('Feature is disabled');
-      expect((await readWorkspace(dashboardId)).presets).toEqual([]);
-    } finally {
-      ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previous);
-    }
-  });
 });
 
 describe('Dashboard presets export, import and duplication', () => {

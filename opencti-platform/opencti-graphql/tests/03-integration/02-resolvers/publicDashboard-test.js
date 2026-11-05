@@ -8,7 +8,6 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboa
 import { queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { fromB64, toB64 } from '../../../src/utils/base64';
 import { addSavedFilter, deleteSavedFilter } from '../../../src/modules/savedFilter/savedFilter-domain';
-import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 
 const LIST_QUERY = gql`
   query publicDashboards(
@@ -1563,23 +1562,6 @@ describe('Public dashboards and dashboard variables', () => {
     const expected = expect.objectContaining({ relativeDate: 'days-7', startDate: null, endDate: null });
     expect(publicManifest.config).toEqual(expected);
     expect(privateManifest.config).toEqual(expected);
-  });
-
-  it('should ignore the new fields when the feature flag is disabled', async () => {
-    const dashboardId = await createDashboardWithVariableWidget('Dashboard variables flag off', 'eq', true);
-    const variableId = await readVariableId(dashboardId);
-    const previous = [...ENABLED_FEATURE_FLAGS];
-    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
-    try {
-      const { privateManifest } = await publishAndRead(dashboardId, 'public-dashboard-variables-flag-off', {
-        variable_values: [{ variable_id: variableId, value: 'Report' }],
-        time_range: { relative_date: 'days-7' },
-      });
-      expect(publishedValues(privateManifest)).toEqual(['Malware']);
-      expect(privateManifest.config.relativeDate).toBeUndefined();
-    } finally {
-      ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previous);
-    }
   });
 
   it.each(['eq', 'not_eq'])('should refuse to publish a widget using a variable without value (%s)', async (operator) => {

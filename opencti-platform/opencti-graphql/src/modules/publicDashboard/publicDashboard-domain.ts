@@ -7,7 +7,7 @@ import { createEntity, deleteElementById, loadEntity, updateAttribute } from '..
 import { type BasicStoreEntityWorkspace } from '../workspace/workspace-types';
 import { isNotEmptyField } from '../../database/utils';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, isFeatureEnabled, logApp } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import {
   type EditInput,
   type FilterGroup,
@@ -34,7 +34,7 @@ import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cach
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
-import { buildDashboardDateVariableIds, buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
+import { buildDashboardDateVariableIds, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
 import { applyPublicationTimeRange, buildPublicationVariableValues, toPublicationTimeZone } from './publicDashboard-publication';
 import {
   findStixCoreObjectPaginated,
@@ -256,15 +256,11 @@ export const addPublicDashboard = async (
   };
 
   // The author chooses the values frozen in the published dashboard: variable values, time range, and the time zone
-  // the date variables were shown in. Without the feature, the defaults of the dashboard are published as before.
-  let variableValues = buildDashboardVariableDefaultValues(parsedManifest.variables);
-  let timeZone: string | undefined;
-  if (isFeatureEnabled('DASHBOARD_VARIABLES')) {
-    variableValues = buildPublicationVariableValues(parsedManifest.variables, input.variable_values);
-    // Before both manifests are built: the public page opens on the published range
-    parsedManifest.config = applyPublicationTimeRange(parsedManifest.config, input.time_range);
-    timeZone = toPublicationTimeZone(input.time_zone);
-  }
+  // the date variables were shown in. Without them, the defaults of the dashboard are published.
+  const variableValues = buildPublicationVariableValues(parsedManifest.variables, input.variable_values);
+  // Before both manifests are built: the public page opens on the published range
+  parsedManifest.config = applyPublicationTimeRange(parsedManifest.config, input.time_range);
+  const timeZone = toPublicationTimeZone(input.time_zone);
 
   const privateManifest = await createPrivateManifest(context, user, parsedManifest, variableValues, timeZone);
   const publicManifest = createPublicManifest(parsedManifest);

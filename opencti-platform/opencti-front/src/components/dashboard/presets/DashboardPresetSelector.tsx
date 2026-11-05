@@ -6,8 +6,6 @@ import { useFormatter } from '../../i18n';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import type { DashboardPreset } from '../dashboard-types';
 
-const NO_PRESET = '__no_preset__';
-
 export interface DashboardPresetSelectorProps {
   presets: readonly DashboardPreset[];
   activePreset: DashboardPreset | null;
@@ -56,8 +54,11 @@ const DashboardPresetSelector = ({
     >
       {presets.length > 0 && (
         <Select
-          value={activePreset?.id ?? NO_PRESET}
-          onValueChange={(value) => onSelect(value === NO_PRESET ? null : value)}
+          value={activePreset?.id ?? ''}
+          // The clear control of the trigger empties the selection: back to no preset.
+          onValueChange={(value) => onSelect(value === '' ? null : value)}
+          clearable
+          clearLabel={t_i18n('No preset')}
           disabled={disabled}
           name="dashboard-preset"
         >
@@ -65,7 +66,6 @@ const DashboardPresetSelector = ({
             <SelectValue placeholder={label} />
           </SelectTrigger>
           <SelectContent aria-label={label}>
-            <SelectItem value={NO_PRESET}><em>{t_i18n('No preset')}</em></SelectItem>
             {presets.map((preset) => (
               <SelectItem key={preset.id} value={preset.id}>
                 {preset.id === defaultPreset?.id ? t_i18n('{name} (default)', { values: { name: preset.name } }) : preset.name}

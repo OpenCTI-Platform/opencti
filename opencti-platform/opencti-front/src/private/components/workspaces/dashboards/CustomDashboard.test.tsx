@@ -123,9 +123,9 @@ const buildWorkspace = (overrides: Record<string, unknown> = {}, config: Record<
 });
 const workspace = buildWorkspace();
 
-const userContext = (flags: string[]) => createMockUserContext({
+const userContext = () => createMockUserContext({
   me: { id: 'user-1', name: 'admin' },
-  settings: { platform_feature_flags: flags.map((id) => ({ id, enable: true })) },
+  settings: { platform_feature_flags: [] },
 });
 
 const storeFinanceEverywhere = () => {
@@ -143,11 +143,11 @@ describe('CustomDashboard variable values', () => {
     captured.granted = true;
   });
 
-  it('feeds the widgets with the per user value when the flag is on', () => {
+  it('feeds the widgets with the per user value', () => {
     storeFinanceEverywhere();
     testRender(
       <CustomDashboard data={workspace as never} />,
-      { userContext: userContext(['DASHBOARD_VARIABLES']) },
+      { userContext: userContext() },
     );
     expect(screen.getByText('dashboard-content')).toBeInTheDocument();
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
@@ -158,7 +158,7 @@ describe('CustomDashboard variable values', () => {
     const url = `/dashboard?variables=${SECTOR_ID}:Defense`;
     testRender(
       <CustomDashboard data={workspace as never} noToolbar />,
-      { userContext: userContext(['DASHBOARD_VARIABLES']), route: url },
+      { userContext: userContext(), route: url },
     );
     expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
     expect(screen.queryByText('workspace-header')).not.toBeInTheDocument();
@@ -180,7 +180,7 @@ describe('CustomDashboard variable values', () => {
     it('ignores, and leaves untouched, the local values when viewers may not change variables', () => {
       testRender(
         <CustomDashboard data={readerWorkspace() as never} />,
-        { userContext: userContext(['DASHBOARD_VARIABLES']), route: url },
+        { userContext: userContext(), route: url },
       );
       expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
       expect(window.location.search).toBe(`?variables=${SECTOR_ID}:Defense`);
@@ -191,7 +191,7 @@ describe('CustomDashboard variable values', () => {
     it('applies the local values when viewers may change variables', () => {
       testRender(
         <CustomDashboard data={readerWorkspace({ allowViewersToChangeVariables: true }) as never} />,
-        { userContext: userContext(['DASHBOARD_VARIABLES']) },
+        { userContext: userContext() },
       );
       expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
     });
@@ -199,7 +199,7 @@ describe('CustomDashboard variable values', () => {
     it('applies the URL value over the stored one when viewers may change variables', () => {
       testRender(
         <CustomDashboard data={readerWorkspace({ allowViewersToChangeVariables: true }) as never} />,
-        { userContext: userContext(['DASHBOARD_VARIABLES']), route: url },
+        { userContext: userContext(), route: url },
       );
       expect(captured.values?.get(SECTOR_ID)).toBe('Defense');
     });
@@ -208,19 +208,14 @@ describe('CustomDashboard variable values', () => {
   it('applies the local values for a manager', () => {
     storeFinanceEverywhere();
     captured.granted = true;
-    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext() });
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
   });
 
-  it('exposes no variable at all when the flag is off', () => {
-    storeFinanceEverywhere();
-    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });
-    expect(captured.values?.size).toBe(0);
-  });
 });
 
 describe('CustomDashboard variables bar', () => {
-  const flagOn = () => userContext(['DASHBOARD_VARIABLES']);
+  const flagOn = userContext;
   const bar = () => screen.queryByTestId('dashboard-variables-bar');
 
   beforeEach(() => {
@@ -297,11 +292,6 @@ describe('CustomDashboard variables bar', () => {
     await user.click(screen.getByRole('button', { name: 'Edit variable' }));
     expect(screen.getByTestId('dashboard-variable-dialog')).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: /Name/ })).toHaveValue('Sector');
-  });
-
-  it('is absent when the feature flag is off', () => {
-    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });
-    expect(bar()).not.toBeInTheDocument();
   });
 
   it('is absent on the home dashboard (noToolbar)', () => {
@@ -416,7 +406,7 @@ describe('CustomDashboard variable definitions for the widget filters', () => {
   });
 
   it('provides the definitions to the whole dashboard, header (widget creation) included, when the flag is on', () => {
-    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext() });
     expect(headerDefinitions()).toBe('Sector');
     expect(captured.contentDefinitions?.map((v) => v.name)).toEqual(['Sector']);
   });
@@ -426,25 +416,19 @@ describe('CustomDashboard variable definitions for the widget filters', () => {
       manifest: toB64(JSON.stringify({ widgets: manifestWidgets, config: {} })),
       variables: [],
     });
-    testRender(<CustomDashboard data={noVariables as never} />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    testRender(<CustomDashboard data={noVariables as never} />, { userContext: userContext() });
     expect(headerDefinitions()).toBe('');
     expect(captured.contentDefinitions).toEqual([]);
   });
 
-  it('provides nothing when the flag is off', () => {
-    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });
-    expect(headerDefinitions()).toBe('none');
-    expect(captured.contentDefinitions).toBeUndefined();
-  });
-
   it('provides nothing on the home dashboard (noToolbar)', () => {
-    testRender(<CustomDashboard data={workspace as never} noToolbar />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    testRender(<CustomDashboard data={workspace as never} noToolbar />, { userContext: userContext() });
     expect(captured.contentDefinitions).toBeUndefined();
   });
 });
 
 describe('CustomDashboard time range', () => {
-  const flagOn = () => userContext(['DASHBOARD_VARIABLES']);
+  const flagOn = userContext;
   const timeRangeKey = dashboardTimeRangeStorageKey('user-1', 'ws-1');
   const relative = (relativeDate: string) => ({ startDate: null, endDate: null, relativeDate });
   const editorWorkspace = buildWorkspace({}, { relativeDate: 'days-7' });
@@ -613,14 +597,6 @@ describe('CustomDashboard time range', () => {
     });
   });
 
-  it('keeps the current behaviour when the flag is off', () => {
-    testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: userContext([]) });
-    expect(screen.getByTestId('refresh-control')).toBeInTheDocument();
-    changeRange('months-1');
-    expect(captured.commit).toHaveBeenCalledTimes(1);
-    expect(captured.commit.mock.calls[0][0].variables.input[0].key).toBe('manifest');
-    expect(window.localStorage.getItem(timeRangeKey)).toBeNull();
-  });
 });
 
 describe('CustomDashboard viewer permissions', () => {
@@ -632,15 +608,10 @@ describe('CustomDashboard viewer permissions', () => {
     captured.relayCommit.mockReset();
   });
 
-  it('gives the edition drawer the viewer permissions when the flag is on', () => {
-    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+  it('gives the edition drawer the viewer permissions', () => {
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext() });
     expect(screen.getByRole('switch', { name: 'Allow viewers to edit time filters' })).toBeInTheDocument();
     expect(screen.getByRole('switch', { name: 'Allow viewers to change variable values' })).toBeInTheDocument();
-  });
-
-  it('gives the edition drawer nothing more when the flag is off', () => {
-    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });
-    expect(screen.queryByRole('switch')).not.toBeInTheDocument();
   });
 
   it('shows a switch in its new position at once, disabled until it is saved', async () => {
@@ -650,7 +621,7 @@ describe('CustomDashboard viewer permissions', () => {
     });
     const { user } = testRender(
       <CustomDashboard data={buildWorkspace({}, { relativeDate: 'days-7' }) as never} />,
-      { userContext: userContext(['DASHBOARD_VARIABLES']) },
+      { userContext: userContext() },
     );
     const toggle = () => screen.getByRole('switch', { name: 'Allow viewers to edit time filters' });
     await user.click(toggle());
@@ -663,7 +634,7 @@ describe('CustomDashboard viewer permissions', () => {
   it('saves a switch through the dashboard config, keeping the other keys', async () => {
     const { user } = testRender(
       <CustomDashboard data={buildWorkspace({}, { relativeDate: 'days-7' }) as never} />,
-      { userContext: userContext(['DASHBOARD_VARIABLES']) },
+      { userContext: userContext() },
     );
     await user.click(screen.getByRole('switch', { name: 'Allow viewers to change variable values' }));
     expect(captured.commit).toHaveBeenCalledTimes(1);
@@ -684,19 +655,15 @@ describe('CustomDashboard widget usage marker', () => {
     captured.granted = false;
     testRender(
       <CustomDashboard data={buildWorkspace({ currentUserAccessRight: 'view' }) as never} />,
-      { userContext: userContext(['DASHBOARD_VARIABLES']) },
+      { userContext: userContext() },
     );
     expect([...(captured.contentMarkerNames ?? [])]).toEqual([['widget-1', ['Sector']]]);
     captured.granted = true;
   });
 
   it('gives no marker on the home dashboard', () => {
-    testRender(<CustomDashboard data={workspace as never} noToolbar />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    testRender(<CustomDashboard data={workspace as never} noToolbar />, { userContext: userContext() });
     expect(captured.contentMarkerNames).toBeUndefined();
   });
 
-  it('gives no marker when the flag is off', () => {
-    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });
-    expect(captured.contentMarkerNames).toBeUndefined();
-  });
 });

@@ -35,9 +35,9 @@ type Workspace implements InternalObject & BasicObject {
     toConfigurationExport: String!
     toWidgetExport(widgetId: ID!): String!
     isShared: Boolean
-    variables: [DashboardVariable!]! @ff(flags: ["DASHBOARD_VARIABLES"], softFail: true, defaultValue: "[]")
-    presets: [DashboardPreset!]! @ff(flags: ["DASHBOARD_VARIABLES"], softFail: true, defaultValue: "[]")
-    currentUserDefaultPresetId: ID @ff(flags: ["DASHBOARD_VARIABLES"], softFail: true)
+    variables: [DashboardVariable!]!
+    presets: [DashboardPreset!]!
+    currentUserDefaultPresetId: ID
     enrichmentWorks(
         first: Int
         after: ID
@@ -224,10 +224,10 @@ type Mutation {
     workspaceContextClean(id: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     workspaceConfigurationImport(file: Upload!): String! @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
     workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace @auth(for: [EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE])
-    workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace @auth(for: [EXPLORE_EXUPDATE]) @ff(flags: ["DASHBOARD_VARIABLES"])
-    workspaceVariableDelete(id: ID!, variableId: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE]) @ff(flags: ["DASHBOARD_VARIABLES"])
-    workspacePresetUpsert(id: ID!, input: DashboardPresetInput!): Workspace @auth(for: [EXPLORE_EXUPDATE]) @ff(flags: ["DASHBOARD_VARIABLES"])
-    workspacePresetDelete(id: ID!, presetId: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE]) @ff(flags: ["DASHBOARD_VARIABLES"])
+    workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceVariableDelete(id: ID!, variableId: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspacePresetUpsert(id: ID!, input: DashboardPresetInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspacePresetDelete(id: ID!, presetId: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE])
     workInvestigationStatusEdit(workId: ID!, status: WorkInvestigationStatus!): Work @auth(for: [INVESTIGATION_INUPDATE])
 }
 

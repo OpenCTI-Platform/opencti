@@ -921,6 +921,76 @@
       "files": [
         "opencti-platform/opencti-front/src/private/components/common/work/ConnectorWorkList.tsx"
       ]
+    },
+    {
+      "component": "Select",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard presets: the preset selector of the variables bar (clearable, the clear control reads No preset), the Default preset field of the user, group and organization settings, and Load a preset in the publication form.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx",
+        "opencti-platform/opencti-front/src/private/components/common/form/DashboardPresetField.tsx",
+        "opencti-platform/opencti-front/src/private/components/workspaces/dashboards/public_dashboards/PublicDashboardPublishedValues.tsx"
+      ]
+    },
+    {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard presets: rename and delete the active preset (icon only, aria-label carried by the button).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard presets: explains the Update preset action (the current values differ from the preset).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx"
+      ]
+    },
+    {
+      "component": "Dialog",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard presets: the name dialog (save as / rename) and the deletion confirmation, size sm; closing is refused while the mutation is in flight.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetNameDialog.tsx",
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetDeleteDialog.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard presets dialogs: the titles (title-md) and the explanation of a deletion (content-base).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetNameDialog.tsx",
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetDeleteDialog.tsx"
+      ]
+    },
+    {
+      "component": "Input",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard presets: the name of a preset, with the library error state for a blank, too long or duplicated name.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetNameDialog.tsx"
+      ]
     }
   ]
 }
