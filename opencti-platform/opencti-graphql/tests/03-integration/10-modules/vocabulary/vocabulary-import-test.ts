@@ -64,11 +64,12 @@ describe('Vocabulary import and export (configuration preset)', () => {
   });
 
   it('writes nothing on a dry run, and creates a custom entry otherwise', async () => {
-    const entry = { name: CUSTOM.name, description: 'Foreign information manipulation', aliases: ['fimi'], order: 5 };
+    // Hidden from the start: the visibility is part of the entry, the creation is one event whatever its values
+    const entry = { name: CUSTOM.name, description: 'Foreign information manipulation', aliases: ['fimi'], order: 5, is_hidden: true };
     expect(await importCategory([entry], { dryRun: true })).toMatchObject({ status: 'created', exists: false });
     expect(await load(customId)).toBeFalsy();
     expect(await importCategory([entry])).toMatchObject({ status: 'created', exists: false });
-    expect(await load(customId)).toMatchObject({ ...CUSTOM, description: 'Foreign information manipulation', aliases: ['fimi'], order: 5 });
+    expect(await load(customId)).toMatchObject({ ...CUSTOM, description: 'Foreign information manipulation', aliases: ['fimi'], order: 5, is_hidden: true });
     expect(await exportableCategories()).toContain(CATEGORY);
     expect(await exportedEntry(CUSTOM.name)).toEqual(entry);
   });
@@ -80,16 +81,38 @@ describe('Vocabulary import and export (configuration preset)', () => {
     expect(await load(customId)).toMatchObject({ order: 5 });
   });
 
+  it('refuses a name or an alias that belongs to another entry of the category, and writes nothing', async () => {
+    // The entry has the alias 'fimi': the platform finds it by that name, so it is not a new entry
+    const byAlias = { name: 'FIMI', description: 'Not written' };
+    for (const dryRun of [true, false]) {
+      expect(await importCategory([byAlias], { dryRun })).toMatchObject({ status: 'failed', code: 'alias_conflict', exists: true });
+      expect(await importCategory([byAlias], { mode: ConfigImportMode.Add, dryRun })).toMatchObject({ status: 'failed', code: 'alias_conflict', exists: true });
+    }
+    expect(await load(customId)).toMatchObject({ description: 'Foreign information manipulation' });
+    // A new entry that takes the alias or the name of another one
+    const newOne = { name: 'config-preset-alias-taker', category: CATEGORY };
+    expect(await importCategory([{ name: newOne.name, aliases: ['Fimi'] }])).toMatchObject({ status: 'failed', code: 'alias_conflict', exists: false });
+    expect(await importCategory([{ name: newOne.name, aliases: [CUSTOM.name.toUpperCase()] }])).toMatchObject({ status: 'failed', code: 'alias_conflict', exists: false });
+    expect(await load(getVocabularyStandardId(newOne))).toBeFalsy();
+    // An entry that exists and takes the alias of another one, before the platform fails the edit
+    expect(await importCategory([{ name: DEFAULT.name, aliases: ['fimi'] }])).toMatchObject({ status: 'failed', code: 'alias_conflict', exists: true });
+    expect(await load(defaultId)).toMatchObject({ name: DEFAULT.name });
+    // The same alias in another category is no conflict
+    expect(await importVocabularyCategory(testContext, ADMIN_USER, { category: VocabularyCategory.IncidentTypeOv, entries: [{ name: 'phishing', aliases: ['fimi'] }] }, { mode, dryRun: true }))
+      .toMatchObject({ status: 'overwritten' });
+  });
+
   it('patches the values that differ, replaces the aliases as a whole, and leaves the others untouched', async () => {
     expect(await importCategory([{ name: CUSTOM.name, order: 7 }], { dryRun: true })).toMatchObject({ status: 'overwritten' });
     expect(await load(customId)).toMatchObject({ order: 5 });
     expect(await importCategory([{ name: CUSTOM.name, order: 7 }])).toMatchObject({ status: 'overwritten', exists: true });
-    expect(await load(customId)).toMatchObject({ description: 'Foreign information manipulation', aliases: ['fimi'], order: 7 });
+    expect(await load(customId)).toMatchObject({ description: 'Foreign information manipulation', aliases: ['fimi'], order: 7, is_hidden: true });
     expect(await importCategory([{ name: CUSTOM.name, aliases: ['fimi', 'fim'] }])).toMatchObject({ status: 'overwritten' });
     expect((await load(customId))?.aliases).toEqual(expect.arrayContaining(['fimi', 'fim']));
     // An empty list is a value: it clears the aliases. An order of 0 is a value too
-    expect(await importCategory([{ name: CUSTOM.name, aliases: [], order: 0 }])).toMatchObject({ status: 'overwritten' });
-    expect(await load(customId)).toMatchObject({ order: 0 });
+    // The entry is visible again: false is a value
+    expect(await importCategory([{ name: CUSTOM.name, aliases: [], order: 0, is_hidden: false }])).toMatchObject({ status: 'overwritten' });
+    expect(await load(customId)).toMatchObject({ order: 0, is_hidden: false });
     expect((await load(customId))?.aliases ?? []).toEqual([]);
   });
 

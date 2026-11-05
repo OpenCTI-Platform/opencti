@@ -17,7 +17,7 @@ import { addVocabulary, editVocabulary } from '../../../../src/modules/vocabular
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import { getVocabularyStandardId, importVocabulary, importVocabularyCategory } from '../../../../src/modules/vocabulary/vocabulary-import';
 import { vocabularyCategoryImportSchema, vocabularyImportSchema } from '../../../../src/modules/vocabulary/vocabulary-import-schema';
-import { getVocabularyCategories, getVocabularyCategoryConfigPresetConfiguration } from '../../../../src/modules/vocabulary/vocabulary-export';
+import { getVocabularyCategories, exportVocabularyCategory } from '../../../../src/modules/vocabulary/vocabulary-export';
 import { cleanVocabularyAliases, openVocabularies } from '../../../../src/modules/vocabulary/vocabulary-utils';
 import { ENTITY_TYPE_VOCABULARY, type BasicStoreEntityVocabulary } from '../../../../src/modules/vocabulary/vocabulary-types';
 import { VocabularyCategory } from '../../../../src/generated/graphql';
@@ -93,6 +93,9 @@ describe('Vocabulary category import schema', () => {
     [{ category, entries: [{ name: 'fimi-report', order: 1.5 }] }],
     [{ category, entries: [{ name: 'fimi-report' }], builtIn: true }],
     [{ category, entries: [{ name: 'fimi-report' }, { name: ' FIMI-Report ' }] }],
+    // The platform finds an entry by its name and its aliases: a name or an alias held by two entries would write the first when it creates the second
+    [{ category, entries: [{ name: 'fimi-report', aliases: ['fimi'] }, { name: 'fimi' }] }],
+    [{ category, entries: [{ name: 'fimi-report', aliases: ['fimi'] }, { name: 'other', aliases: ['FIMI'] }] }],
   ])('refuses %j', (configuration) => {
     expect(vocabularyCategoryImportSchema.safeParse(configuration).success).toBe(false);
   });
@@ -113,23 +116,23 @@ describe('Which categories are exported, and how', () => {
   });
 
   it('exports all the entries of the category, the ones nobody modified included', () => {
-    expect(getVocabularyCategoryConfigPresetConfiguration(VocabularyCategory.ReportTypesOv, all)).toEqual({
+    expect(exportVocabularyCategory(VocabularyCategory.ReportTypesOv, all)).toEqual({
       category: 'report_types_ov',
       entries: [
         expect.objectContaining({ name: 'threat-report' }),
         { name: 'fimi-report', description: 'Foreign information manipulation', aliases: ['fimi'], order: 5 },
       ],
     });
-    expect(getVocabularyCategoryConfigPresetConfiguration(VocabularyCategory.IntegrityLevelOv, all).entries).toEqual([
+    expect(exportVocabularyCategory(VocabularyCategory.IntegrityLevelOv, all).entries).toEqual([
       expect.objectContaining({ name: 'high', description: 'Our own description' }),
       expect.objectContaining({ name: 'low' }),
     ]);
-    expect(getVocabularyCategoryConfigPresetConfiguration(VocabularyCategory.IncidentTypeOv, all).entries).toEqual([expect.objectContaining({ name: 'phishing' })]);
-    expect(getVocabularyCategoryConfigPresetConfiguration(VocabularyCategory.CoverageOv, all)).toEqual({ category: 'coverage_ov', entries: [] });
+    expect(exportVocabularyCategory(VocabularyCategory.IncidentTypeOv, all).entries).toEqual([expect.objectContaining({ name: 'phishing' })]);
+    expect(exportVocabularyCategory(VocabularyCategory.CoverageOv, all)).toEqual({ category: 'coverage_ov', entries: [] });
   });
 
   it('leaves out of an entry its category, the values it does not have and everything the import does not accept', () => {
-    const configuration = getVocabularyCategoryConfigPresetConfiguration(entry.category, [
+    const configuration = exportVocabularyCategory(entry.category, [
       { ...stored, creator_id: ['secret'], builtIn: false } as BasicStoreEntityVocabulary,
       { ...stored, name: 'no-values', description: null, aliases: undefined, order: undefined } as unknown as BasicStoreEntityVocabulary,
     ]);
@@ -141,7 +144,7 @@ describe('Which categories are exported, and how', () => {
   });
 
   it('is the format of the import, so an export imports back as is', () => {
-    const configuration = getVocabularyCategoryConfigPresetConfiguration(VocabularyCategory.ReportTypesOv, all);
+    const configuration = exportVocabularyCategory(VocabularyCategory.ReportTypesOv, all);
     expect(vocabularyCategoryImportSchema.safeParse(configuration).success).toBe(true);
   });
 
@@ -151,7 +154,7 @@ describe('Which categories are exported, and how', () => {
     const categories = getVocabularyCategories(everyDefault);
     expect(categories.length).toBeGreaterThan(10);
     categories.forEach((category) => {
-      expect(vocabularyCategoryImportSchema.safeParse(getVocabularyCategoryConfigPresetConfiguration(category, everyDefault)).success).toBe(true);
+      expect(vocabularyCategoryImportSchema.safeParse(exportVocabularyCategory(category, everyDefault)).success).toBe(true);
     });
   });
 });
@@ -282,6 +285,113 @@ describe('importVocabulary', () => {
   });
 });
 
+describe('The names and aliases of the entries of a category', () => {
+  const category = VocabularyCategory.ReportTypesOv;
+  const alpha = { id: 'alpha-id', name: 'alpha', category, description: 'First', aliases: ['a1'], order: 1 } as BasicStoreEntityVocabulary;
+  const overwrite = (configuration: unknown, dryRun = false) => importVocabulary(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun });
+  const writes = () => [addVocabulary, editVocabulary];
+  // The platform finds an entry by its name and by its aliases: loaded by the standard id of 'a1', it returns alpha
+  const withAlpha = () => {
+    vi.mocked(storeLoadById).mockImplementation((async (_ctx: unknown, _user: unknown, id: string) => {
+      return [alpha.name, ...alpha.aliases].some((value) => getVocabularyStandardId({ name: value, category }) === id) ? alpha : undefined;
+    }) as never);
+  };
+
+  describe.each([ConfigImportMode.Overwrite, ConfigImportMode.Add])('a name that is an alias of another entry (%s)', (mode) => {
+    it('is a conflict, not the entry that holds the alias: it is not written, and the requested entry is not created', async () => {
+      withAlpha();
+      const configuration = { name: 'a1', category, description: 'Mine', aliases: ['x'] };
+      for (const dryRun of [true, false]) {
+        expect(await importVocabulary(context, user, configuration, { mode, dryRun })).toMatchObject({ status: 'failed', code: 'alias_conflict', exists: true });
+      }
+      writes().forEach((write) => expect(write).not.toHaveBeenCalled());
+    });
+  });
+
+  it('finds the entry of the same name in another case, not through an alias', async () => {
+    withAlpha();
+    expect(await overwrite({ name: ' ALPHA ', category, description: 'First', aliases: ['a1'], order: 1 })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true });
+  });
+
+  describe.each([ConfigImportMode.Overwrite, ConfigImportMode.Add])('an alias of a new entry that is the name or an alias of another entry (%s)', (mode) => {
+    it.each([['its name', 'Alpha'], ['one of its aliases', 'a1']])('is refused when it is %s, on a dry run too, and nothing is written', async (_label, alias) => {
+      withAlpha();
+      const configuration = { name: 'beta', category, aliases: ['b1', alias] };
+      for (const dryRun of [true, false]) {
+        expect(await importVocabulary(context, user, configuration, { mode, dryRun })).toMatchObject({ status: 'failed', code: 'alias_conflict', exists: false });
+      }
+      writes().forEach((write) => expect(write).not.toHaveBeenCalled());
+    });
+  });
+
+  it('refuses a new alias of an entry that exists when another entry holds it, before the platform fails the edit', async () => {
+    withAlpha();
+    const beta = { id: 'beta-id', name: 'beta', category, aliases: [] } as unknown as BasicStoreEntityVocabulary;
+    vi.mocked(storeLoadById).mockImplementation((async (_ctx: unknown, _user: unknown, id: string) => {
+      if (id === getVocabularyStandardId({ name: 'beta', category })) return beta;
+      return [alpha.name, ...alpha.aliases].some((value) => getVocabularyStandardId({ name: value, category }) === id) ? alpha : undefined;
+    }) as never);
+    expect(await overwrite({ name: 'beta', category, aliases: ['b1', 'a1'] }, true)).toMatchObject({ status: 'failed', code: 'alias_conflict', exists: true });
+    expect(await overwrite({ name: 'beta', category, aliases: ['b1'] }, true)).toMatchObject({ status: 'overwritten', exists: true });
+    expect(editVocabulary).not.toHaveBeenCalled();
+  });
+
+  it('does not look up the aliases an entry already has: they are its own', async () => {
+    withAlpha();
+    await overwrite({ name: 'alpha', category, description: 'Changed', aliases: ['a1'] });
+    expect(editVocabulary).toHaveBeenCalledWith(context, user, alpha.id, [{ key: 'description', value: ['Changed'] }], {});
+    expect(storeLoadById).toHaveBeenCalledTimes(1);
+  });
+
+  it('is only a collision between entries of the same category', async () => {
+    withAlpha();
+    expect(await overwrite({ name: 'beta', category: VocabularyCategory.IncidentTypeOv, aliases: ['a1'] })).toMatchObject({ status: 'created' });
+  });
+});
+
+describe('The visibility of an entry', () => {
+  const overwrite = (configuration: unknown, dryRun = false) => importVocabulary(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun });
+
+  it('creates a hidden entry hidden, and a visible one as the platform does (no value)', async () => {
+    await overwrite({ ...entry, is_hidden: true });
+    expect(addVocabulary).toHaveBeenLastCalledWith(context, user, { ...entry, description: '', aliases: [], order: 0, is_hidden: true });
+    await overwrite({ ...entry, is_hidden: false });
+    expect(addVocabulary).toHaveBeenLastCalledWith(context, user, { ...entry, description: '', aliases: [], order: 0, is_hidden: false });
+    await overwrite({ ...entry, is_hidden: null });
+    expect(addVocabulary).toHaveBeenLastCalledWith(context, user, { ...entry, description: '', aliases: [], order: 0 });
+  });
+
+  it('changes the visibility of an entry that exists, and only when it differs', async () => {
+    withExisting(stored);
+    expect(await overwrite({ ...entry, is_hidden: true })).toMatchObject({ status: 'overwritten', exists: true });
+    expect(editVocabulary).toHaveBeenLastCalledWith(context, user, stored.id, [{ key: 'is_hidden', value: [true] }], {});
+    withExisting({ ...stored, is_hidden: true } as BasicStoreEntityVocabulary);
+    await overwrite({ ...entry, is_hidden: false });
+    expect(editVocabulary).toHaveBeenLastCalledWith(context, user, stored.id, [{ key: 'is_hidden', value: [false] }], {});
+  });
+
+  it.each([
+    ['no value, a visible entry', undefined, undefined],
+    ['null, a hidden entry', null, true],
+    ['false, an entry that was never hidden', false, undefined],
+    ['true, a hidden entry', true, true],
+  ])('leaves an entry untouched when the configuration has %s', async (_label, isHidden, storedHidden) => {
+    withExisting({ ...stored, is_hidden: storedHidden } as BasicStoreEntityVocabulary);
+    expect(await overwrite({ ...entry, is_hidden: isHidden })).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expect(editVocabulary).not.toHaveBeenCalled();
+  });
+
+  it('is exported when the platform has a value, so an export imports back as is', () => {
+    const exported = exportVocabularyCategory(VocabularyCategory.ReportTypesOv, [
+      { ...stored, is_hidden: true },
+      { ...stored, name: 'visible', aliases: [], is_hidden: false },
+      { ...stored, name: 'never-hidden', aliases: [] },
+    ] as BasicStoreEntityVocabulary[]);
+    expect(exported.entries.map(({ name, is_hidden: isHidden }) => [name, isHidden])).toEqual([['fimi-report', true], ['visible', false], ['never-hidden', undefined]]);
+    expect(vocabularyCategoryImportSchema.safeParse(exported).success).toBe(true);
+  });
+});
+
 describe('importVocabularyCategory', () => {
   const category = VocabularyCategory.ReportTypesOv;
   const other = { name: 'sev-report', category, description: 'Another one', aliases: [], order: 2 };
@@ -355,6 +465,28 @@ describe('importVocabularyCategory', () => {
     expect(result.reason).toBe('my-own-opinion: This vocabulary category is closed, new values cannot be added, another-opinion: This vocabulary category is closed, new values cannot be added');
     expect(addVocabulary).not.toHaveBeenCalled();
     expect(editVocabulary).not.toHaveBeenCalled();
+  });
+
+  it('fails the whole category, and writes nothing, when an entry takes the alias of an entry of the platform, even if the entries before it are fine', async () => {
+    const holder = { id: 'holder-id', name: 'holder', category, aliases: ['taken'] } as unknown as BasicStoreEntityVocabulary;
+    vi.mocked(storeLoadById).mockImplementation((async (_ctx: unknown, _user: unknown, id: string) => {
+      return id === getVocabularyStandardId({ name: 'taken', category }) || id === getVocabularyStandardId({ name: 'holder', category }) ? holder : undefined;
+    }) as never);
+    const configuration = { category, entries: [{ name: 'fine-report' }, { name: 'late-report', aliases: ['Taken'] }] };
+    const result = await overwrite(configuration);
+    expect(result).toMatchObject({ status: 'failed', code: 'alias_conflict' });
+    expect(result.reason).toBe('late-report: The alias Taken belongs to another vocabulary entry');
+    expect(addVocabulary).not.toHaveBeenCalled();
+    expect(editVocabulary).not.toHaveBeenCalled();
+  });
+
+  it('accepts every category of the platform as it creates it: no default name or alias is held by two entries', () => {
+    for (const [key, defaults] of Object.entries(openVocabularies)) {
+      if (defaults.length > 0) {
+        const entries = defaults.map(({ key: name, description, aliases, order }) => ({ name, description, aliases, order }));
+        expect(vocabularyCategoryImportSchema.safeParse({ category: key, entries }).success, key).toBe(true);
+      }
+    }
   });
 
   it('has no copy', async () => {
