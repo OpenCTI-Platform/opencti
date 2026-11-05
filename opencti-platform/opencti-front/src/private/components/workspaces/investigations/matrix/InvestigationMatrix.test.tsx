@@ -1,0 +1,166 @@
+import React from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, screen } from '@testing-library/react';
+import { MockPayloadGenerator } from 'relay-test-utils';
+import { OperationDescriptor } from 'relay-runtime';
+import useShouldCoverOverlap from '@components/common/stix_domain_objects/useShouldCoverOverlap';
+import testRender from '../../../../../utils/tests/test-render';
+import { useGraphContext } from '../../../../../components/graph/GraphContext';
+import { GraphState } from '../../../../../components/graph/graph.types';
+import { MESSAGING$ } from '../../../../../relay/environment';
+import { INVESTIGATION_MATRIX_EXPORT_ID } from '../InvestigationViewSwitcher';
+import InvestigationMatrix from './InvestigationMatrix';
+
+vi.mock('../../../../../utils/hooks/useTopBanner', () => ({ default: () => ({ height: 0 }) }));
+vi.mock('../../../../../components/graph/GraphContext', () => ({ useGraphContext: vi.fn() }));
+vi.mock('@components/common/stix_domain_objects/useShouldCoverOverlap', () => ({ default: vi.fn() }));
+
+const PLACED_ID = 'attack-pattern--placed';
+const REVOKED_ID = 'attack-pattern--revoked';
+
+const technique = (id: string, name: string, x_mitre_id: string) => ({
+  attack_pattern_id: id,
+  name,
+  description: null,
+  x_mitre_id,
+  subAttackPatterns: [],
+  subAttackPatternsSearchText: null,
+  killChainPhasesIds: [],
+});
+
+const phase = (kill_chain_name: string, phase_name: string, attackPatterns: unknown[]) => ({
+  kill_chain_id: `${kill_chain_name}--${phase_name}`,
+  kill_chain_name,
+  phase_name,
+  x_opencti_order: 1,
+  attackPatterns,
+});
+
+const MITRE_PHASES = [phase('mitre-attack', 'execution', [technique(PLACED_ID, 'Placed', 'T1001')])];
+// No mitre-attack: the select must default to the first kill chain alphabetically.
+const OTHER_PHASES = [
+  phase('zeta-chain', 'zeta-phase', [technique('attack-pattern--zeta', 'Zeta', 'T2001')]),
+  phase('alpha-chain', 'alpha-phase', [technique(PLACED_ID, 'Placed', 'T1001')]),
+];
+
+const resolver = (phases: unknown[]) => (operation: OperationDescriptor) => MockPayloadGenerator.generate(operation, {
+  AttackPatternsMatrix: () => ({ attackPatternsOfPhases: phases }),
+});
+
+const attackPattern = (id: string, name: string) => ({ id, entity_type: 'Attack-Pattern', name, parent_types: ['Stix-Domain-Object'] });
+
+const DEFAULT_GRAPH_STATE: Partial<GraphState> = {
+  loadingCurrent: 2,
+  loadingTotal: 2,
+  disabledEntityTypes: [],
+  disabledCreators: [],
+  disabledMarkings: [],
+  selectedTimeRangeInterval: undefined,
+};
+
+const POSTURE_ERROR = new Error('posture lookup failed');
+
+interface RenderOptions {
+  rawObjects?: unknown[];
+  graphState?: Partial<GraphState>;
+  phases?: unknown[];
+  postureError?: Error | null;
+}
+
+const renderMatrix = async ({
+  rawObjects = [attackPattern(PLACED_ID, 'Placed')],
+  graphState = {},
+  phases = MITRE_PHASES,
+  postureError = null,
+}: RenderOptions = {}) => {
+  vi.mocked(useGraphContext).mockReturnValue({
+    rawObjects,
+    graphState: { ...DEFAULT_GRAPH_STATE, ...graphState },
+  } as unknown as ReturnType<typeof useGraphContext>);
+  vi.mocked(useShouldCoverOverlap).mockReturnValue({
+    attackPatternIdsToOverlap: undefined,
+    setSecurityPlatformIds: vi.fn(),
+    error: postureError,
+  });
+  const ui = <InvestigationMatrix investigationId="investigation-1" investigationName="Investigation" />;
+  const rendered = testRender(ui);
+  const { mock } = rendered.relayEnv;
+  // Queries are issued in effects, some only once an earlier one has answered (the posture
+  // select mounts after the matrix query): answer every pending one until none is left.
+  for (let round = 0; round < 5 && mock.getAllOperations().length > 0; round += 1) {
+    await act(async () => {
+      mock.getAllOperations().forEach((operation) => mock.resolve(operation, resolver(phases)(operation)));
+    });
+  }
+  return { ...rendered, ui };
+};
+
+describe('InvestigationMatrix', () => {
+  let notifyError: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    notifyError = vi.spyOn(MESSAGING$, 'notifyError').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    notifyError.mockRestore();
+  });
+
+  it('shows the graph progress and no matrix while the investigation is loading', async () => {
+    await renderMatrix({ graphState: { loadingCurrent: 200, loadingTotal: 1000 } });
+    expect(await screen.findByText('200 / 1000')).toBeInTheDocument();
+    expect(document.getElementById(INVESTIGATION_MATRIX_EXPORT_ID)).toBeNull();
+  });
+
+  it('keeps the progress visible before the first page is counted', async () => {
+    await renderMatrix({ graphState: { loadingCurrent: 0, loadingTotal: 1000 } });
+    expect(screen.getByRole('status')).toHaveTextContent('0 / 1000');
+    expect(document.getElementById(INVESTIGATION_MATRIX_EXPORT_ID)).toBeNull();
+    expect(screen.queryByText('Add attack patterns to the graph view to visualise them here')).toBeNull();
+  });
+
+  it('shows the empty text when the investigation has no attack pattern', async () => {
+    await renderMatrix({ rawObjects: [{ id: 'is-1', entity_type: 'Intrusion-Set', name: 'APT', parent_types: [] }] });
+    expect(await screen.findByText('Add attack patterns to the graph view to visualise them here')).toBeInTheDocument();
+    expect(screen.queryByText('T1001 - Placed')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Display only used techniques' })).toBeDisabled();
+    expect(screen.getByRole('combobox', { name: 'Kill chain :' })).toBeDisabled();
+    expect(await screen.findByRole('combobox', { name: 'Compare with my security posture' })).toBeDisabled();
+  });
+
+  it('notes the attack patterns that cannot be placed in the kill chain', async () => {
+    await renderMatrix({ rawObjects: [attackPattern(PLACED_ID, 'Placed'), attackPattern(REVOKED_ID, 'Revoked')] });
+    expect(await screen.findByText('1 attack patterns in this investigation aren\'t shown in this kill chain')).toBeInTheDocument();
+    expect(screen.getByText('T1001 - Placed')).toBeInTheDocument();
+  });
+
+  it('notes that graph filters do not apply to the matrix', async () => {
+    await renderMatrix({ graphState: { disabledEntityTypes: ['Report'] } });
+    expect(await screen.findByText('Graph filters don\'t apply to the matrix')).toBeInTheDocument();
+  });
+
+  it('defaults to the first kill chain alphabetically without mitre-attack and renders its columns', async () => {
+    await renderMatrix({ phases: OTHER_PHASES });
+    expect(await screen.findByText('T1001 - Placed')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Kill chain :' })).toHaveTextContent('alpha-chain');
+    expect(screen.getByText('alpha-phase')).toBeInTheDocument();
+    expect(screen.queryByText('zeta-phase')).toBeNull();
+  });
+
+  it('wraps toolbar, notes and matrix in the export element, with no export button', async () => {
+    await renderMatrix();
+    await screen.findByText('T1001 - Placed');
+    const wrapper = document.getElementById(INVESTIGATION_MATRIX_EXPORT_ID);
+    expect(wrapper).not.toBeNull();
+    expect(wrapper).toContainElement(screen.getByRole('combobox', { name: 'Kill chain :' }));
+    expect(wrapper).toContainElement(screen.getByText('T1001 - Placed'));
+    expect(screen.queryByRole('button', { name: /export/i })).toBeNull();
+  });
+
+  it('notifies a failed posture lookup once and still renders the matrix', async () => {
+    const { rerender, ui } = await renderMatrix({ postureError: POSTURE_ERROR });
+    expect(await screen.findByText('T1001 - Placed')).toBeInTheDocument();
+    rerender(ui);
+    expect(notifyError).toHaveBeenCalledTimes(1);
+  });
+});
