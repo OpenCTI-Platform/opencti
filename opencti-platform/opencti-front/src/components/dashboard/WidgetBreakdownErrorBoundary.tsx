@@ -18,6 +18,18 @@ const BreakdownRefusal = ({ reasons, readOnly }: { reasons: (string | undefined)
     message = readOnly
       ? t_i18n('There are too many values to find the lowest ones.')
       : t_i18n('There are too many values to find the lowest ones. Choose the highest values or narrow the filters of this widget.');
+  } else if (reasons.includes('unsupported_date_attribute')) {
+    message = readOnly
+      ? t_i18n('The date attribute of this widget does not apply to its data.')
+      : t_i18n('The date attribute of this widget does not apply to its data. Edit the widget to choose another date attribute.');
+  } else if (reasons.includes('unsupported_field')) {
+    message = readOnly
+      ? t_i18n('The breakdown field of this widget does not apply to its data.')
+      : t_i18n('The breakdown field of this widget does not apply to its data. Edit the widget to choose another field.');
+  } else if (reasons.includes('invalid_limit')) {
+    message = readOnly
+      ? t_i18n('The number of series of this widget must be between 1 and 50.')
+      : t_i18n('The number of series of this widget must be between 1 and 50. Edit the widget to change it.');
   }
   return <WidgetNoData message={message} />;
 };
