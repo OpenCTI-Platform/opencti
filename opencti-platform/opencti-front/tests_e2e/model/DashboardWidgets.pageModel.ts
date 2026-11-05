@@ -178,7 +178,9 @@ export default class DashboardWidgetsPageModel {
   }
 
   getIconFromWidgetTimeline() {
-    return this.page.getByTestId('BiohazardIcon').first();
+    // Not getByTestId('BiohazardIcon'): MUI icon test ids exist in dev builds only.
+    // Not getByRole('img'): this svg is aria-hidden.
+    return this.page.locator('svg[aria-label="Malware"]').first();
   }
 
   getWidgetNumberValue(name: string, value: string) {
