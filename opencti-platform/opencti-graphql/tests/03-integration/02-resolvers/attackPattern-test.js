@@ -48,6 +48,7 @@ const MATRIX_QUERY = gql`
             attack_pattern_id
             name
             description
+            x_mitre_id
           }
           subAttackPatternsSearchText
           killChainPhasesIds
@@ -161,6 +162,46 @@ describe('AttackPattern resolver standard behavior', () => {
     expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].phase_name).toEqual('persistence');
     expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].x_opencti_order).toEqual(20);
     expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].attackPatterns.length).toEqual(1);
+  });
+  it('should return x_mitre_id on sub attack patterns of the matrix', async () => {
+    // The test dataset has no sub-technique, so seed one under the attack pattern created above
+    const subAttackPattern = await queryAsAdmin({
+      query: gql`
+        mutation AttackPatternAdd($input: AttackPatternAddInput!) {
+          attackPatternAdd(input: $input) { id }
+        }
+      `,
+      variables: { input: { name: 'SubAttackPattern', x_mitre_id: 'T001.001', description: 'SubAttackPattern description' } },
+    });
+    const subAttackPatternId = subAttackPattern.data.attackPatternAdd.id;
+    try {
+      const relation = await queryAsAdmin({
+        query: gql`
+          mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {
+            stixCoreRelationshipAdd(input: $input) { id }
+          }
+        `,
+        variables: { input: { fromId: subAttackPatternId, toId: attackPatternInternalId, relationship_type: 'subtechnique-of' } },
+      });
+      expect(relation.data.stixCoreRelationshipAdd.id).toBeDefined();
+      const queryResult = await queryAsAdmin({ query: MATRIX_QUERY });
+      const subs = queryResult.data.attackPatternsMatrix.attackPatternsOfPhases
+        .flatMap((p) => p.attackPatterns).flatMap((ap) => ap.subAttackPatterns ?? []);
+      expect(subs.length).toBeGreaterThan(0);
+      subs.forEach((sub) => expect(sub).toHaveProperty('x_mitre_id'));
+      expect(subs.some((sub) => typeof sub.x_mitre_id === 'string' && sub.x_mitre_id.length > 0)).toBe(true);
+      expect(subs.find((sub) => sub.attack_pattern_id === subAttackPatternId).x_mitre_id).toEqual('T001.001');
+    } finally {
+      // Deleting the sub attack pattern also removes its relationship
+      await queryAsAdmin({
+        query: gql`
+          mutation attackPatternDelete($id: ID!) {
+            attackPatternEdit(id: $id) { delete }
+          }
+        `,
+        variables: { id: subAttackPatternId },
+      });
+    }
   });
   it('should update attackPattern', async () => {
     const UPDATE_QUERY = gql`
