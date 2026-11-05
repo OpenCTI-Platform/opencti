@@ -59,7 +59,7 @@
     "@aws-sdk/lib-storage": "3.1161.0",
     "@aws-sdk/types": "3.975.0",
     "@elastic/elasticsearch": "8.19.2",
-    "@elastic/elasticsearch-v9": "npm:@elastic/elasticsearch@9.4.3",
+    "@elastic/elasticsearch-v9": "npm:@elastic/elasticsearch@9.5.1",
     "@escape.tech/graphql-armor": "3.2.0",
     "@graphql-tools/merge": "10.0.8",
     "@graphql-tools/schema": "11.0.8",
