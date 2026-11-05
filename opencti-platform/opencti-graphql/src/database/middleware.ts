@@ -38,6 +38,7 @@ import {
   isDraftIndex,
   isEmptyField,
   isInferredIndex,
+  isLoadedRefsChanged,
   isNotEmptyField,
   isObjectPathTargetMultipleAttribute,
   READ_DATA_INDICES,
@@ -2815,7 +2816,11 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
               const newRelations = buildInstanceRelTo(refs, relType);
               pushAll(relationsToCreate, newRelations);
             }
-            updatedInputs.push({ key, value: refs, previous: updatedInstance[key] });
+            // A replace that only repairs the stored relationships (the loaded refs are already the targets)
+            // is not an update of the element: no input, so no empty stream event (#18634)
+            if (isLoadedRefsChanged(newTargetsIds, updatedInstance[key])) {
+              updatedInputs.push({ key, value: refs, previous: updatedInstance[key] });
+            }
             updatedInstance[key] = refs;
             updatedInstance[relType] = newTargetsIds;
           }

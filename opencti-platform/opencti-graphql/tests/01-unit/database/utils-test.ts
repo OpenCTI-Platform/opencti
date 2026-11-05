@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs, fillTimeSeries } from '../../../src/database/utils';
+import { extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs, fillTimeSeries, isLoadedRefsChanged } from '../../../src/database/utils';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { EditOperation } from '../../../src/generated/graphql';
 
@@ -294,5 +294,31 @@ describe('Function fillTimeSeries()', () => {
         { date: '2025-08-01T01:00:00.000Z', value: 0 },
       ]);
     });
+  });
+});
+
+// #18634: a replace of object-marking that only repairs the stored relationships must not be an update
+describe('isLoadedRefsChanged', () => {
+  const marking = (id: string) => ({ id, internal_id: id, entity_type: 'Marking-Definition' });
+
+  it('should be false when the loaded refs already are the targets, whatever the order', () => {
+    expect(isLoadedRefsChanged(['m1', 'm2'], [marking('m2'), marking('m1')])).toBe(false);
+  });
+
+  it('should be false when no target replaces no loaded ref', () => {
+    expect(isLoadedRefsChanged([], undefined)).toBe(false);
+    expect(isLoadedRefsChanged([], [])).toBe(false);
+  });
+
+  it('should be true when a target is added or removed', () => {
+    expect(isLoadedRefsChanged(['m1', 'm2'], [marking('m1')])).toBe(true);
+    expect(isLoadedRefsChanged(['m1'], [marking('m1'), marking('m2')])).toBe(true);
+    expect(isLoadedRefsChanged(['m1'], undefined)).toBe(true);
+    expect(isLoadedRefsChanged([], [marking('m1')])).toBe(true);
+  });
+
+  it('should be true when the loaded refs cannot be compared', () => {
+    expect(isLoadedRefsChanged(['m1'], [{ entity_type: 'Marking-Definition' }])).toBe(true);
+    expect(isLoadedRefsChanged(['m1'], 'm1')).toBe(true);
   });
 });

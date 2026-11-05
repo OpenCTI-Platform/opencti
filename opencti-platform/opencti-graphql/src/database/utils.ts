@@ -164,6 +164,23 @@ export const READ_RELATIONSHIPS_INDICES = [
 export const isNotEmptyField = <T>(field: T | undefined | null): field is T => !R.isEmpty(field) && !R.isNil(field);
 export const isEmptyField = <T>(field: T | undefined | null): field is undefined | null => !isNotEmptyField(field);
 
+// Whether replacing a multiple ref by the given target ids changes the refs the loaded instance carries.
+// The stored relationships can differ from the loaded refs (a relationship to a deleted target, a relationship
+// in the inferred index): repairing them is not a change of the element and must not produce an update event.
+export const isLoadedRefsChanged = (nextIds: string[], loadedRefs: unknown): boolean => {
+  if (isEmptyField(loadedRefs)) {
+    return nextIds.length > 0;
+  }
+  if (!Array.isArray(loadedRefs)) {
+    return true;
+  }
+  const loadedIds = loadedRefs.map((ref: { internal_id?: string; id?: string } | null) => ref?.internal_id ?? ref?.id);
+  if (loadedIds.some((id) => id === undefined)) {
+    return true;
+  }
+  return R.symmetricDifference(nextIds, loadedIds as string[]).length > 0;
+};
+
 export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: string | string[] | undefined | null): string => {
   const draftContext = getDraftContext(context, user);
   return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));
