@@ -143,7 +143,7 @@ describe('importCaseTemplate', () => {
     it('skips it when its description is the one of the configuration, or none, and its tasks are the same, whatever their order', async () => {
       vi.mocked(findAllCaseTemplateTasks).mockResolvedValue([notifyTask, blockTask]);
       withTaskTemplates(blockTask, notifyTask);
-      expect(await importCaseTemplate(context, user, configuration, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Nothing to import' });
+      expect(await importCaseTemplate(context, user, configuration, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Already up to date' });
       expect(await importCaseTemplate(context, user, { name: 'Phishing triage', description: null, tasks: null }, overwrite)).toMatchObject({ status: 'skipped' });
       expect(await importCaseTemplate(context, user, { name: 'Phishing triage' }, overwrite)).toMatchObject({ status: 'skipped' });
       expect(caseTemplateEdit).not.toHaveBeenCalled();

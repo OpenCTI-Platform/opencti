@@ -113,7 +113,7 @@ export const importCaseTemplate = async (
     patch.push({ key: 'description', value: [description] });
   }
   if (patch.length === 0 && dropped.length === 0 && !steps.some(hasStepChange)) {
-    return refused('skipped', 'unchanged', 'Nothing to import', true, parsed.data);
+    return refused('skipped', 'unchanged', 'Already up to date', true, parsed.data);
   }
   if (!dryRun) {
     const ids = await writeTaskTemplates(context, user, steps);

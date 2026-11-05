@@ -46,9 +46,9 @@ describe('Case templates import (registry)', () => {
   });
 
   it('reports a template that the platform already has as skipped when nothing differs', async () => {
-    vi.mocked(importCaseTemplate).mockResolvedValue({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Nothing to import' });
-    expect(await family.importer!.compute(context, user, item(configuration), plan, ConfigImportMode.Overwrite)).toMatchObject({ status: 'skipped', exists: true, reason: 'Nothing to import' });
-  });
+    vi.mocked(importCaseTemplate).mockResolvedValue({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Already up to date' });
+    expect(await family.importer!.compute(context, user, item(configuration), plan, ConfigImportMode.Overwrite)).toMatchObject({ status: 'skipped', exists: true, reason: 'Already up to date' });
+});
 
   it('reports a name that several templates have as a failure of the item', async () => {
     vi.mocked(importCaseTemplate).mockResolvedValue({ status: 'failed', code: 'ambiguous', reason: 'Several case templates have this name', exists: true });
