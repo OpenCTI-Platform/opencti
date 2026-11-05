@@ -128,6 +128,7 @@ import { refang } from '../utils/refang';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
+  getRegisteredTypeFromIndexedName,
   isBooleanAttribute,
   isDateAttribute,
   isDateNumericOrBooleanAttribute,
@@ -3519,8 +3520,10 @@ export const elHistogramCount = async (
       throw wrapEngineError('Histogram computation count fail', err, { query });
     });
 };
-// Types are indexed in lowercase: give back the label of the right entity type
-const convertEntityTypeKeyToLabel = (key: string) => (isStixCoreRelationship(key) ? key : generateInternalType({ type: key }));
+// Types are indexed in lowercase: give back the registered type, or a label converted from the key for a name of
+// no registered type
+const convertEntityTypeKeyToLabel = (key: string) => getRegisteredTypeFromIndexedName(key)
+  ?? (isStixCoreRelationship(key) ? key : generateInternalType({ type: key }));
 // Terms options ranking the values on their number of documents. The highest values are kept from the top of
 // each shard, as by any terms aggregation. The lowest cannot be: a value rare on a shard but frequent on another
 // would be taken for one of them. Every shard returns all of its values instead, up to MAX_EXACT_RANKING_SIZE.

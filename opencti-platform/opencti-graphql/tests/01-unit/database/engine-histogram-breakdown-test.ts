@@ -30,6 +30,7 @@ import {
   searchEngineInit,
 } from '../../../src/database/engine';
 import { SYSTEM_USER } from '../../../src/utils/access';
+import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { CLIENT_ABORT_ERROR, DATABASE_ERROR } from '../../../src/config/errors';
 import type { AuthContext } from '../../../src/types/user';
 
@@ -211,6 +212,26 @@ describe('engine: requests of the time series breakdowns', () => {
         exclude: expect.arrayContaining(['stix-domain-object', 'basic-object']),
       });
       expect(distribution).toEqual([{ key: 'malware', label: 'Malware', value: 2, count: 2 }]);
+    });
+
+    it('should name the types after their registered type', async () => {
+      vi.spyOn(schemaAttributesDefinition, 'getRegisteredTypes').mockReturnValue(['IMEI', 'SecurityPlatform', 'Intrusion-Set', 'uses']);
+      elkSearch.mockResolvedValue(searchResponse({
+        connections: {
+          side: {
+            types: {
+              sum_other_doc_count: 0,
+              buckets: ['imei', 'securityplatform', 'intrusion-set', 'uses', 'ipv4-addr'].map((key) => ({ key, doc_count: 1 })),
+            },
+          },
+        },
+      }));
+
+      const distribution = await rankTypes('desc');
+
+      // A name of no registered type keeps the label converted from it
+      expect(distribution.map(({ label }) => label)).toEqual(['IMEI', 'SecurityPlatform', 'Intrusion-Set', 'uses', 'IPv4-Addr']);
+      vi.restoreAllMocks();
     });
 
     it('should keep the top types of each shard for the highest types', async () => {

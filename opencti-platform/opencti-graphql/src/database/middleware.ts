@@ -226,7 +226,15 @@ import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
-import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import {
+  depsKeysRegister,
+  getRegisteredTypeFromIndexedName,
+  isDateAttribute,
+  isMultipleAttribute,
+  isNumericAttribute,
+  isObjectAttribute,
+  schemaAttributesDefinition,
+} from '../schema/schema-attributes';
 import { fillDefaultCustomFieldValues, fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
@@ -926,23 +934,8 @@ type BreakdownField = {
 // Indexed form of an enum value. The keyword normalizer lowercases and folds to ASCII, and the enum values are
 // ASCII constants of the code (a unit test checks every registered one): lowercasing them is exact.
 export const normalizeEnumValue = (value: string) => value.toLowerCase();
-// Entity types are indexed in lowercase: give them back the name of their registered type. The lookup is built at
-// the first use, once every type is registered, and only built again if the registered types change.
-let entityTypesLookup: { registeredTypes: string[]; size: number; labels: Map<string, string> } | null = null;
-const resolveEntityTypeLabel = (key: string) => {
-  const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
-  if (entityTypesLookup?.registeredTypes !== registeredTypes || entityTypesLookup.size !== registeredTypes.length) {
-    const labels = new Map<string, string>();
-    // The first registered type of a lowercase name keeps it
-    registeredTypes.forEach((type) => {
-      if (!labels.has(type.toLowerCase())) {
-        labels.set(type.toLowerCase(), type);
-      }
-    });
-    entityTypesLookup = { registeredTypes, size: registeredTypes.length, labels };
-  }
-  return entityTypesLookup.labels.get(key) ?? key;
-};
+// Entity types are indexed in lowercase: give them back the name of their registered type
+const resolveEntityTypeLabel = (key: string) => getRegisteredTypeFromIndexedName(key) ?? key;
 // A breakdown field read from the schema is a filter key that every requested type carries: a relation ref of
 // the allowlist (author, labels, markings, assignees, participants), or an id, vocabulary or enum attribute.
 // Free text, dates, numbers and the special filter keys cannot be broken down.
@@ -996,7 +989,8 @@ export const resolveRelationshipBreakdownField = (types: string[], field: string
   }
   if (field === RELATION_FROM_TYPES_FILTER || field === RELATION_TO_TYPES_FILTER) {
     const connectionSide = field === RELATION_FROM_TYPES_FILTER ? 'from' : 'to';
-    return { aggregationField: 'connections.types', resolveEntities: false, resolveLabel: resolveEntityTypeLabel, connectionSide };
+    // Named after their registered type by the engine
+    return { aggregationField: 'connections.types', resolveEntities: false, connectionSide };
   }
   const breakdownField = resolveSchemaBreakdownField(types, field);
   if (!breakdownField) {

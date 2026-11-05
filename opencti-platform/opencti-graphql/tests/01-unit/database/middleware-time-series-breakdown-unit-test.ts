@@ -1085,10 +1085,9 @@ describe('resolveRelationshipBreakdownField', () => {
     const toTypes = resolveRelationshipBreakdownField(['uses'], 'toTypes');
     expect(fromTypes).toMatchObject({ aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'from' });
     expect(toTypes).toMatchObject({ aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'to' });
-    // Named after their registered type
-    for (const { resolveLabel } of [fromTypes, toTypes]) {
-      expect(['imei', 'securityplatform', 'malware'].map((key) => resolveLabel?.(key))).toEqual(['IMEI', 'SecurityPlatform', 'Malware']);
-    }
+    // Named after their registered type by the engine, which ranks them: never named again
+    expect(fromTypes.resolveLabel).toBeUndefined();
+    expect(toTypes.resolveLabel).toBeUndefined();
   });
 
   it('should accept the author, labels, markings and creators of the relationships', () => {
@@ -1236,11 +1235,10 @@ describe('timeSeriesBreakdownRelations', () => {
     expect(result.series.map((serie) => serie.label)).toEqual(['Country']);
   });
 
-  it('should name the types of a side after their registered type', async () => {
-    // The labels converted from the indexed type garble some of them
+  it('should keep the names the engine gives the types of a side', async () => {
     vi.mocked(engine.elConnectionTypesAggregationCount).mockResolvedValue([
-      { key: 'imei', label: 'Imei', value: 3, count: 3 },
-      { key: 'securityplatform', label: 'Securityplatform', value: 2, count: 2 },
+      { key: 'imei', label: 'IMEI', value: 3, count: 3 },
+      { key: 'securityplatform', label: 'SecurityPlatform', value: 2, count: 2 },
     ]);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
