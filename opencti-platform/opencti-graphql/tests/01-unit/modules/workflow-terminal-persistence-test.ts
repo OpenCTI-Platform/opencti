@@ -8,6 +8,7 @@ import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { validateDataBeforeIndexing } from '../../../src/schema/schema-attributes';
 import { validateUserAccessOperation } from '../../../src/utils/access';
+import { getDraftContext } from '../../../src/utils/draftContext';
 import '../../../src/modules/draftWorkspace/draftWorkspace';
 import '../../../src/modules/workflow/storage/workflow-instance-entity';
 
@@ -122,6 +123,23 @@ describe('Terminal workflow persistence', () => {
     vi.mocked(validateUserAccessOperation).mockReturnValueOnce(false);
     await expect(triggerWorkflowEvent(context, user, entity.id, 'Validate')).rejects.toThrow('You are not allowed to do this');
     expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it.each(['draft', 'live'])('refuses a transition from a draft when the user cannot edit the %s entity', async (forbidden) => {
+    const versions: Record<string, any> = { draft: { ...entity, version: 'draft' }, live: { ...entity, version: 'live' } };
+    vi.mocked(getDraftContext).mockReturnValue('draft-id');
+    vi.mocked(storeLoadById).mockImplementation(async (_ctx, loadUser: any, id) => {
+      if (id === entity.id) return 'draft_context' in loadUser ? versions.live : versions.draft;
+      if (id === 'workflow-id') return { id, published_version: { content: JSON.stringify(definition) } };
+      return null;
+    });
+    vi.mocked(validateUserAccessOperation).mockImplementation((_user, element: any) => element.version !== forbidden);
+
+    expect(await getAllowedTransitions(context, user, entity.id)).toEqual([]);
+    await expect(triggerWorkflowEvent(context, user, entity.id, 'Validate')).rejects.toThrow('You are not allowed to do this');
+    expect(updateAttribute).not.toHaveBeenCalled();
+    vi.mocked(getDraftContext).mockReturnValue(undefined);
+    vi.mocked(validateUserAccessOperation).mockReturnValue(true);
   });
 
   it('does not complete or persist a terminal transition whose side effect fails', async () => {
