@@ -9,6 +9,7 @@ import { ALL_LABELS } from './configPreset-labels-fixtures';
 import { ALL_EXCLUSION_LISTS } from './configPreset-exclusionLists-fixtures';
 import { ALL_KILL_CHAIN_PHASES } from './configPreset-killChainPhases-fixtures';
 import { ALL_VOCABULARIES } from './configPreset-vocabularies-fixtures';
+import { ALL_STATUS_TEMPLATES } from './configPreset-statusTemplates-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -25,6 +26,7 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   ExclusionList: ALL_EXCLUSION_LISTS,
   'Kill-Chain-Phase': ALL_KILL_CHAIN_PHASES,
   Vocabulary: ALL_VOCABULARIES,
+  StatusTemplate: ALL_STATUS_TEMPLATES,
 };
 const labelOf = (entity: { name?: string; definition?: string; value?: string }) => entity.name ?? entity.definition ?? entity.value ?? '';
 
