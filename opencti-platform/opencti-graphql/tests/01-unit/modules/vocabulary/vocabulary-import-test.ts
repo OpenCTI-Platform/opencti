@@ -245,7 +245,7 @@ describe('importVocabulary', () => {
       ['has no value', entry],
       ['has null values', { ...entry, description: null, aliases: null, order: null }],
     ])('skips it when the configuration %s', async (_name, configuration) => {
-      expect(await overwrite(configuration)).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Nothing to import' });
+      expect(await overwrite(configuration)).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Already up to date' });
       expect(editVocabulary).not.toHaveBeenCalled();
     });
 
@@ -329,7 +329,7 @@ describe('importVocabularyCategory', () => {
   it('skips a category whose entries are all the ones of the platform, and writes nothing', async () => {
     withPlatform(stored, otherStored);
     expect(await overwrite({ category, entries: [{ name: 'FIMI-report', description: 'Foreign information manipulation', aliases: ['fimi'], order: 5 }, { name: 'sev-report' }] }))
-      .toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Nothing to import' });
+      .toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Already up to date' });
     expect(addVocabulary).not.toHaveBeenCalled();
     expect(editVocabulary).not.toHaveBeenCalled();
   });

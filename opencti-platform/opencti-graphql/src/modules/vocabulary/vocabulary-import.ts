@@ -78,7 +78,7 @@ export const importVocabulary = async (
   }
   const patch = toPatch(existing, parsed.data);
   if (patch.length === 0) {
-    return refused('skipped', 'unchanged', 'Nothing to import', true, parsed.data);
+    return refused('skipped', 'unchanged', 'Already up to date', true, parsed.data);
   }
   if (!dryRun) {
     await editVocabulary(context, user, existing.id, patch, {});
@@ -116,7 +116,7 @@ export const importVocabularyCategory = async (
   }
   const changes = decided.filter(({ result }) => result.status !== 'skipped');
   if (changes.length === 0) {
-    return { status: 'skipped', code: 'unchanged', reason: 'Nothing to import', exists, configuration: parsed.data };
+    return { status: 'skipped', code: 'unchanged', reason: 'Already up to date', exists, configuration: parsed.data };
   }
   if (!dryRun) {
     for (const { entry } of changes) {
