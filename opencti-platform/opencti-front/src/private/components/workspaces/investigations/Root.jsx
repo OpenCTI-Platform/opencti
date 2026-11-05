@@ -59,7 +59,7 @@ class RootInvestigation extends Component {
                 return (
                   <Routes>
                     <Route
-                      path="/"
+                      path="/*"
                       element={(
                         <Investigation
                           workspace={props.workspace}
