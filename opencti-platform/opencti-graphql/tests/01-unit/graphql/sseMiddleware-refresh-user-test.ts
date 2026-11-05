@@ -97,6 +97,16 @@ describe('refreshStreamUser', () => {
     expect(isRightsChanged).toBe(false);
   });
 
+  it('should report a rights change when a role is removed, even with the same capabilities', async () => {
+    const user = buildUser({ organizations: [{ internal_id: PLATFORM_ORG }], roles: [{ internal_id: 'role-a' }, { internal_id: 'role-b' }] });
+    const req = buildRequest(user);
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user, roles: [{ internal_id: 'role-a' }] }]]) as any);
+
+    const { isRightsChanged } = await refreshStreamUser(req, undefined);
+
+    expect(isRightsChanged).toBe(true);
+  });
+
   it('should report a rights change when a marking is removed', async () => {
     const user = buildUser({ organizations: [{ internal_id: PLATFORM_ORG }] });
     const req = buildRequest(user);

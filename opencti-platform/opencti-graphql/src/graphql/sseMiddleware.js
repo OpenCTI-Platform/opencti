@@ -122,7 +122,9 @@ const computeStreamUserRightsKey = (user, isInsidePlatformOrganization) => {
     isInsidePlatformOrganization === true,
     sortedIds(user.capabilities, 'name'),
     sortedIds(user.allowed_marking, 'internal_id'),
+    // Groups, roles and organizations also grant access through authorized members (see computeUserMemberAccessIds)
     sortedIds(user.groups, 'internal_id'),
+    sortedIds(user.roles, 'internal_id'),
     sortedIds(user.organizations, 'internal_id'),
   ]);
 };
