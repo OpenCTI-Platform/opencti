@@ -5,7 +5,7 @@ import * as workflowDomain from '../../../../src/modules/workflow/domain/workflo
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../../src/modules/workflow/types/workflow-types';
 import * as draftContextUtils from '../../../../src/utils/draftContext';
 import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../../src/utils/filtering/filtering-constants';
-import { resolveWorkflowStatusFilter } from '../../../../src/utils/filtering/workflow-status-filter';
+import { MAX_WORKFLOW_STATUS_FILTERS, resolveWorkflowStatusFilter } from '../../../../src/utils/filtering/workflow-status-filter';
 
 vi.mock('../../../../src/database/middleware-loader');
 vi.mock('../../../../src/modules/workflow/domain/workflow-domain', () => ({ getWorkflowDefaultState: vi.fn() }));
@@ -263,6 +263,83 @@ describe('resolveWorkflowStatusFilter', () => {
 
     await expect(resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE)).rejects.toThrow('Workflow status filter only supports equality and empty operators');
     expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
+  });
+
+  describe('bounding the WorkflowInstance lookups of one filter tree', () => {
+    const statusFilter = (values: string[], operator = 'eq') => ({ key: WORKFLOW_INSTANCE_STATUS_FILTER, values, operator, mode: 'or' });
+    // One nested group per status filter, the shape that used to fan out into one concurrent scan each.
+    const nestedArgs = (statusFilters: any[]) => ({
+      filters: {
+        mode: 'or',
+        filters: [],
+        filterGroups: statusFilters.map((f) => ({ mode: 'and', filters: [f], filterGroups: [] })),
+      },
+    });
+
+    it('runs one lookup for identical status filters spread over nested groups', async () => {
+      (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-1' }]);
+      const args = nestedArgs(Array.from({ length: MAX_WORKFLOW_STATUS_FILTERS }, () => statusFilter(['status-template-abc'])));
+
+      const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
+
+      expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledTimes(1);
+      expect(result.filters.filterGroups).toHaveLength(MAX_WORKFLOW_STATUS_FILTERS);
+      result.filters.filterGroups.forEach((g: any) => {
+        expect(g.filters).toEqual([{ key: ['id'], values: ['draft-1'], operator: 'eq', mode: 'or' }]);
+      });
+    });
+
+    it('shares the lookup between the same states listed in another order and between eq and not_eq', async () => {
+      (middlewareLoader.fullEntitiesList as any).mockResolvedValue([{ entity_id: 'draft-1' }]);
+      const args = nestedArgs([
+        statusFilter(['status-template-abc', 'status-template-def']),
+        statusFilter(['status-template-def', 'status-template-abc']),
+        statusFilter(['status-template-abc', 'status-template-def'], 'not_eq'),
+      ]);
+
+      const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
+
+      expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledTimes(1);
+      expect(result.filters.filterGroups.map((g: any) => g.filters[0])).toEqual([
+        { key: ['id'], values: ['draft-1'], operator: 'eq', mode: 'or' },
+        { key: ['id'], values: ['draft-1'], operator: 'eq', mode: 'or' },
+        { key: ['id'], values: ['draft-1'], operator: 'not_eq', mode: 'and' },
+      ]);
+    });
+
+    it('still runs one lookup per distinct state set, each replaced where it stands', async () => {
+      (middlewareLoader.fullEntitiesList as any).mockImplementation(async (_ctx: any, _user: any, _types: any, opts: any) => {
+        const [state] = opts.filters.filters[0].values;
+        return [{ entity_id: `draft-in-${state}` }];
+      });
+      const args = nestedArgs([statusFilter(['status-template-abc']), statusFilter(['status-template-def'])]);
+
+      const result = await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
+
+      expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledTimes(2);
+      expect(result.filters.filterGroups.map((g: any) => g.filters[0].values)).toEqual([
+        ['draft-in-status-template-abc'],
+        ['draft-in-status-template-def'],
+      ]);
+    });
+
+    it(`accepts up to ${MAX_WORKFLOW_STATUS_FILTERS} status filters in one tree`, async () => {
+      (middlewareLoader.fullEntitiesList as any).mockResolvedValue([]);
+      const args = nestedArgs(Array.from({ length: MAX_WORKFLOW_STATUS_FILTERS }, (_, i) => statusFilter([`status-template-${i}`])));
+
+      await resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE);
+
+      expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledTimes(MAX_WORKFLOW_STATUS_FILTERS);
+    });
+
+    it('rejects a tree with more status filters than the limit before any lookup', async () => {
+      // Identical filters count too: the limit bounds the tree, not only the lookups left after sharing.
+      const args = nestedArgs(Array.from({ length: MAX_WORKFLOW_STATUS_FILTERS + 1 }, () => statusFilter(['status-template-abc'])));
+
+      await expect(resolveWorkflowStatusFilter(mockContext, args, ENTITY_TYPE_DRAFT_WORKSPACE)).rejects.toThrow('Too many workflow status filters');
+      expect(workflowDomain.getWorkflowDefaultState).not.toHaveBeenCalled();
+      expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
+    });
   });
 
   it('does not cap the resolved id list', async () => {
