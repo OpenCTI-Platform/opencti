@@ -20,6 +20,7 @@
 // 30-197 indicators per run, growing with depth). The operation is re-executed in process
 // when a missing target lands, or by the sweeper; the same key / index / backoff / expiry.
 import { createHash } from 'node:crypto';
+import { LRUCache } from 'lru-cache';
 import conf, { logApp } from '../../config/conf';
 import { SEQUENCER_DEFERRED_ERROR } from '../../config/errors';
 import { getInstanceIds } from '../../schema/identifier';
@@ -248,6 +249,7 @@ export const deferIntents = async (deferrals: { intent: SequencerIntent; missing
   });
   checkBulkResponse(await esOps.bulk(body), 'defer');
   records.forEach(memoryAdd);
+  records.forEach(resubmitIfLanded);
   return true;
 };
 
@@ -306,14 +308,18 @@ export const deferOperation = async ({ operation, envelope, user, missing }: Pen
   const { id: _id, user: _user, ...persisted } = record;
   checkBulkResponse(await esOps.bulk([{ index: { _index: PENDING_INTENTS_INDEX, _id: record.id } }, persisted]), 'defer');
   memoryAdd(record);
+  resubmitIfLanded(record);
   return true;
 };
 
 // Complete-index lookup, called for every committed element (O(1) per instance id).
 export const matchLandedIntents = (element: any): PendingIntentRecord[] => {
-  if (byTarget.size === 0 || !element?.internal_id) return [];
+  if (!element?.internal_id) return [];
+  const instanceIds: string[] = getInstanceIds(element);
+  instanceIds.forEach((id) => recentlyLanded.set(id, true));
+  if (byTarget.size === 0) return [];
   const hits = new Map<string, PendingIntentRecord>();
-  getInstanceIds(element).forEach((id: string) => {
+  instanceIds.forEach((id: string) => {
     const bucket = byTarget.get(id);
     if (bucket) bucket.forEach((record) => hits.set(record.id, record));
   });
@@ -382,12 +388,50 @@ const resubmitOne = async (record: PendingIntentRecord) => {
   }
 };
 
-// Fire-and-forget, sequential: never awaited by the loop.
-let resubmitChain: Promise<void> = Promise.resolve();
+// Fire-and-forget, never awaited by the loop, at most RESUBMIT_CONCURRENCY at once (it was one at a
+// time: 2,268 retentions on one missing author, worker-less mix140k 2026-11-05, took the whole
+// settle window). A record is queued once; one asked again while it runs runs again after, since
+// its reference may have landed during the run (which may have re-deferred it).
+const RESUBMIT_CONCURRENCY = Number(conf.get('app:ingestion_sequencer:pending_resubmit_concurrency') ?? 16);
+const resubmitQueue: PendingIntentRecord[] = [];
+const resubmitQueued = new Set<string>();
+const resubmitRunning = new Set<string>();
+const resubmitAgain = new Set<string>();
+const pumpResubmits = () => {
+  while (resubmitRunning.size < RESUBMIT_CONCURRENCY && resubmitQueue.length > 0) {
+    const record = resubmitQueue.shift() as PendingIntentRecord;
+    resubmitQueued.delete(record.id);
+    resubmitRunning.add(record.id);
+    resubmitOne(record)
+      .catch((err) => logApp.warn('[SEQUENCER] pending intent re-submission error', { id: record.id, cause: String(err) }))
+      .finally(() => {
+        resubmitRunning.delete(record.id);
+        if (resubmitAgain.delete(record.id)) {
+          const current = byId.get(record.id);
+          if (current) fireResubmit([current]);
+        }
+        pumpResubmits();
+      });
+  }
+};
 export const fireResubmit = (records: PendingIntentRecord[]) => {
   records.forEach((record) => {
-    resubmitChain = resubmitChain.then(() => resubmitOne(record));
+    if (resubmitRunning.has(record.id)) {
+      resubmitAgain.add(record.id);
+    } else if (!resubmitQueued.has(record.id)) {
+      resubmitQueued.add(record.id);
+      resubmitQueue.push(record);
+    }
   });
+  pumpResubmits();
+};
+
+// The ids of the elements committed lately: a retention recorded after its missing reference
+// landed (the check missed it, the landing came before the record entered the index) is
+// re-submitted at once instead of waiting for the sweep.
+const recentlyLanded = new LRUCache<string, true>({ max: 200_000, ttl: 10 * 60_000 });
+const resubmitIfLanded = (record: PendingIntentRecord) => {
+  if (record.missing_refs.some((ref) => recentlyLanded.has(ref))) fireResubmit([record]);
 };
 
 // Periodic sweeper: re-submits aged records (targets that arrived through non-sequencer
@@ -418,7 +462,7 @@ const sweepOnce = async () => {
         await settle(record, 'expired', `Creation expired: reference(s) never landed: ${record.missing_refs.join(', ')}`);
         expired += 1;
       } else if (resubmitted < SWEEP_MAX_RESUBMITS) {
-        await resubmitOne(record);
+        fireResubmit([record]);
         resubmitted += 1;
       }
     }

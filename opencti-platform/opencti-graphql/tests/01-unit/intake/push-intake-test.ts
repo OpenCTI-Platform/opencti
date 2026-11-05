@@ -142,3 +142,33 @@ describe('Worker-less intake flow control', () => {
     expect(order.isOrdered('feed')).toBe(false);
   });
 });
+
+describe('Worker-less push message levels', () => {
+  it('should write a level of the bundle before starting the next one', async () => {
+    const author = { type: 'identity', spec_version: '2.1', id: 'identity--00000000-0000-4000-8000-0000000000a1', name: 'Author', identity_class: 'organization' };
+    const events: string[] = [];
+    let releaseFirst: () => void = () => {};
+    const run = async (chunk: PushChunk) => {
+      const ids = chunk.operations.filter((operation) => !operation.echo_id).map((operation) => operation.object_id);
+      events.push(`start ${ids.join(',')}`);
+      if (ids.includes(author.id)) {
+        await new Promise<void>((resolve) => {
+          releaseFirst = resolve;
+        });
+      }
+      events.push(`end ${ids.join(',')}`);
+      return 'acked' as const;
+    };
+    const message = pushMessage(bundleOf(author, { ...malware(1), created_by_ref: author.id }));
+    const deps = { ...depsWith(run), chunkSize: 24 };
+    const handled = handlePushMessage(message, deps);
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
+    // the malware (level 1) waits for its author (level 0) to be written
+    expect(events).toEqual([`start ${author.id}`]);
+    releaseFirst();
+    expect(await handled).toMatchObject({ ack: true, chunks: 2 });
+    expect(events).toEqual([`start ${author.id}`, `end ${author.id}`, `start ${malware(1).id}`, `end ${malware(1).id}`]);
+  });
+});

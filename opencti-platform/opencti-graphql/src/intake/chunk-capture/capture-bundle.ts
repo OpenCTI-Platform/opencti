@@ -22,23 +22,39 @@ export interface CapturedBundle {
   dangling: string[];
 }
 
-export const captureBundle = async (context: ImportContext, bundle: StixObject, update: boolean, types: string[] | null, chunkSize: number): Promise<CapturedBundle> => {
+export interface CaptureOptions {
+  // Chunks built by dependency level (chunkContents), for an intake that writes level by level
+  byLevel?: boolean;
+}
+
+export const captureBundle = async (
+  context: ImportContext,
+  bundle: StixObject,
+  update: boolean,
+  types: string[] | null,
+  chunkSize: number,
+  options: CaptureOptions = {},
+): Promise<CapturedBundle> => {
   const { bundles, incompatibleItems } = new Stix2Splitter().splitBundleWithExpectations(bundle, false, bundle.x_opencti_event_version);
   const memberIds = new Set((bundle.objects as StixObject[]).filter((object) => typeof object?.id === 'string').map((object) => object.id as string));
   (bundles as StixObject[]).forEach((splitBundle) => (splitBundle.objects as StixObject[]).forEach((object) => markMemberRefs(object, memberIds)));
   const client = new ChunkCaptureClient(context.client);
   const captureContext: ImportContext = { ...context, client, cache: new CaptureCache(context.cache, client.window) };
   const items: CapturedBundle['items'] = [];
+  // The dependency level of each captured operation: the split bundle's x_opencti_seq (nb_deps)
+  const levels: number[] = [];
   try {
     // The worker imports each split bundle on its own (import_bundle_from_json splits it again)
     for (const splitBundle of bundles as StixObject[]) {
       const result = await transformBundle(captureContext, splitBundle, update, types);
       items.push(...result.items);
+      const level = Number(splitBundle.x_opencti_seq ?? 0);
+      while (levels.length < client.operations.length) levels.push(level);
     }
   } finally {
     purgeCaptureWindow(context.cache, client.window);
   }
   const dangling = new Set<string>();
-  const chunks = chunkContents(client.operations, Math.max(1, chunkSize), dangling);
+  const chunks = chunkContents(client.operations, Math.max(1, chunkSize), dangling, options.byLevel ? levels : undefined);
   return { chunks, items, incompatible: incompatibleItems.map((item: StixObject) => item.id as string), dangling: [...dangling] };
 };

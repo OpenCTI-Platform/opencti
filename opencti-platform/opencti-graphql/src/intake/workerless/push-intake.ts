@@ -76,7 +76,7 @@ export const handlePushMessage = async (data: Record<string, any> | null, deps: 
   let chunkContents: Awaited<ReturnType<typeof captureBundle>>['chunks'];
   try {
     const context = { ...deps.contextFor(decoded.draftId), client: deps.readsClient(envelope) };
-    ({ chunks: chunkContents } = await captureBundle(context, bundle, update, decoded.types, deps.chunkSize));
+    ({ chunks: chunkContents } = await captureBundle(context, bundle, update, decoded.types, deps.chunkSize, { byLevel: true }));
   } catch (error: any) {
     // A read of the transformation refused by the context checks (the HTTP edge's): a deleted work
     // or a closed draft, skipped as the worker skips it (the chunks report the draft case)
@@ -90,14 +90,23 @@ export const handlePushMessage = async (data: Record<string, any> | null, deps: 
     // The split fails (a malformed message) or the transformation has a defect: the worker nacks
     return { ack: false, reason: 'transformation_failed', chunks: 0, objects };
   }
-  const chunks: PushChunk[] = chunkContents.map((chunk) => ({
+  const chunks: (PushChunk & { level?: number })[] = chunkContents.map((chunk) => ({
     ...envelope,
     v: 1,
     chunk_id: randomUUID(),
     operations: chunk.operations,
     work_objects: chunk.work_objects,
+    level: chunk.level,
   }));
-  const verdicts = await Promise.all(chunks.map((chunk) => deps.runChunk(chunk)));
+  // Level by level, the chunks of a level at once: a level starts once the previous one is written
+  // (a chunk ends after the commit), so an object never runs before its in-bundle dependencies.
+  // A dead-lettered chunk does not stop the next levels, as the worker's inline import went on.
+  const verdicts: ChunkVerdict[] = [];
+  const levels = [...new Set(chunks.map((chunk) => chunk.level ?? 0))];
+  for (const level of levels) {
+    const levelChunks = chunks.filter((chunk) => (chunk.level ?? 0) === level);
+    verdicts.push(...(await Promise.all(levelChunks.map(({ level: _level, ...chunk }) => deps.runChunk(chunk)))));
+  }
   const written = verdicts.every((verdict) => verdict === 'acked');
   return { ack: written, reason: written ? 'written' : 'chunk_dead_lettered', chunks: chunks.length, objects };
 };

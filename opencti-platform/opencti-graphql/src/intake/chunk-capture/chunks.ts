@@ -50,8 +50,10 @@ const collectEchoRefs = (value: unknown, refs: Set<string>) => {
 // and every chunk carries the producers its operations reference, even those captured in an
 // earlier chunk (repeating an idempotent upsert is safe, a dangling echo fails the object). An
 // echo no operation produces goes to `dangling`: it can only come from another message.
-export const buildChunks = (operations: ChunkOperation[], size: number, dangling?: Set<string>): ChunkOperation[][] => {
-  const producers = new Map(operations.filter((operation) => operation.echo_id).map((operation) => [operation.echo_id as string, operation]));
+// The producers are looked up in `producerPool` (the operations themselves by default): the
+// chunks of one dependency level reference the producers captured at an earlier level.
+export const buildChunks = (operations: ChunkOperation[], size: number, dangling?: Set<string>, producerPool: ChunkOperation[] = operations): ChunkOperation[][] => {
+  const producers = new Map(producerPool.filter((operation) => operation.echo_id).map((operation) => [operation.echo_id as string, operation]));
   const chunks: ChunkOperation[][] = [];
   let current: ChunkOperation[] = [];
   let currentEchoes = new Set<string>();
@@ -97,14 +99,34 @@ export interface ChunkContent {
   operations: ChunkOperation[];
   // Objects this chunk reports to the work: an object is reported by the first chunk it is in
   work_objects: number;
+  // The dependency level of its objects (the split's nb_deps), when the chunks are built by level
+  level?: number;
 }
 
-export const chunkContents = (operations: ChunkOperation[], size: number, dangling?: Set<string>): ChunkContent[] => {
+// The chunks of a capture. With `levels` (the dependency level of each operation, in capture
+// order), a chunk never mixes levels: the intake writes a level before the next one, as the POC
+// worker's inline import did (bundle_waves levels), so an object is written once its in-bundle
+// dependencies are (authors, markings, identities before the objects that reference them).
+// Without it, the worker's chunks.
+export const chunkContents = (operations: ChunkOperation[], size: number, dangling?: Set<string>, levels?: number[]): ChunkContent[] => {
+  const runs: { level?: number; operations: ChunkOperation[] }[] = [];
+  if (levels) {
+    operations.forEach((operation, index) => {
+      const last = runs[runs.length - 1];
+      if (last && last.level === levels[index]) {
+        last.operations.push(operation);
+      } else {
+        runs.push({ level: levels[index], operations: [operation] });
+      }
+    });
+  } else {
+    runs.push({ operations });
+  }
   const accounted = new Set<string>();
-  return buildChunks(operations, size, dangling).map((chunkOperations) => {
+  return runs.flatMap((run) => buildChunks(run.operations, size, dangling, operations).map((chunkOperations) => {
     const objects = new Set(chunkOperations.filter((operation) => operation.object_id && !operation.echo_id).map((operation) => operation.object_id as string));
     const reported = [...objects].filter((objectId) => !accounted.has(objectId));
     reported.forEach((objectId) => accounted.add(objectId));
-    return { operations: chunkOperations, work_objects: reported.length };
-  });
+    return { operations: chunkOperations, work_objects: reported.length, ...(run.level !== undefined ? { level: run.level } : {}) };
+  }));
 };

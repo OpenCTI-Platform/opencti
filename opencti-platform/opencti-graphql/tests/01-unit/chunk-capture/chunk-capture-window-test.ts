@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ChunkOperation } from '../../../src/graphql/chunk-executor';
 import { captureBundle } from '../../../src/intake/chunk-capture/capture-bundle';
 import { type CaptureWindow, ECHO_PREFIX } from '../../../src/intake/chunk-capture/capture-client';
-import { buildChunks } from '../../../src/intake/chunk-capture/chunks';
+import { buildChunks, chunkContents } from '../../../src/intake/chunk-capture/chunks';
 import { CaptureCache, purgeCaptureWindow } from '../../../src/intake/chunk-capture/capture-cache';
 import { createImportContext, getInCache, type ImportContext, setInCache } from '../../../src/intake/stix-import/context';
 import type { ImportClient } from '../../../src/intake/stix-import/types';
@@ -139,5 +139,19 @@ describe('Chunk capture windows', () => {
     expect([...dangling]).toEqual([]);
     buildChunks([consumer(1)], 2, dangling);
     expect([...dangling]).toEqual(['echo--p']);
+  });
+
+  it('should never mix dependency levels in a chunk, and repeat an earlier level\'s producer where referenced', () => {
+    const producer: ChunkOperation = { query: 'mutation LabelAdd', variables: { input: { value: 'a' } }, object_id: null, echo_id: 'echo--p' };
+    const author: ChunkOperation = { query: 'mutation IdentityAdd', variables: { input: {} }, object_id: 'identity--1' };
+    const indicator = (index: number): ChunkOperation => ({ query: 'mutation IndicatorAdd', variables: { input: { createdBy: 'identity--1', objectLabel: ['echo--p'] } }, object_id: `indicator--${index}` });
+    const operations = [producer, author, indicator(1), indicator(2)];
+    const chunks = chunkContents(operations, 24, undefined, [0, 0, 1, 1]);
+    expect(chunks.map((chunk) => ({ level: chunk.level, ids: chunk.operations.map((operation) => operation.echo_id ?? operation.object_id) }))).toEqual([
+      { level: 0, ids: ['echo--p', 'identity--1'] },
+      { level: 1, ids: ['echo--p', 'indicator--1', 'indicator--2'] },
+    ]);
+    // without levels: the worker's chunk
+    expect(chunkContents(operations, 24).map((chunk) => chunk.operations.length)).toEqual([4]);
   });
 });

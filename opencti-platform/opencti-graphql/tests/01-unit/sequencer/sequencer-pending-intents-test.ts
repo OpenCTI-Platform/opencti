@@ -3,6 +3,7 @@ import {
   deferIntents,
   deferOperation,
   fireResubmit,
+  matchLandedIntents,
   pendingIntentRecordKey,
   pendingRecordInput,
   registerPendingFileStaging,
@@ -133,5 +134,60 @@ describe('retained operation files', () => {
     const chunks: Buffer[] = [];
     for await (const chunk of createReadStream()) chunks.push(chunk);
     expect({ filename, data: Buffer.concat(chunks).toString() }).toEqual({ filename: 'report.pdf', data: '%PDF-1.4 content' });
+  });
+});
+
+describe('retained records re-submission', () => {
+  const setup = () => {
+    const bulk = vi.fn().mockResolvedValue({ errors: false, items: [] });
+    registerPendingIntentsEsOps({ indexExists: vi.fn(), createIndex: vi.fn(), bulk, search: vi.fn() });
+    return bulk;
+  };
+  const operation = (index: number) => ({ query: 'mutation IndicatorAdd', variables: { input: { name: `I${index}` } }, object_id: `indicator--${index}` });
+
+  it('should re-submit several records at once, each once even if asked again', async () => {
+    setup();
+    let running = 0;
+    let maxRunning = 0;
+    const runs = new Map<string, number>();
+    const releases: (() => void)[] = [];
+    registerPendingOperationExecute(async (record) => {
+      running += 1;
+      maxRunning = Math.max(maxRunning, running);
+      runs.set(record.id, (runs.get(record.id) ?? 0) + 1);
+      await new Promise<void>((resolve) => {
+        releases.push(resolve);
+      });
+      running -= 1;
+      return 'applied';
+    });
+    const user = { id: 'user-1' } as any;
+    for (let index = 0; index < 4; index += 1) {
+      await deferOperation({ operation: operation(index), envelope: {}, user, missing: ['identity--author'] });
+    }
+    // the author lands: its 4 dependents re-submitted together; a second landing while they run
+    const landed = matchLandedIntents({ internal_id: 'x', standard_id: 'identity--author', entity_type: 'Organization' });
+    expect(landed).toHaveLength(4);
+    fireResubmit(landed);
+    fireResubmit(landed);
+    await vi.waitFor(() => expect(running).toEqual(4));
+    expect(maxRunning).toEqual(4);
+    releases.splice(0).forEach((release) => release());
+    await vi.waitFor(() => expect(running).toEqual(0));
+    // asked again while running: run again only if still pending (applied here: settled)
+    expect([...runs.values()]).toEqual([1, 1, 1, 1]);
+  });
+
+  it('should re-submit at once a record whose reference landed before it was retained', async () => {
+    setup();
+    const executed: string[] = [];
+    registerPendingOperationExecute(async (record) => {
+      executed.push(record.id);
+      return 'applied';
+    });
+    // the author lands first (no record waits yet), the retention of its dependent comes after
+    matchLandedIntents({ internal_id: 'y', standard_id: 'identity--early', entity_type: 'Organization' });
+    await deferOperation({ operation: operation(9), envelope: {}, user: { id: 'user-1' } as any, missing: ['identity--early'] });
+    await vi.waitFor(() => expect(executed).toHaveLength(1));
   });
 });
