@@ -181,6 +181,41 @@ export const isLoadedRefsChanged = (nextIds: string[], loadedRefs: unknown): boo
   return R.symmetricDifference(nextIds, loadedIds as string[]).length > 0;
 };
 
+export interface RefsReplaceBaseline {
+  // Whether the replace changes the refs of the element (an update input, so a stream event, is due)
+  changed: boolean;
+  // The refs the update input carries as its previous value
+  previous: unknown;
+  // When the refs read under the lock differ from the pre-lock snapshot: the fields the previous state of the
+  // event must carry, or the stale replace yields an identical pair and an empty patch
+  lockedInitial?: Record<string, unknown>;
+}
+
+// The baseline a multiple ref replace is compared with (#18634). The loaded refs are a pre-lock snapshot: when
+// they already are the targets, the element is read again under the lock (loadLocked), so that a concurrent change
+// of the refs is never taken for a repair and its replacement always produces an update.
+export const resolveRefsReplaceBaseline = async (
+  nextIds: string[],
+  loadedRefs: unknown,
+  key: string,
+  relType: string,
+  loadLocked: () => Promise<Record<string, unknown> | null | undefined>,
+): Promise<RefsReplaceBaseline> => {
+  if (isLoadedRefsChanged(nextIds, loadedRefs)) {
+    return { changed: true, previous: loadedRefs };
+  }
+  const locked = await loadLocked();
+  const lockedRefs = locked?.[key];
+  if (!isLoadedRefsChanged(nextIds, lockedRefs)) {
+    return { changed: false, previous: lockedRefs };
+  }
+  const lockedInitial: Record<string, unknown> = { [key]: lockedRefs };
+  if (locked && locked[relType] !== undefined) {
+    lockedInitial[relType] = locked[relType];
+  }
+  return { changed: true, previous: lockedRefs, lockedInitial };
+};
+
 export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: string | string[] | undefined | null): string => {
   const draftContext = getDraftContext(context, user);
   return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));

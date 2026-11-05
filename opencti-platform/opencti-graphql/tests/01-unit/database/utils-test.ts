@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs, fillTimeSeries, isLoadedRefsChanged } from '../../../src/database/utils';
+import { extractObjectsPirsFromInputs, extractObjectsRestrictionsFromInputs, fillTimeSeries, isLoadedRefsChanged, resolveRefsReplaceBaseline } from '../../../src/database/utils';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { EditOperation } from '../../../src/generated/graphql';
 
@@ -320,5 +320,46 @@ describe('isLoadedRefsChanged', () => {
   it('should be true when the loaded refs cannot be compared', () => {
     expect(isLoadedRefsChanged(['m1'], [{ entity_type: 'Marking-Definition' }])).toBe(true);
     expect(isLoadedRefsChanged(['m1'], 'm1')).toBe(true);
+  });
+});
+
+// #18634: the baseline of a replace is read again under the lock when the pre-lock refs already are the targets
+describe('resolveRefsReplaceBaseline', () => {
+  const marking = (id: string) => ({ id, internal_id: id, entity_type: 'Marking-Definition' });
+  const key = 'objectMarking';
+  const relType = 'object-marking';
+
+  it('should be a change without reading under the lock when the loaded refs differ from the targets', async () => {
+    let lockedReads = 0;
+    const loaded = [marking('m1')];
+    const baseline = await resolveRefsReplaceBaseline(['m1', 'm2'], loaded, key, relType, async () => {
+      lockedReads += 1;
+      return null;
+    });
+    expect(baseline).toEqual({ changed: true, previous: loaded });
+    expect(lockedReads).toBe(0);
+  });
+
+  it('should be a repair when the refs read under the lock still are the targets', async () => {
+    const locked = { [key]: [marking('m2'), marking('m1')], [relType]: ['m2', 'm1'] };
+    const baseline = await resolveRefsReplaceBaseline(['m1', 'm2'], [marking('m1'), marking('m2')], key, relType, async () => locked);
+    expect(baseline.changed).toBe(false);
+    expect(baseline.previous).toEqual(locked[key]);
+    expect(baseline.lockedInitial).toBeUndefined();
+  });
+
+  it('should be a change carrying the refs read under the lock when they changed concurrently', async () => {
+    const locked = { [key]: [marking('m3')], [relType]: ['m3'] };
+    const baseline = await resolveRefsReplaceBaseline(['m1'], [marking('m1')], key, relType, async () => locked);
+    expect(baseline.changed).toBe(true);
+    expect(baseline.previous).toEqual([marking('m3')]);
+    expect(baseline.lockedInitial).toEqual({ [key]: [marking('m3')], [relType]: ['m3'] });
+  });
+
+  it('should be a change without the relation ids when the element is gone under the lock', async () => {
+    const baseline = await resolveRefsReplaceBaseline(['m1'], [marking('m1')], key, relType, async () => null);
+    expect(baseline.changed).toBe(true);
+    expect(baseline.previous).toBeUndefined();
+    expect(baseline.lockedInitial).toEqual({ [key]: undefined });
   });
 });

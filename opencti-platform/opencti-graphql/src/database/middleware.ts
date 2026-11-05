@@ -38,7 +38,6 @@ import {
   isDraftIndex,
   isEmptyField,
   isInferredIndex,
-  isLoadedRefsChanged,
   isNotEmptyField,
   isObjectPathTargetMultipleAttribute,
   READ_DATA_INDICES,
@@ -47,6 +46,7 @@ import {
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+  resolveRefsReplaceBaseline,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE,
@@ -2818,25 +2818,14 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
             }
             // A replace that only repairs the stored relationships (the loaded refs are already the targets)
             // is not an update of the element: no input, so no empty stream event (#18634)
-            let previousRefs = updatedInstance[key];
-            let isRefsChanged = isLoadedRefsChanged(newTargetsIds, previousRefs);
-            if (!isRefsChanged) {
-              // The loaded refs are a pre-lock snapshot: read them again under the lock, so that a concurrent
-              // change of the refs is never taken for a repair and its replacement always produces an update
-              const lockedInstance = await storeLoadByIdWithRefs(context, user, initial.internal_id, { type: initial.entity_type }) as Record<string, any> | null;
-              previousRefs = lockedInstance?.[key];
-              isRefsChanged = isLoadedRefsChanged(newTargetsIds, previousRefs);
-              if (isRefsChanged) {
-                // The event compares the initial element with the updated one: its previous state must carry
-                // the refs read under the lock, or the stale replace yields an identical pair and an empty patch
-                (initial as Record<string, any>)[key] = previousRefs;
-                if (lockedInstance && lockedInstance[relType] !== undefined) {
-                  (initial as Record<string, any>)[relType] = lockedInstance[relType];
-                }
-              }
+            const baseline = await resolveRefsReplaceBaseline(newTargetsIds, updatedInstance[key], key, relType, async () => {
+              return await storeLoadByIdWithRefs(context, user, initial.internal_id, { type: initial.entity_type }) as Record<string, any> | null;
+            });
+            if (baseline.lockedInitial) {
+              Object.assign(initial, baseline.lockedInitial);
             }
-            if (isRefsChanged) {
-              updatedInputs.push({ key, value: refs, previous: previousRefs });
+            if (baseline.changed) {
+              updatedInputs.push({ key, value: refs, previous: baseline.previous });
             }
             updatedInstance[key] = refs;
             updatedInstance[relType] = newTargetsIds;
