@@ -120,6 +120,8 @@ const computeStreamUserRightsKey = (user, isInsidePlatformOrganization) => {
   return JSON.stringify([
     user.user_service_account === true,
     isInsidePlatformOrganization === true,
+    // Outside the platform organization, the individual of the user and the data it created are accessible
+    user.individual_id ?? null,
     sortedIds(user.capabilities, 'name'),
     sortedIds(user.allowed_marking, 'internal_id'),
     // Groups, roles and organizations also grant access through authorized members (see computeUserMemberAccessIds)

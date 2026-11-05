@@ -107,6 +107,17 @@ describe('refreshStreamUser', () => {
     expect(isRightsChanged).toBe(true);
   });
 
+  it('should report a rights change when the individual of the user changes', async () => {
+    const user = buildUser({ organizations: [{ internal_id: OTHER_ORG }], individual_id: 'individual-a' });
+    const req = buildRequest(user);
+    req.context.user_inside_platform_organization = false;
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user, individual_id: 'individual-b' }]]) as any);
+
+    const { isRightsChanged } = await refreshStreamUser(req, undefined);
+
+    expect(isRightsChanged).toBe(true);
+  });
+
   it('should report a rights change when a marking is removed', async () => {
     const user = buildUser({ organizations: [{ internal_id: PLATFORM_ORG }] });
     const req = buildRequest(user);
