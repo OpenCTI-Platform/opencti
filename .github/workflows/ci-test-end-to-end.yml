@@ -173,10 +173,13 @@ jobs:
 
       - name: e2e tests
         run: |
-          docker run --network runner-docker-network \
+          # Share the network of the platform container: the tests reach it on localhost, a secure
+          # context for the browser. Over plain HTTP, http://opencti-e2e-start:4100 is not one, and
+          # the browser hides APIs the front uses, such as crypto.randomUUID.
+          docker run --network container:opencti-e2e-start \
             --name frontend-e2e-tests \
             -v ${{ github.workspace }}/frontend-e2e-test:/home/workspace \
-            -e BACK_END_URL=http://opencti-e2e-start:4100 \
+            -e E2E_BASE_URL=http://localhost:4100 \
             -e E2E_TEST=true \
             -e NODE_OPTIONS=--max_old_space_size=8192 \
             node:22 \
