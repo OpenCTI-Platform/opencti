@@ -55,6 +55,13 @@ describe('Status templates import (registry)', () => {
     expect(importStatusTemplate).not.toHaveBeenCalled();
   });
 
+  it.each([[''], ['   '], [undefined], [42]])('leaves a blank or missing name (%j) to the module, which refuses it, instead of aborting the preview', async (name) => {
+    vi.mocked(importStatusTemplate).mockResolvedValue({ status: 'failed', code: 'invalid', reason: 'name: Invalid input', exists: false });
+    expect(await family.importer!.compute(context, user, item({ name, color: '#e91e63' }), plan, ConfigImportMode.Overwrite))
+      .toMatchObject({ status: 'failed', reason: 'name: Invalid input' });
+    expect(importStatusTemplate).toHaveBeenCalledTimes(1);
+  });
+
   it('leaves a configuration without a name to the module, which refuses it, and names the item by its id', async () => {
     vi.mocked(importStatusTemplate).mockResolvedValue({ status: 'failed', code: 'invalid', reason: 'name: Invalid input', exists: false });
     expect(await family.importer!.compute(context, user, item({ color: '#e91e63' }), plan, ConfigImportMode.Overwrite))

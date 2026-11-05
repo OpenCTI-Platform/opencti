@@ -1,11 +1,11 @@
 import { FilterMode, FilterOperator, OrderingMode, StatusTemplateOrdering } from '../../../generated/graphql';
 import { findAllStatusTemplates, findTemplatePaginated } from '../../../domain/status';
-import { getStatusTemplateConfigPresetConfiguration } from '../../statusTemplate/statusTemplate-export';
+import { exportStatusTemplate } from '../../statusTemplate/statusTemplate-export';
 import { getStatusTemplateStandardId, importStatusTemplate } from '../../statusTemplate/statusTemplate-import';
 import type { BasicStoreEntityStatusTemplate } from '../../statusTemplate/statusTemplate-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetImporter } from '../import/configPreset-import-types';
-import { buildConfigPresetConnection, taxonomyGroup, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
+import { buildConfigPresetConnection, checkStandardId, taxonomyGroup, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
 
 export const STATUS_TEMPLATES_FAMILY_ID = 'statusTemplates';
 
@@ -26,7 +26,7 @@ const toStatusTemplateItem = (template: BasicStoreEntityStatusTemplate): ConfigP
   id: template.standard_id,
   label: template.name,
   translatable: false,
-  exporter: async () => getStatusTemplateConfigPresetConfiguration(template),
+  exporter: async () => exportStatusTemplate(template),
 });
 
 const statusTemplatesImporter: ConfigPresetImporter = {
@@ -34,8 +34,9 @@ const statusTemplatesImporter: ConfigPresetImporter = {
     const { name } = item.configuration;
     const label = { label: typeof name === 'string' ? name.trim() : item.id, translatable: false };
     // The bundle id of a status template is its standard id: the one of its name
-    if (typeof name === 'string' && getStatusTemplateStandardId(name.trim()) !== item.id) {
-      return { ...label, exists: false, conflict: false, status: 'failed', reason: 'The standard id of the status template does not match its name' };
+    const mismatch = checkStandardId(item, label, [name], ([templateName]) => getStatusTemplateStandardId(templateName.trim()), 'The standard id of the status template does not match its name');
+    if (mismatch) {
+      return mismatch;
     }
     return toComputedItem(label, await importStatusTemplate(context, user, item.configuration, { mode, dryRun: true }));
   },

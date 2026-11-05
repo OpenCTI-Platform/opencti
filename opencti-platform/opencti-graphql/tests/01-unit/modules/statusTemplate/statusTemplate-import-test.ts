@@ -16,7 +16,7 @@ import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../../src/schema/internalObje
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import { getStatusTemplateStandardId, importStatusTemplate } from '../../../../src/modules/statusTemplate/statusTemplate-import';
 import { statusTemplateImportSchema } from '../../../../src/modules/statusTemplate/statusTemplate-import-schema';
-import { getStatusTemplateConfigPresetConfiguration } from '../../../../src/modules/statusTemplate/statusTemplate-export';
+import { exportStatusTemplate } from '../../../../src/modules/statusTemplate/statusTemplate-export';
 import type { BasicStoreEntityStatusTemplate } from '../../../../src/modules/statusTemplate/statusTemplate-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
@@ -42,7 +42,7 @@ describe('Status template identity', () => {
 describe('Status template import schema', () => {
   it('accepts a name and a color, and trims the name', () => {
     expect(statusTemplateImportSchema.parse({ name: ' Escalated ', color: '#e91e63' })).toEqual({ name: 'Escalated', color: '#e91e63' });
-    expect(statusTemplateImportSchema.parse({ name: 'N', color: '#fff' })).toEqual({ name: 'N', color: '#fff' });
+    expect(statusTemplateImportSchema.parse({ name: 'New', color: '#fff' })).toEqual({ name: 'New', color: '#fff' });
   });
 
   it.each([
@@ -50,6 +50,8 @@ describe('Status template import schema', () => {
     [{ name: 'Escalated' }],
     [{ color: '#e91e63' }],
     [{ name: '   ', color: '#e91e63' }],
+    // Shorter than the platform accepts for a status template (StatusTemplateAddInput)
+    [{ name: 'E', color: '#e91e63' }],
     [{ name: 'Escalated', color: 'red' }],
     [{ name: 'Escalated', color: null }],
     [{ name: 'Escalated', color: '#e91e63', usages: 3 }],
@@ -59,7 +61,7 @@ describe('Status template import schema', () => {
   });
 
   it('is the format of the export, so an export imports back as is, without the usages', () => {
-    const configuration = getStatusTemplateConfigPresetConfiguration({ ...stored, usages: 4, creator_id: ['secret'] } as unknown as BasicStoreEntityStatusTemplate);
+    const configuration = exportStatusTemplate({ ...stored, usages: 4, creator_id: ['secret'] } as unknown as BasicStoreEntityStatusTemplate);
     expect(configuration).toEqual({ name: 'Escalated', color: '#e91e63' });
     expect(statusTemplateImportSchema.safeParse(configuration).success).toBe(true);
   });
@@ -69,7 +71,7 @@ describe('importStatusTemplate', () => {
   it('refuses an invalid configuration with the path of each issue, without reading the platform', async () => {
     const result = await importStatusTemplate(context, user, { name: '', color: 'red' }, { mode: ConfigImportMode.Overwrite });
     expect(result).toMatchObject({ status: 'failed', code: 'invalid', exists: false });
-    expect(result.reason).toContain('name: Status template name is required');
+    expect(result.reason).toContain('name: Status template name must be at least 2 characters');
     expect(result.reason).toContain('color: Must be a hex color');
     expect(storeLoadById).not.toHaveBeenCalled();
   });

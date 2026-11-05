@@ -5,6 +5,6 @@ import { statusTemplateImportSchema } from './statusTemplate-import-schema';
 const STATUS_TEMPLATE_EXPORT_FIELDS = Object.keys(statusTemplateImportSchema.shape) as (keyof BasicStoreEntityStatusTemplate)[];
 
 // A status template in the import format. Its usages (the workflows it is in) are not part of it
-export const getStatusTemplateConfigPresetConfiguration = (template: BasicStoreEntityStatusTemplate) => {
+export const exportStatusTemplate = (template: BasicStoreEntityStatusTemplate) => {
   return Object.fromEntries(STATUS_TEMPLATE_EXPORT_FIELDS.map((field) => [field, template[field]]));
 };
