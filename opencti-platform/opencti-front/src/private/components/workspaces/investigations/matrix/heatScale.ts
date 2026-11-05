@@ -26,6 +26,10 @@ export const heatStopIndex = (score: number, scale: HeatScale): number => {
   return Math.min(LAST_STOP_INDEX, Math.max(0, index));
 };
 
-export const heatFill = (stopIndex: number): string => `color-mix(in srgb, ${HEAT_STOPS[stopIndex]} 70%, transparent)`;
+// Fill opacity per stop, in %. 70% by default; the two darkest stops need more of their colour for the
+// --black-900 label to reach 4.5:1 over the dark theme background (orange-500 3.7:1 and red-400 3.2:1 at 70%).
+const HEAT_FILL_OPACITIES: readonly number[] = [70, 70, 70, 85, 95];
+
+export const heatFill = (stopIndex: number): string => `color-mix(in srgb, ${HEAT_STOPS[stopIndex]} ${HEAT_FILL_OPACITIES[stopIndex]}%, transparent)`;
 
 export const heatBorder = (stopIndex: number): string => HEAT_STOPS[stopIndex];

@@ -6,7 +6,7 @@ export interface MatrixTechniqueNode {
   attack_pattern_id: string;
   name: string;
   x_mitre_id?: string | null;
-  subAttackPatterns?: MatrixTechniqueNode[] | null;
+  subAttackPatterns?: ReadonlyArray<MatrixTechniqueNode> | null;
 }
 
 type Translate = (s: string, options?: { values?: Record<string, string | number> }) => string;
@@ -32,14 +32,14 @@ const mergeEntities = (usages: (TechniqueUsage | undefined)[]): LinkedEntity[] =
 export const buildCellDecorations = ({ usage, scale, techniques, investigationIds, heatmapOn, t }: {
   usage: Map<string, TechniqueUsage>;
   scale: HeatScale;
-  techniques: MatrixTechniqueNode[];
+  techniques: ReadonlyArray<MatrixTechniqueNode>;
   investigationIds: Set<string>;
   heatmapOn: boolean;
   t: Translate;
 }): Map<string, CellDecoration> => {
   const decorations = new Map<string, CellDecoration>();
 
-  const describe = (technique: MatrixTechniqueNode, subTechniques: MatrixTechniqueNode[]) => {
+  const describe = (technique: MatrixTechniqueNode, subTechniques: ReadonlyArray<MatrixTechniqueNode>) => {
     const own = usage.get(technique.attack_pattern_id);
     const ownScore = own?.score ?? 0;
     const maxSubScore = subTechniques.reduce((max, sub) => Math.max(max, usage.get(sub.attack_pattern_id)?.score ?? 0), 0);
