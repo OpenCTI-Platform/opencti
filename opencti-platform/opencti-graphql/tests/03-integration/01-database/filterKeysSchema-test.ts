@@ -270,7 +270,7 @@ describe('Filter keys schema generation testing', async () => {
   });
   it('should construct a generic nested filter definition for filterable nested attributes', () => {
     const definition = filterKeysSchema.get(RELATION_HAS_COVERED)?.get('coverage_information');
-    expect(definition?.type).toEqual('nested_filterable');
+    expect(definition?.type).toEqual('nested_attribute');
     expect(definition?.label).toEqual('Coverage');
     // the frontend gives each sub-filter the operators of its type
     expect(definition?.subFilters?.map((s) => [s.filterKey, s.type, s.label, s.multiple])).toEqual([
@@ -291,7 +291,7 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get('coverage_information')?.subEntityTypes).toEqual([RELATION_HAS_COVERED]);
     expect(filterKeysSchema.get(RELATION_USES)?.get('coverage_information')).toBeUndefined();
     // the entities that carry coverage information are filterable on it too
-    expect(filterKeysSchema.get(ENTITY_TYPE_SECURITY_COVERAGE)?.get('coverage_information')?.type).toEqual('nested_filterable');
-    expect(filterKeysSchema.get(ENTITY_TYPE_SECURITY_COVERAGE_RESULT)?.get('coverage_information')?.type).toEqual('nested_filterable');
+    expect(filterKeysSchema.get(ENTITY_TYPE_SECURITY_COVERAGE)?.get('coverage_information')?.type).toEqual('nested_attribute');
+    expect(filterKeysSchema.get(ENTITY_TYPE_SECURITY_COVERAGE_RESULT)?.get('coverage_information')?.type).toEqual('nested_attribute');
   });
 });

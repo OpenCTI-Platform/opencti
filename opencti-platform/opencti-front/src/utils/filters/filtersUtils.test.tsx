@@ -2539,7 +2539,7 @@ describe('getSelectedOptions with dashboard variable tokens', () => {
   });
 
   describe('generic nested filter keys', () => {
-    const coverageDefinition: FilterDefinition = { filterKey: 'coverage_information', type: 'nested_filterable', label: 'Coverage', multiple: true, subEntityTypes: [], elementsForFilterValuesSearch: [], subFilters: [
+    const coverageDefinition: FilterDefinition = { filterKey: 'coverage_information', type: 'nested_attribute', label: 'Coverage', multiple: true, subEntityTypes: [], elementsForFilterValuesSearch: [], subFilters: [
       { filterKey: 'coverage_name', type: 'vocabulary', label: 'Coverage name', multiple: false, subEntityTypes: [], elementsForFilterValuesSearch: ['coverage_ov'] },
       { filterKey: 'coverage_score', type: 'float', label: 'Coverage score', multiple: false, subEntityTypes: [], elementsForFilterValuesSearch: [] },
     ] };

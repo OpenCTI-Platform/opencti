@@ -951,11 +951,11 @@ export const getDefaultOperatorFilter = (
 
 /**
  * Generic nested keys (e.g. coverage_information) store one operator per sub-filter in their value objects.
- * The backend gives them the 'nested_filterable' type: regardingOf and dynamicRegardingOf, of type 'nested',
+ * The backend gives them the 'nested_attribute' type: regardingOf and dynamicRegardingOf, of type 'nested',
  * have their own dedicated editor.
  */
 export const isGenericNestedFilterDefinition = (definition?: FilterDefinition): boolean => {
-  return definition?.type === 'nested_filterable';
+  return definition?.type === 'nested_attribute';
 };
 
 /**

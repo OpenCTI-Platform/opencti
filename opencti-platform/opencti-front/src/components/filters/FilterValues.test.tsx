@@ -22,7 +22,7 @@ const labelVariable: DashboardVariable = { id: VARIABLE_ID, name: 'Client label'
 
 const coverageDefinition = {
   filterKey: 'coverage_information',
-  type: 'nested_filterable',
+  type: 'nested_attribute',
   label: 'Coverage score',
   multiple: true,
   subEntityTypes: ['Stix-Core-Object'],
