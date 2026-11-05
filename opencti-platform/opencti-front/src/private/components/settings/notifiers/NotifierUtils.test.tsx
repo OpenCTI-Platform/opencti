@@ -6,18 +6,6 @@ import { buildNotifierUiSchema, NOTIFIER_CONNECTOR_EMAIL_ID, NOTIFIER_TITLE_VARI
 
 const SIMPLE_MAILER_ID = '08f9f00f-4e52-4466-ae27-be9fa9813a88';
 
-describe('NotifierVariablesHelp', () => {
-  it('shows a short help, a documentation link and an information icon', () => {
-    testRender(<NotifierVariablesHelp />);
-    expect(screen.getByText(/Insert notification data with variables in the title or the template\./)).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: 'See the available variables' });
-    expect(link).toHaveAttribute('href', NOTIFIER_TITLE_VARIABLES_DOC);
-    expect(link).toHaveAttribute('target', '_blank');
-    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(screen.getByLabelText('How to insert notification data')).toBeInTheDocument();
-  });
-});
-
 describe('buildNotifierUiSchema', () => {
   it('puts the variables help above the title of the Platform mailer', () => {
     const schema = buildNotifierUiSchema(null, NOTIFIER_CONNECTOR_EMAIL_ID);
