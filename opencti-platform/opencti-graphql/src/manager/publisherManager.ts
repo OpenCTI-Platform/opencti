@@ -46,14 +46,57 @@ import { safeRender } from '../utils/safeEjs.client';
 import { NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 import { InterruptibleTimer } from './interruptible-timer';
 import { addNotificationSentCount } from './telemetryManager';
+import { createEmailRateLimiter, type EmailRateLimitRequest } from './publisherManager/emailRateLimiter';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
 const PUBLISHER_ENABLE_BUFFERING = conf.get('publisher_manager:enable_buffering');
 const PUBLISHER_BUFFERING_SECONDS = conf.get('publisher_manager:buffering_seconds');
 const WEBHOOK_TIMEOUT = conf.get('publisher_manager:webhook_timeout') || 300_000;
+const PUBLISHER_EMAIL_MAX_PER_HOUR = conf.get('publisher_manager:email_max_per_hour') || 0;
+const PUBLISHER_EMAIL_MAX_PER_TRIGGER_RECIPIENT_PER_HOUR = conf.get('publisher_manager:email_max_per_trigger_recipient_per_hour') || 0;
 const PUBLISHER_MANAGER_NAME = 'publisher_manager';
 const STREAM_SCHEDULE_TIME = 10000;
+
+const emailRateLimiter = createEmailRateLimiter({
+  maxPerHour: PUBLISHER_EMAIL_MAX_PER_HOUR,
+  maxPerTriggerRecipientPerHour: PUBLISHER_EMAIL_MAX_PER_TRIGGER_RECIPIENT_PER_HOUR,
+});
+
+interface EmailRateLimitCheck extends Omit<EmailRateLimitRequest, 'nowInMs'> {
+  notifier: BasicStoreEntityNotifier;
+}
+
+interface AllowedNotifications {
+  triggers: BasicStoreEntityTrigger[];
+  data: NotificationData[];
+}
+
+// Returns the trigger keys allowed to send, only email notifiers are rate limited.
+const applyEmailRateLimit = (check: EmailRateLimitCheck): string[] => {
+  const connectorId = check.notifier.notifier_connector_id;
+  const isEmailNotifier = connectorId === NOTIFIER_CONNECTOR_EMAIL || connectorId === NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL;
+  if (!isEmailNotifier) {
+    return check.triggerKeys;
+  }
+  return emailRateLimiter.filterAllowedTriggerKeys({
+    nowInMs: Date.now(),
+    userId: check.userId,
+    triggerKeys: check.triggerKeys,
+    isPerRecipientLimited: check.isPerRecipientLimited,
+  });
+};
+
+// Playbook notifier digests use a virtual trigger without internal_id, so they stay capped per recipient.
+const isStoredDigestTrigger = (trigger: BasicStoreEntityTrigger) => trigger.trigger_type === 'digest' && Boolean(trigger.internal_id);
+
+// Data of triggers missing from the map is kept, only capped triggers are left out.
+const keepAllowedNotifications = (triggers: BasicStoreEntityTrigger[], data: NotificationData[], allowedTriggerKeys: string[]): AllowedNotifications => {
+  const allowedTriggers = triggers.filter((t) => allowedTriggerKeys.includes(t.internal_id));
+  const droppedTriggerKeys = new Set(triggers.filter((t) => !allowedTriggerKeys.includes(t.internal_id)).map((t) => t.internal_id));
+  const allowedData = data.filter((d) => !droppedTriggerKeys.has(d.notification_id));
+  return { triggers: allowedTriggers, data: allowedData };
+};
 
 export async function processNotificationData(
   context: AuthContext,
@@ -358,6 +401,16 @@ export const processNotificationEvent = async (
   for (let i = 0; i < userNotifiers.length; i += 1) {
     const userNotifierId = userNotifiers[i];
     const notifier = notifierMap.get(userNotifierId) ?? {} as BasicStoreEntityNotifier;
+    const isPerRecipientLimited = !isStoredDigestTrigger(notificationTrigger);
+    const allowedTriggerKeys = applyEmailRateLimit({
+      notifier,
+      userId: user.user_id,
+      triggerKeys: [notificationId],
+      isPerRecipientLimited,
+    });
+    if (allowedTriggerKeys.length === 0) {
+      continue;
+    }
 
     // There is no await in purpose; the goal is to send notification and continue without waiting result.
     internalProcessNotification(context, storeSettings, notificationMap, user, notifier, notificationData, [notificationTrigger], usersMap)
@@ -429,7 +482,7 @@ const processDigestNotificationEvent = async (context: AuthContext, notification
 
 const liveNotificationBufferPerEntity: Record<string, { timestamp: number; events: SseEvent<KnowledgeNotificationEvent>[] }> = {};
 
-const processBufferedEvents = async (
+export const processBufferedEvents = async (
   context: AuthContext,
   triggerMap: Map<string, BasicStoreEntityTrigger>,
   events: KnowledgeNotificationEvent[],
@@ -473,10 +526,20 @@ const processBufferedEvents = async (
       if (impactedData.length > 0) {
         const currentUser = impactedData[0].user;
         const dataToSend = impactedData.map((d) => d.data);
-        const triggersInDataToSend = [...new Set(dataToSend.map((d) => triggerMap.get(d.notification_id)).filter((t) => t))];
+        const triggersInDataToSend = [...new Set(dataToSend.map((d) => triggerMap.get(d.notification_id)).filter((t): t is BasicStoreEntityTrigger => Boolean(t)))];
         // If triggers can't be found, no need to send the data
         if (triggersInDataToSend.length >= 1) {
           const notifierEntity = allNotifiersMap.get(notifier) ?? {} as BasicStoreEntityNotifier;
+          const allowedTriggerKeys = applyEmailRateLimit({
+            notifier: notifierEntity,
+            userId: currentUser.user_id,
+            triggerKeys: triggersInDataToSend.map((t) => t.internal_id),
+            isPerRecipientLimited: true,
+          });
+          const allowed = keepAllowedNotifications(triggersInDataToSend, dataToSend, allowedTriggerKeys);
+          if (allowed.triggers.length === 0) {
+            continue;
+          }
           // There is no await in purpose, the goal is to send notification and continue without waiting result.
           internalProcessNotification(
             context,
@@ -484,8 +547,8 @@ const processBufferedEvents = async (
             triggerMap,
             currentUser,
             notifierEntity,
-            dataToSend,
-            triggersInDataToSend as BasicStoreEntityTrigger[],
+            allowed.data,
+            allowed.triggers,
             usersFromCache,
           ).catch((reason) => {
             const meta = {
@@ -493,7 +556,7 @@ const processBufferedEvents = async (
               manager: 'PUBLISHER_MANAGER',
               notifierType: notifierEntity.notifier_connector_id,
               userId: currentUser.user_id,
-              triggerCount: triggersInDataToSend.length,
+              triggerCount: allowed.triggers.length,
             };
             if (isWriteFailure(reason)) {
               logApp.error('[OPENCTI-MODULE] Publisher manager buffered notification write failed', meta);
