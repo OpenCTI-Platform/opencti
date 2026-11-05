@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useMemo } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, screen } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import { useQueryLoader } from 'react-relay';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import { OperationDescriptor } from 'relay-runtime';
@@ -10,6 +10,7 @@ import AttackPatternsMatrix, { attackPatternsMatrixQuery } from './AttackPattern
 import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
 import { getMatrixConfig, MatrixVariant } from './attackPatternsMatrixConfig';
 import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
+import { CellDecoration } from '../../../workspaces/investigations/matrix/matrixTypes';
 
 vi.mock('../../../../../utils/hooks/useTopBanner', () => ({ default: () => ({ height: 0 }) }));
 vi.mock('../../../../../utils/hooks/useQueryLoading', async (importOriginal) => {
@@ -21,7 +22,11 @@ vi.mock('../../../../../utils/hooks/useQueryLoading', async (importOriginal) => 
 // load the design system stylesheet, so the tokens these tests read are defined on the root, with their library values.
 const DESIGN_TOKENS: Record<string, string> = {
   '--black-800': '#000000e5',
+  '--black-900': '#000000f2',
   '--gray-100': '#f2f2f3',
+  '--orange-400': '#f2933a',
+  '--red-400': '#f14337',
+  '--yellow-300': '#f6ce6a',
 };
 beforeEach(() => {
   Object.entries(DESIGN_TOKENS).forEach(([name, value]) => document.documentElement.style.setProperty(name, value));
@@ -80,10 +85,11 @@ const labels = () => screen.getAllByText(LABEL_PATTERN).map((el) => el.textConte
 interface HarnessProps {
   variant?: MatrixVariant;
   isModeOnlyActive?: boolean;
+  cellDecorations?: Map<string, CellDecoration>;
 }
 
 // Loads the query the way AttackPatternsMatrix does, then renders the columns directly.
-const ColumnsHarness = ({ variant, isModeOnlyActive = false }: HarnessProps) => {
+const ColumnsHarness = ({ variant, isModeOnlyActive = false, cellDecorations }: HarnessProps) => {
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
   const config = useMemo(() => getMatrixConfig(variant, false), [variant]);
   if (!queryRef) return null;
@@ -98,6 +104,7 @@ const ColumnsHarness = ({ variant, isModeOnlyActive = false }: HarnessProps) => 
         handleAdd={vi.fn()}
         selectedKillChain="mitre-attack"
         isModeOnlyActive={isModeOnlyActive}
+        cellDecorations={cellDecorations}
       />
     </Suspense>
   );
@@ -196,6 +203,131 @@ describe('AttackPatternsMatrixColumns', () => {
       await renderColumns({ variant, isModeOnlyActive: true });
       expect(labels()).toEqual([expected]);
     });
+  });
+});
+
+describe('AttackPatternsMatrixColumns cellDecorations', () => {
+  const entities = (count: number) => Array.from({ length: count }, (_, i) => ({
+    id: `entity-${i + 1}`,
+    name: `Entity ${String(i + 1).padStart(2, '0')}`,
+    entity_type: 'Malware',
+  }));
+  const decorations = (decoration: Partial<CellDecoration>, id = ZETA_ID) => new Map<string, CellDecoration>([
+    [id, { linkedEntities: [], accessibleName: 'T1078 - Zeta, linked to 0 entities', ...decoration }],
+  ]);
+  const zetaCell = () => screen.getByRole('button', { name: /Zeta/ });
+
+  it('applies fill and the dark label colour', async () => {
+    await renderColumns({
+      variant: 'investigation',
+      cellDecorations: decorations({ fill: 'var(--yellow-300)', textTone: 'dark' }),
+    });
+    expect(zetaCell()).toHaveStyle({ backgroundColor: resolveColor('var(--yellow-300)') });
+    expect(screen.getByText('T1078 - Zeta')).toHaveStyle({ color: resolveColor('var(--black-900)') });
+  });
+
+  it('keeps the default label colour when textTone is not dark', async () => {
+    await renderColumns({
+      variant: 'investigation',
+      cellDecorations: decorations({ fill: 'var(--yellow-300)' }),
+    });
+    expect(screen.getByText('T1078 - Zeta')).not.toHaveStyle({ color: resolveColor('var(--black-900)') });
+  });
+
+  it('applies the border colour', async () => {
+    await renderColumns({
+      variant: 'investigation',
+      cellDecorations: decorations({ border: 'var(--border-elevation-default)' }),
+    });
+    // jsdom drops a `border-color: var(...)` shorthand from computed styles, so read the emitted rule instead.
+    const emotionClass = Array.from(zetaCell().classList).find((name) => name.startsWith('css-'));
+    const css = Array.from(document.querySelectorAll('style')).map((style) => style.textContent).join('');
+    expect(css).toMatch(new RegExp(`\\.${emotionClass}\\{[^}]*border-color:var\\(--border-elevation-default\\)`));
+  });
+
+  it('uses accessibleName as the aria-label of the cell', async () => {
+    await renderColumns({
+      variant: 'investigation',
+      cellDecorations: decorations({ accessibleName: 'T1078 - Zeta, linked to 3 entities' }),
+    });
+    expect(screen.getByRole('button', { name: 'T1078 - Zeta, linked to 3 entities' })).toBeInTheDocument();
+  });
+
+  it('shows the title, 10 names and the overflow on hover', async () => {
+    const { user } = await renderColumns({
+      variant: 'investigation',
+      cellDecorations: decorations({ linkedEntities: entities(12) }),
+    });
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    await user.hover(zetaCell());
+    const tooltip = await screen.findByRole('tooltip');
+    expect(within(tooltip).getByText('Linked entities (12)')).toBeInTheDocument();
+    expect(tooltip).toHaveTextContent('Entity 01, Entity 02, Entity 03, Entity 04, Entity 05, Entity 06, Entity 07, Entity 08, Entity 09, Entity 10 and 2 more');
+    expect(tooltip).not.toHaveTextContent('Entity 11');
+  });
+
+  it('shows the same tooltip on keyboard focus', async () => {
+    const { user } = await renderColumns({
+      variant: 'investigation',
+      cellDecorations: decorations({ linkedEntities: entities(2) }),
+    });
+    await user.tab();
+    expect(zetaCell()).toHaveFocus();
+    const tooltip = await screen.findByRole('tooltip');
+    expect(within(tooltip).getByText('Linked entities (2)')).toBeInTheDocument();
+    expect(tooltip).toHaveTextContent('Entity 01, Entity 02');
+  });
+
+  it('shows no tooltip when there are no linked entities', async () => {
+    const { user } = await renderColumns({
+      variant: 'investigation',
+      cellDecorations: decorations({ border: 'var(--border-elevation-default)' }),
+    });
+    await user.hover(zetaCell());
+    await act(async () => {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+    });
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+  });
+
+  it('decorates a technique that has sub-techniques, on its summary', async () => {
+    const { user } = await renderColumns({
+      variant: 'investigation',
+      cellDecorations: decorations({
+        fill: 'var(--orange-400)',
+        textTone: 'dark',
+        accessibleName: 'T1548 - Alpha, linked to 1 entities',
+        linkedEntities: entities(1),
+      }, ALPHA_ID),
+    });
+    const summary = screen.getByRole('button', { name: 'T1548 - Alpha, linked to 1 entities' });
+    expect(summary).toHaveStyle({ backgroundColor: resolveColor('var(--orange-400)') });
+    expect(screen.getByText('T1548 - Alpha')).toHaveStyle({ color: resolveColor('var(--black-900)') });
+    await user.hover(summary);
+    expect(within(await screen.findByRole('tooltip')).getByText('Linked entities (1)')).toBeInTheDocument();
+  });
+
+  it('decorates a sub-technique once its parent is expanded', async () => {
+    const { user } = await renderColumns({
+      variant: 'investigation',
+      cellDecorations: decorations({
+        fill: 'var(--red-400)',
+        accessibleName: 'T1548.001 - Sub, linked to 1 entities',
+      }, SUB_ID),
+    });
+    await user.click(screen.getByRole('button', { name: 'Expand' }));
+    expect(await screen.findByRole('button', { name: 'T1548.001 - Sub, linked to 1 entities' }))
+      .toHaveStyle({ backgroundColor: resolveColor('var(--red-400)') });
+  });
+
+  it('leaves undecorated cells unchanged', async () => {
+    await renderColumns({
+      variant: 'investigation',
+      cellDecorations: decorations({ fill: 'var(--yellow-300)', accessibleName: 'T1548 - Alpha, linked to 0 entities' }, ALPHA_ID),
+    });
+    expect(zetaCell()).not.toHaveStyle({ backgroundColor: resolveColor('var(--yellow-300)') });
   });
 });
 

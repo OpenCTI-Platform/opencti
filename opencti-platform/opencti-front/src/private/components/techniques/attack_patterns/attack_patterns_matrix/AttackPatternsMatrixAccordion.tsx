@@ -10,6 +10,7 @@ import { Box } from '@mui/material';
 import {
   FilteredAttackPattern,
   FilteredSubAttackPattern,
+  applyCellDecoration,
   getBoxStyles,
   isSubAttackPatternCovered,
   MinimalAttackPattern,
@@ -22,10 +23,15 @@ import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
 import { MatrixConfig } from './attackPatternsMatrixConfig';
+import AttackPatternsMatrixCellTooltip from './AttackPatternsMatrixCellTooltip';
+import type { CellDecoration } from '../../../workspaces/investigations/matrix/matrixTypes';
 
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern;
   config: MatrixConfig;
+  decoration?: CellDecoration;
+  // Decorations of the sub-techniques, keyed by attack pattern id.
+  cellDecorations?: Map<string, CellDecoration>;
   handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void;
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
@@ -38,6 +44,8 @@ interface AccordionAttackPatternProps {
 const AccordionAttackPattern = ({
   attackPattern,
   config,
+  decoration,
+  cellDecorations,
   handleOpen,
   attackPatternIdsToOverlap,
   isSecurityPlatform,
@@ -134,9 +142,12 @@ const AccordionAttackPattern = ({
   const styles = isCoverage
     ? getCoverageColors()
     : getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
-  const { border, backgroundColor } = styles;
+  const { border, borderColor, backgroundColor, labelColor } = applyCellDecoration(styles, decoration);
 
   const a11yProps = () => {
+    if (decoration) {
+      return { 'aria-label': decoration.accessibleName };
+    }
     const scoreValue = getAvgCoverageScore();
     if (scoreValue) {
       return {
@@ -160,70 +171,68 @@ const AccordionAttackPattern = ({
       sx={{
         width: '100%',
         border,
+        borderColor,
         backgroundColor: 'transparent',
         '&:before': {
           display: 'none',
         },
       }}
     >
-      <MuiAccordionSummary
-        onClick={(e) => handleOpen(attackPattern, e)}
-        {...a11yProps()}
-        expandIcon={(
-          <IconButton
-            aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
-            onClick={(event) => {
-              event.stopPropagation();
-              setSkipAnimation(false);
-              setExpanded(!expanded);
-            }}
-            aria-expanded={expanded}
-          >
-            <ArrowForwardIosSharpIcon sx={{
-              fontSize: '0.9rem',
-            }}
-            />
-          </IconButton>
-        )}
-        sx={{
-          minHeight: 0,
-          paddingLeft: 0,
-          paddingRight: 1.25,
-          backgroundColor,
-          whiteSpace: 'wrap',
-          flexDirection: 'row-reverse',
-          '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
-            transform: 'rotate(90deg)',
-          },
-          '.MuiAccordionSummary-content': { justifyContent: 'space-between', marginBlock: 1.25, alignItems: 'center' },
-        }}
-      >
-        <Typography
-          variant="body2"
+      <AttackPatternsMatrixCellTooltip decoration={decoration}>
+        <MuiAccordionSummary
+          onClick={(e) => handleOpen(attackPattern, e)}
+          {...a11yProps()}
+          expandIcon={(
+            <IconButton
+              aria-label={expanded ? t_i18n('Collapse') : t_i18n('Expand')}
+              onClick={(event) => {
+                event.stopPropagation();
+                setSkipAnimation(false);
+                setExpanded(!expanded);
+              }}
+              aria-expanded={expanded}
+            >
+              <ArrowForwardIosSharpIcon sx={{
+                fontSize: '0.9rem',
+              }}
+              />
+            </IconButton>
+          )}
           sx={{
-            fontSize: 10,
+            minHeight: 0,
+            paddingLeft: 0,
+            paddingRight: 1.25,
+            backgroundColor,
+            whiteSpace: 'wrap',
+            flexDirection: 'row-reverse',
+            '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+              transform: 'rotate(90deg)',
+            },
+            '.MuiAccordionSummary-content': { justifyContent: 'space-between', marginBlock: 1.25, alignItems: 'center' },
           }}
         >
-          {config.formatLabel(attackPattern)}
-        </Typography>
+          <Typography variant="body2" sx={{ fontSize: 10, color: labelColor }}>
+            {config.formatLabel(attackPattern)}
+          </Typography>
 
-        {isCoverage && attackPattern.isCovered && (
-          <Box sx={{ marginLeft: 'auto' }}>
-            <SecurityCoverageScores
-              coverage_information={coverage || null}
-              variant="matrix"
-            />
-          </Box>
-        )}
-
-        {!isCoverage && attackPatternIdsToOverlap?.length !== undefined
-          && (attackPattern.isCovered || isSubAttackPatternCovered(attackPattern as FilteredAttackPattern))
-          && (
-            <AttackPatternsMatrixShouldCoverIcon
-              isOverlapping={attackPattern.isOverlapping || false}
-            />
+          {isCoverage && attackPattern.isCovered && (
+            <Box sx={{ marginLeft: 'auto' }}>
+              <SecurityCoverageScores
+                coverage_information={coverage || null}
+                variant="matrix"
+              />
+            </Box>
           )}
-      </MuiAccordionSummary>
+
+          {!isCoverage && attackPatternIdsToOverlap?.length !== undefined
+            && (attackPattern.isCovered || isSubAttackPatternCovered(attackPattern as FilteredAttackPattern))
+            && (
+              <AttackPatternsMatrixShouldCoverIcon
+                isOverlapping={attackPattern.isOverlapping || false}
+              />
+            )}
+        </MuiAccordionSummary>
+      </AttackPatternsMatrixCellTooltip>
       <AccordionDetails
         sx={{
           padding: `0 0 0 ${theme.spacing(2)}`,
@@ -236,6 +245,7 @@ const AccordionAttackPattern = ({
               key={subAttackPattern.attack_pattern_id}
               attackPattern={subAttackPattern}
               config={config}
+              decoration={cellDecorations?.get(subAttackPattern.attack_pattern_id)}
               handleOpen={handleOpen}
               attackPatternIdsToOverlap={attackPatternIdsToOverlap}
               isSecurityPlatform={isSecurityPlatform}
