@@ -37,7 +37,9 @@ import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import {
   builtInTheme,
   customLabel,
+  customStatusTemplate,
   customTheme,
+  defaultStatusTemplate,
   disarmKillChainPhase,
   killChainPhase,
   mockEntityLoaders,
@@ -94,6 +96,13 @@ const phaseItem = (phase: { standard_id: string; kill_chain_name: string; phase_
 const vocabularyItem = (category: string) => ({
   key: category,
   label: category,
+  translatable: false,
+  dependsOn: [],
+  isDefault: false,
+});
+const statusTemplateItem = (template: { standard_id: string; name: string }) => ({
+  key: template.standard_id,
+  label: template.name,
   translatable: false,
   dependsOn: [],
   isDefault: false,
@@ -184,6 +193,15 @@ describe('Config preset exportable types query', () => {
         items: [vocabularyItem('case_severity_ov'), vocabularyItem('incident_type_ov'), vocabularyItem('integrity_level_ov'), vocabularyItem('report_types_ov')],
         itemsPageInfo: onePage(4),
       },
+      {
+        key: 'statusTemplates',
+        label: 'Status templates',
+        description: 'Status templates and their colors',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // By name
+        items: [statusTemplateItem(customStatusTemplate), statusTemplateItem(defaultStatusTemplate)],
+        itemsPageInfo: onePage(2),
+      },
     ]);
   });
 
@@ -222,7 +240,7 @@ describe('Config preset exportable types query', () => {
     const result = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
     expect(result.errors).toBeUndefined();
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
-    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false], ['labels', false], ['killChainPhases', false], ['vocabularies', false]]);
+    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false], ['labels', false], ['killChainPhases', false], ['vocabularies', false], ['statusTemplates', false]]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
@@ -262,6 +280,7 @@ describe('Config preset exportable types query', () => {
       ['labels', 'taxonomy'],
       ['killChainPhases', 'taxonomy'],
       ['vocabularies', 'taxonomy'],
+      ['statusTemplates', 'taxonomy'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);

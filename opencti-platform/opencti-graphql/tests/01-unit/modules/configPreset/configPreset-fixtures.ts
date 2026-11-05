@@ -3,6 +3,7 @@ import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../.
 import { buildPagination } from '../../../../src/database/utils';
 import type { BasicStoreEntityKillChainPhase } from '../../../../src/modules/killChainPhase/killChainPhase-types';
 import type { BasicStoreEntityLabel } from '../../../../src/modules/label/label-types';
+import type { BasicStoreEntityStatusTemplate } from '../../../../src/modules/statusTemplate/statusTemplate-types';
 import type { BasicStoreEntityVocabulary } from '../../../../src/modules/vocabulary/vocabulary-types';
 import type { BasicStoreEntityTheme } from '../../../../src/modules/theme/theme-types';
 
@@ -203,6 +204,29 @@ export const otherCustomVocabulary = {
 
 export const ALL_VOCABULARIES = [defaultVocabulary, untouchedVocabulary, modifiedVocabulary, customVocabulary, otherCustomVocabulary];
 
+// A status template the platform creates, and a custom one
+export const defaultStatusTemplate = {
+  id: 'in-progress-template-id',
+  internal_id: 'in-progress-template-id',
+  standard_id: 'statustemplate--2c3d4e5f-6a7b-5c8d-9e0f-1a2b3c4d5e6f',
+  entity_type: 'StatusTemplate',
+  creator_id: ['creator-secret-id'],
+  created_at: '2026-01-01T00:00:00.000Z',
+  name: 'IN_PROGRESS',
+  color: '#5c7bf5',
+} as unknown as BasicStoreEntityStatusTemplate;
+
+export const customStatusTemplate = {
+  ...defaultStatusTemplate,
+  id: 'escalated-template-id',
+  internal_id: 'escalated-template-id',
+  standard_id: 'statustemplate--9f8e7d6c-5b4a-5392-8170-6f5e4d3c2b1a',
+  name: 'Escalated',
+  color: '#e91e63',
+} as unknown as BasicStoreEntityStatusTemplate;
+
+export const ALL_STATUS_TEMPLATES = [defaultStatusTemplate, customStatusTemplate];
+
 interface ListingArgs {
   search?: string | null;
   filters?: { filters: { key: string[]; values: string[]; operator?: string }[] };
@@ -227,6 +251,7 @@ const listLikeTheEngine = <T extends object>(entities: T[], sortFields: string[]
 export const listThemesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_THEMES, ['name'], args);
 export const listLabelsLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_LABELS, ['value'], args);
 export const listVocabulariesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_VOCABULARIES, ['category', 'order', 'name'], args);
+export const listStatusTemplatesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_STATUS_TEMPLATES, ['name'], args);
 export const listKillChainPhasesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_KILL_CHAIN_PHASES, ['kill_chain_name', 'x_opencti_order'], args, ['kill_chain_name', 'phase_name']);
 
 // The entities of a type the fixtures know, listed like the engine does
@@ -238,6 +263,8 @@ const listFixtures = (type: string | undefined, args: unknown) => {
       return listKillChainPhasesLikeTheEngine(args as ListingArgs);
     case 'Vocabulary':
       return listVocabulariesLikeTheEngine(args as ListingArgs);
+    case 'StatusTemplate':
+      return listStatusTemplatesLikeTheEngine(args as ListingArgs);
     case 'Theme':
       return listThemesLikeTheEngine(args as ListingArgs);
     default:
@@ -246,7 +273,7 @@ const listFixtures = (type: string | undefined, args: unknown) => {
 };
 
 // For a test that mocks fullEntitiesList, pageEntitiesConnection and storeLoadById of the middleware loader:
-// the themes, the labels, the kill chain phases and the vocabularies come from the fixtures, any other type listed by fullEntitiesList gets otherEntities
+// the themes, the labels, the kill chain phases, the vocabularies and the status templates come from the fixtures, any other type listed by fullEntitiesList gets otherEntities
 export const mockEntityLoaders = (otherEntities: unknown[] = []) => {
   vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, types, args) => {
     return (listFixtures(types?.[0], args) ?? otherEntities) as never;
@@ -257,6 +284,6 @@ export const mockEntityLoaders = (otherEntities: unknown[] = []) => {
     const sortOf = (entity: unknown) => ['name', 'value', 'kill_chain_name'].map((field) => (entity as Record<string, unknown>)[field]).find((value) => value !== undefined);
     return buildPagination(first, args?.after, entities.slice(0, first).map((node) => ({ node, sort: [sortOf(node)] })), entities.length) as never;
   });
-  const everyEntity = [...ALL_THEMES, ...ALL_LABELS, ...ALL_KILL_CHAIN_PHASES, ...ALL_VOCABULARIES];
+  const everyEntity = [...ALL_THEMES, ...ALL_LABELS, ...ALL_KILL_CHAIN_PHASES, ...ALL_VOCABULARIES, ...ALL_STATUS_TEMPLATES];
   vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => everyEntity.find((entity) => entity.id === id) as never);
 };
