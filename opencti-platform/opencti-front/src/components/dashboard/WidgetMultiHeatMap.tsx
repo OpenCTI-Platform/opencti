@@ -2,7 +2,7 @@ import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { ApexOptions } from 'apexcharts';
-import { heatMapOptions } from '../../utils/Charts';
+import { heatMapOptions, withChartAnimations } from '../../utils/Charts';
 import type { Theme } from '../Theme';
 import useTimeSeriesAxisFormatter from '../../utils/hooks/useTimeSeriesAxisFormatter';
 
@@ -40,6 +40,10 @@ interface WidgetMultiHeatMapProps {
   minValue: number;
   maxValue: number;
   isStacked?: boolean;
+  interval?: string | null;
+  isAnimated?: boolean;
+  // Off: the chart is drawn with its animations, but its updates are not animated
+  isUpdateAnimated?: boolean;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
@@ -48,15 +52,18 @@ const WidgetMultiHeatMap = ({
   minValue,
   maxValue,
   isStacked = false,
+  interval,
+  isAnimated = true,
+  isUpdateAnimated = true,
   onMounted,
 }: WidgetMultiHeatMapProps) => {
   const theme = useTheme<Theme>();
-  const axisFormatter = useTimeSeriesAxisFormatter();
+  const axisFormatter = useTimeSeriesAxisFormatter(interval);
 
   const options: ApexOptions = useMemo(() => {
-    // Ten color ranges of a width of at least 1 cover the whole spread of the values, up to the hottest cell.
-    // A value on the bound of two ranges takes the upper one: the last range is the one the highest value
-    // starts or falls in, none lies entirely above it.
+    // Width of each color range, not to be confused with the time interval of the series: ten ranges of at
+    // least 1 cover the whole spread, up to the hottest cell. A value on the bound of two ranges takes the
+    // upper one: the last range is the one the highest value starts or falls in, none lies entirely above it.
     // Without a value above 0 (or without values, whose bounds are infinite), only the color of 0 is used.
     const spread = Math.max(0, maxValue - minValue) || 0;
     const rangeWidth = Math.max(1, Math.ceil(spread / 10));
@@ -81,7 +88,7 @@ const WidgetMultiHeatMap = ({
       theme.palette.mode === 'dark' ? darkColors[0] : lightColors[0],
     });
 
-    return heatMapOptions(
+    const chartOptions = heatMapOptions(
       theme,
       true,
       axisFormatter,
@@ -90,7 +97,8 @@ const WidgetMultiHeatMap = ({
       isStacked,
       colorRanges,
     ) as ApexOptions;
-  }, [theme, isStacked, maxValue, minValue, axisFormatter]);
+    return withChartAnimations(chartOptions, isAnimated, isUpdateAnimated) as ApexOptions;
+  }, [theme, isStacked, maxValue, minValue, axisFormatter, isAnimated, isUpdateAnimated]);
 
   return (
     <Chart

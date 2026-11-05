@@ -11,19 +11,17 @@ import WidgetMultiAreas from './WidgetMultiAreas';
 import WidgetMultiHeatMap from './WidgetMultiHeatMap';
 import { WidgetParameters } from '../../utils/widget/widget';
 import { getWidgetInterval } from '../../utils/widget/widgetUtils';
+import { getWidgetBreakdownLimit, getWidgetBreakdownOrder, isBreakdownTypeField } from '../../utils/widget/widgetBreakdown';
 import {
   ANIMATION_POINTS_THRESHOLD,
   coarsenSeriesForRendering,
   getBreakdownTickAmount,
   getRenderedPointsBudget,
-  getWidgetBreakdownLimit,
-  getWidgetBreakdownOrder,
-  isBreakdownTypeField,
   isSameBreakdown,
   nextBreakdownChartWidth,
   numberSharedSeriesNames,
-  scheduleChartDraw,
-} from '../../utils/widget/widgetBreakdown';
+} from './timeSeriesBreakdownRendering';
+import { scheduleChartDraw } from '../../utils/chartDrawQueue';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import { displayEntityTypeForTranslation } from '../../utils/String';
