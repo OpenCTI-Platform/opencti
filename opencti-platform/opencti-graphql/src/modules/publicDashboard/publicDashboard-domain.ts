@@ -19,6 +19,7 @@ import {
   type FilterGroup,
   FilterMode,
   FilterOperator,
+  OrderingMode,
   type PublicDashboardAddInput,
   type QueryPublicBookmarksArgs,
   type QueryPublicDashboardsArgs,
@@ -422,7 +423,7 @@ const buildPublicBreakdownArgs = (
     endDate: args.endDate,
     interval: parameters.interval ?? 'day',
     limit: parameters.breakdownLimit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT,
-    order: parameters.breakdownOrder === 'asc' ? 'asc' : 'desc',
+    orderMode: parameters.breakdownOrder === 'asc' ? OrderingMode.Asc : OrderingMode.Desc,
     includeOther: parameters.breakdownOther ?? false,
     filters: selection.filters,
   };

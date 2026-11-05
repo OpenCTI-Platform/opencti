@@ -121,13 +121,13 @@ test.describe('Dashboard widget breakdown', { tag: ['@ce', '@groupff'] }, () => 
     // -----------------------------------------------------------
 
     await expect(page.getByText(widgetTitle)).toBeVisible();
-    await expect(widgetsPage.getChartCanvas()).toBeVisible();
-    await expect(widgetsPage.getChartLegendEntry(sharedLabel.value)).toBeVisible();
+    await expect(widgetsPage.getChartCanvas(widgetTitle)).toBeVisible();
+    await expect(widgetsPage.getChartLegendEntry(widgetTitle, sharedLabel.value)).toBeVisible();
     for (const label of labels) {
-      await expect(widgetsPage.getChartLegendEntry(label.value)).toBeVisible();
+      await expect(widgetsPage.getChartLegendEntry(widgetTitle, label.value)).toBeVisible();
     }
-    await expect(widgetsPage.getChartLegendEntry('Other')).toBeVisible();
-    await expect(page.locator('.apexcharts-legend-text').last()).toHaveText('Other');
+    await expect(widgetsPage.getChartLegendEntry(widgetTitle, 'Other')).toBeVisible();
+    await expect(widgetsPage.getChartLegendEntries(widgetTitle).last()).toHaveText('Other');
 
     // ---------
     // endregion
@@ -155,13 +155,12 @@ test.describe('Dashboard widget breakdown', { tag: ['@ce', '@groupff'] }, () => 
     await widgetsPage.filters.addFilter('Entity type', 'Report');
     await expect(widgetsPage.getBreakdownInfoMessage()).toBeVisible();
     await widgetsPage.addDataSelection();
-    await expect(page.getByTestId('widget-selection-1')).toBeVisible();
+    await expect(widgetsPage.getDataSelection(1)).toBeVisible();
     await widgetsPage.validateFilters();
 
     await expect(widgetsPage.getBreakdownSelection()).toBeVisible();
     await expect(widgetsPage.breakdownField.getInput()).toBeDisabled();
-    // The disabled controls get no pointer events: the tooltip is carried by their wrapper
-    await widgetsPage.getBreakdownSelection().locator('[tabindex="0"]').hover();
+    await widgetsPage.hoverBreakdownSelection();
     await expect(page.getByRole('tooltip').getByText('A breakdown uses a single dataset.')).toBeVisible();
   });
 

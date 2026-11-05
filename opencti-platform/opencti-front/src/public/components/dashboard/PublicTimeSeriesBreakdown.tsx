@@ -9,7 +9,7 @@ import usePublicWidgetDefaultDates from './usePublicWidgetDefaultDates';
 import WidgetContainer from '../../../components/dashboard/WidgetContainer';
 import type { WidgetTimeSeriesBreakdownData } from '../../../components/dashboard/WidgetTimeSeriesBreakdown';
 import WidgetBreakdownErrorBoundary from '../../../components/dashboard/WidgetBreakdownErrorBoundary';
-import { TimeSeriesBreakdownContent } from '../../../components/dashboard/TimeSeriesBreakdownViz';
+import TimeSeriesBreakdownContent from '../../../components/dashboard/TimeSeriesBreakdownContent';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { getWidgetInterval } from '../../../utils/widget/widgetUtils';
 import { getBreakdownDefaultStartDate } from '../../../utils/widget/widgetBreakdown';

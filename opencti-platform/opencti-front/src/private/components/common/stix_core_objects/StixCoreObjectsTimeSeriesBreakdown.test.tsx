@@ -6,12 +6,15 @@ import testRender, { createMockUserContext } from '../../../../utils/tests/test-
 import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widget';
 import type { FilterDefinition } from '../../../../utils/hooks/useAuth';
 import { daysAgo, monthsAgo } from '../../../../utils/Time';
+import { loadDashboardViz } from '../../../../utils/tests/dashboardVizMock';
+import { itemColor } from '../../../../utils/Colors';
 
 const mocks = vi.hoisted(() => ({
   response: {} as Record<string, unknown>,
   error: null as unknown,
   dashboardViz: vi.fn(),
   resolvedDataSelection: null as unknown[] | null,
+  isResolving: false,
   bars: vi.fn(),
   lines: vi.fn(),
   areas: vi.fn(),
@@ -27,16 +30,15 @@ vi.mock('react-relay', async (importOriginal) => ({
     return mocks.response;
   },
 }));
-vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
-  default: (args: unknown) => {
-    mocks.dashboardViz(args);
-    // Resolved as is, unless the test sets what its saved filters and variables resolve to
-    const resolvedDataSelection = mocks.resolvedDataSelection ?? (args as { dataSelection: unknown[] }).dataSelection;
-    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {}, resolvedDataSelection };
-  },
+// Resolved as is, unless the test sets what its saved filters and variables resolve to. The query is kept until a load.
+vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
+  default: (await import('../../../../utils/tests/dashboardVizMock')).mockDashboardViz(mocks),
 }));
+// The guards pass: a loader waits for the query, unless none is run on purpose
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  default: ({ children, queryRef, isQuerySkipped }: { children: React.ReactNode; queryRef?: unknown; isQuerySkipped?: boolean }) => (
+    queryRef || isQuerySkipped ? <>{children}</> : <div data-testid="loader" />
+  ),
 }));
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
   default: ({ children, warning, chart }: { children: React.ReactNode; warning?: string; chart?: unknown }) => (
@@ -46,6 +48,10 @@ vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
       {children}
     </div>
   ),
+}));
+vi.mock('../../../../components/Loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../components/Loader')>()),
+  default: () => <div data-testid="chart-loader" />,
 }));
 vi.mock('../../../../components/dashboard/WidgetVerticalBars', () => ({
   default: (props: unknown) => {
@@ -76,6 +82,8 @@ import StixCoreObjectsTimeSeriesBreakdown from './StixCoreObjectsTimeSeriesBreak
 
 const config = { relativeDate: null, startDate: '2025-10-01T00:00:00.000Z', endDate: '2026-10-01T00:00:00.000Z' };
 const host = { kind: 'workspace' } as const;
+// The menu of the widget, given to the users who can edit it
+const editorMenu = <div data-testid="widget-menu" />;
 const selection = {
   date_attribute: 'published',
   filters: {
@@ -112,6 +120,7 @@ const filterKeysSchema = new Map<string, Map<string, FilterDefinition>>([
   ['Report', new Map([
     ['objectAssignee', definition('objectAssignee', ['Report'])],
     ['objectLabel', definition('objectLabel', ['Report'])],
+    ['objectMarking', definition('objectMarking', ['Report'])],
     ['creator_id', definition('creator_id', ['Report'])],
   ])],
   // the abstract type has no assignee
@@ -130,7 +139,7 @@ const respond = (series: SerieFixture[], truncated = false) => {
 };
 
 const render = (widget: Widget) => testRender(
-  <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />,
+  <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />,
   { userContext },
 );
 
@@ -146,6 +155,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     mocks.width = 1200;
     mocks.error = null;
     mocks.resolvedDataSelection = null;
+    mocks.isResolving = false;
   });
 
   it('queries one breakdown with the dataset filters, date attribute and series limit', () => {
@@ -161,7 +171,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
       endDate: config.endDate,
       interval: 'week',
       limit: 20,
-      order: 'desc',
+      orderMode: 'desc',
       includeOther: false,
       // the dataset filters on reports: the API validates the field against this type
       types: ['Report'],
@@ -174,7 +184,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     render(makeWidget('line', { breakdownBy: 'objectLabel', breakdownOrder: 'asc', breakdownOther: true }));
 
     const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.calls[0][0];
-    expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ order: 'asc', includeOther: true });
+    expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ orderMode: 'asc', includeOther: true });
   });
 
   it('keeps the dashboard dates, and defaults a daily breakdown to the last 30 days', () => {
@@ -255,8 +265,41 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const { series } = await drawn(mocks.lines);
     expect(series.map((serie: { name: string }) => serie.name)).toEqual(['Alice', 'Other']);
     const [alice, other] = series;
-    expect(alice.color).toBeUndefined();
-    expect(other.color).toBeTruthy();
+    expect(other.color).toEqual('#95969D');
+    expect(alice.color).toBeTruthy();
+    expect(alice.color).not.toEqual(other.color);
+  });
+
+  it('colors a value with its own color, or the same color in every widget, never twice in one', async () => {
+    respond([
+      { label: 'label-red', entity: { id: 'label-red', color: '#ff0000' }, values: dailyValues(3) },
+      { label: 'label-also-red', entity: { id: 'label-also-red', color: '#FF0000' }, values: dailyValues(3) },
+      { label: 'label-without-color', entity: { id: 'label-without-color' }, values: dailyValues(3) },
+    ]);
+    render(makeWidget('line', { breakdownBy: 'objectLabel' }));
+    const [red, alsoRed, withoutColor] = (await drawn(mocks.lines)).series.map((serie: { color: string }) => serie.color);
+    expect(red).toEqual('#ff0000');
+    expect(alsoRed).not.toEqual(red);
+
+    // Ranked first in another widget, the value without color keeps its color
+    vi.clearAllMocks();
+    respond([
+      { label: 'label-without-color', entity: { id: 'label-without-color' }, values: dailyValues(3) },
+      { label: 'Other', isOther: true, entity: null, values: dailyValues(3) },
+    ]);
+    render(makeWidget('area', { breakdownBy: 'objectLabel' }));
+    expect((await drawn(mocks.areas)).series[0].color).toEqual(withoutColor);
+  });
+
+  it('colors the markings and the entity types as the platform does', async () => {
+    respond([{ label: 'marking-id', entity: { id: 'marking-id', x_opencti_color: '#c62828' }, values: dailyValues(3) }]);
+    render(makeWidget('line', { breakdownBy: 'objectMarking' }));
+    expect((await drawn(mocks.lines)).series[0].color).toEqual('#c62828');
+
+    vi.clearAllMocks();
+    respond([{ label: 'Malware', entity: null, values: dailyValues(3) }]);
+    render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    expect((await drawn(mocks.lines)).series[0].color).toEqual(itemColor('Malware').toLowerCase());
   });
 
   it('places the values of every series on the shared dates', async () => {
@@ -312,7 +355,9 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(props.hasHoverFilter).toBe(false);
     expect(props.tickAmount).toEqual(20);
     const warning = (await findByTestId('widget-warning')).textContent;
-    expect(warning).toContain('Interval adjusted to');
+    expect(warning).toContain('Interval adjusted to Month');
+    // The period does not start nor end on the bounds of a month
+    expect(warning).toContain('The first and last intervals may only be partly covered by the selected period.');
     // Days summed into months stay exact
     expect(warning).not.toContain('Each week');
   });
@@ -345,12 +390,36 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect((await drawn(mocks.bars)).interval).toEqual('month');
   });
 
-  it('does not draw the chart before it is measured', () => {
+  it('keeps the days of stacked bars as long as their columns fit, and of grouped bars as long as every bar fits', async () => {
+    // The default daily breakdown: 10 series over the last 31 days
+    const series = Array.from({ length: 10 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(31) }));
+    respond(series);
+    const intervalAt = async (width: number, stacked: boolean) => {
+      vi.clearAllMocks();
+      mocks.width = width;
+      const { unmount } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type', interval: 'day', stacked }, multiTypesSelection));
+      const { interval } = await drawn(mocks.bars);
+      unmount();
+      return interval;
+    };
+    // 500 px give 250 bars, or 250 columns: 31 columns of 10 stacked bars fit, 310 grouped bars do not
+    expect(await intervalAt(500, true)).toEqual('day');
+    expect(await intervalAt(500, false)).toEqual('week');
+    expect(await intervalAt(1000, true)).toEqual('day');
+    expect(await intervalAt(1000, false)).toEqual('day');
+
+    // 50 stacked series of 31 days are 1550 bars: summed into weeks whatever the width
+    respond(Array.from({ length: 50 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(31) })));
+    expect(await intervalAt(2000, true)).toEqual('week');
+  });
+
+  it('does not draw the chart before it is measured, and shows a loader in the measured element', () => {
     respond([{ label: 'Report', entity: null, values: dailyValues(30) }]);
     mocks.width = 0;
-    const { queryByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    const { queryByTestId, getByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
     expect(queryByTestId('bars')).toBeNull();
     expect(mocks.bars).not.toHaveBeenCalled();
+    expect(getByTestId('chart-loader').parentElement?.style.width).toEqual('100%');
     render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
     expect(mocks.lines).not.toHaveBeenCalled();
   });
@@ -361,17 +430,21 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
 
     const props = await drawn(mocks.bars);
     expect(props).toMatchObject({ interval: 'day', isStacked: true, isAnimated: true });
+    // A legend of many series fits a small widget, and counts are labelled as integers
+    expect(props).toMatchObject({ isLegendCompact: true, hasIntegerTicks: true });
     expect(queryByTestId('widget-warning')).toBeNull();
   });
 
   it('draws the charts of widgets mounted together one after the other', async () => {
     respond([{ label: 'Report', entity: null, values: dailyValues(30) }]);
     render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    render(makeWidget('area', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    // the first chart is drawn at once, the second one in a later task
+    const second = render(makeWidget('area', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    // the first chart is drawn at once, the second one in a later task, a loader holding its place
     expect(mocks.lines).toHaveBeenCalled();
     expect(mocks.areas).not.toHaveBeenCalled();
+    expect(second.getByTestId('chart-loader')).toBeTruthy();
     await drawn(mocks.areas);
+    expect(second.queryByTestId('chart-loader')).toBeNull();
   });
 
   it('does not draw the chart again on a refresh that brings the same values', async () => {
@@ -380,7 +453,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const RefreshedWidget = () => {
       const [, setRefreshCount] = useState(0);
       refresh = () => setRefreshCount((count) => count + 1);
-      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />;
+      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />;
     };
     respond([{ label: 'Report', entity: null, values: [1, 2, 3] }]);
     testRender(<RefreshedWidget />, { userContext });
@@ -395,6 +468,43 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     act(() => refresh());
     expect(mocks.lines.mock.lastCall?.[0].series).not.toBe(series);
     expect(mocks.lines.mock.lastCall?.[0].series[0].data[2].y).toEqual(4);
+  });
+
+  it('draws the data with the settings of its query until the query of the edited settings is loaded', async () => {
+    // 20 daily series of a month: more bars than the 1200 px allow, summed into weeks
+    const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(31) }));
+    respond(series, true);
+    const daily = { breakdownBy: 'entity_type', interval: 'day', breakdownLimit: 20 };
+    let edit = (_parameters: Widget['parameters']) => {};
+    const EditedWidget = () => {
+      const [parameters, setParameters] = useState<Widget['parameters']>(daily);
+      edit = setParameters;
+      return <StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('vertical-bar', parameters, multiTypesSelection)} config={config} host={host} popover={editorMenu} />;
+    };
+    const { getByTestId } = testRender(<EditedWidget />, { userContext });
+    expect((await drawn(mocks.bars)).interval).toEqual('week');
+    const warning = getByTestId('widget-warning').textContent;
+    expect(warning).toContain('Interval adjusted to Week');
+    expect(warning).toContain('Only the 20 highest values are displayed.');
+
+    // Edited, while its new query loads: the daily data are still summed into weeks, not into the months
+    // coarser than the new weekly interval, and the warnings speak of the highest values still drawn
+    act(() => edit({ ...daily, interval: 'week', breakdownOrder: 'asc' }));
+    expect(mocks.bars.mock.lastCall?.[0]).toMatchObject({ interval: 'week' });
+    expect(mocks.bars.mock.lastCall?.[0].series[0].data).toHaveLength(5);
+    expect(getByTestId('widget-warning').textContent).toEqual(warning);
+
+    // The query of the new settings is loaded: 20 series of 5 weeks fit
+    mocks.response = {
+      stixCoreObjectsTimeSeriesBreakdown: {
+        truncated: true,
+        dates: Array.from({ length: 5 }, (_, i) => new Date(Date.UTC(2025, 8, 29 + 7 * i)).toISOString()),
+        series: series.map((serie) => ({ ...serie, isOther: false, values: dailyValues(5) })),
+      },
+    };
+    loadDashboardViz();
+    expect(mocks.bars.mock.lastCall?.[0]).toMatchObject({ interval: 'week' });
+    expect(getByTestId('widget-warning').textContent).toEqual('Only the 20 lowest values are displayed.');
   });
 
   it('says why the API refused the breakdown, and leaves any other error to the widget', () => {
@@ -425,6 +535,49 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     vi.mocked(console.error).mockRestore();
   });
 
+  it('only says why the breakdown is refused, or its field not available, to the users who cannot edit the widget', () => {
+    // React logs the errors its boundaries catch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    mocks.error = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_large' } } }] } };
+    const refused = testRender(<StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection)} config={config} host={host} />, { userContext });
+    expect(refused.container.textContent).toEqual('This breakdown has too many points for the selected period.');
+    refused.unmount();
+
+    mocks.error = null;
+    const unsupported = testRender(<StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection)} config={config} host={host} />, { userContext });
+    expect(unsupported.container.textContent).toEqual('This breakdown field is not available for the dataset of this widget.');
+    vi.mocked(console.error).mockRestore();
+  });
+
+  it('keeps a refusal on an unrelated render, and clears it with the next query', async () => {
+    // React logs the errors its boundaries catch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const widget = makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection);
+    let rerender = () => {};
+    const RenderedWidget = () => {
+      const [, setRenderCount] = useState(0);
+      rerender = () => setRenderCount((count) => count + 1);
+      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />;
+    };
+    const tooLarge = 'This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.';
+    mocks.error = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_large' } } }] } };
+    const { getByText, queryByText } = testRender(<RenderedWidget />, { userContext });
+    expect(getByText(tooLarge)).toBeTruthy();
+
+    // The same query: the refusal stays, nothing is queried or drawn again
+    mocks.error = null;
+    respond([{ label: 'Report', entity: null, values: [1, 2, 3] }]);
+    act(() => rerender());
+    expect(getByText(tooLarge)).toBeTruthy();
+    expect(mocks.lines).not.toHaveBeenCalled();
+
+    // A new query clears it
+    loadDashboardViz();
+    expect(queryByText(tooLarge)).toBeNull();
+    await drawn(mocks.lines);
+    vi.mocked(console.error).mockRestore();
+  });
+
   it('stops offering the export of a chart that is gone', async () => {
     // React logs the errors its boundaries catch
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -433,7 +586,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const RefreshedWidget = () => {
       const [, setRefreshCount] = useState(0);
       refresh = () => setRefreshCount((count) => count + 1);
-      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />;
+      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />;
     };
     // The chart says it is mounted once drawn
     const mountChart = () => act(() => mocks.lines.mock.lastCall?.[0].onMounted({}));
@@ -460,10 +613,11 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     vi.mocked(console.error).mockRestore();
   });
 
-  it('warns when only the top values are displayed', () => {
+  it('warns when only the highest values are displayed', () => {
     respond([{ label: 'Report', entity: null, values: dailyValues(3) }], true);
     const { getByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type', breakdownLimit: 5 }, multiTypesSelection));
-    expect(getByTestId('widget-warning').textContent).toContain('5');
+    // As the order is named in the editor
+    expect(getByTestId('widget-warning').textContent).toEqual('Only the 5 highest values are displayed.');
   });
 
   it('warns that only the lowest values are displayed when ordered by lowest values', () => {
@@ -498,6 +652,29 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const { getByText } = render(makeWidget('line', { breakdownBy: 'objectAssignee' }, { ...selection, filters_id: 'saved-filter' } as WidgetDataSelection));
     expect(mocks.dashboardViz.mock.lastCall?.[0].buildQueryVariables([noTypeSelection], config, parameters)).toBeNull();
     expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
+  });
+
+  it('says a field is not available only once the dataset it is checked on is resolved', () => {
+    // Edited to read another dataset, whose saved filter is still being read: the field is not checked
+    // on the dataset resolved before, nothing is queried and the widget waits
+    mocks.isResolving = true;
+    let rerender = () => {};
+    const ResolvedWidget = () => {
+      const [, setRenderCount] = useState(0);
+      rerender = () => setRenderCount((count) => count + 1);
+      return <StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection)} config={config} host={host} popover={editorMenu} />;
+    };
+    const notAvailable = 'This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.';
+    const { queryByText, queryByTestId } = testRender(<ResolvedWidget />, { userContext });
+    expect(queryByText(notAvailable)).toBeNull();
+    expect(queryByTestId('loader')).not.toBeNull();
+    expect(mocks.lines).not.toHaveBeenCalled();
+
+    // Resolved to any entity, which has no assignee
+    mocks.isResolving = false;
+    act(() => rerender());
+    expect(queryByText(notAvailable)).toBeTruthy();
+    expect(mocks.lines).not.toHaveBeenCalled();
   });
 
   it('accepts the entity type for a dataset resolved to a single type, a type variable may hold one', () => {

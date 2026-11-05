@@ -191,7 +191,7 @@ const API_SCO_BREAKDOWN_QUERY = gql`
       dates
       series {
         label
-        value
+        total
         isOther
         values
       }
@@ -216,7 +216,7 @@ const API_SCR_BREAKDOWN_QUERY = gql`
       dates
       series {
         label
-        value
+        total
         isOther
         values
       }
@@ -927,7 +927,7 @@ describe('PublicDashboard resolver', () => {
             expect(publicStixRelationshipsTimeSeriesBreakdown.truncated).toEqual(false);
             const { series } = publicStixRelationshipsTimeSeriesBreakdown;
             // The 4 targets of the malwares of the dynamic source, all of them on areas, and the Other serie of the widget
-            expect(series.map((serie) => [serie.label, serie.value, serie.isOther])).toEqual([['Administrative-Area', 4, false], ['Other', 0, true]]);
+            expect(series.map((serie) => [serie.label, serie.total, serie.isOther])).toEqual([['Administrative-Area', 4, false], ['Other', 0, true]]);
             // Without end date, the period ends now: yesterday and today
             expect(publicStixRelationshipsTimeSeriesBreakdown.dates).toHaveLength(2);
             expect(series.every((serie) => serie.values.length === 2)).toEqual(true);
@@ -949,7 +949,7 @@ describe('PublicDashboard resolver', () => {
             // The dataset of the 'Evolution of attacks without filters' widget, whose 7 relationships include references
             // of their sources: only the 4 targets are displayed by the widgets, no reference gets a serie
             expect(truncated).toEqual(false);
-            expect(series.map((serie) => [serie.label, serie.value])).toEqual([['targets', 4]]);
+            expect(series.map((serie) => [serie.label, serie.total])).toEqual([['targets', 4]]);
           });
 
           it('should refuse the breakdown of a relationships widget without breakdown', async () => {
@@ -1579,7 +1579,7 @@ describe('PublicDashboard resolver', () => {
         expect(errors).toBeUndefined();
         return Object.values(data)[0];
       };
-      const seriesOf = ({ series }) => series.map((serie) => [serie.label, serie.value, serie.isOther]);
+      const seriesOf = ({ series }) => series.map((serie) => [serie.label, serie.total, serie.isOther]);
 
       it('should only break down the elements under the markings of the dashboard, in the series and in Other', async () => {
         // Green: spain, raditz and vegeta, not the amber portugal and nappa. The top type is Malware, the areas are

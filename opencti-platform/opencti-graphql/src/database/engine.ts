@@ -9,6 +9,7 @@ import semver from 'semver';
 import { ATTR_DB_QUERY_TEXT, ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION, SEMATTRS_DB_STATEMENT } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import {
+  BREAKDOWN_REFUSAL_REASONS,
   buildPagination,
   buildPaginationFromEdges,
   cursorToOffset,
@@ -127,6 +128,7 @@ import { refang } from '../utils/refang';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
+  getRegisteredTypeFromIndexedName,
   isBooleanAttribute,
   isDateAttribute,
   isDateNumericOrBooleanAttribute,
@@ -3518,95 +3520,69 @@ export const elHistogramCount = async (
       throw wrapEngineError('Histogram computation count fail', err, { query });
     });
 };
-// Types are indexed in lowercase: give back the label of the right entity type
-const convertEntityTypeKeyToLabel = (key: string) => (isStixCoreRelationship(key) ? key : generateInternalType({ type: key }));
-// Terms options ranking the values on their number of documents. The highest values are kept from the top of
-// each shard, as by any terms aggregation. The lowest cannot be: a value rare on a shard but frequent on another
-// would be taken for one of them. Every shard returns all of its values instead, up to MAX_EXACT_RANKING_SIZE.
-const buildCountRankingTerms = (bucketsOrder: 'asc' | 'desc' | null) => (bucketsOrder === 'asc'
-  ? { size: MAX_EXACT_RANKING_SIZE, shard_size: MAX_EXACT_RANKING_SIZE, order: { _count: 'asc' } }
-  : { size: MAX_AGGREGATION_SIZE, order: { _count: 'desc' } });
+// Types are indexed in lowercase: give back the registered type, or a label converted from the key for a name of
+// no registered type
+const convertEntityTypeKeyToLabel = (key: string) => getRegisteredTypeFromIndexedName(key)
+  ?? (isStixCoreRelationship(key) ? key : generateInternalType({ type: key }));
+// Weighted total of the documents, as the time series count them: the inference weight of a relationship,
+// 1 for a document without weight
+const INFERENCE_WEIGHT_AGGREGATION = { weight: { sum: { field: 'i_inference_weight', missing: 1 } } };
+export type RankingOrder = 'asc' | 'desc';
+// Terms options ranking the values on their weighted total, `weightPath` pointing to its sum in each bucket. The
+// highest values are kept from the top of each shard, as by any terms aggregation. The lowest cannot be: a value
+// rare on a shard but frequent on another would be taken for one of them. Every shard returns all of its values
+// instead, up to MAX_EXACT_RANKING_SIZE: when none is left out, each value is summed over every shard, exactly.
+const buildRankingTerms = (rankingOrder: RankingOrder, weightPath: string) => (rankingOrder === 'asc'
+  ? { size: MAX_EXACT_RANKING_SIZE, shard_size: MAX_EXACT_RANKING_SIZE, order: { [weightPath]: 'asc' } }
+  : { size: MAX_AGGREGATION_SIZE, order: { [weightPath]: 'desc' } });
 // The documents of the values a shard or the final reduction left out are counted in sum_other_doc_count:
 // the lowest values may be among them, the ranking is refused rather than wrong
-const checkExactRanking = (termsAggregation: { sum_other_doc_count?: number }) => {
-  if ((termsAggregation.sum_other_doc_count ?? 0) > 0) {
+const checkExactRanking = (sumOtherDocCount: number) => {
+  if (sumOtherDocCount > 0) {
     throw FunctionalError('Too many values to rank the lowest ones, narrow the filters or the period', {
-      reason: 'too_many_values',
+      reason: BREAKDOWN_REFUSAL_REASONS.TOO_MANY_VALUES,
       max: MAX_EXACT_RANKING_SIZE,
     });
   }
 };
+export type AggregationBucket = { key: string; label: string; value: number; count: number };
+// The values kept by the size cap, and the number of documents of the values left out (0: every value is there)
+export type AggregationRanking = { buckets: AggregationBucket[]; sumOtherDocCount: number };
 type AggregationCountOpts = QueryBodyBuilderOpts & {
   field: string;
   weightField?: string | null;
   normalizeLabel?: boolean | null;
   convertEntityTypeLabel?: boolean | null;
-  // Orders the buckets by value, so the ones kept by the size cap are the lowest or the highest values.
-  // Without it, the buckets are ordered by number of documents. Not named `order`: the distribution APIs
-  // spread their GraphQL arguments here, and their own `order` only sorts the result after the aggregation.
-  bucketsOrder?: 'asc' | 'desc' | null;
-  // Ranks the buckets on their number of documents only, without the weight sum nor the missing bucket:
-  // a much cheaper request when only the ranking of the values is needed. `value` is then the number of documents.
-  // The lowest values (asc) are ranked exactly, or refused beyond MAX_EXACT_RANKING_SIZE values.
-  rankByCount?: boolean | null;
 };
-export const elAggregationCount = async (
+// Terms on a field, each bucket with its weighted total as value, `terms` completing the terms aggregation
+const aggregationTermsCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
-  options: AggregationCountOpts = { field: '' },
-): Promise<{ key: string; label: string; value: any; count: number }[]> => {
-  const {
-    field,
-    types = null,
-    weightField = 'i_inference_weight',
-    normalizeLabel = true,
-    convertEntityTypeLabel = false,
-    bucketsOrder = null,
-    rankByCount = false,
-  } = options;
+  options: AggregationCountOpts,
+  terms: Record<string, unknown>,
+): Promise<AggregationRanking> => {
+  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
-  const queryField = buildFieldForQuery(field);
-  // Only keyword fields accept a string missing value; date/numeric/boolean/object-flat fields do not.
-  const isKeywordField = queryField.endsWith('.keyword');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
-  const genres: any = {
-    terms: {
-      field: queryField,
-      size: MAX_AGGREGATION_SIZE,
+  body.aggs = {
+    genres: {
+      terms: { field: buildFieldForQuery(field), size: MAX_AGGREGATION_SIZE, ...terms },
+      aggs: { weight: { sum: { field: weightField, missing: 1 } } },
     },
   };
-  if (rankByCount) {
-    Object.assign(genres.terms, buildCountRankingTerms(bucketsOrder));
-  } else {
-    genres.aggs = {
-      weight: {
-        sum: {
-          field: weightField,
-          missing: 1,
-        },
-      },
-    };
-    if (isKeywordField) {
-      genres.terms.missing = 'unknown';
-    }
-    if (bucketsOrder === 'asc' || bucketsOrder === 'desc') {
-      genres.terms.order = { weight: bucketsOrder };
-    }
-  }
-  body.aggs = { genres };
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     body,
   };
   logApp.debug('[SEARCH] aggregationCount', { query });
-  const { termsAggregation, distribution } = await elRawSearch(context, user, types, query)
+  return elRawSearch(context, user, types, query)
     .then((data) => {
-      const { buckets } = data.aggregations.genres;
+      const { buckets, sum_other_doc_count: sumOtherDocCount = 0 } = data.aggregations.genres;
       return {
-        termsAggregation: data.aggregations.genres,
-        distribution: buckets.map((b: any) => {
+        sumOtherDocCount,
+        buckets: buckets.map((b: any) => {
           let label = b.key;
           if (typeof label === 'number') {
             label = String(b.key);
@@ -3616,18 +3592,47 @@ export const elAggregationCount = async (
             label = pascalize(b.key);
           }
           // key is the raw term as indexed, usable to target the same bucket in a later aggregation
-          return { key: String(b.key), label, value: rankByCount ? b.doc_count : b.weight.value, count: b.doc_count };
+          return { key: String(b.key), label, value: b.weight.value, count: b.doc_count };
         }),
       };
     })
     .catch((err) => {
       throw wrapEngineError('Aggregation computation count fail', err, { query });
     });
-  // Checked out of the chain above: a refusal is not an engine failure
-  if (rankByCount && bucketsOrder === 'asc') {
-    checkExactRanking(termsAggregation);
+};
+// The top values of a field by number of documents, with their weighted total, and the documents without value
+// in an "unknown" bucket for a keyword field
+export const elAggregationCount = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  options: AggregationCountOpts = { field: '' },
+): Promise<AggregationBucket[]> => {
+  // Only keyword fields accept a string missing value; date/numeric/boolean/object-flat fields do not.
+  const isKeywordField = buildFieldForQuery(options.field).endsWith('.keyword');
+  const { buckets } = await aggregationTermsCount(context, user, indexName, options, isKeywordField ? { missing: 'unknown' } : {});
+  return buckets;
+};
+export type AggregationRankingOpts = QueryBodyBuilderOpts & {
+  field: string;
+  rankingOrder: RankingOrder;
+};
+// The values of a field ranked on their weighted total, the same sum the time series count, the highest (desc)
+// or the lowest (asc) first, as they are indexed. No missing bucket: a real "unknown" value is a value like any
+// other. The lowest values are ranked exactly, or refused beyond MAX_EXACT_RANKING_SIZE values.
+export const elAggregationRanking = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  options: AggregationRankingOpts,
+): Promise<AggregationRanking> => {
+  const { rankingOrder } = options;
+  const ranking = await aggregationTermsCount(context, user, indexName, { ...options, normalizeLabel: false }, buildRankingTerms(rankingOrder, 'weight'));
+  // Checked out of the request: a refusal is not an engine failure
+  if (rankingOrder === 'asc') {
+    checkExactRanking(ranking.sumOtherDocCount);
   }
-  return distribution;
+  return ranking;
 };
 // Source or target of a relationship, stored in its nested connections
 export type ConnectionSide = 'from' | 'to';
@@ -3653,45 +3658,50 @@ const buildConnectionTypesAggregation = (side: ConnectionSide, terms: Record<str
     },
   },
 });
-const INFERENCE_WEIGHT_AGGREGATION = { weight: { sum: { field: 'i_inference_weight', missing: 1 } } };
-export type ConnectionTypesAggregationCountOpts = QueryBodyBuilderOpts & {
+export type ConnectionTypesRankingOpts = QueryBodyBuilderOpts & {
   connectionSide: ConnectionSide;
-  bucketsOrder?: 'asc' | 'desc' | null;
+  rankingOrder: RankingOrder;
 };
-// Ranks the types of the source or target of the relationships on their number of relationships, as
-// elAggregationCount with rankByCount does for a field of the relationships themselves
-export const elConnectionTypesAggregationCount = async (
+// Ranks the types of the source or target of the relationships on the weighted total of their relationships,
+// as elAggregationRanking does for a field of the relationships themselves
+export const elConnectionTypesRanking = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
-  options: ConnectionTypesAggregationCountOpts,
-): Promise<{ key: string; label: string; value: number; count: number }[]> => {
-  const { connectionSide, types = null, bucketsOrder = null } = options;
+  options: ConnectionTypesRankingOpts,
+): Promise<AggregationRanking> => {
+  const { connectionSide, types = null, rankingOrder } = options;
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
-  // The abstract types are excluded before the ranking: they are not values left out
-  const terms = { ...buildCountRankingTerms(bucketsOrder), exclude: CONNECTION_ABSTRACT_TYPES };
-  body.aggs = { connections: buildConnectionTypesAggregation(connectionSide, terms) };
+  // The weight is summed on the relationships of each type. The abstract types are excluded before the ranking:
+  // they are not values left out.
+  const terms = { ...buildRankingTerms(rankingOrder, 'relationships>weight'), exclude: CONNECTION_ABSTRACT_TYPES };
+  body.aggs = { connections: buildConnectionTypesAggregation(connectionSide, terms, INFERENCE_WEIGHT_AGGREGATION) };
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     body,
   };
-  logApp.debug('[SEARCH] connectionTypesAggregationCount', { query });
-  const { termsAggregation, distribution } = await elRawSearch(context, user, types, query)
+  logApp.debug('[SEARCH] connectionTypesRanking', { query });
+  const ranking: AggregationRanking = await elRawSearch(context, user, types, query)
     .then((data) => {
-      const { buckets } = data.aggregations.connections.side.types;
+      const { buckets, sum_other_doc_count: sumOtherDocCount = 0 } = data.aggregations.connections.side.types;
       return {
-        termsAggregation: data.aggregations.connections.side.types,
-        distribution: buckets.map((b: any) => ({ key: String(b.key), label: convertEntityTypeKeyToLabel(b.key), value: b.doc_count, count: b.doc_count })),
+        sumOtherDocCount,
+        buckets: buckets.map((b: any) => ({
+          key: String(b.key),
+          label: convertEntityTypeKeyToLabel(b.key),
+          value: b.relationships.weight.value,
+          count: b.doc_count,
+        })),
       };
     })
     .catch((err) => {
-      throw wrapEngineError('Connection types aggregation count fail', err, { query });
+      throw wrapEngineError('Connection types ranking fail', err, { query });
     });
-  if (bucketsOrder === 'asc') {
-    checkExactRanking(termsAggregation);
+  if (rankingOrder === 'asc') {
+    checkExactRanking(ranking.sumOtherDocCount);
   }
-  return distribution;
+  return ranking;
 };
 export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
   field: string;
@@ -3785,7 +3795,6 @@ export const elHistogramBreakdownCount = async (
   body.aggs = buildHistogramBreakdownAggregations(options, countOverTime);
   const query = {
     index: getIndicesToQuery(context, user, indexName),
-    _source_excludes: '*',
     // Only what is read below: the response of 50 series over a long period weighs megabytes otherwise
     filter_path: [
       '_shards',
@@ -3825,6 +3834,53 @@ export const elHistogramBreakdownCount = async (
     })
     .catch((err) => {
       throw wrapEngineError('Histogram breakdown computation fail', err, { query });
+    });
+};
+export type KeywordWrittenFormsOpts = QueryBodyBuilderOpts & {
+  // A single valued keyword field
+  field: string;
+  // Indexed forms of the field, as a terms aggregation on it returns them
+  keys: string[];
+};
+// Written form of indexed values of a keyword field: the value of one of the documents of each of them, by indexed
+// form. The keyword normalizer lowercases and folds every value to its indexed form, which only the engine
+// computes exactly for any letter: the documents are matched on the indexed form of the field itself.
+export const elKeywordWrittenForms = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  options: KeywordWrittenFormsOpts,
+): Promise<Map<string, string>> => {
+  const { field, keys, types = null } = options;
+  if (keys.length === 0) {
+    return new Map();
+  }
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
+  body.size = 0;
+  body.aggs = {
+    keys: {
+      terms: { field: buildFieldForQuery(field), include: keys, size: keys.length },
+      aggs: { written: { top_hits: { size: 1, _source: [field] } } },
+    },
+  };
+  const query = {
+    index: getIndicesToQuery(context, user, indexName),
+    body,
+  };
+  logApp.debug('[SEARCH] keywordWrittenForms', { query });
+  return elRawSearch(context, user, types, query)
+    .then((data) => {
+      const writtenForms = new Map<string, string>();
+      (data.aggregations?.keys?.buckets ?? []).forEach((bucket: any) => {
+        const written = bucket.written?.hits?.hits?.[0]?._source?.[field];
+        if (typeof written === 'string') {
+          writtenForms.set(String(bucket.key), written);
+        }
+      });
+      return writtenForms;
+    })
+    .catch((err) => {
+      throw wrapEngineError('Keyword written forms computation fail', err, { query });
     });
 };
 

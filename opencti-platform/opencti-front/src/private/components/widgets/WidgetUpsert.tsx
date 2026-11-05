@@ -25,7 +25,7 @@ const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
   isUpdate,
 }) => {
   const { t_i18n } = useFormatter();
-  const { config, step } = useWidgetConfigContext();
+  const { getSubmittedConfig, step } = useWidgetConfigContext();
   const { isFormValid } = useWidgetConfigValidateForm();
 
   return (
@@ -52,7 +52,7 @@ const WidgetUpsert: FunctionComponent<WidgetUpsertProps> = ({
         </Button>
         <Button
           data-testid="widget-submit-button"
-          onClick={() => onSubmit(config)}
+          onClick={() => onSubmit(getSubmittedConfig())}
           disabled={!isFormValid}
         >
           {isUpdate ? t_i18n('Update') : t_i18n('Create')}

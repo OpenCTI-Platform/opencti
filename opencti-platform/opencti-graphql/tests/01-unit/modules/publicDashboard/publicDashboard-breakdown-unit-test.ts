@@ -125,7 +125,7 @@ describe('publicStixRelationshipsTimeSeriesBreakdown', () => {
       endDate,
       interval: 'week',
       limit: 20,
-      order: 'asc',
+      orderMode: 'asc',
       includeOther: true,
       // the stored filters, restricted to the relationships the widget displays
       filters: widgetRelationships(targets),
@@ -148,7 +148,7 @@ describe('publicStixRelationshipsTimeSeriesBreakdown', () => {
       endDate: null,
       interval: 'day',
       limit: 10,
-      order: 'desc',
+      orderMode: 'desc',
       includeOther: false,
       relationship_type: [],
     });
@@ -238,7 +238,7 @@ describe('publicStixCoreObjectsTimeSeriesBreakdown', () => {
       endDate,
       interval: 'month',
       limit: 5,
-      order: 'desc',
+      orderMode: 'desc',
       includeOther: false,
       filters: reports,
       types: ['Report'],

@@ -9,7 +9,8 @@ import { daysAgo, monthsAgo } from '../../../utils/Time';
 const mocks = vi.hoisted(() => ({
   response: {} as Record<string, unknown>,
   error: null as unknown,
-  queryRef: {} as unknown,
+  // A loaded query holds its variables: the public queries only name the widget and the dates
+  queryRef: { variables: {} } as unknown,
   viz: vi.fn(),
   bars: vi.fn(),
   lines: vi.fn(),
@@ -84,7 +85,7 @@ describe('PublicTimeSeriesBreakdown', () => {
     vi.clearAllMocks();
     mocks.response = { publicStixCoreObjectsTimeSeriesBreakdown: breakdown([[1, 2, 3]]) };
     mocks.error = null;
-    mocks.queryRef = {};
+    mocks.queryRef = { variables: {} };
   });
 
   it('queries the breakdown of the widget, whose settings are read by the API, over the dates of the dashboard', () => {
@@ -149,7 +150,7 @@ describe('PublicTimeSeriesBreakdown', () => {
 
     // A widget that cannot be broken down any more
     mocks.error = { res: { errors: [{ message: 'This widget cannot be broken down', extensions: { code: 'FUNCTIONAL_ERROR' } }] } };
-    mocks.queryRef = {};
+    mocks.queryRef = { variables: {} };
     rerender(element);
     expect(container.textContent).toEqual('This breakdown cannot be computed with the settings of this widget.');
     vi.mocked(console.error).mockRestore();

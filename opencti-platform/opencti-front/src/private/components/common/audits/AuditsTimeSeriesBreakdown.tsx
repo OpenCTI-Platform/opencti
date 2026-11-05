@@ -31,7 +31,7 @@ const auditsTimeSeriesBreakdownQuery = graphql`
     $endDate: DateTime
     $interval: String!
     $limit: Int
-    $order: OrderingMode
+    $orderMode: OrderingMode
     $includeOther: Boolean
     $types: [String]
     $filters: FilterGroup
@@ -43,7 +43,7 @@ const auditsTimeSeriesBreakdownQuery = graphql`
       endDate: $endDate
       interval: $interval
       limit: $limit
-      order: $order
+      orderMode: $orderMode
       includeOther: $includeOther
       types: $types
       filters: $filters

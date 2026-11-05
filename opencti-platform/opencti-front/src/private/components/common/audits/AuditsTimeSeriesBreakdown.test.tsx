@@ -21,13 +21,9 @@ vi.mock('react-relay', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-relay')>()),
   usePreloadedQuery: () => mocks.response,
 }));
-vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
-  default: (args: unknown) => {
-    mocks.dashboardViz(args);
-    // Resolved as is, unless the test sets what its saved filters and variables resolve to
-    const resolvedDataSelection = mocks.resolvedDataSelection ?? (args as { dataSelection: unknown[] }).dataSelection;
-    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {}, resolvedDataSelection };
-  },
+// Resolved as is, unless the test sets what its saved filters and variables resolve to. The query is kept until a load.
+vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
+  default: (await import('../../../../utils/tests/dashboardVizMock')).mockDashboardViz(mocks),
 }));
 vi.mock('../../../../utils/hooks/useGranted', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../utils/hooks/useGranted')>()),
@@ -60,6 +56,8 @@ import AuditsTimeSeriesBreakdown from './AuditsTimeSeriesBreakdown';
 
 const config = { relativeDate: null, startDate: '2025-10-01T00:00:00.000Z', endDate: '2026-10-01T00:00:00.000Z' };
 const host = { kind: 'workspace' } as const;
+// The menu of the widget, given to the users who can edit it
+const editorMenu = <div data-testid="widget-menu" />;
 const selection = {
   date_attribute: '',
   filters: {
@@ -87,7 +85,7 @@ const respond = (series: SerieFixture[], truncated = false) => {
   mocks.response = { auditsTimeSeriesBreakdown: { truncated, dates, series } };
 };
 
-const render = (widget: Widget) => testRender(<AuditsTimeSeriesBreakdown widget={widget} config={config} host={host} />);
+const render = (widget: Widget) => testRender(<AuditsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />);
 
 // The first draw of a chart can wait for the charts drawn just before it
 const drawn = async (chart: Mock) => {
@@ -123,7 +121,7 @@ describe('AuditsTimeSeriesBreakdown', () => {
       endDate: config.endDate,
       interval: 'week',
       limit: 20,
-      order: 'asc',
+      orderMode: 'asc',
       includeOther: true,
       // the API narrows them to the logs the user can see
       types: ['History', 'Activity'],
@@ -181,7 +179,7 @@ describe('AuditsTimeSeriesBreakdown', () => {
     expect(names[1]).toEqual('Not-A-Translated-Type');
   });
 
-  it('keeps the raw event values and warns when only the top values are displayed', async () => {
+  it('keeps the raw event values and warns when only the highest values are displayed', async () => {
     respond([{ label: 'create', entity: null, values: [1, 2, 3] }], true);
     const { getByTestId } = render(makeWidget('line', { breakdownBy: 'event_scope', breakdownLimit: 5 }));
     expect((await drawn(mocks.lines)).series.map((serie: { name: string }) => serie.name)).toEqual(['create']);
@@ -214,5 +212,18 @@ describe('AuditsTimeSeriesBreakdown', () => {
     const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
     expect(buildQueryVariables(dataSelection, config, parameters)).toBeNull();
     expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
+  });
+
+  it('tells a user without access so before anything about the field', () => {
+    mocks.isGranted = false;
+    const { getByText, queryByText } = render(makeWidget('line', { breakdownBy: 'context_data.id' }));
+    expect(getByText('You are not authorized to see this data.')).toBeTruthy();
+    expect(queryByText(/This breakdown field is not available/)).toBeNull();
+  });
+
+  it('gives no advice to edit the widget to the users who cannot', () => {
+    const { container } = testRender(<AuditsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'context_data.id' })} config={config} host={host} />);
+    expect(container.textContent).toContain('This breakdown field is not available for the dataset of this widget.');
+    expect(container.textContent).not.toContain('Edit the widget');
   });
 });

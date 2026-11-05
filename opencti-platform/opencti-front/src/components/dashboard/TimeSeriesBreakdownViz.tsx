@@ -1,12 +1,11 @@
 import React, { ComponentType, ReactNode, useCallback, useState } from 'react';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import ApexCharts from 'apexcharts';
 import { useFormatter } from '../i18n';
 import useAuth from '../../utils/hooks/useAuth';
 import WidgetContainer from './WidgetContainer';
 import WidgetNoData from './WidgetNoData';
-import WidgetTimeSeriesBreakdown, { WidgetTimeSeriesBreakdownData } from './WidgetTimeSeriesBreakdown';
+import TimeSeriesBreakdownContent, { type SelectTimeSeriesBreakdown } from './TimeSeriesBreakdownContent';
 import WidgetBreakdownErrorBoundary from './WidgetBreakdownErrorBoundary';
 import useDashboardViz from './useDashboardViz';
 import WidgetRenderContent, { type WidgetRenderGuards } from './WidgetRenderContent';
@@ -43,7 +42,7 @@ export const buildTimeSeriesBreakdownSettings = (config: DashboardConfig, parame
     endDate: endDate ?? now(),
     interval,
     limit: getWidgetBreakdownLimit(parameters),
-    order: getWidgetBreakdownOrder(parameters),
+    orderMode: getWidgetBreakdownOrder(parameters),
     includeOther: getWidgetBreakdownOther(parameters),
   };
 };
@@ -71,6 +70,7 @@ export const buildTimeSeriesBreakdownVariables = (
 type BreakdownRenderContentProps = WidgetRenderGuards & {
   queryRef: unknown;
   host?: WidgetHost;
+  isQuerySkipped?: boolean;
   children: ReactNode;
 };
 
@@ -83,7 +83,7 @@ type BuildQueryVariables<TQuery extends OperationType> = (
 interface TimeSeriesBreakdownQueryProps<TQuery extends OperationType> {
   query: GraphQLTaggedNode;
   buildQueryVariables: BuildQueryVariables<TQuery>;
-  selectBreakdown: (data: TQuery['response']) => WidgetTimeSeriesBreakdownData | null | undefined;
+  selectBreakdown: SelectTimeSeriesBreakdown<TQuery>;
   // Title of the widget when it sets none
   defaultTitle?: string;
   // Guards of the perspective on top of the common ones, like the capabilities the audits require
@@ -97,40 +97,6 @@ export interface TimeSeriesBreakdownVizProps {
   config: DashboardConfig;
   refreshRate?: number | null;
 }
-
-interface TimeSeriesBreakdownContentProps<TQuery extends OperationType> {
-  query: GraphQLTaggedNode;
-  queryRef: PreloadedQuery<TQuery>;
-  selectBreakdown: TimeSeriesBreakdownQueryProps<TQuery>['selectBreakdown'];
-  type: string;
-  parameters: WidgetParameters;
-  onMounted: (chart?: ApexCharts) => void;
-  onWarningChange: (warning?: string) => void;
-}
-
-/**
- * Draws the breakdown its query returns: shared by the dashboard widgets and the public dashboards.
- */
-export const TimeSeriesBreakdownContent = <TQuery extends OperationType>({
-  query,
-  queryRef,
-  selectBreakdown,
-  type,
-  parameters,
-  onMounted,
-  onWarningChange,
-}: TimeSeriesBreakdownContentProps<TQuery>) => {
-  const data = usePreloadedQuery<TQuery>(query, queryRef);
-  return (
-    <WidgetTimeSeriesBreakdown
-      breakdown={selectBreakdown(data)}
-      type={type}
-      parameters={parameters}
-      onMounted={onMounted}
-      onWarningChange={onWarningChange}
-    />
-  );
-};
 
 /**
  * Time series widget drawing one series per value of `parameters.breakdownBy`, for the entities, the
@@ -167,7 +133,7 @@ const TimeSeriesBreakdownViz = <TQuery extends OperationType>({
       : null),
     [isSupportedOn, buildQueryVariables],
   );
-  const { renderGuards, isPreviewMode, queryRef, resolvedDataSelection } = useDashboardViz<TQuery>({
+  const { renderGuards, isPreviewMode, queryRef, isResolving, skipped } = useDashboardViz<TQuery>({
     perspective,
     dataSelection: widget.dataSelection,
     host,
@@ -177,9 +143,11 @@ const TimeSeriesBreakdownViz = <TQuery extends OperationType>({
     parameters,
     buildQueryVariables: buildSupportedQueryVariables,
   });
-  // A widget that cannot be resolved says why first
-  const isBlocked = renderGuards.isMissingHostEntity || renderGuards.isMissingSavedFilters || renderGuards.hasUnresolvedVariables;
-  const isUnsupported = !isBlocked && resolvedDataSelection.length > 0 && !isSupportedOn(resolvedDataSelection);
+  // Not queried for the dataset it reads, once it is resolved: the field checked on the dataset resolved before would
+  // be refused, or accepted, for a moment. A widget that cannot be resolved is not skipped: its guards say why first.
+  const isUnsupported = !isResolving && skipped;
+  // The menu of the widget is only given to the users who can edit it: the others get no advice to edit it
+  const readOnly = !popover;
 
   return (
     <WidgetContainer
@@ -190,15 +158,21 @@ const TimeSeriesBreakdownViz = <TQuery extends OperationType>({
       showPreviewTag={isPreviewMode}
       warning={isUnsupported ? undefined : warning}
     >
-      {isUnsupported ? (
-        <WidgetNoData message={t_i18n('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')} />
-      ) : (
-        <RenderContent
-          {...renderGuards}
-          queryRef={queryRef}
-          host={host}
-        >
-          <WidgetBreakdownErrorBoundary resetKey={queryRef}>
+      {/* The guards come first: a user without access to the data is told so, not how to change the widget */}
+      <RenderContent
+        {...renderGuards}
+        queryRef={queryRef}
+        host={host}
+        isQuerySkipped={isUnsupported}
+      >
+        {isUnsupported ? (
+          <WidgetNoData
+            message={readOnly
+              ? t_i18n('This breakdown field is not available for the dataset of this widget.')
+              : t_i18n('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')}
+          />
+        ) : (
+          <WidgetBreakdownErrorBoundary resetKey={queryRef} readOnly={readOnly}>
             <TimeSeriesBreakdownContent<TQuery>
               query={query}
               queryRef={queryRef!}
@@ -209,8 +183,8 @@ const TimeSeriesBreakdownViz = <TQuery extends OperationType>({
               onWarningChange={setWarning}
             />
           </WidgetBreakdownErrorBoundary>
-        </RenderContent>
-      )}
+        )}
+      </RenderContent>
     </WidgetContainer>
   );
 };

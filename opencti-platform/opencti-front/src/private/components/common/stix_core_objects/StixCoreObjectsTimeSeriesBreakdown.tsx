@@ -14,7 +14,7 @@ const stixCoreObjectsTimeSeriesBreakdownQuery = graphql`
     $endDate: DateTime
     $interval: String!
     $limit: Int
-    $order: OrderingMode
+    $orderMode: OrderingMode
     $includeOther: Boolean
     $types: [String]
     $filters: FilterGroup
@@ -26,7 +26,7 @@ const stixCoreObjectsTimeSeriesBreakdownQuery = graphql`
       endDate: $endDate
       interval: $interval
       limit: $limit
-      order: $order
+      orderMode: $orderMode
       includeOther: $includeOther
       types: $types
       filters: $filters
@@ -50,6 +50,13 @@ const stixCoreObjectsTimeSeriesBreakdownQuery = graphql`
           ... on Creator {
             id
             name
+          }
+          # the colors of the values that have one
+          ... on Label {
+            color
+          }
+          ... on MarkingDefinition {
+            x_opencti_color
           }
         }
         values

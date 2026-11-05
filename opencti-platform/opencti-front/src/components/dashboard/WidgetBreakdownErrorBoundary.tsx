@@ -1,14 +1,7 @@
 import React, { ReactNode } from 'react';
 import { useFormatter } from '../i18n';
 import WidgetNoData from './WidgetNoData';
-
-type GraphQLResponseError = { message?: string; extensions?: { code?: string; data?: { reason?: string } } };
-
-// Errors of a GraphQL response, as thrown by the network layer
-const getResponseErrors = (error: unknown): GraphQLResponseError[] => {
-  const responseError = error as { res?: { errors?: GraphQLResponseError[] }; data?: { res?: { errors?: GraphQLResponseError[] } } } | null;
-  return responseError?.res?.errors ?? responseError?.data?.res?.errors ?? [];
-};
+import { getGraphQLResponseErrors } from '../../relay/graphQLResponseErrors';
 
 // The reasons of the refusals are read from extensions.data.reason, never from their messages.
 // Read only, the refusal only says why: its reader cannot change the widget, nor its period.
@@ -25,6 +18,18 @@ const BreakdownRefusal = ({ reasons, readOnly }: { reasons: (string | undefined)
     message = readOnly
       ? t_i18n('There are too many values to find the lowest ones.')
       : t_i18n('There are too many values to find the lowest ones. Choose the highest values or narrow the filters of this widget.');
+  } else if (reasons.includes('unsupported_date_attribute')) {
+    message = readOnly
+      ? t_i18n('The date attribute of this widget does not apply to its data.')
+      : t_i18n('The date attribute of this widget does not apply to its data. Edit the widget to choose another date attribute.');
+  } else if (reasons.includes('unsupported_field')) {
+    message = readOnly
+      ? t_i18n('The breakdown field of this widget does not apply to its data.')
+      : t_i18n('The breakdown field of this widget does not apply to its data. Edit the widget to choose another field.');
+  } else if (reasons.includes('invalid_limit')) {
+    message = readOnly
+      ? t_i18n('The number of series of this widget must be between 1 and 50.')
+      : t_i18n('The number of series of this widget must be between 1 and 50. Edit the widget to change it.');
   }
   return <WidgetNoData message={message} />;
 };
@@ -44,8 +49,10 @@ interface WidgetBreakdownErrorBoundaryState {
 
 /**
  * The breakdown API refuses the requests it cannot serve (too many points for the period, too many values
- * to rank the lowest ones, settings it does not support): the widget says why and keeps its menu, instead
- * of being replaced by the error of the whole widget. Any other error goes on to the enclosing error boundary.
+ * to rank the lowest ones, settings it does not support): the widget says why, in place of its chart.
+ * The error boundary of WidgetContainer, which keeps the menu of the widget all the same, would only show
+ * a generic error, and keep it until the page changes: this one is cleared by the next query of the widget
+ * (`resetKey`), once its settings are changed or it is refreshed. Any other error goes on to that boundary.
  */
 class WidgetBreakdownErrorBoundary extends React.Component<WidgetBreakdownErrorBoundaryProps, WidgetBreakdownErrorBoundaryState> {
   constructor(props: WidgetBreakdownErrorBoundaryProps) {
@@ -64,7 +71,7 @@ class WidgetBreakdownErrorBoundary extends React.Component<WidgetBreakdownErrorB
   render() {
     const { error } = this.state;
     if (error) {
-      const refusals = getResponseErrors(error).filter((responseError) => responseError.extensions?.code === 'FUNCTIONAL_ERROR');
+      const refusals = getGraphQLResponseErrors(error).filter((responseError) => responseError.extensions?.code === 'FUNCTIONAL_ERROR');
       if (refusals.length === 0) {
         throw error;
       }

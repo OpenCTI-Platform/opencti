@@ -26,6 +26,7 @@ vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
         ['stix-relationship', new Map([['objectMarking', definition('objectMarking', 'id', 'Marking', ['stix-relationship', 'targets', 'uses'])]])],
         ['targets', new Map([['objectMarking', definition('objectMarking', 'id', 'Marking', ['targets'])]])],
         ['uses', new Map([['usage_types', definition('usage_types', 'vocabulary', 'Usage types', ['uses'])]])],
+        ['DraftWorkspace', new Map([['creator_id', definition('creator_id', 'id', 'Creators', ['DraftWorkspace'])]])],
       ]),
     },
   }),
@@ -38,15 +39,20 @@ vi.mock('../../../utils/hooks/useHelper', () => ({
   default: () => ({ isFeatureEnable: (flag: string) => mocks.flags.includes(flag) }),
 }));
 
-vi.mock('./WidgetConfigContext', () => ({
-  useWidgetConfigContext: () => ({
-    config: { widget: mocks.widget },
-    host: mocks.host,
-    setStep: vi.fn(),
-    setDataSelection: vi.fn(),
-    setDataSelectionWithIndex: vi.fn(),
-  }),
-}));
+vi.mock('./WidgetConfigContext', async () => {
+  const { default: useResolvedWidgetBreakdown } = await import('./useResolvedWidgetBreakdown');
+  return {
+    useWidgetConfigContext: () => ({
+      config: { widget: mocks.widget },
+      host: mocks.host,
+      setStep: vi.fn(),
+      setDataSelection: vi.fn(),
+      setDataSelectionWithIndex: vi.fn(),
+    }),
+    // The breakdown the editor provider derives from the edited widget
+    useWidgetBreakdownState: () => useResolvedWidgetBreakdown(mocks.widget as never, mocks.host as never, mocks.flags.includes('TIME_SERIES_BREAKDOWN')),
+  };
+});
 vi.mock('@components/widgets/WidgetFilters', () => ({
   default: () => <div data-testid="widget-filters" />,
 }));
@@ -91,14 +97,15 @@ describe('WidgetCreationDataSelection of a relationships widget', () => {
     expect(testRender(<WidgetCreationDataSelection />).getByText(INFO)).toBeTruthy();
   });
 
-  it('cannot add another dataset to a broken down widget', () => {
+  it('cannot add another dataset to a broken down widget, already broken down', () => {
     setWidget({ parameters: { breakdownBy: 'toTypes' } });
-    const { getByRole } = testRender(<WidgetCreationDataSelection />);
+    const { getByRole, queryByText } = testRender(<WidgetCreationDataSelection />);
     expect(isDisabled(getByRole('button', { name: 'Relationships' }))).toBe(true);
     expect(isDisabled(getByRole('button', { name: 'Entities' }))).toBe(true);
+    expect(queryByText(INFO)).toBeNull();
   });
 
-  it('lets datasets be added next to a field the relationship types no longer offer, which the parameters step drops', () => {
+  it('lets datasets be added next to a field the relationship types no longer offer, dropped on submit', () => {
     setWidget({ dataSelection: [ofType('relationships', 'relationship_type', 'uses')], parameters: { breakdownBy: 'usage_types' } });
     const locked = testRender(<WidgetCreationDataSelection />);
     expect(isDisabled(locked.getByRole('button', { name: 'Relationships' }))).toBe(true);
@@ -174,5 +181,37 @@ describe('WidgetCreationDataSelection of a broken down widget', () => {
     expect(isDisabled(getByRole('button', { name: 'Add' }))).toBe(true);
     readSavedFilter(ofType('entities', 'entity_type', 'Malware').filters);
     await waitFor(() => expect(isDisabled(getByRole('button', { name: 'Add' }))).toBe(false));
+  });
+});
+
+describe('WidgetCreationDataSelection of a dataset read from a saved filter', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.host = { kind: 'workspace' };
+    mocks.flags = ['TIME_SERIES_BREAKDOWN'];
+  });
+
+  const savedFilter = { label: '', perspective: 'entities', filters_id: 'saved-filter', filters: undefined };
+
+  it('says the dataset can be broken down once the saved filter is read', async () => {
+    let readSavedFilter: (filters: unknown) => void = () => {};
+    mocks.fetchSavedFilterContent.mockReturnValue(new Promise((resolve) => {
+      readSavedFilter = resolve;
+    }));
+    setWidget({ perspective: 'entities', dataSelection: [savedFilter] });
+    const { queryByText, findByText } = testRender(<WidgetCreationDataSelection />);
+
+    expect(queryByText(INFO)).toBeNull();
+    readSavedFilter(ofType('entities', 'entity_type', 'Report').filters);
+    expect(await findByText(INFO)).toBeTruthy();
+  });
+
+  it('says nothing about the breakdown of draft workspaces, and lets datasets be added', async () => {
+    mocks.fetchSavedFilterContent.mockResolvedValue(ofType('entities', 'entity_type', 'DraftWorkspace').filters);
+    setWidget({ perspective: 'entities', dataSelection: [savedFilter], parameters: { breakdownBy: 'creator_id' } });
+    const { queryByText, getByRole } = testRender(<WidgetCreationDataSelection />);
+
+    await waitFor(() => expect(isDisabled(getByRole('button', { name: 'Add' }))).toBe(false));
+    expect(queryByText(INFO)).toBeNull();
   });
 });
