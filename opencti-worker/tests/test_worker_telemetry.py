@@ -85,23 +85,21 @@ class TestIngestionUnitsGauges:
 
         release = threading.Event()
         try:
-            futures = [
-                selector.submit(False, release.wait),
-                selector.submit(True, release.wait),
-            ]
+            selector.submit(False, release.wait)
+            selector.submit(True, release.wait)
             values = collect_values(reader)
             assert values["opencti_max_ingestion_units"] == [5]
             assert values["opencti_running_ingestion_units"] == [2]
-
-            release.set()
-            for future in futures:
-                future.result(timeout=5)
-            values = collect_values(reader)
-            assert values["opencti_running_ingestion_units"] == [0]
         finally:
             release.set()
+            # Future.result() can return before the done callbacks that
+            # decrement the selector counters have run. Shutting the pools
+            # down joins their threads, which also waits for those callbacks.
             default_pool.shutdown(wait=True)
             realtime_pool.shutdown(wait=True)
+
+        values = collect_values(reader)
+        assert values["opencti_running_ingestion_units"] == [0]
 
 
 class TestBundleProcessingTime:
