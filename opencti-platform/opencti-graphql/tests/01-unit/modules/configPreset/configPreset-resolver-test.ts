@@ -41,11 +41,13 @@ import {
   customTheme,
   defaultStatusTemplate,
   disarmKillChainPhase,
+  fraudCaseTemplate,
   killChainPhase,
   mockEntityLoaders,
   otherCustomTheme,
   otherKillChainPhase,
   otherLabel,
+  phishingCaseTemplate,
 } from './configPreset-fixtures';
 
 const buildSchema = () => {
@@ -202,6 +204,15 @@ describe('Config preset exportable types query', () => {
         items: [statusTemplateItem(customStatusTemplate), statusTemplateItem(defaultStatusTemplate)],
         itemsPageInfo: onePage(2),
       },
+      {
+        key: 'caseTemplates',
+        label: 'Case templates',
+        description: 'Case templates and their tasks',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // By name
+        items: [statusTemplateItem(fraudCaseTemplate), statusTemplateItem(phishingCaseTemplate)],
+        itemsPageInfo: onePage(2),
+      },
     ]);
   });
 
@@ -240,7 +251,7 @@ describe('Config preset exportable types query', () => {
     const result = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
     expect(result.errors).toBeUndefined();
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
-    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false], ['labels', false], ['killChainPhases', false], ['vocabularies', false], ['statusTemplates', false]]);
+    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false], ['labels', false], ['killChainPhases', false], ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false]]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
@@ -281,6 +292,7 @@ describe('Config preset exportable types query', () => {
       ['killChainPhases', 'taxonomy'],
       ['vocabularies', 'taxonomy'],
       ['statusTemplates', 'taxonomy'],
+      ['caseTemplates', 'taxonomy'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
