@@ -211,7 +211,7 @@ import { checkRelationConsistency, isRelationConsistent } from '../utils/modelCo
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
-import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
+import { getVocabularyCategory, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { fillDefaultCustomFieldValues, fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -1714,7 +1714,7 @@ const mergeEntitiesRaw = async (
     if (categories.size > 1) {
       throw FunctionalError('Cannot merge vocabularies of different category', { categories });
     }
-    const completeCategory = getVocabulariesCategories().find(({ key }) => key === targetVocabularyEntity.category);
+    const completeCategory = getVocabularyCategory(targetVocabularyEntity.category);
     if (completeCategory) {
       await updateElasticVocabularyValue(sourceVocabularyEntities.map((s) => s.name), targetVocabularyEntity.name, completeCategory);
     }
