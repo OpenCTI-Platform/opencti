@@ -5,7 +5,7 @@ import type { FieldOption } from '../../../../../utils/field';
 import type { DashboardConfig, DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
 import { deserializeDashboardManifestForFrontend } from '../../../../../components/dashboard/dashboard-utils';
 import { buildDefaultVariableValues, isValidVariableValue } from '../../../../../components/dashboard/dashboardVariablesResolution';
-import { dashboardVariablesStorageKey, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
+import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
 
 /**
  * Generates a URI key slug from a dashboard name.
@@ -50,6 +50,16 @@ export interface PublishableDashboard {
 
 export const EMPTY_PUBLISHED_TIME_RANGE: PublishedTimeRange = { startDate: null, endDate: null, relativeDate: null };
 
+export const pickPublishedTimeRange = (config: DashboardConfig | undefined): PublishedTimeRange => ({
+  startDate: config?.startDate ?? null,
+  endDate: config?.endDate ?? null,
+  relativeDate: config?.relativeDate ?? null,
+});
+
+export const isSamePublishedTimeRange = (a: PublishedTimeRange, b: PublishedTimeRange) => (
+  a.startDate === b.startDate && a.endDate === b.endDate && a.relativeDate === b.relativeDate
+);
+
 /**
  * The variables offered when publishing: only those used by a widget, the others having no effect on the published
  * dashboard. In the manifest order.
@@ -75,20 +85,35 @@ export const buildPublishedVariableValues = (variables: DashboardVariable[], sto
 };
 
 /**
- * Values the form starts from for the selected dashboard, and starts again from when another one is selected.
+ * Whether `pathname` is the page of the dashboard `dashboardId`.
+ */
+const isDashboardPage = (pathname: string, dashboardId: string) => {
+  const segments = pathname.split('/');
+  return segments.some((segment, index) => segment === dashboardId && segments[index - 1] === 'dashboards');
+};
+
+/**
+ * Values the form starts from for the selected dashboard, and starts again from when another one is selected: what
+ * the author sees on the dashboard, with the same precedence as the page (URL, then this browser, then the default).
+ * The URL only speaks for the dashboard it shows: it is read for the dashboard of the page, never for another one.
+ * The time range is the one of the dashboard: it is not kept per user yet.
  */
 export const buildPublishedValuesState = (
   dashboard: PublishableDashboard | undefined,
   userId: string,
+  search: string = window.location.search,
+  pathname: string = window.location.pathname,
 ): Pick<PublicDashboardCreationFormData, 'variable_values' | 'time_range'> => {
   if (!dashboard) return { variable_values: {}, time_range: EMPTY_PUBLISHED_TIME_RANGE };
   const manifest = deserializeDashboardManifestForFrontend(dashboard.manifest);
   const variables = buildPublishedVariables(manifest.variables ?? [], dashboard.variables);
-  const stored = readStoredVariableValues(dashboardVariablesStorageKey(userId, dashboard.id));
-  const { startDate, endDate, relativeDate } = manifest.config;
+  const stored = {
+    ...readStoredVariableValues(dashboardVariablesStorageKey(userId, dashboard.id)),
+    ...(isDashboardPage(pathname, dashboard.id) ? parseVariablesParam(search) : {}),
+  };
   return {
     variable_values: buildPublishedVariableValues(variables, stored),
-    time_range: { startDate: startDate ?? null, endDate: endDate ?? null, relativeDate: relativeDate ?? null },
+    time_range: pickPublishedTimeRange(manifest.config),
   };
 };
 

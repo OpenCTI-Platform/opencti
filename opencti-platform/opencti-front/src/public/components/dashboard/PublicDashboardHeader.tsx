@@ -3,8 +3,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useFormatter } from '../../../components/i18n';
 import type { DashboardConfig } from '../../../components/dashboard/dashboard-types';
 import DashboardRelativeDateSelect from '../../../components/dashboard/DashboardRelativeDateSelect';
-import { buildDate } from '../../../utils/Time';
+import { buildDate, parse } from '../../../utils/Time';
 import type { ReactNode } from 'react';
+import Button from '@common/button/Button';
 
 interface PublicDashboardHeaderProps {
   title: string;
@@ -13,6 +14,10 @@ interface PublicDashboardHeaderProps {
   onChangeStartDate: (value: string | null) => void;
   onChangeEndDate: (value: string | null) => void;
   actions?: ReactNode;
+  // The author allowed viewers to edit the time filters: the pickers are enabled.
+  editable?: boolean;
+  // Back to the published range, offered once the visitor changed it.
+  onReset?: () => void;
 }
 
 const PublicDashboardHeader = ({
@@ -22,9 +27,13 @@ const PublicDashboardHeader = ({
   onChangeStartDate,
   onChangeEndDate,
   actions,
+  editable = false,
+  onReset,
 }: PublicDashboardHeaderProps) => {
   const { t_i18n } = useFormatter();
   const { relativeDate, startDate, endDate } = manifestConfig;
+  // The pickers give a Date: stored as the private dashboard stores its dates.
+  const toValue = (value: Date | null) => (value ? parse(value).format() : null);
 
   return (
     <header
@@ -49,15 +58,15 @@ const PublicDashboardHeader = ({
         <DashboardRelativeDateSelect
           value={relativeDate ?? ''}
           onChange={onChangeRelativeDate}
-          disabled
+          disabled={!editable}
         />
         <DatePicker
-          disabled
+          disabled={!editable}
           value={buildDate(startDate)}
           label={t_i18n('Start date')}
           sx={{ width: 220 }}
           disableFuture
-          onChange={(value, context) => !context.validationError && onChangeStartDate(value?.toString() ?? null)}
+          onChange={(value, context) => !context.validationError && onChangeStartDate(toValue(value))}
           slotProps={{
             field: {
               clearable: true,
@@ -72,11 +81,11 @@ const PublicDashboardHeader = ({
           }}
         />
         <DatePicker
-          disabled
+          disabled={!editable}
           value={buildDate(endDate)}
           label={t_i18n('End date')}
           disableFuture
-          onChange={(value, context) => !context.validationError && onChangeEndDate(value?.toString() ?? null)}
+          onChange={(value, context) => !context.validationError && onChangeEndDate(toValue(value))}
           sx={{ width: 220 }}
           slotProps={{
             field: {
@@ -91,6 +100,11 @@ const PublicDashboardHeader = ({
             },
           }}
         />
+        {onReset && (
+          <Button variant="tertiary" size="small" onClick={onReset} data-testid="public-dashboard-reset-range">
+            {t_i18n('Reset')}
+          </Button>
+        )}
       </div>
       {actions}
     </header>

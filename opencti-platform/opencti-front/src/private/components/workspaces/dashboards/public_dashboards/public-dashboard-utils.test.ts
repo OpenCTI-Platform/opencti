@@ -2,7 +2,15 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { toB64 } from '../../../../../utils/String';
 import { dashboardVariablesStorageKey } from '../../../../../components/dashboard/dashboardVariablesStorage';
 import type { DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
-import { applyPublishedTimeRangeChange, buildPublicationInput, buildPublishedValuesState, buildPublishedVariables, buildPublishedVariableValues } from './public-dashboard-utils';
+import {
+  applyPublishedTimeRangeChange,
+  buildPublicationInput,
+  buildPublishedValuesState,
+  buildPublishedVariables,
+  buildPublishedVariableValues,
+  isSamePublishedTimeRange,
+  pickPublishedTimeRange,
+} from './public-dashboard-utils';
 
 const USED = '11111111-1111-4111-8111-111111111111';
 const UNUSED = '22222222-2222-4222-8222-222222222222';
@@ -63,6 +71,21 @@ describe('buildPublishedValuesState', () => {
   it('should be empty without a selected dashboard', () => {
     expect(buildPublishedValuesState(undefined, 'user-1')).toEqual({ variable_values: {}, time_range: { relativeDate: null, startDate: null, endDate: null } });
   });
+
+  it('should prefer the URL values on the page of the dashboard, as the page does', () => {
+    window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'dashboard-1'), JSON.stringify({ [USED]: 'stored' }));
+    const search = `?variables=${USED}:url`;
+    const onPage = buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1', search, '/dashboard/workspaces/dashboards/dashboard-1');
+    expect(onPage.variable_values[USED]).toEqual('url');
+    // The range is the one of the dashboard
+    expect(onPage.time_range).toEqual({ relativeDate: 'months-1', startDate: null, endDate: null });
+    // From a list, the URL speaks for another dashboard: ignored
+    const fromList = buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1', search, '/dashboard/workspaces/dashboards_public');
+    expect(fromList.variable_values[USED]).toEqual('stored');
+    // The page of another dashboard whose id starts like this one
+    const otherPage = buildPublishedValuesState(dashboard('dashboard-1'), 'user-1', search, '/dashboard/workspaces/dashboards/dashboard-10');
+    expect(otherPage.variable_values[USED]).toEqual('stored');
+  });
 });
 
 describe('applyPublishedTimeRangeChange', () => {
@@ -74,6 +97,18 @@ describe('applyPublishedTimeRangeChange', () => {
   it('should empty a field set to none', () => {
     expect(applyPublishedTimeRangeChange({ relativeDate: 'days-7', startDate: null, endDate: null }, 'relativeDate', 'none'))
       .toEqual({ relativeDate: null, startDate: null, endDate: null });
+  });
+});
+
+describe('pickPublishedTimeRange', () => {
+  it('should read the range of a config, without its other keys', () => {
+    expect(pickPublishedTimeRange({ startDate: 's', refresh_interval: 5, allowViewersToEditTimeFilters: true })).toEqual({ startDate: 's', endDate: null, relativeDate: null });
+    expect(pickPublishedTimeRange(undefined)).toEqual({ startDate: null, endDate: null, relativeDate: null });
+  });
+
+  it('should compare two ranges field by field', () => {
+    expect(isSamePublishedTimeRange(pickPublishedTimeRange({ relativeDate: 'days-7' }), { relativeDate: 'days-7', startDate: null, endDate: null })).toBe(true);
+    expect(isSamePublishedTimeRange(pickPublishedTimeRange({ relativeDate: 'days-7' }), pickPublishedTimeRange({ relativeDate: 'days-1' }))).toBe(false);
   });
 });
 
