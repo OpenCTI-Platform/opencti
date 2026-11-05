@@ -223,6 +223,7 @@ nav:
       - Background tasks: usage/background-tasks.md
       - Dashboards:
         - Custom dashboards: usage/dashboards.md
+        - Dashboard variables and presets: usage/dashboards-variables.md
         - Share custom dashboards: usage/dashboards-share.md
         - Widget creation: usage/widgets.md
         - Tips for widget creation: usage/tips-widget-creation.md

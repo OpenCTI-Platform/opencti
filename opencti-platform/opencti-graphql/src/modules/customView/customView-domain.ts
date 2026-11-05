@@ -35,7 +35,6 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { addCustomViewCreatedCount, addCustomViewEnabledCount } from '../../manager/telemetryManager';
 import { lockResources } from '../../lock/master-lock';
 import { hasDashboardVariableWidget, sanitizeCustomViewManifest } from '../workspace/workspace-variables-utils';
-import { isFeatureEnabled } from '../../config/conf';
 
 /**
  * Exclusion list: entity types not capable of
@@ -319,7 +318,7 @@ export const customViewImportWidgetConfiguration = async (
       // Dashboard variables do not exist in a custom view: a widget using them would never show data.
       // Checked on the widget of the file, before anything is resolved; the whole manifest is checked when stored.
       validateWidget: (widget) => {
-        if (isFeatureEnabled('DASHBOARD_VARIABLES') && hasDashboardVariableWidget({ imported: widget })) {
+        if (hasDashboardVariableWidget({ imported: widget })) {
           throw FunctionalError('A widget using dashboard variables cannot be imported into a custom view');
         }
       },

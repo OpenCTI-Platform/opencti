@@ -115,15 +115,10 @@ describe('pickPublishedTimeRange', () => {
 
 describe('buildPublicationInput', () => {
   it('should send the published values, the time range and the time zone', () => {
-    const input = buildPublicationInput(formValues, true);
+    const input = buildPublicationInput(formValues);
     expect(input.variable_values).toEqual([{ variable_id: USED, value: 'y' }]);
     expect(input.time_range).toEqual({ relative_date: 'days-7', start_date: null, end_date: null });
     expect(input.time_zone).toEqual(Intl.DateTimeFormat().resolvedOptions().timeZone);
     expect(input.allowed_markings_ids).toEqual(['marking-id']);
-  });
-
-  it('should send nothing new when the feature flag is disabled', () => {
-    const input = buildPublicationInput(formValues, false);
-    expect(input).toEqual({ name: 'Public', enabled: true, uri_key: 'public', dashboard_id: 'dashboard-1', allowed_markings_ids: ['marking-id'] });
   });
 });

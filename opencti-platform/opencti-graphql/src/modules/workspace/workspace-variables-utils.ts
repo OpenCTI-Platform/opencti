@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { type DashboardPreset, type DashboardVariable, DashboardVariableRestrictionMode, DashboardVariableType, type EditInput, VocabularyCategory } from '../../generated/graphql';
 import { fromB64, toB64 } from '../../utils/base64';
 import { FunctionalError } from '../../config/errors';
-import { isFeatureEnabled } from '../../config/conf';
 import type { AuthUser } from '../../types/user';
 import { computeDashboardVariablesUsage } from '../dashboard/dashboard-variables-resolution';
 import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS, type StoreDashboardManifest, type StoreDashboardPreset, type StoreDashboardVariable } from './workspace-variables-types';
@@ -261,7 +260,7 @@ export const hasDashboardVariableWidget = (widgets: unknown) => {
  * server-owned keys are removed (see stripServerOwnedManifestKeys). Nothing is refused without the feature.
  */
 export const sanitizeCustomViewManifest = (encoded: string | null | undefined) => {
-  if (encoded && isFeatureEnabled('DASHBOARD_VARIABLES') && hasDashboardVariableWidget(parseManifestObject(encoded)?.widgets)) {
+  if (encoded && hasDashboardVariableWidget(parseManifestObject(encoded)?.widgets)) {
     throw FunctionalError('A widget using dashboard variables cannot be used in a custom view');
   }
   return stripServerOwnedManifestKeys(encoded);

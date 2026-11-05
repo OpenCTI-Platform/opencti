@@ -20,8 +20,6 @@ import useAuth from '../../../../../utils/hooks/useAuth';
 import { ME_FILTER_VALUE } from '../../../../../utils/filters/filtersUtils';
 import { fromB64 } from '../../../../../utils/String';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
-import useHelper from '../../../../../utils/hooks/useHelper';
-import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../../components/dashboard/dashboardVariablesFeatureFlag';
 import { buildPublicationInput, EMPTY_PUBLISHED_TIME_RANGE, generatePublicDashboardUriKey, type PublicDashboardCreationFormData } from './public-dashboard-utils';
 import { PublicDashboardPublishedValuesLoader } from './PublicDashboardPublishedValues';
 
@@ -67,8 +65,6 @@ const PublicDashboardCreationFormComponent = ({
 }: PublicDashboardCreationFormComponentProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
-  const { isFeatureEnable } = useHelper();
-  const isVariablesEnabled = isFeatureEnable(DASHBOARD_VARIABLES_FEATURE_FLAG);
   const publicDashboardCreatorName = me.name;
   const [commitCreateMutation] = useApiMutation(publicDashboardCreateMutation);
 
@@ -95,7 +91,7 @@ const PublicDashboardCreationFormComponent = ({
   const onSubmit: FormikConfig<PublicDashboardCreationFormData>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     commitCreateMutation({
       variables: {
-        input: buildPublicationInput(values, isVariablesEnabled),
+        input: buildPublicationInput(values),
       },
       updater: (store) => updater?.(store, 'publicDashboardAdd'),
       onCompleted: () => {
@@ -201,9 +197,7 @@ const PublicDashboardCreationFormComponent = ({
             {t_i18n('You see only marking definitions that can be shared (defined by the admin)')}
           </Alert>
 
-          {isVariablesEnabled && (
-            <PublicDashboardPublishedValuesLoader dashboardId={values.dashboard_id} />
-          )}
+          <PublicDashboardPublishedValuesLoader dashboardId={values.dashboard_id} />
 
           <FormButtonContainer>
             <Button

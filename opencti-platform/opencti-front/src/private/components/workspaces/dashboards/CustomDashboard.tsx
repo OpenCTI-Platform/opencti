@@ -31,8 +31,6 @@ import DashboardPresetDeleteDialog from '../../../../components/dashboard/preset
 import { useDashboardPreset } from '../../../../components/dashboard/presets/useDashboardPreset';
 import { useDashboardPresetMutations } from '../../../../components/dashboard/presets/useDashboardPresetMutations';
 import { isPresetModified, presetEffectiveValues, presetFromGraphql, presetInputFromValues } from '../../../../components/dashboard/presets/dashboardPresets';
-import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../components/dashboard/dashboardVariablesFeatureFlag';
-import useHelper from '../../../../utils/hooks/useHelper';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
@@ -132,8 +130,6 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     || workspace.currentUserAccessRight === 'edit';
   const userHasUpdateCapa = useGranted([EXPLORE_EXUPDATE]);
   const userCanEdit = userHasEditAccess && userHasUpdateCapa;
-  const { isFeatureEnable } = useHelper();
-  const isVariablesEnabled = isFeatureEnable(DASHBOARD_VARIABLES_FEATURE_FLAG);
   const canManageVariables = userCanEdit;
   // undefined: dialog closed, null: creating a variable, a variable: editing it.
   const [dialogVariable, setDialogVariable] = useState<DashboardVariable | null | undefined>(undefined);
@@ -184,9 +180,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
 
   const onImportWidget = async (id: string, widgetConfig: File, manifestEncoded: string) => {
     // An export carries the tokens of the widget, not the variables: the user is told how many are missing here.
-    const missingVariables = isVariablesEnabled
-      ? await countMissingWidgetVariablesInFile(widgetConfig, new Set(workspace.variables.map((variable) => variable.id)))
-      : 0;
+    const missingVariables = await countMissingWidgetVariablesInFile(widgetConfig, new Set(workspace.variables.map((variable) => variable.id)));
     commitWidgetImportMutation({
       variables: {
         id,
@@ -213,20 +207,19 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     onImportWidget,
     onExportWidget,
   });
-  const { handleAddWidget, handleImportWidget, handleDateChange, handleConfigChange, config, variables, widgetsArray } = helpers;
+  const { handleAddWidget, handleImportWidget, handleConfigChange, config, variables, widgetsArray } = helpers;
   // The bar is the only way to see, change and clear a per user value: to a user who does not get it, such a
   // value (stored, or from the URL) would filter the widgets with no chip to show or reset it.
-  const showVariablesBar = isVariablesEnabled && !noToolbar
+  const showVariablesBar = !noToolbar
     && (canManageVariables || config.allowViewersToChangeVariables === true);
   // The presets of the dashboard, from the server owned key of the manifest.
   const presets = useMemo(() => workspace.presets.map(presetFromGraphql), [workspace.presets]);
   // The selector: editors always (they can at least save one), viewers when they may switch and there is something
   // to switch to.
-  const showPresetSelector = isVariablesEnabled && !noToolbar
+  const showPresetSelector = !noToolbar
     && (canManageVariables ? variables.length > 0 || presets.length > 0 : config.allowViewersToSwitchPresets === true && presets.length > 0);
   const presetControls = useDashboardPreset(workspace.id, presets, {
     ignoreLocalValues: noToolbar || !showPresetSelector,
-    enabled: isVariablesEnabled,
     defaultPresetId: workspace.currentUserDefaultPresetId,
   });
   // The preset the dashboard opens on for this user (own choice, group or organization) replaces the manifest
@@ -240,9 +233,9 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     ignoreLocalValues: noToolbar || !(showVariablesBar || showPresetSelector),
     defaultOverrides: presetDefaultValues,
   });
-  // Flag on, the time range is per user: an editor always gets the time filters, a reader only when viewers may edit
+  // The time range is per user: an editor always gets the time filters, a reader only when viewers may edit
   // them. As for the variables, a user without them only ever sees the default range.
-  const showTimeFilters = isVariablesEnabled && !noToolbar
+  const showTimeFilters = !noToolbar
     && (userCanEdit || config.allowViewersToEditTimeFilters === true);
   const timeRange = useDashboardTimeRange(workspace.id, config, {
     ignoreLocalValues: noToolbar || !(showTimeFilters || showPresetSelector),
@@ -364,7 +357,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   };
   // Definitions offered in the widget filters. CustomDashboard always is the workspace host (WIDGET_WORKSPACE_HOST);
   // the home dashboard (noToolbar) edits no widget. Undefined: filters strictly unchanged.
-  const variableDefinitions = isVariablesEnabled && !noToolbar ? variables : undefined;
+  const variableDefinitions = !noToolbar ? variables : undefined;
   const handleExport = getDashboardExportHandler({ onExport, configType: 'dashboard', entity: workspace });
 
   const {
@@ -405,12 +398,12 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       isRefreshing={isAutoRefreshing}
     />
   );
-  // The widgets follow the per user range; flag off, the manifest one, untouched.
+  // The widgets follow the per user range.
   // Only the range, memoized on its values: the widgets rebuild their queries when the config identity changes, and
   // saving any other key of the config (a viewer switch) refreshes the manifest.
   const { startDate, endDate, relativeDate } = timeRange.range;
   const contentConfig = useMemo(() => ({ startDate, endDate, relativeDate }), [startDate, endDate, relativeDate]);
-  const contentHelpers = isVariablesEnabled ? { ...helpers, config: contentConfig } : helpers;
+  const contentHelpers = { ...helpers, config: contentConfig };
 
   return (
     // Around the whole page: the Create widget entry point lives in the header.
@@ -430,42 +423,19 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
               handleExport={handleExport}
               data={workspace}
               variant="dashboard"
-              editionExtra={isVariablesEnabled ? (
+              editionExtra={(
                 <DashboardViewerPermissions
                   config={{ ...config, ...pendingPermissions }}
                   pending={Object.keys(pendingPermissions) as (keyof ViewerPermissions)[]}
                   onChange={onPermissionChange}
                 />
-              ) : undefined}
+              )}
             />
           </Stack>
         )
         }
         <div id="container">
           <DashboardRefreshProvider refreshToken={refreshToken}>
-            {!noToolbar && !isVariablesEnabled && (
-              <Security
-                needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
-                hasAccess={userCanEdit}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 1.5,
-                  }}
-                >
-                  <DashboardTimeFilters
-                    config={config}
-                    handleDateChange={handleDateChange}
-                  />
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    {refreshControl}
-                  </Box>
-                </Box>
-              </Security>
-            )}
             {showTimeFilters && (
               <Box
                 sx={{
@@ -554,7 +524,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
             <DashboardVariableValuesProvider values={variableControls.values} dateVariableIds={dateVariableIds}>
               <DashboardContent
                 helpers={contentHelpers}
-                variableNamesByWidget={isVariablesEnabled && !noToolbar ? variableNamesByWidget : undefined}
+                variableNamesByWidget={!noToolbar ? variableNamesByWidget : undefined}
                 isEditable={userCanEdit}
                 entity={workspace}
                 host={WIDGET_WORKSPACE_HOST}
