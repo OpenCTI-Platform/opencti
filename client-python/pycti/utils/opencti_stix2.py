@@ -68,6 +68,21 @@ EXPECTED_FUNCTIONAL_ERROR_DOC_CODES = [
 #: Maximum size of the item payload reported as bundle too large
 MAX_REPORTED_SOURCE_LENGTH = 50000
 
+#: STIX types of the containers whose object_refs prepare_export builds;
+#: an empty one is exported with object_refs: [] like the server-side converter.
+CONTAINER_STIX_TYPES = (
+    "report",
+    "note",
+    "opinion",
+    "observed-data",
+    "grouping",
+    "x-opencti-case-incident",
+    "x-opencti-feedback",
+    "x-opencti-case-rfi",
+    "x-opencti-case-rft",
+    "x-opencti-task",
+)
+
 #: STIX Extension ID for OpenCTI custom objects and properties
 STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
 
@@ -2475,9 +2490,10 @@ class OpenCTIStix2:
                     and "stix-ref-relationship" not in entity_object["parent_types"]
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
-        # OpenCTI permits empty Reports, so retain object_refs for consistency with server-side exports.
+        # OpenCTI permits empty containers, so retain object_refs for consistency with
+        # server-side exports (convertObjectReferences emits object_refs: [] for every container).
         if (
-            entity["type"] == "report"
+            entity["type"] in CONTAINER_STIX_TYPES
             and "object_refs" not in entity
             and "objects" not in entity
         ):
