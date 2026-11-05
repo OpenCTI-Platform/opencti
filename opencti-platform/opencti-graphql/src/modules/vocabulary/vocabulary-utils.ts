@@ -1,6 +1,7 @@
 import type { VocabularyCategory, VocabularyDefinition } from '../../generated/graphql';
 import { vocabularyDefinitions } from './vocabulary-types';
 import { UnsupportedError } from '../../config/errors';
+import { isFeatureEnabled } from '../../config/conf';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { STIX_PATTERN_TYPE } from '../../utils/syntax';
@@ -1228,14 +1229,19 @@ const toVocabularyDefinition = (key: string, value: typeof vocabularyDefinitions
   return { key: key as VocabularyCategory, ...value, closed: value.closed ?? false };
 };
 
+// A category behind a disabled feature flag is hidden, and its field is not registered on any entity type
+export const isVocabularyCategoryEnabled = (definition: { featureFlag?: string }) => {
+  return !definition.featureFlag || isFeatureEnabled(definition.featureFlag);
+};
+
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {
   return Object.entries(vocabularyDefinitions)
-    .filter(([_, value]) => value.entity_types?.length > 0)
+    .filter(([_, value]) => value.entity_types?.length > 0 && isVocabularyCategoryEnabled(value))
     .map(([key, value]) => toVocabularyDefinition(key, value))
     .sort();
 };
 
-// Also returns a category hidden from the list, such as closing_reason_ov while the workflow engine is off
+// Also returns a category hidden from the list by its feature flag: its values may still be stored on entities
 export const getVocabularyCategory = (key: string): VocabularyDefinition | undefined => {
   const value = vocabularyDefinitions[key as VocabularyCategory];
   return value ? toVocabularyDefinition(key, value) : undefined;
