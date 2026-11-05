@@ -51,7 +51,7 @@ export const buildCellDecorations = ({ usage, scale, techniques, investigationId
     const linkedEntities = mergeEntities([own, ...subTechniques.map((sub) => usage.get(sub.attack_pattern_id))]);
     const decoration: CellDecoration = {
       linkedEntities,
-      accessibleName: t('{label}, linked to {count} entities', {
+      accessibleName: t('{label}, linked to {count, plural, one {# entity} other {# entities}}', {
         values: { label: formatLabel(technique), count: linkedEntities.length },
       }),
     };
