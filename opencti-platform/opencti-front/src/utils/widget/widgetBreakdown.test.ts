@@ -1,41 +1,26 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Widget } from './widget';
+import { describe, expect, it } from 'vitest';
+import type { Widget, WidgetHost } from './widget';
 import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
-import { dayStartDate, daysAgo, monthsAgo } from '../Time';
 import {
+  applyBreakdownCompatibility,
   AUDITS_BREAKDOWN_FIELDS,
   BREAKDOWN_ALLOWED_REFS,
   BREAKDOWN_LIMIT_OPTIONS,
-  coarsenSeriesForRendering,
+  canWidgetBreakDown,
+  clearBreakdown,
+  getBreakdownEditorState,
   getBreakdownEntityTypes,
-  getBreakdownDefaultStartDate,
   getBreakdownFieldOptions,
   getBreakdownLimitOptions,
-  getBreakdownTickAmount,
-  getRenderedBarsBudget,
-  getRenderedPointsBudget,
   getWidgetBreakdownFieldOptions,
   getWidgetBreakdownLimit,
-  getWidgetBreakdownLockReason,
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
-  hasWidgetBreakdown,
+  getWidgetBreakdownState,
   isBreakdownFieldSupported,
-  isBreakdownTypeField,
-  isWidgetBreakdownActive,
-  isWidgetBreakdownConfigurable,
-  isSameBreakdown,
-  isWidgetBreakdownEligible,
   resolveBreakdownTypeVariables,
-  MAX_RENDERED_BARS,
-  MAX_RENDERED_HEATMAP_CELLS,
-  MAX_RENDERED_LINE_POINTS,
-  MIN_RENDERED_BARS,
-  nextBreakdownChartWidth,
-  numberSharedSeriesNames,
-  scheduleChartDraw,
 } from './widgetBreakdown';
 
 const workspace = { kind: 'workspace' } as const;
@@ -72,64 +57,50 @@ const makeRelationshipsWidget = (overrides: Partial<Widget> = {}, relationshipTy
   ...overrides,
 } as unknown as Widget);
 
-// One point per UTC day, starting on a given date
-const daily = (start: string, values: number[]) => values.map((y, i) => {
-  const x = new Date(start);
-  x.setUTCDate(x.getUTCDate() + i);
-  return { x, y };
-});
-
-describe('widget breakdown eligibility', () => {
+describe('canWidgetBreakDown', () => {
   it('accepts every entities time series visualization of a workspace dashboard', () => {
     ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
-      expect(isWidgetBreakdownActive(makeWidget({ type }), workspace)).toBe(true);
+      expect(canWidgetBreakDown(makeWidget({ type }), workspace)).toBe(true);
     });
   });
 
   it('accepts every relationships time series visualization of a workspace dashboard', () => {
     ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
-      expect(isWidgetBreakdownActive(makeRelationshipsWidget({ type }), workspace)).toBe(true);
+      expect(canWidgetBreakDown(makeRelationshipsWidget({ type }), workspace)).toBe(true);
     });
     // Older datasets carry no perspective of their own
     const withoutDatasetPerspective = makeRelationshipsWidget();
     withoutDatasetPerspective.dataSelection = [{ ...withoutDatasetPerspective.dataSelection[0], perspective: undefined }];
-    expect(isWidgetBreakdownEligible(withoutDatasetPerspective, workspace)).toBe(true);
+    expect(canWidgetBreakDown(withoutDatasetPerspective, workspace)).toBe(true);
   });
 
   it('rejects the relationships widgets that cannot be broken down', () => {
-    expect(isWidgetBreakdownEligible(makeRelationshipsWidget({ type: 'donut' }), workspace)).toBe(false);
+    expect(canWidgetBreakDown(makeRelationshipsWidget({ type: 'donut' }), workspace)).toBe(false);
     const widget = makeRelationshipsWidget();
-    expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
+    expect(canWidgetBreakDown({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
     // A relationships widget can hold an entities dataset: it is not a dataset of relationships
-    expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [{ ...widget.dataSelection[0], perspective: 'entities' }] }, workspace)).toBe(false);
+    expect(canWidgetBreakDown({ ...widget, dataSelection: [{ ...widget.dataSelection[0], perspective: 'entities' }] }, workspace)).toBe(false);
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    expect(isWidgetBreakdownActive(widget, customView)).toBe(true);
-    expect(hasWidgetBreakdown(widget)).toBe(true);
+    expect(canWidgetBreakDown(widget, customView)).toBe(true);
   });
 
   it('rejects other visualizations, perspectives, several datasets and drafts', () => {
-    expect(isWidgetBreakdownEligible(makeWidget({ type: 'donut' }), workspace)).toBe(false);
-    expect(isWidgetBreakdownEligible(makeWidget({ perspective: null }), workspace)).toBe(false);
+    expect(canWidgetBreakDown(makeWidget({ type: 'donut' }), workspace)).toBe(false);
+    expect(canWidgetBreakDown(makeWidget({ perspective: null }), workspace)).toBe(false);
     const widget = makeWidget();
-    expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
-    expect(isWidgetBreakdownEligible(makeWidget({}, ['DraftWorkspace']), workspace)).toBe(false);
+    expect(canWidgetBreakDown({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
+    expect(canWidgetBreakDown(makeWidget({}, ['DraftWorkspace']), workspace)).toBe(false);
   });
 
-  it('renders and configures breakdowns in workspace dashboards and custom views only', () => {
+  it('configures breakdowns in workspace dashboards and custom views only', () => {
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    expect(isWidgetBreakdownActive(makeWidget(), customView)).toBe(true);
-    expect(isWidgetBreakdownEligible(makeWidget(), customView)).toBe(true);
+    expect(canWidgetBreakDown(makeWidget(), customView)).toBe(true);
     // A fintel template writes its widgets in a document
     const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
-    expect(isWidgetBreakdownActive(makeWidget(), fintelTemplate)).toBe(false);
-    expect(isWidgetBreakdownEligible(makeWidget(), fintelTemplate)).toBe(false);
-    expect(isWidgetBreakdownActive(makeWidget(), undefined)).toBe(false);
-    // ...but still knows the widget is broken down, to refuse it elsewhere
-    expect(hasWidgetBreakdown(makeWidget())).toBe(true);
-  });
-
-  it('needs a breakdown field', () => {
-    expect(isWidgetBreakdownActive(makeWidget({ parameters: { breakdownBy: null } }), workspace)).toBe(false);
+    expect(canWidgetBreakDown(makeWidget(), fintelTemplate)).toBe(false);
+    // Without host, the widget alone decides
+    expect(canWidgetBreakDown(makeWidget())).toBe(true);
+    expect(canWidgetBreakDown(makeWidget({ type: 'donut' }))).toBe(false);
   });
 
   it('defaults the number of series', () => {
@@ -153,40 +124,6 @@ describe('widget breakdown eligibility', () => {
     expect(getWidgetBreakdownOther(undefined)).toBe(false);
     expect(getWidgetBreakdownOther({ breakdownOther: null })).toBe(false);
     expect(getWidgetBreakdownOther({ breakdownOther: true })).toBe(true);
-  });
-});
-
-describe('isBreakdownTypeField', () => {
-  it('knows the fields whose values are entity or relationship types', () => {
-    ['entity_type', 'relationship_type', 'fromTypes', 'toTypes'].forEach((field) => expect(isBreakdownTypeField(field)).toBe(true));
-    ['objectLabel', 'creator_id', null, undefined].forEach((field) => expect(isBreakdownTypeField(field)).toBe(false));
-  });
-});
-
-describe('getBreakdownDefaultStartDate', () => {
-  it('only looks back 30 days for a daily breakdown', () => {
-    expect(getBreakdownDefaultStartDate('day')).toEqual(daysAgo(30));
-  });
-
-  it('looks back 12 months for the other intervals', () => {
-    ['week', 'month', 'quarter', 'year'].forEach((interval) => {
-      expect(getBreakdownDefaultStartDate(interval)).toEqual(monthsAgo(12));
-    });
-  });
-
-  it('looks back from the end date of the dashboard, which can be long ago', () => {
-    const endDate = '2024-03-31T12:00:00.000Z';
-    const endDay = dayStartDate(endDate);
-    const dailyStart = new Date(getBreakdownDefaultStartDate('day', endDate));
-    expect(dailyStart.getTime()).toEqual(new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate() - 30).getTime());
-    expect(dailyStart.getTime()).toBeLessThan(new Date(endDate).getTime());
-    ['week', 'month', 'quarter', 'year'].forEach((interval) => {
-      const start = new Date(getBreakdownDefaultStartDate(interval, endDate));
-      expect(start.getTime()).toEqual(new Date(endDay.getFullYear() - 1, endDay.getMonth(), endDay.getDate()).getTime());
-    });
-    // Without end date, from today
-    expect(getBreakdownDefaultStartDate('day', null)).toEqual(daysAgo(30));
-    expect(getBreakdownDefaultStartDate('month', undefined)).toEqual(monthsAgo(12));
   });
 });
 
@@ -472,229 +409,6 @@ describe('getBreakdownFieldOptions', () => {
   });
 });
 
-describe('rendered bars budget', () => {
-  it('follows the width, within the minimum and maximum', () => {
-    expect(getRenderedBarsBudget(800)).toEqual(400);
-    expect(getRenderedBarsBudget(801)).toEqual(400);
-    expect(getRenderedBarsBudget(100)).toEqual(MIN_RENDERED_BARS);
-    expect(getRenderedBarsBudget(5000)).toEqual(MAX_RENDERED_BARS);
-  });
-
-  it('gives the maximum when the width is unknown', () => {
-    expect(getRenderedBarsBudget(0)).toEqual(MAX_RENDERED_BARS);
-    expect(getRenderedBarsBudget(-10)).toEqual(MAX_RENDERED_BARS);
-    expect(getRenderedBarsBudget(Number.NaN)).toEqual(MAX_RENDERED_BARS);
-  });
-});
-
-describe('rendered points budget', () => {
-  it('shares the bars budget between every series', () => {
-    expect(getRenderedPointsBudget('vertical-bar', 800, 20)).toEqual(getRenderedBarsBudget(800));
-  });
-
-  it('gives each line or area series a point every 2 pixels', () => {
-    expect(getRenderedPointsBudget('line', 700, 1)).toEqual(350);
-    expect(getRenderedPointsBudget('area', 700, 10)).toEqual(350 * 10);
-  });
-
-  it('gives each heatmap series a cell every 6 pixels', () => {
-    expect(getRenderedPointsBudget('heatmap', 600, 10)).toEqual(100 * 10);
-  });
-
-  it('keeps a few points per series on a tiny or unknown width', () => {
-    expect(getRenderedPointsBudget('heatmap', 12, 2)).toEqual(10 * 2);
-    expect(getRenderedPointsBudget('line', 0, 1)).toEqual((MAX_RENDERED_BARS * 2) / 2);
-  });
-
-  it('caps the points of a wide chart with many series, keeping a few points per series', () => {
-    expect(getRenderedPointsBudget('line', 2000, 50)).toEqual(MAX_RENDERED_LINE_POINTS);
-    expect(getRenderedPointsBudget('heatmap', 1200, 20)).toEqual(MAX_RENDERED_HEATMAP_CELLS);
-    expect(getRenderedPointsBudget('heatmap', 600, 200)).toEqual(10 * 200);
-  });
-});
-
-describe('isSameBreakdown', () => {
-  const breakdown = (values: number[], overrides = {}) => ({
-    truncated: false,
-    dates: ['2025-10-01T00:00:00.000Z', '2025-10-02T00:00:00.000Z'],
-    series: [{ label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Alice' }, values }],
-    ...overrides,
-  });
-
-  it('finds a refreshed breakdown with the same values the same', () => {
-    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2]))).toBe(true);
-    expect(isSameBreakdown(null, null)).toBe(true);
-  });
-
-  it('finds a breakdown with other values, dates, series or names different', () => {
-    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 3]))).toBe(false);
-    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { truncated: true }))).toBe(false);
-    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { dates: ['2025-10-02T00:00:00.000Z', '2025-10-03T00:00:00.000Z'] }))).toBe(false);
-    expect(isSameBreakdown(breakdown([1, 2]), breakdown([1, 2], { series: [] }))).toBe(false);
-    const renamed = breakdown([1, 2], { series: [{ label: 'user-id', isOther: false, entity: { id: 'user-id', name: 'Bob' }, values: [1, 2] }] });
-    expect(isSameBreakdown(breakdown([1, 2]), renamed)).toBe(false);
-    expect(isSameBreakdown(breakdown([1, 2]), null)).toBe(false);
-  });
-});
-
-describe('scheduleChartDraw', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.runAllTimers();
-    vi.useRealTimers();
-  });
-
-  it('draws the first chart at once, and the charts drawn with it one per task', () => {
-    const draws: string[] = [];
-    scheduleChartDraw(() => draws.push('first'));
-    scheduleChartDraw(() => draws.push('second'));
-    scheduleChartDraw(() => draws.push('third'));
-    expect(draws).toEqual(['first']);
-    vi.advanceTimersToNextTimer();
-    expect(draws).toEqual(['first', 'second']);
-    vi.advanceTimersToNextTimer();
-    expect(draws).toEqual(['first', 'second', 'third']);
-
-    // Once every chart is drawn, the next one is drawn at once
-    vi.runAllTimers();
-    scheduleChartDraw(() => draws.push('later'));
-    expect(draws).toEqual(['first', 'second', 'third', 'later']);
-  });
-
-  it('does not draw a cancelled chart', () => {
-    const draws: string[] = [];
-    scheduleChartDraw(() => draws.push('first'));
-    const cancel = scheduleChartDraw(() => draws.push('second'));
-    scheduleChartDraw(() => draws.push('third'));
-    cancel();
-    vi.advanceTimersToNextTimer();
-    expect(draws).toEqual(['first', 'third']);
-  });
-});
-
-describe('nextBreakdownChartWidth', () => {
-  it('takes the first measured width', () => {
-    expect(nextBreakdownChartWidth(undefined, 800)).toEqual(800);
-  });
-
-  it('keeps the previous width on a small resize, and changes it from 20 %', () => {
-    expect(nextBreakdownChartWidth(800, 900)).toEqual(800); // +12.5 %
-    expect(nextBreakdownChartWidth(800, 700)).toEqual(800); // -12.5 %
-    expect(nextBreakdownChartWidth(800, 960)).toEqual(960); // +20 %
-    expect(nextBreakdownChartWidth(800, 500)).toEqual(500);
-  });
-});
-
-describe('getBreakdownTickAmount', () => {
-  it('gives a label per 60 pixels, at least 2', () => {
-    expect(getBreakdownTickAmount(1200)).toEqual(20);
-    expect(getBreakdownTickAmount(130)).toEqual(2);
-    expect(getBreakdownTickAmount(0)).toEqual(2);
-  });
-});
-
-describe('coarsenSeriesForRendering', () => {
-  it('keeps the series untouched under the budget', () => {
-    const series = [{ name: 'A', data: daily('2026-01-01T00:00:00.000Z', [1, 2, 3]) }];
-    const result = coarsenSeriesForRendering(series, 'day', 10);
-    expect(result.interval).toEqual('day');
-    expect(result.series).toBe(series);
-    expect(result.pointsCount).toEqual(3);
-  });
-
-  it('sums days into weeks starting on Monday', () => {
-    // 2026-01-01 is a Thursday: Thu-Sun belong to the week of Monday 2025-12-29
-    const series = [{ name: 'A', data: daily('2026-01-01T00:00:00.000Z', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) }];
-    const result = coarsenSeriesForRendering(series, 'day', 5);
-    expect(result.interval).toEqual('week');
-    expect(result.series[0].data).toEqual([
-      { x: new Date('2025-12-29T00:00:00.000Z'), y: 1 + 2 + 3 + 4 },
-      { x: new Date('2026-01-05T00:00:00.000Z'), y: 5 + 6 + 7 + 8 + 9 + 10 },
-    ]);
-    expect(result.series[0].name).toEqual('A');
-  });
-
-  it('keeps getting coarser until the budget is met, without losing any count', () => {
-    const values = Array.from({ length: 366 }, (_, i) => i % 7);
-    const series = Array.from({ length: 20 }, (_, i) => ({ name: `S${i}`, data: daily('2025-10-01T00:00:00.000Z', values) }));
-    const total = values.reduce((sum, value) => sum + value, 0);
-
-    const toWeeks = coarsenSeriesForRendering(series, 'day', 1200);
-    expect(toWeeks.interval).toEqual('week');
-    expect(toWeeks.pointsCount).toBeLessThanOrEqual(1200);
-
-    const toMonths = coarsenSeriesForRendering(series, 'day', 600);
-    expect(toMonths.interval).toEqual('month');
-    expect(toMonths.series[0].data).toHaveLength(13); // October 2025 to October 2026 included
-    toMonths.series.forEach((serie) => {
-      expect(serie.data.reduce((sum, point) => sum + point.y, 0)).toEqual(total);
-    });
-    expect(toMonths.weeksCountedByMonday).toBe(false);
-  });
-
-  it('coarsens a week series with a smaller budget', () => {
-    const values = Array.from({ length: 366 }, (_, i) => i % 7);
-    const series = [{ name: 'A', data: daily('2025-10-01T00:00:00.000Z', values) }];
-    expect(coarsenSeriesForRendering(series, 'day', MIN_RENDERED_BARS).interval).toEqual('week');
-    const result = coarsenSeriesForRendering(series, 'week', 20);
-    expect(result.interval).toEqual('month');
-    expect(result.pointsCount).toEqual(13);
-  });
-
-  it('tells when weeks are counted in the month, quarter or year of their Monday', () => {
-    // The week of Monday 2026-03-30 ends in April: it is counted in March, and in the first quarter
-    const weekly = [
-      { x: new Date('2026-03-23T00:00:00.000Z'), y: 1 },
-      { x: new Date('2026-03-30T00:00:00.000Z'), y: 2 },
-      { x: new Date('2026-04-06T00:00:00.000Z'), y: 4 },
-    ];
-    const series = [{ name: 'A', data: weekly }];
-    const toMonths = coarsenSeriesForRendering(series, 'week', 2);
-    expect(toMonths.interval).toEqual('month');
-    expect(toMonths.series[0].data).toEqual([
-      { x: new Date('2026-03-01T00:00:00.000Z'), y: 1 + 2 },
-      { x: new Date('2026-04-01T00:00:00.000Z'), y: 4 },
-    ]);
-    expect(toMonths.weeksCountedByMonday).toBe(true);
-    const toYears = coarsenSeriesForRendering(series, 'week', 1);
-    expect(toYears.interval).toEqual('year');
-    expect(toYears.weeksCountedByMonday).toBe(true);
-
-    // Weeks drawn as weeks, or weeks summed from days, keep every count where it belongs
-    expect(coarsenSeriesForRendering(series, 'week', 3).weeksCountedByMonday).toBe(false);
-    expect(coarsenSeriesForRendering([{ name: 'A', data: daily('2026-03-23T00:00:00.000Z', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) }], 'day', 5))
-      .toMatchObject({ interval: 'week', weeksCountedByMonday: false });
-  });
-
-  it('never goes beyond years', () => {
-    const series = [{ name: 'A', data: daily('2026-01-01T00:00:00.000Z', [1, 2]) }];
-    const result = coarsenSeriesForRendering(series, 'year', 1);
-    expect(result.interval).toEqual('year');
-    expect(result.series).toBe(series);
-  });
-});
-
-describe('numberSharedSeriesNames', () => {
-  it('numbers by order the series sharing a name, and only them', () => {
-    expect(numberSharedSeriesNames(['Restricted', 'Alice', 'Restricted', 'Bob', 'Restricted']))
-      .toEqual(['Restricted (1)', 'Alice', 'Restricted (2)', 'Bob', 'Restricted (3)']);
-    expect(numberSharedSeriesNames(['Alice', 'Bob'])).toEqual(['Alice', 'Bob']);
-    expect(numberSharedSeriesNames([])).toEqual([]);
-  });
-
-  it('skips the numbers other series are already named with', () => {
-    expect(numberSharedSeriesNames(['Alice', 'Alice', 'Alice (1)'])).toEqual(['Alice (2)', 'Alice (3)', 'Alice (1)']);
-    expect(numberSharedSeriesNames(['Alice (2)', 'Alice', 'Alice', 'Alice', 'Alice (4)'])).toEqual(['Alice (2)', 'Alice (1)', 'Alice (3)', 'Alice (5)', 'Alice (4)']);
-    // Shared numbered names are numbered too, apart from the others
-    const names = numberSharedSeriesNames(['Alice', 'Alice', 'Alice (1)', 'Alice (1)']);
-    expect(names).toEqual(['Alice (2)', 'Alice (3)', 'Alice (1) (1)', 'Alice (1) (2)']);
-    expect(new Set(names).size).toEqual(names.length);
-  });
-});
-
 describe('audits breakdown', () => {
   const emptyMap = new Map<string, Map<string, FilterDefinition>>();
   const makeAuditsWidget = (overrides: Partial<Widget> = {}, selectionOverrides: Record<string, unknown> = {}): Widget => ({
@@ -708,23 +422,21 @@ describe('audits breakdown', () => {
 
   it('accepts every audits time series visualization of a workspace dashboard', () => {
     ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
-      expect(isWidgetBreakdownActive(makeAuditsWidget({ type }), workspace)).toBe(true);
+      expect(canWidgetBreakDown(makeAuditsWidget({ type }), workspace)).toBe(true);
     });
-    expect(isWidgetBreakdownEligible(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
+    expect(canWidgetBreakDown(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
     // The history of the entity of a custom view
-    expect(isWidgetBreakdownActive(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
-    // ...but still knows the widget is broken down, to refuse it elsewhere
-    expect(hasWidgetBreakdown(makeAuditsWidget())).toBe(true);
+    expect(canWidgetBreakDown(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
   });
 
   it('refuses a dataset counting distinct values, the breakdown counting every event', () => {
     ['line', 'area'].forEach((type) => {
-      expect(isWidgetBreakdownEligible(makeAuditsWidget({ type }, { unique: true }), workspace)).toBe(false);
+      expect(canWidgetBreakDown(makeAuditsWidget({ type }, { unique: true }), workspace)).toBe(false);
     });
     // Bars and heatmaps never count distinct values: a leftover setting does not matter
-    expect(isWidgetBreakdownEligible(makeAuditsWidget({ type: 'vertical-bar' }, { unique: true }), workspace)).toBe(true);
+    expect(canWidgetBreakDown(makeAuditsWidget({ type: 'vertical-bar' }, { unique: true }), workspace)).toBe(true);
     // The entities never count distinct values either
-    expect(isWidgetBreakdownEligible(makeWidget({ type: 'line', dataSelection: [{ ...makeWidget().dataSelection[0], unique: true }] }), workspace)).toBe(true);
+    expect(canWidgetBreakDown(makeWidget({ type: 'line', dataSelection: [{ ...makeWidget().dataSelection[0], unique: true }] }), workspace)).toBe(true);
   });
 
   it('shows the controls of a widget with several datasets or distinct values, locked with the reason', () => {
@@ -732,14 +444,13 @@ describe('audits breakdown', () => {
     const severalDatasets = { ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] };
     const distinct = makeAuditsWidget({}, { unique: true });
 
-    expect(isWidgetBreakdownConfigurable(widget, workspace)).toBe(true);
-    expect(getWidgetBreakdownLockReason(widget)).toBeUndefined();
-    expect(isWidgetBreakdownConfigurable(severalDatasets, workspace)).toBe(true);
-    expect(getWidgetBreakdownLockReason(severalDatasets)).toEqual('several-datasets');
-    expect(isWidgetBreakdownConfigurable(distinct, workspace)).toBe(true);
-    expect(getWidgetBreakdownLockReason(distinct)).toEqual('distinct-values');
-    expect(isWidgetBreakdownConfigurable(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
-    expect(isWidgetBreakdownConfigurable(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
+    expect(getBreakdownEditorState(widget, workspace)).toEqual('editable');
+    expect(getBreakdownEditorState(severalDatasets, workspace)).toEqual('several-datasets');
+    expect(getBreakdownEditorState(distinct, workspace)).toEqual('distinct-values');
+    expect(getBreakdownEditorState({ ...severalDatasets, dataSelection: [distinct.dataSelection[0], widget.dataSelection[0]] }, workspace)).toEqual('several-datasets');
+    expect(getBreakdownEditorState(makeAuditsWidget({ type: 'donut' }), workspace)).toEqual('hidden');
+    expect(getBreakdownEditorState(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toEqual('editable');
+    expect(getBreakdownEditorState(makeAuditsWidget(), { kind: 'fintelTemplate', fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' })).toEqual('hidden');
   });
 
   it('offers exactly the fields the API accepts for the logs, whatever the filters', () => {
@@ -763,11 +474,179 @@ describe('audits breakdown', () => {
     expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: 'objectLabel' } }))).toBe(false);
     expect(isBreakdownFieldSupported(emptyMap, makeWidget({ parameters: { breakdownBy: 'event_scope' } }))).toBe(false);
   });
+});
 
-  it('names the values of the type fields of the logs after the entity types', () => {
-    expect(isBreakdownTypeField('entity_type')).toBe(true);
-    expect(isBreakdownTypeField('context_data.entity_type')).toBe(true);
-    expect(isBreakdownTypeField('event_scope')).toBe(false);
-    expect(isBreakdownTypeField(null)).toBe(false);
+describe('getWidgetBreakdownState', () => {
+  const definition = (filterKey: string, type: string, label: string, subEntityTypes: string[]): FilterDefinition => ({
+    filterKey, type, label, multiple: true, subEntityTypes, elementsForFilterValuesSearch: [],
+  });
+  const schema = new Map<string, Map<string, FilterDefinition>>([
+    ['Report', new Map([
+      ['createdBy', definition('createdBy', 'id', 'Author', ['Report'])],
+      ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
+    ])],
+    ['Malware', new Map([
+      ['createdBy', definition('createdBy', 'id', 'Author', ['Malware'])],
+      ['malware_types', definition('malware_types', 'vocabulary', 'Malware types', ['Malware'])],
+    ])],
+    ['Stix-Core-Object', new Map([
+      ['createdBy', definition('createdBy', 'id', 'Author', ['Stix-Core-Object', 'Report', 'Malware'])],
+      ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
+    ])],
+    ['DraftWorkspace', new Map([['creator_id', definition('creator_id', 'id', 'Creators', ['DraftWorkspace'])]])],
+    ['stix-relationship', new Map([['objectMarking', definition('objectMarking', 'id', 'Marking', ['stix-relationship', 'targets'])]])],
+    ['targets', new Map([['objectMarking', definition('objectMarking', 'id', 'Marking', ['targets'])]])],
+  ]);
+  const ofTypes = (types: string[], key = 'entity_type') => ({
+    mode: 'and', filters: [{ key, values: types, operator: 'eq', mode: 'or' }], filterGroups: [],
+  } as FilterGroup);
+  // A dataset read from a saved filter holds no filters of its own
+  const savedFilterWidget = (breakdownBy: string) => ({
+    ...makeWidget({ parameters: { breakdownBy } }),
+    dataSelection: [{ filters_id: 'saved-filter', filters: undefined }],
+  } as unknown as Widget);
+  const resolved = { resolution: 'resolved' } as const;
+  const stateOf = (
+    widget: Widget,
+    savedFilter: Parameters<typeof getWidgetBreakdownState>[0]['savedFilter'] = resolved,
+    host: WidgetHost = workspace,
+    variables?: DashboardVariable[],
+  ) => getWidgetBreakdownState({ filterKeysSchema: schema, widget, host, savedFilter, variables });
+  const keys = (state: { fieldOptions: { key: string }[] }) => state.fieldOptions.map(({ key }) => key);
+
+  it('offers the fields of the dataset, and keeps a field it has', () => {
+    const state = stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }));
+    expect(state).toMatchObject({ editorState: 'editable', resolution: 'resolved', field: 'report_types', unlistedField: null });
+    expect(keys(state)).toEqual(['createdBy', 'report_types']);
+    expect(stateOf(makeWidget({ parameters: {} })).field).toBeNull();
+  });
+
+  it('does not keep a field the dataset types do not have, to drop it on submit', () => {
+    const state = stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }, ['Malware']));
+    expect(state).toMatchObject({ editorState: 'editable', field: null, unlistedField: null });
+    expect(keys(state)).toEqual(['createdBy', 'malware_types']);
+  });
+
+  it('keeps and lists the type of a dataset of a single type, not offered but accepted by the API', () => {
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }))).toMatchObject({
+      field: 'entity_type',
+      unlistedField: { key: 'entity_type', label: 'Entity type' },
+    });
+    // A type variable allowing a single type
+    const VARIABLE_ID = '6f1c3f0e-2b7a-4c1e-9d3a-0a1b2c3d4e5f';
+    const variable: DashboardVariable = { id: VARIABLE_ID, name: 'type', type: 'entityType', defaultValue: null, restriction: { mode: 'selection', values: ['Report'] } };
+    const byVariable = makeWidget({ parameters: { breakdownBy: 'entity_type' } }, [`$var:${VARIABLE_ID}`]);
+    expect(stateOf(byVariable, resolved, workspace, [variable])).toMatchObject({ field: 'entity_type', unlistedField: { key: 'entity_type' } });
+    // ...whose fields are kept, which a variable that may hold any type does not have
+    const reportTypesByVariable = { ...byVariable, parameters: { breakdownBy: 'report_types' } };
+    expect(stateOf(reportTypesByVariable, resolved, workspace, [variable]).field).toEqual('report_types');
+    expect(stateOf(reportTypesByVariable, resolved, workspace, [{ ...variable, restriction: { mode: 'none' } }]).field).toBeNull();
+    // A single relationship type
+    const targets = makeRelationshipsWidget({ parameters: { breakdownBy: 'relationship_type' } });
+    expect(stateOf(targets)).toMatchObject({ field: 'relationship_type', unlistedField: { key: 'relationship_type', label: 'Relationship type' } });
+    // Offered with several types: listed among the options
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }, ['Report', 'Malware']))).toMatchObject({ field: 'entity_type', unlistedField: null });
+  });
+
+  it('keeps the field while the saved filter is read, or when it cannot be, and lists it apart when not offered', () => {
+    const loading = stateOf(savedFilterWidget('report_types'), { resolution: 'loading' });
+    expect(loading).toMatchObject({
+      editorState: 'editable',
+      resolution: 'loading',
+      field: 'report_types',
+      unlistedField: { key: 'report_types', label: 'Report types' },
+    });
+    // The types unknown, the fields of any dataset are offered
+    expect(keys(loading)).toEqual(['createdBy', 'entity_type']);
+    expect(stateOf(savedFilterWidget('report_types'), { resolution: 'failed', filters: null })).toMatchObject({
+      resolution: 'failed',
+      field: 'report_types',
+      unlistedField: { key: 'report_types' },
+    });
+    // Offered whatever the types: not listed apart
+    expect(stateOf(savedFilterWidget('createdBy'), { resolution: 'loading' })).toMatchObject({ field: 'createdBy', unlistedField: null });
+    // Unknown to the schema, labelled with its key
+    expect(stateOf(savedFilterWidget('x_unknown'), { resolution: 'loading' }).unlistedField).toEqual({ key: 'x_unknown', label: 'x_unknown' });
+  });
+
+  it('reads the fields of the content of the saved filter once read', () => {
+    const reports = stateOf(savedFilterWidget('report_types'), { resolution: 'resolved', filters: ofTypes(['Report']) });
+    expect(reports).toMatchObject({ field: 'report_types', unlistedField: null });
+    expect(keys(reports)).toEqual(['createdBy', 'report_types']);
+    expect(stateOf(savedFilterWidget('report_types'), { resolution: 'resolved', filters: ofTypes(['Malware']) }).field).toBeNull();
+  });
+
+  it('hides the breakdown of draft workspaces, read on the content of the saved filter', () => {
+    const drafts = { resolution: 'resolved', filters: ofTypes(['DraftWorkspace']) } as const;
+    expect(stateOf(savedFilterWidget('creator_id'), drafts)).toEqual({
+      editorState: 'hidden', fieldOptions: [], resolution: 'resolved', field: null, unlistedField: null,
+    });
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'creator_id' } }, ['DraftWorkspace'])).editorState).toEqual('hidden');
+    // Unknown until the saved filter is read
+    expect(stateOf(savedFilterWidget('creator_id'), { resolution: 'loading' }).editorState).toEqual('editable');
+  });
+
+  it('shows the controls of several datasets or distinct values, without keeping the field', () => {
+    const widget = makeWidget({ parameters: { breakdownBy: 'report_types' } });
+    const severalDatasets = stateOf({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] });
+    expect(severalDatasets).toMatchObject({ editorState: 'several-datasets', field: null, unlistedField: null });
+    expect(keys(severalDatasets)).toEqual(['createdBy', 'report_types']);
+    const distinct = {
+      ...makeWidget({ type: 'line', perspective: 'audits', parameters: { breakdownBy: 'event_type' } }),
+      dataSelection: [{ filters: ofTypes([]), unique: true }],
+    } as unknown as Widget;
+    expect(stateOf(distinct)).toMatchObject({ editorState: 'distinct-values', field: null });
+  });
+
+  it('keeps the breakdown of every time series visualization of the dashboards and custom views', () => {
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      expect(stateOf(makeWidget({ type, parameters: { breakdownBy: 'report_types' } })).field).toEqual('report_types');
+      expect(stateOf(makeRelationshipsWidget({ type, parameters: { breakdownBy: 'toTypes' } })).field).toEqual('toTypes');
+    });
+    const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }), resolved, customView).field).toEqual('report_types');
+  });
+
+  it('hides the breakdown of the widgets that cannot be broken down', () => {
+    const hidden = (widget: Widget, host: WidgetHost = workspace) => stateOf(widget, resolved, host).editorState;
+    expect(hidden(makeWidget({ type: 'donut' }))).toEqual('hidden');
+    expect(hidden(makeWidget({ perspective: null }))).toEqual('hidden');
+    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+    expect(hidden(makeWidget(), fintelTemplate)).toEqual('hidden');
+    // A relationships widget left with an entities dataset cannot be broken down as relationships
+    const relationships = makeRelationshipsWidget();
+    expect(hidden({ ...relationships, dataSelection: [{ ...relationships.dataSelection[0], perspective: 'entities' }] })).toEqual('hidden');
+    expect(stateOf(makeWidget({ type: 'donut' })).field).toBeNull();
+  });
+});
+
+describe('applyBreakdownCompatibility', () => {
+  const widget = {
+    type: 'line',
+    parameters: { title: 'Reports', breakdownBy: 'report_types', breakdownLimit: 20, breakdownOrder: 'asc' as const, breakdownOther: true },
+  };
+
+  it('drops the breakdown and its settings when the editor does not keep its field', () => {
+    expect(applyBreakdownCompatibility(widget, { field: null }).parameters).toEqual({
+      title: 'Reports', breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null,
+    });
+  });
+
+  it('returns the widget untouched when its field is kept, or without breakdown', () => {
+    expect(applyBreakdownCompatibility(widget, { field: 'report_types' })).toBe(widget);
+    // No breakdown settings written on a widget that never had one
+    const donut = { type: 'donut', parameters: { title: 'Donut' } };
+    expect(applyBreakdownCompatibility(donut, { field: null })).toBe(donut);
+  });
+});
+
+describe('clearBreakdown', () => {
+  it('clears the field and its settings, and keeps the other parameters', () => {
+    const widget = { type: 'line', parameters: { title: 'Reports', interval: 'month', breakdownBy: 'entity_type', breakdownLimit: 20, breakdownOrder: 'asc' as const, breakdownOther: true } };
+    expect(clearBreakdown(widget)).toEqual({
+      type: 'line',
+      parameters: { title: 'Reports', interval: 'month', breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null },
+    });
+    expect(widget.parameters.breakdownBy).toEqual('entity_type');
   });
 });

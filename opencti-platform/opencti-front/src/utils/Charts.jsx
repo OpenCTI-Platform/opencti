@@ -27,22 +27,6 @@ export const colors = (temp) => [
   C.grey[temp],
 ];
 
-/**
- * Turns the animations of chart options off: entirely, or only when the series of a drawn chart are updated.
- * @param {object} options
- * @param {boolean} isAnimated
- * @param {boolean} isUpdateAnimated
- */
-export const withChartAnimations = (options, isAnimated = true, isUpdateAnimated = true) => {
-  if (!isAnimated) {
-    return { ...options, chart: { ...options.chart, animations: { enabled: false } } };
-  }
-  if (!isUpdateAnimated) {
-    return { ...options, chart: { ...options.chart, animations: { ...options.chart?.animations, dynamicAnimation: { enabled: false } } } };
-  }
-  return options;
-};
-
 const toolbarOptions = {
   show: false,
   export: {
@@ -306,7 +290,6 @@ export const areaChartOptions = (
  * @param {boolean} isStacked
  * @param {boolean} legend
  * @param {number | 'dataPoints'} tickAmount
- * @param {boolean} hoverFilter
  */
 export const verticalBarsChartOptions = (
   theme,
@@ -317,7 +300,6 @@ export const verticalBarsChartOptions = (
   isStacked = false,
   legend = false,
   tickAmount = undefined,
-  hoverFilter = true,
 ) => ({
   chart: {
     type: 'bar',
@@ -340,9 +322,10 @@ export const verticalBarsChartOptions = (
   ],
   states: {
     hover: {
-      filter: hoverFilter
-        ? { type: 'lighten', value: 0.05 }
-        : { type: 'none' },
+      filter: {
+        type: 'lighten',
+        value: 0.05,
+      },
     },
   },
   grid: {
