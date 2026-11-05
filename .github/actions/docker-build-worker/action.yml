@@ -71,4 +71,4 @@ runs:
       with:
         name: docker-image-opencti-worker${{ inputs.docker_image_suffix }}${{ inputs.artifact_suffix }}
         path: /tmp/opencti-worker${{ inputs.docker_image_suffix }}${{ inputs.artifact_suffix }}.tar
-        retention-days: 1
+        retention-days: 10
