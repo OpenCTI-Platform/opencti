@@ -54,10 +54,11 @@ jobs:
     with:
       checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       run-id: ${{ github.run_id }}
-      # Every pull request and every push on another branch runs Elasticsearch 8 only. A push on master
-      # (each merge, so a failure points at the pull request that caused it), the nightly run and a manual
-      # run (workflow_dispatch, to check a branch before merging) add Elasticsearch 9 and OpenSearch.
-      search_engines: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')) && '["elasticsearch8","elasticsearch9","opensearch"]' || '["elasticsearch8"]' }}
+      # Every pull request and every push on another branch runs Elasticsearch 8 only. A push on master or
+      # on an LTS branch (each merge, so a failure points at the pull request that caused it), the nightly run
+      # and a manual run (workflow_dispatch, to check a branch before merging) add Elasticsearch 9 and OpenSearch.
+      # An LTS branch is cut from master, so it gets this file and the three engines from its creation.
+      search_engines: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/lts/')))) && '["elasticsearch8","elasticsearch9","opensearch"]' || '["elasticsearch8"]' }}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
