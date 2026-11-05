@@ -559,9 +559,6 @@ describe('timeSeriesBreakdownEntities', () => {
   });
 
   it('should reject an unsupported interval before querying', async () => {
-    const actualEngine = await vi.importActual<typeof engine>('../../../src/database/engine');
-    vi.mocked(engine.getHistogramDateFormat).mockImplementation(actualEngine.getHistogramDateFormat);
-
     await expect(breakdown({ field: 'creator_id', interval: 'minute' })).rejects.toThrow('Unsupported interval');
     expect(engine.elAggregationRanking).not.toHaveBeenCalled();
   });
@@ -745,12 +742,16 @@ describe('timeSeriesBreakdownEntities', () => {
     }
   });
 
-  it('should skip the histogram query when no value is found', async () => {
+  it('should skip the histogram query when no value is found, and still give the dates of the period', async () => {
     vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking([]));
 
     const result = await breakdown({ field: 'creator_id' });
 
-    expect(result).toEqual({ truncated: false, dates: [], series: [] });
+    expect(result).toEqual({
+      truncated: false,
+      dates: ['2026-01-01T00:00:00.000Z', '2026-01-02T00:00:00.000Z', '2026-01-03T00:00:00.000Z'],
+      series: [],
+    });
     expect(engine.elHistogramBreakdownCount).not.toHaveBeenCalled();
   });
 
@@ -1375,9 +1376,6 @@ describe('timeSeriesBreakdownRelations', () => {
   });
 
   it('should reject an unsupported interval before querying', async () => {
-    const actualEngine = await vi.importActual<typeof engine>('../../../src/database/engine');
-    vi.mocked(engine.getHistogramDateFormat).mockImplementation(actualEngine.getHistogramDateFormat);
-
     await expect(relationsBreakdown({ field: 'fromTypes', interval: 'minute' })).rejects.toThrow('Unsupported interval');
     expect(engine.elConnectionTypesRanking).not.toHaveBeenCalled();
   });

@@ -3795,7 +3795,6 @@ export const elHistogramBreakdownCount = async (
   body.aggs = buildHistogramBreakdownAggregations(options, countOverTime);
   const query = {
     index: getIndicesToQuery(context, user, indexName),
-    _source_excludes: '*',
     // Only what is read below: the response of 50 series over a long period weighs megabytes otherwise
     filter_path: [
       '_shards',

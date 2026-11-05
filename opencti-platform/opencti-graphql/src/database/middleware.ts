@@ -71,7 +71,6 @@ import {
   type ElFindByIdsOpts,
   elHistogramBreakdownCount,
   elKeywordWrittenForms,
-  getHistogramDateFormat,
   elHistogramCount,
   elIndexElements,
   elList,
@@ -1039,9 +1038,8 @@ type TimeSeriesBreakdownArgs = {
   endDate?: Date | null;
   interval: string;
 };
-const checkTimeSeriesBreakdownLimit = (limit: number | null | undefined) => {
-  const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
-  if (!Number.isInteger(seriesLimit) || seriesLimit < 1 || seriesLimit > TIME_SERIES_BREAKDOWN_MAX_LIMIT) {
+const checkTimeSeriesBreakdownLimit = (limit: number) => {
+  if (!Number.isInteger(limit) || limit < 1 || limit > TIME_SERIES_BREAKDOWN_MAX_LIMIT) {
     throw FunctionalError('Time series breakdown limit must be an integer between 1 and the maximum', {
       reason: BREAKDOWN_REFUSAL_REASONS.INVALID_LIMIT,
       limit,
@@ -1144,21 +1142,21 @@ const timeSeriesBreakdown = async (
   args: TimeSeriesBreakdownArgs & Record<string, any>,
 ) => {
   const { indices, breakdownField, dateAttributeTypes, defaultDateAttribute } = perspective;
-  checkTimeSeriesBreakdownLimit(args.limit);
+  // An explicit null gets the default of the schema too
+  const seriesLimit = args.limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
+  checkTimeSeriesBreakdownLimit(seriesLimit);
   if (args.dateAttribute) {
     checkBreakdownDateAttribute(dateAttributeTypes, args.dateAttribute);
   }
   const dateAttribute = args.dateAttribute || defaultDateAttribute;
-  const { startDate, interval, limit = TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT } = args;
+  const { startDate, interval } = args;
   // Without an end date, the histogram would create every empty bucket up to the most recent document,
   // a date in the future included, past the size checked below: the period always ends
   const endDate = args.endDate ?? new Date();
   const { aggregationField, resolveEntities, withInternalUsers = false, resolveLabel, vocabularyCategories, connectionSide } = breakdownField;
-  const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
   const isAscending = args.orderMode === 'asc';
   const withOther = args.includeOther === true;
-  // Refuse an unsupported interval before it is used to size the request
-  getHistogramDateFormat(interval);
+  // Refuses an unsupported interval, before any request
   const intervalsCount = countTimeSeriesIntervals(startDate, endDate, interval);
   // The Other series is one more series of points
   const seriesCount = seriesLimit + (withOther ? 1 : 0);
@@ -1208,8 +1206,10 @@ const timeSeriesBreakdown = async (
   const selected = R.take(seriesLimit, usableCandidates);
   // More usable values than the limit, or values the ranking left out (in desc only: asc gets them all or refuses)
   const truncated = usableCandidates.length > seriesLimit || sumOtherDocCount > 0;
+  // Every series shares the same dates: they are sent once, each series only carries its values
+  const axis = buildTimeSeriesAxis(startDate, endDate, interval);
   if (selected.length === 0 && !withOther) {
-    return { truncated, dates: [], series: [] };
+    return { truncated, dates: axis.dates, series: [] };
   }
   // 3. Count every selected value, and the entities carrying none of them, over time in a single query.
   // Many distinct values (as many as a full desc candidates page, or several times the limit) mean a field with many
@@ -1228,8 +1228,6 @@ const timeSeriesBreakdown = async (
     }),
     vocabularyCategories && keys.length > 0 ? resolveVocabularyLabels(context, vocabularyCategories, keys) : Promise.resolve(new Map<string, string>()),
   ]);
-  // Every series shares the same dates: they are sent once, each series only carries its values
-  const axis = buildTimeSeriesAxis(startDate, endDate, interval);
   const sumOf = (values: number[]) => values.reduce((total, value) => total + value, 0);
   const series = selected.map(({ label, entity, key }) => {
     const values = fillTimeSeriesValues(axis, histograms.get(key) ?? []);

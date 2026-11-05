@@ -277,7 +277,7 @@ const buildBucketStartAt = (rangeStart: number, interval: string): ((index: numb
   }
 };
 const HOURS = Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, '0'));
-// Key of a bucket as the date histogram of elHistogramCount formats it, from the day it starts on
+// Key of a bucket as getHistogramDateFormat in engine.ts formats it, from the day it starts on
 const toBucketKey = (isoDay: string, hour: string, interval: string) => {
   switch (interval) {
     case 'year':

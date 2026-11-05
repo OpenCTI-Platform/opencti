@@ -370,6 +370,16 @@ describe('engine: requests of the time series breakdowns', () => {
       expect(other).toEqual([{ date: '2026-01-01', value: 7 }]);
     });
 
+    it('should only ask for the aggregations, without any document', async () => {
+      elkSearch.mockResolvedValue(searchResponse({}));
+
+      await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { field: 'creator_id', interval: 'day', keys: ['user-a'] });
+
+      const request = elkSearch.mock.lastCall?.[0];
+      expect(request.body.size).toEqual(0);
+      expect(request._source_excludes).toBeUndefined();
+    });
+
     it('should not return any Other histogram unless it is requested', async () => {
       elkSearch.mockResolvedValue(searchResponse({ breakdown: { buckets: [{ key: 'label-a', count_over_time: { buckets: points(2) } }] } }));
 
