@@ -254,6 +254,41 @@ describe('Decay update testing', () => {
     // THEN
     expect(patchResult, 'No database operation should be done.').toBeNull();
   });
+
+  it('should not decay nor revoke an indicator that received a decay exclusion rule after its decay rule', () => {
+    // GIVEN an Indicator created with a decay rule, then upserted by a source matching a decay exclusion rule
+    // (issue #19199): it carries both decay_applied_rule and decay_exclusion_applied_rule
+    const indicatorInput: Partial<BasicStoreEntityIndicator> = {
+      x_opencti_score: 90,
+      decay_base_score: 24,
+      decay_history: [],
+      revoked: false,
+      valid_from: moment().subtract('5', 'days').toDate(),
+      valid_until: moment().add('5', 'days').toDate(),
+      decay_applied_rule: {
+        decay_rule_id: 'decay-test-next-score',
+        decay_lifetime: 30,
+        decay_points: [100, 80, 50, 20],
+        decay_pound: 0.5,
+        decay_revoke_score: 25,
+      },
+      decay_exclusion_applied_rule: {
+        decay_exclusion_id: 'decay-exclusion-test',
+        decay_exclusion_name: 'StixFile exclusion',
+        decay_exclusion_created_at: new Date().toISOString(),
+        decay_exclusion_observable_types: ['StixFile'],
+      },
+    };
+
+    // WHEN the decay manager computes the next step
+    const patchResult = computeIndicatorDecayPatch(testContext, ADMIN_USER, indicatorInput as BasicStoreEntityIndicator) as IndicatorPatch;
+
+    // THEN the exclusion wins: no score change, no revocation, and the next reaction date is reset
+    expect(patchResult.revoked, 'An excluded indicator must not be revoked by decay.').toBeUndefined();
+    expect(patchResult.x_opencti_score, 'An excluded indicator must keep its score.').toBeUndefined();
+    expect(patchResult.decay_history, 'No decay history point must be added.').toBeUndefined();
+    expect(patchResult.decay_next_reaction_date, 'The next reaction date must be reset so the decay manager stops selecting it.').toBeNull();
+  });
 });
 
 describe('Decay history trimming testing', () => {

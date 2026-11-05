@@ -571,12 +571,18 @@ export interface IndicatorPatch {
   revoked?: boolean;
   x_opencti_score?: number;
   decay_history?: DecayHistory[];
-  decay_next_reaction_date?: Date;
+  decay_next_reaction_date?: Date | null;
   x_opencti_detection?: boolean;
 }
 
 export const computeIndicatorDecayPatch = (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
   let patch: IndicatorPatch | undefined;
+  // A decay exclusion rule takes priority over decay rules: an indicator that received an exclusion
+  // after its decay rule (for example on upsert) must not be decayed or revoked any more.
+  // Reset the next reaction date so the decay manager stops selecting it.
+  if (indicator.decay_exclusion_applied_rule) {
+    return { decay_next_reaction_date: null };
+  }
   const model = indicator.decay_applied_rule;
   if (!model || !model.decay_points) {
     return null;
