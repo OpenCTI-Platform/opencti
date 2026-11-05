@@ -100,7 +100,8 @@ export default {
           if (AUTH_ERRORS.includes(errorCode)) {
             // If not forbidden access, audit already handled
             // Forbidden can be called in many places
-            if (errorCode === FORBIDDEN_ACCESS) {
+            // A call without a user is not authenticated: there is no user action to publish
+            if (errorCode === FORBIDDEN_ACCESS && contextUser) {
               await publishUserAction({
                 user: contextUser,
                 event_type: isWrite ? 'mutation' : 'read',
