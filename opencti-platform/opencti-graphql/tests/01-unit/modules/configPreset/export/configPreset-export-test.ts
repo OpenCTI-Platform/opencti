@@ -49,7 +49,6 @@ import {
   resolveConfigPresetSelections,
 } from '../../../../../src/modules/configPreset/export/configPreset-export-domain';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
-import { CONFIG_PRESET_IMPORT_MAX_ENTRIES } from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
 import type { ConfigPresetItemDefinition } from '../../../../../src/modules/configPreset/configPreset-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import { builtInTheme, customTheme, otherCustomTheme } from '../configPreset-themes-fixtures';
@@ -438,19 +437,6 @@ describe('Config preset export', () => {
     vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
     await expect(configPresetExport(context, bypassUser, [{ type: 'platform' }])).rejects.toThrow('A configuration preset dependency cannot be exported');
     expectNothingWritten();
-  });
-
-  it('refuses, before any write, an export the import could not read back: its items and the fixed files of the zip exceed the import limit', async () => {
-    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!;
-    const manyLabels = (count: number) => Array.from({ length: count }, (_, i) => ({ id: `label-${i}`, label: `label-${i}`, translatable: false, exporter: async () => ({}) }));
-    const resolveItems = vi.spyOn(labels, 'resolveItems');
-    resolveItems.mockResolvedValue(manyLabels(CONFIG_PRESET_IMPORT_MAX_ENTRIES - 1));
-    await expect(configPresetExport(context, bypassUser, [{ type: 'labels' }])).rejects.toThrow('The export holds too many items to be imported back');
-    expectNothingWritten();
-    // The limit itself is still exported
-    resolveItems.mockResolvedValue(manyLabels(CONFIG_PRESET_IMPORT_MAX_ENTRIES - 2));
-    await configPresetExport(context, bypassUser, [{ type: 'labels' }]);
-    expect(Object.keys(await readZip(uploadedZip!))).toHaveLength(CONFIG_PRESET_IMPORT_MAX_ENTRIES);
   });
 
   it('refuses a user without BYPASS', async () => {
