@@ -1,0 +1,30 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 1,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": "#3fb64a",
+          "stix_id": "label--0008ca88-56ff-5e8e-a0a8-1734b84cdd01",
+          "update": false,
+          "value": "small",
+          "x_opencti_stix_ids": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "label--0008ca88-56ff-5e8e-a0a8-1734b84cdd01",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

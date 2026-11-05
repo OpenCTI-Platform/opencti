@@ -1,0 +1,15 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "tracking-number--20000000-0000-4000-8000-000000000056",
+      "type": "tracking-number",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000056",
+      "x_opencti_type": "Tracking-Number",
+      "defanged": false,
+      "value": "5555"
+    }
+  ]
+}

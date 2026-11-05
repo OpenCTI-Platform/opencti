@@ -1,0 +1,367 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "Windows"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "platforms_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "Windows",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "KillChainPhaseAdd",
+      "op": "mutation",
+      "root": "killChainPhaseAdd",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "kill_chain_name": "mitre-attack",
+          "modified": null,
+          "phase_name": "stealth",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_order": 0
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "KillChainPhaseAdd",
+      "op": "mutation",
+      "root": "killChainPhaseAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "kill_chain_name": "mitre-attack",
+          "modified": null,
+          "phase_name": "privilege-escalation",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_order": 0
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 6,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": null,
+          "embedded": null,
+          "external_id": "T1055.011",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "mitre-attack",
+          "stix_id": null,
+          "update": false,
+          "url": "https://attack.mitre.org/techniques/T1055/011",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 7,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "Hosseini, A. (2017, July 18). Ten Process Injection Techniques: A Technical Survey Of Common And Trending Process Injection Techniques. Retrieved December 7, 2017.",
+          "embedded": null,
+          "external_id": null,
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "Elastic Process Injection July 2017",
+          "stix_id": null,
+          "update": false,
+          "url": "https://www.endgame.com/blog/technical-blog/ten-process-injection-techniques-technical-survey-common-and-trending-process",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 8,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "MalwareTech. (2013, August 13). PowerLoader Injection – Something truly amazing. Retrieved December 16, 2017.",
+          "embedded": null,
+          "external_id": null,
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "MalwareTech Power Loader Aug 2013",
+          "stix_id": null,
+          "update": false,
+          "url": "https://www.malwaretech.com/2013/08/powerloader-injection-something-truly.html",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 9,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "Matrosov, A. (2013, March 19). Gapz and Redyms droppers based on Power Loader code. Retrieved December 16, 2017.",
+          "embedded": null,
+          "external_id": null,
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "WeLiveSecurity Gapz and Redyms Mar 2013",
+          "stix_id": null,
+          "update": false,
+          "url": "https://www.welivesecurity.com/2013/03/19/gapz-and-redyms-droppers-based-on-power-loader-code/",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 10,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "Microsoft. (n.d.). About Window Classes. Retrieved December 16, 2017.",
+          "embedded": null,
+          "external_id": null,
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "Microsoft Window Classes",
+          "stix_id": null,
+          "update": false,
+          "url": "https://msdn.microsoft.com/library/windows/desktop/ms633574.aspx",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 11,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "Microsoft. (n.d.). GetWindowLong function. Retrieved December 16, 2017.",
+          "embedded": null,
+          "external_id": null,
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "Microsoft GetWindowLong function",
+          "stix_id": null,
+          "update": false,
+          "url": "https://msdn.microsoft.com/library/windows/desktop/ms633584.aspx",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 12,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "Microsoft. (n.d.). SetWindowLong function. Retrieved December 16, 2017.",
+          "embedded": null,
+          "external_id": null,
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "Microsoft SetWindowLong function",
+          "stix_id": null,
+          "update": false,
+          "url": "https://msdn.microsoft.com/library/windows/desktop/ms633591.aspx",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "AttackPatternAdd",
+      "op": "mutation",
+      "root": "attackPatternAdd",
+      "seq": 13,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "confidence": null,
+          "created": "2020-01-14T17:18:32.126Z",
+          "createdBy": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
+          "customFieldValues": [
+            {
+              "field_name": "x_mitre_attack_spec_version",
+              "value": "3.3.0"
+            },
+            {
+              "field_name": "x_mitre_deprecated",
+              "value": false
+            },
+            {
+              "field_name": "x_mitre_domains",
+              "value": [
+                "enterprise-attack"
+              ]
+            },
+            {
+              "field_name": "x_mitre_is_subtechnique",
+              "value": true
+            },
+            {
+              "field_name": "x_mitre_modified_by_ref",
+              "value": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5"
+            },
+            {
+              "field_name": "x_mitre_platforms",
+              "value": [
+                "Windows"
+              ]
+            },
+            {
+              "field_name": "x_mitre_version",
+              "value": "2.0"
+            }
+          ],
+          "description": "Adversaries may inject malicious code into process via Extra Window Memory (EWM) in order to evade process-based defenses as well as possibly elevate privileges. EWM injection is a method of executing arbitrary code in the address space of a separate live process. \n\nBefore creating a window, graphical Windows-based processes must prescribe to or register a windows class, which stipulate appearance and behavior (via windows procedures, which are functions that handle input/output of data).(Citation: Microsoft Window Classes) Registration of new windows classes can include a request for up to 40 bytes of EWM to be appended to the allocated memory of each instance of that class. This EWM is intended to store data specific to that window and has specific application programming interface (API) functions to set and get its value. (Citation: Microsoft GetWindowLong function) (Citation: Microsoft SetWindowLong function)\n\nAlthough small, the EWM is large enough to store a 32-bit pointer and is often used to point to a windows procedure. Malware may possibly utilize this memory location in part of an attack chain that includes writing code to shared sections of the process’s memory, placing a pointer to the code in EWM, then invoking execution by returning execution control to the address in the process’s EWM.\n\nExecution granted through EWM injection may allow access to both the target process's memory and possibly elevated privileges. Writing payloads to shared sections also avoids the use of highly monitored API calls such as `WriteProcessMemory` and `CreateRemoteThread`.(Citation: Elastic Process Injection July 2017) More sophisticated malware samples may also potentially bypass protection mechanisms such as data execution prevention (DEP) by triggering a combination of windows procedures and other system functions that will rewrite the malicious payload inside an executable portion of the target process.  (Citation: MalwareTech Power Loader Aug 2013) (Citation: WeLiveSecurity Gapz and Redyms Mar 2013)\n\nRunning code in the context of another process may allow access to the process's memory, system/network resources, and possibly elevated privileges. Execution via EWM injection may also evade detection from security products since the execution is masked under a legitimate process. ",
+          "embedded": null,
+          "externalReferences": [
+            "07391ca7-f88e-5bc4-8fa8-1af3633e8f09",
+            "d869cd87-db6d-5d44-851c-aa475c58b0ee",
+            "e86c5598-4933-5193-ab5f-06c639a4b851",
+            "81ff2312-22f0-5638-8f8d-f956ec52ad97",
+            "ccacf393-1909-57fd-a4c6-82f9526c0f57",
+            "13d8c81c-532d-5646-a366-2e16f1620e85",
+            "eea80916-5750-5d13-a8db-99067f0576f6"
+          ],
+          "files": null,
+          "filesMarkings": null,
+          "killChainPhases": [
+            "8bec5bbf-624d-5724-a002-6f8009151cc0",
+            "43439854-b589-5e2f-a170-bf06e6b3eba4"
+          ],
+          "lang": null,
+          "modified": "2026-05-12T15:12:00.617Z",
+          "name": "Extra Window Memory Injection",
+          "noTriggerImport": null,
+          "objectLabel": [],
+          "objectMarking": [
+            "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"
+          ],
+          "objectOrganization": null,
+          "revoked": false,
+          "stix_id": "attack-pattern--0042a9f5-f053-4769-b3ef-9ad018dfa298",
+          "update": false,
+          "upsertOperations": null,
+          "x_mitre_detection": null,
+          "x_mitre_id": "T1055.011",
+          "x_mitre_permissions_required": null,
+          "x_mitre_platforms": [
+            "Windows"
+          ],
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "attack-pattern--0042a9f5-f053-4769-b3ef-9ad018dfa298",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

@@ -1,0 +1,53 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "DomainName": {
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "noTriggerImport": null,
+          "value": "example.com"
+        },
+        "createIndicator": false,
+        "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": [
+          "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+        ],
+        "objectOrganization": [],
+        "stix_id": "domain-name--20000000-0000-4000-8000-000000000021",
+        "type": "Domain-Name",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": 50
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "domain-name--20000000-0000-4000-8000-000000000021",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

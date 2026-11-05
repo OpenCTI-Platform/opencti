@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "user--20000000-0000-4000-8000-000000000a01",
+      "type": "user",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "id": "10000000-0000-4000-8000-000000000a01",
+          "type": "User",
+          "opencti_operation": "add_groups",
+          "group_ids": [
+            "10000000-0000-4000-8000-000000000a09"
+          ]
+        }
+      }
+    }
+  ]
+}

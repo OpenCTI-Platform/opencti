@@ -1,0 +1,67 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "indicator--d5e8a68e-59d8-524f-9a9a-7c2c1cadf2ff",
+      "spec_version": "2.1",
+      "type": "indicator",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Indicator",
+          "is_inferred": false,
+          "detection": true,
+          "score": 75,
+          "main_observable_type": "IPv4-Addr",
+          "observable_values": [
+            {
+              "type": "IPv4-Addr",
+              "value": "198.51.100.1"
+            }
+          ]
+        },
+        "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b": {
+          "extension_type": "property-extension",
+          "platforms": [
+            "linux"
+          ]
+        }
+      },
+      "created": "2025-08-01T10:00:00.000Z",
+      "modified": "2025-08-01T12:00:00.000Z",
+      "revoked": false,
+      "confidence": 85,
+      "labels": [
+        "ryuk"
+      ],
+      "object_marking_refs": [
+        "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+      ],
+      "created_by_ref": "identity--18fe5225-fee1-5627-ad3e-20c14435b024",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "description": "spear phishing",
+          "external_id": "CAPEC-163"
+        }
+      ],
+      "name": "Indicator Stix 2.0",
+      "description": "Malicious IP indicator",
+      "indicator_types": [
+        "malicious-activity"
+      ],
+      "pattern": "[ipv4-addr:value = '198.51.100.1']",
+      "pattern_type": "stix",
+      "pattern_version": "2.1",
+      "valid_from": "2025-08-01T10:00:00.000Z",
+      "valid_until": "2026-08-01T10:00:00.000Z",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-pre-attack",
+          "phase_name": "launch"
+        }
+      ]
+    }
+  ]
+}

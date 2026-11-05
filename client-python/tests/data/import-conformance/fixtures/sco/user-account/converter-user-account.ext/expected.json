@@ -1,0 +1,106 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "unix"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "account_type_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "unix",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "UserAccount": {
+          "account_created": "2025-01-01T00:00:00.000Z",
+          "account_expires": null,
+          "account_first_login": null,
+          "account_last_login": null,
+          "account_login": "admin",
+          "account_type": "unix",
+          "can_escalate_privs": null,
+          "credential": null,
+          "credential_last_changed": null,
+          "display_name": "Root Admin",
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "is_disabled": false,
+          "is_privileged": true,
+          "is_service_account": false,
+          "noTriggerImport": null,
+          "user_id": "1001"
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "user-account--20000000-0000-4000-8000-000000000035",
+        "type": "User-Account",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "user-account--20000000-0000-4000-8000-000000000035",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

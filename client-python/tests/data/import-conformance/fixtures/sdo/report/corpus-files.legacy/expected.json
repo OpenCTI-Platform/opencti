@@ -1,0 +1,119 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": null,
+          "embedded": null,
+          "external_id": null,
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "Cyber Campaign Collections",
+          "stix_id": null,
+          "update": false,
+          "url": "https://github.com/CyberMonitor/APT_CyberCriminal_Campagin_Collections/tree/master/2012/2012.07.11.DarkComet_Creator",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [
+        {
+          "mime": "application/pdf",
+          "name": "dark-comet-syrian-spy-tool.pdf",
+          "path": "input.files.0",
+          "sha256": "5b2332840454f3525e5e145b3b19933ce5878e94eca5aef11ba981cec9ebead4"
+        }
+      ],
+      "name": "ReportAdd",
+      "op": "mutation",
+      "root": "reportAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": null,
+          "content": null,
+          "created": "2026-07-21T09:36:45.849885Z",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_files",
+              "value": [
+                {
+                  "data": "JVBERi0xLjQgY29uZm9ybWFuY2UgZml4dHVyZQo=",
+                  "mime_type": "application/pdf",
+                  "name": "dark-comet-syrian-spy-tool.pdf",
+                  "no_trigger_import": true
+                }
+              ]
+            }
+          ],
+          "description": null,
+          "embedded": [
+            false
+          ],
+          "externalReferences": [
+            "24519b6a-a5aa-5c99-825e-55127d572947"
+          ],
+          "files": [
+            null
+          ],
+          "filesMarkings": [
+            null
+          ],
+          "lang": null,
+          "modified": "2026-07-21T09:36:45.849885Z",
+          "name": "DarkComet Creator",
+          "noTriggerImport": [
+            true
+          ],
+          "objectAssignee": null,
+          "objectLabel": [],
+          "objectMarking": null,
+          "objectOrganization": null,
+          "objectParticipant": null,
+          "objects": [
+            "identity--b7403ffd-634d-52ec-964d-bb755241c27c"
+          ],
+          "published": "2012-07-11T00:00:00Z",
+          "report_types": null,
+          "revoked": null,
+          "stix_id": "report--e83715aa-789c-5705-8b03-28c232a58f44",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_reliability": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "report--e83715aa-789c-5705-8b03-28c232a58f44",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

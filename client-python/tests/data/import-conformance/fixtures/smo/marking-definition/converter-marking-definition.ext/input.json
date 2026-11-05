@@ -1,0 +1,23 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "marking-definition--826578e1-40ad-459f-bc73-ede076f81f37",
+      "spec_version": "2.1",
+      "type": "marking-definition",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Marking-Definition",
+          "is_inferred": false,
+          "order": 3,
+          "color": "#d84315"
+        }
+      },
+      "created": "2024-11-18T08:57:58.528Z",
+      "name": "TLP:AMBER+STRICT",
+      "definition_type": "TLP"
+    }
+  ]
+}

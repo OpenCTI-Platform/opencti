@@ -1,0 +1,154 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixSightingRelationshipAdd",
+      "op": "mutation",
+      "root": "stixSightingRelationshipAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "input": {
+          "attribute_count": 2,
+          "confidence": null,
+          "created": null,
+          "customFieldValues": null,
+          "description": null,
+          "externalReferences": [],
+          "first_seen": "2025-01-01T00:00:00.000Z",
+          "fromId": "indicator--30000000-0000-4000-8000-000000000003",
+          "last_seen": "2025-01-02T00:00:00.000Z",
+          "modified": null,
+          "objectLabel": [],
+          "objectMarking": null,
+          "objectOrganization": [],
+          "stix_id": "sighting--30000000-0000-4000-8000-000000000016",
+          "toId": "identity--30000000-0000-4000-8000-000000000017",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_negative": false,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "StixSightingRelationshipAdd",
+      "op": "mutation",
+      "root": "stixSightingRelationshipAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "attribute_count": 2,
+          "confidence": null,
+          "created": null,
+          "customFieldValues": null,
+          "description": null,
+          "externalReferences": [],
+          "first_seen": "2025-01-01T00:00:00.000Z",
+          "fromId": "indicator--30000000-0000-4000-8000-000000000003",
+          "last_seen": "2025-01-02T00:00:00.000Z",
+          "modified": null,
+          "objectLabel": [],
+          "objectMarking": null,
+          "objectOrganization": [],
+          "stix_id": "sighting--30000000-0000-4000-8000-000000000016",
+          "toId": "identity--30000000-0000-4000-8000-000000000018",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_negative": false,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "StixSightingRelationshipAdd",
+      "op": "mutation",
+      "root": "stixSightingRelationshipAdd",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "input": {
+          "attribute_count": 2,
+          "confidence": null,
+          "created": null,
+          "customFieldValues": null,
+          "description": null,
+          "externalReferences": [],
+          "first_seen": "2025-01-01T00:00:00.000Z",
+          "fromId": "observed-data--30000000-0000-4000-8000-000000000015",
+          "last_seen": "2025-01-02T00:00:00.000Z",
+          "modified": null,
+          "objectLabel": [],
+          "objectMarking": null,
+          "objectOrganization": [],
+          "stix_id": "sighting--30000000-0000-4000-8000-000000000016",
+          "toId": "identity--30000000-0000-4000-8000-000000000017",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_negative": false,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "StixSightingRelationshipAdd",
+      "op": "mutation",
+      "root": "stixSightingRelationshipAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "attribute_count": 2,
+          "confidence": null,
+          "created": null,
+          "customFieldValues": null,
+          "description": null,
+          "externalReferences": [],
+          "first_seen": "2025-01-01T00:00:00.000Z",
+          "fromId": "observed-data--30000000-0000-4000-8000-000000000015",
+          "last_seen": "2025-01-02T00:00:00.000Z",
+          "modified": null,
+          "objectLabel": [],
+          "objectMarking": null,
+          "objectOrganization": [],
+          "stix_id": "sighting--30000000-0000-4000-8000-000000000016",
+          "toId": "identity--30000000-0000-4000-8000-000000000018",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_negative": false,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "sighting--30000000-0000-4000-8000-000000000016",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

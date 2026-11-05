@@ -1,0 +1,38 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 1,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "bug nino 20th January – Threat Intelligence Report. Retrieved 2025-01-20T15:03:57.000Z.",
+          "embedded": null,
+          "external_id": null,
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "20th January – Threat Intelligence Report",
+          "stix_id": "external-reference--c124ce2d-15d8-555f-9023-6afe519ac3df",
+          "update": false,
+          "url": "https://research.checkpoint.com/2025/20th-january-threat-intelligence-report/",
+          "x_opencti_stix_ids": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "external-reference--c124ce2d-15d8-555f-9023-6afe519ac3df",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

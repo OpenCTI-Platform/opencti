@@ -1,0 +1,14 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "type": "simple-observable",
+      "id": "simple-observable--30000000-0000-4000-8000-000000000024",
+      "key": "Text.__proto__",
+      "value": {
+        "value": "evil"
+      }
+    }
+  ]
+}

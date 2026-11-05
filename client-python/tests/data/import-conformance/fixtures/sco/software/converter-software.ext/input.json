@@ -1,0 +1,30 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "software--20000000-0000-4000-8000-000000000034",
+      "spec_version": "2.1",
+      "type": "software",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Software",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "product": "Cobalt Strike Beacon"
+        }
+      },
+      "defanged": false,
+      "name": "Cobalt Strike",
+      "cpe": "cpe:2.3:a:cobaltstrike:beacon:4.0:*:*:*:*:*:*:*",
+      "languages": [
+        "en"
+      ],
+      "vendor": "HelpSystems",
+      "version": "4.0"
+    }
+  ]
+}

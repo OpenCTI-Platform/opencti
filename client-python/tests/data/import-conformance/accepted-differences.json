@@ -1,0 +1,954 @@
+{
+  "ops/rules_rescan/task-malware.ext": {
+    "reason": "pycti calls rules_rescan_async, which does not exist (the method is rule_rescan_async, whose document is not valid GraphQL): the port sends rule_rescan_async's operation as intended",
+    "pycti": {
+      "items": [
+        {
+          "id": "malware--96b4c693-3ee7-5875-8a4a-df033289f23a",
+          "outcome": "AttributeError"
+        }
+      ]
+    },
+    "port": {
+      "calls": [
+        {
+          "root": "rulesRescanAsync",
+          "sub": null,
+          "variables": {
+            "elementId": "malware--96b4c693-3ee7-5875-8a4a-df033289f23a",
+            "executionId": "bundle--00000000-0000-4000-8000-000000000000"
+          }
+        }
+      ],
+      "items": [
+        {
+          "id": "malware--96b4c693-3ee7-5875-8a4a-df033289f23a",
+          "outcome": "transformed"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "missing/relationship-without-target-ref/relationship.legacy": {
+    "reason": "pycti's splitter reads target_ref without a guard and fails on the whole bundle; the platform splitter sets the object aside",
+    "pycti": {
+      "bundle_error": "KeyError"
+    },
+    "port": {
+      "calls": [],
+      "items": [],
+      "incompatible": [
+        "relationship--90000000-0000-4000-8000-000000000913"
+      ],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "sdo/security-coverage/converter-security-coverage.ext": {
+    "reason": "pycti's splitter reads result_of_ref, a list, as one reference and fails on the whole bundle",
+    "pycti": {
+      "bundle_error": "TypeError"
+    },
+    "port": {
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        },
+        {
+          "root": "securityCoverageAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "stix_id": "security-coverage--20000000-0000-4000-8000-000000000903",
+              "customFieldValues": null,
+              "name": "Coverage of APT28",
+              "description": "Scenario coverage",
+              "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+              "objectMarking": [
+                "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+              ],
+              "objectLabel": [],
+              "objectCovered": "intrusion-set--20000000-0000-4000-8000-000000000904",
+              "external_uri": null,
+              "externalReferences": [],
+              "coverage_last_result": null,
+              "coverage_valid_from": null,
+              "coverage_valid_to": null,
+              "coverage_information": [],
+              "auto_enrichment_disable": false,
+              "periodicity": "P1W",
+              "tenant_name": null,
+              "tenant_id": null,
+              "duration": "PT1H",
+              "type_affinity": "ENDPOINT",
+              "platforms_affinity": [
+                "windows"
+              ],
+              "x_opencti_stix_ids": null,
+              "files": null,
+              "filesMarkings": null,
+              "noTriggerImport": null,
+              "embedded": null
+            }
+          }
+        }
+      ],
+      "items": [
+        {
+          "id": "security-coverage--20000000-0000-4000-8000-000000000903",
+          "outcome": "transformed"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/external-references-as-dict.legacy": {
+    "reason": "pycti's splitter iterates external_references given as a dict and fails on the whole bundle (AttributeError); the platform splitter fails too, with a TypeError",
+    "pycti": {
+      "bundle_error": "AttributeError"
+    },
+    "port": {
+      "calls": [],
+      "items": [],
+      "incompatible": [],
+      "bundle_error": "TypeError",
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/external-references-string-item.legacy": {
+    "reason": "pycti's splitter reads an external reference given as a string as a dict and fails on the whole bundle",
+    "pycti": {
+      "bundle_error": "AttributeError"
+    },
+    "port": {
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        },
+        {
+          "root": "externalReferenceAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "stix_id": null,
+              "created": null,
+              "modified": null,
+              "source_name": "s",
+              "external_id": null,
+              "description": null,
+              "url": "https://e.com/b",
+              "x_opencti_stix_ids": null,
+              "update": false,
+              "files": null,
+              "filesMarkings": null,
+              "noTriggerImport": null,
+              "embedded": null
+            }
+          }
+        },
+        {
+          "root": "malwareAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "stix_id": "malware--30000000-0000-4000-8000-000000000010",
+              "customFieldValues": null,
+              "objectMarking": null,
+              "objectLabel": [],
+              "objectOrganization": null,
+              "externalReferences": [
+                "edc6991c-b474-5854-ac3f-9efa1e9dadc2"
+              ],
+              "revoked": null,
+              "confidence": null,
+              "x_opencti_score": null,
+              "lang": null,
+              "created": "2025-01-01T00:00:00.000Z",
+              "modified": "2025-01-01T00:00:00.000Z",
+              "name": "M",
+              "description": null,
+              "aliases": null,
+              "malware_types": null,
+              "is_family": true,
+              "first_seen": null,
+              "last_seen": null,
+              "architecture_execution_envs": null,
+              "implementation_languages": null,
+              "capabilities": null,
+              "killChainPhases": [],
+              "x_opencti_stix_ids": null,
+              "x_opencti_workflow_id": null,
+              "x_opencti_modified_at": null,
+              "samples": [],
+              "update": false,
+              "files": null,
+              "filesMarkings": null,
+              "noTriggerImport": null,
+              "embedded": null,
+              "upsertOperations": null
+            }
+          }
+        }
+      ],
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000010",
+          "outcome": "transformed"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/sighting/sighting-of-ref-list.legacy": {
+    "reason": "pycti's splitter reads x_opencti_sighting_of_ref, a list, as one reference and fails on the whole bundle",
+    "pycti": {
+      "bundle_error": "TypeError"
+    },
+    "port": {
+      "calls": [],
+      "items": [
+        {
+          "id": "sighting--30000000-0000-4000-8000-000000000001",
+          "outcome": "transformed"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/object-marking-refs-empty-string.legacy": {
+    "reason": "object_marking_refs given as an empty string: pycti sends the string as objectMarking, the platform splitter replaces it with an empty list",
+    "pycti": {
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "transformed"
+        }
+      ],
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        },
+        {
+          "root": "malwareAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "aliases": null,
+              "architecture_execution_envs": null,
+              "capabilities": null,
+              "confidence": null,
+              "created": "2025-01-01T00:00:00.000Z",
+              "customFieldValues": null,
+              "description": null,
+              "embedded": null,
+              "externalReferences": [],
+              "files": null,
+              "filesMarkings": null,
+              "first_seen": null,
+              "implementation_languages": null,
+              "is_family": true,
+              "killChainPhases": [],
+              "lang": null,
+              "last_seen": null,
+              "malware_types": null,
+              "modified": "2025-01-01T00:00:00.000Z",
+              "name": "M",
+              "noTriggerImport": null,
+              "objectLabel": [],
+              "objectMarking": "",
+              "objectOrganization": null,
+              "revoked": null,
+              "samples": [],
+              "stix_id": "malware--30000000-0000-4000-8000-000000000020",
+              "update": false,
+              "upsertOperations": null,
+              "x_opencti_modified_at": null,
+              "x_opencti_score": null,
+              "x_opencti_stix_ids": null,
+              "x_opencti_workflow_id": null
+            }
+          }
+        }
+      ]
+    },
+    "port": {
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        },
+        {
+          "root": "malwareAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "stix_id": "malware--30000000-0000-4000-8000-000000000020",
+              "customFieldValues": null,
+              "objectMarking": [],
+              "objectLabel": [],
+              "objectOrganization": null,
+              "externalReferences": [],
+              "revoked": null,
+              "confidence": null,
+              "x_opencti_score": null,
+              "lang": null,
+              "created": "2025-01-01T00:00:00.000Z",
+              "modified": "2025-01-01T00:00:00.000Z",
+              "name": "M",
+              "description": null,
+              "aliases": null,
+              "malware_types": null,
+              "is_family": true,
+              "first_seen": null,
+              "last_seen": null,
+              "architecture_execution_envs": null,
+              "implementation_languages": null,
+              "capabilities": null,
+              "killChainPhases": [],
+              "x_opencti_stix_ids": null,
+              "x_opencti_workflow_id": null,
+              "x_opencti_modified_at": null,
+              "samples": [],
+              "update": false,
+              "files": null,
+              "filesMarkings": null,
+              "noTriggerImport": null,
+              "embedded": null,
+              "upsertOperations": null
+            }
+          }
+        }
+      ],
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "transformed"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/object-marking-refs-as-dict.legacy": {
+    "reason": "object_marking_refs given as a dict (the same for any _refs field given as a dict: analysis_sco_refs, object_refs, sample_refs, to_refs, where_sighted_refs...): pycti iterates its keys, the platform splitter fails on the whole bundle (TypeError)",
+    "pycti": {
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "transformed"
+        }
+      ],
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        },
+        {
+          "root": "malwareAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "aliases": null,
+              "architecture_execution_envs": null,
+              "capabilities": null,
+              "confidence": null,
+              "created": "2025-01-01T00:00:00.000Z",
+              "customFieldValues": null,
+              "description": null,
+              "embedded": null,
+              "externalReferences": [],
+              "files": null,
+              "filesMarkings": null,
+              "first_seen": null,
+              "implementation_languages": null,
+              "is_family": true,
+              "killChainPhases": [],
+              "lang": null,
+              "last_seen": null,
+              "malware_types": null,
+              "modified": "2025-01-01T00:00:00.000Z",
+              "name": "M",
+              "noTriggerImport": null,
+              "objectLabel": [],
+              "objectMarking": [
+                "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"
+              ],
+              "objectOrganization": null,
+              "revoked": null,
+              "samples": [],
+              "stix_id": "malware--30000000-0000-4000-8000-000000000020",
+              "update": false,
+              "upsertOperations": null,
+              "x_opencti_modified_at": null,
+              "x_opencti_score": null,
+              "x_opencti_stix_ids": null,
+              "x_opencti_workflow_id": null
+            }
+          }
+        }
+      ]
+    },
+    "port": {
+      "calls": [],
+      "items": [],
+      "incompatible": [],
+      "bundle_error": "TypeError",
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/extension-as-string.ext": {
+    "reason": "an OpenCTI extension given as a string: pycti's splitter reads it as a dict and fails on the whole bundle (AttributeError), the platform splitter does not, and the port fails on the object (TypeError)",
+    "pycti": {
+      "bundle_error": "AttributeError"
+    },
+    "port": {
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        }
+      ],
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "TypeError"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/extensions-as-list.ext": {
+    "reason": "extensions given as a list: pycti's splitter reads it as a dict and fails on the whole bundle (AttributeError), the platform splitter does not, and the port fails on the object (TypeError)",
+    "pycti": {
+      "bundle_error": "AttributeError"
+    },
+    "port": {
+      "calls": [],
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "TypeError"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/extensions-as-string.ext": {
+    "reason": "extensions given as a string: pycti's splitter reads it as a dict and fails on the whole bundle (AttributeError), the platform splitter does not, and the port imports the object",
+    "pycti": {
+      "bundle_error": "AttributeError"
+    },
+    "port": {
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        },
+        {
+          "root": "malwareAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "stix_id": "malware--30000000-0000-4000-8000-000000000020",
+              "customFieldValues": null,
+              "objectMarking": null,
+              "objectLabel": [],
+              "objectOrganization": null,
+              "externalReferences": [],
+              "revoked": null,
+              "confidence": null,
+              "x_opencti_score": null,
+              "lang": null,
+              "created": "2025-01-01T00:00:00.000Z",
+              "modified": "2025-01-01T00:00:00.000Z",
+              "name": "M",
+              "description": null,
+              "aliases": null,
+              "malware_types": null,
+              "is_family": true,
+              "first_seen": null,
+              "last_seen": null,
+              "architecture_execution_envs": null,
+              "implementation_languages": null,
+              "capabilities": null,
+              "killChainPhases": [],
+              "x_opencti_stix_ids": null,
+              "x_opencti_workflow_id": null,
+              "x_opencti_modified_at": null,
+              "samples": [],
+              "update": false,
+              "files": null,
+              "filesMarkings": null,
+              "noTriggerImport": null,
+              "embedded": null,
+              "upsertOperations": null
+            }
+          }
+        }
+      ],
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "transformed"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/object-without-type.legacy": {
+    "reason": "an object without type: pycti's splitter reads its type and fails on the whole bundle (KeyError), the platform splitter does not, and the port fails on the object (AttributeError)",
+    "pycti": {
+      "bundle_error": "KeyError"
+    },
+    "port": {
+      "calls": [],
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "AttributeError"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/created-by-ref-as-list.legacy": {
+    "reason": "created_by_ref given as a list: pycti's splitter reads it as one reference and fails on the whole bundle (TypeError), the platform splitter does not, and the port imports the object",
+    "pycti": {
+      "bundle_error": "TypeError"
+    },
+    "port": {
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        },
+        {
+          "root": "malwareAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "stix_id": "malware--30000000-0000-4000-8000-000000000020",
+              "customFieldValues": null,
+              "createdBy": [
+                "identity--30000000-0000-4000-8000-000000000021"
+              ],
+              "objectMarking": null,
+              "objectLabel": [],
+              "objectOrganization": null,
+              "externalReferences": [],
+              "revoked": null,
+              "confidence": null,
+              "x_opencti_score": null,
+              "lang": null,
+              "created": "2025-01-01T00:00:00.000Z",
+              "modified": "2025-01-01T00:00:00.000Z",
+              "name": "M",
+              "description": null,
+              "aliases": null,
+              "malware_types": null,
+              "is_family": true,
+              "first_seen": null,
+              "last_seen": null,
+              "architecture_execution_envs": null,
+              "implementation_languages": null,
+              "capabilities": null,
+              "killChainPhases": [],
+              "x_opencti_stix_ids": null,
+              "x_opencti_workflow_id": null,
+              "x_opencti_modified_at": null,
+              "samples": [],
+              "update": false,
+              "files": null,
+              "filesMarkings": null,
+              "noTriggerImport": null,
+              "embedded": null,
+              "upsertOperations": null
+            }
+          }
+        }
+      ],
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "transformed"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/object-without-id.legacy": {
+    "reason": "an object without id: pycti's splitter fails on the whole bundle with a KeyError, the platform splitter with a TypeError",
+    "pycti": {
+      "bundle_error": "KeyError"
+    },
+    "port": {
+      "calls": [],
+      "items": [],
+      "incompatible": [],
+      "bundle_error": "TypeError",
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/external-references-as-empty-dict.legacy": {
+    "reason": "external_references given as an empty dict: pycti iterates nothing and imports the object, the platform splitter fails on the whole bundle (TypeError)",
+    "pycti": {
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "transformed"
+        }
+      ],
+      "bundle_error": null
+    },
+    "port": {
+      "calls": [],
+      "items": [],
+      "incompatible": [],
+      "bundle_error": "TypeError",
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/kill-chain-phases-as-dict.legacy": {
+    "reason": "kill_chain_phases given as a dict: pycti's splitter fails on the whole bundle with an AttributeError, the platform splitter with a TypeError",
+    "pycti": {
+      "bundle_error": "AttributeError"
+    },
+    "port": {
+      "calls": [],
+      "items": [],
+      "incompatible": [],
+      "bundle_error": "TypeError",
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/kill-chain-phases-as-empty-dict.legacy": {
+    "reason": "kill_chain_phases given as an empty dict: pycti iterates nothing and imports the object, the platform splitter fails on the whole bundle (TypeError)",
+    "pycti": {
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "transformed"
+        }
+      ],
+      "bundle_error": null
+    },
+    "port": {
+      "calls": [],
+      "items": [],
+      "incompatible": [],
+      "bundle_error": "TypeError",
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/object-marking-refs-list-item.legacy": {
+    "reason": "an item of object_marking_refs given as a list (the same for an item of any _refs field): pycti's splitter uses it as a dict key and fails on the whole bundle (TypeError), the platform splitter does not, and the port sends it as is",
+    "pycti": {
+      "bundle_error": "TypeError"
+    },
+    "port": {
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        },
+        {
+          "root": "malwareAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "stix_id": "malware--30000000-0000-4000-8000-000000000020",
+              "customFieldValues": null,
+              "objectMarking": [
+                [
+                  "x"
+                ]
+              ],
+              "objectLabel": [],
+              "objectOrganization": null,
+              "externalReferences": [],
+              "revoked": null,
+              "confidence": null,
+              "x_opencti_score": null,
+              "lang": null,
+              "created": "2025-01-01T00:00:00.000Z",
+              "modified": "2025-01-01T00:00:00.000Z",
+              "name": "M",
+              "description": null,
+              "aliases": null,
+              "malware_types": null,
+              "is_family": true,
+              "first_seen": null,
+              "last_seen": null,
+              "architecture_execution_envs": null,
+              "implementation_languages": null,
+              "capabilities": null,
+              "killChainPhases": [],
+              "x_opencti_stix_ids": null,
+              "x_opencti_workflow_id": null,
+              "x_opencti_modified_at": null,
+              "samples": [],
+              "update": false,
+              "files": null,
+              "filesMarkings": null,
+              "noTriggerImport": null,
+              "embedded": null,
+              "upsertOperations": null
+            }
+          }
+        }
+      ],
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "transformed"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/extension-id-as-list.ext": {
+    "reason": "the OpenCTI extension id given as a list (the same for x_opencti_id): pycti's splitter uses it as a dict key and fails on the whole bundle (TypeError), the platform splitter does not, and the port imports the object",
+    "pycti": {
+      "bundle_error": "TypeError"
+    },
+    "port": {
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        },
+        {
+          "root": "malwareAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "stix_id": "malware--30000000-0000-4000-8000-000000000020",
+              "customFieldValues": null,
+              "objectMarking": null,
+              "objectLabel": [],
+              "objectOrganization": null,
+              "externalReferences": [],
+              "revoked": null,
+              "confidence": null,
+              "x_opencti_score": null,
+              "lang": null,
+              "created": "2025-01-01T00:00:00.000Z",
+              "modified": "2025-01-01T00:00:00.000Z",
+              "name": "M",
+              "description": null,
+              "aliases": null,
+              "malware_types": null,
+              "is_family": true,
+              "first_seen": null,
+              "last_seen": null,
+              "architecture_execution_envs": null,
+              "implementation_languages": null,
+              "capabilities": null,
+              "killChainPhases": [],
+              "x_opencti_stix_ids": null,
+              "x_opencti_workflow_id": null,
+              "x_opencti_modified_at": null,
+              "samples": [],
+              "update": false,
+              "files": null,
+              "filesMarkings": null,
+              "noTriggerImport": null,
+              "embedded": null,
+              "upsertOperations": null
+            }
+          }
+        }
+      ],
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "transformed"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/kill-chain-phases-number-item.legacy": {
+    "reason": "an item of kill_chain_phases given as a number: pycti's splitter reads it as a dict and fails on the whole bundle (AttributeError), the platform splitter does not, and the port fails on the object (TypeError)",
+    "pycti": {
+      "bundle_error": "AttributeError"
+    },
+    "port": {
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        }
+      ],
+      "items": [
+        {
+          "id": "malware--30000000-0000-4000-8000-000000000020",
+          "outcome": "TypeError"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/malware/external-references-null-item.legacy": {
+    "reason": "an item of external_references given as null: pycti's splitter reads it as a dict and fails on the whole bundle with an AttributeError, the platform splitter with a TypeError",
+    "pycti": {
+      "bundle_error": "AttributeError"
+    },
+    "port": {
+      "calls": [],
+      "items": [],
+      "incompatible": [],
+      "bundle_error": "TypeError",
+      "logged_errors": []
+    }
+  },
+  "splitter-divergences/report/object-refs-empty-string.legacy": {
+    "reason": "object_refs given as an empty string (the same for any _refs field: x_opencti_granted_refs...): pycti sends the string as objects, the platform splitter replaces it with an empty list",
+    "pycti": {
+      "items": [
+        {
+          "id": "report--30000000-0000-4000-8000-000000000020",
+          "outcome": "transformed"
+        }
+      ],
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        },
+        {
+          "root": "reportAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "confidence": null,
+              "content": null,
+              "created": "2025-01-01T00:00:00.000Z",
+              "customFieldValues": null,
+              "description": null,
+              "embedded": null,
+              "externalReferences": [],
+              "files": null,
+              "filesMarkings": null,
+              "lang": null,
+              "modified": "2025-01-01T00:00:00.000Z",
+              "name": "R",
+              "noTriggerImport": null,
+              "objectAssignee": null,
+              "objectLabel": [],
+              "objectMarking": null,
+              "objectOrganization": null,
+              "objectParticipant": null,
+              "objects": "",
+              "published": "2025-01-01T00:00:00.000Z",
+              "report_types": null,
+              "revoked": null,
+              "stix_id": "report--30000000-0000-4000-8000-000000000020",
+              "update": false,
+              "upsertOperations": null,
+              "x_opencti_modified_at": null,
+              "x_opencti_reliability": null,
+              "x_opencti_stix_ids": null,
+              "x_opencti_workflow_id": null
+            }
+          }
+        }
+      ]
+    },
+    "port": {
+      "calls": [
+        {
+          "root": "vocabularyCategories",
+          "sub": null,
+          "variables": {}
+        },
+        {
+          "root": "reportAdd",
+          "sub": null,
+          "variables": {
+            "input": {
+              "stix_id": "report--30000000-0000-4000-8000-000000000020",
+              "customFieldValues": null,
+              "objectMarking": null,
+              "objectLabel": [],
+              "objectOrganization": null,
+              "objectAssignee": null,
+              "objectParticipant": null,
+              "objects": [],
+              "externalReferences": [],
+              "revoked": null,
+              "confidence": null,
+              "lang": null,
+              "created": "2025-01-01T00:00:00.000Z",
+              "modified": "2025-01-01T00:00:00.000Z",
+              "name": "R",
+              "description": null,
+              "content": null,
+              "report_types": null,
+              "published": "2025-01-01T00:00:00.000Z",
+              "x_opencti_reliability": null,
+              "x_opencti_stix_ids": null,
+              "x_opencti_workflow_id": null,
+              "x_opencti_modified_at": null,
+              "update": false,
+              "files": null,
+              "filesMarkings": null,
+              "noTriggerImport": null,
+              "embedded": null,
+              "upsertOperations": null
+            }
+          }
+        }
+      ],
+      "items": [
+        {
+          "id": "report--30000000-0000-4000-8000-000000000020",
+          "outcome": "transformed"
+        }
+      ],
+      "incompatible": [],
+      "bundle_error": null,
+      "logged_errors": []
+    }
+  }
+}

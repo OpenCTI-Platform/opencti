@@ -1,0 +1,30 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "sighting--22799cbd-e9b5-5b7c-8733-5c2a5cc49ebe",
+      "type": "sighting",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "id": "11cad6c5-98f1-4491-899a-15b7789e1492",
+          "type": "stix-sighting-relationship",
+          "opencti_operation": "patch",
+          "opencti_field_patch": [
+            {
+              "key": "description",
+              "value": [
+                "Updated description"
+              ],
+              "operation": "replace"
+            }
+          ]
+        }
+      },
+      "sighting_of_ref": "a07241c5-8d5f-413c-9a19-8eba1245359d",
+      "where_sighted_refs": [
+        "47cffe73-dcad-4830-884d-8d10f66780c5"
+      ]
+    }
+  ]
+}

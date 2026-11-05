@@ -1,0 +1,16 @@
+{
+  "type": "bundle",
+  "id": "bundle--b0000000-0000-4000-8000-000000000019",
+  "objects": [
+    {
+      "type": "artifact",
+      "spec_version": "2.1",
+      "id": "artifact--b0000000-0000-4000-8000-000000000002",
+      "mime_type": "text/plain",
+      "payload_bin": "aGVsbG",
+      "hashes": {
+        "SHA-256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+      }
+    }
+  ]
+}

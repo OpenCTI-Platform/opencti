@@ -1,0 +1,12 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000905",
+  "objects": [
+    {
+      "type": "email-addr",
+      "spec_version": "2.1",
+      "id": "email-addr--90000000-0000-4000-8000-000000000905",
+      "display_name": "Nobody"
+    }
+  ]
+}

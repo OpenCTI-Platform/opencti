@@ -1,0 +1,1 @@
+E: hand-written, an artifact whose payload_bin lacks its padding (pycti b64decode raises binascii.Error)

@@ -1,0 +1,206 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "analysis"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "note_types_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "analysis",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "note"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "note",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 6,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "spear phishing",
+          "embedded": null,
+          "external_id": "CAPEC-163",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "capec",
+          "stix_id": null,
+          "update": false,
+          "url": null,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "NoteAdd",
+      "op": "mutation",
+      "root": "noteAdd",
+      "seq": 7,
+      "sub": null,
+      "variables": {
+        "input": {
+          "attribute_abstract": "this is a new note",
+          "authors": null,
+          "confidence": 100,
+          "content": "with description:",
+          "created": "2025-06-26T15:32:23.000Z",
+          "createdBy": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "b9aca079-0a66-4efd-a481-71b1ce745a3a"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "Note"
+            },
+            {
+              "field_name": "x_opencti_files",
+              "value": [
+                {
+                  "mime_type": "application/json",
+                  "name": "ipv4_example.json",
+                  "object_marking_refs": [
+                    "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                  ],
+                  "uri": "/storage/get/import/Note/b9aca079-0a66-4efd-a481-71b1ce745a3a/ipv4_example.json",
+                  "version": "2025-06-26T15:32:54.229Z"
+                }
+              ]
+            }
+          ],
+          "embedded": null,
+          "externalReferences": [
+            "709d0a80-a6b6-5597-9ae8-7cd4656149d5"
+          ],
+          "files": null,
+          "filesMarkings": null,
+          "lang": null,
+          "likelihood": 50,
+          "modified": "2025-06-26T15:33:21.426Z",
+          "noTriggerImport": null,
+          "note_types": [
+            "analysis"
+          ],
+          "objectLabel": [
+            "7f6f8de6-3d12-5fb3-ac32-1437d650de57"
+          ],
+          "objectMarking": [
+            "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+          ],
+          "objectOrganization": null,
+          "objects": [
+            "domain-name--c9d852bc-ec1b-57c8-b013-32f0f402f7a8"
+          ],
+          "revoked": false,
+          "stix_id": "note--2a80c942-1c85-5bb7-91d4-e92ed2b86fd8",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "note--2a80c942-1c85-5bb7-91d4-e92ed2b86fd8",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

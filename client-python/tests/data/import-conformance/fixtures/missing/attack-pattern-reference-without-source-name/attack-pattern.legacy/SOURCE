@@ -1,0 +1,1 @@
+E: hand-written, an attack-pattern whose external reference has no source_name (pycti external_reference["source_name"].startswith, after the reference is created)

@@ -1,0 +1,57 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "SSHKey": {
+          "comment": "test key",
+          "created": null,
+          "embedded": null,
+          "expiration_date": null,
+          "files": null,
+          "filesMarkings": null,
+          "fingerprint_md5": null,
+          "fingerprint_sha256": "698e5b54741866540fee17b77d4a1da0",
+          "key_length": null,
+          "key_type": null,
+          "noTriggerImport": null,
+          "public_key": null
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "ssh-key--20000000-0000-4000-8000-000000000058",
+        "type": "SSH-Key",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": 50
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "ssh-key--20000000-0000-4000-8000-000000000058",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

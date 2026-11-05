@@ -1,0 +1,18 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000100",
+  "objects": [
+    {
+      "type": "simple-observable",
+      "id": "simple-observable--30000000-0000-4000-8000-000000000001",
+      "key": "IPv4-Addr.value",
+      "value": "198.51.100.7",
+      "description": "Seen in a phishing campaign",
+      "x_opencti_score": 80,
+      "x_opencti_labels": [
+        "phishing"
+      ],
+      "created_by_ref": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb"
+    }
+  ]
+}

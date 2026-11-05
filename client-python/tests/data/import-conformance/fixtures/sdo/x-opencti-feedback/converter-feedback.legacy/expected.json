@@ -1,0 +1,155 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "ryuk"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "ryuk",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": null,
+          "embedded": null,
+          "external_id": "G0096",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "mitre-attack",
+          "stix_id": null,
+          "update": false,
+          "url": "https://attack.mitre.org/groups/G0096",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "FeedbackAdd",
+      "op": "mutation",
+      "root": "feedbackAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": 93,
+          "created": "2025-06-26T15:58:16.208Z",
+          "createdBy": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "5a194bd5-1fe1-4618-bfa0-48b15eb590b4"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "Feedback"
+            },
+            {
+              "field_name": "x_opencti_files",
+              "value": [
+                {
+                  "mime_type": "application/json",
+                  "name": "file_example (2).json",
+                  "object_marking_refs": [],
+                  "uri": "/storage/get/import/Feedback/5a194bd5-1fe1-4618-bfa0-48b15eb590b4/file_example (2).json",
+                  "version": "2025-06-26T15:58:16.639Z"
+                }
+              ]
+            }
+          ],
+          "description": "Feedback STIX 2.0",
+          "embedded": null,
+          "externalReferences": [
+            "6798c254-e435-55a5-b2a8-17c7533f8c00"
+          ],
+          "files": null,
+          "filesMarkings": null,
+          "lang": null,
+          "modified": "2025-06-26T16:04:50.126Z",
+          "name": "Feedback from admin@opencti.io",
+          "noTriggerImport": null,
+          "objectLabel": [
+            "8651b296-b51f-5b6a-b88d-56ac56428d65"
+          ],
+          "objectMarking": null,
+          "objectOrganization": null,
+          "objects": [
+            "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a"
+          ],
+          "rating": 3,
+          "revoked": false,
+          "stix_id": "x-opencti-feedback--ce07ddc6-2377-576b-ace5-a4de6996e789",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "x-opencti-feedback--ce07ddc6-2377-576b-ace5-a4de6996e789",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

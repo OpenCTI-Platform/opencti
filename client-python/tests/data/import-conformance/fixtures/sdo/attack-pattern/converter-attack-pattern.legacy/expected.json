@@ -1,0 +1,249 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "android"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "platforms_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "android",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "Administrator"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "permissions_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "Administrator",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 6,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "stix 2.0"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 7,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "stix 2.0",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "KillChainPhaseAdd",
+      "op": "mutation",
+      "root": "killChainPhaseAdd",
+      "seq": 8,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "kill_chain_name": "kill chain name 1",
+          "modified": null,
+          "phase_name": "phase 1",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_order": 1
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "AttackPatternAdd",
+      "op": "mutation",
+      "root": "attackPatternAdd",
+      "seq": 9,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "confidence": 100,
+          "created": "2026-03-18T09:53:13.663Z",
+          "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "737e0a89-31dc-4fb0-a224-2e8b91b3816a"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "Attack-Pattern"
+            },
+            {
+              "field_name": "x_mitre_id",
+              "value": "testID"
+            },
+            {
+              "field_name": "x_mitre_platforms",
+              "value": [
+                "android"
+              ]
+            },
+            {
+              "field_name": "x_mitre_permissions_required",
+              "value": [
+                "Administrator"
+              ]
+            },
+            {
+              "field_name": "x_mitre_detection",
+              "value": "rule"
+            }
+          ],
+          "description": "description",
+          "embedded": null,
+          "externalReferences": [],
+          "files": null,
+          "filesMarkings": null,
+          "killChainPhases": [
+            "7ad3865f-9d4e-52c7-aa51-775ff66b40c0"
+          ],
+          "lang": null,
+          "modified": "2026-03-18T10:11:36.491Z",
+          "name": "Attack Pattern STIX 2.0",
+          "noTriggerImport": null,
+          "objectLabel": [
+            "9b36b7b3-8ee6-5f3c-84fd-be02a9e8e306"
+          ],
+          "objectMarking": null,
+          "objectOrganization": null,
+          "revoked": false,
+          "stix_id": "attack-pattern--e79f2d1c-4c56-5176-98f3-2c062f49ef4e",
+          "update": false,
+          "upsertOperations": null,
+          "x_mitre_detection": "rule",
+          "x_mitre_id": "testID",
+          "x_mitre_permissions_required": [
+            "Administrator"
+          ],
+          "x_mitre_platforms": [
+            "android"
+          ],
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "attack-pattern--e79f2d1c-4c56-5176-98f3-2c062f49ef4e",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

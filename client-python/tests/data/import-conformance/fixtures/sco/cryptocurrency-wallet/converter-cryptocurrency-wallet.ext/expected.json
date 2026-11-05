@@ -1,0 +1,50 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "CryptocurrencyWallet": {
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "noTriggerImport": null,
+          "value": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "cryptocurrency-wallet--20000000-0000-4000-8000-000000000041",
+        "type": "Cryptocurrency-Wallet",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": 90
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "cryptocurrency-wallet--20000000-0000-4000-8000-000000000041",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

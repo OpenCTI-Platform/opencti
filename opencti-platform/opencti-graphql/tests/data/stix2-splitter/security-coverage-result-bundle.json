@@ -1,0 +1,39 @@
+{
+  "type": "bundle",
+  "id": "bundle--4f3c5a52-6a36-4b8e-9d0e-6c1b0f6b9a01",
+  "objects": [
+    {
+      "type": "security-coverage-result",
+      "spec_version": "2.1",
+      "id": "security-coverage-result--20000000-0000-4000-8000-000000000905",
+      "name": "security coverage result",
+      "external_uri": "http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a131"
+    },
+    {
+      "type": "malware",
+      "spec_version": "2.1",
+      "id": "malware--20000000-0000-4000-8000-000000000906",
+      "name": "Covered malware",
+      "is_family": true
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--20000000-0000-4000-8000-000000000907",
+      "relationship_type": "has-covered",
+      "source_ref": "security-coverage-result--20000000-0000-4000-8000-000000000905",
+      "target_ref": "malware--20000000-0000-4000-8000-000000000906"
+    },
+    {
+      "type": "report",
+      "spec_version": "2.1",
+      "id": "report--20000000-0000-4000-8000-000000000908",
+      "name": "Coverage report",
+      "published": "2025-01-01T00:00:00.000Z",
+      "object_refs": [
+        "security-coverage-result--20000000-0000-4000-8000-000000000905",
+        "malware--20000000-0000-4000-8000-000000000906"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "ipv6-addr--20000000-0000-4000-8000-000000000030",
+      "spec_version": "2.1",
+      "type": "ipv6-addr",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "IPv6-Addr",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "score": 60
+        }
+      },
+      "defanged": false,
+      "value": "2001:0db8:85a3::8a2e:0370:7334"
+    }
+  ]
+}

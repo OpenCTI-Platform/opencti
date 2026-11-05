@@ -1,0 +1,1 @@
+E: hand-written, an observed-data whose embedded observable is a string (pycti reads it as a dict: TypeError)

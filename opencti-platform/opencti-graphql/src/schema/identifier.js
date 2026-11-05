@@ -314,10 +314,19 @@ const identifierContributions = [
   stixBaseRelationshipContribution,
   stixBaseSightingContribution,
 ];
-export const isSupportedStixType = (stixType) => [...identifierContributions.map((identifier) => Object.keys(identifier.definition)).flat()
-  .map((type) => type.toLowerCase()), 'identity', 'location', 'file', 'relationship', 'sighting', 'threat-actor'].includes(stixType);
+// The supported types, built once per set of contributions: the StixId and StixRef scalars test
+// every value they parse
+let supportedStixTypes = null;
+export const isSupportedStixType = (stixType) => {
+  if (supportedStixTypes === null) {
+    supportedStixTypes = new Set([...identifierContributions.map((identifier) => Object.keys(identifier.definition)).flat()
+      .map((type) => type.toLowerCase()), 'identity', 'location', 'file', 'relationship', 'sighting', 'threat-actor']);
+  }
+  return supportedStixTypes.has(stixType);
+};
 export const registerModelIdentifier = (identifier) => {
   identifierContributions.push(identifier);
+  supportedStixTypes = null;
 };
 
 const resolveContribution = (type) => {

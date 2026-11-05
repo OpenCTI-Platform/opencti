@@ -1,4 +1,5 @@
 import conf, {
+  booleanConf,
   ENABLED_API,
   ENABLED_EXPIRED_MANAGER,
   ENABLED_FILE_INDEX_MANAGER,
@@ -34,6 +35,11 @@ import draftValidationConnector from './modules/draftWorkspace/draftWorkspace-co
 import authenticationProviderListener from './modules/authenticationProvider/authenticationProvider-listener';
 import supportPackageListener from './modules/support/supportPackage-listener';
 
+// Bench only (task 0040): loaded only when enabled, so a platform without it does not load the
+// STIX import port it runs
+const ENABLED_DRY_INTAKE_MANAGER = booleanConf('dry_intake_manager:enabled', false);
+const loadDryIntakeManager = async () => (await import('./intake/dry-intake/dry-intake-manager')).default;
+
 export const startModules = async () => {
   const startingPromises = [];
 
@@ -64,6 +70,14 @@ export const startModules = async () => {
 
   // region draft validation built in connector
   startingPromises.push(draftValidationConnector.start());
+  // endregion
+
+  // region Dry intake manager (bench only: consumes the push queues without writing)
+  if (ENABLED_DRY_INTAKE_MANAGER) {
+    startingPromises.push(loadDryIntakeManager().then((manager) => manager.start()));
+  } else {
+    logApp.debug('[OPENCTI-MODULE] Dry intake manager not started (disabled by configuration)');
+  }
   // endregion
 
   // region Task manager
@@ -167,6 +181,11 @@ export const shutdownModules = async () => {
   // endregion
   // region draft validation built in connector
   stoppingPromises.push(draftValidationConnector.shutdown());
+  // endregion
+  // region Dry intake manager
+  if (ENABLED_DRY_INTAKE_MANAGER) {
+    stoppingPromises.push(loadDryIntakeManager().then((manager) => manager.shutdown()));
+  }
   // endregion
   // region Task manager
   if (ENABLED_TASK_SCHEDULER) {

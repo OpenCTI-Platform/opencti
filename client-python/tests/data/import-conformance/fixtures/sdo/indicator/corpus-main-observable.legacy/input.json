@@ -1,0 +1,29 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000105",
+  "objects": [
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--c856e8c8-cf74-51e1-b509-4c1510e847fb",
+      "created_by_ref": "identity--1e9eb117-0292-5559-92a3-53422431df30",
+      "created": "2015-01-14T08:02:18.000Z",
+      "modified": "2015-01-14T08:02:18.000Z",
+      "name": "Dridex",
+      "description": "",
+      "pattern": "[text:value = 'Dridex']",
+      "pattern_type": "stix",
+      "pattern_version": "2.1",
+      "valid_from": "2015-01-14T08:02:18Z",
+      "labels": [
+        "OSINT"
+      ],
+      "object_marking_refs": [
+        "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"
+      ],
+      "x_opencti_detection": false,
+      "x_opencti_main_observable_type": "Text",
+      "x_opencti_score": 30
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763",
+      "spec_version": "2.1",
+      "type": "case-rft",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sdo",
+          "type": "Case-Rft",
+          "files": [
+            {
+              "name": "ipv4_example.json",
+              "uri": "/storage/get/import/Case-Rft/ae110ba9-34a7-44ef-86b9-7b52def4b4aa/ipv4_example.json",
+              "version": "2025-06-26T17:55:28.870Z",
+              "mime_type": "application/json",
+              "object_marking_refs": [
+                "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+              ]
+            }
+          ],
+          "is_inferred": false,
+          "assignee_ids": [
+            "88ec0c6a-13ce-5e39-b486-354fe4a7084f"
+          ],
+          "participant_ids": [
+            "0ff0750e-4d91-425d-b44c-b69269dead0b"
+          ]
+        }
+      },
+      "created": "2025-06-26T17:54:43.000Z",
+      "modified": "2025-06-26T17:56:37.718Z",
+      "revoked": false,
+      "confidence": 100,
+      "labels": [
+        "ryuk"
+      ],
+      "object_marking_refs": [
+        "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+      ],
+      "created_by_ref": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "description": "spear phishing",
+          "external_id": "CAPEC-163"
+        }
+      ],
+      "name": "RFT STIX 2.0",
+      "description": "description",
+      "content": "<p>content: Disco Team Threat Actor Group</p>",
+      "content_mapping": "eyJkaXNjbyB0ZWFtIHRocmVhdCBhY3RvciBncm91cCI6InRocmVhdC1hY3Rvci0tZmQ2YjBlNmYtOTZlMC01NjhkLWJhMjQtOGExNDBkMDQyOGNkIn0",
+      "takedown_types": [
+        "brand-abuse"
+      ],
+      "severity": "medium",
+      "priority": "P2",
+      "object_refs": [
+        "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a",
+        "threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd",
+        "incident--8658860d-df08-5f41-bf41-106095e48085"
+      ]
+    }
+  ]
+}

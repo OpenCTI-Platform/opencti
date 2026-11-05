@@ -1,0 +1,1 @@
+E: hand-written, a simple observable whose AS number is surrounded by non ASCII spaces int() strips (NEL, ideographic space)

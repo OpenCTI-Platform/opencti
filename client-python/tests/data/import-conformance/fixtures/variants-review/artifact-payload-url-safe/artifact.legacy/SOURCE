@@ -1,0 +1,1 @@
+E: hand-written, an artifact whose payload_bin holds characters outside the base64 alphabet (pycti b64decode discards them)

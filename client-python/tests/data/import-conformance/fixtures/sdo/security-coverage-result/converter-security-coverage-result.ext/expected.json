@@ -1,0 +1,60 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "SecurityCoverageResultAdd",
+      "op": "mutation",
+      "root": "securityCoverageResultAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "input": {
+          "coverage_information": [
+            {
+              "coverage_name": "vulnerability",
+              "coverage_score": 40
+            }
+          ],
+          "coverage_last_result": "2025-02-01T00:00:00.000Z",
+          "coverage_valid_from": "2025-03-01T00:00:00.000Z",
+          "coverage_valid_to": "2025-04-01T00:00:00.000Z",
+          "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+          "customFieldValues": null,
+          "description": null,
+          "embedded": null,
+          "externalReferences": [],
+          "external_uri": "http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a131",
+          "files": null,
+          "filesMarkings": null,
+          "name": "security coverage result",
+          "noTriggerImport": null,
+          "objectLabel": [],
+          "objectMarking": [
+            "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+          ],
+          "resultOf": "security-coverage--20000000-0000-4000-8000-000000000903",
+          "stix_id": "security-coverage-result--20000000-0000-4000-8000-000000000905",
+          "x_opencti_stix_ids": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "security-coverage-result--20000000-0000-4000-8000-000000000905",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

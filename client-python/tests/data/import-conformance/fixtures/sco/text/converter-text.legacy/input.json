@@ -1,0 +1,18 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "text--20000000-0000-4000-8000-000000000054",
+      "type": "text",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000054",
+      "x_opencti_type": "Text",
+      "defanged": false,
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "value": "v=spf1 redirect=spf.hostens.com"
+    }
+  ]
+}

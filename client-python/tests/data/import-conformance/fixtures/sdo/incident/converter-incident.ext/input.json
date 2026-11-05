@@ -1,0 +1,49 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "incident--4e110b9d-8c95-581e-8618-4be501bcbe06",
+      "spec_version": "2.1",
+      "type": "incident",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sdo",
+          "type": "Incident",
+          "is_inferred": false,
+          "granted_refs": [
+            "identity--18fe5225-fee1-5627-ad3e-20c14435b024"
+          ],
+          "granted_refs_ids": [
+            null
+          ],
+          "assignee_ids": [
+            "51c085a6-612a-463b-9575-27513bf85d99"
+          ],
+          "participant_ids": [
+            "51c085a6-612a-463b-9575-27513bf85d99"
+          ]
+        }
+      },
+      "created": "2025-07-30T16:26:06.212Z",
+      "modified": "2025-07-30T18:52:14.947Z",
+      "revoked": false,
+      "confidence": 100,
+      "labels": [
+        "covid-19"
+      ],
+      "object_marking_refs": [
+        "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+      ],
+      "created_by_ref": "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29",
+      "name": "Incident Stix 2.0",
+      "description": "description",
+      "first_seen": "2025-07-24T22:00:00.000Z",
+      "last_seen": "2025-07-30T22:00:00.000Z",
+      "objective": "destruction",
+      "incident_type": "alert",
+      "severity": "medium",
+      "source": "secret"
+    }
+  ]
+}

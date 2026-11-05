@@ -1,0 +1,33 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "UserEdit",
+      "op": "mutation",
+      "root": "userEdit",
+      "seq": 1,
+      "sub": "fieldPatch",
+      "variables": {
+        "id": "10000000-0000-4000-8000-000000000a01",
+        "input": [
+          {
+            "key": "account_status",
+            "operation": "replace",
+            "value": [
+              "Locked"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "user--20000000-0000-4000-8000-000000000a01",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

@@ -1,0 +1,466 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "organizational-gain"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "attack_motivation_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "organizational-gain",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "dominance"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "attack_motivation_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "dominance",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 6,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "personal-gain"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 7,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "attack_motivation_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "personal-gain",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 8,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "government"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 9,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "attack_resource_level_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "government",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 10,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "nation-state"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 11,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "threat_actor_group_type_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "nation-state",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 12,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "director"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 13,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "threat_actor_group_role_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "director",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 14,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "advanced"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 15,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "threat_actor_group_sophistication_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "advanced",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 16,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "covid-19"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 17,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "covid-19",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 18,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "spear phishing",
+          "embedded": null,
+          "external_id": "CAPEC-163",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "capec",
+          "stix_id": null,
+          "update": false,
+          "url": null,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ThreatActorGroupAdd",
+      "op": "mutation",
+      "root": "threatActorGroupAdd",
+      "seq": 19,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": [
+            "tag-1"
+          ],
+          "confidence": 90,
+          "created": "2025-03-01T00:00:00.000Z",
+          "createdBy": "identity--18fe5225-fee1-5627-ad3e-20c14435b024",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "33333333-3333-4333-8333-333333333333"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "Threat-Actor-Group"
+            }
+          ],
+          "description": "threat actor group description",
+          "embedded": null,
+          "externalReferences": [
+            "709d0a80-a6b6-5597-9ae8-7cd4656149d5"
+          ],
+          "files": null,
+          "filesMarkings": null,
+          "first_seen": "2025-03-01T00:00:00.000Z",
+          "goals": [
+            "espionage"
+          ],
+          "lang": null,
+          "last_seen": "2025-03-04T00:00:00.000Z",
+          "modified": "2025-03-05T00:00:00.000Z",
+          "name": "Threat Group Stix 2.0",
+          "noTriggerImport": null,
+          "objectLabel": [
+            "80a4b030-ee7a-5e73-bad8-bd941cb4ff73"
+          ],
+          "objectMarking": [
+            "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+          ],
+          "objectOrganization": null,
+          "personal_motivations": [
+            "personal-gain"
+          ],
+          "primary_motivation": "organizational-gain",
+          "resource_level": "government",
+          "revoked": false,
+          "roles": [
+            "director"
+          ],
+          "secondary_motivations": [
+            "dominance"
+          ],
+          "sophistication": "advanced",
+          "stix_id": "threat-actor--33333333-3333-4333-8333-333333333333",
+          "threat_actor_types": [
+            "nation-state"
+          ],
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_score": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "threat-actor--33333333-3333-4333-8333-333333333333",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

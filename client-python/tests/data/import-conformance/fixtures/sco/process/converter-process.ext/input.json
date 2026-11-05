@@ -1,0 +1,36 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "process--20000000-0000-4000-8000-000000000037",
+      "spec_version": "2.1",
+      "type": "process",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Process",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension"
+        },
+        "windows-process-ext": {
+          "aslr_enabled": true,
+          "dep_enabled": true,
+          "priority": "NORMAL",
+          "owner_sid": "S-1-5-21-123456789"
+        },
+        "windows-service-ext": {
+          "service_dll_refs": []
+        }
+      },
+      "defanged": false,
+      "is_hidden": false,
+      "pid": 1234,
+      "created_time": "2026-01-01T00:00:00.000Z",
+      "cwd": "C:\\Windows\\System32",
+      "command_line": "cmd.exe /c whoami"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "x-opencti-task--8788511e-974c-571d-9a47-381299785038",
+      "type": "x-opencti-task",
+      "spec_version": "2.0",
+      "x_opencti_id": "d4e02a21-0dda-4295-be80-3c81503b69c8",
+      "x_opencti_type": "Task",
+      "x_opencti_granted_refs": [
+        "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
+      ],
+      "x_opencti_files": [
+        {
+          "name": "ipv4_example.json",
+          "uri": "/storage/get/import/Task/d4e02a21-0dda-4295-be80-3c81503b69c8/ipv4_example.json",
+          "mime_type": "application/json",
+          "version": "2025-07-02T15:47:23.032Z",
+          "object_marking_refs": []
+        }
+      ],
+      "created": "2025-06-26T17:55:28.987Z",
+      "modified": "2025-07-02T15:46:34.373Z",
+      "revoked": false,
+      "confidence": 100,
+      "labels": [
+        "ryuk"
+      ],
+      "object_marking_refs": [
+        "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+      ],
+      "name": "task STIX 2.0",
+      "description": "Description",
+      "due_date": "2025-06-27T22:00:00.000Z",
+      "object_refs": [
+        "case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763"
+      ]
+    }
+  ]
+}

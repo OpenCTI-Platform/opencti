@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000922",
+  "objects": [
+    {
+      "type": "security-coverage",
+      "id": "security-coverage--90000000-0000-4000-8000-000000000922",
+      "spec_version": "2.1",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z",
+      "name": "Coverage with a nameless entry",
+      "covered_ref": "malware--90000000-0000-4000-8000-000000000901",
+      "coverage": [
+        {
+          "score": 50
+        }
+      ]
+    }
+  ]
+}

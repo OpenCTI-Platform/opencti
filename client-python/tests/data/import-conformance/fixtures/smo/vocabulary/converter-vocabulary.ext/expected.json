@@ -1,0 +1,36 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 1,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": [
+            "loader"
+          ],
+          "category": "malware_type_ov",
+          "created": null,
+          "description": "A dropper malware",
+          "modified": null,
+          "name": "dropper",
+          "stix_id": "vocabulary--20000000-0000-4000-8000-000000000902",
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "vocabulary--20000000-0000-4000-8000-000000000902",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

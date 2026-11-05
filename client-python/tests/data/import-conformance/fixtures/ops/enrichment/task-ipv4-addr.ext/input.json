@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "ipv4-addr--20000000-0000-4000-8000-000000000020",
+      "type": "ipv4-addr",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "id": "10000000-0000-4000-8000-000000000020",
+          "type": "IPv4-Addr",
+          "opencti_operation": "enrichment",
+          "connector_ids": [
+            "10000000-0000-4000-8000-000000000d01"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "ExternalReferenceEdit",
+      "op": "mutation",
+      "root": "externalReferenceEdit",
+      "seq": 1,
+      "sub": "fieldPatch",
+      "variables": {
+        "id": "10000000-0000-4000-8000-000000000a14",
+        "input": [
+          {
+            "key": "description",
+            "operation": "replace",
+            "value": [
+              "Updated description"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        {
+          "mime": "text/plain",
+          "name": "evidence.txt",
+          "path": "file",
+          "sha256": "5396585455a5ab5173862fe3bd7e3bb4f98fa7ae90d1f8f894b5126602184bcd"
+        }
+      ],
+      "name": "ExternalReferenceEdit",
+      "op": "mutation",
+      "root": "externalReferenceEdit",
+      "seq": 2,
+      "sub": "importPush",
+      "variables": {
+        "embedded": false,
+        "file": null,
+        "fileMarkings": [
+          "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+        ],
+        "id": "10000000-0000-4000-8000-000000000a14",
+        "noTriggerImport": true,
+        "version": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "external-reference--20000000-0000-4000-8000-000000000a14",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

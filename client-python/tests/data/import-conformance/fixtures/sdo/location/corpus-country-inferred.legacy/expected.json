@@ -1,0 +1,63 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "LocationAdd",
+      "op": "mutation",
+      "root": "locationAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": null,
+          "created": "2026-07-21T09:07:30.560924Z",
+          "createdBy": "identity--098b49c5-5c08-53e9-87ad-d237f39c94ed",
+          "customFieldValues": null,
+          "description": null,
+          "embedded": null,
+          "externalReferences": [],
+          "files": null,
+          "filesMarkings": null,
+          "lang": null,
+          "latitude": null,
+          "longitude": null,
+          "modified": "2026-07-21T09:07:30.560924Z",
+          "name": "AU",
+          "noTriggerImport": null,
+          "objectLabel": [],
+          "objectMarking": [
+            "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+          ],
+          "precision": null,
+          "revoked": null,
+          "stix_id": "location--cb6c53e7-4f14-5d5d-9311-5cae03838f3d",
+          "type": "Country",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_aliases": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "location--cb6c53e7-4f14-5d5d-9311-5cae03838f3d",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

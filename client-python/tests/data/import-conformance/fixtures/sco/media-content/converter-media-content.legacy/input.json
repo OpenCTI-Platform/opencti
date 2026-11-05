@@ -1,0 +1,15 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "media-content--20000000-0000-4000-8000-000000000057",
+      "type": "media-content",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000057",
+      "x_opencti_type": "Media-Content",
+      "defanged": false,
+      "url": "https://t.me/noname05716/5077"
+    }
+  ]
+}

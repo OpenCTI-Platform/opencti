@@ -1,0 +1,17 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000116",
+  "objects": [
+    {
+      "type": "email-message",
+      "spec_version": "2.1",
+      "id": "email-message--30000000-0000-4000-8000-000000000006",
+      "is_multipart": false,
+      "subject": "Invoice",
+      "from_ref": "email-addr--30000000-0000-4000-8000-000000000007",
+      "to_refs": [
+        "email-addr--30000000-0000-4000-8000-000000000008"
+      ]
+    }
+  ]
+}

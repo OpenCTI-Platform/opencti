@@ -1,0 +1,1 @@
+C: buildBundleElement(security-coverage, ADD_RELATED_COVERED_ENTITIES), opencti-graphql src/manager/taskManager.js

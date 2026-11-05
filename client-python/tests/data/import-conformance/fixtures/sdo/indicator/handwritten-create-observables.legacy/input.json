@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000113",
+  "objects": [
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--30000000-0000-4000-8000-000000000003",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z",
+      "name": "198.51.100.9",
+      "pattern": "[ipv4-addr:value = '198.51.100.9']",
+      "pattern_type": "stix",
+      "valid_from": "2025-01-01T00:00:00.000Z",
+      "x_opencti_create_observables": true,
+      "x_opencti_main_observable_type": "IPv4-Addr",
+      "x_opencti_score": 75
+    }
+  ]
+}

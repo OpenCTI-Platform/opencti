@@ -1,0 +1,32 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "security-coverage--20000000-0000-4000-8000-000000000903",
+      "type": "security-coverage",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "id": "10000000-0000-4000-8000-000000000903",
+          "type": "Security-Coverage",
+          "opencti_operation": "add_related_covered_entities",
+          "security_coverage_result_id": "security-coverage-result--20000000-0000-4000-8000-000000000905",
+          "relationships_config": {
+            "description": "Covered by the scenario",
+            "start_time": "2025-01-01T00:00:00.000Z",
+            "coverage_information": [
+              {
+                "coverage_name": "detection",
+                "coverage_score": 60
+              },
+              {
+                "coverage_name": "no score"
+              }
+            ],
+            "confidence": 80
+          }
+        }
+      }
+    }
+  ]
+}

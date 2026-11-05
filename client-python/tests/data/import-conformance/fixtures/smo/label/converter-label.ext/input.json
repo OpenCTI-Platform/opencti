@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "label--0008ca88-56ff-5e8e-a0a8-1734b84cdd01",
+      "spec_version": "2.1",
+      "type": "label",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sdo",
+          "type": "Label",
+          "is_inferred": false
+        }
+      },
+      "value": "small",
+      "color": "#3fb64a"
+    }
+  ]
+}

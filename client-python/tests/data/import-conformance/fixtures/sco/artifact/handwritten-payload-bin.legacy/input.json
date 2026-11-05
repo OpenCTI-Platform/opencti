@@ -1,0 +1,18 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000115",
+  "objects": [
+    {
+      "type": "artifact",
+      "spec_version": "2.1",
+      "id": "artifact--30000000-0000-4000-8000-000000000005",
+      "mime_type": "application/zip",
+      "payload_bin": "UEsgY29uZm9ybWFuY2UgYXJ0aWZhY3Q=",
+      "hashes": {
+        "SHA-256": "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0"
+      },
+      "x_opencti_description": "Sample",
+      "x_opencti_score": 90
+    }
+  ]
+}

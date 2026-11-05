@@ -1,0 +1,22 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000108",
+  "objects": [
+    {
+      "type": "threat-actor",
+      "spec_version": "2.1",
+      "id": "threat-actor--8507d8c7-5fe8-5233-947e-96984457713b",
+      "created_by_ref": "identity--098b49c5-5c08-53e9-87ad-d237f39c94ed",
+      "created": "2026-07-21T09:07:30.527265Z",
+      "modified": "2026-07-21T09:07:30.527265Z",
+      "name": "synthetic-group",
+      "description": "Synthetic description of a ransomware group, written for the import conformance fixtures.\n",
+      "labels": [
+        "ransomware"
+      ],
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
+    }
+  ]
+}

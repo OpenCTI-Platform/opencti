@@ -1,0 +1,27 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "SendUserMail",
+      "op": "mutation",
+      "root": "sendUserMail",
+      "seq": 1,
+      "sub": null,
+      "variables": {
+        "input": {
+          "email_template_id": "10000000-0000-4000-8000-000000000f01",
+          "target_user_id": "user--20000000-0000-4000-8000-000000000a01"
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "user--20000000-0000-4000-8000-000000000a01",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

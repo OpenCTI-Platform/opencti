@@ -1,0 +1,32 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "x509-certificate--20000000-0000-4000-8000-000000000039",
+      "spec_version": "2.1",
+      "type": "x509-certificate",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "X509-Certificate",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension"
+        }
+      },
+      "defanged": false,
+      "is_self_signed": false,
+      "hashes": {
+        "SHA-256": "certHashValue"
+      },
+      "serial_number": "01:02:03:04",
+      "issuer": "CN=Evil CA",
+      "validity_not_before": "2025-01-01T00:00:00.000Z",
+      "validity_not_after": "2026-01-01T00:00:00.000Z",
+      "subject": "CN=malware.com",
+      "subject_public_key_algorithm": "RSA"
+    }
+  ]
+}

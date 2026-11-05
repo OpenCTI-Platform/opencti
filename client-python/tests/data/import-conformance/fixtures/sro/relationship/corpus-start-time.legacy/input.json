@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000110",
+  "objects": [
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--fa97c59e-8fbd-5f07-99c2-2829d0ff0970",
+      "created": "2026-07-21T08:47:55.876422Z",
+      "modified": "2026-07-21T08:47:55.876422Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--2edc7ace-b3be-572f-8879-ea2bb599a60d",
+      "target_ref": "vulnerability--762c357e-96d0-5dfb-b7cd-8e77a5e7cf25",
+      "start_time": "2026-07-16T00:00:00Z",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
+    }
+  ]
+}

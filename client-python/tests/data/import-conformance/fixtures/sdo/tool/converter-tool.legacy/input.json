@@ -1,0 +1,44 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "tool--a8bdbff3-16b4-5cd2-b112-ee7a7b1f359c",
+      "type": "tool",
+      "spec_version": "2.0",
+      "x_opencti_id": "c914c155-5672-432d-9904-c7981d81caa5",
+      "x_opencti_type": "Tool",
+      "created": "2025-08-01T15:23:49.755Z",
+      "modified": "2025-08-01T15:29:11.399Z",
+      "revoked": false,
+      "confidence": 100,
+      "labels": [
+        "ryuk"
+      ],
+      "object_marking_refs": [
+        "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+      ],
+      "created_by_ref": "identity--18fe5225-fee1-5627-ad3e-20c14435b024",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "description": "spear phishing",
+          "external_id": "CAPEC-163"
+        }
+      ],
+      "name": "Tool Stix 2.0",
+      "description": "description",
+      "tool_types": [
+        "denial-of-service"
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-pre-attack",
+          "phase_name": "launch",
+          "x_opencti_order": 0
+        }
+      ],
+      "tool_version": "2"
+    }
+  ]
+}

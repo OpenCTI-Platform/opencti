@@ -1,0 +1,32 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "KillChainPhaseAdd",
+      "op": "mutation",
+      "root": "killChainPhaseAdd",
+      "seq": 1,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "kill_chain_name": "mitre-pre-attack",
+          "modified": null,
+          "phase_name": "launch",
+          "stix_id": "kill-chain-phase--498ccf4c-2534-5534-83cd-9a3c61a4f287",
+          "update": false,
+          "x_opencti_order": 0
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "kill-chain-phase--498ccf4c-2534-5534-83cd-9a3c61a4f287",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

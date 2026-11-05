@@ -24,13 +24,15 @@ const SUPPORTED_INTERNAL_OBJECTS = [
   'publicdashboard',
 ];
 
-// Mirrors pycti's STIX_META_OBJECTS + STIX_CORE_OBJECTS (opencti_stix2_utils.py)
-const SUPPORTED_STIX_ENTITY_OBJECTS = [
-  // Meta objects
+// Mirrors pycti's STIX_META_OBJECTS (opencti_stix2_utils.py)
+export const STIX_META_OBJECTS = [
   'label',
   'vocabulary',
   'kill-chain-phase',
-  // Core objects
+];
+
+// Mirrors pycti's STIX_CORE_OBJECTS (opencti_stix2_utils.py)
+export const STIX_CORE_OBJECTS = [
   'attack-pattern',
   'campaign',
   'case-incident',
@@ -71,10 +73,14 @@ const SUPPORTED_STIX_ENTITY_OBJECTS = [
   'tool',
   'vulnerability',
   'security-coverage',
+  'security-coverage-result',
 ];
 
+// Mirrors pycti's SUPPORTED_STIX_ENTITY_OBJECTS = STIX_META_OBJECTS + STIX_CORE_OBJECTS
+const SUPPORTED_STIX_ENTITY_OBJECTS = [...STIX_META_OBJECTS, ...STIX_CORE_OBJECTS];
+
 // Mirrors pycti's STIX_CYBER_OBSERVABLE_MAPPING keys (opencti_stix2_utils.py)
-const STIX_CYBER_OBSERVABLE_TYPES = [
+export const STIX_CYBER_OBSERVABLE_TYPES = [
   'autonomous-system',
   'directory',
   'domain-name',
@@ -134,28 +140,34 @@ export const isIdSupported = (key: string): boolean => {
   return true;
 };
 
-// Mirrors pycti's external_reference_generate_id (opencti_stix2_identifier.py)
-export const externalReferenceGenerateId = (opts: { url?: string | null; sourceName?: string | null; externalId?: string | null }): string | null => {
+// The canonical JSON pycti's external_reference_generate_id hashes, null when it gives no id
+const externalReferenceCanonicalKey = (opts: { url?: string | null; sourceName?: string | null; externalId?: string | number | null }): string | null => {
   const { url, sourceName, externalId } = opts;
-  let data: Record<string, string>;
-  if (url) {
+  let data: Record<string, string | number>;
+  if (url !== null && url !== undefined) {
     data = { url };
-  } else if (sourceName && externalId) {
+  } else if (sourceName !== null && sourceName !== undefined && externalId !== null && externalId !== undefined) {
     data = { source_name: sourceName, external_id: externalId };
   } else {
     return null;
   }
-  const canonicalData = jsonCanonicalize(data) as string;
-  return `external-reference--${uuidv5(canonicalData, OASIS_NAMESPACE)}`;
+  return jsonCanonicalize(data) as string;
+};
+
+// Mirrors pycti's external_reference_generate_id (opencti_stix2_identifier.py)
+export const externalReferenceGenerateId = (opts: { url?: string | null; sourceName?: string | null; externalId?: string | number | null }): string | null => {
+  const canonicalData = externalReferenceCanonicalKey(opts);
+  return canonicalData === null ? null : `external-reference--${uuidv5(canonicalData, OASIS_NAMESPACE)}`;
+};
+
+// The canonical JSON pycti's kill_chain_phase_generate_id hashes
+const killChainPhaseCanonicalKey = (opts: { phaseName: string; killChainName: string }): string => {
+  const { phaseName, killChainName } = opts;
+  return jsonCanonicalize({ phase_name: phaseName, kill_chain_name: killChainName }) as string;
 };
 
 // Mirrors pycti's kill_chain_phase_generate_id (opencti_stix2_identifier.py)
-export const killChainPhaseGenerateId = (opts: { phaseName: string; killChainName: string }): string => {
-  const { phaseName, killChainName } = opts;
-  const data = { phase_name: phaseName, kill_chain_name: killChainName };
-  const canonicalData = jsonCanonicalize(data) as string;
-  return `kill-chain-phase--${uuidv5(canonicalData, OASIS_NAMESPACE)}`;
-};
+export const killChainPhaseGenerateId = (opts: { phaseName: string; killChainName: string }): string => `kill-chain-phase--${uuidv5(killChainPhaseCanonicalKey(opts), OASIS_NAMESPACE)}`;
 
 type StixObject = Record<string, any>;
 
@@ -169,7 +181,8 @@ interface SplitResult {
 export class Stix2Splitter {
   private cacheIndex: Map<string, StixObject> = new Map();
 
-  private cacheRefs: Map<string, string[]> = new Map();
+  // The references enlisted from each item, only tested for membership
+  private cacheRefs: Map<string, Set<string>> = new Map();
 
   private elements: StixObject[] = [];
 
@@ -202,21 +215,24 @@ export class Stix2Splitter {
 
     const item = rawData.get(itemId) as StixObject;
     if (!this.cacheRefs.has(itemId)) {
-      this.cacheRefs.set(itemId, []);
+      this.cacheRefs.set(itemId, new Set());
     }
     for (const key of Object.keys(item)) {
       const value = item[key];
       if (key.endsWith('_refs') && value !== null && value !== undefined) {
         const toKeep: string[] = [];
+        // Membership of toKeep, which keeps the order: a container can hold thousands of refs
+        const kept = new Set<string>();
         for (const elementRef of value as string[]) {
           const isMissingRef = !rawData.has(elementRef);
           const mustBeCleaned = isMissingRef && cleanupInconsistentBundle;
           const itemRefs = this.cacheRefs.get(elementRef);
-          const notDependencyRef = itemRefs === undefined || !itemRefs.includes(itemId);
+          const notDependencyRef = itemRefs === undefined || !itemRefs.has(itemId);
           if (isIdSupported(elementRef) && !mustBeCleaned && !parentAcc.includes(elementRef) && elementRef !== itemId && notDependencyRef) {
-            (this.cacheRefs.get(itemId) as string[]).push(elementRef);
+            (this.cacheRefs.get(itemId) as Set<string>).add(elementRef);
             nbDeps += this.enlistElement(elementRef, rawData, cleanupInconsistentBundle, [...parentAcc, elementRef]);
-            if (!toKeep.includes(elementRef)) {
+            if (!kept.has(elementRef)) {
+              kept.add(elementRef);
               toKeep.push(elementRef);
             }
           }
@@ -226,20 +242,22 @@ export class Stix2Splitter {
         const isMissingRef = value !== null && value !== undefined && !rawData.has(value);
         const mustBeCleaned = isMissingRef && cleanupInconsistentBundle;
         const itemRefs = this.cacheRefs.get(value);
-        const notDependencyRef = itemRefs === undefined || !itemRefs.includes(itemId);
+        const notDependencyRef = itemRefs === undefined || !itemRefs.has(itemId);
         if (value !== null && value !== undefined && !mustBeCleaned && !parentAcc.includes(value) && isIdSupported(value) && value !== itemId && notDependencyRef) {
-          (this.cacheRefs.get(itemId) as string[]).push(value);
+          (this.cacheRefs.get(itemId) as Set<string>).add(value);
           nbDeps += this.enlistElement(value, rawData, cleanupInconsistentBundle, [...parentAcc, value]);
         } else {
           item[key] = null;
         }
       } else if (key === 'external_references' && value !== null && value !== undefined) {
         const deduplicatedReferences: StixObject[] = [];
+        // Keyed by the canonical JSON the id hashes, not by the id: the same dedupe (barring a
+        // collision of uuid v5, a truncated SHA-1) without a hash per reference
         const deduplicatedReferencesCache = new Set<string>();
         for (const reference of value as StixObject[]) {
-          const referenceId = externalReferenceGenerateId({ url: reference.url, sourceName: reference.source_name, externalId: reference.external_id });
-          if (referenceId !== null && !deduplicatedReferencesCache.has(referenceId)) {
-            deduplicatedReferencesCache.add(referenceId);
+          const referenceKey = externalReferenceCanonicalKey({ url: reference.url, sourceName: reference.source_name, externalId: reference.external_id });
+          if (referenceKey !== null && !deduplicatedReferencesCache.has(referenceKey)) {
+            deduplicatedReferencesCache.add(referenceKey);
             deduplicatedReferences.push(reference);
           }
         }
@@ -247,10 +265,11 @@ export class Stix2Splitter {
       } else if (key === 'kill_chain_phases' && value !== null && value !== undefined) {
         const deduplicatedKillChain: StixObject[] = [];
         const deduplicatedKillChainCache = new Set<string>();
+        // Keyed by the canonical JSON the id hashes, as the external references above
         for (const killChain of value as StixObject[]) {
-          const killChainId = killChainPhaseGenerateId({ phaseName: killChain.phase_name, killChainName: killChain.kill_chain_name });
-          if (!deduplicatedKillChainCache.has(killChainId)) {
-            deduplicatedKillChainCache.add(killChainId);
+          const killChainKey = killChainPhaseCanonicalKey({ phaseName: killChain.phase_name, killChainName: killChain.kill_chain_name });
+          if (!deduplicatedKillChainCache.has(killChainKey)) {
+            deduplicatedKillChainCache.add(killChainKey);
             deduplicatedKillChain.push(killChain);
           }
         }

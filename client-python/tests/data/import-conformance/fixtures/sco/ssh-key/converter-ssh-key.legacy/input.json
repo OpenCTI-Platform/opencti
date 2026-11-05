@@ -1,0 +1,17 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "ssh-key--20000000-0000-4000-8000-000000000058",
+      "type": "ssh-key",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000058",
+      "x_opencti_type": "SSH-Key",
+      "defanged": false,
+      "x_opencti_score": 50,
+      "fingerprint_sha256": "698e5b54741866540fee17b77d4a1da0",
+      "comment": "test key"
+    }
+  ]
+}

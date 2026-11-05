@@ -1,0 +1,19 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "directory--20000000-0000-4000-8000-000000000033",
+      "type": "directory",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000033",
+      "x_opencti_type": "Directory",
+      "defanged": false,
+      "path": "/etc/malware",
+      "path_enc": "utf-8",
+      "ctime": "2026-01-01T00:00:00.000Z",
+      "mtime": "2026-01-02T00:00:00.000Z",
+      "atime": "2026-01-03T00:00:00.000Z"
+    }
+  ]
+}

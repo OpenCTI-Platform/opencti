@@ -1,0 +1,17 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000915",
+  "objects": [
+    {
+      "type": "grouping",
+      "id": "grouping--90000000-0000-4000-8000-000000000915",
+      "spec_version": "2.1",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z",
+      "name": "Grouping without context",
+      "object_refs": [
+        "malware--90000000-0000-4000-8000-000000000901"
+      ]
+    }
+  ]
+}

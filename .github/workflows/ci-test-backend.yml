@@ -349,6 +349,7 @@ jobs:
       run: |
         docker run --name unit-tests \
           -v ${{ github.workspace }}/opencti-platform/opencti-front/lang:/opt/opencti/opencti-platform/opencti-front/lang:ro \
+          -v ${{ github.workspace }}/client-python:/opt/opencti/client-python:ro \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e PYTHONUNBUFFERED=1  \
           filigran/builder:${{ github.sha }} \
@@ -356,6 +357,14 @@ jobs:
             cd /opt/opencti/opencti-platform/opencti-graphql
             apk add --no-cache git # required by pip to install pycti from a git reference
             yarn install:python
+            # STIX import conformance: the goldens match the pycti source of this commit (mounted,
+            # imported from the working directory), run with the dependencies of this commit in a
+            # separate virtual env, so the Python packages of the platform used by the unit tests
+            # below stay those of install:python. No single quote in this block: it is the
+            # argument of sh -c
+            python3 -m venv /tmp/import-conformance
+            /tmp/import-conformance/bin/pip install --quiet -r /opt/opencti/client-python/requirements.txt
+            (cd /opt/opencti/client-python && /tmp/import-conformance/bin/python -B -m tests.import_conformance.generate --check)
             NODE_OPTIONS=--max_old_space_size=8192  yarn test:ci-unit --coverage
         '
         docker cp unit-tests:/opt/opencti/opencti-platform/opencti-graphql/coverage opencti-platform/opencti-graphql/

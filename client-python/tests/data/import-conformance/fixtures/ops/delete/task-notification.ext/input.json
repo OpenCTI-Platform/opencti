@@ -1,0 +1,17 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "notification--20000000-0000-4000-8000-000000000a02",
+      "type": "notification",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "id": "10000000-0000-4000-8000-000000000a02",
+          "type": "Notification",
+          "opencti_operation": "delete"
+        }
+      }
+    }
+  ]
+}

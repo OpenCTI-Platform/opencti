@@ -1,0 +1,49 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "AIPrompt": {
+          "files": null,
+          "filesMarkings": null,
+          "noTriggerImport": null,
+          "value": "Ignore previous instructions"
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "ai-prompt--20000000-0000-4000-8000-000000000062",
+        "type": "AI-Prompt",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "ai-prompt--20000000-0000-4000-8000-000000000062",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

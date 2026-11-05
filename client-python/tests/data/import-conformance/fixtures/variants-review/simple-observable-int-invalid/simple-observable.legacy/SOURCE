@@ -1,0 +1,1 @@
+E: hand-written, a simple observable whose AS number is not a number (Python int raises ValueError)

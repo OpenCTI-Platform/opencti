@@ -1,0 +1,2 @@
+C': convertStoreToStix_2_1(SECURITY_COVERAGE_INSTANCE), opencti-graphql tests/01-unit/import-conformance/import-conformance-fixtures-test.ts
+Known pycti defect: the splitter reads result_of_ref (a list) as one reference, the bundle fails.

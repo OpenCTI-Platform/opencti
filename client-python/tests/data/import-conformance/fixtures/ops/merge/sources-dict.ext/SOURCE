@@ -1,0 +1,1 @@
+E: hand-written, a merge whose merge_source_ids is a dict (pycti joins its keys and sends the dict as is)

@@ -1,0 +1,52 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "EmailMimePartType": {
+          "body": "Hello world",
+          "content_disposition": null,
+          "content_type": "text/plain",
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "noTriggerImport": null
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "email-mime-part-type--20000000-0000-4000-8000-000000000065",
+        "type": "Email-Mime-Part-Type",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "email-mime-part-type--20000000-0000-4000-8000-000000000065",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

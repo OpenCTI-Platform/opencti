@@ -1,0 +1,16 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "persona--20000000-0000-4000-8000-000000000044",
+      "type": "persona",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000044",
+      "x_opencti_type": "Persona",
+      "defanged": false,
+      "persona_name": "DarkOperator",
+      "persona_type": "social-media"
+    }
+  ]
+}

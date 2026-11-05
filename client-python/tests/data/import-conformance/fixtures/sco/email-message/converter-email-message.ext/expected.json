@@ -1,0 +1,55 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "EmailMessage": {
+          "attribute_date": null,
+          "body": "<html>test</html>",
+          "embedded": null,
+          "files": null,
+          "filesMarkings": null,
+          "is_multipart": false,
+          "message_id": null,
+          "noTriggerImport": null,
+          "received_lines": null,
+          "subject": "Test subject"
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "email-message--20000000-0000-4000-8000-000000000050",
+        "type": "Email-Message",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": 50
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "email-message--20000000-0000-4000-8000-000000000050",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

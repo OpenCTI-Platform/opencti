@@ -1,0 +1,1 @@
+E: hand-written, a merge event without context (the worker fails on the whole message: KeyError)

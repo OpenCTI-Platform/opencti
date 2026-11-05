@@ -1,0 +1,82 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "X509Certificate": {
+          "authority_key_identifier": null,
+          "basic_constraints": null,
+          "certificate_policies": null,
+          "crl_distribution_points": null,
+          "embedded": null,
+          "extended_key_usage": null,
+          "files": null,
+          "filesMarkings": null,
+          "hashes": [
+            {
+              "algorithm": "SHA-256",
+              "hash": "certHashValue"
+            }
+          ],
+          "inhibit_any_policy": null,
+          "is_self_signed": false,
+          "issuer": "CN=Evil CA",
+          "issuer_alternative_name": null,
+          "key_usage": null,
+          "name_constraints": null,
+          "noTriggerImport": null,
+          "policy_constraints": null,
+          "policy_mappings": null,
+          "private_key_usage_period_not_after": null,
+          "private_key_usage_period_not_before": null,
+          "serial_number": "01:02:03:04",
+          "signature_algorithm": null,
+          "subject": "CN=malware.com",
+          "subject_alternative_name": null,
+          "subject_directory_attributes": null,
+          "subject_key_identifier": null,
+          "subject_public_key_algorithm": "RSA",
+          "subject_public_key_exponent": null,
+          "subject_public_key_modulus": null,
+          "validity_not_after": "2026-01-01T00:00:00.000Z",
+          "validity_not_before": "2025-01-01T00:00:00.000Z",
+          "version": null
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "x509-certificate--20000000-0000-4000-8000-000000000039",
+        "type": "X509-Certificate",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "x509-certificate--20000000-0000-4000-8000-000000000039",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

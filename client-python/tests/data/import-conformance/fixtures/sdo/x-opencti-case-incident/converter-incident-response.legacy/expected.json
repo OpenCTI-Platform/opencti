@@ -1,0 +1,293 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "medium"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 3,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "case_severity_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "medium",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 4,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "P2"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 5,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "case_priority_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "P2",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Vocabularies",
+      "op": "query",
+      "root": "vocabularies",
+      "seq": 6,
+      "sub": null,
+      "variables": {
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "name",
+              "values": [
+                "data-leak"
+              ]
+            }
+          ],
+          "mode": "and"
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "VocabularyAdd",
+      "op": "mutation",
+      "root": "vocabularyAdd",
+      "seq": 7,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": null,
+          "category": "incident_response_types_ov",
+          "created": null,
+          "description": null,
+          "modified": null,
+          "name": "data-leak",
+          "stix_id": null,
+          "update": false,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "Labels",
+      "op": "query",
+      "root": "labels",
+      "seq": 8,
+      "sub": null,
+      "variables": {
+        "after": null,
+        "filters": {
+          "filterGroups": [],
+          "filters": [
+            {
+              "key": "value",
+              "values": [
+                "ryuk"
+              ]
+            }
+          ],
+          "mode": "and"
+        },
+        "first": 500,
+        "orderBy": null,
+        "orderMode": null,
+        "search": null
+      }
+    },
+    {
+      "files": [],
+      "name": "LabelAdd",
+      "op": "mutation",
+      "root": "labelAdd",
+      "seq": 9,
+      "sub": null,
+      "variables": {
+        "input": {
+          "color": null,
+          "stix_id": null,
+          "update": false,
+          "value": "ryuk",
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "ExternalReferenceAdd",
+      "op": "mutation",
+      "root": "externalReferenceAdd",
+      "seq": 10,
+      "sub": null,
+      "variables": {
+        "input": {
+          "created": null,
+          "description": "spear phishing",
+          "embedded": null,
+          "external_id": "CAPEC-163",
+          "files": null,
+          "filesMarkings": null,
+          "modified": null,
+          "noTriggerImport": null,
+          "source_name": "capec",
+          "stix_id": null,
+          "update": false,
+          "url": null,
+          "x_opencti_stix_ids": null
+        }
+      }
+    },
+    {
+      "files": [],
+      "name": "CaseIncidentAdd",
+      "op": "mutation",
+      "root": "caseIncidentAdd",
+      "seq": 11,
+      "sub": null,
+      "variables": {
+        "input": {
+          "confidence": 100,
+          "content": null,
+          "created": "2025-06-26T16:06:02.000Z",
+          "createdBy": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+          "customFieldValues": [
+            {
+              "field_name": "x_opencti_id",
+              "value": "4c849ab0-81f2-457c-b837-bea76f4d4d15"
+            },
+            {
+              "field_name": "x_opencti_type",
+              "value": "Case-Incident"
+            },
+            {
+              "field_name": "x_opencti_files",
+              "value": [
+                {
+                  "mime_type": "application/json",
+                  "name": "ipv4_example.json",
+                  "object_marking_refs": [
+                    "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                  ],
+                  "uri": "/storage/get/import/Case-Incident/4c849ab0-81f2-457c-b837-bea76f4d4d15/ipv4_example.json",
+                  "version": "2025-06-26T16:06:52.222Z"
+                }
+              ]
+            }
+          ],
+          "description": "description",
+          "embedded": null,
+          "externalReferences": [
+            "709d0a80-a6b6-5597-9ae8-7cd4656149d5"
+          ],
+          "files": null,
+          "filesMarkings": null,
+          "lang": null,
+          "modified": "2025-06-26T16:06:52.288Z",
+          "name": "IR STIX 2.0",
+          "noTriggerImport": null,
+          "objectAssignee": null,
+          "objectLabel": [
+            "8651b296-b51f-5b6a-b88d-56ac56428d65"
+          ],
+          "objectMarking": [
+            "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+          ],
+          "objectOrganization": null,
+          "objectParticipant": null,
+          "objects": [],
+          "priority": "P2",
+          "response_types": [
+            "data-leak"
+          ],
+          "revoked": false,
+          "severity": "medium",
+          "stix_id": "x-opencti-case-incident--0ed8c294-d99f-5155-a54b-7cc3044174c3",
+          "update": false,
+          "upsertOperations": null,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null,
+          "x_opencti_workflow_id": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "x-opencti-case-incident--0ed8c294-d99f-5155-a54b-7cc3044174c3",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

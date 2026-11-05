@@ -1,0 +1,56 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "LanguageAdd",
+      "op": "mutation",
+      "root": "languageAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "input": {
+          "aliases": [
+            "pt"
+          ],
+          "confidence": null,
+          "created": null,
+          "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+          "customFieldValues": null,
+          "embedded": null,
+          "externalReferences": [],
+          "files": null,
+          "filesMarkings": null,
+          "lang": null,
+          "modified": null,
+          "name": "Portuguese",
+          "noTriggerImport": null,
+          "objectLabel": [],
+          "objectMarking": null,
+          "revoked": null,
+          "stix_id": "language--20000000-0000-4000-8000-000000000901",
+          "update": false,
+          "x_opencti_modified_at": null,
+          "x_opencti_stix_ids": null
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "language--20000000-0000-4000-8000-000000000901",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

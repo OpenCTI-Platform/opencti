@@ -1,0 +1,26 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000114",
+  "objects": [
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--30000000-0000-4000-8000-000000000004",
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-01T00:00:00.000Z",
+      "name": "evil.example",
+      "pattern": "[domain-name:value = 'evil.example']",
+      "pattern_type": "stix",
+      "valid_from": "2025-01-01T00:00:00.000Z",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "create_observables": true,
+          "main_observable_type": "Domain-Name",
+          "score": 60,
+          "detection": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "network-traffic--20000000-0000-4000-8000-000000000036",
+      "spec_version": "2.1",
+      "type": "network-traffic",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Network-Traffic",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension"
+        }
+      },
+      "defanged": false,
+      "start": "2026-01-01T00:00:00.000Z",
+      "end": "2026-01-01T01:00:00.000Z",
+      "is_active": false,
+      "src_ref": "ipv4-addr--aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "dst_ref": "ipv4-addr--bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "src_port": 44123,
+      "dst_port": 443,
+      "protocols": [
+        "tcp",
+        "https"
+      ],
+      "src_byte_count": 1024,
+      "dst_byte_count": 4096
+    }
+  ]
+}

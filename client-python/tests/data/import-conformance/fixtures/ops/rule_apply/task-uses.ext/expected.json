@@ -1,0 +1,26 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "StixCoreApplyRule",
+      "op": "mutation",
+      "root": "ruleApplyAsync",
+      "seq": 1,
+      "sub": null,
+      "variables": {
+        "elementId": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+        "executionId": "bundle--00000000-0000-4000-8000-000000000000",
+        "ruleId": "attribution_attribution"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

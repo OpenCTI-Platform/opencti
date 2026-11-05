@@ -1,0 +1,18 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000107",
+  "objects": [
+    {
+      "type": "identity",
+      "spec_version": "2.1",
+      "id": "identity--b7ce8d60-60fb-5443-9966-1a0f0c070e86",
+      "created": "2026-07-21T09:07:30.542904Z",
+      "modified": "2026-07-21T09:07:30.542904Z",
+      "name": "Synthetic sector",
+      "identity_class": "class",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
+    }
+  ]
+}

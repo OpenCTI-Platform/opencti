@@ -1,0 +1,50 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "PirFlagElement",
+      "op": "mutation",
+      "root": "pirFlagElement",
+      "seq": 1,
+      "sub": null,
+      "variables": {
+        "id": "pir--20000000-0000-4000-8000-000000000a12",
+        "input": {
+          "matchingCriteria": [
+            {
+              "filters": {
+                "filterGroups": [],
+                "filters": [
+                  {
+                    "key": [
+                      "toId"
+                    ],
+                    "mode": "or",
+                    "operator": "eq",
+                    "values": [
+                      "10000000-0000-4000-8000-000000000a19"
+                    ]
+                  }
+                ],
+                "mode": "and"
+              },
+              "weight": 2
+            }
+          ],
+          "relationshipAuthorId": "10000000-0000-4000-8000-000000000a20",
+          "relationshipId": "10000000-0000-4000-8000-000000000a13",
+          "sourceId": "d86d8f38-42e2-4c6f-a016-9c7aabb22f03"
+        }
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "pir--20000000-0000-4000-8000-000000000a12",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

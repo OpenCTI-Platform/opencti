@@ -1,0 +1,16 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "payment-card--20000000-0000-4000-8000-000000000061",
+      "type": "payment-card",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000061",
+      "x_opencti_type": "Payment-Card",
+      "defanged": false,
+      "card_number": "4111111111111111",
+      "holder_name": "John Doe"
+    }
+  ]
+}

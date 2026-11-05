@@ -1,0 +1,24 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "ConnectorWorksMutation",
+      "op": "mutation",
+      "root": "workEdit",
+      "seq": 1,
+      "sub": "delete",
+      "variables": {
+        "workId": "work--20000000-0000-4000-8000-000000000a18"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "work--20000000-0000-4000-8000-000000000a18",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

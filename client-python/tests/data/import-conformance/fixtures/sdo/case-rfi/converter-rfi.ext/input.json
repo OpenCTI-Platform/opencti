@@ -1,0 +1,69 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "case-rfi--cc1229b2-8ba7-50fd-b822-055b45e3aa4f",
+      "spec_version": "2.1",
+      "type": "case-rfi",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sdo",
+          "type": "Case-Rfi",
+          "files": [
+            {
+              "name": "ipv4_example.json",
+              "uri": "/storage/get/import/Case-Rfi/4ebd03f2-d922-4449-915e-2facb67e781c/ipv4_example.json",
+              "version": "2025-06-26T17:51:30.748Z",
+              "mime_type": "application/json",
+              "object_marking_refs": [
+                "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+              ]
+            }
+          ],
+          "is_inferred": false,
+          "assignee_ids": [
+            "0ff0750e-4d91-425d-b44c-b69269dead0b"
+          ],
+          "participant_ids": [
+            "0ff0750e-4d91-425d-b44c-b69269dead0b"
+          ],
+          "workflow_id": "38f497dc-b0bc-48e5-aff8-0e5bd5d5937a"
+        }
+      },
+      "created": "2025-06-26T17:50:38.000Z",
+      "modified": "2025-06-26T17:52:57.246Z",
+      "revoked": false,
+      "confidence": 100,
+      "labels": [
+        "ryuk"
+      ],
+      "object_marking_refs": [
+        "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+      ],
+      "created_by_ref": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "description": "spear phishing",
+          "external_id": "CAPEC-163"
+        }
+      ],
+      "name": "RFI STIX 2.0",
+      "description": "description",
+      "content": "<p>some content</p>",
+      "content_mapping": "eyJwYXJhZGlzZSByYW5zb213YXJlIjoibWFsd2FyZS0tMjFjNDVkYmUtNTRlYy01YmI3LWI4Y2QtOWYyN2NjNTE4NzE0In0",
+      "information_types": [
+        "type 1"
+      ],
+      "severity": "medium",
+      "priority": "P2",
+      "object_refs": [
+        "campaign--e388a843-1590-5af1-b5a5-50231c97cfba",
+        "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a",
+        "incident--8658860d-df08-5f41-bf41-106095e48085",
+        "malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714"
+      ]
+    }
+  ]
+}

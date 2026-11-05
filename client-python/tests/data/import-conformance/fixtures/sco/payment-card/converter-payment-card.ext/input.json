@@ -1,0 +1,24 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "payment-card--20000000-0000-4000-8000-000000000061",
+      "spec_version": "2.1",
+      "type": "payment-card",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Payment-Card",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "new-sco"
+        }
+      },
+      "defanged": false,
+      "card_number": "4111111111111111",
+      "holder_name": "John Doe"
+    }
+  ]
+}

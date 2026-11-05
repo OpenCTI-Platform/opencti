@@ -1,0 +1,44 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "campaign--11111111-1111-4111-8111-111111111111",
+      "spec_version": "2.1",
+      "type": "campaign",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Campaign",
+          "is_inferred": false
+        }
+      },
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-01-03T00:00:00.000Z",
+      "revoked": false,
+      "confidence": 80,
+      "labels": [
+        "covid-19"
+      ],
+      "object_marking_refs": [
+        "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+      ],
+      "created_by_ref": "identity--18fe5225-fee1-5627-ad3e-20c14435b024",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "description": "spear phishing",
+          "external_id": "CAPEC-163"
+        }
+      ],
+      "name": "Campaign Stix 2.0",
+      "description": "campaign description",
+      "aliases": [
+        "camp-1"
+      ],
+      "first_seen": "2025-01-01T00:00:00.000Z",
+      "last_seen": "2025-01-02T00:00:00.000Z",
+      "objective": "credential theft"
+    }
+  ]
+}

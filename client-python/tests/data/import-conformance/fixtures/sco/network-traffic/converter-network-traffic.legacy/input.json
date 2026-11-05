@@ -1,0 +1,27 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "network-traffic--20000000-0000-4000-8000-000000000036",
+      "type": "network-traffic",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000036",
+      "x_opencti_type": "Network-Traffic",
+      "defanged": false,
+      "start": "2026-01-01T00:00:00.000Z",
+      "end": "2026-01-01T01:00:00.000Z",
+      "is_active": false,
+      "src_ref": "ipv4-addr--aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "dst_ref": "ipv4-addr--bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "src_port": 44123,
+      "dst_port": 443,
+      "protocols": [
+        "tcp",
+        "https"
+      ],
+      "src_byte_count": 1024,
+      "dst_byte_count": 4096
+    }
+  ]
+}

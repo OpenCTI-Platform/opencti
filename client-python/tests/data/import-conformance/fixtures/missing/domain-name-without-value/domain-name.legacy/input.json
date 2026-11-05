@@ -1,0 +1,12 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000904",
+  "objects": [
+    {
+      "type": "domain-name",
+      "spec_version": "2.1",
+      "id": "domain-name--90000000-0000-4000-8000-000000000904",
+      "x_opencti_score": 50
+    }
+  ]
+}

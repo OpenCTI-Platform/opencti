@@ -1,0 +1,17 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000921",
+  "objects": [
+    {
+      "type": "file",
+      "spec_version": "2.1",
+      "id": "file--90000000-0000-4000-8000-000000000921",
+      "name": "sample.bin",
+      "hashes": [
+        {
+          "MD5": "d41d8cd98f00b204e9800998ecf8427e"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "url--20000000-0000-4000-8000-000000000022",
+      "type": "url",
+      "spec_version": "2.0",
+      "x_opencti_id": "10000000-0000-4000-8000-000000000022",
+      "x_opencti_type": "Url",
+      "defanged": false,
+      "object_marking_refs": [
+        "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+      ],
+      "x_opencti_score": 80,
+      "value": "https://example.com/malware",
+      "score": 80
+    }
+  ]
+}

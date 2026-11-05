@@ -1,0 +1,12 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000102",
+  "objects": [
+    {
+      "type": "simple-observable",
+      "id": "simple-observable--30000000-0000-4000-8000-000000000003",
+      "key": "Autonomous-System.number",
+      "value": "64500"
+    }
+  ]
+}

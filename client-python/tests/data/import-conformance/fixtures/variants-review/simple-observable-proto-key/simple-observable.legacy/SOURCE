@@ -1,0 +1,1 @@
+E: hand-written, a simple observable whose attribute is __proto__ (pycti sets a plain key, the value stays absent)

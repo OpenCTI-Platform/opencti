@@ -1,0 +1,28 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "domain-name--20000000-0000-4000-8000-000000000021",
+      "spec_version": "2.1",
+      "type": "domain-name",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Domain-Name",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension",
+          "score": 50,
+          "created_by_ref": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb"
+        }
+      },
+      "defanged": false,
+      "object_marking_refs": [
+        "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+      ],
+      "value": "example.com"
+    }
+  ]
+}

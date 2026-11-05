@@ -1,0 +1,24 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "StixCoreRelationshipEditDraftRemove",
+      "op": "mutation",
+      "root": "stixCoreRelationshipEdit",
+      "seq": 1,
+      "sub": "removeFromDraft",
+      "variables": {
+        "id": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

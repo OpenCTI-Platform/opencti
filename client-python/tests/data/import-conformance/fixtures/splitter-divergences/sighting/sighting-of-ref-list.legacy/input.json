@@ -1,0 +1,16 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-0000000000aa",
+  "objects": [
+    {
+      "type": "sighting",
+      "spec_version": "2.1",
+      "id": "sighting--30000000-0000-4000-8000-000000000001",
+      "sighting_of_ref": "malware--30000000-0000-4000-8000-000000000010",
+      "where_sighted_refs": [
+        "identity--30000000-0000-4000-8000-000000000001"
+      ],
+      "x_opencti_sighting_of_ref": []
+    }
+  ]
+}

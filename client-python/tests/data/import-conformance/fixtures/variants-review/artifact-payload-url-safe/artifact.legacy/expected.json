@@ -1,0 +1,83 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "getVocabCategories",
+      "op": "query",
+      "root": "vocabularyCategories",
+      "seq": 1,
+      "sub": null,
+      "variables": {}
+    },
+    {
+      "files": [],
+      "name": "StixCyberObservableAdd",
+      "op": "mutation",
+      "root": "stixCyberObservableAdd",
+      "seq": 2,
+      "sub": null,
+      "variables": {
+        "Artifact": {
+          "decryption_key": null,
+          "embedded": null,
+          "encryption_algorithm": null,
+          "files": null,
+          "filesMarkings": null,
+          "hashes": [
+            {
+              "algorithm": "SHA-256",
+              "hash": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+            }
+          ],
+          "mime_type": "text/plain",
+          "noTriggerImport": null,
+          "url": null,
+          "x_opencti_additional_names": null
+        },
+        "createIndicator": false,
+        "externalReferences": [],
+        "objectLabel": [],
+        "objectMarking": null,
+        "objectOrganization": [],
+        "stix_id": "artifact--b0000000-0000-4000-8000-000000000001",
+        "type": "Artifact",
+        "update": false,
+        "upsertOperations": null,
+        "x_opencti_description": null,
+        "x_opencti_score": null
+      }
+    },
+    {
+      "files": [
+        {
+          "mime": "text/plain",
+          "name": "artifact.bin",
+          "path": "file",
+          "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+        }
+      ],
+      "name": "StixCyberObservableEdit",
+      "op": "mutation",
+      "root": "stixCyberObservableEdit",
+      "seq": 3,
+      "sub": "importPush",
+      "variables": {
+        "embedded": false,
+        "file": null,
+        "fileMarkings": null,
+        "id": "6a6c71aa-50c4-5fb1-b5e6-3ad3d58af5a3",
+        "noTriggerImport": false,
+        "version": null
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "artifact--b0000000-0000-4000-8000-000000000001",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

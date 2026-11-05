@@ -1,0 +1,21 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "external-reference--c124ce2d-15d8-555f-9023-6afe519ac3df",
+      "spec_version": "2.1",
+      "type": "external-reference",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sdo",
+          "type": "External-Reference",
+          "is_inferred": false
+        }
+      },
+      "source_name": "20th January – Threat Intelligence Report",
+      "description": "bug nino 20th January – Threat Intelligence Report. Retrieved 2025-01-20T15:03:57.000Z.",
+      "url": "https://research.checkpoint.com/2025/20th-january-threat-intelligence-report/"
+    }
+  ]
+}

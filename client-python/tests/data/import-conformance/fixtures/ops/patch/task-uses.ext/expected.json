@@ -1,0 +1,33 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "StixCoreRelationshipEdit",
+      "op": "mutation",
+      "root": "stixCoreRelationshipEdit",
+      "seq": 1,
+      "sub": "fieldPatch",
+      "variables": {
+        "id": "b4ee072e-1b2a-4e8b-bfed-fb34f3011de2",
+        "input": [
+          {
+            "key": "description",
+            "operation": "replace",
+            "value": [
+              "Updated description"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

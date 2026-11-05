@@ -1,0 +1,41 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "channel--6e66b6f7-f60b-50d9-8d6c-6686192695d6",
+      "spec_version": "2.1",
+      "type": "channel",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "new-sdo",
+          "type": "Channel",
+          "is_inferred": false
+        }
+      },
+      "created": "2025-08-01T15:34:01.690Z",
+      "modified": "2025-08-01T15:36:28.567Z",
+      "revoked": false,
+      "confidence": 100,
+      "labels": [
+        "covid-19"
+      ],
+      "object_marking_refs": [
+        "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+      ],
+      "created_by_ref": "identity--18fe5225-fee1-5627-ad3e-20c14435b024",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "description": "spear phishing",
+          "external_id": "CAPEC-163"
+        }
+      ],
+      "name": "Channel Stix 2.0",
+      "description": "description",
+      "channel_types": [
+        "Facebook"
+      ]
+    }
+  ]
+}

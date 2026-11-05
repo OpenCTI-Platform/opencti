@@ -1,0 +1,27 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "StixCoreObjectEdit",
+      "op": "mutation",
+      "root": "stixCoreObjectEdit",
+      "seq": 1,
+      "sub": "askEnrichments",
+      "variables": {
+        "connectorIds": [
+          "10000000-0000-4000-8000-000000000d01"
+        ],
+        "id": "ipv4-addr--20000000-0000-4000-8000-000000000020"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "ipv4-addr--20000000-0000-4000-8000-000000000020",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

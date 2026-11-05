@@ -1,0 +1,23 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1",
+      "spec_version": "2.1",
+      "type": "marking-definition",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Marking-Definition",
+          "is_inferred": false,
+          "order": 2,
+          "color": "#2e7d32"
+        }
+      },
+      "created": "2026-03-12T16:20:23.380Z",
+      "name": "PAP:GREEN",
+      "definition_type": "PAP"
+    }
+  ]
+}

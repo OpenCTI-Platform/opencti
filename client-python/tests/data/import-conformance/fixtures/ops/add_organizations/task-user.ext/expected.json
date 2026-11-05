@@ -1,0 +1,25 @@
+{
+  "bundle_error": null,
+  "calls": [
+    {
+      "files": [],
+      "name": "UserEditAddOrganization",
+      "op": "mutation",
+      "root": "userEdit",
+      "seq": 1,
+      "sub": "organizationAdd",
+      "variables": {
+        "id": "user--20000000-0000-4000-8000-000000000a01",
+        "organization_id": "10000000-0000-4000-8000-000000000b01"
+      }
+    }
+  ],
+  "incompatible": [],
+  "items": [
+    {
+      "id": "user--20000000-0000-4000-8000-000000000a01",
+      "outcome": "transformed"
+    }
+  ],
+  "logged_errors": []
+}

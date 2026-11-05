@@ -1,0 +1,27 @@
+{
+  "type": "bundle",
+  "id": "bundle--00000000-0000-4000-8000-000000000000",
+  "objects": [
+    {
+      "id": "directory--20000000-0000-4000-8000-000000000033",
+      "spec_version": "2.1",
+      "type": "directory",
+      "extensions": {
+        "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba": {
+          "extension_type": "property-extension",
+          "type": "Directory",
+          "is_inferred": false
+        },
+        "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82": {
+          "extension_type": "property-extension"
+        }
+      },
+      "defanged": false,
+      "path": "/etc/malware",
+      "path_enc": "utf-8",
+      "ctime": "2026-01-01T00:00:00.000Z",
+      "mtime": "2026-01-02T00:00:00.000Z",
+      "atime": "2026-01-03T00:00:00.000Z"
+    }
+  ]
+}
