@@ -41,7 +41,7 @@ const filterKeysSchema = new Map([
       buildDefinition('dynamic', 'filters', 'Dynamic filter'),
     ])],
     ['coverage_information', {
-      ...buildDefinition('coverage_information', 'nested_filterable', 'Coverage score', [
+      ...buildDefinition('coverage_information', 'nested_attribute', 'Coverage score', [
         { ...buildDefinition('coverage_name', 'vocabulary', 'Coverage name'), multiple: false },
         { ...buildDefinition('coverage_score', 'float', 'Score'), multiple: false },
       ]),

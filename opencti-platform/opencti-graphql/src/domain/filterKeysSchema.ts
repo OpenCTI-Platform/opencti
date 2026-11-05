@@ -63,7 +63,7 @@ import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/c
 
 export type FilterDefinition = {
   filterKey: string;
-  type: string; // possible values: boolean, date, integer, float, version, string, id, vocabulary, text, enum, object, nested, nested_filterable
+  type: string; // possible values: boolean, date, integer, float, version, string, id, vocabulary, text, enum, object, nested, nested_attribute
   label: string; // filter key translation in English
   multiple: boolean; // if the field can have multiple values
   subEntityTypes: string[]; // entity types that have the given type as parent and have this filter key in their schema
@@ -184,7 +184,7 @@ const completeFilterDefinitionMapWithObjectAttributeWithMappings = (
   });
 };
 
-// a filterable nested attribute is exposed as ONE filter key of type 'nested_filterable',
+// a filterable nested attribute is exposed as ONE filter key of type 'nested_attribute',
 // whose subFilters are the filterable mappings of the attribute
 const completeFilterDefinitionMapWithNestedAttribute = (
   filterDefinitionMap: Map<string, FilterDefinition>, // map in construction
@@ -219,7 +219,7 @@ const completeFilterDefinitionMapForType = (
   const types = subTypes ? subTypes.concat(type) : [type];
   attributesMap.forEach((attributeDefinition, attributeName) => {
     if (attributeDefinition.isFilterable) { // if it is filterable
-      if (isGenericNestedFilterAttribute(attributeDefinition)) { // case 1.3: generic nested attribute, exposed as one 'nested_filterable' key with subFilters
+      if (isGenericNestedFilterAttribute(attributeDefinition)) { // case 1.3: generic nested attribute, exposed as one 'nested_attribute' key with subFilters
         completeFilterDefinitionMapWithNestedAttribute(filterDefinitionMap, attributeDefinition, types);
       } else if (attributeDefinition.type === 'object' && ['nested', 'standard'].includes(attributeDefinition.format)) { // case 1.1: attribute with mappings
         completeFilterDefinitionMapWithObjectAttributeWithMappings(filterDefinitionMap, attributeDefinition as ComplexAttributeWithMappings, types);
