@@ -46,7 +46,10 @@ testCreatedCounter.infrastructure = 1;
 // - 1 created and deleted by stixRelationship-test (time series breakdown)
 testCreatedCounter['intrusion-set'] = 55;
 testCreatedCounter['ipv4-addr'] = 1;
-testCreatedCounter['kill-chain-phase'] = 4;
+// Counts for:
+// - 1 created and deleted by form-submission-test
+// - 3 created and deleted by killChainPhase-import-test
+testCreatedCounter['kill-chain-phase'] = 7;
 // Counts for:
 // - 3 created and deleted by investigation-enrichment-test
 // - 3 created and deleted by label-import-test
@@ -110,6 +113,9 @@ testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
 testUpdatedCounter.indicator = 33;
+// Counts for:
+// - 3 updated by killChainPhase-import-test
+testUpdatedCounter['kill-chain-phase'] = 3;
 // Counts for:
 // - 1 updated by label-import-test
 testUpdatedCounter.label = 2;
@@ -177,7 +183,10 @@ testDeletedCounter.infrastructure = 1;
 // - 1 created and deleted by stixRelationship-test (time series breakdown)
 testDeletedCounter['intrusion-set'] = 53;
 testDeletedCounter['ipv4-addr'] = 1;
-testDeletedCounter['kill-chain-phase'] = 1; // created and deleted by form-submission-test
+// Counts for:
+// - 1 created and deleted by form-submission-test
+// - 3 deleted by killChainPhase-import-test
+testDeletedCounter['kill-chain-phase'] = 4;
 // Counts for:
 // - 3 created and deleted by investigation-enrichment-test
 // - 3 deleted by label-import-test

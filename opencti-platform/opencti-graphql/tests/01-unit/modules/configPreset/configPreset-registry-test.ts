@@ -47,6 +47,7 @@ import { BUILT_IN_MARKING_STANDARD_IDS } from '../../../../src/modules/markingDe
 import { roleCapabilities } from '../../../../src/modules/user/user-domain';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusionLists-fixtures';
+import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './configPreset-killChainPhases-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -154,6 +155,14 @@ describe('Config preset registry', () => {
         group: 'customization',
         itemIds: [dnsExclusionList.standard_id, retiredExclusionList.standard_id],
       },
+      // By kill chain, then by order in the kill chain
+      {
+        id: 'killChainPhases',
+        label: 'Kill chain phases',
+        description: 'Kill chains, their phases and their order',
+        group: 'taxonomy',
+        itemIds: [disarmKillChainPhase.standard_id, otherKillChainPhase.standard_id, killChainPhase.standard_id],
+      },
     ]);
   });
 
@@ -161,7 +170,7 @@ describe('Config preset registry', () => {
     expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark']);
   });
 
-  it('translates the static labels only, never a theme name, a label value or an exclusion list name', async () => {
+  it('translates the static labels only, never a theme name, a label value, an exclusion list name or a phase name', async () => {
     const items = await resolveAllItems();
     expect(items.map((item) => [item.label, item.translatable])).toEqual([
       ['Platform configuration', true],
@@ -184,10 +193,13 @@ describe('Config preset registry', () => {
       ['tlp:amber', false],
       ['Public DNS resolvers', false],
       ['Retired partners', false],
+      ['disarm: plan-strategy', false],
+      ['mitre-attack: initial-access', false],
+      ['mitre-attack: execution', false],
     ]);
   });
 
-  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label or an exclusion list by its standard id', async () => {
+  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label, an exclusion list or a phase by its standard id', async () => {
     const paths = (await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
       const items = await family.resolveItems(context, user, null, []);
       return items.map((item) => configPresetItemFilePath(family, item));
@@ -213,6 +225,9 @@ describe('Config preset registry', () => {
       `taxonomy/labels/${customLabel.standard_id}.json`,
       `customization/exclusion_lists/${dnsExclusionList.standard_id}.json`,
       `customization/exclusion_lists/${retiredExclusionList.standard_id}.json`,
+      `taxonomy/kill_chain_phases/${disarmKillChainPhase.standard_id}.json`,
+      `taxonomy/kill_chain_phases/${otherKillChainPhase.standard_id}.json`,
+      `taxonomy/kill_chain_phases/${killChainPhase.standard_id}.json`,
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -474,6 +489,66 @@ describe('Config preset registry', () => {
       const ids = async (selected: string[] | null, excluded: string[]) => (await lists.resolveItems(context, user, selected, excluded)).map((item) => item.id);
       expect(await ids(null, [])).toEqual([dnsExclusionList.standard_id, retiredExclusionList.standard_id]);
       expect(await ids(null, [dnsExclusionList.standard_id])).toEqual([retiredExclusionList.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('kill chain phases', () => {
+    const phases = findFamily('killChainPhases');
+    const pageIds = async (args: Parameters<typeof phases.listItems>[2]) => (await phases.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports a phase in the phase import format only: its names and its order', async () => {
+      const file = await exportConfigPresetItem(context, user, phases, await findItem('killChainPhases', killChainPhase.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'taxonomy.killChainPhases',
+        id: killChainPhase.standard_id,
+        configuration: { kill_chain_name: 'mitre-attack', phase_name: 'execution', x_opencti_order: 2 },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|phase-id"/);
+    });
+
+    it('exports an order of 0, which is an order, and leaves a missing one out', async () => {
+      const [first] = await phases.resolveItems(context, user, [disarmKillChainPhase.standard_id], []);
+      expect(await first.exporter(context, user)).toEqual({ kill_chain_name: 'disarm', phase_name: 'plan-strategy', x_opencti_order: 0 });
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ ...killChainPhase, x_opencti_order: null }] as never);
+      const [second] = await phases.resolveItems(context, user, [killChainPhase.standard_id], []);
+      expect(await second.exporter(context, user)).toEqual({ kill_chain_name: 'mitre-attack', phase_name: 'execution' });
+    });
+
+    it('opens the first page with the phases by kill chain then by order, and counts them', async () => {
+      const page = await phases.listItems(context, user, { first: 2 });
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['Kill-Chain-Phase'], {
+        first: 2,
+        after: undefined,
+        search: undefined,
+        orderBy: ['kill_chain_name', 'x_opencti_order'],
+        orderMode: 'asc',
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([
+        [disarmKillChainPhase.standard_id, 'disarm: plan-strategy', false],
+        [otherKillChainPhase.standard_id, 'mitre-attack: initial-access', false],
+      ]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[1].cursor, globalCount: 3 });
+    });
+
+    it('applies search, ids and excluded ids to the phases', async () => {
+      expect(await pageIds({ search: 'execution' })).toEqual([killChainPhase.standard_id]);
+      expect(await pageIds({ ids: [otherKillChainPhase.standard_id] })).toEqual([otherKillChainPhase.standard_id]);
+      expect(await pageIds({ excludedIds: [disarmKillChainPhase.standard_id, killChainPhase.standard_id] })).toEqual([otherKillChainPhase.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no phase query, whose empty filter would match every phase
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the phases to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await phases.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([disarmKillChainPhase.standard_id, otherKillChainPhase.standard_id, killChainPhase.standard_id]);
+      expect(await ids(null, [disarmKillChainPhase.standard_id])).toEqual([otherKillChainPhase.standard_id, killChainPhase.standard_id]);
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();
