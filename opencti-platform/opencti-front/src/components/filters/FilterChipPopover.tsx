@@ -5,7 +5,6 @@ import { FilterSearchContext, isGenericNestedFilterDefinition, useFilterDefiniti
 import type { WidgetHost } from '../../utils/widget/widget';
 import { FilterRepresentative } from './FiltersModel';
 import CompositeNestedFilterEditor from './fields/CompositeNestedFilterEditor';
-import CompositeRegardingOfFilterEditor from './fields/CompositeRegardingOfFilterEditor';
 import { FilterEditorProvider, useFilterEditorContext } from './fields/FilterEditorContext';
 import FilterOperatorSelect from './fields/FilterOperatorSelect';
 import FilterValueInput from './fields/FilterValueInput';
@@ -84,21 +83,10 @@ const FilterChipEditor: FunctionComponent<FilterChipEditorProps> = ({
     </>
   );
 
-  if (isGenericNestedFilterDefinition(filterDefinition) && filterDefinition?.subFilters && filterDefinition.subFilters.length > 1) {
+  // generic nested keys (e.g. coverage_information), regardingOf and dynamicRegardingOf
+  if (isGenericNestedFilterDefinition(filterDefinition) || (filterDefinition?.subFilters?.length ?? 0) > 1) {
     return (
       <CompositeNestedFilterEditor
-        filter={filter}
-        filterKey={filterKey}
-        inputValues={inputValues}
-        setInputValues={setInputValues}
-        showFirstOperator
-      />
-    );
-  }
-
-  if (filterDefinition?.subFilters && filterDefinition.subFilters.length > 1) {
-    return (
-      <CompositeRegardingOfFilterEditor
         filter={filter}
         filterKey={filterKey}
         inputValues={inputValues}
