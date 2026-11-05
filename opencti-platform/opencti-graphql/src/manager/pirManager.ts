@@ -14,14 +14,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { Promise as BluePromise } from 'bluebird';
+import { GraphQLError } from 'graphql';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import { executionContext, PIR_MANAGER_USER } from '../utils/access';
 import type { DataEvent, SseEvent } from '../types/event';
-import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
+import { checkSavedFilterGroupForStixMatch, isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { STIX_TYPE_RELATION } from '../schema/general';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext } from '../types/user';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, UNSUPPORTED_ERROR } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
 import { constructFinalPirFilters, parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
@@ -93,6 +94,36 @@ const pirUnflagElementFromQueue = async (
   await pushBundleToWorker(context, PIR_MANAGER_USER, pir.internal_id, message);
 };
 
+// Ids of the Pirs already reported as not matchable, to warn once per Pir instead of on every manager run.
+const reportedUnmatchablePirIds = new Set<string>();
+
+/**
+ * Check that the filters of a PIR can be evaluated on stream events.
+ * A PIR created through the API may hold filters not supported in stix matching:
+ * it would fail on every batch without ever moving its lastEventId, so it must be skipped.
+ *
+ * @param context To call internal stuff.
+ * @param pir The PIR to check.
+ * @returns true if the PIR filters and criteria can be evaluated on stream events.
+ */
+export const isPirMatchableOnStream = async (context: AuthContext, pir: ParsedPir) => {
+  try {
+    await checkSavedFilterGroupForStixMatch(context, PIR_MANAGER_USER, constructFinalPirFilters(pir.pir_type, pir.pir_filters));
+    for (const criterion of pir.pir_criteria) {
+      await checkSavedFilterGroupForStixMatch(context, PIR_MANAGER_USER, criterion.filters);
+    }
+    return true;
+  } catch (err) {
+    // Only an invalid filter makes the Pir not matchable, any other error must surface as before
+    if (!(err instanceof GraphQLError && err.extensions.code === UNSUPPORTED_ERROR)) throw err;
+    if (!reportedUnmatchablePirIds.has(pir.id)) {
+      reportedUnmatchablePirIds.add(pir.id);
+      logApp.warn('[OPENCTI-MODULE] Pir filters are not compatible with stream matching, Pir skipped', { cause: err, pirId: pir.id });
+    }
+    return false;
+  }
+};
+
 /**
  * Find the criteria of the PIR that the event matches.
  * Empty array if the event does not match the PIR.
@@ -102,19 +133,6 @@ const pirUnflagElementFromQueue = async (
  * @param pir The PIR to check.
  * @returns Array of matching criteria, if any.
  */
-// A Pir created through the API may hold filters that cannot be evaluated on stream events.
-// Such a Pir would fail on every batch without ever moving its lastEventId.
-export const isPirMatchableOnStream = (pir: ParsedPir) => {
-  try {
-    validateFilterGroupForStixMatch(constructFinalPirFilters(pir.pir_type, pir.pir_filters));
-    pir.pir_criteria.forEach((criterion) => validateFilterGroupForStixMatch(criterion.filters));
-    return true;
-  } catch (err) {
-    logApp.warn('[OPENCTI-MODULE] Pir filters are not compatible with stream matching, Pir skipped', { cause: err, pirId: pir.id });
-    return false;
-  }
-};
-
 export const checkEventOnPir = async (context: AuthContext, event: SseEvent<any>, pir: ParsedPir) => {
   const { data } = event;
   const { pir_type, pir_criteria, pir_filters } = pir;
@@ -132,9 +150,7 @@ export const checkEventOnPir = async (context: AuthContext, event: SseEvent<any>
   return matchingCriteria;
 };
 
-const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPir) => {
-  const parsedPir = parsePir(pir);
-
+const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPir, parsedPir: ParsedPir) => {
   return async (streamEvents: Array<SseEvent<DataEvent>>) => {
     const eventsContent = streamEvents
       .map((e) => e.data)
@@ -184,11 +200,12 @@ export const pirManagerHandler = async () => {
 
   // Loop through all Pirs by group
   await BluePromise.map(allPirs, async (pir) => {
-    if (!isPirMatchableOnStream(parsePir(pir))) return;
+    const parsedPir = parsePir(pir);
+    if (!await isPirMatchableOnStream(context, parsedPir)) return;
     // Fetch stream events since last event id caught by the Pir.
     const { lastEventId } = await fetchStreamEventsRangeFromEventId(
       pir.lastEventId,
-      processStreamEventsForPir(context, pir),
+      processStreamEventsForPir(context, pir, parsedPir),
       { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE },
     );
       // Update pir last event id.
