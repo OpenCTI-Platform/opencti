@@ -17,8 +17,6 @@ import {
 
 // Limits of a bundle, enforced on the bytes really read and never on the sizes declared in the zip
 export const CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE = 50 * 1024 * 1024;
-// One file per item: thousands of labels fit. Not sized from the zip, reading and previewing a bundle costs more than linear in its items
-export const CONFIG_PRESET_IMPORT_MAX_ENTRIES = 10000;
 export const CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE = 5 * 1024 * 1024;
 export const CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE = 50 * 1024 * 1024;
 
@@ -98,10 +96,6 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
     directory = await unzipper.Open.buffer(zip);
   } catch {
     throw bundleRefused('The file is not a valid zip archive');
-  }
-  const entries: { path: string; type: string }[] = directory.files;
-  if (entries.length > CONFIG_PRESET_IMPORT_MAX_ENTRIES) {
-    throw bundleRefused('The configuration bundle holds too many files', { limit: CONFIG_PRESET_IMPORT_MAX_ENTRIES });
   }
   let metadata: ConfigPresetBundleMetadata | undefined;
   let dependencies: ConfigPresetBundle['dependencies'] = {};
