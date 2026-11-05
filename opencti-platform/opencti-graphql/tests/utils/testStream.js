@@ -34,7 +34,7 @@ export const waitForStableStream = async (stableTime = 10000, pollInterval = 100
 };
 
 // Without untilEventId, the stream is closed after idleTimeout ms without a new event.
-// With untilEventId (raw stream only), it is closed as soon as this event, or a heartbeat past it, is received,
+// With untilEventId, it is closed as soon as this event, or a heartbeat past it, is received,
 // unless the stream has grown meanwhile; the idle timeout stays as a fallback.
 export const fetchStreamEvents = (uri, { from, untilEventId, idleTimeout = 30000 } = {}) => {
   const extraHeaders = { authorization: generateBasicAuth(), 'last-event-id': from };
