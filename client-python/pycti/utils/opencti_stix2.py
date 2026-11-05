@@ -86,22 +86,19 @@ CONTAINER_STIX_TYPES = (
 #: STIX Extension ID for OpenCTI custom objects and properties
 STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
 
-# STIX 2.0 delegation backend dispatch
-# TODO(stix-2-0-migration): once every entity_type is covered, this dict
-# becomes the unique conversion path and `generate_export` can be reduced
-# to a one-liner
-_STIX_2_0_BACKEND_DISPATCH = {
-    "Malware": lambda api, eid: api.malware.to_stix(id=eid, version="stix_2_0"),
-}
+#: Value of the GraphQL ``Version`` enum to request a STIX 2.0 export
+STIX_VERSION_2_0: str = "stix_2_0"
 
-# TODO(stix-2-0-migration): DELETE this set once every entity is migrated.
-# The whole nested-ref enrichment block in `prepare_export` will disappear
-# (no need to guard it any more).
-_STIX_2_0_BACKEND_STIX_TYPES = {"malware"}
+# STIX 2.0 export: entity types whose serialization is delegated to the
+# GraphQL ``toStix(version: stix_2_0)`` field instead of the legacy converter.
+# Only used when the caller opts in with ``stix_version=STIX_VERSION_2_0``.
+# TODO(stix-2-0-migration): once every type is covered, drop this set and the
+# legacy code path in `generate_export` / `prepare_export`.
+_STIX_2_0_BACKEND_ENTITY_TYPES = frozenset({"Malware"})
 
-# TODO(stix-2-0-migration): DELETE this tuple (and its re-injection loop
-# in `generate_export`) once the backend also produces these related SDOs
-# in a bundle-shaped response.
+# Raw GraphQL keys kept on the backend payload so that `prepare_export` can
+# still add the related objects (author, markings, files) to the bundle.
+# TODO(stix-2-0-migration): DELETE once the backend produces these objects.
 _STIX_2_0_PRESERVED_KEYS = (
     "createdBy",
     "createdById",
@@ -110,6 +107,17 @@ _STIX_2_0_PRESERVED_KEYS = (
     "objectOrganization",
     "importFiles",
     "importFilesIds",
+)
+
+# Backend keys dropped because `prepare_export` rebuilds them from the
+# preserved raw keys above, with the legacy rules (restricted author,
+# no_custom_attributes, empty lists, embedded file content).
+# TODO(stix-2-0-migration): DELETE together with `_STIX_2_0_PRESERVED_KEYS`.
+_STIX_2_0_REBUILT_KEYS = (
+    "created_by_ref",
+    "object_marking_refs",
+    "x_opencti_granted_refs",
+    "x_opencti_files",
 )
 
 #: STIX Extension ID for OpenCTI custom Cyber Observables (SCO)
@@ -2030,11 +2038,57 @@ class OpenCTIStix2:
     # endregion
 
     # region export
+    @staticmethod
+    def _is_backend_stix_2_0(entity_type: str, stix_version: Optional[str]) -> bool:
+        """Tell whether the backend STIX 2.0 converter is used for this type.
+
+        :param entity_type: OpenCTI entity type (e.g. ``Malware``)
+        :type entity_type: str
+        :param stix_version: STIX version requested by the caller
+        :type stix_version: str, optional
+        :return: True if the caller opted in and the type is migrated
+        :rtype: bool
+        """
+        return (
+            stix_version == STIX_VERSION_2_0
+            and entity_type in _STIX_2_0_BACKEND_ENTITY_TYPES
+        )
+
+    def _generate_backend_stix_2_0_export(self, entity: Dict) -> Dict:
+        """Get the STIX 2.0 representation of an entity from the backend.
+
+        The raw GraphQL keys listed in ``_STIX_2_0_PRESERVED_KEYS`` are kept so
+        that ``prepare_export`` can add the related objects to the bundle.
+
+        :param entity: OpenCTI entity dictionary, as returned by a reader
+        :type entity: Dict
+        :return: STIX 2.0 entity dictionary
+        :rtype: Dict
+        :raises ValueError: if the backend returns no payload
+        """
+        backend_stix = self.opencti.stix_core_object.to_stix(
+            id=entity["id"], version=STIX_VERSION_2_0
+        )
+        if backend_stix is None:
+            raise ValueError(
+                f"Backend STIX 2.0 conversion returned no payload for "
+                f"{entity['entity_type']} {entity['id']!r}"
+            )
+        for key in _STIX_2_0_REBUILT_KEYS:
+            backend_stix.pop(key, None)
+        # Same filter as the end of the legacy `generate_export`: empty raw
+        # keys are not kept (e.g. `importFiles: []` would leak into the export).
+        for key in _STIX_2_0_PRESERVED_KEYS:
+            if key in entity and self.opencti.not_empty(entity[key]):
+                backend_stix[key] = entity[key]
+        return backend_stix
+
     def generate_export(
         self,
         entity: Dict,
         no_custom_attributes: bool = False,
         access_filter: Dict = None,
+        stix_version: Optional[str] = None,
     ) -> Dict:
         """Generate a STIX2 export from an OpenCTI entity.
 
@@ -2045,29 +2099,18 @@ class OpenCTIStix2:
         :param access_filter: Access filter for the export, external reference files
             carrying an excluded marking are not embedded, defaults to None
         :type access_filter: Dict, optional
+        :param stix_version: ``STIX_VERSION_2_0`` to use the backend STIX 2.0
+            converter for the migrated types, defaults to None (legacy converter)
+        :type stix_version: str, optional
         :return: STIX2 formatted entity dictionary
         :rtype: Dict
         """
         excluded_marking_ids = self._get_excluded_marking_ids(access_filter)
+        if self._is_backend_stix_2_0(entity["entity_type"], stix_version):
+            return self._generate_backend_stix_2_0_export(entity)
+
         # Handle model deviation
         original_entity_type = entity["entity_type"]
-
-        # STIX 2.0 backend dispatch: types whose STIX serialization is delegated
-        # to the GraphQL `toStix(version: stix_2_0)` field. The backend payload
-        # already produces deterministic refs.
-        # TODO(stix-2-0-migration): remove legacy code once every entity is migrated
-        dispatcher = _STIX_2_0_BACKEND_DISPATCH.get(entity["entity_type"])
-        if dispatcher is not None:
-            backend_stix = dispatcher(self.opencti, entity["id"])
-            if backend_stix is None:
-                raise ValueError(
-                    f"Backend STIX 2.0 conversion returned no payload for "
-                    f"{entity['entity_type']} {entity['id']!r}"
-                )
-            for key in _STIX_2_0_PRESERVED_KEYS:
-                if key in entity:
-                    backend_stix[key] = entity[key]
-            return backend_stix
 
         # Identities
         if IdentityTypes.has_value(entity["entity_type"]):
@@ -2429,6 +2472,7 @@ class OpenCTIStix2:
         mode: str = "simple",
         access_filter: Dict = None,
         no_custom_attributes: bool = False,
+        stix_version: Optional[str] = None,
     ) -> List:
         """Prepare an entity for STIX2 export with related objects.
 
@@ -2440,6 +2484,9 @@ class OpenCTIStix2:
         :type access_filter: Dict, optional
         :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
         :type no_custom_attributes: bool, optional
+        :param stix_version: STIX version passed to ``generate_export`` for the
+            related objects, defaults to None (legacy converter)
+        :type stix_version: str, optional
         :return: List of STIX2 objects ready for export
         :rtype: List
         """
@@ -2447,16 +2494,16 @@ class OpenCTIStix2:
         objects_to_get = []
         self._rewrite_embedded_image_uris_for_export(entity)
 
-        # Related SDOs generated below (e.g. marking-definition) must match
-        # the spec_version of the entity they are attached to: entities
-        # whose STIX representation is delegated to the backend
-        # `toStix(version: stix_2_0)` are STIX 2.0, everything else keeps
-        # the client-side default `SPEC_VERSION`.
-        # TODO(stix-2-0-migration): DELETE this once every entity is migrated
-        # and `SPEC_VERSION` becomes the sole spec version in use.
-        related_objects_spec_version = (
-            "2.0" if entity["type"] in _STIX_2_0_BACKEND_STIX_TYPES else SPEC_VERSION
+        # Entities produced by the backend STIX 2.0 converter already carry
+        # their nested refs, and the objects generated below (marking
+        # definitions) must use the same spec_version. Keyed on the opt-in and
+        # the type, not on `spec_version`: legacy entities also carry the
+        # stored `spec_version`, which may be "2.0".
+        # TODO(stix-2-0-migration): DELETE once every entity is migrated.
+        is_backend_stix_2_0 = self._is_backend_stix_2_0(
+            entity.get("x_opencti_type"), stix_version
         )
+        related_objects_spec_version = "2.0" if is_backend_stix_2_0 else SPEC_VERSION
 
         # CreatedByRef
         if (
@@ -2465,7 +2512,9 @@ class OpenCTIStix2:
             and entity["createdBy"] is not None
             and not self._is_restricted_identity(entity["createdBy"])
         ):
-            created_by = self.generate_export(entity=entity["createdBy"])
+            created_by = self.generate_export(
+                entity=entity["createdBy"], stix_version=stix_version
+            )
             if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
                 entity["x_opencti_created_by_ref"] = created_by["id"]
             else:
@@ -2491,7 +2540,9 @@ class OpenCTIStix2:
             and "dataSource" in entity
             and entity["dataSource"] is not None
         ):
-            data_source = self.generate_export(entity["dataSource"])
+            data_source = self.generate_export(
+                entity["dataSource"], stix_version=stix_version
+            )
             entity["x_mitre_data_source_ref"] = data_source["id"]
             result.append(data_source)
         if "dataSource" in entity:
@@ -2785,13 +2836,16 @@ class OpenCTIStix2:
                 for marking_id in x_opencti_file.get("object_marking_refs") or []:
                     if marking_id in self.export_file_marking_definitions:
                         self._append_marking_definition(
-                            result, self.export_file_marking_definitions[marking_id]
+                            result,
+                            {
+                                **self.export_file_marking_definitions[marking_id],
+                                "spec_version": related_objects_spec_version,
+                            },
                         )
 
         # StixRefRelationship
-        # Skipped for types whose STIX 2.0 representation is produced by the backend `toStix(version: stix_2_0)`
         # TODO(stix-2-0-migration): DELETE once every entity is migrated.
-        if entity["type"] not in _STIX_2_0_BACKEND_STIX_TYPES:
+        if not is_backend_stix_2_0:
             stix_nested_ref_relationships = (
                 self.opencti.stix_nested_ref_relationship.list(
                     fromId=entity["x_opencti_id"], filters=access_filter
@@ -2912,10 +2966,13 @@ class OpenCTIStix2:
                 relation_object_data = (
                     self.prepare_export(  # ICI -> remove max marking ?
                         entity=self.generate_export(
-                            stix_core_relationship, access_filter=access_filter
+                            stix_core_relationship,
+                            access_filter=access_filter,
+                            stix_version=stix_version,
                         ),
                         mode="simple",
                         access_filter=access_filter,
+                        stix_version=stix_version,
                     )
                 )
                 relation_object_bundle = self.filter_objects(
@@ -2937,10 +2994,13 @@ class OpenCTIStix2:
                 relation_object_data = (
                     self.prepare_export(  # ICI -> remove max marking ?
                         entity=self.generate_export(
-                            stix_sighting_relationship, access_filter=access_filter
+                            stix_sighting_relationship,
+                            access_filter=access_filter,
+                            stix_version=stix_version,
                         ),
                         mode="simple",
                         access_filter=access_filter,
+                        stix_version=stix_version,
                     )
                 )
                 relation_object_bundle = self.filter_objects(
@@ -2966,10 +3026,13 @@ class OpenCTIStix2:
                 if entity_object_data is not None:
                     stix_entity_object = self.prepare_export(
                         entity=self.generate_export(
-                            entity_object_data, access_filter=access_filter
+                            entity_object_data,
+                            access_filter=access_filter,
+                            stix_version=stix_version,
                         ),
                         mode="simple",
                         access_filter=access_filter,
+                        stix_version=stix_version,
                     )
                     # Add to result
                     entity_object_bundle = self.filter_objects(
@@ -3040,6 +3103,7 @@ class OpenCTIStix2:
         access_filter: Dict = None,
         no_custom_attributes: bool = False,
         only_entity: bool = False,
+        stix_version: Optional[str] = None,
     ) -> Dict:
         """Get a STIX2 bundle or single object from an entity ID.
 
@@ -3055,6 +3119,9 @@ class OpenCTIStix2:
         :type no_custom_attributes: bool, optional
         :param only_entity: If True, return only the entity object instead of a bundle
         :type only_entity: bool, optional
+        :param stix_version: ``STIX_VERSION_2_0`` to use the backend STIX 2.0
+            converter for the migrated types, defaults to None (legacy converter)
+        :type stix_version: str, optional
         :return: STIX2 bundle dictionary or single STIX2 object if only_entity is True
         :rtype: Dict
         """
@@ -3073,11 +3140,15 @@ class OpenCTIStix2:
         entity_standard_id = entity["standard_id"]
         stix_objects = self.prepare_export(
             entity=self.generate_export(
-                entity, no_custom_attributes, access_filter=access_filter
+                entity,
+                no_custom_attributes,
+                access_filter=access_filter,
+                stix_version=stix_version,
             ),
             mode=mode,
             access_filter=access_filter,
             no_custom_attributes=no_custom_attributes,
+            stix_version=stix_version,
         )
         if stix_objects is not None:
             bundle["objects"].extend(stix_objects)
@@ -3237,6 +3308,7 @@ class OpenCTIStix2:
         order_mode: str = None,
         mode: str = "simple",
         access_filter: Dict = None,
+        stix_version: Optional[str] = None,
     ) -> Dict:
         """Export a list of entities as a STIX2 bundle.
 
@@ -3254,6 +3326,9 @@ class OpenCTIStix2:
         :type mode: str
         :param access_filter: Access filter for the export, defaults to None
         :type access_filter: Dict, optional
+        :param stix_version: ``STIX_VERSION_2_0`` to use the backend STIX 2.0
+            converter for the migrated types, defaults to None (legacy converter)
+        :type stix_version: str, optional
         :return: STIX2 bundle containing all exported entities
         :rtype: Dict
         """
@@ -3285,9 +3360,12 @@ class OpenCTIStix2:
             uuids = []
             for entity in entities_list:
                 entity_bundle = self.prepare_export(
-                    entity=self.generate_export(entity, access_filter=access_filter),
+                    entity=self.generate_export(
+                        entity, access_filter=access_filter, stix_version=stix_version
+                    ),
                     mode=mode,
                     access_filter=access_filter,
+                    stix_version=stix_version,
                 )
                 if entity_bundle is not None:
                     entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
@@ -3302,6 +3380,7 @@ class OpenCTIStix2:
         entities_list: List[dict],
         mode: str = "simple",
         access_filter: Dict = None,
+        stix_version: Optional[str] = None,
     ) -> Dict:
         """Export selected entities as a STIX2 bundle.
 
@@ -3311,6 +3390,9 @@ class OpenCTIStix2:
         :type mode: str
         :param access_filter: Access filter for the export
         :type access_filter: Dict
+        :param stix_version: ``STIX_VERSION_2_0`` to use the backend STIX 2.0
+            converter for the migrated types, defaults to None (legacy converter)
+        :type stix_version: str, optional
         :return: STIX2 bundle containing exported entities
         :rtype: Dict
         """
@@ -3323,9 +3405,12 @@ class OpenCTIStix2:
         uuids = []
         for entity in entities_list:
             entity_bundle = self.prepare_export(
-                entity=self.generate_export(entity, access_filter=access_filter),
+                entity=self.generate_export(
+                    entity, access_filter=access_filter, stix_version=stix_version
+                ),
                 mode=mode,
                 access_filter=access_filter,
+                stix_version=stix_version,
             )
             if entity_bundle is not None:
                 entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
