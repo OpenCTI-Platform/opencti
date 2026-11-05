@@ -32,6 +32,7 @@ import {
 } from '../../../utils/access';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { now } from '../../../utils/format';
+import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
 import { addFilter } from '../../../utils/filtering/filtering-utils';
 import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
@@ -1320,6 +1321,10 @@ export const getAllowedTransitions = async (
   if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
     return [];
   }
+  // Same for a user whose confidence level is too low to write the new status
+  if (!controlUserConfidenceAgainstElement(user, entity, true)) {
+    return [];
+  }
 
   const entitySetting = options?.entitySetting ?? await getWorkflowConfig(context, user, entity.entity_type);
   const definitionData = options?.definitionData ?? await getDefinitionData(context, user, entitySetting);
@@ -1465,6 +1470,11 @@ export const triggerWorkflowEvent = async (
   // prevent a view-only user from calling this mutation directly.
   if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
     throw ForbiddenAccess();
+  }
+  // The new status is written with the user's rights: refuse before the instance moves,
+  // instead of leaving a moved instance whose status write failed.
+  if (!controlUserConfidenceAgainstElement(user, entity, true)) {
+    return { success: false, reason: 'Your confidence level is too low to update this entity' };
   }
 
   // 2. Fetch its EntitySetting to get the workflow configuration

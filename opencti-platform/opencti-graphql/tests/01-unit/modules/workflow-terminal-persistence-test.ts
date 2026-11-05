@@ -37,6 +37,11 @@ vi.mock('../../../src/utils/access', async (importOriginal) => ({
   validateUserAccessOperation: vi.fn().mockReturnValue(true),
 }));
 
+vi.mock('../../../src/utils/confidence-level', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../src/utils/confidence-level')>(),
+  controlUserConfidenceAgainstElement: vi.fn().mockReturnValue(true),
+}));
+
 describe('Terminal workflow persistence', () => {
   const user = { id: 'user-id' } as any;
   const context = { user } as any;

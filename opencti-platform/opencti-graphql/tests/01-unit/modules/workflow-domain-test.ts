@@ -46,6 +46,7 @@ import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-f
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { WORKFLOW_MANAGER_USER } from '../../../src/utils/access';
+import { controlUserConfidenceAgainstElement } from '../../../src/utils/confidence-level';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
 import { createListTask } from '../../../src/domain/backgroundTask-common';
@@ -168,6 +169,14 @@ vi.mock('../../../src/utils/access', async (importOriginal) => {
   return {
     ...actual,
     executionContext: vi.fn().mockReturnValue({ user: null }),
+  };
+});
+
+vi.mock('../../../src/utils/confidence-level', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/utils/confidence-level')>();
+  return {
+    ...actual,
+    controlUserConfidenceAgainstElement: vi.fn().mockReturnValue(true),
   };
 });
 
@@ -2511,6 +2520,17 @@ describe('Workflow Domain', () => {
 
     expect(result.success).toBe(false);
     expect(result.reason).toContain('not configured');
+  });
+
+  it('should refuse a trigger when the user confidence level is too low, before the instance moves', async () => {
+    (storeLoadById as any).mockResolvedValue({ id: 'entity-1', entity_type: 'Incident', confidence: 90 });
+    vi.mocked(controlUserConfidenceAgainstElement).mockReturnValueOnce(false);
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'test');
+
+    expect(result).toEqual({ success: false, reason: 'Your confidence level is too low to update this entity' });
+    expect(lockResources).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
   });
 
   it('should return failure when entity setting not found', async () => {
