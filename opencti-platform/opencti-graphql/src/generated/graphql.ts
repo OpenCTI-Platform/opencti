@@ -36914,17 +36914,38 @@ export type TimeSeries = {
 
 export type TimeSeriesBreakdown = {
   __typename?: 'TimeSeriesBreakdown';
+  /** Dates shared by every series, sent once */
   dates: Array<Scalars['DateTime']['output']>;
+  /** The series of the values kept by the limit, ranked, then Other when it is requested */
   series: Array<TimeSeriesBreakdownSeries>;
+  /** Some values have no series of their own, beyond the limit: their documents are in Other when it is requested */
   truncated: Scalars['Boolean']['output'];
 };
 
+/**
+ * The documents carrying one value of the field, over time. A document carrying several of the values of the
+ * series (labels, markings...) counts in the series of each of them: the totals of the series can add up to
+ * more than the number of documents.
+ */
 export type TimeSeriesBreakdownSeries = {
   __typename?: 'TimeSeriesBreakdownSeries';
+  /**
+   * Entity of the value (restricted when the user cannot read it), null for the values that are not entities
+   * (types, vocabularies...) and for Other
+   */
   entity?: Maybe<StixObjectOrStixRelationshipOrCreator>;
+  /**
+   * The series of the documents carrying none of the values of the other series, the documents without any
+   * value included. A document carrying one of these values is never in Other, whatever its other values.
+   */
   isOther: Scalars['Boolean']['output'];
   label: Scalars['String']['output'];
+  /**
+   * Sum of the values of the series: its documents over the whole period, an inferred relationship weighing
+   * the number of its inferences, as in the other time series
+   */
   total: Scalars['Int']['output'];
+  /** One value per date of TimeSeriesBreakdown.dates */
   values: Array<Scalars['Int']['output']>;
 };
 

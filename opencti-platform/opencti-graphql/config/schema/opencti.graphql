@@ -423,19 +423,45 @@ type TimeSeries {
 type MultiTimeSeries {
   data: [TimeSeries]
 }
+"""
+The documents carrying one value of the field, over time. A document carrying several of the values of the
+series (labels, markings...) counts in the series of each of them: the totals of the series can add up to
+more than the number of documents.
+"""
 type TimeSeriesBreakdownSeries {
   label: String!
+  """
+  Entity of the value (restricted when the user cannot read it), null for the values that are not entities
+  (types, vocabularies...) and for Other
+  """
   entity: StixObjectOrStixRelationshipOrCreator
-  # Sum of the values of the series
+  """
+  Sum of the values of the series: its documents over the whole period, an inferred relationship weighing
+  the number of its inferences, as in the other time series
+  """
   total: Int!
+  """
+  The series of the documents carrying none of the values of the other series, the documents without any
+  value included. A document carrying one of these values is never in Other, whatever its other values.
+  """
   isOther: Boolean!
-  # One value per date of TimeSeriesBreakdown.dates
+  """
+  One value per date of TimeSeriesBreakdown.dates
+  """
   values: [Int!]!
 }
 type TimeSeriesBreakdown {
+  """
+  Some values have no series of their own, beyond the limit: their documents are in Other when it is requested
+  """
   truncated: Boolean!
-  # Dates shared by every series, sent once
+  """
+  Dates shared by every series, sent once
+  """
   dates: [DateTime!]!
+  """
+  The series of the values kept by the limit, ranked, then Other when it is requested
+  """
   series: [TimeSeriesBreakdownSeries!]!
 }
 input AuditsTimeSeriesParameters {

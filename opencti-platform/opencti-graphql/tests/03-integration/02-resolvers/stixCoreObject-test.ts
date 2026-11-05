@@ -314,6 +314,43 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
     expect(series[1].total).toEqual(4);
   });
 
+  it('should count an entity in the series of each of its values, and never in Other with one of them', async () => {
+    // A report of March with the labels a and b: a=4, b=3, c=1
+    const report = await queryAsAdminWithSuccess({
+      query: REPORT_ADD_QUERY,
+      variables: {
+        input: {
+          name: 'bkd-int-report-two-labels',
+          published: '2021-03-25T12:00:00.000Z',
+          created: '2021-03-25T12:00:00.000Z',
+          report_types: ['threat-report'],
+          createdBy: organizationId,
+          objectLabel: [labelIds.a, labelIds.b],
+        },
+      },
+    });
+    const reportId = report.data?.reportAdd.id;
+    try {
+      // Only a is selected: the report is in its series, not in Other, which still counts b of February and
+      // March, c and the unlabeled report, as without the report
+      const top = await breakdown({ field: 'objectLabel', orderMode: 'desc', limit: 1, includeOther: true });
+      expect(top.series.map((s) => [s.entity?.value ?? s.label, s.total, s.values])).toEqual([
+        [LABELS.a, 4, [2, 1, 1]],
+        ['Other', 4, [1, 1, 2]],
+      ]);
+      // a and b are selected: the report is counted in both, the totals add up to one more than the 8 reports
+      const both = await breakdown({ field: 'objectLabel', orderMode: 'desc', limit: 2, includeOther: true });
+      expect(both.series.map((s) => [s.entity?.value ?? s.label, s.total, s.values])).toEqual([
+        [LABELS.a, 4, [2, 1, 1]],
+        [LABELS.b, 3, [0, 1, 2]],
+        ['Other', 2, [1, 0, 1]],
+      ]);
+      expect(both.series.reduce((sum, s) => sum + s.total, 0)).toEqual(REPORTS.length + 2);
+    } finally {
+      await queryAsAdminWithSuccess({ query: REPORT_DELETE_QUERY, variables: { id: reportId } });
+    }
+  });
+
   it('should break down by label in ascending order', async () => {
     const { truncated, series } = await breakdown({ field: 'objectLabel', orderMode: 'asc', limit: 2 });
     expect(series.map((s) => s.entity?.value)).toEqual([LABELS.c, LABELS.b]);
