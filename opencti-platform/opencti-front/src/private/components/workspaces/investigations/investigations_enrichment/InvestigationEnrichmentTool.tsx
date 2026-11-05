@@ -103,6 +103,7 @@ const InvestigationEnrichmentToolComponent = ({
 }: InvestigationEnrichmentToolComponentProps) => {
   const [openEnrichment, setOpenEnrichment] = useState(false);
   const [tab, setTab] = useState<TabList>('toreview');
+  const [isSending, setIsSending] = useState(false);
   const { workspace: investigation } = usePreloadedQuery(investigationQuery, queryRef);
   const { canLaunch } = useInvestigationEnrichmentRights(investigation?.currentUserAccessRight);
 
@@ -130,6 +131,10 @@ const InvestigationEnrichmentToolComponent = ({
     };
   }, [investigation]);
 
+  useEffect(() => {
+    setIsSending(false);
+  }, [nbWorks]);
+
   if (!investigation) {
     return null;
   }
@@ -148,6 +153,7 @@ const InvestigationEnrichmentToolComponent = ({
         investigationId={investigation.id}
         canLaunch={canLaunch}
         onLaunched={() => {
+          setIsSending(true);
           setTab('toreview');
           setOpenEnrichment(true);
           onRefresh();
@@ -160,7 +166,8 @@ const InvestigationEnrichmentToolComponent = ({
         onTabChange={setTab}
         investigation={investigation}
         works={works}
-        nbWorks={nbWorks}
+        isSending={isSending}
+        onLaunched={() => setIsSending(true)}
         onClose={() => setOpenEnrichment(false)}
         askRefresh={onRefresh}
         onExpand={onExpand}

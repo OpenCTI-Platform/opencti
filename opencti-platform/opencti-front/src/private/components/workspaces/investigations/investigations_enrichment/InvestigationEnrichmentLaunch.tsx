@@ -2,7 +2,7 @@ import { Alert, Card, CardFooter, CardHeader, CardTitle, Spinner } from '@filigr
 import { useFormatter } from '../../../../../components/i18n';
 import EnrichmentConnectorSelection from '../../../data/connectors/EnrichmentConnectorSelection';
 import { CardContent } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Button from '../../../../../components/common/button/Button';
 import BackgroundTaskLaunch from '../../../common/background_task/BackgroundTaskLaunch';
 import { useGraphContext } from '../../../../../components/graph/GraphContext';
@@ -11,26 +11,19 @@ import { toEnrichmentSelection, toEnrichmentTaskActions } from './investigation-
 interface InvestigationEnrichmentLaunchProps {
   investigationId: string;
   onCompleted: () => void;
-  worksCount: number;
+  isSending: boolean;
 }
 
 const InvestigationEnrichmentLaunch = ({
   investigationId,
   onCompleted,
-  worksCount,
+  isSending,
 }: InvestigationEnrichmentLaunchProps) => {
   const { t_i18n } = useFormatter();
 
   const [selectedConnectors, setSelectedConnectors] = useState<string[]>([]);
   const [showValidation, setShowValidation] = useState(false);
   const [processing, setProcessing] = useState(false);
-  // The count of works when the enrichment was launched, until the works it creates show in the list.
-  const [launchedAtWorksCount, setLaunchedAtWorksCount] = useState<number>();
-  const isSending = launchedAtWorksCount !== undefined;
-
-  useEffect(() => {
-    setLaunchedAtWorksCount(undefined);
-  }, [worksCount]);
 
   const { graphState } = useGraphContext();
   const { selectedNodes, selectedLinks } = graphState;
@@ -85,10 +78,7 @@ const InvestigationEnrichmentLaunch = ({
         taskScope="KNOWLEDGE"
         actions={backgroundTaskAction}
         onClose={() => setShowValidation(false)}
-        onLaunch={() => {
-          setProcessing(true);
-          setLaunchedAtWorksCount(worksCount);
-        }}
+        onLaunch={() => setProcessing(true)}
         onCompleted={() => {
           setSelectedConnectors([]);
           setShowValidation(false);

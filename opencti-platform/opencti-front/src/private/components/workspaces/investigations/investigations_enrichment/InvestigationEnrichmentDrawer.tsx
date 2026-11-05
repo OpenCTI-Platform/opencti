@@ -34,7 +34,8 @@ interface InvestigationEnrichmentDrawerProps {
   onTabChange: (tab: TabList) => void;
   investigation: Investigation;
   works: InvestigationWorkSorted;
-  nbWorks: number;
+  isSending: boolean;
+  onLaunched: () => void;
   askRefresh: () => void;
   onExpand?: (newObjects: ObjectToParse[]) => void;
 }
@@ -46,7 +47,8 @@ const InvestigationEnrichmentDrawer = ({
   onTabChange,
   investigation,
   works,
-  nbWorks,
+  isSending,
+  onLaunched,
   askRefresh,
   onExpand,
 }: InvestigationEnrichmentDrawerProps) => {
@@ -119,9 +121,12 @@ const InvestigationEnrichmentDrawer = ({
         <>
           {hasSelection && canLaunch && (
             <InvestigationEnrichmentLaunch
-              onCompleted={askRefresh}
+              onCompleted={() => {
+                onLaunched();
+                askRefresh();
+              }}
               investigationId={investigation.id}
-              worksCount={nbWorks}
+              isSending={isSending}
             />
           )}
 

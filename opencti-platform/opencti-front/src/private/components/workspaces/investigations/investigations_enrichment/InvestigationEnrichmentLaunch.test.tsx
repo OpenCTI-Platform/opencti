@@ -49,32 +49,23 @@ const lastLaunchProps = () => {
 const lastLaunchedActions = () => lastLaunchProps().actions;
 
 /**
- * Renders the form with a count of works, a connector selected, and the enrichment launched.
+ * Renders the form, sending an enrichment or not, with a connector selected.
  */
-const renderLaunched = () => {
+const renderForm = ({ isSending = false, onCompleted = () => {} }: { isSending?: boolean; onCompleted?: () => void } = {}) => {
   const view = testRender(
     <InvestigationEnrichmentLaunch
       investigationId="investigation-1"
-      onCompleted={() => {}}
-      worksCount={2}
+      onCompleted={onCompleted}
+      isSending={isSending}
     />,
   );
   fireEvent.click(screen.getByText('select connector'));
-  act(() => lastLaunchProps().onLaunch());
   return view;
 };
 
 describe('InvestigationEnrichmentLaunch', () => {
   it('links the bulk enrichment to the investigation', () => {
-    testRender(
-      <InvestigationEnrichmentLaunch
-        investigationId="investigation-1"
-        onCompleted={console.log}
-        worksCount={0}
-      />,
-    );
-
-    fireEvent.click(screen.getByText('select connector'));
+    renderForm();
 
     expect(lastLaunchedActions()).toEqual([{
       type: 'ENRICHMENT',
@@ -85,24 +76,38 @@ describe('InvestigationEnrichmentLaunch', () => {
     }]);
   });
 
-  it('shows a spinner next to the label once launched, without disabling the button', () => {
-    renderLaunched();
+  it('reports the enrichment once the API accepted it, so that the button shows it is sending', () => {
+    const onCompleted = vi.fn();
+    renderForm({ onCompleted });
+
+    act(() => lastLaunchProps().onLaunch());
+    expect(onCompleted).not.toHaveBeenCalled();
+
+    act(() => lastLaunchProps().onCompleted());
+    expect(onCompleted).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not report an enrichment the API rejected, so that the button does not stay busy', () => {
+    const onCompleted = vi.fn();
+    renderForm({ onCompleted });
+
+    act(() => lastLaunchProps().onLaunch());
+    // The mutation failed: onCompleted never comes, the user closes the launcher.
+    act(() => lastLaunchProps().onClose());
+
+    expect(onCompleted).not.toHaveBeenCalled();
+  });
+
+  it('shows a spinner next to the label while sending, without disabling the button', () => {
+    renderForm({ isSending: true });
 
     const button = screen.getByRole('button', { name: 'Enrich' });
     expect(button).toHaveAttribute('aria-busy', 'true');
     expect(button).toBeEnabled();
   });
 
-  it('stops showing the spinner once the count of works changed', () => {
-    const { rerender } = renderLaunched();
-
-    rerender(
-      <InvestigationEnrichmentLaunch
-        investigationId="investigation-1"
-        onCompleted={() => {}}
-        worksCount={3}
-      />,
-    );
+  it('shows no spinner when not sending', () => {
+    renderForm();
 
     expect(screen.getByRole('button', { name: 'Enrich' })).not.toHaveAttribute('aria-busy');
   });

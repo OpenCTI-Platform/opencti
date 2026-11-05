@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   menuAction: vi.fn(),
   activateBoost: vi.fn(),
   canLaunch: true,
+  works: [] as unknown[],
 }));
 
 vi.mock('react-relay', async (importOriginal) => {
@@ -18,7 +19,7 @@ vi.mock('react-relay', async (importOriginal) => {
     ...actual,
     useQueryLoader: () => [{}, vi.fn()],
     usePreloadedQuery: () => ({
-      workspace: { id: 'investigation-1', currentUserAccessRight: 'admin', enrichmentWorks: { edges: [] } },
+      workspace: { id: 'investigation-1', currentUserAccessRight: 'admin', enrichmentWorks: { edges: mocks.works } },
     }),
   };
 });
@@ -71,6 +72,31 @@ describe('InvestigationEnrichmentTool', () => {
 
     expect(lastProps(mocks.drawer)).toMatchObject({ open: true, tab: 'toreview' });
     expect(mocks.activateBoost).toHaveBeenCalled();
+  });
+
+  it('shows the drawer launch as sending once an enrichment is launched from the context menu', () => {
+    renderTool();
+    expect(lastProps(mocks.drawer)).toMatchObject({ isSending: false });
+
+    act(() => lastProps(mocks.menuAction).onLaunched());
+
+    expect(lastProps(mocks.drawer)).toMatchObject({ isSending: true });
+  });
+
+  it('shows the drawer launch as sending once launched from the drawer, until the count of works changes', () => {
+    const work = { node: { id: 'work-1', status: 'progress', investigation_status: null, errors: [], event_source_id: 'ip-1' } };
+    try {
+      const { rerender } = renderTool();
+      act(() => lastProps(mocks.drawer).onLaunched());
+      expect(lastProps(mocks.drawer)).toMatchObject({ isSending: true });
+
+      mocks.works = [work];
+      rerender(<InvestigationEnrichmentTool entity={{ id: 'investigation-1' } as GraphEntity} />);
+
+      expect(lastProps(mocks.drawer)).toMatchObject({ isSending: false });
+    } finally {
+      mocks.works = [];
+    }
   });
 
   it('gives the context menu action the investigation and the rights of the drawer launch', () => {
