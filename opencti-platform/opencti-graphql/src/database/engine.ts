@@ -995,7 +995,7 @@ export const buildDataRestrictions = async (
           mustNotHaveOneOf.push(markingId);
         }
       }
-      // If use have marking, he can access to data with no marking && data with according marking.
+      // If the user has markings, they can access data with no marking and data with the markings they have.
       // Data with no marking never matches the terms below, so excluding the forbidden markings is enough,
       // and nothing is excluded when the user can access every marking.
       if (mustNotHaveOneOf.length > 0) {
