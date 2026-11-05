@@ -64,6 +64,7 @@
   "{entity_type} successfully updated": "{entity_type} successfully updated",
   "{entityType} `{entityName}` added to `{pirName}`": "{entityType} `{entityName}` added to `{pirName}`",
   "{entityType} `{entityName}` removed from `{pirName}`": "{entityType} `{entityName}` removed from `{pirName}`",
+  "{label}, linked to {count} entities": "{label}, linked to {count} entities",
   "{percent}% full": "{percent}% full",
   "{processed} of {total}": "{processed} of {total}",
   "{processed} of {total} items processed": "{processed} of {total} items processed",
