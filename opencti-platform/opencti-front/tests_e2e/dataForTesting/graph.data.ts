@@ -12,7 +12,7 @@ export const withApiRequest = async <T>(
   playwright: PlaywrightWorkerArgs['playwright'],
   run: (request: APIRequestContext) => Promise<T>,
 ): Promise<T> => {
-  const context = await playwright.request.newContext({ baseURL: 'http://localhost:3000', storageState: AUTH_FILE });
+  const context = await playwright.request.newContext({ baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3000', storageState: AUTH_FILE });
   const prefixed = {
     post: (url: string, options?: Parameters<APIRequestContext['post']>[1]) => context.post(`${BASE_PATH}${url}`, options),
   } as APIRequestContext;
