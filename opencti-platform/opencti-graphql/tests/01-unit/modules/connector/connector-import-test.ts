@@ -186,7 +186,7 @@ describe('importConnector overwrite and copy', () => {
 
   it('updates the managed connector with the same name, keeping its secrets when none is given', async () => {
     const result = await importConnector(context, user, connectorConfiguration({ manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }] }), overwrite);
-    expect(result).toMatchObject({ status: 'overwritten', exists: true, credentials: [{ key: 'MITRE_API_KEY', required: false }] });
+    expect(result).toMatchObject({ status: 'overwritten', exists: true, credentials: [{ key: 'MITRE_API_KEY', required: true, stored: true }] });
     expect(managedConnectorEdit).toHaveBeenCalledWith(context, user, {
       id: mitreConnector.id,
       name: 'mitre',
@@ -197,6 +197,47 @@ describe('importConnector overwrite and copy', () => {
     // The contract of the connector that runs, and its current configuration that keeps the secrets
     expect(computeConnectorTargetContract).toHaveBeenCalledWith(expect.anything(), mitreConnector.manager_contract, 'public-key', mitreConnector.manager_contract_configuration);
     expect(managedConnectorAdd).not.toHaveBeenCalled();
+  });
+
+  it('gives back a secret only known by its name, which the contract would not keep', async () => {
+    const withProxyToken = { ...mitreConnector, manager_contract_configuration: [...mitreConnector.manager_contract_configuration, { key: 'MITRE_PROXY_TOKEN', value: 'proxy-token' }] };
+    withConnectors([withProxyToken]);
+    const configuration = connectorConfiguration({ manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }], required_at_import: ['MITRE_API_KEY', 'MITRE_PROXY_TOKEN'] });
+    const result = await importConnector(context, user, configuration, overwrite);
+    expect(result).toMatchObject({ status: 'overwritten' });
+    expect(vi.mocked(managedConnectorEdit).mock.calls[0][2].manager_contract_configuration)
+      .toEqual([{ key: 'MITRE_INTERVAL', value: '14' }, { key: 'MITRE_PROXY_TOKEN', value: 'proxy-token' }]);
+  });
+
+  it('finds the connector by the id of the bundle when its display name changed', async () => {
+    withConnectors([{ ...mitreConnector, title: 'MITRE ATT&CK' }]);
+    const configuration = connectorConfiguration({ name: 'MITRE ATT&CK', manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }] });
+    const result = await importConnector(context, user, configuration, { ...overwrite, bundleId: 'mitre' });
+    expect(result).toMatchObject({ status: 'overwritten', exists: true });
+    expect(managedConnectorEdit).toHaveBeenCalledWith(context, user, expect.objectContaining({ id: mitreConnector.id, name: 'mitre', title: 'MITRE ATT&CK' }));
+    expect(managedConnectorAdd).not.toHaveBeenCalled();
+  });
+
+  it('asks for a stored secret again when the connector is added as a copy', async () => {
+    const result = await importConnector(context, user, connectorConfiguration(), { mode: ConfigImportMode.Copy, dryRun: true });
+    expect(result).toMatchObject({ status: 'failed', code: 'credentials_required', credentials: [{ key: 'MITRE_API_KEY', required: true, stored: false }] });
+  });
+
+  it('says that the confidence level of the service account is not changed', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'mitre-user-id', user_confidence_level: { max_confidence: 50, overrides: [] } } as never);
+    const unchanged = await importConnector(context, user, connectorConfiguration(), overwrite);
+    expect(unchanged).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date\nThe confidence level of the service account is not changed' });
+    const changed = await importConnector(context, user, connectorConfiguration({ manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }] }), overwrite);
+    expect(changed).toMatchObject({ status: 'overwritten', reason: 'The confidence level of the service account is not changed' });
+    expect(storeLoadById).toHaveBeenCalledWith(context, user, mitreConnector.connector_user_id, 'User');
+  });
+
+  it('reads the connectors and the managers given by the dry run instead of loading them again', async () => {
+    const loaded = { connectors: [mitreConnector], managers: [{ public_key: 'public-key' }] } as never;
+    const result = await importConnector(context, user, connectorConfiguration({ manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }] }), { ...overwrite, dryRun: true, loaded });
+    expect(result).toMatchObject({ status: 'overwritten' });
+    expect(findConnectors).not.toHaveBeenCalled();
+    expect(findConnectorManagers).not.toHaveBeenCalled();
   });
 
   it('skips the managed connector when the bundle changes nothing of it', async () => {

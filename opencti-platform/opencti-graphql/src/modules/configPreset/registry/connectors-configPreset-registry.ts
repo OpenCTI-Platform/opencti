@@ -3,7 +3,7 @@ import { fullEntitiesList, pageEntitiesConnection } from '../../../database/midd
 import { ENTITY_TYPE_CONNECTOR } from '../../../schema/internalObject';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { exportConnector } from '../../connector/connector-export';
-import { connectorName, importConnector } from '../../connector/connector-import';
+import { importConnector, loadConnectorImportContext } from '../../connector/connector-import';
 import type { BasicStoreEntityConnector } from '../../connector/connector-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
@@ -37,6 +37,7 @@ const toConnectorItem = (connector: BasicStoreEntityConnector): ConfigPresetItem
 
 type Plan = Parameters<ConfigPresetImporter['compute']>[3];
 const itemOptionsOf = (plan: Plan, id: string) => ({
+  bundleId: id,
   credentials: plan.credentials?.get(configPresetPlanKey(CONNECTORS_FAMILY_ID, id)),
   serviceAccountId: plan.serviceAccounts?.get(configPresetPlanKey(CONNECTORS_FAMILY_ID, id)),
 });
@@ -46,10 +47,9 @@ const connectorsImporter: ConfigPresetImporter = {
     const { name } = item.configuration;
     const title = typeof name === 'string' && name.trim() ? name : undefined;
     const label = { label: title ?? item.id, translatable: false };
-    if (title !== undefined && connectorName(title) !== item.id) {
-      return { ...label, exists: false, conflict: false, status: 'failed', reason: 'The id of the connector does not match its name' };
-    }
-    const options = { mode, dryRun: true, reservedNames: plan.connectorNames, ingestionGroupPlanned: plan.ingestionGroupPlanned, ...itemOptionsOf(plan, item.id) };
+    plan.connectorsLoaded ??= loadConnectorImportContext(context, user);
+    const loaded = await plan.connectorsLoaded;
+    const options = { mode, dryRun: true, loaded, reservedNames: plan.connectorNames, ingestionGroupPlanned: plan.ingestionGroupPlanned, ...itemOptionsOf(plan, item.id) };
     const result = await importConnector(context, user, item.configuration, options);
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(CONNECTORS_FAMILY_ID, item.id));

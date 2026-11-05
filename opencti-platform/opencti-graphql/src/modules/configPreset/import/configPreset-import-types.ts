@@ -1,6 +1,7 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode, type ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetConfiguration } from '../configPreset-types';
+import type { ConnectorImportLoaded } from '../../connector/connector-import';
 
 // Reasons of a refusal, read by the front in extensions.data.reason (the message is only for display)
 export const CONFIG_PRESET_REASON_FILE_MISSING = 'file_missing';
@@ -53,6 +54,7 @@ export interface ConfigPresetImportCredential {
   key: string;
   description: string;
   required: boolean;
+  stored: boolean;
 }
 
 export type ConfigPresetImportCredentials = Map<string, Record<string, string>>;
@@ -81,6 +83,7 @@ export interface ConfigPresetImportPlan {
   // The items that depend on it use it, so that they get the item of the bundle and never the local one with its bundle id
   targets?: Map<string, string | null>;
   connectorNames?: Set<string>;
+  connectorsLoaded?: Promise<ConnectorImportLoaded>;
   ingestionGroupPlanned?: boolean;
   credentials?: ConfigPresetImportCredentials;
   serviceAccounts?: Map<string, string>;

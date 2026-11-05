@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { findCatalogByCatalogId, findLatestCompatibleCatalogContractByImageName } from '../catalog/catalog-repository';
 import { computeConnectorTargetContract, getContractConfigSchemaWithoutExcludedRuntimeVars } from '../catalog/catalog-domain';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { CONFIG_IMPORT_UNCHANGED_REASON, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
+import { CONFIG_IMPORT_UNCHANGED_REASON, configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../configImport/configImport-utils';
 import { userAlreadyExists } from '../user/user-domain';
 import { findDefaultIngestionGroups } from '../../domain/group';
 import { storeLoadById } from '../../database/middleware-loader';
@@ -13,7 +13,14 @@ import type { BasicStoreEntityConnector } from './connector-types';
 import { connectorSecretKeys } from './connector-export';
 import { type ConnectorImportConfiguration, connectorImportSchema } from './connector-import-schema';
 
+export interface ConnectorImportLoaded {
+  connectors: BasicStoreEntityConnector[];
+  managers: { public_key: string }[];
+}
+
 export interface ConnectorImportOptions extends ConfigImportOptions {
+  bundleId?: string;
+  loaded?: ConnectorImportLoaded;
   reservedNames?: Set<string>;
   credentials?: Record<string, string>;
   ingestionGroupPlanned?: boolean;
@@ -24,11 +31,13 @@ export interface ConnectorImportCredential {
   key: string;
   description: string;
   required: boolean;
+  stored: boolean;
 }
 
 export type ConnectorImportCode = 'invalid' | 'not_available' | 'no_manager' | 'not_managed' | 'exists' | 'name_conflict' | 'credentials_required' | 'no_ingestion_group' | 'service_account_missing' | 'unchanged';
 
 export const NO_INGESTION_GROUP_REASON = 'You have not defined a default group for ingestion users';
+export const CONFIDENCE_NOT_CHANGED_REASON = 'The confidence level of the service account is not changed';
 
 export type ConnectorImportResult = ConfigImportResult<ConnectorImportConfiguration, ConnectorImportCode> & {
   credentials?: ConnectorImportCredential[];
@@ -44,6 +53,11 @@ const refused = (
 ): ConnectorImportResult => ({ status: 'failed', code, reason, exists, configuration, credentials });
 
 export const connectorName = (title: string) => sanitizeContainerName(title);
+
+export const loadConnectorImportContext = async (context: AuthContext, user: AuthUser): Promise<ConnectorImportLoaded> => {
+  const [connectors, managers] = await Promise.all([findConnectors(context, user), findConnectorManagers(context, user)]);
+  return { connectors, managers };
+};
 
 const freeServiceAccountName = (context: AuthContext, title: string) => {
   return freeConfigImportName(`[C] ${title}`, (candidate) => userAlreadyExists(context, candidate));
@@ -61,18 +75,18 @@ export const importConnector = async (
   configuration: unknown,
   options: ConnectorImportOptions,
 ): Promise<ConnectorImportResult> => {
-  const { mode, dryRun = false, reservedNames, credentials = {}, ingestionGroupPlanned = false, serviceAccountId } = options;
+  const { mode, dryRun = false, bundleId, loaded, reservedNames, credentials = {}, ingestionGroupPlanned = false, serviceAccountId } = options;
   const parsed = connectorImportSchema.safeParse(configuration);
   if (!parsed.success) {
     return refused('invalid', configImportValidationReason(parsed.error), false);
   }
   const bundleConnector = parsed.data;
-  const connectors = await findConnectors(context, user);
+  const { connectors, managers } = loaded ?? await loadConnectorImportContext(context, user);
   const isNameTaken = async (candidate: string) => {
     const name = connectorName(candidate);
     return !!reservedNames?.has(name) || connectors.some((connector) => connector.name === name);
   };
-  const existing = connectors.find(({ name }) => name === connectorName(bundleConnector.name));
+  const existing = connectors.find(({ name }) => name === bundleId) ?? connectors.find(({ name }) => name === connectorName(bundleConnector.name));
   if (existing && mode === ConfigImportMode.Add) {
     return refused('exists', 'Connector already exists', true, bundleConnector);
   }
@@ -91,7 +105,7 @@ export const importConnector = async (
   if (!contract || (!target && !contract.manager_supported)) {
     return refused('not_available', `Connector not available on this platform: ${bundleConnector.manager_contract_image}`, !!existing, bundleConnector);
   }
-  const [manager] = await findConnectorManagers(context, user);
+  const [manager] = managers;
   if (!manager) {
     return refused('no_manager', 'There is no connector manager configured', !!existing, bundleConnector);
   }
@@ -101,9 +115,9 @@ export const importConnector = async (
 
   const connectorCredentials: ConnectorImportCredential[] = secretKeys
     .filter((key) => configSchema.required.includes(key) || bundleConnector.required_at_import.includes(key))
-    .map((key) => ({ key, description: configSchema.properties[key]?.description ?? '', required: configSchema.required.includes(key) && !currentKeys.includes(key) }));
+    .map((key) => ({ key, description: configSchema.properties[key]?.description ?? '', required: configSchema.required.includes(key), stored: currentKeys.includes(key) }));
   const given = connectorCredentials.filter(({ key }) => (credentials[key] ?? '') !== '');
-  const missing = connectorCredentials.filter(({ key, required }) => required && !given.some((credential) => credential.key === key));
+  const missing = connectorCredentials.filter(({ key, required, stored }) => required && !stored && !given.some((credential) => credential.key === key));
   if (missing.length > 0) {
     return refused('credentials_required', `Credentials to provide: ${missing.map(({ key }) => key).join(', ')}`, !!existing, bundleConnector, connectorCredentials);
   }
@@ -114,11 +128,20 @@ export const importConnector = async (
     return refused('no_ingestion_group', NO_INGESTION_GROUP_REASON, !!existing, bundleConnector, connectorCredentials);
   }
   const parameters = bundleConnector.manager_contract_configuration.filter(({ key }) => configSchema.properties[key] && !secretKeys.includes(key));
-  const input = [...parameters, ...given.map(({ key }) => ({ key, value: credentials[key] }))];
+  const keptSecrets = (target?.manager_contract_configuration ?? [])
+    .filter(({ key, value, encrypted }) => !encrypted && value && secretKeys.includes(key) && !given.some((credential) => credential.key === key))
+    .map(({ key, value }) => ({ key, value: value as string }));
+  const input = [...parameters, ...given.map(({ key }) => ({ key, value: credentials[key] })), ...keptSecrets];
+  const { confidence_level: confidence } = bundleConnector;
+  const connectorUser = target && confidence !== null && confidence !== undefined
+    ? await storeLoadById<AuthUser>(context, user, target.connector_user_id, ENTITY_TYPE_USER)
+    : undefined;
+  const confidenceReason = connectorUser && connectorUser.user_confidence_level?.max_confidence !== confidence ? CONFIDENCE_NOT_CHANGED_REASON : undefined;
   if (target && given.length === 0 && (target.title ?? target.name) === title) {
     const currentParameters = (target.manager_contract_configuration ?? []).filter(({ key, encrypted }) => !encrypted && configSchema.properties[key] && !secretKeys.includes(key));
     if (sameConfiguration(currentParameters, parameters)) {
-      return { status: 'skipped', code: 'unchanged', reason: CONFIG_IMPORT_UNCHANGED_REASON, exists: true, configuration: bundleConnector, credentials: connectorCredentials };
+      const reason = joinConfigImportReasons([CONFIG_IMPORT_UNCHANGED_REASON, confidenceReason]);
+      return { status: 'skipped', code: 'unchanged', reason, exists: true, configuration: bundleConnector, credentials: connectorCredentials };
     }
   }
   try {
@@ -126,7 +149,7 @@ export const importConnector = async (
   } catch (error) {
     return refused('invalid', error instanceof Error ? error.message : String(error), !!existing, bundleConnector, connectorCredentials);
   }
-  const reason = title !== bundleConnector.name ? `Added as "${title}"` : undefined;
+  const reason = joinConfigImportReasons([title !== bundleConnector.name ? `Added as "${title}"` : undefined, confidenceReason]);
   const result: ConnectorImportResult = { status: target ? 'overwritten' : 'created', exists: !!existing, configuration: bundleConnector, reason, credentials: connectorCredentials };
   if (dryRun) {
     reservedNames?.add(connectorName(title));
@@ -142,7 +165,6 @@ export const importConnector = async (
     });
     return { ...result, connector: connector as unknown as BasicStoreEntityConnector };
   }
-  const { confidence_level: confidence } = bundleConnector;
   const serviceAccount = serviceAccountId
     ? { user_id: serviceAccountId, automatic_user: false }
     : {

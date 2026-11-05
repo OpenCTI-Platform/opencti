@@ -82,6 +82,7 @@ const configPresetImportPreviewQuery = graphql`
             key
             description
             required
+            stored
           }
           dependsOn {
             type
@@ -109,7 +110,7 @@ const toCountedTypes = (types: ReadonlyArray<PreviewType>) => types.map((type) =
 
 type ImportSelections = ReturnType<typeof buildConfigPresetSelections>;
 
-export type ImportCredentials = { type: string; key: string; values: { key: string; value: string }[] }[];
+export type ImportCredentials = { type: string; key: string; values: { key: string; secret: string }[] }[];
 
 export interface ImportItemOptions {
   credentials: ImportCredentials;
@@ -283,9 +284,14 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
 
   const types = preview ? toCountedTypes(preview.types) : [];
   const givenCredentials = (typeKey: string, itemKey: string) => credentials[`${typeKey}/${itemKey}`] ?? {};
+  // A secret stored on the platform is kept on overwrite, never on a copy
+  const requiredCredentials = (typeKey: string, item: PreviewType['items'][number]) => {
+    const isCopy = importModes[configImportModeKey(typeKey, item.key)] === 'COPY';
+    return item.credentials.map((credential) => ({ ...credential, required: credential.required && (isCopy || !credential.stored) }));
+  };
   // An item whose required secrets are not entered cannot be imported: it stays unchecked, as a type the license locks
   const isCredentialsLocked = (typeKey: string, item: PreviewType['items'][number]) => {
-    return item.credentials.some(({ key, required }) => required && (givenCredentials(typeKey, item.key)[key] ?? '') === '');
+    return requiredCredentials(typeKey, item).some(({ key, required }) => required && (givenCredentials(typeKey, item.key)[key] ?? '') === '');
   };
   const importableSelection = types.reduce((current, type) => type.items
     .filter((item) => isCredentialsLocked(type.key, item))
@@ -299,7 +305,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     .map((item) => ({
       type: type.key,
       key: item.key,
-      values: item.credentials.map(({ key }) => ({ key, value: givenCredentials(type.key, item.key)[key] ?? '' })).filter(({ value }) => value !== ''),
+      values: item.credentials.map(({ key }) => ({ key, secret: givenCredentials(type.key, item.key)[key] ?? '' })).filter(({ secret }) => secret !== ''),
     }))
     .filter(({ values }) => values.length > 0));
   const itemOptions: ImportItemOptions = {
@@ -484,7 +490,20 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           if (isCredentialsLocked(type.key, item)) {
             return (
               <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
-                <ConfigPresetCredentialsItemRow label={itemLabel} onOpen={() => setCredentialsItem({ typeKey: type.key, item })} />
+                <ConfigPresetCredentialsItemRow
+                  label={itemLabel}
+                  actions={item.conflict && type.modes.length > 1 && (
+                    <ConfigPresetImportModeSelect
+                      subject={itemLabel}
+                      purpose="When it already exists"
+                      modes={type.modes}
+                      value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
+                      disabled={isStarting}
+                      onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
+                    />
+                  )}
+                  onOpen={() => setCredentialsItem({ typeKey: type.key, item })}
+                />
               </div>
             );
           }
@@ -586,7 +605,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         <ConfigPresetCredentialsDialog
           open
           itemLabel={credentialsItem.item.translatable ? t_i18n(credentialsItem.item.label) : credentialsItem.item.label}
-          credentials={credentialsItem.item.credentials}
+          credentials={requiredCredentials(credentialsItem.typeKey, credentialsItem.item)}
           values={givenCredentials(credentialsItem.typeKey, credentialsItem.item.key)}
           onClose={() => setCredentialsItem(null)}
           onSubmit={(values) => {

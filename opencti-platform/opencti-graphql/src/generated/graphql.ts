@@ -4607,7 +4607,7 @@ export enum ConfigImportMode {
 
 export type ConfigPresetCredentialInput = {
   key: Scalars['String']['input'];
-  value: Scalars['String']['input'];
+  secret: Scalars['String']['input'];
 };
 
 export type ConfigPresetExportableGroup = {
@@ -4662,6 +4662,7 @@ export type ConfigPresetImportCredential = {
   description: Scalars['String']['output'];
   key: Scalars['String']['output'];
   required: Scalars['Boolean']['output'];
+  stored: Scalars['Boolean']['output'];
 };
 
 export type ConfigPresetImportField = {
@@ -45102,6 +45103,7 @@ export type ConfigPresetImportCredentialResolvers<ContextType = any, ParentType 
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   required?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  stored?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type ConfigPresetImportFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportField'] = ResolversParentTypes['ConfigPresetImportField']> = ResolversObject<{

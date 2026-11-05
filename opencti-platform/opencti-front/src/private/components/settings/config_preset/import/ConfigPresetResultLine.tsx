@@ -83,7 +83,7 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'There is no connector manager configured': return t_i18n('There is no connector manager configured');
     case 'You have not defined a default group for ingestion users': return t_i18n('You have not defined a default group for ingestion users');
     case 'Service account not found': return t_i18n('Service account not found');
-    case 'The id of the connector does not match its name': return t_i18n('The id of the connector does not match its name');
+    case 'The confidence level of the service account is not changed': return t_i18n('The confidence level of the service account is not changed');
     default: break;
   }
   const mainOrganization = reason.match(/^Sets the main organization: (.+)$/)?.[1];

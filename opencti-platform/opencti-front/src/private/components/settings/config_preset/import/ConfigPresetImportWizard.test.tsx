@@ -117,7 +117,7 @@ const previewWithConnector = {
       previewItem('mitre', 'MITRE', {
         translatable: false,
         exists: false,
-        credentials: [{ key: 'MITRE_API_KEY', description: 'The key of the MITRE API', required: true }],
+        credentials: [{ key: 'MITRE_API_KEY', description: 'The key of the MITRE API', required: true, stored: false }],
       }),
     ], ['OVERWRITE', 'COPY']),
   ],
@@ -1184,7 +1184,7 @@ describe('ConfigPresetImportWizard', () => {
       await rendered.user.type(screen.getByLabelText(/MITRE_API_KEY/), 'secret-key');
       await rendered.user.click(screen.getByRole('button', { name: 'Save' }));
     };
-    const credentials = [{ type: 'connectors', key: 'mitre', values: [{ key: 'MITRE_API_KEY', value: 'secret-key' }] }];
+    const credentials = [{ type: 'connectors', key: 'mitre', values: [{ key: 'MITRE_API_KEY', secret: 'secret-key' }] }];
 
     it('locks an item whose required secrets are not entered, as the license locks a type: it is not imported', async () => {
       await openPreview(session(), previewWithConnector);
@@ -1224,6 +1224,22 @@ describe('ConfigPresetImportWizard', () => {
       await enterCredentials(rendered);
       await rendered.user.click(await screen.findByRole('button', { name: 'Credentials' }));
       expect(screen.getByLabelText(/MITRE_API_KEY/)).toHaveValue('secret-key');
+    });
+
+    it('asks again for a secret the platform stores when the connector is added as a copy, and keeps the choice on the row', async () => {
+      const storedSecret = [{ key: 'MITRE_API_KEY', description: 'The key of the MITRE API', required: true, stored: true }];
+      const existingConnector = {
+        ...previewWithConnector,
+        types: [previewType('connectors', 'Connectors', [previewItem('mitre', 'MITRE', { translatable: false, conflict: true, credentials: storedSecret })], ['OVERWRITE', 'COPY'])],
+      };
+      const rendered = await openPreview(session(), existingConnector);
+      expect(checkbox('MITRE')).toHaveAttribute('data-state', 'checked');
+      expect(screen.queryByText('Credentials required')).not.toBeInTheDocument();
+      const modeSelect = () => screen.getByRole('combobox', { name: 'MITRE: When it already exists' });
+      await rendered.user.click(modeSelect());
+      await rendered.user.click(await screen.findByRole('option', { name: 'Add as a copy' }));
+      expect(await screen.findByText('Credentials required')).toBeInTheDocument();
+      expect(modeSelect()).toHaveTextContent('Add as a copy');
     });
   });
 

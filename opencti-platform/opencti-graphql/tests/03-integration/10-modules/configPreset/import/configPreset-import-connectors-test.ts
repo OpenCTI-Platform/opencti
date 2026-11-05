@@ -23,7 +23,7 @@ const PREVIEW_QUERY = gql`
 `;
 
 const SECRET = 'connector-secret-value';
-const credentials = [{ type: 'connectors', key: 'mitre', values: [{ key: 'MITRE_API_KEY', value: SECRET }] }];
+const credentials = [{ type: 'connectors', key: 'mitre', values: [{ key: 'MITRE_API_KEY', secret: SECRET }] }];
 const connectorBundle = () => ({
   'metadata.json': metadataFile(),
   'integrations/connectors/mitre.json': itemFile('integrations.connectors', 'mitre', {

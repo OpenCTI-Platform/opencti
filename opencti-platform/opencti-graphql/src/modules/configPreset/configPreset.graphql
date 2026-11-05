@@ -61,6 +61,7 @@ type ConfigPresetImportCredential {
     key: String!
     description: String!
     required: Boolean!
+    stored: Boolean!
 }
 
 # An item of an uploaded bundle: type is the bare family id, key the bundle id (the pair the results of the import carry).
@@ -270,7 +271,7 @@ input ConfigPresetItemServiceAccountInput {
 
 input ConfigPresetCredentialInput {
     key: String!
-    value: String!
+    secret: String!
 }
 
 input ConfigPresetItemModeInput {

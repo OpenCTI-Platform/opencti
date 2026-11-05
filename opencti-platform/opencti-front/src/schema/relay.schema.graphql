@@ -17873,6 +17873,7 @@ type ConfigPresetImportCredential {
   key: String!
   description: String!
   required: Boolean!
+  stored: Boolean!
 }
 
 type ConfigPresetImportItem {
@@ -18030,7 +18031,7 @@ input ConfigPresetItemServiceAccountInput {
 
 input ConfigPresetCredentialInput {
   key: String!
-  value: String!
+  secret: String!
 }
 
 input ConfigPresetItemModeInput {

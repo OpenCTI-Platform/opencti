@@ -299,7 +299,7 @@ export const configPresetImport = async (
   checkConfigPresetImportAccess(context, user);
   const credentials: ConfigPresetImportCredentials = new Map(itemCredentials.map(({ type, key, values }) => [
     configPresetPlanKey(type, key),
-    Object.fromEntries(values.map((credential) => [credential.key, credential.value])),
+    Object.fromEntries(values.map((credential) => [credential.key, credential.secret])),
   ]));
   const serviceAccounts = new Map(itemServiceAccounts.map(({ type, key, user_id: userId }) => [configPresetPlanKey(type, key), userId]));
   const itemOptions: ConfigPresetItemOptions = { credentials, serviceAccounts };
