@@ -5,7 +5,7 @@ import { Kind, parse, type ObjectTypeDefinitionNode, type StringValueNode } from
 import { isFeatureEnabled } from '../../../src/config/conf';
 import { loadEntity, patchAttribute } from '../../../src/database/middleware';
 import { getEntityFromCache } from '../../../src/database/cache';
-import { isAdministrativeAccount, LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../../../src/domain/local-auth-lockout';
+import { isAdministrativeAccount, LOCAL_AUTH_LOCKOUT_DEFAULTS, lockDurationCapMs } from '../../../src/domain/local-auth-lockout';
 import {
   LOCAL_AUTH_LOCKOUT_DURATION_LIMIT,
   LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT,
@@ -205,5 +205,28 @@ describe('isAdministrativeAccount - lockout threshold', () => {
     ['knowledge capabilities only', ['KNOWLEDGE', 'KNOWLEDGE_KNUPDATE_KNDELETE', 'APIACCESS_USEBASICAUTH']],
   ])('should be false with %s', (_, names) => {
     expect(isAdministrativeAccount(accountWith(...names))).toBe(false);
+  });
+});
+
+describe('lockDurationCapMs - temporary locks', () => {
+  // Same durations as the Redis script: 30 s doubled on each failure, capped
+  const temporaryLocksMs = (windowMs: number, maxAttempts: number) => Array.from(
+    { length: maxAttempts - 1 },
+    (_, i) => Math.floor(Math.min(30000 * (2 ** i), lockDurationCapMs(windowMs, maxAttempts))),
+  );
+
+  it.each([1, 15, 60, LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT])('should always let the max attempts be reached within a %s min window', (windowMinutes) => {
+    const windowMs = windowMinutes * 60000;
+    for (let maxAttempts = 1; maxAttempts <= LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT; maxAttempts += 1) {
+      const totalMs = temporaryLocksMs(windowMs, maxAttempts).reduce((sum, ms) => sum + ms, 0);
+      expect(totalMs).toBeLessThan(windowMs);
+    }
+  });
+
+  it('should reach the default users threshold after 12 min, and the administrators one after 1.5 min', () => {
+    const windowMs = LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window * 60000;
+    const total = (maxAttempts: number) => temporaryLocksMs(windowMs, maxAttempts).reduce((sum, ms) => sum + ms, 0);
+    expect(total(LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts)).toEqual(12 * 60000);
+    expect(total(LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_admin_max_attempts)).toEqual(90000);
   });
 });

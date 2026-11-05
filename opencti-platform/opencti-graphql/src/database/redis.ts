@@ -918,7 +918,8 @@ export type LocalAuthLockoutTimings = { maxAttempts: number; windowMs: number; d
 // Records an attempt as a failure and locks the email before its password is checked, in one atomic step with the lock check,
 // so that concurrent attempts never check more than one password per lock. An accepted attempt clears or releases it.
 // - The failure window starts on the first failure and is never extended.
-// - Below the max attempts, each failure locks temporarily, with a duration doubled on each failure, up to the max duration.
+// - Below the max attempts, each failure locks temporarily, with a duration doubled on each failure, up to the max duration
+//   (window / max attempts), so that the max attempts are always reached within the window.
 // - From the max attempts, the final action locks for the whole window. The lock holds the final action,
 //   so that a permanent lock is reported the same way for an existing account and an unknown email.
 // Returns [allowed, remainingMs, lockType, isFinal]:

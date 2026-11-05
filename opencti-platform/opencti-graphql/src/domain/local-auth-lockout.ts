@@ -1,5 +1,6 @@
 // -- Local authentication lockout --
-// Each failed local password login or MFA code locks the email temporarily, with a duration doubled on each failure.
+// Each failed local password login or MFA code locks the email temporarily, with a duration doubled on each failure
+// and capped, so that the max attempts can always be reached within the window.
 // Once the max attempts are reached, the final action applies: a lock for the whole window, or the account set to Locked.
 // The temporary locks live in Redis only: the account status is not changed, and open sessions and API tokens keep working.
 
@@ -14,10 +15,10 @@ import { ENTITY_TYPE_USER } from '../modules/user/user-types';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { BYPASS, executionContext, SYSTEM_USER } from '../utils/access';
-
-const SETTINGS = 'SETTINGS';
 import { normalizeEmail } from '../utils/email';
 import { hashSHA256 } from '../utils/hash';
+
+const SETTINGS = 'SETTINGS';
 
 // Values returned for the local authentication lockout policy when the settings hold none.
 // Thresholds and window follow NIST SP 800-53 AC-7: 3 attempts for administrative accounts, 10 for the other users, within 15 minutes
@@ -29,14 +30,18 @@ export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
   // Applied once max attempts are reached: a lock for the whole window, or the account set to Locked until an admin unlocks it
   local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Temporary,
   local_auth_lockout_window: 15, // minutes
-  local_auth_lockout_duration: 30, // seconds
-  local_auth_lockout_max_duration: 10800, // seconds, 3h
 };
 export type LocalAuthLockoutKey = keyof typeof LOCAL_AUTH_LOCKOUT_DEFAULTS;
 export const LOCAL_AUTH_LOCKOUT_KEYS = Object.keys(LOCAL_AUTH_LOCKOUT_DEFAULTS) as LocalAuthLockoutKey[];
 
 const SECOND_MS = 1000;
 const MINUTE_MS = 60 * SECOND_MS;
+// Duration of the lock after the first failure, doubled on each next failure. Not a setting: its cap depends on the policy
+const FIRST_LOCK_DURATION_MS = 30 * SECOND_MS;
+
+// Caps the temporary locks so that the max attempts can always be reached within the window:
+// the (maxAttempts - 1) locks before the final action add up to at most windowMs * (maxAttempts - 1) / maxAttempts
+export const lockDurationCapMs = (windowMs: number, maxAttempts: number) => Math.floor(windowMs / maxAttempts);
 
 // The lock type and the remaining time are sent in the error data, so that the login form can show them.
 // A permanent lock has no remaining time: an administrator must unlock the account
@@ -82,13 +87,15 @@ const getLockoutTimings = async (userId?: string): Promise<LocalAuthLockoutTimin
   }
   // NIST SP 800-53 AC-7: administrative accounts get a lower threshold than the other users
   const isAdministrative = await isAdministrativeUserId(context, userId);
+  const maxAttempts = isAdministrative
+    ? settings.local_auth_lockout_admin_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_admin_max_attempts
+    : settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts;
+  const windowMs = (settings.local_auth_lockout_window ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window) * MINUTE_MS;
   return {
-    maxAttempts: isAdministrative
-      ? settings.local_auth_lockout_admin_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_admin_max_attempts
-      : settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts,
-    windowMs: (settings.local_auth_lockout_window ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window) * MINUTE_MS,
-    durationMs: (settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration) * SECOND_MS,
-    maxDurationMs: (settings.local_auth_lockout_max_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_duration) * SECOND_MS,
+    maxAttempts,
+    windowMs,
+    durationMs: FIRST_LOCK_DURATION_MS,
+    maxDurationMs: lockDurationCapMs(windowMs, maxAttempts),
     finalAction: settings.local_auth_lockout_final_action ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_final_action,
   };
 };
