@@ -211,6 +211,10 @@ Account status can have four values:
 
 Only the expired status can be automatically set (given the account expiry date). The other statuses can be set manually or through mass operations within the user management screen. 
 
+### Merging users
+
+To merge a duplicate account into another one, for instance a local account into the account created by SSO, see [Merging users](users-merge.md).
+
 ## Groups
 
 Groups are the main way to manage permissions and [data segregation](segregation.md) as well as platform customization for the given users part of this group. You can manage the groups in `Settings > Security > Groups`.

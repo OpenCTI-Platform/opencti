@@ -604,9 +604,6 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
-// User merge feature flag (use isFeatureEnabled(MERGE_USERS_FEATURE_FLAG) to check activation)
-export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
-
 // Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
 // check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
 // entity types with a published WorkflowDefinition behave as before this change.

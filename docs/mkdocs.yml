@@ -259,6 +259,7 @@ nav:
         - Policies: administration/policies.md
         - Users and RBAC:
           - Users and RBAC: administration/users.md
+          - Merging users: administration/users-merge.md
           - Protect sensitive configuration: administration/protect-sensitive-configuration.md
         - Data segregation:
           - Marking restriction: administration/segregation.md
