@@ -35,6 +35,12 @@ const restoreStyle = (element, style) => {
   Object.assign(element.style, style);
 };
 
+// Sets the style attribute back to what it was, or removes it if the element had none.
+const restoreStyleAttribute = (element, style) => {
+  if (style === null) element.removeAttribute('style');
+  else element.setAttribute('style', style);
+};
+
 const wait = async (delay = DELAY) => {
   await new Promise((resolve) => {
     setTimeout(resolve, delay);
@@ -68,6 +74,10 @@ export class ExportButtons extends Component {
     const viewButtons = document.getElementById('container-view-buttons');
     const dashboardButtons = document.getElementById('dashboard-buttons');
     const dashboardRefreshControl = document.getElementById('dashboard-refresh-control');
+    const { prepareCapture } = this.props;
+    let capturedContainer = null;
+    let initialStyle = null;
+    let undoPrepareCapture = null;
 
     try {
       this.setState({ exporting: true });
@@ -79,6 +89,8 @@ export class ExportButtons extends Component {
       setExportTheme(themeNode);
 
       const container = document.getElementById(domElementId);
+      capturedContainer = container;
+      initialStyle = container.getAttribute('style');
 
       // Hide buttons: dashboard-buttons wraps everything (including export-buttons) on dashboards
       if (dashboardRefreshControl) {
@@ -96,6 +108,8 @@ export class ExportButtons extends Component {
         container.setAttribute('style', 'width:3840px; height:2160px');
         this.adjust(true);
       }
+      // After `adjust`, so a view that sizes its own capture wins over the fixed dashboard size.
+      undoPrepareCapture = prepareCapture?.(container) ?? null;
 
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
@@ -112,6 +126,10 @@ export class ExportButtons extends Component {
     } catch {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to image'));
     } finally {
+      if (prepareCapture && capturedContainer) {
+        undoPrepareCapture?.();
+        restoreStyleAttribute(capturedContainer, initialStyle);
+      }
       if (dashboardRefreshControl) {
         restoreStyle(dashboardRefreshControl, { display: 'flex' });
       }
@@ -140,6 +158,10 @@ export class ExportButtons extends Component {
     const exportButtons = document.getElementById('export-buttons');
     const dashboardButtons = document.getElementById('dashboard-buttons');
     const dashbaordRefreshControl = document.getElementById('dashboard-refresh-control');
+    const { prepareCapture } = this.props;
+    let capturedContainer = null;
+    let initialStyle = null;
+    let undoPrepareCapture = null;
 
     try {
       this.setState({ exporting: true });
@@ -161,6 +183,12 @@ export class ExportButtons extends Component {
         exportButtons?.setAttribute('style', 'display: none');
       }
 
+      if (prepareCapture) {
+        capturedContainer = document.getElementById(domElementId);
+        initialStyle = capturedContainer.getAttribute('style');
+        undoPrepareCapture = prepareCapture(capturedContainer) ?? null;
+      }
+
       // add some delay to permit the ui to re-render with the selected theme
       await wait();
 
@@ -174,6 +202,10 @@ export class ExportButtons extends Component {
     } catch (_e) {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to pdf'));
     } finally {
+      if (prepareCapture && capturedContainer) {
+        undoPrepareCapture?.();
+        restoreStyleAttribute(capturedContainer, initialStyle);
+      }
       setExportTheme(null);
       this.setState({ exporting: false });
 
