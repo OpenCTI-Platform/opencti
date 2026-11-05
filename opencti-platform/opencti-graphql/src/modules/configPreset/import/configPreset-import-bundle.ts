@@ -90,12 +90,18 @@ const findItemFamily = (type: string) => {
   return family && configPresetFamilyType(family) === type ? family : undefined;
 };
 
-const toBundleFile = (path: string, entry: { stream: () => AsyncIterable<Buffer | string> }): ConfigPresetBundleFile => ({
+// The files are read when an importer asks for them: what they add to the extracted size counts against the same limit as the JSON files
+const toBundleFile = (path: string, entry: { stream: () => AsyncIterable<Buffer | string> }, extracted: { size: number }): ConfigPresetBundleFile => ({
   path,
   read: async (limit) => {
     const tooLarge = new Error('too large');
     try {
-      return await readStreamWithLimit(entry.stream(), limit, () => tooLarge);
+      const content = await readStreamWithLimit(entry.stream(), limit, () => tooLarge);
+      extracted.size += content.length;
+      if (extracted.size > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+        throw bundleRefused('The configuration bundle is too large once extracted');
+      }
+      return content;
     } catch (err) {
       if (err === tooLarge) {
         return null;
@@ -120,7 +126,7 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
   // The entries that are not JSON, by path: the file an item points to is read when its importer asks for it
   const otherEntries = new Map<string, { stream: () => AsyncIterable<Buffer | string> }>();
   const attachedPaths = new Map<string, string>();
-  let totalSize = 0;
+  const extracted = { size: 0 };
   for (let i = 0; i < directory.files.length; i += 1) {
     const entry = directory.files[i];
     if (entry.type !== 'Directory') {
@@ -130,8 +136,8 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
         const content = await readStreamWithLimit(entry.stream(), CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE, () => {
           return bundleRefused('A file of the configuration bundle is too large', { path: entry.path });
         });
-        totalSize += content.length;
-        if (totalSize > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+        extracted.size += content.length;
+        if (extracted.size > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
           throw bundleRefused('The configuration bundle is too large once extracted');
         }
         const json = parseJson(entry.path, content);
@@ -180,7 +186,7 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
     const entry = filePath ? otherEntries.get(filePath) : undefined;
     if (filePath && entry && !claimed.has(filePath)) {
       claimed.add(filePath);
-      items[i].file = toBundleFile(filePath, entry);
+      items[i].file = toBundleFile(filePath, entry, extracted);
     }
   }
   otherEntries.forEach((_entry, path) => {
