@@ -37,6 +37,13 @@ const publicStixRelationshipsTimeSeriesBreakdownQuery = graphql`
             id
             name
           }
+          # the colors of the values that have one
+          ... on Label {
+            color
+          }
+          ... on MarkingDefinition {
+            x_opencti_color
+          }
         }
         values
       }
