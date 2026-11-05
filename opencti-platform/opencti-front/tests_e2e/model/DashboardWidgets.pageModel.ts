@@ -108,6 +108,19 @@ export default class DashboardWidgetsPageModel {
     return this.page.getByTestId('widget-breakdown-selection');
   }
 
+  /**
+   * Hovers the breakdown controls, to show the tooltip of the disabled ones. A disabled control gets no pointer
+   * events (FDS-WORKAROUND #68: its wrapper carries the tooltip), so the pointer lands on that wrapper.
+   */
+  hoverBreakdownSelection() {
+    return this.getBreakdownSelection().hover();
+  }
+
+  /** The dataset of the Filters step at this index, from 0. */
+  getDataSelection(index: number) {
+    return this.page.getByTestId(`widget-selection-${index}`);
+  }
+
   /** Alert of the Filters step, shown when the widget can be broken down in the Parameters step. */
   getBreakdownInfoMessage() {
     return this.page.getByText('You can break this dataset down into one series per field value in the Parameters step.');
@@ -126,12 +139,22 @@ export default class DashboardWidgetsPageModel {
     return this.page.getByRole('button', { name: 'Add', exact: true }).click();
   }
 
-  getChartCanvas() {
-    return this.page.locator('.apexcharts-canvas');
+  /** The cell of a widget in the dashboard grid, found by its title: its chart is never one of another widget. */
+  getWidgetCard(title: string) {
+    return this.page.locator('.react-grid-item').filter({ hasText: title });
   }
 
-  getChartLegendEntry(name: string): Locator {
-    return this.page.locator('.apexcharts-legend-text').filter({ hasText: name });
+  getChartCanvas(widgetTitle: string) {
+    return this.getWidgetCard(widgetTitle).locator('.apexcharts-canvas');
+  }
+
+  /** The names of the legend of the chart of a widget, in their order. */
+  getChartLegendEntries(widgetTitle: string): Locator {
+    return this.getWidgetCard(widgetTitle).locator('.apexcharts-legend-text');
+  }
+
+  getChartLegendEntry(widgetTitle: string, name: string): Locator {
+    return this.getChartLegendEntries(widgetTitle).filter({ hasText: name });
   }
 
   getItemFromWidgetList(name: string) {
