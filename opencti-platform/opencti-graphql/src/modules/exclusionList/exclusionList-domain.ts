@@ -15,7 +15,10 @@ import { generateInternalId } from '../../schema/identifier';
 
 const filePath = 'exclusionLists';
 
-const MAX_FILE_SIZE = conf.get('app:exclusion_list:file_max_size') ?? 10000000;
+export const MAX_FILE_SIZE = conf.get('app:exclusion_list:file_max_size') ?? 10000000;
+
+// The key of the file of a list in the storage: the upload lowercases the name of the file, not the folder
+export const exclusionListStorageKey = (internalId: string) => `${filePath}/${internalId.toLowerCase()}.txt`;
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityExclusionList>(context, user, id, ENTITY_TYPE_EXCLUSION_LIST);
@@ -52,7 +55,6 @@ const checkFileSize = async (createReadStream: () => Readable) => {
   let byteLength = 0;
   let linesNumber = 1;
   let fileTooHeavy = false;
-  // eslint-disable-next-line no-restricted-syntax
   for await (const uploadChunk of uploadStream) {
     byteLength += (uploadChunk as Buffer).byteLength;
     const chunkAsString = (uploadChunk as Buffer).toString('utf-8');
@@ -98,7 +100,8 @@ const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser,
     exclusion_list_file_size: byteLength,
     exclusion_list_values_count: linesNumber,
   };
-  const createdExclusionList = createInternalObject<StoreEntityExclusionList>(context, user, exclusionListToCreate, ENTITY_TYPE_EXCLUSION_LIST);
+  // The list is indexed before the cache is asked to rebuild, or a rebuild between the two would miss it
+  const createdExclusionList = await createInternalObject<StoreEntityExclusionList>(context, user, exclusionListToCreate, ENTITY_TYPE_EXCLUSION_LIST);
   await refreshExclusionListStatus();
   return createdExclusionList;
 };
@@ -124,7 +127,8 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
   const fullInput = [...(input ?? []), { key: 'exclusion_list_file_size', value: [fileSize] }, { key: 'exclusion_list_values_count', value: [exclusionListCount] }];
   const { element } = await updateAttribute<StoreEntityExclusionList>(context, user, id, ENTITY_TYPE_EXCLUSION_LIST, fullInput);
 
-  if (file || fullInput.some((i) => i.key === 'enabled')) {
+  // The cache holds the types of each list next to its values: a change of types needs a rebuild as much as a change of values
+  if (file || fullInput.some((i) => i.key === 'enabled' || i.key === 'exclusion_list_entity_types')) {
     await refreshExclusionListStatus();
   }
 

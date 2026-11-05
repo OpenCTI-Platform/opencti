@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // The Settings entity is read through topEntitiesList (loadEntity), the entity settings and the themes through
 // fullEntitiesList, a page of themes through pageEntitiesConnection, a theme through storeLoadById
+// The values of an exclusion list are a file of the storage
+vi.mock('../../../../src/database/raw-file-storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/raw-file-storage')>()),
+  downloadFile: vi.fn(),
+}));
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
@@ -28,6 +33,8 @@ vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => ({
 }));
 
 import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
+import { Readable } from 'node:stream';
+import { downloadFile } from '../../../../src/database/raw-file-storage';
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
 import { CONFIG_PRESET_FAMILIES, configPresetItemFilePath, exportConfigPresetItem } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -39,6 +46,7 @@ import { ALL_MARKINGS, customMarking, papRed, tlpAmber } from './configPreset-ma
 import { BUILT_IN_MARKING_STANDARD_IDS } from '../../../../src/modules/markingDefinition/marking-import';
 import { roleCapabilities } from '../../../../src/modules/user/user-domain';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
+import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusionLists-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -138,6 +146,14 @@ describe('Config preset registry', () => {
       { id: 'policies', label: 'Policies', description: 'Password policy, users visibility and main organization', group: 'securityAccess', itemIds: ['policies'] },
       // The labels by value
       { id: 'labels', label: 'Labels', description: 'Labels and their colors', group: 'taxonomy', itemIds: [otherLabel.standard_id, customLabel.standard_id] },
+      // The exclusion lists by name, in their own group
+      {
+        id: 'exclusionLists',
+        label: 'Exclusion lists',
+        description: 'Exclusion lists and their values',
+        group: 'customization',
+        itemIds: [dnsExclusionList.standard_id, retiredExclusionList.standard_id],
+      },
     ]);
   });
 
@@ -145,7 +161,7 @@ describe('Config preset registry', () => {
     expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark']);
   });
 
-  it('translates the static labels only, never a theme name or a label value', async () => {
+  it('translates the static labels only, never a theme name, a label value or an exclusion list name', async () => {
     const items = await resolveAllItems();
     expect(items.map((item) => [item.label, item.translatable])).toEqual([
       ['Platform configuration', true],
@@ -166,10 +182,12 @@ describe('Config preset registry', () => {
       ['Policies', true],
       ['APT', false],
       ['tlp:amber', false],
+      ['Public DNS resolvers', false],
+      ['Retired partners', false],
     ]);
   });
 
-  it('writes one distinct JSON file per item, in the folder of its category, a theme or a label by its standard id', async () => {
+  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label or an exclusion list by its standard id', async () => {
     const paths = (await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
       const items = await family.resolveItems(context, user, null, []);
       return items.map((item) => configPresetItemFilePath(family, item));
@@ -193,6 +211,8 @@ describe('Config preset registry', () => {
       'security_access/policies.json',
       `taxonomy/labels/${otherLabel.standard_id}.json`,
       `taxonomy/labels/${customLabel.standard_id}.json`,
+      `customization/exclusion_lists/${dnsExclusionList.standard_id}.json`,
+      `customization/exclusion_lists/${retiredExclusionList.standard_id}.json`,
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -384,6 +404,76 @@ describe('Config preset registry', () => {
       expect(await ids(null, [])).toEqual([otherLabel.standard_id, customLabel.standard_id]);
       expect(await ids(null, [otherLabel.standard_id])).toEqual([customLabel.standard_id]);
       expect(await ids([customLabel.standard_id], [])).toEqual([customLabel.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('exclusion lists', () => {
+    const lists = findFamily('exclusionLists');
+    const pageIds = async (args: Parameters<typeof lists.listItems>[2]) => (await lists.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports an exclusion list in the import format only, and points to its values file next to it', async () => {
+      const file = await exportConfigPresetItem(context, user, lists, await findItem('exclusionLists', dnsExclusionList.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'customization.exclusionLists',
+        id: dnsExclusionList.standard_id,
+        configuration: { name: 'Public DNS resolvers', description: 'Well-known resolvers', enabled: true, exclusion_list_entity_types: ['IPv4-Addr'] },
+        file: `customization/exclusion_lists/${dnsExclusionList.standard_id}.txt`,
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|dns-exclusion-list-id|exclusionLists\/|values_count|file_size/);
+    });
+
+    it('exports a disabled list without description with its state and its types', async () => {
+      const file = await exportConfigPresetItem(context, user, lists, await findItem('exclusionLists', retiredExclusionList.standard_id));
+      expect(file.configuration).toEqual({ name: 'Retired partners', enabled: false, exclusion_list_entity_types: ['Domain-Name', 'Hostname'] });
+    });
+
+    it('reads the values of a list byte for byte from the storage, by the file of the list', async () => {
+      const bytes = Buffer.from('8.8.8.8\r\n1.1.1.1\n\u00e9\n');
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([bytes.subarray(0, 5), bytes.subarray(5)]) as never);
+      const item = await findItem('exclusionLists', dnsExclusionList.standard_id);
+      expect(item.file?.name).toBe(`${dnsExclusionList.standard_id}.txt`);
+      expect(await item.file!.read(context, user)).toEqual(bytes);
+      expect(downloadFile).toHaveBeenCalledWith(dnsExclusionList.file_id);
+    });
+
+    it('refuses to export a list whose file is missing from the storage, instead of exporting it without its values', async () => {
+      vi.mocked(downloadFile).mockResolvedValue(null);
+      const item = await findItem('exclusionLists', dnsExclusionList.standard_id);
+      await expect(item.file!.read(context, user)).rejects.toThrow('The file of the values of an exclusion list is missing from the storage');
+    });
+
+    it('opens the first page with the exclusion lists by name, and counts them', async () => {
+      const page = await lists.listItems(context, user, { first: 1 });
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['ExclusionList'], {
+        first: 1,
+        after: undefined,
+        search: undefined,
+        orderBy: 'name',
+        orderMode: 'asc',
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([[dnsExclusionList.standard_id, 'Public DNS resolvers', false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
+    });
+
+    it('applies search, ids and excluded ids to the exclusion lists', async () => {
+      expect(await pageIds({ search: 'retired' })).toEqual([retiredExclusionList.standard_id]);
+      expect(await pageIds({ ids: [dnsExclusionList.standard_id] })).toEqual([dnsExclusionList.standard_id]);
+      expect(await pageIds({ excludedIds: [dnsExclusionList.standard_id] })).toEqual([retiredExclusionList.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every list
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the exclusion lists to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await lists.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([dnsExclusionList.standard_id, retiredExclusionList.standard_id]);
+      expect(await ids(null, [dnsExclusionList.standard_id])).toEqual([retiredExclusionList.standard_id]);
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();

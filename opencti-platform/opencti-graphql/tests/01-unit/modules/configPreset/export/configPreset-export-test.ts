@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { Writable } from 'node:stream';
+import { Readable, Writable } from 'node:stream';
 import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 // @ts-expect-error unzipper ships no type declarations
 import unzipper from 'unzipper';
@@ -11,6 +11,11 @@ const enterpriseEdition = vi.hoisted(() => ({ enabled: true }));
 vi.mock('../../../../../src/enterprise-edition/ee', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/enterprise-edition/ee')>()),
   isEnterpriseEditionUpToDate: vi.fn(async () => enterpriseEdition.enabled),
+}));
+// The values of an exclusion list are a file of the storage
+vi.mock('../../../../../src/database/raw-file-storage', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/database/raw-file-storage')>()),
+  downloadFile: vi.fn(),
 }));
 vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/database/middleware-loader')>()),
@@ -35,6 +40,7 @@ vi.mock('../../../../../src/manager/telemetryManager', async (importOriginal) =>
 
 import { fullEntitiesList, topEntitiesList } from '../../../../../src/database/middleware-loader';
 import { uploadToStorage } from '../../../../../src/database/file-storage';
+import { downloadFile } from '../../../../../src/database/raw-file-storage';
 import { publishUserAction, type UserConfigPresetExportActionContextData } from '../../../../../src/listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../../../src/manager/telemetryManager';
 import { PLATFORM_VERSION } from '../../../../../src/config/conf';
@@ -53,6 +59,7 @@ import type { ConfigPresetItemDefinition } from '../../../../../src/modules/conf
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import { builtInTheme, customTheme, otherCustomTheme } from '../configPreset-themes-fixtures';
 import { mockConfigPresetLoaders } from '../configPreset-loaders-fixtures';
+import { dnsExclusionList, retiredExclusionList } from '../configPreset-exclusionLists-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const draftContext = { source: 'test', draft_context: 'draft-id' } as AuthContext;
@@ -437,6 +444,60 @@ describe('Config preset export', () => {
     vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
     await expect(configPresetExport(context, bypassUser, [{ type: 'platform' }])).rejects.toThrow('A configuration preset dependency cannot be exported');
     expectNothingWritten();
+  });
+
+  describe('the file of an item', () => {
+    const readEntries = async (zip: Buffer) => {
+      const directory = await unzipper.Open.buffer(zip);
+      const entries: Record<string, Buffer> = {};
+      for (let i = 0; i < directory.files.length; i += 1) {
+        entries[directory.files[i].path] = await directory.files[i].buffer();
+      }
+      return entries;
+    };
+    const jsonPath = (list: { standard_id: string }) => `customization/exclusion_lists/${list.standard_id}.json`;
+    const txtPath = (list: { standard_id: string }) => `customization/exclusion_lists/${list.standard_id}.txt`;
+
+    it('writes the values of an exclusion list as they are stored, next to its JSON that points to them', async () => {
+      const bytes = Buffer.from('8.8.8.8\r\n1.1.1.1\n\u00e9\n');
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([bytes]) as never);
+      await configPresetExport(context, bypassUser, [{ type: 'exclusionLists', items: [dnsExclusionList.standard_id] }]);
+      const entries = await readEntries(uploadedZip!);
+      expect(Object.keys(entries).sort()).toEqual([jsonPath(dnsExclusionList), txtPath(dnsExclusionList), 'dependencies.json', 'metadata.json']);
+      expect(entries[txtPath(dnsExclusionList)]).toEqual(bytes);
+      expect(JSON.parse(entries[jsonPath(dnsExclusionList)].toString('utf8'))).toMatchObject({
+        type: 'customization.exclusionLists',
+        id: dnsExclusionList.standard_id,
+        file: txtPath(dnsExclusionList),
+      });
+      expect(downloadFile).toHaveBeenCalledWith(dnsExclusionList.file_id);
+      // The file is not an item: it is counted with its list
+      expect(publishedSummary()).toMatchObject({ entity_types: ['exclusionLists'], counts: { exclusionLists: 1 }, items: { exclusionLists: [dnsExclusionList.standard_id] } });
+    });
+
+    it('writes one file for each exclusion list, each under the name of its list', async () => {
+      vi.mocked(downloadFile).mockImplementation(async (id) => Readable.from([Buffer.from(`values of ${id}\n`)]) as never);
+      await configPresetExport(context, bypassUser, [{ type: 'exclusionLists' }]);
+      const entries = await readEntries(uploadedZip!);
+      expect(entries[txtPath(dnsExclusionList)].toString('utf8')).toBe(`values of ${dnsExclusionList.file_id}\n`);
+      expect(entries[txtPath(retiredExclusionList)].toString('utf8')).toBe(`values of ${retiredExclusionList.file_id}\n`);
+    });
+
+    it('refuses the export of a list whose file is missing from the storage, and uploads nothing', async () => {
+      vi.mocked(downloadFile).mockResolvedValue(null);
+      await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists', items: [dnsExclusionList.standard_id] }]))
+        .rejects.toThrow('The file of the values of an exclusion list is missing from the storage');
+      // The zip was being written: it is removed, nothing is stored and nothing is audited
+      expect(uploadToStorage).not.toHaveBeenCalled();
+      expect(publishUserAction).not.toHaveBeenCalled();
+      tmpZipPaths().forEach((zipPath) => expect(fs.existsSync(zipPath)).toBe(false));
+    });
+
+    it('fails with the error of the storage when it cannot be read, it is not a missing file', async () => {
+      vi.mocked(downloadFile).mockRejectedValue(new Error('s3 down'));
+      await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists', items: [dnsExclusionList.standard_id] }])).rejects.toThrow('s3 down');
+      expect(uploadToStorage).not.toHaveBeenCalled();
+    });
   });
 
   it('refuses a user without BYPASS', async () => {

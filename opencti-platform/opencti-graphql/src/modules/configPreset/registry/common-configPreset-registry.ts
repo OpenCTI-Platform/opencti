@@ -11,6 +11,7 @@ export const platformSettingsGroup = { id: 'platformSettings', label: 'Platform 
 export const dataModelGroup = { id: 'dataModel', label: 'Data model' };
 export const securityAccessGroup = { id: 'securityAccess', label: 'Security & Access' };
 export const taxonomyGroup = { id: 'taxonomy', label: 'Taxonomy' };
+export const customizationGroup = { id: 'customization', label: 'Customization' };
 
 // The families the items of another family depend on (the roles of a group, the default theme of the platform):
 // their ids are shared here, so that registries do not import each other
