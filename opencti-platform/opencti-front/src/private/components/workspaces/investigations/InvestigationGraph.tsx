@@ -318,6 +318,7 @@ const investigationGraphObjectsFragment = graphql`
               }
             }
             ... on StixRefRelationship {
+              relationship_type
               created_at
             }
             ... on StixCoreRelationship {
