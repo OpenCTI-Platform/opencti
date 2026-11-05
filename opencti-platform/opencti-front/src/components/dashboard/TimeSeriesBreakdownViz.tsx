@@ -1,12 +1,11 @@
 import React, { ComponentType, ReactNode, useCallback, useState } from 'react';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import ApexCharts from 'apexcharts';
 import { useFormatter } from '../i18n';
 import useAuth from '../../utils/hooks/useAuth';
 import WidgetContainer from './WidgetContainer';
 import WidgetNoData from './WidgetNoData';
-import WidgetTimeSeriesBreakdown, { WidgetTimeSeriesBreakdownData } from './WidgetTimeSeriesBreakdown';
+import TimeSeriesBreakdownContent, { type SelectTimeSeriesBreakdown } from './TimeSeriesBreakdownContent';
 import WidgetBreakdownErrorBoundary from './WidgetBreakdownErrorBoundary';
 import useDashboardViz from './useDashboardViz';
 import WidgetRenderContent, { type WidgetRenderGuards } from './WidgetRenderContent';
@@ -83,7 +82,7 @@ type BuildQueryVariables<TQuery extends OperationType> = (
 interface TimeSeriesBreakdownQueryProps<TQuery extends OperationType> {
   query: GraphQLTaggedNode;
   buildQueryVariables: BuildQueryVariables<TQuery>;
-  selectBreakdown: (data: TQuery['response']) => WidgetTimeSeriesBreakdownData | null | undefined;
+  selectBreakdown: SelectTimeSeriesBreakdown<TQuery>;
   // Title of the widget when it sets none
   defaultTitle?: string;
   // Guards of the perspective on top of the common ones, like the capabilities the audits require
@@ -97,37 +96,6 @@ export interface TimeSeriesBreakdownVizProps {
   config: DashboardConfig;
   refreshRate?: number | null;
 }
-
-interface TimeSeriesBreakdownContentProps<TQuery extends OperationType> {
-  query: GraphQLTaggedNode;
-  queryRef: PreloadedQuery<TQuery>;
-  selectBreakdown: TimeSeriesBreakdownQueryProps<TQuery>['selectBreakdown'];
-  type: string;
-  parameters: WidgetParameters;
-  onMounted: (chart?: ApexCharts) => void;
-  onWarningChange: (warning?: string) => void;
-}
-
-const TimeSeriesBreakdownContent = <TQuery extends OperationType>({
-  query,
-  queryRef,
-  selectBreakdown,
-  type,
-  parameters,
-  onMounted,
-  onWarningChange,
-}: TimeSeriesBreakdownContentProps<TQuery>) => {
-  const data = usePreloadedQuery<TQuery>(query, queryRef);
-  return (
-    <WidgetTimeSeriesBreakdown
-      breakdown={selectBreakdown(data)}
-      type={type}
-      parameters={parameters}
-      onMounted={onMounted}
-      onWarningChange={onWarningChange}
-    />
-  );
-};
 
 /**
  * Time series widget drawing one series per value of `parameters.breakdownBy`, for the entities, the
