@@ -9,6 +9,7 @@ import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImpo
 export const platformSettingsGroup = { id: 'platformSettings', label: 'Platform settings' };
 export const dataModelGroup = { id: 'dataModel', label: 'Data model' };
 export const taxonomyGroup = { id: 'taxonomy', label: 'Taxonomy' };
+export const customizationGroup = { id: 'customization', label: 'Customization' };
 
 // The search does not apply to static items: their label is a source string the UI translates,
 // so a match on it would not be the text the user sees. They are always listed.

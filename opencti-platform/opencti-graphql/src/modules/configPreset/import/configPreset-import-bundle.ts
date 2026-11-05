@@ -10,6 +10,7 @@ import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from '../configPreset-
 import {
   CONFIG_PRESET_REASON_BUNDLE_REFUSED,
   type ConfigPresetBundle,
+  type ConfigPresetBundleFile,
   type ConfigPresetBundleItem,
   type ConfigPresetBundleMetadata,
   configPresetPlanKey,
@@ -58,7 +59,7 @@ const metadataSchema = z.object({
   bundle_name: z.string().nullish().transform((name) => name ?? null),
 });
 const dependenciesSchema = z.record(z.string(), z.record(z.string(), z.record(z.string(), z.string())));
-const itemFileSchema = z.object({ type: z.string(), id: z.string(), configuration: z.record(z.string(), z.unknown()) });
+const itemFileSchema = z.object({ type: z.string(), id: z.string(), configuration: z.record(z.string(), z.unknown()), file: z.string().optional() });
 
 // A bundle from a more recent platform is refused; a -dev or -rc suffix is ignored and an unreadable version is refused.
 // Not isCompatibleVersionWithMinimal: it has no coerce and throws on a non-semver string.
@@ -89,6 +90,27 @@ const findItemFamily = (type: string) => {
   return family && configPresetFamilyType(family) === type ? family : undefined;
 };
 
+// The files are read when an importer asks for them: what they add to the extracted size counts against the same limit as the JSON files
+const toBundleFile = (path: string, entry: { stream: () => AsyncIterable<Buffer | string> }, extracted: { size: number }): ConfigPresetBundleFile => ({
+  path,
+  read: async (limit) => {
+    const tooLarge = new Error('too large');
+    try {
+      const content = await readStreamWithLimit(entry.stream(), limit, () => tooLarge);
+      extracted.size += content.length;
+      if (extracted.size > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+        throw bundleRefused('The configuration bundle is too large once extracted');
+      }
+      return content;
+    } catch (err) {
+      if (err === tooLarge) {
+        return null;
+      }
+      throw err;
+    }
+  },
+});
+
 // Reads a zip in memory, nothing is written to disk and entry names are never used as paths
 export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetBundle> => {
   let directory;
@@ -101,18 +123,21 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
   let dependencies: ConfigPresetBundle['dependencies'] = {};
   const items: ConfigPresetBundleItem[] = [];
   const ignored: string[] = [];
-  let totalSize = 0;
+  // The entries that are not JSON, by path: the file an item points to is read when its importer asks for it
+  const otherEntries = new Map<string, { stream: () => AsyncIterable<Buffer | string> }>();
+  const attachedPaths = new Map<string, string>();
+  const extracted = { size: 0 };
   for (let i = 0; i < directory.files.length; i += 1) {
     const entry = directory.files[i];
     if (entry.type !== 'Directory') {
       if (!entry.path.endsWith('.json')) {
-        ignored.push(entry.path);
+        otherEntries.set(entry.path, entry);
       } else {
         const content = await readStreamWithLimit(entry.stream(), CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE, () => {
           return bundleRefused('A file of the configuration bundle is too large', { path: entry.path });
         });
-        totalSize += content.length;
-        if (totalSize > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+        extracted.size += content.length;
+        if (extracted.size > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
           throw bundleRefused('The configuration bundle is too large once extracted');
         }
         const json = parseJson(entry.path, content);
@@ -141,6 +166,9 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
               throw bundleRefused('The configuration bundle holds the same item twice', { type: parsed.data.type, id: parsed.data.id });
             }
             items.push({ type: family.id, id: parsed.data.id, path: entry.path, configuration: parsed.data.configuration });
+            if (parsed.data.file) {
+              attachedPaths.set(entry.path, parsed.data.file);
+            }
           }
         }
       }
@@ -150,6 +178,22 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
     throw bundleRefused(`The configuration bundle has no valid ${CONFIG_PRESET_METADATA_FILE}`);
   }
   checkBundleVersion(metadata.openCTI_version);
+  // The file of an item is the entry of the zip at the path its JSON gives, never a path of the disk. A path that is no entry gives no
+  // file, and an entry serves one item only.
+  const claimed = new Set<string>();
+  for (let i = 0; i < items.length; i += 1) {
+    const filePath = attachedPaths.get(items[i].path);
+    const entry = filePath ? otherEntries.get(filePath) : undefined;
+    if (filePath && entry && !claimed.has(filePath)) {
+      claimed.add(filePath);
+      items[i].file = toBundleFile(filePath, entry, extracted);
+    }
+  }
+  otherEntries.forEach((_entry, path) => {
+    if (!claimed.has(path)) {
+      ignored.push(path);
+    }
+  });
   return { metadata, items, dependencies, ignored };
 };
 

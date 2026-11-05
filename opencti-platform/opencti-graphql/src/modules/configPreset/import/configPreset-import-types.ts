@@ -27,6 +27,16 @@ export interface ConfigPresetBundleItem {
   // Path in the zip
   path: string;
   configuration: ConfigPresetConfiguration;
+  // The file of the item in the zip (the values of an exclusion list): absent when the item has none, or when the zip lacks it
+  file?: ConfigPresetBundleFile;
+}
+
+export interface ConfigPresetBundleFile {
+  // Path in the zip
+  path: string;
+  // Reads the file when it is needed, never while the bundle is read. The limit is enforced on the bytes really read:
+  // null when the file is bigger, nothing is kept of it.
+  read: (limit: number) => Promise<Buffer | null>;
 }
 
 // What an importer decides for an item, without writing anything
