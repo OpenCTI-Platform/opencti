@@ -11,7 +11,6 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { PublicDashboardCreationFormDashboardsQuery } from '@components/workspaces/dashboards/public_dashboards/__generated__/PublicDashboardCreationFormDashboardsQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
-import { FieldOption } from '../../../../../utils/field';
 import SwitchField from '../../../../../components/fields/SwitchField';
 import SelectFieldFds, { SelectItem } from '../../../../../components/fields/SelectFieldFds';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
@@ -21,7 +20,10 @@ import useAuth from '../../../../../utils/hooks/useAuth';
 import { ME_FILTER_VALUE } from '../../../../../utils/filters/filtersUtils';
 import { fromB64 } from '../../../../../utils/String';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
-import { generatePublicDashboardUriKey } from './public-dashboard-utils';
+import useHelper from '../../../../../utils/hooks/useHelper';
+import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../../components/dashboard/dashboardVariablesFeatureFlag';
+import { buildPublicationInput, EMPTY_PUBLISHED_TIME_RANGE, generatePublicDashboardUriKey, type PublicDashboardCreationFormData } from './public-dashboard-utils';
+import PublicDashboardPublishedValues from './PublicDashboardPublishedValues';
 
 const publicDashboardCreateMutation = graphql`
   mutation PublicDashboardCreationFormCreateMutation($input: PublicDashboardAddInput!) {
@@ -40,19 +42,15 @@ export const dashboardsQuery = graphql`
           name
           currentUserAccessRight
           manifest
+          variables {
+            id
+            usedInWidgetIds
+          }
         }
       }
     }
   }
 `;
-
-export interface PublicDashboardCreationFormData {
-  name: string;
-  enabled: boolean;
-  uri_key: string;
-  max_markings: FieldOption[];
-  dashboard_id: string;
-}
 
 interface PublicDashboardCreationFormComponentProps {
   queryRef: PreloadedQuery<PublicDashboardCreationFormDashboardsQuery>;
@@ -73,6 +71,8 @@ const PublicDashboardCreationFormComponent = ({
 }: PublicDashboardCreationFormComponentProps) => {
   const { t_i18n } = useFormatter();
   const { me } = useAuth();
+  const { isFeatureEnable } = useHelper();
+  const isVariablesEnabled = isFeatureEnable(DASHBOARD_VARIABLES_FEATURE_FLAG);
   const publicDashboardCreatorName = me.name;
   const [commitCreateMutation] = useApiMutation(publicDashboardCreateMutation);
 
@@ -99,13 +99,7 @@ const PublicDashboardCreationFormComponent = ({
   const onSubmit: FormikConfig<PublicDashboardCreationFormData>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     commitCreateMutation({
       variables: {
-        input: {
-          name: values.name,
-          enabled: values.enabled,
-          uri_key: values.uri_key,
-          dashboard_id: values.dashboard_id,
-          allowed_markings_ids: values.max_markings.map((marking) => marking.value),
-        },
+        input: buildPublicationInput(values, isVariablesEnabled),
       },
       updater: (store) => updater?.(store, 'publicDashboardAdd'),
       onCompleted: () => {
@@ -131,6 +125,8 @@ const PublicDashboardCreationFormComponent = ({
         enabled: true,
         uri_key: '',
         max_markings: [],
+        variable_values: {},
+        time_range: EMPTY_PUBLISHED_TIME_RANGE,
       }}
       onSubmit={onSubmit}
     >
@@ -208,6 +204,10 @@ const PublicDashboardCreationFormComponent = ({
           <Alert severity="info" variant="outlined" style={{ marginTop: '10px' }}>
             {t_i18n('You see only marking definitions that can be shared (defined by the admin)')}
           </Alert>
+
+          {isVariablesEnabled && (
+            <PublicDashboardPublishedValues dashboard={dashboards?.find(({ id }) => id === values.dashboard_id)} />
+          )}
 
           <FormButtonContainer>
             <Button

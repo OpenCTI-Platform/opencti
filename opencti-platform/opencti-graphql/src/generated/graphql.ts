@@ -25204,7 +25204,10 @@ export type PublicDashboardAddInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   enabled: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
+  time_range?: InputMaybe<PublicDashboardTimeRangeInput>;
+  time_zone?: InputMaybe<Scalars['String']['input']>;
   uri_key: Scalars['String']['input'];
+  variable_values?: InputMaybe<Array<PublicDashboardVariableValueInput>>;
 };
 
 export type PublicDashboardConnection = {
@@ -25217,6 +25220,17 @@ export type PublicDashboardEdge = {
   __typename?: 'PublicDashboardEdge';
   cursor: Scalars['String']['output'];
   node: PublicDashboard;
+};
+
+export type PublicDashboardTimeRangeInput = {
+  end_date?: InputMaybe<Scalars['String']['input']>;
+  relative_date?: InputMaybe<Scalars['String']['input']>;
+  start_date?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type PublicDashboardVariableValueInput = {
+  value: Scalars['String']['input'];
+  variable_id: Scalars['String']['input'];
 };
 
 export enum PublicDashboardsOrdering {
@@ -42079,6 +42093,8 @@ export type ResolversTypes = ResolversObject<{
   PublicDashboardAddInput: PublicDashboardAddInput;
   PublicDashboardConnection: ResolverTypeWrapper<Omit<PublicDashboardConnection, 'edges'> & { edges: Array<ResolversTypes['PublicDashboardEdge']> }>;
   PublicDashboardEdge: ResolverTypeWrapper<Omit<PublicDashboardEdge, 'node'> & { node: ResolversTypes['PublicDashboard'] }>;
+  PublicDashboardTimeRangeInput: PublicDashboardTimeRangeInput;
+  PublicDashboardVariableValueInput: PublicDashboardVariableValueInput;
   PublicDashboardsOrdering: PublicDashboardsOrdering;
   PublicDistribution: ResolverTypeWrapper<Omit<PublicDistribution, 'breakdownDistribution' | 'entity'> & { breakdownDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, entity?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']> }>;
   PublicProvider: ResolverTypeWrapper<PublicProvider>;
@@ -43198,6 +43214,8 @@ export type ResolversParentTypes = ResolversObject<{
   PublicDashboardAddInput: PublicDashboardAddInput;
   PublicDashboardConnection: Omit<PublicDashboardConnection, 'edges'> & { edges: Array<ResolversParentTypes['PublicDashboardEdge']> };
   PublicDashboardEdge: Omit<PublicDashboardEdge, 'node'> & { node: ResolversParentTypes['PublicDashboard'] };
+  PublicDashboardTimeRangeInput: PublicDashboardTimeRangeInput;
+  PublicDashboardVariableValueInput: PublicDashboardVariableValueInput;
   PublicDistribution: Omit<PublicDistribution, 'breakdownDistribution' | 'entity'> & { breakdownDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, entity?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> };
   PublicProvider: PublicProvider;
   PublicSettings: Omit<PublicSettings, 'platform_theme'> & { platform_theme?: Maybe<ResolversParentTypes['Theme']> };
