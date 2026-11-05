@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { StatusScope } from '../../../src/generated/graphql';
 import {
-  buildMigrationDefinition,
   buildWorkflowMigrationPreviewResult,
   convertStatusToDefinition,
   getPublishBlockingDiagnostics,
+  pickMigrationScope,
 } from '../../../src/modules/workflow/migration/status-to-definition-converter';
 import type { WorkflowSerializedTransition } from '../../../src/modules/workflow/types/workflow-types';
 import type { BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../src/types/store';
@@ -32,7 +32,7 @@ const buildTemplate = (overrides: Partial<BasicWorkflowTemplateEntity> = {}): Ba
 /** Builds a directed reachability map from `transitions` and asserts every state can reach every other state. */
 const isFullyConnected = (transitions: WorkflowSerializedTransition[], stateIds: string[]): boolean => stateIds.every((from) => stateIds.every((to) => {
   if (from === to) return true;
-  return transitions.some((t) => t.to === to && (Array.isArray(t.from) ? t.from.includes(from) : t.from === from));
+  return transitions.some((t) => t.to === to && t.from === from);
 }));
 
 describe('convertStatusToDefinition', () => {
@@ -182,7 +182,44 @@ describe('convertStatusToDefinition', () => {
 
     expect(isFullyConnected(definition.transitions, ['t1', 't2', 't3', 't4'])).toBe(true);
     // Not just adjacent-order pairs: a non-adjacent jump (t1 -> t4) must also be allowed.
-    expect(definition.transitions.some((t) => t.to === 't4' && Array.isArray(t.from) && t.from.includes('t1'))).toBe(true);
+    expect(definition.transitions.some((t) => t.to === 't4' && t.from === 't1')).toBe(true);
+  });
+
+  it('emits one transition per (from, to) pair with a single-string from, which the engine can match', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1 }),
+      buildStatus({ id: 's2', template_id: 't2', order: 2 }),
+      buildStatus({ id: 's3', template_id: 't3', order: 3 }),
+    ];
+    const templates = [
+      buildTemplate({ id: 't1', name: 'New' }),
+      buildTemplate({ id: 't2', name: 'In Progress' }),
+      buildTemplate({ id: 't3', name: 'Closed' }),
+    ];
+
+    const { definition } = convertStatusToDefinition(statuses, templates).byScope[StatusScope.Global]!;
+
+    expect(definition.transitions).toHaveLength(6);
+    expect(definition.transitions.every((t) => typeof t.from === 'string' && t.from !== t.to)).toBe(true);
+    expect(definition.transitions.filter((t) => t.to === 't3')).toEqual([
+      { from: 't1', to: 't3', event: 'MOVE_TO_CLOSED' },
+      { from: 't2', to: 't3', event: 'MOVE_TO_CLOSED' },
+    ]);
+  });
+
+  it('breaks order ties and orders statuses without order by status id, whatever the store order', () => {
+    const templates = ['t1', 't2', 't3'].map((id) => buildTemplate({ id, name: id }));
+    const statuses = [
+      buildStatus({ id: 's-c', template_id: 't3', order: undefined as unknown as number }),
+      buildStatus({ id: 's-b', template_id: 't2', order: 1 }),
+      buildStatus({ id: 's-a', template_id: 't1', order: 1 }),
+    ];
+
+    const forward = convertStatusToDefinition(statuses, templates).byScope[StatusScope.Global]!;
+    const reversed = convertStatusToDefinition([...statuses].reverse(), templates).byScope[StatusScope.Global]!;
+
+    expect(forward.definition.states.map((s) => s.statusId)).toEqual(['t1', 't2', 't3']);
+    expect(reversed.definition).toEqual(forward.definition);
   });
 
   it('assigns states a sequential 0-based order matching their final migrated rank', () => {
@@ -272,12 +309,40 @@ describe('convertStatusToDefinition', () => {
     const { byScope } = convertStatusToDefinition(statuses, templates);
 
     const { definition, diagnostics } = byScope[StatusScope.Global]!;
-    const events = definition.transitions.map((t) => t.event);
-    expect(new Set(events).size).toBe(events.length);
+    const eventByTarget = new Map(definition.transitions.map((t) => [t.to, t.event]));
+    expect(new Set(eventByTarget.values()).size).toBe(4);
     expect(definition.transitions).toContainEqual(expect.objectContaining({ to: 't1', event: 'MOVE_TO_IN_PROGRESS' }));
     expect(definition.transitions).toContainEqual(expect.objectContaining({ to: 't2', event: 'MOVE_TO_IN_PROGRESS_3' }));
     expect(definition.transitions).toContainEqual(expect.objectContaining({ to: 't3', event: 'MOVE_TO_IN_PROGRESS_2' }));
     expect(diagnostics).toEqual([]);
+  });
+
+  it('trims a non-ASCII name used as is in the event name', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1 }),
+      buildStatus({ id: 's2', template_id: 't2', order: 2 }),
+    ];
+    const templates = [buildTemplate({ id: 't1', name: '  进行中  ' }), buildTemplate({ id: 't2', name: 'Done' })];
+
+    const { definition } = convertStatusToDefinition(statuses, templates).byScope[StatusScope.Global]!;
+
+    expect(definition.transitions).toContainEqual(expect.objectContaining({ to: 't1', event: 'MOVE_TO_进行中' }));
+  });
+
+  it('keeps event names within the 255-character limit for very long names', () => {
+    const longName = 'A'.repeat(300);
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1 }),
+      buildStatus({ id: 's2', template_id: 't2', order: 2 }),
+      buildStatus({ id: 's3', template_id: 't3', order: 3 }),
+    ];
+    const templates = [buildTemplate({ id: 't1', name: longName }), buildTemplate({ id: 't2', name: `${longName}B` }), buildTemplate({ id: 't3', name: 'Done' })];
+
+    const { definition } = convertStatusToDefinition(statuses, templates).byScope[StatusScope.Global]!;
+
+    expect(definition.transitions.every((t) => t.event.length <= 255)).toBe(true);
+    expect(new Set(definition.transitions.map((t) => `${t.to}:${t.event}`)).size).toBe(3);
+    expect(new Set(definition.transitions.map((t) => t.event)).size).toBe(3);
   });
 
   it('returns no transitions for a single-state definition', () => {
@@ -291,7 +356,7 @@ describe('convertStatusToDefinition', () => {
 });
 
 describe('buildWorkflowMigrationPreviewResult', () => {
-  it('shapes byScope into a results array per scope, with published/hasPublishedVersion always false', () => {
+  it('shapes byScope into a results array per scope, with hasPublishedVersion false by default', () => {
     const statuses = [buildStatus({ id: 's1', template_id: 't1', order: 1 })];
     const templates = [buildTemplate({ id: 't1', name: 'New' })];
     const { byScope } = convertStatusToDefinition(statuses, templates);
@@ -304,7 +369,6 @@ describe('buildWorkflowMigrationPreviewResult', () => {
         {
           scope: StatusScope.Global,
           initialState: 't1',
-          published: false,
           hasPublishedVersion: false,
           states: [{ statusId: 't1', order: 0 }],
           transitions: [],
@@ -337,9 +401,9 @@ describe('buildWorkflowMigrationPreviewResult', () => {
 
     const result = buildWorkflowMigrationPreviewResult('Incident', byScope, true);
 
-    expect(result.results.map((r) => [r.scope, r.published, r.hasPublishedVersion])).toEqual([
-      [StatusScope.Global, false, true],
-      [StatusScope.RequestAccess, false, false],
+    expect(result.results.map((r) => [r.scope, r.hasPublishedVersion])).toEqual([
+      [StatusScope.Global, true],
+      [StatusScope.RequestAccess, false],
     ]);
   });
 
@@ -348,7 +412,7 @@ describe('buildWorkflowMigrationPreviewResult', () => {
   });
 });
 
-describe('buildMigrationDefinition', () => {
+describe('pickMigrationScope', () => {
   it('serialises the GLOBAL scope into a definition payload, keeping states, order and transitions', () => {
     const statuses = [
       buildStatus({ id: 's1', template_id: 't1', order: 1 }),
@@ -357,7 +421,7 @@ describe('buildMigrationDefinition', () => {
     const templates = [buildTemplate({ id: 't1', name: 'New' }), buildTemplate({ id: 't2', name: 'Closed' })];
     const { byScope } = convertStatusToDefinition(statuses, templates);
 
-    const { definition, diagnostics } = buildMigrationDefinition('Grouping', byScope);
+    const { definition, diagnostics } = pickMigrationScope('Grouping', byScope);
 
     expect(definition.initialState).toBe('t1');
     expect(definition.states).toEqual([{ statusId: 't1', order: 0 }, { statusId: 't2', order: 1 }]);
@@ -373,20 +437,33 @@ describe('buildMigrationDefinition', () => {
     const templates = [buildTemplate({ id: 't1', name: 'New' }), buildTemplate({ id: 't2', name: 'Pending' })];
     const { byScope } = convertStatusToDefinition(statuses, templates);
 
-    const { definition } = buildMigrationDefinition('Grouping', byScope);
+    const { definition } = pickMigrationScope('Grouping', byScope);
 
     expect(definition.states.map((s) => s.statusId)).toEqual(['t1']);
   });
 
   it('throws when there is no GLOBAL scope result', () => {
-    expect(() => buildMigrationDefinition('Grouping', {})).toThrow('No legacy statuses to migrate');
+    expect(() => pickMigrationScope('Grouping', {})).toThrow('No legacy statuses to migrate');
+  });
+
+  it('picks another scope when asked, keeping the REQUEST_ACCESS path open', () => {
+    const statuses = [
+      buildStatus({ id: 's1', template_id: 't1', order: 1, scope: StatusScope.Global }),
+      buildStatus({ id: 's2', template_id: 't2', order: 1, scope: StatusScope.RequestAccess }),
+    ];
+    const templates = [buildTemplate({ id: 't1', name: 'New' }), buildTemplate({ id: 't2', name: 'Pending' })];
+    const { byScope } = convertStatusToDefinition(statuses, templates);
+
+    const { definition } = pickMigrationScope('Case-Rfi', byScope, StatusScope.RequestAccess);
+
+    expect(definition.states.map((s) => s.statusId)).toEqual(['t2']);
   });
 
   it('exposes diagnostics so the caller can gate publishing', () => {
     const statuses = [buildStatus({ id: 's1', template_id: 'missing', order: 1 })];
     const { byScope } = convertStatusToDefinition(statuses, []);
 
-    const { diagnostics } = buildMigrationDefinition('Grouping', byScope);
+    const { diagnostics } = pickMigrationScope('Grouping', byScope);
 
     expect(diagnostics.map((d) => d.type)).toEqual(['MISSING_TEMPLATE']);
   });

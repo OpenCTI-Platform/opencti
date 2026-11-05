@@ -40311,7 +40311,6 @@ export type WorkflowMigrationScopeResult = {
   diagnostics: Array<WorkflowMigrationDiagnostic>;
   hasPublishedVersion: Scalars['Boolean']['output'];
   initialState: Scalars['String']['output'];
-  published: Scalars['Boolean']['output'];
   scope: StatusScope;
   states: Array<WorkflowMigrationState>;
   transitions: Array<WorkflowSerializedTransition>;
@@ -56384,7 +56383,6 @@ export type WorkflowMigrationScopeResultResolvers<ContextType = any, ParentType 
   diagnostics?: Resolver<Array<ResolversTypes['WorkflowMigrationDiagnostic']>, ParentType, ContextType>;
   hasPublishedVersion?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   initialState?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  published?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   scope?: Resolver<ResolversTypes['StatusScope'], ParentType, ContextType>;
   states?: Resolver<Array<ResolversTypes['WorkflowMigrationState']>, ParentType, ContextType>;
   transitions?: Resolver<Array<ResolversTypes['WorkflowSerializedTransition']>, ParentType, ContextType>;

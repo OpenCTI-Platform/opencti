@@ -1,7 +1,7 @@
 import { FunctionalError } from '../../../config/errors';
 import { StatusScope } from '../../../generated/graphql';
 import type { BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
-import type { WorkflowSerializedTransition } from '../types/workflow-types';
+import type { WorkflowSerializedState, WorkflowSerializedTransition } from '../types/workflow-types';
 
 export type WorkflowMigrationDiagnosticType = 'MISSING_ORDER' | 'DUPLICATE_ORDER' | 'DUPLICATE_TEMPLATE' | 'NAME_CONFLICT' | 'MISSING_TEMPLATE' | 'EXISTING_WORKFLOW';
 
@@ -14,15 +14,9 @@ export interface WorkflowMigrationDiagnostic {
   templateId?: string;
 }
 
-// A migrated state carries a fully-computed, sequential `order` (its final rank in the migrated
-// sequence, 0-based) — unlike the real `WorkflowSerializedState`, which has no ordering concept at
-// all (a real workflow's order is inferred from its transition graph). Exposing this rank is only
-// meaningful in the context of a legacy-Status migration, so it lives in its own type rather than
-// polluting the shared `WorkflowSerializedState` used by real, persisted workflow definitions.
-export interface WorkflowMigrationState {
-  statusId: string;
-  order: number;
-}
+// A migrated state is a plain `WorkflowSerializedState` whose optional legacy `order` is always set:
+// its final 0-based rank in the migrated sequence.
+export type WorkflowMigrationState = WorkflowSerializedState & { order: number };
 
 export interface WorkflowMigrationDefinitionData {
   initialState: string;
@@ -41,11 +35,16 @@ export interface ConvertStatusToDefinitionResult {
   byScope: WorkflowMigrationByScope;
 }
 
+// Events are capped at 255 characters by validation: `MOVE_TO_` (8) + segment + a `_N` uniqueness
+// suffix must fit, so the segment itself is capped well below that.
+const MAX_EVENT_SEGMENT_LENGTH = 200;
+
 // Turns a display name into a valid, human-readable event segment (`In Progress` -> `IN_PROGRESS`),
-// falling back to the raw id if the name is missing/empty so the event is never blank.
+// falling back to the trimmed raw value when nothing ASCII is left (e.g. a non-Latin name) so the
+// event is never blank.
 const toEventSegment = (value: string): string => {
   const segment = value.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-  return segment || value;
+  return (segment || value.trim()).slice(0, MAX_EVENT_SEGMENT_LENGTH);
 };
 
 // A blank/whitespace-only template name is treated the same as a missing one everywhere in this
@@ -60,11 +59,11 @@ const resolveDisplayName = (templateId: string, templatesById: Map<string, Basic
  * Synthesizes a fully-connected transition graph over `states`: legacy `Status` data has no
  * edge/transition concept, only a flat `order`, and today's `StatusField` UI lets users jump to
  * any status in any order. To introduce zero new ordering restrictions on migrated data, every
- * state must be able to transition to every other state. One transition is synthesized per target
- * state, with `from` listing every other state, rather than one transition per ordered pair
- * (N transitions instead of N*(N-1)). The event name uses the target status's display name (e.g.
- * `MOVE_TO_APPROVED`) rather than its id, to match the naming convention of hand-authored
- * transitions (e.g. `NEW_EVENT`).
+ * state must be able to transition to every other state. One transition is emitted per ordered
+ * (from, to) pair, with a single-string `from`, like the front editor does: the engine matches a
+ * transition on `from === currentState`. All transitions into the same state share one event
+ * name, built from its display name (e.g. `MOVE_TO_APPROVED`) rather than its id, to match the
+ * naming convention of hand-authored transitions; duplicates are only checked per (from, event).
  */
 const synthesizeFullyConnectedTransitions = (
   states: WorkflowMigrationState[],
@@ -89,11 +88,9 @@ const synthesizeFullyConnectedTransitions = (
     taken.add(unique);
     return unique;
   });
-  return stateIds.map((to, index) => ({
-    from: stateIds.filter((id) => id !== to),
-    to,
-    event: `MOVE_TO_${uniqueSegments[index]}`,
-  }));
+  return stateIds.flatMap((to, index) => stateIds
+    .filter((from) => from !== to)
+    .map((from) => ({ from, to, event: `MOVE_TO_${uniqueSegments[index]}` })));
 };
 
 const hasOrder = (status: BasicWorkflowStatus): boolean => status.order !== undefined && status.order !== null;
@@ -104,21 +101,19 @@ const convertScopeGroup = (
 ): WorkflowMigrationConversionResult => {
   const diagnostics: WorkflowMigrationDiagnostic[] = [];
 
-  // Statuses with a defined order sort by that value; statuses missing order keep their original
-  // (source array) relative order, appended after the ordered ones — a deterministic best-effort
-  // fallback rather than a hard failure.
-  const sorted = statuses
-    .map((status, index) => ({ status, index }))
-    .sort((a, b) => {
-      if (hasOrder(a.status) && hasOrder(b.status)) return a.status.order - b.status.order;
-      if (hasOrder(a.status)) return -1;
-      if (hasOrder(b.status)) return 1;
-      return a.index - b.index;
-    })
-    .map((entry) => entry.status);
+  // Statuses with a defined order sort by that value; statuses missing order are appended after the
+  // ordered ones. Ties (equal or missing order) break on the status id, never on store return order,
+  // so the preview and the migration always produce the same sequence.
+  const sorted = [...statuses].sort((a, b) => {
+    if (hasOrder(a) && hasOrder(b) && a.order !== b.order) return a.order - b.order;
+    if (hasOrder(a) !== hasOrder(b)) return hasOrder(a) ? -1 : 1;
+    return a.id.localeCompare(b.id);
+  });
 
-  // One state per distinct StatusTemplate. Deduplicating after the sort keeps the occurrence with
-  // the lowest order; every dropped duplicate is reported.
+  // One state per distinct StatusTemplate, ranked by the occurrence with the lowest order. States
+  // are keyed by template, so every Status sharing it maps to that one state: entities on a dropped
+  // duplicate keep their status and land in the same state, and their next transition moves them
+  // onto whichever Status the workflow projects for that template.
   const keptByTemplateId = new Map<string, BasicWorkflowStatus>();
   const ordered: BasicWorkflowStatus[] = [];
   sorted.forEach((status) => {
@@ -126,7 +121,7 @@ const convertScopeGroup = (
     if (kept) {
       diagnostics.push({
         type: 'DUPLICATE_TEMPLATE',
-        message: `Status ${status.id} uses template ${status.template_id} already used by status ${kept.id}; only the one with the lowest order (${kept.id}) is migrated.`,
+        message: `Status ${status.id} uses template ${status.template_id}, like status ${kept.id}; both become one state, ranked by the order of ${kept.id}. Entities on either status stay in that state.`,
         legacyStatusId: status.id,
         templateId: status.template_id,
       });
@@ -140,7 +135,7 @@ const convertScopeGroup = (
     if (!hasOrder(status)) {
       diagnostics.push({
         type: 'MISSING_ORDER',
-        message: `Status ${status.id} (template ${status.template_id}) has no order value; falling back to source order.`,
+        message: `Status ${status.id} (template ${status.template_id}) has no order value; it is placed after the ordered statuses, by status id.`,
         legacyStatusId: status.id,
         templateId: status.template_id,
       });
@@ -155,9 +150,8 @@ const convertScopeGroup = (
     }
   });
 
-  // Duplicate-order diagnostic: statuses sharing the same legacy `order` within a scope group make
-  // the resulting sort look non-deterministic to a reviewer, even though it isn't (source-array
-  // order breaks the tie).
+  // Duplicate-order diagnostic: statuses sharing the same legacy `order` within a scope group are
+  // ordered by status id, which a reviewer may not expect.
   const orderCounts = new Map<number, number>();
   ordered.forEach((status) => {
     if (hasOrder(status)) {
@@ -168,7 +162,7 @@ const convertScopeGroup = (
     if (hasOrder(status) && (orderCounts.get(status.order) ?? 0) > 1) {
       diagnostics.push({
         type: 'DUPLICATE_ORDER',
-        message: `Multiple statuses share order ${status.order} (status ${status.id}, template ${status.template_id}); tie is broken by source order.`,
+        message: `Multiple statuses share order ${status.order} (status ${status.id}, template ${status.template_id}); the tie is broken by status id.`,
         legacyStatusId: status.id,
         templateId: status.template_id,
       });
@@ -248,12 +242,11 @@ export const convertStatusToDefinition = (
 };
 
 // GraphQL-ready shape for a single scope's preview result, distinct from `WorkflowMigrationConversionResult`
-// because it also carries the `published`/`hasPublishedVersion` fields expected by the
-// `WorkflowMigrationScopeResult` schema type.
+// because it also carries the `hasPublishedVersion` field expected by the `WorkflowMigrationScopeResult`
+// schema type.
 export interface WorkflowMigrationScopeResult {
   scope: StatusScope;
   initialState: string;
-  published: boolean;
   hasPublishedVersion: boolean;
   states: WorkflowMigrationState[];
   transitions: WorkflowSerializedTransition[];
@@ -293,8 +286,6 @@ export const buildWorkflowMigrationPreviewResult = (
     .map(([scope, result]) => ({
       scope: scope as StatusScope,
       initialState: result.definition.initialState,
-      // Always false: the preview is never persisted, so it can never be the published version.
-      published: false,
       hasPublishedVersion: hasPublishedVersion && scope === StatusScope.Global,
       states: result.definition.states,
       transitions: result.definition.transitions,
@@ -313,16 +304,19 @@ export const getPublishBlockingDiagnostics = (diagnostics: WorkflowMigrationDiag
 };
 
 /**
- * Picks the GLOBAL scope out of a conversion result: a single entity type has one workflow, and
- * `REQUEST_ACCESS` statuses are not part of it. Throws when the entity type has no GLOBAL statuses.
+ * Picks the result of one scope out of a conversion result, and throws when that scope has no
+ * statuses to migrate. `workflowMigrate` only migrates GLOBAL today (an entity type's workflow).
+ * REQUEST_ACCESS is previewed on purpose: Case statuses with that scope will need migrating next,
+ * so keep its preview result and this scope parameter.
  */
-export const buildMigrationDefinition = (
+export const pickMigrationScope = (
   entityType: string,
   byScope: WorkflowMigrationByScope,
+  scope: StatusScope = StatusScope.Global,
 ): WorkflowMigrationConversionResult => {
-  const globalResult = byScope[StatusScope.Global];
-  if (!globalResult || globalResult.definition.states.length === 0) {
-    throw FunctionalError('No legacy statuses to migrate', { entityType, scope: StatusScope.Global });
+  const result = byScope[scope];
+  if (!result || result.definition.states.length === 0) {
+    throw FunctionalError('No legacy statuses to migrate', { entityType, scope });
   }
-  return globalResult;
+  return result;
 };

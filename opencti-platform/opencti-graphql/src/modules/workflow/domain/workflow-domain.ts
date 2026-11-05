@@ -38,6 +38,7 @@ import { now } from '../../../utils/format';
 import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
 import { addFilter } from '../../../utils/filtering/filtering-utils';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../draftWorkspace/draftWorkspace-types';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import { validateSetting } from '../../entitySetting/entitySetting-validators';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
@@ -64,12 +65,7 @@ import { computeStateOrder, findStatesWithOutgoingTransitions } from './workflow
 import { isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
 import { appendWorkflowHistoryEntry, closingReasonNotWrittenError, isClosingReasonLost, runWorkflowBypassActions } from './workflow-async-completion';
-import {
-  type ConvertStatusToDefinitionResult,
-  buildMigrationDefinition,
-  convertStatusToDefinition,
-  getPublishBlockingDiagnostics,
-} from '../migration/status-to-definition-converter';
+import { type ConvertStatusToDefinitionResult, convertStatusToDefinition, getPublishBlockingDiagnostics, pickMigrationScope } from '../migration/status-to-definition-converter';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -526,6 +522,15 @@ export const getWorkflowPublishedVersionId = async (
  * Gathers the `Status`/`StatusTemplate` input data for `entityType` (all scopes, matching
  * `byScope`'s shape) and hands it to the pure `convertStatusToDefinition`.
  */
+// Rejects, before reading any data, an entity type that has no workflow setting (or does not exist),
+// and DraftWorkspace, whose workflow must contain a validateDraft action a migrated one never has.
+const assertMigratableEntityType = (entityType: string) => {
+  validateSetting(entityType, 'workflow_id');
+  if (entityType === ENTITY_TYPE_DRAFT_WORKSPACE) {
+    throw FunctionalError('DraftWorkspace statuses cannot be migrated: its workflow must contain a validateDraft action', { entityType });
+  }
+};
+
 const convertLegacyStatuses = async (
   context: AuthContext,
   user: AuthUser,
@@ -541,8 +546,14 @@ const convertLegacyStatuses = async (
     },
   });
   // A status marked `to_be_deleted_at` is a state an admin removed in an earlier republish: migrating
-  // it again would bring it back and clear its deletion mark on publish.
-  const statuses = allStatuses.filter((status) => !status.to_be_deleted_at);
+  // it again would bring it back and clear its deletion mark on publish. One that an entity still
+  // references is kept, so that entity lands in a state the migrated workflow knows.
+  const statuses: BasicWorkflowStatus[] = [];
+  for (const status of allStatuses) {
+    if (!status.to_be_deleted_at || await isStatusReferencedByEntity(executionContext, executionUser, entityType, status.id)) {
+      statuses.push(status);
+    }
+  }
   const templateIds = [...new Set(statuses.map((status) => status.template_id))];
   const templates = templateIds.length > 0
     ? await storeLoadByIds<BasicWorkflowTemplateEntity>(executionContext, executionUser, templateIds, ENTITY_TYPE_STATUS_TEMPLATE)
@@ -568,31 +579,50 @@ export const getWorkflowMigrationPreview = async (
   user: AuthUser,
   entityType: string,
 ): Promise<WorkflowMigrationPreviewData> => {
+  assertMigratableEntityType(entityType);
   const { byScope } = await convertLegacyStatuses(context, user, entityType);
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (!entitySetting?.workflow_id) {
     return { byScope, hasPublishedVersion: false };
   }
   const publishedVersionId = await getWorkflowPublishedVersionId(context, user, entitySetting);
-  byScope[StatusScope.Global]?.diagnostics.push({
+  // Reported even when no GLOBAL status is left to migrate, so the preview never hides the workflow.
+  const globalResult = byScope[StatusScope.Global] ?? { definition: { initialState: '', states: [], transitions: [] }, diagnostics: [] };
+  globalResult.diagnostics.push({
     type: 'EXISTING_WORKFLOW',
     message: publishedVersionId
-      ? 'Entity type already has a published workflow; its statuses are managed by that workflow, and migrating replaces it only with overwrite: true.'
-      : 'Entity type already has a workflow with no published version; migrating replaces it only with overwrite: true.',
+      ? 'Entity type already has a published workflow; its statuses are managed by that workflow, and migration cannot replace it.'
+      : 'Entity type already has a workflow with no published version; migrating replaces its draft only with overwrite: true.',
   });
+  byScope[StatusScope.Global] = globalResult;
   return { byScope, hasPublishedVersion: !!publishedVersionId };
+};
+
+const getWorkflowMigrateLockKey = (entityType: string): string => `workflow-migrate:${entityType}`;
+
+// Undoes a first-time migration whose publish failed: the type goes back to having no workflow, so
+// a retry does not need `overwrite`.
+const removeMigratedWorkflow = async (context: AuthContext, user: AuthUser, entityType: string) => {
+  const entitySetting = await getWorkflowConfig(context, user, entityType);
+  if (!entitySetting?.workflow_id) return;
+  await deleteWorkflowDefinition(context, user, entityType);
+  await deleteElementById(bypassDraftContext(context), bypassDraftUser(user), entitySetting.workflow_id, ENTITY_TYPE_WORKFLOW_DEFINITION);
 };
 
 /**
  * One-shot migration of an entity type's legacy `Status` set (GLOBAL scope) into a workflow
  * definition: saved as a draft, then published when `publish` is true. Reuses
  * `setWorkflowDefinition` / `publishWorkflowDefinition`, so validation, EE checks and status
- * locking are the same as a hand-authored workflow. Refuses to replace an existing workflow unless
- * `overwrite` is true (the migrated definition then becomes a new draft version, and publishing it
- * keeps the usual guard against removing states still in use). Never publishes a definition the
- * preview flagged with a blocking diagnostic. When publishing, the definition is validated before
- * anything is saved, so a validation error leaves the store untouched; only the publish-time
- * in-use guard (overwrite path) can still fail after the draft is saved.
+ * locking are the same as a hand-authored workflow.
+ *
+ * - Refuses to replace an existing workflow unless `overwrite` is true, and never replaces one that
+ *   has a published version: its conditions, actions and hooks would be lost in a migrated mesh.
+ * - Never saves a state whose template no longer exists (MISSING_TEMPLATE), and never publishes a
+ *   definition the preview flagged with another blocking diagnostic, nor one that fails validation:
+ *   all are checked before anything is saved. Publishing also needs the
+ *   ENTITIES_WORKFLOW feature, without which the workflow is not applied to entity writes.
+ * - Runs under a per-type lock from the existence check to the publish, and removes the workflow it
+ *   created when the publish fails, so a retry starts from the same state.
  */
 export const migrateWorkflowFromStatuses = async (
   context: AuthContext,
@@ -601,48 +631,74 @@ export const migrateWorkflowFromStatuses = async (
   publish: boolean,
   overwrite = false,
 ): Promise<EntitySettingWithWorkflowResponse> => {
-  const entitySetting = await getWorkflowConfig(context, user, entityType);
-  if (!entitySetting) {
-    throw FunctionalError('Entity setting not found for type', { entityType });
+  assertMigratableEntityType(entityType);
+  if (publish && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    throw FunctionalError('Cannot publish a migrated workflow while the ENTITIES_WORKFLOW feature is disabled; migrate without publishing', { entityType });
   }
-  if (entitySetting.workflow_id && !overwrite) {
-    throw FunctionalError('Entity type already has a workflow, migration would overwrite it (pass overwrite: true to replace it)', { entityType });
-  }
+  const lock = await lockResources([getWorkflowMigrateLockKey(entityType)]);
+  try {
+    const entitySetting = await getWorkflowConfig(context, user, entityType);
+    if (!entitySetting) {
+      throw FunctionalError('Entity setting not found for type', { entityType });
+    }
+    if (entitySetting.workflow_id) {
+      if (!overwrite) {
+        throw FunctionalError('Entity type already has a workflow, migration would overwrite it (pass overwrite: true to replace it)', { entityType });
+      }
+      if (await getWorkflowPublishedVersionId(context, user, entitySetting)) {
+        throw FunctionalError('Entity type already has a published workflow; migration only replaces a workflow that was never published', { entityType });
+      }
+    }
 
-  const { byScope } = await convertLegacyStatuses(context, user, entityType);
-  const { definition, diagnostics } = buildMigrationDefinition(entityType, byScope);
-  if (publish) {
-    const blocking = getPublishBlockingDiagnostics(diagnostics);
-    if (blocking.length > 0) {
-      throw FunctionalError('Cannot publish migrated workflow: resolve the blocking diagnostics first, or migrate without publishing', {
+    const { byScope } = await convertLegacyStatuses(context, user, entityType);
+    const { definition, diagnostics } = pickMigrationScope(entityType, byScope);
+    // Validation only checks state ids that are not declared in `states`, and a migrated definition
+    // declares them all: a state whose template is gone would pass a later plain publish. Refuse it
+    // here, even for a draft.
+    const missingTemplates = diagnostics.filter((diagnostic) => diagnostic.type === 'MISSING_TEMPLATE');
+    if (missingTemplates.length > 0) {
+      throw FunctionalError('Cannot migrate: some statuses reference a status template that no longer exists', {
         entityType,
-        diagnostics: blocking.map((diagnostic) => diagnostic.message),
+        diagnostics: missingTemplates.map((diagnostic) => diagnostic.message),
       });
     }
-  }
-
-  const definitionContent = JSON.stringify(definition);
-  if (publish) {
-    // Publishing re-validates the saved draft and throws on errors, by which point the draft (and,
-    // for a new type, the workflow itself) is already persisted. Validate first so a definition that
-    // cannot be published leaves nothing behind.
-    const validationErrors = await validateWorkflowDefinitionData(
-      bypassDraftContext(context),
-      bypassDraftUser(user),
-      definitionContent,
-      entityType,
-      entitySetting.workflow_id ?? undefined,
-    );
-    if (validationErrors.length > 0) {
-      throw FunctionalError('Cannot publish migrated workflow: the migrated definition is invalid', {
+    const definitionContent = JSON.stringify(definition);
+    if (publish) {
+      const blocking = getPublishBlockingDiagnostics(diagnostics);
+      if (blocking.length > 0) {
+        throw FunctionalError('Cannot publish migrated workflow: resolve the blocking diagnostics first, or migrate without publishing', {
+          entityType,
+          diagnostics: blocking.map((diagnostic) => diagnostic.message),
+        });
+      }
+      const validationErrors = await validateWorkflowDefinitionData(
+        bypassDraftContext(context),
+        bypassDraftUser(user),
+        definitionContent,
         entityType,
-        errors: validationErrors.map((error) => error.message),
-      });
+        entitySetting.workflow_id ?? undefined,
+      );
+      if (validationErrors.length > 0) {
+        throw FunctionalError('Cannot publish migrated workflow: the migrated definition is invalid', {
+          entityType,
+          errors: validationErrors.map((error) => error.message),
+        });
+      }
     }
-  }
 
-  const draftResult = await setWorkflowDefinition(context, user, entityType, definitionContent);
-  return publish ? publishWorkflowDefinition(context, user, entityType) : draftResult;
+    const draftResult = await setWorkflowDefinition(context, user, entityType, definitionContent);
+    if (!publish) return draftResult;
+    try {
+      return await publishWorkflowDefinition(context, user, entityType);
+    } catch (error) {
+      if (!entitySetting.workflow_id) {
+        await removeMigratedWorkflow(context, user, entityType);
+      }
+      throw error;
+    }
+  } finally {
+    await lock.unlock();
+  }
 };
 
 /**
