@@ -14,7 +14,7 @@ import * as middleware from '../../../../src/database/middleware';
 import * as playbookExecutor from '../../../../src/manager/playbookManager/playbookExecutor';
 import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
-import type { PirStreamConfiguration } from '../../../../src/modules/playbook/components/data-stream-pir-component';
+import { normalizeInPirFilters, type PirStreamConfiguration } from '../../../../src/modules/playbook/components/data-stream-pir-component';
 import { testContext } from '../../../utils/testQuery';
 import { logApp } from '../../../../src/config/conf';
 
@@ -492,6 +492,20 @@ describe('listenPirEventsUtils', () => {
     });
   });
 
+  describe('normalizeInPirFilters', () => {
+    // Same cases as the resolved filters cache (cacheManager-test): both must read the same PIR ids.
+    it.each([
+      ['options', [{ value: 'id2' }], [{ value: 'id2' }]],
+      ['an empty array', [], []],
+      ['null', null, []],
+      ['a bare id', 'id2', []],
+      ['a single option', { value: 'id2' }, []],
+      ['a mixed array', ['id2', null, { value: 'id3' }], [{ value: 'id3' }]],
+    ])('should read only options from %s', (_, inPirFilters, expected) => {
+      expect(normalizeInPirFilters(inPirFilters)).toEqual(expected);
+    });
+  });
+
   describe('listenPirEvents', () => {
     it('should call playbookExecutor when called with event in PIR, stix data, valid event type, and matching PIR, and entity matches a filter', async () => {
       vi.spyOn(playbookExecutor, 'playbookExecutor').mockResolvedValue(undefined);
@@ -557,7 +571,6 @@ describe('listenPirEventsUtils', () => {
     });
 
     it.each([
-      ['an empty string', ''],
       ['null', null],
       ['an empty array', []],
     ])('should listen to any PIR when PIR filters are %s', async (label, inPirFilters) => {
@@ -575,6 +588,10 @@ describe('listenPirEventsUtils', () => {
     });
 
     it.each([
+      ['an empty string', ''],
+      ['a bare id', 'pir-id-1'],
+      ['an array of bare ids', ['pir-id-1']],
+      ['a single option', { label: 'test', value: 'pir-id-1', type: 'Pir' }],
       ['options without a value', [{ label: 'test', id: 'pir-id-1' }]],
       ['an array of empty ids', ['']],
       ['an array of null', [null]],

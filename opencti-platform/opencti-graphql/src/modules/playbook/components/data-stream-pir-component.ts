@@ -10,17 +10,17 @@ export interface PirStreamConfiguration {
   filters: string;
 }
 
-// The configuration is stored as free JSON and never validated against the schema,
-// so inPirFilters may be missing, null, '' (untouched form field), a single option or bare ids.
-const isEmptyInPirFilters = (inPirFilters: unknown) => inPirFilters === null || inPirFilters === undefined || inPirFilters === ''
+// The configuration is stored as free JSON and never validated against the schema, so inPirFilters
+// is not guaranteed to be what the form saves: an array of { value } options.
+// Only that shape is read, as the resolved filters cache does (cacheManager): a PIR id the cache
+// does not resolve would never match "toId" filters, so reading more shapes here would half-work.
+const isEmptyInPirFilters = (inPirFilters: unknown) => inPirFilters === null || inPirFilters === undefined
   || (Array.isArray(inPirFilters) && inPirFilters.length === 0);
 
 export const normalizeInPirFilters = (inPirFilters: unknown): { value: string }[] => {
-  if (isEmptyInPirFilters(inPirFilters)) return [];
-  const list: unknown[] = Array.isArray(inPirFilters) ? inPirFilters : [inPirFilters];
-  return list.flatMap((item) => {
-    if (typeof item === 'string') return item ? [{ value: item }] : [];
-    const value = (item as { value?: unknown } | null)?.value;
+  if (!Array.isArray(inPirFilters)) return [];
+  return inPirFilters.flatMap((item) => {
+    const value = typeof item === 'object' && item !== null ? (item as { value?: unknown }).value : undefined;
     return typeof value === 'string' && value ? [{ value }] : [];
   });
 };
