@@ -1,4 +1,7 @@
+import moment, { type DurationInputArg2, type unitOfTime } from 'moment';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT } from '../../database/middleware';
+import { countTimeSeriesIntervals } from '../../database/utils';
 import { type FilterGroup, FilterMode, FilterOperator, type QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs } from '../../generated/graphql';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
@@ -73,6 +76,34 @@ export const canWidgetBreakDown = (widget: Pick<PublicDashboardCachedWidget, 'ty
     && !(perspective === 'audits' && AUDITS_DISTINCT_COUNT_TYPES.includes(type) && dataset.unique === true);
 };
 
+// Points a public breakdown counts at most, its series times its dates. Anyone with the link picks the period: the
+// breakdown API would accept up to 50,000 of them (TIME_SERIES_BREAKDOWN_MAX_BUCKETS), while its charts never draw more
+// than 5,000, the most points of a line (MAX_RENDERED_LINE_POINTS, the bars and the heatmaps draw fewer, in
+// opencti-front/src/components/dashboard/timeSeriesBreakdownRendering.ts).
+export const PUBLIC_BREAKDOWN_MAX_POINTS = 5000;
+// Start of the bucket of a date, for each interval, as the date histogram aligns them (computeTimeSeriesRange in utils.ts)
+const BUCKET_START_UNITS: Record<string, unitOfTime.StartOf> = { year: 'year', quarter: 'quarter', month: 'month', week: 'isoWeek', day: 'day', hour: 'hour' };
+
+/**
+ * Start date of a public breakdown: the requested one, moved forward when the period would count more points than
+ * PUBLIC_BREAKDOWN_MAX_POINTS for this many series, so that the axis keeps the most recent dates that fit. The end date
+ * is kept, now without one, as for the API.
+ */
+export const clampPublicBreakdownStartDate = (startDate: any, endDate: any, interval: string, seriesCount: number) => {
+  // The API refuses the invalid limits itself
+  if (!Number.isInteger(seriesCount) || seriesCount < 1) {
+    return startDate;
+  }
+  const maxIntervals = Math.max(1, Math.floor(PUBLIC_BREAKDOWN_MAX_POINTS / seriesCount));
+  const end = endDate ?? new Date();
+  // Refuses an unsupported interval, as the API does
+  if (countTimeSeriesIntervals(startDate, end, interval) <= maxIntervals) {
+    return startDate;
+  }
+  // The bucket of the end date and the ones before it
+  return moment.utc(end).startOf(BUCKET_START_UNITS[interval]).subtract(maxIntervals - 1, `${interval}s` as DurationInputArg2).toDate();
+};
+
 /**
  * Arguments of the breakdown API for a public widget. Every setting of a breakdown is read from the stored widget,
  * never from the request of the visitor, who only gives the period. The audits widgets can carry a breakdown too, but
@@ -100,15 +131,19 @@ export const buildPublicBreakdownArgs = (
   if (!args.startDate) {
     throw FunctionalError('A start date is required for a time series breakdown');
   }
+  // The API has none: daily, as the other time series of the public widgets (publicStixCoreObjectsMultiTimeSeries)
+  const interval = parameters.interval ?? 'day';
+  // As many series as the API draws at most: its limit, and Other when it is requested
+  const seriesCount = (parameters.breakdownLimit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT) + (parameters.breakdownOther === true ? 1 : 0);
   // The settings the widget leaves out get the defaults of the breakdown API (timeSeriesBreakdown in middleware.ts):
   // 10 series, the highest values first, without Other
   const breakdownArgs = {
     field: parameters.breakdownBy,
     dateAttribute: selection.date_attribute,
-    startDate: args.startDate,
+    // The dates of the response tell the period the visitor gets
+    startDate: clampPublicBreakdownStartDate(args.startDate, args.endDate, interval, seriesCount),
     endDate: args.endDate,
-    // The API has none: daily, as the other time series of the public widgets (publicStixCoreObjectsMultiTimeSeries)
-    interval: parameters.interval ?? 'day',
+    interval,
     limit: parameters.breakdownLimit,
     orderMode: parameters.breakdownOrder,
     includeOther: parameters.breakdownOther,

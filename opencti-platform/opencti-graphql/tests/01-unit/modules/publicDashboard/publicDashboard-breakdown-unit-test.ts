@@ -3,8 +3,15 @@
  * only gives the period. Only the breakdowns of entities and relationships widgets are public: audits widgets can
  * carry a breakdown as well, but the logs have no public API.
  */
-import { describe, expect, it } from 'vitest';
-import { buildPublicBreakdownArgs, canWidgetBreakDown, getBreakdownEntityTypes } from '../../../../src/modules/publicDashboard/publicDashboard-breakdown';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  buildPublicBreakdownArgs,
+  canWidgetBreakDown,
+  clampPublicBreakdownStartDate,
+  getBreakdownEntityTypes,
+  PUBLIC_BREAKDOWN_MAX_POINTS,
+} from '../../../../src/modules/publicDashboard/publicDashboard-breakdown';
+import { countTimeSeriesIntervals } from '../../../../src/database/utils';
 
 const startDate = '2026-01-01T00:00:00.000Z';
 const endDate = '2026-02-01T00:00:00.000Z';
@@ -121,6 +128,20 @@ describe('buildPublicBreakdownArgs of relationships', () => {
     expect(() => relationshipsArgs(storedWidget(null, [relationships], breakdownParameters))).toThrow(refusal('This widget cannot be broken down'));
   });
 
+  it('should move the start date of a long period forward, keeping its end date', () => {
+    // 20 series and Other, hourly: the 238 most recent hours fit the 5,000 points of the public breakdowns
+    const widget = storedWidget('relationships', [{ date_attribute: 'created_at', filters: targets }], { ...breakdownParameters, interval: 'hour' });
+    const args = relationshipsArgs(widget);
+    expect(new Date(args.startDate).toISOString()).toEqual('2026-01-22T03:00:00.000Z');
+    expect(args.endDate).toBe(endDate);
+    expect(countTimeSeriesIntervals(args.startDate, new Date(endDate), 'hour') * 21).toBeLessThanOrEqual(PUBLIC_BREAKDOWN_MAX_POINTS);
+    // Without limit, the 10 series of the API: the 500 most recent hours
+    const defaultLimit = relationshipsArgs(storedWidget('relationships', [{ date_attribute: 'created_at' }], { breakdownBy: 'toTypes', interval: 'hour' }));
+    expect(countTimeSeriesIntervals(defaultLimit.startDate, new Date(endDate), 'hour')).toEqual(500);
+    // A short period is left as it is
+    expect(relationshipsArgs(storedWidget('relationships', [{ date_attribute: 'created_at' }], breakdownParameters)).startDate).toBe(startDate);
+  });
+
   it('should break down every time series of a single relationships dataset', () => {
     for (const type of ['vertical-bar', 'line', 'area', 'heatmap']) {
       const widget = storedWidget('relationships', [{ date_attribute: 'created_at', perspective: 'relationships', filters: targets }], breakdownParameters, type);
@@ -182,6 +203,54 @@ describe('buildPublicBreakdownArgs of entities', () => {
       const widget = storedWidget(perspective, dataSelection, { interval: 'day', breakdownBy: 'objectLabel' }, type);
       expect(() => entitiesArgs(widget)).toThrow(refusal('This widget cannot be broken down'));
     }
+  });
+});
+
+describe('clampPublicBreakdownStartDate', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should keep the most recent dates of a long hourly period that fit the points of the public breakdowns', () => {
+    // 11 series (10 and Other) of 454 hours: 4,994 points, one more hour would be 5,005. The 745 hours of January would be 8,195.
+    const clamped = clampPublicBreakdownStartDate(startDate, endDate, 'hour', 11);
+    expect(new Date(clamped).toISOString()).toEqual('2026-01-13T03:00:00.000Z');
+    expect(countTimeSeriesIntervals(clamped, new Date(endDate), 'hour')).toEqual(454);
+    expect(454 * 11).toBeLessThanOrEqual(PUBLIC_BREAKDOWN_MAX_POINTS);
+    expect(455 * 11).toBeGreaterThan(PUBLIC_BREAKDOWN_MAX_POINTS);
+  });
+
+  it('should leave a period that fits untouched', () => {
+    // 32 days of 11 series
+    expect(clampPublicBreakdownStartDate(startDate, endDate, 'day', 11)).toBe(startDate);
+    // 51 series of the 98 weeks that fit exactly: the budget is reached, not exceeded
+    const start = new Date(Date.UTC(2024, 2, 18)).toISOString();
+    expect(countTimeSeriesIntervals(new Date(start), new Date(endDate), 'week')).toEqual(98);
+    expect(clampPublicBreakdownStartDate(start, endDate, 'week', 51)).toBe(start);
+  });
+
+  it('should start on the first day of an interval, as the buckets of the breakdown', () => {
+    const weekly = clampPublicBreakdownStartDate('2020-01-01T00:00:00.000Z', endDate, 'week', 51);
+    // a monday, 97 weeks before the one of the end date (monday 2026-01-26)
+    expect(new Date(weekly).toISOString()).toEqual('2024-03-18T00:00:00.000Z');
+    expect(countTimeSeriesIntervals(weekly, new Date(endDate), 'week')).toEqual(98);
+    // Daily, 50 series: 100 days
+    const daily = clampPublicBreakdownStartDate('2020-01-01T00:00:00.000Z', '2026-02-01T12:30:00.000Z', 'day', 50);
+    expect(new Date(daily).toISOString()).toEqual('2025-10-25T00:00:00.000Z');
+    expect(countTimeSeriesIntervals(daily, new Date('2026-02-01T12:30:00.000Z'), 'day')).toEqual(100);
+  });
+
+  it('should count the period up to now without end date', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-02-01T00:30:00.000Z'));
+    // The hour of now and the 453 before it
+    expect(new Date(clampPublicBreakdownStartDate(startDate, null, 'hour', 11)).toISOString()).toEqual('2026-01-13T03:00:00.000Z');
+  });
+
+  it('should leave the limits the API refuses, and the unsupported intervals, to the API', () => {
+    expect(clampPublicBreakdownStartDate('2020-01-01T00:00:00.000Z', endDate, 'hour', 0)).toEqual('2020-01-01T00:00:00.000Z');
+    expect(clampPublicBreakdownStartDate('2020-01-01T00:00:00.000Z', endDate, 'hour', 2.5)).toEqual('2020-01-01T00:00:00.000Z');
+    expect(() => clampPublicBreakdownStartDate(startDate, endDate, 'minute', 11)).toThrow('Unsupported interval');
   });
 });
 
