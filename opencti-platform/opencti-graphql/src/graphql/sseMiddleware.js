@@ -114,6 +114,19 @@ export const closeUserStreamConnections = (userId) => {
   return clients.length;
 };
 
+// Everything that defines what a stream user can access: a change of any of these invalidates what was resolved before
+const computeStreamUserRightsKey = (user, isInsidePlatformOrganization) => {
+  const sortedIds = (elements, key) => (elements ?? []).map((element) => element[key]).sort();
+  return JSON.stringify([
+    user.user_service_account === true,
+    isInsidePlatformOrganization === true,
+    sortedIds(user.capabilities, 'name'),
+    sortedIds(user.allowed_marking, 'internal_id'),
+    sortedIds(user.groups, 'internal_id'),
+    sortedIds(user.organizations, 'internal_id'),
+  ]);
+};
+
 /**
  * Resolve again, from the platform users cache, the user a stream connection serves events for.
  *
@@ -123,18 +136,21 @@ export const closeUserStreamConnections = (userId) => {
  * The request, the channel and the context are updated in place, the origin computed at connection is kept.
  * Internal users (SYSTEM_USER of legacy public streams) never change and are returned as is.
  *
- * Returns the refreshed user, or undefined if the user no longer exists.
+ * Returns { user, isRightsChanged }, or undefined if the user no longer exists.
+ * isRightsChanged tells whether what the user can access changed since the previous resolution:
+ * what the connection already resolved with the previous rights must then be checked again.
  */
 export const refreshStreamUser = async (req, channel) => {
   const { context, user } = req;
   if (INTERNAL_USERS[user.id]) {
-    return user;
+    return { user, isRightsChanged: false };
   }
   const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const cachedUser = platformUsers.get(user.id);
   if (!cachedUser) {
     return undefined;
   }
+  const previousRightsKey = computeStreamUserRightsKey(user, context.user_inside_platform_organization);
   const refreshedUser = user.origin ? { ...cachedUser, origin: user.origin } : cachedUser;
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // For a public stream, the context user is the requester (if any), not the user the stream is served for
@@ -150,7 +166,8 @@ export const refreshStreamUser = async (req, channel) => {
     channel.capabilities = refreshedUser.capabilities;
     channel.allowed_marking = refreshedUser.allowed_marking;
   }
-  return refreshedUser;
+  const isRightsChanged = previousRightsKey !== computeStreamUserRightsKey(refreshedUser, context.user_inside_platform_organization);
+  return { user: refreshedUser, isRightsChanged };
 };
 
 const createBroadcastClient = (channel) => {
@@ -659,13 +676,13 @@ const createSseMiddleware = () => {
       const opts = { autoReconnect: true, bufferTime: 0 };
       const processor = createStreamProcessor(user.user_email, async (elements, lastEventId) => {
         // Rights of the user can change while the stream is open
-        const refreshedUser = await refreshStreamUser(req, channel);
-        if (!refreshedUser || !isUserHasCapability(refreshedUser, BYPASS)) {
+        const refreshed = await refreshStreamUser(req, channel);
+        if (!refreshed || !isUserHasCapability(refreshed.user, BYPASS)) {
           logApp.info('[STREAM] Closing generic stream, user no longer exists or lost the bypass capability', { userId: req.userId });
           client.close();
           return;
         }
-        user = refreshedUser;
+        user = refreshed.user;
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
@@ -911,24 +928,37 @@ const createSseMiddleware = () => {
         }
         // Init stream and broadcasting
         let error;
-        let isUserRemoved = false;
+        // The user (groups, organizations, service account...) and the collection can change while the stream is open.
+        // Both are resolved again and the access to the stream checked again before each batch of events, live or recovered.
+        // Returns false, with the stream closed, if the stream cannot be served anymore.
+        const refreshStreamAccess = async () => {
+          if (error) {
+            return false;
+          }
+          const refreshed = await refreshStreamUser(req, channel);
+          if (!refreshed) {
+            error = 'The user of this live stream no longer exists';
+            logApp.info('[STREAM] Closing live stream, user no longer exists', { streamCollectionId: id, userId: req.userId });
+            channel.close();
+            return false;
+          }
+          user = refreshed.user;
+          if (refreshed.isRightsChanged) {
+            // Elements in cache are trusted as already published and accessible: they must be checked again with the new rights
+            cache.clear();
+          }
+          const newComputed = await computeUserAndCollection(req, res, { id, user, context });
+          streamFilters = newComputed.streamFilters;
+          originFilters = newComputed.originFilters;
+          collection = newComputed.collection;
+          error = newComputed.error;
+          return !error;
+        };
         const userEmail = user.user_email;
         const opts = { autoReconnect: true, bufferTime: 0 };
         const processor = createStreamProcessor(userEmail, async (elements, lastEventId) => {
-          // Rights of the user can change while the stream is open (groups, organizations, service account...)
-          if (!error) {
-            const refreshedUser = await refreshStreamUser(req, channel);
-            if (refreshedUser) {
-              user = refreshedUser;
-            } else {
-              isUserRemoved = true;
-              error = 'The user of this live stream no longer exists';
-              logApp.info('[STREAM] Closing live stream, user no longer exists', { streamCollectionId: id, userId: req.userId });
-              channel.close();
-            }
-          }
           // Default Live collection doesn't have a stored Object associated
-          if (!error && (!collection || collection.stream_live)) {
+          if (await refreshStreamAccess() && (!collection || collection.stream_live)) {
             // Process the stream elements
             for (let index = 0; index < elements.length; index += 1) {
               const element = elements[index];
@@ -1041,15 +1071,6 @@ const createSseMiddleware = () => {
             }
           }
           channel.setLastEventId(lastEventId);
-          // Do not compute the access again with the outdated user of a removed account
-          if (isUserRemoved) {
-            return;
-          }
-          const newComputed = await computeUserAndCollection(req, res, { id, user, context });
-          streamFilters = newComputed.streamFilters;
-          originFilters = newComputed.originFilters;
-          collection = newComputed.collection;
-          error = newComputed.error;
         }, opts);
         await initBroadcasting(req, res, client, processor);
         // After recovery start the stream listening
@@ -1077,6 +1098,11 @@ const createSseMiddleware = () => {
         if (isRecoveryMode && !skipRecoveryForOriginFilters) {
           // noinspection UnnecessaryLocalVariableJS
           const queryCallback = async (elements) => {
+            // Recovery can be long: stop it as soon as the stream cannot be served anymore
+            if (!(await refreshStreamAccess())) {
+              return false;
+            }
+            // Elements are loaded with the refreshed user, so the ones no longer accessible are not published
             const workingElementsIds = elements.filter((e) => !cache.has(e.standard_id)).map((e) => e.internal_id);
             const instances = await storeLoadByIdsWithRefs(context, user, workingElementsIds, STREAM_LOAD_OPTS);
             for (let index = 0; index < instances.length; index += 1) {
@@ -1111,6 +1137,10 @@ const createSseMiddleware = () => {
         }
         // Start the live stream processor after successful recovery (or if no recovery was needed).
         const processorStartId = isRecoveryMode ? recoverStreamId : startStreamId;
+        // The recovery may have closed the stream, do not start listening for nothing
+        if (error) {
+          return;
+        }
         // noinspection ES6MissingAwait
         await processor.start(processorStartId);
       } catch (err) {

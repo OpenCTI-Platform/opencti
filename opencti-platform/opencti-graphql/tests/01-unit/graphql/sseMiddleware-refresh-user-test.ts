@@ -57,8 +57,9 @@ describe('refreshStreamUser', () => {
     const updatedUser = buildUser({ user_service_account: false, organizations: [{ internal_id: OTHER_ORG }], allowed_marking: [] });
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', updatedUser]]) as any);
 
-    const refreshed = await refreshStreamUser(req, channel);
+    const { user: refreshed, isRightsChanged } = await refreshStreamUser(req, channel);
 
+    expect(isRightsChanged).toBe(true);
     expect(refreshed.user_service_account).toBe(false);
     expect(refreshed.allowed_marking).toEqual([]);
     // Origin computed at connection is kept
@@ -77,9 +78,33 @@ describe('refreshStreamUser', () => {
     req.context.user_inside_platform_organization = false;
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user }]]) as any);
 
-    await refreshStreamUser(req, undefined);
+    const { isRightsChanged } = await refreshStreamUser(req, undefined);
 
     expect(req.context.user_inside_platform_organization).toBe(true);
+    expect(isRightsChanged).toBe(true);
+  });
+
+  it('should not report a rights change when only other attributes changed', async () => {
+    const user = buildUser({ organizations: [{ internal_id: PLATFORM_ORG }], groups: [{ internal_id: 'group-a' }, { internal_id: 'group-b' }] });
+    const req = buildRequest(user);
+    // Same rights, listed in another order, other attributes updated
+    const updatedUser = { ...user, name: 'Renamed', groups: [{ internal_id: 'group-b' }, { internal_id: 'group-a' }] };
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', updatedUser]]) as any);
+
+    const { user: refreshed, isRightsChanged } = await refreshStreamUser(req, undefined);
+
+    expect(refreshed.name).toBe('Renamed');
+    expect(isRightsChanged).toBe(false);
+  });
+
+  it('should report a rights change when a marking is removed', async () => {
+    const user = buildUser({ organizations: [{ internal_id: PLATFORM_ORG }] });
+    const req = buildRequest(user);
+    vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user, allowed_marking: [] }]]) as any);
+
+    const { isRightsChanged } = await refreshStreamUser(req, undefined);
+
+    expect(isRightsChanged).toBe(true);
   });
 
   it('should not replace the requester of a public stream served for another user', async () => {
@@ -88,7 +113,7 @@ describe('refreshStreamUser', () => {
     const req = buildRequest(publicUser, requester);
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['public-user-id', { ...publicUser }]]) as any);
 
-    const refreshed = await refreshStreamUser(req, undefined);
+    const { user: refreshed } = await refreshStreamUser(req, undefined);
 
     expect(req.user).toBe(refreshed);
     expect(req.context.user).toBe(requester);
@@ -110,7 +135,7 @@ describe('refreshStreamUser', () => {
 
     const refreshed = await refreshStreamUser(req, undefined);
 
-    expect(refreshed).toBe(SYSTEM_USER);
+    expect(refreshed).toEqual({ user: SYSTEM_USER, isRightsChanged: false });
     expect(getEntitiesMapFromCache).not.toHaveBeenCalled();
   });
 });
