@@ -292,6 +292,40 @@ describe('importPolicies', () => {
     expect(input).toContainEqual({ key: 'password_policy_min_length', value: [12] });
   });
 
+  it('skips policies the platform has as they are, without writing nor moving the expiration dates', async () => {
+    const { platform_organization: _, ...fields } = policies();
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', ...fields, platform_organization: 'organization-id' } as never);
+    expect(await importPolicies(context, user, policies(), overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+    expect(propagatePasswordValidityChange).not.toHaveBeenCalled();
+  });
+
+  it('skips the default policy on a platform that never stored its fields, without writing', async () => {
+    const defaults = policies({ password_policy_min_length: 0, password_policy_min_symbols: 0, password_policy_min_numbers: 0, password_policy_min_lowercase: 0,
+      password_policy_min_uppercase: 0, password_policy_validity_days: 0, platform_organization: null });
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id' } as never);
+    expect(await importPolicies(context, user, defaults, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+    expect(propagatePasswordValidityChange).not.toHaveBeenCalled();
+  });
+
+  it('skips policies the platform has as they are when only the main organization is left out, and says why it is', async () => {
+    const { platform_organization: _, ...fields } = policies();
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', ...fields } as never);
+    vi.mocked(isEnterpriseEdition).mockResolvedValue(false);
+    const result = await importPolicies(context, user, policies(), overwrite);
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date\nThe main organization requires the Enterprise Edition' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+  });
+
+  it('says in the preview that the passwords no longer expire, and that users can view the users of other organizations', async () => {
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 30, platform_organization: 'organization-id' } as never);
+    const result = await importPolicies(context, user, policies({ password_policy_validity_days: 0, view_all_users: true }), dryRun);
+    expect(result.reason).toEqual("The users' passwords no longer expire\nUsers can view the users of other organizations");
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 0, view_all_users: true, platform_organization: 'organization-id' } as never);
+    expect((await importPolicies(context, user, policies({ password_policy_validity_days: 0, view_all_users: true }), dryRun)).reason).toBeUndefined();
+  });
+
   it('does not write on a dry run', async () => {
     expect(await importPolicies(context, user, policies(), dryRun)).toMatchObject({ status: 'overwritten' });
     expect(settingsEditField).not.toHaveBeenCalled();

@@ -41,6 +41,9 @@ const TLP_GREEN = marking('TLP', 'TLP:GREEN', 2);
 const TLP_AMBER = marking('TLP', 'TLP:AMBER', 3);
 const PAP_RED = marking('PAP', 'PAP:RED', 4);
 const markingReference = ({ standard_id, definition_type, definition }: ReturnType<typeof marking>) => ({ standard_id, definition_type, definition });
+const plannedMarking = ({ standard_id, definition_type, definition, x_opencti_order }: ReturnType<typeof marking>, order = x_opencti_order) => {
+  return new Map([[standard_id, { definition_type, definition, x_opencti_order: order }]]);
+};
 
 const analystRole = { id: 'analyst-internal-id', standard_id: roleStandardId('Analyst'), name: 'Analyst' };
 const hunterRole = { id: 'hunter-internal-id', standard_id: roleStandardId('Hunter'), name: 'Hunter' };
@@ -195,8 +198,18 @@ describe('importGroup create', () => {
   it('accepts on a dry run a marking the same import creates', async () => {
     withPlatform({ markings: [PAP_RED] });
     const configuration = groupConfiguration({ allowed_markings: [markingReference(TLP_AMBER), markingReference(PAP_RED)] });
-    const plannedMarkings = new Set([TLP_AMBER.standard_id]);
-    const result = await importGroup(context, user, configuration, { mode: ConfigImportMode.Add, dryRun: true, plannedMarkings });
+    const result = await importGroup(context, user, configuration, { mode: ConfigImportMode.Add, dryRun: true, plannedMarkings: plannedMarking(TLP_AMBER) });
+    expect(result).toMatchObject({ status: 'created', reason: undefined });
+  });
+
+  it('checks on a dry run a shareable marking against an allowed marking the same import creates', async () => {
+    withPlatform({ markings: [TLP_GREEN] });
+    const configuration = groupConfiguration({
+      allowed_markings: [markingReference(TLP_AMBER)],
+      default_marking: [],
+      max_shareable_markings: [{ type: 'TLP', value: markingReference(TLP_GREEN) }],
+    });
+    const result = await importGroup(context, user, configuration, { mode: ConfigImportMode.Add, dryRun: true, plannedMarkings: plannedMarking(TLP_AMBER) });
     expect(result).toMatchObject({ status: 'created', reason: undefined });
   });
 
@@ -420,6 +433,52 @@ describe('importGroup sensitive rights', () => {
     withRelations([analystRole], [TLP_AMBER]);
     vi.mocked(roleCapabilities).mockResolvedValue([{ name: 'BYPASS' }] as never);
     const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date' });
+  });
+});
+
+describe('importGroup already up to date', () => {
+  const analysts = existingGroup('Analysts');
+
+  it('skips a group the platform has as it is, and writes nothing', async () => {
+    withPlatform({ groups: [analysts] });
+    withRelations([analystRole], [TLP_AMBER]);
+    const result = await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite });
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Already up to date' });
+    expectNothingWritten();
+  });
+
+  it('overwrites it when it gets a role or a marking the same import creates', async () => {
+    withPlatform({ groups: [analysts], roles: [] });
+    withRelations([], [TLP_AMBER]);
+    const plannedRoles = new Map([[analystRole.standard_id, { grantsSensitiveRights: false }]]);
+    expect(await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true, plannedRoles })).toMatchObject({ status: 'overwritten' });
+    withPlatform({ groups: [analysts], markings: [] });
+    withRelations([analystRole], []);
+    const plannedMarkings = plannedMarking(TLP_AMBER);
+    expect(await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true, plannedMarkings })).toMatchObject({ status: 'overwritten' });
     expect(result.reason).toBeUndefined();
+  });
+
+  it('reads a field the group never stored as its exported default, and a list of names in any order', async () => {
+    const unset = ['description', 'default_assignation', 'auto_integration_assignation', 'no_creators', 'restrict_delete', 'auto_new_marking', 'default_marking', 'max_shareable_markings'];
+    const stored = existingGroup('Analysts', { default_hidden_types: ['Report', 'Channel'], group_confidence_level: { overrides: [], max_confidence: 80 } });
+    withPlatform({ groups: [Object.fromEntries(Object.entries(stored).filter(([key]) => !unset.includes(key))) as typeof stored] });
+    withRelations([analystRole], [TLP_AMBER]);
+    const configuration = groupConfiguration({ description: '', default_hidden_types: ['Channel', 'Report'], default_marking: [], max_shareable_markings: [] });
+    const result = await importGroup(context, user, configuration, { mode: ConfigImportMode.Overwrite });
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expectNothingWritten();
+  });
+
+  it('reads on a dry run the order a marking overwritten by the same import will have', async () => {
+    withPlatform({ groups: [analysts], markings: [TLP_GREEN, TLP_AMBER, PAP_RED] });
+    withRelations([analystRole], [TLP_GREEN]);
+    // TLP:AMBER is above the allowed TLP:GREEN on the platform, and below it once the same import raises the order of TLP:GREEN
+    const configuration = groupConfiguration({ allowed_markings: [markingReference(TLP_GREEN)] });
+    const current = await importGroup(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(current).toMatchObject({ status: 'overwritten', reason: 'Shareable markings not allowed by the group: TLP:AMBER' });
+    const plannedMarkings = plannedMarking(TLP_GREEN, 5);
+    expect(await importGroup(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true, plannedMarkings })).toMatchObject({ status: 'skipped', code: 'unchanged' });
   });
 });

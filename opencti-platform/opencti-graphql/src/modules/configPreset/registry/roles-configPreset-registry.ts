@@ -27,6 +27,8 @@ const toRoleItem = (role: BasicStoreEntityRole): ConfigPresetItemDefinition => (
 
 const rolesImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
+    // Until the role is known to be written, the groups of the same import that depend on it fail, never get the local role of the same name
+    recordConfigPresetTarget(plan, ROLES_FAMILY_ID, item.id, null);
     const { label, failed } = namedItemIdentity(item, roleStandardId, 'The standard id of the role does not match its name');
     if (failed) {
       return failed;
@@ -38,9 +40,6 @@ const rolesImporter: ConfigPresetImporter = {
     if (result.targetId) {
       recordConfigPresetTarget(plan, ROLES_FAMILY_ID, item.id, result.targetId);
       plan.roleSensitiveRights?.set(result.targetId, !!result.grantsSensitiveRights);
-    } else {
-      // A role that is not written: the groups of the same import that depend on it fail, never get the local role of the same name
-      recordConfigPresetTarget(plan, ROLES_FAMILY_ID, item.id, null);
     }
     return toComputedItem(label, result);
   },

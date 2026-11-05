@@ -27,8 +27,14 @@ export interface GroupImportOptions extends ConfigImportOptions {
   plannedRoles?: Map<string, { grantsSensitiveRights: boolean }>;
   // The standard id each role of the bundle is written under by the same import, by its bundle id (the copy of a role imported as COPY)
   roleTargets?: Map<string, string | null>;
-  // In a dry run, the standard ids of the markings the same import creates
-  plannedMarkings?: Set<string>;
+  // In a dry run, the markings the same import creates or overwrites, as they will be once written, by standard id
+  plannedMarkings?: Map<string, PlannedMarking>;
+}
+
+export interface PlannedMarking {
+  definition_type: string;
+  definition: string;
+  x_opencti_order: number;
 }
 
 export type GroupImportCode = 'invalid' | 'role_missing' | 'exists' | 'name_conflict' | 'sensitive_config';
@@ -62,6 +68,8 @@ const ADMINISTRATORS_GROUP = 'Administrators';
 
 type BasicStoreMarking = BasicStoreEntity & { definition: string; definition_type: string; x_opencti_order: number };
 
+type ResolvedMarking = PlannedMarking & { id?: string; standard_id: string };
+
 interface ResolvedGroup {
   fields: Record<string, unknown>;
   roleIds: string[];
@@ -70,6 +78,7 @@ interface ResolvedGroup {
   // Maximum shareable markings above the allowed markings of the group: never written, as the settings screen never offers them
   notAllowedShareableMarkings: string[];
   missingDashboard?: string;
+  getsPlannedMarkings: boolean;
 }
 
 const loadMarkings = async (context: AuthContext, user: AuthUser, references: GroupMarkingReference[]) => {
@@ -84,14 +93,20 @@ const resolveGroup = async (
   user: AuthUser,
   configuration: GroupImportConfiguration,
   roles: BasicStoreEntity[],
-  plannedMarkings: Set<string>,
+  plannedMarkings: Map<string, PlannedMarking>,
 ): Promise<ResolvedGroup> => {
   const shareable = configuration.max_shareable_markings.flatMap(({ value }) => (value === 'none' ? [] : [value]));
   const findMarking = await loadMarkings(context, user, [...configuration.allowed_markings, ...configuration.default_marking.flatMap(({ values }) => values), ...shareable]);
   const missingMarkings = new Set<string>();
-  const resolveMarking = (reference: GroupMarkingReference) => {
+  let getsPlannedMarkings = false;
+  const resolveMarking = (reference: GroupMarkingReference): ResolvedMarking | undefined => {
     const marking = findMarking(reference.standard_id);
-    if (!marking && !plannedMarkings.has(reference.standard_id)) {
+    const planned = plannedMarkings.get(reference.standard_id);
+    if (planned) {
+      getsPlannedMarkings ||= !marking;
+      return { ...planned, id: marking?.id, standard_id: reference.standard_id };
+    }
+    if (!marking) {
       missingMarkings.add(reference.definition);
     }
     return marking;
@@ -104,11 +119,12 @@ const resolveGroup = async (
   fields.default_dashboard = dashboard?.id;
   fields.default_marking = await Promise.all(configuration.default_marking.map(async ({ entity_type, values }) => ({
     entity_type,
-    values: (await cleanMarkings(context, values.map(resolveMarking).filter((marking) => !!marking)) as BasicStoreEntity[]).map(({ id }) => id),
+    values: (await cleanMarkings(context, values.map(resolveMarking).filter((marking) => !!marking)) as ResolvedMarking[])
+      .flatMap(({ id }) => (id ? [id] : [])),
   })));
   // Same rule as the settings screen: a marking is shareable when an allowed marking of its type is at least as high
-  const allowed = configuration.allowed_markings.map(resolveMarking).filter((marking): marking is BasicStoreMarking => !!marking);
-  const isAllowed = (marking: BasicStoreMarking) => allowed.some(({ definition_type, x_opencti_order }) => definition_type === marking.definition_type
+  const allowed = configuration.allowed_markings.map(resolveMarking).filter((marking): marking is ResolvedMarking => !!marking);
+  const isAllowed = (marking: ResolvedMarking) => allowed.some(({ definition_type, x_opencti_order }) => definition_type === marking.definition_type
     && x_opencti_order >= marking.x_opencti_order);
   const notAllowedShareableMarkings: string[] = [];
   fields.max_shareable_markings = configuration.max_shareable_markings.map(({ type, value }) => {
@@ -126,6 +142,7 @@ const resolveGroup = async (
     markingIds: resolveAll(configuration.allowed_markings),
     missingMarkings: [...missingMarkings],
     missingDashboard: dashboardReference && !dashboard ? dashboardReference.name : undefined,
+    getsPlannedMarkings,
   };
 };
 
@@ -171,9 +188,31 @@ const createGroup = async (context: AuthContext, user: AuthUser, name: string, r
   return group;
 };
 
+const GROUP_FIELD_DEFAULTS: Record<string, unknown> = {
+  description: '',
+  default_assignation: false,
+  auto_integration_assignation: [],
+  no_creators: false,
+  restrict_delete: false,
+  auto_new_marking: false,
+  default_hidden_types: [],
+  default_marking: [],
+  max_shareable_markings: [],
+};
+const GROUP_SET_FIELDS = ['auto_integration_assignation', 'default_hidden_types'];
+
+const sortedKeys = (_key: string, value: unknown) => (value && typeof value === 'object' && !Array.isArray(value)
+  ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
+  : value);
+
+const comparableField = (key: string, value: unknown) => {
+  const field = value ?? GROUP_FIELD_DEFAULTS[key] ?? null;
+  return JSON.stringify(GROUP_SET_FIELDS.includes(key) && Array.isArray(field) ? [...field].sort() : field, sortedKeys);
+};
+
 const overwriteGroup = async (context: AuthContext, user: AuthUser, existing: BasicStoreEntityGroup, resolved: ResolvedGroup, current: CurrentGroupRelations) => {
   const input: EditInput[] = definedFields(resolved.fields)
-    .filter(([key, value]) => JSON.stringify(existing[key as keyof BasicStoreEntityGroup] ?? null) !== JSON.stringify(value))
+    .filter(([key, value]) => comparableField(key, existing[key as keyof BasicStoreEntityGroup]) !== comparableField(key, value))
     .map(([key, value]) => ({ key, value: Array.isArray(value) ? value : [value] }));
   if (input.length > 0) {
     await groupEditField(context, user, existing.id, input);
@@ -249,7 +288,7 @@ export const importGroup = async (
   configuration: unknown,
   options: GroupImportOptions,
 ): Promise<GroupImportResult> => {
-  const { mode, dryRun = false, reservedIds, plannedRoles = new Map(), roleTargets = new Map(), plannedMarkings = new Set<string>() } = options;
+  const { mode, dryRun = false, reservedIds, plannedRoles = new Map(), roleTargets = new Map(), plannedMarkings = new Map() } = options;
   const parsed = groupImportSchema.safeParse(configuration);
   if (!parsed.success) {
     return refused('invalid', configImportValidationReason(parsed.error), false);
@@ -283,7 +322,7 @@ export const importGroup = async (
   }
   const found = roles.filter((role): role is BasicStoreEntityRole => !!role);
   const { roles: groupRoles, administratorRoleKept } = await withAdministratorRole(context, user, targetId, found);
-  const resolved = await resolveGroup(context, user, parsed.data, groupRoles, dryRun ? plannedMarkings : new Set());
+  const resolved = await resolveGroup(context, user, parsed.data, groupRoles, dryRun ? plannedMarkings : new Map());
   const current = target ? await currentRelations(context, user, target.id) : { roles: [], markings: [] };
   const currentIds = idsOf(current.roles);
   const removedRoles = current.roles.filter(({ id }) => !resolved.roleIds.includes(id));
@@ -300,6 +339,14 @@ export const importGroup = async (
     removedMarkings.length > 0 ? `Markings removed: ${configImportReasonValue(removedMarkings.join(', '))}` : undefined,
     ...assignmentReasons(parsed.data, target),
   ]);
+  // A role or a marking the same import creates is not on the platform yet, but the group will get it
+  const getsPlanned = roles.some((role) => !role) || resolved.getsPlannedMarkings;
+  const unchanged = !!target && !getsPlanned && groupEditInput(target, resolved).length === 0
+    && sameIds(currentIds, resolved.roleIds) && sameIds(idsOf(current.markings), resolved.markingIds);
+  if (unchanged) {
+    const upToDate = joinConfigImportReasons([CONFIG_IMPORT_UNCHANGED_REASON, administratorRoleKept ? ADMINISTRATOR_ROLE_KEPT_REASON : undefined, ...missingReasons(resolved)]);
+    return { status: 'skipped', code: 'unchanged', exists: true, configuration: parsed.data, reason: upToDate };
+  }
   const result: GroupImportResult = { status: target ? 'overwritten' : 'created', exists: !!existing, configuration: parsed.data, reason };
   if (dryRun) {
     reservedIds?.add(targetId);

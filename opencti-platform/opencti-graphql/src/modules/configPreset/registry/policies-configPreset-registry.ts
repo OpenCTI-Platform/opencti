@@ -1,4 +1,4 @@
-import { getPoliciesConfigPresetConfiguration } from '../../settings/settings-export';
+import { exportPolicies } from '../../settings/settings-export';
 import { importPolicies } from '../../settings/settings-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
@@ -11,7 +11,7 @@ const getPoliciesItems = async (): Promise<ConfigPresetItemDefinition[]> => [{
   id: POLICIES_FAMILY_ID,
   label: POLICIES_LABEL,
   translatable: true,
-  exporter: (context, user) => getPoliciesConfigPresetConfiguration(context, user),
+  exporter: (context, user) => exportPolicies(context, user),
 }];
 
 const policiesImporter: ConfigPresetImporter = {

@@ -61,6 +61,8 @@ export interface ConfigPresetImportPlan {
   groupIds?: Set<string>;
   // Whether the roles the earlier items of a dry run would create or overwrite give sensitive rights, by the standard id they are written under
   roleSensitiveRights?: Map<string, boolean>;
+  // The markings the earlier items of a dry run would create or whose order they would change, as they will be once written, by standard id
+  plannedMarkings?: Map<string, { definition_type: string; definition: string; x_opencti_order: number }>;
   // `<type>/<bundle id>` -> the standard id the item is written under (its copy when imported as COPY), null when the copy is not written.
   // The items that depend on it use it, so that they get the item of the bundle and never the local one with its bundle id
   targets?: Map<string, string | null>;

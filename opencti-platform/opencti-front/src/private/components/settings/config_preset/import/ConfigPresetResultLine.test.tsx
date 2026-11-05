@@ -61,6 +61,8 @@ describe('ConfigPresetResultLine', () => {
     ['Groups that get new markings automatically get this one', 'Groups that get new markings automatically get this one'],
     ['Sets the main organization: Filigran', 'Sets the main organization: Filigran'],
     ["The expiration date of the users' passwords changes", "The expiration date of the users' passwords changes"],
+    ["The users' passwords no longer expire", "The users' passwords no longer expire"],
+    ['Users can view the users of other organizations', 'Users can view the users of other organizations'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();

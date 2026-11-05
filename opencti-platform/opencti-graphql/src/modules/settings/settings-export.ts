@@ -67,7 +67,7 @@ export const getMessagesConfigPresetConfigurations = async (context: AuthContext
 
 const policyValue = (settings: Record<string, unknown>, field: string) => settings[field] ?? (field === 'view_all_users' ? false : 0);
 
-export const getPoliciesConfigPresetConfiguration = async (context: AuthContext, user: AuthUser) => {
+export const exportPolicies = async (context: AuthContext, user: AuthUser) => {
   const settings = await readSettings(context);
   const organizationId = settings.platform_organization as string | undefined;
   const organization = organizationId ? await storeLoadById<BasicStoreEntity>(context, user, organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION) : undefined;

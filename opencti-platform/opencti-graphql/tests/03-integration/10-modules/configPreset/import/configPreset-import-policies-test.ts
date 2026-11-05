@@ -1,15 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { buildZip, itemFile, metadataFile } from '../../../../utils/configPresetBundle';
-import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess } from '../../../../utils/testQueryHelper';
-import { ADMIN_USER, testContext } from '../../../../utils/testQuery';
+import { createUploadFromBuffer, queryAsAdmin, queryAsAdminWithSuccess, unSetOrganization } from '../../../../utils/testQueryHelper';
+import { ADMIN_USER, PLATFORM_ORGANIZATION, testContext } from '../../../../utils/testQuery';
 import { getClientBase } from '../../../../../src/database/redis';
 import { getSettings, setPlatformBootstrapStatus, settingsEditField } from '../../../../../src/domain/settings';
 import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
 import { deleteFile } from '../../../../../src/database/file-storage';
 import { downloadFile } from '../../../../../src/database/raw-file-storage';
 import { isEnterpriseEdition } from '../../../../../src/enterprise-edition/ee';
-import { getPoliciesConfigPresetConfiguration } from '../../../../../src/modules/settings/settings-export';
+import { exportPolicies } from '../../../../../src/modules/settings/settings-export';
 import { importPolicies } from '../../../../../src/modules/settings/settings-import';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
 
@@ -39,7 +39,7 @@ const importData = async (fileId: string, dryRun = false) => {
   expect(errors).toBeUndefined();
   return data?.configPresetImport.results as { type: string; key: string; status: string; reason: string | null }[];
 };
-const readPolicies = async () => (await getPoliciesConfigPresetConfiguration(testContext, ADMIN_USER)) as Record<string, unknown>;
+const readPolicies = async () => (await exportPolicies(testContext, ADMIN_USER)) as Record<string, unknown>;
 const editSettings = async (input: { key: string; value: unknown[] }[]) => settingsEditField(testContext, ADMIN_USER, (await getSettings(testContext)).id, input);
 
 const PASSWORD_POLICY = {
@@ -85,7 +85,7 @@ describe('Config preset import: policies', () => {
 
     const fileId = await uploadZip(zip);
     const dry = await importData(fileId, true);
-    expect(dry).toEqual([{ type: 'policies', key: 'policies', status: 'OVERWRITTEN', reason: null }]);
+    expect(dry).toEqual([{ type: 'policies', key: 'policies', status: 'OVERWRITTEN', reason: 'Users can view the users of other organizations' }]);
     expect((await readPolicies()).password_policy_min_length).toEqual(4);
     expect(await importData(fileId)).toEqual(dry);
     expect(await readPolicies()).toEqual(exported);
@@ -98,5 +98,22 @@ describe('Config preset import: policies', () => {
     const reason = (await isEnterpriseEdition(testContext)) ? 'Main organization not found: Unknown organization' : 'The main organization requires the Enterprise Edition';
     expect(results).toEqual([{ type: 'policies', key: 'policies', status: 'OVERWRITTEN', reason }]);
     expect(await readPolicies()).toMatchObject({ password_policy_min_length: 12, platform_organization: before.platform_organization });
+  });
+
+  it('sets a main organization of this platform under the Enterprise Edition, then finds the policies up to date', async () => {
+    const organization = { standard_id: PLATFORM_ORGANIZATION.id, name: PLATFORM_ORGANIZATION.name };
+    const configuration = { ...PASSWORD_POLICY, view_all_users: false, platform_organization: organization };
+    const fileId = await uploadZip(await buildZip({ 'metadata.json': metadataFile(), 'security_access/policies.json': itemFile('securityAccess.policies', 'policies', configuration) }));
+    if (!(await isEnterpriseEdition(testContext))) {
+      expect(await importData(fileId)).toMatchObject([{ status: 'OVERWRITTEN', reason: 'The main organization requires the Enterprise Edition' }]);
+      return;
+    }
+    try {
+      expect(await importData(fileId)).toEqual([{ type: 'policies', key: 'policies', status: 'OVERWRITTEN', reason: `Sets the main organization: ${PLATFORM_ORGANIZATION.name}` }]);
+      expect((await readPolicies()).platform_organization).toEqual(organization);
+      expect(await importPolicies(testContext, ADMIN_USER, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true })).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    } finally {
+      await unSetOrganization();
+    }
   });
 });

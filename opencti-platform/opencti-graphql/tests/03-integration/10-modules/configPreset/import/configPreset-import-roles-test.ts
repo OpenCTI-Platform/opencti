@@ -88,6 +88,7 @@ describe('Config preset import: roles', () => {
 
   it('imports back the zip of the real export: the role is created with its capabilities, under the standard id of its name', async () => {
     const role = await addRole(testContext, ADMIN_USER, { name: ROLE_NAME, description: 'Round trip', capabilities: ['KNOWLEDGE', 'EXPLORE'], capabilitiesInDraft: ['KNOWLEDGE'] });
+    expect(await findRoleById(testContext, ADMIN_USER, role.id)).not.toHaveProperty('capabilitiesInDraft');
     const exported = await queryAsAdminWithSuccess({ query: EXPORT_MUTATION, variables: { selections: [{ type: 'roles', items: [role.standard_id] }] } });
     const exportId = exported.data?.configPresetExport.id as string;
     const zip = await readStream(await downloadFile(exportId));

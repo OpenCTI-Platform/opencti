@@ -9,7 +9,7 @@ import { groupStandardId, importGroup } from '../../user/configPreset/group-impo
 import type { BasicStoreEntityRole } from '../../user/configPreset/role-export';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
-import { configPresetCreated, configPresetPlanKey, configPresetTargets } from '../import/configPreset-import-types';
+import { configPresetPlanKey, configPresetTargets } from '../import/configPreset-import-types';
 import {
   buildConfigPresetConnection,
   namedItemIdentity,
@@ -52,8 +52,7 @@ const groupsImporter: ConfigPresetImporter = {
     }
     const plannedRoles = new Map([...(plan.roleSensitiveRights ?? [])].map(([standardId, grantsSensitiveRights]) => [standardId, { grantsSensitiveRights }]));
     const roleTargets = configPresetTargets(plan, ROLES_FAMILY_ID);
-    const plannedMarkings = configPresetCreated(plan, MARKINGS_FAMILY_ID);
-    const options = { mode, dryRun: true, reservedIds: plan.groupIds, plannedRoles, roleTargets, plannedMarkings };
+    const options = { mode, dryRun: true, reservedIds: plan.groupIds, plannedRoles, roleTargets, plannedMarkings: plan.plannedMarkings };
     const result = await importGroup(context, user, item.configuration, options);
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(GROUPS_FAMILY_ID, item.id));

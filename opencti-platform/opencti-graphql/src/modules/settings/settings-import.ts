@@ -6,7 +6,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportReasonValue, configImportValidationReason, joinConfigImportReasons } from '../configImport/configImport-utils';
+import { CONFIG_IMPORT_UNCHANGED_REASON, configImportReasonValue, configImportValidationReason, joinConfigImportReasons } from '../configImport/configImport-utils';
 import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../user/configPreset/sensitive-config-import';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { findById as findThemeById } from '../theme/theme-domain';
@@ -44,8 +44,7 @@ const toInput = (configuration: Record<string, unknown>, keys: string[]) => {
     .map((key) => ({ key, value: [configuration[key]] }));
 };
 
-// What the platform has already is not written again, so nothing is shown nor audited for it. A boolean that is off is the same as one that is not set.
-const isSameValue = (current: unknown, value: unknown) => current === value || (value === false && (current === null || current === undefined));
+const isSameValue = (current: unknown, value: unknown) => current === value || ((value === false || value === 0) && (current === null || current === undefined));
 
 const isUnchanged = async (context: AuthContext, input: { key: string; value: unknown[] }[]) => {
   const current = (await getSettingsFromDatabase(context)) as unknown as Record<string, unknown>;
@@ -142,6 +141,8 @@ const ORGANIZATION_REQUIRES_EE_REASON = 'The main organization requires the Ente
 const ORGANIZATION_SET_REASON = 'Sets the main organization';
 const UNSATISFIABLE_PASSWORD_POLICY_REASON = 'The password policy cannot be satisfied: its maximum length is below what its other rules require';
 const PASSWORD_VALIDITY_REASON = 'The expiration date of the users\' passwords changes';
+const PASSWORD_VALIDITY_CLEARED_REASON = 'The users\' passwords no longer expire';
+const VIEW_ALL_USERS_REASON = 'Users can view the users of other organizations';
 
 export const importPolicies = async (
   context: AuthContext,
@@ -167,33 +168,47 @@ export const importPolicies = async (
   if (!isPasswordPolicySatisfiable(policy)) {
     return failed('invalid', UNSATISFIABLE_PASSWORD_POLICY_REASON, parsed.data);
   }
-  let organizationReason: string | undefined;
+  // Why the main organization of the bundle is left out, when it is
+  let leftOutReason: string | undefined;
+  let organization: BasicStoreEntity | undefined;
   if (organizationReference) {
     if (!(await isEnterpriseEdition(context))) {
-      organizationReason = ORGANIZATION_REQUIRES_EE_REASON;
+      leftOutReason = ORGANIZATION_REQUIRES_EE_REASON;
     } else if (!(await isConfigImportSensitiveChangeAllowed(context, user, 'platform_organization'))) {
-      organizationReason = CONFIG_IMPORT_SENSITIVE_REASON;
+      leftOutReason = CONFIG_IMPORT_SENSITIVE_REASON;
     } else {
-      const organization = await storeLoadById<BasicStoreEntity>(context, user, organizationReference.standard_id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-      if (organization) {
-        input.push({ key: 'platform_organization', value: [organization.id] });
-        if (organization.id !== current.platform_organization) {
-          organizationReason = `${ORGANIZATION_SET_REASON}: ${configImportReasonValue(organization.name)}`;
-        }
-      } else {
-        organizationReason = `Main organization not found: ${configImportReasonValue(organizationReference.name)}`;
+      organization = await storeLoadById<BasicStoreEntity>(context, user, organizationReference.standard_id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+      if (!organization) {
+        leftOutReason = `Main organization not found: ${configImportReasonValue(organizationReference.name)}`;
       }
     }
+  }
+  const setsOrganization = !!organization && organization.id !== current.platform_organization;
+  const settings = current as unknown as Record<string, unknown>;
+  if (!setsOrganization && input.every(({ key, value }) => isSameValue(settings[key], value[0]))) {
+    return skipped('unchanged', joinConfigImportReasons([CONFIG_IMPORT_UNCHANGED_REASON, leftOutReason]) ?? CONFIG_IMPORT_UNCHANGED_REASON, parsed.data);
+  }
+  if (organization && setsOrganization) {
+    input.push({ key: 'platform_organization', value: [organization.id] });
   }
   const oldValidity = Number(current.password_policy_validity_days ?? 0);
   const validity = parsed.data.password_policy_validity_days;
   const validityChanges = validity !== null && validity !== undefined && validity !== oldValidity;
-  if (!dryRun && input.length > 0) {
+  if (!dryRun) {
     await writeSettings(context, user, input);
     if (validityChanges) {
       await propagatePasswordValidityChange(context, oldValidity, validity);
     }
   }
-  const reason = joinConfigImportReasons([organizationReason, validityChanges ? PASSWORD_VALIDITY_REASON : undefined]);
+  let validityReason: string | undefined;
+  if (validityChanges) {
+    validityReason = validity <= 0 ? PASSWORD_VALIDITY_CLEARED_REASON : PASSWORD_VALIDITY_REASON;
+  }
+  const reason = joinConfigImportReasons([
+    organization && setsOrganization ? `${ORGANIZATION_SET_REASON}: ${configImportReasonValue(organization.name)}` : undefined,
+    leftOutReason,
+    validityReason,
+    parsed.data.view_all_users === true && !current.view_all_users ? VIEW_ALL_USERS_REASON : undefined,
+  ]);
   return { status: 'overwritten', exists: true, configuration: parsed.data, reason };
 };

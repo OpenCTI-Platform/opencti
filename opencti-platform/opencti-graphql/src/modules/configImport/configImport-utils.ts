@@ -1,6 +1,8 @@
+export const configImportReasonValue = (value: string) => value.replace(/[\r\n]+/g, ' ');
+
 // The reason of an import that failed its validation: one `path: message` per issue of the Zod error
 export const configImportValidationReason = (error: { issues: { path: PropertyKey[]; message: string }[] }) => {
-  return error.issues.map((issue) => `${issue.path.map(String).join('.') || 'configuration'}: ${issue.message}`).join(', ');
+  return configImportReasonValue(error.issues.map((issue) => `${issue.path.map(String).join('.') || 'configuration'}: ${issue.message}`).join(', '));
 };
 
 const MAX_COPIES = 100;
@@ -32,5 +34,3 @@ export const joinConfigImportReasons = (reasons: (string | undefined)[]) => {
   const present = reasons.filter((reason): reason is string => !!reason);
   return present.length > 0 ? present.join(CONFIG_IMPORT_REASON_SEPARATOR) : undefined;
 };
-
-export const configImportReasonValue = (value: string) => value.replace(/[\r\n]+/g, ' ');

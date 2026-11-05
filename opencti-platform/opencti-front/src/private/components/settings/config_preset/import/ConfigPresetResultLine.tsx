@@ -65,6 +65,8 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'The order of the marking changes': return t_i18n('The order of the marking changes');
     case 'Groups that get new markings automatically get this one': return t_i18n('Groups that get new markings automatically get this one');
     case 'The expiration date of the users\' passwords changes': return t_i18n('The expiration date of the users\' passwords changes');
+    case 'The users\' passwords no longer expire': return t_i18n('The users\' passwords no longer expire');
+    case 'Users can view the users of other organizations': return t_i18n('Users can view the users of other organizations');
     case 'The standard id of the group does not match its name': return t_i18n('The standard id of the group does not match its name');
     case 'Group already exists': return t_i18n('Group already exists');
     case 'Group name already exists': return t_i18n('Group name already exists');
