@@ -53,6 +53,7 @@ import { customMarking, papRed } from './configPreset-markings-fixtures';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './configPreset-killChainPhases-fixtures';
 import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
+import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -248,6 +249,15 @@ describe('Config preset exportable types query', () => {
         items: [statusTemplateItem(customStatusTemplate), statusTemplateItem(defaultStatusTemplate)],
         itemsPageInfo: onePage(2),
       },
+      {
+        key: 'caseTemplates',
+        label: 'Case templates',
+        description: 'Case templates and their tasks',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // By name
+        items: [statusTemplateItem(fraudCaseTemplate), statusTemplateItem(phishingCaseTemplate)],
+        itemsPageInfo: onePage(2),
+      },
     ]);
   });
 
@@ -289,7 +299,7 @@ describe('Config preset exportable types query', () => {
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['killChainPhases', false],
-      ['vocabularies', false], ['statusTemplates', false],
+      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false],
     ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
@@ -335,6 +345,7 @@ describe('Config preset exportable types query', () => {
       ['killChainPhases', 'taxonomy'],
       ['vocabularies', 'taxonomy'],
       ['statusTemplates', 'taxonomy'],
+      ['caseTemplates', 'taxonomy'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);

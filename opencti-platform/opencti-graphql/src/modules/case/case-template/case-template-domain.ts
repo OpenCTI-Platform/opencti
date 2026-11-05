@@ -1,12 +1,12 @@
-import { type EntityOptions, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import { type BasicStoreEntityCaseTemplate, ENTITY_TYPE_CASE_TEMPLATE, TEMPLATE_TASK_RELATION } from './case-template-types';
-import type { CaseTemplateAddInput, EditInput, StixRefRelationshipAddInput } from '../../../generated/graphql';
+import { type CaseTemplateAddInput, type EditInput, FilterMode, type StixRefRelationshipAddInput } from '../../../generated/graphql';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../../database/middleware';
 import { notify } from '../../../database/redis';
 import { BUS_TOPICS } from '../../../config/conf';
-import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from '../../../domain/stixObjectOrStixRelationship';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
@@ -18,6 +18,21 @@ export const findById: DomainFindById<BasicStoreEntityCaseTemplate> = (context: 
 };
 export const findCaseTemplatePaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseTemplate>) => {
   return pageEntitiesConnection<BasicStoreEntityCaseTemplate>(context, user, [ENTITY_TYPE_CASE_TEMPLATE], opts);
+};
+
+export const findAllCaseTemplates = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseTemplate> = {}) => {
+  return fullEntitiesList<BasicStoreEntityCaseTemplate>(context, user, [ENTITY_TYPE_CASE_TEMPLATE], opts);
+};
+
+// The task templates of a case template, read as they are to create the tasks of a case (see upsertTemplateForCase)
+export const findAllCaseTemplateTasks = (context: AuthContext, user: AuthUser, caseTemplateId: string) => {
+  return fullEntitiesList<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: [buildRefRelationKey(TEMPLATE_TASK_RELATION)], values: [caseTemplateId] }],
+      filterGroups: [],
+    },
+  });
 };
 
 export const taskTemplatesPaginated = async (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<BasicStoreEntityCase>) => {
