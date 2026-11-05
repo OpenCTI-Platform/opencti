@@ -24,9 +24,7 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
-  GENERIC_NESTED_FILTER_OPERATORS,
   GENERIC_NESTED_FILTER_TYPE,
-  getGenericNestedSubFilterOperators,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   IS_INFERRED_FILTER,
@@ -71,7 +69,6 @@ export type FilterDefinition = {
   subEntityTypes: string[]; // entity types that have the given type as parent and have this filter key in their schema
   elementsForFilterValuesSearch: string[]; // not empty if type = id, type = enum or type = vocabulary
   subFilters?: FilterDefinition[];
-  operators?: string[]; // operators accepted by the backend, when it restricts them (generic nested filter keys and their sub-filters)
 };
 
 // build the FilterDefinition object that is saved in the filterKeysShema
@@ -188,7 +185,7 @@ const completeFilterDefinitionMapWithObjectAttributeWithMappings = (
 };
 
 // a filterable nested attribute is exposed as ONE filter key of type 'nested_filterable',
-// whose subFilters are the filterable mappings of the attribute, with the operators each one accepts
+// whose subFilters are the filterable mappings of the attribute
 const completeFilterDefinitionMapWithNestedAttribute = (
   filterDefinitionMap: Map<string, FilterDefinition>, // map in construction
   nestedAttributeDefinition: NestedObjectAttribute, // nested attribute with mappings
@@ -198,11 +195,10 @@ const completeFilterDefinitionMapWithNestedAttribute = (
   if (!existingDefinition) {
     const subFilters = nestedAttributeDefinition.mappings
       .filter((mapping) => mapping.isFilterable)
-      .map((mapping) => ({ ...buildFilterDefinitionFromAttributeDefinition(mapping, []), operators: getGenericNestedSubFilterOperators(mapping) }));
+      .map((mapping) => buildFilterDefinitionFromAttributeDefinition(mapping, []));
     filterDefinitionMap.set(nestedAttributeDefinition.name, {
       ...buildFilterDefinitionFromAttributeDefinition(nestedAttributeDefinition, types),
       type: GENERIC_NESTED_FILTER_TYPE,
-      operators: GENERIC_NESTED_FILTER_OPERATORS,
       subFilters,
     });
   } else if (!types.every((type) => existingDefinition.subEntityTypes.includes(type))) {

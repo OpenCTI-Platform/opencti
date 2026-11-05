@@ -27,10 +27,9 @@ const coverageDefinition = {
   multiple: true,
   subEntityTypes: ['Stix-Core-Object'],
   elementsForFilterValuesSearch: [],
-  operators: ['eq', 'nil', 'not_nil'],
   subFilters: [
-    { filterKey: 'coverage_name', type: 'vocabulary', label: 'Coverage name', multiple: true, subEntityTypes: [], elementsForFilterValuesSearch: ['coverage_ov'], operators: ['eq', 'not_eq'] },
-    { filterKey: 'coverage_score', type: 'float', label: 'Score', multiple: false, subEntityTypes: [], elementsForFilterValuesSearch: [], operators: ['eq', 'gt', 'gte', 'lt', 'lte'] },
+    { filterKey: 'coverage_name', type: 'vocabulary', label: 'Coverage name', multiple: false, subEntityTypes: [], elementsForFilterValuesSearch: ['coverage_ov'] },
+    { filterKey: 'coverage_score', type: 'float', label: 'Score', multiple: false, subEntityTypes: [], elementsForFilterValuesSearch: [] },
   ],
 } as FilterDefinition;
 

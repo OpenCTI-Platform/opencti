@@ -12,7 +12,6 @@ import {
   CUSTOM_FIELD_SELECT_VALUE_SUBFILTER,
   CUSTOM_FIELD_SELECT_VALUES_SUBFILTER,
   CUSTOM_FIELD_STRING_VALUE_SUBFILTER,
-  getGenericNestedSubFilterOperators,
   ID_SUBFILTER,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
@@ -646,12 +645,8 @@ export const adaptFilterToGenericNestedFilterKey = (filter: Filter, attribute: N
     if (!mapping) {
       throw BadUserInputError('Unknown sub-filter key on a nested filter key', { key: attribute.name, subFilterKey: subFilter.key });
     }
-    const subOperator = subFilter.operator ?? FilterOperator.Eq;
-    if (!getGenericNestedSubFilterOperators(mapping).includes(subOperator)) {
-      throw BadUserInputError('Unsupported sub-filter operator on a nested filter key', { key: attribute.name, subFilterKey: subFilter.key, operator: subOperator });
-    }
     if (subFilter.values && subFilter.values.length > 0) {
-      nested.push({ key: subFilter.key, values: subFilter.values, operator: subOperator });
+      nested.push({ key: subFilter.key, values: subFilter.values, operator: subFilter.operator ?? FilterOperator.Eq });
     }
   }
   return nested.length > 0 ? { ...base, nested } : null;

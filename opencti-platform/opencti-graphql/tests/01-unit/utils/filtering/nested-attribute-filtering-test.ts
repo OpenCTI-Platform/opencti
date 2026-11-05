@@ -37,10 +37,12 @@ describe('adaptFilterToGenericNestedFilterKey', () => {
     expect(adapt(filter({ values: [] }))).toBeNull();
     expect(adapt(filter({ values: [{ key: 'coverage_name', values: [] }, { key: 'coverage_score', operator: 'lt', values: [] }] as any }))).toBeNull();
   });
-  it('rejects unknown sub-filter keys and invalid operators', () => {
+  it('keeps the operator of each sub-filter, like the other filters', () => {
+    expect(adapt(filter({ values: [{ key: 'coverage_score', operator: 'not_eq', values: ['20'] }] as any }))?.nested)
+      .toEqual([{ key: 'coverage_score', operator: 'not_eq', values: ['20'] }]);
+  });
+  it('rejects unknown sub-filter keys and operators other than eq, nil and not_nil on the nested filter', () => {
     expect(() => adapt(filter({ values: [{ key: 'unknown', values: ['a'] }] as any }))).toThrow(/sub-filter key/);
-    expect(() => adapt(filter({ values: [{ key: 'coverage_score', operator: 'not_eq', values: ['20'] }] as any }))).toThrow(/operator/);
-    expect(() => adapt(filter({ values: [{ key: 'coverage_name', operator: 'gt', values: ['detection'] }] as any }))).toThrow(/operator/);
     expect(() => adapt(filter({ operator: FilterOperator.NotEq }))).toThrow(/operator/);
   });
 });
