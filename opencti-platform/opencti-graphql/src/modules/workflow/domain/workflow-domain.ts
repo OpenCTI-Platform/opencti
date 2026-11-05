@@ -1291,6 +1291,16 @@ const toAllowedTransition = (
 /**
  * Get allowed transitions for an entity.
  */
+// The projection writes the new status on the live entity, even from a draft:
+// check the user's rights against that entity, not its draft version.
+const loadStatusWriteTarget = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, entityId: string, entity: T): Promise<T> => {
+  if (!getDraftContext(context, user)) {
+    return entity;
+  }
+  const liveEntity = await storeLoadById<T>(bypassDraftContext(context), bypassDraftUser(user), entityId, 'Basic-Object');
+  return liveEntity ?? entity;
+};
+
 export const getAllowedTransitions = async (
   context: AuthContext,
   user: AuthUser,
@@ -1318,11 +1328,12 @@ export const getAllowedTransitions = async (
 
   // View access alone isn't enough to trigger a transition: a view-only user (e.g. restricted by
   // an authorized-members group restriction) must not see any transition as available.
-  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
+  const statusWriteTarget = await loadStatusWriteTarget(context, user, entityId, entity);
+  if (!validateUserAccessOperation(user, statusWriteTarget, AccessOperation.EDIT)) {
     return [];
   }
   // Same for a user whose confidence level is too low to write the new status
-  if (!controlUserConfidenceAgainstElement(user, entity, true)) {
+  if (!controlUserConfidenceAgainstElement(user, statusWriteTarget, true)) {
     return [];
   }
 
@@ -1468,12 +1479,13 @@ export const triggerWorkflowEvent = async (
   // View access alone isn't enough to trigger a transition: mirrors the check in
   // getAllowedTransitions, which only hides transitions from the UI and does not itself
   // prevent a view-only user from calling this mutation directly.
-  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
+  const statusWriteTarget = await loadStatusWriteTarget(context, user, entityId, entity);
+  if (!validateUserAccessOperation(user, statusWriteTarget, AccessOperation.EDIT)) {
     throw ForbiddenAccess();
   }
   // The new status is written with the user's rights: refuse before the instance moves,
   // instead of leaving a moved instance whose status write failed.
-  if (!controlUserConfidenceAgainstElement(user, entity, true)) {
+  if (!controlUserConfidenceAgainstElement(user, statusWriteTarget, true)) {
     return { success: false, reason: 'Your confidence level is too low to update this entity' };
   }
 
