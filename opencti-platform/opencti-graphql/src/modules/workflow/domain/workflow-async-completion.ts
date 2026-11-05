@@ -21,8 +21,12 @@ import { projectWorkflowState, resolveProjectionScope } from './workflow-project
 
 // history is rewritten as a whole on each append, so keep only the latest entries.
 const MAX_WORKFLOW_HISTORY_ENTRIES = 200;
-// A failed entity write must not lose a closing reason: the history entry keeps it, the instance error points to it
-export const closingReasonNotWrittenError = (closingReason: string) => {
+// A failed entity write must not lose a closing reason: the history entry keeps it, the instance error points to it.
+// A failed clear (null) is reported too: nothing repairs a closing reason left on a reopened entity.
+export const closingReasonNotWrittenError = (closingReason: string | null) => {
+  if (closingReason === null) {
+    return 'The closing reason could not be cleared on the entity: a user with bypass rights can clear it';
+  }
   return `Closing reason "${closingReason}" could not be written on the entity: a user with bypass rights can set it`;
 };
 
@@ -251,7 +255,7 @@ const completeWorkflowAsyncActionResult = async (
   if (fullEntity) {
     const scope = resolveProjectionScope(instanceEntity.scope);
     const projected = await projectWorkflowState(executionContext, executionUser, fullEntity, pendingTransition.toState, scope, pendingTransition.closingReason);
-    if (!projected && pendingTransition.closingReason) {
+    if (!projected && pendingTransition.closingReason !== undefined) {
       await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
         { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason)] },
       ]);

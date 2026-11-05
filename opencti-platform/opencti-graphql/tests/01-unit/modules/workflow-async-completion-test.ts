@@ -827,6 +827,25 @@ describe('reportWorkflowAsyncActionResult', () => {
       ]);
     });
 
+    it('reports a closing reason that could not be cleared when the entity write fails', async () => {
+      const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+      const pt = makePendingTransition({ syncActions: [], closingReason: null });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt), scope: 'GLOBAL' });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+      (updateAttribute as any).mockResolvedValue({});
+      (projectWorkflowState as any).mockResolvedValueOnce(false);
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect((updateAttribute as any).mock.calls.at(-1)[4]).toEqual([
+        { key: 'pendingError', value: [expect.stringContaining('could not be cleared')] },
+      ]);
+    });
+
     it('skips projection and logs a warning when the full entity could not be loaded', async () => {
       const pt = makePendingTransition({ syncActions: [] });
       const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });

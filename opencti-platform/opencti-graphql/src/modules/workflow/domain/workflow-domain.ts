@@ -1709,7 +1709,7 @@ export const triggerWorkflowEvent = async (
     // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
     const scope = resolveProjectionScope(instanceEntity.scope);
     const projected = await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, newState, scope, resolvedClosingReason.closingReason);
-    if (!projected && resolvedClosingReason.closingReason) {
+    if (!projected && resolvedClosingReason.closingReason !== undefined) {
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
         { key: 'pendingError', value: [closingReasonNotWrittenError(resolvedClosingReason.closingReason)] },
       ]);
@@ -1921,7 +1921,12 @@ const executeWorkflowBypass = async (
       { key: 'pendingError', value: [null] },
       { key: 'pendingTransition', value: [null] },
     ]);
-    await projectWorkflowState(executionContext, executionUser, entity, targetStatus.template_id, scope, pendingTransition.closingReason);
+    const projected = await projectWorkflowState(executionContext, executionUser, entity, targetStatus.template_id, scope, pendingTransition.closingReason);
+    if (!projected && pendingTransition.closingReason !== undefined) {
+      await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason)] },
+      ]);
+    }
     return { success: true, newState: targetStatus.template_id, executionStatus: 'completed', entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
@@ -2101,7 +2106,10 @@ const applyExternalStatusWrite = async (
     { key: 'pendingError', value: [null] },
   ]);
   if (clearsClosingReason(definitionData.transitions, instanceEntity.currentState, stateId)) {
-    await projectWorkflowState(context, WORKFLOW_MANAGER_USER, entity, stateId, resolveProjectionScope(instanceEntity.scope), null);
+    const projected = await projectWorkflowState(context, WORKFLOW_MANAGER_USER, entity, stateId, resolveProjectionScope(instanceEntity.scope), null);
+    if (!projected) {
+      await updateInstance([{ key: 'pendingError', value: [closingReasonNotWrittenError(null)] }]);
+    }
   }
 };
 

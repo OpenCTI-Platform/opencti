@@ -245,6 +245,17 @@ describe('Workflow bypass', () => {
     expect(projectWorkflowState).toHaveBeenCalledWith(context, { ...user, draft_context: undefined }, entity, 'open', StatusScope.Global, null);
   });
 
+  it('reports a closing reason that a bypass could not clear', async () => {
+    definition.transitions[0].closingReason = 'allowed';
+    instance.currentState = 'closed';
+    vi.mocked(projectWorkflowState).mockResolvedValueOnce(false);
+
+    const result = await setWorkflowStatus(context, user, entity.id, legacy.id, false);
+
+    expect(result).toMatchObject({ success: true, newState: 'open' });
+    expect(instance.pendingError).toContain('could not be cleared');
+  });
+
   it('keeps the closing reason when a bypass moves from a final state to another one', async () => {
     definition.transitions[0].closingReason = 'allowed';
     definition.states.push({ statusId: 'archived' });
@@ -4565,13 +4576,27 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
       states: [{ statusId: 'draft' }, { statusId: 'closed' }],
       transitions: [{ from: 'draft', to: 'closed', event: 'close', closingReason: 'required' }],
     }));
-    (projectWorkflowState as any).mockResolvedValue(undefined);
+    (projectWorkflowState as any).mockResolvedValue(true);
     storedStatusId = 'status-draft-id';
 
     await syncWorkflowInstanceFromExternalWrite(mockContext, { id: 'bypass-id', capabilities: [{ name: 'BYPASS' }] } as any, entity, 'status-draft-id');
 
     expect(lastHistory()).toEqual([expect.objectContaining({ state: 'draft', event: 'event_external' })]);
     expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.objectContaining({ id: 'entity-1' }), 'draft', 'GLOBAL', null);
+  });
+
+  it('reports a closing reason that a BYPASS write could not clear', async () => {
+    setupPublishedDefinition({ ...draftInstance, currentState: 'closed' }, JSON.stringify({
+      initialState: 'draft',
+      states: [{ statusId: 'draft' }, { statusId: 'closed' }],
+      transitions: [{ from: 'draft', to: 'closed', event: 'close', closingReason: 'required' }],
+    }));
+    (projectWorkflowState as any).mockResolvedValue(false);
+    storedStatusId = 'status-draft-id';
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, { id: 'bypass-id', capabilities: [{ name: 'BYPASS' }] } as any, entity, 'status-draft-id');
+
+    expect(lastUpdateInputs()).toEqual([{ key: 'pendingError', value: [expect.stringContaining('could not be cleared')] }]);
   });
 
   it('keeps the current state when the target state has onEnter actions', async () => {
@@ -4848,6 +4873,38 @@ describe('triggerWorkflowEvent — closing reason', () => {
     const inputs = (updateAttribute as any).mock.calls.flatMap((call: any[]) => call[4]);
     expect(JSON.parse(inputs.find((input: any) => input.key === 'history').value[0]).at(-1)).toMatchObject({ closing_reason: 'duplicate' });
     expect((updateAttribute as any).mock.calls.at(-1)[4]).toEqual([{ key: 'pendingError', value: [expect.stringContaining('duplicate')] }]);
+  });
+
+  it('reports a closing reason that could not be cleared when the entity write fails', async () => {
+    const workflowContent = {
+      initialState: 'open',
+      states: [{ statusId: 'open' }, { statusId: 'triaged' }, { statusId: 'closed' }],
+      transitions: [
+        { from: 'open', to: 'triaged', event: 'triage' },
+        { from: 'triaged', to: 'closed', event: 'close', closingReason: 'required' },
+      ],
+    };
+    const version = { id: 'v1', content: JSON.stringify(workflowContent), validation_errors: [] };
+    (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
+      if (type === 'Basic-Object') return entity;
+      if (type === 'WorkflowDefinition') return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
+      return null;
+    });
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({ success: true }),
+      getCurrentState: vi.fn().mockReturnValue('triaged'),
+    });
+    (projectWorkflowState as any).mockResolvedValueOnce(false);
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'triage');
+
+    expect(result.success).toBe(true);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, executionUser, entity, 'triaged', StatusScope.Global, null);
+    expect((updateAttribute as any).mock.calls.at(-1)[4]).toEqual([{ key: 'pendingError', value: [expect.stringContaining('could not be cleared')] }]);
   });
 
   it('writes the vocabulary value name rather than the given spelling', async () => {
