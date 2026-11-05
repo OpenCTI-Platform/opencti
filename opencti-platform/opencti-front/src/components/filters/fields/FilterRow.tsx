@@ -48,7 +48,7 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
   // a generic nested filter shows the operator of its first sub-filter here, which also holds empty / not empty
   const firstNestedSubKey = isGenericNested ? filterDefinition?.subFilters?.[0]?.filterKey : undefined;
 
-  // Same rule as CompositeRegardingOfFilterEditor (root chip popover): once a dynamic filter is
+  // Same rule as CompositeNestedFilterEditor (root chip popover): once a dynamic filter is
   // defined, the relationship type it depends on cannot be emptied or changed anymore.
   const isRelationshipTypeLocked = filter.key === 'dynamicRegardingOf' && filter.values.some((value) => value.key === 'dynamic');
 
