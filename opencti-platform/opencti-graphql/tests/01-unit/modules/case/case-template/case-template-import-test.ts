@@ -5,7 +5,7 @@ vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) 
   storeLoadById: vi.fn(),
 }));
 vi.mock('../../../../../src/modules/case/case-template/case-template-domain', () => ({
-  findAllCaseTemplates: vi.fn(),
+  findCaseTemplatesByName: vi.fn(),
   findAllCaseTemplateTasks: vi.fn(),
   caseTemplateAdd: vi.fn(),
   caseTemplateEdit: vi.fn(),
@@ -17,13 +17,13 @@ vi.mock('../../../../../src/modules/task/task-template/task-template-domain', ()
 // Registers the Task-Template type, which the platform does at boot
 import '../../../../../src/modules/task/task-template/task-template';
 import { storeLoadById } from '../../../../../src/database/middleware-loader';
-import { generateStandardId } from '../../../../../src/schema/identifier';
+import { generateStandardId, normalizeName } from '../../../../../src/schema/identifier';
 import {
   caseTemplateAdd,
   caseTemplateAddRelation,
   caseTemplateDeleteRelation,
   caseTemplateEdit,
-  findAllCaseTemplates,
+  findCaseTemplatesByName,
   findAllCaseTemplateTasks,
 } from '../../../../../src/modules/case/case-template/case-template-domain';
 import { taskTemplateAdd, taskTemplateEdit } from '../../../../../src/modules/task/task-template/task-template-domain';
@@ -53,9 +53,16 @@ const withTaskTemplates = (...templates: BasicStoreEntityTaskTemplate[]) => {
   }) as never);
 };
 
+// The case templates of the platform, found by their name whatever its case, as the domain does
+const withCaseTemplates = (templates: BasicStoreEntityCaseTemplate[]) => {
+  vi.mocked(findCaseTemplatesByName).mockImplementation((async (_ctx: unknown, _user: unknown, name: string) => {
+    return templates.filter((template) => normalizeName(template.name) === normalizeName(name));
+  }) as never);
+};
+
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(findAllCaseTemplates).mockResolvedValue([]);
+  withCaseTemplates([]);
   vi.mocked(findAllCaseTemplateTasks).mockResolvedValue([]);
   vi.mocked(storeLoadById).mockResolvedValue(undefined as never);
   vi.mocked(taskTemplateAdd).mockImplementation((async (_ctx: unknown, _user: unknown, input: { name: string }) => ({ id: `new-${input.name}` })) as never);
@@ -65,25 +72,28 @@ describe('Case template import schema', () => {
   it('accepts a name with or without description and tasks, and trims the names', () => {
     expect(caseTemplateImportSchema.parse({ name: ' Phishing triage ' })).toEqual({ name: 'Phishing triage' });
     expect(caseTemplateImportSchema.parse(configuration)).toEqual(configuration);
-    expect(caseTemplateImportSchema.parse({ name: 'A', description: null, tasks: [] })).toEqual({ name: 'A', description: null, tasks: [] });
-    expect(caseTemplateImportSchema.parse({ name: 'A', tasks: [{ name: ' Notify ' }] })).toEqual({ name: 'A', tasks: [{ name: 'Notify' }] });
+    expect(caseTemplateImportSchema.parse({ name: 'AB', description: null, tasks: [] })).toEqual({ name: 'AB', description: null, tasks: [] });
+    expect(caseTemplateImportSchema.parse({ name: 'AB', tasks: [{ name: ' Notify ' }] })).toEqual({ name: 'AB', tasks: [{ name: 'Notify' }] });
   });
 
   it.each([
     [{}],
     [{ name: '   ' }],
-    [{ name: 'A', tasks: [{ description: 'No name' }] }],
-    [{ name: 'A', tasks: [{ name: '  ' }] }],
-    [{ name: 'A', tasks: ['Notify users'] }],
-    [{ name: 'A', tasks: [{ name: 'Notify', priority: 1 }] }],
-    [{ name: 'A', standard_id: 'case-template--x' }],
-    [{ name: 'A', tasks: [{ name: 'Notify' }, { name: 'NOTIFY' }] }],
+    [{ name: 'AB', tasks: [{ description: 'No name' }] }],
+    [{ name: 'AB', tasks: [{ name: '  ' }] }],
+    // Shorter than the platform accepts for a case template or a task template (CaseTemplateAddInput, TaskTemplateAddInput)
+    [{ name: 'A' }],
+    [{ name: 'AB', tasks: [{ name: 'N' }] }],
+    [{ name: 'AB', tasks: ['Notify users'] }],
+    [{ name: 'AB', tasks: [{ name: 'Notify', priority: 1 }] }],
+    [{ name: 'AB', standard_id: 'case-template--x' }],
+    [{ name: 'AB', tasks: [{ name: 'Notify' }, { name: 'NOTIFY' }] }],
   ])('refuses %j', (value) => {
     expect(caseTemplateImportSchema.safeParse(value).success).toBe(false);
   });
 
   it('says which rule the tasks break', () => {
-    const result = caseTemplateImportSchema.safeParse({ name: 'A', tasks: [{ name: 'Notify' }, { name: 'notify' }] });
+    const result = caseTemplateImportSchema.safeParse({ name: 'AB', tasks: [{ name: 'Notify' }, { name: 'notify' }] });
     expect(result.error?.issues.map(({ path, message }) => [path.join('.'), message])).toEqual([['tasks', 'Task names must be unique']]);
   });
 });
@@ -92,9 +102,9 @@ describe('importCaseTemplate', () => {
   it('refuses an invalid configuration with the path of each issue, without reading the platform', async () => {
     const result = await importCaseTemplate(context, user, { name: '', tasks: [{ description: 'x' }] }, overwrite);
     expect(result).toMatchObject({ status: 'failed', code: 'invalid', exists: false });
-    expect(result.reason).toContain('name: Case template name is required');
+    expect(result.reason).toContain('name: Case template name must be at least 2 characters');
     expect(result.reason).toContain('tasks.0.name');
-    expect(findAllCaseTemplates).not.toHaveBeenCalled();
+    expect(findCaseTemplatesByName).not.toHaveBeenCalled();
   });
 
   describe.each([ConfigImportMode.Overwrite, ConfigImportMode.Add])('a template that does not exist (%s)', (mode) => {
@@ -132,11 +142,11 @@ describe('importCaseTemplate', () => {
 
   describe('a template that exists', () => {
     beforeEach(() => {
-      vi.mocked(findAllCaseTemplates).mockResolvedValue([stored]);
+      withCaseTemplates([stored]);
     });
 
     it('finds it by its name whatever its case, as its standard id is random', async () => {
-      vi.mocked(findAllCaseTemplates).mockResolvedValue([{ ...stored, name: 'PHISHING TRIAGE' }]);
+      withCaseTemplates([{ ...stored, name: 'PHISHING TRIAGE' }]);
       expect(await importCaseTemplate(context, user, { name: 'phishing triage ' }, overwrite)).toMatchObject({ status: 'skipped', exists: true });
     });
 
@@ -211,16 +221,16 @@ describe('importCaseTemplate', () => {
   });
 
   it('refuses a name that several templates have, as it cannot tell which one to overwrite', async () => {
-    vi.mocked(findAllCaseTemplates).mockResolvedValue([stored, { ...stored, id: 'other-id', standard_id: 'case-template--other' }]);
+    withCaseTemplates([stored, { ...stored, id: 'other-id', standard_id: 'case-template--other' }]);
     expect(await importCaseTemplate(context, user, configuration, overwrite)).toMatchObject({ status: 'failed', code: 'ambiguous', exists: true });
     expect(await importCaseTemplate(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true })).toMatchObject({ code: 'ambiguous' });
     [caseTemplateAdd, caseTemplateEdit, caseTemplateAddRelation, taskTemplateAdd].forEach((write) => expect(write).not.toHaveBeenCalled());
   });
 
   it('has no copy: a case template is its name', async () => {
-    vi.mocked(findAllCaseTemplates).mockResolvedValue([stored]);
+    withCaseTemplates([stored]);
     expect(await importCaseTemplate(context, user, configuration, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: true });
-    vi.mocked(findAllCaseTemplates).mockResolvedValue([]);
+    withCaseTemplates([]);
     expect(await importCaseTemplate(context, user, configuration, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: false });
     expect(caseTemplateAdd).not.toHaveBeenCalled();
   });

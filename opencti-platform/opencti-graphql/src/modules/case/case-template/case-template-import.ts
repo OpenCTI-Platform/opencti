@@ -1,12 +1,12 @@
 import { storeLoadById } from '../../../database/middleware-loader';
 import type { EditInput } from '../../../generated/graphql';
-import { generateStandardId, normalizeName } from '../../../schema/identifier';
+import { generateStandardId } from '../../../schema/identifier';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../../configImport/configImport-types';
 import { configImportValidationReason } from '../../configImport/configImport-utils';
 import { taskTemplateAdd, taskTemplateEdit } from '../../task/task-template/task-template-domain';
 import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
-import { caseTemplateAdd, caseTemplateAddRelation, caseTemplateDeleteRelation, caseTemplateEdit, findAllCaseTemplates, findAllCaseTemplateTasks } from './case-template-domain';
+import { caseTemplateAdd, caseTemplateAddRelation, caseTemplateDeleteRelation, caseTemplateEdit, findAllCaseTemplateTasks, findCaseTemplatesByName } from './case-template-domain';
 import { type CaseTemplateImportConfiguration, caseTemplateImportSchema } from './case-template-import-schema';
 import { TEMPLATE_TASK_RELATION } from './case-template-types';
 
@@ -89,7 +89,7 @@ export const importCaseTemplate = async (
     return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
   }
   const { name, description, tasks } = parsed.data;
-  const sameName = (await findAllCaseTemplates(context, user)).filter((template) => normalizeName(template.name) === normalizeName(name));
+  const sameName = await findCaseTemplatesByName(context, user, name);
   if (sameName.length > 1) {
     return refused('failed', 'ambiguous', 'Several case templates have this name', true, parsed.data);
   }

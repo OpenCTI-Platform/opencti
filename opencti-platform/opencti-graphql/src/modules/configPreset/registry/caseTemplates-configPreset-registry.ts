@@ -1,6 +1,6 @@
 import { CaseTemplatesOrdering, FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
 import { findAllCaseTemplates, findCaseTemplatePaginated } from '../../case/case-template/case-template-domain';
-import { getCaseTemplateConfigPresetConfiguration } from '../../case/case-template/case-template-export';
+import { exportCaseTemplate } from '../../case/case-template/case-template-export';
 import { importCaseTemplate } from '../../case/case-template/case-template-import';
 import type { BasicStoreEntityCaseTemplate } from '../../case/case-template/case-template-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
@@ -27,7 +27,7 @@ const toCaseTemplateItem = (template: BasicStoreEntityCaseTemplate): ConfigPrese
   id: template.standard_id,
   label: template.name,
   translatable: false,
-  exporter: async (context, user) => getCaseTemplateConfigPresetConfiguration(context, user, template),
+  exporter: async (context, user) => exportCaseTemplate(context, user, template),
 });
 
 const caseTemplatesImporter: ConfigPresetImporter = {
