@@ -45,7 +45,13 @@ const coverageDefinition = {
 };
 
 const filterKeysSchema = new Map([
-  ['Stix-Core-Object', new Map([['coverage_information', coverageDefinition]])],
+  ['Stix-Core-Object', new Map([
+    ['coverage_information', coverageDefinition],
+    ['dynamicRegardingOf', buildDefinition('dynamicRegardingOf', 'nested', 'In regards of (dynamic)', [
+      { ...buildDefinition('relationship_type', 'id', 'Relationship type'), multiple: false },
+      { ...buildDefinition('dynamic', 'filters', 'Dynamic filter'), multiple: false },
+    ])],
+  ])],
 ]);
 
 const userContext = createMockUserContext({ schema: { filterKeysSchema } });
@@ -168,5 +174,65 @@ describe('CompositeNestedFilterEditor (generic nested filter keys)', () => {
     await user.tab();
     expect(helpers.handleChangeSubFilter).toHaveBeenCalledWith('f1', 'coverage_score', { values: [] });
     expect(helpers.handleChangeSubFilter).not.toHaveBeenCalledWith('f1', 'coverage_score', { values: [expect.anything()] });
+  });
+});
+
+const filtersRepresentativesMap = new Map([
+  ['targets', { value: 'Targets', entity_type: 'Relationship', color: null, representativeId: 'targets' }],
+]);
+
+// Root-level filter: this editor is the body of the filter chip popover.
+describe('CompositeNestedFilterEditor (regardingOf and dynamicRegardingOf)', () => {
+  const helpers = {
+    handleChangeRepresentationFilter: vi.fn(),
+    handleRemoveRepresentationFilter: vi.fn(),
+    handleReplaceFilterValues: vi.fn(),
+    handleChangeOperatorFilters: vi.fn(),
+    handleChangeSubFilter: vi.fn(),
+  } as unknown as handleFilterHelpers;
+
+  const relationshipType = { key: 'relationship_type', values: ['targets'] };
+  const dynamic = { key: 'dynamic', values: [{ mode: 'and', filters: [{ key: 'name', values: ['abc'] }], filterGroups: [] }] };
+  const buildRegardingOfFilter = (key: string, operator: string, values: object[]) => ({ id: 'filter-dyn', key, operator, mode: 'or', values } as unknown as Filter);
+
+  const renderEditor = (filter: Filter) => testRender(
+    <FilterEditorProvider
+      helpers={helpers}
+      availableFilterKeys={[]}
+      entityTypes={['Stix-Core-Object']}
+      filtersRepresentativesMap={filtersRepresentativesMap}
+    >
+      <CompositeNestedFilterEditor
+        filter={filter}
+        filterKey={filter.key}
+        inputValues={[]}
+        setInputValues={vi.fn()}
+        showFirstOperator
+      />
+    </FilterEditorProvider>,
+    { userContext },
+  );
+
+  it('keeps both sub-filter values with not_eq: the operator applies to the whole filter', () => {
+    renderEditor(buildRegardingOfFilter('dynamicRegardingOf', 'not_eq', [relationshipType]));
+    expect(screen.getByText('Targets')).toBeInTheDocument();
+    expect(screen.getAllByText('WITH')).toHaveLength(1);
+    // the dynamic sub-filter has no operator of its own
+    expect(screen.getAllByLabelText('Operator')).toHaveLength(1);
+  });
+
+  it('can empty the relationship type of a dynamicRegardingOf filter while no dynamic filter is defined', () => {
+    renderEditor(buildRegardingOfFilter('dynamicRegardingOf', 'eq', [relationshipType]));
+    expect(screen.getByRole('button', { name: 'Remove Targets' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Clear all')).toBeInTheDocument();
+    expect(screen.getByLabelText('Operator')).not.toBeDisabled();
+  });
+
+  it('cannot empty the relationship type of a dynamicRegardingOf filter once a dynamic filter is defined', () => {
+    renderEditor(buildRegardingOfFilter('dynamicRegardingOf', 'eq', [relationshipType, dynamic]));
+    expect(screen.getByText('Targets')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Remove Targets' })).toBeNull();
+    expect(screen.queryByLabelText('Clear all')).toBeNull();
+    expect(screen.getByLabelText('Operator')).toBeDisabled();
   });
 });
