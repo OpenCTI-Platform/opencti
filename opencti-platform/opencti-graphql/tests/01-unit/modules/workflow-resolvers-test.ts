@@ -477,7 +477,6 @@ describe('workflow-resolvers', () => {
             {
               scope: 'GLOBAL',
               initialState: 't1',
-              published: false,
               hasPublishedVersion: true,
               states: [{ statusId: 't1' }],
               transitions: [],

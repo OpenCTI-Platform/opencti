@@ -66,10 +66,8 @@ type WorkflowMigrationDiagnostic {
     templateId: String
 }
 
-# Unlike WorkflowSerializedState, a migrated state carries a fully-computed, sequential `order`
-# (its final rank in the migrated sequence) — real workflow definitions have no ordering concept
-# of their own (order is inferred from the transition graph), so this is specific to the
-# legacy-Status migration preview.
+# A migrated WorkflowSerializedState: its `order` is always set, to its final 0-based rank in the
+# migrated sequence.
 type WorkflowMigrationState {
     statusId: String!
     order: Int!
@@ -81,10 +79,8 @@ type WorkflowMigrationState {
 type WorkflowMigrationScopeResult {
     scope: StatusScope!
     initialState: String!
-    # Same meaning as on WorkflowSchema, the preview playing the role of a new draft: published is
-    # always false (the preview is never persisted), hasPublishedVersion tells whether the entity
-    # type's existing workflow has a published version (GLOBAL scope only).
-    published: Boolean!
+    # Whether the entity type's existing workflow has a published version (GLOBAL scope only), in
+    # which case workflowMigrate refuses to replace it.
     hasPublishedVersion: Boolean!
     states: [WorkflowMigrationState!]!
     transitions: [WorkflowSerializedTransition!]!
@@ -204,7 +200,8 @@ extend type Query {
 extend type Mutation {
     workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
-    # One-shot migration of the legacy GLOBAL Status set into a workflow; fails if a workflow already exists unless overwrite is true.
+    # One-shot migration of the legacy GLOBAL Status set into a workflow. Fails if a workflow already exists, unless overwrite is true
+    # and that workflow was never published. publish: true also requires the ENTITIES_WORKFLOW feature flag.
     workflowMigrate(entityType: String!, publish: Boolean = false, overwrite: Boolean = false): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionDelete(entityType: String!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])

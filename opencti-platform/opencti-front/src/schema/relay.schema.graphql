@@ -10305,7 +10305,6 @@ type WorkflowMigrationState {
 type WorkflowMigrationScopeResult {
   scope: StatusScope!
   initialState: String!
-  published: Boolean!
   hasPublishedVersion: Boolean!
   states: [WorkflowMigrationState!]!
   transitions: [WorkflowSerializedTransition!]!
