@@ -9,6 +9,7 @@ import { STIX_EXT_OCTI } from '../../src/types/stix-2-1-extensions';
 import { EVENT_TYPE_UPDATE, wait } from '../../src/database/utils';
 import { internalLoadById } from '../../src/database/middleware-loader';
 import { fetchStreamInfo } from '../../src/database/stream/stream-handler';
+import { logApp } from '../../src/config/conf';
 
 const compareStreamIds = (a, b) => {
   const [aTime, aSeq] = a.split('-').map(Number);
@@ -55,11 +56,16 @@ export const fetchStreamEvents = (uri, { from, untilEventId, idleTimeout = 30000
       if (!targetEventId || !lastEventId || compareStreamIds(lastEventId, targetEventId) < 0) {
         return;
       }
-      const info = await fetchStreamInfo();
-      if (compareStreamIds(info.lastEventId, lastEventId) <= 0) {
-        closeEventSource();
-      } else {
-        targetEventId = info.lastEventId;
+      try {
+        const info = await fetchStreamInfo();
+        if (compareStreamIds(info.lastEventId, lastEventId) <= 0) {
+          closeEventSource();
+        } else {
+          targetEventId = info.lastEventId;
+        }
+      } catch (err) {
+        // The next event or heartbeat retries, the idle timeout closes the stream otherwise
+        logApp.warn('[TEST] Fail to fetch the stream info', { cause: err });
       }
     };
     const handleEvent = (event) => {
@@ -76,13 +82,13 @@ export const fetchStreamEvents = (uri, { from, untilEventId, idleTimeout = 30000
           closeEventSource();
         }
       }, idleTimeout);
-      closeIfTargetReached(lastEventId).catch(reject);
+      void closeIfTargetReached(lastEventId);
     };
     es.addEventListener('create', (event) => handleEvent(event));
     es.addEventListener('update', (event) => handleEvent(event));
     es.addEventListener('merge', (event) => handleEvent(event));
     es.addEventListener('delete', (event) => handleEvent(event));
-    es.addEventListener('heartbeat', (event) => closeIfTargetReached(event.lastEventId).catch(reject));
+    es.addEventListener('heartbeat', (event) => void closeIfTargetReached(event.lastEventId));
     es.addEventListener('error', (err) => reject(err));
   });
 };
