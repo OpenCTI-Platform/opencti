@@ -6,6 +6,7 @@ import testRender, { createMockUserContext } from '../../../../utils/tests/test-
 import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widget';
 import type { FilterDefinition } from '../../../../utils/hooks/useAuth';
 import { daysAgo, monthsAgo } from '../../../../utils/Time';
+import { loadDashboardViz } from '../../../../utils/tests/dashboardVizMock';
 
 const mocks = vi.hoisted(() => ({
   response: {} as Record<string, unknown>,
@@ -27,13 +28,9 @@ vi.mock('react-relay', async (importOriginal) => ({
     return mocks.response;
   },
 }));
-vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
-  default: (args: unknown) => {
-    mocks.dashboardViz(args);
-    // Resolved as is, unless the test sets what its saved filters and variables resolve to
-    const resolvedDataSelection = mocks.resolvedDataSelection ?? (args as { dataSelection: unknown[] }).dataSelection;
-    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {}, resolvedDataSelection };
-  },
+// Resolved as is, unless the test sets what its saved filters and variables resolve to. The query is kept until a load.
+vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
+  default: (await import('../../../../utils/tests/dashboardVizMock')).mockDashboardViz(mocks),
 }));
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -422,6 +419,35 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
 
     mocks.error = new Error('Network error');
     expect(() => render(widget)).toThrow('Network error');
+    vi.mocked(console.error).mockRestore();
+  });
+
+  it('keeps a refusal on an unrelated render, and clears it with the next query', async () => {
+    // React logs the errors its boundaries catch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const widget = makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection);
+    let rerender = () => {};
+    const RenderedWidget = () => {
+      const [, setRenderCount] = useState(0);
+      rerender = () => setRenderCount((count) => count + 1);
+      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />;
+    };
+    const tooLarge = 'This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.';
+    mocks.error = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_large' } } }] } };
+    const { getByText, queryByText } = testRender(<RenderedWidget />, { userContext });
+    expect(getByText(tooLarge)).toBeTruthy();
+
+    // The same query: the refusal stays, nothing is queried or drawn again
+    mocks.error = null;
+    respond([{ label: 'Report', entity: null, values: [1, 2, 3] }]);
+    act(() => rerender());
+    expect(getByText(tooLarge)).toBeTruthy();
+    expect(mocks.lines).not.toHaveBeenCalled();
+
+    // A new query clears it
+    loadDashboardViz();
+    expect(queryByText(tooLarge)).toBeNull();
+    await drawn(mocks.lines);
     vi.mocked(console.error).mockRestore();
   });
 

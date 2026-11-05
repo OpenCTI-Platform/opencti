@@ -21,13 +21,9 @@ vi.mock('react-relay', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-relay')>()),
   usePreloadedQuery: () => mocks.response,
 }));
-vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
-  default: (args: unknown) => {
-    mocks.dashboardViz(args);
-    // Resolved as is, unless the test sets what its saved filters and variables resolve to
-    const resolvedDataSelection = mocks.resolvedDataSelection ?? (args as { dataSelection: unknown[] }).dataSelection;
-    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {}, resolvedDataSelection };
-  },
+// Resolved as is, unless the test sets what its saved filters and variables resolve to. The query is kept until a load.
+vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
+  default: (await import('../../../../utils/tests/dashboardVizMock')).mockDashboardViz(mocks),
 }));
 vi.mock('../../../../utils/hooks/useGranted', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../utils/hooks/useGranted')>()),
