@@ -70,8 +70,10 @@ export const importMarking = async (
     return refused('failed', 'sensitive_config', CONFIG_IMPORT_SENSITIVE_REASON, !!existing, parsed.data);
   }
   if (existing) {
+    // A marking stored without an order has the order 0, the one the export and the creation give it
+    const stored = { x_opencti_color: existing.x_opencti_color, x_opencti_order: existing.x_opencti_order ?? 0 };
     const input: EditInput[] = ([['x_opencti_color', color], ['x_opencti_order', order]] as const)
-      .filter(([key, value]) => value !== null && value !== undefined && value !== existing[key])
+      .filter(([key, value]) => value !== null && value !== undefined && value !== stored[key])
       .map(([key, value]) => ({ key, value: [value] }));
     if (input.length === 0) {
       return refused('skipped', 'unchanged', CONFIG_IMPORT_UNCHANGED_REASON, true, parsed.data);

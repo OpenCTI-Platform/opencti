@@ -96,6 +96,13 @@ describe('importMarking', () => {
     expectNothingWritten();
   });
 
+  it('reads a marking stored without an order as the order 0, so that its export is up to date', async () => {
+    const { x_opencti_order: _, ...unordered } = existing;
+    vi.mocked(findById).mockResolvedValue(unordered as never);
+    expect(await importMarking(context, user, markingConfiguration({ x_opencti_order: 0 }), overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
+    expectNothingWritten();
+  });
+
   it('refuses a marking that exists in ADD mode, and one the user cannot change', async () => {
     vi.mocked(findById).mockResolvedValue(existing as never);
     expect(await importMarking(context, user, markingConfiguration(), { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists' });

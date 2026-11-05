@@ -785,9 +785,10 @@ const shuffleInPlace = <T>(elements: T[]) => {
   return elements;
 };
 
+const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
+
 // Generate a random password that satisfies the given password policy
 const passwordPolicyRequirements = (policy: PasswordInlinePolicy) => {
-  const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
   const minUppercase = positive(policy.password_policy_min_uppercase);
   const minLowercase = positive(policy.password_policy_min_lowercase);
   const minNumbers = positive(policy.password_policy_min_numbers);
@@ -806,7 +807,6 @@ const passwordPolicyRequirements = (policy: PasswordInlinePolicy) => {
 // Whether checkPasswordInlinePolicy accepts a password of at most the maximum length: a word separator is also a symbol,
 // and the words it splits may be empty
 export const isPasswordPolicySatisfiable = (policy: PasswordInlinePolicy) => {
-  const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
   const maxLength = positive(policy.password_policy_max_length);
   const symbolsCount = Math.max(positive(policy.password_policy_min_symbols), positive(policy.password_policy_min_words) - 1);
   const charsCount = positive(policy.password_policy_min_uppercase) + positive(policy.password_policy_min_lowercase)
