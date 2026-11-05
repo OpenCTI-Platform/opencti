@@ -671,6 +671,56 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         static: false,
       },
     },
+    'c3f1a7d2-8e4b-4c6a-9d15-7b2e0f4a6c91': {
+      id: 'c3f1a7d2-8e4b-4c6a-9d15-7b2e0f4a6c91',
+      type: 'vertical-bar',
+      perspective: 'entities',
+      dataSelection: [
+        {
+          label: 'reports by author',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'entities',
+          isTo: true,
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: ['entity_type'],
+                values: ['Report'],
+                operator: 'eq',
+                mode: 'or',
+              },
+              {
+                key: 'description',
+                // In quotes: the search matches the phrase, not any report holding one of its words
+                values: ['"public breakdown by author"'],
+                operator: 'search',
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: {
+        title: 'Evolution of reports by author',
+        interval: 'day',
+        breakdownBy: 'createdBy',
+        breakdownLimit: 5,
+        breakdownOrder: 'desc',
+        breakdownOther: false,
+      },
+      layout: {
+        w: 4,
+        h: 2,
+        x: 4,
+        y: 10,
+        i: 'c3f1a7d2-8e4b-4c6a-9d15-7b2e0f4a6c91',
+        moved: false,
+        static: false,
+      },
+    },
   },
   config: {
 

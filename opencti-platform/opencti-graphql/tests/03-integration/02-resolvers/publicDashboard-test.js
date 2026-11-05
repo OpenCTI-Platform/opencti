@@ -191,6 +191,11 @@ const API_SCO_BREAKDOWN_QUERY = gql`
       dates
       series {
         label
+        entity {
+          ... on Organization {
+            name
+          }
+        }
         total
         isOther
         values
@@ -1472,6 +1477,9 @@ describe('PublicDashboard resolver', () => {
       // Above the markings of both public dashboards
       let portugalId;
       let nappaId;
+      // The author of clear reports, above the markings of both public dashboards
+      let authorId;
+      const authorReportIds = [];
 
       afterAll(async () => {
         // region Delete areas.
@@ -1508,6 +1516,19 @@ describe('PublicDashboard resolver', () => {
         await queryAsAdmin({
           query: DELETE_MALWARE,
           variables: { id: nappaId },
+        });
+        // endregion
+        // region Delete the reports, then their author.
+        for (let i = 0; i < authorReportIds.length; i += 1) {
+          await queryAsAdmin({ query: REPORT_DELETE_QUERY, variables: { id: authorReportIds[i] } });
+        }
+        await queryAsAdmin({
+          query: gql`
+            mutation PublicDashboardTestOrganizationDelete($id: ID!) {
+              organizationDelete(id: $id)
+            }
+          `,
+          variables: { id: authorId },
         });
         // endregion
         // region Delete the publicDashboards.
@@ -1657,6 +1678,33 @@ describe('PublicDashboard resolver', () => {
           },
         });
         // endregion
+        // region Create a red author and two of its reports, clear.
+        const author = await queryAsAdmin({
+          query: gql`
+            mutation PublicDashboardTestOrganizationAdd($input: OrganizationAddInput!) {
+              organizationAdd(input: $input) { id }
+            }
+          `,
+          variables: { input: { name: 'public breakdown author', objectMarking: [tlpRed.id] } },
+        });
+        authorId = author.data.organizationAdd.id;
+        for (let i = 0; i < 2; i += 1) {
+          const report = await queryAsAdmin({
+            query: REPORT_ADD_QUERY,
+            variables: {
+              input: {
+                name: `public breakdown report by author ${i}`,
+                description: 'public breakdown by author',
+                published: new Date().toISOString(),
+                report_types: ['threat-report'],
+                createdBy: authorId,
+                objectMarking: [tlpClear.id],
+              },
+            },
+          });
+          authorReportIds.push(report.data.reportAdd.id);
+        }
+        // endregion
       });
 
       it('should return the data for API: SCR Number', async () => {
@@ -1708,6 +1756,15 @@ describe('PublicDashboard resolver', () => {
         const clear = await breakdownOf(API_SCO_BREAKDOWN_QUERY, 'public-dashboard-marking-clear', '65b10e7f-f502-4fed-a192-085f460fb94a');
         expect(seriesOf(clear)).toEqual([['Other', 0, true]]);
         expect(clear.truncated).toEqual(false);
+      });
+
+      it('should break the reports the dashboard reads down by an author it cannot read, as a restricted entity', async () => {
+        // The clear reports are counted, under the id of their red author, whose name the visitors never get
+        for (const uriKey of ['public-dashboard-marking-clear', 'public-dashboard-marking-green']) {
+          const byAuthor = await breakdownOf(API_SCO_BREAKDOWN_QUERY, uriKey, 'c3f1a7d2-8e4b-4c6a-9d15-7b2e0f4a6c91');
+          expect(byAuthor.series.map((serie) => [serie.label, serie.entity?.name, serie.total, serie.isOther])).toEqual([[authorId, 'Restricted', 2, false]]);
+          expect(byAuthor.truncated).toEqual(false);
+        }
       });
 
       it('should only break down the relationships under the markings of the dashboard', async () => {
