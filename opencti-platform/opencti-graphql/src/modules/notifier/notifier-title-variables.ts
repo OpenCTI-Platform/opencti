@@ -6,11 +6,8 @@ export const TITLE_VARIABLE_ROOTS: readonly string[] = [
   'notification_content',
   'content',
   'data',
-  'settings',
   'user',
   'platform_uri',
-  'doc_uri',
-  'url_suffix',
 ];
 
 // Name under which resolved values are exposed to the compiled EJS template.

@@ -1,9 +1,10 @@
 import type { BasicStoreEntityTrigger } from '../modules/notification/notification-types';
 import type { StixCoreObject, StixId, StixRelationshipObject } from '../types/stix-2-1-common';
+import type { EditInput } from '../generated/graphql';
 
 export interface NotificationData {
   notification_id: string;
-  instance: (StixCoreObject | StixRelationshipObject | Partial<{ id: string | StixId | null }>) & { entity_type?: string };
+  instance: (StixCoreObject | StixRelationshipObject | Partial<{ id: string | StixId | null }>) & { entity_type?: string; name?: string; input?: EditInput[] };
   type: string;
   message: string;
 }
@@ -11,7 +12,7 @@ export interface NotificationData {
 // All the data below is fake and only used by the notifier "Test" button.
 // It does not rely on any entity existing in the platform, and every instance is a plain object
 // (no `extensions`) so that its representative is computed from its `name`.
-const DEFAULT_NOTIFICATION = {
+const DEFAULT_NOTIFICATION: NotificationData = {
   notification_id: 'default_notification_id',
   instance: {
     id: 'report--00000000-0000-4000-8000-000000000001',
@@ -21,9 +22,9 @@ const DEFAULT_NOTIFICATION = {
   },
   type: 'create',
   message: '[TEST] Creates a report with name : [TEST] Sample report',
-} as NotificationData;
+};
 
-const DEFAULT_DIGEST = [
+const DEFAULT_DIGEST: NotificationData[] = [
   DEFAULT_NOTIFICATION,
   {
     notification_id: 'default_notification_id_2',
@@ -36,9 +37,9 @@ const DEFAULT_DIGEST = [
     type: 'update',
     message: '[TEST] Updates a malware with name : [TEST] Sample malware',
   },
-] as NotificationData[];
+];
 
-const DEFAULT_ACTIVITY = {
+const DEFAULT_ACTIVITY: NotificationData = {
   notification_id: 'default_activity_id',
   instance: {
     id: 'sync--00000000-0000-4000-8000-000000000003',
@@ -56,7 +57,7 @@ const DEFAULT_ACTIVITY = {
   },
   type: 'update',
   message: '`admin` updates `name` for synchronizer `[TEST] Sample synchronizer`',
-} as NotificationData;
+};
 
 export const MOCK_NOTIFICATIONS: Record<string, NotificationData[]> = {
   default_notification: [DEFAULT_NOTIFICATION],

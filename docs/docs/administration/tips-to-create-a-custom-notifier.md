@@ -291,7 +291,7 @@ The **Title** of the Platform mailer is the subject of the email. In addition to
 
 A variable is a `$` followed by a path into the notification data:
 
-- The first segment is a **root**. The available roots are `notification`, `notification_content`, `content`, `data`, `settings`, `user`, `platform_uri`, `doc_uri` and `url_suffix`. They hold the same data as in the message template.
+- The first segment is a **root**. The available roots are `notification`, `notification_content`, `content`, `data`, `user` and `platform_uri`. They hold the same data as in the message template. The other platform data (`settings`, `doc_uri`, `url_suffix`) is not available with `$` variables: use EJS to insert it in the title, for instance `<%= settings.platform_title %>`.
 - It is followed by any number of `.property` or `[index]` (a non-negative integer, starting at 0).
 - `.length` gives the number of elements of a list, for instance `$data.length`.
 
@@ -306,8 +306,8 @@ The `$` variables only work in the Title. The table gives, for each one, how to 
 | `$notification_content[0].events[0].message` | `<%= notification_content[0].events[0].message %>` | Message of the event |
 | `$data[0].instance.name`, `$data[0].instance.type` | `<%= data[0].instance.name %>`, `<%= data[0].instance.type %>` | Name and type of the STIX object of the first event |
 | `$data.length` | `<%= data.length %>` | Number of events in the email |
-| `$settings.platform_title` | `<%= settings.platform_title %>` | Title of the platform |
 | `$user.user_email` | `<%= user.user_email %>` | Email of the recipient |
+| `$platform_uri` | `<%= platform_uri %>` | URL of the platform |
 
 ### Examples
 
