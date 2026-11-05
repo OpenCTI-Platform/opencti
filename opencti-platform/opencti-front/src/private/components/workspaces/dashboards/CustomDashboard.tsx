@@ -23,8 +23,14 @@ import DashboardViewerPermissions, { type ViewerPermissions } from '../../../../
 import DashboardVariablesBar from '../../../../components/dashboard/variables/DashboardVariablesBar';
 import DashboardVariableDialog from '../../../../components/dashboard/variables/DashboardVariableDialog';
 import DashboardVariableDeletion from '../../../../components/dashboard/variables/DashboardVariableDeletion';
-import type { DashboardVariable } from '../../../../components/dashboard/dashboard-types';
+import type { DashboardPreset, DashboardVariable } from '../../../../components/dashboard/dashboard-types';
 import { useDashboardVariableMutations } from '../../../../components/dashboard/variables/useDashboardVariableMutations';
+import DashboardPresetSelector from '../../../../components/dashboard/presets/DashboardPresetSelector';
+import DashboardPresetNameDialog from '../../../../components/dashboard/presets/DashboardPresetNameDialog';
+import DashboardPresetDeleteDialog from '../../../../components/dashboard/presets/DashboardPresetDeleteDialog';
+import { useDashboardPreset } from '../../../../components/dashboard/presets/useDashboardPreset';
+import { useDashboardPresetMutations } from '../../../../components/dashboard/presets/useDashboardPresetMutations';
+import { isPresetModified, presetEffectiveValues, presetFromGraphql, presetInputFromValues } from '../../../../components/dashboard/presets/dashboardPresets';
 import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../components/dashboard/dashboardVariablesFeatureFlag';
 import useHelper from '../../../../utils/hooks/useHelper';
 import Security from 'src/utils/Security';
@@ -83,6 +89,20 @@ const dashboardFragment = graphql`
       id
       usedInWidgetIds
     }
+    presets {
+      id
+      name
+      values {
+        variableId
+        value
+      }
+      config {
+        startDate
+        endDate
+        relativeDate
+      }
+    }
+    currentUserDefaultPresetId
     ...WorkspaceEditionContainer_workspace
     ...WorkspaceHeaderFragment
   }
@@ -118,6 +138,9 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   // undefined: dialog closed, null: creating a variable, a variable: editing it.
   const [dialogVariable, setDialogVariable] = useState<DashboardVariable | null | undefined>(undefined);
   const [variableToDelete, setVariableToDelete] = useState<DashboardVariable | undefined>(undefined);
+  // undefined: dialog closed, null: saving the current values as a new preset, a preset: renaming it.
+  const [presetNameDialog, setPresetNameDialog] = useState<DashboardPreset | null | undefined>(undefined);
+  const [presetToDelete, setPresetToDelete] = useState<DashboardPreset | undefined>(undefined);
 
   const onExportWidget = async (id: string, widget: { id: string; type: string }) => {
     try {
@@ -195,16 +218,92 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   // value (stored, or from the URL) would filter the widgets with no chip to show or reset it.
   const showVariablesBar = isVariablesEnabled && !noToolbar
     && (canManageVariables || config.allowViewersToChangeVariables === true);
-  // The home dashboard (noToolbar) and a user without the bar only ever see the manifest defaults:
+  // The presets of the dashboard, from the server owned key of the manifest.
+  const presets = useMemo(() => workspace.presets.map(presetFromGraphql), [workspace.presets]);
+  // The selector: editors always (they can at least save one), viewers when they may switch and there is something
+  // to switch to.
+  const showPresetSelector = isVariablesEnabled && !noToolbar
+    && (canManageVariables ? variables.length > 0 || presets.length > 0 : config.allowViewersToSwitchPresets === true && presets.length > 0);
+  const presetControls = useDashboardPreset(workspace.id, presets, {
+    ignoreLocalValues: noToolbar || !showPresetSelector,
+    enabled: isVariablesEnabled,
+    defaultPresetId: workspace.currentUserDefaultPresetId,
+  });
+  // The preset the dashboard opens on for this user (own choice, group or organization) replaces the manifest
+  // defaults: what Reset goes back to, and what the home dashboard shows.
+  const { defaultPreset } = presetControls;
+  const presetDefaultValues = useMemo(() => (defaultPreset ? new Map(Object.entries(defaultPreset.values)) : undefined), [defaultPreset]);
+  // The home dashboard (noToolbar) and a user without the bar only ever see the defaults:
   // no per user value is read or written.
-  const variableControls = useDashboardVariables(workspace.id, variables, { ignoreLocalValues: noToolbar || !showVariablesBar });
+  const variableControls = useDashboardVariables(workspace.id, variables, {
+    ignoreLocalValues: noToolbar || !showVariablesBar,
+    defaultOverrides: presetDefaultValues,
+  });
   // Flag on, the time range is per user: an editor always gets the time filters, a reader only when viewers may edit
-  // them. As for the variables, a user without them only ever sees the manifest range.
+  // them. As for the variables, a user without them only ever sees the default range.
   const showTimeFilters = isVariablesEnabled && !noToolbar
     && (userCanEdit || config.allowViewersToEditTimeFilters === true);
-  const timeRange = useDashboardTimeRange(workspace.id, config, { ignoreLocalValues: noToolbar || !showTimeFilters });
+  const timeRange = useDashboardTimeRange(workspace.id, config, {
+    ignoreLocalValues: noToolbar || !showTimeFilters,
+    defaultOverride: defaultPreset?.config ?? null,
+  });
+  const { activePreset } = presetControls;
+  const isActivePresetModified = activePreset !== null
+    && isPresetModified(activePreset, variables, variableControls.defaults, variableControls.values, timeRange.range);
+  const { upsert: upsertPreset, remove: removePreset, isSubmitting: isPresetSubmitting } = useDashboardPresetMutations(workspace.id);
+  // Switching restores the values and the range of the preset at once; no preset goes back to the defaults.
+  const onSelectPreset = (presetId: string | null) => {
+    presetControls.select(presetId);
+    const preset = presetId ? presets.find((candidate) => candidate.id === presetId) : undefined;
+    if (preset) {
+      variableControls.setValues(presetEffectiveValues(preset, variables, variableControls.defaults));
+      timeRange.setRange(preset.config);
+    } else {
+      variableControls.reset();
+      timeRange.reset();
+    }
+  };
+  const onSavePresetAs = async (name: string) => {
+    const presetId = await upsertPreset(presetInputFromValues(name, variables, variableControls.values, timeRange.range));
+    if (presetId) presetControls.select(presetId);
+  };
+  const onUpdatePreset = async () => {
+    if (!activePreset) return;
+    try {
+      await upsertPreset(presetInputFromValues(activePreset.name, variables, variableControls.values, timeRange.range, activePreset.id));
+    } catch {
+      // The mutation already notified the user.
+    }
+  };
+  const onRenamePreset = async (preset: DashboardPreset, name: string) => {
+    await upsertPreset({
+      id: preset.id,
+      name,
+      values: Object.entries(preset.values).map(([variableId, value]) => ({ variableId, value })),
+      config: preset.config,
+    });
+  };
+  const onDeletePreset = async (preset: DashboardPreset) => {
+    await removePreset(preset.id);
+    if (activePreset?.id === preset.id) presetControls.select(null);
+  };
   // Mirrors the bar, which renders nothing without variables nor a way to create one.
-  const isBarVisible = showVariablesBar && (variables.length > 0 || canManageVariables);
+  const isBarVisible = showVariablesBar && (variables.length > 0 || canManageVariables || showPresetSelector);
+  const presetSelector = showPresetSelector ? (
+    <DashboardPresetSelector
+      presets={presets}
+      activePreset={activePreset}
+      defaultPreset={defaultPreset}
+      isModified={isActivePresetModified}
+      canManage={canManageVariables}
+      disabled={isPresetSubmitting}
+      onSelect={onSelectPreset}
+      onSaveAs={canManageVariables ? () => setPresetNameDialog(null) : undefined}
+      onUpdate={canManageVariables ? onUpdatePreset : undefined}
+      onRename={canManageVariables ? setPresetNameDialog : undefined}
+      onDelete={canManageVariables ? setPresetToDelete : undefined}
+    />
+  ) : null;
   // Summarized by its signature: the widgets re-resolve their filters whenever this set changes.
   const dateVariableIdsSignature = JSON.stringify(variables.filter((variable) => variable.type === 'date').map((variable) => variable.id));
   const dateVariableIds = useMemo(() => new Set<string>(JSON.parse(dateVariableIdsSignature)), [dateVariableIdsSignature]);
@@ -239,6 +338,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     });
   };
   const onReset = () => {
+    presetControls.select(null);
     variableControls.reset();
     timeRange.reset();
   };
@@ -392,8 +492,15 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                 </Box>
               </Box>
             )}
+            {/* A viewer who may switch presets but not change the variables gets the selector on its own row. */}
+            {!showVariablesBar && presetSelector && (
+              <Stack direction="row" sx={{ alignItems: 'center', gap: 1, marginBottom: 1.5 }}>
+                {presetSelector}
+              </Stack>
+            )}
             {showVariablesBar && (
               <DashboardVariablesBar
+                leading={presetSelector}
                 variables={variables}
                 values={variableControls.values}
                 defaults={variableControls.defaults}
@@ -415,6 +522,23 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                 usedInWidgetIds={usedInWidgetIdsByVariable.get(variableToDelete.id) ?? []}
                 widgets={widgetsArray}
                 onClose={() => setVariableToDelete(undefined)}
+              />
+            )}
+            {presetNameDialog !== undefined && (
+              <DashboardPresetNameDialog
+                open
+                existingPresets={presets}
+                preset={presetNameDialog ?? undefined}
+                onConfirm={(name) => (presetNameDialog ? onRenamePreset(presetNameDialog, name) : onSavePresetAs(name))}
+                onClose={() => setPresetNameDialog(undefined)}
+              />
+            )}
+            {presetToDelete && (
+              <DashboardPresetDeleteDialog
+                open
+                preset={presetToDelete}
+                onConfirm={() => onDeletePreset(presetToDelete)}
+                onClose={() => setPresetToDelete(undefined)}
               />
             )}
             {showVariablesBar && dialogVariable !== undefined && (

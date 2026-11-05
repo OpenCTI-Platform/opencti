@@ -120,6 +120,8 @@ const buildWorkspace = (overrides: Record<string, unknown> = {}, config: Record<
   refresh_interval: 0,
   currentUserAccessRight: 'admin',
   variables: [{ id: SECTOR_ID, usedInWidgetIds: ['widget-1'] }],
+  presets: [],
+  currentUserDefaultPresetId: null,
   ...overrides,
 });
 const workspace = buildWorkspace();

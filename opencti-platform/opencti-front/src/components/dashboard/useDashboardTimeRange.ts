@@ -10,10 +10,16 @@ import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange,
  * Time range of a dashboard for the current user: the one of the manifest unless the user picked another, which is
  * kept in this browser and in the URL. Changing it never writes the dashboard.
  */
+interface UseDashboardTimeRangeOptions {
+  ignoreLocalValues?: boolean;
+  // A range that replaces the manifest one as the default (the preset a group or the user opens this dashboard on).
+  defaultOverride?: DashboardTimeRange | null;
+}
+
 export const useDashboardTimeRange = (
   workspaceId: string,
   config: DashboardConfig,
-  { ignoreLocalValues = false }: { ignoreLocalValues?: boolean } = {},
+  { ignoreLocalValues = false, defaultOverride = null }: UseDashboardTimeRangeOptions = {},
 ) => {
   const { me } = useAuth();
   const { isFeatureEnable } = useHelper();
@@ -34,7 +40,7 @@ export const useDashboardTimeRange = (
     if (!ignoreLocalValues && enabled) writeTimeRangeParam(stored);
   }, [stored, ignoreLocalValues, enabled]);
 
-  const { startDate, endDate, relativeDate } = pickTimeRange(config);
+  const { startDate, endDate, relativeDate } = enabled && defaultOverride ? defaultOverride : pickTimeRange(config);
   const defaultRange = useMemo(() => ({ startDate, endDate, relativeDate }), [startDate, endDate, relativeDate]);
   const range = stored ?? defaultRange;
   // Compared with the default, not tested for a local entry: the default may have caught up with it.
@@ -53,6 +59,12 @@ export const useDashboardTimeRange = (
     commit(isSameTimeRange(next, defaultRange) ? null : next);
   }, [commit, range, defaultRange, ignoreLocalValues, enabled]);
 
+  // Replaces the whole range at once (a preset): back to the default, nothing is kept.
+  const setRange = useCallback((next: DashboardTimeRange) => {
+    if (ignoreLocalValues || !enabled) return;
+    commit(isSameTimeRange(next, defaultRange) ? null : next);
+  }, [commit, defaultRange, ignoreLocalValues, enabled]);
+
   const reset = useCallback(() => {
     if (ignoreLocalValues || !enabled) return;
     commit(null);
@@ -70,5 +82,5 @@ export const useDashboardTimeRange = (
     if (current && isSameTimeRange(current, submitted)) commitCurrent(null);
   }, [ignoreLocalValues, enabled]);
 
-  return { range, defaultRange, isModified, setDate, reset, resetRange };
+  return { range, defaultRange, isModified, setDate, setRange, reset, resetRange };
 };
