@@ -154,8 +154,16 @@ const WidgetTimeSeriesBreakdown = ({
         : t_i18n('Only the {limit} highest values are displayed.', { values: { limit } }));
     }
     if (coarsenedInterval) {
+      // The intervals of a time series, named as in the editor
+      const intervalLabels: Record<string, string> = {
+        day: t_i18n('Day'),
+        week: t_i18n('Week'),
+        month: t_i18n('Month'),
+        quarter: t_i18n('Quarter'),
+        year: t_i18n('Year'),
+      };
       warnings.push(t_i18n('Interval adjusted to {interval} to keep the chart responsive.', {
-        values: { interval: t_i18n(coarsenedInterval.charAt(0).toUpperCase() + coarsenedInterval.slice(1)) },
+        values: { interval: intervalLabels[coarsenedInterval] ?? coarsenedInterval },
       }));
     }
     if (weeksCountedByMonday) {
