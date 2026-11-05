@@ -243,7 +243,7 @@ const AUDITS_TIME_SERIES_BREAKDOWN_QUERY = gql`
         $endDate: DateTime
         $interval: String!
         $limit: Int
-        $order: OrderingMode
+        $orderMode: OrderingMode
         $includeOther: Boolean
         $types: [String]
         $filters: FilterGroup
@@ -255,7 +255,7 @@ const AUDITS_TIME_SERIES_BREAKDOWN_QUERY = gql`
             endDate: $endDate
             interval: $interval
             limit: $limit
-            order: $order
+            orderMode: $orderMode
             includeOther: $includeOther
             types: $types
             filters: $filters
@@ -264,7 +264,7 @@ const AUDITS_TIME_SERIES_BREAKDOWN_QUERY = gql`
             dates
             series {
                 label
-                value
+                total
                 isOther
                 values
                 entity {
@@ -370,7 +370,7 @@ describe('audits time series breakdown query', () => {
       expect(byScope.truncated).toBe(false);
       const create = byScope.series.find((serie: { label: string }) => serie.label === 'create');
       expect(create.entity).toBeNull();
-      expect(total(create)).toEqual(create.value);
+      expect(total(create)).toEqual(create.total);
       expect(byScope.series.every((serie: { values: number[] }) => serie.values.length === byScope.dates.length)).toBe(true);
 
       // The user is resolved, the SYSTEM user is never a series

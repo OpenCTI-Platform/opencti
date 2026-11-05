@@ -172,7 +172,16 @@ export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: s
 // Reasons of the refusals of a time series breakdown, in the data of their error: the front tells the
 // refusals apart from them, never from their messages
 export const BREAKDOWN_REFUSAL_REASONS = {
+  // The limit of series is not an integer between 1 and the maximum
+  INVALID_LIMIT: 'invalid_limit',
+  // The field cannot be broken down for the requested types
+  UNSUPPORTED_FIELD: 'unsupported_field',
+  // The date attribute is not a date of the requested types
   UNSUPPORTED_DATE_ATTRIBUTE: 'unsupported_date_attribute',
+  // The series and their dates would exceed the maximum number of buckets
+  TOO_LARGE: 'too_large',
+  // The lowest values cannot be ranked exactly among so many values
+  TOO_MANY_VALUES: 'too_many_values',
 } as const;
 
 // Same refusal as elHistogramCount, for the intervals its date histogram cannot aggregate

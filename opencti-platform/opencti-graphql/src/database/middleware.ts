@@ -991,7 +991,7 @@ export const resolveBreakdownField = (types: string[], field: string): Breakdown
   }
   const breakdownField = resolveSchemaBreakdownField(types, field);
   if (!breakdownField) {
-    throw FunctionalError('Time series breakdown does not support this field for these entity types', { field, types });
+    throw FunctionalError('Time series breakdown does not support this field for these entity types', { reason: BREAKDOWN_REFUSAL_REASONS.UNSUPPORTED_FIELD, field, types });
   }
   return breakdownField;
 };
@@ -1009,7 +1009,7 @@ export const resolveRelationshipBreakdownField = (types: string[], field: string
   }
   const breakdownField = resolveSchemaBreakdownField(types, field);
   if (!breakdownField) {
-    throw FunctionalError('Time series breakdown does not support this field for these relationship types', { field, types });
+    throw FunctionalError('Time series breakdown does not support this field for these relationship types', { reason: BREAKDOWN_REFUSAL_REASONS.UNSUPPORTED_FIELD, field, types });
   }
   return breakdownField;
 };
@@ -1034,7 +1034,7 @@ const HISTORY_TYPES = [ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY];
 export const resolveHistoryBreakdownField = (field: string): BreakdownField => {
   const breakdownField = HISTORY_BREAKDOWN_FIELDS.get(field);
   if (!breakdownField) {
-    throw FunctionalError('Time series breakdown does not support this field for the history and activity logs', { field });
+    throw FunctionalError('Time series breakdown does not support this field for the history and activity logs', { reason: BREAKDOWN_REFUSAL_REASONS.UNSUPPORTED_FIELD, field });
   }
   return breakdownField;
 };
@@ -1042,7 +1042,7 @@ type TimeSeriesBreakdownArgs = {
   field: string;
   dateAttribute?: string | null;
   limit?: number | null;
-  order?: 'asc' | 'desc' | null;
+  orderMode?: 'asc' | 'desc' | null;
   includeOther?: boolean | null;
   onlyInferred?: boolean | null;
   startDate: Date;
@@ -1052,7 +1052,11 @@ type TimeSeriesBreakdownArgs = {
 const checkTimeSeriesBreakdownLimit = (limit: number | null | undefined) => {
   const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
   if (!Number.isInteger(seriesLimit) || seriesLimit < 1 || seriesLimit > TIME_SERIES_BREAKDOWN_MAX_LIMIT) {
-    throw FunctionalError('Time series breakdown limit must be an integer between 1 and the maximum', { limit, max: TIME_SERIES_BREAKDOWN_MAX_LIMIT });
+    throw FunctionalError('Time series breakdown limit must be an integer between 1 and the maximum', {
+      reason: BREAKDOWN_REFUSAL_REASONS.INVALID_LIMIT,
+      limit,
+      max: TIME_SERIES_BREAKDOWN_MAX_LIMIT,
+    });
   }
 };
 // Names of the vocabularies of the categories, by their indexed form, for the keys only. Read with the SYSTEM
@@ -1125,7 +1129,7 @@ const timeSeriesBreakdown = async (
   const endDate = args.endDate ?? new Date();
   const { aggregationField, resolveEntities, resolveLabel, vocabularyCategories, connectionSide } = breakdownField;
   const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
-  const isAscending = args.order === 'asc';
+  const isAscending = args.orderMode === 'asc';
   const withOther = args.includeOther === true;
   // Refuse an unsupported interval before it is used to size the request
   getHistogramDateFormat(interval);
@@ -1134,14 +1138,14 @@ const timeSeriesBreakdown = async (
   const seriesCount = seriesLimit + (withOther ? 1 : 0);
   if (seriesCount * intervalsCount > TIME_SERIES_BREAKDOWN_MAX_BUCKETS) {
     throw FunctionalError('Time series breakdown is too large, reduce the period, the interval or the number of series', {
-      reason: 'too_large',
+      reason: BREAKDOWN_REFUSAL_REASONS.TOO_LARGE,
       limit: seriesCount,
       intervalsCount,
       max: TIME_SERIES_BREAKDOWN_MAX_BUCKETS,
     });
   }
   const breakdownArgs = {
-    ...R.omit(['order', 'includeOther'], args),
+    ...R.omit(['orderMode', 'includeOther'], args),
     dateAttribute,
     endDate,
     field: aggregationField,
@@ -1202,11 +1206,11 @@ const timeSeriesBreakdown = async (
   const series = selected.map(({ label, entity, key }) => {
     const values = fillTimeSeriesValues(axis, histograms.get(key) ?? []);
     // The weighted total of the series, the candidates being only ranked on their number of entities
-    return { label: vocabularyLabels.get(key) ?? label, value: sumOf(values), entity, isOther: false, values };
+    return { label: vocabularyLabels.get(key) ?? label, total: sumOf(values), entity, isOther: false, values };
   });
   if (withOther) {
     const otherValues = fillTimeSeriesValues(axis, other ?? []);
-    series.push({ label: BREAKDOWN_OTHER_LABEL, value: sumOf(otherValues), entity: null, isOther: true, values: otherValues });
+    series.push({ label: BREAKDOWN_OTHER_LABEL, total: sumOf(otherValues), entity: null, isOther: true, values: otherValues });
   }
   return { truncated, dates: axis.dates, series };
 };

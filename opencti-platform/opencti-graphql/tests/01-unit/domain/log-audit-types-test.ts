@@ -57,6 +57,7 @@ import {
 } from '../../../src/domain/log';
 
 import type { AuthContext, AuthUser } from '../../../src/types/user';
+import { OrderingMode } from '../../../src/generated/graphql';
 
 const ENTITY_TYPE_ACTIVITY = 'Activity';
 const ENTITY_TYPE_HISTORY = 'History';
@@ -321,7 +322,7 @@ describe('auditsTimeSeriesBreakdown — applies computeAuditTypes like auditsMul
       dateAttribute: 'timestamp',
       endDate: new Date('2026-02-01'),
       limit: 5,
-      order: 'asc' as any,
+      orderMode: OrderingMode.Asc,
       includeOther: true,
       filters,
       search: 'report',
@@ -331,7 +332,7 @@ describe('auditsTimeSeriesBreakdown — applies computeAuditTypes like auditsMul
       dateAttribute: 'timestamp',
       interval: 'day',
       limit: 5,
-      order: 'asc',
+      orderMode: 'asc',
       includeOther: true,
       filters,
       search: 'report',

@@ -52,7 +52,7 @@ import {
   timeSeriesBreakdownRelations,
 } from '../../../src/database/middleware';
 import { stixRelationshipsMultiTimeSeries, stixRelationshipsTimeSeriesBreakdown } from '../../../src/domain/stixRelationship';
-import { INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_HISTORY, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
+import { BREAKDOWN_REFUSAL_REASONS, INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_HISTORY, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../../../src/database/utils';
@@ -133,6 +133,11 @@ describe('timeSeriesBreakdownEntities', () => {
   it('should reject a limit out of bounds', async () => {
     await expect(breakdown({ field: 'creator_id', limit: 0 })).rejects.toThrow('Time series breakdown limit');
     await expect(breakdown({ field: 'creator_id', limit: 51 })).rejects.toThrow('Time series breakdown limit');
+    for (const limit of [0, 51, 2.5]) {
+      await expect(breakdown({ field: 'creator_id', limit })).rejects.toMatchObject({
+        extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'invalid_limit', limit, max: 50 } },
+      });
+    }
     expect(engine.elAggregationCount).not.toHaveBeenCalled();
   });
 
@@ -140,6 +145,9 @@ describe('timeSeriesBreakdownEntities', () => {
     await expect(breakdown({ field: 'description' })).rejects.toThrow('does not support this field');
     await expect(breakdown({ field: 'published' })).rejects.toThrow('does not support this field');
     await expect(breakdown({ field: 'regardingOf' })).rejects.toThrow('does not support this field');
+    await expect(breakdown({ field: 'description' })).rejects.toMatchObject({
+      extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'unsupported_field', field: 'description', types: ['Report'] } },
+    });
     expect(engine.elAggregationCount).not.toHaveBeenCalled();
   });
 
@@ -204,7 +212,7 @@ describe('timeSeriesBreakdownEntities', () => {
     } as any);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
-    const result = await breakdown({ field: 'creator_id', limit: 2, order: 'asc' });
+    const result = await breakdown({ field: 'creator_id', limit: 2, orderMode: 'asc' });
 
     expect(result.truncated).toBe(true);
     expect(result.series.map((serie) => (serie.entity as any)?.name)).toEqual(['Dave', 'Carol']);
@@ -216,11 +224,11 @@ describe('timeSeriesBreakdownEntities', () => {
     vi.mocked(engine.elFindByIds).mockResolvedValue({ 'user-a': makeEntity('user-a', 'Alice') } as any);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
-    await breakdown({ field: 'creator_id', order: 'asc' });
+    await breakdown({ field: 'creator_id', orderMode: 'asc' });
     expect(vi.mocked(engine.elAggregationCount).mock.lastCall?.[3]).toMatchObject({ rankByCount: true, bucketsOrder: 'asc' });
 
     for (const order of ['desc', null, undefined]) {
-      await breakdown({ field: 'creator_id', order });
+      await breakdown({ field: 'creator_id', orderMode: order });
       expect(vi.mocked(engine.elAggregationCount).mock.lastCall?.[3]).toMatchObject({ rankByCount: true, bucketsOrder: 'desc' });
     }
   });
@@ -235,7 +243,7 @@ describe('timeSeriesBreakdownEntities', () => {
     const result = await breakdown({ field: 'creator_id' });
 
     expect(result.series[0].values).toEqual([2, 0, 1.5]);
-    expect(result.series[0].value).toEqual(3.5);
+    expect(result.series[0].total).toEqual(3.5);
   });
 
   it('should use one filter per value in the histogram only when the field has many values', async () => {
@@ -329,7 +337,7 @@ describe('timeSeriesBreakdownEntities', () => {
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
     for (const order of ['desc', null, undefined]) {
-      const result = await breakdown({ field: 'creator_id', limit: 2, order });
+      const result = await breakdown({ field: 'creator_id', limit: 2, orderMode: order });
       expect(result.series.map((serie) => (serie.entity as any)?.name)).toEqual(['Alice', 'Bob']);
     }
   });
@@ -342,7 +350,7 @@ describe('timeSeriesBreakdownEntities', () => {
     } as any);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
-    const result = await breakdown({ field: 'creator_id', limit: 10, order: 'asc' });
+    const result = await breakdown({ field: 'creator_id', limit: 10, orderMode: 'asc' });
 
     expect(result.truncated).toBe(false);
   });
@@ -352,7 +360,7 @@ describe('timeSeriesBreakdownEntities', () => {
     vi.mocked(engine.elAggregationCount).mockResolvedValue(candidates);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
-    const result = await breakdown({ field: 'entity_type', limit: 50, order: 'asc' });
+    const result = await breakdown({ field: 'entity_type', limit: 50, orderMode: 'asc' });
 
     expect(result.truncated).toBe(true);
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys[0]).toEqual(`report-${engine.MAX_AGGREGATION_SIZE - 1}`);
@@ -367,11 +375,11 @@ describe('timeSeriesBreakdownEntities', () => {
     ) as any);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
-    const asc = await breakdown({ field: 'creator_id', limit: 10, order: 'asc' });
+    const asc = await breakdown({ field: 'creator_id', limit: 10, orderMode: 'asc' });
     expect(asc.series.map((serie) => serie.label)).toEqual(['user-1', 'user-0']);
     expect(asc.truncated).toBe(false);
 
-    const desc = await breakdown({ field: 'creator_id', limit: 10, order: 'desc' });
+    const desc = await breakdown({ field: 'creator_id', limit: 10, orderMode: 'desc' });
     expect(desc.series.map((serie) => serie.label)).toEqual(['user-0', 'user-1']);
     expect(desc.truncated).toBe(true);
   });
@@ -384,7 +392,7 @@ describe('timeSeriesBreakdownEntities', () => {
     ) as any);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
-    const result = await breakdown({ field: 'creator_id', limit: 5, order: 'asc' });
+    const result = await breakdown({ field: 'creator_id', limit: 5, orderMode: 'asc' });
 
     expect(engine.elFindByIds).toHaveBeenCalledTimes(1);
     expect(vi.mocked(engine.elFindByIds).mock.calls[0][2]).toEqual(users.slice(0, 15));
@@ -395,7 +403,7 @@ describe('timeSeriesBreakdownEntities', () => {
   it('should pass the refusal of the lowest values on to the caller, before any histogram', async () => {
     vi.mocked(engine.elAggregationCount).mockRejectedValue(tooManyValuesError());
 
-    await expect(breakdown({ field: 'creator_id', order: 'asc' })).rejects.toMatchObject({
+    await expect(breakdown({ field: 'creator_id', orderMode: 'asc' })).rejects.toMatchObject({
       extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_many_values', max: engine.MAX_EXACT_RANKING_SIZE } },
     });
     expect(engine.elFindByIds).not.toHaveBeenCalled();
@@ -422,7 +430,7 @@ describe('timeSeriesBreakdownEntities', () => {
     const other = result.series[2];
     expect(other.label).toEqual('Other');
     expect(other.entity).toBeNull();
-    expect(other.value).toEqual(7);
+    expect(other.total).toEqual(7);
     expect(other.values).toEqual([2, 0, 5]);
     // The dates are sent once, shared by every series
     expect(result.dates).toEqual(['2026-01-01T00:00:00.000Z', '2026-01-02T00:00:00.000Z', '2026-01-03T00:00:00.000Z']);
@@ -473,7 +481,7 @@ describe('timeSeriesBreakdownEntities', () => {
 
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual([]);
     expect(result.series.map((serie) => serie.label)).toEqual(['Other']);
-    expect(result.series[0].value).toEqual(3);
+    expect(result.series[0].total).toEqual(3);
   });
 
   it('should reject an unsupported interval before querying', async () => {
@@ -634,7 +642,7 @@ describe('timeSeriesBreakdownEntities', () => {
       ['identity-a', 'Filigran', 'Organization'],
       ['identity-b', 'Restricted', 'Organization'],
     ]);
-    expect(result.series[1]).toMatchObject({ value: 3, values: [0, 3, 0] });
+    expect(result.series[1]).toMatchObject({ total: 3, values: [0, 3, 0] });
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['identity-a', 'identity-b']);
   });
 
@@ -675,6 +683,18 @@ describe('timeSeriesBreakdownEntities', () => {
 
     expect(result.series.map((serie) => serie.isOther)).toEqual([true]);
     expect(engine.elList).not.toHaveBeenCalled();
+  });
+});
+
+describe('BREAKDOWN_REFUSAL_REASONS', () => {
+  it('should keep the reasons the front tells the refusals apart from', () => {
+    expect(BREAKDOWN_REFUSAL_REASONS).toEqual({
+      INVALID_LIMIT: 'invalid_limit',
+      UNSUPPORTED_FIELD: 'unsupported_field',
+      UNSUPPORTED_DATE_ATTRIBUTE: 'unsupported_date_attribute',
+      TOO_LARGE: 'too_large',
+      TOO_MANY_VALUES: 'too_many_values',
+    });
   });
 });
 
@@ -857,7 +877,9 @@ describe('timeSeriesBreakdownHistory', () => {
 
   it('should refuse a field outside the allowlist before querying', async () => {
     await expect(historyBreakdown({ field: 'context_data.id' })).rejects.toThrow('does not support this field');
-    await expect(historyBreakdown({ field: 'context_data.message' })).rejects.toThrow('does not support this field');
+    await expect(historyBreakdown({ field: 'context_data.message' })).rejects.toMatchObject({
+      extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'unsupported_field', field: 'context_data.message' } },
+    });
     expect(engine.elAggregationCount).not.toHaveBeenCalled();
   });
 
@@ -933,13 +955,13 @@ describe('timeSeriesBreakdownHistory', () => {
     vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('update', 2), bucket('create', 6)]);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf([['create', [{ date: '2026-01-02', value: 6 }]]]));
 
-    const result = await historyBreakdown({ field: 'event_scope', order: 'desc' });
+    const result = await historyBreakdown({ field: 'event_scope', orderMode: 'desc' });
 
     expect(vi.mocked(engine.elAggregationCount).mock.calls[0][3]).toMatchObject({ rankByCount: true, bucketsOrder: 'desc' });
     expect(engine.elFindByIds).not.toHaveBeenCalled();
     expect(result.series.map((serie) => serie.label)).toEqual(['create', 'update']);
     expect(result.series.every((serie) => serie.entity === null)).toBe(true);
-    expect(result.series[0]).toMatchObject({ value: 6, values: [0, 6, 0] });
+    expect(result.series[0]).toMatchObject({ total: 6, values: [0, 6, 0] });
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['create', 'update']);
   });
 
@@ -1010,7 +1032,7 @@ describe('timeSeriesBreakdownHistory', () => {
 
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3]).toMatchObject({ keys: ['create'], withOther: true });
     expect(result.series.map((serie) => serie.label)).toEqual(['create', 'Other']);
-    expect(result.series[1]).toMatchObject({ isOther: true, value: 3, values: [3, 0, 0] });
+    expect(result.series[1]).toMatchObject({ isOther: true, total: 3, values: [3, 0, 0] });
   });
 });
 
@@ -1125,6 +1147,10 @@ describe('timeSeriesBreakdownRelations', () => {
     await expect(relationsBreakdown({ field: 'relationship_type', limit: 0 })).rejects.toThrow('Time series breakdown limit');
     await expect(relationsBreakdown({ field: 'relationship_type', limit: 51 })).rejects.toThrow('Time series breakdown limit');
     await expect(relationsBreakdown({ field: 'fromId' })).rejects.toThrow('does not support this field for these relationship types');
+    await expect(relationsBreakdown({ field: 'fromId' })).rejects.toMatchObject({
+      extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'unsupported_field', field: 'fromId', types: ['uses', 'targets'] } },
+    });
+    await expect(relationsBreakdown({ field: 'relationship_type', limit: 51 })).rejects.toMatchObject({ extensions: { data: { reason: 'invalid_limit' } } });
     expect(engine.elAggregationCount).not.toHaveBeenCalled();
     expect(engine.elConnectionTypesAggregationCount).not.toHaveBeenCalled();
   });
@@ -1165,7 +1191,7 @@ describe('timeSeriesBreakdownRelations', () => {
     expect(engine.elConnectionTypesAggregationCount).not.toHaveBeenCalled();
     // Ranked on their number of relationships, like the fields of the entities
     expect(vi.mocked(engine.elAggregationCount).mock.calls[0][3]).toMatchObject({ field: 'relationship_type', rankByCount: true, bucketsOrder: 'desc' });
-    expect(result.series.map((serie) => [serie.label, serie.value, serie.entity])).toEqual([['uses', 5, null], ['targets', 3, null]]);
+    expect(result.series.map((serie) => [serie.label, serie.total, serie.entity])).toEqual([['uses', 5, null], ['targets', 3, null]]);
     expect(result.series.map((serie) => serie.values)).toEqual([[0, 5, 0], [1, 0, 2]]);
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].connectionSide).toBeUndefined();
   });
@@ -1184,7 +1210,7 @@ describe('timeSeriesBreakdownRelations', () => {
     expect(discoveryOptions).toMatchObject({ connectionSide: 'from', bucketsOrder: 'desc', types: ['uses', 'targets'], intervalInclude: true });
     const histogramOptions = vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3];
     expect(histogramOptions).toMatchObject({ connectionSide: 'from', keys: ['malware', 'intrusion-set'], withOther: true });
-    expect(result.series.map((serie) => [serie.label, serie.value, serie.entity, serie.isOther])).toEqual([
+    expect(result.series.map((serie) => [serie.label, serie.total, serie.entity, serie.isOther])).toEqual([
       ['Malware', 4, null, false],
       // The value of a series is the sum of its values: no histogram bucket, no relationship
       ['Intrusion-Set', 0, null, false],
@@ -1200,7 +1226,7 @@ describe('timeSeriesBreakdownRelations', () => {
     ]);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
-    const result = await relationsBreakdown({ field: 'toTypes', order: 'asc', limit: 1 });
+    const result = await relationsBreakdown({ field: 'toTypes', orderMode: 'asc', limit: 1 });
 
     expect(vi.mocked(engine.elConnectionTypesAggregationCount).mock.calls[0][3]).toMatchObject({ connectionSide: 'to', bucketsOrder: 'asc' });
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3]).toMatchObject({ connectionSide: 'to', keys: ['country'] });
@@ -1225,7 +1251,7 @@ describe('timeSeriesBreakdownRelations', () => {
   it('should pass the refusal of the lowest types of a side on to the caller', async () => {
     vi.mocked(engine.elConnectionTypesAggregationCount).mockRejectedValue(tooManyValuesError());
 
-    await expect(relationsBreakdown({ field: 'fromTypes', order: 'asc' })).rejects.toMatchObject({
+    await expect(relationsBreakdown({ field: 'fromTypes', orderMode: 'asc' })).rejects.toMatchObject({
       extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_many_values', max: engine.MAX_EXACT_RANKING_SIZE } },
     });
     expect(engine.elHistogramBreakdownCount).not.toHaveBeenCalled();

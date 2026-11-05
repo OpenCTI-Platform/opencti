@@ -423,11 +423,11 @@ type TimeSeries {
 type MultiTimeSeries {
   data: [TimeSeries]
 }
-type TimeSeriesBreakdownSerie {
+type TimeSeriesBreakdownSeries {
   label: String!
   entity: StixObjectOrStixRelationshipOrCreator
   # Sum of the values of the series
-  value: Int!
+  total: Int!
   isOther: Boolean!
   # One value per date of TimeSeriesBreakdown.dates
   values: [Int!]!
@@ -436,7 +436,7 @@ type TimeSeriesBreakdown {
   truncated: Boolean!
   # Dates shared by every series, sent once
   dates: [DateTime!]!
-  series: [TimeSeriesBreakdownSerie!]!
+  series: [TimeSeriesBreakdownSeries!]!
 }
 input AuditsTimeSeriesParameters {
   field: String!
@@ -14109,14 +14109,21 @@ type Query {
     timeSeriesParameters: [AuditsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   auditsTimeSeriesBreakdown(
+    """
+    Field of the logs to break down by, as indexed: event_type, event_scope, user_id, group_ids,
+    organization_ids, entity_type (History or Activity) or context_data.entity_type (type of the entity of the event)
+    """
     field: String!
+    """
+    Date of the logs the events are counted on: timestamp by default
+    """
     dateAttribute: String
     startDate: DateTime!
     endDate: DateTime
     interval: String!
-    limit: Int
-    order: OrderingMode
-    includeOther: Boolean
+    limit: Int = 10
+    orderMode: OrderingMode
+    includeOther: Boolean = false
     types: [String]
     filters: FilterGroup
     search: String
@@ -14359,14 +14366,22 @@ type Query {
     timeSeriesParameters: [StixCoreObjectsTimeSeriesParameters]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsTimeSeriesBreakdown(
+    """
+    Filter key to break the entities down by, carried by every requested type: a reference (createdBy, objectLabel,
+    objectMarking, objectAssignee or objectParticipant), creator_id, a vocabulary or enum attribute (like report_types),
+    or entity_type
+    """
     field: String!
+    """
+    Date attribute of the requested types the entities are counted on: created_at by default
+    """
     dateAttribute: String
     startDate: DateTime!
     endDate: DateTime
     interval: String!
-    limit: Int
-    order: OrderingMode
-    includeOther: Boolean
+    limit: Int = 10
+    orderMode: OrderingMode
+    includeOther: Boolean = false
     onlyInferred: Boolean
     types: [String]
     filters: FilterGroup
@@ -14958,14 +14973,22 @@ type Query {
     relationship_type: [String!]
   ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixRelationshipsTimeSeriesBreakdown(
+    """
+    Field to break the relationships down by: relationship_type, fromTypes or toTypes (type of the source or of the
+    target), or a filter key carried by every requested relationship type: a reference (createdBy, objectLabel or
+    objectMarking), creator_id, or a vocabulary or enum attribute
+    """
     field: String!
+    """
+    Date attribute of the requested relationship types the relationships are counted on: created_at by default
+    """
     dateAttribute: String
     startDate: DateTime!
     endDate: DateTime
     interval: String!
-    limit: Int
-    order: OrderingMode
-    includeOther: Boolean
+    limit: Int = 10
+    orderMode: OrderingMode
+    includeOther: Boolean = false
     onlyInferred: Boolean
     relationship_type: [String!]
     filters: FilterGroup

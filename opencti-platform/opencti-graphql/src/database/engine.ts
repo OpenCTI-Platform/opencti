@@ -9,6 +9,7 @@ import semver from 'semver';
 import { ATTR_DB_QUERY_TEXT, ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION, SEMATTRS_DB_STATEMENT } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import {
+  BREAKDOWN_REFUSAL_REASONS,
   buildPagination,
   buildPaginationFromEdges,
   cursorToOffset,
@@ -3531,7 +3532,7 @@ const buildCountRankingTerms = (bucketsOrder: 'asc' | 'desc' | null) => (buckets
 const checkExactRanking = (termsAggregation: { sum_other_doc_count?: number }) => {
   if ((termsAggregation.sum_other_doc_count ?? 0) > 0) {
     throw FunctionalError('Too many values to rank the lowest ones, narrow the filters or the period', {
-      reason: 'too_many_values',
+      reason: BREAKDOWN_REFUSAL_REASONS.TOO_MANY_VALUES,
       max: MAX_EXACT_RANKING_SIZE,
     });
   }
