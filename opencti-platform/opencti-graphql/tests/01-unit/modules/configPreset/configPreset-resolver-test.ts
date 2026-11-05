@@ -52,6 +52,7 @@ import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtur
 import { customMarking, papRed } from './configPreset-markings-fixtures';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './configPreset-killChainPhases-fixtures';
+import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -101,6 +102,13 @@ const phaseItem = (phase: { standard_id: string; kill_chain_name: string; phase_
 const vocabularyItem = (category: string) => ({
   key: category,
   label: category,
+  translatable: false,
+  dependsOn: [],
+  isDefault: false,
+});
+const statusTemplateItem = (template: { standard_id: string; name: string }) => ({
+  key: template.standard_id,
+  label: template.name,
   translatable: false,
   dependsOn: [],
   isDefault: false,
@@ -231,6 +239,15 @@ describe('Config preset exportable types query', () => {
         items: [vocabularyItem('case_severity_ov'), vocabularyItem('incident_type_ov'), vocabularyItem('integrity_level_ov'), vocabularyItem('report_types_ov')],
         itemsPageInfo: onePage(4),
       },
+      {
+        key: 'statusTemplates',
+        label: 'Status templates',
+        description: 'Status templates and their colors',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // By name
+        items: [statusTemplateItem(customStatusTemplate), statusTemplateItem(defaultStatusTemplate)],
+        itemsPageInfo: onePage(2),
+      },
     ]);
   });
 
@@ -272,7 +289,7 @@ describe('Config preset exportable types query', () => {
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['killChainPhases', false],
-      ['vocabularies', false],
+      ['vocabularies', false], ['statusTemplates', false],
     ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
@@ -317,6 +334,7 @@ describe('Config preset exportable types query', () => {
       ['labels', 'taxonomy'],
       ['killChainPhases', 'taxonomy'],
       ['vocabularies', 'taxonomy'],
+      ['statusTemplates', 'taxonomy'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
