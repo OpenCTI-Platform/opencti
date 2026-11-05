@@ -1,7 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const BASE_PATH = process.env.APP__BASE_PATH ?? '';
-const BASE_URL = `http://localhost:3000${BASE_PATH}`;
+// Set to a platform serving the built front (CI image, or local backend after `yarn build`): vite is not started.
+const E2E_BASE_URL = process.env.E2E_BASE_URL;
+const BASE_URL = `${E2E_BASE_URL ?? 'http://localhost:3000'}${BASE_PATH}`;
 
 // https://playwright.dev/docs/browsers
 
@@ -221,8 +223,8 @@ export default defineConfig({
     // },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
+  /* Run your local dev server before starting the tests, unless E2E_BASE_URL serves the front */
+  webServer: E2E_BASE_URL ? undefined : {
     command: `APP__BASE_PATH=${BASE_PATH} yarn start`,
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
