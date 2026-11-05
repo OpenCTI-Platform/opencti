@@ -52,7 +52,16 @@ vi.mock('../../../src/schema/schema-relationsRef', () => ({
   },
 }));
 
-import { createRedisClient, generateClusterNodes, generateNatMap, removeResolvedRefs } from '../../../src/database/redis';
+import {
+  createRedisClient,
+  generateClusterNodes,
+  generateNatMap,
+  getClientBase,
+  initializeRedisClients,
+  redisHealthCheck,
+  removeResolvedRefs,
+  shutdownRedisClients,
+} from '../../../src/database/redis';
 
 describe('Redis client creation', () => {
   let client;
@@ -134,6 +143,34 @@ describe('Redis client creation', () => {
       ca: ['test-ca'],
       servername: 'redis-service.example.test',
     });
+  });
+});
+
+describe('Redis health check', () => {
+  beforeEach(async () => {
+    redisConfig.mode = 'single';
+    await initializeRedisClients();
+  });
+
+  afterEach(() => {
+    shutdownRedisClients();
+    vi.restoreAllMocks();
+  });
+
+  it('should fail fast without queuing a command when the base client is not connected', async () => {
+    const getSpy = vi.spyOn(getClientBase(), 'get');
+
+    await expect(redisHealthCheck()).rejects.toThrow('Redis seems down');
+    expect(getSpy).not.toHaveBeenCalled();
+  });
+
+  it('should probe redis when the base client is ready', async () => {
+    const client = getClientBase();
+    client.status = 'ready';
+    const getSpy = vi.spyOn(client, 'get').mockResolvedValue(null);
+
+    await expect(redisHealthCheck()).resolves.toBe(true);
+    expect(getSpy).toHaveBeenCalledWith('test-key');
   });
 });
 
