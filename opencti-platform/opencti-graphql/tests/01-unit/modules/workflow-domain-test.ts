@@ -2601,6 +2601,22 @@ describe('Workflow Domain', () => {
     expect(updateAttribute).not.toHaveBeenCalled();
   });
 
+  it('should check the confidence level against the live entity when triggered from a draft', async () => {
+    // Draft version at 50, live entity at 90: the status is written on the live one
+    (storeLoadById as any).mockImplementation((_ctx: any, user: any) => Promise.resolve({
+      id: 'entity-1', entity_type: 'Incident', confidence: 'draft_context' in user ? 90 : 50,
+    }));
+    vi.mocked(getDraftContext).mockReturnValue('draft-id');
+    vi.mocked(controlUserConfidenceAgainstElement).mockImplementation((_user, element: any) => element.confidence <= 50);
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'test');
+
+    expect(result).toEqual({ success: false, reason: 'Your confidence level is too low to update this entity' });
+    expect(lockResources).not.toHaveBeenCalled();
+    vi.mocked(getDraftContext).mockReturnValue(undefined);
+    vi.mocked(controlUserConfidenceAgainstElement).mockReturnValue(true);
+  });
+
   it('should return failure when entity setting not found', async () => {
     const entity = { id: 'entity-1', entity_type: 'Incident' };
 
@@ -2757,6 +2773,24 @@ describe('Transition comments – Domain', () => {
         return Promise.resolve(null);
       });
       (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    });
+
+    it('should check the confidence level against the live entity from a draft', async () => {
+      // Draft version at 90, live entity at 50: the status is written on the live one
+      (storeLoadById as any).mockImplementation((_ctx: any, user: any, id: string) => {
+        if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', confidence: 'draft_context' in user ? 50 : 90 });
+        if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', published_version: { id: 'v1', content: definitionWithComments, timestamp: '', createdBy: '', validation_errors: [] } });
+        return Promise.resolve(null);
+      });
+      (loadEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id', currentState: 'draft', history: '[]' });
+      vi.mocked(getDraftContext).mockReturnValue('draft-id');
+      vi.mocked(controlUserConfidenceAgainstElement).mockImplementation((_user, element: any) => element.confidence <= 50);
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
+
+      expect(transitions.map((transition) => transition.event)).toEqual(['review']);
+      vi.mocked(getDraftContext).mockReturnValue(undefined);
+      vi.mocked(controlUserConfidenceAgainstElement).mockReturnValue(true);
     });
 
     it('should expose the comment field on allowed transitions when comment is defined', async () => {
