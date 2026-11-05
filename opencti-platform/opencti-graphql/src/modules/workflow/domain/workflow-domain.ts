@@ -20,6 +20,8 @@ import { lockResources } from '../../../lock/master-lock';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
+import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
+import { X_CLOSING_REASON } from '../../../schema/identifier';
 import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import {
@@ -60,7 +62,7 @@ import { extractCanonicalStateIds, findInstancesBlockingStateRemoval, validateWo
 import { computeStateOrder, findStatesWithOutgoingTransitions } from './workflow-ordering';
 import { isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
-import { appendWorkflowHistoryEntry, closingReasonNotWrittenError, runWorkflowBypassActions } from './workflow-async-completion';
+import { appendWorkflowHistoryEntry, closingReasonNotWrittenError, isClosingReasonLost, runWorkflowBypassActions } from './workflow-async-completion';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -1452,8 +1454,16 @@ const isClosingReasonMode = (mode: string | undefined) => mode === 'allowed' || 
 // stays in one: any move to a state it can leave clears it.
 // It does not look at the stored reason: the entity may be read before the lock, and clearing an empty one changes nothing.
 // Nor at the transitions asking for one: a workflow that stopped asking must still clear a reason given before.
-const clearsClosingReason = (transitions: Pick<WorkflowSerializedTransition, 'from'>[] | undefined, fromState: string, toState: string) => {
-  return fromState !== toState && findStatesWithOutgoingTransitions(transitions ?? []).has(toState);
+// Entity types without the attribute (outside domain objects) never carry one.
+const clearsClosingReason = (
+  entityType: string,
+  transitions: Pick<WorkflowSerializedTransition, 'from'>[] | undefined,
+  fromState: string,
+  toState: string,
+) => {
+  return fromState !== toState
+    && !!schemaAttributesDefinition.getAttribute(entityType, X_CLOSING_REASON)
+    && findStatesWithOutgoingTransitions(transitions ?? []).has(toState);
 };
 
 const resolveTransitionClosingReason = (
@@ -1553,7 +1563,7 @@ export const triggerWorkflowEvent = async (
       const fromStates = Array.isArray(t.from) ? t.from : [t.from];
       return fromStates.includes(currentStateId) && t.event === eventName;
     });
-    const clears = !!targetTransition?.to && clearsClosingReason(definitionData.transitions, currentStateId, targetTransition.to);
+    const clears = !!targetTransition?.to && clearsClosingReason(entity.entity_type, definitionData.transitions, currentStateId, targetTransition.to);
     // The reason is written to the live entity: draft-only capabilities cannot skip a required one.
     // Without a transition for this event, the engine rejects the event itself: the reason is not checked.
     const resolvedClosingReason: ReturnType<typeof resolveTransitionClosingReason> = targetTransition
@@ -1715,7 +1725,7 @@ export const triggerWorkflowEvent = async (
     // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
     const scope = resolveProjectionScope(instanceEntity.scope);
     const projected = await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, newState, scope, resolvedClosingReason.closingReason);
-    if (!projected && resolvedClosingReason.closingReason !== undefined) {
+    if (!projected && isClosingReasonLost(resolvedClosingReason.closingReason, entity)) {
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
         { key: 'pendingError', value: [closingReasonNotWrittenError(resolvedClosingReason.closingReason)] },
       ]);
@@ -1870,7 +1880,7 @@ const executeWorkflowBypass = async (
     triggeredAt: new Date().toISOString(),
     runtimeParams,
     ...(normalizedComment ? { comment: normalizedComment } : {}),
-    ...(clearsClosingReason(definitionData.transitions, instanceEntity.currentState, targetStatus.template_id) ? { closingReason: null } : {}),
+    ...(clearsClosingReason(entity.entity_type, definitionData.transitions, instanceEntity.currentState, targetStatus.template_id) ? { closingReason: null } : {}),
     asyncActions: [],
     syncActions: applyTransitionActions ? [
       ...(definitionData.states?.find((state) => state.statusId === instanceEntity.currentState)?.onExit ?? []),
@@ -1928,7 +1938,7 @@ const executeWorkflowBypass = async (
       { key: 'pendingTransition', value: [null] },
     ]);
     const projected = await projectWorkflowState(executionContext, executionUser, entity, targetStatus.template_id, scope, pendingTransition.closingReason);
-    if (!projected && pendingTransition.closingReason !== undefined) {
+    if (!projected && isClosingReasonLost(pendingTransition.closingReason, entity)) {
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
         { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason)] },
       ]);
@@ -2111,9 +2121,9 @@ const applyExternalStatusWrite = async (
     ...(failedTransition ? [{ key: 'pendingStatus', value: [null] }, { key: 'pendingTransition', value: [null] }] : []),
     { key: 'pendingError', value: [null] },
   ]);
-  if (clearsClosingReason(definitionData.transitions, instanceEntity.currentState, stateId)) {
+  if (clearsClosingReason(entity.entity_type, definitionData.transitions, instanceEntity.currentState, stateId)) {
     const projected = await projectWorkflowState(context, WORKFLOW_MANAGER_USER, entity, stateId, resolveProjectionScope(instanceEntity.scope), null);
-    if (!projected) {
+    if (!projected && isClosingReasonLost(null, entity)) {
       await updateInstance([{ key: 'pendingError', value: [closingReasonNotWrittenError(null)] }]);
     }
   }

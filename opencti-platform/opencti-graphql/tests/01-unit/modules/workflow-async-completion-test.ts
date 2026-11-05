@@ -828,7 +828,7 @@ describe('reportWorkflowAsyncActionResult', () => {
     });
 
     it('reports a closing reason that could not be cleared when the entity write fails', async () => {
-      const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+      const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', x_opencti_closing_reason: 'duplicate' };
       const pt = makePendingTransition({ syncActions: [], closingReason: null });
       const instance = makeInstance({ pendingTransition: JSON.stringify(pt), scope: 'GLOBAL' });
 

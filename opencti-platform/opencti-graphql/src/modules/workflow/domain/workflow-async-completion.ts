@@ -23,6 +23,12 @@ import { projectWorkflowState, resolveProjectionScope } from './workflow-project
 const MAX_WORKFLOW_HISTORY_ENTRIES = 200;
 // A failed entity write must not lose a closing reason: the history entry keeps it, the instance error points to it.
 // A failed clear (null) is reported too: nothing repairs a closing reason left on a reopened entity.
+// A value is always worth reporting; a clear only when the entity holds a reason, or could not be read
+export const isClosingReasonLost = (closingReason: string | null | undefined, entity: { x_opencti_closing_reason?: string } | null | undefined) => {
+  if (closingReason === undefined) return false;
+  return closingReason !== null || !entity || !!entity.x_opencti_closing_reason;
+};
+
 export const closingReasonNotWrittenError = (closingReason: string | null) => {
   if (closingReason === null) {
     return 'The closing reason could not be cleared on the entity: a user with bypass rights can clear it';
@@ -259,7 +265,7 @@ const completeWorkflowAsyncActionResult = async (
   } else {
     logApp.warn('[workflow-async-completion] Skipping status projection: entity could not be loaded', { entityId: instanceEntity.entity_id });
   }
-  if (!projected && pendingTransition.closingReason !== undefined) {
+  if (!projected && isClosingReasonLost(pendingTransition.closingReason, fullEntity)) {
     await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason)] },
     ]);

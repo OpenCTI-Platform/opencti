@@ -151,6 +151,17 @@ vi.mock('../../../src/modules/workflow/domain/workflow-projection', () => ({
   resolveMappedStatusId: vi.fn(),
 }));
 
+// Domain objects carry the closing reason, draft workspaces do not; no other test type is registered here
+vi.mock('../../../src/schema/schema-attributes', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/schema/schema-attributes')>();
+  const getAttribute = actual.schemaAttributesDefinition.getAttribute.bind(actual.schemaAttributesDefinition);
+  actual.schemaAttributesDefinition.getAttribute = (entityType: string, name: string) => {
+    if (name === 'x_opencti_closing_reason') return entityType === 'DraftWorkspace' ? undefined : { name } as any;
+    return getAttribute(entityType, name);
+  };
+  return actual;
+});
+
 vi.mock('../../../src/schema/identifier', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/schema/identifier')>();
   return {
@@ -250,12 +261,23 @@ describe('Workflow bypass', () => {
   it('reports a closing reason that a bypass could not clear', async () => {
     definition.transitions[0].closingReason = 'allowed';
     instance.currentState = 'closed';
+    entity.x_opencti_closing_reason = 'duplicate';
     vi.mocked(projectWorkflowState).mockResolvedValueOnce(false);
 
     const result = await setWorkflowStatus(context, user, entity.id, legacy.id, false);
 
     expect(result).toMatchObject({ success: true, newState: 'open' });
     expect(instance.pendingError).toContain('could not be cleared');
+  });
+
+  it('reports no failed clear when the entity holds no closing reason', async () => {
+    instance.currentState = 'closed';
+    vi.mocked(projectWorkflowState).mockResolvedValueOnce(false);
+
+    const result = await setWorkflowStatus(context, user, entity.id, legacy.id, false);
+
+    expect(result).toMatchObject({ success: true, newState: 'open' });
+    expect(instance.pendingError ?? null).toBeNull();
   });
 
   it('keeps the closing reason when a bypass moves from a final state to another one', async () => {
@@ -4625,6 +4647,12 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
     }));
     (projectWorkflowState as any).mockResolvedValue(false);
     storedStatusId = 'status-draft-id';
+    // The stored entity still holds the reason the write should have cleared
+    const loadStored = (storeLoadById as any).getMockImplementation();
+    (storeLoadById as any).mockImplementation(async (...args: any[]) => {
+      const loaded = await loadStored(...args);
+      return args[2] === 'entity-1' ? { ...loaded, x_opencti_closing_reason: 'duplicate' } : loaded;
+    });
 
     await syncWorkflowInstanceFromExternalWrite(mockContext, { id: 'bypass-id', capabilities: [{ name: 'BYPASS' }] } as any, entity, 'status-draft-id');
 
@@ -4913,6 +4941,7 @@ describe('triggerWorkflowEvent — closing reason', () => {
   });
 
   it('reports a closing reason that could not be cleared when the entity write fails', async () => {
+    const closedEntity = { ...entity, x_opencti_closing_reason: 'duplicate' };
     const workflowContent = {
       initialState: 'open',
       states: [{ statusId: 'open' }, { statusId: 'triaged' }, { statusId: 'closed' }],
@@ -4923,7 +4952,7 @@ describe('triggerWorkflowEvent — closing reason', () => {
     };
     const version = { id: 'v1', content: JSON.stringify(workflowContent), validation_errors: [] };
     (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
-      if (type === 'Basic-Object') return entity;
+      if (type === 'Basic-Object') return closedEntity;
       if (type === 'WorkflowDefinition') return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
       return null;
     });
@@ -4940,7 +4969,7 @@ describe('triggerWorkflowEvent — closing reason', () => {
     const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'triage');
 
     expect(result.success).toBe(true);
-    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, executionUser, entity, 'triaged', StatusScope.Global, null);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, executionUser, closedEntity, 'triaged', StatusScope.Global, null);
     expect((updateAttribute as any).mock.calls.at(-1)[4]).toEqual([{ key: 'pendingError', value: [expect.stringContaining('could not be cleared')] }]);
   });
 
@@ -4959,6 +4988,34 @@ describe('triggerWorkflowEvent — closing reason', () => {
     const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close', undefined, {}, 'vocabulary--malware');
 
     expect(result).toMatchObject({ success: false, reason: 'Closing reason must be a value of the closing reason vocabulary' });
+  });
+
+  it('never clears a closing reason on a type without one', async () => {
+    const workflowContent = {
+      initialState: 'open',
+      states: [{ statusId: 'open' }, { statusId: 'review' }],
+      transitions: [{ from: 'open', to: 'review', event: 'submit' }, { from: 'review', to: 'open', event: 'back' }],
+    };
+    const draft = { ...entity, entity_type: 'DraftWorkspace' };
+    const version = { id: 'v1', content: JSON.stringify(workflowContent), validation_errors: [] };
+    (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
+      if (type === 'Basic-Object') return draft;
+      if (type === 'WorkflowDefinition') return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
+      return null;
+    });
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({ success: true }),
+      getCurrentState: vi.fn().mockReturnValue('review'),
+    });
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'submit');
+
+    expect(result.success).toBe(true);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, executionUser, draft, 'review', StatusScope.Global, undefined);
   });
 
   it('clears the closing reason in a workflow that no longer asks for one', async () => {
