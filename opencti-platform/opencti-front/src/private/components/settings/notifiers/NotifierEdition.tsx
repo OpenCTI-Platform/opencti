@@ -189,7 +189,7 @@ const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({
               }}
             >
               <JsonForm
-                uiSchema={buildNotifierUiSchema(data?.notifier_connector?.connector_schema_ui, data?.notifier_connector?.id, t_i18n)}
+                uiSchema={buildNotifierUiSchema(data?.notifier_connector?.connector_schema_ui, data?.notifier_connector?.id)}
                 ref={formRef}
                 tagName="div"
                 showErrorList={false}
