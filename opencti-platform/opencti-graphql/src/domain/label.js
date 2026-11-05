@@ -41,29 +41,19 @@ export const stringToColour = (str) => {
   return colour;
 };
 
-// Creates the label, or returns the one that exists, as it is: a label found after the lookup (created by someone else in between) is never upserted.
-// created tells whether this call created it
-export const createLabel = async (context, user, label) => {
+export const addLabel = async (context, user, label) => {
   // Check if a label with the same value (case-insensitive) already exists
   const standardId = generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label.value) });
   const existing = await storeLoadById(context, user, standardId, ENTITY_TYPE_LABEL);
   if (existing) {
-    return { label: existing, created: false };
+    return existing;
   }
   const finalLabel = pipe(
     assoc('value', label.value.trim()),
     assoc('color', label.color ? label.color : stringToColour(normalizeName(label.value))),
   )(label);
-  const { element, isCreation } = await createEntity(context, user, finalLabel, ENTITY_TYPE_LABEL, { complete: true, createOnly: true });
-  if (!isCreation) {
-    return { label: element, created: false };
-  }
-  return { label: await notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, element, user), created: true };
-};
-
-export const addLabel = async (context, user, label) => {
-  const { label: added } = await createLabel(context, user, label);
-  return added;
+  const element = await createEntity(context, user, finalLabel, ENTITY_TYPE_LABEL);
+  return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, element, user);
 };
 
 export const labelDelete = async (context, user, labelId) => {

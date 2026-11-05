@@ -1,5 +1,5 @@
 import { storeLoadById } from '../../database/middleware-loader';
-import { createLabel, labelEditField } from '../../domain/label';
+import { addLabel, labelEditField } from '../../domain/label';
 import { generateStandardId, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -55,9 +55,10 @@ export const importLabel = async (
     return importExisting(existing);
   }
   if (!dryRun) {
-    // createLabel gives a label without color the one it makes of its value, and writes nothing on a label created by someone else since the lookup above
-    const { label: added, created } = await createLabel(context, user, { value, color });
-    if (!created) {
+    // addLabel gives a label without color the one it makes of its value
+    const added = await addLabel(context, user, { value, color });
+    // addLabel writes nothing and returns the label as it is when another one was created since the lookup above: it is an existing label
+    if (color && added.color?.toLowerCase() !== color.toLowerCase()) {
       return importExisting(added);
     }
   }
