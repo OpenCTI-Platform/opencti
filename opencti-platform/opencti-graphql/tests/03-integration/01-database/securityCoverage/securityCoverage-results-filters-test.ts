@@ -91,9 +91,12 @@ describe('Security coverage results: filters on coverage_information', () => {
   it('ignores a coverage filter without any sub-filter value', async () => {
     expect(await rels(coverage([name('eq'), { key: 'coverage_score', operator: 'lt', values: [] }]))).toEqual(['r1', 'r2', 'r3', 'r4', 'r5']);
   });
-  it('rejects an invalid sub-filter key or operator', async () => {
+  it('filters with not_eq on the score of the same entry', async () => {
+    // r3 has its only detection entry at 0
+    expect(await rels(coverage([name('eq', 'detection'), score('not_eq', '0')]))).toEqual(['r1', 'r2']);
+  });
+  it('rejects an unknown sub-filter key', async () => {
     await expect(rels(coverage([{ key: 'unknown', values: ['a'] }]))).rejects.toThrow();
-    await expect(rels(coverage([score('not_eq', '20')]))).rejects.toThrow();
   });
   it('combines with fromId, toTypes, updated_at and search', async () => {
     const lowScore = coverage([score('lt', '20')]).filters;

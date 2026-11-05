@@ -22,7 +22,6 @@ export type FilterDefinition = {
   subEntityTypes: string[];
   elementsForFilterValuesSearch: string[]; // not empty if type = 'id', type = 'enum' or type = 'vocabulary'
   subFilters?: FilterDefinition[] | null;
-  operators?: readonly string[] | null; // operators accepted by the backend (generic nested keys and their sub-filters), used when the frontend has no rule of its own
 };
 
 export type SchemaType = {
