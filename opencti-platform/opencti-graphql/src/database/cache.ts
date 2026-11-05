@@ -35,6 +35,18 @@ export const STORE_ENTITIES_LINKS: Record<string, string[]> = {
 
 const cache: any = {};
 
+/**
+ * Drops the values of a cache entry and bumps its generation. A load in flight started before this
+ * call reads the generation it was started with: when it finishes, it sees that an invalidation
+ * overtook it and discards its result instead of storing data older than the invalidation.
+ */
+const invalidateCacheEntry = (entry: { values?: unknown; generation?: number }) => {
+  // eslint-disable-next-line no-param-reassign
+  entry.generation = (entry.generation ?? 0) + 1;
+  // eslint-disable-next-line no-param-reassign
+  entry.values = undefined;
+};
+
 const buildStoreEntityMap = <T extends BasicStoreIdentifier>(entities: Array<T>) => {
   const entityById = new Map();
   for (let i = 0; i < entities.length; i += 1) {
@@ -63,7 +75,7 @@ export const resetCacheForEntity = (entityType: string) => {
   types.forEach((type) => {
     if (cache[type]) {
       logApp.debug('Reset cache for entity', { type, entityType });
-      cache[type].values = undefined;
+      invalidateCacheEntry(cache[type]);
     } else {
       // This entity type is not part of the caching system
     }
@@ -81,10 +93,14 @@ const handleCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommo
         cache[type].values = await cache[type][fn](cache[type].values, instance);
       } else {
         logApp.debug('Simple reset cache for entity', { type });
-        cache[type].values = undefined;
+        invalidateCacheEntry(cache[type]);
       }
+    } else if (cache[type]) {
+      // Not loaded yet, or a load is in flight: that load may have read the data before this change,
+      // so it must not be stored (it would hide the change until the next invalidation).
+      invalidateCacheEntry(cache[type]);
     } else {
-      // This entity type is not part of the caching system or it has not been initialized yet
+      // This entity type is not part of the caching system
     }
   }
 };
@@ -130,9 +146,15 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
     // If a concurrent fetch fails, waiters retry instead of returning empty data.
     while (!fromCache.values) {
       if (!fromCache.inProgress) {
+        const startGeneration = fromCache.generation ?? 0;
         const loadFromFn = async () => {
           try {
             let cacheData = await fromCache.fn();
+            if ((fromCache.generation ?? 0) !== startGeneration) {
+              // Invalidated while loading: the data may predate the change, load again.
+              logApp.debug('[CACHE] Cache invalidated while loading, discarding the loaded values', { type });
+              return;
+            }
             if (!cacheData) {
               // This situation must be adapted with code evolution
               logApp.warn('[CACHE] Cache function refresh return undefined values', { type });

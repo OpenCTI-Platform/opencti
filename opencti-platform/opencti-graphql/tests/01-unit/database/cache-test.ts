@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getEntitiesMapFromCache, writeCacheForEntity } from '../../../src/database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, refreshCacheForEntity, resetCacheForEntity, writeCacheForEntity } from '../../../src/database/cache';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import type { AuthContext } from '../../../src/types/user';
 
@@ -46,5 +46,73 @@ describe('Cache entities map building', () => {
     expect(map.get('entity-internal-id')).toEqual(entity);
     expect(map.get('user--entity-standard-id')).toEqual(entity);
     expect(map.get('user--legacy-stix-id')).toEqual(entity);
+  });
+});
+
+const ENTITY_TYPE_TEST_RACE = 'TestCacheRace';
+
+// A cache loader whose every call is resolved by the test, in order, so a change can land while a load is in flight.
+const createControlledLoader = () => {
+  const pending: Array<(value: unknown[]) => void> = [];
+  const fn = () => new Promise<unknown[]>((resolve) => {
+    pending.push(resolve);
+  });
+  // Yields to the event loop until the cache started a load (never resolves a load before it exists)
+  const waitForLoad = async () => {
+    while (pending.length === 0) {
+      await new Promise((resolve) => {
+        setImmediate(resolve);
+      });
+    }
+  };
+  const resolveNext = async (value: unknown[]) => {
+    await waitForLoad();
+    pending.shift()!(value);
+  };
+  return { fn, resolveNext, waitForLoad, pendingCount: () => pending.length };
+};
+
+describe('Cache invalidation while a load is in flight', () => {
+  const before = { internal_id: 'race-entity', entity_type: ENTITY_TYPE_TEST_RACE, running: false };
+  const after = { ...before, running: true };
+
+  it('should not keep the values of a load overtaken by an edit of the cached type', async () => {
+    const loader = createControlledLoader();
+    writeCacheForEntity(ENTITY_TYPE_TEST_RACE, { values: undefined, fn: loader.fn });
+
+    const read = getEntitiesListFromCache(testContext, SYSTEM_USER, ENTITY_TYPE_TEST_RACE);
+    // The edit lands while the first load still holds the data read before it
+    await loader.waitForLoad();
+    await refreshCacheForEntity(after as never);
+    await loader.resolveNext([before]);
+    // The overtaken load is discarded and the cache loads again
+    await loader.resolveNext([after]);
+
+    expect(await read).toEqual([after]);
+    expect(await getEntitiesListFromCache(testContext, SYSTEM_USER, ENTITY_TYPE_TEST_RACE)).toEqual([after]);
+  });
+
+  it('should not keep the values of a load overtaken by a reset of the cached type', async () => {
+    const loader = createControlledLoader();
+    writeCacheForEntity(ENTITY_TYPE_TEST_RACE, { values: undefined, fn: loader.fn });
+
+    const read = getEntitiesListFromCache(testContext, SYSTEM_USER, ENTITY_TYPE_TEST_RACE);
+    await loader.waitForLoad();
+    resetCacheForEntity(ENTITY_TYPE_TEST_RACE);
+    await loader.resolveNext([before]);
+    await loader.resolveNext([after]);
+
+    expect(await read).toEqual([after]);
+  });
+
+  it('should keep the values of a load that no change overtook', async () => {
+    const loader = createControlledLoader();
+    writeCacheForEntity(ENTITY_TYPE_TEST_RACE, { values: undefined, fn: loader.fn });
+
+    const read = getEntitiesListFromCache(testContext, SYSTEM_USER, ENTITY_TYPE_TEST_RACE);
+    await loader.resolveNext([before]);
+
+    expect(await read).toEqual([before]);
+    expect(loader.pendingCount()).toBe(0);
   });
 });
