@@ -21,9 +21,11 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
+import { MatrixConfig } from './attackPatternsMatrixConfig';
 
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern;
+  config: MatrixConfig;
   handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void;
   attackPatternIdsToOverlap?: string[];
   isSecurityPlatform: boolean;
@@ -35,6 +37,7 @@ interface AccordionAttackPatternProps {
 
 const AccordionAttackPattern = ({
   attackPattern,
+  config,
   handleOpen,
   attackPatternIdsToOverlap,
   isSecurityPlatform,
@@ -201,7 +204,7 @@ const AccordionAttackPattern = ({
             fontSize: 10,
           }}
         >
-          {attackPattern.name}
+          {config.formatLabel(attackPattern)}
         </Typography>
 
         {isCoverage && attackPattern.isCovered && (
@@ -232,6 +235,7 @@ const AccordionAttackPattern = ({
             <AttackPatternsMatrixColumnsElement
               key={subAttackPattern.attack_pattern_id}
               attackPattern={subAttackPattern}
+              config={config}
               handleOpen={handleOpen}
               attackPatternIdsToOverlap={attackPatternIdsToOverlap}
               isSecurityPlatform={isSecurityPlatform}

@@ -11,6 +11,8 @@ export interface MatrixConfig {
   badgeColors?: { color: string; textColor: string };
   canAdd: boolean;
   keyboardCells: boolean;
+  // When false, sub-techniques keep the order the API returns.
+  sortSubTechniques: boolean;
 }
 
 const MITRE_ID_REGEX = /^T(\d+)(?:\.(\d+))?$/i;
@@ -41,6 +43,7 @@ const defaultConfig = (isCoverage: boolean): MatrixConfig => ({
   badgeColors: undefined,
   canAdd: !isCoverage,
   keyboardCells: false,
+  sortSubTechniques: false,
 });
 
 const investigationConfig: MatrixConfig = {
@@ -49,6 +52,7 @@ const investigationConfig: MatrixConfig = {
   badgeColors: { color: 'var(--black-800)', textColor: 'var(--gray-100)' },
   canAdd: false,
   keyboardCells: true,
+  sortSubTechniques: true,
 };
 
 export const getMatrixConfig = (variant: MatrixVariant | undefined, isCoverage: boolean): MatrixConfig => {
