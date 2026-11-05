@@ -18,14 +18,14 @@ import {
   ANIMATION_POINTS_THRESHOLD,
   coarsenSeriesForRendering,
   getBreakdownLegendMaxHeight,
+  getBreakdownPalette,
+  getBreakdownSeriesColors,
   getBreakdownTickAmount,
+  getEntityTypeColor,
   getRenderedPointsBudget,
   isSameBreakdown,
   nextBreakdownChartWidth,
   numberSharedSeriesNames,
-  getBreakdownPalette,
-  getBreakdownSeriesColors,
-  getEntityTypeColor,
 } from './timeSeriesBreakdownRendering';
 import { scheduleChartDraw } from '../../utils/chartDrawQueue';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
@@ -103,7 +103,8 @@ const WidgetTimeSeriesBreakdown = ({
     const dates = (stableBreakdown?.dates ?? []).map((date) => new Date(date as string));
     const breakdownSeries = stableBreakdown?.series ?? [];
     const isTypeField = isBreakdownTypeField(breakdownBy);
-    // The "Other" serie gets a neutral color instead of one of the palette
+    // A value has its color in every widget, two series of a widget never share one, and the "Other" serie
+    // gets a neutral color instead of one of the palette
     const seriesColors = getBreakdownSeriesColors(
       breakdownSeries.map((serie) => ({
         key: serie.label,

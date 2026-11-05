@@ -224,7 +224,7 @@ const useDashboardViz = <TQuery extends OperationType>({
     isPreviewMode,
     resolvedDataSelection,
     renderGuards,
-    // The resolved selection is not the one of the current inputs yet
+    // The resolved selection is not the one of the current selection yet
     isResolving,
     // The resolved selection is not queried, buildQueryVariables having built no variables for it
     skipped,
