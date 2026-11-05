@@ -1,6 +1,6 @@
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, screen } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import { OperationDescriptor } from 'relay-runtime';
 import useShouldCoverOverlap from '@components/common/stix_domain_objects/useShouldCoverOverlap';
@@ -18,12 +18,12 @@ vi.mock('@components/common/stix_domain_objects/useShouldCoverOverlap', () => ({
 const PLACED_ID = 'attack-pattern--placed';
 const REVOKED_ID = 'attack-pattern--revoked';
 
-const technique = (id: string, name: string, x_mitre_id: string) => ({
+const technique = (id: string, name: string, x_mitre_id: string, subAttackPatterns: unknown[] = []) => ({
   attack_pattern_id: id,
   name,
   description: null,
   x_mitre_id,
-  subAttackPatterns: [],
+  subAttackPatterns,
   subAttackPatternsSearchText: null,
   killChainPhasesIds: [],
 });
@@ -37,6 +37,13 @@ const phase = (kill_chain_name: string, phase_name: string, attackPatterns: unkn
 });
 
 const MITRE_PHASES = [phase('mitre-attack', 'execution', [technique(PLACED_ID, 'Placed', 'T1001')])];
+const PARENT_ID = 'attack-pattern--parent';
+const SUB_ID = 'attack-pattern--sub';
+const SUB = { attack_pattern_id: SUB_ID, name: 'Sub', description: null, x_mitre_id: 'T1002.001' };
+const HEAT_PHASES = [phase('mitre-attack', 'execution', [
+  technique(PLACED_ID, 'Placed', 'T1001'),
+  technique(PARENT_ID, 'Parent', 'T1002', [SUB]),
+])];
 // No mitre-attack: the select must default to the first kill chain alphabetically.
 const OTHER_PHASES = [
   phase('zeta-chain', 'zeta-phase', [technique('attack-pattern--zeta', 'Zeta', 'T2001')]),
@@ -48,6 +55,28 @@ const resolver = (phases: unknown[]) => (operation: OperationDescriptor) => Mock
 });
 
 const attackPattern = (id: string, name: string) => ({ id, entity_type: 'Attack-Pattern', name, parent_types: ['Stix-Domain-Object'] });
+const intrusionSet = (id: string, name: string) => ({ id, entity_type: 'Intrusion-Set', name, parent_types: ['Stix-Domain-Object'] });
+const uses = (id: string, fromId: string, toId: string) => ({
+  id,
+  entity_type: 'stix-core-relationship',
+  relationship_type: 'uses',
+  parent_types: ['basic-relationship', 'stix-core-relationship'],
+  from: { id: fromId },
+  to: { id: toId },
+});
+// T1001 is used by two intrusion sets (score 2), its neighbour's sub-technique by one (score 1).
+const SCORED_OBJECTS = [
+  attackPattern(PLACED_ID, 'Placed'),
+  attackPattern(SUB_ID, 'Sub'),
+  intrusionSet('is-a', 'APT A'),
+  intrusionSet('is-b', 'APT B'),
+  uses('rel-1', 'is-a', PLACED_ID),
+  uses('rel-2', 'is-b', PLACED_ID),
+  uses('rel-3', 'is-a', SUB_ID),
+];
+const HEATMAP_LABEL = 'Displays heat map of attack pattern use';
+const NO_SCORE_LABEL = 'No attack pattern is linked to an entity in this investigation';
+const heatmapToggle = () => screen.getByRole('button', { name: HEATMAP_LABEL });
 
 const DEFAULT_GRAPH_STATE: Partial<GraphState> = {
   loadingCurrent: 2,
@@ -155,6 +184,67 @@ describe('InvestigationMatrix', () => {
     expect(wrapper).toContainElement(screen.getByRole('combobox', { name: 'Kill chain :' }));
     expect(wrapper).toContainElement(screen.getByText('T1001 - Placed'));
     expect(screen.queryByRole('button', { name: /export/i })).toBeNull();
+  });
+
+  describe('heatmap', () => {
+    it('places the toggle between "only used" and the posture, with its tooltip', async () => {
+      const { user } = await renderMatrix({ rawObjects: SCORED_OBJECTS, phases: HEAT_PHASES });
+      await screen.findByText('T1001 - Placed');
+      const onlyUsed = screen.getByRole('button', { name: 'Display only used techniques' });
+      const posture = await screen.findByRole('combobox', { name: 'Compare with my security posture' });
+      expect(onlyUsed.compareDocumentPosition(heatmapToggle()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(heatmapToggle().compareDocumentPosition(posture) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(heatmapToggle()).toBeEnabled();
+      await user.hover(heatmapToggle());
+      expect(await screen.findByRole('tooltip')).toHaveTextContent(HEATMAP_LABEL);
+    });
+
+    it('disables the toggle without scores and explains why on focus of its wrapper', async () => {
+      const { user } = await renderMatrix();
+      await screen.findByText('T1001 - Placed');
+      expect(heatmapToggle()).toBeDisabled();
+      const wrapper = heatmapToggle().parentElement as HTMLElement;
+      expect(wrapper.tagName).toBe('SPAN');
+      expect(wrapper).toHaveAttribute('tabindex', '0');
+      while (document.activeElement !== wrapper) await user.tab();
+      expect(await screen.findByRole('tooltip')).toHaveTextContent(NO_SCORE_LABEL);
+    });
+
+    it('disables the toggle in the empty state', async () => {
+      await renderMatrix({ rawObjects: [intrusionSet('is-a', 'APT A')] });
+      await screen.findByText('Add attack patterns to the graph view to visualise them here');
+      expect(heatmapToggle()).toBeDisabled();
+    });
+
+    it('shows the legend only while the heatmap is on', async () => {
+      const { user } = await renderMatrix({ rawObjects: SCORED_OBJECTS, phases: HEAT_PHASES });
+      await screen.findByText('T1001 - Placed');
+      expect(screen.queryByRole('img', { name: /Technique usage scale/ })).toBeNull();
+
+      await user.click(heatmapToggle());
+      const legend = screen.getByRole('img', { name: 'Technique usage scale, 1 to 2' });
+      expect(document.getElementById(INVESTIGATION_MATRIX_EXPORT_ID)).toContainElement(legend);
+
+      await user.click(heatmapToggle());
+      expect(screen.queryByRole('img', { name: /Technique usage scale/ })).toBeNull();
+
+      await user.click(heatmapToggle());
+      expect(screen.getByRole('img', { name: 'Technique usage scale, 1 to 2' })).toBeInTheDocument();
+    });
+
+    it('names scored cells after their linked entities', async () => {
+      await renderMatrix({ rawObjects: SCORED_OBJECTS, phases: HEAT_PHASES });
+      expect(await screen.findByRole('button', { name: 'T1001 - Placed, linked to 2 entities' })).toBeInTheDocument();
+    });
+
+    it('keeps the sub-technique accordions collapsed with the heatmap on', async () => {
+      const { user } = await renderMatrix({ rawObjects: SCORED_OBJECTS, phases: HEAT_PHASES });
+      await screen.findByText('T1001 - Placed');
+      await user.click(heatmapToggle());
+      const parent = screen.getByRole('button', { name: 'T1002 - Parent, linked to 1 entities' });
+      expect(within(parent).getByRole('button', { name: 'Expand' })).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByText('T1002.001 - Sub')).toBeNull();
+    });
   });
 
   it('notifies a failed posture lookup once and still renders the matrix', async () => {
