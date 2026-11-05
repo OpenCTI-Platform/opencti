@@ -206,9 +206,10 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
           <Tooltip>
             <TooltipTrigger asChild>
               <Text variant="content-caption" tabIndex={0}>
-                {t_i18n('{count} attack patterns in this investigation aren\'t shown in this kill chain', {
-                  values: { count: unplacedAttackPatterns.length },
-                })}
+                {t_i18n(
+                  '{count, plural, one {# attack pattern in this investigation isn\'t shown in this kill chain} other {# attack patterns in this investigation aren\'t shown in this kill chain}}',
+                  { values: { count: unplacedAttackPatterns.length } },
+                )}
               </Text>
             </TooltipTrigger>
             <TooltipContent>
@@ -254,7 +255,7 @@ const InvestigationMatrixProgress = ({ graphState: { loadingCurrent, loadingTota
   );
 };
 
-const InvestigationMatrix = (_props: { investigationId: string; investigationName: string }) => {
+const InvestigationMatrix = () => {
   const { rawObjects, graphState } = useGraphContext();
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 

@@ -21,9 +21,9 @@ vi.mock('../../../../../utils/hooks/useQueryLoading', async (importOriginal) => 
 // Since jsdom 31, computed styles resolve var(), and an undefined token computes to transparent. Unit tests do not
 // load the design system stylesheet, so the tokens these tests read are defined on the root, with their library values.
 const DESIGN_TOKENS: Record<string, string> = {
-  '--black-800': '#000000e5',
-  '--black-900': '#000000f2',
+  '--black-1000': '#000',
   '--gray-100': '#f2f2f3',
+  '--gray-800': '#313235',
   '--orange-400': '#f2933a',
   '--red-400': '#f14337',
   '--yellow-300': '#f6ce6a',
@@ -175,7 +175,7 @@ describe('AttackPatternsMatrixColumns', () => {
     it('uses the neutral badge colours', async () => {
       const { container } = await renderColumns({ variant: 'investigation' });
       const style = getComputedStyle(container.querySelector('.MuiBadge-badge') as Element);
-      expect(style.backgroundColor).toBe(resolveColor('var(--black-800)'));
+      expect(style.backgroundColor).toBe(resolveColor('var(--gray-800)'));
       expect(style.color).toBe(resolveColor('var(--gray-100)'));
     });
 
@@ -223,7 +223,7 @@ describe('AttackPatternsMatrixColumns cellDecorations', () => {
       cellDecorations: decorations({ fill: 'var(--yellow-300)', textTone: 'dark' }),
     });
     expect(zetaCell()).toHaveStyle({ backgroundColor: resolveColor('var(--yellow-300)') });
-    expect(screen.getByText('T1078 - Zeta')).toHaveStyle({ color: resolveColor('var(--black-900)') });
+    expect(screen.getByText('T1078 - Zeta')).toHaveStyle({ color: resolveColor('var(--black-1000)') });
   });
 
   it('keeps the default label colour when textTone is not dark', async () => {
@@ -231,7 +231,7 @@ describe('AttackPatternsMatrixColumns cellDecorations', () => {
       variant: 'investigation',
       cellDecorations: decorations({ fill: 'var(--yellow-300)' }),
     });
-    expect(screen.getByText('T1078 - Zeta')).not.toHaveStyle({ color: resolveColor('var(--black-900)') });
+    expect(screen.getByText('T1078 - Zeta')).not.toHaveStyle({ color: resolveColor('var(--black-1000)') });
   });
 
   it('applies the border colour', async () => {
@@ -298,13 +298,13 @@ describe('AttackPatternsMatrixColumns cellDecorations', () => {
       cellDecorations: decorations({
         fill: 'var(--orange-400)',
         textTone: 'dark',
-        accessibleName: 'T1548 - Alpha, linked to 1 entities',
+        accessibleName: 'T1548 - Alpha, linked to 1 entity',
         linkedEntities: entities(1),
       }, ALPHA_ID),
     });
-    const summary = screen.getByRole('button', { name: 'T1548 - Alpha, linked to 1 entities' });
+    const summary = screen.getByRole('button', { name: 'T1548 - Alpha, linked to 1 entity' });
     expect(summary).toHaveStyle({ backgroundColor: resolveColor('var(--orange-400)') });
-    expect(screen.getByText('T1548 - Alpha')).toHaveStyle({ color: resolveColor('var(--black-900)') });
+    expect(screen.getByText('T1548 - Alpha')).toHaveStyle({ color: resolveColor('var(--black-1000)') });
     await user.hover(summary);
     expect(within(await screen.findByRole('tooltip')).getByText('Linked entities (1)')).toBeInTheDocument();
   });
@@ -314,11 +314,11 @@ describe('AttackPatternsMatrixColumns cellDecorations', () => {
       variant: 'investigation',
       cellDecorations: decorations({
         fill: 'var(--red-400)',
-        accessibleName: 'T1548.001 - Sub, linked to 1 entities',
+        accessibleName: 'T1548.001 - Sub, linked to 1 entity',
       }, SUB_ID),
     });
     await user.click(screen.getByRole('button', { name: 'Expand' }));
-    expect(await screen.findByRole('button', { name: 'T1548.001 - Sub, linked to 1 entities' }))
+    expect(await screen.findByRole('button', { name: 'T1548.001 - Sub, linked to 1 entity' }))
       .toHaveStyle({ backgroundColor: resolveColor('var(--red-400)') });
   });
 

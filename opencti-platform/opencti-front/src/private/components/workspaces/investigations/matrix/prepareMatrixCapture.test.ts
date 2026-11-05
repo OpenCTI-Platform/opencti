@@ -2,9 +2,16 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import prepareMatrixCapture from './prepareMatrixCapture';
 
 // jsdom does no layout: the scroll metrics are set by hand.
-const setScrollMetrics = (element: HTMLElement, scrollWidth: number, clientWidth: number) => {
+const setScrollMetrics = (
+  element: HTMLElement,
+  scrollWidth: number,
+  clientWidth: number,
+  { scrollHeight = 0, clientHeight = 0 }: { scrollHeight?: number; clientHeight?: number } = {},
+) => {
   Object.defineProperty(element, 'scrollWidth', { value: scrollWidth, configurable: true });
   Object.defineProperty(element, 'clientWidth', { value: clientWidth, configurable: true });
+  Object.defineProperty(element, 'scrollHeight', { value: scrollHeight, configurable: true });
+  Object.defineProperty(element, 'clientHeight', { value: clientHeight, configurable: true });
 };
 
 describe('prepareMatrixCapture', () => {
@@ -52,10 +59,44 @@ describe('prepareMatrixCapture', () => {
     expect(plainBox.getAttribute('style')).toBe('width: 50px');
   });
 
-  it('leaves a scroller whose content already fits alone', () => {
-    setScrollMetrics(scroller, 800, 800);
+  it('leaves a scroller whose content already fits on both axes alone', () => {
+    setScrollMetrics(scroller, 800, 800, { scrollHeight: 600, clientHeight: 600 });
 
     prepareMatrixCapture(wrapper);
+
+    expect(scroller.getAttribute('style')).toBe('overflow-x: auto; width: 800px; height: 600px');
+  });
+
+  // The matrix columns box: `overflow-x: auto` with a fixed viewport height. Its rows overflow
+  // vertically even when its columns fit, and a scroll container clips both axes.
+  it('opens a box that fits horizontally but overflows vertically, keeping its width', () => {
+    setScrollMetrics(scroller, 800, 800, { scrollHeight: 1500, clientHeight: 600 });
+
+    prepareMatrixCapture(wrapper);
+
+    expect(scroller.style.width).toBe('800px');
+    expect(scroller.style.height).toBe('auto');
+    expect(scroller.style.overflow).toBe('visible');
+  });
+
+  it('opens a vertical scroller', () => {
+    const vertical = document.createElement('div');
+    vertical.setAttribute('style', 'overflow-y: scroll; height: 300px');
+    wrapper.appendChild(vertical);
+    setScrollMetrics(vertical, 400, 400, { scrollHeight: 900, clientHeight: 300 });
+
+    prepareMatrixCapture(wrapper);
+
+    expect(vertical.style.width).toBe('400px');
+    expect(vertical.style.height).toBe('auto');
+    expect(vertical.style.overflow).toBe('visible');
+  });
+
+  it('puts a box opened for its vertical overflow back when the capture is over', () => {
+    setScrollMetrics(scroller, 800, 800, { scrollHeight: 1500, clientHeight: 600 });
+
+    const restore = prepareMatrixCapture(wrapper);
+    restore();
 
     expect(scroller.getAttribute('style')).toBe('overflow-x: auto; width: 800px; height: 600px');
   });

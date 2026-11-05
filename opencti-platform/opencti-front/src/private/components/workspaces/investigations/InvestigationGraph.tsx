@@ -617,10 +617,7 @@ const InvestigationGraphComponent = ({
         </div>
         {view === 'matrix' && (
           <div style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
-            <InvestigationMatrix
-              investigationId={investigation.id}
-              investigationName={investigation.name}
-            />
+            <InvestigationMatrix />
           </div>
         )}
       </div>
