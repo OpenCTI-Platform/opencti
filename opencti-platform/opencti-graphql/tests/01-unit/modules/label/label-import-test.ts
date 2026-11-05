@@ -4,10 +4,10 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   storeLoadById: vi.fn(),
 }));
-vi.mock('../../../../src/domain/label', () => ({ addLabel: vi.fn(), labelEditField: vi.fn() }));
+vi.mock('../../../../src/domain/label', () => ({ createLabel: vi.fn(), labelEditField: vi.fn() }));
 
 import { storeLoadById } from '../../../../src/database/middleware-loader';
-import { addLabel, labelEditField } from '../../../../src/domain/label';
+import { createLabel, labelEditField } from '../../../../src/domain/label';
 import { ENTITY_TYPE_LABEL } from '../../../../src/schema/stixMetaObject';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import { getLabelStandardId, importLabel } from '../../../../src/modules/label/label-import';
@@ -26,7 +26,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   withExisting(undefined);
   // Like the domain: a label without color is given the one the platform makes of its value
-  vi.mocked(addLabel).mockImplementation(async (_context, _user, label) => ({ ...stored, value: label.value, color: label.color ?? '#123456' }));
+  vi.mocked(createLabel).mockImplementation(async (_context, _user, label) => ({ label: { ...stored, value: label.value, color: label.color ?? '#123456' }, created: true }));
 });
 
 describe('Label identity', () => {
@@ -80,17 +80,17 @@ describe('importLabel', () => {
     it('creates it with the given color', async () => {
       const result = await importLabel(context, user, { value: 'APT', color: '#ff0000' }, { mode });
       expect(result).toMatchObject({ status: 'created', exists: false });
-      expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'APT', color: '#ff0000' });
+      expect(createLabel).toHaveBeenCalledWith(context, user, { value: 'APT', color: '#ff0000' });
     });
 
     it('leaves the color to the platform when the configuration has none', async () => {
       await importLabel(context, user, { value: 'APT' }, { mode });
-      expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'APT', color: undefined });
+      expect(createLabel).toHaveBeenCalledWith(context, user, { value: 'APT', color: undefined });
     });
 
     it('decides the same result on a dry run, and writes nothing', async () => {
       expect(await importLabel(context, user, { value: 'APT' }, { mode, dryRun: true })).toMatchObject({ status: 'created', exists: false });
-      expect(addLabel).not.toHaveBeenCalled();
+      expect(createLabel).not.toHaveBeenCalled();
     });
   });
 
@@ -101,7 +101,7 @@ describe('importLabel', () => {
       const result = await importLabel(context, user, { value: 'APT', color: '#00ff00' }, { mode: ConfigImportMode.Overwrite });
       expect(result).toMatchObject({ status: 'overwritten', exists: true });
       expect(labelEditField).toHaveBeenCalledWith(context, user, stored.id, [{ key: 'color', value: ['#00ff00'] }]);
-      expect(addLabel).not.toHaveBeenCalled();
+      expect(createLabel).not.toHaveBeenCalled();
     });
 
     it('writes nothing on a dry run', async () => {
@@ -120,8 +120,8 @@ describe('importLabel', () => {
   });
 
   describe('a label created by someone else since the lookup', () => {
-    // addLabel writes nothing and returns it as it is
-    beforeEach(() => vi.mocked(addLabel).mockResolvedValue({ ...stored, color: '#0000ff' } as never));
+    // createLabel writes nothing and returns it as it is, not created
+    beforeEach(() => vi.mocked(createLabel).mockResolvedValue({ label: { ...stored, color: '#0000ff' }, created: false } as never));
 
     it('gives it the color of the configuration in overwrite mode, as an existing label', async () => {
       const result = await importLabel(context, user, { value: 'APT', color: '#00ff00' }, { mode: ConfigImportMode.Overwrite });
@@ -129,13 +129,19 @@ describe('importLabel', () => {
       expect(labelEditField).toHaveBeenCalledWith(context, user, stored.id, [{ key: 'color', value: ['#00ff00'] }]);
     });
 
-    it('refuses it in add mode, without writing', async () => {
-      expect(await importLabel(context, user, { value: 'APT', color: '#00ff00' }, { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists', exists: true });
+    it('leaves it untouched when the configuration has no color, and says it is up to date', async () => {
+      expect(await importLabel(context, user, { value: 'APT' }, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true });
+      expect(await importLabel(context, user, { value: 'APT', color: null }, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true });
       expect(labelEditField).not.toHaveBeenCalled();
     });
 
-    it('is created as far as the import can tell when it already has the color of the configuration', async () => {
-      expect(await importLabel(context, user, { value: 'APT', color: '#0000FF' }, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'created', exists: false });
+    it('is an existing label, not a created one, when it already has the color of the configuration', async () => {
+      expect(await importLabel(context, user, { value: 'APT', color: '#0000FF' }, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true });
+      expect(labelEditField).not.toHaveBeenCalled();
+    });
+
+    it('refuses it in add mode, without writing', async () => {
+      expect(await importLabel(context, user, { value: 'APT', color: '#00ff00' }, { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists', exists: true });
       expect(labelEditField).not.toHaveBeenCalled();
     });
   });
@@ -151,7 +157,7 @@ describe('importLabel', () => {
     expect(await importLabel(context, user, { value: 'APT' }, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: true });
     withExisting(undefined);
     expect(await importLabel(context, user, { value: 'APT' }, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: false });
-    expect(addLabel).not.toHaveBeenCalled();
+    expect(createLabel).not.toHaveBeenCalled();
     expect(labelEditField).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,8 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
-import { findById, labelDelete } from '../../../../src/domain/label';
+import { createLabel, findById, labelDelete } from '../../../../src/domain/label';
+import { createEntity } from '../../../../src/database/middleware';
+import { ENTITY_TYPE_LABEL } from '../../../../src/schema/stixMetaObject';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import { getLabelStandardId, importLabel } from '../../../../src/modules/label/label-import';
 import { labelsFamily } from '../../../../src/modules/configPreset/registry/labels-configPreset-registry';
@@ -9,11 +11,12 @@ import { exportConfigPresetItem } from '../../../../src/modules/configPreset/con
 // One word: the search is an OR of the words of the term, and the word "label" matches the entity type of every label
 const VALUE_A = 'ConfigPresetLabelA';
 const VALUE_B = 'ConfigPresetLabelB';
+const VALUE_RACED = 'RacedImportedLabel';
 const mode = ConfigImportMode.Overwrite;
 
 describe('Label import and export (configuration preset)', () => {
   afterAll(async () => {
-    for (const value of [VALUE_A, VALUE_B]) {
+    for (const value of [VALUE_A, VALUE_B, VALUE_RACED]) {
       const label = await findById(testContext, ADMIN_USER, value);
       if (label) {
         await labelDelete(testContext, ADMIN_USER, label.id);
@@ -71,5 +74,19 @@ describe('Label import and export (configuration preset)', () => {
     await labelDelete(testContext, ADMIN_USER, existing.id);
     expect(await importLabel(testContext, ADMIN_USER, file.configuration, { mode })).toMatchObject({ status: 'created', exists: false });
     expect(await findById(testContext, ADMIN_USER, VALUE_A)).toMatchObject({ value: VALUE_A, color: '#445566' });
+  });
+
+  it('never upserts a label that exists when it is created, so a label created since the lookup keeps its color', async () => {
+    const { label: first, created } = await createLabel(testContext, ADMIN_USER, { value: VALUE_RACED, color: '#abcdef' });
+    expect(created).toBe(true);
+    // What the creation does when the label appears between its lookup and its write: the entity creation meets the existing label
+    const raced = await createEntity(testContext, ADMIN_USER, { value: VALUE_RACED, color: '#123456' }, ENTITY_TYPE_LABEL, { complete: true, createOnly: true });
+    expect(raced.isCreation).toBe(false);
+    expect(raced.element.internal_id).toBe(first.internal_id);
+    expect(await findById(testContext, ADMIN_USER, VALUE_RACED)).toMatchObject({ color: '#abcdef' });
+    // The label that exists is returned as it is, whatever the color asked
+    expect(await createLabel(testContext, ADMIN_USER, { value: VALUE_RACED.toUpperCase(), color: '#654321' })).toMatchObject({ created: false, label: { color: '#abcdef' } });
+    expect(await importLabel(testContext, ADMIN_USER, { value: VALUE_RACED }, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true });
+    expect(await findById(testContext, ADMIN_USER, VALUE_RACED)).toMatchObject({ color: '#abcdef' });
   });
 });

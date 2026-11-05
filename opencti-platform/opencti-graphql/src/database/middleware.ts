@@ -3893,6 +3893,8 @@ type CreateEntityRawOpts = PatchAttributeOpts & CreateEventOpts & {
   fromRuleDeletion?: boolean;
   bypassValidation?: boolean;
   bypassMandatoryAttributes?: boolean;
+  // An entity that already exists is returned as it is: never upserted nor merged (isCreation tells whether this call created it)
+  createOnly?: boolean;
 };
 const cleanEntityForIdsCollision = (
   input: Record<string, any>,
@@ -4042,8 +4044,8 @@ const internalCreateEntityRaw = async (
         // If upsert come from a rule, do a specific upsert.
         return await upsertEntityRule(context, user, filteredEntities[0], input, { ...opts, fromRule, locks: participantIds });
       }
-      // A form submission without Create / Update knowledge only creates: the existing entity is used as it is, never upserted nor merged
-      if (isCreateOnlyFormImport(context, user)) {
+      // A form submission without Create / Update knowledge, or a caller that asks for it, only creates: the existing entity is used as it is, never upserted nor merged
+      if (opts.createOnly || isCreateOnlyFormImport(context, user)) {
         const existing = R.find((e) => e.standard_id === standardId, filteredEntities) ?? filteredEntities[0];
         return { element: existing, event: null, isCreation: false };
       }
