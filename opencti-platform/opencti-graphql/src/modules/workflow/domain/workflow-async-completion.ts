@@ -252,16 +252,17 @@ const completeWorkflowAsyncActionResult = async (
 
   // Keep the legacy `x_opencti_workflow_id` in sync with the completed state.
   // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
+  let projected = false;
   if (fullEntity) {
     const scope = resolveProjectionScope(instanceEntity.scope);
-    const projected = await projectWorkflowState(executionContext, executionUser, fullEntity, pendingTransition.toState, scope, pendingTransition.closingReason);
-    if (!projected && pendingTransition.closingReason !== undefined) {
-      await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-        { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason)] },
-      ]);
-    }
+    projected = await projectWorkflowState(executionContext, executionUser, fullEntity, pendingTransition.toState, scope, pendingTransition.closingReason);
   } else {
     logApp.warn('[workflow-async-completion] Skipping status projection: entity could not be loaded', { entityId: instanceEntity.entity_id });
+  }
+  if (!projected && pendingTransition.closingReason !== undefined) {
+    await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+      { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason)] },
+    ]);
   }
 
   logApp.info('[workflow-async-completion] Transition completed', {

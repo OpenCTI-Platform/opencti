@@ -846,6 +846,24 @@ describe('reportWorkflowAsyncActionResult', () => {
       ]);
     });
 
+    it('reports the closing reason when the full entity could not be loaded', async () => {
+      const pt = makePendingTransition({ syncActions: [], closingReason: 'false-positive' });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(instance)
+        .mockRejectedValueOnce(new Error('DB connection lost'));
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(projectWorkflowState).not.toHaveBeenCalled();
+      expect((updateAttribute as any).mock.calls.at(-1)[4]).toEqual([
+        { key: 'pendingError', value: [expect.stringContaining('false-positive')] },
+      ]);
+    });
+
     it('skips projection and logs a warning when the full entity could not be loaded', async () => {
       const pt = makePendingTransition({ syncActions: [] });
       const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
