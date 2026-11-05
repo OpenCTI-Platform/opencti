@@ -54,6 +54,14 @@ const buildStoreEntityMap = <T extends BasicStoreIdentifier>(entities: Array<T>)
   return entityById;
 };
 
+// The map of the entities by id is built from the values on first use, then kept in the cache entry (entitiesMap).
+// Every change of the values must go through this function, so the map is built again from the new values.
+// Some refresh functions update the values in place and return the same array: the map is dropped anyway.
+const setCacheValues = (cacheEntry: any, values: unknown) => {
+  cacheEntry.values = values;
+  cacheEntry.entitiesMap = undefined;
+};
+
 export const writeCacheForEntity = (entityType: string, data: unknown) => {
   cache[entityType] = data;
 };
@@ -63,7 +71,7 @@ export const resetCacheForEntity = (entityType: string) => {
   types.forEach((type) => {
     if (cache[type]) {
       logApp.debug('Reset cache for entity', { type, entityType });
-      cache[type].values = undefined;
+      setCacheValues(cache[type], undefined);
     } else {
       // This entity type is not part of the caching system
     }
@@ -75,13 +83,14 @@ const handleCacheForEntity = async (instance: BasicStoreCommon | BasicStoreCommo
   const types = R.uniq(instances.map((i) => [i.entity_type, ...(STORE_ENTITIES_LINKS[i.entity_type] ?? [])]).flat());
   for (let index = 0; index < types.length; index += 1) {
     const type = types[index];
-    if (cache[type] && cache[type].values) {
-      if (cache[type][fn]) {
+    const cacheEntry = cache[type];
+    if (cacheEntry && cacheEntry.values) {
+      if (cacheEntry[fn]) {
         logApp.debug(`${fn} reset cache for entity`, { type });
-        cache[type].values = await cache[type][fn](cache[type].values, instance);
+        setCacheValues(cacheEntry, await cacheEntry[fn](cacheEntry.values, instance));
       } else {
         logApp.debug('Simple reset cache for entity', { type });
-        cache[type].values = undefined;
+        setCacheValues(cacheEntry, undefined);
       }
     } else {
       // This entity type is not part of the caching system or it has not been initialized yet
@@ -138,7 +147,7 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
               logApp.warn('[CACHE] Cache function refresh return undefined values', { type });
               cacheData = type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : [];
             }
-            fromCache.values = cacheData;
+            setCacheValues(fromCache, cacheData);
           } finally {
             fromCache.inProgress = undefined;
           }
@@ -182,15 +191,25 @@ export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | 
 };
 
 // get a map <id, instance> of the entities in the cache for a given type
+// The map is shared by all the callers until the values change: it must not be modified.
 export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | StixObject>(
   context: AuthContext, user: AuthUser, type: string,
-): Promise<Map<string | StixId, T>> => {
+): Promise<ReadonlyMap<string | StixId, T>> => {
   const data = await getEntitiesFromCache(context, user, type);
   // Filters is already a map
   if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
     return data as Map<string, T>; // map of <standard_id, instance>
   }
-  return buildStoreEntityMap(data as BasicStoreIdentifier[]); // map of <id, instance> for all the instance ids (internal_id, standard_id, stix ids)
+  // map of <id, instance> for all the instance ids (internal_id, standard_id, stix ids)
+  const fromCache = cache[type];
+  if (fromCache?.values !== data) {
+    // The values changed while they were fetched: build a map for this call only, do not keep it for old values
+    return buildStoreEntityMap(data as BasicStoreIdentifier[]);
+  }
+  if (!fromCache.entitiesMap) {
+    fromCache.entitiesMap = buildStoreEntityMap(data as BasicStoreIdentifier[]);
+  }
+  return fromCache.entitiesMap;
 };
 
 export const getEntityFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<T> => {

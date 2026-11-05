@@ -1106,7 +1106,7 @@ export const controlUserRestrictDeleteAgainstElement = <T extends ObjectWithCrea
  * @param markingId
  * @param markingsMap
  */
-export const validateMarking = async (context: AuthContext, user: AuthUser, markingId: string, markingsMap?: Map<string, BasicStoreIdentifier | StixObject>) => {
+export const validateMarking = async (context: AuthContext, user: AuthUser, markingId: string, markingsMap?: ReadonlyMap<string, BasicStoreIdentifier | StixObject>) => {
   if (isBypassUser(user)) {
     return;
   }
