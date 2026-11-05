@@ -26,6 +26,9 @@ import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser';
+import { useFormatter } from '../../../../components/i18n';
+import InvestigationViewSwitcher, { INVESTIGATION_MATRIX_EXPORT_ID, useInvestigationView } from './InvestigationViewSwitcher';
+import InvestigationMatrix from './matrix/InvestigationMatrix';
 
 const investigationGraphDataFragment = graphql`
   fragment InvestigationGraphData_fragment on Workspace {
@@ -446,6 +449,8 @@ const InvestigationGraphComponent = ({
 }: InvestigationGraphComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const view = useInvestigationView();
   const bannerHeight = useSettingsMessagesBannerHeight();
   const { rawObjects } = useGraphContext();
 
@@ -479,6 +484,7 @@ const InvestigationGraphComponent = ({
   const graphContainerStyle: CSSProperties = {
     margin: `0 -${theme.spacing(3)}`,
     height: `calc(100vh - ${totalHeight}px)`,
+    position: 'relative',
   };
 
   const savePositions = (positions: OctiGraphPositions) => {
@@ -586,20 +592,34 @@ const InvestigationGraphComponent = ({
         variant="investigation"
         handleAddWidget={undefined}
         adjust={undefined}
+        exportElementId={view === 'matrix' ? INVESTIGATION_MATRIX_EXPORT_ID : undefined}
+        exportName={view === 'matrix' ? `${investigation.name} - ${t_i18n('Tactics matrix')}` : undefined}
+        viewSwitcher={<InvestigationViewSwitcher investigationId={investigation.id} />}
       />
       <div style={graphContainerStyle} ref={ref}>
-        <Graph parentRef={ref} onPositionsChanged={savePositions}>
-          <GraphToolbar
-            onUnfixNodes={() => savePositions({})}
-            stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
-            relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
-            entity={investigation}
-            onAddRelation={addRelation}
-            onRemove={remove}
-            onInvestigationExpand={expand}
-            onInvestigationRollback={rollback}
-          />
-        </Graph>
+        {/* The graph is never unmounted: hiding it keeps zoom, positions and selection. */}
+        <div style={{ visibility: view === 'matrix' ? 'hidden' : 'visible', height: '100%' }}>
+          <Graph parentRef={ref} onPositionsChanged={savePositions}>
+            <GraphToolbar
+              onUnfixNodes={() => savePositions({})}
+              stixCoreObjectRefetchQuery={knowledgeGraphStixCoreObjectQuery}
+              relationshipRefetchQuery={knowledgeGraphStixRelationshipQuery}
+              entity={investigation}
+              onAddRelation={addRelation}
+              onRemove={remove}
+              onInvestigationExpand={expand}
+              onInvestigationRollback={rollback}
+            />
+          </Graph>
+        </div>
+        {view === 'matrix' && (
+          <div style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
+            <InvestigationMatrix
+              investigationId={investigation.id}
+              investigationName={investigation.name}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
