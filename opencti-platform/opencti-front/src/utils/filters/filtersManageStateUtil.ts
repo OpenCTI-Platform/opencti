@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { Filter, FilterGroup, FilterValue } from './filtersHelpers-types';
-import { DEFAULT_WITHIN_FILTER_VALUES, mapFilterGroupTree } from './filtersUtils';
+import { DEFAULT_WITHIN_FILTER_VALUES, mapFilterGroupTree, NO_VALUES_FILTER_OPERATORS } from './filtersUtils';
 
 type FiltersLocalStorageUtilProps<U> = {
   filters: FilterGroup;
@@ -146,7 +146,7 @@ export const handleChangeSubFilterUtil = ({ filters, id, subKey, change }: Filte
       : [...f.values, { key: subKey, operator: change.operator ?? 'eq', values: change.values ?? [] }];
     // Editing a sub-filter means the nested filter has values again: an empty / not empty parent is switched back to eq,
     // in the same change (two successive changes would be lost by the adapters that do not chain them)
-    const operator = ['nil', 'not_nil'].includes(f.operator ?? 'eq') ? 'eq' : f.operator;
+    const operator = NO_VALUES_FILTER_OPERATORS.includes(f.operator ?? 'eq') ? 'eq' : f.operator;
     return { ...f, operator, values };
   });
 };
