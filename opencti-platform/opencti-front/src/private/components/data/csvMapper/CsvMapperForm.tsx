@@ -172,7 +172,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                 label={t_i18n('Name')}
                 fullWidth
               />
-              <CenteredSection>
+              <CenteredSection style={{ gap: '4px' }}>
                 <Field
                   component={SwitchField}
                   type="checkbox"
@@ -188,12 +188,13 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                     fontSize="small"
                     color="primary"
                     style={{ cursor: 'default' }}
+                    sx={{ position: 'relative', top: '-4px' }}
                   />
                 </Tooltip>
               </CenteredSection>
               <Section>
                 <Typography>{t_i18n('CSV separator')}</Typography>
-                <Centered>
+                <Centered style={{ marginTop: 8 }}>
                   <RadioGroup
                     aria-label="CSV separator"
                     name="separator"
@@ -207,25 +208,25 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   </RadioGroup>
                 </Centered>
               </Section>
-              <Section
-                style={{ display: 'flex', alignItems: 'end', gap: '8px' }}
-              >
+              <Section>
                 <Field
                   component={TextField}
                   name="skip_line_char"
                   label={t_i18n('Char to escape line')}
-                />
-                <Tooltip
-                  title={t_i18n(
-                    'Every line that begins with this character will be skipped during parsing (for example: #).',
+                  infoTooltip={(
+                    <Tooltip
+                      title={t_i18n(
+                        'Every line that begins with this character will be skipped during parsing (for example: #).',
+                      )}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        style={{ cursor: 'default' }}
+                      />
+                    </Tooltip>
                   )}
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ cursor: 'default' }}
-                  />
-                </Tooltip>
+                />
               </Section>
 
               <CenteredSection>
