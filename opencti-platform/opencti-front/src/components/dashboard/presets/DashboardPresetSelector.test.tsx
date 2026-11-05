@@ -19,7 +19,6 @@ describe('DashboardPresetSelector', () => {
     expect(screen.getByTestId('dashboard-preset-trigger')).toHaveTextContent('Energy');
     await user.click(screen.getByTestId('dashboard-preset-trigger'));
     expect(await screen.findByRole('option', { name: 'Finance (default)' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'No preset' })).toBeInTheDocument();
     // A viewer gets no action
     expect(screen.queryByTestId('dashboard-preset-save-as')).not.toBeInTheDocument();
     expect(screen.queryByTestId('dashboard-preset-delete')).not.toBeInTheDocument();
@@ -33,8 +32,8 @@ describe('DashboardPresetSelector', () => {
     await user.click(screen.getByTestId('dashboard-preset-trigger'));
     await user.click(await screen.findByRole('option', { name: 'Finance' }));
     expect(onSelect).toHaveBeenCalledWith('finance');
-    await user.click(screen.getByTestId('dashboard-preset-trigger'));
-    await user.click(await screen.findByRole('option', { name: 'No preset' }));
+    // The clear control of the trigger: back to no preset
+    await user.click(screen.getByRole('button', { name: 'No preset' }));
     expect(onSelect).toHaveBeenLastCalledWith(null);
   });
 

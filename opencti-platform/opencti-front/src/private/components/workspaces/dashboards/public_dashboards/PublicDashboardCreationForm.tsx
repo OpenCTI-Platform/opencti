@@ -23,7 +23,7 @@ import FormButtonContainer from '../../../../../components/common/form/FormButto
 import useHelper from '../../../../../utils/hooks/useHelper';
 import { DASHBOARD_VARIABLES_FEATURE_FLAG } from '../../../../../components/dashboard/dashboardVariablesFeatureFlag';
 import { buildPublicationInput, EMPTY_PUBLISHED_TIME_RANGE, generatePublicDashboardUriKey, type PublicDashboardCreationFormData } from './public-dashboard-utils';
-import PublicDashboardPublishedValues from './PublicDashboardPublishedValues';
+import { PublicDashboardPublishedValuesLoader } from './PublicDashboardPublishedValues';
 
 const publicDashboardCreateMutation = graphql`
   mutation PublicDashboardCreationFormCreateMutation($input: PublicDashboardAddInput!) {
@@ -42,23 +42,6 @@ export const dashboardsQuery = graphql`
           name
           currentUserAccessRight
           manifest
-          variables {
-            id
-            usedInWidgetIds
-          }
-          presets {
-            id
-            name
-            values {
-              variableId
-              value
-            }
-            config {
-              startDate
-              endDate
-              relativeDate
-            }
-          }
         }
       }
     }
@@ -219,7 +202,7 @@ const PublicDashboardCreationFormComponent = ({
           </Alert>
 
           {isVariablesEnabled && (
-            <PublicDashboardPublishedValues dashboard={dashboards?.find(({ id }) => id === values.dashboard_id)} />
+            <PublicDashboardPublishedValuesLoader dashboardId={values.dashboard_id} />
           )}
 
           <FormButtonContainer>

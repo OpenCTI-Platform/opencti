@@ -21,28 +21,34 @@ export interface BuildDashboardPresetOptions {
 }
 
 /**
- * The values of a preset, keyed by variable id: each one belongs to a variable of the dashboard and is valid for the
- * type of this variable (not checked against its restriction: a preset is written by an editor of the dashboard,
- * who could change the restriction anyway). An empty value is not stored: the default of the variable then applies.
+ * The values of a preset, keyed by variable id: each one belongs to a variable of the dashboard, is valid for the type
+ * of this variable and, for a selection restriction, belongs to the selection (a filters restriction is not checked:
+ * it would need a query). An empty value is not stored: the default of the variable then applies.
  */
 const buildPresetValues = (
   input: DashboardPresetInputLike,
   variables: readonly StoreDashboardVariable[],
   dropUnknownVariables: boolean,
 ): Record<string, string> => {
-  const types = new Map(variables.map((variable) => [variable.id, variable.type]));
+  const byId = new Map(variables.map((variable) => [variable.id, variable]));
   const values: Record<string, string> = {};
   (input.values ?? []).forEach(({ variableId, value }) => {
     if (typeof variableId !== 'string' || typeof value !== 'string') throw FunctionalError('Invalid dashboard preset value');
-    if (!types.has(variableId)) {
+    const variable = byId.get(variableId);
+    if (!variable) {
       if (dropUnknownVariables) return;
       throw FunctionalError('Unknown dashboard variable', { variableId });
     }
     if (variableId in values) throw FunctionalError('Duplicated dashboard preset value', { variableId });
     if (value.trim() === '') return;
     // A value is never resolved further than one level: a token-shaped value would leave a token in the filter.
-    if (containsDashboardVariableToken(value) || !isValidDashboardVariableValue(types.get(variableId), value)) {
+    if (containsDashboardVariableToken(value) || !isValidDashboardVariableValue(variable.type, value)) {
       throw FunctionalError('Invalid dashboard preset value', { variableId });
+    }
+    // A selection restriction is a closed list: a preset cannot restore a value the chip could not offer.
+    if (variable.restriction.mode === 'selection' && !variable.restriction.values.includes(value)) {
+      if (dropUnknownVariables) return;
+      throw FunctionalError('The preset value must belong to the selection of the variable', { variableId });
     }
     values[variableId] = value;
   });

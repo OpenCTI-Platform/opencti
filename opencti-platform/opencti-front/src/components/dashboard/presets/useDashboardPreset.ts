@@ -37,19 +37,16 @@ export const useDashboardPreset = (
   const activeId = stored && presets.some((preset) => preset.id === stored) ? stored : effectiveDefaultId;
   const activePreset = useMemo(
     () => (activeId ? presets.find((preset) => preset.id === activeId) ?? null : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [activeId, presetIds, presets],
   );
   const defaultPreset = useMemo(
     () => (effectiveDefaultId ? presets.find((preset) => preset.id === effectiveDefaultId) ?? null : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [effectiveDefaultId, presetIds, presets],
   );
 
   // The URL shows the preset in use, also when it was restored from this browser: a shared address opens the same view.
   useEffect(() => {
     if (!ignoreLocalValues && enabled) writePresetParam(stored && presets.some((preset) => preset.id === stored) ? stored : null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stored, ignoreLocalValues, enabled, presetIds]);
 
   const commit = useCallback((next: string | null) => {

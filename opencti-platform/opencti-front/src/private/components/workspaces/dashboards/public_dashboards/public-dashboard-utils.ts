@@ -6,7 +6,6 @@ import type { DashboardConfig, DashboardVariable } from '../../../../../componen
 import { deserializeDashboardManifestForFrontend } from '../../../../../components/dashboard/dashboard-utils';
 import { buildDefaultVariableValues, isValidVariableValue, widgetVariableIds } from '../../../../../components/dashboard/dashboardVariablesResolution';
 import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
-import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
 import { presetFromGraphql, type GraphqlDashboardPreset } from '../../../../../components/dashboard/presets/dashboardPresets';
 
 /**
@@ -37,7 +36,7 @@ export interface PublicDashboardCreationFormData {
   uri_key: string;
   max_markings: FieldOption[];
   dashboard_id: string;
-  // Frozen in the public dashboard (dashboard variables feature), keyed by variable id
+  // Frozen in the public dashboard, keyed by variable id
   variable_values: Record<string, string>;
   time_range: PublishedTimeRange;
 }

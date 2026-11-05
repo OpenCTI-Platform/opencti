@@ -259,7 +259,7 @@ function useDashboard({
     debouncedSaveLayout();
   };
 
-  const config = manifest.config;
+  const config = manifest.config ?? {};
 
   return {
     handleAddWidget,

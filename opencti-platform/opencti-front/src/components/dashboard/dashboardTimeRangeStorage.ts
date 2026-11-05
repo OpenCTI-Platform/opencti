@@ -1,8 +1,9 @@
-import { RELATIVE_DATE_OPTIONS, type DashboardTimeRange } from './dashboardTimeRange';
+import type { DashboardTimeRange } from './dashboardTimeRange';
 import { isStrictIsoDate } from './dashboardVariablesResolution';
 
-// `none` aside: it is stored as null.
-const RELATIVE_DATE_VALUES: readonly string[] = RELATIVE_DATE_OPTIONS.map(({ value }) => value);
+// A relative date as computeRelativeDate reads it, the same rule as the server (dashboard-time-range.ts): the select
+// offers a few, a preset written through the API or an import may hold others. `none` aside: it is stored as null.
+const RELATIVE_DATE_REGEXP = /^(days|months|years)-\d+$/;
 
 export const TIME_RANGE_PARAM = 'timeRange';
 const ABSOLUTE_RANGE_SEPARATOR = '..';
@@ -17,7 +18,7 @@ export const isValidTimeRange = (value: unknown): value is DashboardTimeRange =>
   const { startDate, endDate, relativeDate } = value as Record<string, unknown>;
   if (!isOptionalIsoDate(startDate) || !isOptionalIsoDate(endDate)) return false;
   if (relativeDate === null) return true;
-  return typeof relativeDate === 'string' && RELATIVE_DATE_VALUES.includes(relativeDate) && startDate === null && endDate === null;
+  return typeof relativeDate === 'string' && RELATIVE_DATE_REGEXP.test(relativeDate) && startDate === null && endDate === null;
 };
 
 export const readStoredTimeRange = (key: string): DashboardTimeRange | null => {

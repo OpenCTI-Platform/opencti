@@ -28,7 +28,9 @@ const MANIFEST = toB64(JSON.stringify({
   variables: [{ id: SECTOR, name: 'Sector name', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Finance' }],
 }));
 
-const renderForm = (flags: string[]) => {
+const LOADER_QUERY = 'PublicDashboardPublishedValuesQuery';
+
+const renderForm = async (flags: string[]) => {
   const rendered = testRender(<PublicDashboardCreationForm dashboard_id="dashboard-1" />, {
     userContext: createMockUserContext({
       me: { id: 'user-1', name: 'admin' },
@@ -40,6 +42,15 @@ const renderForm = (flags: string[]) => {
       data: { workspaces: { edges: [{ node: { id: 'dashboard-1', name: 'Dashboard', currentUserAccessRight: 'admin', manifest: MANIFEST } }] } },
     });
   });
+  if (flags.includes('DASHBOARD_VARIABLES')) {
+    // The published values section loads the selected dashboard, with its variables and presets, on its own.
+    await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().some((op) => op.request.node.operation.name === LOADER_QUERY)).toBe(true));
+    act(() => {
+      rendered.relayEnv.mock.resolveMostRecentOperation({
+        data: { workspace: { id: 'dashboard-1', manifest: MANIFEST, variables: [{ id: SECTOR, usedInWidgetIds: ['widget-1'] }], presets: [] } },
+      });
+    });
+  }
   return rendered;
 };
 
@@ -60,7 +71,7 @@ describe('PublicDashboardCreationForm', () => {
   });
 
   it('should publish the values chosen in the published values section, with the time range and the time zone', async () => {
-    const { user } = renderForm(['DASHBOARD_VARIABLES']);
+    const { user } = await renderForm(['DASHBOARD_VARIABLES']);
     const sector = await screen.findByDisplayValue('Finance');
     await user.clear(sector);
     await user.type(sector, 'Energy');
@@ -78,7 +89,7 @@ describe('PublicDashboardCreationForm', () => {
   });
 
   it('should neither show the section nor send its values without the feature flag', async () => {
-    const { user } = renderForm([]);
+    const { user } = await renderForm([]);
     await screen.findByLabelText('Name');
     expect(screen.queryByTestId('public-dashboard-published-values')).toBeNull();
     const input = await fillAndSubmit(user);

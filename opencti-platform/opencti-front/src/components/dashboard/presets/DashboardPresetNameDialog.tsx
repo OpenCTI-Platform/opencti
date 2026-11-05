@@ -68,7 +68,6 @@ const DashboardPresetNameDialog = ({ open, existingPresets, preset, onConfirm, o
               name="dashboard-preset-name"
               value={name}
               required
-              autoFocus
               error={name !== '' ? error : undefined}
               onChange={(event) => setName(event.target.value)}
               onKeyDown={(event) => {

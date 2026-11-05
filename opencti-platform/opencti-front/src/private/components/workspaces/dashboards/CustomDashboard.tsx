@@ -233,10 +233,11 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   // defaults: what Reset goes back to, and what the home dashboard shows.
   const { defaultPreset } = presetControls;
   const presetDefaultValues = useMemo(() => (defaultPreset ? new Map(Object.entries(defaultPreset.values)) : undefined), [defaultPreset]);
-  // The home dashboard (noToolbar) and a user without the bar only ever see the defaults:
-  // no per user value is read or written.
+  // The home dashboard (noToolbar) and a user without the bar nor the preset selector only ever see the defaults:
+  // no per user value is read or written. A viewer who may only switch presets gets the values of the preset,
+  // and No preset puts the defaults back.
   const variableControls = useDashboardVariables(workspace.id, variables, {
-    ignoreLocalValues: noToolbar || !showVariablesBar,
+    ignoreLocalValues: noToolbar || !(showVariablesBar || showPresetSelector),
     defaultOverrides: presetDefaultValues,
   });
   // Flag on, the time range is per user: an editor always gets the time filters, a reader only when viewers may edit
@@ -244,7 +245,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   const showTimeFilters = isVariablesEnabled && !noToolbar
     && (userCanEdit || config.allowViewersToEditTimeFilters === true);
   const timeRange = useDashboardTimeRange(workspace.id, config, {
-    ignoreLocalValues: noToolbar || !showTimeFilters,
+    ignoreLocalValues: noToolbar || !(showTimeFilters || showPresetSelector),
     defaultOverride: defaultPreset?.config ?? null,
   });
   const { activePreset } = presetControls;

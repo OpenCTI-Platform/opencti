@@ -6,7 +6,6 @@ import { useFormatter } from '../../i18n';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import type { DashboardPreset } from '../dashboard-types';
 
-
 export interface DashboardPresetSelectorProps {
   presets: readonly DashboardPreset[];
   activePreset: DashboardPreset | null;

@@ -161,11 +161,12 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
             />
             <DashboardField
               onChange={(name, value) => {
-                editor.changeField(name, value);
-                // Another dashboard: its presets are other ones.
+                // Another dashboard: its presets are other ones, both keys go in one patch.
                 if (values.default_dashboard_preset) {
                   setFieldValue('default_dashboard_preset', null);
-                  editor.changeField('default_dashboard_preset', '');
+                  editor.fieldPatch({ variables: { id: group.id, input: [{ key: name, value: value || '' }, { key: 'default_dashboard_preset', value: '' }] } });
+                } else {
+                  editor.changeField(name, value);
                 }
               }}
               context={context}
