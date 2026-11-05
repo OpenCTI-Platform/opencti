@@ -77,16 +77,12 @@ export const importExclusionList = async (
   }
   if (!existing) {
     if (!dryRun) {
-      const created = await addExclusionListFile(context, user, {
+      await addExclusionListFile(context, user, {
         name,
         description: description ?? undefined,
         exclusion_list_entity_types: types,
         file: toUpload(content),
-      });
-      // A new list is enabled: a list that is disabled in the configuration is disabled once created
-      if (enabled === false) {
-        await fieldPatchExclusionList(context, user, { id: created.id, input: [{ key: 'enabled', value: ['false'] }] });
-      }
+      }, enabled !== false);
     }
     return { status: 'created', exists: false, configuration: parsed.data };
   }

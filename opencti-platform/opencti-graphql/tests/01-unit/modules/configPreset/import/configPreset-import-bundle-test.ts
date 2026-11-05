@@ -83,6 +83,26 @@ describe('Config preset bundle reader', () => {
       expect(await bundle.items[0].file!.read(CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE + 1)).toHaveLength(CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE + 1);
     });
 
+    it('counts against the extracted size limit of the bundle, with the JSON files', async () => {
+      const size = CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE;
+      const count = Math.floor(CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE / size) + 1;
+      const files: Record<string, string | Buffer> = {};
+      for (let i = 0; i < count; i += 1) {
+        const id = `aaaaaaaa-bbbb-4ccc-8ddd-${String(i).padStart(12, '0')}`;
+        const txt = `customization/exclusion_lists/${id}.txt`;
+        Object.assign(files, withFile(txt, id, `customization/exclusion_lists/${id}.json`), { [txt]: Buffer.alloc(size, 'a') });
+      }
+      const bundle = await read(files);
+      expect(bundle.items).toHaveLength(count);
+      const error = await (async () => {
+        for (const item of bundle.items) {
+          await item.file!.read(size);
+        }
+      })().catch((err) => err);
+      expect(error.extensions?.data?.reason).toEqual('bundle_refused');
+      expect(error.message).toContain('too large once extracted');
+    });
+
     it('is absent when the zip has no entry at the path, and an item without file has none', async () => {
       const missing = await read(withFile(TXT_PATH));
       expect(missing.items[0].file).toBeUndefined();

@@ -101,7 +101,8 @@ describe('importExclusionList', () => {
       const [, , input] = vi.mocked(addExclusionListFile).mock.calls[0];
       expect(input).toMatchObject({ name: 'Public DNS resolvers', description: 'Well-known resolvers', exclusion_list_entity_types: ['IPv4-Addr'] });
       expect(await readUpload(input.file)).toEqual({ content: VALUES, filename: 'exclusion-list.txt', mimeType: 'text/plain' });
-      // A new list is enabled: nothing more to write
+      // A new list is enabled by default: nothing more to write
+      expect(vi.mocked(addExclusionListFile).mock.calls[0][3]).toBe(true);
       expect(fieldPatchExclusionList).not.toHaveBeenCalled();
     });
 
@@ -110,9 +111,10 @@ describe('importExclusionList', () => {
       expect(vi.mocked(addExclusionListFile).mock.calls[0][2]).toMatchObject({ name: 'DNS', description: undefined });
     });
 
-    it('disables it once created when the configuration says so', async () => {
+    it('creates it disabled, in one write, when the configuration says so', async () => {
       await importExclusionList(context, user, { ...configuration, enabled: false }, fileOf(VALUES), { mode });
-      expect(fieldPatchExclusionList).toHaveBeenCalledWith(context, user, { id: 'new-list-id', input: [{ key: 'enabled', value: ['false'] }] });
+      expect(vi.mocked(addExclusionListFile).mock.calls[0][3]).toBe(false);
+      expect(fieldPatchExclusionList).not.toHaveBeenCalled();
     });
 
     it('decides the same result on a dry run, and writes nothing', async () => {
@@ -120,17 +122,6 @@ describe('importExclusionList', () => {
       expect(addExclusionListFile).not.toHaveBeenCalled();
       expect(fieldPatchExclusionList).not.toHaveBeenCalled();
     });
-  });
-
-  it('lets a failed disabling surface, and a retry finds the list it created and disables it', async () => {
-    vi.mocked(fieldPatchExclusionList).mockRejectedValueOnce(new Error('boom'));
-    await expect(importExclusionList(context, user, { ...configuration, enabled: false }, fileOf(VALUES), overwrite)).rejects.toThrow('boom');
-    expect(addExclusionListFile).toHaveBeenCalledTimes(1);
-    // The list exists now, enabled, with the values of the bundle
-    withLists({ ...stored, enabled: true } as BasicStoreEntityExclusionList);
-    expect(await importExclusionList(context, user, { ...configuration, enabled: false }, fileOf(VALUES), overwrite)).toMatchObject({ status: 'overwritten' });
-    expect(addExclusionListFile).toHaveBeenCalledTimes(1);
-    expect(fieldPatchExclusionList).toHaveBeenLastCalledWith(context, user, { id: stored.id, input: [{ key: 'enabled', value: ['false'] }], file: undefined });
   });
 
   it('keeps the empty file of a list that has no value: the export of such a list imports back', async () => {

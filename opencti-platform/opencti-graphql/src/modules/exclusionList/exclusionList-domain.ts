@@ -87,13 +87,13 @@ const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exc
   return { upload, byteLength, linesNumber };
 };
 
-const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput, file: FileUploadData) => {
+const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput, file: FileUploadData, enabled: boolean) => {
   const exclusionListInternalId = generateInternalId();
   const { upload, byteLength, linesNumber } = await uploadExclusionListFile(context, user, exclusionListInternalId, file);
   const exclusionListToCreate = {
     name: input.name,
     description: input.description,
-    enabled: true,
+    enabled,
     exclusion_list_entity_types: input.exclusion_list_entity_types,
     file_id: upload.id,
     internal_id: exclusionListInternalId,
@@ -106,8 +106,9 @@ const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser,
   return createdExclusionList;
 };
 
-export const addExclusionListFile = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput) => {
-  return storeAndCreateExclusionList(context, user, input, input.file);
+// A list is created with its final state: disabling it afterwards could leave the cache built from the enabled list
+export const addExclusionListFile = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput, enabled = true) => {
+  return storeAndCreateExclusionList(context, user, input, input.file, enabled);
 };
 
 export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUser, args: MutationExclusionListFieldPatchArgs) => {
