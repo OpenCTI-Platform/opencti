@@ -36,6 +36,8 @@ import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, storeLoadB
 import { Readable } from 'node:stream';
 import { downloadFile } from '../../../../src/database/raw-file-storage';
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
+import { buildRefRelationKey } from '../../../../src/schema/general';
+import { TEMPLATE_TASK_RELATION } from '../../../../src/modules/case/case-template/case-template-types';
 import { CONFIG_PRESET_FAMILIES, configPresetItemFilePath, exportConfigPresetItem } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { builtInTheme, customTheme, otherCustomTheme, THEME_FILE_FIELDS } from './configPreset-themes-fixtures';
@@ -50,6 +52,7 @@ import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusion
 import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './configPreset-killChainPhases-fixtures';
 import { customVocabulary, modifiedVocabulary } from './configPreset-vocabularies-fixtures';
 import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
+import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -181,6 +184,14 @@ describe('Config preset registry', () => {
         group: 'taxonomy',
         itemIds: [customStatusTemplate.standard_id, defaultStatusTemplate.standard_id],
       },
+      // The case templates by name
+      {
+        id: 'caseTemplates',
+        label: 'Case templates',
+        description: 'Case templates and their tasks',
+        group: 'taxonomy',
+        itemIds: [fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id],
+      },
     ]);
   });
 
@@ -188,7 +199,7 @@ describe('Config preset registry', () => {
     expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark']);
   });
 
-  it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry or a status template name', async () => {
+  it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template or a case template name', async () => {
     const items = await resolveAllItems();
     expect(items.map((item) => [item.label, item.translatable])).toEqual([
       ['Platform configuration', true],
@@ -220,10 +231,12 @@ describe('Config preset registry', () => {
       ['report_types_ov', false],
       ['Escalated', false],
       ['IN_PROGRESS', false],
+      ['Fraud investigation', false],
+      ['Phishing triage', false],
     ]);
   });
 
-  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label, an exclusion list, a phase or a status template by its standard id, a vocabulary category by its name', async () => {
+  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label, an exclusion list, a phase, a status template or a case template by its standard id, a vocabulary category by its name', async () => {
     const paths = (await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
       const items = await family.resolveItems(context, user, null, []);
       return items.map((item) => configPresetItemFilePath(family, item));
@@ -258,6 +271,8 @@ describe('Config preset registry', () => {
       'taxonomy/vocabularies/report_types_ov.json',
       `taxonomy/status_templates/${customStatusTemplate.standard_id}.json`,
       `taxonomy/status_templates/${defaultStatusTemplate.standard_id}.json`,
+      `taxonomy/case_templates/${fraudCaseTemplate.standard_id}.json`,
+      `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -703,6 +718,72 @@ describe('Config preset registry', () => {
       const ids = async (selected: string[] | null, excluded: string[]) => (await templates.resolveItems(context, user, selected, excluded)).map((item) => item.id);
       expect(await ids(null, [])).toEqual([customStatusTemplate.standard_id, defaultStatusTemplate.standard_id]);
       expect(await ids(null, [customStatusTemplate.standard_id])).toEqual([defaultStatusTemplate.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('case templates', () => {
+    const templates = findFamily('caseTemplates');
+    const pageIds = async (args: Parameters<typeof templates.listItems>[2]) => (await templates.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports a case template with its tasks by name, in the import format only, and takes its random id as the id of the item', async () => {
+      const file = await exportConfigPresetItem(context, user, templates, await findItem('caseTemplates', phishingCaseTemplate.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'taxonomy.caseTemplates',
+        id: phishingCaseTemplate.standard_id,
+        configuration: {
+          name: 'Phishing triage',
+          description: 'Triage of a phishing report',
+          // By name, and a task without description has none
+          tasks: [{ name: 'Block sender', description: 'Block the sender domain' }, { name: 'Notify users' }],
+        },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|case-template-id|task-id|task-template--/);
+    });
+
+    it('exports a case template without description and without task as a name and an empty list of tasks', async () => {
+      const file = await exportConfigPresetItem(context, user, templates, await findItem('caseTemplates', fraudCaseTemplate.standard_id));
+      expect(file.configuration).toEqual({ name: 'Fraud investigation', tasks: [] });
+    });
+
+    it('reads the tasks of the template the way the platform reads them to create the tasks of a case', async () => {
+      await exportConfigPresetItem(context, user, templates, await findItem('caseTemplates', phishingCaseTemplate.standard_id));
+      expect(fullEntitiesList).toHaveBeenCalledWith(context, user, ['Task-Template'], {
+        filters: { mode: 'and', filters: [{ key: [buildRefRelationKey(TEMPLATE_TASK_RELATION)], values: [phishingCaseTemplate.id] }], filterGroups: [] },
+      });
+    });
+
+    it('opens the first page with the case templates by name, and counts them', async () => {
+      const page = await templates.listItems(context, user, { first: 1 });
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['Case-Template'], {
+        first: 1,
+        after: undefined,
+        search: undefined,
+        orderBy: 'name',
+        orderMode: 'asc',
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([[fraudCaseTemplate.standard_id, 'Fraud investigation', false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
+    });
+
+    it('applies search, ids and excluded ids to the case templates', async () => {
+      expect(await pageIds({ search: 'phishing' })).toEqual([phishingCaseTemplate.standard_id]);
+      expect(await pageIds({ ids: [fraudCaseTemplate.standard_id] })).toEqual([fraudCaseTemplate.standard_id]);
+      expect(await pageIds({ excludedIds: [fraudCaseTemplate.standard_id] })).toEqual([phishingCaseTemplate.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every template
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the case templates to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await templates.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id]);
+      expect(await ids(null, [fraudCaseTemplate.standard_id])).toEqual([phishingCaseTemplate.standard_id]);
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();
