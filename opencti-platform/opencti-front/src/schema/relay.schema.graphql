@@ -1637,6 +1637,7 @@ type Group implements InternalObject & BasicObject {
   auto_new_marking: Boolean
   description: String
   default_dashboard: Workspace
+  default_dashboard_preset: String
   members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
   created_at: DateTime
   updated_at: DateTime
@@ -9988,6 +9989,8 @@ type Mutation {
   workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace
   workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace
   workspaceVariableDelete(id: ID!, variableId: ID!): Workspace
+  workspacePresetUpsert(id: ID!, input: DashboardPresetInput!): Workspace
+  workspacePresetDelete(id: ID!, presetId: ID!): Workspace
   workInvestigationStatusEdit(workId: ID!, status: WorkInvestigationStatus!): Work
   malwareAnalysisAdd(input: MalwareAnalysisAddInput!): MalwareAnalysis
   malwareAnalysisDelete(id: ID!): ID
@@ -13113,6 +13116,8 @@ type Workspace implements InternalObject & BasicObject {
   toWidgetExport(widgetId: ID!): String!
   isShared: Boolean
   variables: [DashboardVariable!]!
+  presets: [DashboardPreset!]!
+  currentUserDefaultPresetId: ID
   enrichmentWorks(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup, entityIds: [String!]): WorkConnection
 }
 
@@ -13224,6 +13229,42 @@ input ImportConfigurationInput {
   importType: String!
   file: Upload!
   dashboardManifest: String
+}
+
+type DashboardPresetValue {
+  variableId: ID!
+  value: String!
+}
+
+type DashboardPresetConfig {
+  startDate: String
+  endDate: String
+  relativeDate: String
+}
+
+type DashboardPreset {
+  id: ID!
+  name: String!
+  values: [DashboardPresetValue!]!
+  config: DashboardPresetConfig!
+}
+
+input DashboardPresetValueInput {
+  variableId: ID!
+  value: String!
+}
+
+input DashboardPresetConfigInput {
+  startDate: String
+  endDate: String
+  relativeDate: String
+}
+
+input DashboardPresetInput {
+  id: ID
+  name: String!
+  values: [DashboardPresetValueInput!]
+  config: DashboardPresetConfigInput
 }
 
 input ImportWidgetInput {
@@ -14846,6 +14887,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace
+  default_dashboard_preset: String
   default_hidden_types: [String!]
   restrict_access: Boolean
   creators: [Creator!]
@@ -17566,6 +17608,7 @@ type MeUser implements BasicObject & InternalObject {
   groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
   default_dashboards: [Workspace!]!
   default_dashboard: Workspace
+  default_dashboard_preset: String
   default_time_field: String
   account_status: String!
   account_lock_after_date: DateTime

@@ -8,7 +8,7 @@ import { isInternalId, isStixId } from '../../schema/schemaUtils';
 import { idsValuesRemap } from '../../database/stix-2-1-converter';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { pushAll } from '../../utils/arrayUtil';
-import { DASHBOARD_VARIABLE_ID_TYPES, type StoreDashboardVariable } from './workspace-variables-types';
+import { DASHBOARD_VARIABLE_ID_TYPES, type StoreDashboardPreset, type StoreDashboardVariable } from './workspace-variables-types';
 
 // workspace ids converter_2_1
 // Export => Dashboard filter ids must be converted to standard id
@@ -148,8 +148,10 @@ export const convertDashboardVariablesIds = async (
   user: AuthUser,
   variables: StoreDashboardVariable[],
   from: 'internal' | 'stix',
+  presets: StoreDashboardPreset[] = [],
 ) => {
   const idVariables = variables.filter((variable) => DASHBOARD_VARIABLE_ID_TYPES.has(variable.type));
+  const idVariableIds = new Set(idVariables.map((variable) => variable.id));
   // First iteration: resolve all the ids to translate
   const resolvingIds: string[] = [];
   const isConvertible = (value: string) => (from === 'internal' ? isInternalId(value) : isStixId(value));
@@ -160,6 +162,12 @@ export const convertDashboardVariablesIds = async (
     if (restriction.mode === 'filters' && isFilterGroupNotEmpty(restriction.filters)) {
       pushAll(resolvingIds, extractFiltersIds(restriction.filters, from));
     }
+  });
+  // The preset values of the same variables follow: a text value shaped like an id is never touched.
+  presets.forEach((preset) => {
+    Object.entries(preset.values ?? {}).forEach(([variableId, value]) => {
+      if (idVariableIds.has(variableId) && isConvertible(value)) resolvingIds.push(value);
+    });
   });
   if (resolvingIds.length === 0) return;
   // Second iteration: replace the ids
@@ -172,10 +180,18 @@ export const convertDashboardVariablesIds = async (
       [variable.defaultValue] = idsValuesRemap([variable.defaultValue], idsMap, from);
     }
     if (restriction.mode === 'selection') {
-      restriction.values = idsValuesRemap(restriction.values, idsMap, from);
+      // Two exported ids may resolve to one entity on the importing platform (merged entity): kept once, as the API stores it.
+      restriction.values = R.uniq(idsValuesRemap(restriction.values, idsMap, from));
     }
     if (restriction.mode === 'filters' && isFilterGroupNotEmpty(restriction.filters)) {
       replaceFiltersIds(restriction.filters, idsMap, from);
     }
+  });
+  presets.forEach((preset) => {
+    Object.entries(preset.values ?? {}).forEach(([variableId, value]) => {
+      if (idVariableIds.has(variableId)) {
+        [preset.values[variableId]] = idsValuesRemap([value], idsMap, from);
+      }
+    });
   });
 };
