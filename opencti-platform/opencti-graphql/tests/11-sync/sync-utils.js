@@ -103,10 +103,10 @@ export const checkPreSyncContent = async () => {
 };
 const computeMapDifferences = (before, after) => {
   const failedExpects = [];
-  after.forEach((value, key) => {
-    const compareValue = before.get(key);
-    const current = `${key} - ${value}`;
-    const expected = `${key} - ${compareValue}`;
+  // Both sides: a type can be missing on either one
+  new Set([...before.keys(), ...after.keys()]).forEach((key) => {
+    const current = `${key} - ${after.get(key)}`;
+    const expected = `${key} - ${before.get(key)}`;
     if (current !== expected) {
       failedExpects.push({ current, expected });
     }
