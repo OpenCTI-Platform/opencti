@@ -57,6 +57,7 @@ import { schemaAttributesDefinition } from '../../../src/schema/schema-attribute
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../../../src/database/utils';
 import { FunctionalError } from '../../../src/config/errors';
+import stixObjectOrStixRelationshipOrCreatorResolvers from '../../../src/resolvers/stixObjectOrStixRelationshipOrCreator';
 
 // ── Shared fixtures ──────────────────────────────────────────────────────────
 
@@ -319,6 +320,51 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(engine.elFindByIds).toHaveBeenCalledTimes(2);
     expect(result.series.map((serie) => serie.label)).toEqual(['user-13', 'user-14']);
     expect(result.truncated).toBe(true);
+  });
+
+  it('should double the page of the candidates resolved at each round', async () => {
+    // 200 candidates of which the last one only is an entity
+    const users = Array.from({ length: 200 }, (_, i) => `user-${i}`);
+    vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking(users.map((id, i) => bucket(id, 1000 - i))));
+    vi.mocked(engine.elFindByIds).mockImplementation(async (_context, _user, ids) => Object.fromEntries(
+      (ids as string[]).filter((id) => id === 'user-199').map((id) => [id, makeEntity(id, id)]),
+    ) as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
+
+    const result = await breakdown({ field: 'creator_id', limit: 5 });
+
+    // limit + 10, then twice as many at each round: 4 rounds instead of 14 pages of 15
+    expect(vi.mocked(engine.elFindByIds).mock.calls.map(([, , ids]) => (ids as string[]).length)).toEqual([15, 30, 60, 95]);
+    expect(vi.mocked(engine.elFindByIds).mock.calls.flatMap(([, , ids]) => ids as string[])).toEqual(users);
+    expect(result.series.map((serie) => serie.label)).toEqual(['user-199']);
+  });
+
+  it('should keep the internal users as creators, never looked for nor restricted', async () => {
+    const { SYSTEM_USER, AUTOMATION_MANAGER_USER } = accessModule;
+    vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking([bucket(SYSTEM_USER.id, 9), bucket('user-a', 5), bucket(AUTOMATION_MANAGER_USER.id, 2)]));
+    vi.mocked(engine.elFindByIds).mockResolvedValue({ 'user-a': makeEntity('user-a', 'Alice') } as any);
+    // The user can access none of the stored entities
+    vi.mocked(accessModule.userFilterStoreElements).mockResolvedValue([]);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
+
+    const result = await breakdown({ field: 'creator_id' });
+
+    expect(vi.mocked(engine.elFindByIds).mock.calls[0][2]).toEqual(['user-a']);
+    expect(result.series.map((serie) => [serie.label, (serie.entity as any)?.name])).toEqual([
+      [SYSTEM_USER.id, 'SYSTEM'],
+      ['user-a', 'Restricted'],
+      [AUTOMATION_MANAGER_USER.id, AUTOMATION_MANAGER_USER.name],
+    ]);
+    // Shaped as the creators of the entities, the union of the entities resolving a user as a Creator
+    expect(result.series[0].entity).toEqual({
+      id: SYSTEM_USER.id,
+      internal_id: SYSTEM_USER.id,
+      standard_id: SYSTEM_USER.id,
+      entity_type: 'User',
+      parent_types: ['Basic-Object', 'Internal-Object'],
+      name: 'SYSTEM',
+    });
+    expect(stixObjectOrStixRelationshipOrCreatorResolvers.StixObjectOrStixRelationshipOrCreator.__resolveType(result.series[0].entity)).toEqual('Creator');
   });
 
   it('should only query the entities indices', async () => {
@@ -800,7 +846,7 @@ describe('resolveBreakdownField', () => {
   });
 
   it('should aggregate id, vocabulary and enum attributes as they are', () => {
-    expect(resolveBreakdownField(['Report'], 'creator_id')).toEqual({ aggregationField: 'creator_id', resolveEntities: true });
+    expect(resolveBreakdownField(['Report'], 'creator_id')).toEqual({ aggregationField: 'creator_id', resolveEntities: true, withInternalUsers: true });
     expect(resolveBreakdownField(['Report'], 'report_types')).toEqual({ aggregationField: 'report_types', resolveEntities: false, vocabularyCategories: ['report_types_ov'] });
     expect(resolveBreakdownField(['Report'], 'x_opencti_cvss_base_severity')).toMatchObject({ aggregationField: 'x_opencti_cvss_base_severity', resolveEntities: false });
     expect(resolveBreakdownField(['Report', 'Malware'], 'entity_type')).toMatchObject({ aggregationField: 'entity_type', resolveEntities: false });
@@ -863,6 +909,8 @@ describe('resolveHistoryBreakdownField', () => {
   it('should resolve the users, groups and organizations, and only them', () => {
     const resolved = HISTORY_BREAKDOWN_ALLOWED_FIELDS.filter((field) => resolveHistoryBreakdownField(field).resolveEntities);
     expect(resolved).toEqual(['user_id', 'group_ids', 'organization_ids']);
+    // Only the users can be internal users
+    expect(HISTORY_BREAKDOWN_ALLOWED_FIELDS.filter((field) => resolveHistoryBreakdownField(field).withInternalUsers)).toEqual(['user_id']);
   });
 
   it('should refuse the fields with an unbounded cardinality, free texts and unknown fields', () => {
@@ -995,7 +1043,7 @@ describe('timeSeriesBreakdownHistory', () => {
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['create', 'update']);
   });
 
-  it('should drop the SYSTEM user and the deleted users before applying the limit', async () => {
+  it('should keep the SYSTEM user as a creator and drop the deleted users before applying the limit', async () => {
     vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking([
       bucket(accessModule.SYSTEM_USER.id, 50),
       bucket('user-a', 10),
@@ -1011,11 +1059,23 @@ describe('timeSeriesBreakdownHistory', () => {
     } as any);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
-    const result = await historyBreakdown({ field: 'user_id', limit: 2 });
+    const result = await historyBreakdown({ field: 'user_id', limit: 3 });
 
     expect(result.truncated).toBe(true);
-    expect(result.series.map((serie) => (serie.entity as any)?.name)).toEqual(['Alice', 'Bob']);
-    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['user-a', 'user-b']);
+    expect(result.series.map((serie) => (serie.entity as any)?.name)).toEqual(['SYSTEM', 'Alice', 'Bob']);
+    expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual([accessModule.SYSTEM_USER.id, 'user-a', 'user-b']);
+    // The SYSTEM user is not looked for in the indices
+    expect(vi.mocked(engine.elFindByIds).mock.calls[0][2]).toEqual(['user-a', 'deleted-user', 'user-b', 'user-c']);
+  });
+
+  it('should not take the internal users for groups or organizations', async () => {
+    vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking([bucket(accessModule.SYSTEM_USER.id, 5), bucket('org-a', 3)]));
+    vi.mocked(engine.elFindByIds).mockResolvedValue({ 'org-a': { ...makeEntity('org-a', 'Filigran'), entity_type: 'Organization' } } as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
+
+    const result = await historyBreakdown({ field: 'organization_ids' });
+
+    expect(result.series.map((serie) => serie.label)).toEqual(['org-a']);
   });
 
   it('should restrict the users, groups and organizations the user cannot access', async () => {
@@ -1123,7 +1183,7 @@ describe('resolveRelationshipBreakdownField', () => {
     expect(resolveRelationshipBreakdownField(types, 'createdBy')).toEqual({ aggregationField: 'rel_created-by.internal_id', resolveEntities: true });
     expect(resolveRelationshipBreakdownField(types, 'objectLabel')).toEqual({ aggregationField: 'rel_object-label.internal_id', resolveEntities: true });
     expect(resolveRelationshipBreakdownField(types, 'objectMarking')).toEqual({ aggregationField: 'rel_object-marking.internal_id', resolveEntities: true });
-    expect(resolveRelationshipBreakdownField(types, 'creator_id')).toEqual({ aggregationField: 'creator_id', resolveEntities: true });
+    expect(resolveRelationshipBreakdownField(types, 'creator_id')).toEqual({ aggregationField: 'creator_id', resolveEntities: true, withInternalUsers: true });
   });
 
   it('should refuse the source and target themselves, and the fields that cannot be broken down', () => {

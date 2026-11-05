@@ -9,6 +9,7 @@ import {
   queryUnauthenticatedIsExpectedForbidden,
 } from '../../utils/testQueryHelper';
 import { ADMIN_USER, testContext, USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
+import { SYSTEM_USER } from '../../../src/utils/access';
 import { addReport } from '../../../src/domain/report';
 import { stixDomainObjectDelete, stixDomainObjectEditField } from '../../../src/domain/stixDomainObject';
 import { utcDate } from '../../../src/utils/format';
@@ -359,13 +360,17 @@ describe('audits time series breakdown query', () => {
       await stixDomainObjectEditField(testContext, ADMIN_USER, report.id, [
         { key: 'description', value: [`audit breakdown ${Date.now()}`] },
       ]);
+      // An update by an internal user, which no index stores
+      await stixDomainObjectEditField(testContext, SYSTEM_USER, report.id, [
+        { key: 'description', value: [`audit breakdown by system ${Date.now()}`] },
+      ]);
 
       let byScope: any;
       await awaitUntilCondition(async () => {
         byScope = await queryBreakdown({ field: 'event_scope' });
-        const labels = byScope.series.map((serie: { label: string }) => serie.label);
-        return labels.includes('create') && labels.includes('update');
-      }, 10000, { message: 'No creation and update found in the history of the report' });
+        const update = byScope.series.find((serie: { label: string }) => serie.label === 'update');
+        return byScope.series.some((serie: { label: string }) => serie.label === 'create') && update?.total === 2;
+      }, 10000, { message: 'No creation and both updates found in the history of the report' });
 
       expect(byScope.truncated).toBe(false);
       const create = byScope.series.find((serie: { label: string }) => serie.label === 'create');
@@ -373,10 +378,11 @@ describe('audits time series breakdown query', () => {
       expect(total(create)).toEqual(create.total);
       expect(byScope.series.every((serie: { values: number[] }) => serie.values.length === byScope.dates.length)).toBe(true);
 
-      // The user is resolved, the SYSTEM user is never a series
+      // The user is resolved, and the SYSTEM user is a creator as well: the creation and an update, then an update
       const byUser = await queryBreakdown({ field: 'user_id' });
-      expect(byUser.series.map((serie: { label: string }) => serie.label)).toEqual([ADMIN_USER.id]);
+      expect(byUser.series.map((serie: { label: string; total: number }) => [serie.label, serie.total])).toEqual([[ADMIN_USER.id, 2], [SYSTEM_USER.id, 1]]);
       expect(byUser.series[0].entity).toEqual({ id: ADMIN_USER.id, entity_type: 'User', name: ADMIN_USER.name });
+      expect(byUser.series[1].entity).toEqual({ id: SYSTEM_USER.id, entity_type: 'User', name: SYSTEM_USER.name });
 
       const byContextType = await queryBreakdown({ field: 'context_data.entity_type' });
       expect(byContextType.series.map((serie: { label: string }) => serie.label)).toEqual([ENTITY_TYPE_CONTAINER_REPORT]);

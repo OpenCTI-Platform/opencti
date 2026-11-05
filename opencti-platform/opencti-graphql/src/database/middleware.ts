@@ -907,7 +907,8 @@ const BREAKDOWN_ATTRIBUTE_FORMATS = ['id', 'vocabulary', 'enum'];
 // Among id attributes, only the creator can be broken down
 const BREAKDOWN_ALLOWED_ID_ATTRIBUTES = ['creator_id'];
 const BREAKDOWN_OTHER_LABEL = 'Other';
-// Values resolved beyond the limit at once, to replace the ones that cannot be resolved (like the SYSTEM user)
+// Values resolved beyond the limit in the first page, to replace the ones that cannot be resolved (like a deleted
+// user). Each next page doubles: the lowest values among thousands are resolved in a handful of rounds.
 const BREAKDOWN_RESOLUTION_MARGIN = 10;
 // From this many distinct values per series kept, the histogram uses one filter per value
 const BREAKDOWN_FILTER_PER_KEY_RATIO = 3;
@@ -925,6 +926,8 @@ type BreakdownField = {
   aggregationField: string;
   // Values are ids of entities, resolved with the access of the user
   resolveEntities: boolean;
+  // Values are ids of users: the internal users (SYSTEM, the managers), stored nowhere, are creators as well
+  withInternalUsers?: boolean;
   // Label of a value, when its indexed form is not the one to display
   resolveLabel?: (key: string) => string;
   // Vocabulary values are indexed in their normalized form: shown with the name of their vocabulary
@@ -954,7 +957,8 @@ const resolveSchemaBreakdownField = (types: string[], field: string): BreakdownF
   if (attributes.every(isBreakdownAttribute)) {
     const breakdownAttributes = attributes as (AttributeDefinition & { format: string })[];
     if (breakdownAttributes[0].format === 'id') {
-      return { aggregationField: field, resolveEntities: true };
+      // The creators
+      return { aggregationField: field, resolveEntities: true, withInternalUsers: true };
     }
     // Vocabulary and enum values are indexed in their normalized form: they are shown as they are written
     const enumValues = breakdownAttributes.flatMap((attribute) => (attribute.format === 'enum' ? (attribute as EnumAttribute).values : []));
@@ -1005,9 +1009,9 @@ export const resolveRelationshipBreakdownField = (types: string[], field: string
 const HISTORY_BREAKDOWN_FIELDS = new Map<string, BreakdownField>([
   ['event_type', { aggregationField: 'event_type', resolveEntities: false }],
   ['event_scope', { aggregationField: 'event_scope', resolveEntities: false }],
-  // Resolved like the distributions of the logs: values without entity, like the SYSTEM user or a deleted
-  // user, are dropped, and the entities the user cannot access are restricted
-  ['user_id', { aggregationField: 'user_id', resolveEntities: true }],
+  // Resolved like the distributions of the logs: values without entity, like a deleted user, are dropped, and
+  // the entities the user cannot access are restricted. The internal users, like SYSTEM, are users as well.
+  ['user_id', { aggregationField: 'user_id', resolveEntities: true, withInternalUsers: true }],
   ['group_ids', { aggregationField: 'group_ids', resolveEntities: true }],
   ['organization_ids', { aggregationField: 'organization_ids', resolveEntities: true }],
   // History or Activity
@@ -1089,6 +1093,39 @@ export const checkBreakdownDateAttribute = (types: string[], dateAttribute: stri
     });
   }
 };
+// Creator of an internal user, which no index stores, as the creators of the entities are built (batchCreator),
+// with the parent types the union of the breakdown entities is resolved on
+const buildInternalUserCreator = (internalUser: AuthUser) => ({
+  id: internalUser.id,
+  internal_id: internalUser.id,
+  standard_id: internalUser.id,
+  entity_type: ENTITY_TYPE_USER,
+  parent_types: getParentTypes(ENTITY_TYPE_USER),
+  name: internalUser.name,
+}) as unknown as BasicStoreEntity;
+// Entities of the values, in their order, without the values of no entity. With the internal users, their ids are
+// creators, never looked for in the indices nor restricted, as the creators of the entities are not.
+const resolveBreakdownEntities = async <T extends { key: string; label: string; value: number }>(
+  context: AuthContext,
+  user: AuthUser,
+  candidates: T[],
+  withInternalUsers: boolean,
+): Promise<(T & { entity: BasicStoreEntity | null })[]> => {
+  if (!withInternalUsers) {
+    return resolveAggregateDistributions(context, user, candidates);
+  }
+  const storedCandidates = candidates.filter((candidate) => !INTERNAL_USERS[candidate.key]);
+  const resolved = storedCandidates.length > 0 ? await resolveAggregateDistributions(context, user, storedCandidates) : [];
+  const resolvedByKey = new Map(resolved.map((candidate) => [candidate.key, candidate]));
+  return candidates.flatMap((candidate) => {
+    const internalUser = INTERNAL_USERS[candidate.key];
+    if (internalUser) {
+      return [{ ...candidate, entity: buildInternalUserCreator(internalUser) }];
+    }
+    const resolvedCandidate = resolvedByKey.get(candidate.key);
+    return resolvedCandidate ? [resolvedCandidate] : [];
+  });
+};
 // What a perspective breaks down: the documents of its indices, by one of its fields, over one of its dates
 type TimeSeriesBreakdownPerspective = {
   indices: string[] | string;
@@ -1116,7 +1153,7 @@ const timeSeriesBreakdown = async (
   // Without an end date, the histogram would create every empty bucket up to the most recent document,
   // a date in the future included, past the size checked below: the period always ends
   const endDate = args.endDate ?? new Date();
-  const { aggregationField, resolveEntities, resolveLabel, vocabularyCategories, connectionSide } = breakdownField;
+  const { aggregationField, resolveEntities, withInternalUsers = false, resolveLabel, vocabularyCategories, connectionSide } = breakdownField;
   const seriesLimit = limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
   const isAscending = args.orderMode === 'asc';
   const withOther = args.includeOther === true;
@@ -1153,14 +1190,17 @@ const timeSeriesBreakdown = async (
   const labelledCandidates = resolveLabel ? candidates.map((candidate) => ({ ...candidate, label: resolveLabel(candidate.key) })) : candidates;
   // desc keeps the values with the highest total over the period, asc the lowest
   const sortedCandidates = R.sortWith([isAscending ? R.ascend(R.prop('value')) : R.descend(R.prop('value'))], labelledCandidates);
-  // 2. Drop unresolvable values (like the SYSTEM user) before applying the limit, so the limit is honored.
+  // 2. Drop unresolvable values (like a deleted user) before applying the limit, so the limit is honored.
   // Resolved page by page: one more value than the limit is enough to know whether the series are truncated.
   let usableCandidates: (typeof sortedCandidates[number] & { entity: BasicStoreEntity | null })[] = [];
   if (resolveEntities) {
-    const pageSize = seriesLimit + BREAKDOWN_RESOLUTION_MARGIN;
-    for (let from = 0; from < sortedCandidates.length && usableCandidates.length <= seriesLimit; from += pageSize) {
-      const resolved = await resolveAggregateDistributions(context, user, sortedCandidates.slice(from, from + pageSize));
+    let from = 0;
+    let pageSize = seriesLimit + BREAKDOWN_RESOLUTION_MARGIN;
+    while (from < sortedCandidates.length && usableCandidates.length <= seriesLimit) {
+      const resolved = await resolveBreakdownEntities(context, user, sortedCandidates.slice(from, from + pageSize), withInternalUsers);
       usableCandidates = usableCandidates.concat(resolved);
+      from += pageSize;
+      pageSize *= 2;
     }
   } else {
     usableCandidates = sortedCandidates.map((candidate) => ({ ...candidate, entity: null }));
