@@ -8,6 +8,7 @@ import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
 import {
+  convertOperatorToIcon,
   FiltersRestrictions,
   isFilterEditable,
   isFilterGroupNotEmptyShallow,
@@ -36,9 +37,6 @@ const chipSeverity = (color?: string) => {
   if (color === 'success') return 'low' as const;
   return undefined;
 };
-
-// Operator symbols are not translated.
-const NUMERIC_OPERATOR_SYMBOLS: Record<string, string> = { eq: '=', gt: '>', gte: '≥', lt: '<', lte: '≤' };
 
 interface FilterValuesProps {
   label: string | React.JSX.Element;
@@ -172,18 +170,16 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       }
       const subValues = subFilter.values.join(', ');
       if (isNumericFilter(subFilterDefinition.type)) {
-        return [{ key: subFilterDefinition.filterKey, text: `${NUMERIC_OPERATOR_SYMBOLS[subFilter.operator ?? 'eq'] ?? '='} ${subValues}` }];
+        // same symbols as the other filter chips, with their leading non-breaking space
+        return [{ key: subFilterDefinition.filterKey, text: <>{convertOperatorToIcon(subFilter.operator ?? 'eq')} {subValues}</> }];
       }
-      return [{ key: subFilterDefinition.filterKey, text: subFilter.operator === 'not_eq' ? `${t_i18n('not')} ${subValues}` : subValues }];
+      return [{ key: subFilterDefinition.filterKey, text: <> {subFilter.operator === 'not_eq' ? `${t_i18n('not')} ${subValues}` : subValues}</> }];
     });
     return (
       <>
-        {filterLabel}{' '}
-        {subFilterTexts.map(({ key, text }, index) => (
-          <Fragment key={key}>
-            {index > 0 && ' '}
-            <span>{text}</span>
-          </Fragment>
+        {filterLabel}
+        {subFilterTexts.map(({ key, text }) => (
+          <span key={key}>{text}</span>
         ))}
       </>
     );
