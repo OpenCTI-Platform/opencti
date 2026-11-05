@@ -46,6 +46,10 @@ vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
     </div>
   ),
 }));
+vi.mock('../../../../components/Loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../components/Loader')>()),
+  default: () => <div data-testid="chart-loader" />,
+}));
 vi.mock('../../../../components/dashboard/WidgetVerticalBars', () => ({
   default: (props: unknown) => {
     mocks.bars(props);
@@ -345,12 +349,13 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect((await drawn(mocks.bars)).interval).toEqual('month');
   });
 
-  it('does not draw the chart before it is measured', () => {
+  it('does not draw the chart before it is measured, and shows a loader in the measured element', () => {
     respond([{ label: 'Report', entity: null, values: dailyValues(30) }]);
     mocks.width = 0;
-    const { queryByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    const { queryByTestId, getByTestId } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type' }, multiTypesSelection));
     expect(queryByTestId('bars')).toBeNull();
     expect(mocks.bars).not.toHaveBeenCalled();
+    expect(getByTestId('chart-loader').parentElement?.style.width).toEqual('100%');
     render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
     expect(mocks.lines).not.toHaveBeenCalled();
   });
@@ -367,11 +372,13 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
   it('draws the charts of widgets mounted together one after the other', async () => {
     respond([{ label: 'Report', entity: null, values: dailyValues(30) }]);
     render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    render(makeWidget('area', { breakdownBy: 'entity_type' }, multiTypesSelection));
-    // the first chart is drawn at once, the second one in a later task
+    const second = render(makeWidget('area', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    // the first chart is drawn at once, the second one in a later task, a loader holding its place
     expect(mocks.lines).toHaveBeenCalled();
     expect(mocks.areas).not.toHaveBeenCalled();
+    expect(second.getByTestId('chart-loader')).toBeTruthy();
     await drawn(mocks.areas);
+    expect(second.queryByTestId('chart-loader')).toBeNull();
   });
 
   it('does not draw the chart again on a refresh that brings the same values', async () => {

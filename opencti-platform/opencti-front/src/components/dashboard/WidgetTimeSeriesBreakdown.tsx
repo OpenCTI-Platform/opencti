@@ -5,6 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import WidgetNoData from './WidgetNoData';
+import Loader, { LoaderVariant } from '../Loader';
 import WidgetVerticalBars from './WidgetVerticalBars';
 import WidgetMultiLines from './WidgetMultiLines';
 import WidgetMultiAreas from './WidgetMultiAreas';
@@ -177,8 +178,9 @@ const WidgetTimeSeriesBreakdown = ({
     if (series.length === 0) {
       return <WidgetNoData />;
     }
+    // Until measured, and drawn in its turn
     if (!rendered) {
-      return null;
+      return <Loader variant={LoaderVariant.inElement} />;
     }
     const isAnimated = rendered.pointsCount <= ANIMATION_POINTS_THRESHOLD;
     if (type === 'vertical-bar') {
