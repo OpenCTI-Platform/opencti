@@ -7,6 +7,7 @@ import { styled } from '@mui/material/styles';
 import { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import ItemIcon from '../../../../components/ItemIcon';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { DataColumns } from '../../../../components/list_lines';
 import { NotifierLine_node$data, NotifierLine_node$key } from './__generated__/NotifierLine_node.graphql';
 import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
@@ -80,7 +81,7 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
               </BodyItem>
               <BodyItem style={{ width: dataColumns.description.width, paddingRight: 40 }}>
                 <BodyItemText>
-                  {data.description}
+                  <FieldOrEmpty source={data.description}>{data.description}</FieldOrEmpty>
                 </BodyItemText>
               </BodyItem>
             </div>
