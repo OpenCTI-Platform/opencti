@@ -16,7 +16,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { meterManager } from '../config/tracing';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { chunkIntakeQueue, consumeChunkIntakeQueue, registerChunkIntakeQueue } from '../database/rabbitmq';
-import { executeChunkOperation, substituteEchoIds, type ChunkOperation } from '../graphql/chunk-executor';
+import { executeChunkOperation, executeInProcessRead, substituteEchoIds, type ChunkOperation } from '../graphql/chunk-executor';
 import { splitEchoIds } from './chunkIntakeEchoes';
 import { PreLoopGate } from './chunkIntakePreLoop';
 import { resolveProducerIds } from './chunkIntakeProducers';
@@ -36,6 +36,11 @@ import {
 } from '../database/sequencer/sequencer-pending-intents';
 import { DatabaseError, DRAFT_LOCKED_ERROR, EngineShardsError, MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR, WORK_NOT_ALIVE_ERROR } from '../config/errors';
 import { createIntakeContext } from '../intake/intake-context';
+import { consumePushQueues } from '../intake/workerless/push-consumer';
+import type { ChunkVerdict, PushChunk } from '../intake/workerless/push-intake';
+import { createImportContext, type ImportContext } from '../intake/stix-import/context';
+import { type ImportClient, ImportClientError, type ImportLogger } from '../intake/stix-import/types';
+import { connectorsForWorker } from '../modules/connector/connector-domain';
 import { rehydrateFiles, removeStagedFiles, stageFiles } from '../intake/intake-files';
 import { intakeEnvelopeOfMessage, type IntakeEnvelope } from '../intake/intake-envelope';
 import { reportWorkProgress } from '../domain/work';
@@ -59,6 +64,14 @@ const MAX_TRANSIENT_ATTEMPTS = Number(conf.get('chunk_intake_manager:max_transie
 // deadline is RETAINED by the sequencer (pending intents) and re-submitted when the
 // reference lands, instead of failing into a client retry ladder that this path removed.
 const DEFER_MISSING_REFS = booleanConf('chunk_intake_manager:defer_missing_refs', true);
+// Worker-less intake (POC, intake/workerless): 'push_queues' consumes the connector push queues in
+// place of the workers (transformation, capture and chunks in process); 'chunk_queue' consumes the
+// chunks the workers publish
+const CHUNK_INTAKE_SOURCE = conf.get('chunk_intake_manager:source') ?? 'chunk_queue';
+const PUSH_PREFETCH = Number(conf.get('chunk_intake_manager:push_prefetch') ?? 10);
+const PUSH_MAX_IN_FLIGHT_BYTES = Number(conf.get('chunk_intake_manager:push_max_in_flight_bytes') ?? 268435456);
+// Objects per chunk, the worker's ingest chunk size
+const PUSH_CHUNK_SIZE = Number(conf.get('chunk_intake_manager:push_chunk_size') ?? 24);
 // Per-OPERATION transient policy (depth campaign v2, 2026-09-14: a 240-rejection burst of the
 // ES search pool cost 34 indicators at prefetch 48, where pycti's ladder retried them on
 // HTTP). A transient engine error inside one operation (rejected execution, circuit breaker,
@@ -430,7 +443,6 @@ const reportRefusedChunkWork = async (message: ChunkMessage, operations: ChunkOp
 };
 
 export const processChunkMessage = async (payload: string, controls: ChunkControls) => {
-  const start = Date.now();
   let message: ChunkMessage;
   try {
     message = JSON.parse(payload);
@@ -440,6 +452,13 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
     controls.deadLetter();
     return;
   }
+  await processChunk(message, controls, payload);
+};
+
+// One chunk, from the chunk queue (parsed) or from the worker-less intake (in process: its
+// operations may carry files, which no queue message could)
+export const processChunk = async (message: ChunkMessage, controls: ChunkControls, payload?: string) => {
+  const start = Date.now();
   const operations = Array.isArray(message.operations) ? message.operations : [];
   if (operations.length === 0) {
     logApp.error('[CHUNK-INTAKE] Chunk without operations, dead lettering', { chunk_id: message.chunk_id });
@@ -448,7 +467,7 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
     return;
   }
   // A chunk without an id (hand-published) is keyed by its payload head: same policy.
-  const attemptKey = message.chunk_id ?? payload.slice(0, 128);
+  const attemptKey = message.chunk_id ?? (payload ?? JSON.stringify(operations)).slice(0, 128);
   const tracked: InFlightChunk = { startedAt: start, lastProgressAt: start, operations: new Map() };
   operations.forEach((operation) => tracked.operations.set(operation, { phase: 'pending', since: start }));
   inFlightChunks.set(attemptKey, tracked);
@@ -671,6 +690,74 @@ export const processChunkMessage = async (payload: string, controls: ChunkContro
   }
 };
 
+// region worker-less intake (POC): the push queues consumed in place of the workers
+// A chunk run to its end in process: a retry (transient failure, after its backoff) runs it again,
+// the attempts cap of processChunk still bounds it
+const runChunkInProcess = (chunk: PushChunk) => new Promise<ChunkVerdict>((resolve) => {
+  const attempt = () => {
+    processChunk(chunk as ChunkMessage, {
+      redelivered: false,
+      ack: () => resolve('acked'),
+      retry: () => setImmediate(attempt),
+      deadLetter: () => resolve('dead_lettered'),
+    }).catch((cause) => {
+      logApp.error('[CHUNK-INTAKE] Unexpected chunk handling error', { cause, chunk_id: chunk.chunk_id });
+      resolve('dead_lettered');
+    });
+  };
+  attempt();
+});
+
+// The reads of the transformation, in process under the message's context (built on the first read)
+const readsClientFor = (envelope: IntakeEnvelope): ImportClient => {
+  let built: ReturnType<typeof createIntakeContext> | null = null;
+  return {
+    query: async (document: string, variables: Record<string, unknown> = {}) => {
+      built = built ?? createIntakeContext(envelope, CHUNK_INTAKE_MANAGER_CONTEXT);
+      const { context } = await built;
+      const result = await executeInProcessRead(context, document, variables as Record<string, any>);
+      if (result.errors?.length) {
+        const first: any = result.errors[0];
+        throw new ImportClientError(first?.extensions?.code ?? 'INTERNAL_SERVER_ERROR', String(first?.message));
+      }
+      return result.data;
+    },
+  };
+};
+
+let pushMessagesCounter: Counter | null = null;
+const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
+  pushMessagesCounter = meterManager.meterProvider.getMeter('opencti-chunk-intake').createCounter('opencti_workerless_intake_messages_total', {
+    valueType: ValueType.INT,
+    description: 'Push messages of the worker-less intake, by outcome (written, undecodable, transformation_failed, chunk_dead_lettered, work_not_alive, draft_locked)',
+  });
+  // pycti keeps its caches for the life of the worker, one per draft
+  const contexts = new Map<string, ImportContext>();
+  const logger: ImportLogger = { error: () => {}, warn: () => {} };
+  const contextFor = (draftId: string) => {
+    let context = contexts.get(draftId);
+    if (!context) {
+      context = createImportContext({ query: async () => {
+        throw new Error('reads go through the message client');
+      } }, logger, { draftId });
+      contexts.set(draftId, context);
+    }
+    return context;
+  };
+  const listQueues = async () => {
+    const context = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT);
+    // One consumer per queue, as the worker: connectorsForWorker lists some queues twice (background tasks)
+    return [...new Set((await connectorsForWorker(context, SYSTEM_USER)).map((connector: any) => connector.config?.push).filter((queue: unknown): queue is string => typeof queue === 'string'))];
+  };
+  return consumePushQueues(
+    listQueues,
+    { runChunk: runChunkInProcess, readsClient: readsClientFor, contextFor, chunkSize: PUSH_CHUNK_SIZE },
+    { prefetch: PUSH_PREFETCH, maxInFlightBytes: PUSH_MAX_IN_FLIGHT_BYTES },
+    (outcome) => pushMessagesCounter?.add(1, { outcome: outcome.reason }),
+  );
+};
+// endregion
+
 const chunkIntakeInitializer = async () => {
   registerChunkMetrics();
   startPreLoopTicker();
@@ -722,13 +809,19 @@ const chunkIntakeInitializer = async () => {
   if (isSequencerEnabled()) {
     await startSequencerLoop();
   }
-  await registerChunkIntakeQueue();
-  const consumer: ChunkConsumer = await consumeChunkIntakeQueue(PREFETCH, (payload: string, controls: ChunkControls) => {
-    processChunkMessage(payload, controls).catch((e) => {
-      logApp.error('[CHUNK-INTAKE] Unexpected chunk handling error', { cause: e });
+  let consumer: ChunkConsumer;
+  if (CHUNK_INTAKE_SOURCE === 'push_queues') {
+    consumer = await consumeWorkerlessIntake();
+  } else {
+    await registerChunkIntakeQueue();
+    consumer = await consumeChunkIntakeQueue(PREFETCH, (payload: string, controls: ChunkControls) => {
+      processChunkMessage(payload, controls).catch((e) => {
+        logApp.error('[CHUNK-INTAKE] Unexpected chunk handling error', { cause: e });
+      });
     });
-  });
+  }
   logApp.info('[OPENCTI-MODULE] Chunk intake manager consuming', {
+    source: CHUNK_INTAKE_SOURCE,
     queue: consumer.queue,
     prefetch: PREFETCH,
     pre_loop_concurrency: PRE_LOOP_CONCURRENCY,
@@ -754,6 +847,8 @@ export const chunkIntakeHandler = async (cronInput?: any) => {
   if (cronInput?.consumer && !cronInput.consumer.alive()) {
     throw new Error('Chunk intake consumer is not alive');
   }
+  // Worker-less intake: the push queues of the connectors registered since the last tick
+  await cronInput?.consumer?.refresh?.();
 };
 
 const CHUNK_INTAKE_MANAGER_DEFINITION: ManagerDefinition = {

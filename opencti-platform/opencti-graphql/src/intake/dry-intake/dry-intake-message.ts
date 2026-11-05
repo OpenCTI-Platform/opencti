@@ -55,7 +55,7 @@ const seconds = (start: bigint) => Number(process.hrtime.bigint() - start) / 1e9
 
 export const emptyResult = (): DryMessageResult => ({ ack: true, failedStage: null, defect: false, objects: 0, parts: 0, operations: 0, outcomes: {}, timings: {} });
 
-interface Decoded {
+export interface Decoded {
   type: string;
   content: StixObject;
   update: boolean;
@@ -65,8 +65,8 @@ interface Decoded {
 
 const UTF8 = new TextDecoder('utf-8', { fatal: true });
 
-const decode = (body: string): Decoded => {
-  const data = JSON.parse(body);
+// The push message as the worker reads it (push_handler.py): the parsed envelope, its content decoded
+export const decodeData = (data: Record<string, any>): Decoded => {
   if (typeof data.content !== 'string') {
     throw new TypeError('argument should be a bytes-like object or ASCII string');
   }
@@ -81,8 +81,10 @@ const decode = (body: string): Decoded => {
   };
 };
 
+const decode = (body: string): Decoded => decodeData(JSON.parse(body));
+
 // The bundle the worker imports, or an error for a message it refuses
-const bundleOf = (decoded: Decoded): { bundle: StixObject; update: boolean } => {
+export const bundleOf = (decoded: Decoded): { bundle: StixObject; update: boolean } => {
   if (decoded.type === 'bundle') {
     if (!Array.isArray(decoded.content.objects) || decoded.content.objects.length === 0) {
       throw new Error('JSON data type is not a STIX2 bundle');

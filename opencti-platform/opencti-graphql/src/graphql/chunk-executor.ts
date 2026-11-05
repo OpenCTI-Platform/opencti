@@ -109,3 +109,19 @@ export const executeChunkOperation = async (context: AuthContext, operation: Chu
     operationName: operation.operationName,
   });
 };
+
+// A read of the transformation (worker-less intake: vocabularies, categories...): the same
+// in-process execution, its document never pruned (the answer is what the transformation reads)
+const readDocumentCache = new LRUCache<string, DocumentNode>({ max: 200 });
+export const executeInProcessRead = async (context: AuthContext, query: string, variables: Record<string, any> = {}): Promise<ExecutionResult> => {
+  let document = readDocumentCache.get(query);
+  if (!document) {
+    document = parse(query);
+    const errors = validate(createSchema(), document);
+    if (errors.length > 0) {
+      throw UnsupportedError('Invalid read document', { errors: errors.map((e) => e.message) });
+    }
+    readDocumentCache.set(query, document);
+  }
+  return execute({ schema: createSchema(), document, contextValue: context, variableValues: variables });
+};
