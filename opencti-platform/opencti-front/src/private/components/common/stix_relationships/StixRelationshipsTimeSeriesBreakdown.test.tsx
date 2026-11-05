@@ -135,7 +135,7 @@ describe('StixRelationshipsTimeSeriesBreakdown', () => {
       endDate: config.endDate,
       interval: 'week',
       limit: 20,
-      order: 'asc',
+      orderMode: 'asc',
       includeOther: true,
       // the API checks the field against the relationship types the filters restrict to
       relationship_type: ['targets'],

@@ -42,7 +42,7 @@ export const buildTimeSeriesBreakdownSettings = (config: DashboardConfig, parame
     endDate: endDate ?? now(),
     interval,
     limit: getWidgetBreakdownLimit(parameters),
-    order: getWidgetBreakdownOrder(parameters),
+    orderMode: getWidgetBreakdownOrder(parameters),
     includeOther: getWidgetBreakdownOther(parameters),
   };
 };

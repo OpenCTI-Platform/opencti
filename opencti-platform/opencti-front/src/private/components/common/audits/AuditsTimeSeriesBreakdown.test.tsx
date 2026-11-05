@@ -121,7 +121,7 @@ describe('AuditsTimeSeriesBreakdown', () => {
       endDate: config.endDate,
       interval: 'week',
       limit: 20,
-      order: 'asc',
+      orderMode: 'asc',
       includeOther: true,
       // the API narrows them to the logs the user can see
       types: ['History', 'Activity'],

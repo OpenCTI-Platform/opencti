@@ -20,11 +20,11 @@ interface TimeSeriesBreakdownContentProps<TQuery extends OperationType> {
 // Settings of the breakdown its query was loaded with: a widget edited since keeps its data, and its settings
 // with them, until the query of its new settings is loaded. The public queries only name the widget: none is read.
 const isOrder = (value: unknown): value is 'asc' | 'desc' => value === 'asc' || value === 'desc';
-const readQueriedSettings = ({ interval, field, limit, order }: Record<string, unknown>) => ({
+const readQueriedSettings = ({ interval, field, limit, orderMode }: Record<string, unknown>) => ({
   interval: typeof interval === 'string' ? interval : undefined,
   breakdownBy: typeof field === 'string' ? field : undefined,
   limit: typeof limit === 'number' ? limit : undefined,
-  order: isOrder(order) ? order : undefined,
+  order: isOrder(orderMode) ? orderMode : undefined,
 });
 
 /**

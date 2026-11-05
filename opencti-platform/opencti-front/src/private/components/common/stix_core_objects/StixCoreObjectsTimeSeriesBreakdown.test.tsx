@@ -171,7 +171,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
       endDate: config.endDate,
       interval: 'week',
       limit: 20,
-      order: 'desc',
+      orderMode: 'desc',
       includeOther: false,
       // the dataset filters on reports: the API validates the field against this type
       types: ['Report'],
@@ -184,7 +184,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     render(makeWidget('line', { breakdownBy: 'objectLabel', breakdownOrder: 'asc', breakdownOther: true }));
 
     const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.calls[0][0];
-    expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ order: 'asc', includeOther: true });
+    expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ orderMode: 'asc', includeOther: true });
   });
 
   it('keeps the dashboard dates, and defaults a daily breakdown to the last 30 days', () => {
