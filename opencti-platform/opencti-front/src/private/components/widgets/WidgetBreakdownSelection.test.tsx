@@ -149,6 +149,19 @@ describe('WidgetBreakdownSelection', () => {
     }));
   });
 
+  it('explains the Other series with an info icon next to its switch, which the icon does not toggle', async () => {
+    setWidget({ parameters: { breakdownBy: 'report_types' } });
+    const { getByRole, findAllByText, user } = testRender(<WidgetBreakdownSelection />);
+    const info = getByRole('button', { name: 'More information' });
+    expect(info.closest('label')).toBeNull();
+
+    await user.hover(info);
+    expect((await findAllByText('Groups the entities that have none of the displayed values, including entities without a value.')).length).toBeGreaterThan(0);
+    await user.click(info);
+    expect(mocks.setConfigWidget).not.toHaveBeenCalled();
+    expect(getByRole('switch').getAttribute('aria-checked')).toBe('false');
+  });
+
   it('offers the number of series of the widget, even one the editor does not offer', () => {
     // The API accepts any number from 1 to 50: written through it, or imported
     setWidget({ parameters: { breakdownBy: 'report_types', breakdownLimit: 15 } });

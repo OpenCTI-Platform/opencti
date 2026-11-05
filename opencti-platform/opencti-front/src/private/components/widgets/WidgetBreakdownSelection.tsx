@@ -1,5 +1,19 @@
 import React from 'react';
-import { Alert, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import {
+  Alert,
+  Icon,
+  IconButton,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+  Switch,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
 import { clearBreakdown, getBreakdownLimitOptions, getWidgetBreakdownLimit, getWidgetBreakdownOrder, getWidgetBreakdownOther } from '../../../utils/widget/widgetBreakdown';
 import { useWidgetBreakdownState, useWidgetConfigContext } from './WidgetConfigContext';
@@ -95,13 +109,27 @@ const WidgetBreakdownSelection = () => {
   } else if (perspective === 'audits') {
     otherTooltip = t_i18n('Groups the events that have none of the displayed values, including events without a value.');
   }
+  // The explanation is an info icon next to the label, as for the other fields of the dialog: outside the
+  // label of the switch, which a click on would toggle
   const otherSwitch = (
-    <div style={{ width: 'fit-content' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
       <Switch
         checked={getWidgetBreakdownOther(parameters)}
         onCheckedChange={(checked: boolean) => setParameters({ breakdownOther: checked })}
         label={t_i18n('Include Other')}
       />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <IconButton
+            icon={<Icon name="info" size={16} className="text-feedback-info-primary" />}
+            aria-label={t_i18n('More information')}
+            variant="default"
+            priority="tertiary"
+            size="sm"
+          />
+        </TooltipTrigger>
+        <TooltipContent>{otherTooltip}</TooltipContent>
+      </Tooltip>
     </div>
   );
 
@@ -117,14 +145,7 @@ const WidgetBreakdownSelection = () => {
       {field && (
         <div style={{ display: 'flex', gap: 20, alignItems: 'flex-end' }}>
           <div style={{ flex: 2 }}>{orderSelect}</div>
-          <div style={{ flex: 1 }}>
-            <Tooltip>
-              <TooltipTrigger asChild>{otherSwitch}</TooltipTrigger>
-              <TooltipContent>
-                {otherTooltip}
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <div style={{ flex: 1 }}>{otherSwitch}</div>
         </div>
       )}
     </div>

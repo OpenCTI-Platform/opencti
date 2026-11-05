@@ -2824,3 +2824,39 @@ block lines.
 **Removal test.** At a pin where the paragraphs carry no margin: delete the
 `Box` wrapper and the marker, and check that a banner with a title and one
 description line is no taller than the Alert frame (padding plus the two lines).
+
+---
+
+## 76. `Switch` labels its control in 12px, smaller than the MUI switches of the same step, and has no info slot
+
+**Needed.** The parameters step of the widget editor (`WidgetCreationParameters.tsx`)
+lists its options as MUI `Switch`es in `FormControlLabel`s ("Stacked", "Display
+legend", ...). The time series breakdown settings (`WidgetBreakdownSelection.tsx`)
+add one more, "Include Other", with the library `Switch`, and explain it as the
+dialog explains its other fields: an info icon next to the label.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.3.0,
+`components/switch/Switch.mjs`): the `label` is a `content-compact-medium` span,
+`--text-content-compact-medium: var(--text-2)`, 12px. The MUI labels of the same
+step are `body1`, `0.9rem` in this product's theme (`ThemeDark.ts`,
+`ThemeLight.ts`), 14.4px. Nothing sizes the label: `wrapperClassName` styles the
+outer `<label>`, not its text. And unlike `Input` (`infoTooltip`) or `SelectLabel`
+(`hasInfoIcon`, a decorative glyph), `Switch` has no slot for an info control:
+anything passed in `label` sits inside the `<label>`, and a click on it toggles
+the switch.
+
+**What the product did.** Nothing is worked around. "Include Other" keeps the
+library size, and the other switches stay MUI (entry 59 holds their migration):
+the two sizes side by side are the gap this entry records. The info `IconButton`
+and its `Tooltip` sit next to the `Switch`, outside its `<label>`, as the info
+icon of the dataset label does in `WidgetCreationDataSelection.tsx`.
+
+**Ask.** A decision on the size of a switch label: either a text size the
+product can match to its other form labels, or 12px everywhere, which entry 59's
+migration would then bring to the other switches. And an `infoTooltip` slot, as
+on `Input`, rendered outside the `<label>`.
+
+**Removal test.** Once every switch of the step is a library one (entry 59), all
+their labels read at one size. With an `infoTooltip` slot, the info icon of
+"Include Other" moves into it, still opens its tooltip on hover and focus, and
+a click on it does not toggle the switch.
