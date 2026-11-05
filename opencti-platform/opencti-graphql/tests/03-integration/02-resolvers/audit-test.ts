@@ -238,6 +238,7 @@ describe('audits distribution query', () => {
 const AUDITS_TIME_SERIES_BREAKDOWN_QUERY = gql`
     query AuditsTimeSeriesBreakdownQuery(
         $field: String!
+        $dateAttribute: String
         $startDate: DateTime!
         $endDate: DateTime
         $interval: String!
@@ -249,6 +250,7 @@ const AUDITS_TIME_SERIES_BREAKDOWN_QUERY = gql`
     ) {
         auditsTimeSeriesBreakdown(
             field: $field
+            dateAttribute: $dateAttribute
             startDate: $startDate
             endDate: $endDate
             interval: $interval
@@ -320,6 +322,17 @@ describe('audits time series breakdown query', () => {
         'Time series breakdown does not support this field for the history and activity logs',
         'FUNCTIONAL_ERROR',
       );
+    }
+  });
+
+  it('should refuse a date attribute that is not a date of the logs', async () => {
+    for (const dateAttribute of ['event_type', 'context_data.message', 'published']) {
+      const { errors } = await queryAsAdminWithError(
+        { query: AUDITS_TIME_SERIES_BREAKDOWN_QUERY, variables: breakdownVariables({ field: 'event_scope', dateAttribute }) },
+        'Time series breakdown does not support this date attribute for these types',
+        'FUNCTIONAL_ERROR',
+      );
+      expect(errors?.[0].extensions?.data).toEqual({ reason: 'unsupported_date_attribute', dateAttribute, types: ['History', 'Activity'] });
     }
   });
 

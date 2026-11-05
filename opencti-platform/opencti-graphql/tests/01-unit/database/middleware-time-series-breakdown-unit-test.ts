@@ -33,10 +33,13 @@ vi.mock('../../../src/config/conf', async () => {
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
 
+// The registered schema, for the checks of the date attributes
+import '../../../src/modules/index';
 import * as engine from '../../../src/database/engine';
 import * as accessModule from '../../../src/utils/access';
 import {
   BREAKDOWN_ALLOWED_REFS,
+  checkBreakdownDateAttribute,
   distributionEntities,
   distributionHistory,
   HISTORY_BREAKDOWN_ALLOWED_FIELDS,
@@ -144,6 +147,29 @@ describe('timeSeriesBreakdownEntities', () => {
     await expect(breakdown({ field: 'objects' })).rejects.toThrow('does not support this field');
     await expect(breakdown({ field: 'externalReferences' })).rejects.toThrow('does not support this field');
     expect(engine.elAggregationCount).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a date attribute that is not a date of the types, before querying', async () => {
+    // Given to the engine as the field of the date histogram, a text or an unknown field would make it fail
+    for (const dateAttribute of ['description', 'creator_id', 'report_types', 'not_an_attribute']) {
+      await expect(breakdown({ field: 'creator_id', dateAttribute })).rejects.toMatchObject({
+        extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'unsupported_date_attribute', dateAttribute, types: ['Report'] } },
+      });
+    }
+    expect(engine.elAggregationCount).not.toHaveBeenCalled();
+    expect(engine.elHistogramBreakdownCount).not.toHaveBeenCalled();
+  });
+
+  it('should count the entities on their creation date without date attribute', async () => {
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('user-a', 1)]);
+    vi.mocked(engine.elFindByIds).mockResolvedValue({ 'user-a': makeEntity('user-a', 'Alice') } as any);
+    vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
+
+    for (const dateAttribute of [undefined, null, '']) {
+      await breakdown({ field: 'creator_id', dateAttribute });
+      expect((vi.mocked(engine.elAggregationCount).mock.lastCall?.[3] as any).dateAttribute).toEqual('created_at');
+      expect((vi.mocked(engine.elHistogramBreakdownCount).mock.lastCall?.[3] as any).dateAttribute).toEqual('created_at');
+    }
   });
 
   it('should count the Other series in the maximum number of buckets', async () => {
@@ -652,6 +678,63 @@ describe('timeSeriesBreakdownEntities', () => {
   });
 });
 
+describe('checkBreakdownDateAttribute', () => {
+  beforeEach(() => {
+    // The registered schema
+    vi.restoreAllMocks();
+  });
+
+  const refusal = (dateAttribute: string, types: string[]) => ({
+    extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'unsupported_date_attribute', dateAttribute, types } },
+  });
+
+  it('should accept the date attributes of the types', () => {
+    expect(() => checkBreakdownDateAttribute(['Report'], 'published')).not.toThrow();
+    expect(() => checkBreakdownDateAttribute(['Report'], 'created_at')).not.toThrow();
+    expect(() => checkBreakdownDateAttribute(['Report', 'Malware'], 'first_seen')).not.toThrow();
+    expect(() => checkBreakdownDateAttribute(['History', 'Activity'], 'timestamp')).not.toThrow();
+    expect(() => checkBreakdownDateAttribute(['uses'], 'start_time')).not.toThrow();
+    expect(() => checkBreakdownDateAttribute(['stix-sighting-relationship'], 'last_seen')).not.toThrow();
+  });
+
+  it('should accept the date attributes of the types an abstract type stands for', () => {
+    // The default types of the entities and of the relationships
+    expect(() => checkBreakdownDateAttribute(['Stix-Core-Object'], 'first_seen')).not.toThrow();
+    expect(() => checkBreakdownDateAttribute(['Stix-Core-Object'], 'published')).not.toThrow();
+    expect(() => checkBreakdownDateAttribute(['stix-relationship'], 'start_time')).not.toThrow();
+    expect(() => checkBreakdownDateAttribute(['stix-relationship'], 'first_seen')).not.toThrow();
+  });
+
+  it('should refuse any field that is not a date attribute of the types', () => {
+    const cases: [string, string[]][] = [
+      ['name', ['Report']],
+      ['description', ['Report']],
+      ['confidence', ['Report']],
+      ['report_types', ['Report']],
+      ['objectLabel', ['Report']],
+      ['rel_object-marking.internal_id', ['Report']],
+      ['not_an_attribute', ['Stix-Core-Object']],
+      // A date of other types only
+      ['first_seen', ['Report']],
+      ['published', ['uses']],
+      ['start_time', ['stix-sighting-relationship']],
+      ['event_type', ['History', 'Activity']],
+      ['context_data.entity_type', ['History']],
+      ['first_seen', ['History']],
+      ['created_at', ['Not-A-Type']],
+    ];
+    cases.forEach(([dateAttribute, types]) => {
+      let error: unknown;
+      try {
+        checkBreakdownDateAttribute(types, dateAttribute);
+      } catch (e) {
+        error = e;
+      }
+      expect(error, dateAttribute).toMatchObject(refusal(dateAttribute, types));
+    });
+  });
+});
+
 describe('resolveBreakdownField', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -766,6 +849,8 @@ describe('timeSeriesBreakdownHistory', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // The registered attributes of the logs
+    vi.restoreAllMocks();
     vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
     mockRegisteredTypes();
   });
@@ -819,6 +904,15 @@ describe('timeSeriesBreakdownHistory', () => {
       // Without types, only the history, like the other logs aggregations
       expect(options.types).toEqual(['History']);
     }
+  });
+
+  it('should refuse a date attribute that is not a date of the logs, whatever the types requested', async () => {
+    for (const [dateAttribute, types] of [['event_type', ['History']], ['context_data.message', ['Activity']], ['published', ['Report']]]) {
+      await expect(historyBreakdown({ field: 'event_scope', dateAttribute, types })).rejects.toMatchObject({
+        extensions: { data: { reason: 'unsupported_date_attribute', dateAttribute, types: ['History', 'Activity'] } },
+      });
+    }
+    expect(engine.elAggregationCount).not.toHaveBeenCalled();
   });
 
   it('should keep a date attribute given by the widget, and end the period now without end date', async () => {
@@ -1015,6 +1109,16 @@ describe('timeSeriesBreakdownRelations', () => {
     vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
     mockRelationshipSchema();
     mockRegisteredTypes();
+  });
+
+  it('should refuse a date attribute that is not a date of the relationship types', async () => {
+    for (const dateAttribute of ['description', 'relationship_type', 'confidence']) {
+      await expect(relationsBreakdown({ field: 'relationship_type', dateAttribute })).rejects.toMatchObject({
+        extensions: { data: { reason: 'unsupported_date_attribute', dateAttribute, types: ['uses', 'targets'] } },
+      });
+    }
+    expect(engine.elAggregationCount).not.toHaveBeenCalled();
+    expect(engine.elConnectionTypesAggregationCount).not.toHaveBeenCalled();
   });
 
   it('should reject a limit out of bounds and the fields that cannot be broken down', async () => {

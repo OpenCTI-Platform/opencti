@@ -28,6 +28,7 @@ import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
 import { cleanupEntityWorkflow, initializeEntityWorkflow, syncWorkflowInstanceFromExternalWrite } from '../modules/workflow/domain/workflow-domain';
 import {
+  BREAKDOWN_REFUSAL_REASONS,
   computeAverage,
   buildTimeSeriesAxis,
   countTimeSeriesIntervals,
@@ -137,7 +138,7 @@ import {
   REL_INDEX_PREFIX,
   RULE_PREFIX,
 } from '../schema/general';
-import { isAnId, isValidDate } from '../schema/schemaUtils';
+import { getParentTypes, isAnId, isValidDate } from '../schema/schemaUtils';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
@@ -147,7 +148,7 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES,
 } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import {
@@ -1029,6 +1030,7 @@ const HISTORY_BREAKDOWN_FIELDS = new Map<string, BreakdownField>([
   ['context_data.entity_type', { aggregationField: 'context_data.entity_type', resolveEntities: false, resolveLabel: resolveEntityTypeLabel }],
 ]);
 export const HISTORY_BREAKDOWN_ALLOWED_FIELDS = Array.from(HISTORY_BREAKDOWN_FIELDS.keys());
+const HISTORY_TYPES = [ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY];
 export const resolveHistoryBreakdownField = (field: string): BreakdownField => {
   const breakdownField = HISTORY_BREAKDOWN_FIELDS.get(field);
   if (!breakdownField) {
@@ -1064,17 +1066,59 @@ export const resolveVocabularyLabels = async (context: AuthContext, categories: 
   const vocabularies = await fullEntitiesList<BasicStoreEntityVocabulary>(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], { filters, noFiltersChecking: true });
   return new Map(vocabularies.map((vocabulary) => [normalizeKeywordValue(vocabulary.name), vocabulary.name]));
 };
-// One series per value of a field, shared by every perspective: discover the values among the documents of
-// the indices that queryArgs select (with their access restrictions), keep the top ones, count them over time
+const isDateAttributeOfType = (type: string, name: string) => {
+  try {
+    return schemaAttributesDefinition.getAttribute(type, name)?.type === 'date';
+  } catch {
+    return false; // type without registered attributes
+  }
+};
+const isSubtypeOf = (type: string, parentType: string) => {
+  try {
+    return getParentTypes(type).includes(parentType);
+  } catch {
+    return false; // abstract type
+  }
+};
+// The date attribute is the field of the date histogram and of the range of the period, sent as is to the engine:
+// any other field than a date makes the request fail. It must be a date attribute of one of the types at least,
+// or of a type an abstract one stands for (first_seen of the malwares for Stix-Core-Object, start_time of the
+// stix-core-relationships for stix-relationship).
+export const checkBreakdownDateAttribute = (types: string[], dateAttribute: string) => {
+  const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
+  const isDateOfTypes = types.some((type) => isDateAttributeOfType(type, dateAttribute)
+    || registeredTypes.some((registeredType) => isSubtypeOf(registeredType, type) && isDateAttributeOfType(registeredType, dateAttribute)));
+  if (!isDateOfTypes) {
+    throw FunctionalError('Time series breakdown does not support this date attribute for these types', {
+      reason: BREAKDOWN_REFUSAL_REASONS.UNSUPPORTED_DATE_ATTRIBUTE,
+      dateAttribute,
+      types,
+    });
+  }
+};
+// What a perspective breaks down: the documents of its indices, by one of its fields, over one of its dates
+type TimeSeriesBreakdownPerspective = {
+  indices: string[] | string;
+  breakdownField: BreakdownField;
+  // The date attribute must be a date of one of them at least
+  dateAttributeTypes: string[];
+  // Date attribute without one in the arguments
+  defaultDateAttribute: string;
+};
+// One series per value of a field, shared by every perspective: discover the values among the documents that
+// the arguments select (with their access restrictions), keep the top ones, count them over time
 const timeSeriesBreakdown = async (
   context: AuthContext,
   user: AuthUser,
-  indices: string[] | string,
-  breakdownField: BreakdownField,
-  queryArgs: Record<string, any>,
-  args: TimeSeriesBreakdownArgs,
+  perspective: TimeSeriesBreakdownPerspective,
+  args: TimeSeriesBreakdownArgs & Record<string, any>,
 ) => {
+  const { indices, breakdownField, dateAttributeTypes, defaultDateAttribute } = perspective;
   checkTimeSeriesBreakdownLimit(args.limit);
+  if (args.dateAttribute) {
+    checkBreakdownDateAttribute(dateAttributeTypes, args.dateAttribute);
+  }
+  const dateAttribute = args.dateAttribute || defaultDateAttribute;
   const { startDate, interval, limit = TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT } = args;
   // Without an end date, the histogram would create every empty bucket up to the most recent document,
   // a date in the future included, past the size checked below: the period always ends
@@ -1097,7 +1141,8 @@ const timeSeriesBreakdown = async (
     });
   }
   const breakdownArgs = {
-    ...R.omit(['order', 'includeOther'], queryArgs),
+    ...R.omit(['order', 'includeOther'], args),
+    dateAttribute,
     endDate,
     field: aggregationField,
     // Same inclusive bounds as the histogram below, so both requests see the same entities
@@ -1174,7 +1219,10 @@ export const timeSeriesBreakdownEntities = async (
   const breakdownField = resolveBreakdownField(types, args.field);
   // Entities only: the relationships indices hold nothing a Stix-Core-Object filter could match
   const indices = args.onlyInferred ? [READ_INDEX_INFERRED_ENTITIES] : READ_ENTITIES_INDICES;
-  return timeSeriesBreakdown(context, user, indices, breakdownField, buildEntityFilters(types, args), args);
+  // buildEntityFilters keeps the other arguments, which its type does not tell
+  const queryArgs = buildEntityFilters(types, args) as typeof args & { types: string[] };
+  const perspective = { indices, breakdownField, dateAttributeTypes: queryArgs.types, defaultDateAttribute: 'created_at' };
+  return timeSeriesBreakdown(context, user, perspective, queryArgs);
 };
 type TimeSeriesBreakdownHistoryArgs = TimeSeriesBreakdownArgs & {
   types?: string[] | null;
@@ -1186,13 +1234,9 @@ type TimeSeriesBreakdownHistoryArgs = TimeSeriesBreakdownArgs & {
 // The types are the caller's to narrow to what the user can see, like the other logs aggregations (see computeAuditTypes)
 export const timeSeriesBreakdownHistory = async (context: AuthContext, user: AuthUser, args: TimeSeriesBreakdownHistoryArgs) => {
   const breakdownField = resolveHistoryBreakdownField(args.field);
-  const historyArgs = {
-    ...args,
-    types: args.types ?? [ENTITY_TYPE_HISTORY],
-    dateAttribute: args.dateAttribute || 'timestamp',
-    historyFiltering: true,
-  };
-  return timeSeriesBreakdown(context, user, READ_INDEX_HISTORY, breakdownField, historyArgs, historyArgs);
+  // The dates of the logs, whatever the types requested
+  const perspective = { indices: READ_INDEX_HISTORY, breakdownField, dateAttributeTypes: HISTORY_TYPES, defaultDateAttribute: 'timestamp' };
+  return timeSeriesBreakdown(context, user, perspective, { ...args, types: args.types ?? [ENTITY_TYPE_HISTORY], historyFiltering: true });
 };
 export const timeSeriesBreakdownRelations = async (
   context: AuthContext,
@@ -1203,7 +1247,9 @@ export const timeSeriesBreakdownRelations = async (
   const breakdownField = resolveRelationshipBreakdownField(relationshipTypes, args.field);
   // Same relationships as timeSeriesRelations
   const indices = args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES;
-  return timeSeriesBreakdown(context, user, indices, breakdownField, buildEntityFilters(relationshipTypes, args), args);
+  const queryArgs = buildEntityFilters(relationshipTypes, args) as typeof args & { types: string[] };
+  const perspective = { indices, breakdownField, dateAttributeTypes: queryArgs.types, defaultDateAttribute: 'created_at' };
+  return timeSeriesBreakdown(context, user, perspective, queryArgs);
 };
 export const timeSeriesRelations = async (
   context: AuthContext,

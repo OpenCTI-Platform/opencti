@@ -449,6 +449,19 @@ describe('stixRelationshipsTimeSeriesBreakdown', () => {
     }
   });
 
+  it('should refuse a date attribute that is not a date of the relationship types', async () => {
+    const message = 'Time series breakdown does not support this date attribute for these types';
+    // Without relationship type, the dates of every relationship type are accepted (start_time, first_seen)
+    for (const dateAttribute of ['start_time', 'first_seen']) {
+      const { truncated } = await breakdown({ field: 'relationship_type', dateAttribute });
+      expect(truncated).toEqual(false);
+    }
+    for (const [dateAttribute, relationship_type] of [['relationship_type', undefined], ['description', ['targets']], ['first_seen', ['targets']]]) {
+      const { errors } = await expectBreakdownError({ field: 'relationship_type', dateAttribute, relationship_type }, message);
+      expect(errors?.[0].extensions?.data).toMatchObject({ reason: 'unsupported_date_attribute', dateAttribute });
+    }
+  });
+
   it('should refuse an invalid limit or interval', async () => {
     const message = 'Time series breakdown limit must be an integer between 1 and the maximum';
     await expectBreakdownError({ field: 'relationship_type', limit: 0 }, message);

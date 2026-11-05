@@ -169,6 +169,12 @@ export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: s
   return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));
 };
 
+// Reasons of the refusals of a time series breakdown, in the data of their error: the front tells the
+// refusals apart from them, never from their messages
+export const BREAKDOWN_REFUSAL_REASONS = {
+  UNSUPPORTED_DATE_ATTRIBUTE: 'unsupported_date_attribute',
+} as const;
+
 // Same refusal as elHistogramCount, for the intervals its date histogram cannot aggregate
 const unsupportedIntervalError = (interval: string) => {
   return FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });

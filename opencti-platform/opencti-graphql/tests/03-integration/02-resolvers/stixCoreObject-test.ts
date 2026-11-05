@@ -388,6 +388,15 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
     await expectBreakdownError({ field: 'externalReferences' }, message);
   });
 
+  it('should refuse a date attribute that is not a date of the types, without sending the request', async () => {
+    const message = 'Time series breakdown does not support this date attribute for these types';
+    for (const dateAttribute of ['name', 'description', 'report_types', 'first_seen']) {
+      const { errors } = await expectBreakdownError({ field: 'objectLabel', dateAttribute }, message);
+      // Refused before any request to the engine: the error holds the refusal only, never the request
+      expect(errors?.[0].extensions?.data).toEqual({ reason: 'unsupported_date_attribute', dateAttribute, types: ['Report'] });
+    }
+  });
+
   it('should refuse an invalid limit', async () => {
     const message = 'Time series breakdown limit must be an integer between 1 and the maximum';
     await expectBreakdownError({ field: 'objectLabel', limit: 0 }, message);
