@@ -44,26 +44,11 @@ const SwitchField = (props) => {
     }
   }, []);
 
-  const labelNode = tooltip ? (
-    <div style={{ display: 'flex', alignItems: 'center' }}>
-      <span>{label}</span>
-      <Tooltip title={t_i18n(tooltip)}>
-        <InformationOutline
-          fontSize="small"
-          color="primary"
-          style={{ cursor: 'default', margin: '0 0 0 4px' }}
-        />
-      </Tooltip>
-    </div>
-  ) : (
-    label
-  );
-
   return (
     <div style={props.containerstyle}>
       {/* Wrapper kept for the row position; see fds-migration/MIGRATION-DECISIONS.md#switch-formgroup-wrapper */}
       <FormGroup>
-        <div style={{ width: 'fit-content' }}>
+        <div style={{ width: 'fit-content', display: 'flex', alignItems: 'center', gap: 4 }}>
           <Switch
             name={name}
             // A caller-supplied `checked` wins over the Formik value: three sites drive the control from their own
@@ -73,11 +58,16 @@ const SwitchField = (props) => {
             // switches stayed live during submit.
             disabled={disabled ?? isSubmitting}
             required={required}
-            label={labelNode}
+            label={label}
             onCheckedChange={internalOnChange}
             onFocus={onFocus}
             onBlur={internalOnBlur}
           />
+          {tooltip && (
+            <Tooltip title={t_i18n(tooltip)}>
+              <InformationOutline fontSize="small" color="primary" style={{ cursor: 'default' }} />
+            </Tooltip>
+          )}
         </div>
       </FormGroup>
       <FormHelperText>{helpertext}</FormHelperText>
