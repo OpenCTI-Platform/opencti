@@ -79,6 +79,11 @@ const NewsFeedToastManager: FunctionComponent = () => {
     return () => sub.dispose();
   }, [isEnabled, handleNewsFeedItemDeleted]);
 
+  // The queued toasts must not come back, as if they were new, once the notifications are enabled again.
+  useEffect(() => {
+    if (!isEnabled) setToasts([]);
+  }, [isEnabled]);
+
   const handleDismissAll = useCallback(() => setToasts([]), []);
 
   if (!isEnabled || toasts.length === 0) return null;

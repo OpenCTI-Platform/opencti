@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import NewsFeedPage from './NewsFeedPage';
 
 const mockCommitMutation = vi.fn();
@@ -259,6 +260,38 @@ describe('NewsFeedPage', () => {
     renderPage({ unreadCount: 4 });
     emitNewsFeedNumber(null);
     expect(getBadge()).toHaveTextContent('4');
+  });
+
+  it('does not reuse the stale live counts when the news feed is enabled again', () => {
+    let setUnsubscribed: (value: boolean) => void = () => {};
+    mockUseLazyLoadQuery.mockReturnValue({
+      myUnreadResourcesCount: 4,
+      myUnreadBlogPostsCount: 2,
+      settings: BLOG_POST_SETTINGS,
+    });
+    const Harness = () => {
+      const [unsubscribed, setValue] = useState(false);
+      setUnsubscribed = setValue;
+      return (
+        <UserContext.Provider
+          value={createMockUserContext({
+            settings: BLOG_POST_SETTINGS,
+            me: { id: 'user-1', unsubscribed_news_feed_types: unsubscribed ? ['*'] : [] },
+          })}
+        >
+          <NewsFeedPage />
+        </UserContext.Provider>
+      );
+    };
+    testRender(<Harness />);
+    emitNewsFeedNumber(9, 8);
+    expect(getBadge()).toHaveTextContent('9');
+    expect(getBlogPostsBadge()).toHaveTextContent('8');
+
+    act(() => setUnsubscribed(true));
+    act(() => setUnsubscribed(false));
+    expect(getBadge()).toHaveTextContent('4');
+    expect(getBlogPostsBadge()).toHaveTextContent('2');
   });
 
   it('ignores the live count when the platform is not registered', () => {

@@ -82,7 +82,11 @@ const NewsFeedPage: FunctionComponent = () => {
 
   const shouldSubscribeToNewsFeed = isXTMHubRegistered && !isUnsubscribedFromAllNewsFeeds;
   useEffect(() => {
-    if (!shouldSubscribeToNewsFeed) return undefined;
+    if (!shouldSubscribeToNewsFeed) {
+      // the last live counts would be stale, and win over the query, once the feed is enabled again
+      setLiveCounts({ resources: null, blogPosts: null });
+      return undefined;
+    }
     const sub = requestSubscription({
       subscription: newsFeedNumberSubscription,
       variables: {},

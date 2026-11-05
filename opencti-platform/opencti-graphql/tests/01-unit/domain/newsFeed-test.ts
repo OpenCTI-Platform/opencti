@@ -629,6 +629,27 @@ describe('News feed', () => {
       );
     });
 
+    it('should not change the type of an existing item, which decides the tab it is counted in', async () => {
+      mockFullEntitiesList.mockResolvedValueOnce([
+        { id: 'existing-id', user_id: mockUser.id, is_read: false, news_feed_type: NewsFeedItemType.BLOG_POST },
+      ]);
+      mockPatchAttribute.mockResolvedValue({ element: { id: 'existing-id', user_id: mockUser.id } });
+
+      await upsertNewsFeed(mockContext, mockUser, {
+        ...baseInput,
+        news_feed_item_id: 'hub-item-1',
+        news_feed_type: NewsFeedItemType.RESOURCE_CUSTOM_DASHBOARD,
+      });
+
+      expect(mockPatchAttribute).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        'existing-id',
+        'NewsFeedItem',
+        expect.not.objectContaining({ news_feed_type: expect.anything() }),
+      );
+    });
+
     it('should create a new item when no existing item matches by news_feed_item_id', async () => {
       mockFullEntitiesList.mockResolvedValueOnce([]);
       mockCreateInternalObject.mockResolvedValue({ id: 'created-id', user_id: mockUser.id });

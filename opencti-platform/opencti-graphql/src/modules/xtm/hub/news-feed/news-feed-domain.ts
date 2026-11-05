@@ -91,12 +91,13 @@ export const upsertNewsFeed = async (context: AuthContext, user: AuthUser, input
     return addNewsFeed(context, user, input);
   }
 
+  // The type is never patched: it decides the tab (resource or blogpost) in which the item is counted
+  // as unread, and changing it here would leave the published counts stale.
   const patch = {
     title: input.title,
     tags: input.tags ?? [],
     metadata: input.metadata ?? [],
     creation_date: input.creation_date,
-    news_feed_type: input.news_feed_type,
   };
   const { element } = await patchAttribute<StoreEntityNewsFeedItem>(context, user, existing.id, ENTITY_TYPE_NEWS_FEED_ITEM, patch);
   await notify(BUS_TOPICS[ENTITY_TYPE_NEWS_FEED_ITEM].EDIT_TOPIC, element, user);

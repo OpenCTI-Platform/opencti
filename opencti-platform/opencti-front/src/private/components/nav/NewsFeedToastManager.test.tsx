@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen } from '@testing-library/react';
 import testRender, { createMockUserContext } from '../../../utils/tests/test-render';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import NewsFeedToastManager from './NewsFeedToastManager';
 import { NewsFeedToastData } from './NewsFeedToastItem';
 
@@ -222,6 +223,34 @@ describe('NewsFeedToastManager', () => {
     emitAdded({ id: 'item-1' });
     emitAdded({ id: 'item-2' });
     await user.click(screen.getByRole('button', { name: 'Dismiss all' }));
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('does not bring back the queued toasts when the notifications are enabled again', () => {
+    let setUnsubscribed: (value: boolean) => void = () => {};
+    const Harness = () => {
+      const [unsubscribed, setValue] = useState(false);
+      setUnsubscribed = setValue;
+      return (
+        <UserContext.Provider
+          value={createMockUserContext({
+            settings: ENABLED_SETTINGS,
+            me: { id: 'user-1', unsubscribed_news_feed_types: unsubscribed ? ['*'] : [] },
+          })}
+        >
+          <NewsFeedToastManager />
+        </UserContext.Provider>
+      );
+    };
+    const { container } = testRender(<Harness />);
+    emitAdded({ id: 'item-1', title: 'Stale blogpost', news_feed_type: 'BLOG_POST' });
+    expect(screen.getByText('Stale blogpost')).toBeInTheDocument();
+
+    act(() => setUnsubscribed(true));
+    expect(container).toBeEmptyDOMElement();
+
+    act(() => setUnsubscribed(false));
+    expect(screen.queryByText('Stale blogpost')).not.toBeInTheDocument();
     expect(container).toBeEmptyDOMElement();
   });
 
