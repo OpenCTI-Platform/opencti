@@ -229,20 +229,6 @@
             {
               "field_name": "x_opencti_type",
               "value": "Case-Rft"
-            },
-            {
-              "field_name": "x_opencti_files",
-              "value": [
-                {
-                  "mime_type": "application/json",
-                  "name": "ipv4_example.json",
-                  "object_marking_refs": [
-                    "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
-                  ],
-                  "uri": "/storage/get/import/Case-Rft/ae110ba9-34a7-44ef-86b9-7b52def4b4aa/ipv4_example.json",
-                  "version": "2025-06-26T17:55:28.870Z"
-                }
-              ]
             }
           ],
           "description": "description",

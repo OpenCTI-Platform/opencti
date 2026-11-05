@@ -99,20 +99,6 @@
             {
               "field_name": "x_opencti_type",
               "value": "Observed-Data"
-            },
-            {
-              "field_name": "x_opencti_files",
-              "value": [
-                {
-                  "mime_type": "application/json",
-                  "name": "ipv4_example.json",
-                  "object_marking_refs": [
-                    "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
-                  ],
-                  "uri": "/storage/get/import/Observed-Data/9653626d-54c7-433b-beca-ee1dee226125/ipv4_example.json",
-                  "version": "2025-06-26T15:23:30.705Z"
-                }
-              ]
             }
           ],
           "embedded": null,

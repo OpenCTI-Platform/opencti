@@ -55,14 +55,31 @@ export const pickAliases = (object: StixObject) => {
   return null;
 };
 
-// pycti extract_custom_field_values: every x_ property, top level first, then the extensions
+// pycti is_custom_field_input_value: a custom field holds a scalar, or a list of strings for a
+// multi select; an object, or a list holding one or a list, never matches one (x_opencti_files
+// and its base64 content, already sent as uploads) and is not sent
+const isCustomFieldInputValue = (value: unknown) => {
+  if (value === null || value === undefined) {
+    return false;
+  }
+  if (Array.isArray(value)) {
+    return value.every((item) => item === null || typeof item !== 'object');
+  }
+  return typeof value !== 'object';
+};
+
+// pycti extract_custom_field_values: every x_ property that can fill a custom field, top level
+// first, then the extensions
 export const extractCustomFieldValues = (object: StixObject) => {
   const values: { field_name: string; value: unknown }[] = [];
   const seen = new Set<string>();
   Object.entries(object).forEach(([key, value]) => {
     if (key.startsWith('x_') && value !== null && value !== undefined) {
-      values.push({ field_name: key, value });
+      // A top-level value takes precedence even if it cannot be sent
       seen.add(key);
+      if (isCustomFieldInputValue(value)) {
+        values.push({ field_name: key, value });
+      }
     }
   });
   const { extensions } = object;
@@ -72,7 +89,7 @@ export const extractCustomFieldValues = (object: StixObject) => {
         return;
       }
       Object.entries(extension as Record<string, unknown>).forEach(([key, value]) => {
-        if (key.startsWith('x_') && !seen.has(key) && value !== null && value !== undefined) {
+        if (key.startsWith('x_') && !seen.has(key) && isCustomFieldInputValue(value)) {
           values.push({ field_name: key, value });
           seen.add(key);
         }

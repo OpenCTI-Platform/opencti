@@ -144,20 +144,6 @@
             {
               "field_name": "x_opencti_type",
               "value": "Grouping"
-            },
-            {
-              "field_name": "x_opencti_files",
-              "value": [
-                {
-                  "mime_type": "application/json",
-                  "name": "file_example (2).json",
-                  "object_marking_refs": [
-                    "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
-                  ],
-                  "uri": "/storage/get/import/Grouping/2076a71c-a480-424f-8058-cb5c798e4360/file_example (2).json",
-                  "version": "2025-06-26T14:59:43.780Z"
-                }
-              ]
             }
           ],
           "description": "description",

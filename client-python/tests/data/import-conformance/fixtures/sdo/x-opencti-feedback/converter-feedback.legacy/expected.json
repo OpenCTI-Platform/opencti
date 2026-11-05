@@ -99,18 +99,6 @@
             {
               "field_name": "x_opencti_type",
               "value": "Feedback"
-            },
-            {
-              "field_name": "x_opencti_files",
-              "value": [
-                {
-                  "mime_type": "application/json",
-                  "name": "file_example (2).json",
-                  "object_marking_refs": [],
-                  "uri": "/storage/get/import/Feedback/5a194bd5-1fe1-4618-bfa0-48b15eb590b4/file_example (2).json",
-                  "version": "2025-06-26T15:58:16.639Z"
-                }
-              ]
             }
           ],
           "description": "Feedback STIX 2.0",

@@ -233,20 +233,6 @@
             {
               "field_name": "x_opencti_workflow_id",
               "value": "38f497dc-b0bc-48e5-aff8-0e5bd5d5937a"
-            },
-            {
-              "field_name": "x_opencti_files",
-              "value": [
-                {
-                  "mime_type": "application/json",
-                  "name": "ipv4_example.json",
-                  "object_marking_refs": [
-                    "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
-                  ],
-                  "uri": "/storage/get/import/Case-Rfi/4ebd03f2-d922-4449-915e-2facb67e781c/ipv4_example.json",
-                  "version": "2025-06-26T17:51:30.748Z"
-                }
-              ]
             }
           ],
           "description": "description",
