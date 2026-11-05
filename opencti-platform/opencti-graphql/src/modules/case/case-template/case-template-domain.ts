@@ -12,6 +12,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteR
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE, type StoreEntityTaskTemplate } from '../../task/task-template/task-template-types';
 import type { BasicStoreEntityCase, StoreEntityCase } from '../case-types';
+import { normalizeName } from '../../../schema/identifier';
 
 export const findById: DomainFindById<BasicStoreEntityCaseTemplate> = (context: AuthContext, user: AuthUser, templateId: string) => {
   return storeLoadById(context, user, templateId, ENTITY_TYPE_CASE_TEMPLATE);
@@ -22,6 +23,15 @@ export const findCaseTemplatePaginated = (context: AuthContext, user: AuthUser, 
 
 export const findAllCaseTemplates = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseTemplate> = {}) => {
   return fullEntitiesList<BasicStoreEntityCaseTemplate>(context, user, [ENTITY_TYPE_CASE_TEMPLATE], opts);
+};
+
+// The case templates that have this name, whatever its case. The filter on a name is an exact match on the index (lowercased), so only the
+// candidates are read, not every case template: the comparison is made again here, as the importer decides on it.
+export const findCaseTemplatesByName = async (context: AuthContext, user: AuthUser, name: string) => {
+  const candidates = await findAllCaseTemplates(context, user, {
+    filters: { mode: FilterMode.And, filters: [{ key: ['name'], values: [name] }], filterGroups: [] },
+  });
+  return candidates.filter((template) => normalizeName(template.name) === normalizeName(name));
 };
 
 // The task templates of a case template, read as they are to create the tasks of a case (see upsertTemplateForCase)
