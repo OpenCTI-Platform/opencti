@@ -56,6 +56,8 @@ import AuditsTimeSeriesBreakdown from './AuditsTimeSeriesBreakdown';
 
 const config = { relativeDate: null, startDate: '2025-10-01T00:00:00.000Z', endDate: '2026-10-01T00:00:00.000Z' };
 const host = { kind: 'workspace' } as const;
+// The menu of the widget, given to the users who can edit it
+const editorMenu = <div data-testid="widget-menu" />;
 const selection = {
   date_attribute: '',
   filters: {
@@ -83,7 +85,7 @@ const respond = (series: SerieFixture[], truncated = false) => {
   mocks.response = { auditsTimeSeriesBreakdown: { truncated, dates, series } };
 };
 
-const render = (widget: Widget) => testRender(<AuditsTimeSeriesBreakdown widget={widget} config={config} host={host} />);
+const render = (widget: Widget) => testRender(<AuditsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />);
 
 // The first draw of a chart can wait for the charts drawn just before it
 const drawn = async (chart: Mock) => {
@@ -210,5 +212,18 @@ describe('AuditsTimeSeriesBreakdown', () => {
     const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
     expect(buildQueryVariables(dataSelection, config, parameters)).toBeNull();
     expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
+  });
+
+  it('tells a user without access so before anything about the field', () => {
+    mocks.isGranted = false;
+    const { getByText, queryByText } = render(makeWidget('line', { breakdownBy: 'context_data.id' }));
+    expect(getByText('You are not authorized to see this data.')).toBeTruthy();
+    expect(queryByText(/This breakdown field is not available/)).toBeNull();
+  });
+
+  it('gives no advice to edit the widget to the users who cannot', () => {
+    const { container } = testRender(<AuditsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'context_data.id' })} config={config} host={host} />);
+    expect(container.textContent).toContain('This breakdown field is not available for the dataset of this widget.');
+    expect(container.textContent).not.toContain('Edit the widget');
   });
 });

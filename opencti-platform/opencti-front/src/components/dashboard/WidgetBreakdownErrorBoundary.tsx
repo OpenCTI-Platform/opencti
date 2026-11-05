@@ -10,14 +10,21 @@ const getResponseErrors = (error: unknown): GraphQLResponseError[] => {
   return responseError?.res?.errors ?? responseError?.data?.res?.errors ?? [];
 };
 
-// The reasons of the refusals are read from extensions.data.reason, never from their messages
-const BreakdownRefusal = ({ reasons }: { reasons: (string | undefined)[] }) => {
+// The reasons of the refusals are read from extensions.data.reason, never from their messages.
+// Read only, the refusal only says why: its reader cannot change the widget, nor its period.
+const BreakdownRefusal = ({ reasons, readOnly }: { reasons: (string | undefined)[]; readOnly: boolean }) => {
   const { t_i18n } = useFormatter();
-  let message = t_i18n('This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.');
+  let message = readOnly
+    ? t_i18n('This breakdown cannot be computed with the settings of this widget.')
+    : t_i18n('This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.');
   if (reasons.includes('too_large')) {
-    message = t_i18n('This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.');
+    message = readOnly
+      ? t_i18n('This breakdown has too many points for the selected period.')
+      : t_i18n('This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.');
   } else if (reasons.includes('too_many_values')) {
-    message = t_i18n('There are too many values to find the lowest ones. Choose the highest values or narrow the filters of this widget.');
+    message = readOnly
+      ? t_i18n('There are too many values to find the lowest ones.')
+      : t_i18n('There are too many values to find the lowest ones. Choose the highest values or narrow the filters of this widget.');
   }
   return <WidgetNoData message={message} />;
 };
@@ -26,6 +33,8 @@ interface WidgetBreakdownErrorBoundaryProps {
   children: ReactNode;
   // A new value (a new query) clears the error
   resetKey: unknown;
+  // For the readers who cannot edit the widget, like the visitors of a public dashboard: no advice
+  readOnly?: boolean;
 }
 
 interface WidgetBreakdownErrorBoundaryState {
@@ -59,7 +68,7 @@ class WidgetBreakdownErrorBoundary extends React.Component<WidgetBreakdownErrorB
       if (refusals.length === 0) {
         throw error;
       }
-      return <BreakdownRefusal reasons={refusals.map((refusal) => refusal.extensions?.data?.reason)} />;
+      return <BreakdownRefusal reasons={refusals.map((refusal) => refusal.extensions?.data?.reason)} readOnly={this.props.readOnly ?? false} />;
     }
     return this.props.children;
   }

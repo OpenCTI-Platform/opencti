@@ -28,9 +28,11 @@ vi.mock('react-relay', async (importOriginal) => ({
 vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
   default: (await import('../../../../utils/tests/dashboardVizMock')).mockDashboardViz(mocks),
 }));
-// The guards pass: a loader waits for the query
+// The guards pass: a loader waits for the query, unless none is run on purpose
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ children, queryRef }: { children: React.ReactNode; queryRef?: unknown }) => (queryRef ? <>{children}</> : <div data-testid="loader" />),
+  default: ({ children, queryRef, isQuerySkipped }: { children: React.ReactNode; queryRef?: unknown; isQuerySkipped?: boolean }) => (
+    queryRef || isQuerySkipped ? <>{children}</> : <div data-testid="loader" />
+  ),
 }));
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
   default: ({ children, warning }: { children: React.ReactNode; warning?: string }) => (
@@ -57,6 +59,8 @@ import StixRelationshipsTimeSeriesBreakdown from './StixRelationshipsTimeSeriesB
 
 const config = { relativeDate: null, startDate: '2025-10-01T00:00:00.000Z', endDate: '2026-10-01T00:00:00.000Z' };
 const host = { kind: 'workspace' } as const;
+// The menu of the widget, given to the users who can edit it
+const editorMenu = <div data-testid="widget-menu" />;
 const malwares = { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] };
 const sectors = { mode: 'and', filters: [{ key: 'entity_type', values: ['Sector'], operator: 'eq', mode: 'or' }], filterGroups: [] };
 const targets = {
@@ -95,7 +99,7 @@ const respond = (series: SerieFixture[], truncated = false) => {
 };
 
 const render = (widget: Widget) => testRender(
-  <StixRelationshipsTimeSeriesBreakdown widget={widget} config={config} host={host} />,
+  <StixRelationshipsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />,
   { userContext },
 );
 

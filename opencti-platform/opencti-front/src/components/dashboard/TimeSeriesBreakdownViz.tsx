@@ -70,6 +70,7 @@ export const buildTimeSeriesBreakdownVariables = (
 type BreakdownRenderContentProps = WidgetRenderGuards & {
   queryRef: unknown;
   host?: WidgetHost;
+  isQuerySkipped?: boolean;
   children: ReactNode;
 };
 
@@ -145,6 +146,8 @@ const TimeSeriesBreakdownViz = <TQuery extends OperationType>({
   // Not queried for the dataset it reads, once it is resolved: the field checked on the dataset resolved before would
   // be refused, or accepted, for a moment. A widget that cannot be resolved is not skipped: its guards say why first.
   const isUnsupported = !isResolving && skipped;
+  // The menu of the widget is only given to the users who can edit it: the others get no advice to edit it
+  const readOnly = !popover;
 
   return (
     <WidgetContainer
@@ -155,15 +158,21 @@ const TimeSeriesBreakdownViz = <TQuery extends OperationType>({
       showPreviewTag={isPreviewMode}
       warning={isUnsupported ? undefined : warning}
     >
-      {isUnsupported ? (
-        <WidgetNoData message={t_i18n('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')} />
-      ) : (
-        <RenderContent
-          {...renderGuards}
-          queryRef={queryRef}
-          host={host}
-        >
-          <WidgetBreakdownErrorBoundary resetKey={queryRef}>
+      {/* The guards come first: a user without access to the data is told so, not how to change the widget */}
+      <RenderContent
+        {...renderGuards}
+        queryRef={queryRef}
+        host={host}
+        isQuerySkipped={isUnsupported}
+      >
+        {isUnsupported ? (
+          <WidgetNoData
+            message={readOnly
+              ? t_i18n('This breakdown field is not available for the dataset of this widget.')
+              : t_i18n('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')}
+          />
+        ) : (
+          <WidgetBreakdownErrorBoundary resetKey={queryRef} readOnly={readOnly}>
             <TimeSeriesBreakdownContent<TQuery>
               query={query}
               queryRef={queryRef!}
@@ -174,8 +183,8 @@ const TimeSeriesBreakdownViz = <TQuery extends OperationType>({
               onWarningChange={setWarning}
             />
           </WidgetBreakdownErrorBoundary>
-        </RenderContent>
-      )}
+        )}
+      </RenderContent>
     </WidgetContainer>
   );
 };

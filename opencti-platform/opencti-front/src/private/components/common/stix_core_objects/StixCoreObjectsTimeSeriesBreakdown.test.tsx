@@ -33,9 +33,11 @@ vi.mock('react-relay', async (importOriginal) => ({
 vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
   default: (await import('../../../../utils/tests/dashboardVizMock')).mockDashboardViz(mocks),
 }));
-// The guards pass: a loader waits for the query
+// The guards pass: a loader waits for the query, unless none is run on purpose
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ children, queryRef }: { children: React.ReactNode; queryRef?: unknown }) => (queryRef ? <>{children}</> : <div data-testid="loader" />),
+  default: ({ children, queryRef, isQuerySkipped }: { children: React.ReactNode; queryRef?: unknown; isQuerySkipped?: boolean }) => (
+    queryRef || isQuerySkipped ? <>{children}</> : <div data-testid="loader" />
+  ),
 }));
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
   default: ({ children, warning, chart }: { children: React.ReactNode; warning?: string; chart?: unknown }) => (
@@ -79,6 +81,8 @@ import StixCoreObjectsTimeSeriesBreakdown from './StixCoreObjectsTimeSeriesBreak
 
 const config = { relativeDate: null, startDate: '2025-10-01T00:00:00.000Z', endDate: '2026-10-01T00:00:00.000Z' };
 const host = { kind: 'workspace' } as const;
+// The menu of the widget, given to the users who can edit it
+const editorMenu = <div data-testid="widget-menu" />;
 const selection = {
   date_attribute: 'published',
   filters: {
@@ -133,7 +137,7 @@ const respond = (series: SerieFixture[], truncated = false) => {
 };
 
 const render = (widget: Widget) => testRender(
-  <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />,
+  <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />,
   { userContext },
 );
 
@@ -387,7 +391,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const RefreshedWidget = () => {
       const [, setRefreshCount] = useState(0);
       refresh = () => setRefreshCount((count) => count + 1);
-      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />;
+      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />;
     };
     respond([{ label: 'Report', entity: null, values: [1, 2, 3] }]);
     testRender(<RefreshedWidget />, { userContext });
@@ -413,7 +417,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const EditedWidget = () => {
       const [parameters, setParameters] = useState<Widget['parameters']>(daily);
       edit = setParameters;
-      return <StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('vertical-bar', parameters, multiTypesSelection)} config={config} host={host} />;
+      return <StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('vertical-bar', parameters, multiTypesSelection)} config={config} host={host} popover={editorMenu} />;
     };
     const { getByTestId } = testRender(<EditedWidget />, { userContext });
     expect((await drawn(mocks.bars)).interval).toEqual('week');
@@ -469,6 +473,20 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     vi.mocked(console.error).mockRestore();
   });
 
+  it('only says why the breakdown is refused, or its field not available, to the users who cannot edit the widget', () => {
+    // React logs the errors its boundaries catch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    mocks.error = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_large' } } }] } };
+    const refused = testRender(<StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection)} config={config} host={host} />, { userContext });
+    expect(refused.container.textContent).toEqual('This breakdown has too many points for the selected period.');
+    refused.unmount();
+
+    mocks.error = null;
+    const unsupported = testRender(<StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection)} config={config} host={host} />, { userContext });
+    expect(unsupported.container.textContent).toEqual('This breakdown field is not available for the dataset of this widget.');
+    vi.mocked(console.error).mockRestore();
+  });
+
   it('keeps a refusal on an unrelated render, and clears it with the next query', async () => {
     // React logs the errors its boundaries catch
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -477,7 +495,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const RenderedWidget = () => {
       const [, setRenderCount] = useState(0);
       rerender = () => setRenderCount((count) => count + 1);
-      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />;
+      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />;
     };
     const tooLarge = 'This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.';
     mocks.error = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_large' } } }] } };
@@ -506,7 +524,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const RefreshedWidget = () => {
       const [, setRefreshCount] = useState(0);
       refresh = () => setRefreshCount((count) => count + 1);
-      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} />;
+      return <StixCoreObjectsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />;
     };
     // The chart says it is mounted once drawn
     const mountChart = () => act(() => mocks.lines.mock.lastCall?.[0].onMounted({}));
@@ -581,7 +599,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const ResolvedWidget = () => {
       const [, setRenderCount] = useState(0);
       rerender = () => setRenderCount((count) => count + 1);
-      return <StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection)} config={config} host={host} />;
+      return <StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection)} config={config} host={host} popover={editorMenu} />;
     };
     const notAvailable = 'This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.';
     const { queryByText, queryByTestId } = testRender(<ResolvedWidget />, { userContext });
