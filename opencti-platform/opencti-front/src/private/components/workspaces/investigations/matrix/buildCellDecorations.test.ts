@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { createIntl } from 'react-intl';
+import en from '../../../../../../lang/front/en.json';
 import { buildCellDecorations, type MatrixTechniqueNode } from './buildCellDecorations';
 import { analyseTechniqueUsage } from './ttpAnalyser';
 import { heatBorder, heatFill } from './heatScale';
 import type { LinkedEntity, TechniqueUsage } from './matrixTypes';
 import type { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 
-// Identity plus {placeholder} interpolation, like t_i18n with `values`.
-const t = (s: string, options?: { values?: Record<string, string | number> }) => (
-  s.replace(/\{(\w+)\}/g, (_, key: string) => String(options?.values?.[key] ?? `{${key}}`))
-);
+// The English messages through react-intl, like t_i18n with `values`: ICU plurals are resolved.
+const intl = createIntl({ locale: 'en', messages: en });
+const t = (s: string, options?: { values?: Record<string, string | number> }) => intl.formatMessage({ id: s }, options?.values);
 
 const NEUTRAL = 'var(--border-elevation-default)';
 
@@ -133,6 +134,16 @@ describe('buildCellDecorations', () => {
       scale: { max: 3 },
     });
     expect(decorations.get('ap-1059')?.accessibleName).toBe('T1059 - Command and Scripting Interpreter, linked to 3 entities');
+  });
+
+  it('uses the singular for a cell linked to one entity', () => {
+    const decorations = build({
+      usage: toMap([usageOf('ap-1059', entities(1))]),
+      techniques: [T1059],
+      investigationIds: new Set(['ap-1059']),
+      scale: { max: 1 },
+    });
+    expect(decorations.get('ap-1059')?.accessibleName).toBe('T1059 - Command and Scripting Interpreter, linked to 1 entity');
   });
 
   it('names a technique without a MITRE id by its name alone', () => {

@@ -111,7 +111,7 @@ const renderMatrix = async ({
     setSecurityPlatformIds: vi.fn(),
     error: postureError,
   });
-  const ui = <InvestigationMatrix investigationId="investigation-1" investigationName="Investigation" />;
+  const ui = <InvestigationMatrix />;
   const rendered = testRender(ui);
   const { mock } = rendered.relayEnv;
   // Queries are issued in effects, some only once an earlier one has answered (the posture
@@ -159,8 +159,19 @@ describe('InvestigationMatrix', () => {
 
   it('notes the attack patterns that cannot be placed in the kill chain', async () => {
     await renderMatrix({ rawObjects: [attackPattern(PLACED_ID, 'Placed'), attackPattern(REVOKED_ID, 'Revoked')] });
-    expect(await screen.findByText('1 attack patterns in this investigation aren\'t shown in this kill chain')).toBeInTheDocument();
+    expect(await screen.findByText('1 attack pattern in this investigation isn\'t shown in this kill chain')).toBeInTheDocument();
     expect(screen.getByText('T1001 - Placed')).toBeInTheDocument();
+  });
+
+  it('uses the plural when several attack patterns cannot be placed', async () => {
+    await renderMatrix({
+      rawObjects: [
+        attackPattern(PLACED_ID, 'Placed'),
+        attackPattern(REVOKED_ID, 'Revoked'),
+        attackPattern('attack-pattern--other', 'Other'),
+      ],
+    });
+    expect(await screen.findByText('2 attack patterns in this investigation aren\'t shown in this kill chain')).toBeInTheDocument();
   });
 
   it('notes that graph filters do not apply to the matrix', async () => {
@@ -241,7 +252,7 @@ describe('InvestigationMatrix', () => {
       const { user } = await renderMatrix({ rawObjects: SCORED_OBJECTS, phases: HEAT_PHASES });
       await screen.findByText('T1001 - Placed');
       await user.click(heatmapToggle());
-      const parent = screen.getByRole('button', { name: 'T1002 - Parent, linked to 1 entities' });
+      const parent = screen.getByRole('button', { name: 'T1002 - Parent, linked to 1 entity' });
       expect(within(parent).getByRole('button', { name: 'Expand' })).toHaveAttribute('aria-expanded', 'false');
       expect(screen.queryByText('T1002.001 - Sub')).toBeNull();
     });

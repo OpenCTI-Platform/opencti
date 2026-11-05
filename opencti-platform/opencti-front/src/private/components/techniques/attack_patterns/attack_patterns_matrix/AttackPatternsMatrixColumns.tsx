@@ -153,7 +153,8 @@ export const applyCellDecoration = (
   border: styles.border,
   borderColor: decoration?.border,
   backgroundColor: decoration?.fill ?? styles.backgroundColor,
-  labelColor: decoration?.textTone === 'dark' ? 'var(--black-900)' : undefined,
+  // FDS-WORKAROUND #79: --black-900 is not compiled into dist/index.css — see fds-migration/LIBRARY-FEEDBACK.md #79
+  labelColor: decoration?.textTone === 'dark' ? 'var(--black-1000)' : undefined,
 });
 
 const AttackPatternsMatrixColumns = ({

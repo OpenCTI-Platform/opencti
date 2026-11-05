@@ -2,7 +2,8 @@ import type { HeatScale, TechniqueUsage } from './matrixTypes';
 
 export const HEAT_STOPS: readonly string[] = [
   'var(--yellow-300)',
-  'var(--yellow-500)',
+  // FDS-WORKAROUND #79: --yellow-500 is not compiled into dist/index.css — see fds-migration/LIBRARY-FEEDBACK.md #79
+  'var(--yellow-400)',
   'var(--orange-400)',
   'var(--orange-500)',
   'var(--red-400)',
@@ -27,7 +28,7 @@ export const heatStopIndex = (score: number, scale: HeatScale): number => {
 };
 
 // Fill opacity per stop, in %. 70% by default; the two darkest stops need more of their colour for the
-// --black-900 label to reach 4.5:1 over the dark theme background (orange-500 3.7:1 and red-400 3.2:1 at 70%).
+// --black-1000 label to reach 4.5:1 over the dark theme background (orange-500 3.8:1 and red-400 3.2:1 at 70%).
 const HEAT_FILL_OPACITIES: readonly number[] = [70, 70, 70, 85, 95];
 
 export const heatFill = (stopIndex: number): string => `color-mix(in srgb, ${HEAT_STOPS[stopIndex]} ${HEAT_FILL_OPACITIES[stopIndex]}%, transparent)`;

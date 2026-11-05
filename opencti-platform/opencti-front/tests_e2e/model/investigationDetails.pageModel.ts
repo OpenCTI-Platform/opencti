@@ -117,6 +117,23 @@ export default class InvestigationDetailsPage {
     return this.getMatrix().getByRole('img', { name: /^Technique usage scale, 1 to \d+$/ });
   }
 
+  /** One swatch of the legend, by its stop index (0 to 4). */
+  getLegendSwatch(stop: number): Locator {
+    return this.getLegend().locator(`[data-heat-stop="${stop}"]`);
+  }
+
+  /** The text of a cell, which carries the label colour of a filled cell. */
+  getCellLabel(label: string): Locator {
+    return this.getMatrixCell(label).getByText(label, { exact: true });
+  }
+
+  /** The sub-technique count badge of a parent technique (`n/m`), drawn over its accordion. */
+  getBadgeOfCell(label: string): Locator {
+    return this.getMatrixCell(label)
+      .locator('xpath=ancestor::span[contains(@class, "MuiBadge-root")][1]')
+      .locator('.MuiBadge-badge');
+  }
+
   getTooltip(): Locator {
     return this.page.getByRole('tooltip');
   }
@@ -174,7 +191,7 @@ export default class InvestigationDetailsPage {
   }
 
   getUnplacedNote() {
-    return this.getMatrix().getByText(/attack patterns in this investigation aren't shown in this kill chain/);
+    return this.getMatrix().getByText(/attack patterns? in this investigation (isn't|aren't) shown in this kill chain/);
   }
 
   getEmptyMatrixText() {

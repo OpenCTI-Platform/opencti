@@ -63,7 +63,7 @@ describe('getMatrixConfig', () => {
     });
 
     it('uses neutral badge colours', () => {
-      expect(config.badgeColors).toEqual({ color: 'var(--black-800)', textColor: 'var(--gray-100)' });
+      expect(config.badgeColors).toEqual({ color: 'var(--gray-800)', textColor: 'var(--gray-100)' });
     });
 
     it('sorts by MITRE ID', () => {

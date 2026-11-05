@@ -60,17 +60,17 @@ describe('heat colours', () => {
   it('uses the five heat stop tokens in order', () => {
     expect(HEAT_STOPS).toEqual([
       'var(--yellow-300)',
-      'var(--yellow-500)',
+      'var(--yellow-400)',
       'var(--orange-400)',
       'var(--orange-500)',
       'var(--red-400)',
     ]);
   });
 
-  // Alphas from the contrast check: --black-900 labels reach 4.5:1 on every stop in both themes.
+  // Alphas from the contrast check: --black-1000 labels reach 4.5:1 on every stop in both themes.
   it('fills with the stop over transparent, more opaque on the two darkest stops', () => {
     expect(heatFill(0)).toBe('color-mix(in srgb, var(--yellow-300) 70%, transparent)');
-    expect(heatFill(1)).toBe('color-mix(in srgb, var(--yellow-500) 70%, transparent)');
+    expect(heatFill(1)).toBe('color-mix(in srgb, var(--yellow-400) 70%, transparent)');
     expect(heatFill(2)).toBe('color-mix(in srgb, var(--orange-400) 70%, transparent)');
     expect(heatFill(3)).toBe('color-mix(in srgb, var(--orange-500) 85%, transparent)');
     expect(heatFill(4)).toBe('color-mix(in srgb, var(--red-400) 95%, transparent)');

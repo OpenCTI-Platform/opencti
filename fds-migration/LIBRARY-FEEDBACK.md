@@ -2918,7 +2918,7 @@ steps keep a readable label in the light and dark themes, plus the rule that
 says how to use it. The heatmap needs a label of one ink on every step, at least
 4.5:1, and the cell borders at least 3:1.
 
-**Today.** The library ships the colour families (`--yellow-300`, `--yellow-500`,
+**Today.** The library ships the colour families (`--yellow-300`, `--yellow-400`,
 `--orange-400`, `--orange-500`, `--red-400`...) and the semantic roles
 (`--border-elevation-default`...), and no scale: no token names a data step, no
 ordering is defined, and nothing says how an alpha is applied for contrast.
@@ -2926,9 +2926,9 @@ ordering is defined, and nothing says how an alpha is applied for contrast.
 **Workaround.** `heatScale.ts` picks five existing family tokens in order, as
 `var(--...)` references and no hex. It fills with `color-mix(in srgb,
 <stop> N%, transparent)`, where N is 70 for the three lightest steps and 85 and
-95 for the two darkest: at 70% the `--black-900` label on `--orange-500` is
-3.7:1 and on `--red-400` is 3.2:1 over the dark theme background, below the
-4.5:1 required. The alpha per step is product-side contrast tuning that the
+95 for the two darkest: at 70% the `--black-1000` label on `--orange-500` is
+3.8:1 and on `--red-400` is 3.2:1 over the dark theme background, below the
+4.5:1 required. (The second step and the label ink are substitutes: see #79.) The alpha per step is product-side contrast tuning that the
 library should own. The product defines the scale; it does not invent a token
 value.
 
@@ -2942,3 +2942,48 @@ guidelines on how a product draws the legend.
 `color-mix` alpha, and confirm the label contrast (4.5:1) on every step and the
 border contrast (3:1) in both themes, by the same manual check as the heatmap
 review.
+
+---
+
+## 79. Primitive tokens in `theme.css` are missing from the compiled `dist/index.css`
+
+Raised by the same screen, after a review found three colours that never
+resolved in the browser.
+
+**Needed.** Every primitive colour token the library publishes is usable as
+`var(--token)` once the product loads the library stylesheet. The product loads
+only `@filigran/design-system/dist/index.css` (`src/front.tsx`).
+
+**Today.** At 1.2.0, `dist/tokens/theme.css`, `llms-full.txt` and the generated
+token data (`fds-tokens.generated.ts`) define `--yellow-500` (`#eaa510`),
+`--black-800` (`#000000e5`) and `--black-900` (`#000000f2`), but
+`dist/index.css` does not. It holds `--yellow-{200,300,400,600,800}` and
+`--black-{100,200,300,400,1000}` only. The header of `dist/index.css` says
+Tailwind v4, which emits only the theme variables the library itself uses, so
+any primitive no library component uses is dropped from the build. A `var()`
+on a dropped token is invalid at computed-value time: a fill goes transparent
+and a text colour falls back to the inherited one, with no error. Unit tests
+and a `toHaveCSS` against a colour resolved in the same page cannot see it,
+because both sides resolve to the same nothing.
+
+**Workaround.** The matrix uses the nearest token that is compiled, with the
+same intent, and a unit test (`investigations/matrix/matrixTokens.test.ts`)
+fails when a `var(--…)` of the matrix code is not defined in
+`dist/index.css`:
+
+- Heat step 2: `--yellow-400` instead of `--yellow-500` (it keeps the
+  luminance order between `--yellow-300` and `--orange-400`).
+- Heat label ink: `--black-1000` instead of `--black-900`.
+- Investigation badge background: `--gray-800` instead of `--black-800`
+  (text `--gray-100`, 11.5:1).
+
+**Ask.** Either compile every primitive of `theme.css` into `dist/index.css`
+(Tailwind `@theme static`, or a plain `:root` block), or publish `theme.css`
+as an entry point a product imports next to `index.css`, and state which file
+is the token source in the README.
+
+**Removal test.** At a pin where `dist/index.css` defines all three: switch
+back to `--yellow-500`, `--black-900` and `--black-800` if the design asks for
+them, run `matrixTokens.test.ts`, recompute the label contrast table of the
+heatmap review (4.5:1 on every step, both themes), and check the cells, the
+legend and the badge in a browser in both themes.

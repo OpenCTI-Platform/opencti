@@ -11,7 +11,8 @@ import {
   seedInvestigationWithoutAttackPatterns,
   seedInvestigationWithoutScores,
 } from '../dataForTesting/investigationMatrix.data';
-import { heatBorder, heatFill } from '../../src/private/components/workspaces/investigations/matrix/heatScale';
+import { heatBorder, heatFill, HEAT_STOPS } from '../../src/private/components/workspaces/investigations/matrix/heatScale';
+import { getMatrixConfig } from '../../src/private/components/techniques/attack_patterns/attack_patterns_matrix/attackPatternsMatrixConfig';
 
 const INVESTIGATION_URL = '/dashboard/workspaces/investigations';
 
@@ -28,6 +29,11 @@ const LAST_STOP = 4;
 const FIRST_STOP = 0;
 // The neutral outline of a technique of the investigation that nobody uses.
 const NEUTRAL_OUTLINE = 'var(--border-elevation-default)';
+// What an undefined CSS variable resolves to in a background. A token missing from the design-system
+// stylesheet resolves to this on both sides of a `toHaveCSS` against `resolveColor`, so it is checked apart.
+const TRANSPARENT = 'rgba(0, 0, 0, 0)';
+// The label of a filled cell: --black-1000.
+const HEAT_LABEL_COLOR = 'rgb(0, 0, 0)';
 
 // A PNG starts with an 8-byte signature, then the IHDR chunk: 4 bytes of length, 4 of type, then the width as a 32-bit big-endian integer.
 const PNG_WIDTH_OFFSET = 16;
@@ -200,6 +206,18 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
       await expect(investigationPage.getLegend()).toContainText('Technique usage (low → high)');
       // A technique the investigation does not hold is not decorated.
       await expect(investigationPage.getMatrixCell(UNRELATED)).not.toHaveCSS('background-color', firstStopFill);
+
+      // Every colour token resolves: none of the fills, the legend stops, the label or the badge is left transparent.
+      expect(firstStopFill).not.toBe(TRANSPARENT);
+      expect(lastStopFill).not.toBe(TRANSPARENT);
+      await Promise.all(HEAT_STOPS.map((_, stop) => (
+        expect(investigationPage.getLegendSwatch(stop)).not.toHaveCSS('background-color', TRANSPARENT)
+      )));
+      await expect(investigationPage.getCellLabel(ALPHA)).toHaveCSS('color', HEAT_LABEL_COLOR);
+      await expect(investigationPage.getCellLabel(BETA)).toHaveCSS('color', HEAT_LABEL_COLOR);
+      const badgeBackground = await investigationPage.resolveColor(getMatrixConfig('investigation', false).badgeColors?.color ?? '', 'backgroundColor');
+      expect(badgeBackground).not.toBe(TRANSPARENT);
+      await expect(investigationPage.getBadgeOfCell(GAMMA)).toHaveCSS('background-color', badgeBackground);
     });
 
     test('The accessible name of a used technique counts its linked entities', async ({ page, request }) => {
@@ -208,7 +226,7 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
 
       await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
       await expect(page.getByRole('button', { name: `${ALPHA}, linked to 2 entities`, exact: true })).toBeVisible();
-      await expect(page.getByRole('button', { name: `${BETA}, linked to 1 entities`, exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: `${BETA}, linked to 1 entity`, exact: true })).toBeVisible();
       // A technique outside the investigation keeps its plain label.
       await expect(investigationPage.getMatrixCell(UNRELATED)).toHaveAccessibleName(UNRELATED);
     });
