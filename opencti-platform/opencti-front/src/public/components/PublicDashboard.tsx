@@ -15,6 +15,7 @@ import type { DashboardManifest } from '../../components/dashboard/dashboard-typ
 import useDashboardRefresh from '../../components/dashboard/useDashboardRefresh';
 import DashboardRefreshControl from '../../components/dashboard/DashboardRefreshControl';
 import { DashboardRefreshProvider } from '../../components/dashboard/DashboardRefreshContext';
+import { DASHBOARD_GRID_CONFIG } from '../../components/dashboard/dashboard-utils';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
@@ -104,9 +105,9 @@ const PublicDashboardComponent = ({
             className="layout"
             width={width}
             layout={widgetsWithLayout.map((w) => w.layout!)}
-            // The rows of the private dashboards (DashboardContent), where the layouts are made. The container
+            // The grid of the private dashboards (DashboardContent), where the layouts are made. The container
             // padding, the margin by default, keeps the widgets aligned with the header.
-            gridConfig={{ margin: [20, 20], rowHeight: 62, cols: 12 }}
+            gridConfig={DASHBOARD_GRID_CONFIG}
             dragConfig={{ enabled: false }}
             resizeConfig={{ enabled: false }}
           >
