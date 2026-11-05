@@ -28,6 +28,7 @@ import { sequencerMetrics } from './sequencer-metrics';
 import type { IntentKind, SequencerIntent } from './sequencer-intent';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type IntakeEnvelope, intakeEnvelopeOf } from '../../intake/intake-envelope';
+import { fileKeyForm } from '../../intake/file-values';
 
 export const PENDING_INTENTS_INDEX = 'opencti_sequencer_pending_intents';
 const PENDING_INTENTS_MAX = Number(conf.get('app:ingestion_sequencer:pending_intents_max') ?? 200000);
@@ -42,6 +43,8 @@ export interface PendingIntentRecord {
   opts_json: string; // intent: the creation opts; operation: the intake envelope
   // intent: the intake envelope it was written under (intake-envelope.ts), to rebuild its context
   envelope_json?: string;
+  // The object storage keys of the files of the record (staged, deleted once it is settled)
+  staged_files?: string[];
   user_id: string;
   work_id?: string;
   missing_refs: string[]; // the unresolved ids AS GIVEN (stix / standard ids)
@@ -74,6 +77,31 @@ type Resubmit = (record: PendingIntentRecord) => Promise<any>;
 let resubmit: Resubmit | null = null;
 export const registerPendingIntentResubmit = (fn: Resubmit) => {
   resubmit = fn;
+};
+
+// Registered by the chunk intake manager: the files of a retained record cannot ride its JSON,
+// they are staged in the object storage (intake-files.ts). Without it, a file is lost as before.
+interface PendingFileStaging {
+  stage: (value: unknown, prefix: string) => Promise<{ value: unknown; keys: string[] }>;
+  rehydrate: (value: unknown) => Promise<unknown>;
+  remove: (keys: string[]) => Promise<void>;
+}
+let fileStaging: PendingFileStaging | null = null;
+export const registerPendingFileStaging = (staging: PendingFileStaging) => {
+  fileStaging = staging;
+};
+
+// The JSON a record persists for its input, the files staged under the record's id
+const persistedInput = async (id: string, input: unknown): Promise<{ json: string; staged?: string[] }> => {
+  if (!fileStaging) return { json: JSON.stringify(input) };
+  const { value, keys } = await fileStaging.stage(input, id);
+  return { json: JSON.stringify(value), staged: keys.length > 0 ? keys : undefined };
+};
+
+// The input of a record as it re-executes: its staged files read back
+export const pendingRecordInput = async (record: PendingIntentRecord): Promise<any> => {
+  const input = JSON.parse(record.input_json);
+  return fileStaging && record.staged_files && record.staged_files.length > 0 ? fileStaging.rehydrate(input) : input;
 };
 
 // Registered by the chunk intake manager: the context a retained INTENT re-enters the boundary
@@ -122,8 +150,10 @@ const stableStringify = (value: any): string => {
 // objects (dates) that stableStringify renders differently from their JSON form: hashed
 // as given, every re-submission of a retained creation got a SECOND record (attempts 0,
 // never backing off, re-submitted at every sweep) instead of upserting the first one.
+// A file counts by its content hash, never its bytes (fileKeyForm): a staged file read back for a
+// re-submission gives the same key.
 export const pendingIntentRecordKey = (kind: string, type: string, userId: string, input: Record<string, any>) => createHash('sha256')
-  .update(`${kind}|${type}|${userId}|${stableStringify(JSON.parse(JSON.stringify(input)))}`).digest('hex');
+  .update(`${kind}|${type}|${userId}|${stableStringify(JSON.parse(JSON.stringify(fileKeyForm(input))))}`).digest('hex');
 
 const memoryAdd = (record: PendingIntentRecord) => {
   byId.set(record.id, record);
@@ -175,7 +205,8 @@ export const deferIntents = async (deferrals: { intent: SequencerIntent; missing
   if (!esOps || deferrals.length === 0) return false;
   const now = Date.now();
   const records: PendingIntentRecord[] = [];
-  deferrals.forEach(({ intent, missing }) => {
+  for (let index = 0; index < deferrals.length; index += 1) {
+    const { intent, missing } = deferrals[index];
     const id = pendingIntentRecordKey(intent.kind, intent.type, intent.user.id, intent.input);
     const existing = byId.get(id);
     if (existing) {
@@ -190,11 +221,13 @@ export const deferIntents = async (deferrals: { intent: SequencerIntent; missing
       });
       sequencerMetrics.pendingIntentEvent('redeferred');
     } else {
+      const input = await persistedInput(id, intent.input);
       records.push({
         id,
         kind: intent.kind,
         type: intent.type,
-        input_json: JSON.stringify(intent.input),
+        input_json: input.json,
+        staged_files: input.staged,
         opts_json: serializeOpts(intent.opts),
         envelope_json: intent.context ? JSON.stringify(intakeEnvelopeOf(intent.context, intent.user)) : undefined,
         user_id: intent.user.id,
@@ -208,7 +241,7 @@ export const deferIntents = async (deferrals: { intent: SequencerIntent; missing
       });
       sequencerMetrics.pendingIntentEvent('deferred');
     }
-  });
+  }
   const body = records.flatMap((r) => {
     const { id: _id, user: _user, ...persisted } = r;
     return [{ index: { _index: PENDING_INTENTS_INDEX, _id: r.id } }, persisted];
@@ -251,11 +284,13 @@ export const deferOperation = async ({ operation, envelope, user, missing }: Pen
     };
     sequencerMetrics.pendingIntentEvent('redeferred');
   } else {
+    const input = await persistedInput(id, operation);
     record = {
       id,
       kind: 'operation',
       type,
-      input_json: JSON.stringify(operation),
+      input_json: input.json,
+      staged_files: input.staged,
       opts_json: serializeOpts(envelope),
       user_id: user.id,
       work_id: envelope.work_id,
@@ -293,6 +328,14 @@ const settle = async (record: PendingIntentRecord, status: PendingIntentRecord['
     checkBulkResponse(await esOps.bulk(body), 'settle');
   }
   sequencerMetrics.pendingIntentEvent(status);
+  // Settled: its staged files are no longer needed (handed: the intent record staged its own)
+  if (fileStaging && record.staged_files && record.staged_files.length > 0) {
+    try {
+      await fileStaging.remove(record.staged_files);
+    } catch (err) {
+      logApp.warn('[SEQUENCER] pending intent staged files removal failed', { id: record.id, files: record.staged_files, cause: String(err) });
+    }
+  }
   // handed: the loop's intent record owns the work bookkeeping from here
   if (settledHook && status !== 'handed') {
     try {
@@ -401,6 +444,7 @@ export const initPendingIntents = async () => {
       input_json: { type: 'text', index: false },
       opts_json: { type: 'text', index: false },
       envelope_json: { type: 'text', index: false },
+      staged_files: { type: 'keyword', index: false },
       user_id: { type: 'keyword' },
       work_id: { type: 'keyword' },
       missing_refs: { type: 'keyword' },

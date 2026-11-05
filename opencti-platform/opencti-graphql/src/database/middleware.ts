@@ -110,7 +110,7 @@ import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
 import { sequencerMetrics } from './sequencer/sequencer-metrics';
 import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
 import { getCurrentStripSink, registerReconcileAssert } from './sequencer/sequencer-pending-refs';
-import { pendingIntentContext, registerPendingIntentResubmit } from './sequencer/sequencer-pending-intents';
+import { pendingIntentContext, pendingRecordInput, registerPendingIntentResubmit } from './sequencer/sequencer-pending-intents';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
@@ -4914,7 +4914,7 @@ registerPendingIntentResubmit(async (record) => {
     ...SYSTEM_USER,
     origin: { ...(SYSTEM_USER.origin ?? {}), call_retry_number: 0 },
   };
-  const input = JSON.parse(record.input_json);
+  const input = await pendingRecordInput(record);
   const opts = record.opts_json ? JSON.parse(record.opts_json) : {};
   if (record.kind === 'relation') {
     return createRelation(resubmitContext, resubmitUser, input, opts);

@@ -3,28 +3,14 @@ import type { ImportContext } from '../stix-import/context';
 import { transformBundle } from '../stix-import/transform';
 import type { StixObject } from '../stix-import/types';
 import { CaptureCache, purgeCaptureWindow } from './capture-cache';
-import { ChunkCaptureClient, NotChunkableError } from './capture-client';
+import { ChunkCaptureClient } from './capture-client';
 import { type ChunkContent, chunkContents, markMemberRefs } from './chunks';
 
 // One bundle into chunks, as the worker publishes it (push_handler.py publish_bundle_chunks):
 // split, mark the in-bundle refs, transform each split bundle with its mutations captured, then
 // group the operations into chunks. What surrounds it in the worker (work expectations, too large
-// objects, the envelope of the chunk messages) belongs to the intake manager.
-
-// The worker sends a bundle with files over HTTP: a queue message cannot carry a file
-const carriesFiles = (node: unknown): boolean => {
-  if (Array.isArray(node)) {
-    return node.some(carriesFiles);
-  }
-  if (node !== null && typeof node === 'object') {
-    const record = node as Record<string, unknown>;
-    if (record.x_opencti_files || record.x_opencti_file) {
-      return true;
-    }
-    return Object.values(record).some(carriesFiles);
-  }
-  return false;
-};
+// objects, the envelope of the chunk messages) belongs to the intake manager. A bundle with files,
+// that the worker imports over HTTP, is captured too: its files stay in memory (file-values.ts).
 
 export interface CapturedBundle {
   chunks: ChunkContent[];
@@ -37,9 +23,6 @@ export interface CapturedBundle {
 }
 
 export const captureBundle = async (context: ImportContext, bundle: StixObject, update: boolean, types: string[] | null, chunkSize: number): Promise<CapturedBundle> => {
-  if (carriesFiles(bundle.objects)) {
-    throw new NotChunkableError('files');
-  }
   const { bundles, incompatibleItems } = new Stix2Splitter().splitBundleWithExpectations(bundle, false, bundle.x_opencti_event_version);
   const memberIds = new Set((bundle.objects as StixObject[]).filter((object) => typeof object?.id === 'string').map((object) => object.id as string));
   (bundles as StixObject[]).forEach((splitBundle) => (splitBundle.objects as StixObject[]).forEach((object) => markMemberRefs(object, memberIds)));

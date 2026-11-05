@@ -28,12 +28,15 @@ import {
   deferOperation,
   pendingIntentsAccepting,
   registerPendingIntentSettled,
+  pendingRecordInput,
+  registerPendingFileStaging,
   registerPendingIntentContext,
   registerPendingOperationExecute,
   type PendingOperationEnvelope,
 } from '../database/sequencer/sequencer-pending-intents';
 import { DatabaseError, DRAFT_LOCKED_ERROR, EngineShardsError, MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR, WORK_NOT_ALIVE_ERROR } from '../config/errors';
 import { createIntakeContext } from '../intake/intake-context';
+import { rehydrateFiles, removeStagedFiles, stageFiles } from '../intake/intake-files';
 import { intakeEnvelopeOfMessage, type IntakeEnvelope } from '../intake/intake-envelope';
 import { reportWorkProgress } from '../domain/work';
 import { chunkWorkProgress, type ChunkWorkFields } from './chunkIntakeWork';
@@ -679,6 +682,9 @@ const chunkIntakeInitializer = async () => {
     const settleContext = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT);
     await reportWorkProgress(settleContext, SYSTEM_USER, record.work_id, { count: 0, errors: [{ error, source: 'chunk intake (retained creation)' }] });
   });
+  // The files of a retained record: staged in the object storage, read back on re-execution,
+  // deleted once it is settled (intake-files.ts)
+  registerPendingFileStaging({ stage: (value, prefix) => stageFiles(value, prefix), rehydrate: (value) => rehydrateFiles(value), remove: (keys) => removeStagedFiles(keys) });
   // Re-submission of a retained INTENT: the context of its intake envelope (a record written
   // before the envelope existed keeps the legacy context of the middleware)
   registerPendingIntentContext(async (record) => {
@@ -690,7 +696,7 @@ const chunkIntakeInitializer = async () => {
   // executor. Outcomes: landed, handed to the loop (retained as an intent), still missing
   // (re-deferred here, attempts + 1), or a terminal failure (thrown, visible).
   registerPendingOperationExecute(async (record) => {
-    const operation: ChunkOperation = JSON.parse(record.input_json);
+    const operation: ChunkOperation = await pendingRecordInput(record);
     const envelope: PendingOperationEnvelope = record.opts_json ? JSON.parse(record.opts_json) : {};
     const { context, user } = await createChunkContext({ ...envelope, chunk_id: `retained-${record.id}` }, [operation]);
     const result = await executeChunkOperation(context, operation);

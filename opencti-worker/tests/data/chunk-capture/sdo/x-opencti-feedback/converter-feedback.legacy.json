@@ -1,0 +1,188 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "ryuk",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "G0096",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "mitre-attack",
+                "stix_id": null,
+                "update": false,
+                "url": "https://attack.mitre.org/groups/G0096",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "x-opencti-feedback--ce07ddc6-2377-576b-ace5-a4de6996e789",
+            "query": "mutation FeedbackAdd($input: FeedbackAddInput!) { feedbackAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 93,
+                "created": "2025-06-26T15:58:16.208Z",
+                "createdBy": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+                "customFieldValues": [
+                  {
+                    "field_name": "x_opencti_id",
+                    "value": "5a194bd5-1fe1-4618-bfa0-48b15eb590b4"
+                  },
+                  {
+                    "field_name": "x_opencti_type",
+                    "value": "Feedback"
+                  }
+                ],
+                "description": "Feedback STIX 2.0",
+                "embedded": null,
+                "externalReferences": [
+                  "echo--2"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2025-06-26T16:04:50.126Z",
+                "name": "Feedback from admin@opencti.io",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--1"
+                ],
+                "objectMarking": null,
+                "objectOrganization": null,
+                "objects": [
+                  "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a"
+                ],
+                "rating": 3,
+                "revoked": false,
+                "stix_id": "x-opencti-feedback--ce07ddc6-2377-576b-ace5-a4de6996e789",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "ryuk",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "G0096",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "mitre-attack",
+                "stix_id": null,
+                "update": false,
+                "url": "https://attack.mitre.org/groups/G0096",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "x-opencti-feedback--ce07ddc6-2377-576b-ace5-a4de6996e789",
+            "query": "mutation FeedbackAdd($input: FeedbackAddInput!) { feedbackAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 93,
+                "created": "2025-06-26T15:58:16.208Z",
+                "createdBy": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+                "customFieldValues": [
+                  {
+                    "field_name": "x_opencti_id",
+                    "value": "5a194bd5-1fe1-4618-bfa0-48b15eb590b4"
+                  },
+                  {
+                    "field_name": "x_opencti_type",
+                    "value": "Feedback"
+                  }
+                ],
+                "description": "Feedback STIX 2.0",
+                "embedded": null,
+                "externalReferences": [
+                  "echo--2"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2025-06-26T16:04:50.126Z",
+                "name": "Feedback from admin@opencti.io",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--1"
+                ],
+                "objectMarking": null,
+                "objectOrganization": null,
+                "objects": [
+                  "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a"
+                ],
+                "rating": 3,
+                "revoked": false,
+                "stix_id": "x-opencti-feedback--ce07ddc6-2377-576b-ace5-a4de6996e789",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 3
+}

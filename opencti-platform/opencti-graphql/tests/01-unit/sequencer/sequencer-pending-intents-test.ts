@@ -1,5 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
-import { deferIntents, pendingIntentRecordKey, registerPendingIntentsEsOps } from '../../../src/database/sequencer/sequencer-pending-intents';
+import {
+  deferIntents,
+  deferOperation,
+  fireResubmit,
+  pendingIntentRecordKey,
+  pendingRecordInput,
+  registerPendingFileStaging,
+  registerPendingIntentsEsOps,
+  registerPendingOperationExecute,
+} from '../../../src/database/sequencer/sequencer-pending-intents';
+import { toUpload } from '../../../src/intake/file-values';
+import { type FileStorage, rehydrateFiles, removeStagedFiles, stageFiles } from '../../../src/intake/intake-files';
+import { UploadFile } from '../../../src/intake/stix-import/types';
 
 describe('pending intent record key', () => {
   const input = {
@@ -57,5 +69,69 @@ describe('retained intent envelope', () => {
       previous_standard: 'malware--previous',
       retry_number: 0,
     });
+  });
+});
+
+describe('retained operation files', () => {
+  it('should stage the files of a retained operation, read them back to re-execute it, then delete them', async () => {
+    const objects = new Map<string, Buffer>();
+    const storage: FileStorage = {
+      upload: async (key, data) => objects.set(key, data),
+      download: async (key) => objects.get(key) as Buffer,
+      remove: async (key) => objects.delete(key),
+    };
+    registerPendingFileStaging({
+      stage: (value, prefix) => stageFiles(value, prefix, storage),
+      rehydrate: (value) => rehydrateFiles(value, storage),
+      remove: (keys) => removeStagedFiles(keys, storage),
+    });
+    const bulk = vi.fn().mockResolvedValue({ errors: false, items: [] });
+    registerPendingIntentsEsOps({ indexExists: vi.fn(), createIndex: vi.fn(), bulk, search: vi.fn() });
+    const file = new UploadFile('report.pdf', Buffer.from('%PDF-1.4 content'), 'application/pdf');
+    const operation = { query: 'mutation ReportAdd', variables: { input: { name: 'R', files: [file] } }, object_id: 'report--1' };
+    expect(await deferOperation({ operation, envelope: {}, user: { id: 'user-1' } as any, missing: ['malware--x'] })).toBe(true);
+    const persisted = bulk.mock.calls[bulk.mock.calls.length - 1][0][1];
+    const id = pendingIntentRecordKey('operation', 'report', 'user-1', operation);
+    expect(persisted.staged_files).toEqual([`intake-staging/${id}/0`]);
+    expect(persisted.input_json).not.toContain('%PDF');
+    expect(objects.get(`intake-staging/${id}/0`)?.toString()).toEqual('%PDF-1.4 content');
+    // re-executed with its file read back, then settled: the staged file is deleted
+    const executed: any[] = [];
+    registerPendingOperationExecute(async (record) => {
+      executed.push(await pendingRecordInput(record));
+      return 'applied';
+    });
+    fireResubmit([{ ...persisted, id }]);
+    await vi.waitFor(() => expect(objects.size).toEqual(0));
+    expect(executed[0].variables.input.files[0]).toBeInstanceOf(UploadFile);
+    expect(pendingIntentRecordKey('operation', 'report', 'user-1', executed[0])).toEqual(id);
+  });
+
+  it('should stage the file of a retained intent, given as the Upload scalar gives it to the domain', async () => {
+    const objects = new Map<string, Buffer>();
+    const storage: FileStorage = {
+      upload: async (key, data) => objects.set(key, data),
+      download: async (key) => objects.get(key) as Buffer,
+      remove: async (key) => objects.delete(key),
+    };
+    registerPendingFileStaging({
+      stage: (value, prefix) => stageFiles(value, prefix, storage),
+      rehydrate: (value) => rehydrateFiles(value, storage),
+      remove: (keys) => removeStagedFiles(keys, storage),
+    });
+    const bulk = vi.fn().mockResolvedValue({ errors: false, items: [] });
+    registerPendingIntentsEsOps({ indexExists: vi.fn(), createIndex: vi.fn(), bulk, search: vi.fn() });
+    const file = new UploadFile('report.pdf', Buffer.from('%PDF-1.4 content'), 'application/pdf');
+    const user = { id: 'user-1', origin: {} } as any;
+    const input = { name: 'R', files: [(toUpload(file) as any).promise] };
+    const intent = { id: 'i', kind: 'entity', type: 'Report', input, user, context: { workId: 'work-1' }, opts: {}, arrivedAt: 0, source: 'test', sizeBytes: 1, candidateIds: [], referencedIds: [] } as any;
+    expect(await deferIntents([{ intent, missing: ['malware--x'] }])).toBe(true);
+    const persisted = bulk.mock.calls[bulk.mock.calls.length - 1][0][1];
+    expect(persisted.staged_files).toHaveLength(1);
+    const reread: any = await pendingRecordInput({ ...persisted, id: 'record' });
+    const { filename, createReadStream } = await reread.files[0];
+    const chunks: Buffer[] = [];
+    for await (const chunk of createReadStream()) chunks.push(chunk);
+    expect({ filename, data: Buffer.concat(chunks).toString() }).toEqual({ filename: 'report.pdf', data: '%PDF-1.4 content' });
   });
 });

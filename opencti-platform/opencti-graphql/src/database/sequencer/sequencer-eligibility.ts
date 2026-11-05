@@ -10,6 +10,7 @@ import { isStixRelationship } from '../../schema/stixRelationship';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { sequencerIdentityMap } from './sequencer-identity-map';
 import type { AuthContext, AuthUser } from '../../types/user';
+import { isFileValue } from '../../intake/file-values';
 
 // Worker origin (D2): only pycti's import_item_with_retries sets the opencti-retry-number header,
 // read into user.origin.call_retry_number. It is a STRING, "0" on the first attempt: test
@@ -52,6 +53,8 @@ export const isSequencerEligible = (
 // (startsWith checks) still works on a not-yet-stripped id.
 export const MEMBER_REF_MARK = '||M||';
 export const stripMemberRefMarks = (value: any, collected: Set<string>): any => {
+  // A file (in-process intake) is never walked: its Buffer would be, byte by byte
+  if (isFileValue(value)) return value;
   if (typeof value === 'string') {
     if (value.endsWith(MEMBER_REF_MARK) && value.length > MEMBER_REF_MARK.length) {
       const stripped = value.slice(0, -MEMBER_REF_MARK.length);

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, sep } from 'node:path';
 import { type FieldNode, Kind, type OperationDefinitionNode, parse, print, validate } from 'graphql';
@@ -7,10 +8,11 @@ import { pruneResponseConnections } from '../../../src/graphql/chunk-document-pr
 import '../../../src/modules/index';
 import createSchema from '../../../src/graphql/schema';
 import { captureBundle } from '../../../src/intake/chunk-capture/capture-bundle';
-import { ECHO_PREFIX, NotChunkableError } from '../../../src/intake/chunk-capture/capture-client';
+import { ECHO_PREFIX } from '../../../src/intake/chunk-capture/capture-client';
 import type { ChunkContent } from '../../../src/intake/chunk-capture/chunks';
 import { describeOperation } from '../../../src/intake/dry-intake/simulated-answers';
 import { createImportContext } from '../../../src/intake/stix-import/context';
+import { UploadFile } from '../../../src/intake/stix-import/types';
 import { RecordingClient } from '../import-conformance/import-conformance-client';
 import { ACCEPTED_DIFFERENCES_FILE, DEFAULT_CALL, FIXTURES_DIR } from '../import-conformance/import-conformance-utils';
 
@@ -33,9 +35,9 @@ const ACCEPTED_DIFFERENCES: Record<string, unknown> = JSON.parse(readFileSync(AC
 // Where the worker's capture and the port part, with the port's behaviour asserted instead
 const CAPTURE_DIFFERENCES: Record<string, string> = {
   // pycti reads the fieldPatch of the echo it gets for the description patch (KeyError): the
-  // worker drops the object there and never uploads its file. The port does not read that answer,
-  // goes on to the file upload, and a file cannot travel in a chunk.
-  'ops/patch/task-external-reference.ext': 'not chunkable: a file in the variables',
+  // worker drops the object there and never uploads its file. The port does not read that answer
+  // and goes on to the file upload: the worker's operations, then the upload.
+  'ops/patch/task-external-reference.ext': 'the worker drops the file upload',
 };
 
 const fixturesOf = (dir: string, prefix: string) => (readdirSync(dir, { recursive: true }) as string[])
@@ -59,6 +61,10 @@ const namedEchoes = (chunks: ChunkContent[]) => {
     }
   }));
   const rename = (value: unknown): unknown => {
+    // A file as the goldens record it: name, mime type and content hash
+    if (value instanceof UploadFile) {
+      return { file: { name: value.name, mime: value.mime, sha256: createHash('sha256').update(value.data).digest('hex') } };
+    }
     if (typeof value === 'string') {
       return names.get(value) ?? value;
     }
@@ -124,16 +130,15 @@ describe('Chunk capture conformance with the worker', () => {
       return;
     }
     expect(error, EXCLUDED[name]).not.toBeNull();
-    if (EXCLUDED[name].startsWith('split error')) {
-      expect(error).not.toBeInstanceOf(NotChunkableError);
-    } else {
-      expect(error).toBeInstanceOf(NotChunkableError);
-    }
   });
 
-  it.each(Object.keys(CAPTURE_DIFFERENCES).map((name) => [name, join(FIXTURES_DIR, name)]))('should refuse %s where the worker drops the object', async (name, dir) => {
-    const error = await capture(dir, 24).then(() => null, (failure) => failure);
-    expect(error, CAPTURE_DIFFERENCES[name]).toBeInstanceOf(NotChunkableError);
+  it.each(Object.keys(CAPTURE_DIFFERENCES).map((name) => [name, join(FIXTURES_DIR, name)]))('should add to the worker chunks of %s the file upload it drops', async (name, dir) => {
+    const golden = JSON.parse(readFileSync(join(GOLDENS_DIR, `${name}.json`), 'utf-8'));
+    const [chunk] = comparable(namedEchoes((await capture(dir, 24)).chunks));
+    const [goldenChunk] = comparable(golden.chunks['24']);
+    expect(chunk.operations.slice(0, -1), CAPTURE_DIFFERENCES[name]).toEqual(goldenChunk.operations);
+    const upload = chunk.operations[chunk.operations.length - 1];
+    expect({ root: upload.root, sub: upload.sub, file: (upload.variables as any).file?.file?.name }).toEqual({ root: 'externalReferenceEdit', sub: 'importPush', file: 'evidence.txt' });
   });
 
   it.each(FIXTURES.filter(({ name }) => !(name in EXCLUDED) && !(name in ACCEPTED_DIFFERENCES) && !(name in CAPTURE_DIFFERENCES)).map(({ name, dir }) => [name, dir]))('should build the worker chunks of %s', async (name, dir) => {

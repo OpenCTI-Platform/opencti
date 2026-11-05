@@ -1,0 +1,174 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": null,
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "Cyber Campaign Collections",
+                "stix_id": null,
+                "update": false,
+                "url": "https://github.com/CyberMonitor/APT_CyberCriminal_Campagin_Collections/tree/master/2012/2012.07.11.DarkComet_Creator",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "report--e83715aa-789c-5705-8b03-28c232a58f44",
+            "query": "mutation ReportAdd($input: ReportAddInput!) { reportAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "content": null,
+                "created": "2026-07-21T09:36:45.849885Z",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": [
+                  false
+                ],
+                "externalReferences": [
+                  "echo--1"
+                ],
+                "files": [
+                  {
+                    "file": {
+                      "mime": "application/pdf",
+                      "name": "dark-comet-syrian-spy-tool.pdf",
+                      "sha256": "5b2332840454f3525e5e145b3b19933ce5878e94eca5aef11ba981cec9ebead4"
+                    }
+                  }
+                ],
+                "filesMarkings": [
+                  null
+                ],
+                "lang": null,
+                "modified": "2026-07-21T09:36:45.849885Z",
+                "name": "DarkComet Creator",
+                "noTriggerImport": [
+                  true
+                ],
+                "objectAssignee": null,
+                "objectLabel": [],
+                "objectMarking": null,
+                "objectOrganization": null,
+                "objectParticipant": null,
+                "objects": [
+                  "identity--b7403ffd-634d-52ec-964d-bb755241c27c"
+                ],
+                "published": "2012-07-11T00:00:00Z",
+                "report_types": null,
+                "revoked": null,
+                "stix_id": "report--e83715aa-789c-5705-8b03-28c232a58f44",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_reliability": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": null,
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "Cyber Campaign Collections",
+                "stix_id": null,
+                "update": false,
+                "url": "https://github.com/CyberMonitor/APT_CyberCriminal_Campagin_Collections/tree/master/2012/2012.07.11.DarkComet_Creator",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "report--e83715aa-789c-5705-8b03-28c232a58f44",
+            "query": "mutation ReportAdd($input: ReportAddInput!) { reportAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "content": null,
+                "created": "2026-07-21T09:36:45.849885Z",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": [
+                  false
+                ],
+                "externalReferences": [
+                  "echo--1"
+                ],
+                "files": [
+                  {
+                    "file": {
+                      "mime": "application/pdf",
+                      "name": "dark-comet-syrian-spy-tool.pdf",
+                      "sha256": "5b2332840454f3525e5e145b3b19933ce5878e94eca5aef11ba981cec9ebead4"
+                    }
+                  }
+                ],
+                "filesMarkings": [
+                  null
+                ],
+                "lang": null,
+                "modified": "2026-07-21T09:36:45.849885Z",
+                "name": "DarkComet Creator",
+                "noTriggerImport": [
+                  true
+                ],
+                "objectAssignee": null,
+                "objectLabel": [],
+                "objectMarking": null,
+                "objectOrganization": null,
+                "objectParticipant": null,
+                "objects": [
+                  "identity--b7403ffd-634d-52ec-964d-bb755241c27c"
+                ],
+                "published": "2012-07-11T00:00:00Z",
+                "report_types": null,
+                "revoked": null,
+                "stix_id": "report--e83715aa-789c-5705-8b03-28c232a58f44",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_reliability": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 2
+}

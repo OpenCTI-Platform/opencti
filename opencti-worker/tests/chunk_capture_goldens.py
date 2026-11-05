@@ -1,5 +1,8 @@
 """Write (or check) the goldens of the chunk capture: the chunks the worker publishes for each
 import conformance fixture (POC chunk-queue direct intake, opencti-worker/src/chunk_transport.py).
+A bundle with files, that the worker imports over HTTP, is captured all the same (pycti in capture
+mode, each file recorded by name, mime type and content hash): the platform's in-process intake
+keeps its files in memory.
 
 The platform's worker-less intake builds the same chunks in TypeScript; its test compares them
 with these goldens. The goldens run the worker's own path (push_handler.publish_bundle_chunks):
@@ -12,6 +15,7 @@ conformance world (client-python tests/import_conformance/recorder.py), as for t
     python tests/chunk_capture_goldens.py --check  # fail if one is stale
 """
 
+import hashlib
 import json
 import sys
 import types
@@ -28,6 +32,7 @@ sys.path.insert(0, str(WORKER_DIR / "src"))
 sys.path.insert(0, str(REPO_DIR / "client-python"))
 
 from pycti import OpenCTIApiClient, OpenCTIStix2Splitter  # noqa: E402
+from pycti.api.opencti_api_client import File  # noqa: E402
 from pycti.utils.opencti_stix2_utils import OpenCTIStix2Utils  # noqa: E402
 
 # pylint: disable=wrong-import-position
@@ -69,9 +74,23 @@ def exclusion(call: Dict, raw: Dict) -> str:
     """Why the worker does not send this message as chunks, or '' when it does."""
     if call["message_type"] != "bundle":
         return "stream event: the worker imports it over HTTP"
-    if any(PushHandler.carries_files(obj) for obj in raw.get("objects", [])):
-        return "files: the worker imports the bundle over HTTP"
     return ""
+
+
+def file_marker(value: Any) -> Dict[str, Any]:
+    """A pycti File in the variables: its name, mime type and content hash."""
+    if not isinstance(value, File):
+        raise TypeError("not serializable: {}".format(type(value).__name__))
+    raw = value.data.getvalue() if hasattr(value.data, "getvalue") else value.data
+    if isinstance(raw, str):
+        raw = raw.encode("utf-8")
+    return {
+        "file": {
+            "name": value.name,
+            "mime": value.mime,
+            "sha256": hashlib.sha256(raw).hexdigest(),
+        }
+    }
 
 
 def normalize_echoes(value: Any, names: Dict[str, str]) -> Any:
@@ -191,13 +210,10 @@ def capture(fixture_dir: Path, call: Dict, raw: Dict) -> Dict:
                 client.stix2.import_bundle_from_json(
                     json.dumps(mini_bundle), call["update"], call["types"], None, 0
                 )
-        # Serialized after the window, as the worker publishes them
-        try:
-            serialized = json.dumps(captured)
-        except TypeError as error:
-            raise NotChunked(
-                "not serializable (a file in the variables): the worker imports it over HTTP"
-            ) from error
+        # Serialized after the window, as the worker publishes them. A file has no serialized
+        # form: the worker imports such a bundle over HTTP, the platform's in-process intake
+        # keeps it in memory; the golden records it as the import recorder does
+        serialized = json.dumps(captured, default=file_marker)
         operations = normalize_echoes(json.loads(serialized), {})
     return {
         "operations": len(operations),

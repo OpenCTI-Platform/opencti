@@ -13,7 +13,11 @@ import type { DocumentNode, ExecutionResult } from 'graphql';
 import { LRUCache } from 'lru-cache';
 import createSchema from './schema';
 import { booleanConf } from '../config/conf';
-import { UnsupportedError } from '../config/errors';
+import bytes from 'bytes';
+import nconf from 'nconf';
+import { FunctionalError, UnsupportedError } from '../config/errors';
+import { DEFAULT_MAX_UPLOAD_FILE_SIZE } from '../http/httpUtils';
+import { isFileValue, uploadFilesOf, withUploads } from '../intake/file-values';
 import { pruneResponseConnections } from './chunk-document-prune';
 import type { AuthContext } from '../types/user';
 
@@ -31,6 +35,7 @@ export interface ChunkOperation {
 
 // Replace, in place, every string equal to a resolved echo id by the real platform id.
 export const substituteEchoIds = (value: any, resolved: Map<string, string>): any => {
+  if (isFileValue(value)) return value;
   if (typeof value === 'string') {
     return resolved.get(value) ?? value;
   }
@@ -82,15 +87,25 @@ export const chunkOperationDocument = (query: string): DocumentNode => {
   return executable;
 };
 
+// The per-file limit of the HTTP edge (graphqlUploadExpress maxFileSize, httpUtils.ts): a file over
+// it is refused in process too, the operation fails as the worker's request did (413)
+const MAX_UPLOAD_FILE_SIZE = bytes.parse(nconf.get('app:max_upload_file_size') || DEFAULT_MAX_UPLOAD_FILE_SIZE) ?? (bytes.parse(DEFAULT_MAX_UPLOAD_FILE_SIZE) as number);
+
 // Resolves when the operation is DONE, which for a sequencer-eligible write means after the
 // batch commit (the boundary awaits the intent): the caller can tie the chunk ack to it.
+// The files of an in-process operation (UploadFile) reach the resolvers as the Upload a multipart
+// request gives them (file-values.ts).
 export const executeChunkOperation = async (context: AuthContext, operation: ChunkOperation): Promise<ExecutionResult> => {
+  const tooLarge = uploadFilesOf(operation.variables).filter((file) => file.data.length > MAX_UPLOAD_FILE_SIZE);
+  if (tooLarge.length > 0) {
+    return { errors: [FunctionalError('File too large for upload', { files: tooLarge.map((file) => file.name), limit: MAX_UPLOAD_FILE_SIZE })] };
+  }
   const document = chunkOperationDocument(operation.query);
   return execute({
     schema: createSchema(),
     document,
     contextValue: context,
-    variableValues: operation.variables ?? {},
+    variableValues: (withUploads(operation.variables ?? {}) as Record<string, any>),
     operationName: operation.operationName,
   });
 };

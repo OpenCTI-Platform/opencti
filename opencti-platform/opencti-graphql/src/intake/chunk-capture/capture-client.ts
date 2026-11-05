@@ -24,21 +24,15 @@ export interface CaptureWindow {
   readonly keys: Set<string>;
 }
 
-// A file cannot travel in a queue message: the worker imports such a message over HTTP
-export class NotChunkableError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'NotChunkableError';
-  }
-}
-
 const isPlainObject = (value: unknown): value is Record<string, any> => value !== null && typeof value === 'object' && !Array.isArray(value);
 
 // A snapshot of the variables as the worker publishes them (its NOT_PROVIDED values dropped, an
-// undefined here): the transformation may change the objects it passed after the call
+// undefined here): the transformation may change the objects it passed after the call. A file
+// stays an UploadFile: in process it needs no serialization (the worker, sending chunks through a
+// queue, imported a bundle with files over HTTP instead), the executor makes it an Upload.
 const snapshot = (value: unknown): unknown => {
   if (value instanceof UploadFile) {
-    throw new NotChunkableError('a file in the variables');
+    return value;
   }
   if (Array.isArray(value)) {
     return value.map(snapshot);

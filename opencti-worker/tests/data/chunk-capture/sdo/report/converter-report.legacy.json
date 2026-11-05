@@ -1,0 +1,296 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "reliability_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "A - Completely reliable",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "report_types_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "internal-report",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "report",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--4",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": "spear phishing",
+                "embedded": null,
+                "external_id": "CAPEC-163",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "capec",
+                "stix_id": null,
+                "update": false,
+                "url": null,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f",
+            "query": "mutation ReportAdd($input: ReportAddInput!) { reportAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 100,
+                "content": null,
+                "created": "2025-06-26T14:32:10.000Z",
+                "createdBy": "identity--072d8aaa-93a9-5ded-89e4-1ad87d8b91c6",
+                "customFieldValues": [
+                  {
+                    "field_name": "x_opencti_id",
+                    "value": "0c38a734-3150-468f-bf38-8dc1f937a1b3"
+                  },
+                  {
+                    "field_name": "x_opencti_type",
+                    "value": "Report"
+                  },
+                  {
+                    "field_name": "x_opencti_workflow_id",
+                    "value": "b29268cc-bb75-4f28-96c9-4cb48e549dff"
+                  },
+                  {
+                    "field_name": "x_opencti_reliability",
+                    "value": "A - Completely reliable"
+                  }
+                ],
+                "description": "description",
+                "embedded": null,
+                "externalReferences": [
+                  "echo--4"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2025-06-26T14:36:51.467Z",
+                "name": "Report STIX 2.0",
+                "noTriggerImport": null,
+                "objectAssignee": null,
+                "objectLabel": [
+                  "echo--3"
+                ],
+                "objectMarking": [
+                  "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                ],
+                "objectOrganization": null,
+                "objectParticipant": null,
+                "objects": [
+                  "threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd",
+                  "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a"
+                ],
+                "published": "2025-06-26T14:32:10.000Z",
+                "report_types": [
+                  "internal-report"
+                ],
+                "revoked": false,
+                "stix_id": "report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_reliability": "A - Completely reliable",
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": "b29268cc-bb75-4f28-96c9-4cb48e549dff"
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "reliability_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "A - Completely reliable",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "report_types_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "internal-report",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "report",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--4",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": "spear phishing",
+                "embedded": null,
+                "external_id": "CAPEC-163",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "capec",
+                "stix_id": null,
+                "update": false,
+                "url": null,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f",
+            "query": "mutation ReportAdd($input: ReportAddInput!) { reportAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 100,
+                "content": null,
+                "created": "2025-06-26T14:32:10.000Z",
+                "createdBy": "identity--072d8aaa-93a9-5ded-89e4-1ad87d8b91c6",
+                "customFieldValues": [
+                  {
+                    "field_name": "x_opencti_id",
+                    "value": "0c38a734-3150-468f-bf38-8dc1f937a1b3"
+                  },
+                  {
+                    "field_name": "x_opencti_type",
+                    "value": "Report"
+                  },
+                  {
+                    "field_name": "x_opencti_workflow_id",
+                    "value": "b29268cc-bb75-4f28-96c9-4cb48e549dff"
+                  },
+                  {
+                    "field_name": "x_opencti_reliability",
+                    "value": "A - Completely reliable"
+                  }
+                ],
+                "description": "description",
+                "embedded": null,
+                "externalReferences": [
+                  "echo--4"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2025-06-26T14:36:51.467Z",
+                "name": "Report STIX 2.0",
+                "noTriggerImport": null,
+                "objectAssignee": null,
+                "objectLabel": [
+                  "echo--3"
+                ],
+                "objectMarking": [
+                  "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                ],
+                "objectOrganization": null,
+                "objectParticipant": null,
+                "objects": [
+                  "threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd",
+                  "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a"
+                ],
+                "published": "2025-06-26T14:32:10.000Z",
+                "report_types": [
+                  "internal-report"
+                ],
+                "revoked": false,
+                "stix_id": "report--87de3e34-b9a2-551d-a42f-d25a13d4ad0f",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_reliability": "A - Completely reliable",
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": "b29268cc-bb75-4f28-96c9-4cb48e549dff"
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 5
+}

@@ -1,4 +1,5 @@
 import type { ChunkOperation } from '../../graphql/chunk-executor';
+import { isFileValue } from '../file-values';
 import { ECHO_PREFIX } from './capture-client';
 
 // The worker's chunk building (opencti-worker/src/push_handler.py mark_member_refs,
@@ -33,6 +34,7 @@ export const markMemberRefs = (node: unknown, memberIds: Set<string>) => {
 };
 
 const collectEchoRefs = (value: unknown, refs: Set<string>) => {
+  if (isFileValue(value)) return;
   if (typeof value === 'string') {
     if (value.startsWith(ECHO_PREFIX)) {
       refs.add(value);

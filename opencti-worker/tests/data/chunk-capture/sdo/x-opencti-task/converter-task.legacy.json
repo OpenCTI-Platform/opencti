@@ -1,0 +1,150 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "ryuk",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation TaskAdd($input: TaskAddInput!) { taskAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "created": "2025-06-26T17:55:28.987Z",
+                "customFieldValues": [
+                  {
+                    "field_name": "x_opencti_id",
+                    "value": "d4e02a21-0dda-4295-be80-3c81503b69c8"
+                  },
+                  {
+                    "field_name": "x_opencti_type",
+                    "value": "Task"
+                  },
+                  {
+                    "field_name": "x_opencti_granted_refs",
+                    "value": [
+                      "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
+                    ]
+                  }
+                ],
+                "description": "Description",
+                "due_date": "2025-06-27T22:00:00.000Z",
+                "embedded": null,
+                "files": null,
+                "filesMarkings": null,
+                "name": "task STIX 2.0",
+                "noTriggerImport": null,
+                "objectAssignee": null,
+                "objectLabel": [
+                  "echo--1"
+                ],
+                "objectMarking": [
+                  "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                ],
+                "objectOrganization": [
+                  "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
+                ],
+                "objectParticipant": null,
+                "objects": [
+                  "case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763"
+                ],
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "ryuk",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation TaskAdd($input: TaskAddInput!) { taskAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "created": "2025-06-26T17:55:28.987Z",
+                "customFieldValues": [
+                  {
+                    "field_name": "x_opencti_id",
+                    "value": "d4e02a21-0dda-4295-be80-3c81503b69c8"
+                  },
+                  {
+                    "field_name": "x_opencti_type",
+                    "value": "Task"
+                  },
+                  {
+                    "field_name": "x_opencti_granted_refs",
+                    "value": [
+                      "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
+                    ]
+                  }
+                ],
+                "description": "Description",
+                "due_date": "2025-06-27T22:00:00.000Z",
+                "embedded": null,
+                "files": null,
+                "filesMarkings": null,
+                "name": "task STIX 2.0",
+                "noTriggerImport": null,
+                "objectAssignee": null,
+                "objectLabel": [
+                  "echo--1"
+                ],
+                "objectMarking": [
+                  "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                ],
+                "objectOrganization": [
+                  "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
+                ],
+                "objectParticipant": null,
+                "objects": [
+                  "case-rft--8456f0c2-0308-578b-b90c-1dd6e0440763"
+                ],
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 2
+}
