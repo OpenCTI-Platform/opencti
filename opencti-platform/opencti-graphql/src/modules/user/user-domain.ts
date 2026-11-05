@@ -803,16 +803,21 @@ const passwordPolicyRequirements = (policy: PasswordInlinePolicy) => {
   return { minUppercase, minLowercase, minNumbers, separatorsCount, extraSymbolsCount, requiredCharsCount, minLength, maxLength };
 };
 
-// A policy whose maximum length is below the length its other rules require accepts no password
+// Whether checkPasswordInlinePolicy accepts a password of at most the maximum length: a word separator is also a symbol,
+// and the words it splits may be empty
 export const isPasswordPolicySatisfiable = (policy: PasswordInlinePolicy) => {
-  const { minLength, maxLength } = passwordPolicyRequirements(policy);
-  return !(maxLength > 0 && maxLength < minLength);
+  const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
+  const maxLength = positive(policy.password_policy_max_length);
+  const symbolsCount = Math.max(positive(policy.password_policy_min_symbols), positive(policy.password_policy_min_words) - 1);
+  const charsCount = positive(policy.password_policy_min_uppercase) + positive(policy.password_policy_min_lowercase)
+    + positive(policy.password_policy_min_numbers) + symbolsCount;
+  return maxLength === 0 || maxLength >= Math.max(positive(policy.password_policy_min_length), charsCount);
 };
 
 export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
   const { minUppercase, minLowercase, minNumbers, separatorsCount, extraSymbolsCount, requiredCharsCount, minLength, maxLength } = passwordPolicyRequirements(policy);
-  // Check policy feasibility before allocating anything
-  if (!isPasswordPolicySatisfiable(policy)) {
+  // Check policy feasibility before allocating anything: the generated words are never empty
+  if (maxLength > 0 && maxLength < minLength) {
     throw FunctionalError('Unable to generate a password: password policy cannot be satisfied', { minLength, maxLength });
   }
   let length = Math.max(minLength, GENERATED_PASSWORD_DEFAULT_LENGTH);

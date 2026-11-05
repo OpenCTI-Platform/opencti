@@ -247,6 +247,14 @@ describe('importRole protected sensitive configuration', () => {
     await importRole(context, user, roleConfiguration({ name: 'Administrator' }), { mode: ConfigImportMode.Copy, dryRun: true });
     expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'roles', roleStandardId('Administrator (1)'));
   });
+
+  it('refuses a copy of a protected role, which would carry its rights, without writing', async () => {
+    withRoles([existingRole('Administrator')]);
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockImplementation(async (_ctx, _user, _type, id) => id !== roleStandardId('Administrator'));
+    const result = await importRole(context, user, roleConfiguration({ name: 'Administrator' }), { mode: ConfigImportMode.Copy });
+    expect(result).toMatchObject({ status: 'failed', code: 'sensitive_config', reason: 'Requires the right to manage the sensitive configuration' });
+    expectNothingWritten();
+  });
 });
 
 describe('importRole grantsSensitiveRights', () => {

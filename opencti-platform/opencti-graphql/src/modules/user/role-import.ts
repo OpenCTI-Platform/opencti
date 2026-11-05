@@ -162,7 +162,10 @@ export const importRole = async (
   }
   const target = isCopy ? undefined : existing;
   const targetId = roleStandardId(name);
-  if (!(await isConfigImportSensitiveChangeAllowed(context, user, 'roles', targetId))) {
+  // A copy of a protected role carries its rights: it is protected like the role it copies
+  const allowed = await isConfigImportSensitiveChangeAllowed(context, user, 'roles', standardId)
+    && (targetId === standardId || await isConfigImportSensitiveChangeAllowed(context, user, 'roles', targetId));
+  if (!allowed) {
     return refused('sensitive_config', CONFIG_IMPORT_SENSITIVE_REASON, !!existing, parsed.data);
   }
   const { configuration: role, bypassKept } = withAdministratorBypass(targetId, { ...parsed.data, name });

@@ -321,6 +321,15 @@ describe('importGroup protected sensitive configuration', () => {
     expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'groups', groupStandardId('Administrators'));
     expectNothingWritten();
   });
+
+  it('refuses a copy of a protected group, which would carry its roles, without writing', async () => {
+    withPlatform({ groups: [existingGroup('Administrators')] });
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockImplementation(async (_ctx, _user, _type, id) => id !== groupStandardId('Administrators'));
+    const result = await importGroup(context, user, groupConfiguration({ name: 'Administrators' }), { mode: ConfigImportMode.Copy });
+    expect(result).toMatchObject({ status: 'failed', code: 'sensitive_config' });
+    expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'groups', groupStandardId('Administrators'));
+    expectNothingWritten();
+  });
 });
 
 describe('importGroup Administrators group', () => {
@@ -468,6 +477,15 @@ describe('importGroup already up to date', () => {
     const result = await importGroup(context, user, configuration, { mode: ConfigImportMode.Overwrite });
     expect(result).toMatchObject({ status: 'skipped', code: 'unchanged' });
     expectNothingWritten();
+  });
+
+  it('stays up to date on a dry run when a marking the same import creates is left out of the group', async () => {
+    withPlatform({ groups: [analysts], markings: [TLP_AMBER, PAP_RED] });
+    withRelations([analystRole], [TLP_AMBER]);
+    // A default marking below another of its type is never kept, as the settings screen does
+    const configuration = groupConfiguration({ default_marking: [{ entity_type: 'GLOBAL', values: [markingReference(TLP_AMBER), markingReference(TLP_GREEN)] }] });
+    const result = await importGroup(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true, plannedMarkings: plannedMarking(TLP_GREEN) });
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged' });
   });
 
   it('reads on a dry run the order a marking overwritten by the same import will have', async () => {

@@ -43,8 +43,13 @@ const rolesImporter: ConfigPresetImporter = {
     }
     return toComputedItem(label, result);
   },
-  apply: async (context, user, item, computed, mode) => {
-    return toAppliedStatus(await importRole(context, user, item.configuration, { mode }), computed);
+  apply: async (context, user, item, computed, mode, plan) => {
+    const result = await importRole(context, user, item.configuration, { mode });
+    // A copy takes the name that is free when it is written: the groups of the same import get this role, never another one that took the previewed name since
+    if (result.status !== 'failed' && result.targetId) {
+      recordConfigPresetTarget(plan, ROLES_FAMILY_ID, item.id, result.targetId);
+    }
+    return toAppliedStatus(result, computed);
   },
 };
 

@@ -104,12 +104,10 @@ const resolveGroup = async (
   const shareable = configuration.max_shareable_markings.flatMap(({ value }) => (value === 'none' ? [] : [value]));
   const findMarking = await loadMarkings(context, user, [...configuration.allowed_markings, ...configuration.default_marking.flatMap(({ values }) => values), ...shareable]);
   const missingMarkings = new Set<string>();
-  let getsPlannedMarkings = false;
   const resolveMarking = (reference: GroupMarkingReference): ResolvedMarking | undefined => {
     const marking = findMarking(reference.standard_id);
     const planned = plannedMarkings.get(reference.standard_id);
     if (planned) {
-      getsPlannedMarkings ||= !marking;
       return { ...planned, id: marking?.id, standard_id: reference.standard_id };
     }
     if (!marking) {
@@ -123,13 +121,19 @@ const resolveGroup = async (
   const dashboard = dashboardReference ? await storeLoadById<BasicStoreEntity>(context, user, dashboardReference.standard_id, ENTITY_TYPE_WORKSPACE) : undefined;
   const fields: Record<string, unknown> = Object.fromEntries(GROUP_FIELDS.map((key) => [key, configuration[key]]));
   fields.default_dashboard = dashboard?.id;
+  // A marking the same import creates, with no id yet, is a change only when the group keeps it
+  let getsPlannedMarkings = false;
+  const keptIds = (markings: ResolvedMarking[]) => {
+    getsPlannedMarkings ||= markings.some(({ id }) => !id);
+    return markings.flatMap(({ id }) => (id ? [id] : []));
+  };
   fields.default_marking = await Promise.all(configuration.default_marking.map(async ({ entity_type, values }) => ({
     entity_type,
-    values: (await cleanMarkings(context, values.map(resolveMarking).filter((marking) => !!marking)) as ResolvedMarking[])
-      .flatMap(({ id }) => (id ? [id] : [])),
+    values: keptIds(await cleanMarkings(context, values.map(resolveMarking).filter((marking) => !!marking)) as ResolvedMarking[]),
   })));
   // Same rule as the settings screen: a marking is shareable when an allowed marking of its type is at least as high
   const allowed = configuration.allowed_markings.map(resolveMarking).filter((marking): marking is ResolvedMarking => !!marking);
+  keptIds(allowed);
   const isAllowed = (marking: ResolvedMarking) => allowed.some(({ definition_type, x_opencti_order }) => definition_type === marking.definition_type
     && x_opencti_order >= marking.x_opencti_order);
   const notAllowedShareableMarkings: string[] = [];
@@ -139,7 +143,7 @@ const resolveGroup = async (
       notAllowedShareableMarkings.push(marking.definition);
       return { type, value: 'none' };
     }
-    return { type, value: marking?.id ?? 'none' };
+    return { type, value: marking ? keptIds([marking])[0] ?? 'none' : 'none' };
   });
   return {
     notAllowedShareableMarkings,
@@ -329,7 +333,11 @@ export const importGroup = async (
   }
   const target = isCopy ? undefined : existing;
   const targetId = groupStandardId(name);
-  if (!(await isConfigImportSensitiveChangeAllowed(context, user, 'groups', targetId))) {
+  const standardId = groupStandardId(parsed.data.name);
+  // A copy of a protected group carries its rights: it is protected like the group it copies
+  const allowed = await isConfigImportSensitiveChangeAllowed(context, user, 'groups', standardId)
+    && (targetId === standardId || await isConfigImportSensitiveChangeAllowed(context, user, 'groups', targetId));
+  if (!allowed) {
     return refused('sensitive_config', CONFIG_IMPORT_SENSITIVE_REASON, !!existing, parsed.data);
   }
   const found = roles.filter((role): role is BasicStoreEntityRole => !!role);
