@@ -12,14 +12,23 @@ export interface PirStreamConfiguration {
 
 // The configuration is stored as free JSON and never validated against the schema,
 // so inPirFilters may be missing, null, '' (untouched form field), a single option or bare ids.
+const isEmptyInPirFilters = (inPirFilters: unknown) => inPirFilters === null || inPirFilters === undefined || inPirFilters === ''
+  || (Array.isArray(inPirFilters) && inPirFilters.length === 0);
+
 export const normalizeInPirFilters = (inPirFilters: unknown): { value: string }[] => {
-  if (inPirFilters === null || inPirFilters === undefined || inPirFilters === '') return [];
+  if (isEmptyInPirFilters(inPirFilters)) return [];
   const list: unknown[] = Array.isArray(inPirFilters) ? inPirFilters : [inPirFilters];
   return list.flatMap((item) => {
     if (typeof item === 'string') return item ? [{ value: item }] : [];
     const value = (item as { value?: unknown } | null)?.value;
     return typeof value === 'string' && value ? [{ value }] : [];
   });
+};
+
+// An empty selection means "any PIR". A selection that was set but yields no PIR id
+// must not silently widen to that: callers should match nothing instead.
+export const isUnreadableInPirFilters = (inPirFilters: unknown) => {
+  return !isEmptyInPirFilters(inPirFilters) && normalizeInPirFilters(inPirFilters).length === 0;
 };
 
 const PLAYBOOK_DATA_STREAM_PIR_SCHEMA: JSONSchemaType<PirStreamConfiguration> = {

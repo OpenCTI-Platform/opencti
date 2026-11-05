@@ -16,6 +16,7 @@ import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 import type { PirStreamConfiguration } from '../../../../src/modules/playbook/components/data-stream-pir-component';
 import { testContext } from '../../../utils/testQuery';
+import { logApp } from '../../../../src/config/conf';
 
 describe('listenPirEventsUtils', () => {
   beforeEach(() => {
@@ -547,6 +548,53 @@ describe('listenPirEventsUtils', () => {
       expect(stixFiltering.isStixMatchFilterGroup).toHaveBeenCalled();
       expect(middleware.stixLoadById).not.toHaveBeenCalled();
       expect(playbookExecutor.playbookExecutor).not.toHaveBeenCalled();
+    });
+
+    const instanceWithInPirFilters = (id: string, inPirFilters: unknown) => ({
+      ...randomInstance,
+      id,
+      configuration: JSON.stringify({ ...JSON.parse(randomInstance.configuration), inPirFilters }),
+    });
+
+    it.each([
+      ['an empty string', ''],
+      ['null', null],
+      ['an empty array', []],
+    ])('should listen to any PIR when PIR filters are %s', async (label, inPirFilters) => {
+      vi.spyOn(playbookExecutor, 'playbookExecutor').mockResolvedValue(undefined);
+      vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
+      vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockEntity);
+
+      await listenPirEvents(
+        testContext,
+        { id: 'id-tested-event', data: { ...eventDeleteInPirRelationship } } as unknown as SseEvent<StreamDataEvent>,
+        instanceWithInPirFilters(`id-empty-${label}`, inPirFilters),
+        randomPlaybook,
+      );
+      expect(playbookExecutor.playbookExecutor).toHaveBeenCalled();
+    });
+
+    it.each([
+      ['options without a value', [{ label: 'test', id: 'pir-id-1' }]],
+      ['an array of empty ids', ['']],
+      ['an array of null', [null]],
+      ['an object without a value', {}],
+      ['a number', 42],
+    ])('should not listen to any PIR when PIR filters are %s', async (label, inPirFilters) => {
+      vi.spyOn(playbookExecutor, 'playbookExecutor').mockResolvedValue(undefined);
+      vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(true);
+      vi.spyOn(middleware, 'stixLoadById').mockResolvedValue(mockEntity);
+      const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+
+      await listenPirEvents(
+        testContext,
+        { id: 'id-tested-event', data: { ...eventDeleteInPirRelationship } } as unknown as SseEvent<StreamDataEvent>,
+        instanceWithInPirFilters(`id-unreadable-${label}`, inPirFilters),
+        randomPlaybook,
+      );
+      expect(middleware.stixLoadById).not.toHaveBeenCalled();
+      expect(playbookExecutor.playbookExecutor).not.toHaveBeenCalled();
+      expect(warn).toHaveBeenCalledTimes(1);
     });
   });
 });

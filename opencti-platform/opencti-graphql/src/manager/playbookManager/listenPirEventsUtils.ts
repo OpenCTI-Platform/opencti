@@ -3,7 +3,8 @@ import { stixLoadById } from '../../database/middleware';
 import { FilterMode, type FilterGroup } from '../../generated/graphql';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, NodeDefinition } from '../../modules/playbook/playbook-types';
-import { normalizeInPirFilters, type PirStreamConfiguration } from '../../modules/playbook/components/data-stream-pir-component';
+import { isUnreadableInPirFilters, normalizeInPirFilters, type PirStreamConfiguration } from '../../modules/playbook/components/data-stream-pir-component';
+import { logApp } from '../../config/conf';
 import { isStixRelation } from '../../schema/stixRelationship';
 import type { SseEvent, StreamDataEvent } from '../../types/event';
 import type { StixBundle, StixCoreObject, StixObject } from '../../types/stix-2-1-common';
@@ -148,6 +149,20 @@ export const formatFiltersForPirPlaybookComponent = (sourceFilters: string, inPi
   return { ...filtersOnSource, filters: formattedFirstLevelFilters };
 };
 
+// listenPirEvents runs for every stream event: warn once per playbook node, not once per event.
+const warnedUnreadableInPirFilters = new Set<string>();
+const warnUnreadableInPirFiltersOnce = (playbook: BasicStoreEntityPlaybook, instance: NodeDefinition, inPirFilters: unknown) => {
+  const key = `${playbook.id}:${instance.id}`;
+  if (warnedUnreadableInPirFilters.has(key)) return;
+  warnedUnreadableInPirFilters.add(key);
+  logApp.warn('[OPENCTI-MODULE] Playbook PIR listener ignores events: selected PIRs cannot be read', {
+    manager: 'PLAYBOOK_MANAGER',
+    playbookId: playbook.id,
+    instanceId: instance.id,
+    inPirFilters,
+  });
+};
+
 export const listenPirEvents = async (
   context: AuthContext,
   streamEvent: SseEvent<StreamDataEvent>,
@@ -156,6 +171,10 @@ export const listenPirEvents = async (
 ) => {
   const { id: eventId, data: { data, type } } = streamEvent;
   const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
+  if (isUnreadableInPirFilters(configuration.inPirFilters)) {
+    warnUnreadableInPirFiltersOnce(playbook, instance, configuration.inPirFilters);
+    return;
+  }
   const { filters: sourceFilters } = configuration;
   const inPirFilters = normalizeInPirFilters(configuration.inPirFilters);
   const filtersOnSource = formatFiltersForPirPlaybookComponent(sourceFilters, inPirFilters);
