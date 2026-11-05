@@ -151,6 +151,13 @@ export const canReceiveNotifications = (user: AuthUser): boolean => {
   return !user.user_service_account && isNotificationRecipientActive(user);
 };
 
+// Recipient check for the triggers a user defined that name the recipient directly: an active service
+// account is kept, because a machine identity subscribes to events through a webhook notifier. The publisher delivers
+// to a service account through a webhook notifier only (see publisherManager).
+export const canReceiveDefinedTriggerNotifications = (user: AuthUser): boolean => {
+  return isNotificationRecipientActive(user);
+};
+
 const generateAssigneeTrigger = (user: AuthUser) => {
   const filters = {
     mode: 'or',
@@ -216,8 +223,10 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
 
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
-  const platformUsers = (await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER))
-    .filter(canReceiveNotifications);
+  const activeUsers = (await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER))
+    .filter(canReceiveDefinedTriggerNotifications);
+  // Native triggers (assignee, platform, request access) target humans only.
+  const platformUsers = activeUsers.filter(canReceiveNotifications);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const isAssigneeAutoTriggerEnabled = settings.platform_notifier_auto_trigger_assignee ?? true;
   const notificationTriggers = [];
@@ -236,11 +245,12 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
   for (let index = 0; index < triggers.length; index += 1) {
     const trigger = triggers[index];
     const triggerAuthorizedMembersIds = trigger.restricted_members?.map((member) => member.id) ?? [];
+    // Groups and organizations reach humans only; a service account is a recipient when the trigger names it directly.
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
     const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
-    const usersFromIds = platformUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
+    const usersFromIds = activeUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
     const withoutInternalUsers = [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]
       .filter((u) => INTERNAL_USERS[u.id] === undefined);
     const users = R.uniqBy(R.prop('id'), withoutInternalUsers);
