@@ -9,7 +9,7 @@ import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { OPENCTI_NAMESPACE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
+import { delEditContext, notify, redisDeleteIngestionLogHistory, redisGetWork, setEditContext } from '../database/redis';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -285,6 +285,7 @@ export const syncEditField = async (context: AuthContext, user: AuthUser, syncId
 export const syncDelete = async (context: AuthContext, user: AuthUser, syncId: string) => {
   const deleted = await deleteElementById<StoreEntity>(context, user, syncId, ENTITY_TYPE_SYNC);
   await unregisterConnector(syncId);
+  await redisDeleteIngestionLogHistory(deleted.internal_id);
   await publishUserAction({
     user,
     event_type: 'mutation',

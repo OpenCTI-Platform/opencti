@@ -126,4 +126,15 @@ describe('Connector resolver - stream logs', () => {
       expect(result.errors[0].message).toContain('Unknown ingestion log level');
     }
   });
+
+  it('should delete the synchronizer and its log history', async () => {
+    await redisPushIngestionLog(synchronizerId, { level: 'info', type: 'sync', identifier: synchronizerName, message: 'before-delete' });
+    const result = await queryAsAdminWithSuccess({
+      query: gql`mutation deleteSynchronizerForLogs($id: ID!) { synchronizerEdit(id: $id) { delete } }`,
+      variables: { id: synchronizerId },
+    });
+    expect(result.data?.synchronizerEdit.delete).toEqual(synchronizerId);
+    expect(await getClientBase().exists(`ingestion-log-${synchronizerId}-history`)).toBe(0);
+    synchronizerId = ''; // already deleted, nothing left for afterAll
+  });
 });
