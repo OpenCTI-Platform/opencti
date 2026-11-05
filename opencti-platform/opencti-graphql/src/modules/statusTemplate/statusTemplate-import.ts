@@ -52,7 +52,7 @@ export const importStatusTemplate = async (
     return refused('failed', 'exists', 'Status template already exists', true, parsed.data);
   }
   if (color.toLowerCase() === existing.color?.toLowerCase()) {
-    return refused('skipped', 'unchanged', 'Nothing to import', true, parsed.data);
+    return refused('skipped', 'unchanged', 'Already up to date', true, parsed.data);
   }
   if (!dryRun) {
     await statusTemplateEditField(context, user, existing.id, [{ key: 'color', value: [color] }]);

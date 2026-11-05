@@ -38,9 +38,9 @@ describe('Status templates import (registry)', () => {
   });
 
   it('reports a template that the platform already has as skipped when nothing differs', async () => {
-    vi.mocked(importStatusTemplate).mockResolvedValue({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Nothing to import' });
+    vi.mocked(importStatusTemplate).mockResolvedValue({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Already up to date' });
     expect(await family.importer!.compute(context, user, item(configuration), plan, ConfigImportMode.Overwrite))
-      .toMatchObject({ status: 'skipped', exists: true, reason: 'Nothing to import' });
+      .toMatchObject({ status: 'skipped', exists: true, reason: 'Already up to date' });
   });
 
   it('accepts an id computed from the name whatever its case and surrounding spaces, as the platform does', async () => {

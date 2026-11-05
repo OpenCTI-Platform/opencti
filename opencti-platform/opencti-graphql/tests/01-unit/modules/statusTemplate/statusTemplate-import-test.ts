@@ -107,7 +107,7 @@ describe('importStatusTemplate', () => {
 
     it('skips it when it has the same color, whatever its case, as the templates of a new instance do', async () => {
       expect(await importStatusTemplate(context, user, { name: 'ESCALATED', color: '#E91E63' }, { mode: ConfigImportMode.Overwrite }))
-        .toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Nothing to import' });
+        .toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Already up to date' });
       expect(statusTemplateEditField).not.toHaveBeenCalled();
     });
   });
