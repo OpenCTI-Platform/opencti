@@ -295,17 +295,19 @@ A variable is a `$` followed by a path into the notification data:
 - It is followed by any number of `.property` or `[index]` (a non-negative integer, starting at 0).
 - `.length` gives the number of elements of a list, for instance `$data.length`.
 
-| **Variable** | **Value** |
-| --- | --- |
-| `$notification.name` | Name of the trigger |
-| `$notification.trigger_type` | `live` or `digest` |
-| `$notification_content[0].title` | Name of the first entity concerned |
-| `$notification_content[0].events[0].operation` | `create`, `update`, `delete`... |
-| `$notification_content[0].events[0].message` | Message of the event |
-| `$data[0].instance.name`, `$data[0].instance.type` | Name and type of the STIX object of the first event |
-| `$data.length` | Number of events in the email |
-| `$settings.platform_title` | Title of the platform |
-| `$user.user_email` | Email of the recipient |
+The `$` variables only work in the Title. The table gives, for each one, how to write the same value in the message template with EJS.
+
+| **Variable** | **In the message template (EJS)** | **Value** |
+| --- | --- | --- |
+| `$notification.name` | `<%= notification.name %>` | Name of the trigger |
+| `$notification.trigger_type` | `<%= notification.trigger_type %>` | `live` or `digest` |
+| `$notification_content[0].title` | `<%= notification_content[0].title %>` | Name of the first entity concerned |
+| `$notification_content[0].events[0].operation` | `<%= notification_content[0].events[0].operation %>` | `create`, `update`, `delete`... |
+| `$notification_content[0].events[0].message` | `<%= notification_content[0].events[0].message %>` | Message of the event |
+| `$data[0].instance.name`, `$data[0].instance.type` | `<%= data[0].instance.name %>`, `<%= data[0].instance.type %>` | Name and type of the STIX object of the first event |
+| `$data.length` | `<%= data.length %>` | Number of events in the email |
+| `$settings.platform_title` | `<%= settings.platform_title %>` | Title of the platform |
+| `$user.user_email` | `<%= user.user_email %>` | Email of the recipient |
 
 ### Examples
 
