@@ -1,7 +1,6 @@
 import { FunctionalError, UnsupportedError } from '../../config/errors';
-import { TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT } from '../../database/middleware';
-import { type FilterGroup, FilterMode, FilterOperator, OrderingMode, type QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs } from '../../generated/graphql';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
+import { type FilterGroup, FilterMode, FilterOperator, type QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs } from '../../generated/graphql';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../../schema/stixRefRelationship';
 import { addFilter } from '../../utils/filtering/filtering-utils';
@@ -67,22 +66,25 @@ export const buildPublicBreakdownArgs = (
   if (!args.startDate) {
     throw FunctionalError('A start date is required for a time series breakdown');
   }
+  // The settings the widget leaves out get the defaults of the breakdown API (timeSeriesBreakdown in middleware.ts):
+  // 10 series, the highest values first, without Other
   const breakdownArgs = {
     field: parameters.breakdownBy,
     dateAttribute: selection.date_attribute,
     startDate: args.startDate,
     endDate: args.endDate,
+    // The API has none: daily, as the other time series of the public widgets (publicStixCoreObjectsMultiTimeSeries)
     interval: parameters.interval ?? 'day',
-    limit: parameters.breakdownLimit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT,
-    orderMode: parameters.breakdownOrder === 'asc' ? OrderingMode.Asc : OrderingMode.Desc,
-    includeOther: parameters.breakdownOther ?? false,
+    limit: parameters.breakdownLimit,
+    orderMode: parameters.breakdownOrder,
+    includeOther: parameters.breakdownOther,
   };
   if (breakdownPerspective === 'entities') {
-    const types = getBreakdownEntityTypes(selection.filters);
     return {
       ...breakdownArgs,
       filters: selection.filters,
-      types: types.length > 0 ? types : [ABSTRACT_STIX_CORE_OBJECT],
+      // Without types, every entity (extractStixCoreObjectTypesFromArgs in stixCoreObject.js)
+      types: getBreakdownEntityTypes(selection.filters),
     };
   }
   return {

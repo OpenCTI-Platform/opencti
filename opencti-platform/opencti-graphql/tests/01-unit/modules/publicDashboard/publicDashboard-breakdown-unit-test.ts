@@ -55,16 +55,17 @@ describe('buildPublicBreakdownArgs of relationships', () => {
     expect(args).not.toHaveProperty('isTo');
   });
 
-  it('should default the settings of the widget, and break all the relationships down without type filter', () => {
+  it('should leave the settings the widget does not set to the API, and break all the relationships down without type filter', () => {
     const widget = storedWidget('relationships', [{ date_attribute: 'created_at' }], { breakdownBy: 'relationship_type' });
 
-    expect(relationshipsArgs(widget, { endDate: null })).toMatchObject({
+    // Without limit, order nor Other: the API defaults them. The interval has no default there.
+    expect(relationshipsArgs(widget, { endDate: null })).toEqual({
       field: 'relationship_type',
+      dateAttribute: 'created_at',
+      startDate,
       endDate: null,
       interval: 'day',
-      limit: 10,
-      orderMode: 'desc',
-      includeOther: false,
+      filters: widgetRelationships(),
       relationship_type: [],
     });
   });
@@ -130,7 +131,7 @@ describe('buildPublicBreakdownArgs of entities', () => {
 
   it('should break the stored entities dataset down with the stored settings', () => {
     const reports = { mode: 'and', filters: [{ key: ['entity_type'], values: ['Report'], operator: 'eq', mode: 'or' }], filterGroups: [] };
-    const widget = storedWidget('entities', [{ date_attribute: 'published', filters: reports }], { interval: 'month', breakdownBy: 'objectLabel', breakdownLimit: 5 });
+    const widget = storedWidget('entities', [{ date_attribute: 'published', filters: reports }], { interval: 'month', breakdownBy: 'objectLabel', breakdownLimit: 5, breakdownOrder: 'desc' });
 
     expect(entitiesArgs(widget)).toEqual({
       field: 'objectLabel',
@@ -140,16 +141,15 @@ describe('buildPublicBreakdownArgs of entities', () => {
       interval: 'month',
       limit: 5,
       orderMode: 'desc',
-      includeOther: false,
       filters: reports,
       // the field is checked against the types the filters restrict to
       types: ['Report'],
     });
   });
 
-  it('should break every entity down without type filter', () => {
+  it('should leave the types to the API without type filter, which breaks every entity down', () => {
     const widget = storedWidget('entities', [{ date_attribute: 'created_at' }], { breakdownBy: 'entity_type' });
-    expect(entitiesArgs(widget)).toMatchObject({ filters: undefined, types: ['Stix-Core-Object'] });
+    expect(entitiesArgs(widget)).toMatchObject({ filters: undefined, types: [] });
   });
 
   it('should refuse an audits widget carrying a breakdown', () => {
