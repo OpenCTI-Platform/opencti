@@ -14,7 +14,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
 import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
-import { Icon, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import type { LocalStrategyFormQuery } from './__generated__/LocalStrategyFormQuery.graphql';
 import type { LocalAuthLockoutFinalAction, LocalStrategyFormMutation } from './__generated__/LocalStrategyFormMutation.graphql';
 
@@ -38,8 +38,6 @@ const localStrategyFormQuery = graphql`
       local_auth_lockout_admin_max_attempts
       local_auth_lockout_final_action
       local_auth_lockout_window
-      local_auth_lockout_duration
-      local_auth_lockout_max_duration
       platform_enterprise_edition {
         license_validated
       }
@@ -79,8 +77,6 @@ const localStrategyFormMutation = graphql`
         local_auth_lockout_admin_max_attempts
         local_auth_lockout_final_action
         local_auth_lockout_window
-        local_auth_lockout_duration
-        local_auth_lockout_max_duration
       }
     }
   }
@@ -91,7 +87,6 @@ type Translate = (message: string, options?: { values: Record<string, number> })
 // Upper bounds of the lockout policy, mirrored from setting-auth.ts
 const LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
 const LOCKOUT_WINDOW_LIMIT = 1440; // minutes, the window is capped to 24h
-const LOCKOUT_MAX_DURATION_LIMIT = 10800; // seconds, locks are capped to 3h
 
 // Action applied once the max attempts are reached, mirrored from the LocalAuthLockoutFinalAction enum
 const LOCKOUT_FINAL_ACTIONS = ['temporary', 'permanent'];
@@ -125,17 +120,6 @@ const localStrategyValidation = (t_i18n: Translate) => Yup.object().shape({
   local_auth_lockout_admin_max_attempts: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_ATTEMPTS_LIMIT),
   local_auth_lockout_final_action: Yup.string().oneOf(LOCKOUT_FINAL_ACTIONS),
   local_auth_lockout_window: lockoutNumberSchema(t_i18n, LOCKOUT_WINDOW_LIMIT),
-  local_auth_lockout_duration: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_DURATION_LIMIT),
-  local_auth_lockout_max_duration: lockoutNumberSchema(t_i18n, LOCKOUT_MAX_DURATION_LIMIT)
-    // Only compared to a valid first duration, whose own field reports any other error
-    .when(['local_auth_lockout_enabled', 'local_auth_lockout_duration'], {
-      is: (lockoutEnabled: boolean, duration?: number) => lockoutEnabled && duration !== undefined
-        && Number.isFinite(duration) && duration <= LOCKOUT_MAX_DURATION_LIMIT,
-      then: (schema) => schema.min(
-        Yup.ref('local_auth_lockout_duration'),
-        t_i18n('The maximum lock duration must be greater than or equal to the first lock duration'),
-      ),
-    }),
 });
 
 interface LocalStrategyFormProps {
@@ -183,8 +167,6 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
     local_auth_lockout_admin_max_attempts: settings.local_auth_lockout_admin_max_attempts ?? '',
     local_auth_lockout_final_action: settings.local_auth_lockout_final_action ?? 'temporary',
     local_auth_lockout_window: settings.local_auth_lockout_window ?? '',
-    local_auth_lockout_duration: settings.local_auth_lockout_duration ?? '',
-    local_auth_lockout_max_duration: settings.local_auth_lockout_max_duration ?? '',
   };
 
   const handleSubmit = (
@@ -200,8 +182,6 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           local_auth_lockout_admin_max_attempts: Number(values.local_auth_lockout_admin_max_attempts),
           local_auth_lockout_final_action: values.local_auth_lockout_final_action as LocalAuthLockoutFinalAction,
           local_auth_lockout_window: Number(values.local_auth_lockout_window),
-          local_auth_lockout_duration: Number(values.local_auth_lockout_duration),
-          local_auth_lockout_max_duration: Number(values.local_auth_lockout_max_duration),
         }
       : { local_auth_lockout_enabled: false };
     commitMutation({
@@ -387,38 +367,6 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                     className="mt-5"
                     name="local_auth_lockout_window"
                     label={t_i18n('Failed login attempts counter reset after (minutes)')}
-                    fullWidth
-                  />
-                  <Field
-                    component={TextField}
-                    type="number"
-                    variant="outlined"
-                    className="mt-5"
-                    name="local_auth_lockout_duration"
-                    label={t_i18n('First lock duration (seconds)')}
-                    fullWidth
-                    infoTooltip={(
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <IconButton
-                            icon={<Icon name="info" size={16} className="text-feedback-info-primary" />}
-                            aria-label={t_i18n('More information')}
-                            variant="default"
-                            priority="tertiary"
-                            size="sm"
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>{t_i18n('The lock duration doubles with each failed login attempt, up to the maximum lock duration')}</TooltipContent>
-                      </Tooltip>
-                    )}
-                  />
-                  <Field
-                    component={TextField}
-                    type="number"
-                    variant="outlined"
-                    className="mt-5"
-                    name="local_auth_lockout_max_duration"
-                    label={t_i18n('Maximum lock duration (seconds)')}
                     fullWidth
                   />
                 </>
