@@ -3676,6 +3676,36 @@ describe('getMassWorkflowTransitions', () => {
     }
   });
 
+  it.each([
+    ['closing reason', { closingReason: 'required' }, { closingReason: 'disabled' }],
+    ['comment', { comment: 'required' }, {}],
+    ['organizations', { requiresShareOrganizationInput: true }, { requiresShareOrganizationInput: false }],
+  ])('should drop a transition whose %s input differs between the states of the selection', async (_name, fromNew, fromAnalyse) => {
+    transitionsByState.new.push({ event: 'close', to: 'closed', actionTypes: [], conditions: [], ...fromNew });
+    transitionsByState.analyse[0] = { ...transitionsByState.analyse[0], ...fromAnalyse };
+    (elAggregationCount as any).mockResolvedValue([{ label: 'status-new', value: 1, count: 1 }, { label: 'status-analyse', value: 1, count: 1 }]);
+    try {
+      expect(await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-c'] })).toEqual([]);
+      expect(await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { filters: null })).toEqual([]);
+    } finally {
+      transitionsByState.new.pop();
+      transitionsByState.analyse[0] = { event: 'close', to: 'closed', actionTypes: [], conditions: [] };
+    }
+  });
+
+  it('should keep a transition that asks for the same inputs in every state of the selection', async () => {
+    transitionsByState.new.push({ event: 'close', to: 'closed', actionTypes: [], conditions: [], closingReason: 'required' });
+    transitionsByState.analyse[0] = { ...transitionsByState.analyse[0], closingReason: 'required' };
+    try {
+      const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-c'] });
+
+      expect(result).toEqual([expect.objectContaining({ event: 'close', toState: 'closed', closingReason: 'required' })]);
+    } finally {
+      transitionsByState.new.pop();
+      transitionsByState.analyse[0] = { event: 'close', to: 'closed', actionTypes: [], conditions: [] };
+    }
+  });
+
   it('should offer nothing when the selected entities have no transition in common', async () => {
     const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-c'] });
 

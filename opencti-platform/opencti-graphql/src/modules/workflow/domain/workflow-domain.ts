@@ -1368,11 +1368,19 @@ export const getAllowedTransitions = async (
 
 type AllowedTransition = Awaited<ReturnType<typeof getAllowedTransitions>>[number];
 
+// The mass update collects these inputs once for every entity, so they must be the same for all of them
+const hasSameInputRequirements = (transition: AllowedTransition, other: AllowedTransition) => {
+  return (transition.comment ?? 'disabled') === (other.comment ?? 'disabled')
+    && (transition.closingReason ?? 'disabled') === (other.closingReason ?? 'disabled')
+    && transition.requiresShareOrganizationInput === other.requiresShareOrganizationInput
+    && transition.requiresUnshareOrganizationInput === other.requiresUnshareOrganizationInput;
+};
+
 const keepCommonTransitions = (transitionLists: AllowedTransition[][]): AllowedTransition[] => {
   if (transitionLists.length === 0) return [];
   const [first, ...others] = transitionLists;
   return first.filter((transition) => others.every((list) => list.some((other) => {
-    return other.event === transition.event && other.toState === transition.toState;
+    return other.event === transition.event && other.toState === transition.toState && hasSameInputRequirements(transition, other);
   })));
 };
 
@@ -1399,7 +1407,8 @@ export const getWorkflowDefaultState = async (
  * entity by entity, conditions included. A filter (select all) is checked from the statuses found
  * under it: entities without status are in the initial state, and conditions are only checked when
  * the transition runs. A transition that needs a comment, a closing reason or organizations gets
- * them from the mass update, the same for every entity.
+ * them from the mass update, the same for every entity: it is only offered when every state asks for
+ * the same inputs.
  */
 export const getMassWorkflowTransitions = async (
   context: AuthContext,
