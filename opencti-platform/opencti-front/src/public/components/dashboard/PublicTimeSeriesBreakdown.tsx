@@ -47,7 +47,9 @@ const PublicTimeSeriesBreakdown = <TQuery extends OperationType>({
   const queryRef = usePublicDashboardViz<TQuery>(query, { uriKey, widgetId: id, ...dates } as VariablesOf<TQuery>);
 
   return (
+    // The same shell as the dashboard widget (TimeSeriesBreakdownViz): the plot gets the same height
     <WidgetContainer
+      padding="small"
       title={parameters.title ?? title ?? t_i18n('Entities history')}
       chart={chart}
       warning={warning}

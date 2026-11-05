@@ -32,8 +32,8 @@ vi.mock('./usePublicDashboardViz', () => ({
   },
 }));
 vi.mock('../../../components/dashboard/WidgetContainer', () => ({
-  default: ({ children, warning, chart }: { children: React.ReactNode; warning?: string; chart?: unknown }) => (
-    <div>
+  default: ({ children, warning, chart, padding }: { children: React.ReactNode; warning?: string; chart?: unknown; padding?: string }) => (
+    <div data-testid="widget-container" data-padding={padding}>
       {warning && <div data-testid="widget-warning">{warning}</div>}
       {chart ? <div data-testid="widget-export" /> : null}
       {children}
@@ -131,6 +131,11 @@ describe('PublicTimeSeriesBreakdown', () => {
     mocks.response = { publicStixRelationshipsTimeSeriesBreakdown: breakdown([[4, 5], [6, 7]]) };
     testRender(<PublicStixRelationshipsTimeSeriesBreakdown uriKey="public-key" widget={makeWidget('line', { breakdownBy: 'toTypes' }, 'relationships')} />);
     expect((await drawn(mocks.lines)).series).toHaveLength(2);
+  });
+
+  it('draws in the same shell as the dashboard widget, for the same plot height', () => {
+    const { getByTestId } = testRender(<PublicStixCoreObjectsTimeSeriesBreakdown uriKey="public-key" widget={makeWidget('line', { breakdownBy: 'entity_type' })} />);
+    expect(getByTestId('widget-container').getAttribute('data-padding')).toEqual('small');
   });
 
   it('only says why the API refused the breakdown to its visitors, and stops offering the export of its chart', async () => {
