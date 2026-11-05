@@ -12,7 +12,7 @@ import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelation
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import Alert from '../../../components/Alert';
 import { Alert as FdsAlert, Icon, IconButton as FdsIconButton, Input, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { isBreakdownField, isWidgetBreakdownEligible } from '../../../utils/widget/widgetBreakdown';
+import { canWidgetBreakDown, isBreakdownField } from '../../../utils/widget/widgetBreakdown';
 import useHelper from '../../../utils/hooks/useHelper';
 import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
 import useWidgetBreakdownFieldOptions from './useWidgetBreakdownFieldOptions';
@@ -109,7 +109,7 @@ const WidgetCreationDataSelection = () => {
   const canAddDataSelection = getCurrentDataSelectionLimit(type) > 1;
   // A breakdown generates its series from a single dataset
   const isBreakdownEnabled = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
-  const isBreakdownEligible = isBreakdownEnabled && isWidgetBreakdownEligible(config.widget, host);
+  const isBreakdownEligible = isBreakdownEnabled && canWidgetBreakDown(config.widget, host);
   const { fieldOptions, isResolved } = useWidgetBreakdownFieldOptions({ perspective, dataSelection }, isBreakdownEligible);
   const breakdownBy = parameters?.breakdownBy;
   // Only a field the parameters step keeps locks the dataset: one the filters no longer offer is dropped there,

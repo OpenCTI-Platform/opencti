@@ -1,23 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import type { Widget } from './widget';
+import type { Widget, WidgetDataSelection } from './widget';
 import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
 import {
+  applyBreakdownCompatibility,
   AUDITS_BREAKDOWN_FIELDS,
   BREAKDOWN_ALLOWED_REFS,
   BREAKDOWN_LIMIT_OPTIONS,
+  canWidgetBreakDown,
+  clearBreakdown,
+  getBreakdownEditorState,
   getBreakdownEntityTypes,
   getBreakdownFieldOptions,
   getBreakdownLimitOptions,
   getWidgetBreakdownFieldOptions,
   getWidgetBreakdownLimit,
-  getWidgetBreakdownLockReason,
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
   isBreakdownFieldSupported,
-  isWidgetBreakdownConfigurable,
-  isWidgetBreakdownEligible,
   resolveBreakdownTypeVariables,
 } from './widgetBreakdown';
 
@@ -55,47 +56,50 @@ const makeRelationshipsWidget = (overrides: Partial<Widget> = {}, relationshipTy
   ...overrides,
 } as unknown as Widget);
 
-describe('widget breakdown eligibility', () => {
+describe('canWidgetBreakDown', () => {
   it('accepts every entities time series visualization of a workspace dashboard', () => {
     ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
-      expect(isWidgetBreakdownEligible(makeWidget({ type }), workspace)).toBe(true);
+      expect(canWidgetBreakDown(makeWidget({ type }), workspace)).toBe(true);
     });
   });
 
   it('accepts every relationships time series visualization of a workspace dashboard', () => {
     ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
-      expect(isWidgetBreakdownEligible(makeRelationshipsWidget({ type }), workspace)).toBe(true);
+      expect(canWidgetBreakDown(makeRelationshipsWidget({ type }), workspace)).toBe(true);
     });
     // Older datasets carry no perspective of their own
     const withoutDatasetPerspective = makeRelationshipsWidget();
     withoutDatasetPerspective.dataSelection = [{ ...withoutDatasetPerspective.dataSelection[0], perspective: undefined }];
-    expect(isWidgetBreakdownEligible(withoutDatasetPerspective, workspace)).toBe(true);
+    expect(canWidgetBreakDown(withoutDatasetPerspective, workspace)).toBe(true);
   });
 
   it('rejects the relationships widgets that cannot be broken down', () => {
-    expect(isWidgetBreakdownEligible(makeRelationshipsWidget({ type: 'donut' }), workspace)).toBe(false);
+    expect(canWidgetBreakDown(makeRelationshipsWidget({ type: 'donut' }), workspace)).toBe(false);
     const widget = makeRelationshipsWidget();
-    expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
+    expect(canWidgetBreakDown({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
     // A relationships widget can hold an entities dataset: it is not a dataset of relationships
-    expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [{ ...widget.dataSelection[0], perspective: 'entities' }] }, workspace)).toBe(false);
+    expect(canWidgetBreakDown({ ...widget, dataSelection: [{ ...widget.dataSelection[0], perspective: 'entities' }] }, workspace)).toBe(false);
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    expect(isWidgetBreakdownEligible(widget, customView)).toBe(true);
+    expect(canWidgetBreakDown(widget, customView)).toBe(true);
   });
 
   it('rejects other visualizations, perspectives, several datasets and drafts', () => {
-    expect(isWidgetBreakdownEligible(makeWidget({ type: 'donut' }), workspace)).toBe(false);
-    expect(isWidgetBreakdownEligible(makeWidget({ perspective: null }), workspace)).toBe(false);
+    expect(canWidgetBreakDown(makeWidget({ type: 'donut' }), workspace)).toBe(false);
+    expect(canWidgetBreakDown(makeWidget({ perspective: null }), workspace)).toBe(false);
     const widget = makeWidget();
-    expect(isWidgetBreakdownEligible({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
-    expect(isWidgetBreakdownEligible(makeWidget({}, ['DraftWorkspace']), workspace)).toBe(false);
+    expect(canWidgetBreakDown({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
+    expect(canWidgetBreakDown(makeWidget({}, ['DraftWorkspace']), workspace)).toBe(false);
   });
 
   it('configures breakdowns in workspace dashboards and custom views only', () => {
     const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    expect(isWidgetBreakdownEligible(makeWidget(), customView)).toBe(true);
+    expect(canWidgetBreakDown(makeWidget(), customView)).toBe(true);
     // A fintel template writes its widgets in a document
     const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
-    expect(isWidgetBreakdownEligible(makeWidget(), fintelTemplate)).toBe(false);
+    expect(canWidgetBreakDown(makeWidget(), fintelTemplate)).toBe(false);
+    // Without host, the widget alone decides
+    expect(canWidgetBreakDown(makeWidget())).toBe(true);
+    expect(canWidgetBreakDown(makeWidget({ type: 'donut' }))).toBe(false);
   });
 
   it('defaults the number of series', () => {
@@ -417,21 +421,21 @@ describe('audits breakdown', () => {
 
   it('accepts every audits time series visualization of a workspace dashboard', () => {
     ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
-      expect(isWidgetBreakdownEligible(makeAuditsWidget({ type }), workspace)).toBe(true);
+      expect(canWidgetBreakDown(makeAuditsWidget({ type }), workspace)).toBe(true);
     });
-    expect(isWidgetBreakdownEligible(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
+    expect(canWidgetBreakDown(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
     // The history of the entity of a custom view
-    expect(isWidgetBreakdownEligible(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
+    expect(canWidgetBreakDown(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
   });
 
   it('refuses a dataset counting distinct values, the breakdown counting every event', () => {
     ['line', 'area'].forEach((type) => {
-      expect(isWidgetBreakdownEligible(makeAuditsWidget({ type }, { unique: true }), workspace)).toBe(false);
+      expect(canWidgetBreakDown(makeAuditsWidget({ type }, { unique: true }), workspace)).toBe(false);
     });
     // Bars and heatmaps never count distinct values: a leftover setting does not matter
-    expect(isWidgetBreakdownEligible(makeAuditsWidget({ type: 'vertical-bar' }, { unique: true }), workspace)).toBe(true);
+    expect(canWidgetBreakDown(makeAuditsWidget({ type: 'vertical-bar' }, { unique: true }), workspace)).toBe(true);
     // The entities never count distinct values either
-    expect(isWidgetBreakdownEligible(makeWidget({ type: 'line', dataSelection: [{ ...makeWidget().dataSelection[0], unique: true }] }), workspace)).toBe(true);
+    expect(canWidgetBreakDown(makeWidget({ type: 'line', dataSelection: [{ ...makeWidget().dataSelection[0], unique: true }] }), workspace)).toBe(true);
   });
 
   it('shows the controls of a widget with several datasets or distinct values, locked with the reason', () => {
@@ -439,14 +443,13 @@ describe('audits breakdown', () => {
     const severalDatasets = { ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] };
     const distinct = makeAuditsWidget({}, { unique: true });
 
-    expect(isWidgetBreakdownConfigurable(widget, workspace)).toBe(true);
-    expect(getWidgetBreakdownLockReason(widget)).toBeUndefined();
-    expect(isWidgetBreakdownConfigurable(severalDatasets, workspace)).toBe(true);
-    expect(getWidgetBreakdownLockReason(severalDatasets)).toEqual('several-datasets');
-    expect(isWidgetBreakdownConfigurable(distinct, workspace)).toBe(true);
-    expect(getWidgetBreakdownLockReason(distinct)).toEqual('distinct-values');
-    expect(isWidgetBreakdownConfigurable(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
-    expect(isWidgetBreakdownConfigurable(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
+    expect(getBreakdownEditorState(widget, workspace)).toEqual('editable');
+    expect(getBreakdownEditorState(severalDatasets, workspace)).toEqual('several-datasets');
+    expect(getBreakdownEditorState(distinct, workspace)).toEqual('distinct-values');
+    expect(getBreakdownEditorState({ ...severalDatasets, dataSelection: [distinct.dataSelection[0], widget.dataSelection[0]] }, workspace)).toEqual('several-datasets');
+    expect(getBreakdownEditorState(makeAuditsWidget({ type: 'donut' }), workspace)).toEqual('hidden');
+    expect(getBreakdownEditorState(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toEqual('editable');
+    expect(getBreakdownEditorState(makeAuditsWidget(), { kind: 'fintelTemplate', fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' })).toEqual('hidden');
   });
 
   it('offers exactly the fields the API accepts for the logs, whatever the filters', () => {
@@ -469,5 +472,78 @@ describe('audits breakdown', () => {
     // An entities field carried over to an audits widget is not supported, and the reverse
     expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: 'objectLabel' } }))).toBe(false);
     expect(isBreakdownFieldSupported(emptyMap, makeWidget({ parameters: { breakdownBy: 'event_scope' } }))).toBe(false);
+  });
+});
+
+describe('applyBreakdownCompatibility', () => {
+  const selection = { filters: { mode: 'and', filters: [], filterGroups: [] } } as unknown as WidgetDataSelection;
+  const brokenDownLine = {
+    type: 'line',
+    perspective: 'entities' as const,
+    dataSelection: [selection],
+    parameters: { breakdownBy: 'entity_type' as const, breakdownLimit: 20, breakdownOrder: 'asc' as const, breakdownOther: true },
+  };
+
+  it('keeps the breakdown of every entities time series visualization', () => {
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      const { parameters } = applyBreakdownCompatibility({ ...brokenDownLine, type }, workspace);
+      expect(parameters).toEqual(brokenDownLine.parameters);
+    });
+  });
+
+  it('drops the breakdown and its settings for a non time series visualization', () => {
+    const widget = applyBreakdownCompatibility({ ...brokenDownLine, type: 'donut' }, workspace);
+    expect(widget.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
+  });
+
+  it('keeps the breakdown of every relationships time series visualization', () => {
+    const relationships = { ...brokenDownLine, perspective: 'relationships' as const, parameters: { ...brokenDownLine.parameters, breakdownBy: 'toTypes' } };
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      expect(applyBreakdownCompatibility({ ...relationships, type }, workspace).parameters).toEqual(relationships.parameters);
+    });
+    // A relationships widget left with an entities dataset cannot be broken down as relationships
+    const entitiesDataset = { ...selection, perspective: 'entities' as const };
+    expect(applyBreakdownCompatibility({ ...relationships, dataSelection: [entitiesDataset] }, workspace).parameters.breakdownBy).toBeNull();
+  });
+
+  it('drops the breakdown without perspective, with several datasets or another host', () => {
+    expect(applyBreakdownCompatibility({ ...brokenDownLine, perspective: null }, workspace).parameters.breakdownBy).toBeNull();
+    expect(applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace).parameters.breakdownBy).toBeNull();
+    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+    expect(applyBreakdownCompatibility(brokenDownLine, fintelTemplate).parameters.breakdownBy).toBeNull();
+    // A custom view keeps it: editing an imported broken down widget does not lose its breakdown
+    const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
+    expect(applyBreakdownCompatibility(brokenDownLine, customView).parameters).toEqual(brokenDownLine.parameters);
+    const severalDatasets = applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace);
+    expect(severalDatasets.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
+  });
+
+  it('keeps the breakdown of every audits time series visualization', () => {
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      const { parameters } = applyBreakdownCompatibility({ ...brokenDownLine, perspective: 'audits' as const, type }, workspace);
+      expect(parameters).toEqual(brokenDownLine.parameters);
+    });
+  });
+
+  it('drops the breakdown of audits lines and areas counting distinct values', () => {
+    const distinct = { ...brokenDownLine, perspective: 'audits' as const, dataSelection: [{ ...selection, unique: true }] };
+    expect(applyBreakdownCompatibility(distinct, workspace).parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
+    expect(applyBreakdownCompatibility({ ...distinct, type: 'vertical-bar' }, workspace).parameters).toEqual(brokenDownLine.parameters);
+  });
+
+  it('returns the widget untouched without breakdown', () => {
+    const widget = { ...brokenDownLine, type: 'donut', parameters: { title: 'Donut' } };
+    expect(applyBreakdownCompatibility(widget, workspace)).toBe(widget);
+  });
+});
+
+describe('clearBreakdown', () => {
+  it('clears the field and its settings, and keeps the other parameters', () => {
+    const widget = { type: 'line', parameters: { title: 'Reports', interval: 'month', breakdownBy: 'entity_type', breakdownLimit: 20, breakdownOrder: 'asc' as const, breakdownOther: true } };
+    expect(clearBreakdown(widget)).toEqual({
+      type: 'line',
+      parameters: { title: 'Reports', interval: 'month', breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null },
+    });
+    expect(widget.parameters.breakdownBy).toEqual('entity_type');
   });
 });

@@ -4,19 +4,16 @@ import { useFormatter } from '../../../components/i18n';
 import useHelper from '../../../utils/hooks/useHelper';
 import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
 import {
+  clearBreakdown,
+  getBreakdownEditorState,
   getBreakdownLimitOptions,
   getWidgetBreakdownLimit,
-  getWidgetBreakdownLockReason,
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
   isBreakdownField,
-  isWidgetBreakdownConfigurable,
 } from '../../../utils/widget/widgetBreakdown';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import useWidgetBreakdownFieldOptions from './useWidgetBreakdownFieldOptions';
-
-// Cleared together with the field: they only make sense for a broken down widget
-const NO_BREAKDOWN = { breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null };
 
 /**
  * Breakdown choice, made in the parameters step: the fields it offers depend on the perspective and the
@@ -30,10 +27,10 @@ const WidgetBreakdownSelection = () => {
 
   // Without the feature, the breakdown of a stored widget is neither shown nor dropped
   const isEnabled = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
-  const isSupported = isEnabled && isWidgetBreakdownConfigurable(config.widget, host);
+  const editorState = isEnabled ? getBreakdownEditorState(config.widget, host) : 'hidden';
+  const isSupported = editorState !== 'hidden';
   // Several datasets or distinct values: the controls are shown, disabled, with the reason
-  const lockReason = getWidgetBreakdownLockReason(config.widget);
-  const isEditable = !lockReason;
+  const isEditable = editorState === 'editable';
   const { fieldOptions, isResolved } = useWidgetBreakdownFieldOptions({ perspective, dataSelection }, isSupported);
   const breakdownBy = isBreakdownField(parameters.breakdownBy) ? parameters.breakdownBy : null;
   const isFieldAvailable = fieldOptions.some(({ key }) => key === breakdownBy);
@@ -46,7 +43,7 @@ const WidgetBreakdownSelection = () => {
   // Not before the saved filter is read: its types are unknown until then.
   useEffect(() => {
     if (isEnabled && isResolved && breakdownBy && !isFieldAvailable) {
-      setParameters(NO_BREAKDOWN);
+      setConfigWidget(clearBreakdown(config.widget));
     }
   }, [isEnabled, isResolved, breakdownBy, isFieldAvailable]);
 
@@ -61,7 +58,7 @@ const WidgetBreakdownSelection = () => {
   const fieldSelect = (
     <Select
       value={isFieldAvailable && breakdownBy ? breakdownBy : 'none'}
-      onValueChange={(value: string) => setParameters(value === 'none' ? NO_BREAKDOWN : { breakdownBy: value })}
+      onValueChange={(value: string) => (value === 'none' ? setConfigWidget(clearBreakdown(config.widget)) : setParameters({ breakdownBy: value }))}
       disabled={!isEditable}
     >
       <SelectLabel>{t_i18n('Break down by')}</SelectLabel>
@@ -163,7 +160,7 @@ const WidgetBreakdownSelection = () => {
             <div tabIndex={0}>{controls}</div>
           </TooltipTrigger>
           <TooltipContent>
-            {lockReason === 'distinct-values'
+            {editorState === 'distinct-values'
               ? t_i18n('A breakdown counts every event: it cannot count distinct values.')
               : t_i18n('A breakdown uses a single dataset.')}
           </TooltipContent>

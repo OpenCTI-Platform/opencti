@@ -231,11 +231,20 @@ const isCountingDistinctValues = (widget: BreakdownWidget) => {
     && widget.dataSelection.some((selection) => selection.unique === true);
 };
 
-// A breakdown expands the single dataset of a time series widget, counting its entities, relationships or events.
-// A relationships widget can also hold entities datasets: they cannot be broken down as relationships.
-const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
+// Hosts whose widgets can be broken down: the dashboards, and the custom views, whose widgets read the
+// platform data the same way, around their entity. A fintel template writes its widgets in a document.
+const BREAKDOWN_HOST_KINDS: WidgetHost['kind'][] = ['workspace', 'custom-view'];
+
+/**
+ * Whether the widget can be broken down: a breakdown expands the single dataset of a time series widget,
+ * counting its entities, relationships or events, outside the drafts. A relationships widget can also hold
+ * entities datasets: they cannot be broken down as relationships. With a `host`, whether it breaks its
+ * widgets down too (the workspace dashboards and the custom views); without one, the widget alone decides.
+ */
+export const canWidgetBreakDown = (widget: BreakdownWidget, host?: WidgetHost) => {
   const [dataset] = widget.dataSelection;
-  return isBreakdownPerspective(widget.perspective)
+  return (!host || BREAKDOWN_HOST_KINDS.includes(host.kind))
+    && isBreakdownPerspective(widget.perspective)
     && getCurrentCategory(widget.type) === 'timeseries'
     && widget.dataSelection.length === 1
     && (dataset.perspective ?? widget.perspective) === widget.perspective
@@ -243,37 +252,46 @@ const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
     && !isCountingDistinctValues(widget);
 };
 
-// Hosts whose widgets can be broken down: the dashboards, and the custom views, whose widgets read the
-// platform data the same way, around their entity. A fintel template writes its widgets in a document.
-const BREAKDOWN_HOST_KINDS: WidgetHost['kind'][] = ['workspace', 'custom-view'];
-const isBreakdownHost = (host?: WidgetHost) => !!host && BREAKDOWN_HOST_KINDS.includes(host.kind);
-
 /**
- * Whether the breakdown can be configured: in workspace dashboards and custom views.
+ * How the editor shows the breakdown: 'hidden' when the widget could not be broken down even reduced to its
+ * first dataset counting every event, 'editable' when it can be, disabled otherwise, for the reason given:
+ * a breakdown uses a single dataset ('several-datasets'), and counts every event ('distinct-values').
  */
-export const isWidgetBreakdownEligible = (widget: BreakdownWidget, host?: WidgetHost) => {
-  return isBreakdownHost(host) && canWidgetBeBrokenDown(widget);
-};
-
-/**
- * Whether the breakdown controls are shown: the widget could be broken down once reduced to its
- * first dataset, counting every event. getWidgetBreakdownLockReason says why they are disabled.
- */
-export const isWidgetBreakdownConfigurable = (widget: BreakdownWidget, host?: WidgetHost) => {
+export type BreakdownEditorState = 'hidden' | 'editable' | 'several-datasets' | 'distinct-values';
+export const getBreakdownEditorState = (widget: BreakdownWidget, host: WidgetHost): BreakdownEditorState => {
   const [firstSelection] = widget.dataSelection;
-  return !!firstSelection && isWidgetBreakdownEligible({ ...widget, dataSelection: [{ ...firstSelection, unique: false }] }, host);
-};
-
-/**
- * Why the breakdown of a configurable widget cannot be changed: a breakdown uses a single dataset,
- * and counts every event of the logs.
- */
-export const getWidgetBreakdownLockReason = (widget: BreakdownWidget): 'several-datasets' | 'distinct-values' | undefined => {
+  if (!firstSelection || !canWidgetBreakDown({ ...widget, dataSelection: [{ ...firstSelection, unique: false }] }, host)) {
+    return 'hidden';
+  }
   if (widget.dataSelection.length > 1) {
     return 'several-datasets';
   }
   if (isCountingDistinctValues(widget)) {
     return 'distinct-values';
   }
-  return undefined;
+  return 'editable';
+};
+
+// Cleared together with the field: the settings only make sense for a broken down widget
+const NO_BREAKDOWN = { breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null };
+
+type ConfiguredWidget = { parameters?: WidgetParameters | null };
+
+/**
+ * The widget without breakdown: its field, and its settings with it.
+ */
+export const clearBreakdown = <T extends ConfiguredWidget>(widget: T): T => ({
+  ...widget,
+  parameters: { ...widget.parameters, ...NO_BREAKDOWN },
+});
+
+/**
+ * Drops the breakdown once the widget can no longer be broken down (another visualization,
+ * perspective or several datasets), instead of keeping a setting that would be silently ignored.
+ */
+export const applyBreakdownCompatibility = <T extends BreakdownWidget & ConfiguredWidget>(widget: T, host: WidgetHost): T => {
+  if (!widget.parameters?.breakdownBy || canWidgetBreakDown(widget, host)) {
+    return widget;
+  }
+  return clearBreakdown(widget);
 };

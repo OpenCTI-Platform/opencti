@@ -57,7 +57,7 @@ import useCustomFieldWidgetColumns from '@components/widgets/useCustomFieldWidge
 import { getCustomFieldLabelFromFilterKeysSchema, isCustomFieldAttribute } from 'src/utils/customFields';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import WidgetBreakdownSelection from './WidgetBreakdownSelection';
-import { isBreakdownField, isWidgetBreakdownEligible } from 'src/utils/widget/widgetBreakdown';
+import { canWidgetBreakDown, isBreakdownField } from 'src/utils/widget/widgetBreakdown';
 import useHelper from 'src/utils/hooks/useHelper';
 import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from 'src/components/dashboard/timeSeriesBreakdownFeatureFlag';
 
@@ -328,7 +328,7 @@ const WidgetCreationParameters = () => {
     // A breakdown counts every event: distinct values can only be counted without it
     const isDistinctLockedByBreakdown = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG)
       && isBreakdownField(parameters.breakdownBy)
-      && isWidgetBreakdownEligible(config.widget, host);
+      && canWidgetBreakDown(config.widget, host);
 
     const uniqueDataCheckbox = () => {
       const inline = dataSelection.length === 1;

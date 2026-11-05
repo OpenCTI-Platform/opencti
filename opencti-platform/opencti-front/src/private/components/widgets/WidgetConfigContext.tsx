@@ -3,7 +3,7 @@ import type { Widget, WidgetHost, WidgetDataSelection, WidgetParameters, WidgetP
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 import { getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
 import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
-import { applyBreakdownCompatibility } from './WidgetCreationParameters.utils';
+import { applyBreakdownCompatibility } from '../../../utils/widget/widgetBreakdown';
 import useHelper from '../../../utils/hooks/useHelper';
 import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
 
