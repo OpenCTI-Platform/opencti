@@ -1,6 +1,7 @@
 import { vi } from 'vitest';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../../src/database/middleware-loader';
 import { buildPagination } from '../../../../src/database/utils';
+import type { BasicStoreEntityKillChainPhase } from '../../../../src/modules/killChainPhase/killChainPhase-types';
 import type { BasicStoreEntityLabel } from '../../../../src/modules/label/label-types';
 import type { BasicStoreEntityTheme } from '../../../../src/modules/theme/theme-types';
 
@@ -95,41 +96,90 @@ export const otherLabel = {
 
 export const ALL_LABELS = [customLabel, otherLabel];
 
+export const killChainPhase = {
+  id: 'phase-id',
+  internal_id: 'phase-id',
+  standard_id: 'kill-chain-phase--4c3b2a19-8e7d-5f6a-9b0c-1d2e3f4a5b6c',
+  entity_type: 'Kill-Chain-Phase',
+  creator_id: ['creator-secret-id'],
+  created_at: '2026-01-01T00:00:00.000Z',
+  kill_chain_name: 'mitre-attack',
+  phase_name: 'execution',
+  x_opencti_order: 2,
+} as unknown as BasicStoreEntityKillChainPhase;
+
+export const otherKillChainPhase = {
+  ...killChainPhase,
+  id: 'other-phase-id',
+  internal_id: 'other-phase-id',
+  standard_id: 'kill-chain-phase--7e6d5c4b-3a29-5180-9f8e-7d6c5b4a3921',
+  phase_name: 'initial-access',
+  x_opencti_order: 1,
+} as unknown as BasicStoreEntityKillChainPhase;
+
+export const disarmKillChainPhase = {
+  ...killChainPhase,
+  id: 'disarm-phase-id',
+  internal_id: 'disarm-phase-id',
+  standard_id: 'kill-chain-phase--0a1b2c3d-4e5f-5061-8273-94a5b6c7d8e9',
+  kill_chain_name: 'disarm',
+  phase_name: 'plan-strategy',
+  x_opencti_order: 0,
+} as unknown as BasicStoreEntityKillChainPhase;
+
+// By kill chain, then by order in the kill chain
+export const ALL_KILL_CHAIN_PHASES = [killChainPhase, otherKillChainPhase, disarmKillChainPhase];
+
 interface ListingArgs {
   search?: string | null;
   filters?: { filters: { key: string[]; values: string[]; operator?: string }[] };
 }
 
-// The eq / not_eq filters and the search the families send, applied like the engine does, sorted by the given field
-const listLikeTheEngine = <T extends object>(entities: T[], field: string, args: ListingArgs = {}) => {
-  const valueOf = (entity: T, key: string) => String((entity as Record<string, unknown>)[key]);
+// The eq / not_eq filters and the search the families send, applied like the engine does, sorted by the given fields
+const listLikeTheEngine = <T extends object>(entities: T[], sortFields: string[], args: ListingArgs = {}, searchFields = sortFields) => {
+  const read = (entity: T, key: string) => (entity as Record<string, unknown>)[key];
+  const compare = (a: unknown, b: unknown) => (typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b)));
   return entities
     .filter((entity) => (args.filters?.filters ?? []).every(({ key, values, operator }) => {
-      const matches = values.map(String).includes(valueOf(entity, key[0]));
+      const matches = values.map(String).includes(String(read(entity, key[0])));
       return operator === 'not_eq' ? !matches : matches;
     }))
-    .filter((entity) => !args.search || valueOf(entity, field).toLowerCase().includes(args.search.toLowerCase()))
-    .sort((a, b) => valueOf(a, field).localeCompare(valueOf(b, field)));
+    .filter((entity) => !args.search || searchFields.some((field) => {
+      const value = read(entity, field);
+      return typeof value === 'string' && value.toLowerCase().includes(args.search!.toLowerCase());
+    }))
+    .sort((a, b) => sortFields.reduce((result, field) => result || compare(read(a, field), read(b, field)), 0));
 };
 
-export const listThemesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_THEMES, 'name', args);
-export const listLabelsLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_LABELS, 'value', args);
+export const listThemesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_THEMES, ['name'], args);
+export const listLabelsLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_LABELS, ['value'], args);
+export const listKillChainPhasesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_KILL_CHAIN_PHASES, ['kill_chain_name', 'x_opencti_order'], args, ['kill_chain_name', 'phase_name']);
+
+// The entities of a type the fixtures know, listed like the engine does
+const listFixtures = (type: string | undefined, args: unknown) => {
+  switch (type) {
+    case 'Label':
+      return listLabelsLikeTheEngine(args as ListingArgs);
+    case 'Kill-Chain-Phase':
+      return listKillChainPhasesLikeTheEngine(args as ListingArgs);
+    case 'Theme':
+      return listThemesLikeTheEngine(args as ListingArgs);
+    default:
+      return undefined;
+  }
+};
 
 // For a test that mocks fullEntitiesList, pageEntitiesConnection and storeLoadById of the middleware loader:
-// the themes and the labels come from the fixtures, any other type listed by fullEntitiesList gets otherEntities
+// the themes, the labels and the kill chain phases come from the fixtures, any other type listed by fullEntitiesList gets otherEntities
 export const mockEntityLoaders = (otherEntities: unknown[] = []) => {
   vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, types, args) => {
-    if (types?.[0] === 'Label') {
-      return listLabelsLikeTheEngine(args as never) as never;
-    }
-    return (types?.[0] === 'Theme' ? listThemesLikeTheEngine(args as never) : otherEntities) as never;
+    return (listFixtures(types?.[0], args) ?? otherEntities) as never;
   });
   vi.mocked(pageEntitiesConnection).mockImplementation(async (_ctx, _user, types, args) => {
     const first = args?.first ?? 500;
-    const isLabel = types?.[0] === 'Label';
-    const entities = isLabel ? listLabelsLikeTheEngine(args as never) : listThemesLikeTheEngine(args as never);
-    const sortOf = (entity: unknown) => (isLabel ? (entity as BasicStoreEntityLabel).value : (entity as BasicStoreEntityTheme).name);
+    const entities = listFixtures(types?.[0], args) ?? [];
+    const sortOf = (entity: unknown) => ['name', 'value', 'kill_chain_name'].map((field) => (entity as Record<string, unknown>)[field]).find((value) => value !== undefined);
     return buildPagination(first, args?.after, entities.slice(0, first).map((node) => ({ node, sort: [sortOf(node)] })), entities.length) as never;
   });
-  vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => [...ALL_THEMES, ...ALL_LABELS].find((entity) => entity.id === id) as never);
+  vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => [...ALL_THEMES, ...ALL_LABELS, ...ALL_KILL_CHAIN_PHASES].find((entity) => entity.id === id) as never);
 };

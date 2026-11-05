@@ -34,7 +34,17 @@ import { topEntitiesList } from '../../../../src/database/middleware-loader';
 import { buildPaginationFromEdges } from '../../../../src/database/utils';
 import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import { builtInTheme, customLabel, customTheme, mockEntityLoaders, otherCustomTheme, otherLabel } from './configPreset-fixtures';
+import {
+  builtInTheme,
+  customLabel,
+  customTheme,
+  disarmKillChainPhase,
+  killChainPhase,
+  mockEntityLoaders,
+  otherCustomTheme,
+  otherKillChainPhase,
+  otherLabel,
+} from './configPreset-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -74,6 +84,13 @@ const themeItem = (theme: { standard_id: string; name: string }, isDefault: bool
   isDefault,
 });
 const labelItem = (label: { standard_id: string; value: string }) => ({ key: label.standard_id, label: label.value, translatable: false, dependsOn: [], isDefault: false });
+const phaseItem = (phase: { standard_id: string; kill_chain_name: string; phase_name: string }) => ({
+  key: phase.standard_id,
+  label: `${phase.kill_chain_name}: ${phase.phase_name}`,
+  translatable: false,
+  dependsOn: [],
+  isDefault: false,
+});
 const onePage = (globalCount: number) => ({ hasNextPage: false, globalCount });
 
 describe('Config preset exportable types query', () => {
@@ -142,6 +159,15 @@ describe('Config preset exportable types query', () => {
         items: [labelItem(otherLabel), labelItem(customLabel)],
         itemsPageInfo: onePage(2),
       },
+      {
+        key: 'killChainPhases',
+        label: 'Kill chain phases',
+        description: 'Kill chains, their phases and their order',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // By kill chain, then by order in the kill chain
+        items: [phaseItem(disarmKillChainPhase), phaseItem(otherKillChainPhase), phaseItem(killChainPhase)],
+        itemsPageInfo: onePage(3),
+      },
     ]);
   });
 
@@ -180,7 +206,7 @@ describe('Config preset exportable types query', () => {
     const result = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
     expect(result.errors).toBeUndefined();
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
-    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false], ['labels', false]]);
+    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false], ['labels', false], ['killChainPhases', false]]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
@@ -218,6 +244,7 @@ describe('Config preset exportable types query', () => {
       ['whitemark', 'platformSettings'],
       ['hiddenEntityTypes', 'dataModel'],
       ['labels', 'taxonomy'],
+      ['killChainPhases', 'taxonomy'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
