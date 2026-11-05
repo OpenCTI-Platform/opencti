@@ -17,7 +17,7 @@ import { addVocabulary, editVocabulary } from '../../../../src/modules/vocabular
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import { getVocabularyStandardId, importVocabulary, importVocabularyCategory } from '../../../../src/modules/vocabulary/vocabulary-import';
 import { vocabularyCategoryImportSchema, vocabularyImportSchema } from '../../../../src/modules/vocabulary/vocabulary-import-schema';
-import { getExportableVocabularyCategories, getVocabularyCategoryConfigPresetConfiguration, isVocabularyExportable } from '../../../../src/modules/vocabulary/vocabulary-export';
+import { getVocabularyCategories, getVocabularyCategoryConfigPresetConfiguration } from '../../../../src/modules/vocabulary/vocabulary-export';
 import { cleanVocabularyAliases, openVocabularies } from '../../../../src/modules/vocabulary/vocabulary-utils';
 import { ENTITY_TYPE_VOCABULARY, type BasicStoreEntityVocabulary } from '../../../../src/modules/vocabulary/vocabulary-types';
 import { VocabularyCategory } from '../../../../src/generated/graphql';
@@ -107,20 +107,25 @@ describe('Which categories are exported, and how', () => {
     seeded(VocabularyCategory.IncidentTypeOv, 'phishing'),
   ] as BasicStoreEntityVocabulary[];
 
-  it('exports a category that has a custom entry or a modified one, and not one that only has entries nobody modified', () => {
-    expect(getExportableVocabularyCategories(all)).toEqual([VocabularyCategory.ReportTypesOv, VocabularyCategory.IntegrityLevelOv]);
-    expect(getExportableVocabularyCategories([])).toEqual([]);
+  it('exports every category that has an entry, once, the ones of the platform included', () => {
+    expect(getVocabularyCategories(all)).toEqual([VocabularyCategory.ReportTypesOv, VocabularyCategory.IntegrityLevelOv, VocabularyCategory.IncidentTypeOv]);
+    expect(getVocabularyCategories([])).toEqual([]);
   });
 
-  it('exports the custom entries and the modified ones of the category, without the entries nobody modified', () => {
+  it('exports all the entries of the category, the ones nobody modified included', () => {
     expect(getVocabularyCategoryConfigPresetConfiguration(VocabularyCategory.ReportTypesOv, all)).toEqual({
       category: 'report_types_ov',
-      entries: [{ name: 'fimi-report', description: 'Foreign information manipulation', aliases: ['fimi'], order: 5 }],
+      entries: [
+        expect.objectContaining({ name: 'threat-report' }),
+        { name: 'fimi-report', description: 'Foreign information manipulation', aliases: ['fimi'], order: 5 },
+      ],
     });
     expect(getVocabularyCategoryConfigPresetConfiguration(VocabularyCategory.IntegrityLevelOv, all).entries).toEqual([
       expect.objectContaining({ name: 'high', description: 'Our own description' }),
+      expect.objectContaining({ name: 'low' }),
     ]);
-    expect(getVocabularyCategoryConfigPresetConfiguration(VocabularyCategory.IncidentTypeOv, all)).toEqual({ category: 'incident_type_ov', entries: [] });
+    expect(getVocabularyCategoryConfigPresetConfiguration(VocabularyCategory.IncidentTypeOv, all).entries).toEqual([expect.objectContaining({ name: 'phishing' })]);
+    expect(getVocabularyCategoryConfigPresetConfiguration(VocabularyCategory.CoverageOv, all)).toEqual({ category: 'coverage_ov', entries: [] });
   });
 
   it('leaves out of an entry its category, the values it does not have and everything the import does not accept', () => {
@@ -139,56 +144,19 @@ describe('Which categories are exported, and how', () => {
     const configuration = getVocabularyCategoryConfigPresetConfiguration(VocabularyCategory.ReportTypesOv, all);
     expect(vocabularyCategoryImportSchema.safeParse(configuration).success).toBe(true);
   });
-});
 
-describe('Which entries are exported', () => {
-  it('exports a custom entry, which the platform does not create', () => {
-    expect(isVocabularyExportable(stored)).toBe(true);
-    expect(isVocabularyExportable({ ...seeded(VocabularyCategory.ReportTypesOv, 'threat-report'), name: 'not-a-default' } as BasicStoreEntityVocabulary)).toBe(true);
-    // A category without defaults has only custom entries
-    expect(isVocabularyExportable({ name: 'whatever', category: VocabularyCategory.CoverageOv } as BasicStoreEntityVocabulary)).toBe(true);
-  });
-
-  it('does not export the entries of the platform nobody modified, whatever their defaults are', () => {
-    // No description, no aliases, no order
-    expect(isVocabularyExportable(seeded(VocabularyCategory.ReportTypesOv, 'threat-report'))).toBe(false);
-    // All three
-    expect(isVocabularyExportable(seeded(VocabularyCategory.IntegrityLevelOv, 'high'))).toBe(false);
-    // Every default of the platform, as it is created
+  it('exports every entry the platform creates, as the platform stores it, in the format of the import', () => {
     const everyDefault = (Object.keys(openVocabularies) as VocabularyCategory[]).flatMap((category) => openVocabularies[category].map(({ key }) => seeded(category, key)));
     expect(everyDefault.length).toBeGreaterThan(100);
-    expect(everyDefault.filter(isVocabularyExportable)).toEqual([]);
+    const categories = getVocabularyCategories(everyDefault);
+    expect(categories.length).toBeGreaterThan(10);
+    categories.forEach((category) => {
+      expect(vocabularyCategoryImportSchema.safeParse(getVocabularyCategoryConfigPresetConfiguration(category, everyDefault)).success).toBe(true);
+    });
   });
+});
 
-  it('finds the default of an entry whatever the case of its name, and does not count the order of the aliases', () => {
-    expect(isVocabularyExportable({ ...seeded(VocabularyCategory.ReportTypesOv, 'threat-report'), name: 'Threat-Report' } as BasicStoreEntityVocabulary)).toBe(false);
-    expect(isVocabularyExportable({ ...seeded(VocabularyCategory.IntegrityLevelOv, 'system'), aliases: ['critical'] } as BasicStoreEntityVocabulary)).toBe(false);
-    // An entry created before the order and the description existed has none
-    expect(isVocabularyExportable({ ...seeded(VocabularyCategory.ReportTypesOv, 'threat-report'), description: undefined, order: undefined, aliases: undefined } as unknown as BasicStoreEntityVocabulary)).toBe(false);
-  });
-
-  it.each([
-    ['its description', { description: 'Our own description' }],
-    ['its aliases', { aliases: ['high', 'h'] }],
-    ['its order', { order: 9 }],
-  ])('exports an entry of the platform whose %s was modified', (_name, change) => {
-    expect(isVocabularyExportable({ ...seeded(VocabularyCategory.IntegrityLevelOv, 'high'), ...change } as BasicStoreEntityVocabulary)).toBe(true);
-  });
-
-  it('exports an entry of the platform whose aliases were cleared, when it has an alias that is not its name', () => {
-    expect(isVocabularyExportable({ ...seeded(VocabularyCategory.IntegrityLevelOv, 'system'), aliases: [] } as BasicStoreEntityVocabulary)).toBe(true);
-  });
-
-  it('does not take the name of an entry for an alias: the platform does not keep it, so the default \'low\' with the alias \'low\' is not modified', () => {
-    // The severities, the only categories whose defaults have an alias that is the name of the entry, as the platform stores them
-    expect(seeded(VocabularyCategory.CaseSeverityOv, 'low').aliases).toEqual([]);
-    expect(isVocabularyExportable(seeded(VocabularyCategory.CaseSeverityOv, 'low'))).toBe(false);
-    expect(isVocabularyExportable(seeded(VocabularyCategory.IncidentSeverityOv, 'critical'))).toBe(false);
-    // Whatever the case, and when an administrator gave it back as an alias
-    expect(isVocabularyExportable({ ...seeded(VocabularyCategory.IntegrityLevelOv, 'high'), aliases: ['HIGH'] } as BasicStoreEntityVocabulary)).toBe(false);
-    expect(isVocabularyExportable({ ...seeded(VocabularyCategory.IntegrityLevelOv, 'high'), aliases: ['h'] } as BasicStoreEntityVocabulary)).toBe(true);
-  });
-
+describe('The aliases of an entry', () => {
   it('keeps the aliases of an entry as the platform does: not its name, not an empty one, once each', () => {
     expect(cleanVocabularyAliases('low', ['low', 'Low', ' l ', '', 'L', 'weak'])).toEqual(['l', 'weak']);
     expect(cleanVocabularyAliases('low', null)).toEqual([]);

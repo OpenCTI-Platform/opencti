@@ -139,7 +139,7 @@ const storedVocabulary = {
   builtIn: false,
 };
 
-// An entry of the platform that nobody modified: not exported, its category is when another entry of it is
+// An entry of the platform that nobody modified: exported like any other
 export const defaultVocabulary = {
   ...storedVocabulary,
   id: 'default-vocabulary-id',
@@ -152,7 +152,7 @@ export const defaultVocabulary = {
   order: 0,
 } as unknown as BasicStoreEntityVocabulary;
 
-// The only entry of its category the fixtures have, and nobody modified it: the category is not exported
+// The only entry of its category the fixtures have, and nobody modified it: the category is exported all the same
 export const untouchedVocabulary = {
   ...defaultVocabulary,
   id: 'untouched-vocabulary-id',
@@ -163,7 +163,7 @@ export const untouchedVocabulary = {
   description: 'An alert.',
 } as unknown as BasicStoreEntityVocabulary;
 
-// An entry of the platform whose description was modified: exported
+// An entry of the platform whose description was modified
 export const modifiedVocabulary = {
   ...storedVocabulary,
   id: 'modified-vocabulary-id',
@@ -176,7 +176,7 @@ export const modifiedVocabulary = {
   order: 3,
 } as unknown as BasicStoreEntityVocabulary;
 
-// A custom entry: exported
+// A custom entry
 export const customVocabulary = {
   ...storedVocabulary,
   id: 'custom-vocabulary-id',

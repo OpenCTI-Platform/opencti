@@ -1,6 +1,6 @@
 import { OrderingMode, type VocabularyCategory, VocabularyOrdering } from '../../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { getExportableVocabularyCategories, getVocabularyCategoryConfigPresetConfiguration } from '../../vocabulary/vocabulary-export';
+import { getVocabularyCategories, getVocabularyCategoryConfigPresetConfiguration } from '../../vocabulary/vocabulary-export';
 import { findAllVocabularies } from '../../vocabulary/vocabulary-domain';
 import { importVocabularyCategory } from '../../vocabulary/vocabulary-import';
 import type { BasicStoreEntityVocabulary } from '../../vocabulary/vocabulary-types';
@@ -18,14 +18,13 @@ const toCategoryItem = (category: VocabularyCategory, vocabularies: BasicStoreEn
   exporter: async () => getVocabularyCategoryConfigPresetConfiguration(category, vocabularies),
 });
 
-// The categories to export are the ones with a custom entry or an entry of the platform that was modified: which one it is, is known by comparing
-// each entry with its default, so they are all read and filtered here, not by the engine. By category.
+// The categories to export are all the ones that have an entry, the entries of the platform included: they are all read here, not by the engine. By category.
 const getExportableItems = async (context: AuthContext, user: AuthUser) => {
   const vocabularies = await findAllVocabularies(context, user, {
     orderBy: [VocabularyOrdering.Category, VocabularyOrdering.Order, VocabularyOrdering.Name],
     orderMode: OrderingMode.Asc,
   });
-  return getExportableVocabularyCategories(vocabularies).map((category) => toCategoryItem(category, vocabularies));
+  return getVocabularyCategories(vocabularies).map((category) => toCategoryItem(category, vocabularies));
 };
 
 const matchesSearch = (item: ConfigPresetItemDefinition, search?: string | null) => {
@@ -52,13 +51,13 @@ const filterItems = (items: ConfigPresetItemDefinition[], args: ConfigPresetList
   return items.filter((item) => matchesListArgs(item, args) && matchesSearch(item, args.search));
 };
 
-// Vocabularies: the categories that have custom or modified entries, listed and paged in memory. A category is exported with those entries and
-// imported by creating or overwriting them, never deleting one. It has no copy, an import overwrites.
+// Vocabularies: all the categories, listed and paged in memory. A category is exported with all its entries, the ones of the platform included, and
+// imported by creating or overwriting them, never deleting one. An import skips the entries that are the same. It has no copy, an import overwrites.
 export const vocabulariesFamily: ConfigPresetFamilyDefinition = {
   importer: vocabulariesImporter,
   id: VOCABULARIES_FAMILY_ID,
   label: 'Vocabularies',
-  description: 'Vocabulary categories with custom or modified entries',
+  description: 'Vocabulary categories and their entries',
   group: taxonomyGroup,
   directory: 'taxonomy/vocabularies',
   listItems: async (context, user, args) => {

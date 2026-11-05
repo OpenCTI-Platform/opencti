@@ -104,13 +104,13 @@ describe('Config preset registry', () => {
         group: 'taxonomy',
         itemIds: [disarmKillChainPhase.standard_id, otherKillChainPhase.standard_id, killChainPhase.standard_id],
       },
-      // The categories with a custom entry or a modified one, by category: the category of an entry nobody modified is not exported
+      // All the categories, by category
       {
         id: 'vocabularies',
         label: 'Vocabularies',
-        description: 'Vocabulary categories with custom or modified entries',
+        description: 'Vocabulary categories and their entries',
         group: 'taxonomy',
-        itemIds: ['case_severity_ov', 'integrity_level_ov', 'report_types_ov'],
+        itemIds: ['case_severity_ov', 'incident_type_ov', 'integrity_level_ov', 'report_types_ov'],
       },
     ]);
   });
@@ -137,6 +137,7 @@ describe('Config preset registry', () => {
       ['mitre-attack: initial-access', false],
       ['mitre-attack: execution', false],
       ['case_severity_ov', false],
+      ['incident_type_ov', false],
       ['integrity_level_ov', false],
       ['report_types_ov', false],
     ]);
@@ -163,6 +164,7 @@ describe('Config preset registry', () => {
       `taxonomy/kill_chain_phases/${otherKillChainPhase.standard_id}.json`,
       `taxonomy/kill_chain_phases/${killChainPhase.standard_id}.json`,
       'taxonomy/vocabularies/case_severity_ov.json',
+      'taxonomy/vocabularies/incident_type_ov.json',
       'taxonomy/vocabularies/integrity_level_ov.json',
       'taxonomy/vocabularies/report_types_ov.json',
     ]);
@@ -426,22 +428,25 @@ describe('Config preset registry', () => {
     const vocabularies = findFamily('vocabularies');
     const pageIds = async (args: Parameters<typeof vocabularies.listItems>[2]) => (await vocabularies.listItems(context, user, args)).edges.map(({ node }) => node.id);
 
-    it('exports a category with its custom and modified entries, in the vocabulary import format only', async () => {
+    it('exports a category with all its entries, in the vocabulary import format only', async () => {
       const file = await exportConfigPresetItem(context, user, vocabularies, await findItem('vocabularies', 'report_types_ov'));
-      // The entry of the platform nobody modified (threat-report) is not in it, the category of the entries is the one of the file
+      // The entry of the platform nobody modified (threat-report) is in it, the category of the entries is the one of the file
       expect(file).toEqual({
         openCTI_version: PLATFORM_VERSION,
         type: 'taxonomy.vocabularies',
         id: 'report_types_ov',
         configuration: {
           category: 'report_types_ov',
-          entries: [{ name: 'fimi-report', description: 'Foreign information manipulation', aliases: ['fimi'], order: 5 }],
+          entries: [
+            { name: 'threat-report', description: '', aliases: [], order: 0 },
+            { name: 'fimi-report', description: 'Foreign information manipulation', aliases: ['fimi'], order: 5 },
+          ],
         },
       });
       expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|builtIn|custom-vocabulary-id|vocabulary--/);
     });
 
-    it('exports an entry of the platform that was modified, with the values that make it so', async () => {
+    it('exports an entry of the platform that was modified, with its values', async () => {
       const [category] = await vocabularies.resolveItems(context, user, ['integrity_level_ov'], []);
       expect(await category.exporter(context, user)).toEqual({
         category: 'integrity_level_ov',
@@ -457,39 +462,39 @@ describe('Config preset registry', () => {
       expect(await missing.exporter(context, user)).toEqual({ category: 'report_types_ov', entries: [{ name: 'fimi-report', aliases: ['fimi'] }] });
     });
 
-    it('lists the categories that have something to export, by name, and counts them', async () => {
+    it('lists all the categories, by name, and counts them', async () => {
       const page = await vocabularies.listItems(context, user, { first: 2 });
       expect(fullEntitiesList).toHaveBeenCalledWith(context, user, ['Vocabulary'], { orderBy: ['category', 'order', 'name'], orderMode: 'asc' });
       expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([
         ['case_severity_ov', 'case_severity_ov', false],
-        ['integrity_level_ov', 'integrity_level_ov', false],
+        ['incident_type_ov', 'incident_type_ov', false],
       ]);
-      // The category of the entry nobody modified (incident_type_ov) is neither listed nor counted
-      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: 'integrity_level_ov', globalCount: 3 });
+      // The category of the entry nobody modified (incident_type_ov) is listed and counted like the others
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: 'incident_type_ov', globalCount: 4 });
       const next = await vocabularies.listItems(context, user, { first: 2, after: page.pageInfo.endCursor });
-      expect(next.edges.map(({ node }) => node.id)).toEqual(['report_types_ov']);
-      expect(next.pageInfo).toMatchObject({ hasNextPage: false, globalCount: 3 });
+      expect(next.edges.map(({ node }) => node.id)).toEqual(['integrity_level_ov', 'report_types_ov']);
+      expect(next.pageInfo).toMatchObject({ hasNextPage: false, globalCount: 4 });
     });
 
-    it('lists a category once, whatever its number of entries to export', async () => {
+    it('lists a category once, whatever its number of entries', async () => {
       vi.mocked(fullEntitiesList).mockResolvedValueOnce([modifiedVocabulary, customVocabulary, { ...customVocabulary, name: 'second-custom' }] as never);
       expect(await pageIds({})).toEqual(['integrity_level_ov', 'report_types_ov']);
     });
 
-    it('applies search, ids and excluded ids to the exportable categories', async () => {
+    it('applies search, ids and excluded ids to the categories', async () => {
       expect(await pageIds({ search: 'REPORT' })).toEqual(['report_types_ov']);
       expect(await pageIds({ search: 'integrity' })).toEqual(['integrity_level_ov']);
-      // A category with nothing to export is not an item, even when it is asked for
-      expect(await pageIds({ ids: ['incident_type_ov', 'report_types_ov'] })).toEqual(['report_types_ov']);
-      expect(await pageIds({ excludedIds: ['report_types_ov', 'case_severity_ov'] })).toEqual(['integrity_level_ov']);
+      // A category without entry is not an item, even when it is asked for
+      expect(await pageIds({ ids: ['incident_type_ov', 'report_types_ov', 'opinion_ov'] })).toEqual(['incident_type_ov', 'report_types_ov']);
+      expect(await pageIds({ excludedIds: ['report_types_ov', 'case_severity_ov'] })).toEqual(['incident_type_ov', 'integrity_level_ov']);
       expect(await pageIds({ ids: [] })).toEqual([]);
     });
 
     it('resolves the categories to export, with the same rules as the listing', async () => {
       const ids = async (selected: string[] | null, excluded: string[]) => (await vocabularies.resolveItems(context, user, selected, excluded)).map((item) => item.id);
-      expect(await ids(null, [])).toEqual(['case_severity_ov', 'integrity_level_ov', 'report_types_ov']);
-      expect(await ids(null, ['integrity_level_ov'])).toEqual(['case_severity_ov', 'report_types_ov']);
-      expect(await ids(['report_types_ov', 'incident_type_ov'], [])).toEqual(['report_types_ov']);
+      expect(await ids(null, [])).toEqual(['case_severity_ov', 'incident_type_ov', 'integrity_level_ov', 'report_types_ov']);
+      expect(await ids(null, ['integrity_level_ov'])).toEqual(['case_severity_ov', 'incident_type_ov', 'report_types_ov']);
+      expect(await ids(['report_types_ov', 'incident_type_ov', 'opinion_ov'], [])).toEqual(['incident_type_ov', 'report_types_ov']);
       expect(await ids([], [])).toEqual([]);
     });
   });

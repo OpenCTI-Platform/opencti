@@ -21,7 +21,7 @@ const importCategory = (entries: Record<string, unknown>[], options: { mode?: Co
   return importVocabularyCategory(testContext, ADMIN_USER, { category: CATEGORY, entries }, { mode, ...options });
 };
 const exportableCategories = async () => (await vocabulariesFamily.resolveItems(testContext, ADMIN_USER, null, [])).map(({ id }) => id);
-// The file of the category as the export writes it: undefined when the category has nothing to export
+// The file of the category as the export writes it: undefined when the category has no entry
 const exportCategory = async () => {
   const [item] = await vocabulariesFamily.resolveItems(testContext, ADMIN_USER, [CATEGORY], []);
   return item ? exportConfigPresetItem(testContext, ADMIN_USER, vocabulariesFamily, item) : undefined;
@@ -41,23 +41,23 @@ describe('Vocabulary import and export (configuration preset)', () => {
     }
   });
 
-  it('does not export the entries the platform created, as long as nobody modified them', async () => {
+  it('exports the entries the platform created, though nobody modified them', async () => {
     const stored = await load(defaultId);
     expect(stored).toMatchObject(DEFAULT);
-    expect(await exportedEntry(DEFAULT.name)).toBeUndefined();
+    expect(await exportedEntry(DEFAULT.name)).toMatchObject({ name: DEFAULT.name, description: '' });
     // The platform creates it without description: the same values have nothing to import
     expect(await importCategory([{ name: DEFAULT.name, description: '', aliases: [], order: 0 }])).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true });
   });
 
-  it('does not export a category whose entries are the ones of the platform, though it stores them without the alias that is their name', async () => {
+  it('exports a category whose entries are the ones of the platform, and imports a default as it is declared without change', async () => {
     // The defaults of these categories have the alias 'low' under the name 'low': the platform stores such an entry without alias
     const low = await load(getVocabularyStandardId({ name: 'low', category: VocabularyCategory.CaseSeverityOv }));
     expect(low).toMatchObject({ name: 'low', order: 1 });
     expect(low?.aliases ?? []).toEqual([]);
     const categories = await exportableCategories();
-    expect(categories).not.toContain(VocabularyCategory.CaseSeverityOv);
-    expect(categories).not.toContain(VocabularyCategory.IncidentSeverityOv);
-    expect(categories).not.toContain(VocabularyCategory.IntegrityLevelOv);
+    expect(categories).toContain(VocabularyCategory.CaseSeverityOv);
+    expect(categories).toContain(VocabularyCategory.IncidentSeverityOv);
+    expect(categories).toContain(VocabularyCategory.IntegrityLevelOv);
     // Importing the default as it is declared is no change either
     expect(await importVocabularyCategory(testContext, ADMIN_USER, { category: VocabularyCategory.CaseSeverityOv, entries: [{ name: 'low', aliases: ['low'], order: 1 }] }, { mode }))
       .toMatchObject({ status: 'skipped', code: 'unchanged' });
@@ -112,13 +112,13 @@ describe('Vocabulary import and export (configuration preset)', () => {
     }
   });
 
-  it('exports an entry of the platform once it is modified, and takes it back as an overwrite', async () => {
+  it('exports an entry of the platform with its modification, and takes it back as an overwrite', async () => {
     expect(await importCategory([{ name: DEFAULT.name, description: 'Our own definition' }])).toMatchObject({ status: 'overwritten', exists: true });
     expect(await exportedEntry(DEFAULT.name)).toMatchObject({ name: DEFAULT.name, description: 'Our own definition' });
     const file = await exportCategory();
     expect(file).toMatchObject({ type: 'taxonomy.vocabularies', id: CATEGORY, configuration: { category: CATEGORY } });
     await importCategory([{ name: DEFAULT.name, description: '' }]);
-    expect(await exportedEntry(DEFAULT.name)).toBeUndefined();
+    expect(await exportedEntry(DEFAULT.name)).toMatchObject({ name: DEFAULT.name, description: '' });
     // The same file on a platform where the entry has its default description gives it the description again
     expect(await importVocabularyCategory(testContext, ADMIN_USER, file?.configuration, { mode })).toMatchObject({ status: 'overwritten', exists: true });
     expect(await load(defaultId)).toMatchObject({ description: 'Our own definition' });

@@ -178,11 +178,11 @@ describe('Config preset exportable types query', () => {
       {
         key: 'vocabularies',
         label: 'Vocabularies',
-        description: 'Vocabulary categories with custom or modified entries',
+        description: 'Vocabulary categories and their entries',
         group: { key: 'taxonomy', label: 'Taxonomy' },
-        // The categories with a custom entry or a modified one, by category
-        items: [vocabularyItem('case_severity_ov'), vocabularyItem('integrity_level_ov'), vocabularyItem('report_types_ov')],
-        itemsPageInfo: onePage(3),
+        // All the categories, by category
+        items: [vocabularyItem('case_severity_ov'), vocabularyItem('incident_type_ov'), vocabularyItem('integrity_level_ov'), vocabularyItem('report_types_ov')],
+        itemsPageInfo: onePage(4),
       },
     ]);
   });
