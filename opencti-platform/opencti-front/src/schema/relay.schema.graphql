@@ -15860,6 +15860,7 @@ type RequestAccessConfiguration {
 type RequestAccessWorkflow {
   approved_workflow_id: String
   declined_workflow_id: String
+  workflow_definition_id: String
   approval_admin: [ID]
 }
 

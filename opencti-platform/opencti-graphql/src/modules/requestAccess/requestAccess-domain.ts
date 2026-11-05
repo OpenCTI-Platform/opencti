@@ -338,6 +338,7 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
     approval_admin = input.approval_admin as string [];
   }
   const newConfiguration = {
+    ...rfiEntitySettings.request_access_workflow,
     approval_admin,
     approved_workflow_id,
     declined_workflow_id,
