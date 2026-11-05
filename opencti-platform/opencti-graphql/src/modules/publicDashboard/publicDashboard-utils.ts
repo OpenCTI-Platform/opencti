@@ -15,7 +15,8 @@ import { findById as findWorkspace } from '../workspace/workspace-domain';
 import { isFeatureEnabled, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../config/conf';
 import { fromB64, toB64 } from '../../utils/base64';
 
-const WIDGET_BREAKDOWN_PARAMETERS = ['breakdownBy', 'breakdownLimit', 'breakdownOrder', 'breakdownOther'];
+// Parameters of a widget setting its breakdown: the type of the widgets of the public dashboards is derived from them
+export const WIDGET_BREAKDOWN_PARAMETERS = ['breakdownBy', 'breakdownLimit', 'breakdownOrder', 'breakdownOther'] as const;
 
 /**
  * Public manifest as served to the visitors. Without the time series breakdown feature, the widgets are served without
