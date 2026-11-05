@@ -38,7 +38,7 @@ const buildDefinition = (filterKey: string, type: string, label: string, subFilt
 } as FilterDefinition);
 
 const coverageDefinition = {
-  ...buildDefinition('coverage_information', 'nested_filterable', 'Coverage score', [
+  ...buildDefinition('coverage_information', 'nested_attribute', 'Coverage score', [
     { ...buildDefinition('coverage_name', 'vocabulary', 'Coverage name'), multiple: false, elementsForFilterValuesSearch: ['coverage_ov'] },
     { ...buildDefinition('coverage_score', 'float', 'Score'), multiple: false },
   ]),

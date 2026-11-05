@@ -26,7 +26,7 @@ const isObjectAttributeWithMappings = (schemaDef: AttributeDefinition): schemaDe
   return schemaDef.type === 'object' && (schemaDef.format === 'standard' || schemaDef.format === 'nested');
 };
 
-// A filterable nested attribute with at least one filterable mapping is exposed as one 'nested_filterable' filter key
+// A filterable nested attribute with at least one filterable mapping is exposed as one 'nested_attribute' filter key
 // (its filterable mappings are the subFilters).
 // Nested attributes whose mappings declare associatedFilterKeys (e.g. connections) keep the flattened keys.
 export const isGenericNestedFilterAttribute = (schemaDef: AttributeDefinition): schemaDef is NestedObjectAttribute => {

@@ -133,7 +133,7 @@ export const isCustomFieldFilterKey = (key: string): boolean => {
 
 // ---- generic nested filter keys (filterable nested attributes, ex: coverage_information)
 // type of their filter definition ('nested' is the type of regardingOf and dynamicRegardingOf)
-export const GENERIC_NESTED_FILTER_TYPE = 'nested_filterable';
+export const GENERIC_NESTED_FILTER_TYPE = 'nested_attribute';
 
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
