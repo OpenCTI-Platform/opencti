@@ -8,7 +8,7 @@ import { isInternalId, isStixId } from '../../schema/schemaUtils';
 import { idsValuesRemap } from '../../database/stix-2-1-converter';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { pushAll } from '../../utils/arrayUtil';
-import { DASHBOARD_VARIABLE_ID_TYPES, type StoreDashboardVariable } from './workspace-variables-types';
+import { DASHBOARD_VARIABLE_ID_TYPES, type StoreDashboardPreset, type StoreDashboardVariable } from './workspace-variables-types';
 
 // workspace ids converter_2_1
 // Export => Dashboard filter ids must be converted to standard id
@@ -159,6 +159,30 @@ const replaceDashboardVariablesIds = (variables: StoreDashboardVariable[], idsMa
   });
 };
 
+// The preset values of the same variables follow: a value of a text variable shaped like an id is never touched.
+const extractDashboardPresetsIds = (variables: StoreDashboardVariable[], presets: StoreDashboardPreset[], from: 'internal' | 'stix') => {
+  const idVariableIds = new Set(idVariablesOf(variables).map((variable) => variable.id));
+  const isConvertible = (value: string) => (from === 'internal' ? isInternalId(value) : isStixId(value));
+  const resolvingIds: string[] = [];
+  presets.forEach((preset) => {
+    Object.entries(preset.values ?? {}).forEach(([variableId, value]) => {
+      if (idVariableIds.has(variableId) && isConvertible(value)) resolvingIds.push(value);
+    });
+  });
+  return resolvingIds;
+};
+
+const replaceDashboardPresetsIds = (variables: StoreDashboardVariable[], presets: StoreDashboardPreset[], idsMap: IdsMap, from: 'internal' | 'stix') => {
+  const idVariableIds = new Set(idVariablesOf(variables).map((variable) => variable.id));
+  presets.forEach((preset) => {
+    Object.entries(preset.values ?? {}).forEach(([variableId, value]) => {
+      if (idVariableIds.has(variableId)) {
+        [preset.values[variableId]] = idsValuesRemap([value], idsMap, from);
+      }
+    });
+  });
+};
+
 /**
  * Converts entity IDs within widget filter definitions between internal and STIX formats.
  * On export (from='internal'): internal IDs are replaced with standard STIX IDs.
@@ -188,9 +212,15 @@ export const convertDashboardIds = async (
   widgetDefinitions: any[],
   variables: StoreDashboardVariable[],
   from: 'internal' | 'stix',
+  presets: StoreDashboardPreset[] = [],
 ) => {
-  const resolvingIds = [...extractWidgetsIds(widgetDefinitions, from), ...extractDashboardVariablesIds(variables, from)];
+  const resolvingIds = [
+    ...extractWidgetsIds(widgetDefinitions, from),
+    ...extractDashboardVariablesIds(variables, from),
+    ...extractDashboardPresetsIds(variables, presets, from),
+  ];
   const idsMap = await resolveIdsMap(context, user, resolvingIds);
   replaceWidgetsIds(widgetDefinitions, idsMap, from);
   replaceDashboardVariablesIds(variables, idsMap, from);
+  replaceDashboardPresetsIds(variables, presets, idsMap, from);
 };

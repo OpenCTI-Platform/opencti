@@ -203,6 +203,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'language',
   'personal_notifiers',
   'default_dashboard',
+  'default_dashboard_preset',
   'default_time_field',
   'unit_system',
   'date_format',

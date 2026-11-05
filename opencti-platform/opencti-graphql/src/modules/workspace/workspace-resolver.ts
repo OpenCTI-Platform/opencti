@@ -27,7 +27,8 @@ import { toStixReportBundle } from './investigation-domain';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { loadCreator } from '../../database/members';
 import { workspaceVariableDelete, workspaceVariableUpsert } from './workspace-variables-domain';
-import { toGraphqlDashboardVariables } from './workspace-variables-utils';
+import { findCurrentUserDefaultPresetId, toGraphqlDashboardPresets, toGraphqlDashboardVariables } from './workspace-variables-utils';
+import { workspacePresetDelete, workspacePresetUpsert } from './workspace-presets-domain';
 import { editWorkInvestigationStatus, findInvestigationEnrichmentWorks } from './investigation-enrichment';
 
 const workspaceResolvers: Resolvers = {
@@ -48,6 +49,8 @@ const workspaceResolvers: Resolvers = {
     toWidgetExport: (workspace, { widgetId }, context) => generateWidgetExportConfiguration(context, context.user, workspace, widgetId),
     isShared: (workspace, _, context) => isDashboardShared(context, workspace),
     variables: (workspace) => toGraphqlDashboardVariables(workspace),
+    presets: (workspace) => toGraphqlDashboardPresets(workspace),
+    currentUserDefaultPresetId: (workspace, _, context) => findCurrentUserDefaultPresetId(context.user, workspace),
     enrichmentWorks: (workspace, args, context) => findInvestigationEnrichmentWorks(context, context.user, workspace, args) as unknown as ResolversTypes['WorkConnection'],
   },
   Mutation: {
@@ -86,6 +89,12 @@ const workspaceResolvers: Resolvers = {
     },
     workspaceVariableDelete: (_, { id, variableId }, context) => {
       return workspaceVariableDelete(context, context.user, id, variableId);
+    },
+    workspacePresetUpsert: (_, { id, input }, context) => {
+      return workspacePresetUpsert(context, context.user, id, input);
+    },
+    workspacePresetDelete: (_, { id, presetId }, context) => {
+      return workspacePresetDelete(context, context.user, id, presetId);
     },
     workInvestigationStatusEdit: (_, { workId, status }, context) => {
       return editWorkInvestigationStatus(context, context.user, workId, status) as unknown as ResolversTypes['Work'];
