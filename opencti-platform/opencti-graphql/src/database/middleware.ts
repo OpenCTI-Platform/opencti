@@ -2818,8 +2818,17 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
             }
             // A replace that only repairs the stored relationships (the loaded refs are already the targets)
             // is not an update of the element: no input, so no empty stream event (#18634)
-            if (isLoadedRefsChanged(newTargetsIds, updatedInstance[key])) {
-              updatedInputs.push({ key, value: refs, previous: updatedInstance[key] });
+            let previousRefs = updatedInstance[key];
+            let isRefsChanged = isLoadedRefsChanged(newTargetsIds, previousRefs);
+            if (!isRefsChanged) {
+              // The loaded refs are a pre-lock snapshot: read them again under the lock, so that a concurrent
+              // change of the refs is never taken for a repair and its replacement always produces an update
+              const lockedInstance = await storeLoadByIdWithRefs(context, user, initial.internal_id, { type: initial.entity_type }) as Record<string, any> | null;
+              previousRefs = lockedInstance?.[key];
+              isRefsChanged = isLoadedRefsChanged(newTargetsIds, previousRefs);
+            }
+            if (isRefsChanged) {
+              updatedInputs.push({ key, value: refs, previous: previousRefs });
             }
             updatedInstance[key] = refs;
             updatedInstance[relType] = newTargetsIds;
