@@ -60,6 +60,8 @@ type WorkspaceHeaderProps = {
   editionExtra?: React.ReactNode;
   exportElementId?: string;
   exportName?: string;
+  // Resizes the export element for the length of a capture. Returns the function that undoes it.
+  prepareExportCapture?: (element: HTMLElement) => () => void;
   viewSwitcher?: ReactNode;
 };
 
@@ -73,6 +75,7 @@ const WorkspaceHeader = ({
   editionExtra,
   exportElementId = 'container',
   exportName,
+  prepareExportCapture,
   viewSwitcher,
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
@@ -128,6 +131,7 @@ const WorkspaceHeader = ({
             // An investigation is a graph: its toolbar exports the image of the drawing.
             exportToImage={workspace.type !== 'investigation'}
             adjust={adjust}
+            prepareCapture={prepareExportCapture}
             handleDownloadAsStixReport={handleDownloadAsStixReport}
             handleExportDashboard={handleExportDashboard}
           />
