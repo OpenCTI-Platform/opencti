@@ -44,7 +44,7 @@ export const importLabel = async (
       return refused('failed', 'exists', 'Label already exists', true, parsed.data);
     }
     if (!color || color.toLowerCase() === label.color?.toLowerCase()) {
-      return refused('skipped', 'unchanged', 'Nothing to import', true, parsed.data);
+      return refused('skipped', 'unchanged', 'Already up to date', true, parsed.data);
     }
     if (!dryRun) {
       await labelEditField(context, user, label.id, [{ key: 'color', value: [color] }]);

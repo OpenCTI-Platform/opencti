@@ -114,7 +114,7 @@ describe('importLabel', () => {
       ['has no color', { value: 'APT' }],
       ['has a null color', { value: 'APT', color: null }],
     ])('skips it when the configuration %s', async (_name, configuration) => {
-      expect(await importLabel(context, user, configuration, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Nothing to import' });
+      expect(await importLabel(context, user, configuration, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Already up to date' });
       expect(labelEditField).not.toHaveBeenCalled();
     });
   });
