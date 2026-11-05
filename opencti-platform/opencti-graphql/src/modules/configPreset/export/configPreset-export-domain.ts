@@ -21,7 +21,14 @@ import { allFilesForPaths } from '../../internal/document/document-domain';
 import { CONFIG_PRESET_EXPORT_PATH } from '../../internal/document/document-types';
 import { type ConfigPresetExportSummary, publishUserAction } from '../../../listener/UserActionListener';
 import { addConfigPresetExportCount } from '../../../manager/telemetryManager';
-import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, configPresetItemFilePath, exportConfigPresetItem, isConfigPresetFamilyAvailable } from '../configPreset-registry';
+import {
+  CONFIG_PRESET_FAMILIES,
+  configPresetFamilyType,
+  configPresetItemAttachedFilePath,
+  configPresetItemFilePath,
+  exportConfigPresetItem,
+  isConfigPresetFamilyAvailable,
+} from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import { buildConfigPresetFileName, CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE, sanitizeBundleName } from '../configPreset-utils';
 
@@ -244,6 +251,10 @@ const writeConfigPresetZip = async (
         const item = family.items[j];
         const file = await exportConfigPresetItem(context, user, family, item);
         archive.append(JSON.stringify(file, null, 2), { name: configPresetItemFilePath(family, item) });
+        // The file of the item (the values of an exclusion list) as it is stored, next to its JSON
+        if (item.file) {
+          archive.append(await item.file.read(context, user), { name: configPresetItemAttachedFilePath(family, item.file) });
+        }
         counts[family.id] += 1;
       }
     }

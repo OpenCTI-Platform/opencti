@@ -10,6 +10,7 @@ import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from '../configPreset-
 import {
   CONFIG_PRESET_REASON_BUNDLE_REFUSED,
   type ConfigPresetBundle,
+  type ConfigPresetBundleFile,
   type ConfigPresetBundleItem,
   type ConfigPresetBundleMetadata,
   configPresetPlanKey,
@@ -58,7 +59,7 @@ const metadataSchema = z.object({
   bundle_name: z.string().nullish().transform((name) => name ?? null),
 });
 const dependenciesSchema = z.record(z.string(), z.record(z.string(), z.record(z.string(), z.string())));
-const itemFileSchema = z.object({ type: z.string(), id: z.string(), configuration: z.record(z.string(), z.unknown()) });
+const itemFileSchema = z.object({ type: z.string(), id: z.string(), configuration: z.record(z.string(), z.unknown()), file: z.string().optional() });
 
 // A bundle from a more recent platform is refused; a -dev or -rc suffix is ignored and an unreadable version is refused.
 // Not isCompatibleVersionWithMinimal: it has no coerce and throws on a non-semver string.
@@ -89,6 +90,21 @@ const findItemFamily = (type: string) => {
   return family && configPresetFamilyType(family) === type ? family : undefined;
 };
 
+const toBundleFile = (path: string, entry: { stream: () => AsyncIterable<Buffer | string> }): ConfigPresetBundleFile => ({
+  path,
+  read: async (limit) => {
+    const tooLarge = new Error('too large');
+    try {
+      return await readStreamWithLimit(entry.stream(), limit, () => tooLarge);
+    } catch (err) {
+      if (err === tooLarge) {
+        return null;
+      }
+      throw err;
+    }
+  },
+});
+
 // Reads a zip in memory, nothing is written to disk and entry names are never used as paths
 export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetBundle> => {
   let directory;
@@ -101,12 +117,15 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
   let dependencies: ConfigPresetBundle['dependencies'] = {};
   const items: ConfigPresetBundleItem[] = [];
   const ignored: string[] = [];
+  // The entries that are not JSON, by path: the file an item points to is read when its importer asks for it
+  const otherEntries = new Map<string, { stream: () => AsyncIterable<Buffer | string> }>();
+  const attachedPaths = new Map<string, string>();
   let totalSize = 0;
   for (let i = 0; i < directory.files.length; i += 1) {
     const entry = directory.files[i];
     if (entry.type !== 'Directory') {
       if (!entry.path.endsWith('.json')) {
-        ignored.push(entry.path);
+        otherEntries.set(entry.path, entry);
       } else {
         const content = await readStreamWithLimit(entry.stream(), CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE, () => {
           return bundleRefused('A file of the configuration bundle is too large', { path: entry.path });
@@ -141,6 +160,9 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
               throw bundleRefused('The configuration bundle holds the same item twice', { type: parsed.data.type, id: parsed.data.id });
             }
             items.push({ type: family.id, id: parsed.data.id, path: entry.path, configuration: parsed.data.configuration });
+            if (parsed.data.file) {
+              attachedPaths.set(entry.path, parsed.data.file);
+            }
           }
         }
       }
@@ -150,6 +172,22 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
     throw bundleRefused(`The configuration bundle has no valid ${CONFIG_PRESET_METADATA_FILE}`);
   }
   checkBundleVersion(metadata.openCTI_version);
+  // The file of an item is the entry of the zip at the path its JSON gives, never a path of the disk. A path that is no entry gives no
+  // file, and an entry serves one item only.
+  const claimed = new Set<string>();
+  for (let i = 0; i < items.length; i += 1) {
+    const filePath = attachedPaths.get(items[i].path);
+    const entry = filePath ? otherEntries.get(filePath) : undefined;
+    if (filePath && entry && !claimed.has(filePath)) {
+      claimed.add(filePath);
+      items[i].file = toBundleFile(filePath, entry);
+    }
+  }
+  otherEntries.forEach((_entry, path) => {
+    if (!claimed.has(path)) {
+      ignored.push(path);
+    }
+  });
   return { metadata, items, dependencies, ignored };
 };
 

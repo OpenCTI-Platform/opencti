@@ -4,6 +4,7 @@ import { buildPagination } from '../../../../src/database/utils';
 import type { BasicStoreEntityKillChainPhase } from '../../../../src/modules/killChainPhase/killChainPhase-types';
 import { buildRefRelationKey } from '../../../../src/schema/general';
 import { type BasicStoreEntityCaseTemplate, TEMPLATE_TASK_RELATION } from '../../../../src/modules/case/case-template/case-template-types';
+import type { BasicStoreEntityExclusionList } from '../../../../src/modules/exclusionList/exclusionList-types';
 import type { BasicStoreEntityLabel } from '../../../../src/modules/label/label-types';
 import type { BasicStoreEntityStatusTemplate } from '../../../../src/modules/statusTemplate/statusTemplate-types';
 import type { BasicStoreEntityTaskTemplate } from '../../../../src/modules/task/task-template/task-template-types';
@@ -277,6 +278,38 @@ export const blockTask = {
 
 export const ALL_TASK_TEMPLATES = [notifyTask, blockTask];
 
+// An exclusion list of IP addresses, and a disabled one without description. The id of an exclusion list is random on every platform;
+// its values are a file of the storage, whose name is `<internal id>.txt`.
+export const dnsExclusionList = {
+  id: 'dns-exclusion-list-id',
+  internal_id: 'dns-exclusion-list-id',
+  standard_id: '3f1d0c4e-7a52-4b8e-9f3a-1c2d3e4f5a6b',
+  entity_type: 'ExclusionList',
+  creator_id: ['creator-secret-id'],
+  created_at: '2026-01-01T00:00:00.000Z',
+  name: 'Public DNS resolvers',
+  description: 'Well-known resolvers',
+  enabled: true,
+  exclusion_list_entity_types: ['IPv4-Addr'],
+  file_id: 'exclusionLists/dns-exclusion-list-id.txt',
+  exclusion_list_values_count: 3,
+  exclusion_list_file_size: 22,
+} as unknown as BasicStoreEntityExclusionList;
+
+export const retiredExclusionList = {
+  ...dnsExclusionList,
+  id: 'retired-exclusion-list-id',
+  internal_id: 'retired-exclusion-list-id',
+  standard_id: '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d',
+  name: 'Retired partners',
+  description: undefined,
+  enabled: false,
+  exclusion_list_entity_types: ['Domain-Name', 'Hostname'],
+  file_id: 'exclusionLists/retired-exclusion-list-id.txt',
+} as unknown as BasicStoreEntityExclusionList;
+
+export const ALL_EXCLUSION_LISTS = [dnsExclusionList, retiredExclusionList];
+
 interface ListingArgs {
   search?: string | null;
   filters?: { filters: { key: string[]; values: string[]; operator?: string }[] };
@@ -303,6 +336,7 @@ export const listLabelsLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEn
 export const listVocabulariesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_VOCABULARIES, ['category', 'order', 'name'], args);
 export const listStatusTemplatesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_STATUS_TEMPLATES, ['name'], args);
 export const listCaseTemplatesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_CASE_TEMPLATES, ['name'], args);
+export const listExclusionListsLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_EXCLUSION_LISTS, ['name'], args);
 export const listTaskTemplatesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_TASK_TEMPLATES, ['name'], args);
 export const listKillChainPhasesLikeTheEngine = (args: ListingArgs = {}) => listLikeTheEngine(ALL_KILL_CHAIN_PHASES, ['kill_chain_name', 'x_opencti_order'], args, ['kill_chain_name', 'phase_name']);
 
@@ -321,6 +355,8 @@ const listFixtures = (type: string | undefined, args: unknown) => {
       return listCaseTemplatesLikeTheEngine(args as ListingArgs);
     case 'Task-Template':
       return listTaskTemplatesLikeTheEngine(args as ListingArgs);
+    case 'ExclusionList':
+      return listExclusionListsLikeTheEngine(args as ListingArgs);
     case 'Theme':
       return listThemesLikeTheEngine(args as ListingArgs);
     default:
@@ -329,7 +365,7 @@ const listFixtures = (type: string | undefined, args: unknown) => {
 };
 
 // For a test that mocks fullEntitiesList, pageEntitiesConnection and storeLoadById of the middleware loader:
-// the themes, the labels, the kill chain phases, the vocabularies, the status templates and the case templates come from the fixtures,
+// the themes, the labels, the kill chain phases, the vocabularies, the status templates, the case templates and the exclusion lists come from the fixtures,
 // any other type listed by fullEntitiesList gets otherEntities
 export const mockEntityLoaders = (otherEntities: unknown[] = []) => {
   vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, types, args) => {
@@ -341,6 +377,15 @@ export const mockEntityLoaders = (otherEntities: unknown[] = []) => {
     const sortOf = (entity: unknown) => ['name', 'value', 'kill_chain_name'].map((field) => (entity as Record<string, unknown>)[field]).find((value) => value !== undefined);
     return buildPagination(first, args?.after, entities.slice(0, first).map((node) => ({ node, sort: [sortOf(node)] })), entities.length) as never;
   });
-  const everyEntity = [...ALL_THEMES, ...ALL_LABELS, ...ALL_KILL_CHAIN_PHASES, ...ALL_VOCABULARIES, ...ALL_STATUS_TEMPLATES, ...ALL_CASE_TEMPLATES, ...ALL_TASK_TEMPLATES];
+  const everyEntity = [
+    ...ALL_THEMES,
+    ...ALL_LABELS,
+    ...ALL_KILL_CHAIN_PHASES,
+    ...ALL_VOCABULARIES,
+    ...ALL_STATUS_TEMPLATES,
+    ...ALL_CASE_TEMPLATES,
+    ...ALL_TASK_TEMPLATES,
+    ...ALL_EXCLUSION_LISTS,
+  ];
   vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => everyEntity.find((entity) => entity.id === id) as never);
 };
