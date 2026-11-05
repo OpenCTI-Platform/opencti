@@ -201,6 +201,8 @@ const AttackPatternsMatrixColumns = ({
     attackPatterns.forEach(({ id }) => levelById.set(id, (levelById.get(id) ?? 0) + 1));
     const getLevel = (ap: AttackPattern | SubAttackPattern) => levelById.get(ap.attack_pattern_id) ?? 0;
     const isAttackPatternCovered = (ap: AttackPattern | SubAttackPattern) => levelById.has(ap.attack_pattern_id);
+    // The posture lookup is paged without a cap, so the list can hold thousands of ids: check them through a Set.
+    const overlapIds = attackPatternIdsToOverlap ? new Set(attackPatternIdsToOverlap) : undefined;
     // Copy before sorting: Relay data is read-only.
     const orderSubs = (subs: AttackPattern['subAttackPatterns']) => (
       config.sortSubTechniques && subs ? [...subs].sort(config.compareTechniques) : subs
@@ -225,9 +227,9 @@ const AttackPatternsMatrixColumns = ({
               ...sub,
               level: getLevel(sub),
               isCovered: isAttackPatternCovered(sub),
-              isOverlapping: attackPatternIdsToOverlap?.includes(sub.attack_pattern_id),
+              isOverlapping: overlapIds?.has(sub.attack_pattern_id),
             })),
-            isOverlapping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
+            isOverlapping: overlapIds?.has(ap.attack_pattern_id),
             subAttackPatternsTotal: ap.subAttackPatterns?.length,
           }))
           .filter((ap) => (isModeOnlyActive ? ap.isCovered || isSubAttackPatternCovered(ap) : true))
