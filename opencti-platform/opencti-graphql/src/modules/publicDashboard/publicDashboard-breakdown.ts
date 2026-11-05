@@ -1,5 +1,6 @@
 import moment, { type DurationInputArg2, type unitOfTime } from 'moment';
-import { FunctionalError, UnsupportedError } from '../../config/errors';
+import type { GraphQLError } from 'graphql';
+import { FUNCTIONAL_ERROR, FunctionalError, UnsupportedError } from '../../config/errors';
 import { TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT } from '../../database/middleware';
 import { countTimeSeriesIntervals } from '../../database/utils';
 import { type FilterGroup, FilterMode, FilterOperator, type QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs } from '../../generated/graphql';
@@ -167,4 +168,23 @@ export const buildPublicBreakdownArgs = (
     // Without types, every type the filters above allow
     relationship_type: getBreakdownEntityTypes(selection.filters, RELATION_TYPE_FILTER),
   };
+};
+
+/**
+ * Runs a public breakdown, its refusals only saying why: the same message, and in their data their reason alone
+ * (BREAKDOWN_REFUSAL_REASONS in utils.ts), which the public dashboards tell their visitors. The breakdown API adds the
+ * requested types to some of them, read from the stored filters the public manifest strips on purpose. Its other
+ * errors are left as they are.
+ */
+export const withPublicBreakdownRefusals = async <T>(breakdown: () => Promise<T>): Promise<T> => {
+  try {
+    return await breakdown();
+  } catch (error) {
+    const { message, extensions } = error as GraphQLError;
+    if (extensions?.code === FUNCTIONAL_ERROR) {
+      const { reason } = (extensions.data ?? {}) as { reason?: string };
+      throw FunctionalError(message, { reason });
+    }
+    throw error;
+  }
 };

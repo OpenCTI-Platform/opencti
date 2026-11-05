@@ -10,7 +10,9 @@ import {
   clampPublicBreakdownStartDate,
   getBreakdownEntityTypes,
   PUBLIC_BREAKDOWN_MAX_POINTS,
+  withPublicBreakdownRefusals,
 } from '../../../../src/modules/publicDashboard/publicDashboard-breakdown';
+import { DatabaseError, FunctionalError, UnsupportedError } from '../../../../src/config/errors';
 import { countTimeSeriesIntervals } from '../../../../src/database/utils';
 
 const startDate = '2026-01-01T00:00:00.000Z';
@@ -322,5 +324,53 @@ describe('getBreakdownEntityTypes', () => {
     expect(getBreakdownEntityTypes({ mode: 'and', filterGroups: [] } as any)).toEqual([]);
     expect(getBreakdownEntityTypes({ mode: 'and', filters: [{ key: ['entity_type'], operator: 'eq', mode: 'or' }] } as any)).toEqual([]);
     expect(getBreakdownEntityTypes(null)).toEqual([]);
+  });
+});
+
+describe('withPublicBreakdownRefusals', () => {
+  const refusedWith = async (error: unknown) => {
+    try {
+      await withPublicBreakdownRefusals(() => Promise.reject(error));
+    } catch (thrown) {
+      return thrown as any;
+    }
+    throw new Error('The breakdown was not refused');
+  };
+
+  it('should give the breakdown when it is not refused', async () => {
+    const breakdown = { truncated: false, dates: [], series: [] };
+    await expect(withPublicBreakdownRefusals(() => Promise.resolve(breakdown))).resolves.toBe(breakdown);
+  });
+
+  it('should keep the message and the reason of a refusal, never the types of the stored filters', async () => {
+    // As the breakdown API refuses a field or a date attribute (resolveBreakdownField, checkBreakdownDateAttribute)
+    const refusals = [
+      { reason: 'unsupported_field', error: FunctionalError('Time series breakdown does not support this field for these entity types', { reason: 'unsupported_field', field: 'report_types', types: ['Report'] }) },
+      { reason: 'unsupported_date_attribute', error: FunctionalError('Time series breakdown does not support this date attribute for these types', { reason: 'unsupported_date_attribute', dateAttribute: 'name', types: ['Report'] }) },
+    ];
+    for (const { reason, error } of refusals) {
+      const thrown = await refusedWith(error);
+      expect(thrown.message).toEqual(error.message);
+      expect(thrown.extensions).toEqual({ code: 'FUNCTIONAL_ERROR', data: { http_status: 400, genre: 'BUSINESS', reason } });
+    }
+  });
+
+  it('should keep no data of a refusal without reason', async () => {
+    const thrown = await refusedWith(FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval: 'minute' }));
+    expect(thrown.message).toEqual('Unsupported interval, please choose between year, quarter, month, week, day or hour');
+    expect(thrown.extensions.data).not.toHaveProperty('interval');
+    expect(thrown.extensions.data.reason).toBeUndefined();
+  });
+
+  it('should leave the other errors as they are', async () => {
+    const others = [UnsupportedError('Feature is disabled', { flag: 'TIME_SERIES_BREAKDOWN' }), DatabaseError('Engine execution fail'), new Error('Unexpected')];
+    for (const other of others) {
+      expect(await refusedWith(other)).toBe(other);
+    }
+    // Refused before any promise, like the disabled feature
+    const disabled = UnsupportedError('Feature is disabled', { flag: 'TIME_SERIES_BREAKDOWN' });
+    await expect(withPublicBreakdownRefusals(() => {
+      throw disabled;
+    })).rejects.toBe(disabled);
   });
 });

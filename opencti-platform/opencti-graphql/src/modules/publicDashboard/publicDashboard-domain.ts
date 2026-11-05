@@ -35,7 +35,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
-import { buildPublicBreakdownArgs } from './publicDashboard-breakdown';
+import { buildPublicBreakdownArgs, withPublicBreakdownRefusals } from './publicDashboard-breakdown';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
 import { buildDashboardDateVariableIds, buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
 import {
@@ -388,7 +388,7 @@ export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthCont
 
   const breakdownArgs = buildPublicBreakdownArgs(args, widget, 'entities');
   // Use standard API
-  return stixCoreObjectsTimeSeriesBreakdown(context, user, breakdownArgs);
+  return withPublicBreakdownRefusals(() => stixCoreObjectsTimeSeriesBreakdown(context, user, breakdownArgs));
 };
 
 // vertical-bar & line & area & heatmap of relationships with a breakdown
@@ -397,7 +397,7 @@ export const publicStixRelationshipsTimeSeriesBreakdown = async (context: AuthCo
 
   const breakdownArgs = buildPublicBreakdownArgs(args, widget, 'relationships');
   // Use standard API
-  return stixRelationshipsTimeSeriesBreakdown(context, user, breakdownArgs);
+  return withPublicBreakdownRefusals(() => stixRelationshipsTimeSeriesBreakdown(context, user, breakdownArgs));
 };
 
 export const publicStixRelationshipsMultiTimeSeries = async (
