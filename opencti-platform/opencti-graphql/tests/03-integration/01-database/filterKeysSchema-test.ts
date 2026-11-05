@@ -189,7 +189,6 @@ describe('Filter keys schema generation testing', async () => {
     let filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_OBJECT)?.get(INSTANCE_REGARDING_OF);
     expect(filterDefinition?.filterKey).toEqual(INSTANCE_REGARDING_OF);
     expect(filterDefinition?.type).toEqual('nested');
-    expect(filterDefinition?.operators).toBeUndefined();
     expect(filterDefinition?.multiple).toEqual(true);
     expect(filterDefinition?.elementsForFilterValuesSearch.length).toEqual(0);
     expect(filterDefinition?.subFilters?.length).toEqual(2);
@@ -273,10 +272,10 @@ describe('Filter keys schema generation testing', async () => {
     const definition = filterKeysSchema.get(RELATION_HAS_COVERED)?.get('coverage_information');
     expect(definition?.type).toEqual('nested_filterable');
     expect(definition?.label).toEqual('Coverage');
-    expect(definition?.operators).toEqual(['eq', 'nil', 'not_nil']);
-    expect(definition?.subFilters?.map((s) => [s.filterKey, s.type, s.label, s.operators])).toEqual([
-      ['coverage_name', 'vocabulary', 'Coverage name', ['eq', 'not_eq']],
-      ['coverage_score', 'float', 'Coverage score', ['eq', 'gt', 'gte', 'lt', 'lte']],
+    // the frontend gives each sub-filter the operators of its type
+    expect(definition?.subFilters?.map((s) => [s.filterKey, s.type, s.label, s.multiple])).toEqual([
+      ['coverage_name', 'vocabulary', 'Coverage name', false],
+      ['coverage_score', 'float', 'Coverage score', false],
     ]);
     expect(definition?.subFilters?.[0].elementsForFilterValuesSearch).toEqual(['coverage_ov']);
     // no 'parent.child' keys for a nested attribute

@@ -37,13 +37,11 @@ const buildDefinition = (filterKey: string, type: string, label: string, subFilt
   ...(subFilters ? { subFilters } : {}),
 } as FilterDefinition);
 
-// as sent by the backend: a generic nested key and its sub-filters carry their operators
 const coverageDefinition = {
   ...buildDefinition('coverage_information', 'nested_filterable', 'Coverage score', [
-    { ...buildDefinition('coverage_name', 'vocabulary', 'Coverage name'), elementsForFilterValuesSearch: ['coverage_ov'], operators: ['eq', 'not_eq'] },
-    { ...buildDefinition('coverage_score', 'float', 'Score'), operators: ['eq', 'gt', 'gte', 'lt', 'lte'] },
+    { ...buildDefinition('coverage_name', 'vocabulary', 'Coverage name'), multiple: false, elementsForFilterValuesSearch: ['coverage_ov'] },
+    { ...buildDefinition('coverage_score', 'float', 'Score'), multiple: false },
   ]),
-  operators: ['eq', 'nil', 'not_nil'],
 };
 
 const filterKeysSchema = new Map([
@@ -140,11 +138,12 @@ describe('CompositeNestedFilterEditor (generic nested filter keys)', () => {
     await user.click(screen.getAllByLabelText('Operator')[1]);
     const listbox = await screen.findByRole('listbox');
     expect(within(listbox).getAllByRole('option').map((option) => option.textContent)).toEqual([
-      'Equals',
       'Greater than',
       'Greater than/ Equals',
       'Lower than',
       'Lower than/ Equals',
+      'Equals',
+      'Not equals',
     ]);
     await user.click(within(listbox).getByText('Lower than'));
     expect(helpers.handleChangeSubFilter).toHaveBeenCalledWith('f1', 'coverage_score', { operator: 'lt' });
