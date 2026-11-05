@@ -41,6 +41,15 @@ const buildRequest = (user: any, contextUser: any = user) => ({
   context: { user: contextUser, user_inside_platform_organization: true } as any,
 });
 
+// The user exists in these tests: fail clearly otherwise, and narrow the result type
+const refreshExistingStreamUser = async (req: any, channel: any) => {
+  const refreshed = await refreshStreamUser(req, channel);
+  if (!refreshed) {
+    throw new Error('The stream user should still exist');
+  }
+  return refreshed;
+};
+
 describe('refreshStreamUser', () => {
   beforeEach(() => {
     vi.mocked(getEntitiesMapFromCache).mockReset();
@@ -57,7 +66,7 @@ describe('refreshStreamUser', () => {
     const updatedUser = buildUser({ user_service_account: false, organizations: [{ internal_id: OTHER_ORG }], allowed_marking: [] });
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', updatedUser]]) as any);
 
-    const { user: refreshed, isRightsChanged } = await refreshStreamUser(req, channel);
+    const { user: refreshed, isRightsChanged } = await refreshExistingStreamUser(req, channel);
 
     expect(isRightsChanged).toBe(true);
     expect(refreshed.user_service_account).toBe(false);
@@ -78,7 +87,7 @@ describe('refreshStreamUser', () => {
     req.context.user_inside_platform_organization = false;
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user }]]) as any);
 
-    const { isRightsChanged } = await refreshStreamUser(req, undefined);
+    const { isRightsChanged } = await refreshExistingStreamUser(req, undefined);
 
     expect(req.context.user_inside_platform_organization).toBe(true);
     expect(isRightsChanged).toBe(true);
@@ -91,7 +100,7 @@ describe('refreshStreamUser', () => {
     const updatedUser = { ...user, name: 'Renamed', groups: [{ internal_id: 'group-b' }, { internal_id: 'group-a' }] };
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', updatedUser]]) as any);
 
-    const { user: refreshed, isRightsChanged } = await refreshStreamUser(req, undefined);
+    const { user: refreshed, isRightsChanged } = await refreshExistingStreamUser(req, undefined);
 
     expect(refreshed.name).toBe('Renamed');
     expect(isRightsChanged).toBe(false);
@@ -102,7 +111,7 @@ describe('refreshStreamUser', () => {
     const req = buildRequest(user);
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user, roles: [{ internal_id: 'role-a' }] }]]) as any);
 
-    const { isRightsChanged } = await refreshStreamUser(req, undefined);
+    const { isRightsChanged } = await refreshExistingStreamUser(req, undefined);
 
     expect(isRightsChanged).toBe(true);
   });
@@ -113,7 +122,7 @@ describe('refreshStreamUser', () => {
     req.context.user_inside_platform_organization = false;
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user, individual_id: 'individual-b' }]]) as any);
 
-    const { isRightsChanged } = await refreshStreamUser(req, undefined);
+    const { isRightsChanged } = await refreshExistingStreamUser(req, undefined);
 
     expect(isRightsChanged).toBe(true);
   });
@@ -123,7 +132,7 @@ describe('refreshStreamUser', () => {
     const req = buildRequest(user);
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['user-id', { ...user, allowed_marking: [] }]]) as any);
 
-    const { isRightsChanged } = await refreshStreamUser(req, undefined);
+    const { isRightsChanged } = await refreshExistingStreamUser(req, undefined);
 
     expect(isRightsChanged).toBe(true);
   });
@@ -134,7 +143,7 @@ describe('refreshStreamUser', () => {
     const req = buildRequest(publicUser, requester);
     vi.mocked(getEntitiesMapFromCache).mockResolvedValue(new Map([['public-user-id', { ...publicUser }]]) as any);
 
-    const { user: refreshed } = await refreshStreamUser(req, undefined);
+    const { user: refreshed } = await refreshExistingStreamUser(req, undefined);
 
     expect(req.user).toBe(refreshed);
     expect(req.context.user).toBe(requester);
