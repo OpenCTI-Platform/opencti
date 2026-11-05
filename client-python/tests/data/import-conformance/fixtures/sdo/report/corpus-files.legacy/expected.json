@@ -54,19 +54,7 @@
           "confidence": null,
           "content": null,
           "created": "2026-07-21T09:36:45.849885Z",
-          "customFieldValues": [
-            {
-              "field_name": "x_opencti_files",
-              "value": [
-                {
-                  "data": "JVBERi0xLjQgY29uZm9ybWFuY2UgZml4dHVyZQo=",
-                  "mime_type": "application/pdf",
-                  "name": "dark-comet-syrian-spy-tool.pdf",
-                  "no_trigger_import": true
-                }
-              ]
-            }
-          ],
+          "customFieldValues": null,
           "description": null,
           "embedded": [
             false

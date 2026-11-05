@@ -78,18 +78,6 @@
               "value": [
                 "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
               ]
-            },
-            {
-              "field_name": "x_opencti_files",
-              "value": [
-                {
-                  "mime_type": "application/json",
-                  "name": "ipv4_example.json",
-                  "object_marking_refs": [],
-                  "uri": "/storage/get/import/Task/d4e02a21-0dda-4295-be80-3c81503b69c8/ipv4_example.json",
-                  "version": "2025-07-02T15:47:23.032Z"
-                }
-              ]
             }
           ],
           "description": "Description",

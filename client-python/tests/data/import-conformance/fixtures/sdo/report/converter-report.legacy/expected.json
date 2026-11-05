@@ -192,20 +192,6 @@
               "value": "b29268cc-bb75-4f28-96c9-4cb48e549dff"
             },
             {
-              "field_name": "x_opencti_files",
-              "value": [
-                {
-                  "mime_type": "application/json",
-                  "name": "ipv4_example.json",
-                  "object_marking_refs": [
-                    "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
-                  ],
-                  "uri": "/storage/get/import/Report/0c38a734-3150-468f-bf38-8dc1f937a1b3/ipv4_example.json",
-                  "version": "2025-06-26T14:33:39.655Z"
-                }
-              ]
-            },
-            {
               "field_name": "x_opencti_reliability",
               "value": "A - Completely reliable"
             }
