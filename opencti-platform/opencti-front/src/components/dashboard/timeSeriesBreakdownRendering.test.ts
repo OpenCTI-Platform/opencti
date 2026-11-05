@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import * as C from '@mui/material/colors';
+import { itemColor } from '../../utils/Colors';
 import {
   coarsenSeriesForRendering,
+  getBreakdownPalette,
+  getBreakdownSeriesColors,
+  getEntityTypeColor,
   getBreakdownTickAmount,
   getRenderedBarsBudget,
   getRenderedPointsBudget,
@@ -220,5 +225,73 @@ describe('numberSharedSeriesNames', () => {
     const names = numberSharedSeriesNames(['Alice', 'Alice', 'Alice (1)', 'Alice (1)']);
     expect(names).toEqual(['Alice (2)', 'Alice (3)', 'Alice (1) (1)', 'Alice (1) (2)']);
     expect(new Set(names).size).toEqual(names.length);
+  });
+});
+
+describe('getBreakdownPalette', () => {
+  it('gives enough distinct colors for 50 series, without the greys of the Other series', () => {
+    (['dark', 'light'] as const).forEach((mode) => {
+      const palette = getBreakdownPalette(mode);
+      const sequence = palette.flat();
+      expect(new Set(sequence).size).toEqual(sequence.length);
+      expect(sequence.length).toBeGreaterThanOrEqual(50);
+      [400, 600, 200, 800, 300, 700].forEach((shade) => {
+        expect(sequence).not.toContain(C.grey[shade as 400]);
+        expect(sequence).not.toContain(C.blueGrey[shade as 400]);
+      });
+    });
+    expect(getBreakdownPalette('dark')[0]).toContain(C.red[400]);
+    expect(getBreakdownPalette('light')[0]).toContain(C.red[600]);
+  });
+});
+
+describe('getEntityTypeColor', () => {
+  it('colors an entity type as the platform does, but not the relationship types, all one grey', () => {
+    expect(getEntityTypeColor('Malware')).toEqual(itemColor('Malware'));
+    expect(getEntityTypeColor('IPv4-Addr')).toEqual(itemColor('IPv4-Addr'));
+    expect(getEntityTypeColor('targets')).toBeUndefined();
+    expect(getEntityTypeColor('Not-A-Type')).toBeUndefined();
+  });
+});
+
+describe('getBreakdownSeriesColors', () => {
+  const palette = getBreakdownPalette('dark');
+  const other = '#95969d';
+  const serie = (key: string, ownColor?: string | null) => ({ key, isOther: false, ownColor });
+  const otherSerie = { key: 'Other', isOther: true };
+
+  it('keeps the own color of a value, and gives the Other series its neutral color', () => {
+    expect(getBreakdownSeriesColors([serie('label-a', '#FF0000'), otherSerie], palette, other)).toEqual(['#ff0000', other]);
+  });
+
+  it('gives a value without color the same color whatever its rank and the other series', () => {
+    const [alone] = getBreakdownSeriesColors([serie('user-alice')], palette, other);
+    const [, ranked] = getBreakdownSeriesColors([serie('user-bob-xyz'), serie('user-alice'), otherSerie], palette, other);
+    expect(palette.flat()).toContain(alone);
+    expect(ranked).toEqual(alone);
+  });
+
+  it('never gives two series of a widget the same color', () => {
+    // Two labels of the same color, and a value hashed to it
+    const [first, second] = getBreakdownSeriesColors([serie('label-a', '#ff0000'), serie('label-b', '#FF0000')], palette, other);
+    expect(first).toEqual('#ff0000');
+    expect(second).not.toEqual(first);
+    // An own color equal to the one of the Other series
+    expect(getBreakdownSeriesColors([serie('label-grey', other), otherSerie], palette, other)[0]).not.toEqual(other);
+    // The 50 series of the largest breakdown, and Other
+    const colors = getBreakdownSeriesColors([...Array.from({ length: 50 }, (_, i) => serie(`value-${i}`)), otherSerie], palette, other);
+    expect(new Set(colors).size).toEqual(51);
+  });
+
+  it('lets an own color win over a value hashed to it', () => {
+    const [hashed] = getBreakdownSeriesColors([serie('user-alice')], palette, other);
+    const [alice, label] = getBreakdownSeriesColors([serie('user-alice'), serie('label', hashed)], palette, other);
+    expect(label).toEqual(hashed);
+    expect(alice).not.toEqual(hashed);
+  });
+
+  it('ignores an own color that is not a color', () => {
+    const [color] = getBreakdownSeriesColors([serie('label-a', 'red; background: url(x)')], palette, other);
+    expect(color).toEqual(getBreakdownSeriesColors([serie('label-a')], palette, other)[0]);
   });
 });

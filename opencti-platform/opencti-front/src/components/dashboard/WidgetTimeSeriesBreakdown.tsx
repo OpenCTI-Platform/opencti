@@ -21,6 +21,9 @@ import {
   isSameBreakdown,
   nextBreakdownChartWidth,
   numberSharedSeriesNames,
+  getBreakdownPalette,
+  getBreakdownSeriesColors,
+  getEntityTypeColor,
 } from './timeSeriesBreakdownRendering';
 import { scheduleChartDraw } from '../../utils/chartDrawQueue';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
@@ -40,6 +43,9 @@ export interface WidgetTimeSeriesBreakdownData {
       readonly id?: string;
       readonly name?: string;
       readonly representative?: { readonly main: string };
+      // The colors of a label and of a marking
+      readonly color?: string | null;
+      readonly x_opencti_color?: string | null;
     } | null;
     readonly values: ReadonlyArray<number>;
   }>;
@@ -93,12 +99,24 @@ const WidgetTimeSeriesBreakdown = ({
   const series = useMemo(() => {
     // Parsed once for every series
     const dates = (stableBreakdown?.dates ?? []).map((date) => new Date(date as string));
+    const breakdownSeries = stableBreakdown?.series ?? [];
+    const isTypeField = isBreakdownTypeField(breakdownBy);
+    // The "Other" serie gets a neutral color instead of one of the palette
+    const seriesColors = getBreakdownSeriesColors(
+      breakdownSeries.map((serie) => ({
+        key: serie.label,
+        isOther: serie.isOther,
+        ownColor: isTypeField ? getEntityTypeColor(serie.label) : (serie.entity?.color ?? serie.entity?.x_opencti_color),
+      })),
+      getBreakdownPalette(theme.palette.mode),
+      theme.palette.common?.grey,
+    );
     // The API already returns the "Other" serie last
-    const namedSeries = (stableBreakdown?.series ?? []).map((serie) => {
+    const namedSeries = breakdownSeries.map((serie, serieIndex) => {
       let name = serie.label;
       if (serie.isOther) {
         name = t_i18n('Other');
-      } else if (isBreakdownTypeField(breakdownBy)) {
+      } else if (isTypeField) {
         // An entity type or a relationship type, kept as is when it has no translation
         const translationKey = displayEntityTypeForTranslation(serie.label) ?? serie.label;
         const translated = t_i18n(translationKey);
@@ -108,8 +126,7 @@ const WidgetTimeSeriesBreakdown = ({
       }
       return {
         name,
-        // The "Other" serie gets a neutral color instead of one of the palette
-        ...(serie.isOther ? { color: theme.palette.common?.grey } : {}),
+        color: seriesColors[serieIndex],
         data: serie.values.map((value, index) => ({ x: dates[index], y: value })),
       };
     });

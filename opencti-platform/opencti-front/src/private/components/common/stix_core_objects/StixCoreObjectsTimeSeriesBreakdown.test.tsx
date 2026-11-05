@@ -7,6 +7,7 @@ import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widge
 import type { FilterDefinition } from '../../../../utils/hooks/useAuth';
 import { daysAgo, monthsAgo } from '../../../../utils/Time';
 import { loadDashboardViz } from '../../../../utils/tests/dashboardVizMock';
+import { itemColor } from '../../../../utils/Colors';
 
 const mocks = vi.hoisted(() => ({
   response: {} as Record<string, unknown>,
@@ -119,6 +120,7 @@ const filterKeysSchema = new Map<string, Map<string, FilterDefinition>>([
   ['Report', new Map([
     ['objectAssignee', definition('objectAssignee', ['Report'])],
     ['objectLabel', definition('objectLabel', ['Report'])],
+    ['objectMarking', definition('objectMarking', ['Report'])],
     ['creator_id', definition('creator_id', ['Report'])],
   ])],
   // the abstract type has no assignee
@@ -263,8 +265,41 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const { series } = await drawn(mocks.lines);
     expect(series.map((serie: { name: string }) => serie.name)).toEqual(['Alice', 'Other']);
     const [alice, other] = series;
-    expect(alice.color).toBeUndefined();
-    expect(other.color).toBeTruthy();
+    expect(other.color).toEqual('#95969D');
+    expect(alice.color).toBeTruthy();
+    expect(alice.color).not.toEqual(other.color);
+  });
+
+  it('colors a value with its own color, or the same color in every widget, never twice in one', async () => {
+    respond([
+      { label: 'label-red', entity: { id: 'label-red', color: '#ff0000' }, values: dailyValues(3) },
+      { label: 'label-also-red', entity: { id: 'label-also-red', color: '#FF0000' }, values: dailyValues(3) },
+      { label: 'label-without-color', entity: { id: 'label-without-color' }, values: dailyValues(3) },
+    ]);
+    render(makeWidget('line', { breakdownBy: 'objectLabel' }));
+    const [red, alsoRed, withoutColor] = (await drawn(mocks.lines)).series.map((serie: { color: string }) => serie.color);
+    expect(red).toEqual('#ff0000');
+    expect(alsoRed).not.toEqual(red);
+
+    // Ranked first in another widget, the value without color keeps its color
+    vi.clearAllMocks();
+    respond([
+      { label: 'label-without-color', entity: { id: 'label-without-color' }, values: dailyValues(3) },
+      { label: 'Other', isOther: true, entity: null, values: dailyValues(3) },
+    ]);
+    render(makeWidget('area', { breakdownBy: 'objectLabel' }));
+    expect((await drawn(mocks.areas)).series[0].color).toEqual(withoutColor);
+  });
+
+  it('colors the markings and the entity types as the platform does', async () => {
+    respond([{ label: 'marking-id', entity: { id: 'marking-id', x_opencti_color: '#c62828' }, values: dailyValues(3) }]);
+    render(makeWidget('line', { breakdownBy: 'objectMarking' }));
+    expect((await drawn(mocks.lines)).series[0].color).toEqual('#c62828');
+
+    vi.clearAllMocks();
+    respond([{ label: 'Malware', entity: null, values: dailyValues(3) }]);
+    render(makeWidget('line', { breakdownBy: 'entity_type' }, multiTypesSelection));
+    expect((await drawn(mocks.lines)).series[0].color).toEqual(itemColor('Malware').toLowerCase());
   });
 
   it('places the values of every series on the shared dates', async () => {

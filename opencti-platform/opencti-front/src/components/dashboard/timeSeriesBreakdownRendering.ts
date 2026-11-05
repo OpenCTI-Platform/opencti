@@ -1,4 +1,7 @@
+import * as C from '@mui/material/colors';
 import type { WidgetTimeSeriesBreakdownData } from './WidgetTimeSeriesBreakdown';
+import { colors } from '../../utils/Charts';
+import { itemColor, itemFamily } from '../../utils/Colors';
 
 // ApexCharts bar rendering cost grows with the square of the number of bars (every bar is
 // revealed again for each bar drawn), so bar charts are kept under these sizes. The bar budget follows
@@ -69,6 +72,8 @@ export const isSameBreakdown = (a?: WidgetTimeSeriesBreakdownData | null, b?: Wi
       && serie.entity?.entity_type === other.entity?.entity_type
       && serie.entity?.name === other.entity?.name
       && serie.entity?.representative?.main === other.entity?.representative?.main
+      && serie.entity?.color === other.entity?.color
+      && serie.entity?.x_opencti_color === other.entity?.x_opencti_color
       && serie.values.length === other.values.length
       && serie.values.every((value, valueIndex) => value === other.values[valueIndex]);
   });
@@ -172,5 +177,76 @@ export const numberSharedSeriesNames = (names: string[]) => {
     while (inputNames.has(`${name} (${rank})`)) rank += 1;
     ranks.set(name, rank);
     return `${name} (${rank})`;
+  });
+};
+
+// Shades of the palette of the series, the first one tried first: enough colors for the 50 series of a breakdown
+const PALETTE_SHADES = { dark: [400, 200, 700], light: [600, 800, 300] } as const;
+
+/**
+ * Colors the series of a breakdown are drawn with: the hues of the chart palette without its greys, as the
+ * "Other" series is grey, in several shades. The first shade holds the colors a key is hashed to.
+ */
+export const getBreakdownPalette = (mode: 'light' | 'dark'): string[][] => PALETTE_SHADES[mode].map((shade) => (
+  (colors(shade) as string[]).filter((color) => color !== C.grey[shade] && color !== C.blueGrey[shade])
+));
+
+/**
+ * Color of an entity type, as the platform draws it, when it tells the type apart: the families of the
+ * relationships and of the restricted entities are one grey for all.
+ */
+export const getEntityTypeColor = (type: string) => {
+  const family = itemFamily(type);
+  return family && family !== 'relationships' && family !== 'restricted' ? itemColor(type) : undefined;
+};
+
+const HEX_COLOR = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+
+// Same key, same number, whatever the widget
+const hashKey = (key: string) => {
+  let hash = 0;
+  for (let i = 0; i < key.length; i += 1) {
+    hash = (Math.imul(hash, 31) + key.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+};
+
+/**
+ * Colors of the series of a breakdown. A value keeps its own color (`ownColor`: the one of its label, of its marking,
+ * of its entity type), otherwise takes the one its `key` is hashed to in the first shade of the `palette`: a value has
+ * the same color in every widget, whatever its rank. Two series of a widget never share a color: a color already
+ * taken, by the series before or by a value of its own, goes on to the next free one of the palette.
+ * The "Other" series takes `otherColor`, which no other series takes.
+ */
+export const getBreakdownSeriesColors = (
+  series: ReadonlyArray<{ key: string; isOther: boolean; ownColor?: string | null }>,
+  palette: string[][],
+  // The neutral color of the theme, a grey without theme
+  otherColor: string = C.grey[500],
+): string[] => {
+  const taken = new Set([otherColor.toLowerCase()]);
+  // The own colors first, the first series keeping a color two of them have
+  const ownColors = series.map(({ isOther, ownColor }) => {
+    const color = ownColor?.toLowerCase();
+    if (isOther || !color || !HEX_COLOR.test(color) || taken.has(color)) return undefined;
+    taken.add(color);
+    return color;
+  });
+  const sequence = palette.flat().map((color) => color.toLowerCase());
+  const firstShadeSize = Math.max(1, palette[0]?.length ?? 0);
+  return series.map(({ key, isOther }, index) => {
+    if (isOther) return otherColor;
+    const ownColor = ownColors[index];
+    if (ownColor) return ownColor;
+    const start = hashKey(key) % firstShadeSize;
+    for (let probe = 0; probe < sequence.length; probe += 1) {
+      const color = sequence[(start + probe) % sequence.length];
+      if (!taken.has(color)) {
+        taken.add(color);
+        return color;
+      }
+    }
+    // More series than colors: the hashed one is shared
+    return sequence[start] ?? otherColor;
   });
 };
