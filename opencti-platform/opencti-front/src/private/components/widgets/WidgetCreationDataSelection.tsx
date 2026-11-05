@@ -111,10 +111,10 @@ const WidgetCreationDataSelection = () => {
     && !breakdown.field
     && breakdown.resolution === 'resolved'
     && breakdown.fieldOptions.length > 0;
-  // A disabled button gets no pointer events: the wrapper carries the tooltip
   const lockedByBreakdown = (button: React.ReactElement) => (isBreakdownActive ? (
     <Tooltip>
       <TooltipTrigger asChild>
+        {/* FDS-WORKAROUND #68: a disabled library IconButton or Button cannot trigger its own tooltip, so this span takes the hover and focus — see fds-migration/LIBRARY-FEEDBACK.md #68 */}
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <span style={{ display: 'flex', flex: 1 }} tabIndex={0}>{button}</span>
       </TooltipTrigger>
@@ -251,7 +251,7 @@ const WidgetCreationDataSelection = () => {
       {perspective === 'relationships' && canAddDataSelection && (isBreakdownActive ? (
         <Tooltip>
           <TooltipTrigger asChild>
-            {/* Disabled buttons get no pointer events: the wrapper carries the tooltip */}
+            {/* FDS-WORKAROUND #68: a disabled library Button cannot trigger its own tooltip, so this div takes the hover and focus — see fds-migration/LIBRARY-FEEDBACK.md #68 */}
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
             <div tabIndex={0}>{relationshipsAddButtons}</div>
           </TooltipTrigger>

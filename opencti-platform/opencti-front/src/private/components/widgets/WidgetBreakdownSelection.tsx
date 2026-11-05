@@ -156,7 +156,7 @@ const WidgetBreakdownSelection = () => {
       {isEditable ? controls : (
         <Tooltip>
           <TooltipTrigger asChild>
-            {/* Disabled controls get no pointer events: the wrapper carries the tooltip */}
+            {/* FDS-WORKAROUND #68: a disabled library Select cannot trigger its own tooltip, so this div takes the hover and focus — see fds-migration/LIBRARY-FEEDBACK.md #68 */}
             {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
             <div tabIndex={0}>{controls}</div>
           </TooltipTrigger>
