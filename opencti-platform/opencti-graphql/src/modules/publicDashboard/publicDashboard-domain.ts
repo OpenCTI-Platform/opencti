@@ -2,14 +2,8 @@ import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import {
-  type BasicStoreEntityPublicDashboard,
-  ENTITY_TYPE_PUBLIC_DASHBOARD,
-  type PublicDashboardCached,
-  type PublicDashboardCachedWidget,
-  type StoreEntityPublicDashboard,
-} from './publicDashboard-types';
-import { createEntity, deleteElementById, loadEntity, TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT, updateAttribute } from '../../database/middleware';
+import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type StoreEntityPublicDashboard } from './publicDashboard-types';
+import { createEntity, deleteElementById, loadEntity, updateAttribute } from '../../database/middleware';
 import { type BasicStoreEntityWorkspace } from '../workspace/workspace-types';
 import { isNotEmptyField } from '../../database/utils';
 import { notify } from '../../database/redis';
@@ -19,7 +13,6 @@ import {
   type FilterGroup,
   FilterMode,
   FilterOperator,
-  OrderingMode,
   type PublicDashboardAddInput,
   type QueryPublicBookmarksArgs,
   type QueryPublicDashboardsArgs,
@@ -41,7 +34,8 @@ import { findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
-import { checkUserIsAdminOnDashboard, getBreakdownEntityTypes, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
+import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
+import { buildPublicBreakdownArgs } from './publicDashboard-breakdown';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
 import { buildDashboardDateVariableIds, buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
 import {
@@ -52,9 +46,7 @@ import {
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeriesBreakdown,
 } from '../../domain/stixCoreObject';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
-import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../../schema/stixRefRelationship';
+import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import {
   findStixRelationPaginated,
   stixRelationshipsDistribution,
@@ -68,7 +60,6 @@ import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { ES_MAX_CONCURRENCY } from '../../database/engine';
 import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { RELATION_TYPE_FILTER, TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import { fromB64, toB64 } from '../../utils/base64';
 import { computeLoaders } from '../../http/httpAuthenticatedContext';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -193,7 +184,7 @@ const createPrivateManifest = async (
  * Creates the public manifest by stripping each widget's dataSelection
  * to only keep display-related properties (no filters, no query data).
  */
-export const createPublicManifest = (manifest: any) => {
+const createPublicManifest = (manifest: any) => {
   // Dashboard variables and presets are internal definitions (filters, ids, default values):
   // the public manifest is served to anonymous visitors and must never carry them.
   const parsedManifest = manifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest) : manifest;
@@ -391,84 +382,22 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
 };
 
-// Widgets drawing a time series, the only ones a breakdown expands (the 'timeseries' category of the front widgets)
-const TIME_SERIES_WIDGET_TYPES = ['vertical-bar', 'line', 'area', 'heatmap'];
-
-// Every setting of a breakdown is read from the stored widget, never from the request of the visitor.
-// A widget of another perspective can carry a breakdown too (an audits widget, whose logs have no public API).
-const buildPublicBreakdownArgs = (
-  args: Pick<QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs, 'widgetId' | 'startDate' | 'endDate'>,
-  widget: Pick<PublicDashboardCachedWidget, 'type' | 'perspective' | 'dataSelection' | 'parameters'>,
-  breakdownPerspective: PublicDashboardCachedWidget['perspective'],
-) => {
-  const { type, perspective, dataSelection, parameters } = widget;
-  if (perspective !== breakdownPerspective || !parameters?.breakdownBy) {
-    throw UnsupportedError('This widget has no breakdown', { widgetId: args.widgetId });
-  }
-  // A widget edited without the breakdown feature, or imported, can keep a breakdown it cannot have: the private
-  // dashboards draw its regular chart. Same rule as the front (canWidgetBeBrokenDown in widgetBreakdown.ts): a time
-  // series of a single dataset, of the elements of the widget (a relationships widget can also hold entities datasets).
-  const [selection] = dataSelection;
-  if (!TIME_SERIES_WIDGET_TYPES.includes(type) || dataSelection.length !== 1 || (selection.perspective ?? perspective) !== perspective) {
-    throw FunctionalError('This widget cannot be broken down', { widgetId: args.widgetId, type, datasetsCount: dataSelection.length });
-  }
-  // The histogram is anchored on the start date: without it the series would silently collapse on today
-  if (!args.startDate) {
-    throw FunctionalError('A start date is required for a time series breakdown');
-  }
-  return {
-    field: parameters.breakdownBy,
-    dateAttribute: selection.date_attribute,
-    startDate: args.startDate,
-    endDate: args.endDate,
-    interval: parameters.interval ?? 'day',
-    limit: parameters.breakdownLimit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT,
-    orderMode: parameters.breakdownOrder === 'asc' ? OrderingMode.Asc : OrderingMode.Desc,
-    includeOther: parameters.breakdownOther ?? false,
-    filters: selection.filters,
-  };
-};
-
 // vertical-bar & line & area & heatmap with a breakdown: one series per value of a field
 export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs) => {
-  const { user, type, perspective, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, ...widget } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
-  const breakdownArgs = buildPublicBreakdownArgs(args, { type, perspective, dataSelection, parameters }, 'entities');
-  const selection = dataSelection[0];
-  const types = getBreakdownEntityTypes(selection.filters);
-  const standardArgs = {
-    ...breakdownArgs,
-    types: types.length > 0 ? types : [ABSTRACT_STIX_CORE_OBJECT],
-  };
+  const breakdownArgs = buildPublicBreakdownArgs(args, widget, 'entities');
   // Use standard API
-  return stixCoreObjectsTimeSeriesBreakdown(context, user, standardArgs);
+  return stixCoreObjectsTimeSeriesBreakdown(context, user, breakdownArgs);
 };
-
-// Relationships the relationships widgets display, as the front restricts them (RELATIONSHIP_WIDGETS_TYPES in
-// opencti-front/src/utils/widget/widgetUtils.tsx): the knowledge relationships, the sightings, and the content and the
-// labels of the containers. Not the other references of the elements (markings, authors, external references...).
-const RELATIONSHIP_WIDGETS_TYPES = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP, RELATION_OBJECT, RELATION_OBJECT_LABEL];
 
 // vertical-bar & line & area & heatmap of relationships with a breakdown
 export const publicStixRelationshipsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixRelationshipsTimeSeriesBreakdownArgs) => {
-  const { user, type, perspective, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, ...widget } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
-  const breakdownArgs = buildPublicBreakdownArgs(args, { type, perspective, dataSelection, parameters }, 'relationships');
-  const selection = dataSelection[0];
-  const relationshipTypes = getBreakdownEntityTypes(selection.filters, RELATION_TYPE_FILTER);
-  const standardArgs = {
-    ...breakdownArgs,
-    // Restricted to the relationships the widget displays, as the private breakdown: without a relationship type,
-    // the references of the elements would be counted too, and could fill the top values
-    filters: addFilter(selection.filters, TYPE_FILTER, RELATIONSHIP_WIDGETS_TYPES),
-    // The same relationships as publicStixRelationshipsMultiTimeSeries
-    dynamicFrom: selection.dynamicFrom,
-    dynamicTo: selection.dynamicTo,
-    // Without types, every type the filters above allow
-    relationship_type: relationshipTypes,
-  };
+  const breakdownArgs = buildPublicBreakdownArgs(args, widget, 'relationships');
   // Use standard API
-  return stixRelationshipsTimeSeriesBreakdown(context, user, standardArgs);
+  return stixRelationshipsTimeSeriesBreakdown(context, user, breakdownArgs);
 };
 
 export const publicStixRelationshipsMultiTimeSeries = async (
