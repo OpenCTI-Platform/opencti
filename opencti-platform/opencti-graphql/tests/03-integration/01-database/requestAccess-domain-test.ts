@@ -443,4 +443,22 @@ describe('Request access domain  - configuration edition', async () => {
     expect(configuration.approval_admin).toStrictEqual([{ id: greenGroup.id, name: GREEN_GROUP.name }]);
     expect(configuration.approved_status?.id).toStrictEqual(statusRequestAccess.id);
   });
+
+  it('should keep workflow_definition_id when configuring request access', async () => {
+    const current = (await getRfiEntitySettings(testContext, ADMIN_USER)).request_access_workflow;
+    const withDefinition = { ...current, workflow_definition_id: 'def-ra' };
+    await entitySettingEditField(testContext, ADMIN_USER, rfiEntitySettings.id, [{ key: 'request_access_workflow', value: [withDefinition] }]);
+
+    const input: RequestAccessConfigureInput = {
+      approval_admin: [greenGroup.id],
+      approved_status_id: statusTemplateRequestAccess.id,
+      declined_status_id: statusTemplateRequestAccess.id,
+    };
+    await configureRequestAccess(testContext, ADMIN_USER, input);
+
+    const setting = await getRfiEntitySettings(testContext, ADMIN_USER);
+    expect(setting.request_access_workflow?.workflow_definition_id).toBe('def-ra');
+    expect(setting.request_access_workflow?.approval_admin).toStrictEqual([greenGroup.id]);
+    expect(setting.request_access_workflow?.approved_workflow_id).toBe(statusRequestAccess.id);
+  });
 });

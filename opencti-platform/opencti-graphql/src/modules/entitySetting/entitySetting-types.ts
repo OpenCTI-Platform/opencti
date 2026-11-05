@@ -67,6 +67,7 @@ export interface OverviewLayoutCustomization {
 export interface RequestAccessFlow {
   approved_workflow_id?: string;
   declined_workflow_id?: string;
+  workflow_definition_id?: string;
   approval_admin: string[];
 }
 
