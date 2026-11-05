@@ -1,12 +1,12 @@
 import { GroupsOrdering } from '../../../generated/graphql';
 import { batchMarkingsForGroups, findAllGroups, findGroupPaginated } from '../../../domain/group';
-import { BUILT_IN_MARKING_STANDARD_IDS } from '../../markingDefinition/configPreset/marking-import';
+import { BUILT_IN_MARKING_STANDARD_IDS } from '../../markingDefinition/marking-import';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { batchRolesForGroups } from '../../user/user-domain';
-import { type BasicStoreEntityGroup, getGroupConfigPresetConfiguration } from '../../user/configPreset/group-export';
-import { groupStandardId, importGroup } from '../../user/configPreset/group-import';
-import type { BasicStoreEntityRole } from '../../user/configPreset/role-export';
+import { type BasicStoreEntityGroup, exportGroup } from '../../user/group-export';
+import { groupStandardId, importGroup } from '../../user/group-import';
+import type { BasicStoreEntityRole } from '../../user/role-export';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey, configPresetTargets } from '../import/configPreset-import-types';
@@ -40,7 +40,7 @@ const toGroupItems = async (context: AuthContext, user: AuthUser, groups: BasicS
         .filter(({ standard_id }) => !BUILT_IN_MARKING_STANDARD_IDS.includes(standard_id))
         .map((marking) => ({ type: MARKINGS_FAMILY_ID, id: marking.standard_id })),
     ],
-    exporter: async (ctx, usr) => getGroupConfigPresetConfiguration(ctx, usr, group, groupsRoles[index]),
+    exporter: async (ctx, usr) => exportGroup(ctx, usr, group, groupsRoles[index]),
   }));
 };
 

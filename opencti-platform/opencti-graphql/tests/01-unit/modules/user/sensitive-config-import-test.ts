@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../../../src/domain/settings', () => ({ getProtectedSensitiveConfig: vi.fn() }));
+vi.mock('../../../../src/domain/settings', () => ({ getProtectedSensitiveConfig: vi.fn() }));
 
-import { getProtectedSensitiveConfig } from '../../../../../src/domain/settings';
-import { isConfigImportSensitiveChangeAllowed } from '../../../../../src/modules/user/configPreset/sensitive-config-import';
-import { OPENCTI_ADMIN_UUID } from '../../../../../src/schema/general';
-import type { AuthContext, AuthUser } from '../../../../../src/types/user';
+import { getProtectedSensitiveConfig } from '../../../../src/domain/settings';
+import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/user/sensitive-config-import';
+import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
+import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 const context = { source: 'test' } as AuthContext;
 const PROTECTED_ROLE = 'role--protected';

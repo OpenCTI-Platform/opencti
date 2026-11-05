@@ -1,5 +1,5 @@
-import { roleStandardId } from '../../../../src/modules/user/configPreset/role-import';
-import type { BasicStoreEntityRole } from '../../../../src/modules/user/configPreset/role-export';
+import { roleStandardId } from '../../../../src/modules/user/role-import';
+import type { BasicStoreEntityRole } from '../../../../src/modules/user/role-export';
 
 export const administratorRole = {
   id: 'administrator-role-id',

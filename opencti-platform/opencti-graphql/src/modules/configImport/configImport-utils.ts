@@ -30,6 +30,9 @@ export const freeConfigImportName = async (
 // An item can have several reasons (the name of its copy, what the import grants, what it leaves out), joined with this separator.
 // The front splits on it, translates each reason and shows them on one line, separated by ' · '
 export const CONFIG_IMPORT_REASON_SEPARATOR = '\n';
+
+// An item the platform already has as it is: skipped with the code unchanged, which the front shows without a status
+export const CONFIG_IMPORT_UNCHANGED_REASON = 'Already up to date';
 export const joinConfigImportReasons = (reasons: (string | undefined)[]) => {
   const present = reasons.filter((reason): reason is string => !!reason);
   return present.length > 0 ? present.join(CONFIG_IMPORT_REASON_SEPARATOR) : undefined;

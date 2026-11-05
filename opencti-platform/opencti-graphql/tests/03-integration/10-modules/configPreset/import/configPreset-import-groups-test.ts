@@ -15,10 +15,10 @@ import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../../../../src/schema/i
 import { RELATION_HAS_ROLE } from '../../../../../src/schema/internalRelationship';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../../../src/schema/identifier';
 import { roleDelete } from '../../../../../src/modules/user/user-domain';
-import { type BasicStoreEntityGroup, getGroupConfigPresetConfiguration } from '../../../../../src/modules/user/configPreset/group-export';
-import type { BasicStoreEntityRole } from '../../../../../src/modules/user/configPreset/role-export';
-import { groupStandardId } from '../../../../../src/modules/user/configPreset/group-import';
-import { roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
+import { type BasicStoreEntityGroup, exportGroup } from '../../../../../src/modules/user/group-export';
+import type { BasicStoreEntityRole } from '../../../../../src/modules/user/role-export';
+import { groupStandardId } from '../../../../../src/modules/user/group-import';
+import { roleStandardId } from '../../../../../src/modules/user/role-import';
 import type { BasicStoreEntity } from '../../../../../src/types/store';
 
 const UPLOAD_MUTATION = gql`mutation ConfigPresetGroupsUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
@@ -81,7 +81,7 @@ const testEntities = async (type: string) => {
 const configurationOf = async (name: string) => {
   const group = await findGroupById(testContext, ADMIN_USER, groupStandardId(name)) as BasicStoreEntityGroup;
   const roles = await fullEntitiesThroughRelationsToList<BasicStoreEntityRole>(testContext, ADMIN_USER, group.id, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
-  return getGroupConfigPresetConfiguration(testContext, ADMIN_USER, group, roles);
+  return exportGroup(testContext, ADMIN_USER, group, roles);
 };
 
 describe('Config preset import: groups', () => {

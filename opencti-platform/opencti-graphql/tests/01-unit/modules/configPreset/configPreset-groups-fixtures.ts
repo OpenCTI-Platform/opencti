@@ -1,5 +1,5 @@
-import { groupStandardId } from '../../../../src/modules/user/configPreset/group-import';
-import type { BasicStoreEntityGroup } from '../../../../src/modules/user/configPreset/group-export';
+import { groupStandardId } from '../../../../src/modules/user/group-import';
+import type { BasicStoreEntityGroup } from '../../../../src/modules/user/group-export';
 import { administratorRole, analystRole } from './configPreset-roles-fixtures';
 import { ALL_MARKINGS, papRed, tlpAmber } from './configPreset-markings-fixtures';
 

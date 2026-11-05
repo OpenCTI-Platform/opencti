@@ -12,8 +12,8 @@ vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/user/user-domain')>()),
   propagatePasswordValidityChange: vi.fn(),
 }));
-vi.mock('../../../../src/modules/user/configPreset/sensitive-config-import', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/modules/user/configPreset/sensitive-config-import')>()),
+vi.mock('../../../../src/modules/user/sensitive-config-import', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/user/sensitive-config-import')>()),
   isConfigImportSensitiveChangeAllowed: vi.fn(),
 }));
 
@@ -22,8 +22,8 @@ import { findById } from '../../../../src/modules/theme/theme-domain';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { isEnterpriseEdition } from '../../../../src/enterprise-edition/ee';
 import { propagatePasswordValidityChange } from '../../../../src/modules/user/user-domain';
-import { importMessage, importPlatformConfiguration, importWhitemark, importPolicies } from '../../../../src/modules/settings/settings-import';
-import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/user/configPreset/sensitive-config-import';
+import { importMessage, importPlatformConfiguration, importPolicies, importWhitemark } from '../../../../src/modules/settings/settings-import';
+import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/user/sensitive-config-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { CUSTOM_THEME_ID } from '../../../utils/configPresetBundle';

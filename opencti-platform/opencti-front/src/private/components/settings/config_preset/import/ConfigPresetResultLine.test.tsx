@@ -68,6 +68,11 @@ describe('ConfigPresetResultLine', () => {
     expect(screen.getByText(text)).toBeInTheDocument();
   });
 
+  it('translates each reason of an item that has several, and shows them on one line', () => {
+    testRender(<ConfigPresetResultLine label="Group" status="CREATED" reason={'Added as "SOC (1)"\nMarkings not found: PAP:RED'} />);
+    expect(screen.getByText('Added as "SOC (1)" · Markings not found: PAP:RED')).toBeInTheDocument();
+  });
+
   it('says an item the platform has already as it is, without a status that would read as if it was ignored', () => {
     testRender(<ConfigPresetResultLine label="Banner" status="SKIPPED" reason="Already up to date" code="unchanged" />);
     expect(screen.getByText('Banner')).toBeInTheDocument();
@@ -78,11 +83,6 @@ describe('ConfigPresetResultLine', () => {
   it('keeps the status of a skipped item that is not unchanged, whatever its reason says', () => {
     testRender(<ConfigPresetResultLine label="Banner" status="SKIPPED" reason="Already up to date" code="not_overwrite" />);
     expect(screen.getByText('Skipped')).toBeInTheDocument();
-  });
-
-  it('translates each reason of an item that has several, and shows them on one line', () => {
-    testRender(<ConfigPresetResultLine label="Group" status="CREATED" reason={'Added as "SOC (1)"\nMarkings not found: PAP:RED'} />);
-    expect(screen.getByText('Added as "SOC (1)" · Markings not found: PAP:RED')).toBeInTheDocument();
   });
 
   it('shows an unknown status as is, and no reason when there is none', () => {

@@ -36,7 +36,7 @@ import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
 import { administratorRole, analystRole, ROLE_CAPABILITIES } from './configPreset-roles-fixtures';
 import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
 import { ALL_MARKINGS, customMarking, papRed, tlpAmber } from './configPreset-markings-fixtures';
-import { BUILT_IN_MARKING_STANDARD_IDS } from '../../../../src/modules/markingDefinition/configPreset/marking-import';
+import { BUILT_IN_MARKING_STANDARD_IDS } from '../../../../src/modules/markingDefinition/marking-import';
 import { roleCapabilities } from '../../../../src/modules/user/user-domain';
 
 const context = { source: 'test' } as AuthContext;

@@ -1,8 +1,8 @@
 import { RolesOrdering } from '../../../generated/graphql';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { findAllRoles, findRoles } from '../../user/user-domain';
-import { type BasicStoreEntityRole, getRoleConfigPresetConfiguration } from '../../user/configPreset/role-export';
-import { importRole, roleStandardId } from '../../user/configPreset/role-import';
+import { type BasicStoreEntityRole, exportRole } from '../../user/role-export';
+import { importRole, roleStandardId } from '../../user/role-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
 import { configPresetPlanKey, recordConfigPresetTarget } from '../import/configPreset-import-types';
@@ -22,7 +22,7 @@ const toRoleItem = (role: BasicStoreEntityRole): ConfigPresetItemDefinition => (
   id: role.standard_id,
   label: role.name,
   translatable: false,
-  exporter: async (context, user) => getRoleConfigPresetConfiguration(context, user, role),
+  exporter: async (context, user) => exportRole(context, user, role),
 });
 
 const rolesImporter: ConfigPresetImporter = {

@@ -1,21 +1,27 @@
-import type { AuthContext, AuthUser } from '../../../types/user';
-import type { BasicStoreEntity } from '../../../types/store';
-import type { EditInput } from '../../../generated/graphql';
-import { getEntitiesMapFromCache } from '../../../database/cache';
-import { fullEntitiesThroughRelationsToList, storeLoadById } from '../../../database/middleware-loader';
-import { addGroup } from '../../../domain/grant';
-import { findById as findGroupById, groupAddRelation, groupAllowedMarkings, groupDeleteRelation, groupEditField } from '../../../domain/group';
-import { generateStandardId } from '../../../schema/identifier';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../../schema/internalObject';
-import { RELATION_ACCESSES_TO, RELATION_HAS_ROLE } from '../../../schema/internalRelationship';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
-import { ROLE_ADMINISTRATOR, SYSTEM_USER } from '../../../utils/access';
-import { cleanMarkings } from '../../../utils/markingDefinition-utils';
-import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../../configImport/configImport-types';
-import { configImportReasonValue, configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../../configImport/configImport-utils';
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { BasicStoreEntity } from '../../types/store';
+import type { EditInput } from '../../generated/graphql';
+import { getEntitiesMapFromCache } from '../../database/cache';
+import { fullEntitiesThroughRelationsToList, storeLoadById } from '../../database/middleware-loader';
+import { addGroup } from '../../domain/grant';
+import { findById as findGroupById, groupAddRelation, groupAllowedMarkings, groupDeleteRelation, groupEditField } from '../../domain/group';
+import { generateStandardId } from '../../schema/identifier';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../../schema/internalObject';
+import { RELATION_ACCESSES_TO, RELATION_HAS_ROLE } from '../../schema/internalRelationship';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import { ROLE_ADMINISTRATOR, SYSTEM_USER } from '../../utils/access';
+import { cleanMarkings } from '../../utils/markingDefinition-utils';
+import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
+import {
+  CONFIG_IMPORT_UNCHANGED_REASON,
+  configImportReasonValue,
+  configImportValidationReason,
+  freeConfigImportName,
+  joinConfigImportReasons,
+} from '../configImport/configImport-utils';
 import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from './sensitive-config-import';
-import { ENTITY_TYPE_WORKSPACE } from '../../workspace/workspace-types';
-import { findRoleById, roleCapabilities } from '../user-domain';
+import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
+import { findRoleById, roleCapabilities } from './user-domain';
 import type { BasicStoreEntityGroup } from './group-export';
 import type { BasicStoreEntityRole } from './role-export';
 import { isSensitiveRole, REMOVES_SENSITIVE_RIGHTS_REASON, roleStandardId, SENSITIVE_RIGHTS_REASON } from './role-import';
@@ -37,7 +43,7 @@ export interface PlannedMarking {
   x_opencti_order: number;
 }
 
-export type GroupImportCode = 'invalid' | 'role_missing' | 'exists' | 'name_conflict' | 'sensitive_config';
+export type GroupImportCode = 'invalid' | 'role_missing' | 'exists' | 'name_conflict' | 'sensitive_config' | 'unchanged';
 
 export type GroupImportResult = ConfigImportResult<GroupImportConfiguration, GroupImportCode> & {
   group?: BasicStoreEntityGroup;
@@ -210,10 +216,16 @@ const comparableField = (key: string, value: unknown) => {
   return JSON.stringify(GROUP_SET_FIELDS.includes(key) && Array.isArray(field) ? [...field].sort() : field, sortedKeys);
 };
 
-const overwriteGroup = async (context: AuthContext, user: AuthUser, existing: BasicStoreEntityGroup, resolved: ResolvedGroup, current: CurrentGroupRelations) => {
-  const input: EditInput[] = definedFields(resolved.fields)
+const groupEditInput = (existing: BasicStoreEntityGroup, resolved: ResolvedGroup): EditInput[] => {
+  return definedFields(resolved.fields)
     .filter(([key, value]) => comparableField(key, existing[key as keyof BasicStoreEntityGroup]) !== comparableField(key, value))
     .map(([key, value]) => ({ key, value: Array.isArray(value) ? value : [value] }));
+};
+
+const sameIds = (currentIds: string[], ids: string[]) => currentIds.length === ids.length && ids.every((id) => currentIds.includes(id));
+
+const overwriteGroup = async (context: AuthContext, user: AuthUser, existing: BasicStoreEntityGroup, resolved: ResolvedGroup, current: CurrentGroupRelations) => {
+  const input = groupEditInput(existing, resolved);
   if (input.length > 0) {
     await groupEditField(context, user, existing.id, input);
   }
@@ -333,8 +345,7 @@ export const importGroup = async (
     administratorRoleKept ? ADMINISTRATOR_ROLE_KEPT_REASON : undefined,
     (await grantsSensitiveRights(context, user, references, groupRoles, currentIds, plannedRoles)) ? SENSITIVE_RIGHTS_REASON : undefined,
     (await anyGivesSensitiveRights(context, user, removedRoles, plannedRoles)) ? REMOVES_SENSITIVE_RIGHTS_REASON : undefined,
-    resolved.missingMarkings.length > 0 ? `Markings not found: ${configImportReasonValue(resolved.missingMarkings.join(', '))}` : undefined,
-    resolved.missingDashboard ? `Default dashboard not found: ${configImportReasonValue(resolved.missingDashboard)}` : undefined,
+    ...missingReasons(resolved),
     removedRoles.length > 0 ? `Roles removed: ${configImportReasonValue(removedRoles.map(({ name }) => name).join(', '))}` : undefined,
     removedMarkings.length > 0 ? `Markings removed: ${configImportReasonValue(removedMarkings.join(', '))}` : undefined,
     ...assignmentReasons(parsed.data, target),

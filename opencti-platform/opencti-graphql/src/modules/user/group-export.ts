@@ -1,11 +1,11 @@
-import type { AuthContext, AuthUser } from '../../../types/user';
-import type { BasicStoreEntity } from '../../../types/store';
-import { getEntitiesMapFromCache } from '../../../database/cache';
-import { storeLoadById } from '../../../database/middleware-loader';
-import { groupAllowedMarkings } from '../../../domain/group';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
-import { SYSTEM_USER } from '../../../utils/access';
-import { ENTITY_TYPE_WORKSPACE } from '../../workspace/workspace-types';
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { BasicStoreEntity } from '../../types/store';
+import { getEntitiesMapFromCache } from '../../database/cache';
+import { storeLoadById } from '../../database/middleware-loader';
+import { groupAllowedMarkings } from '../../domain/group';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import { SYSTEM_USER } from '../../utils/access';
+import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
 import type { BasicStoreEntityRole } from './role-export';
 import type { GroupImportConfiguration, GroupMarkingReference } from './group-import-schema';
 
@@ -34,7 +34,7 @@ const toMarkingReference = (marking: BasicStoreMarking): GroupMarkingReference =
 
 const byName = <T extends { name: string }>(a: T, b: T) => a.name.localeCompare(b.name);
 
-export const getGroupConfigPresetConfiguration = async (
+export const exportGroup = async (
   context: AuthContext,
   user: AuthUser,
   group: BasicStoreEntityGroup,

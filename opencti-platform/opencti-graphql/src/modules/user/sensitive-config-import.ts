@@ -1,6 +1,6 @@
-import { getProtectedSensitiveConfig } from '../../../domain/settings';
-import type { AuthContext, AuthUser } from '../../../types/user';
-import { isSensitiveChangesAllowed } from '../user-domain';
+import { getProtectedSensitiveConfig } from '../../domain/settings';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { isSensitiveChangesAllowed } from './user-domain';
 
 export type ConfigImportSensitiveType = 'roles' | 'groups' | 'markings' | 'platform_organization';
 

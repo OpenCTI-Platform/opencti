@@ -12,8 +12,8 @@ import { downloadFile } from '../../../../../src/database/raw-file-storage';
 import { fullEntitiesList } from '../../../../../src/database/middleware-loader';
 import { ENTITY_TYPE_ROLE } from '../../../../../src/schema/internalObject';
 import { findRoleById, roleDelete } from '../../../../../src/modules/user/user-domain';
-import { type BasicStoreEntityRole, getRoleConfigPresetConfiguration } from '../../../../../src/modules/user/configPreset/role-export';
-import { importRole, roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
+import { type BasicStoreEntityRole, exportRole } from '../../../../../src/modules/user/role-export';
+import { importRole, roleStandardId } from '../../../../../src/modules/user/role-import';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
 import { BYPASS, ROLE_ADMINISTRATOR } from '../../../../../src/utils/access';
 
@@ -68,7 +68,7 @@ const testRoles = async () => {
 };
 const configurationOf = async (name: string) => {
   const role = await findRoleById(testContext, ADMIN_USER, roleStandardId(name)) as BasicStoreEntityRole;
-  return getRoleConfigPresetConfiguration(testContext, ADMIN_USER, role);
+  return exportRole(testContext, ADMIN_USER, role);
 };
 
 describe('Config preset import: roles', () => {

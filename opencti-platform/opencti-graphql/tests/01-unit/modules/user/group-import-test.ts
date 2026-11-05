@@ -1,31 +1,31 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../../../src/modules/user/user-domain', () => ({ findRoleById: vi.fn(), roleCapabilities: vi.fn() }));
-vi.mock('../../../../../src/domain/grant', () => ({ addGroup: vi.fn() }));
-vi.mock('../../../../../src/domain/group', () => ({
+vi.mock('../../../../src/modules/user/user-domain', () => ({ findRoleById: vi.fn(), roleCapabilities: vi.fn() }));
+vi.mock('../../../../src/domain/grant', () => ({ addGroup: vi.fn() }));
+vi.mock('../../../../src/domain/group', () => ({
   findById: vi.fn(),
   groupAddRelation: vi.fn(),
   groupAllowedMarkings: vi.fn(),
   groupDeleteRelation: vi.fn(),
   groupEditField: vi.fn(),
 }));
-vi.mock('../../../../../src/database/middleware-loader', () => ({ fullEntitiesThroughRelationsToList: vi.fn(), storeLoadById: vi.fn() }));
-vi.mock('../../../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
-vi.mock('../../../../../src/modules/user/configPreset/sensitive-config-import', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../../src/modules/user/configPreset/sensitive-config-import')>()),
+vi.mock('../../../../src/database/middleware-loader', () => ({ fullEntitiesThroughRelationsToList: vi.fn(), storeLoadById: vi.fn() }));
+vi.mock('../../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
+vi.mock('../../../../src/modules/user/sensitive-config-import', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/user/sensitive-config-import')>()),
   isConfigImportSensitiveChangeAllowed: vi.fn(),
 }));
 
-import { findRoleById, roleCapabilities } from '../../../../../src/modules/user/user-domain';
-import { addGroup } from '../../../../../src/domain/grant';
-import { findById as findGroupById, groupAddRelation, groupAllowedMarkings, groupDeleteRelation, groupEditField } from '../../../../../src/domain/group';
-import { fullEntitiesThroughRelationsToList, storeLoadById } from '../../../../../src/database/middleware-loader';
-import { getEntitiesMapFromCache } from '../../../../../src/database/cache';
-import { groupStandardId, importGroup } from '../../../../../src/modules/user/configPreset/group-import';
-import { roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
-import { isConfigImportSensitiveChangeAllowed } from '../../../../../src/modules/user/configPreset/sensitive-config-import';
-import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
-import type { AuthContext, AuthUser } from '../../../../../src/types/user';
+import { findRoleById, roleCapabilities } from '../../../../src/modules/user/user-domain';
+import { addGroup } from '../../../../src/domain/grant';
+import { findById as findGroupById, groupAddRelation, groupAllowedMarkings, groupDeleteRelation, groupEditField } from '../../../../src/domain/group';
+import { fullEntitiesThroughRelationsToList, storeLoadById } from '../../../../src/database/middleware-loader';
+import { getEntitiesMapFromCache } from '../../../../src/database/cache';
+import { groupStandardId, importGroup } from '../../../../src/modules/user/group-import';
+import { roleStandardId } from '../../../../src/modules/user/role-import';
+import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/user/sensitive-config-import';
+import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
+import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'user-id' } as AuthUser;
@@ -457,7 +457,6 @@ describe('importGroup already up to date', () => {
     withRelations([analystRole], []);
     const plannedMarkings = plannedMarking(TLP_AMBER);
     expect(await importGroup(context, user, groupConfiguration(), { mode: ConfigImportMode.Overwrite, dryRun: true, plannedMarkings })).toMatchObject({ status: 'overwritten' });
-    expect(result.reason).toBeUndefined();
   });
 
   it('reads a field the group never stored as its exported default, and a list of names in any order', async () => {

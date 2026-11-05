@@ -1,16 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../../../src/modules/user/configPreset/role-import', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../../src/modules/user/configPreset/role-import')>()),
+vi.mock('../../../../../src/modules/user/role-import', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/modules/user/role-import')>()),
   importRole: vi.fn(),
 }));
-vi.mock('../../../../../src/modules/user/configPreset/group-import', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../../src/modules/user/configPreset/group-import')>()),
+vi.mock('../../../../../src/modules/user/group-import', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/modules/user/group-import')>()),
   importGroup: vi.fn(),
 }));
 
-import { importRole, roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
-import { groupStandardId, importGroup } from '../../../../../src/modules/user/configPreset/group-import';
+import { importRole, roleStandardId } from '../../../../../src/modules/user/role-import';
+import { groupStandardId, importGroup } from '../../../../../src/modules/user/group-import';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import { configPresetTargets, type ConfigPresetBundleItem, type ConfigPresetImportPlan } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';

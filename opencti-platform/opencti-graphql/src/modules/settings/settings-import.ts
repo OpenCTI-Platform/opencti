@@ -7,12 +7,12 @@ import type { BasicStoreEntity } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { CONFIG_IMPORT_UNCHANGED_REASON, configImportReasonValue, configImportValidationReason, joinConfigImportReasons } from '../configImport/configImport-utils';
-import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../user/configPreset/sensitive-config-import';
+import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../user/sensitive-config-import';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { findById as findThemeById } from '../theme/theme-domain';
 import { isPasswordPolicySatisfiable, propagatePasswordValidityChange } from '../user/user-domain';
-import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_WHITEMARK_FIELDS, SETTINGS_POLICIES_FIELDS } from './settings-export';
-import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema, policiesConfigurationSchema } from './settings-import-schema';
+import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_POLICIES_FIELDS, SETTINGS_WHITEMARK_FIELDS } from './settings-export';
+import { messageConfigurationSchemas, platformConfigurationSchema, policiesConfigurationSchema, whitemarkConfigurationSchema } from './settings-import-schema';
 
 export type SettingsImportCode = 'invalid' | 'unknown_message' | 'not_overwrite' | 'nothing_to_import' | 'unchanged' | 'default_theme_missing';
 

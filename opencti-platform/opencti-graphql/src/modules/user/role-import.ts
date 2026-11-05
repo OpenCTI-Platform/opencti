@@ -1,16 +1,22 @@
-import type { AuthContext, AuthUser } from '../../../types/user';
-import type { BasicStoreEntity } from '../../../types/store';
-import type { EditInput } from '../../../generated/graphql';
-import { fullEntitiesList } from '../../../database/middleware-loader';
-import { addRole } from '../../../domain/grant';
-import { generateStandardId } from '../../../schema/identifier';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../../../schema/internalObject';
-import { RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT } from '../../../schema/internalRelationship';
-import { BYPASS, CAPABILITIES_IN_DRAFT_NAMES, ROLE_ADMINISTRATOR } from '../../../utils/access';
-import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../../configImport/configImport-types';
-import { configImportReasonValue, configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../../configImport/configImport-utils';
+import type { AuthContext, AuthUser } from '../../types/user';
+import type { BasicStoreEntity } from '../../types/store';
+import type { EditInput } from '../../generated/graphql';
+import { fullEntitiesList } from '../../database/middleware-loader';
+import { addRole } from '../../domain/grant';
+import { generateStandardId } from '../../schema/identifier';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../../schema/internalObject';
+import { RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT } from '../../schema/internalRelationship';
+import { BYPASS, CAPABILITIES_IN_DRAFT_NAMES, ROLE_ADMINISTRATOR } from '../../utils/access';
+import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
+import {
+  CONFIG_IMPORT_UNCHANGED_REASON,
+  configImportReasonValue,
+  configImportValidationReason,
+  freeConfigImportName,
+  joinConfigImportReasons,
+} from '../configImport/configImport-utils';
 import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from './sensitive-config-import';
-import { findRoleById, roleAddRelation, roleCapabilities, roleDeleteRelation, roleEditField } from '../user-domain';
+import { findRoleById, roleAddRelation, roleCapabilities, roleDeleteRelation, roleEditField } from './user-domain';
 import type { BasicStoreEntityRole } from './role-export';
 import { type RoleImportConfiguration, roleImportSchema } from './role-import-schema';
 
@@ -19,7 +25,7 @@ export interface RoleImportOptions extends ConfigImportOptions {
   reservedIds?: Set<string>;
 }
 
-export type RoleImportCode = 'invalid' | 'unknown_capability' | 'exists' | 'name_conflict' | 'sensitive_config';
+export type RoleImportCode = 'invalid' | 'unknown_capability' | 'exists' | 'name_conflict' | 'sensitive_config' | 'unchanged';
 
 export type RoleImportResult = ConfigImportResult<RoleImportConfiguration, RoleImportCode> & {
   role?: BasicStoreEntityRole;
@@ -111,10 +117,16 @@ const replaceCapabilities = async (context: AuthContext, user: AuthUser, roleId:
 };
 
 // A value that is null or absent is left untouched, the capabilities are always replaced
-const overwriteRole = async (context: AuthContext, user: AuthUser, existing: BasicStoreEntityRole, configuration: RoleImportConfiguration) => {
-  const input: EditInput[] = (['description', 'can_manage_sensitive_config'] as const)
-    .filter((key) => configuration[key] !== null && configuration[key] !== undefined && configuration[key] !== existing[key])
+const roleEditInput = (existing: BasicStoreEntityRole, configuration: RoleImportConfiguration): EditInput[] => {
+  return (['description', 'can_manage_sensitive_config'] as const)
+    .filter((key) => configuration[key] !== null && configuration[key] !== undefined && configuration[key] !== (existing[key] ?? (key === 'description' ? '' : false)))
     .map((key) => ({ key, value: [configuration[key]] }));
+};
+
+const sameNames = (current: string[], names: string[]) => current.length === names.length && names.every((name) => current.includes(name));
+
+const overwriteRole = async (context: AuthContext, user: AuthUser, existing: BasicStoreEntityRole, configuration: RoleImportConfiguration) => {
+  const input = roleEditInput(existing, configuration);
   if (input.length > 0) {
     await roleEditField(context, user, existing.id, input);
   }
@@ -169,14 +181,14 @@ export const importRole = async (
     removed.length > 0 ? `Capabilities removed: ${configImportReasonValue(removed.join(', '))}` : undefined,
     removedInDraft.length > 0 ? `Capabilities in draft removed: ${configImportReasonValue(removedInDraft.join(', '))}` : undefined,
   ]);
-  const result: RoleImportResult = {
-    status: target ? 'overwritten' : 'created',
-    exists: !!existing,
-    configuration: parsed.data,
-    reason,
-    targetId,
-    grantsSensitiveRights: configurationGrantsSensitiveRights(role, target),
-  };
+  const identity = { targetId, grantsSensitiveRights: configurationGrantsSensitiveRights(role, target) };
+  const unchanged = !!current && roleEditInput(current.role, role).length === 0
+    && sameNames(current.capabilities, role.capabilities) && sameNames(current.inDraft, role.capabilities_in_draft);
+  if (unchanged) {
+    const upToDate = joinConfigImportReasons([CONFIG_IMPORT_UNCHANGED_REASON, bypassKept ? BYPASS_KEPT_REASON : undefined]);
+    return { status: 'skipped', code: 'unchanged', exists: true, configuration: parsed.data, reason: upToDate, ...identity };
+  }
+  const result: RoleImportResult = { status: target ? 'overwritten' : 'created', exists: !!existing, configuration: parsed.data, reason, ...identity };
   if (dryRun) {
     reservedIds?.add(targetId);
     return result;

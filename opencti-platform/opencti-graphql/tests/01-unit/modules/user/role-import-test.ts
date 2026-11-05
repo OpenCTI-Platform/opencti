@@ -1,27 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../../../src/modules/user/user-domain', () => ({
+vi.mock('../../../../src/modules/user/user-domain', () => ({
   findRoleById: vi.fn(),
   roleAddRelation: vi.fn(),
   roleCapabilities: vi.fn(),
   roleDeleteRelation: vi.fn(),
   roleEditField: vi.fn(),
 }));
-vi.mock('../../../../../src/domain/grant', () => ({ addRole: vi.fn() }));
-vi.mock('../../../../../src/database/middleware-loader', () => ({ fullEntitiesList: vi.fn() }));
-vi.mock('../../../../../src/modules/user/configPreset/sensitive-config-import', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../../src/modules/user/configPreset/sensitive-config-import')>()),
+vi.mock('../../../../src/domain/grant', () => ({ addRole: vi.fn() }));
+vi.mock('../../../../src/database/middleware-loader', () => ({ fullEntitiesList: vi.fn() }));
+vi.mock('../../../../src/modules/user/sensitive-config-import', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/user/sensitive-config-import')>()),
   isConfigImportSensitiveChangeAllowed: vi.fn(),
 }));
 
-import { findRoleById, roleAddRelation, roleCapabilities, roleDeleteRelation, roleEditField } from '../../../../../src/modules/user/user-domain';
-import { addRole } from '../../../../../src/domain/grant';
-import { fullEntitiesList } from '../../../../../src/database/middleware-loader';
-import { importRole, roleStandardId } from '../../../../../src/modules/user/configPreset/role-import';
-import { isConfigImportSensitiveChangeAllowed } from '../../../../../src/modules/user/configPreset/sensitive-config-import';
-import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
-import { generateStandardId } from '../../../../../src/schema/identifier';
-import type { AuthContext, AuthUser } from '../../../../../src/types/user';
+import { findRoleById, roleAddRelation, roleCapabilities, roleDeleteRelation, roleEditField } from '../../../../src/modules/user/user-domain';
+import { addRole } from '../../../../src/domain/grant';
+import { fullEntitiesList } from '../../../../src/database/middleware-loader';
+import { importRole, roleStandardId } from '../../../../src/modules/user/role-import';
+import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/user/sensitive-config-import';
+import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
+import { generateStandardId } from '../../../../src/schema/identifier';
+import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'user-id' } as AuthUser;
@@ -227,7 +227,8 @@ describe('importRole sensitive rights', () => {
     withRoles([administrator], { [administrator.id]: { 'has-capability': ['BYPASS'], 'has-capability-in-draft': [] } });
     const configuration = roleConfiguration({ name: 'Administrator', capabilities: ['BYPASS'], capabilities_in_draft: [], can_manage_sensitive_config: true });
     const result = await importRole(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
-    expect(result).toMatchObject({ status: 'overwritten', reason: undefined });
+    // Already up to date, and still under its own standard id for the groups of the same import
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date', targetId: administrator.standard_id, grantsSensitiveRights: true });
   });
 });
 
@@ -285,6 +286,6 @@ describe('importRole removes sensitive rights', () => {
   it('says nothing when the role keeps them, a management of sensitive configuration left untouched included', async () => {
     withRoles([admins], { [admins.id]: { 'has-capability': ['BYPASS'], 'has-capability-in-draft': [] } });
     const configuration = roleConfiguration({ name: 'Platform admins', capabilities: ['BYPASS'], capabilities_in_draft: [], can_manage_sensitive_config: null });
-    expect((await importRole(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true })).reason).toBeUndefined();
+    expect((await importRole(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true })).reason).toEqual('Already up to date');
   });
 });
