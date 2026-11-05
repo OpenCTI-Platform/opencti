@@ -6,6 +6,7 @@ import { ALL_ROLES } from './configPreset-roles-fixtures';
 import { ALL_GROUPS, GROUP_ALLOWED_MARKINGS, GROUP_ROLE_RELATIONS } from './configPreset-groups-fixtures';
 import { ALL_MARKINGS } from './configPreset-markings-fixtures';
 import { ALL_LABELS } from './configPreset-labels-fixtures';
+import { ALL_KILL_CHAIN_PHASES } from './configPreset-killChainPhases-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -19,19 +20,43 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   Group: ALL_GROUPS,
   'Marking-Definition': ALL_MARKINGS,
   Label: ALL_LABELS,
+  'Kill-Chain-Phase': ALL_KILL_CHAIN_PHASES,
 };
 const labelOf = (entity: { name?: string; definition?: string; value?: string }) => entity.name ?? entity.definition ?? entity.value ?? '';
 
-// The eq / not_eq filters and the search the families send, applied like the engine does, sorted by name
+// The types the engine sorts by other fields than their name, and searches in other fields
+const FIXTURE_LISTINGS: Record<string, { sortFields: string[]; searchFields: string[] }> = {
+  'Kill-Chain-Phase': { sortFields: ['kill_chain_name', 'x_opencti_order'], searchFields: ['kill_chain_name', 'phase_name'] },
+};
+const read = (entity: object, field: string) => (entity as Record<string, unknown>)[field];
+const compare = (a: unknown, b: unknown) => (typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b)));
+const sortOf = (type: string | undefined, entity: { name?: string; definition?: string; value?: string }) => {
+  const listing = type ? FIXTURE_LISTINGS[type] : undefined;
+  return listing ? read(entity, listing.sortFields[0]) : labelOf(entity);
+};
+
+// The eq / not_eq filters and the search the families send, applied like the engine does, sorted by name or by the fields of the type
 const listLikeTheEngine = (type: string | undefined, args: ListingArgs = {}) => {
   const entities = type ? FIXTURE_ENTITIES[type] : undefined;
+  const listing = type ? FIXTURE_LISTINGS[type] : undefined;
+  const matchesSearch = (entity: { name?: string; definition?: string; value?: string }, search: string) => {
+    if (!listing) {
+      return labelOf(entity).toLowerCase().includes(search);
+    }
+    return listing.searchFields.some((field) => {
+      const value = read(entity, field);
+      return typeof value === 'string' && value.toLowerCase().includes(search);
+    });
+  };
   return entities
     ?.filter((entity) => (args.filters?.filters ?? []).every(({ key, values, operator }) => {
       const matches = values.map(String).includes(String((entity as unknown as Record<string, unknown>)[key[0]]));
       return operator === 'not_eq' ? !matches : matches;
     }))
-    .filter((entity) => !args.search || labelOf(entity).toLowerCase().includes(args.search.toLowerCase()))
-    .sort((a, b) => labelOf(a).localeCompare(labelOf(b)));
+    .filter((entity) => !args.search || matchesSearch(entity, args.search.toLowerCase()))
+    .sort((a, b) => (listing
+      ? listing.sortFields.reduce((result, field) => result || compare(read(a, field), read(b, field)), 0)
+      : labelOf(a).localeCompare(labelOf(b))));
 };
 
 // For a test that mocks fullEntitiesList, pageEntitiesConnection and storeLoadById of the middleware loader:
@@ -43,7 +68,7 @@ export const mockConfigPresetLoaders = (otherEntities: unknown[] = []) => {
   vi.mocked(pageEntitiesConnection).mockImplementation(async (_ctx, _user, types, args) => {
     const first = args?.first ?? 500;
     const entities = listLikeTheEngine(types?.[0], args as never) ?? [];
-    return buildPagination(first, args?.after, entities.slice(0, first).map((node) => ({ node, sort: [labelOf(node)] })), entities.length) as never;
+    return buildPagination(first, args?.after, entities.slice(0, first).map((node) => ({ node, sort: [sortOf(types?.[0], node)] })), entities.length) as never;
   });
   vi.mocked(storeLoadById).mockImplementation(async (_ctx, _user, id) => {
     return Object.values(FIXTURE_ENTITIES).flat().find((entity) => entity.id === id) as never;

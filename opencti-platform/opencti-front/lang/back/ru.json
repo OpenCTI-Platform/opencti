@@ -580,6 +580,8 @@
   "Kill chain name": "Название цепи убийств",
   "Kill chain order": "Порядок цепочки атак",
   "Kill chain phase": "Фаза цепочки убийств",
+  "Kill chain phases": "Фазы Kill chain",
+  "Kill chains, their phases and their order": "Kill chain, их фазы и порядок",
   "Label": "Этикетка",
   "Label IDs": "Идентификаторы этикеток",
   "Label of related entity": "Метка связанного предприятия",

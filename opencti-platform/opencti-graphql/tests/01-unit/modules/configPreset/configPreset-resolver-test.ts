@@ -51,6 +51,7 @@ import { administratorRole, analystRole } from './configPreset-roles-fixtures';
 import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
 import { customMarking, papRed } from './configPreset-markings-fixtures';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
+import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './configPreset-killChainPhases-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -90,6 +91,13 @@ const themeItem = (theme: { standard_id: string; name: string }, isDefault: bool
   isDefault,
 });
 const labelItem = (label: { standard_id: string; value: string }) => ({ key: label.standard_id, label: label.value, translatable: false, dependsOn: [], isDefault: false });
+const phaseItem = (phase: { standard_id: string; kill_chain_name: string; phase_name: string }) => ({
+  key: phase.standard_id,
+  label: `${phase.kill_chain_name}: ${phase.phase_name}`,
+  translatable: false,
+  dependsOn: [],
+  isDefault: false,
+});
 const onePage = (globalCount: number) => ({ hasNextPage: false, globalCount });
 
 describe('Config preset exportable types query', () => {
@@ -198,6 +206,15 @@ describe('Config preset exportable types query', () => {
         items: [labelItem(otherLabel), labelItem(customLabel)],
         itemsPageInfo: onePage(2),
       },
+      {
+        key: 'killChainPhases',
+        label: 'Kill chain phases',
+        description: 'Kill chains, their phases and their order',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // By kill chain, then by order in the kill chain
+        items: [phaseItem(disarmKillChainPhase), phaseItem(otherKillChainPhase), phaseItem(killChainPhase)],
+        itemsPageInfo: onePage(3),
+      },
     ]);
   });
 
@@ -238,7 +255,7 @@ describe('Config preset exportable types query', () => {
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
-      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false],
+      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['killChainPhases', false],
     ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
@@ -281,6 +298,7 @@ describe('Config preset exportable types query', () => {
       ['groups', 'securityAccess'],
       ['policies', 'securityAccess'],
       ['labels', 'taxonomy'],
+      ['killChainPhases', 'taxonomy'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
