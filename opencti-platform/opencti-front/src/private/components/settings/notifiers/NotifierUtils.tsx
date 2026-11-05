@@ -5,7 +5,6 @@ import { InfoOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 
-export const NOTIFIER_CONNECTOR_EMAIL_ID = '6f5e30a8-56d5-4ff1-8b8d-f90243f771dc';
 export const NOTIFIER_TITLE_VARIABLES_DOC = 'https://docs.opencti.io/latest/administration/tips-to-create-a-custom-notifier/#title-variables';
 
 export const uiSchema: UiSchema = {
@@ -52,9 +51,9 @@ export const NotifierVariablesHelp = () => {
   );
 };
 
-// The help sits above the title input, which neither ui:help nor ui:description can do: the MUI theme renders both below the field.
+// The help sits above the field, which neither ui:help nor ui:description can do: the MUI theme renders both below it.
 // Defined once at module level: a component built on each render would remount the input and lose its focus
-const TitleWithVariablesHelpFieldTemplate = (props: FieldTemplateProps) => {
+const NotifierVariablesHelpFieldTemplate = (props: FieldTemplateProps) => {
   const { FieldTemplate } = props.registry.templates;
   return (
     <>
@@ -64,19 +63,11 @@ const TitleWithVariablesHelpFieldTemplate = (props: FieldTemplateProps) => {
   );
 };
 
-export const buildNotifierUiSchema = (
-  connectorUiSchema: string | null | undefined,
-  connectorId: string | undefined,
-): UiSchema => {
-  const schema: UiSchema = {
-    ...JSON.parse(connectorUiSchema ?? '{}'),
-    ...uiSchema,
-  };
-  if (connectorId === NOTIFIER_CONNECTOR_EMAIL_ID) {
-    schema.title = {
-      ...schema.title,
-      'ui:FieldTemplate': TitleWithVariablesHelpFieldTemplate,
-    };
-  }
-  return schema;
-};
+// Templates a connector ui schema can name, as 'ui:FieldTemplate': '<name>' (the Platform mailer does it on its title).
+// Registered on the notifier forms
+export const notifierFormTemplates = { NotifierVariablesHelpFieldTemplate };
+
+export const buildNotifierUiSchema = (connectorUiSchema: string | null | undefined): UiSchema => ({
+  ...JSON.parse(connectorUiSchema ?? '{}'),
+  ...uiSchema,
+});
