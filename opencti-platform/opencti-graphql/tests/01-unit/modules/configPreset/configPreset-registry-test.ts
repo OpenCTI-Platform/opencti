@@ -40,6 +40,7 @@ import { BUILT_IN_MARKING_STANDARD_IDS } from '../../../../src/modules/markingDe
 import { roleCapabilities } from '../../../../src/modules/user/user-domain';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './configPreset-killChainPhases-fixtures';
+import { customVocabulary, modifiedVocabulary } from './configPreset-vocabularies-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -147,6 +148,14 @@ describe('Config preset registry', () => {
         group: 'taxonomy',
         itemIds: [disarmKillChainPhase.standard_id, otherKillChainPhase.standard_id, killChainPhase.standard_id],
       },
+      // All the categories, by category
+      {
+        id: 'vocabularies',
+        label: 'Vocabularies',
+        description: 'Vocabulary categories and their entries',
+        group: 'taxonomy',
+        itemIds: ['case_severity_ov', 'incident_type_ov', 'integrity_level_ov', 'report_types_ov'],
+      },
     ]);
   });
 
@@ -154,7 +163,7 @@ describe('Config preset registry', () => {
     expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark']);
   });
 
-  it('translates the static labels only, never a theme name or a label value or a phase name', async () => {
+  it('translates the static labels only, never a theme name or a label value, a phase name or a vocabulary entry', async () => {
     const items = await resolveAllItems();
     expect(items.map((item) => [item.label, item.translatable])).toEqual([
       ['Platform configuration', true],
@@ -178,10 +187,14 @@ describe('Config preset registry', () => {
       ['disarm: plan-strategy', false],
       ['mitre-attack: initial-access', false],
       ['mitre-attack: execution', false],
+      ['case_severity_ov', false],
+      ['incident_type_ov', false],
+      ['integrity_level_ov', false],
+      ['report_types_ov', false],
     ]);
   });
 
-  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label or a phase by its standard id', async () => {
+  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label, a phase by its standard id, a vocabulary category by its name', async () => {
     const paths = (await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
       const items = await family.resolveItems(context, user, null, []);
       return items.map((item) => configPresetItemFilePath(family, item));
@@ -208,6 +221,10 @@ describe('Config preset registry', () => {
       `taxonomy/kill_chain_phases/${disarmKillChainPhase.standard_id}.json`,
       `taxonomy/kill_chain_phases/${otherKillChainPhase.standard_id}.json`,
       `taxonomy/kill_chain_phases/${killChainPhase.standard_id}.json`,
+      'taxonomy/vocabularies/case_severity_ov.json',
+      'taxonomy/vocabularies/incident_type_ov.json',
+      'taxonomy/vocabularies/integrity_level_ov.json',
+      'taxonomy/vocabularies/report_types_ov.json',
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -462,6 +479,81 @@ describe('Config preset registry', () => {
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('vocabularies', () => {
+    const vocabularies = findFamily('vocabularies');
+    const pageIds = async (args: Parameters<typeof vocabularies.listItems>[2]) => (await vocabularies.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports a category with all its entries, in the vocabulary import format only', async () => {
+      const file = await exportConfigPresetItem(context, user, vocabularies, await findItem('vocabularies', 'report_types_ov'));
+      // The entry of the platform nobody modified (threat-report) is in it, the category of the entries is the one of the file
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'taxonomy.vocabularies',
+        id: 'report_types_ov',
+        configuration: {
+          category: 'report_types_ov',
+          entries: [
+            { name: 'threat-report', description: '', aliases: [], order: 0 },
+            { name: 'fimi-report', description: 'Foreign information manipulation', aliases: ['fimi'], order: 5 },
+          ],
+        },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|builtIn|custom-vocabulary-id|vocabulary--/);
+    });
+
+    it('exports an entry of the platform that was modified, with its values', async () => {
+      const [category] = await vocabularies.resolveItems(context, user, ['integrity_level_ov'], []);
+      expect(await category.exporter(context, user)).toEqual({
+        category: 'integrity_level_ov',
+        entries: [{ name: 'high', description: 'Our own description of a high integrity', aliases: ['elevated'], order: 3 }],
+      });
+    });
+
+    it('exports an empty description, no aliases and an order of 0, which are values, and leaves a missing one out', async () => {
+      const [category] = await vocabularies.resolveItems(context, user, ['case_severity_ov'], []);
+      expect(await category.exporter(context, user)).toEqual({ category: 'case_severity_ov', entries: [{ name: 'sev-x', description: '', aliases: [], order: 0 }] });
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ ...customVocabulary, description: null, order: undefined }] as never);
+      const [missing] = await vocabularies.resolveItems(context, user, ['report_types_ov'], []);
+      expect(await missing.exporter(context, user)).toEqual({ category: 'report_types_ov', entries: [{ name: 'fimi-report', aliases: ['fimi'] }] });
+    });
+
+    it('lists all the categories, by name, and counts them', async () => {
+      const page = await vocabularies.listItems(context, user, { first: 2 });
+      expect(fullEntitiesList).toHaveBeenCalledWith(context, user, ['Vocabulary'], { orderBy: ['category', 'order', 'name'], orderMode: 'asc' });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([
+        ['case_severity_ov', 'case_severity_ov', false],
+        ['incident_type_ov', 'incident_type_ov', false],
+      ]);
+      // The category of the entry nobody modified (incident_type_ov) is listed and counted like the others
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: 'incident_type_ov', globalCount: 4 });
+      const next = await vocabularies.listItems(context, user, { first: 2, after: page.pageInfo.endCursor });
+      expect(next.edges.map(({ node }) => node.id)).toEqual(['integrity_level_ov', 'report_types_ov']);
+      expect(next.pageInfo).toMatchObject({ hasNextPage: false, globalCount: 4 });
+    });
+
+    it('lists a category once, whatever its number of entries', async () => {
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce([modifiedVocabulary, customVocabulary, { ...customVocabulary, name: 'second-custom' }] as never);
+      expect(await pageIds({})).toEqual(['integrity_level_ov', 'report_types_ov']);
+    });
+
+    it('applies search, ids and excluded ids to the categories', async () => {
+      expect(await pageIds({ search: 'REPORT' })).toEqual(['report_types_ov']);
+      expect(await pageIds({ search: 'integrity' })).toEqual(['integrity_level_ov']);
+      // A category without entry is not an item, even when it is asked for
+      expect(await pageIds({ ids: ['incident_type_ov', 'report_types_ov', 'opinion_ov'] })).toEqual(['incident_type_ov', 'report_types_ov']);
+      expect(await pageIds({ excludedIds: ['report_types_ov', 'case_severity_ov'] })).toEqual(['incident_type_ov', 'integrity_level_ov']);
+      expect(await pageIds({ ids: [] })).toEqual([]);
+    });
+
+    it('resolves the categories to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await vocabularies.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual(['case_severity_ov', 'incident_type_ov', 'integrity_level_ov', 'report_types_ov']);
+      expect(await ids(null, ['integrity_level_ov'])).toEqual(['case_severity_ov', 'incident_type_ov', 'report_types_ov']);
+      expect(await ids(['report_types_ov', 'incident_type_ov', 'opinion_ov'], [])).toEqual(['incident_type_ov', 'report_types_ov']);
+      expect(await ids([], [])).toEqual([]);
     });
   });
 

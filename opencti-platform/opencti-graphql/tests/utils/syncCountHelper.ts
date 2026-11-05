@@ -72,7 +72,9 @@ testCreatedCounter.task = 1;
 testCreatedCounter['threat-actor'] = 33;
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
-testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
+// Counts for:
+// - 3 created and deleted by vocabulary-import-test
+testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 3;
 testCreatedCounter.vulnerability = 11;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -120,7 +122,9 @@ testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
 testUpdatedCounter['threat-actor'] = 18;
-testUpdatedCounter.vocabulary = 3;
+// Counts for:
+// - 9 updated by vocabulary-import-test
+testUpdatedCounter.vocabulary = 3 + 9;
 testUpdatedCounter.vulnerability = 5;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
@@ -192,6 +196,9 @@ testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
 testDeletedCounter['threat-actor'] = 20;
 testDeletedCounter.tool = 5;
+// Counts for:
+// - 3 deleted by vocabulary-import-test
+testDeletedCounter.vocabulary = 3;
 testDeletedCounter.vulnerability = 5;
 testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;

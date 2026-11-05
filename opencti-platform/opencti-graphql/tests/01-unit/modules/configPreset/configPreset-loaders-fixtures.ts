@@ -7,6 +7,7 @@ import { ALL_GROUPS, GROUP_ALLOWED_MARKINGS, GROUP_ROLE_RELATIONS } from './conf
 import { ALL_MARKINGS } from './configPreset-markings-fixtures';
 import { ALL_LABELS } from './configPreset-labels-fixtures';
 import { ALL_KILL_CHAIN_PHASES } from './configPreset-killChainPhases-fixtures';
+import { ALL_VOCABULARIES } from './configPreset-vocabularies-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -21,12 +22,14 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   'Marking-Definition': ALL_MARKINGS,
   Label: ALL_LABELS,
   'Kill-Chain-Phase': ALL_KILL_CHAIN_PHASES,
+  Vocabulary: ALL_VOCABULARIES,
 };
 const labelOf = (entity: { name?: string; definition?: string; value?: string }) => entity.name ?? entity.definition ?? entity.value ?? '';
 
 // The types the engine sorts by other fields than their name, and searches in other fields
 const FIXTURE_LISTINGS: Record<string, { sortFields: string[]; searchFields: string[] }> = {
   'Kill-Chain-Phase': { sortFields: ['kill_chain_name', 'x_opencti_order'], searchFields: ['kill_chain_name', 'phase_name'] },
+  Vocabulary: { sortFields: ['category', 'order', 'name'], searchFields: ['category', 'name'] },
 };
 const read = (entity: object, field: string) => (entity as Record<string, unknown>)[field];
 const compare = (a: unknown, b: unknown) => (typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b)));

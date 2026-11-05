@@ -98,6 +98,13 @@ const phaseItem = (phase: { standard_id: string; kill_chain_name: string; phase_
   dependsOn: [],
   isDefault: false,
 });
+const vocabularyItem = (category: string) => ({
+  key: category,
+  label: category,
+  translatable: false,
+  dependsOn: [],
+  isDefault: false,
+});
 const onePage = (globalCount: number) => ({ hasNextPage: false, globalCount });
 
 describe('Config preset exportable types query', () => {
@@ -215,6 +222,15 @@ describe('Config preset exportable types query', () => {
         items: [phaseItem(disarmKillChainPhase), phaseItem(otherKillChainPhase), phaseItem(killChainPhase)],
         itemsPageInfo: onePage(3),
       },
+      {
+        key: 'vocabularies',
+        label: 'Vocabularies',
+        description: 'Vocabulary categories and their entries',
+        group: { key: 'taxonomy', label: 'Taxonomy' },
+        // All the categories, by category
+        items: [vocabularyItem('case_severity_ov'), vocabularyItem('incident_type_ov'), vocabularyItem('integrity_level_ov'), vocabularyItem('report_types_ov')],
+        itemsPageInfo: onePage(4),
+      },
     ]);
   });
 
@@ -256,6 +272,7 @@ describe('Config preset exportable types query', () => {
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['killChainPhases', false],
+      ['vocabularies', false],
     ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
@@ -299,6 +316,7 @@ describe('Config preset exportable types query', () => {
       ['policies', 'securityAccess'],
       ['labels', 'taxonomy'],
       ['killChainPhases', 'taxonomy'],
+      ['vocabularies', 'taxonomy'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
