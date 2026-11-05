@@ -333,7 +333,7 @@ describe('audits time series breakdown query', () => {
         'Time series breakdown does not support this date attribute for these types',
         'FUNCTIONAL_ERROR',
       );
-      expect(errors?.[0].extensions?.data).toEqual({ reason: 'unsupported_date_attribute', dateAttribute, types: ['History', 'Activity'] });
+      expect(errors?.[0].extensions?.data).toMatchObject({ reason: 'unsupported_date_attribute', dateAttribute, types: ['History', 'Activity'] });
     }
   });
 

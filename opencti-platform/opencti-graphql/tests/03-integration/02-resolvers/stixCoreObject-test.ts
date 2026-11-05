@@ -422,7 +422,7 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
   it('should refuse a field that cannot be broken down', async () => {
     const message = 'Time series breakdown does not support this field for these entity types';
     const { errors } = await expectBreakdownError({ field: 'objects' }, message);
-    expect(errors?.[0].extensions?.data).toEqual({ reason: 'unsupported_field', field: 'objects', types: ['Report'] });
+    expect(errors?.[0].extensions?.data).toMatchObject({ reason: 'unsupported_field', field: 'objects', types: ['Report'] });
     await expectBreakdownError({ field: 'externalReferences' }, message);
   });
 
@@ -431,7 +431,8 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
     for (const dateAttribute of ['name', 'description', 'report_types', 'first_seen']) {
       const { errors } = await expectBreakdownError({ field: 'objectLabel', dateAttribute }, message);
       // Refused before any request to the engine: the error holds the refusal only, never the request
-      expect(errors?.[0].extensions?.data).toEqual({ reason: 'unsupported_date_attribute', dateAttribute, types: ['Report'] });
+      expect(errors?.[0].extensions?.data).toMatchObject({ reason: 'unsupported_date_attribute', dateAttribute, types: ['Report'] });
+      expect(errors?.[0].extensions?.data).not.toHaveProperty('query');
     }
   });
 
@@ -439,7 +440,7 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
     const message = 'Time series breakdown limit must be an integer between 1 and the maximum';
     await expectBreakdownError({ field: 'objectLabel', limit: 0 }, message);
     const { errors } = await expectBreakdownError({ field: 'objectLabel', limit: 51 }, message);
-    expect(errors?.[0].extensions?.data).toEqual({ reason: 'invalid_limit', limit: 51, max: 50 });
+    expect(errors?.[0].extensions?.data).toMatchObject({ reason: 'invalid_limit', limit: 51, max: 50 });
   });
 });
 

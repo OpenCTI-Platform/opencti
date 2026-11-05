@@ -1030,7 +1030,7 @@ describe('timeSeriesBreakdownHistory', () => {
     expect(result.dates).toHaveLength(3);
   });
 
-  it('should keep the raw values of the event fields, without entity, ranked on their number of events', async () => {
+  it('should keep the raw values of the event fields, without entity, ranked on their weighted total', async () => {
     vi.mocked(engine.elAggregationRanking).mockResolvedValue(ranking([bucket('update', 2), bucket('create', 6)]));
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf([['create', [{ date: '2026-01-02', value: 6 }]]]));
 
@@ -1279,7 +1279,7 @@ describe('timeSeriesBreakdownRelations', () => {
 
     expect(engine.elFindByIds).not.toHaveBeenCalled();
     expect(engine.elConnectionTypesRanking).not.toHaveBeenCalled();
-    // Ranked on their number of relationships, like the fields of the entities
+    // Ranked on their weighted total, like the fields of the entities
     expect(vi.mocked(engine.elAggregationRanking).mock.calls[0][3]).toMatchObject({ field: 'relationship_type', rankingOrder: 'desc' });
     expect(result.series.map((serie) => [serie.label, serie.total, serie.entity])).toEqual([['uses', 5, null], ['targets', 3, null]]);
     expect(result.series.map((serie) => serie.values)).toEqual([[0, 5, 0], [1, 0, 2]]);
