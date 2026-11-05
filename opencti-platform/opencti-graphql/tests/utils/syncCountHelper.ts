@@ -61,7 +61,8 @@ testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 // Includes 5 created and deleted by stixRelationship-test, and 1 created by publicDashboard-test, deleted with its target (time series breakdown)
 testCreatedCounter.relationship = 153;
-testCreatedCounter.report = 68; // includes 8 created and deleted by stixCoreObject-test (time series breakdown), and 1 by audit-test (audits breakdown)
+// Includes 8 created and deleted by stixCoreObject-test and 3 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
+testCreatedCounter.report = 71;
 testCreatedCounter.sighting = 5;
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
@@ -170,7 +171,8 @@ testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
 testDeletedCounter.relationship = 10; // includes 5 created and deleted by stixRelationship-test (time series breakdown)
-testDeletedCounter.report = 59; // includes 8 created and deleted by stixCoreObject-test (time series breakdown), and 1 by audit-test (audits breakdown)
+// Includes 8 created and deleted by stixCoreObject-test and 3 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
+testDeletedCounter.report = 62;
 testDeletedCounter.sighting = 2;
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
