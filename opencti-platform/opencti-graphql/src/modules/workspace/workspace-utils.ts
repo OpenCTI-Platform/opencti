@@ -8,6 +8,7 @@ import { isInternalId, isStixId } from '../../schema/schemaUtils';
 import { idsValuesRemap } from '../../database/stix-2-1-converter';
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { pushAll } from '../../utils/arrayUtil';
+import { DASHBOARD_VARIABLE_ID_TYPES, type StoreDashboardVariable } from './workspace-variables-types';
 
 // workspace ids converter_2_1
 // Export => Dashboard filter ids must be converted to standard id
@@ -78,10 +79,9 @@ const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: Basi
         });
         regardingOfValues.push(dynamicSubfilter);
       }
-      // eslint-disable-next-line no-param-reassign
+
       f.values = regardingOfValues;
     } else {
-      // eslint-disable-next-line no-param-reassign
       f.values = filterValuesRemap(f, resolvedMap, from);
     }
   });
@@ -135,5 +135,47 @@ export const convertWidgetsIds = async (
         replaceFiltersIds(selection.dynamicTo as FilterGroup, idsMap, from);
       }
     });
+  });
+};
+
+/**
+ * Converts the entity ids held by dashboard variables between internal and STIX formats, like convertWidgetsIds.
+ * Only the variables whose type references entities are touched: a text value shaped like an id stays as is.
+ * The default and the selection go through the same map, so a default still belongs to its selection afterwards.
+ */
+export const convertDashboardVariablesIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  variables: StoreDashboardVariable[],
+  from: 'internal' | 'stix',
+) => {
+  const idVariables = variables.filter((variable) => DASHBOARD_VARIABLE_ID_TYPES.has(variable.type));
+  // First iteration: resolve all the ids to translate
+  const resolvingIds: string[] = [];
+  const isConvertible = (value: string) => (from === 'internal' ? isInternalId(value) : isStixId(value));
+  idVariables.forEach((variable) => {
+    const { defaultValue, restriction } = variable;
+    if (defaultValue && isConvertible(defaultValue)) resolvingIds.push(defaultValue);
+    if (restriction.mode === 'selection') pushAll(resolvingIds, restriction.values.filter(isConvertible));
+    if (restriction.mode === 'filters' && isFilterGroupNotEmpty(restriction.filters)) {
+      pushAll(resolvingIds, extractFiltersIds(restriction.filters, from));
+    }
+  });
+  if (resolvingIds.length === 0) return;
+  // Second iteration: replace the ids
+  const resolveOpts = { baseData: true, toMap: true, mapWithAllIds: true };
+  const resolvedMap = await internalFindByIds(context, user, R.uniq(resolvingIds), resolveOpts);
+  const idsMap = resolvedMap as unknown as { [k: string]: BasicStoreObject };
+  idVariables.forEach((variable) => {
+    const { restriction } = variable;
+    if (variable.defaultValue) {
+      [variable.defaultValue] = idsValuesRemap([variable.defaultValue], idsMap, from);
+    }
+    if (restriction.mode === 'selection') {
+      restriction.values = idsValuesRemap(restriction.values, idsMap, from);
+    }
+    if (restriction.mode === 'filters' && isFilterGroupNotEmpty(restriction.filters)) {
+      replaceFiltersIds(restriction.filters, idsMap, from);
+    }
   });
 };

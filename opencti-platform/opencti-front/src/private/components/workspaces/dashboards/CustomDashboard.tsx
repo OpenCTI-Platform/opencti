@@ -11,6 +11,7 @@ import DashboardContent from '../../../../components/dashboard/DashboardContent'
 import useDashboard from '../../../../components/dashboard/useDashboard';
 import useDashboardRefresh from '../../../../components/dashboard/useDashboardRefresh';
 import { getDashboardExportHandler } from '../../../../components/dashboard/import-export/dashboard-export-utils';
+import { countMissingWidgetVariables } from '../../../../components/dashboard/import-export/widgetImportVariables';
 import DashboardRefreshControl from '../../../../components/dashboard/DashboardRefreshControl';
 import { DashboardRefreshProvider } from '../../../../components/dashboard/DashboardRefreshContext';
 import { DashboardVariableValuesProvider } from '../../../../components/dashboard/DashboardVariableValuesContext';
@@ -158,7 +159,11 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     });
   };
 
-  const onImportWidget = (id: string, widgetConfig: File, manifestEncoded: string) => {
+  const onImportWidget = async (id: string, widgetConfig: File, manifestEncoded: string) => {
+    // An export carries the tokens of the widget, not the variables: the user is told how many are missing here.
+    const missingVariables = isVariablesEnabled
+      ? countMissingWidgetVariables(await widgetConfig.text(), new Set(workspace.variables.map((variable) => variable.id)))
+      : 0;
     commitWidgetImportMutation({
       variables: {
         id,
@@ -167,6 +172,11 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
           file: widgetConfig,
           dashboardManifest: manifestEncoded,
         },
+      },
+      onCompleted: () => {
+        if (missingVariables > 0) {
+          MESSAGING$.notifyWarning(t_i18n('This widget uses variables missing from this dashboard...', { values: { count: missingVariables } }));
+        }
       },
       onError: (error) => {
         handleError(error);
