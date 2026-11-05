@@ -3,7 +3,7 @@ import { stixLoadById } from '../../database/middleware';
 import { FilterMode, type FilterGroup } from '../../generated/graphql';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, NodeDefinition } from '../../modules/playbook/playbook-types';
-import type { PirStreamConfiguration } from '../../modules/playbook/components/data-stream-pir-component';
+import { normalizeInPirFilters, type PirStreamConfiguration } from '../../modules/playbook/components/data-stream-pir-component';
 import { isStixRelation } from '../../schema/stixRelationship';
 import type { SseEvent, StreamDataEvent } from '../../types/event';
 import type { StixBundle, StixCoreObject, StixObject } from '../../types/stix-2-1-common';
@@ -156,7 +156,8 @@ export const listenPirEvents = async (
 ) => {
   const { id: eventId, data: { data, type } } = streamEvent;
   const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
-  const { filters: sourceFilters, inPirFilters } = configuration;
+  const { filters: sourceFilters } = configuration;
+  const inPirFilters = normalizeInPirFilters(configuration.inPirFilters);
   const filtersOnSource = formatFiltersForPirPlaybookComponent(sourceFilters, inPirFilters);
 
   // Check that event type matches the active toggles of the config.
