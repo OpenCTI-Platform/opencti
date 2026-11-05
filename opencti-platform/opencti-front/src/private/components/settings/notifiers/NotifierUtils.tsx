@@ -35,7 +35,7 @@ export const NotifierVariablesHelp = () => {
         <TooltipContent>
           <div>
             {t_i18n('In the title, use $ variables, e.g.')}{' '}
-            <code>[$notification.name] $notification_content[0].title</code>
+            <code>$notification.name</code>{', '}<code>$notification_content[0].title</code>
             {'. '}
             {t_i18n('A missing value is left empty.')}
           </div>
