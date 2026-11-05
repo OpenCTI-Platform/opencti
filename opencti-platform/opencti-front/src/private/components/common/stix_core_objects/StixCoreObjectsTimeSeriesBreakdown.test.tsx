@@ -394,6 +394,43 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect(mocks.lines.mock.lastCall?.[0].series[0].data[2].y).toEqual(4);
   });
 
+  it('draws the data with the settings of its query until the query of the edited settings is loaded', async () => {
+    // 20 daily series of a month: more bars than the 1200 px allow, summed into weeks
+    const series = Array.from({ length: 20 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(31) }));
+    respond(series, true);
+    const daily = { breakdownBy: 'entity_type', interval: 'day', breakdownLimit: 20 };
+    let edit = (_parameters: Widget['parameters']) => {};
+    const EditedWidget = () => {
+      const [parameters, setParameters] = useState<Widget['parameters']>(daily);
+      edit = setParameters;
+      return <StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('vertical-bar', parameters, multiTypesSelection)} config={config} host={host} />;
+    };
+    const { getByTestId } = testRender(<EditedWidget />, { userContext });
+    expect((await drawn(mocks.bars)).interval).toEqual('week');
+    const warning = getByTestId('widget-warning').textContent;
+    expect(warning).toContain('Interval adjusted to Week');
+    expect(warning).toContain('Only the top 20 values are displayed.');
+
+    // Edited, while its new query loads: the daily data are still summed into weeks, not into the months
+    // coarser than the new weekly interval, and the warnings speak of the highest values still drawn
+    act(() => edit({ ...daily, interval: 'week', breakdownOrder: 'asc' }));
+    expect(mocks.bars.mock.lastCall?.[0]).toMatchObject({ interval: 'week' });
+    expect(mocks.bars.mock.lastCall?.[0].series[0].data).toHaveLength(5);
+    expect(getByTestId('widget-warning').textContent).toEqual(warning);
+
+    // The query of the new settings is loaded: 20 series of 5 weeks fit
+    mocks.response = {
+      stixCoreObjectsTimeSeriesBreakdown: {
+        truncated: true,
+        dates: Array.from({ length: 5 }, (_, i) => new Date(Date.UTC(2025, 8, 29 + 7 * i)).toISOString()),
+        series: series.map((serie) => ({ ...serie, isOther: false, values: dailyValues(5) })),
+      },
+    };
+    loadDashboardViz();
+    expect(mocks.bars.mock.lastCall?.[0]).toMatchObject({ interval: 'week' });
+    expect(getByTestId('widget-warning').textContent).toEqual('Only the 20 lowest values are displayed.');
+  });
+
   it('says why the API refused the breakdown, and leaves any other error to the widget', () => {
     // React logs the errors its boundaries catch
     vi.spyOn(console, 'error').mockImplementation(() => {});

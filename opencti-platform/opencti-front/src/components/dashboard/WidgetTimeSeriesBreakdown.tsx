@@ -48,6 +48,12 @@ interface WidgetTimeSeriesBreakdownProps {
   breakdown?: WidgetTimeSeriesBreakdownData | null;
   type: string;
   parameters: WidgetParameters;
+  // Settings the breakdown was queried with, which the `parameters` of an edited widget no longer hold
+  // until its next query: the ones of the `parameters` when not given
+  interval?: string;
+  breakdownBy?: string;
+  limit?: number;
+  order?: 'asc' | 'desc';
   // Called with the chart once it is drawn, and without it once it is gone
   onMounted: (chart?: ApexCharts) => void;
   onWarningChange: (warning?: string) => void;
@@ -60,6 +66,10 @@ const WidgetTimeSeriesBreakdown = ({
   breakdown,
   type,
   parameters,
+  interval: queriedInterval,
+  breakdownBy: queriedBreakdownBy,
+  limit: queriedLimit,
+  order: queriedOrder,
   onMounted,
   onWarningChange,
 }: WidgetTimeSeriesBreakdownProps) => {
@@ -67,7 +77,10 @@ const WidgetTimeSeriesBreakdown = ({
   // t_i18n is a new function at every render, its intl is not: memos depend on intl
   const intl = useIntl();
   const theme = useTheme<Theme>();
-  const interval = getWidgetInterval(parameters);
+  const interval = queriedInterval ?? getWidgetInterval(parameters);
+  const breakdownBy = queriedBreakdownBy ?? parameters.breakdownBy;
+  const limit = queriedLimit ?? getWidgetBreakdownLimit(parameters);
+  const order = queriedOrder ?? getWidgetBreakdownOrder(parameters);
 
   // A refresh hands a new breakdown even when nothing changed (its end date moved): the previous one is
   // kept then, so that no memo below is computed again and no chart is redrawn
@@ -84,7 +97,7 @@ const WidgetTimeSeriesBreakdown = ({
       let name = serie.label;
       if (serie.isOther) {
         name = t_i18n('Other');
-      } else if (isBreakdownTypeField(parameters.breakdownBy)) {
+      } else if (isBreakdownTypeField(breakdownBy)) {
         // An entity type or a relationship type, kept as is when it has no translation
         const translationKey = displayEntityTypeForTranslation(serie.label) ?? serie.label;
         const translated = t_i18n(translationKey);
@@ -102,7 +115,7 @@ const WidgetTimeSeriesBreakdown = ({
     // Several restricted entities, or entities of the same name, would be one name repeated in the legend
     const names = numberSharedSeriesNames(namedSeries.map(({ name }) => name));
     return namedSeries.map((serie, index) => ({ ...serie, name: names[index] }));
-  }, [stableBreakdown, parameters.breakdownBy, intl, theme]);
+  }, [stableBreakdown, breakdownBy, intl, theme]);
 
   // The points budget and the x axis labels follow the width of the chart. The width is only updated by
   // a large enough resize, and stays unknown until the first measure so that the chart is not drawn twice.
@@ -130,8 +143,6 @@ const WidgetTimeSeriesBreakdown = ({
   );
 
   const truncated = stableBreakdown?.truncated ?? false;
-  const limit = getWidgetBreakdownLimit(parameters);
-  const order = getWidgetBreakdownOrder(parameters);
   const coarsenedInterval = rendered && rendered.interval !== interval ? rendered.interval : undefined;
   const weeksCountedByMonday = rendered?.weeksCountedByMonday ?? false;
   useEffect(() => {
