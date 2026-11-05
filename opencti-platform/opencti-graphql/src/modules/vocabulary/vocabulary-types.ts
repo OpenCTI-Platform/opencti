@@ -526,6 +526,7 @@ export interface BasicStoreEntityVocabulary extends BasicStoreEntity {
   description: string;
   category: VocabularyCategory;
   order?: number;
+  is_hidden?: boolean;
   builtIn?: boolean;
 }
 

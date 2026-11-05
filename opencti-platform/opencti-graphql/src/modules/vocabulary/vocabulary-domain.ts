@@ -89,7 +89,8 @@ const checkVocabularyNameAllowed = (category: VocabularyCategory, name: string) 
   }
 };
 
-export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
+// is_hidden is not part of the add input of the API (an entry is hidden by editing it), but the platform stores it on creation
+export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput & { is_hidden?: boolean }) => {
   checkVocabularyNameAllowed(vocabulary.category, vocabulary.name);
   const element = await createEntity(context, user, { ...vocabulary, order: vocabulary.order ?? 0 }, ENTITY_TYPE_VOCABULARY);
   return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, element, user);
