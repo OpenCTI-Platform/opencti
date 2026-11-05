@@ -6,6 +6,7 @@ const data = {
   notification_content: [{ title: 'L\'APT & co', events: [{ operation: 'create', message: 'm' }] }],
   data: [{ instance: { name: 'Report A', labels: ['a', 'b'], confidence: 80, revoked: false, nested: { x: 1 }, nullish: null } }, {}],
   user: { user_email: 'a@b.c' },
+  platform_uri: 'https://opencti.example.com',
 };
 
 describe('resolveTitleVariablePath', () => {
@@ -37,6 +38,16 @@ describe('compileTitleVariables', () => {
   });
   it('keeps unknown roots literal', () => {
     expect(compileTitleVariables('Cost $100 $foo.bar $name', data)).toEqual({ template: 'Cost $100 $foo.bar $name', values: [] });
+  });
+  it('keeps the platform data roots literal, except the platform url', () => {
+    const title = '$settings.platform_title $doc_uri $url_suffix';
+    expect(compileTitleVariables(title, data)).toEqual({ template: title, values: [] });
+  });
+  it('replaces the platform url', () => {
+    expect(compileTitleVariables('From $platform_uri', data)).toEqual({
+      template: 'From <%- octi_title_variables[0] %>',
+      values: ['https://opencti.example.com'],
+    });
   });
   it('does not consume a trailing dot', () => {
     expect(compileTitleVariables('$notification.name.', data).template).toBe('<%- octi_title_variables[0] %>.');
