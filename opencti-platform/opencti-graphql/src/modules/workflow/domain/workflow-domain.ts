@@ -1373,6 +1373,24 @@ const keepCommonTransitions = (transitionLists: AllowedTransition[][]): AllowedT
 };
 
 /**
+ * The state that getWorkflowInstance shows for an entity of this type with no WorkflowInstance yet.
+ * Null when the type has no published workflow, so no entity of it shows a workflow status;
+ * initialState is null when the workflow has no single initial state ('*').
+ */
+export const getWorkflowDefaultState = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+): Promise<{ initialState: string | null } | null> => {
+  if (entityType !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return null;
+  const entitySetting = await getWorkflowConfig(context, user, entityType);
+  const definitionData = await getDefinitionData(context, user, entitySetting);
+  if (!definitionData) return null;
+  const { initialState } = definitionData;
+  return { initialState: initialState && initialState !== '*' ? initialState : null };
+};
+
+/**
  * Transitions that every targeted entity can take, for a mass transition. A selection is checked
  * entity by entity, conditions included. A filter (select all) is checked from the statuses found
  * under it: entities without status are in the initial state, and conditions are only checked when
