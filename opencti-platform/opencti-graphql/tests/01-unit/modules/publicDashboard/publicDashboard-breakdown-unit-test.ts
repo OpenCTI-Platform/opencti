@@ -4,7 +4,7 @@
  * carry a breakdown as well, but the logs have no public API.
  */
 import { describe, expect, it } from 'vitest';
-import { buildPublicBreakdownArgs, getBreakdownEntityTypes } from '../../../../src/modules/publicDashboard/publicDashboard-breakdown';
+import { buildPublicBreakdownArgs, canWidgetBreakDown, getBreakdownEntityTypes } from '../../../../src/modules/publicDashboard/publicDashboard-breakdown';
 
 const startDate = '2026-01-01T00:00:00.000Z';
 const endDate = '2026-02-01T00:00:00.000Z';
@@ -25,6 +25,8 @@ const storedWidget = (perspective: string | null, dataSelection: unknown[], para
   return { type, perspective, dataSelection, parameters } as any;
 };
 const request = (overrides: Record<string, unknown> = {}) => ({ widgetId: 'widget-1', startDate, endDate, ...overrides } as any);
+const refusal = (message: string, code = 'FUNCTIONAL_ERROR') => expect.objectContaining({ message, extensions: expect.objectContaining({ code }) });
+const drafts = { mode: 'and', filters: [{ key: ['entity_type'], values: ['DraftWorkspace'], operator: 'eq', mode: 'or' }], filterGroups: [] };
 
 describe('buildPublicBreakdownArgs of relationships', () => {
   const relationshipsArgs = (widget: unknown, overrides: Record<string, unknown> = {}) => {
@@ -87,20 +89,21 @@ describe('buildPublicBreakdownArgs of relationships', () => {
 
   it('should refuse a widget without breakdown, or a request without start date', () => {
     expect(() => relationshipsArgs(storedWidget('relationships', [{ date_attribute: 'created_at', filters: targets }], { interval: 'day' })))
-      .toThrow('This widget has no breakdown');
+      .toThrow(refusal('This widget has no breakdown', 'UNSUPPORTED_ERROR'));
     const widget = storedWidget('relationships', [{ date_attribute: 'created_at', filters: targets }], breakdownParameters);
-    expect(() => relationshipsArgs(widget, { startDate: null })).toThrow('A start date is required');
+    expect(() => relationshipsArgs(widget, { startDate: null })).toThrow(refusal('A start date is required for a time series breakdown'));
   });
 
-  it('should refuse the widgets of the other perspectives, or without perspective, carrying a breakdown', () => {
-    for (const perspective of ['entities', 'audits', null]) {
-      const widget = storedWidget(perspective, [{ date_attribute: 'created_at', filters: targets }], breakdownParameters);
-      expect(() => relationshipsArgs(widget)).toThrow('This widget has no breakdown');
+  it('should refuse the widgets broken down on another perspective, whose public breakdown is another query', () => {
+    for (const perspective of ['entities', 'audits']) {
+      const widget = storedWidget(perspective, [{ date_attribute: 'created_at', filters: malwares }], breakdownParameters);
+      expect(() => relationshipsArgs(widget)).toThrow(refusal('This widget is broken down on another perspective'));
     }
   });
 
   it('should refuse the widgets that cannot be broken down, still carrying a breakdown', () => {
-    // Edited without the breakdown feature, or imported: the private dashboards draw their regular chart
+    // Edited without the breakdown feature, or imported: the dashboards draw their regular chart, the public manifest
+    // serves them without breakdown
     const relationships = { date_attribute: 'created_at', perspective: 'relationships', filters: targets };
     const stale = [
       { type: 'donut', dataSelection: [relationships] },
@@ -108,14 +111,14 @@ describe('buildPublicBreakdownArgs of relationships', () => {
       { type: 'line', dataSelection: [] },
       // a relationships widget can hold entities datasets, which cannot be broken down as relationships
       { type: 'vertical-bar', dataSelection: [{ ...relationships, perspective: 'entities', filters: malwares }] },
+      { type: 'line', dataSelection: [{ ...relationships, filters: drafts }] },
     ];
     for (const { type, dataSelection } of stale) {
       const widget = storedWidget('relationships', dataSelection, breakdownParameters, type);
-      expect(() => relationshipsArgs(widget)).toThrow(expect.objectContaining({
-        message: 'This widget cannot be broken down',
-        extensions: expect.objectContaining({ code: 'FUNCTIONAL_ERROR' }),
-      }));
+      expect(() => relationshipsArgs(widget)).toThrow(refusal('This widget cannot be broken down'));
     }
+    // A widget without perspective is no time series of elements
+    expect(() => relationshipsArgs(storedWidget(null, [relationships], breakdownParameters))).toThrow(refusal('This widget cannot be broken down'));
   });
 
   it('should break down every time series of a single relationships dataset', () => {
@@ -152,32 +155,62 @@ describe('buildPublicBreakdownArgs of entities', () => {
     expect(entitiesArgs(widget)).toMatchObject({ filters: undefined, types: [] });
   });
 
-  it('should refuse an audits widget carrying a breakdown', () => {
+  it('should refuse an audits widget carrying a breakdown: the logs have no public breakdown', () => {
     const widget = storedWidget('audits', [{ date_attribute: 'timestamp', filters: null }], { interval: 'day', breakdownBy: 'event_scope', breakdownLimit: 5 });
-    expect(() => entitiesArgs(widget)).toThrow('This widget has no breakdown');
+    expect(() => entitiesArgs(widget)).toThrow(refusal('This widget is broken down on another perspective'));
+    // Counting the distinct values of an attribute, its line cannot be broken down at all
+    const distinctValues = storedWidget('audits', [{ date_attribute: 'timestamp', unique: true }], { breakdownBy: 'event_scope' });
+    expect(() => entitiesArgs(distinctValues)).toThrow(refusal('This widget cannot be broken down'));
   });
 
-  it('should refuse the widgets of the other perspectives, or without perspective', () => {
-    for (const perspective of ['relationships', null]) {
-      const widget = storedWidget(perspective, [{ date_attribute: 'published', filters: null }], { interval: 'day', breakdownBy: 'objectLabel' });
-      expect(() => entitiesArgs(widget)).toThrow('This widget has no breakdown');
-    }
+  it('should refuse a relationships widget, broken down through the query of the relationships', () => {
+    const widget = storedWidget('relationships', [{ date_attribute: 'created_at', filters: targets }], breakdownParameters);
+    expect(() => entitiesArgs(widget)).toThrow(refusal('This widget is broken down on another perspective'));
   });
 
   it('should refuse the entities widgets that cannot be broken down, still carrying a breakdown', () => {
     const entities = { date_attribute: 'published', perspective: 'entities', filters: malwares };
     const stale = [
-      { type: 'number', dataSelection: [entities] },
-      { type: 'area', dataSelection: [entities, entities] },
-      { type: 'area', dataSelection: [{ ...entities, perspective: 'relationships' }] },
+      { perspective: 'entities', type: 'number', dataSelection: [entities] },
+      { perspective: 'entities', type: 'area', dataSelection: [entities, entities] },
+      { perspective: 'entities', type: 'area', dataSelection: [{ ...entities, perspective: 'relationships' }] },
+      // drafts cannot be broken down, as the front refuses them: a dataset of draft workspaces only
+      { perspective: 'entities', type: 'area', dataSelection: [{ ...entities, filters: drafts }] },
+      { perspective: null, type: 'line', dataSelection: [entities] },
     ];
-    for (const { type, dataSelection } of stale) {
-      const widget = storedWidget('entities', dataSelection, { interval: 'day', breakdownBy: 'objectLabel' }, type);
-      expect(() => entitiesArgs(widget)).toThrow(expect.objectContaining({
-        message: 'This widget cannot be broken down',
-        extensions: expect.objectContaining({ code: 'FUNCTIONAL_ERROR' }),
-      }));
+    for (const { perspective, type, dataSelection } of stale) {
+      const widget = storedWidget(perspective, dataSelection, { interval: 'day', breakdownBy: 'objectLabel' }, type);
+      expect(() => entitiesArgs(widget)).toThrow(refusal('This widget cannot be broken down'));
     }
+  });
+});
+
+describe('canWidgetBreakDown', () => {
+  const widget = (overrides: Record<string, unknown> = {}) => ({ type: 'line', perspective: 'entities', dataSelection: [{ filters: malwares }], ...overrides } as any);
+
+  it('should break down a time series of a single dataset of the elements of the widget, outside the drafts', () => {
+    for (const type of ['vertical-bar', 'line', 'area', 'heatmap']) {
+      expect(canWidgetBreakDown(widget({ type }))).toEqual(true);
+    }
+    expect(canWidgetBreakDown(widget({ perspective: 'relationships', dataSelection: [{ perspective: 'relationships', filters: targets }] }))).toEqual(true);
+    expect(canWidgetBreakDown(widget({ perspective: 'audits', dataSelection: [{}] }))).toEqual(true);
+    // Draft workspaces among other types are not a dataset of drafts only, as for the front
+    const withDrafts = { ...drafts, filters: [{ ...drafts.filters[0], values: ['DraftWorkspace', 'Malware'] }] };
+    expect(canWidgetBreakDown(widget({ dataSelection: [{ filters: withDrafts }] }))).toEqual(true);
+  });
+
+  it('should not break down the other widgets', () => {
+    expect(canWidgetBreakDown(widget({ type: 'donut' }))).toEqual(false);
+    expect(canWidgetBreakDown(widget({ perspective: null }))).toEqual(false);
+    expect(canWidgetBreakDown(widget({ dataSelection: [] }))).toEqual(false);
+    expect(canWidgetBreakDown(widget({ dataSelection: [{ filters: malwares }, { filters: sectors }] }))).toEqual(false);
+    expect(canWidgetBreakDown(widget({ perspective: 'relationships', dataSelection: [{ perspective: 'entities', filters: malwares }] }))).toEqual(false);
+    // The key of a stored filter can be a string as well
+    expect(canWidgetBreakDown(widget({ dataSelection: [{ filters: drafts }] }))).toEqual(false);
+    expect(canWidgetBreakDown(widget({ dataSelection: [{ filters: { ...drafts, filters: [{ ...drafts.filters[0], key: 'entity_type' }] } }] }))).toEqual(false);
+    // The audits lines and areas counting distinct values, not their bars, which count every event
+    expect(canWidgetBreakDown(widget({ perspective: 'audits', type: 'area', dataSelection: [{ unique: true }] }))).toEqual(false);
+    expect(canWidgetBreakDown(widget({ perspective: 'audits', type: 'vertical-bar', dataSelection: [{ unique: true }] }))).toEqual(true);
   });
 });
 

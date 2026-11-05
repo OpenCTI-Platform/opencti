@@ -41,7 +41,7 @@ const publicDashboardResolvers: Resolvers = {
     publicStixRelationships: (_, args, context) => publicStixRelationships(context, args),
   },
   PublicDashboard: {
-    public_manifest: (publicDashboard) => getServedPublicManifest(publicDashboard.public_manifest),
+    public_manifest: (publicDashboard) => getServedPublicManifest(publicDashboard),
     allowed_markings: (publicDashboard, _, context) => getAllowedMarkings(context, context.user, publicDashboard),
     owner: (publicDashboard, _, context) => loadCreator(context, context.user, publicDashboard.user_id),
     dashboard: (publicDashboard, _, context) => findWorkspaceById(context, context.user, publicDashboard.dashboard_id),

@@ -81,6 +81,8 @@ export interface PublicDashboardCachedWidget {
     number?: boolean;
     toTypes?: string[];
     perspective?: 'entities' | 'relationships' | 'audits' | null;
+    // Counting the distinct values of an attribute instead of the events, for the audits
+    unique?: boolean;
     sort_by?: string;
     sort_mode?: string;
   }[];

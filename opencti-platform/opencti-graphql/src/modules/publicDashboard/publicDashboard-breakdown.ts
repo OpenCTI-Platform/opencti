@@ -6,6 +6,7 @@ import { RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../../schema/stixRefRela
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { RELATION_TYPE_FILTER, TYPE_FILTER } from '../../utils/filtering/filtering-constants';
 import type { PublicDashboardCachedWidget } from './publicDashboard-types';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 
 // Perspectives with a public breakdown API: the logs of the audits widgets have none
 type PublicBreakdownPerspective = 'entities' | 'relationships';
@@ -14,6 +15,10 @@ type PublicBreakdownWidget = Pick<PublicDashboardCachedWidget, 'type' | 'perspec
 
 // Widgets drawing a time series, the only ones a breakdown expands (the 'timeseries' category of the front widgets)
 const TIME_SERIES_WIDGET_TYPES = ['vertical-bar', 'line', 'area', 'heatmap'];
+// Perspectives whose widgets can be broken down, the audits ones included (isBreakdownPerspective in the front)
+const BREAKDOWN_PERSPECTIVES = ['entities', 'relationships', 'audits'];
+// Audits lines and areas can count the distinct values of an attribute instead of the events
+const AUDITS_DISTINCT_COUNT_TYPES = ['line', 'area'];
 
 // Relationships the relationships widgets display, as the front restricts them (RELATIONSHIP_WIDGETS_TYPES in
 // opencti-front/src/utils/widget/widgetUtils.tsx): the knowledge relationships, the sightings, and the content and the
@@ -41,10 +46,37 @@ export const getBreakdownEntityTypes = (filters?: FilterGroup | null, typeFilter
   return typeValues.filter((value): value is string => typeof value === 'string');
 };
 
+// A dataset of draft workspaces only, as the front reads it (isDraftWorkspaceFilterGroup in filtersUtils.tsx)
+const isDraftWorkspaceDataset = (filters?: FilterGroup | null) => {
+  // Manifest filters can hold the key as a string or as a list
+  const typeFilter = (filters?.filters ?? []).find((filter) => [filter.key].flat().includes(TYPE_FILTER));
+  const types = typeFilter?.values ?? [];
+  return types.length > 0 && types.every((type) => type === ENTITY_TYPE_DRAFT_WORKSPACE);
+};
+
+/**
+ * Whether the stored widget can be broken down: a breakdown expands the single dataset of a time series widget, counting
+ * its entities, relationships or events, outside the drafts. A relationships widget can also hold entities datasets: they
+ * cannot be broken down as relationships. A widget edited without the breakdown feature, or imported, can keep a
+ * breakdown it cannot have: the dashboards draw its regular chart.
+ * Same rule as the front (canWidgetBreakDown in opencti-front/src/utils/widget/widgetBreakdown.ts), read on the widget of
+ * the private manifest: its datasets keep their filters there, their saved filters and dashboard variables resolved.
+ */
+export const canWidgetBreakDown = (widget: Pick<PublicDashboardCachedWidget, 'type' | 'perspective' | 'dataSelection'>) => {
+  const { type, perspective, dataSelection = [] } = widget;
+  const [dataset] = dataSelection;
+  return !!perspective && BREAKDOWN_PERSPECTIVES.includes(perspective)
+    && TIME_SERIES_WIDGET_TYPES.includes(type)
+    && dataSelection.length === 1
+    && (dataset.perspective ?? perspective) === perspective
+    && !isDraftWorkspaceDataset(dataset.filters)
+    && !(perspective === 'audits' && AUDITS_DISTINCT_COUNT_TYPES.includes(type) && dataset.unique === true);
+};
+
 /**
  * Arguments of the breakdown API for a public widget. Every setting of a breakdown is read from the stored widget,
- * never from the request of the visitor, who only gives the period. A widget of another perspective can carry a
- * breakdown too (an audits widget, whose logs have no public API).
+ * never from the request of the visitor, who only gives the period. The audits widgets can carry a breakdown too, but
+ * the logs have no public API.
  */
 export const buildPublicBreakdownArgs = (
   args: PublicBreakdownRequest,
@@ -52,16 +84,18 @@ export const buildPublicBreakdownArgs = (
   breakdownPerspective: PublicBreakdownPerspective,
 ) => {
   const { type, perspective, dataSelection, parameters } = widget;
-  if (perspective !== breakdownPerspective || !parameters?.breakdownBy) {
+  if (!parameters?.breakdownBy) {
     throw UnsupportedError('This widget has no breakdown', { widgetId: args.widgetId });
   }
-  // A widget edited without the breakdown feature, or imported, can keep a breakdown it cannot have: the private
-  // dashboards draw its regular chart. Same rule as the front (canWidgetBeBrokenDown in widgetBreakdown.ts): a time
-  // series of a single dataset, of the elements of the widget (a relationships widget can also hold entities datasets).
-  const [selection] = dataSelection;
-  if (!TIME_SERIES_WIDGET_TYPES.includes(type) || dataSelection.length !== 1 || (selection.perspective ?? perspective) !== perspective) {
+  // The public manifest serves it without its breakdown: the public dashboards draw its regular chart
+  if (!canWidgetBreakDown(widget)) {
     throw FunctionalError('This widget cannot be broken down', { widgetId: args.widgetId, type, datasetsCount: dataSelection.length });
   }
+  // Each perspective has its own query, the public dashboards asking the one of the widget
+  if (perspective !== breakdownPerspective) {
+    throw FunctionalError('This widget is broken down on another perspective', { widgetId: args.widgetId, perspective });
+  }
+  const [selection] = dataSelection;
   // The histogram is anchored on the start date: without it the series would silently collapse on today
   if (!args.startDate) {
     throw FunctionalError('A start date is required for a time series breakdown');

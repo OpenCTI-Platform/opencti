@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, PUBLIC_DASHBOARD_REFERER, SYSTEM_USER } from '../../utils/access';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDashboardCachedWidget } from './publicDashboard-types';
+import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDashboardCachedWidget } from './publicDashboard-types';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser, UserCapability } from '../../types/user';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
@@ -14,16 +14,20 @@ import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { findById as findWorkspace } from '../workspace/workspace-domain';
 import { isFeatureEnabled, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../config/conf';
 import { fromB64, toB64 } from '../../utils/base64';
+import { canWidgetBreakDown } from './publicDashboard-breakdown';
 
 // Parameters of a widget setting its breakdown: the type of the widgets of the public dashboards is derived from them
 export const WIDGET_BREAKDOWN_PARAMETERS = ['breakdownBy', 'breakdownLimit', 'breakdownOrder', 'breakdownOther'] as const;
 
 /**
- * Public manifest as served to the visitors. Without the time series breakdown feature, the widgets are served without
- * their breakdown and render as regular time series: the stored manifest keeps it.
+ * Public manifest as served to the visitors. A widget keeps its breakdown when it can be broken down (canWidgetBreakDown),
+ * read on its stored widget of the private manifest, which keeps the filters the public one strips, and with the time
+ * series breakdown feature. Otherwise it is served without, and renders its regular chart as in the private dashboards:
+ * the stored manifest keeps it.
  */
-export const getServedPublicManifest = (publicManifest?: string | null) => {
-  if (!publicManifest || isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG)) {
+export const getServedPublicManifest = (publicDashboard: Pick<BasicStoreEntityPublicDashboard, 'public_manifest' | 'private_manifest'>) => {
+  const { public_manifest: publicManifest } = publicDashboard;
+  if (!publicManifest) {
     return publicManifest;
   }
   const manifest = fromB64(publicManifest);
@@ -31,8 +35,18 @@ export const getServedPublicManifest = (publicManifest?: string | null) => {
   if (!widgets.some(([, widget]) => widget?.parameters?.breakdownBy)) {
     return publicManifest;
   }
+  const storedWidgets = isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG)
+    ? fromB64<{ widgets?: Record<string, PublicDashboardCachedWidget> }>(publicDashboard.private_manifest).widgets ?? {}
+    : {};
+  const isServedWithoutBreakdown = (widgetId: string, widget: any) => {
+    const storedWidget = storedWidgets[widgetId];
+    return !!widget?.parameters?.breakdownBy && !(storedWidget && canWidgetBreakDown(storedWidget));
+  };
+  if (!widgets.some(([widgetId, widget]) => isServedWithoutBreakdown(widgetId, widget))) {
+    return publicManifest;
+  }
   const servedWidgets = widgets.map(([widgetId, widget]) => {
-    return [widgetId, widget?.parameters ? { ...widget, parameters: R.omit(WIDGET_BREAKDOWN_PARAMETERS, widget.parameters) } : widget];
+    return [widgetId, isServedWithoutBreakdown(widgetId, widget) ? { ...widget, parameters: R.omit(WIDGET_BREAKDOWN_PARAMETERS, widget.parameters) } : widget];
   });
   return toB64({ ...manifest, widgets: Object.fromEntries(servedWidgets) });
 };

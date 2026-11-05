@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithError } from '../../utils/testQueryHelper';
 import { PRIVATE_DASHBOARD_MANIFEST } from './publicDashboard-data';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboard/publicDashboard-types';
@@ -858,6 +858,18 @@ describe('PublicDashboard resolver', () => {
             });
             expect(errors).toBeDefined();
             expect(errors.length).toEqual(1);
+            expect(data.publicStixCoreObjectsTimeSeriesBreakdown).toBeNull();
+          });
+
+          it('should refuse the breakdown of a relationships widget through the query of the entities', async () => {
+            const { data } = await queryAsAdminWithError(
+              {
+                query: API_SCO_BREAKDOWN_QUERY,
+                variables: { uriKey: publicDashboardUriKey, widgetId: 'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38', startDate: yesterday },
+              },
+              'This widget is broken down on another perspective',
+              'FUNCTIONAL_ERROR',
+            );
             expect(data.publicStixCoreObjectsTimeSeriesBreakdown).toBeNull();
           });
 
