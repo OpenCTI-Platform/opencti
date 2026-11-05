@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   error: null as unknown,
   dashboardViz: vi.fn(),
   resolvedDataSelection: null as unknown[] | null,
+  isResolving: false,
   bars: vi.fn(),
   lines: vi.fn(),
   areas: vi.fn(),
@@ -32,8 +33,9 @@ vi.mock('react-relay', async (importOriginal) => ({
 vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
   default: (await import('../../../../utils/tests/dashboardVizMock')).mockDashboardViz(mocks),
 }));
+// The guards pass: a loader waits for the query
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  default: ({ children, queryRef }: { children: React.ReactNode; queryRef?: unknown }) => (queryRef ? <>{children}</> : <div data-testid="loader" />),
 }));
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
   default: ({ children, warning, chart }: { children: React.ReactNode; warning?: string; chart?: unknown }) => (
@@ -143,6 +145,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     mocks.width = 1200;
     mocks.error = null;
     mocks.resolvedDataSelection = null;
+    mocks.isResolving = false;
   });
 
   it('queries one breakdown with the dataset filters, date attribute and series limit', () => {
@@ -561,6 +564,29 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     const { getByText } = render(makeWidget('line', { breakdownBy: 'objectAssignee' }, { ...selection, filters_id: 'saved-filter' } as WidgetDataSelection));
     expect(mocks.dashboardViz.mock.lastCall?.[0].buildQueryVariables([noTypeSelection], config, parameters)).toBeNull();
     expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
+  });
+
+  it('says a field is not available only once the dataset it is checked on is resolved', () => {
+    // Edited to read another dataset, whose saved filter is still being read: the field is not checked
+    // on the dataset resolved before, nothing is queried and the widget waits
+    mocks.isResolving = true;
+    let rerender = () => {};
+    const ResolvedWidget = () => {
+      const [, setRenderCount] = useState(0);
+      rerender = () => setRenderCount((count) => count + 1);
+      return <StixCoreObjectsTimeSeriesBreakdown widget={makeWidget('line', { breakdownBy: 'objectAssignee' }, noTypeSelection)} config={config} host={host} />;
+    };
+    const notAvailable = 'This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.';
+    const { queryByText, queryByTestId } = testRender(<ResolvedWidget />, { userContext });
+    expect(queryByText(notAvailable)).toBeNull();
+    expect(queryByTestId('loader')).not.toBeNull();
+    expect(mocks.lines).not.toHaveBeenCalled();
+
+    // Resolved to any entity, which has no assignee
+    mocks.isResolving = false;
+    act(() => rerender());
+    expect(queryByText(notAvailable)).toBeTruthy();
+    expect(mocks.lines).not.toHaveBeenCalled();
   });
 
   it('accepts the entity type for a dataset resolved to a single type, a type variable may hold one', () => {

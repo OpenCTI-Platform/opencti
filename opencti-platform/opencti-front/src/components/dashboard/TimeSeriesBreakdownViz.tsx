@@ -132,7 +132,7 @@ const TimeSeriesBreakdownViz = <TQuery extends OperationType>({
       : null),
     [isSupportedOn, buildQueryVariables],
   );
-  const { renderGuards, isPreviewMode, queryRef, resolvedDataSelection } = useDashboardViz<TQuery>({
+  const { renderGuards, isPreviewMode, queryRef, isResolving, skipped } = useDashboardViz<TQuery>({
     perspective,
     dataSelection: widget.dataSelection,
     host,
@@ -142,9 +142,9 @@ const TimeSeriesBreakdownViz = <TQuery extends OperationType>({
     parameters,
     buildQueryVariables: buildSupportedQueryVariables,
   });
-  // A widget that cannot be resolved says why first
-  const isBlocked = renderGuards.isMissingHostEntity || renderGuards.isMissingSavedFilters || renderGuards.hasUnresolvedVariables;
-  const isUnsupported = !isBlocked && resolvedDataSelection.length > 0 && !isSupportedOn(resolvedDataSelection);
+  // Not queried for the dataset it reads, once it is resolved: the field checked on the dataset resolved before would
+  // be refused, or accepted, for a moment. A widget that cannot be resolved is not skipped: its guards say why first.
+  const isUnsupported = !isResolving && skipped;
 
   return (
     <WidgetContainer

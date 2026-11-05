@@ -28,8 +28,9 @@ vi.mock('react-relay', async (importOriginal) => ({
 vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
   default: (await import('../../../../utils/tests/dashboardVizMock')).mockDashboardViz(mocks),
 }));
+// The guards pass: a loader waits for the query
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  default: ({ children, queryRef }: { children: React.ReactNode; queryRef?: unknown }) => (queryRef ? <>{children}</> : <div data-testid="loader" />),
 }));
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
   default: ({ children, warning }: { children: React.ReactNode; warning?: string }) => (
