@@ -161,13 +161,15 @@ describe('FilterValues for a generic nested filter key', () => {
   );
 
   it.each([
-    [[{ key: 'coverage_name', operator: 'eq', values: ['detection'] }, { key: 'coverage_score', operator: 'lt', values: ['20'] }], 'detection < 20'],
-    [[{ key: 'coverage_score', operator: 'gte', values: ['90'] }], '≥ 90'],
-    [[{ key: 'coverage_name', operator: 'not_eq', values: ['detection', 'prevention'] }, { key: 'coverage_score', operator: 'eq', values: ['0'] }], 'not detection, prevention = 0'],
+    // the operator symbols are the ones of the other filter chips (convertOperatorToIcon), after a non-breaking space
+    [[{ key: 'coverage_name', operator: 'eq', values: ['detection'] }, { key: 'coverage_score', operator: 'lt', values: ['20'] }], ' detection\u00a0< 20'],
+    [[{ key: 'coverage_score', operator: 'gte', values: ['90'] }], '\u00a0≥ 90'],
+    [[{ key: 'coverage_score', operator: 'not_eq', values: ['20'] }], '\u00a0≠ 20'],
+    [[{ key: 'coverage_name', operator: 'not_eq', values: ['detection', 'prevention'] }, { key: 'coverage_score', operator: 'eq', values: ['0'] }], ' not detection, prevention\u00a0= 0'],
   ])('renders the coverage chip', (values, text) => {
     const { container } = renderCoverage('eq', values);
     expect(screen.getByText('Coverage score')).toBeInTheDocument();
-    expect(container.textContent).toBe(`Coverage score ${text}`);
+    expect(container.textContent).toBe(`Coverage score${text}`);
   });
 
   it('renders the sub-filters in definition order, whatever the order of the stored values', () => {
@@ -175,7 +177,7 @@ describe('FilterValues for a generic nested filter key', () => {
       { key: 'coverage_score', operator: 'gt', values: ['5'] },
       { key: 'coverage_name', operator: 'eq', values: ['detection'] },
     ]);
-    expect(container.textContent).toBe('Coverage score detection > 5');
+    expect(container.textContent).toBe('Coverage score detection\u00a0> 5');
   });
 
   it('renders an empty coverage filter as "is empty"', () => {
