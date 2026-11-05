@@ -179,7 +179,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
               }}
             >
               <JsonForm
-                uiSchema={buildNotifierUiSchema(connector.ui_schema, connector.value, t_i18n)}
+                uiSchema={buildNotifierUiSchema(connector.ui_schema, connector.value)}
                 ref={formRef}
                 tagName="div"
                 showErrorList={false}
