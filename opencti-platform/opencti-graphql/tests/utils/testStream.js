@@ -6,10 +6,9 @@ import { ADMIN_USER, generateBasicAuth, testContext } from './testQuery';
 import { isStixId } from '../../src/schema/schemaUtils';
 import { isStixRelationship } from '../../src/schema/stixRelationship';
 import { STIX_EXT_OCTI } from '../../src/types/stix-2-1-extensions';
-import { EVENT_TYPE_UPDATE } from '../../src/database/utils';
+import { EVENT_TYPE_UPDATE, wait } from '../../src/database/utils';
 import { internalLoadById } from '../../src/database/middleware-loader';
 import { fetchStreamInfo } from '../../src/database/stream/stream-handler';
-import { wait } from '../../src/database/utils';
 
 const compareStreamIds = (a, b) => {
   const [aTime, aSeq] = a.split('-').map(Number);
