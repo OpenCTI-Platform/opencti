@@ -3,10 +3,12 @@ import { Switch, SwitchProps, Tooltip, TooltipContent, TooltipTrigger } from '@f
 import FormGroup from '@mui/material/FormGroup';
 import FormHelperText from '@mui/material/FormHelperText';
 import { InformationOutline } from 'mdi-material-ui';
-import { FieldProps } from 'formik';
+import { FieldInputProps, FormikProps } from 'formik';
 import { useFormatter } from '../i18n';
 
-export type SwitchFieldProps = FieldProps<boolean | undefined> & {
+export type SwitchFieldProps = {
+  field: Pick<FieldInputProps<boolean | string | undefined>, 'name' | 'value'>;
+  form: Pick<FormikProps<unknown>, 'setFieldValue' | 'setFieldTouched' | 'isSubmitting'>;
   label?: ReactNode;
   // Translated here: callers pass the English text
   tooltip?: string;
@@ -85,7 +87,15 @@ const SwitchField = ({
           {tooltip && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <InformationOutline fontSize="small" color="primary" style={{ cursor: 'default' }} tabIndex={0} />
+                <InformationOutline
+                  fontSize="small"
+                  color="primary"
+                  style={{ cursor: 'default' }}
+                  tabIndex={0}
+                  role="img"
+                  aria-hidden={false}
+                  aria-label={t_i18n(tooltip)}
+                />
               </TooltipTrigger>
               <TooltipContent>{t_i18n(tooltip)}</TooltipContent>
             </Tooltip>
