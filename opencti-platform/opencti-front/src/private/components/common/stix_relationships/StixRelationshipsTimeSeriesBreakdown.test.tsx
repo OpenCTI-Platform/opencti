@@ -190,10 +190,10 @@ describe('StixRelationshipsTimeSeriesBreakdown', () => {
     expect((await drawn(mocks.lines)).series[0].name).toEqual('TLP:GREEN');
   });
 
-  it('warns when only the top values are displayed', () => {
+  it('warns when only the highest values are displayed', () => {
     respond([{ label: 'targets', entity: null, values: [1, 2, 3] }], true);
     const { getByTestId } = render(makeWidget('line', { breakdownBy: 'relationship_type', breakdownLimit: 5 }, allRelationships));
-    expect(getByTestId('widget-warning').textContent).toContain('Only the top 5 values are displayed.');
+    expect(getByTestId('widget-warning').textContent).toContain('Only the 5 highest values are displayed.');
   });
 
   it('does not query a field the relationships do not support, and says so', () => {

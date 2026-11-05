@@ -179,7 +179,7 @@ describe('AuditsTimeSeriesBreakdown', () => {
     expect(names[1]).toEqual('Not-A-Translated-Type');
   });
 
-  it('keeps the raw event values and warns when only the top values are displayed', async () => {
+  it('keeps the raw event values and warns when only the highest values are displayed', async () => {
     respond([{ label: 'create', entity: null, values: [1, 2, 3] }], true);
     const { getByTestId } = render(makeWidget('line', { breakdownBy: 'event_scope', breakdownLimit: 5 }));
     expect((await drawn(mocks.lines)).series.map((serie: { name: string }) => serie.name)).toEqual(['create']);

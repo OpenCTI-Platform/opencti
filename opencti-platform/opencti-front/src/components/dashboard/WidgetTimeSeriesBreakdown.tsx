@@ -151,7 +151,7 @@ const WidgetTimeSeriesBreakdown = ({
     if (truncated) {
       warnings.push(order === 'asc'
         ? t_i18n('Only the {limit} lowest values are displayed.', { values: { limit } })
-        : t_i18n('Only the top {limit} values are displayed.', { values: { limit } }));
+        : t_i18n('Only the {limit} highest values are displayed.', { values: { limit } }));
     }
     if (coarsenedInterval) {
       warnings.push(t_i18n('Interval adjusted to {interval} to keep the chart responsive.', {

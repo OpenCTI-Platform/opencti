@@ -3767,7 +3767,7 @@
   "Only main element in the bundle": "Solo l'elemento principale del bundle",
   "Only successful tests allow the ingestion creation.": "Solo i test riusciti consentono la creazione dell'ingestione.",
   "Only successful tests allow the ingestion edition.": "Solo i test riusciti consentono la modifica dell'ingestione.",
-  "Only the top {limit} values are displayed.": "Vengono visualizzati solo i primi {limit} valori.",
+  "Only the {limit} highest values are displayed.": "Vengono visualizzati solo i {limit} valori più alti.",
   "Only the {limit} lowest values are displayed.": "Vengono visualizzati solo i {limit} valori più bassi.",
   "Only yourself and service accounts can be selected": "È possibile selezionare solo se stessi e gli account di servizio",
   "only_eq_to": "Solo uguale a",

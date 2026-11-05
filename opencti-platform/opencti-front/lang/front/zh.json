@@ -3767,7 +3767,7 @@
   "Only main element in the bundle": "仅捆绑包中的主要元素",
   "Only successful tests allow the ingestion creation.": "只有成功的测试才允许创建摄取。",
   "Only successful tests allow the ingestion edition.": "只有成功的测试才允许摄取版本。",
-  "Only the top {limit} values are displayed.": "仅显示前 {limit} 个值。",
+  "Only the {limit} highest values are displayed.": "仅显示 {limit} 个最高值。",
   "Only the {limit} lowest values are displayed.": "仅显示 {limit} 个最低值。",
   "Only yourself and service accounts can be selected": "仅可选择您本人和服务账户",
   "only_eq_to": "只相当于",

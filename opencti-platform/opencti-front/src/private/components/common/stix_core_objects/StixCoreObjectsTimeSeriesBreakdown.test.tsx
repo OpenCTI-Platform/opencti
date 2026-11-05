@@ -423,7 +423,7 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect((await drawn(mocks.bars)).interval).toEqual('week');
     const warning = getByTestId('widget-warning').textContent;
     expect(warning).toContain('Interval adjusted to Week');
-    expect(warning).toContain('Only the top 20 values are displayed.');
+    expect(warning).toContain('Only the 20 highest values are displayed.');
 
     // Edited, while its new query loads: the daily data are still summed into weeks, not into the months
     // coarser than the new weekly interval, and the warnings speak of the highest values still drawn
@@ -551,10 +551,11 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     vi.mocked(console.error).mockRestore();
   });
 
-  it('warns when only the top values are displayed', () => {
+  it('warns when only the highest values are displayed', () => {
     respond([{ label: 'Report', entity: null, values: dailyValues(3) }], true);
     const { getByTestId } = render(makeWidget('line', { breakdownBy: 'entity_type', breakdownLimit: 5 }, multiTypesSelection));
-    expect(getByTestId('widget-warning').textContent).toContain('5');
+    // As the order is named in the editor
+    expect(getByTestId('widget-warning').textContent).toEqual('Only the 5 highest values are displayed.');
   });
 
   it('warns that only the lowest values are displayed when ordered by lowest values', () => {

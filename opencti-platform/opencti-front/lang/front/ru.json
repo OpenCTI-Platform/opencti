@@ -3767,7 +3767,7 @@
   "Only main element in the bundle": "Только основной элемент пакета",
   "Only successful tests allow the ingestion creation.": "Только успешные тесты позволяют создать впуск.",
   "Only successful tests allow the ingestion edition.": "Только успешно пройденные тесты дают право на включение издания.",
-  "Only the top {limit} values are displayed.": "Показаны только первые {limit} значений.",
+  "Only the {limit} highest values are displayed.": "Показаны только {limit} наибольших значений.",
   "Only the {limit} lowest values are displayed.": "Показаны только {limit} наименьших значений.",
   "Only yourself and service accounts can be selected": "Можно выбрать только себя и служебные учетные записи",
   "only_eq_to": "Равняется только",
