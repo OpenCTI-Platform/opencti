@@ -133,7 +133,8 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
 
   const handleApplyWizard = (values: TransitionFormValues): Promise<void> => {
     if (!wizard) return Promise.resolve();
-    return fireTransition(wizard.event, wizard.actions, buildTransitionRuntimeParams(wizard, values), values.comment.trim() || undefined, (wizard.closingReasonMode && values.closingReason) || undefined);
+    const closingReason = (wizard.closingReasonMode && values.closingReason) || undefined;
+    return fireTransition(wizard.event, wizard.actions, buildTransitionRuntimeParams(wizard, values), values.comment.trim() || undefined, closingReason);
   };
 
   const handleClear = () => {

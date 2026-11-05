@@ -4904,7 +4904,7 @@ describe('triggerWorkflowEvent — closing reason', () => {
 
     const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'reopen', undefined, {}, 'duplicate');
 
-    expect(result).toMatchObject({ success: false, reason: 'Event reopen is not allowed from state open' });
+    expect(result).toMatchObject({ success: false, reason: "Transition 'reopen' is not available from status 'open'" });
     expect(projectWorkflowState).not.toHaveBeenCalled();
   });
 

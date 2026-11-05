@@ -63,6 +63,7 @@ vi.mock('../../../../utils/hooks/useGranted', () => ({
   KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
 }));
 
+vi.mock('../form/OpenVocabField', () => ({ default: () => null }));
 vi.mock('../../../../components/i18n', () => ({
   useFormatter: () => ({ t_i18n: (s: string) => s }),
 }));
