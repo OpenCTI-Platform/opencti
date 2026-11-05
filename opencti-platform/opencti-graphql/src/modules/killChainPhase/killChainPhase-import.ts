@@ -56,7 +56,7 @@ export const importKillChainPhase = async (
   }
   // 0 is an order: only null and absent leave it untouched
   if (order === null || order === undefined || order === existing.x_opencti_order) {
-    return refused('skipped', 'unchanged', 'Nothing to import', true, parsed.data);
+    return refused('skipped', 'unchanged', 'Already up to date', true, parsed.data);
   }
   if (!dryRun) {
     await killChainPhaseEditField(context, user, existing.id, [{ key: 'x_opencti_order', value: [order] }]);

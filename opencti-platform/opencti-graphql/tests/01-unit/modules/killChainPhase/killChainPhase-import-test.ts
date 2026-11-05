@@ -122,7 +122,7 @@ describe('importKillChainPhase', () => {
       ['has no order', names],
       ['has a null order', { ...names, x_opencti_order: null }],
     ])('skips it when the configuration %s', async (_name, configuration) => {
-      expect(await importKillChainPhase(context, user, configuration, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Nothing to import' });
+      expect(await importKillChainPhase(context, user, configuration, { mode: ConfigImportMode.Overwrite })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true, reason: 'Already up to date' });
       expect(killChainPhaseEditField).not.toHaveBeenCalled();
     });
   });
