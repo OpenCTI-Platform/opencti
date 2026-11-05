@@ -36,8 +36,26 @@ describe('rendered bars budget', () => {
 });
 
 describe('rendered points budget', () => {
-  it('shares the bars budget between every series', () => {
+  it('shares the bars budget between every series of grouped bars', () => {
     expect(getRenderedPointsBudget('vertical-bar', 800, 20)).toEqual(getRenderedBarsBudget(800));
+    expect(getRenderedPointsBudget('vertical-bar', 800, 20, false)).toEqual(getRenderedBarsBudget(800));
+  });
+
+  it('gives the bars budget to the columns of stacked bars, within the cost of their bars', () => {
+    // 10 series of 31 days: 31 columns of 10 bars
+    expect(getRenderedPointsBudget('vertical-bar', 500, 10, true)).toEqual(MAX_RENDERED_BARS);
+    expect(getRenderedPointsBudget('vertical-bar', 500, 10, true)).toBeGreaterThanOrEqual(10 * 31);
+    expect(getRenderedPointsBudget('vertical-bar', 500, 10)).toBeLessThan(10 * 31);
+    // A single series is one column per bar either way
+    expect(getRenderedPointsBudget('vertical-bar', 500, 1, true)).toEqual(getRenderedBarsBudget(500));
+    // Never more than the bars budget of the width per column, nor than the cost cap
+    expect(getRenderedPointsBudget('vertical-bar', 300, 2, true)).toEqual(2 * 150);
+    expect(getRenderedPointsBudget('vertical-bar', 2000, 50, true)).toEqual(MAX_RENDERED_BARS);
+    expect(getRenderedPointsBudget('vertical-bar', 0, 0, true)).toEqual(MAX_RENDERED_BARS);
+  });
+
+  it('does not change the budget of stacked areas', () => {
+    expect(getRenderedPointsBudget('area', 700, 10, true)).toEqual(getRenderedPointsBudget('area', 700, 10));
   });
 
   it('gives each line or area series a point every 2 pixels', () => {

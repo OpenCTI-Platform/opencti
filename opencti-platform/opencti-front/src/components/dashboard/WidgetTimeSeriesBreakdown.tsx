@@ -134,7 +134,8 @@ const WidgetTimeSeriesBreakdown = ({
     setChartWidth((previous) => nextBreakdownChartWidth(previous, width));
     return undefined;
   }, [width]);
-  const pointsBudget = chartWidth === undefined ? undefined : getRenderedPointsBudget(type, chartWidth, series.length);
+  const isStacked = parameters.stacked ?? false;
+  const pointsBudget = chartWidth === undefined ? undefined : getRenderedPointsBudget(type, chartWidth, series.length, isStacked);
 
   // The cost of every chart grows with its number of points, far past what its width can show:
   // sum the points into coarser intervals when needed

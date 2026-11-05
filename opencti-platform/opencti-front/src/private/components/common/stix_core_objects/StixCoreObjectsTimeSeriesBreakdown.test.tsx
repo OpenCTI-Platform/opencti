@@ -355,6 +355,29 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     expect((await drawn(mocks.bars)).interval).toEqual('month');
   });
 
+  it('keeps the days of stacked bars as long as their columns fit, and of grouped bars as long as every bar fits', async () => {
+    // The default daily breakdown: 10 series over the last 31 days
+    const series = Array.from({ length: 10 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(31) }));
+    respond(series);
+    const intervalAt = async (width: number, stacked: boolean) => {
+      vi.clearAllMocks();
+      mocks.width = width;
+      const { unmount } = render(makeWidget('vertical-bar', { breakdownBy: 'entity_type', interval: 'day', stacked }, multiTypesSelection));
+      const { interval } = await drawn(mocks.bars);
+      unmount();
+      return interval;
+    };
+    // 500 px give 250 bars, or 250 columns: 31 columns of 10 stacked bars fit, 310 grouped bars do not
+    expect(await intervalAt(500, true)).toEqual('day');
+    expect(await intervalAt(500, false)).toEqual('week');
+    expect(await intervalAt(1000, true)).toEqual('day');
+    expect(await intervalAt(1000, false)).toEqual('day');
+
+    // 50 stacked series of 31 days are 1550 bars: summed into weeks whatever the width
+    respond(Array.from({ length: 50 }, (_, i) => ({ label: `Type-${i}`, entity: null, values: dailyValues(31) })));
+    expect(await intervalAt(2000, true)).toEqual('week');
+  });
+
   it('does not draw the chart before it is measured, and shows a loader in the measured element', () => {
     respond([{ label: 'Report', entity: null, values: dailyValues(30) }]);
     mocks.width = 0;

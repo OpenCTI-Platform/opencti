@@ -31,11 +31,17 @@ export const getRenderedBarsBudget = (width: number) => {
 };
 
 /**
- * Number of points the chart can draw for a given width in pixels: bars share the width between
- * every series, while lines, areas and heatmaps draw each series across the whole width.
+ * Number of points the chart can draw for a given width in pixels: grouped bars share the width between
+ * every series, while stacked bars share it between their columns, one per date, as lines, areas and
+ * heatmaps draw each series across the whole width. Stacked bars still draw a bar per series and date:
+ * their cost keeps them under MAX_RENDERED_BARS.
  */
-export const getRenderedPointsBudget = (type: string, width: number, seriesCount: number) => {
-  if (type === 'vertical-bar') return getRenderedBarsBudget(width);
+export const getRenderedPointsBudget = (type: string, width: number, seriesCount: number, isStacked = false) => {
+  if (type === 'vertical-bar') {
+    return isStacked
+      ? Math.min(MAX_RENDERED_BARS, getRenderedBarsBudget(width) * Math.max(1, seriesCount))
+      : getRenderedBarsBudget(width);
+  }
   const chartWidth = width > 0 ? width : MAX_RENDERED_BARS * PIXELS_PER_BAR;
   const isHeatmap = type === 'heatmap';
   const pixelsPerPoint = isHeatmap ? PIXELS_PER_HEATMAP_CELL : PIXELS_PER_LINE_POINT;
