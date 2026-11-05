@@ -29,7 +29,13 @@ export const NotifierVariablesHelp = () => {
       <span>{t_i18n('Insert notification data with variables in the title or the template.')}</span>
       <Tooltip>
         <TooltipTrigger asChild>
-          <InfoOutlined fontSize="small" tabIndex={0} aria-label={t_i18n('How to insert notification data')} />
+          <InfoOutlined
+            fontSize="small"
+            tabIndex={0}
+            role="img"
+            aria-hidden={false}
+            aria-label={t_i18n('How to insert notification data')}
+          />
         </TooltipTrigger>
         <TooltipContent>
           <div>
