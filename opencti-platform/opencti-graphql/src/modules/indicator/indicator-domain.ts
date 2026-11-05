@@ -573,6 +573,7 @@ export interface IndicatorPatch {
   decay_history?: DecayHistory[];
   decay_next_reaction_date?: Date | null;
   x_opencti_detection?: boolean;
+  valid_until?: Date | string;
 }
 
 export const computeIndicatorDecayPatch = (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
@@ -581,7 +582,13 @@ export const computeIndicatorDecayPatch = (context: AuthContext, user: AuthUser,
   // after its decay rule (for example on upsert) must not be decayed or revoked any more.
   // Reset the next reaction date so the decay manager stops selecting it.
   if (indicator.decay_exclusion_applied_rule) {
-    return { decay_next_reaction_date: null };
+    const exclusionPatch: IndicatorPatch = { decay_next_reaction_date: null };
+    // The valid_until kept from the decay rule is the decay revoke date: lift it to the end date an
+    // excluded indicator gets at creation, so the expiration manager does not revoke it either.
+    if (indicator.decay_applied_rule) {
+      exclusionPatch.valid_until = UNTIL_END_STR;
+    }
+    return exclusionPatch;
   }
   const model = indicator.decay_applied_rule;
   if (!model || !model.decay_points) {

@@ -24,6 +24,7 @@ import { ADMIN_USER, testContext } from '../../../../tests/utils/testQuery';
 import { ENTITY_URL, ENTITY_IPV4_ADDR } from '../../../../src/schema/stixCyberObservable';
 import * as cacheModule from '../../../../src/database/cache';
 import * as stixFilteringModule from '../../../../src/utils/filtering/filtering-stix/stix-filtering';
+import { UNTIL_END_STR } from '../../../../src/utils/format';
 
 const indicator_fallback_applied_rule: IndicatorDecayRule = {
   decay_rule_id: 'fake-rule-id',
@@ -288,6 +289,7 @@ describe('Decay update testing', () => {
     expect(patchResult.x_opencti_score, 'An excluded indicator must keep its score.').toBeUndefined();
     expect(patchResult.decay_history, 'No decay history point must be added.').toBeUndefined();
     expect(patchResult.decay_next_reaction_date, 'The next reaction date must be reset so the decay manager stops selecting it.').toBeNull();
+    expect(patchResult.valid_until, 'The decay revoke date must be lifted so the expiration manager does not revoke it.').toBe(UNTIL_END_STR);
   });
 });
 
