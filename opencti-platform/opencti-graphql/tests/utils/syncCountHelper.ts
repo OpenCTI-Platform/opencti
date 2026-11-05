@@ -13,8 +13,8 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-// 2 created by ingestionDeduplication-test (an import, then the same import after the deletion)
-testCreatedCounter['attack-pattern'] = 27;
+// 2 created by ingestionDeduplication-test (an import, then the same import after the deletion), +1 sub-technique created and deleted by attackPattern-test (x_mitre_id)
+testCreatedCounter['attack-pattern'] = 28;
 testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
@@ -74,7 +74,7 @@ testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
 // Includes 5 created and deleted by stixRelationship-test, and 1 created by publicDashboard-test, deleted with its target (time series breakdown)
-testCreatedCounter.relationship = 154;
+testCreatedCounter.relationship = 155; // +1 subtechnique-of created by attackPattern-test, removed with its sub-technique
 // Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
 // Plus 3 created and deleted by workflow-entity-write-test
 testCreatedCounter.report = 77;
@@ -160,8 +160,8 @@ testMergedCounter['intrusion-set'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-// 2 by ingestionDeduplication-test
-testDeletedCounter['attack-pattern'] = 22;
+// 2 by ingestionDeduplication-test, +1 sub-technique deleted by attackPattern-test (x_mitre_id)
+testDeletedCounter['attack-pattern'] = 23;
 testDeletedCounter.campaign = 2;
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;

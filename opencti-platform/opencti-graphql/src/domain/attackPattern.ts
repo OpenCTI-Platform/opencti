@@ -94,7 +94,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
 
   const subTechniqueIds = new Set(subTechniquesRelations.map((s) => s.fromId));
   // This map regroups sub attack patterns by the parent attack pattern
-  const subTechniquesByParentId = new Map<string, { attack_pattern_id: string; name: string; description?: string }[]>();
+  const subTechniquesByParentId = new Map<string, { attack_pattern_id: string; name: string; description?: string; x_mitre_id?: string }[]>();
   const searchTextPartsByParentId = new Map<string, string[]>();
   for (const s of subTechniquesRelations) {
     const subAP = allAttackPatternsById.get(s.fromId);
@@ -103,7 +103,7 @@ export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUs
         subTechniquesByParentId.set(s.toId, []);
         searchTextPartsByParentId.set(s.toId, []);
       }
-      subTechniquesByParentId.get(s.toId)!.push({ attack_pattern_id: subAP.id, name: subAP.name, description: subAP.description });
+      subTechniquesByParentId.get(s.toId)!.push({ attack_pattern_id: subAP.id, name: subAP.name, description: subAP.description, x_mitre_id: subAP.x_mitre_id });
       searchTextPartsByParentId.get(s.toId)!.push(`${subAP.x_mitre_id} ${subAP.name} ${subAP.description}`);
     }
   }
