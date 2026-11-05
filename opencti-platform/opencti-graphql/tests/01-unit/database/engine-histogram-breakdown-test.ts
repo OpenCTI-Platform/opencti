@@ -22,7 +22,8 @@ import conf from '../../../src/config/conf';
 import {
   buildHistogramBreakdownAggregations,
   elAggregationCount,
-  elConnectionTypesAggregationCount,
+  elAggregationRanking,
+  elConnectionTypesRanking,
   elHistogramBreakdownCount,
   elKeywordWrittenForms,
   MAX_AGGREGATION_SIZE,
@@ -133,85 +134,108 @@ describe('engine: requests of the time series breakdowns', () => {
     elkSearch.mockReset();
   });
 
-  describe('elAggregationCount', () => {
-    const rankByCount = (bucketsOrder: 'asc' | 'desc') => elAggregationCount(context, SYSTEM_USER, 'index', {
-      field: 'creator_id',
-      normalizeLabel: false,
-      rankByCount: true,
-      bucketsOrder,
-    });
+  describe('elAggregationRanking', () => {
+    const rank = (rankingOrder: 'asc' | 'desc') => elAggregationRanking(context, SYSTEM_USER, 'index', { field: 'creator_id', rankingOrder });
     const genres = (sumOtherDocCount: number) => searchResponse({
-      genres: { sum_other_doc_count: sumOtherDocCount, buckets: [{ key: 'user-a', doc_count: 1 }, { key: 'user-b', doc_count: 3 }] },
+      genres: {
+        sum_other_doc_count: sumOtherDocCount,
+        buckets: [{ key: 'user-a', doc_count: 3, weight: { value: 3 } }, { key: 'user-b', doc_count: 2, weight: { value: 7 } }],
+      },
     });
+    const weight = { weight: { sum: { field: 'i_inference_weight', missing: 1 } } };
 
-    it('should rank every value of every shard for the lowest values', async () => {
+    it('should rank every value of every shard on its weighted total for the lowest values', async () => {
       elkSearch.mockResolvedValue(genres(0));
 
-      const distribution = await rankByCount('asc');
+      const ranking = await rank('asc');
 
       expect(lastSearchBody().aggs.genres).toEqual({
-        terms: { field: 'creator_id.keyword', size: MAX_EXACT_RANKING_SIZE, shard_size: MAX_EXACT_RANKING_SIZE, order: { _count: 'asc' } },
+        terms: { field: 'creator_id.keyword', size: MAX_EXACT_RANKING_SIZE, shard_size: MAX_EXACT_RANKING_SIZE, order: { weight: 'asc' } },
+        aggs: weight,
       });
-      expect(distribution).toEqual([
-        { key: 'user-a', label: 'user-a', value: 1, count: 1 },
-        { key: 'user-b', label: 'user-b', value: 3, count: 3 },
-      ]);
+      // The value is the weighted total, as the series count it, not the number of documents
+      expect(ranking).toEqual({
+        sumOtherDocCount: 0,
+        buckets: [
+          { key: 'user-a', label: 'user-a', value: 3, count: 3 },
+          { key: 'user-b', label: 'user-b', value: 7, count: 2 },
+        ],
+      });
     });
 
-    it('should keep the top values of each shard for the highest values', async () => {
-      // Values left out are expected in desc: they are below the ones kept
+    it('should keep the top values of each shard on their weighted total for the highest values', async () => {
+      // Values left out are expected in desc: they are below the ones kept, and counted
       elkSearch.mockResolvedValue(genres(12));
 
-      await expect(rankByCount('desc')).resolves.toHaveLength(2);
+      const ranking = await rank('desc');
 
       expect(lastSearchBody().aggs.genres).toEqual({
-        terms: { field: 'creator_id.keyword', size: MAX_AGGREGATION_SIZE, order: { _count: 'desc' } },
+        terms: { field: 'creator_id.keyword', size: MAX_AGGREGATION_SIZE, order: { weight: 'desc' } },
+        aggs: weight,
       });
+      expect(ranking.buckets).toHaveLength(2);
+      expect(ranking.sumOtherDocCount).toEqual(12);
     });
 
     it('should refuse the lowest values when a value was left out, the ranking being no longer exact', async () => {
       elkSearch.mockResolvedValue(genres(1));
 
-      await expect(rankByCount('asc')).rejects.toMatchObject({
+      await expect(rank('asc')).rejects.toMatchObject({
         extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'too_many_values', max: MAX_EXACT_RANKING_SIZE } },
       });
     });
 
-    it('should not check the values left out of a weighted distribution', async () => {
+    it('should keep a request aborted by its client a client abort', async () => {
+      await expect(elAggregationRanking(abortedContext(), SYSTEM_USER, 'index', { field: 'creator_id', rankingOrder: 'desc' }))
+        .rejects.toMatchObject({ extensions: { code: CLIENT_ABORT_ERROR } });
+      expect(elkSearch).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('elAggregationCount', () => {
+    it('should keep the request of the distributions: the top values by documents, with the missing bucket', async () => {
       elkSearch.mockResolvedValue(searchResponse({
         genres: { sum_other_doc_count: 5, buckets: [{ key: 'malware', doc_count: 2, weight: { value: 2 } }] },
       }));
 
-      const distribution = await elAggregationCount(context, SYSTEM_USER, 'index', { field: 'entity_type', bucketsOrder: 'asc' });
+      const distribution = await elAggregationCount(context, SYSTEM_USER, 'index', { field: 'entity_type' });
 
       expect(distribution).toEqual([{ key: 'malware', label: 'Malware', value: 2, count: 2 }]);
-      expect(lastSearchBody().aggs.genres.terms).toEqual({ field: 'entity_type.keyword', size: MAX_AGGREGATION_SIZE, missing: 'unknown', order: { weight: 'asc' } });
+      expect(lastSearchBody().aggs.genres).toEqual({
+        terms: { field: 'entity_type.keyword', size: MAX_AGGREGATION_SIZE, missing: 'unknown' },
+        aggs: { weight: { sum: { field: 'i_inference_weight', missing: 1 } } },
+      });
     });
   });
 
-  describe('elConnectionTypesAggregationCount', () => {
-    const rankTypes = (bucketsOrder: 'asc' | 'desc', ctx = context) => elConnectionTypesAggregationCount(ctx, SYSTEM_USER, 'index', {
+  describe('elConnectionTypesRanking', () => {
+    const rankTypes = (rankingOrder: 'asc' | 'desc', ctx = context) => elConnectionTypesRanking(ctx, SYSTEM_USER, 'index', {
       connectionSide: 'from',
-      bucketsOrder,
+      rankingOrder,
     });
+    const typeBucket = (key: string, count: number, weight: number) => ({ key, doc_count: count, relationships: { doc_count: count, weight: { value: weight } } });
     const connections = (sumOtherDocCount: number) => searchResponse({
-      connections: { side: { types: { sum_other_doc_count: sumOtherDocCount, buckets: [{ key: 'malware', doc_count: 2 }] } } },
+      connections: { side: { types: { sum_other_doc_count: sumOtherDocCount, buckets: [typeBucket('malware', 2, 5)] } } },
     });
-    const typesTermsOf = (body: any) => body.aggs.connections.aggs.side.aggs.types.terms;
+    const typesOf = (body: any) => body.aggs.connections.aggs.side.aggs.types;
 
-    it('should rank every type of every shard for the lowest types, the abstract ones excluded', async () => {
+    it('should rank every type of every shard on the weighted total of its relationships for the lowest types, the abstract ones excluded', async () => {
       elkSearch.mockResolvedValue(connections(0));
 
-      const distribution = await rankTypes('asc');
+      const ranking = await rankTypes('asc');
 
-      expect(typesTermsOf(lastSearchBody())).toMatchObject({
-        field: 'connections.types.keyword',
-        size: MAX_EXACT_RANKING_SIZE,
-        shard_size: MAX_EXACT_RANKING_SIZE,
-        order: { _count: 'asc' },
-        exclude: expect.arrayContaining(['stix-domain-object', 'basic-object']),
+      expect(typesOf(lastSearchBody())).toEqual({
+        terms: {
+          field: 'connections.types.keyword',
+          size: MAX_EXACT_RANKING_SIZE,
+          shard_size: MAX_EXACT_RANKING_SIZE,
+          order: { 'relationships>weight': 'asc' },
+          exclude: expect.arrayContaining(['stix-domain-object', 'basic-object']),
+        },
+        // The weight of the relationships themselves, reached back from their connection
+        aggs: { relationships: { reverse_nested: {}, aggs: { weight: { sum: { field: 'i_inference_weight', missing: 1 } } } } },
       });
-      expect(distribution).toEqual([{ key: 'malware', label: 'Malware', value: 2, count: 2 }]);
+      expect(ranking).toEqual({ sumOtherDocCount: 0, buckets: [{ key: 'malware', label: 'Malware', value: 5, count: 2 }] });
     });
 
     it('should name the types after their registered type', async () => {
@@ -221,26 +245,26 @@ describe('engine: requests of the time series breakdowns', () => {
           side: {
             types: {
               sum_other_doc_count: 0,
-              buckets: ['imei', 'securityplatform', 'intrusion-set', 'uses', 'ipv4-addr'].map((key) => ({ key, doc_count: 1 })),
+              buckets: ['imei', 'securityplatform', 'intrusion-set', 'uses', 'ipv4-addr'].map((key) => typeBucket(key, 1, 1)),
             },
           },
         },
       }));
 
-      const distribution = await rankTypes('desc');
+      const { buckets } = await rankTypes('desc');
 
       // A name of no registered type keeps the label converted from it
-      expect(distribution.map(({ label }) => label)).toEqual(['IMEI', 'SecurityPlatform', 'Intrusion-Set', 'uses', 'IPv4-Addr']);
+      expect(buckets.map(({ label }) => label)).toEqual(['IMEI', 'SecurityPlatform', 'Intrusion-Set', 'uses', 'IPv4-Addr']);
       vi.restoreAllMocks();
     });
 
     it('should keep the top types of each shard for the highest types', async () => {
       elkSearch.mockResolvedValue(connections(4));
 
-      await expect(rankTypes('desc')).resolves.toHaveLength(1);
+      await expect(rankTypes('desc')).resolves.toMatchObject({ sumOtherDocCount: 4, buckets: [{ key: 'malware' }] });
 
-      const terms = typesTermsOf(lastSearchBody());
-      expect(terms).toMatchObject({ field: 'connections.types.keyword', size: MAX_AGGREGATION_SIZE, order: { _count: 'desc' } });
+      const { terms } = typesOf(lastSearchBody());
+      expect(terms).toMatchObject({ field: 'connections.types.keyword', size: MAX_AGGREGATION_SIZE, order: { 'relationships>weight': 'desc' } });
       expect(terms.shard_size).toBeUndefined();
     });
 

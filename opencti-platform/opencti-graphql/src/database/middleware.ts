@@ -60,11 +60,12 @@ import {
 import {
   type AggregationRelationsCount,
   elAggregationCount,
+  elAggregationRanking,
   elAggregationNestedTermsWithFilter,
   elAggregationRelationsCount,
   elConnection,
   type ConnectionSide,
-  elConnectionTypesAggregationCount,
+  elConnectionTypesRanking,
   elDeleteElements,
   elFindByIds,
   type ElFindByIdsOpts,
@@ -1140,17 +1141,17 @@ const timeSeriesBreakdown = async (
     // Same inclusive bounds as the histogram below, so both requests see the same entities
     intervalInclude: true,
   };
-  const bucketsOrder = isAscending ? 'asc' : 'desc';
+  const rankingOrder = isAscending ? 'asc' : 'desc';
   // 1. Discover the candidate values over the whole period. Vocabulary and enum values keep their raw form.
-  // Ranked on their number of entities (the series values below stay weighted), which spares the weight
-  // sum of every value; no missing bucket either, so a real "unknown" value is a value like any other.
-  // The types of a side of the relationships are ranked the same way, on their number of relationships.
-  // desc gets the top values only, asc every value, ranked exactly or refused when there are too many of them.
-  const candidates = connectionSide
-    ? await elConnectionTypesAggregationCount(context, user, indices, { ...breakdownArgs, connectionSide, bucketsOrder })
-    : await elAggregationCount(context, user, indices, { ...breakdownArgs, normalizeLabel: false, rankByCount: true, bucketsOrder });
+  // Ranked on the weighted total the series count below, the types of a side of the relationships on the one of
+  // their relationships: the order of the series and their selection follow their totals, inferred
+  // relationships included. desc gets the top values only, asc every value, ranked exactly or refused when there
+  // are too many of them.
+  const { buckets: candidates, sumOtherDocCount } = connectionSide
+    ? await elConnectionTypesRanking(context, user, indices, { ...breakdownArgs, connectionSide, rankingOrder })
+    : await elAggregationRanking(context, user, indices, { ...breakdownArgs, rankingOrder });
   const labelledCandidates = resolveLabel ? candidates.map((candidate) => ({ ...candidate, label: resolveLabel(candidate.key) })) : candidates;
-  // desc keeps the values with the most entities over the period, asc the fewest
+  // desc keeps the values with the highest total over the period, asc the lowest
   const sortedCandidates = R.sortWith([isAscending ? R.ascend(R.prop('value')) : R.descend(R.prop('value'))], labelledCandidates);
   // 2. Drop unresolvable values (like the SYSTEM user) before applying the limit, so the limit is honored.
   // Resolved page by page: one more value than the limit is enough to know whether the series are truncated.
@@ -1165,9 +1166,8 @@ const timeSeriesBreakdown = async (
     usableCandidates = sortedCandidates.map((candidate) => ({ ...candidate, entity: null }));
   }
   const selected = R.take(seriesLimit, usableCandidates);
-  // In desc, the terms aggregation is capped: a full candidates page means some values may never have been seen.
-  // In asc, every value has been seen.
-  const truncated = usableCandidates.length > seriesLimit || (!isAscending && candidates.length >= MAX_AGGREGATION_SIZE);
+  // More usable values than the limit, or values the ranking left out (in desc only: asc gets them all or refuses)
+  const truncated = usableCandidates.length > seriesLimit || sumOtherDocCount > 0;
   if (selected.length === 0 && !withOther) {
     return { truncated, dates: [], series: [] };
   }
@@ -1193,7 +1193,7 @@ const timeSeriesBreakdown = async (
   const sumOf = (values: number[]) => values.reduce((total, value) => total + value, 0);
   const series = selected.map(({ label, entity, key }) => {
     const values = fillTimeSeriesValues(axis, histograms.get(key) ?? []);
-    // The weighted total of the series, the candidates being only ranked on their number of entities
+    // The total of the series over the period, as its values count it: the weighted total it was ranked on
     return { label: vocabularyLabels.get(key) ?? label, total: sumOf(values), entity, isOther: false, values };
   });
   if (withOther) {
