@@ -46,6 +46,19 @@ export const dashboardsQuery = graphql`
             id
             usedInWidgetIds
           }
+          presets {
+            id
+            name
+            values {
+              variableId
+              value
+            }
+            config {
+              startDate
+              endDate
+              relativeDate
+            }
+          }
         }
       }
     }

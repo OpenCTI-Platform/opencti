@@ -18,6 +18,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import DashboardField from '../../common/form/DashboardField';
+import DashboardPresetField from '../../common/form/DashboardPresetField';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -84,6 +85,7 @@ interface SettingsOrganizationFormValues {
   x_opencti_organization_type: string | null;
   contact_information: string | null;
   default_dashboard: FieldOption | null;
+  default_dashboard_preset: string | null;
   message?: string;
   references?: FieldOption[];
   grantable_groups: { label: string; value: string }[];
@@ -147,6 +149,7 @@ const SettingsOrganizationEdition = ({
           label: organization.default_dashboard.name,
         }
       : null,
+    default_dashboard_preset: organization.default_dashboard_preset ?? null,
     grantable_groups: convertGrantableGroups(organization),
   };
   const onSubmit: FormikConfig<SettingsOrganizationFormValues>['onSubmit'] = (
@@ -273,8 +276,24 @@ const SettingsOrganizationEdition = ({
                 )}
               />
               <DashboardField
-                onChange={editor.changeField}
+                onChange={(name, value) => {
+                  editor.changeField(name, value);
+                  // Another dashboard: its presets are other ones.
+                  if (values.default_dashboard_preset) {
+                    setFieldValue('default_dashboard_preset', null);
+                    editor.changeField('default_dashboard_preset', '');
+                  }
+                }}
                 context={context}
+              />
+              <DashboardPresetField
+                dashboardId={values.default_dashboard?.value}
+                value={values.default_dashboard_preset}
+                style={{ marginTop: 20 }}
+                onChange={(value) => {
+                  setFieldValue('default_dashboard_preset', value);
+                  editor.changeField('default_dashboard_preset', value ?? '');
+                }}
               />
               <SettingsOrganizationHiddenTypesField organizationData={organization} />
               <EEField featureLabel="Organization sharing">

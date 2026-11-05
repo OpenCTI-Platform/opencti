@@ -3,7 +3,7 @@ import SwitchField from '../fields/SwitchField';
 import { useFormatter } from '../i18n';
 import type { DashboardConfig } from './dashboard-types';
 
-export type ViewerPermissions = Pick<DashboardConfig, 'allowViewersToEditTimeFilters' | 'allowViewersToChangeVariables'>;
+export type ViewerPermissions = Pick<DashboardConfig, 'allowViewersToEditTimeFilters' | 'allowViewersToChangeVariables' | 'allowViewersToSwitchPresets'>;
 type ViewerPermission = keyof ViewerPermissions;
 
 interface DashboardViewerPermissionsProps {
@@ -25,7 +25,11 @@ const DashboardViewerPermissions = ({ config, pending = [], onChange }: Dashboar
   return (
     <Formik
       enableReinitialize
-      initialValues={{ allowViewersToEditTimeFilters: isOn('allowViewersToEditTimeFilters'), allowViewersToChangeVariables: isOn('allowViewersToChangeVariables') }}
+      initialValues={{
+        allowViewersToEditTimeFilters: isOn('allowViewersToEditTimeFilters'),
+        allowViewersToChangeVariables: isOn('allowViewersToChangeVariables'),
+        allowViewersToSwitchPresets: isOn('allowViewersToSwitchPresets'),
+      }}
       onSubmit={() => {}}
     >
       <Form>
@@ -46,6 +50,16 @@ const DashboardViewerPermissions = ({ config, pending = [], onChange }: Dashboar
           label={t_i18n('Allow viewers to change variable values')}
           checked={isOn('allowViewersToChangeVariables')}
           disabled={pending.includes('allowViewersToChangeVariables')}
+          containerstyle={{ marginTop: 20 }}
+          onChange={handleChange}
+        />
+        <Field
+          component={SwitchField}
+          type="checkbox"
+          name="allowViewersToSwitchPresets"
+          label={t_i18n('Allow viewers to switch presets')}
+          checked={isOn('allowViewersToSwitchPresets')}
+          disabled={pending.includes('allowViewersToSwitchPresets')}
           containerstyle={{ marginTop: 20 }}
           onChange={handleChange}
         />

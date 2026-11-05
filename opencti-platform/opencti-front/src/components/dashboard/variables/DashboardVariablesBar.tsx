@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import Stack from '@mui/material/Stack';
 import { AddOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
@@ -28,6 +28,8 @@ export interface DashboardVariablesBarProps {
   onCreate?: () => void;
   onEdit?: (variable: DashboardVariable) => void;
   onDelete?: (variable: DashboardVariable) => void;
+  // Rendered first in the bar: the preset selector of the dashboard.
+  leading?: ReactNode;
 }
 
 // An unset variable (no default, no value) and an empty value are the same thing.
@@ -54,6 +56,7 @@ const DashboardVariablesBar = ({
   onCreate,
   onEdit,
   onDelete,
+  leading,
 }: DashboardVariablesBarProps) => {
   const { t_i18n } = useFormatter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,7 +65,7 @@ const DashboardVariablesBar = ({
 
   const invalidDefaultIds = useMemo(() => getInvalidDefaultVariableIds(variables), [variables]);
 
-  if (variables.length === 0 && !onCreate) return null;
+  if (variables.length === 0 && !onCreate && !leading) return null;
 
   const isModified = isTimeRangeModified || isModifiedFromDefaults(variables, values, defaults);
   const handleSetAsDefaults = async () => {
@@ -85,6 +88,7 @@ const DashboardVariablesBar = ({
         marginBottom: 1.5,
       }}
     >
+      {leading}
       {variables.map((variable) => (
         <DashboardVariableChip
           key={variable.id}

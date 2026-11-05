@@ -7,6 +7,7 @@ import { deserializeDashboardManifestForFrontend } from '../../../../../componen
 import { buildDefaultVariableValues, isValidVariableValue } from '../../../../../components/dashboard/dashboardVariablesResolution';
 import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
 import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
+import { presetFromGraphql, type GraphqlDashboardPreset } from '../../../../../components/dashboard/presets/dashboardPresets';
 
 /**
  * Generates a URI key slug from a dashboard name.
@@ -42,11 +43,13 @@ export interface PublicDashboardCreationFormData {
   time_range: PublishedTimeRange;
 }
 
-// A dashboard as the creation form loads it: the manifest holds the definitions, `variables` their usage.
+// A dashboard as the creation form loads it: the manifest holds the definitions, `variables` their usage,
+// `presets` the sets of values an author can start the publication from.
 export interface PublishableDashboard {
   id: string;
   manifest?: string | null;
   variables?: readonly { id: string; usedInWidgetIds: readonly string[] }[] | null;
+  presets?: readonly GraphqlDashboardPreset[] | null;
 }
 
 export const EMPTY_PUBLISHED_TIME_RANGE: PublishedTimeRange = { startDate: null, endDate: null, relativeDate: null };
@@ -100,6 +103,24 @@ export const buildPublishedValuesState = (
     variable_values: buildPublishedVariableValues(variables, stored),
     time_range: localRange ?? { startDate: startDate ?? null, endDate: endDate ?? null, relativeDate: relativeDate ?? null },
   };
+};
+
+/**
+ * The published values a preset gives: its value for every offered variable it holds, the default of the variable for
+ * the others, and its time range. A snapshot: the public dashboard is not tied to the preset afterwards.
+ */
+export const applyPresetToPublishedValues = (
+  preset: GraphqlDashboardPreset,
+  variables: readonly DashboardVariable[],
+): Pick<PublicDashboardCreationFormData, 'variable_values' | 'time_range'> => {
+  const { values, config } = presetFromGraphql(preset);
+  const defaults = Object.fromEntries(buildDefaultVariableValues([...variables]));
+  const variableValues: Record<string, string> = { ...defaults };
+  variables.forEach((variable) => {
+    const value = values[variable.id];
+    if (value !== undefined && isValidVariableValue(variable, value)) variableValues[variable.id] = value;
+  });
+  return { variable_values: variableValues, time_range: { startDate: config.startDate, endDate: config.endDate, relativeDate: config.relativeDate } };
 };
 
 /**
