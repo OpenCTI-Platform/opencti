@@ -59,6 +59,8 @@ vi.mock('../../../src/database/middleware', () => ({
   loadEntity: vi.fn(),
   updateAttribute: vi.fn(),
   deleteElementById: vi.fn(),
+  // An id is kept as is; a name gets the case insensitive vocabulary id, like the real identifier
+  idVocabulary: (nameOrId: string) => (nameOrId.startsWith('vocabulary--') ? nameOrId : `vocabulary--${nameOrId.toLowerCase()}`),
 }));
 
 vi.mock('../../../src/database/middleware-loader', () => ({
@@ -4817,7 +4819,12 @@ describe('triggerWorkflowEvent — closing reason', () => {
       if (type === 'WorkflowDefinition') {
         return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
       }
-      if (type === 'Vocabulary') return ['vocabulary--duplicate', 'vocabulary--false-positive', 'vocabulary--true-positive'].includes(id) ? { id, name: id.replace('vocabulary--', '') } : null;
+      if (type === 'Vocabulary') {
+        if (id === 'vocabulary--malware') return { id, name: 'malware', category: 'malware_type_ov' };
+        return ['vocabulary--duplicate', 'vocabulary--false-positive', 'vocabulary--true-positive'].includes(id)
+          ? { id, name: id.replace('vocabulary--', ''), category: 'closing_reason_ov' }
+          : null;
+      }
       return null;
     });
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
@@ -4944,6 +4951,44 @@ describe('triggerWorkflowEvent — closing reason', () => {
 
     expect(result.success).toBe(true);
     expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, executionUser, entity, 'closed', StatusScope.Global, 'duplicate');
+  });
+
+  it('rejects the id of a vocabulary from another category', async () => {
+    setup('allowed');
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close', undefined, {}, 'vocabulary--malware');
+
+    expect(result).toMatchObject({ success: false, reason: 'Closing reason must be a value of the closing reason vocabulary' });
+  });
+
+  it('clears the closing reason in a workflow that no longer asks for one', async () => {
+    const workflowContent = {
+      initialState: 'closed',
+      states: [{ statusId: 'open' }, { statusId: 'closed' }],
+      transitions: [
+        { from: 'closed', to: 'open', event: 'reopen' },
+        { from: 'open', to: 'closed', event: 'close' },
+      ],
+    };
+    const version = { id: 'v1', content: JSON.stringify(workflowContent), validation_errors: [] };
+    (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
+      if (type === 'Basic-Object') return entity;
+      if (type === 'WorkflowDefinition') return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
+      return null;
+    });
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (loadEntity as any).mockResolvedValue({ ...existingInstance, currentState: 'closed' });
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({ success: true }),
+      getCurrentState: vi.fn().mockReturnValue('open'),
+    });
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'reopen');
+
+    expect(result.success).toBe(true);
+    expect(projectWorkflowState).toHaveBeenCalledWith(mockContext, executionUser, entity, 'open', StatusScope.Global, null);
   });
 
   it('rejects a closing reason that is not a value of the closing reason vocabulary', async () => {

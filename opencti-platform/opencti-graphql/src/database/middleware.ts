@@ -1049,7 +1049,7 @@ const depsKeys = (type: string): { src: string; dst?: string; types?: string[] }
   ],
 ]);
 
-const idVocabulary = (nameOrId: string, category: string) => {
+export const idVocabulary = (nameOrId: string, category: string) => {
   return isAnId(nameOrId) ? nameOrId : generateStandardId(ENTITY_TYPE_VOCABULARY, { name: nameOrId, category });
 };
 

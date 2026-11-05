@@ -6,7 +6,7 @@ import { ForbiddenAccess, FunctionalError } from '../../../config/errors';
 import { getEntitiesListFromCache } from '../../../database/cache';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
-import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
+import { createEntity, createRelation, deleteElementById, idVocabulary, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
 import { READ_DATA_INDICES, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
 import { elAggregationCount, ES_MAX_CONCURRENCY } from '../../../database/engine';
@@ -15,7 +15,6 @@ import { resolveUserById } from '../../user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../domain/status';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
 import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode, VocabularyCategory } from '../../../generated/graphql';
-import { generateStandardId } from '../../../schema/identifier';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from '../../vocabulary/vocabulary-types';
 import { lockResources } from '../../../lock/master-lock';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
@@ -1450,14 +1449,11 @@ export const getMassWorkflowTransitions = async (
 const isClosingReasonMode = (mode: string | undefined) => mode === 'allowed' || mode === 'required';
 
 // A closing reason is only asked on the way into a final state (no transition leaves it), and kept while the entity
-// stays in one: a bypass or an external status write moving it to a state it can leave clears it.
+// stays in one: any move to a state it can leave clears it.
 // It does not look at the stored reason: the entity may be read before the lock, and clearing an empty one changes nothing.
-// Workflows asking for no closing reason never touch it.
-const clearsClosingReason = (transitions: Pick<WorkflowSerializedTransition, 'from' | 'closingReason'>[] | undefined, fromState: string, toState: string) => {
-  const allTransitions = transitions ?? [];
-  return fromState !== toState
-    && allTransitions.some((t) => isClosingReasonMode(t.closingReason))
-    && findStatesWithOutgoingTransitions(allTransitions).has(toState);
+// Nor at the transitions asking for one: a workflow that stopped asking must still clear a reason given before.
+const clearsClosingReason = (transitions: Pick<WorkflowSerializedTransition, 'from'>[] | undefined, fromState: string, toState: string) => {
+  return fromState !== toState && findStatesWithOutgoingTransitions(transitions ?? []).has(toState);
 };
 
 const resolveTransitionClosingReason = (
@@ -1478,10 +1474,11 @@ const resolveTransitionClosingReason = (
 };
 
 // Vocabulary ids ignore case: the stored value takes the vocabulary spelling so usages, renames and filters match it
+// An id of a vocabulary from another category is not a closing reason
 const findClosingReasonVocabularyName = async (context: AuthContext, value: string): Promise<string | undefined> => {
-  const vocabularyId = generateStandardId(ENTITY_TYPE_VOCABULARY, { name: value, category: VocabularyCategory.ClosingReasonOv });
+  const vocabularyId = idVocabulary(value, VocabularyCategory.ClosingReasonOv);
   const vocabulary = await storeLoadById<BasicStoreEntityVocabulary>(context, SYSTEM_USER, vocabularyId, ENTITY_TYPE_VOCABULARY);
-  return vocabulary?.name;
+  return vocabulary?.category === VocabularyCategory.ClosingReasonOv ? vocabulary.name : undefined;
 };
 
 /**
