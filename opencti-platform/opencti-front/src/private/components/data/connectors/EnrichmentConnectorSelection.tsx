@@ -7,7 +7,7 @@ import { Box, Typography } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { Alert, Checkbox } from '@filigran/design-system';
 
-const enrichmentConnectorsQuery = graphql`
+export const enrichmentConnectorsQuery = graphql`
   query EnrichmentConnectorSelectionQuery($type: String!) {
     enrichmentConnectors(type: $type) {
       id

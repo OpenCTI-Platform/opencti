@@ -12,6 +12,9 @@ import { useGraphContext } from '../../../../../components/graph/GraphContext';
 import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
 import { addInEnrichmentMap } from './investigation-enrichment.utils';
 import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
+import InvestigationEnrichmentMenuAction from './InvestigationEnrichmentMenuAction';
+import useInvestigationEnrichmentRights from './useInvestigationEnrichmentRights';
+import { TabList } from './InvestigationEnrichmentDrawerTabs';
 
 const investigationQuery = graphql`
   query InvestigationEnrichmentToolQuery($id: String!, $entityIds: [String!]) {
@@ -99,7 +102,9 @@ const InvestigationEnrichmentToolComponent = ({
   onExpand,
 }: InvestigationEnrichmentToolComponentProps) => {
   const [openEnrichment, setOpenEnrichment] = useState(false);
+  const [tab, setTab] = useState<TabList>('toreview');
   const { workspace: investigation } = usePreloadedQuery(investigationQuery, queryRef);
+  const { canLaunch } = useInvestigationEnrichmentRights(investigation?.currentUserAccessRight);
 
   const { works, haveErrors, nbWorks } = useMemo(() => {
     let worksInError = false;
@@ -139,8 +144,20 @@ const InvestigationEnrichmentToolComponent = ({
         onClick={() => setOpenEnrichment(true)}
       />
 
+      <InvestigationEnrichmentMenuAction
+        investigationId={investigation.id}
+        canLaunch={canLaunch}
+        onLaunched={() => {
+          setTab('toreview');
+          setOpenEnrichment(true);
+          onRefresh();
+        }}
+      />
+
       <InvestigationEnrichmentDrawer
         open={openEnrichment}
+        tab={tab}
+        onTabChange={setTab}
         investigation={investigation}
         works={works}
         nbWorks={nbWorks}

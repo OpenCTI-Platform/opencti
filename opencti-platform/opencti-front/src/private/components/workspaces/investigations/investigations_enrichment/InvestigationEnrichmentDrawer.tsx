@@ -30,6 +30,8 @@ const dismissReviewMutation = graphql`
 interface InvestigationEnrichmentDrawerProps {
   open: boolean;
   onClose: () => void;
+  tab: TabList;
+  onTabChange: (tab: TabList) => void;
   investigation: Investigation;
   works: InvestigationWorkSorted;
   nbWorks: number;
@@ -40,6 +42,8 @@ interface InvestigationEnrichmentDrawerProps {
 const InvestigationEnrichmentDrawer = ({
   open,
   onClose,
+  tab,
+  onTabChange,
   investigation,
   works,
   nbWorks,
@@ -47,7 +51,6 @@ const InvestigationEnrichmentDrawer = ({
   onExpand,
 }: InvestigationEnrichmentDrawerProps) => {
   const { t_i18n } = useFormatter();
-  const [tab, setTab] = useState<TabList>('toreview');
   const [worksToReview, setWorksToReview] = useState<InvestigationEnrichmentWork[]>([]);
   const [workToAddAll, setWorkToAddAll] = useState<InvestigationEnrichmentWork>();
 
@@ -124,7 +127,7 @@ const InvestigationEnrichmentDrawer = ({
 
           <InvestigationEnrichmentDrawerTabs
             current={tab}
-            onChange={setTab}
+            onChange={onTabChange}
             works={works}
           />
 
@@ -152,7 +155,7 @@ const InvestigationEnrichmentDrawer = ({
             onAddAll={setWorkToAddAll}
             onEnrichment={() => {
               askRefresh();
-              setTab('ongoing');
+              onTabChange('ongoing');
             }}
           />
         </>

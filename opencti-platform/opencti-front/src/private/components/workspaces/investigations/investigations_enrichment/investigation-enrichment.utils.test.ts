@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { InvestigationEnrichmentWork } from './investigation-enrichment.types';
-import { countExpandOptions, ExpandElement, isNothingToExpand, selectExpandIds, toExpandElements } from './investigation-enrichment.utils';
+import {
+  countExpandOptions,
+  ExpandElement,
+  isNothingToExpand,
+  selectExpandIds,
+  toEnrichmentSelection,
+  toEnrichmentTaskActions,
+  toExpandElements,
+} from './investigation-enrichment.utils';
 
 const malware: ExpandElement = { id: 'malware-1', entity_type: 'Malware' };
 const indicator: ExpandElement = { id: 'indicator-1', entity_type: 'Indicator' };
@@ -79,5 +87,32 @@ describe('Function: selectExpandIds', () => {
 
   it('adds each element once', () => {
     expect(selectExpandIds(elements, new Set(), ['Indicator', 'Malware'], ['indicates'])).toEqual(['malware-1', 'indicator-1', 'indicator-2', 'rel-1']);
+  });
+});
+
+describe('Function: toEnrichmentSelection', () => {
+  const ip = { id: 'ip-1', label: '198.51.100.7', entity_type: 'IPv4-Addr' };
+  const otherIp = { id: 'ip-2', label: '203.0.113.24', entity_type: 'IPv4-Addr' };
+  const domain = { id: 'domain-1', label: 'example.com', entity_type: 'Domain-Name' };
+
+  it('gives the type of a selection of one type, with its elements named after their label', () => {
+    const { selectionMap, selectionSize, enrichmentType } = toEnrichmentSelection([ip, otherIp]);
+    expect(enrichmentType).toBe('IPv4-Addr');
+    expect(selectionSize).toBe(2);
+    expect(selectionMap['ip-1']).toEqual({ ...ip, name: '198.51.100.7' });
+  });
+
+  it('gives no type to a selection mixing types, or to an empty one', () => {
+    expect(toEnrichmentSelection([ip, domain]).enrichmentType).toBeUndefined();
+    expect(toEnrichmentSelection([]).enrichmentType).toBeUndefined();
+  });
+});
+
+describe('Function: toEnrichmentTaskActions', () => {
+  it('enriches with the connectors and tags the works with the investigation', () => {
+    expect(toEnrichmentTaskActions(['connector-1'], 'investigation-1')).toEqual([{
+      type: 'ENRICHMENT',
+      context: { values: ['connector-1'], options: { investigationId: 'investigation-1' } },
+    }]);
   });
 });
