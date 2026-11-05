@@ -1328,8 +1328,9 @@ export const getAllowedTransitions = async (
 
   // View access alone isn't enough to trigger a transition: a view-only user (e.g. restricted by
   // an authorized-members group restriction) must not see any transition as available.
+  // From a draft, the user needs edit access to both the draft version and the live entity that gets the status.
   const statusWriteTarget = await loadStatusWriteTarget(context, user, entityId, entity);
-  if (!validateUserAccessOperation(user, statusWriteTarget, AccessOperation.EDIT)) {
+  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT) || !validateUserAccessOperation(user, statusWriteTarget, AccessOperation.EDIT)) {
     return [];
   }
   // Same for a user whose confidence level is too low to write the new status
@@ -1479,8 +1480,9 @@ export const triggerWorkflowEvent = async (
   // View access alone isn't enough to trigger a transition: mirrors the check in
   // getAllowedTransitions, which only hides transitions from the UI and does not itself
   // prevent a view-only user from calling this mutation directly.
+  // From a draft, the user needs edit access to both the draft version and the live entity that gets the status.
   const statusWriteTarget = await loadStatusWriteTarget(context, user, entityId, entity);
-  if (!validateUserAccessOperation(user, statusWriteTarget, AccessOperation.EDIT)) {
+  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT) || !validateUserAccessOperation(user, statusWriteTarget, AccessOperation.EDIT)) {
     throw ForbiddenAccess();
   }
   // The new status is written with the user's rights: refuse before the instance moves,
