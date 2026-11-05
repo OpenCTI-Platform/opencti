@@ -1,4 +1,5 @@
 import type { DashboardPreset, DashboardVariable } from '../dashboard-types';
+import { isValidVariableValue } from '../dashboardVariablesResolution';
 import { isSameTimeRange, pickTimeRange, type DashboardTimeRange } from '../dashboardTimeRange';
 
 // A preset as the GraphQL API serves it: the values as a list, the time range possibly partial.
@@ -18,13 +19,15 @@ export const presetFromGraphql = (preset: GraphqlDashboardPreset): DashboardPres
 
 /**
  * The values a preset restores: its own value for every variable it holds, the manifest default for the others.
- * Only the variables that still exist are kept.
+ * Only the variables that still exist are kept, and a preset value the variable no longer accepts (outside its
+ * selection, wrong type) falls back to the default, as the page would drop it anyway.
  */
 export const presetEffectiveValues = (preset: DashboardPreset, variables: readonly DashboardVariable[], defaults: ReadonlyMap<string, string>) => {
   const values = new Map<string, string>();
-  variables.forEach(({ id }) => {
-    const value = preset.values[id] ?? defaults.get(id);
-    if (value !== undefined && value !== '') values.set(id, value);
+  variables.forEach((variable) => {
+    const own = preset.values[variable.id];
+    const value = own !== undefined && own !== '' && isValidVariableValue(variable, own) ? own : defaults.get(variable.id);
+    if (value !== undefined && value !== '') values.set(variable.id, value);
   });
   return values;
 };

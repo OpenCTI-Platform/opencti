@@ -38,7 +38,7 @@ export interface PublicDashboardCreationFormData {
   uri_key: string;
   max_markings: FieldOption[];
   dashboard_id: string;
-  // Frozen in the public dashboard (dashboard variables feature), keyed by variable id
+  // Frozen in the public dashboard, keyed by variable id
   variable_values: Record<string, string>;
   time_range: PublishedTimeRange;
 }

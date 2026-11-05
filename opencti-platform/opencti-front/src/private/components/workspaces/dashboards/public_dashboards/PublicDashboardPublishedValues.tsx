@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormikContext } from 'formik';
 import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
@@ -8,6 +9,8 @@ import useAuth from '../../../../../utils/hooks/useAuth';
 import DashboardTimeFilters from '../../../../../components/dashboard/DashboardTimeFilters';
 import DashboardVariableValueInput from '../../../../../components/dashboard/variables/DashboardVariableValueInput';
 import { deserializeDashboardManifestForFrontend } from '../../../../../components/dashboard/dashboard-utils';
+import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
+import { PublicDashboardPublishedValuesQuery } from './__generated__/PublicDashboardPublishedValuesQuery.graphql';
 import {
   applyPresetToPublishedValues,
   applyPublishedTimeRangeChange,
@@ -101,3 +104,52 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
 };
 
 export default PublicDashboardPublishedValues;
+
+// Only the selected dashboard is loaded, with its variables, their usage and its presets: the list of the form does not
+// carry them for every dashboard.
+const publishedValuesQuery = graphql`
+  query PublicDashboardPublishedValuesQuery($id: String!) {
+    workspace(id: $id) {
+      id
+      manifest
+      variables {
+        id
+        usedInWidgetIds
+      }
+      presets {
+        id
+        name
+        values {
+          variableId
+          value
+        }
+        config {
+          startDate
+          endDate
+          relativeDate
+        }
+      }
+    }
+  }
+`;
+
+const PublicDashboardPublishedValuesComponent = ({ queryRef }: { queryRef: PreloadedQuery<PublicDashboardPublishedValuesQuery> }) => {
+  const { workspace } = usePreloadedQuery<PublicDashboardPublishedValuesQuery>(publishedValuesQuery, queryRef);
+  return <PublicDashboardPublishedValues dashboard={workspace ?? undefined} />;
+};
+
+const PublicDashboardPublishedValuesFetcher = ({ dashboardId }: { dashboardId: string }) => {
+  const queryRef = useQueryLoading<PublicDashboardPublishedValuesQuery>(publishedValuesQuery, { id: dashboardId });
+  if (!queryRef) return null;
+  return (
+    <Suspense fallback={null}>
+      <PublicDashboardPublishedValuesComponent queryRef={queryRef} />
+    </Suspense>
+  );
+};
+
+export const PublicDashboardPublishedValuesLoader = ({ dashboardId }: { dashboardId: string | null | undefined }) => {
+  // Without a dashboard the section resets its fields through the component itself.
+  if (!dashboardId) return <PublicDashboardPublishedValues dashboard={undefined} />;
+  return <PublicDashboardPublishedValuesFetcher dashboardId={dashboardId} />;
+};

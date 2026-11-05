@@ -459,11 +459,12 @@ export const importCustomViewConfiguration = async (
         entityType: resolvedTargetEntityType,
       });
   }
-  // Manifest ids must be rewritten for filters
-  const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');
+  // Manifest ids must be rewritten for filters. Variables and presets cannot live in a custom view: stripped before
+  // the conversion, so an unvalidated entry of a dashboard export never reaches it.
+  const generatedManifest = await convertDashboardManifestIds(context, user, stripServerOwnedManifestKeys(manifest), 'stix');
   const customViewToCreate = {
     name: parsedData.configuration.name,
-    manifest: stripServerOwnedManifestKeys(generatedManifest),
+    manifest: generatedManifest,
     target_entity_type: resolvedTargetEntityType,
     slug: slugify(parsedData.configuration.name),
     default: false,

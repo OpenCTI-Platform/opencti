@@ -16,11 +16,24 @@ export const buildVariableAuditInput = (
   return [{ key: 'variables', value: [{ operation, id: variable.id, name: variable.name, type: variable.type }] }];
 };
 
-export const toGraphqlDashboardVariables = (workspace: { type?: string | null; manifest?: string | null }): DashboardVariable[] => {
-  if (workspace.type !== 'dashboard' || !workspace.manifest) return [];
+type WorkspaceLike = { id?: string; type?: string | null; manifest?: string | null };
+
+// The three Workspace fields below decode the same manifest of the same loaded workspace: decoded once per object.
+const decodedManifests = new WeakMap<object, { encoded: string; manifest: StoreDashboardManifest }>();
+const decodeDashboardManifest = (workspace: WorkspaceLike): StoreDashboardManifest | null => {
+  if (workspace.type !== 'dashboard' || !workspace.manifest) return null;
+  const cached = decodedManifests.get(workspace);
+  if (cached && cached.encoded === workspace.manifest) return cached.manifest;
   const manifest = fromB64<StoreDashboardManifest>(workspace.manifest);
+  decodedManifests.set(workspace, { encoded: workspace.manifest, manifest });
+  return manifest;
+};
+
+export const toGraphqlDashboardVariables = (workspace: WorkspaceLike): DashboardVariable[] => {
+  const manifest = decodeDashboardManifest(workspace);
+  if (!manifest || !manifest.variables || manifest.variables.length === 0) return [];
   const usage = computeDashboardVariablesUsage(manifest.widgets);
-  return (manifest.variables ?? []).map((variable) => {
+  return manifest.variables.map((variable) => {
     const { restriction } = variable;
     return {
       id: variable.id,
@@ -40,9 +53,9 @@ export const toGraphqlDashboardVariables = (workspace: { type?: string | null; m
   });
 };
 
-export const toGraphqlDashboardPresets = (workspace: { type?: string | null; manifest?: string | null }): DashboardPreset[] => {
-  if (workspace.type !== 'dashboard' || !workspace.manifest) return [];
-  const manifest = fromB64<StoreDashboardManifest>(workspace.manifest);
+export const toGraphqlDashboardPresets = (workspace: WorkspaceLike): DashboardPreset[] => {
+  const manifest = decodeDashboardManifest(workspace);
+  if (!manifest) return [];
   return (manifest.presets ?? []).map((preset) => ({
     id: preset.id,
     name: preset.name,
@@ -60,9 +73,9 @@ type DefaultDashboardHolder = { default_dashboard?: string | null; default_dashb
 /**
  * The preset this dashboard opens on for the current user: the one attached to their own default dashboard choice,
  * else the one of the first organization or group (the order of findDefaultDashboards) whose default dashboard is this
- * one. Null when no holder points to this dashboard with a preset, or when the preset no longer exists.
+ * one. Null when no holder points to this dashboard, when the first one holds no preset, or when it no longer exists.
  */
-export const findCurrentUserDefaultPresetId = (user: AuthUser, workspace: { id: string; type?: string | null; manifest?: string | null }) => {
+export const findCurrentUserDefaultPresetId = (user: AuthUser, workspace: WorkspaceLike & { id: string }) => {
   if (workspace.type !== 'dashboard' || !workspace.manifest) return null;
   const self = user as unknown as DefaultDashboardHolder;
   const holders: DefaultDashboardHolder[] = [
@@ -70,10 +83,12 @@ export const findCurrentUserDefaultPresetId = (user: AuthUser, workspace: { id: 
     ...((user.organizations ?? []) as unknown as DefaultDashboardHolder[]),
     ...((user.groups ?? []) as unknown as DefaultDashboardHolder[]),
   ];
-  const holder = holders.find((candidate) => candidate.default_dashboard === workspace.id && candidate.default_dashboard_preset);
-  if (!holder) return null;
-  const manifest = fromB64<StoreDashboardManifest>(workspace.manifest);
-  return (manifest.presets ?? []).some((preset) => preset.id === holder.default_dashboard_preset) ? holder.default_dashboard_preset : null;
+  // The first holder that opens on this dashboard decides, with or without a preset: a user who chose this dashboard
+  // with No preset is not caught up by the preset of their group.
+  const holder = holders.find((candidate) => candidate.default_dashboard === workspace.id);
+  if (!holder?.default_dashboard_preset) return null;
+  const manifest = decodeDashboardManifest(workspace);
+  return (manifest?.presets ?? []).some((preset) => preset.id === holder.default_dashboard_preset) ? holder.default_dashboard_preset : null;
 };
 
 const parseManifestObject = (encoded: string): Record<string, unknown> | null => {
@@ -160,7 +175,10 @@ const toPresetInput = (preset: unknown): DashboardPresetInputLike => {
   const values = value.values ?? {};
   if (typeof values !== 'object' || values === null || Array.isArray(values)) throw FunctionalError('Invalid dashboard preset values', { presetId: value.id });
   const config = value.config ?? {};
-  if (typeof config !== 'object' || config === null || Array.isArray(config)) throw FunctionalError('Invalid dashboard preset time range', { presetId: value.id });
+  if (typeof config !== 'object' || config === null || Array.isArray(config)
+    || !isOptionalString(config.startDate) || !isOptionalString(config.endDate) || !isOptionalString(config.relativeDate)) {
+    throw FunctionalError('Invalid dashboard preset time range', { presetId: value.id });
+  }
   return {
     id: value.id,
     name: value.name,

@@ -405,7 +405,7 @@ describe('CustomDashboard variable definitions for the widget filters', () => {
     captured.contentDefinitions = undefined;
   });
 
-  it('provides the definitions to the whole dashboard, header (widget creation) included, when the flag is on', () => {
+  it('provides the definitions to the whole dashboard, header (widget creation) included', () => {
     testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext() });
     expect(headerDefinitions()).toBe('Sector');
     expect(captured.contentDefinitions?.map((v) => v.name)).toEqual(['Sector']);
@@ -666,4 +666,71 @@ describe('CustomDashboard widget usage marker', () => {
     expect(captured.contentMarkerNames).toBeUndefined();
   });
 
+});
+
+describe('CustomDashboard presets', () => {
+  const flagOn = userContext;
+  const finance = { id: 'p1', name: 'Finance', values: [{ variableId: SECTOR_ID, value: 'Finance' }], config: { startDate: null, endDate: null, relativeDate: 'months-1' } };
+  const withPresets = (overrides: Record<string, unknown> = {}, config: Record<string, unknown> = {}) => buildWorkspace({ presets: [finance], ...overrides }, { relativeDate: 'days-7', ...config });
+  const selector = () => screen.queryByTestId('dashboard-preset-selector');
+
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.history.replaceState(null, '', '/');
+    captured.granted = true;
+    captured.commit.mockReset();
+  });
+
+  it('applies the values and the range of the preset picked by an editor, and Reset puts the defaults back', async () => {
+    const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    expect(captured.contentConfig?.relativeDate).toBe('months-1');
+    expect(new URLSearchParams(window.location.search).get('preset')).toBe('p1');
+    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: 'Reset', exact: true }));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
+    expect(captured.contentConfig?.relativeDate).toBe('days-7');
+    expect(new URLSearchParams(window.location.search).get('preset')).toBeNull();
+  });
+
+  it('lets a viewer who may only switch presets apply one, on its own row, without any editor action', async () => {
+    captured.granted = false;
+    const viewer = withPresets({ currentUserAccessRight: 'view' }, { allowViewersToSwitchPresets: true });
+    const { user } = testRender(<CustomDashboard data={viewer as never} />, { userContext: flagOn() });
+    expect(selector()).toBeInTheDocument();
+    expect(screen.queryByTestId('dashboard-variables-bar')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('dashboard-preset-save-as')).not.toBeInTheDocument();
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    expect(captured.contentConfig?.relativeDate).toBe('months-1');
+  });
+
+  it('hides the selector from a viewer without the switch, even with presets', () => {
+    captured.granted = false;
+    testRender(<CustomDashboard data={withPresets({ currentUserAccessRight: 'view' }) as never} />, { userContext: flagOn() });
+    expect(selector()).not.toBeInTheDocument();
+    expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
+  });
+
+  it('opens on the default preset of the user, marks it, and Reset goes back to it rather than to the manifest', async () => {
+    const { user } = testRender(<CustomDashboard data={withPresets({ currentUserDefaultPresetId: 'p1' }) as never} />, { userContext: flagOn() });
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    expect(captured.contentConfig?.relativeDate).toBe('months-1');
+    expect(screen.getByTestId('dashboard-preset-trigger')).toHaveTextContent('Finance (default)');
+    act(() => captured.onSetValue?.(SECTOR_ID, 'Retail'));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Retail');
+    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: 'Reset', exact: true }));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+  });
+
+  it('applies the default preset on the home dashboard without selector nor local read', () => {
+    storeFinanceEverywhere();
+    window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'ws-1'), JSON.stringify({ [SECTOR_ID]: 'Retail' }));
+    testRender(<CustomDashboard data={withPresets({ currentUserDefaultPresetId: 'p1' }) as never} noToolbar />, { userContext: flagOn() });
+    expect(selector()).not.toBeInTheDocument();
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    expect(captured.contentConfig?.relativeDate).toBe('months-1');
+  });
 });

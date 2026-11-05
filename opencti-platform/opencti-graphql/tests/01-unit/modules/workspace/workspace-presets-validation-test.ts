@@ -70,6 +70,13 @@ describe('buildDashboardPreset', () => {
       .toThrow('Invalid dashboard preset value');
   });
 
+  it('should refuse a value outside the selection of a restricted variable, unless asked to drop it', () => {
+    const restricted: StoreDashboardVariable[] = [{ id: SECTOR_ID, name: 'Sector', type: 'entity', entityTypes: ['Sector'], restriction: { mode: 'selection', values: ['sector-a', 'sector-b'] }, defaultValue: 'sector-a' }];
+    expect(buildDashboardPreset({ name: 'P', values: [{ variableId: SECTOR_ID, value: 'sector-b' }] }, [], restricted).values).toEqual({ [SECTOR_ID]: 'sector-b' });
+    expect(() => buildDashboardPreset({ name: 'P', values: [{ variableId: SECTOR_ID, value: 'sector-z' }] }, [], restricted)).toThrow('must belong to the selection');
+    expect(buildDashboardPreset({ name: 'P', values: [{ variableId: SECTOR_ID, value: 'sector-z' }] }, [], restricted, { dropUnknownVariables: true }).values).toEqual({});
+  });
+
   it('should refuse an invalid time range', () => {
     expect(() => buildDashboardPreset({ name: 'P', config: { relativeDate: 'last-week' } }, [], variables)).toThrow('Invalid dashboard preset time range');
     expect(() => buildDashboardPreset({ name: 'P', config: { startDate: 'yesterday' } }, [], variables)).toThrow('Invalid dashboard preset time range');

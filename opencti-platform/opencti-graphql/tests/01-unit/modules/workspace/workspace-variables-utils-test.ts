@@ -70,6 +70,10 @@ describe('findCurrentUserDefaultPresetId', () => {
     expect(findCurrentUserDefaultPresetId(me, workspace)).toEqual(PRESET_ID);
     expect(findCurrentUserDefaultPresetId(user({ groups: [{ default_dashboard: 'dashboard-1' }] }), workspace)).toBeNull();
   });
+  it('should let the own choice of the user without preset win over the preset of a group', () => {
+    const me = user({ default_dashboard: 'dashboard-1', groups: [{ default_dashboard: 'dashboard-1', default_dashboard_preset: PRESET_ID }] });
+    expect(findCurrentUserDefaultPresetId(me, workspace)).toBeNull();
+  });
   it('should return null when the preset no longer exists, or outside a dashboard', () => {
     const me = user({ groups: [{ default_dashboard: 'dashboard-1', default_dashboard_preset: 'deleted' }] });
     expect(findCurrentUserDefaultPresetId(me, workspace)).toBeNull();
@@ -143,6 +147,7 @@ describe('validateManifestVariables', () => {
     expect(() => validateManifestVariables(toB64({ widgets: {}, presets: { id: 'p' } }))).toThrow('Invalid dashboard presets');
     expect(() => validateManifestVariables(toB64({ widgets: {}, presets: [{ id: 'p' }] }))).toThrow('Invalid dashboard preset');
     expect(() => validateManifestVariables(toB64({ widgets: {}, presets: [{ name: 'Bad range', config: { relativeDate: 'soon' } }] }))).toThrow('Invalid dashboard preset time range');
+    expect(() => validateManifestVariables(toB64({ widgets: {}, presets: [{ name: 'Array range', config: { relativeDate: ['days-7'] } }] }))).toThrow('Invalid dashboard preset time range');
     expect(() => validateManifestVariables(toB64({ widgets: {}, presets: [{ id: PRESET_ID, name: 'A' }, { id: PRESET_ID, name: 'B' }] }))).toThrow('Duplicated dashboard preset id');
   });
   it.each([

@@ -21,7 +21,7 @@ import { ME_FILTER_VALUE } from '../../../../../utils/filters/filtersUtils';
 import { fromB64 } from '../../../../../utils/String';
 import FormButtonContainer from '../../../../../components/common/form/FormButtonContainer';
 import { buildPublicationInput, EMPTY_PUBLISHED_TIME_RANGE, generatePublicDashboardUriKey, type PublicDashboardCreationFormData } from './public-dashboard-utils';
-import PublicDashboardPublishedValues from './PublicDashboardPublishedValues';
+import { PublicDashboardPublishedValuesLoader } from './PublicDashboardPublishedValues';
 
 const publicDashboardCreateMutation = graphql`
   mutation PublicDashboardCreationFormCreateMutation($input: PublicDashboardAddInput!) {
@@ -40,23 +40,6 @@ export const dashboardsQuery = graphql`
           name
           currentUserAccessRight
           manifest
-          variables {
-            id
-            usedInWidgetIds
-          }
-          presets {
-            id
-            name
-            values {
-              variableId
-              value
-            }
-            config {
-              startDate
-              endDate
-              relativeDate
-            }
-          }
         }
       }
     }
@@ -214,7 +197,7 @@ const PublicDashboardCreationFormComponent = ({
             {t_i18n('You see only marking definitions that can be shared (defined by the admin)')}
           </Alert>
 
-          <PublicDashboardPublishedValues dashboard={dashboards?.find(({ id }) => id === values.dashboard_id)} />
+          <PublicDashboardPublishedValuesLoader dashboardId={values.dashboard_id} />
 
           <FormButtonContainer>
             <Button
