@@ -17,7 +17,7 @@ export const getVocabularyCategories = (vocabularies: BasicStoreEntityVocabulary
 };
 
 // A category in the import format: all its entries, the ones of the platform included, in the order of the given list
-export const getVocabularyCategoryConfigPresetConfiguration = (category: VocabularyCategory, vocabularies: BasicStoreEntityVocabulary[]) => {
+export const exportVocabularyCategory = (category: VocabularyCategory, vocabularies: BasicStoreEntityVocabulary[]) => {
   const entries = vocabularies.filter((vocabulary) => vocabulary.category === category);
   return { category, entries: entries.map(getVocabularyEntryConfiguration) };
 };

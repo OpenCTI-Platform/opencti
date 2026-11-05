@@ -1,6 +1,6 @@
 import { OrderingMode, type VocabularyCategory, VocabularyOrdering } from '../../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { getVocabularyCategories, getVocabularyCategoryConfigPresetConfiguration } from '../../vocabulary/vocabulary-export';
+import { getVocabularyCategories, exportVocabularyCategory } from '../../vocabulary/vocabulary-export';
 import { findAllVocabularies } from '../../vocabulary/vocabulary-domain';
 import { importVocabularyCategory } from '../../vocabulary/vocabulary-import';
 import type { BasicStoreEntityVocabulary } from '../../vocabulary/vocabulary-types';
@@ -15,7 +15,7 @@ const toCategoryItem = (category: VocabularyCategory, vocabularies: BasicStoreEn
   id: category,
   label: category,
   translatable: false,
-  exporter: async () => getVocabularyCategoryConfigPresetConfiguration(category, vocabularies),
+  exporter: async () => exportVocabularyCategory(category, vocabularies),
 });
 
 // The categories to export are all the ones that have an entry, the entries of the platform included: they are all read here, not by the engine. By category.

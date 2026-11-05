@@ -1,6 +1,6 @@
 import { storeLoadById } from '../../database/middleware-loader';
 import type { EditInput } from '../../generated/graphql';
-import { generateStandardId } from '../../schema/identifier';
+import { generateStandardId, normalizeName } from '../../schema/identifier';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { configImportValidationReason } from '../configImport/configImport-utils';
@@ -9,13 +9,37 @@ import { type VocabularyCategoryImportConfiguration, vocabularyCategoryImportSch
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
 import { cleanVocabularyAliases, isSameAliasSet } from './vocabulary-utils';
 
-export type VocabularyImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged' | 'category_closed';
+export type VocabularyImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged' | 'category_closed' | 'alias_conflict';
 
 export type VocabularyImportResult = ConfigImportResult<VocabularyImportConfiguration, VocabularyImportCode>;
 
 // The standard id of an entry is derived from its name (without its case) and its category: the same on every platform
 export const getVocabularyStandardId = ({ name, category }: Pick<VocabularyImportConfiguration, 'name' | 'category'>) => {
   return generateStandardId(ENTITY_TYPE_VOCABULARY, { name, category });
+};
+
+// The platform finds an entry by its name and by its aliases: loaded by the standard id of a name, it can return the entry that holds this
+// name as an alias
+const loadEntry = (context: AuthContext, user: AuthUser, name: string, category: VocabularyImportConfiguration['category']) => {
+  return storeLoadById<BasicStoreEntityVocabulary>(context, user, getVocabularyStandardId({ name, category }), ENTITY_TYPE_VOCABULARY);
+};
+
+// The first alias of the configuration that is the name or an alias of another entry of the category: the platform would write that entry
+// when the entry is created, and refuse the alias when it is edited. The aliases the entry already has are its own.
+const findAliasOfAnotherEntry = async (
+  context: AuthContext,
+  user: AuthUser,
+  { name, category, aliases }: VocabularyImportConfiguration,
+  existing?: BasicStoreEntityVocabulary,
+) => {
+  const own = cleanVocabularyAliases(name, existing?.aliases).map(normalizeName);
+  for (const alias of cleanVocabularyAliases(name, aliases).filter((candidate) => !own.includes(normalizeName(candidate)))) {
+    const owner = await loadEntry(context, user, alias, category);
+    if (owner && owner.id !== existing?.id) {
+      return alias;
+    }
+  }
+  return undefined;
 };
 
 const refused = (
@@ -27,7 +51,7 @@ const refused = (
 ): VocabularyImportResult => ({ status, code, reason, exists, configuration });
 
 // What differs between an entry and the configuration: a value that is null or absent is left untouched
-const toPatch = (existing: BasicStoreEntityVocabulary, { name, description, aliases, order }: VocabularyImportConfiguration): EditInput[] => {
+const toPatch = (existing: BasicStoreEntityVocabulary, { name, description, aliases, order, is_hidden: isHidden }: VocabularyImportConfiguration): EditInput[] => {
   const patch: EditInput[] = [];
   if (description !== null && description !== undefined && description !== (existing.description ?? '')) {
     patch.push({ key: 'description', value: [description] });
@@ -40,14 +64,19 @@ const toPatch = (existing: BasicStoreEntityVocabulary, { name, description, alia
   if (order !== null && order !== undefined && order !== (existing.order ?? 0)) {
     patch.push({ key: 'order', value: [order] });
   }
+  // An entry that was never hidden has no value: it is visible
+  if (isHidden !== null && isHidden !== undefined && isHidden !== (existing.is_hidden ?? false)) {
+    patch.push({ key: 'is_hidden', value: [isHidden] });
+  }
   return patch;
 };
 
 // The one place where a vocabulary entry is imported: validates, finds the entry by its name and category and writes it.
 // A refusal is a result, not an error. A dry run decides the same result and writes nothing.
-// add: the entry must not exist yet. overwrite: an entry of the same name and category gets the description, the aliases and the order of
-// the configuration, else it is created; a value that is null or absent leaves the entry untouched, and the aliases are replaced as a
-// whole. An entry is its name and its category: it has no copy.
+// add: the entry must not exist yet. overwrite: an entry of the same name and category gets the description, the aliases, the order and the
+// visibility of the configuration, else it is created; a value that is null or absent leaves the entry untouched, and the aliases are replaced
+// as a whole. An entry is its name and its category: it has no copy. A name or an alias that is already an alias or the name of another entry
+// of the category is a conflict: that entry is never written in place of the requested one.
 export const importVocabulary = async (
   context: AuthContext,
   user: AuthUser,
@@ -58,18 +87,34 @@ export const importVocabulary = async (
   if (!parsed.success) {
     return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
   }
-  const { name, category, description, aliases, order } = parsed.data;
-  const existing = await storeLoadById<BasicStoreEntityVocabulary>(context, user, getVocabularyStandardId(parsed.data), ENTITY_TYPE_VOCABULARY);
+  const { name, category, description, aliases, order, is_hidden: isHidden } = parsed.data;
+  const found = await loadEntry(context, user, name, category);
+  // Found by its name, not by an alias of another entry
+  const existing = found && normalizeName(found.name) === normalizeName(name) && found.category === category ? found : undefined;
   if (mode === ConfigImportMode.Copy) {
     return refused('failed', 'copy_unsupported', 'A vocabulary entry has no copy', !!existing, parsed.data);
+  }
+  if (found && !existing) {
+    return refused('failed', 'alias_conflict', `The name is an alias of the vocabulary entry ${found.name}`, true, parsed.data);
   }
   if (!existing) {
     // A closed category only has its default entries: the platform refuses a new one
     if (!isVocabularyNameAllowed(category, name)) {
       return refused('failed', 'category_closed', 'This vocabulary category is closed, new values cannot be added', false, parsed.data);
     }
+    const taken = await findAliasOfAnotherEntry(context, user, parsed.data);
+    if (taken) {
+      return refused('failed', 'alias_conflict', `The alias ${taken} belongs to another vocabulary entry`, false, parsed.data);
+    }
     if (!dryRun) {
-      await addVocabulary(context, user, { name, category, description: description ?? '', aliases: aliases ?? [], order: order ?? 0 });
+      await addVocabulary(context, user, {
+        name,
+        category,
+        description: description ?? '',
+        aliases: aliases ?? [],
+        order: order ?? 0,
+        ...(isHidden !== null && isHidden !== undefined ? { is_hidden: isHidden } : {}),
+      });
     }
     return { status: 'created', exists: false, configuration: parsed.data };
   }
@@ -79,6 +124,10 @@ export const importVocabulary = async (
   const patch = toPatch(existing, parsed.data);
   if (patch.length === 0) {
     return refused('skipped', 'unchanged', 'Already up to date', true, parsed.data);
+  }
+  const taken = patch.some(({ key }) => key === 'aliases') ? await findAliasOfAnotherEntry(context, user, parsed.data, existing) : undefined;
+  if (taken) {
+    return refused('failed', 'alias_conflict', `The alias ${taken} belongs to another vocabulary entry`, true, parsed.data);
   }
   if (!dryRun) {
     await editVocabulary(context, user, existing.id, patch, {});
