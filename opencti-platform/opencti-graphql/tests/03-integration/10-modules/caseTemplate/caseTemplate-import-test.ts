@@ -75,7 +75,8 @@ describe('Case template import and export (configuration preset)', () => {
     expect(await tasksOf(NAME)).toEqual([BLOCK]);
     expect(await loadTask(BLOCK)).toMatchObject({ description: 'Block the domain' });
     const found = await findTaskTemplatePaginated(testContext, ADMIN_USER, { search: 'Config preset block sender' });
-    expect(found.edges).toHaveLength(1);
+    // The search matches the words, so the other task of the test is found too: the task template must exist once
+    expect(found.edges.filter(({ node }) => node.name === BLOCK)).toHaveLength(1);
   });
 
   it('refuses a name that several templates have, which the platform allows, and writes nothing', async () => {
