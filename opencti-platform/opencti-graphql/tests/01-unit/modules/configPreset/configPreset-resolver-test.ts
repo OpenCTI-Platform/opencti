@@ -18,9 +18,20 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
   fullEntitiesList: vi.fn(),
+  fullRelationsList: vi.fn(),
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
+// The markings of a group are read from the cache
+vi.mock('../../../../src/database/cache', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../../../src/database/cache')>();
+  const { ALL_MARKINGS } = await import('./configPreset-markings-fixtures');
+  const markings = new Map(ALL_MARKINGS.flatMap((marking) => [[marking.id, marking], [marking.standard_id, marking]]));
+  return {
+    ...original,
+    getEntitiesMapFromCache: vi.fn(async (ctx, usr, type) => (type === 'Marking-Definition' ? markings : original.getEntitiesMapFromCache(ctx, usr, type))),
+  };
+});
 vi.mock('../../../../src/modules/configPreset/export/configPreset-export-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/configPreset/export/configPreset-export-domain')>()),
   configPresetExport: vi.fn(),
@@ -34,7 +45,11 @@ import { topEntitiesList } from '../../../../src/database/middleware-loader';
 import { buildPaginationFromEdges } from '../../../../src/database/utils';
 import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
-import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme } from './configPreset-themes-fixtures';
+import { builtInTheme, customTheme, otherCustomTheme } from './configPreset-themes-fixtures';
+import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
+import { administratorRole, analystRole } from './configPreset-roles-fixtures';
+import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
+import { customMarking, papRed } from './configPreset-markings-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -81,7 +96,7 @@ describe('Config preset exportable types query', () => {
     flags.enabled = true;
     enterpriseEdition.enabled = true;
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id }] as never);
-    mockThemeLoaders();
+    mockConfigPresetLoaders();
   });
 
   it('returns the exportable types to a BYPASS user when the flag is enabled', async () => {
@@ -123,6 +138,46 @@ describe('Config preset exportable types query', () => {
         items: [staticItem('hiddenEntityTypes', 'Hidden entity types')],
         itemsPageInfo: onePage(1),
       },
+      {
+        key: 'markings',
+        label: 'Markings',
+        description: 'Marking definitions, their colors and orders',
+        group: { key: 'securityAccess', label: 'Security & Access' },
+        // The markings by definition, without the built-in ones
+        items: [customMarking, papRed].map((marking) => ({ key: marking.standard_id, label: marking.definition, translatable: false, dependsOn: [], isDefault: false })),
+        itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'roles',
+        label: 'Roles',
+        description: 'Roles and their capabilities',
+        group: { key: 'securityAccess', label: 'Security & Access' },
+        items: [administratorRole, analystRole].map((role) => ({ key: role.standard_id, label: role.name, translatable: false, dependsOn: [], isDefault: false })),
+        itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'groups',
+        label: 'Groups',
+        description: 'Groups with their roles, markings and confidence level',
+        group: { key: 'securityAccess', label: 'Security & Access' },
+        // Each group depends on its roles
+        items: [[administratorsGroup, administratorRole], [analystsGroup, analystRole]].map(([group, role]) => ({
+          key: group.standard_id,
+          label: group.name,
+          translatable: false,
+          dependsOn: [{ type: 'roles', key: role.standard_id }],
+          isDefault: false,
+        })),
+        itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'policies',
+        label: 'Policies',
+        description: 'Password policy, users visibility and main organization',
+        group: { key: 'securityAccess', label: 'Security & Access' },
+        items: [staticItem('policies', 'Policies')],
+        itemsPageInfo: onePage(1),
+      },
     ]);
   });
 
@@ -138,7 +193,8 @@ describe('Config preset exportable types query', () => {
   it('lists the messages set on the platform and hides the category when none is set', async () => {
     // No message is set in the default settings of these tests: the category is not returned
     const none = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
-    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key)).toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes']);
+    expect((none.data?.configPresetExportableTypes as { key: string }[]).map((type) => type.key))
+      .toEqual(['platform', 'branding', 'whitemark', 'hiddenEntityTypes', 'markings', 'roles', 'groups', 'policies']);
 
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: customTheme.id, platform_login_message: 'Welcome' }] as never);
     const result = await graphql({ schema: buildSchema(), source: QUERY, contextValue: { user: bypassUser } });
@@ -160,7 +216,10 @@ describe('Config preset exportable types query', () => {
     const result = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
     expect(result.errors).toBeUndefined();
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
-    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([['platform', false], ['branding', false], ['whitemark', true], ['hiddenEntityTypes', false]]);
+    expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
+      ['platform', false], ['branding', false], ['whitemark', true], ['hiddenEntityTypes', false],
+      ['markings', false], ['roles', false], ['groups', false], ['policies', false],
+    ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
@@ -196,6 +255,10 @@ describe('Config preset exportable types query', () => {
       ['branding', 'platformSettings'],
       ['whitemark', 'platformSettings'],
       ['hiddenEntityTypes', 'dataModel'],
+      ['markings', 'securityAccess'],
+      ['roles', 'securityAccess'],
+      ['groups', 'securityAccess'],
+      ['policies', 'securityAccess'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
@@ -216,7 +279,7 @@ describe('Config preset exportable items query', () => {
     flags.enabled = true;
     enterpriseEdition.enabled = true;
     vi.mocked(topEntitiesList).mockResolvedValue([{ id: 'settings-id', platform_theme: builtInTheme.id }] as never);
-    mockThemeLoaders();
+    mockConfigPresetLoaders();
   });
 
   const queryItems = (variables: Record<string, unknown>, user: unknown = bypassUser) => graphql({

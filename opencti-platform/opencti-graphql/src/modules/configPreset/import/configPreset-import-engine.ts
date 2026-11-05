@@ -157,7 +157,7 @@ const realImport = async (
   }
   logApp.info('[CONFIG PRESET] Import started', { user_id: user.id, file_id: fileId, total: items.length });
   const importContext = context;
-  const plan: ConfigPresetImportPlan = { created: new Set() };
+  const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map() };
   const modes = configPresetImportModes(selections);
   const results: ConfigPresetImportItemResult[] = [];
   // Why the import stopped before the end, when it did: a lost lock, or an unexpected error between two items
@@ -190,14 +190,18 @@ const realImport = async (
           computed = await computeConfigPresetItem(importContext, runUser, family, item, plan, mode);
           result = toResult(item, computed.status, computed.reason, computed);
           if (computed.status !== 'failed' && computed.status !== 'skipped') {
-            const applied = await importer.apply(importContext, runUser, item, computed, mode);
+            const applied = await importer.apply(importContext, runUser, item, computed, mode, plan);
             if (applied) {
               result = toResult(item, applied, computed.reason, computed);
             }
           }
         } catch (err) {
-          // The theme was not created: the items that depend on it fail with it
-          plan.created.delete(configPresetPlanKey(item.type, item.id));
+          // The item was not written (a theme, a role): the items that depend on it fail with it
+          const key = configPresetPlanKey(item.type, item.id);
+          plan.created.delete(key);
+          if (plan.targets?.has(key)) {
+            plan.targets.set(key, null);
+          }
           result = toResult(item, 'failed', err instanceof Error ? err.message : String(err), computed);
         }
         results.push(result);
