@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { type Filter, FilterOperator } from '../../../../src/generated/graphql';
 import { adaptFilterToGenericNestedFilterKey } from '../../../../src/utils/filtering/filtering-completeSpecialFilterKeys';
 import { coverageInformation } from '../../../../src/schema/attribute-definition';
+import { isGenericNestedFilterAttribute } from '../../../../src/schema/schema-attributes';
 
 const filter = (overrides: Partial<Filter>) => ({ key: ['coverage_information'], operator: 'eq', mode: 'and', values: [], ...overrides } as Filter);
 const adapt = (f: Filter) => adaptFilterToGenericNestedFilterKey(f, coverageInformation);
@@ -44,5 +45,14 @@ describe('adaptFilterToGenericNestedFilterKey', () => {
   it('rejects unknown sub-filter keys and operators other than eq, nil and not_nil on the nested filter', () => {
     expect(() => adapt(filter({ values: [{ key: 'unknown', values: ['a'] }] as any }))).toThrow(/sub-filter key/);
     expect(() => adapt(filter({ operator: FilterOperator.NotEq }))).toThrow(/operator/);
+  });
+});
+
+describe('isGenericNestedFilterAttribute', () => {
+  it('needs a filterable nested attribute with at least one filterable mapping', () => {
+    expect(isGenericNestedFilterAttribute(coverageInformation)).toBe(true);
+    expect(isGenericNestedFilterAttribute({ ...coverageInformation, isFilterable: false })).toBe(false);
+    const withoutFilterableMapping = { ...coverageInformation, mappings: coverageInformation.mappings.map((mapping) => ({ ...mapping, isFilterable: false })) };
+    expect(isGenericNestedFilterAttribute(withoutFilterableMapping)).toBe(false);
   });
 });
