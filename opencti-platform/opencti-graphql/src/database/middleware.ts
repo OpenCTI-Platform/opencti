@@ -840,7 +840,8 @@ const resolveAggregateDistributions = async <T extends { label: string; value: n
   // entities not granted shall be sent as "restricted" with limited information, all checked at once.
   // The 'unknown' bucket has no real entity — skip its access check
   const resolvedElements = filteredData.filter((n) => n.label !== 'unknown').map((n) => allResolveLabels[n.label.toLowerCase()]);
-  const grantedElements = new Set(await userFilterStoreElements(context, user, resolvedElements));
+  const grantedElements = await userFilterStoreElements(context, user, resolvedElements);
+  const grantedIds = new Set(grantedElements.map((element) => element.internal_id));
   return filteredData
     .map((n) => {
       // The 'unknown' bucket has no backing entity
@@ -848,7 +849,7 @@ const resolveAggregateDistributions = async <T extends { label: string; value: n
         return { ...n, entity: null };
       }
       const element = allResolveLabels[n.label.toLowerCase()];
-      if (grantedElements.has(element)) {
+      if (grantedIds.has(element.internal_id)) {
         return {
           ...n,
           entity: element,
