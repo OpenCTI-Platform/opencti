@@ -52,6 +52,7 @@ import {
 } from './utils';
 import conf, { booleanConf, extendedErrors, loadCert, logApp, logMigration } from '../config/conf';
 import {
+  CLIENT_ABORT_ERROR,
   ClientAbortError,
   ComplexSearchError,
   ConfigurationError,
@@ -641,7 +642,10 @@ export const isClientAbortError = (err: any): boolean => {
 // from an abort-signal-aware engine call, so a client abort isn't misclassified
 // as a genuine engine failure.
 export const wrapEngineError = (reason: string, err: any, data: Record<string, any> = {}): GraphQLError => {
-  if (isClientAbortError(err)) {
+  // A nested engine call (e.g. the regardingOf post filtering of elPaginate) may already have
+  // classified the abort: wrapping it again must keep it a client abort (#19586).
+  const isAlreadyClientAbort = err?.extensions?.code === CLIENT_ABORT_ERROR;
+  if (isClientAbortError(err) || isAlreadyClientAbort) {
     return ClientAbortError(reason, { cause: err, ...data });
   }
   return DatabaseError(reason, { cause: err, ...data });
