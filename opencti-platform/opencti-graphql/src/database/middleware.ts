@@ -50,6 +50,7 @@ import {
   READ_INDEX_HISTORY,
   READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_INDEX_STIX_META_OBJECTS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
@@ -68,6 +69,7 @@ import {
   elFindByIds,
   type ElFindByIdsOpts,
   elHistogramBreakdownCount,
+  elKeywordWrittenForms,
   getHistogramDateFormat,
   elHistogramCount,
   elIndexElements,
@@ -210,7 +212,6 @@ import {
   buildThingsFilters,
   type EntityFilters,
   type EntityOptions,
-  fullEntitiesList,
   fullEntitiesThroughRelationsToList,
   fullRelationsList,
   internalFindByIds,
@@ -922,19 +923,9 @@ type BreakdownField = {
   // Set to break relationships down by the type of their source or target
   connectionSide?: ConnectionSide;
 };
-// Letters and punctuation asciifolding folds that have no decomposition, which stripping the diacritics leaves as
-// they are: the most common ones, with the typographic quotes (‘ ’ ‚ ‛ “ ” „) and dashes (– —)
-const ASCII_FOLDINGS: Record<string, string> = {
-  ß: 'ss', œ: 'oe', æ: 'ae', ø: 'o', ł: 'l', đ: 'd', ð: 'd', þ: 'th', ı: 'i',
-  '\u2018': "'", '\u2019': "'", '\u201a': "'", '\u201b': "'", '\u201c': '"', '\u201d': '"', '\u201e': '"', '\u2013': '-', '\u2014': '-',
-};
-const ASCII_FOLDINGS_PATTERN = new RegExp(`[${Object.keys(ASCII_FOLDINGS).join('')}]`, 'g');
-// Indexed form of a keyword value (string_normalizer: lowercase and asciifolding), for the accented latin letters
-// and the most common letters and punctuation without decomposition
-export const normalizeKeywordValue = (value: string) => value.toLowerCase()
-  .normalize('NFD')
-  .replace(/[\u0300-\u036f]/g, '')
-  .replace(ASCII_FOLDINGS_PATTERN, (character) => ASCII_FOLDINGS[character]);
+// Indexed form of an enum value. The keyword normalizer lowercases and folds to ASCII, and the enum values are
+// ASCII constants of the code (a unit test checks every registered one): lowercasing them is exact.
+export const normalizeEnumValue = (value: string) => value.toLowerCase();
 // Entity types are indexed in lowercase: give them back the name of their registered type. The lookup is built at
 // the first use, once every type is registered, and only built again if the registered types change.
 let entityTypesLookup: { registeredTypes: string[]; size: number; labels: Map<string, string> } | null = null;
@@ -971,9 +962,9 @@ const resolveSchemaBreakdownField = (types: string[], field: string): BreakdownF
     if (breakdownAttributes[0].format === 'id') {
       return { aggregationField: field, resolveEntities: true };
     }
-    // Vocabulary and enum values are indexed in lowercase and without accents: they are shown as they are written
+    // Vocabulary and enum values are indexed in their normalized form: they are shown as they are written
     const enumValues = breakdownAttributes.flatMap((attribute) => (attribute.format === 'enum' ? (attribute as EnumAttribute).values : []));
-    const enumLabels = new Map(enumValues.map((value) => [normalizeKeywordValue(value), value]));
+    const enumLabels = new Map(enumValues.map((value) => [normalizeEnumValue(value), value]));
     const vocabularyCategories = R.uniq(breakdownAttributes.flatMap((attribute) => (attribute.format === 'vocabulary' ? [(attribute as VocabAttribute).vocabularyCategory] : [])));
     return {
       aggregationField: field,
@@ -1059,16 +1050,19 @@ const checkTimeSeriesBreakdownLimit = (limit: number | null | undefined) => {
     });
   }
 };
-// Names of the vocabularies of the categories, by their indexed form, for the keys only. Read with the SYSTEM
-// user, as the entities of a breakdown are: only the names of values already counted for the user come back
+// Names of the vocabularies of the categories, by their indexed form, for the keys only: the vocabularies are
+// matched on the indexed form of their name, normalized as the values of the field are, whatever the letters.
+// Read with the SYSTEM user, as the entities of a breakdown are: only the names of values already counted for
+// the user come back
 export const resolveVocabularyLabels = async (context: AuthContext, categories: string[], keys: string[]) => {
-  const filters = {
-    mode: FilterMode.And,
-    filters: [{ key: ['category'], values: categories }, { key: ['name'], values: keys }],
-    filterGroups: [],
-  };
-  const vocabularies = await fullEntitiesList<BasicStoreEntityVocabulary>(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], { filters, noFiltersChecking: true });
-  return new Map(vocabularies.map((vocabulary) => [normalizeKeywordValue(vocabulary.name), vocabulary.name]));
+  const filters = { mode: FilterMode.And, filters: [{ key: ['category'], values: categories }], filterGroups: [] };
+  return elKeywordWrittenForms(context, SYSTEM_USER, READ_INDEX_STIX_META_OBJECTS, {
+    types: [ENTITY_TYPE_VOCABULARY],
+    filters,
+    noFiltersChecking: true,
+    field: 'name',
+    keys,
+  });
 };
 const isDateAttributeOfType = (type: string, name: string) => {
   try {

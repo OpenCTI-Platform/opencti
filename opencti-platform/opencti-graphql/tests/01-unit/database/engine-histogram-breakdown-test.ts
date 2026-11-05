@@ -24,6 +24,7 @@ import {
   elAggregationCount,
   elConnectionTypesAggregationCount,
   elHistogramBreakdownCount,
+  elKeywordWrittenForms,
   MAX_AGGREGATION_SIZE,
   MAX_EXACT_RANKING_SIZE,
   searchEngineInit,
@@ -239,6 +240,63 @@ describe('engine: requests of the time series breakdowns', () => {
       elkSearch.mockRejectedValue(new Error('index_not_found_exception'));
 
       await expect(rankTypes('desc')).rejects.toMatchObject({ extensions: { code: DATABASE_ERROR } });
+    });
+  });
+
+  describe('elKeywordWrittenForms', () => {
+    const categoryFilter = { mode: 'and', filters: [{ key: ['category'], values: ['report_types_ov'] }], filterGroups: [] } as any;
+    const writtenForms = (keys: string[]) => elKeywordWrittenForms(context, SYSTEM_USER, 'index', {
+      types: ['Vocabulary'],
+      filters: categoryFilter,
+      noFiltersChecking: true,
+      field: 'name',
+      keys,
+    });
+
+    it('should match the keys on the indexed form of the field, and read one written form of each', async () => {
+      elkSearch.mockResolvedValue(searchResponse({ keys: { buckets: [] } }));
+      const keys = ['высокий', 'strasse', 'ħ ŋ ĳ ſ ﬁ ｆｕｌｌ'];
+
+      await writtenForms(keys);
+
+      const body = lastSearchBody();
+      expect(body.size).toEqual(0);
+      // The keys are the indexed forms already: the engine compares them to the normalized name as they are
+      expect(body.aggs).toEqual({
+        keys: {
+          terms: { field: 'name.keyword', include: keys, size: 3 },
+          aggs: { written: { top_hits: { size: 1, _source: ['name'] } } },
+        },
+      });
+      // Restricted to the vocabularies of the category
+      expect(JSON.stringify(body.query)).toContain('report_types_ov');
+      expect(JSON.stringify(body.query)).toContain('Vocabulary');
+    });
+
+    it('should map every indexed form found to its written form, and only them', async () => {
+      elkSearch.mockResolvedValue(searchResponse({
+        keys: {
+          buckets: [
+            { key: 'высокий', doc_count: 1, written: { hits: { hits: [{ _source: { name: 'Высокий' } }] } } },
+            { key: 'strasse', doc_count: 2, written: { hits: { hits: [{ _source: { name: 'Straße' } }] } } },
+          ],
+        },
+      }));
+
+      const names = await writtenForms(['высокий', 'strasse', 'not-a-vocabulary']);
+
+      expect(names).toEqual(new Map([['высокий', 'Высокий'], ['strasse', 'Straße']]));
+    });
+
+    it('should not query anything without key', async () => {
+      await expect(writtenForms([])).resolves.toEqual(new Map());
+      expect(elkSearch).not.toHaveBeenCalled();
+    });
+
+    it('should report an engine failure as a database error', async () => {
+      elkSearch.mockRejectedValue(new Error('index_not_found_exception'));
+
+      await expect(writtenForms(['p1'])).rejects.toMatchObject({ extensions: { code: DATABASE_ERROR } });
     });
   });
 

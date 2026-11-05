@@ -3828,6 +3828,53 @@ export const elHistogramBreakdownCount = async (
       throw wrapEngineError('Histogram breakdown computation fail', err, { query });
     });
 };
+export type KeywordWrittenFormsOpts = QueryBodyBuilderOpts & {
+  // A single valued keyword field
+  field: string;
+  // Indexed forms of the field, as a terms aggregation on it returns them
+  keys: string[];
+};
+// Written form of indexed values of a keyword field: the value of one of the documents of each of them, by indexed
+// form. The keyword normalizer lowercases and folds every value to its indexed form, which only the engine
+// computes exactly for any letter: the documents are matched on the indexed form of the field itself.
+export const elKeywordWrittenForms = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  options: KeywordWrittenFormsOpts,
+): Promise<Map<string, string>> => {
+  const { field, keys, types = null } = options;
+  if (keys.length === 0) {
+    return new Map();
+  }
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
+  body.size = 0;
+  body.aggs = {
+    keys: {
+      terms: { field: buildFieldForQuery(field), include: keys, size: keys.length },
+      aggs: { written: { top_hits: { size: 1, _source: [field] } } },
+    },
+  };
+  const query = {
+    index: getIndicesToQuery(context, user, indexName),
+    body,
+  };
+  logApp.debug('[SEARCH] keywordWrittenForms', { query });
+  return elRawSearch(context, user, types, query)
+    .then((data) => {
+      const writtenForms = new Map<string, string>();
+      (data.aggregations?.keys?.buckets ?? []).forEach((bucket: any) => {
+        const written = bucket.written?.hits?.hits?.[0]?._source?.[field];
+        if (typeof written === 'string') {
+          writtenForms.set(String(bucket.key), written);
+        }
+      });
+      return writtenForms;
+    })
+    .catch((err) => {
+      throw wrapEngineError('Keyword written forms computation fail', err, { query });
+    });
+};
 
 const extractNestedQueriesFromBool = (boolQueryArray: { bool: any }[], nestedPath = 'connections') => {
   let result: any[] = [];

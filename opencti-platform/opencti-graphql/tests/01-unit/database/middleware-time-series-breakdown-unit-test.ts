@@ -43,7 +43,7 @@ import {
   distributionEntities,
   distributionHistory,
   HISTORY_BREAKDOWN_ALLOWED_FIELDS,
-  normalizeKeywordValue,
+  normalizeEnumValue,
   resolveBreakdownField,
   resolveHistoryBreakdownField,
   resolveRelationshipBreakdownField,
@@ -52,7 +52,7 @@ import {
   timeSeriesBreakdownRelations,
 } from '../../../src/database/middleware';
 import { stixRelationshipsMultiTimeSeries, stixRelationshipsTimeSeriesBreakdown } from '../../../src/domain/stixRelationship';
-import { BREAKDOWN_REFUSAL_REASONS, INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_HISTORY, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
+import { BREAKDOWN_REFUSAL_REASONS, INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_HISTORY, READ_INDEX_STIX_META_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../../../src/database/utils';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 import { READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } from '../../../src/database/utils';
@@ -125,7 +125,7 @@ describe('timeSeriesBreakdownEntities', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(accessModule, 'userFilterStoreElements').mockImplementation(async (_context, _user, elements) => elements);
-    vi.mocked(engine.elList).mockResolvedValue([]);
+    vi.mocked(engine.elKeywordWrittenForms).mockResolvedValue(new Map());
     mockSchema();
     mockRegisteredTypes();
   });
@@ -565,7 +565,7 @@ describe('timeSeriesBreakdownEntities', () => {
 
   it('should name the vocabulary values after their vocabulary, read for the values kept only', async () => {
     vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('reseau interne', 9), bucket('threat-report', 5), bucket('no-vocabulary', 3), bucket('dropped', 1)]);
-    vi.mocked(engine.elList).mockResolvedValue([{ name: 'Réseau Interne' }, { name: 'threat-report' }] as any);
+    vi.mocked(engine.elKeywordWrittenForms).mockResolvedValue(new Map([['reseau interne', 'Réseau Interne'], ['threat-report', 'threat-report']]));
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
     const result = await breakdown({ field: 'report_types', limit: 3 });
@@ -574,25 +574,30 @@ describe('timeSeriesBreakdownEntities', () => {
     expect(result.series.map((serie) => serie.label)).toEqual(['Réseau Interne', 'threat-report', 'no-vocabulary']);
     // The histogram still targets the indexed values
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['reseau interne', 'threat-report', 'no-vocabulary']);
-    expect(engine.elList).toHaveBeenCalledTimes(1);
-    const [, vocabularyUser, , vocabularyOptions] = vi.mocked(engine.elList).mock.calls[0] as any[];
+    // The vocabularies of the category of the field, matched by the engine on the indexed form of their name
+    expect(engine.elKeywordWrittenForms).toHaveBeenCalledTimes(1);
+    const [, vocabularyUser, vocabularyIndices, vocabularyOptions] = vi.mocked(engine.elKeywordWrittenForms).mock.calls[0];
     expect(vocabularyUser).toBe(accessModule.SYSTEM_USER);
-    const collectFilters = (group: any): any[] => [...group.filters, ...group.filterGroups.flatMap(collectFilters)];
-    const vocabularyFilters = collectFilters(vocabularyOptions.filters);
-    expect(vocabularyFilters).toEqual(expect.arrayContaining([
-      expect.objectContaining({ key: ['category'], values: ['report_types_ov'] }),
-      expect.objectContaining({ key: ['name'], values: ['reseau interne', 'threat-report', 'no-vocabulary'] }),
-    ]));
+    expect(vocabularyIndices).toEqual(READ_INDEX_STIX_META_OBJECTS);
+    expect(vocabularyOptions).toEqual({
+      types: ['Vocabulary'],
+      filters: { mode: 'and', filters: [{ key: ['category'], values: ['report_types_ov'] }], filterGroups: [] },
+      noFiltersChecking: true,
+      field: 'name',
+      keys: ['reseau interne', 'threat-report', 'no-vocabulary'],
+    });
   });
 
-  it('should name the vocabulary values whose letters the keyword normalizer folds', async () => {
-    vi.mocked(engine.elAggregationCount).mockResolvedValue([bucket('strasse', 2), bucket('oeuvre', 1)]);
-    vi.mocked(engine.elList).mockResolvedValue([{ name: 'Straße' }, { name: 'Œuvre' }] as any);
+  it('should name the vocabulary values as the engine matched them, whatever their letters', async () => {
+    // No folding on this side: the indexed forms are the engine's, of the field as of the names of the vocabularies
+    const writtenForms = new Map([['высокий', 'Высокий'], ['strasse', 'Straße'], ['ħ ŋ ĳ ſ ﬁ ｆｕｌｌ', 'Ħ Ŋ Ĳ ſ ﬁ ＦＵＬＬ']]);
+    vi.mocked(engine.elAggregationCount).mockResolvedValue([...writtenForms.keys()].map((key, i) => bucket(key, 3 - i)));
+    vi.mocked(engine.elKeywordWrittenForms).mockResolvedValue(writtenForms);
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
 
     const result = await breakdown({ field: 'report_types' });
 
-    expect(result.series.map((serie) => serie.label)).toEqual(['Straße', 'Œuvre']);
+    expect(result.series.map((serie) => serie.label)).toEqual([...writtenForms.values()]);
   });
 
   it('should name the enum values as they are written in the schema, without reading anything', async () => {
@@ -603,7 +608,7 @@ describe('timeSeriesBreakdownEntities', () => {
 
     expect(result.series.map((serie) => serie.label)).toEqual(['CRITICAL', 'Unknown', 'not-in-schema']);
     expect(vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3].keys).toEqual(['critical', 'unknown', 'not-in-schema']);
-    expect(engine.elList).not.toHaveBeenCalled();
+    expect(engine.elKeywordWrittenForms).not.toHaveBeenCalled();
   });
 
   it('should name the entity types after their registered type, without entity', async () => {
@@ -682,7 +687,7 @@ describe('timeSeriesBreakdownEntities', () => {
     const result = await breakdown({ field: 'report_types', includeOther: true });
 
     expect(result.series.map((serie) => serie.isOther)).toEqual([true]);
-    expect(engine.elList).not.toHaveBeenCalled();
+    expect(engine.elKeywordWrittenForms).not.toHaveBeenCalled();
   });
 });
 
@@ -796,21 +801,18 @@ describe('resolveBreakdownField', () => {
   });
 });
 
-describe('normalizeKeywordValue', () => {
-  it('should lowercase and strip the diacritics of the accented letters', () => {
-    expect(normalizeKeywordValue('Réseau Interne')).toEqual('reseau interne');
-    expect(normalizeKeywordValue('ÇA VA')).toEqual('ca va');
+describe('normalizeEnumValue', () => {
+  it('should give the indexed form of the enum values', () => {
+    expect(['CRITICAL', 'Unknown', 'THREAT_CUSTOM', 'not-in-schema'].map(normalizeEnumValue)).toEqual(['critical', 'unknown', 'threat_custom', 'not-in-schema']);
   });
 
-  it('should fold the letters without decomposition as asciifolding does', () => {
-    expect(normalizeKeywordValue('Straße')).toEqual('strasse');
-    expect(normalizeKeywordValue('Œuvre')).toEqual('oeuvre');
-    expect(normalizeKeywordValue('Ærø Łódź Đakovo Þór Ðorð ıstanbul')).toEqual('aero lodz dakovo thor dord istanbul');
-  });
-
-  it('should fold the typographic quotes and dashes', () => {
-    expect(normalizeKeywordValue('\u2018a\u2019 \u201ab\u201b \u201cc\u201d \u201ed\u201d e\u2013f\u2014g')).toEqual('\'a\' \'b\' "c" "d" e-f-g');
-    expect(normalizeKeywordValue('L’Équipe')).toEqual("l'equipe");
+  it('should only meet ASCII enum values, which the keyword normalizer only lowercases', () => {
+    vi.restoreAllMocks();
+    const enumValues = schemaAttributesDefinition.getAllAttributes()
+      .flatMap((attribute) => (attribute.type === 'string' && attribute.format === 'enum' ? attribute.values : []));
+    expect(enumValues.length).toBeGreaterThan(0);
+    // eslint-disable-next-line no-control-regex
+    expect(enumValues.filter((value) => !/^[\x00-\x7f]*$/.test(value))).toEqual([]);
   });
 });
 
