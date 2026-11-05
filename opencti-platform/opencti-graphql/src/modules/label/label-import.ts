@@ -57,7 +57,9 @@ export const importLabel = async (
   if (!dryRun) {
     // addLabel gives a label without color the one it makes of its value
     const added = await addLabel(context, user, { value, color });
-    // addLabel writes nothing and returns the label as it is when another one was created since the lookup above: it is an existing label
+    // addLabel returns the label as it is when another one was created since the lookup above: it is an existing label.
+    // Known limitation, left as it is: a label created by someone else between the lookup of addLabel and its write is upserted by the
+    // generic create path (with the color given, else the generated one) and reported as created. Fixing it needs a create-only creation in the middleware.
     if (color && added.color?.toLowerCase() !== color.toLowerCase()) {
       return importExisting(added);
     }
