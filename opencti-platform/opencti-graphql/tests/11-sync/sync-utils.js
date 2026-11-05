@@ -141,18 +141,23 @@ const POLL_INTERVAL = 5000;
 export const waitForRemotePlatform = async (remoteUri, timeout = FIVE_MINUTES) => {
   const healthUrl = new URL(`health?health_access_key=${conf.get('app:health_access_key')}`, remoteUri);
   const deadline = Date.now() + timeout;
+  let lastAnswer = 'no response';
   while (Date.now() < deadline) {
-    try {
-      const response = await fetch(healthUrl);
+    // No response while still booting
+    const response = await fetch(healthUrl).catch(() => undefined);
+    if (response) {
+      await response.body?.cancel();
       if (response.ok) {
         return;
       }
-    } catch {
-      // Still booting
+      if (response.status === 401) {
+        throw new Error(`Remote platform ${remoteUri} rejects app:health_access_key`);
+      }
+      lastAnswer = `HTTP ${response.status}`;
     }
     await wait(POLL_INTERVAL);
   }
-  throw new Error(`Remote platform ${remoteUri} is not healthy after ${timeout} ms`);
+  throw new Error(`Remote platform ${remoteUri} is not healthy after ${timeout} ms (last answer: ${lastAnswer})`);
 };
 
 // Poll until the remote platform holds the same content, twice in a row so a transient match does not count.
