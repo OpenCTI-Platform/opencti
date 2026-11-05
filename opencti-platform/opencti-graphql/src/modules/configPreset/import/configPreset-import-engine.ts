@@ -7,10 +7,8 @@ import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySe
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigImportMode, ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetSelectionInput, ResolversTypes } from '../../../generated/graphql';
-import { resolveUserByIdFromCache } from '../../user/user-domain';
-import { BYPASS, isUserHasCapability } from '../../../utils/access';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
-import { checkConfigPresetImportAccess, configPresetImportMode, configPresetImportModes } from './configPreset-import-utils';
+import { checkConfigPresetImportAccess, configPresetImportMode, configPresetImportModes, reloadConfigPresetImportUser } from './configPreset-import-utils';
 import { computeConfigPresetItem, computeConfigPresetItems, loadConfigPresetImportZip } from './configPreset-import-domain';
 import { readConfigPresetBundle, resolveBundleDependencies } from './configPreset-import-bundle';
 import { writeConfigPresetImportReport } from './configPreset-import-report';
@@ -58,6 +56,32 @@ const toResult = (
   translatable: naming?.translatable ?? false,
 });
 
+// Computes then writes one item of the bundle and returns its result. An item of a family the platform cannot apply (Enterprise Edition)
+// is skipped, so it never reaches apply. An error of the item, whether it is read or written, fails this item and is never thrown: the
+// next items go on. Shared by every import that writes items of a bundle (the wizard, the partial import).
+export const importConfigPresetItem = async (
+  context: AuthContext,
+  user: AuthUser,
+  item: ConfigPresetBundleItem,
+  plan: ConfigPresetImportPlan,
+  mode: ConfigImportMode,
+): Promise<ConfigPresetImportItemResult> => {
+  const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === item.type)!;
+  let computed: ConfigPresetComputedItem | undefined;
+  try {
+    computed = await computeConfigPresetItem(context, user, family, item, plan, mode);
+    if (computed.status === 'failed' || computed.status === 'skipped') {
+      return toResult(item, computed.status, computed.reason, computed);
+    }
+    const applied = await family.importer!.apply(context, user, item, computed, mode);
+    return toResult(item, applied || computed.status, computed.reason, computed);
+  } catch (err) {
+    // The theme was not created: the items that depend on it fail with it
+    plan.created.delete(configPresetPlanKey(item.type, item.id));
+    return toResult(item, 'failed', err instanceof Error ? err.message : String(err), computed);
+  }
+};
+
 const COUNT_KEYS: Record<ConfigPresetImportResultStatus, keyof ConfigPresetImportCounts> = {
   CREATED: 'created',
   OVERWRITTEN: 'overwritten',
@@ -65,7 +89,7 @@ const COUNT_KEYS: Record<ConfigPresetImportResultStatus, keyof ConfigPresetImpor
   FAILED: 'failed',
 };
 
-const countResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImportCounts => {
+export const countConfigPresetImportResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImportCounts => {
   const counts: ConfigPresetImportCounts = { created: 0, overwritten: 0, skipped: 0, failed: 0 };
   results.forEach(({ status }) => {
     counts[COUNT_KEYS[status]] += 1;
@@ -169,37 +193,9 @@ const realImport = async (
       if (lock.signal.aborted) {
         stopReason = 'Import stopped: lock lost';
       } else {
-        // Re-read before each item: the rights of the user may have changed; the origin is kept for the audit.
-        // The domain functions of the importers check no capability, so BYPASS is checked here: losing it stops the import.
-        const cachedUser = await resolveUserByIdFromCache(importContext, user.id);
-        if (!cachedUser) {
-          throw FunctionalError('The user who started the import no longer exists');
-        }
-        if (!isUserHasCapability(cachedUser, BYPASS)) {
-          throw FunctionalError('The user who started the import no longer has the right to import');
-        }
-        const runUser = { ...cachedUser, origin: user.origin } as AuthUser;
-        const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === item.type)!;
-        const importer = family.importer!;
-        const mode = configPresetImportMode(modes, item.type, item.id);
-        let computed: ConfigPresetComputedItem | undefined;
-        let result: ConfigPresetImportItemResult;
-        // An error of the item, whether it is read or written, fails this item and never the next ones
-        try {
-          // An item of a family the platform cannot apply is skipped here, so it never reaches apply
-          computed = await computeConfigPresetItem(importContext, runUser, family, item, plan, mode);
-          result = toResult(item, computed.status, computed.reason, computed);
-          if (computed.status !== 'failed' && computed.status !== 'skipped') {
-            const applied = await importer.apply(importContext, runUser, item, computed, mode);
-            if (applied) {
-              result = toResult(item, applied, computed.reason, computed);
-            }
-          }
-        } catch (err) {
-          // The theme was not created: the items that depend on it fail with it
-          plan.created.delete(configPresetPlanKey(item.type, item.id));
-          result = toResult(item, 'failed', err instanceof Error ? err.message : String(err), computed);
-        }
+        // Re-read before each item: losing BYPASS, or the account, stops the import
+        const runUser = await reloadConfigPresetImportUser(importContext, user);
+        const result = await importConfigPresetItem(importContext, runUser, item, plan, configPresetImportMode(modes, item.type, item.id));
         results.push(result);
         await applyConfigPresetImportRunEvent(importContext, user, startedAt, 'ITEM_PROCESSED', { result });
         await updateConfigPresetImportRunning(user, startedAt, results.length);
@@ -237,7 +233,7 @@ const realImport = async (
       logApp.warn('[CONFIG PRESET] The platform bootstrap status could not be set to completed', { cause: err });
     }
   }
-  const counts = countResults(results);
+  const counts = countConfigPresetImportResults(results);
   const report = await writeConfigPresetImportReport(importContext, user, fileId, {
     user_id: user.id,
     started_at: startedAt,
