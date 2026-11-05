@@ -2826,6 +2826,14 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
               const lockedInstance = await storeLoadByIdWithRefs(context, user, initial.internal_id, { type: initial.entity_type }) as Record<string, any> | null;
               previousRefs = lockedInstance?.[key];
               isRefsChanged = isLoadedRefsChanged(newTargetsIds, previousRefs);
+              if (isRefsChanged) {
+                // The event compares the initial element with the updated one: its previous state must carry
+                // the refs read under the lock, or the stale replace yields an identical pair and an empty patch
+                (initial as Record<string, any>)[key] = previousRefs;
+                if (lockedInstance && lockedInstance[relType] !== undefined) {
+                  (initial as Record<string, any>)[relType] = lockedInstance[relType];
+                }
+              }
             }
             if (isRefsChanged) {
               updatedInputs.push({ key, value: refs, previous: previousRefs });
