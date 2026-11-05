@@ -64,7 +64,8 @@ The below capabilities are applicable to the whole application.
 | &nbsp;&nbsp;`Manage authentication`                        | Define authentication strategies, the password policy & set up platform-wide authentication via 2FA when using basic auth.              |
 | &nbsp;&nbsp;`Manage marking definitions`                | Update and delete marking definitions.                                                        |
 | &nbsp;&nbsp;`Manage dissemination lists`                | Update and manage dissemination lists                                                         |
-| &nbsp;&nbsp;`Manage customization`                      | Customize entity types                                                                        |
+| &nbsp;&nbsp;`Manage customization`                      | Customize entity types, including attaching custom fields to them                             |
+| &nbsp;&nbsp;`Manage custom fields`                      | Manage custom fields (create/update/delete). See [Custom fields](custom-fields.md).           |
 | &nbsp;&nbsp;`Manage labels`                             | Manage labels (create/update/delete)                                                          |
 | &nbsp;&nbsp;`Manage vocabularies`                       | Manage vocabularies (create/update/delete)                                                    |
 | &nbsp;&nbsp;`Manage case templates`                     | Manage case templates (create/update/delete)                                                  |

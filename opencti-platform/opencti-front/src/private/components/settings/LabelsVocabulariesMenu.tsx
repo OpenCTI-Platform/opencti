@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
 import useGranted, {
   SETTINGS_SETCASETEMPLATES,
-  SETTINGS_SETCUSTOMIZATION,
+  SETTINGS_SETCUSTOMFIELDS,
   SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETLABELS,
   SETTINGS_SETSTATUSTEMPLATES,
@@ -15,7 +15,7 @@ const LabelsVocabulariesMenu: FunctionComponent = () => {
   const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
   const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
   const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
-  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMIZATION]);
+  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMFIELDS]);
   const entries: MenuEntry[] = [];
   if (isGrantedToLabels) {
     entries.push({
