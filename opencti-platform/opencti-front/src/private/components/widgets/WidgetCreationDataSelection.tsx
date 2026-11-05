@@ -114,7 +114,8 @@ const WidgetCreationDataSelection = () => {
   const lockedByBreakdown = (button: React.ReactElement) => (isBreakdownActive ? (
     <Tooltip>
       <TooltipTrigger asChild>
-        {/* FDS-WORKAROUND #68: a disabled library IconButton or Button cannot trigger its own tooltip, so this span takes the hover and focus — see fds-migration/LIBRARY-FEEDBACK.md #68 */}
+        {/* FDS-WORKAROUND #68: a disabled library IconButton or Button cannot trigger its own tooltip,
+            so this span takes the hover and focus — see fds-migration/LIBRARY-FEEDBACK.md #68 */}
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <span style={{ display: 'flex', flex: 1 }} tabIndex={0}>{button}</span>
       </TooltipTrigger>

@@ -348,7 +348,8 @@ const WidgetCreationParameters = () => {
           {isDistinctLockedByBreakdown ? (
             <FdsTooltip>
               <TooltipTrigger asChild>
-                {/* FDS-WORKAROUND #68: a disabled library Checkbox cannot trigger its own tooltip, so this span takes the hover and focus — see fds-migration/LIBRARY-FEEDBACK.md #68 */}
+                {/* FDS-WORKAROUND #68: a disabled library Checkbox cannot trigger its own tooltip,
+                    so this span takes the hover and focus — see fds-migration/LIBRARY-FEEDBACK.md #68 */}
                 {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
                 <span tabIndex={0}>{checkbox}</span>
               </TooltipTrigger>
