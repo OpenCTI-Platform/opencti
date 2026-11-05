@@ -198,8 +198,10 @@ export const findPirContainers = async (
 export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAddInput) => {
   await checkEnterpriseEdition(context);
   // Pir filters are evaluated on stream events, they must be compatible with stix matching
-  validateFilterGroupForStixMatch(input.pir_filters);
-  input.pir_criteria.forEach((criterion) => validateFilterGroupForStixMatch(criterion.filters));
+  await validateFilterGroupForStixMatch(context, user, input.pir_filters);
+  for (const criterion of input.pir_criteria) {
+    await validateFilterGroupForStixMatch(context, user, criterion.filters);
+  }
   // -- create Pir --
   const rescanStartDate = now() - (input.pir_rescan_days * 24 * 3600 * 1000); // rescan start date in milliseconds
   const authorized_members = input.authorized_members ?? [
