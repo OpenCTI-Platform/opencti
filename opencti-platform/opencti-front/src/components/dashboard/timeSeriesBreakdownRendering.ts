@@ -24,6 +24,10 @@ export const PIXELS_PER_X_LABEL = 60;
 export const ANIMATION_POINTS_THRESHOLD = 300;
 // Relative change under which a new chart width is ignored, to not redraw the chart on small resizes
 const CHART_WIDTH_HYSTERESIS = 0.2;
+// Height the plot and its x axis keep under the legend, which scrolls past it, and the height of a row of
+// the compact legend, which always shows one
+export const MIN_PLOT_HEIGHT = 120;
+export const COMPACT_LEGEND_ROW_HEIGHT = 20;
 
 /**
  * Number of bars the chart can draw for a given width in pixels, an unknown width gives the maximum.
@@ -86,6 +90,15 @@ export const isSameBreakdown = (a?: WidgetTimeSeriesBreakdownData | null, b?: Wi
 export const nextBreakdownChartWidth = (previous: number | undefined, width: number) => {
   if (previous === undefined || !(previous > 0)) return width;
   return Math.abs(width - previous) < previous * CHART_WIDTH_HYSTERESIS ? previous : width;
+};
+
+/**
+ * Height the legend of a chart of a given height in pixels scrolls past, to keep MIN_PLOT_HEIGHT to the plot,
+ * when the cap of ApexCharts (half of the chart) does not keep it. One row of the legend always shows.
+ */
+export const getBreakdownLegendMaxHeight = (height: number) => {
+  if (!(height > 0) || height - MIN_PLOT_HEIGHT >= height / 2) return undefined;
+  return Math.max(COMPACT_LEGEND_ROW_HEIGHT, height - MIN_PLOT_HEIGHT);
 };
 
 /**

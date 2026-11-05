@@ -430,6 +430,8 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
 
     const props = await drawn(mocks.bars);
     expect(props).toMatchObject({ interval: 'day', isStacked: true, isAnimated: true });
+    // A legend of many series fits a small widget, and counts are labelled as integers
+    expect(props).toMatchObject({ isLegendCompact: true, hasIntegerTicks: true });
     expect(queryByTestId('widget-warning')).toBeNull();
   });
 

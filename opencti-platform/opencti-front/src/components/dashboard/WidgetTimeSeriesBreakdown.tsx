@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ApexCharts from 'apexcharts';
 import { useIntl } from 'react-intl';
 import { useTheme } from '@mui/material/styles';
+import Box from '@mui/material/Box';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import WidgetNoData from './WidgetNoData';
@@ -16,6 +17,7 @@ import { getWidgetBreakdownLimit, getWidgetBreakdownOrder, isBreakdownTypeField 
 import {
   ANIMATION_POINTS_THRESHOLD,
   coarsenSeriesForRendering,
+  getBreakdownLegendMaxHeight,
   getBreakdownTickAmount,
   getRenderedPointsBudget,
   isSameBreakdown,
@@ -138,7 +140,7 @@ const WidgetTimeSeriesBreakdown = ({
   // The points budget and the x axis labels follow the width of the chart. The width is only updated by
   // a large enough resize, and stays unknown until the first measure so that the chart is not drawn twice.
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { width } = useResizeObserver(containerRef);
+  const { width, height } = useResizeObserver(containerRef);
   const [chartWidth, setChartWidth] = useState<number>();
   useEffect(() => {
     if (!(width > 0)) {
@@ -220,6 +222,8 @@ const WidgetTimeSeriesBreakdown = ({
           hasLegend={parameters.legend ?? undefined}
           isAnimated={isAnimated}
           isUpdateAnimated={false}
+          isLegendCompact
+          hasIntegerTicks
           hasHoverFilter={false}
           tickAmount={getBreakdownTickAmount(chartWidth ?? width)}
           onMounted={onMounted}
@@ -235,6 +239,8 @@ const WidgetTimeSeriesBreakdown = ({
           hasLegend={parameters.legend ?? undefined}
           isAnimated={isAnimated}
           isUpdateAnimated={false}
+          isLegendCompact
+          hasIntegerTicks
           onMounted={onMounted}
         />
       );
@@ -267,16 +273,24 @@ const WidgetTimeSeriesBreakdown = ({
         hasLegend={parameters.legend ?? undefined}
         isAnimated={isAnimated}
         isUpdateAnimated={false}
+        isLegendCompact
+        hasIntegerTicks
         onMounted={onMounted}
       />
     );
   };
 
-  // The measured container stays mounted, whatever it holds, to be observed from the first render
+  // The measured container stays mounted, whatever it holds, to be observed from the first render.
+  // In a small widget, the legend scrolls before the plot gets too small to read (ApexCharts sets its inline cap).
+  const legendMaxHeight = getBreakdownLegendMaxHeight(height);
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
+    <Box
+      ref={containerRef}
+      style={{ width: '100%', height: '100%' }}
+      sx={legendMaxHeight !== undefined ? { '& .apexcharts-legend': { maxHeight: `${legendMaxHeight}px !important` } } : undefined}
+    >
       {renderChart()}
-    </div>
+    </Box>
   );
 };
 

@@ -3,6 +3,8 @@ import * as C from '@mui/material/colors';
 import { itemColor } from '../../utils/Colors';
 import {
   coarsenSeriesForRendering,
+  COMPACT_LEGEND_ROW_HEIGHT,
+  getBreakdownLegendMaxHeight,
   getBreakdownPalette,
   getBreakdownSeriesColors,
   getEntityTypeColor,
@@ -13,6 +15,7 @@ import {
   MAX_RENDERED_BARS,
   MAX_RENDERED_HEATMAP_CELLS,
   MAX_RENDERED_LINE_POINTS,
+  MIN_PLOT_HEIGHT,
   MIN_RENDERED_BARS,
   nextBreakdownChartWidth,
   numberSharedSeriesNames,
@@ -118,6 +121,19 @@ describe('nextBreakdownChartWidth', () => {
     expect(nextBreakdownChartWidth(800, 700)).toEqual(800); // -12.5 %
     expect(nextBreakdownChartWidth(800, 960)).toEqual(960); // +20 %
     expect(nextBreakdownChartWidth(800, 500)).toEqual(500);
+  });
+});
+
+describe('getBreakdownLegendMaxHeight', () => {
+  it('lets the legend of a small chart scroll past the height the plot keeps, one row at least', () => {
+    expect(getBreakdownLegendMaxHeight(200)).toEqual(200 - MIN_PLOT_HEIGHT);
+    expect(getBreakdownLegendMaxHeight(130)).toEqual(COMPACT_LEGEND_ROW_HEIGHT);
+  });
+
+  it('leaves the legend of a large chart, or of an unmeasured one, to ApexCharts, which caps it at half of the chart', () => {
+    expect(getBreakdownLegendMaxHeight(2 * MIN_PLOT_HEIGHT)).toBeUndefined();
+    expect(getBreakdownLegendMaxHeight(600)).toBeUndefined();
+    expect(getBreakdownLegendMaxHeight(0)).toBeUndefined();
   });
 });
 

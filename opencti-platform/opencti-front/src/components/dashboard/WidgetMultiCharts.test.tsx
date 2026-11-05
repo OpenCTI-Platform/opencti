@@ -15,6 +15,7 @@ vi.mock('@components/common/charts/Chart', () => ({
 import WidgetMultiLines from './WidgetMultiLines';
 import WidgetMultiAreas from './WidgetMultiAreas';
 import WidgetMultiHeatMap from './WidgetMultiHeatMap';
+import WidgetVerticalBars from './WidgetVerticalBars';
 
 const series = [{ name: 'Report', data: [{ x: new Date('2025-10-01T00:00:00.000Z'), y: 3 }] }];
 const lastOptions = () => mocks.chart.mock.lastCall?.[0].options as ApexOptions;
@@ -47,6 +48,22 @@ describe('Time series chart widgets', () => {
     expect(lastOptions().chart?.animations?.dynamicAnimation?.enabled).toBe(false);
     testRender(<WidgetMultiHeatMap data={series} minValue={0} maxValue={3} isUpdateAnimated={false} />);
     expect(lastOptions().chart?.animations?.dynamicAnimation?.enabled).toBe(false);
+  });
+
+  it('keeps the legend and the y axis of the time series charts unless a compact legend and integer ticks are asked for', () => {
+    const counts = [{ name: 'Report', data: [{ x: new Date('2025-10-01T00:00:00.000Z'), y: 3 }, { x: new Date('2025-10-02T00:00:00.000Z'), y: 1 }] }];
+    [WidgetVerticalBars, WidgetMultiLines, WidgetMultiAreas].forEach((TimeSeriesChart) => {
+      testRender(<TimeSeriesChart series={counts} interval="day" hasLegend />);
+      expect(lastOptions().legend?.itemMargin?.vertical).toEqual(20);
+      expect((lastOptions().yaxis as ApexYAxis).tickAmount).toBeUndefined();
+
+      testRender(<TimeSeriesChart series={counts} interval="day" hasLegend isLegendCompact hasIntegerTicks />);
+      expect(lastOptions().legend?.itemMargin).toEqual({ horizontal: 5, vertical: 2 });
+      expect(lastOptions().yaxis).toMatchObject({ min: 0, max: 3, tickAmount: 3 });
+    });
+    // Stacked, the highest sum of a date
+    testRender(<WidgetVerticalBars series={[...counts, ...counts]} interval="day" isStacked hasIntegerTicks />);
+    expect(lastOptions().yaxis).toMatchObject({ min: 0, max: 6 });
   });
 
   describe('heatmap color ranges', () => {
