@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { toB64 } from '../../../../../utils/String';
+import { dashboardTimeRangeStorageKey } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
 import { dashboardVariablesStorageKey } from '../../../../../components/dashboard/dashboardVariablesStorage';
 import type { DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
 import { applyPublishedTimeRangeChange, buildPublicationInput, buildPublishedValuesState, buildPublishedVariables, buildPublishedVariableValues } from './public-dashboard-utils';
@@ -62,6 +63,23 @@ describe('buildPublishedValuesState', () => {
 
   it('should be empty without a selected dashboard', () => {
     expect(buildPublishedValuesState(undefined, 'user-1')).toEqual({ variable_values: {}, time_range: { relativeDate: null, startDate: null, endDate: null } });
+  });
+
+  it('should prefer the URL values and range on the page of the dashboard, as the page does', () => {
+    window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'dashboard-1'), JSON.stringify({ [USED]: 'stored' }));
+    const search = `?variables=${USED}:url&timeRange=years-1`;
+    const onPage = buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1', search, '/dashboard/workspaces/dashboards/dashboard-1');
+    expect(onPage.variable_values[USED]).toEqual('url');
+    expect(onPage.time_range).toEqual({ relativeDate: 'years-1', startDate: null, endDate: null });
+    // From a list, the URL speaks for another dashboard: ignored
+    const fromList = buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1', search, '/dashboard/workspaces/dashboards_public');
+    expect(fromList.variable_values[USED]).toEqual('stored');
+    expect(fromList.time_range).toEqual({ relativeDate: 'months-1', startDate: null, endDate: null });
+  });
+
+  it('should start from the range kept in this browser for the dashboard', () => {
+    window.localStorage.setItem(dashboardTimeRangeStorageKey('user-1', 'dashboard-1'), JSON.stringify({ relativeDate: 'days-7', startDate: null, endDate: null }));
+    expect(buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1', '', '/x').time_range.relativeDate).toEqual('days-7');
   });
 });
 

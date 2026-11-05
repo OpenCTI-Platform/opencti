@@ -5,7 +5,8 @@ import type { FieldOption } from '../../../../../utils/field';
 import type { DashboardConfig, DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
 import { deserializeDashboardManifestForFrontend } from '../../../../../components/dashboard/dashboard-utils';
 import { buildDefaultVariableValues, isValidVariableValue } from '../../../../../components/dashboard/dashboardVariablesResolution';
-import { dashboardVariablesStorageKey, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
+import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
+import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
 
 /**
  * Generates a URI key slug from a dashboard name.
@@ -75,20 +76,29 @@ export const buildPublishedVariableValues = (variables: DashboardVariable[], sto
 };
 
 /**
- * Values the form starts from for the selected dashboard, and starts again from when another one is selected.
+ * Values the form starts from for the selected dashboard, and starts again from when another one is selected: what
+ * the author sees on the dashboard, with the same precedence as the page (URL, then this browser, then the manifest).
+ * The URL only speaks for the dashboard it shows: it is read for the dashboard of the page, never for another one.
  */
 export const buildPublishedValuesState = (
   dashboard: PublishableDashboard | undefined,
   userId: string,
+  search: string = window.location.search,
+  pathname: string = window.location.pathname,
 ): Pick<PublicDashboardCreationFormData, 'variable_values' | 'time_range'> => {
   if (!dashboard) return { variable_values: {}, time_range: EMPTY_PUBLISHED_TIME_RANGE };
   const manifest = deserializeDashboardManifestForFrontend(dashboard.manifest);
   const variables = buildPublishedVariables(manifest.variables ?? [], dashboard.variables);
-  const stored = readStoredVariableValues(dashboardVariablesStorageKey(userId, dashboard.id));
+  const isDashboardPage = pathname.includes(`/dashboards/${dashboard.id}`);
+  const stored = {
+    ...readStoredVariableValues(dashboardVariablesStorageKey(userId, dashboard.id)),
+    ...(isDashboardPage ? parseVariablesParam(search) : {}),
+  };
+  const localRange = (isDashboardPage ? parseTimeRangeParam(search) : null) ?? readStoredTimeRange(dashboardTimeRangeStorageKey(userId, dashboard.id));
   const { startDate, endDate, relativeDate } = manifest.config;
   return {
     variable_values: buildPublishedVariableValues(variables, stored),
-    time_range: { startDate: startDate ?? null, endDate: endDate ?? null, relativeDate: relativeDate ?? null },
+    time_range: localRange ?? { startDate: startDate ?? null, endDate: endDate ?? null, relativeDate: relativeDate ?? null },
   };
 };
 
