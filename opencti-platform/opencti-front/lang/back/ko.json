@@ -748,6 +748,7 @@
   "Notes about this entity": "이 엔터티에 대한 메모",
   "Notification content": "알림 내용",
   "Notification delay (in minute)": "알림 지연 시간 (분 단위)",
+  "Notification entity internal id": "알림 엔티티 내부 ID",
   "Notification entity type": "알림 엔티티 유형",
   "Notification event message": "알림 이벤트 메시지",
   "Notification events": "알림 이벤트",

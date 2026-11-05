@@ -46,6 +46,7 @@ import { safeRender } from '../utils/safeEjs.client';
 import { NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 import { InterruptibleTimer } from './interruptible-timer';
 import { addNotificationSentCount } from './telemetryManager';
+import { resolveNotificationEntityInternalId } from './notification-instance-id';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -73,6 +74,7 @@ export async function processNotificationData(
         operation: type,
         message,
         instance_id: instance.id,
+        entity_internal_id: resolveNotificationEntityInternalId(instance),
         entity_type: instance.entity_type,
       };
 

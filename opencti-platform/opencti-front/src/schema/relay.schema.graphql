@@ -11639,6 +11639,7 @@ type NotificationCount {
 type NotificationEvent {
   message: String!
   instance_id: String
+  entity_internal_id: String
   operation: String!
   entity_type: String
 }

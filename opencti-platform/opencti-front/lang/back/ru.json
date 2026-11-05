@@ -748,6 +748,7 @@
   "Notes about this entity": "Заметки об этой организации",
   "Notification content": "Содержание уведомления",
   "Notification delay (in minute)": "Задержка уведомления (в минутах)",
+  "Notification entity internal id": "Внутренний идентификатор субъекта уведомления",
   "Notification entity type": "Тип субъекта уведомления",
   "Notification event message": "Сообщение о событии уведомления",
   "Notification events": "События уведомления",

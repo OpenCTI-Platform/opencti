@@ -748,6 +748,7 @@
   "Notes about this entity": "Notes about this entity",
   "Notification content": "Notification content",
   "Notification delay (in minute)": "Notification delay (in minute)",
+  "Notification entity internal id": "Notification entity internal id",
   "Notification entity type": "Notification entity type",
   "Notification event message": "Notification event message",
   "Notification events": "Notification events",

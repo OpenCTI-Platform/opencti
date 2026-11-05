@@ -748,6 +748,7 @@
   "Notes about this entity": "このエンティティに関するメモ",
   "Notification content": "通知タイトル",
   "Notification delay (in minute)": "通知の遅延（分単位）",
+  "Notification entity internal id": "通知エンティティ内部ID",
   "Notification entity type": "通知エンティティ型",
   "Notification event message": "通知関連インスタンス",
   "Notification events": "通知イベントメッセージ",
