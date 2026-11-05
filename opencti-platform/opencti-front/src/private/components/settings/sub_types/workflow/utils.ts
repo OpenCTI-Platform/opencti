@@ -201,16 +201,19 @@ const isNewElementStatus = (selectedElement: Node) => (selectedElement?.type ===
 
 export type TargetStatusExits = { status: string; events: string[] };
 
-// The transitions leaving the status a transition leads to. A closing reason is only allowed into a final status, left by none.
+// The transitions leaving a status a transition leads to. A closing reason is only allowed into a final status, left by none:
+// a transition leading to several statuses is checked against each of them, like the backend does.
 const findTargetStatusExits = (transitionId: string, nodes: Node[], edges: Edge[]): TargetStatusExits | undefined => {
-  const target = nodes.find((node) => node.type === WorkflowNodeType.status
+  const targets = nodes.filter((node) => node.type === WorkflowNodeType.status
     && edges.some((edge) => edge.source === transitionId && edge.target === node.id));
-  if (!target) return undefined;
-  const events = edges
-    .filter((edge) => edge.source === target.id)
-    .map((edge) => nodes.find((node) => node.id === edge.target && node.type === WorkflowNodeType.transition)?.data.event)
-    .filter((event): event is string => !!event);
-  return events.length > 0 ? { status: target.data.statusTemplate?.name ?? target.id, events } : undefined;
+  for (const target of targets) {
+    const events = edges
+      .filter((edge) => edge.source === target.id)
+      .map((edge) => nodes.find((node) => node.id === edge.target && node.type === WorkflowNodeType.transition)?.data.event)
+      .filter((event): event is string => !!event);
+    if (events.length > 0) return { status: target.data.statusTemplate?.name ?? target.id, events };
+  }
+  return undefined;
 };
 
 export {

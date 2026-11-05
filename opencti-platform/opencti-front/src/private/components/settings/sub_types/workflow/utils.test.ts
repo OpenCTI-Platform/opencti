@@ -197,6 +197,12 @@ describe('findTargetStatusExits', () => {
     expect(findTargetStatusExits('t-close', nodes, edges)).toEqual({ status: 'Closed', events: ['reopen'] });
   });
 
+  it('checks every status a transition leads to', () => {
+    const fanOut = [...nodes, status('review', 'Review')];
+    const edges = [edge('open', 't-close'), edge('t-close', 'closed'), edge('t-close', 'review'), edge('review', 't-reopen'), edge('t-reopen', 'open')];
+    expect(findTargetStatusExits('t-close', fanOut, edges)).toEqual({ status: 'Review', events: ['reopen'] });
+  });
+
   it('returns nothing for a transition without a target status', () => {
     expect(findTargetStatusExits('t-close', nodes, [edge('open', 't-close')])).toBeUndefined();
   });
