@@ -982,7 +982,7 @@ export const getAvailableOperatorForFilterSubKey = (filterDefinition: FilterDefi
   // the nested elements exist, so they belong to the nested filter itself (see FilterOperatorSelect).
   if (isGenericNestedFilterDefinition(filterDefinition)) {
     const subFilterDefinition = filterDefinition.subFilters?.find((subFilter) => subFilter.filterKey === subKey);
-    return getAvailableOperatorForFilterKey(subFilterDefinition).filter((op) => op !== 'nil' && op !== 'not_nil');
+    return getAvailableOperatorForFilterKey(subFilterDefinition).filter((op) => !NO_VALUES_FILTER_OPERATORS.includes(op));
   }
   return ['eq', 'not_eq', 'nil', 'not_nil'];
 };

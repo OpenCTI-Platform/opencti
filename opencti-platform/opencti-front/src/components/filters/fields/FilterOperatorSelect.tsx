@@ -2,7 +2,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { addDays, subDays } from 'date-fns';
 import { CSSProperties, Dispatch, FunctionComponent, SetStateAction } from 'react';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
-import { getAvailableOperatorForFilter, isGenericNestedFilterDefinition, useFilterDefinition } from '../../../utils/filters/filtersUtils';
+import { getAvailableOperatorForFilter, isGenericNestedFilterDefinition, NO_VALUES_FILTER_OPERATORS, useFilterDefinition } from '../../../utils/filters/filtersUtils';
 import { FilterDefinition } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../i18n';
 import { useOptionalDashboardVariableDefinitions } from '../../dashboard/DashboardVariablesContext';
@@ -33,8 +33,6 @@ const OperatorKeyValues: {
   has_changed: 'Has changed',
   not_has_changed: 'Has not changed',
 };
-
-const NO_VALUE_OPERATORS = ['nil', 'not_nil'];
 
 export interface FilterOperatorSelectProps {
   filter?: Filter;
@@ -83,10 +81,10 @@ const FilterOperatorSelect: FunctionComponent<FilterOperatorSelectProps> = ({
   // so that the popover does not show two 'Equals' selects in a row (same idea as the first operator of regardingOf).
   const isFirstSubFilterOperator = isSubFilterOperator && filterDefinition?.subFilters?.[0]?.filterKey === subKey;
   const parentNoValueOperators = isFirstSubFilterOperator
-    ? getAvailableOperatorForFilter(filterDefinition, undefined, { isStixFiltering }).filter((op) => NO_VALUE_OPERATORS.includes(op))
+    ? getAvailableOperatorForFilter(filterDefinition, undefined, { isStixFiltering }).filter((op) => NO_VALUES_FILTER_OPERATORS.includes(op))
     : [];
   const availableOperators = [...getAvailableOperatorForFilter(filterDefinition, subKey, { isStixFiltering }), ...parentNoValueOperators];
-  const isParentWithoutValue = isFirstSubFilterOperator && NO_VALUE_OPERATORS.includes(filter?.operator ?? 'eq');
+  const isParentWithoutValue = isFirstSubFilterOperator && NO_VALUES_FILTER_OPERATORS.includes(filter?.operator ?? 'eq');
   let selectedOperator = filter?.operator ?? '';
   if (isSubFilterOperator && !isParentWithoutValue) {
     selectedOperator = filter?.values.find((value) => value.key === subKey)?.operator ?? 'eq';
@@ -95,7 +93,7 @@ const FilterOperatorSelect: FunctionComponent<FilterOperatorSelectProps> = ({
   if (availableOperators.length === 0) return null;
 
   const handleChangeOperator = (newOperator: string, fDef?: FilterDefinition) => {
-    if (isFirstSubFilterOperator && NO_VALUE_OPERATORS.includes(newOperator)) {
+    if (isFirstSubFilterOperator && NO_VALUES_FILTER_OPERATORS.includes(newOperator)) {
       helpers?.handleChangeOperatorFilters(filter?.id ?? '', newOperator);
       return;
     }
