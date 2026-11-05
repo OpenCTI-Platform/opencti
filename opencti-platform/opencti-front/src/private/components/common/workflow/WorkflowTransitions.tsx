@@ -74,7 +74,6 @@ interface WorkflowTransitionsViewProps {
   processingCount?: number;
   workflowInstance: WorkflowStatus_data$data['workflowInstance'];
   entityType: string;
-  currentClosingReason?: string | null;
   refreshing?: boolean;
   onCompleted?: () => void;
 }
@@ -86,7 +85,6 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   processingCount = 0,
   workflowInstance,
   entityType,
-  currentClosingReason,
   refreshing = false,
   onCompleted,
 }) => {
@@ -291,7 +289,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
       </Box>
       {wizard && (
         <Formik<TransitionFormValues>
-          initialValues={{ ...EMPTY_TRANSITION_INPUT_VALUES, closingReason: currentClosingReason ?? '' }}
+          initialValues={EMPTY_TRANSITION_INPUT_VALUES}
           validationSchema={buildTransitionInputsSchema(wizard, canBypassMandatoryFields, t_i18n)}
           onSubmit={handleApplyWizard}
           validateOnMount
@@ -454,7 +452,6 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
         entityId={entity.id}
         workflowInstance={entity.workflowInstance}
         entityType={entityType}
-        currentClosingReason={entity.x_opencti_closing_reason}
         refreshing={refreshing}
         onCompleted={refresh}
       />

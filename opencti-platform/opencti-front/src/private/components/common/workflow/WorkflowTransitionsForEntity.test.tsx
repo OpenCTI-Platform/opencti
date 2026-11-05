@@ -200,7 +200,8 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     expect(screen.getByTestId('legacy-status')).toHaveTextContent('B');
   });
 
-  it('pre-fills the closing reason with the current one', async () => {
+  // A closing reason is only asked on the way into a final state: the one stored on the entity is not carried over
+  it('does not pre-fill the closing reason with the current one', async () => {
     const rendered = testRender(<Suspense><Harness /></Suspense>, {
       userContext: createMockUserContext({
         me: { capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }], capabilitiesInDraft: [] },
@@ -217,7 +218,8 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     await rendered.user.click(screen.getByRole('button', { name: 'approve' }));
     await rendered.user.click(await screen.findByRole('button', { name: 'Confirm' }));
     const mutation = rendered.relayEnv.mock.getAllOperations().find((operation) => operation.request.node.params.name === 'WorkflowStatusTriggerMutation');
-    expect(mutation?.request.variables).toMatchObject({ eventName: 'approve', closingReason: 'duplicate' });
+    expect(mutation?.request.variables).toMatchObject({ eventName: 'approve' });
+    expect(mutation?.request.variables.closingReason).toBeNull();
   });
 
   it('cancels polling and the active refresh on unmount', async () => {
