@@ -33,7 +33,7 @@ const MassTransitionInputs = ({ requirements, onChange }: MassTransitionInputsPr
   const schema = buildTransitionInputsSchema(requirements, canBypassMandatoryFields, t_i18n);
   return (
     <Formik<TransitionInputValues> initialValues={EMPTY_TRANSITION_INPUT_VALUES} validationSchema={schema} onSubmit={() => {}}>
-      {({ values, setFieldValue }) => (
+      {({ values }) => (
         <div className="flex flex-col gap-6">
           {/* Checked synchronously: Formik reports a form as valid until its first validation run */}
           <ReportInputs values={values} isValid={schema.isValidSync(values)} onChange={onChange} />
@@ -41,7 +41,6 @@ const MassTransitionInputs = ({ requirements, onChange }: MassTransitionInputsPr
             requirements={requirements}
             canBypassMandatoryFields={canBypassMandatoryFields}
             commentLength={values.comment.length}
-            setFieldValue={setFieldValue}
           />
         </div>
       )}

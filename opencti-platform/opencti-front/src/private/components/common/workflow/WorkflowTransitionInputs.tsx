@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Icon, Text } from '@filigran/design-system';
-import { Field } from 'formik';
+import { Field, useFormikContext } from 'formik';
 import * as Yup from 'yup';
 import ObjectOrganizationField from '../form/ObjectOrganizationField';
 import OpenVocabField from '../form/OpenVocabField';
@@ -63,8 +63,6 @@ interface WorkflowTransitionInputsProps {
   disabled?: boolean;
   // Inside a dialog, the first prompt (comment, else closing reason) is the dialog description
   renderCommentPrompt?: (prompt: ReactNode) => ReactNode;
-  // Needed to render the closing reason field
-  setFieldValue?: (field: string, value: unknown) => void;
 }
 
 // Comment, closing reason and organization fields of a transition, inside a Formik form of TransitionInputValues
@@ -74,12 +72,12 @@ const WorkflowTransitionInputs = ({
   commentLength,
   disabled = false,
   renderCommentPrompt,
-  setFieldValue,
 }: WorkflowTransitionInputsProps) => {
   const { t_i18n } = useFormatter();
+  const { setFieldValue } = useFormikContext<TransitionInputValues>();
   const renderPlainPrompt = (prompt: ReactNode) => <div className="flex flex-col gap-2">{prompt}</div>;
   const showComment = hasTransitionComment(requirements.commentMode);
-  const showClosingReason = hasTransitionComment(requirements.closingReasonMode) && !!setFieldValue;
+  const showClosingReason = hasTransitionComment(requirements.closingReasonMode);
   const organizationsField = (name: string, title: string, label: string) => (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">

@@ -296,7 +296,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           onSubmit={handleApplyWizard}
           validateOnMount
         >
-          {({ values, isSubmitting, isValid, setFieldValue }) => {
+          {({ values, isSubmitting, isValid }) => {
             const disabled = isSubmitting || approving || clearing;
             const missingComment = wizard.commentMode === CommentMode.required && !canBypassMandatoryFields && !values.comment.trim();
             // Radix gives every DialogDescription the same id, so the closing reason and validation prompts use it only when no comment prompt precedes them.
@@ -341,7 +341,6 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                           commentLength={values.comment.length}
                           disabled={disabled}
                           renderCommentPrompt={(prompt) => <DialogDescription className="flex flex-col gap-2">{prompt}</DialogDescription>}
-                          setFieldValue={setFieldValue}
                         />
                         {wizard.requiresValidation && (
                           <>
