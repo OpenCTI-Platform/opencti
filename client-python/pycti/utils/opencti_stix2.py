@@ -40,6 +40,7 @@ from pycti.utils.opencti_stix2_utils import (
     STIX_CYBER_OBSERVABLE_MAPPING,
     STIX_META_OBJECTS,
     OpenCTIStix2Utils,
+    is_custom_field_input_value,
 )
 
 utc = pytz.UTC
@@ -1721,7 +1722,9 @@ class OpenCTIStix2:
         """Extract the x_ custom properties of a STIX object as custom field inputs.
 
         Top-level properties take precedence over the ones nested in extensions.
-        The platform only keeps the ones matching a custom field definition.
+        The platform only keeps the ones matching a custom field definition, so
+        the values that can never match one (objects, such as ``x_opencti_files``)
+        are not sent.
 
         :param stix_object: STIX2 object
         :type stix_object: Dict
@@ -1732,8 +1735,10 @@ class OpenCTIStix2:
         seen_custom_fields = set()
         for key, value in stix_object.items():
             if key.startswith("x_") and value is not None:
-                custom_field_values.append({"field_name": key, "value": value})
+                # A top-level value takes precedence even if it cannot be sent
                 seen_custom_fields.add(key)
+                if is_custom_field_input_value(value):
+                    custom_field_values.append({"field_name": key, "value": value})
         # Also extract x_ custom properties nested inside all extensions
         extensions = stix_object.get("extensions")
         if isinstance(extensions, dict):
@@ -1745,7 +1750,7 @@ class OpenCTIStix2:
                     if (
                         key.startswith("x_")
                         and key not in seen_custom_fields
-                        and value is not None
+                        and is_custom_field_input_value(value)
                     ):
                         custom_field_values.append({"field_name": key, "value": value})
                         seen_custom_fields.add(key)
