@@ -198,7 +198,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           name="instance_trigger"
           label={t_i18n('Subscription to specific object(s)')}
           tooltip={instanceTriggerDescription}
-          containerstyle={{ marginTop: 20 }}
+          containerstyle={{ marginTop: 30 }}
           onChange={() => onChangeInstanceTrigger(setFieldValue)}
         />
         <Box
