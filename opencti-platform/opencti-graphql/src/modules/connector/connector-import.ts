@@ -4,6 +4,9 @@ import { computeConnectorTargetContract, getContractConfigSchemaWithoutExcludedR
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { CONFIG_IMPORT_UNCHANGED_REASON, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
 import { userAlreadyExists } from '../user/user-domain';
+import { findDefaultIngestionGroups } from '../../domain/group';
+import { storeLoadById } from '../../database/middleware-loader';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { managedConnectorAdd, managedConnectorEdit, sanitizeContainerName } from './connector-domain';
 import { findConnectorManagers, findConnectors } from './connector-repository';
 import type { BasicStoreEntityConnector } from './connector-types';
@@ -13,6 +16,8 @@ import { type ConnectorImportConfiguration, connectorImportSchema } from './conn
 export interface ConnectorImportOptions extends ConfigImportOptions {
   reservedNames?: Set<string>;
   credentials?: Record<string, string>;
+  ingestionGroupPlanned?: boolean;
+  serviceAccountId?: string;
 }
 
 export interface ConnectorImportCredential {
@@ -21,7 +26,9 @@ export interface ConnectorImportCredential {
   required: boolean;
 }
 
-export type ConnectorImportCode = 'invalid' | 'not_available' | 'no_manager' | 'not_managed' | 'exists' | 'name_conflict' | 'credentials_required' | 'unchanged';
+export type ConnectorImportCode = 'invalid' | 'not_available' | 'no_manager' | 'not_managed' | 'exists' | 'name_conflict' | 'credentials_required' | 'no_ingestion_group' | 'service_account_missing' | 'unchanged';
+
+export const NO_INGESTION_GROUP_REASON = 'You have not defined a default group for ingestion users';
 
 export type ConnectorImportResult = ConfigImportResult<ConnectorImportConfiguration, ConnectorImportCode> & {
   credentials?: ConnectorImportCredential[];
@@ -54,7 +61,7 @@ export const importConnector = async (
   configuration: unknown,
   options: ConnectorImportOptions,
 ): Promise<ConnectorImportResult> => {
-  const { mode, dryRun = false, reservedNames, credentials = {} } = options;
+  const { mode, dryRun = false, reservedNames, credentials = {}, ingestionGroupPlanned = false, serviceAccountId } = options;
   const parsed = connectorImportSchema.safeParse(configuration);
   if (!parsed.success) {
     return refused('invalid', configImportValidationReason(parsed.error), false);
@@ -100,6 +107,12 @@ export const importConnector = async (
   if (missing.length > 0) {
     return refused('credentials_required', `Credentials to provide: ${missing.map(({ key }) => key).join(', ')}`, !!existing, bundleConnector, connectorCredentials);
   }
+  if (!target && serviceAccountId && !(await storeLoadById(context, user, serviceAccountId, ENTITY_TYPE_USER))) {
+    return refused('service_account_missing', 'Service account not found', !!existing, bundleConnector, connectorCredentials);
+  }
+  if (!target && !serviceAccountId && !ingestionGroupPlanned && (await findDefaultIngestionGroups(context, user)).length === 0) {
+    return refused('no_ingestion_group', NO_INGESTION_GROUP_REASON, !!existing, bundleConnector, connectorCredentials);
+  }
   const parameters = bundleConnector.manager_contract_configuration.filter(({ key }) => configSchema.properties[key] && !secretKeys.includes(key));
   const input = [...parameters, ...given.map(({ key }) => ({ key, value: credentials[key] }))];
   if (target && given.length === 0 && (target.title ?? target.name) === title) {
@@ -130,14 +143,19 @@ export const importConnector = async (
     return { ...result, connector: connector as unknown as BasicStoreEntityConnector };
   }
   const { confidence_level: confidence } = bundleConnector;
+  const serviceAccount = serviceAccountId
+    ? { user_id: serviceAccountId, automatic_user: false }
+    : {
+        user_id: (await freeServiceAccountName(context, title)) ?? `[C] ${title}`,
+        automatic_user: true,
+        ...(confidence !== null && confidence !== undefined ? { confidence_level: String(confidence) } : {}),
+      };
   const connector = await managedConnectorAdd(context, user, {
     name: title,
     catalog_id: bundleConnector.catalog_id,
     manager_contract_image: bundleConnector.manager_contract_image,
     manager_contract_configuration: input,
-    user_id: (await freeServiceAccountName(context, title)) ?? `[C] ${title}`,
-    automatic_user: true,
-    ...(confidence !== null && confidence !== undefined ? { confidence_level: String(confidence) } : {}),
+    ...serviceAccount,
   });
   return { ...result, connector: connector as unknown as BasicStoreEntityConnector };
 };

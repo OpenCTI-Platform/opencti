@@ -35,7 +35,11 @@ const toConnectorItem = (connector: BasicStoreEntityConnector): ConfigPresetItem
   exporter: async (context) => exportConnector(context, connector),
 });
 
-const credentialsOf = (plan: Parameters<ConfigPresetImporter['compute']>[3], id: string) => plan.credentials?.get(configPresetPlanKey(CONNECTORS_FAMILY_ID, id));
+type Plan = Parameters<ConfigPresetImporter['compute']>[3];
+const itemOptionsOf = (plan: Plan, id: string) => ({
+  credentials: plan.credentials?.get(configPresetPlanKey(CONNECTORS_FAMILY_ID, id)),
+  serviceAccountId: plan.serviceAccounts?.get(configPresetPlanKey(CONNECTORS_FAMILY_ID, id)),
+});
 
 const connectorsImporter: ConfigPresetImporter = {
   compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
@@ -45,7 +49,7 @@ const connectorsImporter: ConfigPresetImporter = {
     if (title !== undefined && connectorName(title) !== item.id) {
       return { ...label, exists: false, conflict: false, status: 'failed', reason: 'The id of the connector does not match its name' };
     }
-    const options = { mode, dryRun: true, reservedNames: plan.connectorNames, credentials: credentialsOf(plan, item.id) };
+    const options = { mode, dryRun: true, reservedNames: plan.connectorNames, ingestionGroupPlanned: plan.ingestionGroupPlanned, ...itemOptionsOf(plan, item.id) };
     const result = await importConnector(context, user, item.configuration, options);
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(CONNECTORS_FAMILY_ID, item.id));
@@ -53,7 +57,7 @@ const connectorsImporter: ConfigPresetImporter = {
     return { ...toComputedItem(label, result), credentials: result.credentials };
   },
   apply: async (context, user, item, computed, mode, plan) => {
-    return toAppliedStatus(await importConnector(context, user, item.configuration, { mode, credentials: credentialsOf(plan, item.id) }), computed);
+    return toAppliedStatus(await importConnector(context, user, item.configuration, { mode, ...itemOptionsOf(plan, item.id) }), computed);
   },
 };
 

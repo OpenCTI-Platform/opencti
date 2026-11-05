@@ -6,7 +6,7 @@ import { findAllEntitySettings } from '../../entitySetting/entitySetting-domain'
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigImportMode, ConfigImportStatus } from '../../configImport/configImport-types';
-import type { ConfigPresetItemCredentialsInput, ConfigPresetSelectionInput, ResolversTypes } from '../../../generated/graphql';
+import type { ConfigPresetItemCredentialsInput, ConfigPresetItemServiceAccountInput, ConfigPresetSelectionInput, ResolversTypes } from '../../../generated/graphql';
 import { resolveUserByIdFromCache } from '../../user/user-domain';
 import { BYPASS, isUserHasCapability } from '../../../utils/access';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
@@ -25,6 +25,7 @@ import {
   type ConfigPresetBundleItem,
   type ConfigPresetComputedItem,
   type ConfigPresetImportCredentials,
+  type ConfigPresetItemOptions,
   type ConfigPresetImportPlan,
   configPresetPlanKey,
 } from './configPreset-import-types';
@@ -116,9 +117,9 @@ const dryRun = async (
   user: AuthUser,
   items: ConfigPresetBundleItem[],
   modes: Map<string, ConfigImportMode>,
-  credentials: ConfigPresetImportCredentials,
+  itemOptions: ConfigPresetItemOptions,
 ): Promise<ConfigPresetImportOutput> => {
-  return { results: toOutput(await computeConfigPresetItems(context, user, items, { modes, credentials })), report_id: null, settings: null, entity_settings: null };
+  return { results: toOutput(await computeConfigPresetItems(context, user, items, { modes, ...itemOptions })), report_id: null, settings: null, entity_settings: null };
 };
 
 const realImport = async (
@@ -129,7 +130,7 @@ const realImport = async (
   bundle: ConfigPresetBundle,
   items: ConfigPresetBundleItem[],
   selections: ConfigPresetSelectionInput[],
-  credentials: ConfigPresetImportCredentials,
+  itemOptions: ConfigPresetItemOptions,
 ): Promise<ConfigPresetImportOutput> => {
   const session = await readConfigPresetImportSession(context, user);
   // The import is on the pending zip of the session: another upload since (another tab) made this file missing
@@ -160,7 +161,7 @@ const realImport = async (
   }
   logApp.info('[CONFIG PRESET] Import started', { user_id: user.id, file_id: fileId, total: items.length });
   const importContext = context;
-  const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map(), credentials };
+  const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map(), ...itemOptions };
   const modes = configPresetImportModes(selections);
   const results: ConfigPresetImportItemResult[] = [];
   // Why the import stopped before the end, when it did: a lost lock, or an unexpected error between two items
@@ -293,12 +294,15 @@ export const configPresetImport = async (
   selections: ConfigPresetSelectionInput[],
   isDryRun: boolean,
   itemCredentials: ConfigPresetItemCredentialsInput[] = [],
+  itemServiceAccounts: ConfigPresetItemServiceAccountInput[] = [],
 ): Promise<ConfigPresetImportOutput> => {
   checkConfigPresetImportAccess(context, user);
   const credentials: ConfigPresetImportCredentials = new Map(itemCredentials.map(({ type, key, values }) => [
     configPresetPlanKey(type, key),
     Object.fromEntries(values.map((credential) => [credential.key, credential.value])),
   ]));
+  const serviceAccounts = new Map(itemServiceAccounts.map(({ type, key, user_id: userId }) => [configPresetPlanKey(type, key), userId]));
+  const itemOptions: ConfigPresetItemOptions = { credentials, serviceAccounts };
   // A real import goes on if the browser disconnects: its context is detached from the request
   const engineContext: AuthContext = isDryRun ? context : { ...context, requestAbortSignal: undefined };
   const prepare = async () => {
@@ -307,11 +311,11 @@ export const configPresetImport = async (
   };
   if (isDryRun) {
     // No lock: a dry run writes nothing and runs even while an import is in progress
-    return dryRun(engineContext, user, (await prepare()).items, configPresetImportModes(selections), credentials);
+    return dryRun(engineContext, user, (await prepare()).items, configPresetImportModes(selections), itemOptions);
   }
   // The lock is taken first, before the zip is read and before any session read: a second import is refused at once
   return withConfigPresetImportLock(engineContext, async (lock) => {
     const { bundle, items } = await prepare();
-    return realImport(engineContext, user, lock, fileId, bundle, items, selections, credentials);
+    return realImport(engineContext, user, lock, fileId, bundle, items, selections, itemOptions);
   }, async (ctx) => (await findConfigPresetImportRunning(ctx, user)).running?.name);
 };

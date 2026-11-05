@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { handleError } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import type { FieldOption } from '../../../../../utils/field';
 import { ConfigPresetImportPreviewQuery, ConfigPresetImportPreviewQuery$data } from './__generated__/ConfigPresetImportPreviewQuery.graphql';
 import { ConfigPresetImportPreviewSaveMutation } from './__generated__/ConfigPresetImportPreviewSaveMutation.graphql';
 import { toConfigImportModes, toConfigPresetSelection } from './configPresetImportSelection';
@@ -38,6 +39,7 @@ import ConfigPresetImportMessages from './ConfigPresetImportMessages';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 import ConfigPresetCredentialsDialog from './ConfigPresetCredentialsDialog';
 import ConfigPresetCredentialsItemRow from './ConfigPresetCredentialsItemRow';
+import ConfigPresetServiceAccountDialog from './ConfigPresetServiceAccountDialog';
 import { translateConfigPresetEntityTypes } from '../configPresetEntityTypes';
 import useConfigPresetLockedTypes from '../useConfigPresetLockedTypes';
 import ConfigPresetSelectionAccordion, { describeEnabled, describeType } from '../ConfigPresetSelectionAccordion';
@@ -109,6 +111,11 @@ type ImportSelections = ReturnType<typeof buildConfigPresetSelections>;
 
 export type ImportCredentials = { type: string; key: string; values: { key: string; value: string }[] }[];
 
+export interface ImportItemOptions {
+  credentials: ImportCredentials;
+  service_accounts: { type: string; key: string; user_id: string }[];
+}
+
 // The expected result of a processed item
 interface SimulatedResult {
   readonly type: string;
@@ -139,12 +146,12 @@ export interface ConfigPresetImportPreviewProps {
   // The administrator whose import refused the last Apply
   startedBy?: string | null;
   // Sends the real import: the selection is saved first
-  onApply: (selections: ImportSelections, credentials: ImportCredentials) => void;
+  onApply: (selections: ImportSelections, itemOptions: ImportItemOptions) => void;
   // The expected result of each item of the selection: reads only, the results come back through onCompleted
   onSimulate: (
     fileId: string,
     selections: ImportSelections,
-    credentials: ImportCredentials,
+    itemOptions: ImportItemOptions,
     callbacks: { onCompleted: (results: ReadonlyArray<SimulatedResult>) => void; onError: (error: Error) => void },
   ) => void;
   onStartOver: () => void;
@@ -172,6 +179,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [confirmStartOver, setConfirmStartOver] = useState(false);
   const [credentials, setCredentials] = useState<Record<string, Record<string, string>>>({});
   const [credentialsItem, setCredentialsItem] = useState<{ typeKey: string; item: PreviewType['items'][number] } | null>(null);
+  const [serviceAccounts, setServiceAccounts] = useState<Record<string, FieldOption>>({});
+  const [serviceAccountItem, setServiceAccountItem] = useState<{ typeKey: string; item: PreviewType['items'][number] } | null>(null);
   // The expected results, by `<type>/<key>`: held here only, never saved; computed again when the selection changes
   const [results, setResults] = useState<Record<string, SimulatedResult> | null>(null);
   // Only the response of the latest request is kept
@@ -293,6 +302,18 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       values: item.credentials.map(({ key }) => ({ key, value: givenCredentials(type.key, item.key)[key] ?? '' })).filter(({ value }) => value !== ''),
     }))
     .filter(({ values }) => values.length > 0));
+  const itemOptions: ImportItemOptions = {
+    credentials: sentCredentials,
+    service_accounts: Object.entries(serviceAccounts)
+      .map(([itemKey, account]) => ({ type: itemKey.slice(0, itemKey.indexOf('/')), key: itemKey.slice(itemKey.indexOf('/') + 1), user_id: account.value }))
+      .filter(({ type, key }) => isImportedItem(type, key)),
+  };
+
+  // A type that asks for something (a license, secrets, a service account) stays open, even once it is given; the others start collapsed
+  const openTypeKeysRef = useRef(new Set<string>());
+  types
+    .filter((type) => type.lockedByEnterpriseEdition || type.items.some((item) => isCredentialsLocked(type.key, item) || results?.[`${type.key}/${item.key}`]?.code === 'no_ingestion_group'))
+    .forEach((type) => openTypeKeysRef.current.add(type.key));
 
   // The selection and the modes are saved together, after a short delay
   const scheduleSave = (nextSelection: ConfigPresetSelection, nextImportModes: ConfigImportModes) => {
@@ -339,7 +360,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     isStartingRef.current = true;
     setIsStarting(true);
     flushSave()
-      .then(() => onApply(selections, sentCredentials))
+      .then(() => onApply(selections, itemOptions))
       .finally(() => {
         isStartingRef.current = false;
         if (isMountedRef.current) {
@@ -362,7 +383,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   // The expected results are computed as soon as the preview is shown, and again after each change of the selection or of a mode
   // (and when another import ended), once the changes have stopped. Nothing is selected: nothing to compute.
   const selectionsKey = JSON.stringify(selections);
-  const credentialsKey = JSON.stringify(sentCredentials);
+  const itemOptionsKey = JSON.stringify(itemOptions);
   useEffect(() => {
     if (!preview) {
       return undefined;
@@ -377,7 +398,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     const delay = hasSimulatedRef.current ? SIMULATE_DELAY_MS : 0;
     const timer = window.setTimeout(() => {
       hasSimulatedRef.current = true;
-      onSimulateRef.current(session.file_id, selections, sentCredentials, {
+      onSimulateRef.current(session.file_id, selections, itemOptions, {
         // A response that arrives after a newer request, or after the wizard was closed, is dropped
         onCompleted: (simulated) => {
           if (isMountedRef.current && request === simulationRef.current) {
@@ -397,7 +418,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     }, delay);
     return () => window.clearTimeout(timer);
   // The selection as sent: a new array with the same content does not compute again
-  }, [preview, selectionsKey, credentialsKey, platformVersion]);
+  }, [preview, selectionsKey, itemOptionsKey, platformVersion]);
 
   if (error) {
     return (
@@ -430,7 +451,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         types={types}
         selection={importableSelection}
         forced={forced}
-        expandTypes
+        isExpandedByDefault={(type) => openTypeKeysRef.current.has(type.key)}
         disabled={isStarting}
         lockedTitle="Activate the Enterprise Edition to import this item"
         onSelectionChange={handleSelectionChange}
@@ -468,6 +489,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
             );
           }
           const hasCredentials = item.credentials.length > 0 && isImportedItem(type.key, item.key);
+          const serviceAccount = serviceAccounts[`${type.key}/${item.key}`];
+          const needsServiceAccount = isImportedItem(type.key, item.key) && (!!serviceAccount || result?.code === 'no_ingestion_group');
           return (
             <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
               <ConfigPresetItemRow
@@ -478,13 +501,19 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                 forced={forced}
                 disabled={isStarting}
                 onSelectionChange={handleSelectionChange}
-                statusSlot={(hasChoice || hasCredentials || (result && isResultShown(result, hasChoice))) ? (
+                statusSlot={(hasChoice || hasCredentials || needsServiceAccount || (result && isResultShown(result, hasChoice))) ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+                    {needsServiceAccount && (
+                      <Button variant="secondary" size="small" disabled={isStarting} onClick={() => setServiceAccountItem({ typeKey: type.key, item })}>
+                        {serviceAccount ? serviceAccount.label : t_i18n('Choose a service account')}
+                      </Button>
+                    )}
                     {hasCredentials && (
                       <Button variant="secondary" size="small" disabled={isStarting} onClick={() => setCredentialsItem({ typeKey: type.key, item })}>
                         {t_i18n('Credentials')}
                       </Button>
                     )}
+                    {result && isResultShown(result, hasChoice) && <ConfigPresetResultLine status={result.status} reason={result.reason} code={result.code} />}
                     {hasChoice && (
                       <ConfigPresetImportModeSelect
                         subject={item.translatable ? t_i18n(item.label) : item.label}
@@ -495,7 +524,6 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                         onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
                       />
                     )}
-                    {result && isResultShown(result, hasChoice) && <ConfigPresetResultLine status={result.status} reason={result.reason} code={result.code} />}
                   </div>
                 ) : undefined}
               />
@@ -542,6 +570,18 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           onApply={handleApply}
         />
       </div>
+      {serviceAccountItem && (
+        <ConfigPresetServiceAccountDialog
+          open
+          itemLabel={serviceAccountItem.item.translatable ? t_i18n(serviceAccountItem.item.label) : serviceAccountItem.item.label}
+          value={serviceAccounts[`${serviceAccountItem.typeKey}/${serviceAccountItem.item.key}`] ?? null}
+          onClose={() => setServiceAccountItem(null)}
+          onSubmit={(account) => {
+            setServiceAccounts((current) => ({ ...current, [`${serviceAccountItem.typeKey}/${serviceAccountItem.item.key}`]: account }));
+            setServiceAccountItem(null);
+          }}
+        />
+      )}
       {credentialsItem && (
         <ConfigPresetCredentialsDialog
           open

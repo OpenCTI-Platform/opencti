@@ -154,10 +154,11 @@ export const computeConfigPresetItems = async (
   context: AuthContext,
   user: AuthUser,
   items: ConfigPresetBundleItem[],
-  { modes = new Map(), availability, credentials = new Map() }: {
+  { modes = new Map(), availability, credentials = new Map(), serviceAccounts = new Map() }: {
     modes?: Map<string, ConfigImportMode>;
     availability?: Map<string, boolean>;
     credentials?: ConfigPresetImportCredentials;
+    serviceAccounts?: Map<string, string>;
   } = {},
 ): Promise<{ item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[]> => {
   const familiesAvailability = availability ?? await getConfigPresetFamiliesAvailability(context, items);
@@ -172,6 +173,7 @@ export const computeConfigPresetItems = async (
     targets: new Map(),
     connectorNames: new Set(),
     credentials,
+    serviceAccounts,
   };
   const results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[] = [];
   for (let i = 0; i < items.length; i += 1) {

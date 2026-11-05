@@ -13,7 +13,7 @@ import { ConfigPresetImportWizardBackMutation } from './__generated__/ConfigPres
 import { ConfigPresetImportWizardRunningQuery, ConfigPresetImportWizardRunningQuery$data } from './__generated__/ConfigPresetImportWizardRunningQuery.graphql';
 import { getConfigPresetErrorReason, getConfigPresetImportStep, getConfigPresetStartedBy } from './configPresetImportStep';
 import ConfigPresetImportInterrupted from './ConfigPresetImportInterrupted';
-import ConfigPresetImportPreview, { ConfigPresetImportPreviewProps } from './ConfigPresetImportPreview';
+import ConfigPresetImportPreview, { ConfigPresetImportPreviewProps, type ImportItemOptions } from './ConfigPresetImportPreview';
 import { ConfigPresetImportProgress, ConfigPresetImportResult } from './ConfigPresetImportResult';
 import ConfigPresetImportUpload from './ConfigPresetImportUpload';
 import ConfigPresetWizardStepper from '../ConfigPresetWizardStepper';
@@ -71,8 +71,9 @@ const configPresetImportWizardApplyMutation = graphql`
     $selections: [ConfigPresetSelectionInput!]!
     $dry_run: Boolean!
     $credentials: [ConfigPresetItemCredentialsInput!]
+    $service_accounts: [ConfigPresetItemServiceAccountInput!]
   ) {
-    configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run, credentials: $credentials) {
+    configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run, credentials: $credentials, service_accounts: $service_accounts) {
       results {
         type
         key
@@ -188,12 +189,12 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
   const handleApply = (
     fileId: string,
     selections: ConfigPresetImportWizardApplyMutation['variables']['selections'],
-    credentials: ConfigPresetImportWizardApplyMutation['variables']['credentials'],
+    itemOptions: ImportItemOptions,
   ) => {
     setStartedBy(null);
     setIsApplying(true);
     commitApply({
-      variables: { file_id: fileId, selections, dry_run: false, credentials },
+      variables: { file_id: fileId, selections, dry_run: false, ...itemOptions },
       // The progress stays until the session is read: the session in hand is still the draft, and its preview would ask for the zip the import deleted
       onCompleted: () => {
         refresh().finally(() => setIsApplying(false));
@@ -211,9 +212,9 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
   };
 
   // The expected result of each item, nothing is written: the wizard stays on the preview
-  const handleSimulate: ConfigPresetImportPreviewProps['onSimulate'] = (fileId, selections, credentials, { onCompleted, onError }) => {
+  const handleSimulate: ConfigPresetImportPreviewProps['onSimulate'] = (fileId, selections, itemOptions, { onCompleted, onError }) => {
     commitApply({
-      variables: { file_id: fileId, selections, dry_run: true, credentials },
+      variables: { file_id: fileId, selections, dry_run: true, ...itemOptions },
       onCompleted: (response) => onCompleted(response.configPresetImport.results),
       onError,
     });
@@ -280,7 +281,7 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
         isOtherImportRunning={otherImport !== null}
         lastFinishedAt={running?.last_finished_at}
         startedBy={startedBy}
-        onApply={(selections, credentials) => handleApply(session!.file_id, selections, credentials)}
+        onApply={(selections, itemOptions) => handleApply(session!.file_id, selections, itemOptions)}
         onSimulate={handleSimulate}
         onStartOver={handleStartOver}
         onFileMissing={() => setIsFileMissing(true)}

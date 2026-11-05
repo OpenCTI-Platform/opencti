@@ -81,6 +81,8 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'A connector that is not managed by the platform has this name': return t_i18n('A connector that is not managed by the platform has this name');
     case 'Connector name already exists': return t_i18n('Connector name already exists');
     case 'There is no connector manager configured': return t_i18n('There is no connector manager configured');
+    case 'You have not defined a default group for ingestion users': return t_i18n('You have not defined a default group for ingestion users');
+    case 'Service account not found': return t_i18n('Service account not found');
     case 'The id of the connector does not match its name': return t_i18n('The id of the connector does not match its name');
     default: break;
   }

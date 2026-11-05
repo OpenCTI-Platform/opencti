@@ -4818,6 +4818,12 @@ export type ConfigPresetItemReference = {
   type: Scalars['String']['output'];
 };
 
+export type ConfigPresetItemServiceAccountInput = {
+  key: Scalars['ID']['input'];
+  type: Scalars['ID']['input'];
+  user_id: Scalars['ID']['input'];
+};
+
 export type ConfigPresetSelectionInput = {
   excluded_items?: InputMaybe<Array<Scalars['ID']['input']>>;
   item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
@@ -18567,6 +18573,7 @@ export type MutationConfigPresetImportArgs = {
   dry_run?: InputMaybe<Scalars['Boolean']['input']>;
   file_id: Scalars['ID']['input'];
   selections: Array<ConfigPresetSelectionInput>;
+  service_accounts?: InputMaybe<Array<ConfigPresetItemServiceAccountInput>>;
 };
 
 
@@ -41445,6 +41452,7 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetItemMode: ResolverTypeWrapper<ConfigPresetItemMode>;
   ConfigPresetItemModeInput: ConfigPresetItemModeInput;
   ConfigPresetItemReference: ResolverTypeWrapper<ConfigPresetItemReference>;
+  ConfigPresetItemServiceAccountInput: ConfigPresetItemServiceAccountInput;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: ResolverTypeWrapper<BasicStoreEntityConnector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
@@ -42664,6 +42672,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetItemMode: ConfigPresetItemMode;
   ConfigPresetItemModeInput: ConfigPresetItemModeInput;
   ConfigPresetItemReference: ConfigPresetItemReference;
+  ConfigPresetItemServiceAccountInput: ConfigPresetItemServiceAccountInput;
   ConfigPresetSelectionInput: ConfigPresetSelectionInput;
   Connector: BasicStoreEntityConnector;
   ConnectorConfig: ConnectorConfig;

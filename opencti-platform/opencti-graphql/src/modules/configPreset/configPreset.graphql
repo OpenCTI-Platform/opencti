@@ -262,6 +262,12 @@ input ConfigPresetItemCredentialsInput {
     values: [ConfigPresetCredentialInput!]!
 }
 
+input ConfigPresetItemServiceAccountInput {
+    type: ID!
+    key: ID!
+    user_id: ID!
+}
+
 input ConfigPresetCredentialInput {
     key: String!
     value: String!
@@ -283,7 +289,7 @@ extend type Mutation {
     # Start over (draft) or Close (finished): deletes the session, and the pending zip with delete_file.
     configPresetImportSessionClear(delete_file: Boolean): Boolean! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Applies the selected items of the pending zip of the caller (and the items they depend on); with dry_run nothing is written and the expected results are returned.
-    configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean, credentials: [ConfigPresetItemCredentialsInput!]): ConfigPresetImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean, credentials: [ConfigPresetItemCredentialsInput!], service_accounts: [ConfigPresetItemServiceAccountInput!]): ConfigPresetImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # From an interrupted import: back to the selection, with the file and the selection kept.
     configPresetImportSessionBackToSelection: ConfigPresetImportSession! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }

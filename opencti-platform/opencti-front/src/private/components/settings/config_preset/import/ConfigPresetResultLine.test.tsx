@@ -67,6 +67,8 @@ describe('ConfigPresetResultLine', () => {
     ['A connector that is not managed by the platform has this name', 'A connector that is not managed by the platform has this name'],
     ['Connector name already exists', 'Connector name already exists'],
     ['There is no connector manager configured', 'There is no connector manager configured'],
+    ['You have not defined a default group for ingestion users', 'You have not defined a default group for ingestion users'],
+    ['Service account not found', 'Service account not found'],
     ['The id of the connector does not match its name', 'The id of the connector does not match its name'],
     ['Credentials to provide: MITRE_API_KEY', 'Credentials to provide: MITRE_API_KEY'],
     ['Connector not available on this platform: opencti/connector-mitre', 'Connector not available on this platform: opencti/connector-mitre'],

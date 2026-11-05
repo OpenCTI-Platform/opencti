@@ -57,6 +57,11 @@ export interface ConfigPresetImportCredential {
 
 export type ConfigPresetImportCredentials = Map<string, Record<string, string>>;
 
+export interface ConfigPresetItemOptions {
+  credentials: ConfigPresetImportCredentials;
+  serviceAccounts: Map<string, string>;
+}
+
 // What the import would create, shared by the items of one import: `<type>/<bundle id>`
 export interface ConfigPresetImportPlan {
   created: Set<string>;
@@ -76,7 +81,9 @@ export interface ConfigPresetImportPlan {
   // The items that depend on it use it, so that they get the item of the bundle and never the local one with its bundle id
   targets?: Map<string, string | null>;
   connectorNames?: Set<string>;
+  ingestionGroupPlanned?: boolean;
   credentials?: ConfigPresetImportCredentials;
+  serviceAccounts?: Map<string, string>;
 }
 
 export const configPresetPlanKey = (type: string, id: string) => `${type}/${id}`;

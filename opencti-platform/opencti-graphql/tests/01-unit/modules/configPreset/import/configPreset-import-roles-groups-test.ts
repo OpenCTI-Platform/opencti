@@ -84,3 +84,16 @@ describe('A role imported as COPY and a group of the same import that depends on
     expect(configPresetTargets(plan, 'roles')).toEqual(new Map([[roleItem.id, null]]));
   });
 });
+
+describe('A group that becomes the default group of the ingestion users', () => {
+  it.each([
+    ['records it for the connectors of the same import', { status: 'created', exists: false, configuration: { auto_integration_assignation: ['global'] } }, true],
+    ['records nothing for a group that is not the default one', { status: 'created', exists: false, configuration: { auto_integration_assignation: [] } }, undefined],
+    ['records nothing for a group that fails', { status: 'failed', exists: false, configuration: { auto_integration_assignation: ['global'] } }, undefined],
+  ])('%s', async (_, result, planned) => {
+    vi.mocked(importGroup).mockResolvedValue(result as never);
+    const plan = newPlan();
+    await importerOf('groups').compute(context, user, groupItem, plan, ConfigImportMode.Overwrite);
+    expect(plan.ingestionGroupPlanned).toBe(planned);
+  });
+});

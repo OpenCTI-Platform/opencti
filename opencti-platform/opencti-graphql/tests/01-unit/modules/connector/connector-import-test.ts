@@ -15,12 +15,16 @@ vi.mock('../../../../src/modules/connector/connector-domain', async (importOrigi
 }));
 vi.mock('../../../../src/modules/connector/connector-repository', () => ({ findConnectors: vi.fn(), findConnectorManagers: vi.fn() }));
 vi.mock('../../../../src/modules/user/user-domain', () => ({ userAlreadyExists: vi.fn() }));
+vi.mock('../../../../src/domain/group', () => ({ findDefaultIngestionGroups: vi.fn() }));
+vi.mock('../../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
 
 import { findCatalogByCatalogId, findLatestCompatibleCatalogContractByImageName } from '../../../../src/modules/catalog/catalog-repository';
 import { computeConnectorTargetContract } from '../../../../src/modules/catalog/catalog-domain';
 import { managedConnectorAdd, managedConnectorEdit } from '../../../../src/modules/connector/connector-domain';
 import { findConnectorManagers, findConnectors } from '../../../../src/modules/connector/connector-repository';
 import { userAlreadyExists } from '../../../../src/modules/user/user-domain';
+import { findDefaultIngestionGroups } from '../../../../src/domain/group';
+import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { importConnector } from '../../../../src/modules/connector/connector-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -49,6 +53,7 @@ beforeEach(() => {
   vi.mocked(findConnectorManagers).mockResolvedValue([{ id: 'manager-id', public_key: 'public-key' }] as never);
   vi.mocked(computeConnectorTargetContract).mockReturnValue([]);
   vi.mocked(userAlreadyExists).mockResolvedValue(false);
+  vi.mocked(findDefaultIngestionGroups).mockResolvedValue([{ id: 'connectors-group-id' }] as never);
   vi.mocked(managedConnectorAdd).mockResolvedValue({ id: 'created-id' } as never);
   vi.mocked(managedConnectorEdit).mockResolvedValue({ id: mitreConnector.id } as never);
   withConnectors([]);
@@ -133,6 +138,46 @@ describe('importConnector credentials', () => {
     vi.mocked(userAlreadyExists).mockImplementation(async (_ctx: unknown, name: string) => name === '[C] MITRE');
     await importConnector(context, user, connectorConfiguration(), { ...overwrite, credentials: { MITRE_API_KEY: 'key' } });
     expect(managedConnectorAdd).toHaveBeenCalledWith(context, user, expect.objectContaining({ user_id: '[C] MITRE (1)' }));
+  });
+});
+
+describe('importConnector default group of the ingestion users', () => {
+  const withSecret = { ...overwrite, dryRun: true, credentials: { MITRE_API_KEY: 'key' } };
+
+  it('fails a connector to create when the platform has no default group for the ingestion users, already in the dry run', async () => {
+    vi.mocked(findDefaultIngestionGroups).mockResolvedValue([] as never);
+    const result = await importConnector(context, user, connectorConfiguration(), withSecret);
+    expect(result).toMatchObject({ status: 'failed', code: 'no_ingestion_group', reason: 'You have not defined a default group for ingestion users' });
+    expectNothingWritten();
+  });
+
+  it('accepts it when a group of the same import becomes the default group of the ingestion users', async () => {
+    vi.mocked(findDefaultIngestionGroups).mockResolvedValue([] as never);
+    expect(await importConnector(context, user, connectorConfiguration(), { ...withSecret, ingestionGroupPlanned: true })).toMatchObject({ status: 'created' });
+  });
+
+  it('creates the connector with an existing user chosen at import, without a new service account', async () => {
+    vi.mocked(findDefaultIngestionGroups).mockResolvedValue([] as never);
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'chosen-user-id' } as never);
+    const result = await importConnector(context, user, connectorConfiguration(), { ...overwrite, credentials: { MITRE_API_KEY: 'key' }, serviceAccountId: 'chosen-user-id' });
+    expect(result).toMatchObject({ status: 'created' });
+    const input = vi.mocked(managedConnectorAdd).mock.calls[0][2];
+    expect(input).toMatchObject({ user_id: 'chosen-user-id', automatic_user: false });
+    expect(input).not.toHaveProperty('confidence_level');
+    expect(userAlreadyExists).not.toHaveBeenCalled();
+  });
+
+  it('fails a connector whose chosen user does not exist', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(undefined as never);
+    const result = await importConnector(context, user, connectorConfiguration(), { ...withSecret, serviceAccountId: 'deleted-user-id' });
+    expect(result).toMatchObject({ status: 'failed', code: 'service_account_missing', reason: 'Service account not found' });
+  });
+
+  it('does not need it to overwrite a connector, which keeps its service account', async () => {
+    vi.mocked(findDefaultIngestionGroups).mockResolvedValue([] as never);
+    withConnectors([mitreConnector]);
+    const result = await importConnector(context, user, connectorConfiguration({ manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }] }), overwrite);
+    expect(result).toMatchObject({ status: 'overwritten' });
   });
 });
 

@@ -10238,7 +10238,7 @@ type Mutation {
   configPresetImportUpload(file: Upload!): File!
   configPresetImportSessionSave(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, revision: Int!): ConfigPresetImportSession!
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
-  configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean, credentials: [ConfigPresetItemCredentialsInput!]): ConfigPresetImportOutput!
+  configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean, credentials: [ConfigPresetItemCredentialsInput!], service_accounts: [ConfigPresetItemServiceAccountInput!]): ConfigPresetImportOutput!
   configPresetImportSessionBackToSelection: ConfigPresetImportSession!
 }
 
@@ -18020,6 +18020,12 @@ input ConfigPresetItemCredentialsInput {
   type: ID!
   key: ID!
   values: [ConfigPresetCredentialInput!]!
+}
+
+input ConfigPresetItemServiceAccountInput {
+  type: ID!
+  key: ID!
+  user_id: ID!
 }
 
 input ConfigPresetCredentialInput {
