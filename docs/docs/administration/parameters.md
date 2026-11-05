@@ -48,17 +48,17 @@ Two settings of the **Appearance** card control how dates are displayed in every
 | Setting               | Option                                | Display                                                                          |
 |:----------------------|:--------------------------------------|:---------------------------------------------------------------------------------|
 | Date format in tables | Default                               | Date written in the language of the user, as each column displays it today.      |
-|                       | ISO 8601 (YYYY-MM-DD)                 | `YYYY-MM-DD`, followed by the time and the time zone offset when a time is shown. |
+|                       | ISO 8601 (`YYYY-MM-DD`)                 | `YYYY-MM-DD`, followed by the time and the time zone offset when a time is shown. |
 | Time in tables        | Default                               | Each column keeps its own choice: date only, or date and time.                   |
 |                       | Date only                             | No time, in every column.                                                        |
-|                       | Hours and minutes (HH:mm)             | Time with hours and minutes, in every column.                                    |
-|                       | Hours, minutes and seconds (HH:mm:ss) | Time with hours, minutes and seconds, in every column.                           |
+|                       | Hours and minutes (`HH:mm`)             | Time with hours and minutes, in every column.                                    |
+|                       | Hours, minutes and seconds (`HH:mm:ss`) | Time with hours, minutes and seconds, in every column.                           |
 
-For example, with **ISO 8601 (YYYY-MM-DD)** and **Hours, minutes and seconds (HH:mm:ss)**, a date is displayed as `2026-10-27 15:32:17+01:00`.
+For example, with **ISO 8601 (`YYYY-MM-DD`)** and **Hours, minutes and seconds (`HH:mm:ss`)**, a date is displayed as `2026-10-27 15:32:17+01:00`.
 
 Keep in mind that:
 
-- The time is always displayed on a 24-hour clock with **HH:mm**, **HH:mm:ss**, or **ISO 8601**. The clock follows the language only when both settings are **Default**.
+- The time is always displayed on a 24-hour clock with `HH:mm`, `HH:mm:ss`, or **ISO 8601**. The clock follows the language only when both settings are **Default**.
 - Times are displayed in the time zone of the browser. With ISO 8601, the offset at the end of the date tells which time zone it is.
 - When a date is too long for its cell, it is cut with an ellipsis; hover the cell to read it in full in a tooltip.
 - An invalid date is displayed as `-`.
