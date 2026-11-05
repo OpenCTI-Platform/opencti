@@ -22,7 +22,7 @@ export interface ChunkOperation {
   variables?: Record<string, any>;
   operationName?: string;
   // Optional, for diagnostics only: the STIX id the operation carries.
-  object_id?: string;
+  object_id?: string | null;
   // Set on a PRODUCER: a pycti pre-created sub-object (label, external reference, kill
   // chain phase) whose platform id the following operations reference through this echo
   // id. The manager executes producers first and substitutes the real ids.

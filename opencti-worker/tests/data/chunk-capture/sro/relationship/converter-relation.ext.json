@@ -1,0 +1,86 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "object_id": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+            "query": "mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) { stixCoreRelationshipAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 80,
+                "coverage_information": [],
+                "created": "2021-03-15T10:00:00.000Z",
+                "customFieldValues": null,
+                "description": "APT28 uses Mimikatz",
+                "externalReferences": [],
+                "external_uri": null,
+                "fromId": "intrusion-set--738e5ee3-6781-5f4c-93b0-d914bbf0c1d3",
+                "killChainPhases": [],
+                "lang": null,
+                "modified": "2021-03-15T10:00:00.000Z",
+                "objectLabel": [],
+                "objectMarking": null,
+                "objectOrganization": null,
+                "relationship_type": "uses",
+                "revoked": false,
+                "start_time": "2020-01-01T00:00:00.000Z",
+                "stix_id": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+                "stop_time": "2021-01-01T00:00:00.000Z",
+                "toId": "tool--6dabb5b8-a30d-5bd3-ab61-5e1f048a3dc3",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "object_id": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+            "query": "mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) { stixCoreRelationshipAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 80,
+                "coverage_information": [],
+                "created": "2021-03-15T10:00:00.000Z",
+                "customFieldValues": null,
+                "description": "APT28 uses Mimikatz",
+                "externalReferences": [],
+                "external_uri": null,
+                "fromId": "intrusion-set--738e5ee3-6781-5f4c-93b0-d914bbf0c1d3",
+                "killChainPhases": [],
+                "lang": null,
+                "modified": "2021-03-15T10:00:00.000Z",
+                "objectLabel": [],
+                "objectMarking": null,
+                "objectOrganization": null,
+                "relationship_type": "uses",
+                "revoked": false,
+                "start_time": "2020-01-01T00:00:00.000Z",
+                "stix_id": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+                "stop_time": "2021-01-01T00:00:00.000Z",
+                "toId": "tool--6dabb5b8-a30d-5bd3-ab61-5e1f048a3dc3",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

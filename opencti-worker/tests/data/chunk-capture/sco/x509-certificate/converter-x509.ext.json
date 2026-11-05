@@ -1,0 +1,132 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "object_id": "x509-certificate--20000000-0000-4000-8000-000000000039",
+            "query": "mutation StixCyberObservableAdd( $type: String!, $stix_id: StixId, $x_opencti_score: Int, $x_opencti_description: String, $createIndicator: Boolean, $createdBy: String, $objectMarking: [String], $objectLabel: [String], $objectOrganization: [String], $externalReferences: [String], $update: Boolean, $upsertOperations: [EditInput!], $AutonomousSystem: AutonomousSystemAddInput, $Directory: DirectoryAddInput, $DomainName: DomainNameAddInput, $EmailAddr: EmailAddrAddInput, $EmailMessage: EmailMessageAddInput, $EmailMimePartType: EmailMimePartTypeAddInput, $Artifact: ArtifactAddInput, $StixFile: StixFileAddInput, $X509Certificate: X509CertificateAddInput, $IPv4Addr: IPv4AddrAddInput, $IPv6Addr: IPv6AddrAddInput, $MacAddr: MacAddrAddInput, $Mutex: MutexAddInput, $NetworkTraffic: NetworkTrafficAddInput, $Process: ProcessAddInput, $Software: SoftwareAddInput, $Url: UrlAddInput, $UserAccount: UserAccountAddInput, $WindowsRegistryKey: WindowsRegistryKeyAddInput, $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, $CryptographicKey: CryptographicKeyAddInput, $CryptocurrencyWallet: CryptocurrencyWalletAddInput, $Hostname: HostnameAddInput $Text: TextAddInput, $UserAgent: UserAgentAddInput $BankAccount: BankAccountAddInput $PhoneNumber: PhoneNumberAddInput $Credential: CredentialAddInput $TrackingNumber: TrackingNumberAddInput $PaymentCard: PaymentCardAddInput $Persona: PersonaAddInput $MediaContent: MediaContentAddInput $SSHKey: SSHKeyAddInput $AIPrompt: AIPromptAddInput $IMEI: IMEIAddInput $ICCID: ICCIDAddInput $IMSI: IMSIAddInput ) { stixCyberObservableAdd( type: $type, stix_id: $stix_id, x_opencti_score: $x_opencti_score, x_opencti_description: $x_opencti_description, createIndicator: $createIndicator, createdBy: $createdBy, objectMarking: $objectMarking, objectLabel: $objectLabel, update: $update, upsertOperations: $upsertOperations, externalReferences: $externalReferences, objectOrganization: $objectOrganization, AutonomousSystem: $AutonomousSystem, Directory: $Directory, DomainName: $DomainName, EmailAddr: $EmailAddr, EmailMessage: $EmailMessage, EmailMimePartType: $EmailMimePartType, Artifact: $Artifact, StixFile: $StixFile, X509Certificate: $X509Certificate, IPv4Addr: $IPv4Addr, IPv6Addr: $IPv6Addr, MacAddr: $MacAddr, Mutex: $Mutex, NetworkTraffic: $NetworkTraffic, Process: $Process, Software: $Software, Url: $Url, UserAccount: $UserAccount, WindowsRegistryKey: $WindowsRegistryKey, WindowsRegistryValueType: $WindowsRegistryValueType, CryptographicKey: $CryptographicKey, CryptocurrencyWallet: $CryptocurrencyWallet, Hostname: $Hostname, Text: $Text, UserAgent: $UserAgent BankAccount: $BankAccount PhoneNumber: $PhoneNumber Credential: $Credential TrackingNumber: $TrackingNumber PaymentCard: $PaymentCard Persona: $Persona MediaContent: $MediaContent SSHKey: $SSHKey AIPrompt: $AIPrompt IMEI: $IMEI ICCID: $ICCID IMSI: $IMSI ) { id standard_id entity_type parent_types indicators { edges { node { id pattern pattern_type } } } } }",
+            "variables": {
+              "X509Certificate": {
+                "authority_key_identifier": null,
+                "basic_constraints": null,
+                "certificate_policies": null,
+                "crl_distribution_points": null,
+                "embedded": null,
+                "extended_key_usage": null,
+                "files": null,
+                "filesMarkings": null,
+                "hashes": [
+                  {
+                    "algorithm": "SHA-256",
+                    "hash": "certHashValue"
+                  }
+                ],
+                "inhibit_any_policy": null,
+                "is_self_signed": false,
+                "issuer": "CN=Evil CA",
+                "issuer_alternative_name": null,
+                "key_usage": null,
+                "name_constraints": null,
+                "noTriggerImport": null,
+                "policy_constraints": null,
+                "policy_mappings": null,
+                "private_key_usage_period_not_after": null,
+                "private_key_usage_period_not_before": null,
+                "serial_number": "01:02:03:04",
+                "signature_algorithm": null,
+                "subject": "CN=malware.com",
+                "subject_alternative_name": null,
+                "subject_directory_attributes": null,
+                "subject_key_identifier": null,
+                "subject_public_key_algorithm": "RSA",
+                "subject_public_key_exponent": null,
+                "subject_public_key_modulus": null,
+                "validity_not_after": "2026-01-01T00:00:00.000Z",
+                "validity_not_before": "2025-01-01T00:00:00.000Z",
+                "version": null
+              },
+              "createIndicator": false,
+              "externalReferences": [],
+              "objectLabel": [],
+              "objectMarking": null,
+              "objectOrganization": [],
+              "stix_id": "x509-certificate--20000000-0000-4000-8000-000000000039",
+              "type": "X509-Certificate",
+              "update": false,
+              "upsertOperations": null,
+              "x_opencti_description": null,
+              "x_opencti_score": null
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "object_id": "x509-certificate--20000000-0000-4000-8000-000000000039",
+            "query": "mutation StixCyberObservableAdd( $type: String!, $stix_id: StixId, $x_opencti_score: Int, $x_opencti_description: String, $createIndicator: Boolean, $createdBy: String, $objectMarking: [String], $objectLabel: [String], $objectOrganization: [String], $externalReferences: [String], $update: Boolean, $upsertOperations: [EditInput!], $AutonomousSystem: AutonomousSystemAddInput, $Directory: DirectoryAddInput, $DomainName: DomainNameAddInput, $EmailAddr: EmailAddrAddInput, $EmailMessage: EmailMessageAddInput, $EmailMimePartType: EmailMimePartTypeAddInput, $Artifact: ArtifactAddInput, $StixFile: StixFileAddInput, $X509Certificate: X509CertificateAddInput, $IPv4Addr: IPv4AddrAddInput, $IPv6Addr: IPv6AddrAddInput, $MacAddr: MacAddrAddInput, $Mutex: MutexAddInput, $NetworkTraffic: NetworkTrafficAddInput, $Process: ProcessAddInput, $Software: SoftwareAddInput, $Url: UrlAddInput, $UserAccount: UserAccountAddInput, $WindowsRegistryKey: WindowsRegistryKeyAddInput, $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, $CryptographicKey: CryptographicKeyAddInput, $CryptocurrencyWallet: CryptocurrencyWalletAddInput, $Hostname: HostnameAddInput $Text: TextAddInput, $UserAgent: UserAgentAddInput $BankAccount: BankAccountAddInput $PhoneNumber: PhoneNumberAddInput $Credential: CredentialAddInput $TrackingNumber: TrackingNumberAddInput $PaymentCard: PaymentCardAddInput $Persona: PersonaAddInput $MediaContent: MediaContentAddInput $SSHKey: SSHKeyAddInput $AIPrompt: AIPromptAddInput $IMEI: IMEIAddInput $ICCID: ICCIDAddInput $IMSI: IMSIAddInput ) { stixCyberObservableAdd( type: $type, stix_id: $stix_id, x_opencti_score: $x_opencti_score, x_opencti_description: $x_opencti_description, createIndicator: $createIndicator, createdBy: $createdBy, objectMarking: $objectMarking, objectLabel: $objectLabel, update: $update, upsertOperations: $upsertOperations, externalReferences: $externalReferences, objectOrganization: $objectOrganization, AutonomousSystem: $AutonomousSystem, Directory: $Directory, DomainName: $DomainName, EmailAddr: $EmailAddr, EmailMessage: $EmailMessage, EmailMimePartType: $EmailMimePartType, Artifact: $Artifact, StixFile: $StixFile, X509Certificate: $X509Certificate, IPv4Addr: $IPv4Addr, IPv6Addr: $IPv6Addr, MacAddr: $MacAddr, Mutex: $Mutex, NetworkTraffic: $NetworkTraffic, Process: $Process, Software: $Software, Url: $Url, UserAccount: $UserAccount, WindowsRegistryKey: $WindowsRegistryKey, WindowsRegistryValueType: $WindowsRegistryValueType, CryptographicKey: $CryptographicKey, CryptocurrencyWallet: $CryptocurrencyWallet, Hostname: $Hostname, Text: $Text, UserAgent: $UserAgent BankAccount: $BankAccount PhoneNumber: $PhoneNumber Credential: $Credential TrackingNumber: $TrackingNumber PaymentCard: $PaymentCard Persona: $Persona MediaContent: $MediaContent SSHKey: $SSHKey AIPrompt: $AIPrompt IMEI: $IMEI ICCID: $ICCID IMSI: $IMSI ) { id standard_id entity_type parent_types indicators { edges { node { id pattern pattern_type } } } } }",
+            "variables": {
+              "X509Certificate": {
+                "authority_key_identifier": null,
+                "basic_constraints": null,
+                "certificate_policies": null,
+                "crl_distribution_points": null,
+                "embedded": null,
+                "extended_key_usage": null,
+                "files": null,
+                "filesMarkings": null,
+                "hashes": [
+                  {
+                    "algorithm": "SHA-256",
+                    "hash": "certHashValue"
+                  }
+                ],
+                "inhibit_any_policy": null,
+                "is_self_signed": false,
+                "issuer": "CN=Evil CA",
+                "issuer_alternative_name": null,
+                "key_usage": null,
+                "name_constraints": null,
+                "noTriggerImport": null,
+                "policy_constraints": null,
+                "policy_mappings": null,
+                "private_key_usage_period_not_after": null,
+                "private_key_usage_period_not_before": null,
+                "serial_number": "01:02:03:04",
+                "signature_algorithm": null,
+                "subject": "CN=malware.com",
+                "subject_alternative_name": null,
+                "subject_directory_attributes": null,
+                "subject_key_identifier": null,
+                "subject_public_key_algorithm": "RSA",
+                "subject_public_key_exponent": null,
+                "subject_public_key_modulus": null,
+                "validity_not_after": "2026-01-01T00:00:00.000Z",
+                "validity_not_before": "2025-01-01T00:00:00.000Z",
+                "version": null
+              },
+              "createIndicator": false,
+              "externalReferences": [],
+              "objectLabel": [],
+              "objectMarking": null,
+              "objectOrganization": [],
+              "stix_id": "x509-certificate--20000000-0000-4000-8000-000000000039",
+              "type": "X509-Certificate",
+              "update": false,
+              "upsertOperations": null,
+              "x_opencti_description": null,
+              "x_opencti_score": null
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

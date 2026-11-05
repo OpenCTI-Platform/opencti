@@ -1,0 +1,42 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!) { stixCoreObjectEdit(id: $id) { askEnrichments(connectorIds: $connectorIds) { id } } }",
+            "variables": {
+              "connectorIds": [
+                "10000000-0000-4000-8000-000000000d01"
+              ],
+              "id": "ipv4-addr--20000000-0000-4000-8000-000000000020"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!) { stixCoreObjectEdit(id: $id) { askEnrichments(connectorIds: $connectorIds) { id } } }",
+            "variables": {
+              "connectorIds": [
+                "10000000-0000-4000-8000-000000000d01"
+              ],
+              "id": "ipv4-addr--20000000-0000-4000-8000-000000000020"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

@@ -1,0 +1,274 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "infrastructure_type_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "command-and-control",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "ryuk",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation KillChainPhaseAdd($input: KillChainPhaseAddInput!) { killChainPhaseAdd(input: $input) { id standard_id entity_type parent_types kill_chain_name phase_name x_opencti_order created modified created_at updated_at } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "kill_chain_name": "mitre-pre-attack",
+                "modified": null,
+                "phase_name": "launch",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_order": 0
+              }
+            }
+          },
+          {
+            "echo_id": "echo--4",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": "spear phishing",
+                "embedded": null,
+                "external_id": "CAPEC-163",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "capec",
+                "stix_id": null,
+                "update": false,
+                "url": null,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "infrastructure--ae4b2f9c-3e7d-5a1f-8b9c-2d4e6f8a0b1c",
+            "query": "mutation InfrastructureAdd($input: InfrastructureAddInput!) { infrastructureAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": [
+                  "C2-Infra-Alpha"
+                ],
+                "confidence": 90,
+                "created": "2025-08-01T14:00:00.000Z",
+                "createdBy": "identity--18fe5225-fee1-5627-ad3e-20c14435b024",
+                "customFieldValues": [
+                  {
+                    "field_name": "x_opencti_id",
+                    "value": "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+                  },
+                  {
+                    "field_name": "x_opencti_type",
+                    "value": "Infrastructure"
+                  }
+                ],
+                "description": "C2 server infrastructure",
+                "embedded": null,
+                "externalReferences": [
+                  "echo--4"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "first_seen": "2025-06-01T00:00:00.000Z",
+                "infrastructure_types": [
+                  "command-and-control"
+                ],
+                "killChainPhases": [
+                  "echo--3"
+                ],
+                "lang": null,
+                "last_seen": "2025-08-01T00:00:00.000Z",
+                "modified": "2025-08-01T16:00:00.000Z",
+                "name": "Infrastructure Stix 2.0",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--2"
+                ],
+                "objectMarking": [
+                  "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                ],
+                "objectOrganization": null,
+                "revoked": false,
+                "stix_id": "infrastructure--ae4b2f9c-3e7d-5a1f-8b9c-2d4e6f8a0b1c",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "infrastructure_type_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "command-and-control",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "ryuk",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation KillChainPhaseAdd($input: KillChainPhaseAddInput!) { killChainPhaseAdd(input: $input) { id standard_id entity_type parent_types kill_chain_name phase_name x_opencti_order created modified created_at updated_at } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "kill_chain_name": "mitre-pre-attack",
+                "modified": null,
+                "phase_name": "launch",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_order": 0
+              }
+            }
+          },
+          {
+            "echo_id": "echo--4",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": "spear phishing",
+                "embedded": null,
+                "external_id": "CAPEC-163",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "capec",
+                "stix_id": null,
+                "update": false,
+                "url": null,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "infrastructure--ae4b2f9c-3e7d-5a1f-8b9c-2d4e6f8a0b1c",
+            "query": "mutation InfrastructureAdd($input: InfrastructureAddInput!) { infrastructureAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": [
+                  "C2-Infra-Alpha"
+                ],
+                "confidence": 90,
+                "created": "2025-08-01T14:00:00.000Z",
+                "createdBy": "identity--18fe5225-fee1-5627-ad3e-20c14435b024",
+                "customFieldValues": [
+                  {
+                    "field_name": "x_opencti_id",
+                    "value": "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+                  },
+                  {
+                    "field_name": "x_opencti_type",
+                    "value": "Infrastructure"
+                  }
+                ],
+                "description": "C2 server infrastructure",
+                "embedded": null,
+                "externalReferences": [
+                  "echo--4"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "first_seen": "2025-06-01T00:00:00.000Z",
+                "infrastructure_types": [
+                  "command-and-control"
+                ],
+                "killChainPhases": [
+                  "echo--3"
+                ],
+                "lang": null,
+                "last_seen": "2025-08-01T00:00:00.000Z",
+                "modified": "2025-08-01T16:00:00.000Z",
+                "name": "Infrastructure Stix 2.0",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--2"
+                ],
+                "objectMarking": [
+                  "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                ],
+                "objectOrganization": null,
+                "revoked": false,
+                "stix_id": "infrastructure--ae4b2f9c-3e7d-5a1f-8b9c-2d4e6f8a0b1c",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 5
+}

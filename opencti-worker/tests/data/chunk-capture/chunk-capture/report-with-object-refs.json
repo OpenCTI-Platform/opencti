@@ -1,0 +1,875 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "object_id": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+            "query": "mutation OrganizationAdd($input: OrganizationAddInput!) { organizationAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "contact_information": null,
+                "created": "2024-01-01T00:00:00.000Z",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2024-01-01T00:00:00.000Z",
+                "name": "Chunk Author",
+                "noTriggerImport": null,
+                "objectLabel": [],
+                "objectMarking": null,
+                "revoked": null,
+                "roles": null,
+                "stix_id": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_aliases": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_organization_type": null,
+                "x_opencti_reliability": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          },
+          {
+            "object_id": "ipv4-addr--1d0a1a1e-0000-4000-8000-000000000011",
+            "query": "mutation StixCyberObservableAdd( $type: String!, $stix_id: StixId, $x_opencti_score: Int, $x_opencti_description: String, $createIndicator: Boolean, $createdBy: String, $objectMarking: [String], $objectLabel: [String], $objectOrganization: [String], $externalReferences: [String], $update: Boolean, $upsertOperations: [EditInput!], $AutonomousSystem: AutonomousSystemAddInput, $Directory: DirectoryAddInput, $DomainName: DomainNameAddInput, $EmailAddr: EmailAddrAddInput, $EmailMessage: EmailMessageAddInput, $EmailMimePartType: EmailMimePartTypeAddInput, $Artifact: ArtifactAddInput, $StixFile: StixFileAddInput, $X509Certificate: X509CertificateAddInput, $IPv4Addr: IPv4AddrAddInput, $IPv6Addr: IPv6AddrAddInput, $MacAddr: MacAddrAddInput, $Mutex: MutexAddInput, $NetworkTraffic: NetworkTrafficAddInput, $Process: ProcessAddInput, $Software: SoftwareAddInput, $Url: UrlAddInput, $UserAccount: UserAccountAddInput, $WindowsRegistryKey: WindowsRegistryKeyAddInput, $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, $CryptographicKey: CryptographicKeyAddInput, $CryptocurrencyWallet: CryptocurrencyWalletAddInput, $Hostname: HostnameAddInput $Text: TextAddInput, $UserAgent: UserAgentAddInput $BankAccount: BankAccountAddInput $PhoneNumber: PhoneNumberAddInput $Credential: CredentialAddInput $TrackingNumber: TrackingNumberAddInput $PaymentCard: PaymentCardAddInput $Persona: PersonaAddInput $MediaContent: MediaContentAddInput $SSHKey: SSHKeyAddInput $AIPrompt: AIPromptAddInput $IMEI: IMEIAddInput $ICCID: ICCIDAddInput $IMSI: IMSIAddInput ) { stixCyberObservableAdd( type: $type, stix_id: $stix_id, x_opencti_score: $x_opencti_score, x_opencti_description: $x_opencti_description, createIndicator: $createIndicator, createdBy: $createdBy, objectMarking: $objectMarking, objectLabel: $objectLabel, update: $update, upsertOperations: $upsertOperations, externalReferences: $externalReferences, objectOrganization: $objectOrganization, AutonomousSystem: $AutonomousSystem, Directory: $Directory, DomainName: $DomainName, EmailAddr: $EmailAddr, EmailMessage: $EmailMessage, EmailMimePartType: $EmailMimePartType, Artifact: $Artifact, StixFile: $StixFile, X509Certificate: $X509Certificate, IPv4Addr: $IPv4Addr, IPv6Addr: $IPv6Addr, MacAddr: $MacAddr, Mutex: $Mutex, NetworkTraffic: $NetworkTraffic, Process: $Process, Software: $Software, Url: $Url, UserAccount: $UserAccount, WindowsRegistryKey: $WindowsRegistryKey, WindowsRegistryValueType: $WindowsRegistryValueType, CryptographicKey: $CryptographicKey, CryptocurrencyWallet: $CryptocurrencyWallet, Hostname: $Hostname, Text: $Text, UserAgent: $UserAgent BankAccount: $BankAccount PhoneNumber: $PhoneNumber Credential: $Credential TrackingNumber: $TrackingNumber PaymentCard: $PaymentCard Persona: $Persona MediaContent: $MediaContent SSHKey: $SSHKey AIPrompt: $AIPrompt IMEI: $IMEI ICCID: $ICCID IMSI: $IMSI ) { id standard_id entity_type parent_types indicators { edges { node { id pattern pattern_type } } } } }",
+            "variables": {
+              "IPv4Addr": {
+                "embedded": null,
+                "files": null,
+                "filesMarkings": null,
+                "noTriggerImport": null,
+                "value": "198.51.100.7"
+              },
+              "createIndicator": false,
+              "externalReferences": [],
+              "objectLabel": [],
+              "objectMarking": null,
+              "objectOrganization": [],
+              "stix_id": "ipv4-addr--1d0a1a1e-0000-4000-8000-000000000011",
+              "type": "IPv4-Addr",
+              "update": false,
+              "upsertOperations": null,
+              "x_opencti_description": null,
+              "x_opencti_score": null
+            }
+          },
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "pattern_type_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "stix",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "chunk-label-a",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "chunk-label-b",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--4",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "CS-12",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "chunk-source",
+                "stix_id": null,
+                "update": false,
+                "url": "https://example.com/12",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "indicator--1d0a1a1e-0000-4000-8000-000000000012",
+            "query": "mutation IndicatorAdd($input: IndicatorAddInput!) { indicatorAdd(input: $input) { id standard_id entity_type parent_types observables { edges { node { id standard_id entity_type } } } } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "createObservables": null,
+                "created": "2024-01-02T00:00:00.000Z",
+                "createdBy": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01||M||",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [
+                  "echo--4"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "indicator_types": null,
+                "killChainPhases": [],
+                "lang": null,
+                "modified": "2024-01-03T00:00:00.000Z",
+                "name": "Chunk Indicator",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--2",
+                  "echo--3"
+                ],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "pattern": "[ipv4-addr:value = '198.51.100.7']",
+                "pattern_type": "stix",
+                "pattern_version": null,
+                "revoked": null,
+                "stix_id": "indicator--1d0a1a1e-0000-4000-8000-000000000012",
+                "update": false,
+                "upsertOperations": null,
+                "valid_from": "2024-01-02T00:00:00.000Z",
+                "valid_until": null,
+                "x_mitre_platforms": null,
+                "x_opencti_detection": null,
+                "x_opencti_main_observable_type": "Unknown",
+                "x_opencti_modified_at": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--5",
+            "object_id": null,
+            "query": "mutation KillChainPhaseAdd($input: KillChainPhaseAddInput!) { killChainPhaseAdd(input: $input) { id standard_id entity_type parent_types kill_chain_name phase_name x_opencti_order created modified created_at updated_at } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "kill_chain_name": "mitre-attack",
+                "modified": null,
+                "phase_name": "execution",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_order": 0
+              }
+            }
+          },
+          {
+            "echo_id": "echo--6",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "CS-2",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "chunk-source",
+                "stix_id": null,
+                "update": false,
+                "url": "https://example.com/2",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "malware--1d0a1a1e-0000-4000-8000-000000000002",
+            "query": "mutation MalwareAdd($input: MalwareAddInput!) { malwareAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "architecture_execution_envs": null,
+                "capabilities": null,
+                "confidence": null,
+                "created": "2024-01-02T00:00:00.000Z",
+                "createdBy": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01||M||",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [
+                  "echo--6"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "first_seen": null,
+                "implementation_languages": null,
+                "is_family": true,
+                "killChainPhases": [
+                  "echo--5"
+                ],
+                "lang": null,
+                "last_seen": null,
+                "malware_types": null,
+                "modified": "2024-01-03T00:00:00.000Z",
+                "name": "Chunk Malware",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--2",
+                  "echo--3"
+                ],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "revoked": null,
+                "samples": [],
+                "stix_id": "malware--1d0a1a1e-0000-4000-8000-000000000002",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          },
+          {
+            "object_id": "relationship--1d0a1a1e-0000-4000-8000-000000000113",
+            "query": "mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) { stixCoreRelationshipAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "coverage_information": [],
+                "created": "2024-01-02T00:00:00.000Z",
+                "createdBy": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01||M||",
+                "customFieldValues": null,
+                "description": null,
+                "externalReferences": [],
+                "external_uri": null,
+                "fromId": "indicator--1d0a1a1e-0000-4000-8000-000000000012||M||",
+                "killChainPhases": [],
+                "lang": null,
+                "modified": "2024-01-03T00:00:00.000Z",
+                "objectLabel": [],
+                "objectMarking": null,
+                "objectOrganization": null,
+                "relationship_type": "based-on",
+                "revoked": null,
+                "start_time": null,
+                "stix_id": "relationship--1d0a1a1e-0000-4000-8000-000000000113",
+                "stop_time": null,
+                "toId": "ipv4-addr--1d0a1a1e-0000-4000-8000-000000000011||M||",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--7",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "report_types_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "threat-report",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--8",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "CS-14",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "chunk-source",
+                "stix_id": null,
+                "update": false,
+                "url": "https://example.com/14",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "report--1d0a1a1e-0000-4000-8000-000000000014",
+            "query": "mutation ReportAdd($input: ReportAddInput!) { reportAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "content": null,
+                "created": "2024-01-02T00:00:00.000Z",
+                "createdBy": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01||M||",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [
+                  "echo--8"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2024-01-03T00:00:00.000Z",
+                "name": "Chunk Report",
+                "noTriggerImport": null,
+                "objectAssignee": null,
+                "objectLabel": [
+                  "echo--2",
+                  "echo--3"
+                ],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "objectParticipant": null,
+                "objects": [
+                  "indicator--1d0a1a1e-0000-4000-8000-000000000012||M||",
+                  "ipv4-addr--1d0a1a1e-0000-4000-8000-000000000011||M||",
+                  "relationship--1d0a1a1e-0000-4000-8000-000000000113||M||",
+                  "malware--1d0a1a1e-0000-4000-8000-000000000002||M||"
+                ],
+                "published": "2024-01-04T00:00:00.000Z",
+                "report_types": [
+                  "threat-report"
+                ],
+                "revoked": null,
+                "stix_id": "report--1d0a1a1e-0000-4000-8000-000000000014",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_reliability": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 6
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "object_id": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+            "query": "mutation OrganizationAdd($input: OrganizationAddInput!) { organizationAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "contact_information": null,
+                "created": "2024-01-01T00:00:00.000Z",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2024-01-01T00:00:00.000Z",
+                "name": "Chunk Author",
+                "noTriggerImport": null,
+                "objectLabel": [],
+                "objectMarking": null,
+                "revoked": null,
+                "roles": null,
+                "stix_id": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_aliases": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_organization_type": null,
+                "x_opencti_reliability": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          },
+          {
+            "object_id": "ipv4-addr--1d0a1a1e-0000-4000-8000-000000000011",
+            "query": "mutation StixCyberObservableAdd( $type: String!, $stix_id: StixId, $x_opencti_score: Int, $x_opencti_description: String, $createIndicator: Boolean, $createdBy: String, $objectMarking: [String], $objectLabel: [String], $objectOrganization: [String], $externalReferences: [String], $update: Boolean, $upsertOperations: [EditInput!], $AutonomousSystem: AutonomousSystemAddInput, $Directory: DirectoryAddInput, $DomainName: DomainNameAddInput, $EmailAddr: EmailAddrAddInput, $EmailMessage: EmailMessageAddInput, $EmailMimePartType: EmailMimePartTypeAddInput, $Artifact: ArtifactAddInput, $StixFile: StixFileAddInput, $X509Certificate: X509CertificateAddInput, $IPv4Addr: IPv4AddrAddInput, $IPv6Addr: IPv6AddrAddInput, $MacAddr: MacAddrAddInput, $Mutex: MutexAddInput, $NetworkTraffic: NetworkTrafficAddInput, $Process: ProcessAddInput, $Software: SoftwareAddInput, $Url: UrlAddInput, $UserAccount: UserAccountAddInput, $WindowsRegistryKey: WindowsRegistryKeyAddInput, $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, $CryptographicKey: CryptographicKeyAddInput, $CryptocurrencyWallet: CryptocurrencyWalletAddInput, $Hostname: HostnameAddInput $Text: TextAddInput, $UserAgent: UserAgentAddInput $BankAccount: BankAccountAddInput $PhoneNumber: PhoneNumberAddInput $Credential: CredentialAddInput $TrackingNumber: TrackingNumberAddInput $PaymentCard: PaymentCardAddInput $Persona: PersonaAddInput $MediaContent: MediaContentAddInput $SSHKey: SSHKeyAddInput $AIPrompt: AIPromptAddInput $IMEI: IMEIAddInput $ICCID: ICCIDAddInput $IMSI: IMSIAddInput ) { stixCyberObservableAdd( type: $type, stix_id: $stix_id, x_opencti_score: $x_opencti_score, x_opencti_description: $x_opencti_description, createIndicator: $createIndicator, createdBy: $createdBy, objectMarking: $objectMarking, objectLabel: $objectLabel, update: $update, upsertOperations: $upsertOperations, externalReferences: $externalReferences, objectOrganization: $objectOrganization, AutonomousSystem: $AutonomousSystem, Directory: $Directory, DomainName: $DomainName, EmailAddr: $EmailAddr, EmailMessage: $EmailMessage, EmailMimePartType: $EmailMimePartType, Artifact: $Artifact, StixFile: $StixFile, X509Certificate: $X509Certificate, IPv4Addr: $IPv4Addr, IPv6Addr: $IPv6Addr, MacAddr: $MacAddr, Mutex: $Mutex, NetworkTraffic: $NetworkTraffic, Process: $Process, Software: $Software, Url: $Url, UserAccount: $UserAccount, WindowsRegistryKey: $WindowsRegistryKey, WindowsRegistryValueType: $WindowsRegistryValueType, CryptographicKey: $CryptographicKey, CryptocurrencyWallet: $CryptocurrencyWallet, Hostname: $Hostname, Text: $Text, UserAgent: $UserAgent BankAccount: $BankAccount PhoneNumber: $PhoneNumber Credential: $Credential TrackingNumber: $TrackingNumber PaymentCard: $PaymentCard Persona: $Persona MediaContent: $MediaContent SSHKey: $SSHKey AIPrompt: $AIPrompt IMEI: $IMEI ICCID: $ICCID IMSI: $IMSI ) { id standard_id entity_type parent_types indicators { edges { node { id pattern pattern_type } } } } }",
+            "variables": {
+              "IPv4Addr": {
+                "embedded": null,
+                "files": null,
+                "filesMarkings": null,
+                "noTriggerImport": null,
+                "value": "198.51.100.7"
+              },
+              "createIndicator": false,
+              "externalReferences": [],
+              "objectLabel": [],
+              "objectMarking": null,
+              "objectOrganization": [],
+              "stix_id": "ipv4-addr--1d0a1a1e-0000-4000-8000-000000000011",
+              "type": "IPv4-Addr",
+              "update": false,
+              "upsertOperations": null,
+              "x_opencti_description": null,
+              "x_opencti_score": null
+            }
+          },
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "pattern_type_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "stix",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "chunk-label-a",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "chunk-label-b",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--4",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "CS-12",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "chunk-source",
+                "stix_id": null,
+                "update": false,
+                "url": "https://example.com/12",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "indicator--1d0a1a1e-0000-4000-8000-000000000012",
+            "query": "mutation IndicatorAdd($input: IndicatorAddInput!) { indicatorAdd(input: $input) { id standard_id entity_type parent_types observables { edges { node { id standard_id entity_type } } } } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "createObservables": null,
+                "created": "2024-01-02T00:00:00.000Z",
+                "createdBy": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01||M||",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [
+                  "echo--4"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "indicator_types": null,
+                "killChainPhases": [],
+                "lang": null,
+                "modified": "2024-01-03T00:00:00.000Z",
+                "name": "Chunk Indicator",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--2",
+                  "echo--3"
+                ],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "pattern": "[ipv4-addr:value = '198.51.100.7']",
+                "pattern_type": "stix",
+                "pattern_version": null,
+                "revoked": null,
+                "stix_id": "indicator--1d0a1a1e-0000-4000-8000-000000000012",
+                "update": false,
+                "upsertOperations": null,
+                "valid_from": "2024-01-02T00:00:00.000Z",
+                "valid_until": null,
+                "x_mitre_platforms": null,
+                "x_opencti_detection": null,
+                "x_opencti_main_observable_type": "Unknown",
+                "x_opencti_modified_at": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--5",
+            "object_id": null,
+            "query": "mutation KillChainPhaseAdd($input: KillChainPhaseAddInput!) { killChainPhaseAdd(input: $input) { id standard_id entity_type parent_types kill_chain_name phase_name x_opencti_order created modified created_at updated_at } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "kill_chain_name": "mitre-attack",
+                "modified": null,
+                "phase_name": "execution",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_order": 0
+              }
+            }
+          },
+          {
+            "echo_id": "echo--6",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "CS-2",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "chunk-source",
+                "stix_id": null,
+                "update": false,
+                "url": "https://example.com/2",
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 3
+      },
+      {
+        "operations": [
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "chunk-label-a",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "chunk-label-b",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--5",
+            "object_id": null,
+            "query": "mutation KillChainPhaseAdd($input: KillChainPhaseAddInput!) { killChainPhaseAdd(input: $input) { id standard_id entity_type parent_types kill_chain_name phase_name x_opencti_order created modified created_at updated_at } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "kill_chain_name": "mitre-attack",
+                "modified": null,
+                "phase_name": "execution",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_order": 0
+              }
+            }
+          },
+          {
+            "echo_id": "echo--6",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "CS-2",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "chunk-source",
+                "stix_id": null,
+                "update": false,
+                "url": "https://example.com/2",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "malware--1d0a1a1e-0000-4000-8000-000000000002",
+            "query": "mutation MalwareAdd($input: MalwareAddInput!) { malwareAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "architecture_execution_envs": null,
+                "capabilities": null,
+                "confidence": null,
+                "created": "2024-01-02T00:00:00.000Z",
+                "createdBy": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01||M||",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [
+                  "echo--6"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "first_seen": null,
+                "implementation_languages": null,
+                "is_family": true,
+                "killChainPhases": [
+                  "echo--5"
+                ],
+                "lang": null,
+                "last_seen": null,
+                "malware_types": null,
+                "modified": "2024-01-03T00:00:00.000Z",
+                "name": "Chunk Malware",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--2",
+                  "echo--3"
+                ],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "revoked": null,
+                "samples": [],
+                "stix_id": "malware--1d0a1a1e-0000-4000-8000-000000000002",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          },
+          {
+            "object_id": "relationship--1d0a1a1e-0000-4000-8000-000000000113",
+            "query": "mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) { stixCoreRelationshipAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "coverage_information": [],
+                "created": "2024-01-02T00:00:00.000Z",
+                "createdBy": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01||M||",
+                "customFieldValues": null,
+                "description": null,
+                "externalReferences": [],
+                "external_uri": null,
+                "fromId": "indicator--1d0a1a1e-0000-4000-8000-000000000012||M||",
+                "killChainPhases": [],
+                "lang": null,
+                "modified": "2024-01-03T00:00:00.000Z",
+                "objectLabel": [],
+                "objectMarking": null,
+                "objectOrganization": null,
+                "relationship_type": "based-on",
+                "revoked": null,
+                "start_time": null,
+                "stix_id": "relationship--1d0a1a1e-0000-4000-8000-000000000113",
+                "stop_time": null,
+                "toId": "ipv4-addr--1d0a1a1e-0000-4000-8000-000000000011||M||",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--7",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "report_types_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "threat-report",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--8",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "CS-14",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "chunk-source",
+                "stix_id": null,
+                "update": false,
+                "url": "https://example.com/14",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "report--1d0a1a1e-0000-4000-8000-000000000014",
+            "query": "mutation ReportAdd($input: ReportAddInput!) { reportAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "content": null,
+                "created": "2024-01-02T00:00:00.000Z",
+                "createdBy": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01||M||",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [
+                  "echo--8"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2024-01-03T00:00:00.000Z",
+                "name": "Chunk Report",
+                "noTriggerImport": null,
+                "objectAssignee": null,
+                "objectLabel": [
+                  "echo--2",
+                  "echo--3"
+                ],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "objectParticipant": null,
+                "objects": [
+                  "indicator--1d0a1a1e-0000-4000-8000-000000000012||M||",
+                  "ipv4-addr--1d0a1a1e-0000-4000-8000-000000000011||M||",
+                  "relationship--1d0a1a1e-0000-4000-8000-000000000113||M||",
+                  "malware--1d0a1a1e-0000-4000-8000-000000000002||M||"
+                ],
+                "published": "2024-01-04T00:00:00.000Z",
+                "report_types": [
+                  "threat-report"
+                ],
+                "revoked": null,
+                "stix_id": "report--1d0a1a1e-0000-4000-8000-000000000014",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_reliability": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 3
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 14
+}

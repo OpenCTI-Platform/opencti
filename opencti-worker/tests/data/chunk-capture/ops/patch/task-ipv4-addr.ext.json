@@ -1,0 +1,54 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixCyberObservableEdit($id: ID!, $input: [EditInput]!) { stixCyberObservableEdit(id: $id) { fieldPatch(input: $input) { id standard_id entity_type } } }",
+            "variables": {
+              "id": "10000000-0000-4000-8000-000000000020",
+              "input": [
+                {
+                  "key": "x_opencti_description",
+                  "operation": "replace",
+                  "value": [
+                    "Updated description"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixCyberObservableEdit($id: ID!, $input: [EditInput]!) { stixCyberObservableEdit(id: $id) { fieldPatch(input: $input) { id standard_id entity_type } } }",
+            "variables": {
+              "id": "10000000-0000-4000-8000-000000000020",
+              "input": [
+                {
+                  "key": "x_opencti_description",
+                  "operation": "replace",
+                  "value": [
+                    "Updated description"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

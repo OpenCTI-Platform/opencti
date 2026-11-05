@@ -1,0 +1,54 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "object_id": "marking-definition--826578e1-40ad-459f-bc73-ede076f81f37",
+            "query": "mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput!) { markingDefinitionAdd(input: $input) { id standard_id entity_type parent_types definition_type definition x_opencti_order x_opencti_color created modified created_at updated_at } }",
+            "variables": {
+              "input": {
+                "created": "2024-11-18T08:57:58.528Z",
+                "definition": "TLP:AMBER+STRICT",
+                "definition_type": "TLP",
+                "modified": null,
+                "stix_id": "marking-definition--826578e1-40ad-459f-bc73-ede076f81f37",
+                "update": false,
+                "x_opencti_color": "#d84315",
+                "x_opencti_order": 3,
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "object_id": "marking-definition--826578e1-40ad-459f-bc73-ede076f81f37",
+            "query": "mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput!) { markingDefinitionAdd(input: $input) { id standard_id entity_type parent_types definition_type definition x_opencti_order x_opencti_color created modified created_at updated_at } }",
+            "variables": {
+              "input": {
+                "created": "2024-11-18T08:57:58.528Z",
+                "definition": "TLP:AMBER+STRICT",
+                "definition_type": "TLP",
+                "modified": null,
+                "stix_id": "marking-definition--826578e1-40ad-459f-bc73-ede076f81f37",
+                "update": false,
+                "x_opencti_color": "#d84315",
+                "x_opencti_order": 3,
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

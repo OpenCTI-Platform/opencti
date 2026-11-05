@@ -1,0 +1,36 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixSightingRelationshipEdit($id: ID!) { stixSightingRelationshipEdit(id: $id) { delete } }",
+            "variables": {
+              "id": "sighting--22799cbd-e9b5-5b7c-8733-5c2a5cc49ebe"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixSightingRelationshipEdit($id: ID!) { stixSightingRelationshipEdit(id: $id) { delete } }",
+            "variables": {
+              "id": "sighting--22799cbd-e9b5-5b7c-8733-5c2a5cc49ebe"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

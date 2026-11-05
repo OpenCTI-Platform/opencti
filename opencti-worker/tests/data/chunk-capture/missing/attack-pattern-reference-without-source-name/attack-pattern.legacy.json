@@ -1,0 +1,64 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "T0000",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": null,
+                "stix_id": null,
+                "update": false,
+                "url": "https://example.org/attack",
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "T0000",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": null,
+                "stix_id": null,
+                "update": false,
+                "url": "https://example.org/attack",
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

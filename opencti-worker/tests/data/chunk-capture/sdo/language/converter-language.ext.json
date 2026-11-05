@@ -1,0 +1,80 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "object_id": "language--20000000-0000-4000-8000-000000000901",
+            "query": "mutation LanguageAdd($input: LanguageAddInput!) { languageAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": [
+                  "pt"
+                ],
+                "confidence": null,
+                "created": null,
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": null,
+                "embedded": null,
+                "externalReferences": [],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": null,
+                "name": "Portuguese",
+                "noTriggerImport": null,
+                "objectLabel": [],
+                "objectMarking": null,
+                "revoked": null,
+                "stix_id": "language--20000000-0000-4000-8000-000000000901",
+                "update": false,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "object_id": "language--20000000-0000-4000-8000-000000000901",
+            "query": "mutation LanguageAdd($input: LanguageAddInput!) { languageAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": [
+                  "pt"
+                ],
+                "confidence": null,
+                "created": null,
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": null,
+                "embedded": null,
+                "externalReferences": [],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": null,
+                "name": "Portuguese",
+                "noTriggerImport": null,
+                "objectLabel": [],
+                "objectMarking": null,
+                "revoked": null,
+                "stix_id": "language--20000000-0000-4000-8000-000000000901",
+                "update": false,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

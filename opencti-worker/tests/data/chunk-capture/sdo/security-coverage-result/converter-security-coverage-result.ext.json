@@ -1,0 +1,88 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "object_id": "security-coverage-result--20000000-0000-4000-8000-000000000905",
+            "query": "mutation SecurityCoverageResultAdd($input: SecurityCoverageResultAddInput!) { securityCoverageResultAdd(input: $input) { id name standard_id entity_type parent_types spec_version created_at updated_at external_uri coverage_last_result coverage_valid_from coverage_valid_to coverage_information { coverage_name coverage_score } resultOf { id } objectMarking { id standard_id entity_type definition_type definition created modified x_opencti_order x_opencti_color } customFieldValues { field_id field_name int_value string_value boolean_value date_value select_value select_values } } }",
+            "variables": {
+              "input": {
+                "coverage_information": [
+                  {
+                    "coverage_name": "vulnerability",
+                    "coverage_score": 40
+                  }
+                ],
+                "coverage_last_result": "2025-02-01T00:00:00.000Z",
+                "coverage_valid_from": "2025-03-01T00:00:00.000Z",
+                "coverage_valid_to": "2025-04-01T00:00:00.000Z",
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [],
+                "external_uri": "http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a131",
+                "files": null,
+                "filesMarkings": null,
+                "name": "security coverage result",
+                "noTriggerImport": null,
+                "objectLabel": [],
+                "objectMarking": [
+                  "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+                ],
+                "resultOf": "security-coverage--20000000-0000-4000-8000-000000000903",
+                "stix_id": "security-coverage-result--20000000-0000-4000-8000-000000000905",
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "object_id": "security-coverage-result--20000000-0000-4000-8000-000000000905",
+            "query": "mutation SecurityCoverageResultAdd($input: SecurityCoverageResultAddInput!) { securityCoverageResultAdd(input: $input) { id name standard_id entity_type parent_types spec_version created_at updated_at external_uri coverage_last_result coverage_valid_from coverage_valid_to coverage_information { coverage_name coverage_score } resultOf { id } objectMarking { id standard_id entity_type definition_type definition created modified x_opencti_order x_opencti_color } customFieldValues { field_id field_name int_value string_value boolean_value date_value select_value select_values } } }",
+            "variables": {
+              "input": {
+                "coverage_information": [
+                  {
+                    "coverage_name": "vulnerability",
+                    "coverage_score": 40
+                  }
+                ],
+                "coverage_last_result": "2025-02-01T00:00:00.000Z",
+                "coverage_valid_from": "2025-03-01T00:00:00.000Z",
+                "coverage_valid_to": "2025-04-01T00:00:00.000Z",
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [],
+                "external_uri": "http://localhost/admin/scenarios/a2166709-be41-48bf-9ce1-51bb2fd3a131",
+                "files": null,
+                "filesMarkings": null,
+                "name": "security coverage result",
+                "noTriggerImport": null,
+                "objectLabel": [],
+                "objectMarking": [
+                  "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+                ],
+                "resultOf": "security-coverage--20000000-0000-4000-8000-000000000903",
+                "stix_id": "security-coverage-result--20000000-0000-4000-8000-000000000905",
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

@@ -1,0 +1,36 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation InternalFileDelete($fileName: String) { deleteImport(fileName: $fileName) }",
+            "variables": {
+              "fileName": "import/global/report.pdf"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation InternalFileDelete($fileName: String) { deleteImport(fileName: $fileName) }",
+            "variables": {
+              "fileName": "import/global/report.pdf"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

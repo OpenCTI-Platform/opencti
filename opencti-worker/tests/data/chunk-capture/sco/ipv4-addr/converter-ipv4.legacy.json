@@ -1,0 +1,106 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "stix 2.0",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "ipv4-addr--20000000-0000-4000-8000-000000000020",
+            "query": "mutation StixCyberObservableAdd( $type: String!, $stix_id: StixId, $x_opencti_score: Int, $x_opencti_description: String, $createIndicator: Boolean, $createdBy: String, $objectMarking: [String], $objectLabel: [String], $objectOrganization: [String], $externalReferences: [String], $update: Boolean, $upsertOperations: [EditInput!], $AutonomousSystem: AutonomousSystemAddInput, $Directory: DirectoryAddInput, $DomainName: DomainNameAddInput, $EmailAddr: EmailAddrAddInput, $EmailMessage: EmailMessageAddInput, $EmailMimePartType: EmailMimePartTypeAddInput, $Artifact: ArtifactAddInput, $StixFile: StixFileAddInput, $X509Certificate: X509CertificateAddInput, $IPv4Addr: IPv4AddrAddInput, $IPv6Addr: IPv6AddrAddInput, $MacAddr: MacAddrAddInput, $Mutex: MutexAddInput, $NetworkTraffic: NetworkTrafficAddInput, $Process: ProcessAddInput, $Software: SoftwareAddInput, $Url: UrlAddInput, $UserAccount: UserAccountAddInput, $WindowsRegistryKey: WindowsRegistryKeyAddInput, $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, $CryptographicKey: CryptographicKeyAddInput, $CryptocurrencyWallet: CryptocurrencyWalletAddInput, $Hostname: HostnameAddInput $Text: TextAddInput, $UserAgent: UserAgentAddInput $BankAccount: BankAccountAddInput $PhoneNumber: PhoneNumberAddInput $Credential: CredentialAddInput $TrackingNumber: TrackingNumberAddInput $PaymentCard: PaymentCardAddInput $Persona: PersonaAddInput $MediaContent: MediaContentAddInput $SSHKey: SSHKeyAddInput $AIPrompt: AIPromptAddInput $IMEI: IMEIAddInput $ICCID: ICCIDAddInput $IMSI: IMSIAddInput ) { stixCyberObservableAdd( type: $type, stix_id: $stix_id, x_opencti_score: $x_opencti_score, x_opencti_description: $x_opencti_description, createIndicator: $createIndicator, createdBy: $createdBy, objectMarking: $objectMarking, objectLabel: $objectLabel, update: $update, upsertOperations: $upsertOperations, externalReferences: $externalReferences, objectOrganization: $objectOrganization, AutonomousSystem: $AutonomousSystem, Directory: $Directory, DomainName: $DomainName, EmailAddr: $EmailAddr, EmailMessage: $EmailMessage, EmailMimePartType: $EmailMimePartType, Artifact: $Artifact, StixFile: $StixFile, X509Certificate: $X509Certificate, IPv4Addr: $IPv4Addr, IPv6Addr: $IPv6Addr, MacAddr: $MacAddr, Mutex: $Mutex, NetworkTraffic: $NetworkTraffic, Process: $Process, Software: $Software, Url: $Url, UserAccount: $UserAccount, WindowsRegistryKey: $WindowsRegistryKey, WindowsRegistryValueType: $WindowsRegistryValueType, CryptographicKey: $CryptographicKey, CryptocurrencyWallet: $CryptocurrencyWallet, Hostname: $Hostname, Text: $Text, UserAgent: $UserAgent BankAccount: $BankAccount PhoneNumber: $PhoneNumber Credential: $Credential TrackingNumber: $TrackingNumber PaymentCard: $PaymentCard Persona: $Persona MediaContent: $MediaContent SSHKey: $SSHKey AIPrompt: $AIPrompt IMEI: $IMEI ICCID: $ICCID IMSI: $IMSI ) { id standard_id entity_type parent_types indicators { edges { node { id pattern pattern_type } } } } }",
+            "variables": {
+              "IPv4Addr": {
+                "embedded": null,
+                "files": null,
+                "filesMarkings": null,
+                "noTriggerImport": null,
+                "value": "198.51.100.1"
+              },
+              "createIndicator": false,
+              "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+              "externalReferences": [],
+              "objectLabel": [
+                "echo--1"
+              ],
+              "objectMarking": [
+                "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+              ],
+              "objectOrganization": [],
+              "stix_id": "ipv4-addr--20000000-0000-4000-8000-000000000020",
+              "type": "IPv4-Addr",
+              "update": false,
+              "upsertOperations": null,
+              "x_opencti_description": "Malicious IP",
+              "x_opencti_score": 70
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "stix 2.0",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "ipv4-addr--20000000-0000-4000-8000-000000000020",
+            "query": "mutation StixCyberObservableAdd( $type: String!, $stix_id: StixId, $x_opencti_score: Int, $x_opencti_description: String, $createIndicator: Boolean, $createdBy: String, $objectMarking: [String], $objectLabel: [String], $objectOrganization: [String], $externalReferences: [String], $update: Boolean, $upsertOperations: [EditInput!], $AutonomousSystem: AutonomousSystemAddInput, $Directory: DirectoryAddInput, $DomainName: DomainNameAddInput, $EmailAddr: EmailAddrAddInput, $EmailMessage: EmailMessageAddInput, $EmailMimePartType: EmailMimePartTypeAddInput, $Artifact: ArtifactAddInput, $StixFile: StixFileAddInput, $X509Certificate: X509CertificateAddInput, $IPv4Addr: IPv4AddrAddInput, $IPv6Addr: IPv6AddrAddInput, $MacAddr: MacAddrAddInput, $Mutex: MutexAddInput, $NetworkTraffic: NetworkTrafficAddInput, $Process: ProcessAddInput, $Software: SoftwareAddInput, $Url: UrlAddInput, $UserAccount: UserAccountAddInput, $WindowsRegistryKey: WindowsRegistryKeyAddInput, $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, $CryptographicKey: CryptographicKeyAddInput, $CryptocurrencyWallet: CryptocurrencyWalletAddInput, $Hostname: HostnameAddInput $Text: TextAddInput, $UserAgent: UserAgentAddInput $BankAccount: BankAccountAddInput $PhoneNumber: PhoneNumberAddInput $Credential: CredentialAddInput $TrackingNumber: TrackingNumberAddInput $PaymentCard: PaymentCardAddInput $Persona: PersonaAddInput $MediaContent: MediaContentAddInput $SSHKey: SSHKeyAddInput $AIPrompt: AIPromptAddInput $IMEI: IMEIAddInput $ICCID: ICCIDAddInput $IMSI: IMSIAddInput ) { stixCyberObservableAdd( type: $type, stix_id: $stix_id, x_opencti_score: $x_opencti_score, x_opencti_description: $x_opencti_description, createIndicator: $createIndicator, createdBy: $createdBy, objectMarking: $objectMarking, objectLabel: $objectLabel, update: $update, upsertOperations: $upsertOperations, externalReferences: $externalReferences, objectOrganization: $objectOrganization, AutonomousSystem: $AutonomousSystem, Directory: $Directory, DomainName: $DomainName, EmailAddr: $EmailAddr, EmailMessage: $EmailMessage, EmailMimePartType: $EmailMimePartType, Artifact: $Artifact, StixFile: $StixFile, X509Certificate: $X509Certificate, IPv4Addr: $IPv4Addr, IPv6Addr: $IPv6Addr, MacAddr: $MacAddr, Mutex: $Mutex, NetworkTraffic: $NetworkTraffic, Process: $Process, Software: $Software, Url: $Url, UserAccount: $UserAccount, WindowsRegistryKey: $WindowsRegistryKey, WindowsRegistryValueType: $WindowsRegistryValueType, CryptographicKey: $CryptographicKey, CryptocurrencyWallet: $CryptocurrencyWallet, Hostname: $Hostname, Text: $Text, UserAgent: $UserAgent BankAccount: $BankAccount PhoneNumber: $PhoneNumber Credential: $Credential TrackingNumber: $TrackingNumber PaymentCard: $PaymentCard Persona: $Persona MediaContent: $MediaContent SSHKey: $SSHKey AIPrompt: $AIPrompt IMEI: $IMEI ICCID: $ICCID IMSI: $IMSI ) { id standard_id entity_type parent_types indicators { edges { node { id pattern pattern_type } } } } }",
+            "variables": {
+              "IPv4Addr": {
+                "embedded": null,
+                "files": null,
+                "filesMarkings": null,
+                "noTriggerImport": null,
+                "value": "198.51.100.1"
+              },
+              "createIndicator": false,
+              "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+              "externalReferences": [],
+              "objectLabel": [
+                "echo--1"
+              ],
+              "objectMarking": [
+                "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+              ],
+              "objectOrganization": [],
+              "stix_id": "ipv4-addr--20000000-0000-4000-8000-000000000020",
+              "type": "IPv4-Addr",
+              "update": false,
+              "upsertOperations": null,
+              "x_opencti_description": "Malicious IP",
+              "x_opencti_score": 70
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 2
+}

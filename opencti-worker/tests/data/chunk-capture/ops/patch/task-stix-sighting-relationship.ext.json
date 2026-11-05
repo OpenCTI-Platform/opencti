@@ -1,0 +1,54 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixSightingRelationshipEdit($id: ID!, $input: [EditInput]!) { stixSightingRelationshipEdit(id: $id) { fieldPatch(input: $input) { id } } }",
+            "variables": {
+              "id": "11cad6c5-98f1-4491-899a-15b7789e1492",
+              "input": [
+                {
+                  "key": "description",
+                  "operation": "replace",
+                  "value": [
+                    "Updated description"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixSightingRelationshipEdit($id: ID!, $input: [EditInput]!) { stixSightingRelationshipEdit(id: $id) { fieldPatch(input: $input) { id } } }",
+            "variables": {
+              "id": "11cad6c5-98f1-4491-899a-15b7789e1492",
+              "input": [
+                {
+                  "key": "description",
+                  "operation": "replace",
+                  "value": [
+                    "Updated description"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

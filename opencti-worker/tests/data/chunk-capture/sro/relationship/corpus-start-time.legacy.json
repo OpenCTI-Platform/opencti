@@ -1,0 +1,90 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "object_id": "relationship--fa97c59e-8fbd-5f07-99c2-2829d0ff0970",
+            "query": "mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) { stixCoreRelationshipAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "coverage_information": [],
+                "created": "2026-07-21T08:47:55.876422Z",
+                "customFieldValues": null,
+                "description": null,
+                "externalReferences": [],
+                "external_uri": null,
+                "fromId": "infrastructure--2edc7ace-b3be-572f-8879-ea2bb599a60d",
+                "killChainPhases": [],
+                "lang": null,
+                "modified": "2026-07-21T08:47:55.876422Z",
+                "objectLabel": [],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "relationship_type": "has",
+                "revoked": null,
+                "start_time": "2026-07-16T00:00:00Z",
+                "stix_id": "relationship--fa97c59e-8fbd-5f07-99c2-2829d0ff0970",
+                "stop_time": null,
+                "toId": "vulnerability--762c357e-96d0-5dfb-b7cd-8e77a5e7cf25",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "object_id": "relationship--fa97c59e-8fbd-5f07-99c2-2829d0ff0970",
+            "query": "mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) { stixCoreRelationshipAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": null,
+                "coverage_information": [],
+                "created": "2026-07-21T08:47:55.876422Z",
+                "customFieldValues": null,
+                "description": null,
+                "externalReferences": [],
+                "external_uri": null,
+                "fromId": "infrastructure--2edc7ace-b3be-572f-8879-ea2bb599a60d",
+                "killChainPhases": [],
+                "lang": null,
+                "modified": "2026-07-21T08:47:55.876422Z",
+                "objectLabel": [],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "relationship_type": "has",
+                "revoked": null,
+                "start_time": "2026-07-16T00:00:00Z",
+                "stix_id": "relationship--fa97c59e-8fbd-5f07-99c2-2829d0ff0970",
+                "stop_time": null,
+                "toId": "vulnerability--762c357e-96d0-5dfb-b7cd-8e77a5e7cf25",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

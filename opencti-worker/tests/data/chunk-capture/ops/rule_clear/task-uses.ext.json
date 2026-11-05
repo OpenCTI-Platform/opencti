@@ -1,0 +1,38 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixCoreClearRule($elementId: ID!, $ruleId: ID!) { ruleClear(elementId: $elementId, ruleId: $ruleId) }",
+            "variables": {
+              "elementId": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+              "ruleId": "attribution_attribution"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixCoreClearRule($elementId: ID!, $ruleId: ID!) { ruleClear(elementId: $elementId, ruleId: $ruleId) }",
+            "variables": {
+              "elementId": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+              "ruleId": "attribution_attribution"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

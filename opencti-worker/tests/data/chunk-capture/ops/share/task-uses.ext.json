@@ -1,0 +1,44 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixCoreRelationshipEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) { stixCoreRelationshipEdit(id: $id) { restrictionOrganizationAdd(organizationId: $organizationId, directContainerSharing: $directContainerSharing) { id } } }",
+            "variables": {
+              "directContainerSharing": false,
+              "id": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+              "organizationId": [
+                "10000000-0000-4000-8000-000000000b01"
+              ]
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixCoreRelationshipEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) { stixCoreRelationshipEdit(id: $id) { restrictionOrganizationAdd(organizationId: $organizationId, directContainerSharing: $directContainerSharing) { id } } }",
+            "variables": {
+              "directContainerSharing": false,
+              "id": "relationship--5a2da23f-201e-5d8a-8b1f-2a38ca99aa5c",
+              "organizationId": [
+                "10000000-0000-4000-8000-000000000b01"
+              ]
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

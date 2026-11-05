@@ -1,0 +1,54 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation UserEdit($id: ID!, $input: [EditInput]!) { userEdit(id: $id) { fieldPatch(input: $input) { id standard_id individual_id user_email firstname lastname name description language theme unit_system external restrict_delete account_status account_lock_after_date entity_type parent_types created_at updated_at unit_system submenu_show_icons submenu_auto_collapse monochrome_labels roles { id, name, description capabilities { id, name } capabilitiesInDraft { id, name } } groups { edges { node { id, name, description } } } objectOrganization { edges { node { id, is_inferred, name, description } } } administrated_organizations { id, name, description } user_confidence_level { max_confidence overrides { entity_type, max_confidence } } effective_confidence_level { max_confidence source { type object { ... on Group { id, name } } } overrides { entity_type, max_confidence source { type object { ... on Group { id, name } } } } } } } }",
+            "variables": {
+              "id": "10000000-0000-4000-8000-000000000a01",
+              "input": [
+                {
+                  "key": "account_status",
+                  "operation": "replace",
+                  "value": [
+                    "Locked"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation UserEdit($id: ID!, $input: [EditInput]!) { userEdit(id: $id) { fieldPatch(input: $input) { id standard_id individual_id user_email firstname lastname name description language theme unit_system external restrict_delete account_status account_lock_after_date entity_type parent_types created_at updated_at unit_system submenu_show_icons submenu_auto_collapse monochrome_labels roles { id, name, description capabilities { id, name } capabilitiesInDraft { id, name } } groups { edges { node { id, name, description } } } objectOrganization { edges { node { id, is_inferred, name, description } } } administrated_organizations { id, name, description } user_confidence_level { max_confidence overrides { entity_type, max_confidence } } effective_confidence_level { max_confidence source { type object { ... on Group { id, name } } } overrides { entity_type, max_confidence source { type object { ... on Group { id, name } } } } } } } }",
+            "variables": {
+              "id": "10000000-0000-4000-8000-000000000a01",
+              "input": [
+                {
+                  "key": "account_status",
+                  "operation": "replace",
+                  "value": [
+                    "Locked"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

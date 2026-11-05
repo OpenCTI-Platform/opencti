@@ -1,0 +1,208 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "opinion_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "agree",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "opinion",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "G0096",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "mitre-attack",
+                "stix_id": null,
+                "update": false,
+                "url": "https://attack.mitre.org/groups/G0096",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "opinion--0fe325be-7171-5696-a922-c9d15685c495",
+            "query": "mutation OpinionAdd($input: OpinionAddInput!) { opinionAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "authors": null,
+                "confidence": 75,
+                "created": "2025-06-26T15:36:22.864Z",
+                "createdBy": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+                "customFieldValues": null,
+                "embedded": null,
+                "explanation": "my opinion",
+                "externalReferences": [
+                  "echo--3"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2025-06-26T15:37:27.254Z",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--2"
+                ],
+                "objectMarking": null,
+                "objectOrganization": [
+                  "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
+                ],
+                "objects": [
+                  "note--2a80c942-1c85-5bb7-91d4-e92ed2b86fd8"
+                ],
+                "opinion": "agree",
+                "revoked": false,
+                "stix_id": "opinion--0fe325be-7171-5696-a922-c9d15685c495",
+                "update": false,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "opinion_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "agree",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "opinion",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": null,
+                "embedded": null,
+                "external_id": "G0096",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "mitre-attack",
+                "stix_id": null,
+                "update": false,
+                "url": "https://attack.mitre.org/groups/G0096",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "opinion--0fe325be-7171-5696-a922-c9d15685c495",
+            "query": "mutation OpinionAdd($input: OpinionAddInput!) { opinionAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "authors": null,
+                "confidence": 75,
+                "created": "2025-06-26T15:36:22.864Z",
+                "createdBy": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+                "customFieldValues": null,
+                "embedded": null,
+                "explanation": "my opinion",
+                "externalReferences": [
+                  "echo--3"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2025-06-26T15:37:27.254Z",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--2"
+                ],
+                "objectMarking": null,
+                "objectOrganization": [
+                  "identity--8cb00c79-ab20-5ed4-b37d-337241b96a29"
+                ],
+                "objects": [
+                  "note--2a80c942-1c85-5bb7-91d4-e92ed2b86fd8"
+                ],
+                "opinion": "agree",
+                "revoked": false,
+                "stix_id": "opinion--0fe325be-7171-5696-a922-c9d15685c495",
+                "update": false,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 4
+}

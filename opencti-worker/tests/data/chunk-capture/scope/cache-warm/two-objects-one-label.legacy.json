@@ -1,0 +1,232 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "shared-label",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "malware--30000000-0000-4000-8000-000000000020",
+            "query": "mutation MalwareAdd($input: MalwareAddInput!) { malwareAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "architecture_execution_envs": null,
+                "capabilities": null,
+                "confidence": null,
+                "created": "2025-01-01T00:00:00.000Z",
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [],
+                "files": null,
+                "filesMarkings": null,
+                "first_seen": null,
+                "implementation_languages": null,
+                "is_family": true,
+                "killChainPhases": [],
+                "lang": null,
+                "last_seen": null,
+                "malware_types": null,
+                "modified": "2025-01-01T00:00:00.000Z",
+                "name": "Variant malware 20",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--1"
+                ],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "revoked": null,
+                "samples": [],
+                "stix_id": "malware--30000000-0000-4000-8000-000000000020",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          },
+          {
+            "object_id": "malware--30000000-0000-4000-8000-000000000021",
+            "query": "mutation MalwareAdd($input: MalwareAddInput!) { malwareAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "architecture_execution_envs": null,
+                "capabilities": null,
+                "confidence": null,
+                "created": "2025-01-01T00:00:00.000Z",
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [],
+                "files": null,
+                "filesMarkings": null,
+                "first_seen": null,
+                "implementation_languages": null,
+                "is_family": true,
+                "killChainPhases": [],
+                "lang": null,
+                "last_seen": null,
+                "malware_types": null,
+                "modified": "2025-01-01T00:00:00.000Z",
+                "name": "Variant malware 21",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--1"
+                ],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "revoked": null,
+                "samples": [],
+                "stix_id": "malware--30000000-0000-4000-8000-000000000021",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 2
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "shared-label",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "malware--30000000-0000-4000-8000-000000000020",
+            "query": "mutation MalwareAdd($input: MalwareAddInput!) { malwareAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "architecture_execution_envs": null,
+                "capabilities": null,
+                "confidence": null,
+                "created": "2025-01-01T00:00:00.000Z",
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [],
+                "files": null,
+                "filesMarkings": null,
+                "first_seen": null,
+                "implementation_languages": null,
+                "is_family": true,
+                "killChainPhases": [],
+                "lang": null,
+                "last_seen": null,
+                "malware_types": null,
+                "modified": "2025-01-01T00:00:00.000Z",
+                "name": "Variant malware 20",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--1"
+                ],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "revoked": null,
+                "samples": [],
+                "stix_id": "malware--30000000-0000-4000-8000-000000000020",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          },
+          {
+            "object_id": "malware--30000000-0000-4000-8000-000000000021",
+            "query": "mutation MalwareAdd($input: MalwareAddInput!) { malwareAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "architecture_execution_envs": null,
+                "capabilities": null,
+                "confidence": null,
+                "created": "2025-01-01T00:00:00.000Z",
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": null,
+                "description": null,
+                "embedded": null,
+                "externalReferences": [],
+                "files": null,
+                "filesMarkings": null,
+                "first_seen": null,
+                "implementation_languages": null,
+                "is_family": true,
+                "killChainPhases": [],
+                "lang": null,
+                "last_seen": null,
+                "malware_types": null,
+                "modified": "2025-01-01T00:00:00.000Z",
+                "name": "Variant malware 21",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--1"
+                ],
+                "objectMarking": [
+                  "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+                ],
+                "objectOrganization": null,
+                "revoked": null,
+                "samples": [],
+                "stix_id": "malware--30000000-0000-4000-8000-000000000021",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 2
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 3
+}

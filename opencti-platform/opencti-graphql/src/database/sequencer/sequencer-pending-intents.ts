@@ -214,7 +214,7 @@ export interface PendingOperationEnvelope {
 }
 
 export interface PendingOperation {
-  operation: { query: string; variables?: Record<string, any>; operationName?: string; object_id?: string };
+  operation: { query: string; variables?: Record<string, any>; operationName?: string; object_id?: string | null };
   envelope: PendingOperationEnvelope;
   user: AuthUser;
   missing: string[];

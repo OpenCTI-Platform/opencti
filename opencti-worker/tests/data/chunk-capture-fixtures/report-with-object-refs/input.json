@@ -1,0 +1,121 @@
+{
+  "type": "bundle",
+  "id": "bundle--1d0a1a1e-0000-4000-8000-0000000000b2",
+  "objects": [
+    {
+      "type": "identity",
+      "spec_version": "2.1",
+      "id": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "created": "2024-01-01T00:00:00.000Z",
+      "modified": "2024-01-01T00:00:00.000Z",
+      "name": "Chunk Author",
+      "identity_class": "organization"
+    },
+    {
+      "type": "ipv4-addr",
+      "spec_version": "2.1",
+      "id": "ipv4-addr--1d0a1a1e-0000-4000-8000-000000000011",
+      "value": "198.51.100.7"
+    },
+    {
+      "type": "indicator",
+      "spec_version": "2.1",
+      "id": "indicator--1d0a1a1e-0000-4000-8000-000000000012",
+      "created": "2024-01-02T00:00:00.000Z",
+      "modified": "2024-01-03T00:00:00.000Z",
+      "created_by_ref": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "chunk-label-a",
+        "chunk-label-b"
+      ],
+      "name": "Chunk Indicator",
+      "pattern": "[ipv4-addr:value = '198.51.100.7']",
+      "pattern_type": "stix",
+      "valid_from": "2024-01-02T00:00:00.000Z",
+      "external_references": [
+        {
+          "source_name": "chunk-source",
+          "url": "https://example.com/12",
+          "external_id": "CS-12"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1d0a1a1e-0000-4000-8000-000000000113",
+      "created": "2024-01-02T00:00:00.000Z",
+      "modified": "2024-01-03T00:00:00.000Z",
+      "relationship_type": "based-on",
+      "source_ref": "indicator--1d0a1a1e-0000-4000-8000-000000000012",
+      "target_ref": "ipv4-addr--1d0a1a1e-0000-4000-8000-000000000011",
+      "created_by_ref": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01"
+    },
+    {
+      "type": "malware",
+      "spec_version": "2.1",
+      "id": "malware--1d0a1a1e-0000-4000-8000-000000000002",
+      "created": "2024-01-02T00:00:00.000Z",
+      "modified": "2024-01-03T00:00:00.000Z",
+      "created_by_ref": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "chunk-label-a",
+        "chunk-label-b"
+      ],
+      "name": "Chunk Malware",
+      "is_family": true,
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "execution"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "chunk-source",
+          "url": "https://example.com/2",
+          "external_id": "CS-2"
+        }
+      ]
+    },
+    {
+      "type": "report",
+      "spec_version": "2.1",
+      "id": "report--1d0a1a1e-0000-4000-8000-000000000014",
+      "created": "2024-01-02T00:00:00.000Z",
+      "modified": "2024-01-03T00:00:00.000Z",
+      "created_by_ref": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "chunk-label-a",
+        "chunk-label-b"
+      ],
+      "name": "Chunk Report",
+      "published": "2024-01-04T00:00:00.000Z",
+      "report_types": [
+        "threat-report"
+      ],
+      "object_refs": [
+        "indicator--1d0a1a1e-0000-4000-8000-000000000012",
+        "ipv4-addr--1d0a1a1e-0000-4000-8000-000000000011",
+        "relationship--1d0a1a1e-0000-4000-8000-000000000113",
+        "malware--1d0a1a1e-0000-4000-8000-000000000002"
+      ],
+      "external_references": [
+        {
+          "source_name": "chunk-source",
+          "url": "https://example.com/14",
+          "external_id": "CS-14"
+        }
+      ]
+    }
+  ]
+}

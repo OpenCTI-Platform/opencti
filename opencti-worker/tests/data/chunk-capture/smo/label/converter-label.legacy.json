@@ -1,0 +1,46 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "object_id": "label--0008ca88-56ff-5e8e-a0a8-1734b84cdd01",
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": "#3fb64a",
+                "stix_id": "label--0008ca88-56ff-5e8e-a0a8-1734b84cdd01",
+                "update": false,
+                "value": "small",
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "object_id": "label--0008ca88-56ff-5e8e-a0a8-1734b84cdd01",
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": "#3fb64a",
+                "stix_id": "label--0008ca88-56ff-5e8e-a0a8-1734b84cdd01",
+                "update": false,
+                "value": "small",
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

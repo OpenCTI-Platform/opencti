@@ -1,0 +1,466 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "attack_motivation_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "organizational-gain",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "attack_motivation_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "dominance",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "attack_motivation_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "personal-gain",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--4",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "attack_resource_level_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "government",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--5",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "threat_actor_group_type_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "nation-state",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--6",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "threat_actor_group_role_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "director",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--7",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "threat_actor_group_sophistication_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "advanced",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--8",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "covid-19",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--9",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": "spear phishing",
+                "embedded": null,
+                "external_id": "CAPEC-163",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "capec",
+                "stix_id": null,
+                "update": false,
+                "url": null,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "threat-actor--33333333-3333-4333-8333-333333333333",
+            "query": "mutation ThreatActorGroupAdd($input: ThreatActorGroupAddInput!) { threatActorGroupAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": [
+                  "tag-1"
+                ],
+                "confidence": 90,
+                "created": "2025-03-01T00:00:00.000Z",
+                "createdBy": "identity--18fe5225-fee1-5627-ad3e-20c14435b024",
+                "customFieldValues": null,
+                "description": "threat actor group description",
+                "embedded": null,
+                "externalReferences": [
+                  "echo--9"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "first_seen": "2025-03-01T00:00:00.000Z",
+                "goals": [
+                  "espionage"
+                ],
+                "lang": null,
+                "last_seen": "2025-03-04T00:00:00.000Z",
+                "modified": "2025-03-05T00:00:00.000Z",
+                "name": "Threat Group Stix 2.0",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--8"
+                ],
+                "objectMarking": [
+                  "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+                ],
+                "objectOrganization": null,
+                "personal_motivations": [
+                  "personal-gain"
+                ],
+                "primary_motivation": "organizational-gain",
+                "resource_level": "government",
+                "revoked": false,
+                "roles": [
+                  "director"
+                ],
+                "secondary_motivations": [
+                  "dominance"
+                ],
+                "sophistication": "advanced",
+                "stix_id": "threat-actor--33333333-3333-4333-8333-333333333333",
+                "threat_actor_types": [
+                  "nation-state"
+                ],
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "attack_motivation_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "organizational-gain",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "attack_motivation_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "dominance",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "attack_motivation_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "personal-gain",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--4",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "attack_resource_level_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "government",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--5",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "threat_actor_group_type_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "nation-state",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--6",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "threat_actor_group_role_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "director",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--7",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "threat_actor_group_sophistication_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "advanced",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--8",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "covid-19",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--9",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": "spear phishing",
+                "embedded": null,
+                "external_id": "CAPEC-163",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "capec",
+                "stix_id": null,
+                "update": false,
+                "url": null,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "threat-actor--33333333-3333-4333-8333-333333333333",
+            "query": "mutation ThreatActorGroupAdd($input: ThreatActorGroupAddInput!) { threatActorGroupAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": [
+                  "tag-1"
+                ],
+                "confidence": 90,
+                "created": "2025-03-01T00:00:00.000Z",
+                "createdBy": "identity--18fe5225-fee1-5627-ad3e-20c14435b024",
+                "customFieldValues": null,
+                "description": "threat actor group description",
+                "embedded": null,
+                "externalReferences": [
+                  "echo--9"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "first_seen": "2025-03-01T00:00:00.000Z",
+                "goals": [
+                  "espionage"
+                ],
+                "lang": null,
+                "last_seen": "2025-03-04T00:00:00.000Z",
+                "modified": "2025-03-05T00:00:00.000Z",
+                "name": "Threat Group Stix 2.0",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--8"
+                ],
+                "objectMarking": [
+                  "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+                ],
+                "objectOrganization": null,
+                "personal_motivations": [
+                  "personal-gain"
+                ],
+                "primary_motivation": "organizational-gain",
+                "resource_level": "government",
+                "revoked": false,
+                "roles": [
+                  "director"
+                ],
+                "secondary_motivations": [
+                  "dominance"
+                ],
+                "sophistication": "advanced",
+                "stix_id": "threat-actor--33333333-3333-4333-8333-333333333333",
+                "threat_actor_types": [
+                  "nation-state"
+                ],
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_score": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 10
+}

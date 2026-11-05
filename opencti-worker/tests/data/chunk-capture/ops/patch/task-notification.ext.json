@@ -1,0 +1,38 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation notificationMarkRead($id: ID!, $read: Boolean!) { notificationMarkRead(id: $id, read: $read) { id } }",
+            "variables": {
+              "id": "10000000-0000-4000-8000-000000000a02",
+              "read": true
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation notificationMarkRead($id: ID!, $read: Boolean!) { notificationMarkRead(id: $id, read: $read) { id } }",
+            "variables": {
+              "id": "10000000-0000-4000-8000-000000000a02",
+              "read": true
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

@@ -1,0 +1,310 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "case_severity_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "medium",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "case_priority_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "P2",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "request_for_information_types_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "type 1",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--4",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "ryuk",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--5",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": "spear phishing",
+                "embedded": null,
+                "external_id": "CAPEC-163",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "capec",
+                "stix_id": null,
+                "update": false,
+                "url": null,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "case-rfi--cc1229b2-8ba7-50fd-b822-055b45e3aa4f",
+            "query": "mutation CaseRfiAdd($input: CaseRfiAddInput!) { caseRfiAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 100,
+                "content": "<p>some content</p>",
+                "created": "2025-06-26T17:50:38.000Z",
+                "createdBy": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+                "customFieldValues": null,
+                "description": "description",
+                "embedded": null,
+                "externalReferences": [
+                  "echo--5"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "information_types": [
+                  "type 1"
+                ],
+                "lang": null,
+                "modified": "2025-06-26T17:52:57.246Z",
+                "name": "RFI STIX 2.0",
+                "noTriggerImport": null,
+                "objectAssignee": [
+                  "0ff0750e-4d91-425d-b44c-b69269dead0b"
+                ],
+                "objectLabel": [
+                  "echo--4"
+                ],
+                "objectMarking": [
+                  "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                ],
+                "objectOrganization": null,
+                "objectParticipant": [
+                  "0ff0750e-4d91-425d-b44c-b69269dead0b"
+                ],
+                "objects": [
+                  "campaign--e388a843-1590-5af1-b5a5-50231c97cfba",
+                  "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a",
+                  "incident--8658860d-df08-5f41-bf41-106095e48085",
+                  "malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714"
+                ],
+                "priority": "P2",
+                "revoked": false,
+                "severity": "medium",
+                "stix_id": "case-rfi--cc1229b2-8ba7-50fd-b822-055b45e3aa4f",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": "38f497dc-b0bc-48e5-aff8-0e5bd5d5937a"
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "case_severity_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "medium",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "case_priority_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "P2",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--3",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "request_for_information_types_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "type 1",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--4",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "ryuk",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--5",
+            "object_id": null,
+            "query": "mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) { externalReferenceAdd(input: $input) { id standard_id entity_type parent_types created_at updated_at created modified source_name description url hash external_id } }",
+            "variables": {
+              "input": {
+                "created": null,
+                "description": "spear phishing",
+                "embedded": null,
+                "external_id": "CAPEC-163",
+                "files": null,
+                "filesMarkings": null,
+                "modified": null,
+                "noTriggerImport": null,
+                "source_name": "capec",
+                "stix_id": null,
+                "update": false,
+                "url": null,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "case-rfi--cc1229b2-8ba7-50fd-b822-055b45e3aa4f",
+            "query": "mutation CaseRfiAdd($input: CaseRfiAddInput!) { caseRfiAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 100,
+                "content": "<p>some content</p>",
+                "created": "2025-06-26T17:50:38.000Z",
+                "createdBy": "identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91",
+                "customFieldValues": null,
+                "description": "description",
+                "embedded": null,
+                "externalReferences": [
+                  "echo--5"
+                ],
+                "files": null,
+                "filesMarkings": null,
+                "information_types": [
+                  "type 1"
+                ],
+                "lang": null,
+                "modified": "2025-06-26T17:52:57.246Z",
+                "name": "RFI STIX 2.0",
+                "noTriggerImport": null,
+                "objectAssignee": [
+                  "0ff0750e-4d91-425d-b44c-b69269dead0b"
+                ],
+                "objectLabel": [
+                  "echo--4"
+                ],
+                "objectMarking": [
+                  "marking-definition--4cdff7eb-acb8-543f-8573-829eb9fe8b34"
+                ],
+                "objectOrganization": null,
+                "objectParticipant": [
+                  "0ff0750e-4d91-425d-b44c-b69269dead0b"
+                ],
+                "objects": [
+                  "campaign--e388a843-1590-5af1-b5a5-50231c97cfba",
+                  "credential--4a194ac7-4aef-57d5-9a64-1312da4e604a",
+                  "incident--8658860d-df08-5f41-bf41-106095e48085",
+                  "malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714"
+                ],
+                "priority": "P2",
+                "revoked": false,
+                "severity": "medium",
+                "stix_id": "case-rfi--cc1229b2-8ba7-50fd-b822-055b45e3aa4f",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": "38f497dc-b0bc-48e5-aff8-0e5bd5d5937a"
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 6
+}

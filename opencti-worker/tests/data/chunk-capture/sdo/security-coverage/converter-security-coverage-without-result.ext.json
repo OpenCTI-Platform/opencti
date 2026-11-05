@@ -1,0 +1,96 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "object_id": "security-coverage--20000000-0000-4000-8000-000000000903",
+            "query": "mutation SecurityCoverageAdd($input: SecurityCoverageAddInput!) { securityCoverageAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "auto_enrichment_disable": false,
+                "coverage_information": [],
+                "coverage_last_result": null,
+                "coverage_valid_from": null,
+                "coverage_valid_to": null,
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": null,
+                "description": "Scenario coverage",
+                "duration": "PT1H",
+                "embedded": null,
+                "externalReferences": [],
+                "external_uri": null,
+                "files": null,
+                "filesMarkings": null,
+                "name": "Coverage of APT28",
+                "noTriggerImport": null,
+                "objectCovered": "intrusion-set--20000000-0000-4000-8000-000000000904",
+                "objectLabel": [],
+                "objectMarking": [
+                  "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+                ],
+                "periodicity": "P1W",
+                "platforms_affinity": [
+                  "windows"
+                ],
+                "stix_id": "security-coverage--20000000-0000-4000-8000-000000000903",
+                "tenant_id": null,
+                "tenant_name": null,
+                "type_affinity": "ENDPOINT",
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "object_id": "security-coverage--20000000-0000-4000-8000-000000000903",
+            "query": "mutation SecurityCoverageAdd($input: SecurityCoverageAddInput!) { securityCoverageAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "auto_enrichment_disable": false,
+                "coverage_information": [],
+                "coverage_last_result": null,
+                "coverage_valid_from": null,
+                "coverage_valid_to": null,
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": null,
+                "description": "Scenario coverage",
+                "duration": "PT1H",
+                "embedded": null,
+                "externalReferences": [],
+                "external_uri": null,
+                "files": null,
+                "filesMarkings": null,
+                "name": "Coverage of APT28",
+                "noTriggerImport": null,
+                "objectCovered": "intrusion-set--20000000-0000-4000-8000-000000000904",
+                "objectLabel": [],
+                "objectMarking": [
+                  "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+                ],
+                "periodicity": "P1W",
+                "platforms_affinity": [
+                  "windows"
+                ],
+                "stix_id": "security-coverage--20000000-0000-4000-8000-000000000903",
+                "tenant_id": null,
+                "tenant_name": null,
+                "type_affinity": "ENDPOINT",
+                "x_opencti_stix_ids": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

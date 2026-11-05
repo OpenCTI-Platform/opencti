@@ -1,0 +1,42 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixEdit($id: ID!, $stixObjectsIds: [String]!) { stixEdit(id: $id) { merge(stixObjectsIds: $stixObjectsIds) { id standard_id entity_type } } }",
+            "variables": {
+              "id": "t",
+              "stixObjectsIds": {
+                "a": 1
+              }
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixEdit($id: ID!, $stixObjectsIds: [String]!) { stixEdit(id: $id) { merge(stixObjectsIds: $stixObjectsIds) { id standard_id entity_type } } }",
+            "variables": {
+              "id": "t",
+              "stixObjectsIds": {
+                "a": 1
+              }
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

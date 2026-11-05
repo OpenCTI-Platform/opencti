@@ -1,0 +1,36 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation RoleDelete($id: ID!) { roleEdit(id: $id) { delete } }",
+            "variables": {
+              "id": "role--20000000-0000-4000-8000-000000000a17"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation RoleDelete($id: ID!) { roleEdit(id: $id) { delete } }",
+            "variables": {
+              "id": "role--20000000-0000-4000-8000-000000000a17"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

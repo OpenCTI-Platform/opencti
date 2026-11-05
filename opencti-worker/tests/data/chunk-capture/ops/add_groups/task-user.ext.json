@@ -1,0 +1,38 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation UserEditAddMembership($id: ID!, $group_id: ID!) { userEdit(id: $id) { relationAdd(input: { relationship_type: \"member-of\", toId: $group_id }) { id from { ... on User { id, name, user_email } } to { ... on Group { id, name, description } } } } }",
+            "variables": {
+              "group_id": "10000000-0000-4000-8000-000000000a09",
+              "id": "user--20000000-0000-4000-8000-000000000a01"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation UserEditAddMembership($id: ID!, $group_id: ID!) { userEdit(id: $id) { relationAdd(input: { relationship_type: \"member-of\", toId: $group_id }) { id from { ... on User { id, name, user_email } } to { ... on Group { id, name, description } } } } }",
+            "variables": {
+              "group_id": "10000000-0000-4000-8000-000000000a09",
+              "id": "user--20000000-0000-4000-8000-000000000a01"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

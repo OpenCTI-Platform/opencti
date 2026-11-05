@@ -1,0 +1,210 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "platforms_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "android",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "stix 2.0",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "x-mitre-data-source--d9ad9c14-1310-53f0-85ad-3654c552cc2d",
+            "query": "mutation DataSourceAdd($input: DataSourceAddInput!) { dataSourceAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "collection_layers": [
+                  "OSINT"
+                ],
+                "confidence": 100,
+                "created": "2026-03-18T10:06:58.468Z",
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": [
+                  {
+                    "field_name": "x_opencti_id",
+                    "value": "968d2b6f-85fc-4e5e-8546-4ac4fff10b7e"
+                  },
+                  {
+                    "field_name": "x_opencti_type",
+                    "value": "Data-Source"
+                  },
+                  {
+                    "field_name": "x_mitre_platforms",
+                    "value": [
+                      "android"
+                    ]
+                  },
+                  {
+                    "field_name": "x_mitre_collection_layers",
+                    "value": [
+                      "OSINT"
+                    ]
+                  }
+                ],
+                "description": "description",
+                "embedded": null,
+                "externalReferences": [],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2026-03-18T13:14:37.564Z",
+                "name": "Data Source",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--2"
+                ],
+                "objectMarking": [
+                  "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+                ],
+                "objectOrganization": null,
+                "revoked": false,
+                "stix_id": "x-mitre-data-source--d9ad9c14-1310-53f0-85ad-3654c552cc2d",
+                "update": false,
+                "upsertOperations": null,
+                "x_mitre_platforms": [
+                  "android"
+                ],
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation VocabularyAdd($input: VocabularyAddInput!) { vocabularyAdd(input: $input) { id name category { key fields { key } } } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "category": "platforms_ov",
+                "created": null,
+                "description": null,
+                "modified": null,
+                "name": "android",
+                "stix_id": null,
+                "update": false,
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "echo_id": "echo--2",
+            "object_id": null,
+            "query": "mutation LabelAdd($input: LabelAddInput!) { labelAdd(input: $input) { id value color created_at updated_at standard_id } }",
+            "variables": {
+              "input": {
+                "color": null,
+                "stix_id": null,
+                "update": false,
+                "value": "stix 2.0",
+                "x_opencti_stix_ids": null
+              }
+            }
+          },
+          {
+            "object_id": "x-mitre-data-source--d9ad9c14-1310-53f0-85ad-3654c552cc2d",
+            "query": "mutation DataSourceAdd($input: DataSourceAddInput!) { dataSourceAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "aliases": null,
+                "collection_layers": [
+                  "OSINT"
+                ],
+                "confidence": 100,
+                "created": "2026-03-18T10:06:58.468Z",
+                "createdBy": "identity--c801c762-92e8-58b6-9bcb-6fa805f902cb",
+                "customFieldValues": [
+                  {
+                    "field_name": "x_opencti_id",
+                    "value": "968d2b6f-85fc-4e5e-8546-4ac4fff10b7e"
+                  },
+                  {
+                    "field_name": "x_opencti_type",
+                    "value": "Data-Source"
+                  },
+                  {
+                    "field_name": "x_mitre_platforms",
+                    "value": [
+                      "android"
+                    ]
+                  },
+                  {
+                    "field_name": "x_mitre_collection_layers",
+                    "value": [
+                      "OSINT"
+                    ]
+                  }
+                ],
+                "description": "description",
+                "embedded": null,
+                "externalReferences": [],
+                "files": null,
+                "filesMarkings": null,
+                "lang": null,
+                "modified": "2026-03-18T13:14:37.564Z",
+                "name": "Data Source",
+                "noTriggerImport": null,
+                "objectLabel": [
+                  "echo--2"
+                ],
+                "objectMarking": [
+                  "marking-definition--89484dde-e3d2-547f-a6c6-d14824429eb1"
+                ],
+                "objectOrganization": null,
+                "revoked": false,
+                "stix_id": "x-mitre-data-source--d9ad9c14-1310-53f0-85ad-3654c552cc2d",
+                "update": false,
+                "upsertOperations": null,
+                "x_mitre_platforms": [
+                  "android"
+                ],
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 3
+}

@@ -1,0 +1,36 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation notificationDelete($id: ID!) { notificationDelete(id: $id) }",
+            "variables": {
+              "id": "notification--20000000-0000-4000-8000-000000000a02"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation notificationDelete($id: ID!) { notificationDelete(id: $id) }",
+            "variables": {
+              "id": "notification--20000000-0000-4000-8000-000000000a02"
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

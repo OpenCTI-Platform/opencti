@@ -1,0 +1,86 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "object_id": "relationship--21c1841a-7b2d-40a5-9398-5fd979384467",
+            "query": "mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) { stixCoreRelationshipAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 75,
+                "coverage_information": [],
+                "created": "2023-11-03T14:15:14.368Z",
+                "customFieldValues": null,
+                "description": null,
+                "externalReferences": [],
+                "external_uri": null,
+                "fromId": "threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd",
+                "killChainPhases": [],
+                "lang": "en",
+                "modified": "2023-11-03T14:15:14.368Z",
+                "objectLabel": [],
+                "objectMarking": null,
+                "objectOrganization": null,
+                "relationship_type": "related-to",
+                "revoked": false,
+                "start_time": null,
+                "stix_id": "relationship--21c1841a-7b2d-40a5-9398-5fd979384467",
+                "stop_time": null,
+                "toId": "grouping--e09ce86e-0bd0-5a09-a5e9-4ebd76b79bd4",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "object_id": "relationship--21c1841a-7b2d-40a5-9398-5fd979384467",
+            "query": "mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) { stixCoreRelationshipAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 75,
+                "coverage_information": [],
+                "created": "2023-11-03T14:15:14.368Z",
+                "customFieldValues": null,
+                "description": null,
+                "externalReferences": [],
+                "external_uri": null,
+                "fromId": "threat-actor--fd6b0e6f-96e0-568d-ba24-8a140d0428cd",
+                "killChainPhases": [],
+                "lang": "en",
+                "modified": "2023-11-03T14:15:14.368Z",
+                "objectLabel": [],
+                "objectMarking": null,
+                "objectOrganization": null,
+                "relationship_type": "related-to",
+                "revoked": false,
+                "start_time": null,
+                "stix_id": "relationship--21c1841a-7b2d-40a5-9398-5fd979384467",
+                "stop_time": null,
+                "toId": "grouping--e09ce86e-0bd0-5a09-a5e9-4ebd76b79bd4",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 1
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

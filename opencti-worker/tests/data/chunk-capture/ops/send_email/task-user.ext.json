@@ -1,0 +1,42 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation SendUserMail($input: SendUserMailInput!) { sendUserMail(input: $input) }",
+            "variables": {
+              "input": {
+                "email_template_id": "10000000-0000-4000-8000-000000000f01",
+                "target_user_id": "user--20000000-0000-4000-8000-000000000a01"
+              }
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation SendUserMail($input: SendUserMailInput!) { sendUserMail(input: $input) }",
+            "variables": {
+              "input": {
+                "email_template_id": "10000000-0000-4000-8000-000000000f01",
+                "target_user_id": "user--20000000-0000-4000-8000-000000000a01"
+              }
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

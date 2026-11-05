@@ -1,0 +1,100 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) { stixCoreRelationshipAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 80,
+                "coverage_information": [
+                  {
+                    "coverage_name": "detection",
+                    "coverage_score": 60
+                  }
+                ],
+                "created": null,
+                "createdBy": null,
+                "customFieldValues": null,
+                "description": "Covered by the scenario",
+                "externalReferences": null,
+                "external_uri": null,
+                "fromId": "security-coverage-result--20000000-0000-4000-8000-000000000905",
+                "killChainPhases": null,
+                "lang": null,
+                "modified": null,
+                "objectLabel": null,
+                "objectMarking": null,
+                "objectOrganization": null,
+                "relationship_type": "has-covered",
+                "revoked": null,
+                "start_time": "2025-01-01T00:00:00.000Z",
+                "stix_id": null,
+                "stop_time": null,
+                "toId": "security-coverage--20000000-0000-4000-8000-000000000903",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) { stixCoreRelationshipAdd(input: $input) { id standard_id entity_type parent_types } }",
+            "variables": {
+              "input": {
+                "confidence": 80,
+                "coverage_information": [
+                  {
+                    "coverage_name": "detection",
+                    "coverage_score": 60
+                  }
+                ],
+                "created": null,
+                "createdBy": null,
+                "customFieldValues": null,
+                "description": "Covered by the scenario",
+                "externalReferences": null,
+                "external_uri": null,
+                "fromId": "security-coverage-result--20000000-0000-4000-8000-000000000905",
+                "killChainPhases": null,
+                "lang": null,
+                "modified": null,
+                "objectLabel": null,
+                "objectMarking": null,
+                "objectOrganization": null,
+                "relationship_type": "has-covered",
+                "revoked": null,
+                "start_time": "2025-01-01T00:00:00.000Z",
+                "stix_id": null,
+                "stop_time": null,
+                "toId": "security-coverage--20000000-0000-4000-8000-000000000903",
+                "update": false,
+                "upsertOperations": null,
+                "x_opencti_modified_at": null,
+                "x_opencti_stix_ids": null,
+                "x_opencti_workflow_id": null
+              }
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

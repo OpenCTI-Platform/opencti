@@ -1,0 +1,44 @@
+{
+  "chunks": {
+    "24": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixSightingRelationshipEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) { stixSightingRelationshipEdit(id: $id) { restrictionOrganizationDelete(organizationId: $organizationId, directContainerSharing: $directContainerSharing) { id } } }",
+            "variables": {
+              "directContainerSharing": false,
+              "id": "sighting--22799cbd-e9b5-5b7c-8733-5c2a5cc49ebe",
+              "organizationId": [
+                "10000000-0000-4000-8000-000000000b01"
+              ]
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ],
+    "3": [
+      {
+        "operations": [
+          {
+            "echo_id": "echo--1",
+            "object_id": null,
+            "query": "mutation StixSightingRelationshipEdit($id: ID!, $organizationId: [ID!]!, $directContainerSharing: Boolean) { stixSightingRelationshipEdit(id: $id) { restrictionOrganizationDelete(organizationId: $organizationId, directContainerSharing: $directContainerSharing) { id } } }",
+            "variables": {
+              "directContainerSharing": false,
+              "id": "sighting--22799cbd-e9b5-5b7c-8733-5c2a5cc49ebe",
+              "organizationId": [
+                "10000000-0000-4000-8000-000000000b01"
+              ]
+            }
+          }
+        ],
+        "work_objects": 0
+      }
+    ]
+  },
+  "incompatible": [],
+  "operations": 1
+}

@@ -1,0 +1,170 @@
+{
+  "type": "bundle",
+  "id": "bundle--1d0a1a1e-0000-4000-8000-0000000000b1",
+  "objects": [
+    {
+      "type": "identity",
+      "spec_version": "2.1",
+      "id": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "created": "2024-01-01T00:00:00.000Z",
+      "modified": "2024-01-01T00:00:00.000Z",
+      "name": "Chunk Author",
+      "identity_class": "organization"
+    },
+    {
+      "type": "intrusion-set",
+      "spec_version": "2.1",
+      "id": "intrusion-set--1d0a1a1e-0000-4000-8000-000000000001",
+      "created": "2024-01-02T00:00:00.000Z",
+      "modified": "2024-01-03T00:00:00.000Z",
+      "created_by_ref": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "chunk-label-a",
+        "chunk-label-b"
+      ],
+      "name": "Chunk Set",
+      "external_references": [
+        {
+          "source_name": "chunk-source",
+          "url": "https://example.com/1",
+          "external_id": "CS-1"
+        }
+      ]
+    },
+    {
+      "type": "malware",
+      "spec_version": "2.1",
+      "id": "malware--1d0a1a1e-0000-4000-8000-000000000002",
+      "created": "2024-01-02T00:00:00.000Z",
+      "modified": "2024-01-03T00:00:00.000Z",
+      "created_by_ref": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "chunk-label-a",
+        "chunk-label-b"
+      ],
+      "name": "Chunk Malware",
+      "is_family": true,
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "execution"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "chunk-source",
+          "url": "https://example.com/2",
+          "external_id": "CS-2"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--1d0a1a1e-0000-4000-8000-000000000003",
+      "created": "2024-01-02T00:00:00.000Z",
+      "modified": "2024-01-03T00:00:00.000Z",
+      "created_by_ref": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "chunk-label-a",
+        "chunk-label-b"
+      ],
+      "name": "Chunk Pattern",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "execution"
+        }
+      ],
+      "external_references": [
+        {
+          "source_name": "chunk-source",
+          "url": "https://example.com/3",
+          "external_id": "CS-3"
+        }
+      ]
+    },
+    {
+      "type": "tool",
+      "spec_version": "2.1",
+      "id": "tool--1d0a1a1e-0000-4000-8000-000000000004",
+      "created": "2024-01-02T00:00:00.000Z",
+      "modified": "2024-01-03T00:00:00.000Z",
+      "created_by_ref": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "chunk-label-a",
+        "chunk-label-b"
+      ],
+      "name": "Chunk Tool",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "execution"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1d0a1a1e-0000-4000-8000-000000000101",
+      "created": "2024-01-02T00:00:00.000Z",
+      "modified": "2024-01-03T00:00:00.000Z",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--1d0a1a1e-0000-4000-8000-000000000001",
+      "target_ref": "malware--1d0a1a1e-0000-4000-8000-000000000002",
+      "created_by_ref": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "chunk-label-a"
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1d0a1a1e-0000-4000-8000-000000000102",
+      "created": "2024-01-02T00:00:00.000Z",
+      "modified": "2024-01-03T00:00:00.000Z",
+      "relationship_type": "uses",
+      "source_ref": "malware--1d0a1a1e-0000-4000-8000-000000000002",
+      "target_ref": "attack-pattern--1d0a1a1e-0000-4000-8000-000000000003",
+      "created_by_ref": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "chunk-label-a"
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1d0a1a1e-0000-4000-8000-000000000103",
+      "created": "2024-01-02T00:00:00.000Z",
+      "modified": "2024-01-03T00:00:00.000Z",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--1d0a1a1e-0000-4000-8000-000000000001",
+      "target_ref": "tool--1d0a1a1e-0000-4000-8000-000000000004",
+      "created_by_ref": "identity--8a3e6a2c-2f5d-4c55-9a8e-1b1c0f3b9d01",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "chunk-label-a"
+      ]
+    }
+  ]
+}
