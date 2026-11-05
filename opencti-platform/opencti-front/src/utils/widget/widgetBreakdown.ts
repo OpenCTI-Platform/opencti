@@ -40,7 +40,7 @@ export const AUDITS_BREAKDOWN_FIELDS: { key: string; label: string }[] = [
   { key: 'context_data.entity_type', label: 'Type of related entity' },
 ];
 
-type BreakdownField = { key: string; label: string };
+export type BreakdownField = { key: string; label: string };
 interface BreakdownPerspective {
   // Filter key restricting the types of the dataset
   typeFilterKey: string;
@@ -180,13 +180,14 @@ export const getWidgetBreakdownFieldOptions = (
 };
 
 /**
- * Whether the widget breakdown field can be used on its dataset, once its saved filters and variables
- * are resolved: saved or imported widgets can carry a field the API refuses for the entity types of
- * their filters, or for their perspective.
+ * Whether the widget breakdown field can be used on its dataset, once its saved filters are resolved:
+ * saved or imported widgets can carry a field the API refuses for the entity types of their filters,
+ * or for their perspective. Its type variables are read as the types they allow, given the dashboard `variables`.
  */
 export const isBreakdownFieldSupported = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   widget: Pick<Widget, 'perspective' | 'dataSelection' | 'parameters'>,
+  variables?: DashboardVariable[],
 ) => {
   const breakdownBy = widget.parameters?.breakdownBy;
   if (!breakdownBy || isDraftWorkspaceDataset(widget.dataSelection)) {
@@ -197,7 +198,7 @@ export const isBreakdownFieldSupported = (
   if (getBreakdownPerspective(widget.perspective ?? 'entities')?.typeField.key === breakdownBy) {
     return true;
   }
-  return getWidgetBreakdownFieldOptions(filterKeysSchema, widget).some(({ key }) => key === breakdownBy);
+  return getWidgetBreakdownFieldOptions(filterKeysSchema, widget, variables).some(({ key }) => key === breakdownBy);
 };
 
 export const getWidgetBreakdownLimit = (parameters?: WidgetParameters | null) => {
@@ -286,11 +287,102 @@ export const clearBreakdown = <T extends ConfiguredWidget>(widget: T): T => ({
 });
 
 /**
- * Drops the breakdown once the widget can no longer be broken down (another visualization,
- * perspective or several datasets), instead of keeping a setting that would be silently ignored.
+ * Whether the saved filter of the dataset is read: until then, or when it cannot be, the types of the dataset
+ * are unknown. A dataset without saved filter is resolved.
  */
-export const applyBreakdownCompatibility = <T extends BreakdownWidget & ConfiguredWidget>(widget: T, host: WidgetHost): T => {
-  if (!widget.parameters?.breakdownBy || canWidgetBreakDown(widget, host)) {
+export type BreakdownResolution = 'resolved' | 'loading' | 'failed';
+
+/**
+ * The breakdown of a widget in the editor, derived once for the whole editor.
+ */
+export interface WidgetBreakdownState {
+  // Whether the controls are shown, and why they are disabled
+  editorState: BreakdownEditorState;
+  // Fields offered for the dataset its query reads, ordered as their labels are shown
+  fieldOptions: BreakdownField[];
+  resolution: BreakdownResolution;
+  // Field the widget is broken down by, kept on submit: none when the widget, or its dataset, cannot be broken down by it
+  field: string | null;
+  // The field, when it is not among the options: the type of a dataset of a single type, which the API accepts,
+  // or any field while the types of the dataset are unknown
+  unlistedField: BreakdownField | null;
+}
+
+export const NO_BREAKDOWN_STATE: WidgetBreakdownState = {
+  editorState: 'hidden',
+  fieldOptions: [],
+  resolution: 'resolved',
+  field: null,
+  unlistedField: null,
+};
+
+// Label of a field the options do not hold: the one of the perspective, or of the schema, the key itself otherwise
+const getBreakdownFieldLabel = (
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
+  perspective: WidgetPerspective,
+  key: string,
+) => {
+  const breakdownPerspective = getBreakdownPerspective(perspective);
+  const perspectiveFields = breakdownPerspective ? [breakdownPerspective.typeField, ...breakdownPerspective.fields] : AUDITS_BREAKDOWN_FIELDS;
+  const perspectiveField = perspectiveFields.find((field) => field.key === key);
+  if (perspectiveField) {
+    return perspectiveField.label;
+  }
+  const definitions = [...filterKeysSchema.values()].find((typeDefinitions) => typeDefinitions.has(key));
+  return definitions?.get(key)?.label ?? key;
+};
+
+/**
+ * Breakdown of the edited widget, on the dataset its query reads: the content of its saved filter once read
+ * (`savedFilter`), and the types its type variables allow, given the dashboard `variables`.
+ * Its field is kept while the saved filter is read, or when it cannot be: the types of the dataset are unknown.
+ * Once they are known, a field the dataset cannot be broken down by is not kept. The labels are `translate`d to order the options.
+ */
+export const getWidgetBreakdownState = ({
+  filterKeysSchema,
+  widget,
+  host,
+  savedFilter,
+  variables,
+  translate,
+}: {
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
+  widget: BreakdownWidget & ConfiguredWidget;
+  host: WidgetHost;
+  savedFilter: { resolution: BreakdownResolution; filters?: FilterGroup | null };
+  variables?: DashboardVariable[];
+  translate?: (label: string) => string;
+}): WidgetBreakdownState => {
+  const [firstSelection, ...otherSelections] = widget.dataSelection;
+  const resolvedWidget = firstSelection && savedFilter.filters
+    ? { ...widget, dataSelection: [{ ...firstSelection, filters: savedFilter.filters }, ...otherSelections] }
+    : widget;
+  // Read on the content of the saved filter: it can select draft workspaces
+  const editorState = getBreakdownEditorState(resolvedWidget, host);
+  if (editorState === 'hidden') {
+    return { ...NO_BREAKDOWN_STATE, resolution: savedFilter.resolution };
+  }
+  const fieldOptions = getWidgetBreakdownFieldOptions(filterKeysSchema, resolvedWidget, variables, translate);
+  const breakdownBy = widget.parameters?.breakdownBy;
+  const storedField = isBreakdownField(breakdownBy) ? breakdownBy : null;
+  const isFieldKept = editorState === 'editable'
+    && !!storedField
+    && (savedFilter.resolution !== 'resolved' || isBreakdownFieldSupported(filterKeysSchema, resolvedWidget, variables));
+  const field = isFieldKept ? storedField : null;
+  const unlistedField = field && !fieldOptions.some(({ key }) => key === field)
+    ? { key: field, label: getBreakdownFieldLabel(filterKeysSchema, widget.perspective ?? 'entities', field) }
+    : null;
+  return { editorState, fieldOptions, resolution: savedFilter.resolution, field, unlistedField };
+};
+
+/**
+ * The widget as submitted: without breakdown when the editor does not keep its field (WidgetBreakdownState),
+ * as the widget, or its dataset, can no longer be broken down by it, instead of keeping a setting that
+ * would be silently ignored. Applied once, on submit: until then the field stays, so that a widget turned
+ * into another visualization and back, or whose filters are changed and changed back, keeps its breakdown.
+ */
+export const applyBreakdownCompatibility = <T extends ConfiguredWidget>(widget: T, breakdown: Pick<WidgetBreakdownState, 'field'>): T => {
+  if (!widget.parameters?.breakdownBy || breakdown.field) {
     return widget;
   }
   return clearBreakdown(widget);

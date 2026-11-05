@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Widget, WidgetDataSelection } from './widget';
+import type { Widget, WidgetHost } from './widget';
 import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
@@ -18,6 +18,7 @@ import {
   getWidgetBreakdownLimit,
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
+  getWidgetBreakdownState,
   isBreakdownFieldSupported,
   resolveBreakdownTypeVariables,
 } from './widgetBreakdown';
@@ -475,65 +476,167 @@ describe('audits breakdown', () => {
   });
 });
 
+describe('getWidgetBreakdownState', () => {
+  const definition = (filterKey: string, type: string, label: string, subEntityTypes: string[]): FilterDefinition => ({
+    filterKey, type, label, multiple: true, subEntityTypes, elementsForFilterValuesSearch: [],
+  });
+  const schema = new Map<string, Map<string, FilterDefinition>>([
+    ['Report', new Map([
+      ['createdBy', definition('createdBy', 'id', 'Author', ['Report'])],
+      ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
+    ])],
+    ['Malware', new Map([
+      ['createdBy', definition('createdBy', 'id', 'Author', ['Malware'])],
+      ['malware_types', definition('malware_types', 'vocabulary', 'Malware types', ['Malware'])],
+    ])],
+    ['Stix-Core-Object', new Map([
+      ['createdBy', definition('createdBy', 'id', 'Author', ['Stix-Core-Object', 'Report', 'Malware'])],
+      ['report_types', definition('report_types', 'vocabulary', 'Report types', ['Report'])],
+    ])],
+    ['DraftWorkspace', new Map([['creator_id', definition('creator_id', 'id', 'Creators', ['DraftWorkspace'])]])],
+    ['stix-relationship', new Map([['objectMarking', definition('objectMarking', 'id', 'Marking', ['stix-relationship', 'targets'])]])],
+    ['targets', new Map([['objectMarking', definition('objectMarking', 'id', 'Marking', ['targets'])]])],
+  ]);
+  const ofTypes = (types: string[], key = 'entity_type') => ({
+    mode: 'and', filters: [{ key, values: types, operator: 'eq', mode: 'or' }], filterGroups: [],
+  } as FilterGroup);
+  // A dataset read from a saved filter holds no filters of its own
+  const savedFilterWidget = (breakdownBy: string) => ({
+    ...makeWidget({ parameters: { breakdownBy } }),
+    dataSelection: [{ filters_id: 'saved-filter', filters: undefined }],
+  } as unknown as Widget);
+  const resolved = { resolution: 'resolved' } as const;
+  const stateOf = (
+    widget: Widget,
+    savedFilter: Parameters<typeof getWidgetBreakdownState>[0]['savedFilter'] = resolved,
+    host: WidgetHost = workspace,
+    variables?: DashboardVariable[],
+  ) => getWidgetBreakdownState({ filterKeysSchema: schema, widget, host, savedFilter, variables });
+  const keys = (state: { fieldOptions: { key: string }[] }) => state.fieldOptions.map(({ key }) => key);
+
+  it('offers the fields of the dataset, and keeps a field it has', () => {
+    const state = stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }));
+    expect(state).toMatchObject({ editorState: 'editable', resolution: 'resolved', field: 'report_types', unlistedField: null });
+    expect(keys(state)).toEqual(['createdBy', 'report_types']);
+    expect(stateOf(makeWidget({ parameters: {} })).field).toBeNull();
+  });
+
+  it('does not keep a field the dataset types do not have, to drop it on submit', () => {
+    const state = stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }, ['Malware']));
+    expect(state).toMatchObject({ editorState: 'editable', field: null, unlistedField: null });
+    expect(keys(state)).toEqual(['createdBy', 'malware_types']);
+  });
+
+  it('keeps and lists the type of a dataset of a single type, not offered but accepted by the API', () => {
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }))).toMatchObject({
+      field: 'entity_type',
+      unlistedField: { key: 'entity_type', label: 'Entity type' },
+    });
+    // A type variable allowing a single type
+    const VARIABLE_ID = '6f1c3f0e-2b7a-4c1e-9d3a-0a1b2c3d4e5f';
+    const variable: DashboardVariable = { id: VARIABLE_ID, name: 'type', type: 'entityType', defaultValue: null, restriction: { mode: 'selection', values: ['Report'] } };
+    const byVariable = makeWidget({ parameters: { breakdownBy: 'entity_type' } }, [`$var:${VARIABLE_ID}`]);
+    expect(stateOf(byVariable, resolved, workspace, [variable])).toMatchObject({ field: 'entity_type', unlistedField: { key: 'entity_type' } });
+    // ...whose fields are kept, which a variable that may hold any type does not have
+    const reportTypesByVariable = { ...byVariable, parameters: { breakdownBy: 'report_types' } };
+    expect(stateOf(reportTypesByVariable, resolved, workspace, [variable]).field).toEqual('report_types');
+    expect(stateOf(reportTypesByVariable, resolved, workspace, [{ ...variable, restriction: { mode: 'none' } }]).field).toBeNull();
+    // A single relationship type
+    const targets = makeRelationshipsWidget({ parameters: { breakdownBy: 'relationship_type' } });
+    expect(stateOf(targets)).toMatchObject({ field: 'relationship_type', unlistedField: { key: 'relationship_type', label: 'Relationship type' } });
+    // Offered with several types: listed among the options
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }, ['Report', 'Malware']))).toMatchObject({ field: 'entity_type', unlistedField: null });
+  });
+
+  it('keeps the field while the saved filter is read, or when it cannot be, and lists it apart when not offered', () => {
+    const loading = stateOf(savedFilterWidget('report_types'), { resolution: 'loading' });
+    expect(loading).toMatchObject({
+      editorState: 'editable',
+      resolution: 'loading',
+      field: 'report_types',
+      unlistedField: { key: 'report_types', label: 'Report types' },
+    });
+    // The types unknown, the fields of any dataset are offered
+    expect(keys(loading)).toEqual(['createdBy', 'entity_type']);
+    expect(stateOf(savedFilterWidget('report_types'), { resolution: 'failed', filters: null })).toMatchObject({
+      resolution: 'failed',
+      field: 'report_types',
+      unlistedField: { key: 'report_types' },
+    });
+    // Offered whatever the types: not listed apart
+    expect(stateOf(savedFilterWidget('createdBy'), { resolution: 'loading' })).toMatchObject({ field: 'createdBy', unlistedField: null });
+    // Unknown to the schema, labelled with its key
+    expect(stateOf(savedFilterWidget('x_unknown'), { resolution: 'loading' }).unlistedField).toEqual({ key: 'x_unknown', label: 'x_unknown' });
+  });
+
+  it('reads the fields of the content of the saved filter once read', () => {
+    const reports = stateOf(savedFilterWidget('report_types'), { resolution: 'resolved', filters: ofTypes(['Report']) });
+    expect(reports).toMatchObject({ field: 'report_types', unlistedField: null });
+    expect(keys(reports)).toEqual(['createdBy', 'report_types']);
+    expect(stateOf(savedFilterWidget('report_types'), { resolution: 'resolved', filters: ofTypes(['Malware']) }).field).toBeNull();
+  });
+
+  it('hides the breakdown of draft workspaces, read on the content of the saved filter', () => {
+    const drafts = { resolution: 'resolved', filters: ofTypes(['DraftWorkspace']) } as const;
+    expect(stateOf(savedFilterWidget('creator_id'), drafts)).toEqual({
+      editorState: 'hidden', fieldOptions: [], resolution: 'resolved', field: null, unlistedField: null,
+    });
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'creator_id' } }, ['DraftWorkspace'])).editorState).toEqual('hidden');
+    // Unknown until the saved filter is read
+    expect(stateOf(savedFilterWidget('creator_id'), { resolution: 'loading' }).editorState).toEqual('editable');
+  });
+
+  it('shows the controls of several datasets or distinct values, without keeping the field', () => {
+    const widget = makeWidget({ parameters: { breakdownBy: 'report_types' } });
+    const severalDatasets = stateOf({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] });
+    expect(severalDatasets).toMatchObject({ editorState: 'several-datasets', field: null, unlistedField: null });
+    expect(keys(severalDatasets)).toEqual(['createdBy', 'report_types']);
+    const distinct = {
+      ...makeWidget({ type: 'line', perspective: 'audits', parameters: { breakdownBy: 'event_type' } }),
+      dataSelection: [{ filters: ofTypes([]), unique: true }],
+    } as unknown as Widget;
+    expect(stateOf(distinct)).toMatchObject({ editorState: 'distinct-values', field: null });
+  });
+
+  it('keeps the breakdown of every time series visualization of the dashboards and custom views', () => {
+    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
+      expect(stateOf(makeWidget({ type, parameters: { breakdownBy: 'report_types' } })).field).toEqual('report_types');
+      expect(stateOf(makeRelationshipsWidget({ type, parameters: { breakdownBy: 'toTypes' } })).field).toEqual('toTypes');
+    });
+    const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'report_types' } }), resolved, customView).field).toEqual('report_types');
+  });
+
+  it('hides the breakdown of the widgets that cannot be broken down', () => {
+    const hidden = (widget: Widget, host: WidgetHost = workspace) => stateOf(widget, resolved, host).editorState;
+    expect(hidden(makeWidget({ type: 'donut' }))).toEqual('hidden');
+    expect(hidden(makeWidget({ perspective: null }))).toEqual('hidden');
+    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+    expect(hidden(makeWidget(), fintelTemplate)).toEqual('hidden');
+    // A relationships widget left with an entities dataset cannot be broken down as relationships
+    const relationships = makeRelationshipsWidget();
+    expect(hidden({ ...relationships, dataSelection: [{ ...relationships.dataSelection[0], perspective: 'entities' }] })).toEqual('hidden');
+    expect(stateOf(makeWidget({ type: 'donut' })).field).toBeNull();
+  });
+});
+
 describe('applyBreakdownCompatibility', () => {
-  const selection = { filters: { mode: 'and', filters: [], filterGroups: [] } } as unknown as WidgetDataSelection;
-  const brokenDownLine = {
+  const widget = {
     type: 'line',
-    perspective: 'entities' as const,
-    dataSelection: [selection],
-    parameters: { breakdownBy: 'entity_type' as const, breakdownLimit: 20, breakdownOrder: 'asc' as const, breakdownOther: true },
+    parameters: { title: 'Reports', breakdownBy: 'report_types', breakdownLimit: 20, breakdownOrder: 'asc' as const, breakdownOther: true },
   };
 
-  it('keeps the breakdown of every entities time series visualization', () => {
-    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
-      const { parameters } = applyBreakdownCompatibility({ ...brokenDownLine, type }, workspace);
-      expect(parameters).toEqual(brokenDownLine.parameters);
+  it('drops the breakdown and its settings when the editor does not keep its field', () => {
+    expect(applyBreakdownCompatibility(widget, { field: null }).parameters).toEqual({
+      title: 'Reports', breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null,
     });
   });
 
-  it('drops the breakdown and its settings for a non time series visualization', () => {
-    const widget = applyBreakdownCompatibility({ ...brokenDownLine, type: 'donut' }, workspace);
-    expect(widget.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
-  });
-
-  it('keeps the breakdown of every relationships time series visualization', () => {
-    const relationships = { ...brokenDownLine, perspective: 'relationships' as const, parameters: { ...brokenDownLine.parameters, breakdownBy: 'toTypes' } };
-    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
-      expect(applyBreakdownCompatibility({ ...relationships, type }, workspace).parameters).toEqual(relationships.parameters);
-    });
-    // A relationships widget left with an entities dataset cannot be broken down as relationships
-    const entitiesDataset = { ...selection, perspective: 'entities' as const };
-    expect(applyBreakdownCompatibility({ ...relationships, dataSelection: [entitiesDataset] }, workspace).parameters.breakdownBy).toBeNull();
-  });
-
-  it('drops the breakdown without perspective, with several datasets or another host', () => {
-    expect(applyBreakdownCompatibility({ ...brokenDownLine, perspective: null }, workspace).parameters.breakdownBy).toBeNull();
-    expect(applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace).parameters.breakdownBy).toBeNull();
-    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
-    expect(applyBreakdownCompatibility(brokenDownLine, fintelTemplate).parameters.breakdownBy).toBeNull();
-    // A custom view keeps it: editing an imported broken down widget does not lose its breakdown
-    const customView = { kind: 'custom-view' as const, customViewTargetEntityType: 'Report' };
-    expect(applyBreakdownCompatibility(brokenDownLine, customView).parameters).toEqual(brokenDownLine.parameters);
-    const severalDatasets = applyBreakdownCompatibility({ ...brokenDownLine, dataSelection: [selection, selection] }, workspace);
-    expect(severalDatasets.parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
-  });
-
-  it('keeps the breakdown of every audits time series visualization', () => {
-    ['line', 'area', 'vertical-bar', 'heatmap'].forEach((type) => {
-      const { parameters } = applyBreakdownCompatibility({ ...brokenDownLine, perspective: 'audits' as const, type }, workspace);
-      expect(parameters).toEqual(brokenDownLine.parameters);
-    });
-  });
-
-  it('drops the breakdown of audits lines and areas counting distinct values', () => {
-    const distinct = { ...brokenDownLine, perspective: 'audits' as const, dataSelection: [{ ...selection, unique: true }] };
-    expect(applyBreakdownCompatibility(distinct, workspace).parameters).toEqual({ breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null });
-    expect(applyBreakdownCompatibility({ ...distinct, type: 'vertical-bar' }, workspace).parameters).toEqual(brokenDownLine.parameters);
-  });
-
-  it('returns the widget untouched without breakdown', () => {
-    const widget = { ...brokenDownLine, type: 'donut', parameters: { title: 'Donut' } };
-    expect(applyBreakdownCompatibility(widget, workspace)).toBe(widget);
+  it('returns the widget untouched when its field is kept, or without breakdown', () => {
+    expect(applyBreakdownCompatibility(widget, { field: 'report_types' })).toBe(widget);
+    // No breakdown settings written on a widget that never had one
+    const donut = { type: 'donut', parameters: { title: 'Donut' } };
+    expect(applyBreakdownCompatibility(donut, { field: null })).toBe(donut);
   });
 });
 

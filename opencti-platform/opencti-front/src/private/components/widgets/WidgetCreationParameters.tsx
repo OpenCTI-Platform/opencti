@@ -32,7 +32,7 @@ import {
   getDefaultWidgetColumns,
   getWidgetColumns,
 } from '@components/widgets/WidgetListsDefaultColumns';
-import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
+import { useWidgetBreakdownState, useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
 import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
 import { WidgetAttributesInputContainerInstanceQuery$data } from '@components/widgets/__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
@@ -57,9 +57,6 @@ import useCustomFieldWidgetColumns from '@components/widgets/useCustomFieldWidge
 import { getCustomFieldLabelFromFilterKeysSchema, isCustomFieldAttribute } from 'src/utils/customFields';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import WidgetBreakdownSelection from './WidgetBreakdownSelection';
-import { canWidgetBreakDown, isBreakdownField } from 'src/utils/widget/widgetBreakdown';
-import useHelper from 'src/utils/hooks/useHelper';
-import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from 'src/components/dashboard/timeSeriesBreakdownFeatureFlag';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -69,7 +66,6 @@ const WidgetCreationParameters = () => {
     platformModuleHelpers: { isRuntimeFieldEnable },
     schema: { filterKeysSchema },
   } = useAuth();
-  const { isFeatureEnable } = useHelper();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
 
@@ -152,6 +148,7 @@ const WidgetCreationParameters = () => {
     setDataSelectionWithIndex,
   } = useWidgetConfigContext();
   const { type, dataSelection, parameters } = config.widget;
+  const breakdown = useWidgetBreakdownState();
   const { isWidgetVarNameAlreadyUsed, isVariableNameValid, isDateAttributeValid } = useWidgetConfigValidateForm();
   const widgetCategory = getCurrentCategory(type);
 
@@ -325,10 +322,8 @@ const WidgetCreationParameters = () => {
   const auditAttributeSelectionSection = (uniqueParameterEnabled: boolean, dataSelectionIndex: number) => {
     const isAttributeSelectionDisabled = uniqueParameterEnabled && !dataSelection[dataSelectionIndex].unique;
     const attributeSize = uniqueParameterEnabled ? 10 : 12;
-    // A breakdown counts every event: distinct values can only be counted without it
-    const isDistinctLockedByBreakdown = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG)
-      && isBreakdownField(parameters.breakdownBy)
-      && canWidgetBreakDown(config.widget, host);
+    // A breakdown counts every event: distinct values can only be counted without the field the widget keeps
+    const isDistinctLockedByBreakdown = !!breakdown.field;
 
     const uniqueDataCheckbox = () => {
       const inline = dataSelection.length === 1;

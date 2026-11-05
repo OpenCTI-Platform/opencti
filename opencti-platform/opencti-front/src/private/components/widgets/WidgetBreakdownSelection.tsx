@@ -1,63 +1,34 @@
-import React, { useEffect } from 'react';
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import React from 'react';
+import { Alert, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
-import useHelper from '../../../utils/hooks/useHelper';
-import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
-import {
-  clearBreakdown,
-  getBreakdownEditorState,
-  getBreakdownLimitOptions,
-  getWidgetBreakdownLimit,
-  getWidgetBreakdownOrder,
-  getWidgetBreakdownOther,
-  isBreakdownField,
-} from '../../../utils/widget/widgetBreakdown';
-import { useWidgetConfigContext } from './WidgetConfigContext';
-import useWidgetBreakdownFieldOptions from './useWidgetBreakdownFieldOptions';
+import { clearBreakdown, getBreakdownLimitOptions, getWidgetBreakdownLimit, getWidgetBreakdownOrder, getWidgetBreakdownOther } from '../../../utils/widget/widgetBreakdown';
+import { useWidgetBreakdownState, useWidgetConfigContext } from './WidgetConfigContext';
 
 /**
  * Breakdown choice, made in the parameters step: the fields it offers depend on the perspective and the
  * dataset filters, and a breakdown excludes adding other datasets or counting distinct values.
+ * A field the dataset no longer offers is shown as none, and dropped on submit.
  */
 const WidgetBreakdownSelection = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const { config, setConfigWidget, host } = useWidgetConfigContext();
-  const { dataSelection, parameters, perspective } = config.widget;
+  const { config, setConfigWidget } = useWidgetConfigContext();
+  const { editorState, fieldOptions, resolution, field, unlistedField } = useWidgetBreakdownState();
+  const { parameters, perspective } = config.widget;
 
-  // Without the feature, the breakdown of a stored widget is neither shown nor dropped
-  const isEnabled = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
-  const editorState = isEnabled ? getBreakdownEditorState(config.widget, host) : 'hidden';
-  const isSupported = editorState !== 'hidden';
+  // Nothing to choose: a single type without any field to break it down by
+  if (editorState === 'hidden' || (fieldOptions.length === 0 && !field)) {
+    return null;
+  }
   // Several datasets or distinct values: the controls are shown, disabled, with the reason
   const isEditable = editorState === 'editable';
-  const { fieldOptions, isResolved } = useWidgetBreakdownFieldOptions({ perspective, dataSelection }, isSupported);
-  const breakdownBy = isBreakdownField(parameters.breakdownBy) ? parameters.breakdownBy : null;
-  const isFieldAvailable = fieldOptions.some(({ key }) => key === breakdownBy);
 
   const setParameters = (changes: Partial<typeof parameters>) => {
     setConfigWidget({ ...config.widget, parameters: { ...config.widget.parameters, ...changes } });
   };
 
-  // Filters changed to types without this field: drop the breakdown rather than keeping a field the API refuses.
-  // Not before the saved filter is read: its types are unknown until then.
-  useEffect(() => {
-    if (isEnabled && isResolved && breakdownBy && !isFieldAvailable) {
-      setConfigWidget(clearBreakdown(config.widget));
-    }
-  }, [isEnabled, isResolved, breakdownBy, isFieldAvailable]);
-
-  if (!isSupported) {
-    return null;
-  }
-
-  // The editor drops the breakdown of a widget with several datasets or distinct values as soon as it opens
-  // (applyBreakdownCompatibility): a locked widget has no field, only its choice is shown, disabled
-  const hasField = !!breakdownBy && isFieldAvailable;
-
   const fieldSelect = (
     <Select
-      value={isFieldAvailable && breakdownBy ? breakdownBy : 'none'}
+      value={field ?? 'none'}
       onValueChange={(value: string) => (value === 'none' ? setConfigWidget(clearBreakdown(config.widget)) : setParameters({ breakdownBy: value }))}
       disabled={!isEditable}
     >
@@ -72,6 +43,12 @@ const WidgetBreakdownSelection = () => {
             {t_i18n(label)}
           </SelectItem>
         ))}
+        {/* The field of the widget, not offered: the type of a single type, or a field kept while the dataset is unknown */}
+        {unlistedField && (
+          <SelectItem value={unlistedField.key} disabled={resolution !== 'resolved'}>
+            {t_i18n(unlistedField.label)}
+          </SelectItem>
+        )}
       </SelectContent>
     </Select>
   );
@@ -132,9 +109,12 @@ const WidgetBreakdownSelection = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ display: 'flex', gap: 20 }}>
         <div style={{ flex: 2 }}>{fieldSelect}</div>
-        {hasField && <div style={{ flex: 1 }}>{limitSelect}</div>}
+        {field && <div style={{ flex: 1 }}>{limitSelect}</div>}
       </div>
-      {hasField && (
+      {resolution === 'failed' && (
+        <Alert severity="warning" title={t_i18n('The saved filter could not be read: the breakdown field cannot be checked.')} />
+      )}
+      {field && (
         <div style={{ display: 'flex', gap: 20, alignItems: 'flex-end' }}>
           <div style={{ flex: 2 }}>{orderSelect}</div>
           <div style={{ flex: 1 }}>

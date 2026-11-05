@@ -9,13 +9,9 @@ import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { WidgetPerspective } from '../../../utils/widget/widget';
 import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelationsAggregation } from '../../../utils/widget/widgetUtils';
-import { useWidgetConfigContext } from './WidgetConfigContext';
+import { useWidgetBreakdownState, useWidgetConfigContext } from './WidgetConfigContext';
 import Alert from '../../../components/Alert';
 import { Alert as FdsAlert, Icon, IconButton as FdsIconButton, Input, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { canWidgetBreakDown, isBreakdownField } from '../../../utils/widget/widgetBreakdown';
-import useHelper from '../../../utils/hooks/useHelper';
-import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
-import useWidgetBreakdownFieldOptions from './useWidgetBreakdownFieldOptions';
 
 type StepContainerProps = {
   perspective?: WidgetPerspective | null;
@@ -52,9 +48,9 @@ const StepContainer = ({ perspective, children, id }: StepContainerProps) => {
 
 const WidgetCreationDataSelection = () => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
-  const { config, setStep, setDataSelection, setDataSelectionWithIndex, host } = useWidgetConfigContext();
-  const { type, dataSelection, perspective, parameters } = config.widget;
+  const { config, setStep, setDataSelection, setDataSelectionWithIndex } = useWidgetConfigContext();
+  const breakdown = useWidgetBreakdownState();
+  const { type, dataSelection, perspective } = config.widget;
 
   const [itemIds, setItemIds] = useState<string[]>(() => dataSelection.map(() => uuidv4()));
 
@@ -107,16 +103,14 @@ const WidgetCreationDataSelection = () => {
   // the "add" buttons at all, as they would be permanently disabled and
   // never clickable (e.g. the Number widget). See issue #16360.
   const canAddDataSelection = getCurrentDataSelectionLimit(type) > 1;
-  // A breakdown generates its series from a single dataset
-  const isBreakdownEnabled = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
-  const isBreakdownEligible = isBreakdownEnabled && canWidgetBreakDown(config.widget, host);
-  const { fieldOptions, isResolved } = useWidgetBreakdownFieldOptions({ perspective, dataSelection }, isBreakdownEligible);
-  const breakdownBy = parameters?.breakdownBy;
-  // Only a field the parameters step keeps locks the dataset: one the filters no longer offer is dropped there,
-  // once the saved filter is read
-  const isBreakdownActive = isBreakdownEligible
-    && isBreakdownField(breakdownBy)
-    && (!isResolved || fieldOptions.some(({ key }) => key === breakdownBy));
+  // A breakdown generates its series from a single dataset. Only a field the widget keeps locks it: one the
+  // filters no longer offer is dropped on submit, once the saved filter is read
+  const isBreakdownActive = !!breakdown.field;
+  // Said before a breakdown is chosen, once the fields of the dataset are known
+  const isBreakdownOffered = breakdown.editorState === 'editable'
+    && !breakdown.field
+    && breakdown.resolution === 'resolved'
+    && breakdown.fieldOptions.length > 0;
   // A disabled button gets no pointer events: the wrapper carries the tooltip
   const lockedByBreakdown = (button: React.ReactElement) => (isBreakdownActive ? (
     <Tooltip>
@@ -225,7 +219,7 @@ const WidgetCreationDataSelection = () => {
         })
       }
 
-      {isBreakdownEligible && (
+      {isBreakdownOffered && (
         <FdsAlert
           severity="info"
           title={t_i18n('You can break this dataset down into one series per field value in the Parameters step.')}
