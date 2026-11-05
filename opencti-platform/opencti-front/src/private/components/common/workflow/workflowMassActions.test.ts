@@ -43,6 +43,20 @@ describe('buildWorkflowTransitionAction', () => {
     expect(action.context.options).toEqual({ eventName: 'approve', comment: 'Checked', shareOrganizationIds: ['org-1'] });
   });
 
+  it('should send the closing reason the transition asks for', () => {
+    const [option] = buildTransitionOptions([{ event: 'close', toState: 'closed', closingReason: 'required' }]);
+    const action = buildWorkflowTransitionAction(setTransitionInputs({ type: 'REPLACE', values: [option] }, { closingReason: 'false-positive' }));
+
+    expect(action.context.options).toEqual({ eventName: 'close', closingReason: 'false-positive' });
+  });
+
+  it('should send no closing reason for a transition without one, even if one was picked for another transition', () => {
+    const [option] = buildTransitionOptions([{ event: 'approve', toState: 'approved', closingReason: 'disabled' }]);
+    const action = buildWorkflowTransitionAction(setTransitionInputs({ type: 'REPLACE', values: [option] }, { closingReason: 'duplicate' }));
+
+    expect(action.context.options).toEqual({ eventName: 'approve' });
+  });
+
   it('should send no comment for a transition without one, even if one was typed for another transition', () => {
     const [option] = buildTransitionOptions([{ event: 'approve', toState: 'approved', comment: 'disabled' }]);
     const action = buildWorkflowTransitionAction(setTransitionInputs({ type: 'REPLACE', values: [option] }, { comment: 'Left over' }));

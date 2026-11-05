@@ -1398,8 +1398,8 @@ export const getWorkflowDefaultState = async (
  * Transitions that every targeted entity can take, for a mass transition. A selection is checked
  * entity by entity, conditions included. A filter (select all) is checked from the statuses found
  * under it: entities without status are in the initial state, and conditions are only checked when
- * the transition runs. A transition that needs a comment or organizations gets them from the mass
- * update, the same for every entity.
+ * the transition runs. A transition that needs a comment, a closing reason or organizations gets
+ * them from the mass update, the same for every entity.
  */
 export const getMassWorkflowTransitions = async (
   context: AuthContext,

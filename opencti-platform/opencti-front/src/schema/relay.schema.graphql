@@ -1210,6 +1210,7 @@ input BackgroundTaskContextOptionsInput {
   applyTransitionActions: Boolean
   eventName: String
   comment: String
+  closingReason: String
   shareOrganizationIds: [String!]
   unshareOrganizationIds: [String!]
   investigationId: String

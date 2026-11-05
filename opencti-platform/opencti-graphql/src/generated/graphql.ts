@@ -1860,6 +1860,7 @@ export type BackgroundTaskContextOptions = {
 
 export type BackgroundTaskContextOptionsInput = {
   applyTransitionActions?: InputMaybe<Scalars['Boolean']['input']>;
+  closingReason?: InputMaybe<Scalars['String']['input']>;
   comment?: InputMaybe<Scalars['String']['input']>;
   eventName?: InputMaybe<Scalars['String']['input']>;
   includeNeighbours?: InputMaybe<Scalars['Boolean']['input']>;
