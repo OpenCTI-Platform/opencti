@@ -213,7 +213,6 @@ type FilterDefinition {
   subEntityTypes: [String!]!
   elementsForFilterValuesSearch: [String!]!
   subFilters: [FilterDefinition!]
-  operators: [String!]
 }
 
 enum EditOperation {

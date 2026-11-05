@@ -42,10 +42,9 @@ const filterKeysSchema = new Map([
     ])],
     ['coverage_information', {
       ...buildDefinition('coverage_information', 'nested_filterable', 'Coverage score', [
-        { ...buildDefinition('coverage_name', 'vocabulary', 'Coverage name'), operators: ['eq', 'not_eq'] },
-        { ...buildDefinition('coverage_score', 'float', 'Score'), operators: ['eq', 'gt', 'gte', 'lt', 'lte'] },
+        { ...buildDefinition('coverage_name', 'vocabulary', 'Coverage name'), multiple: false },
+        { ...buildDefinition('coverage_score', 'float', 'Score'), multiple: false },
       ]),
-      operators: ['eq', 'nil', 'not_nil'],
     }],
   ])],
 ]);

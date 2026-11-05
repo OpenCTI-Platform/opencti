@@ -199,7 +199,6 @@ type FilterDefinition {
   subEntityTypes: [String!]!
   elementsForFilterValuesSearch: [String!]!
   subFilters: [FilterDefinition!]
-  operators: [String!] # operators accepted by the backend, when it restricts them (ex: generic nested filter keys and their sub-filters)
 }
 
 ### EDIT

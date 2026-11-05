@@ -969,10 +969,11 @@ export const getAvailableOperatorForFilterSubKey = (filterDefinition: FilterDefi
     }
     return [];
   }
-  // no frontend rule: the operators sent by the backend, if any, replace the default ones
-  const subFilterOperators = filterDefinition.subFilters?.find((subFilter) => subFilter.filterKey === subKey)?.operators;
-  if (subFilterOperators) {
-    return [...subFilterOperators];
+  // A sub-filter of a generic nested key follows the rules of its own type. Empty / not empty tell whether
+  // the nested elements exist, so they belong to the nested filter itself (see FilterOperatorSelect).
+  if (isGenericNestedFilterDefinition(filterDefinition)) {
+    const subFilterDefinition = filterDefinition.subFilters?.find((subFilter) => subFilter.filterKey === subKey);
+    return getAvailableOperatorForFilterKey(subFilterDefinition).filter((op) => op !== 'nil' && op !== 'not_nil');
   }
   return ['eq', 'not_eq', 'nil', 'not_nil'];
 };
@@ -1003,6 +1004,9 @@ export const getAvailableOperatorForFilterKey = (
   if (filterType === 'boolean') {
     return ['eq', 'not_eq', ...changeOperators];
   }
+  if (isGenericNestedFilterDefinition(filterDefinition)) { // each sub-filter carries its own operator, the nested filter only tells whether the nested elements exist
+    return ['eq', 'nil', 'not_nil', ...changeOperators];
+  }
   if (isBasicTextFilter(filterDefinition)) {
     if (filterDefinition.type === 'string' || opts?.isStixFiltering) { // all the string operators are available for short string or in stix filtering
       return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
@@ -1015,11 +1019,6 @@ export const getAvailableOperatorForFilterKey = (
     } else {
       throw Error(`A basic text filter is of type string or text, not ${filterDefinition.type}`);
     }
-  }
-
-  // no frontend rule: the operators sent by the backend, if any, replace the default ones
-  if (filterDefinition.operators) {
-    return [...filterDefinition.operators, ...changeOperators];
   }
 
   if (filterDefinition.multiple) {
