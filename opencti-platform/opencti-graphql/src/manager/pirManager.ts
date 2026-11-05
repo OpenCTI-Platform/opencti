@@ -118,7 +118,7 @@ export const isPirMatchableOnStream = async (context: AuthContext, pir: ParsedPi
     if (!(err instanceof GraphQLError && err.extensions.code === UNSUPPORTED_ERROR)) throw err;
     if (!reportedUnmatchablePirIds.has(pir.id)) {
       reportedUnmatchablePirIds.add(pir.id);
-      logApp.warn('[OPENCTI-MODULE] Pir filters are not compatible with stream matching, Pir skipped', { cause: err, pirId: pir.id });
+      logApp.warn('[OPENCTI-MODULE] Pir filter keys are not compatible with stix filtering, Pir skipped', { cause: err, pirId: pir.id });
     }
     return false;
   }
