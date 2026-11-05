@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import moment, { type DurationInputArg2 } from 'moment/moment';
 import type { estypes } from '@elastic/elasticsearch';
-import { DatabaseError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { DatabaseError, FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../schema/stixDomainObject';
@@ -169,6 +169,26 @@ export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: s
   return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));
 };
 
+// Reasons of the refusals of a time series breakdown, in the data of their error: the front tells the
+// refusals apart from them, never from their messages
+export const BREAKDOWN_REFUSAL_REASONS = {
+  // The limit of series is not an integer between 1 and the maximum
+  INVALID_LIMIT: 'invalid_limit',
+  // The field cannot be broken down for the requested types
+  UNSUPPORTED_FIELD: 'unsupported_field',
+  // The date attribute is not a date of the requested types
+  UNSUPPORTED_DATE_ATTRIBUTE: 'unsupported_date_attribute',
+  // The series and their dates would exceed the maximum number of buckets
+  TOO_LARGE: 'too_large',
+  // The lowest values cannot be ranked exactly among so many values
+  TOO_MANY_VALUES: 'too_many_values',
+} as const;
+
+// Same refusal as elHistogramCount, for the intervals its date histogram cannot aggregate
+const unsupportedIntervalError = (interval: string) => {
+  return FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
+};
+
 const computeTimeSeriesRange = (startDate: Date, endDate: Date, interval: string) => {
   // Elasticsearch aggregates on UTC calendar boundaries and the front-end labels the
   // emitted instants as UTC: everything here must stay anchored on UTC, never on the
@@ -202,8 +222,11 @@ const computeTimeSeriesRange = (startDate: Date, endDate: Date, interval: string
       dateFormat = 'YYYY-MM-DD HH:mm:ss';
       startDateParsed = startDateParsed.startOf('hour');
       break;
-    default:
+    case 'day':
       dateFormat = 'YYYY-MM-DD';
+      break;
+    default:
+      throw unsupportedIntervalError(interval);
   }
   const formattedEndDate = moment.utc(endDateParsed.format(dateFormat), dateFormat);
   const formattedStartDate = moment.utc(startDateParsed.format(dateFormat), dateFormat);
@@ -212,9 +235,10 @@ const computeTimeSeriesRange = (startDate: Date, endDate: Date, interval: string
   return { startDateParsed, elementsOfInterval };
 };
 
-// A period ending before it starts holds no bucket, as its axis
+// A period ending before it starts, or with an invalid date, holds no bucket, as its axis
 export const countTimeSeriesIntervals = (startDate: Date, endDate: Date, interval: string) => {
-  return Math.max(0, computeTimeSeriesRange(startDate, endDate, interval).elementsOfInterval + 1);
+  const count = computeTimeSeriesRange(startDate, endDate, interval).elementsOfInterval + 1;
+  return Number.isFinite(count) ? Math.max(0, count) : 0;
 };
 
 export type TimeSeriesAxis = {
@@ -249,11 +273,11 @@ const buildBucketStartAt = (rangeStart: number, interval: string): ((index: numb
       // The range starts at the beginning of its hour
       return (index) => rangeStart + index * HOUR_MS;
     default:
-      throw UnsupportedError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
+      throw unsupportedIntervalError(interval);
   }
 };
 const HOURS = Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, '0'));
-// Key of a bucket as the date histogram formats it (getHistogramDateFormat in engine.ts), from the day it starts on
+// Key of a bucket as getHistogramDateFormat in engine.ts formats it, from the day it starts on
 const toBucketKey = (isoDay: string, hour: string, interval: string) => {
   switch (interval) {
     case 'year':
@@ -270,8 +294,8 @@ const toBucketKey = (isoDay: string, hour: string, interval: string) => {
 
 // The dates of a time series only depend on the period and the interval: compute them once, then
 // place the values of any number of series on them. The range is parsed once with moment, the buckets
-// are computed on UTC timestamps: moment for each of them blocked the event loop for about 150 ms
-// on the largest breakdown (50,000 hours over 5.7 years).
+// are computed on UTC timestamps: moment for each of them blocked the event loop for about 120 ms
+// per series of 50,000 hours (5.7 years), against about 15 ms now.
 export const buildTimeSeriesAxis = (startDate: Date, endDate: Date, interval: string): TimeSeriesAxis => {
   const { startDateParsed, elementsOfInterval } = computeTimeSeriesRange(startDate, endDate, interval);
   const bucketStartAt = buildBucketStartAt(startDateParsed.valueOf(), interval);
@@ -300,7 +324,7 @@ export const fillTimeSeriesValues = (axis: TimeSeriesAxis, data: { date: string;
   return axis.keys.map((key) => (valuesByDate.has(key) ? valuesByDate.get(key) as number : 0));
 };
 
-export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
+export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: { date: string; value: number }[]) => {
   const axis = buildTimeSeriesAxis(startDate, endDate, interval);
   const values = fillTimeSeriesValues(axis, data);
   return axis.dates.map((date, i) => ({ date, value: values[i] }));

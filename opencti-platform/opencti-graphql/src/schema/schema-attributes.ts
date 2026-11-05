@@ -306,6 +306,30 @@ export const isObjectRawAttribute = (k: string): boolean => {
   if (!definition) return false;
   return definition.type === 'object' && definition.format === 'raw';
 };
+// -- INDEXED TYPES --
+
+// Registered types by their lowercase name, built at the first use, once every type is registered, and built
+// again when more types are registered
+let registeredTypesByIndexedName: { size: number; types: Map<string, string> } | null = null;
+/**
+ * Registered type of a type name as the engine indexes it, in lowercase (entity_type.keyword, connections.types.keyword):
+ * the type with its own letter case (IMEI, SecurityPlatform, Intrusion-Set), undefined for a name of no registered type.
+ */
+export const getRegisteredTypeFromIndexedName = (indexedName: string): string | undefined => {
+  const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
+  if (registeredTypesByIndexedName?.size !== registeredTypes.length) {
+    const types = new Map<string, string>();
+    // The first registered type of a lowercase name keeps it
+    registeredTypes.forEach((type) => {
+      if (!types.has(type.toLowerCase())) {
+        types.set(type.toLowerCase(), type);
+      }
+    });
+    registeredTypesByIndexedName = { size: registeredTypes.length, types };
+  }
+  return registeredTypesByIndexedName.types.get(indexedName);
+};
+
 // -- MULTIPLE --
 
 export const isMultipleAttribute = (entityType: string, k: string): boolean => (
