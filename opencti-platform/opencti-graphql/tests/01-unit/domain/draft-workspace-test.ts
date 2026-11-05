@@ -164,6 +164,27 @@ describe('resolveWorkflowInstanceStatusFilter (via draftWorkspacesNumber)', () =
     );
   });
 
+  it('should replace workflowInstanceCurrentState filter nested in a filter group', async () => {
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([{ entity_id: 'draft-uuid-1' }] as any);
+    const args = {
+      filters: {
+        mode: 'and',
+        filters: [{ key: 'entity_type', values: ['DraftWorkspace'], operator: 'eq', mode: 'or' }],
+        filterGroups: [{
+          mode: 'and',
+          filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: ['status-template-abc'], operator: 'eq', mode: 'or' }],
+          filterGroups: [],
+        }],
+      },
+    };
+    await draftWorkspacesNumber(mockContext, mockUser, args);
+    const countArgs = vi.mocked(engine.elCount).mock.calls[0][3] as any;
+    expect(countArgs.filters.filters).toEqual([{ key: 'entity_type', values: ['DraftWorkspace'], operator: 'eq', mode: 'or' }]);
+    expect(countArgs.filters.filterGroups[0].filters).toEqual([
+      { key: ['id'], values: ['draft-uuid-1'], operator: 'eq', mode: 'or' },
+    ]);
+  });
+
   it('should use <no-match> fallback when no WorkflowInstance entities match the filter', async () => {
     vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([] as any);
     const args = {
