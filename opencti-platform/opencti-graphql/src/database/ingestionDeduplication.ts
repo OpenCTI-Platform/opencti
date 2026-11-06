@@ -9,26 +9,58 @@ import { generateStandardId } from '../schema/identifier';
 import type { AuthContext, AuthUser } from '../types/user';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_COURSE_OF_ACTION,
+  ENTITY_TYPE_DATA_COMPONENT,
+  ENTITY_TYPE_DATA_SOURCE,
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
+  ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_POSITION,
   ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
   ENTITY_TYPE_TOOL,
 } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../modules/administrativeArea/administrativeArea-types';
+import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
+import { ENTITY_TYPE_CHANNEL } from '../modules/channel/channel-types';
+import { ENTITY_TYPE_LANGUAGE } from '../modules/language/language-types';
+import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { type BasicStoreEntityIngestionDeduplicationRule, ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../modules/ingestionDeduplication/ingestionDeduplicationRule-types';
 
-// Peripheral types that rarely change: vulnerabilities, indicators and observables must always be imported
+// SDOs whose standard id comes from plain fields only: vulnerabilities, indicators, observables and containers must always be imported
 export const INGESTION_DEDUPLICATION_ALLOWED_TYPES = [
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_THREAT_ACTOR_GROUP,
+  ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
+  ENTITY_TYPE_INFRASTRUCTURE,
+  ENTITY_TYPE_DATA_SOURCE,
+  ENTITY_TYPE_DATA_COMPONENT,
+  ENTITY_TYPE_NARRATIVE,
+  ENTITY_TYPE_CHANNEL,
+  ENTITY_TYPE_LANGUAGE,
+  ENTITY_TYPE_EVENT,
   ENTITY_TYPE_IDENTITY_SECTOR,
-  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_SYSTEM,
   ENTITY_TYPE_LOCATION_REGION,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_POSITION,
 ];
 
 export const INGESTION_DEDUPLICATION_TTL: number = conf.get('ingestion_deduplication:ttl') || 86400;
