@@ -6,6 +6,7 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
+import { handleError } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { ConfigPresetImportPreviewQuery, ConfigPresetImportPreviewQuery$data } from './__generated__/ConfigPresetImportPreviewQuery.graphql';
 import { ConfigPresetImportPreviewSaveMutation } from './__generated__/ConfigPresetImportPreviewSaveMutation.graphql';
@@ -28,13 +29,15 @@ import {
   isConfigPresetItemSelected,
   isSingletonConfigPresetType,
   selectAllConfigPresetItems,
+  toggleConfigPresetTypes,
 } from '../configPresetSelection';
 import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
 import ConfigPresetImportActions from './ConfigPresetImportActions';
 import ConfigPresetImportMessages from './ConfigPresetImportMessages';
 import ConfigPresetResultLine from './ConfigPresetResultLine';
 import { translateConfigPresetEntityTypes } from '../configPresetEntityTypes';
-import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
+import useConfigPresetLockedTypes from '../useConfigPresetLockedTypes';
+import ConfigPresetSelectionAccordion, { describeEnabled, describeType } from '../ConfigPresetSelectionAccordion';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
 const SAVE_DELAY_MS = 500;
@@ -52,6 +55,7 @@ const configPresetImportPreviewQuery = graphql`
         key
         label
         description
+        lockedByEnterpriseEdition
         modes
         group {
           key
@@ -64,6 +68,7 @@ const configPresetImportPreviewQuery = graphql`
           isDefault
           exists
           conflict
+          isEnabled
           fields {
             key
             value
@@ -100,12 +105,16 @@ interface SimulatedResult {
   readonly key: string;
   readonly status: string;
   readonly reason?: string | null;
+  readonly code?: string | null;
 }
 
-// A row shows what the import would do unless there is nothing to say: an item that is created as it is, or one that is overwritten
-// and has its choice (the choice says it)
+// A row shows what the import would do unless there is nothing to say: an item that is created as it is, one that has nothing to
+// change on the platform, or one that is overwritten and has its choice (the choice says it)
 const isResultShown = (result: SimulatedResult, hasChoice: boolean) => {
   if (result.status === 'CREATED' && !result.reason) {
+    return false;
+  }
+  if (result.status === 'SKIPPED' && result.code === 'nothing_to_import') {
     return false;
   }
   return !(result.status === 'OVERWRITTEN' && hasChoice);
@@ -152,19 +161,23 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [confirmStartOver, setConfirmStartOver] = useState(false);
   // The expected results, by `<type>/<key>`: held here only, never saved; computed again when the selection changes
   const [results, setResults] = useState<Record<string, SimulatedResult> | null>(null);
-  // True from a change of the selection until the results of the latest request are in: Apply waits
-  const [isSimulating, setIsSimulating] = useState(false);
   // Only the response of the latest request is kept
   const simulationRef = useRef(0);
   const hasSimulatedRef = useRef(false);
   const isMountedRef = useRef(true);
   const onSimulateRef = useRef(onSimulate);
   onSimulateRef.current = onSimulate;
+  const hasLoadedRef = useRef(false);
+  // The preview is read again when a license is activated, which unlocks the types that need it
+  const [reloadCount, setReloadCount] = useState(0);
+  const reload = useCallback(() => setReloadCount((count) => count + 1), []);
   const [commitSave] = useApiMutation<ConfigPresetImportPreviewSaveMutation>(configPresetImportPreviewSaveMutation);
   // The revision only goes up: the backend ignores a lower one
   const revisionRef = useRef(session.revision);
   const pendingRef = useRef<ReturnType<typeof buildConfigPresetSelections> | null>(null);
   const timerRef = useRef<number | null>(null);
+  // The saves sent and not answered yet: Apply waits for them too, not only for the one still in its delay
+  const inFlightRef = useRef<Promise<void> | null>(null);
   const commitSaveRef = useRef(commitSave);
   commitSaveRef.current = commitSave;
 
@@ -176,10 +189,13 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         if (active && data) {
           const loaded = data.configPresetImportPreview;
           setPreview(loaded);
-          // A new upload has no saved selection yet: every item starts selected, as in the export
-          const isNew = session.revision === 0 && session.selections.length === 0;
-          setSelection(isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections));
-          setImportModes(toConfigImportModes(session.selections));
+          if (!hasLoadedRef.current) {
+            hasLoadedRef.current = true;
+            // A new upload has no saved selection yet: every item starts selected, as in the export
+            const isNew = session.revision === 0 && session.selections.length === 0;
+            setSelection(isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections));
+            setImportModes(toConfigImportModes(session.selections));
+          }
         }
       })
       .catch((err) => {
@@ -187,16 +203,18 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           const reason = getConfigPresetErrorReason(err);
           if (reason === 'file_missing') {
             onFileMissing();
-          } else {
+          } else if (!hasLoadedRef.current) {
             setError(reason ?? 'error');
+          } else {
+            // A reload that fails (after a license change) leaves the preview that is shown: the error is only notified
+            handleError(err);
           }
         }
       });
     return () => {
       active = false;
     };
-  // The preview is read once for a file
-  }, [environment, session.file_id]);
+  }, [environment, session.file_id, reloadCount]);
 
   // Resolved once the save is answered, whatever the answer. A failure is notified by the global error toast; a file that is no longer
   // the one of the session (another tab uploaded a new one) sends the wizard back to the upload.
@@ -206,11 +224,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       timerRef.current = null;
     }
     if (!pendingRef.current) {
-      return Promise.resolve();
+      return inFlightRef.current ?? Promise.resolve();
     }
     const selections = pendingRef.current;
     pendingRef.current = null;
-    return new Promise((resolve) => {
+    const previous = inFlightRef.current;
+    const sent = new Promise<void>((resolve) => {
       commitSaveRef.current({
         variables: { file_id: session.file_id, selections, revision: revisionRef.current },
         onCompleted: () => resolve(),
@@ -222,6 +241,14 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         },
       });
     });
+    const answered = previous ? Promise.all([previous, sent]).then(() => undefined) : sent;
+    inFlightRef.current = answered;
+    answered.then(() => {
+      if (inFlightRef.current === answered) {
+        inFlightRef.current = null;
+      }
+    });
+    return answered;
   }, [session.file_id]);
 
   // A pending save is sent on close
@@ -247,6 +274,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     }
     timerRef.current = window.setTimeout(flushSave, SAVE_DELAY_MS);
   };
+
+  useConfigPresetLockedTypes(preview ? types : null, reload, (usable) => {
+    const next = toggleConfigPresetTypes(selection, usable, true);
+    setSelection(next);
+    scheduleSave(next, importModes);
+  });
 
   const handleSelectionChange = (next: ConfigPresetSelection) => {
     setSelection(next);
@@ -307,12 +340,10 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     if (selections.length === 0) {
       simulationRef.current += 1;
       setResults(null);
-      setIsSimulating(false);
       return undefined;
     }
     simulationRef.current += 1;
     const request = simulationRef.current;
-    setIsSimulating(true);
     const delay = hasSimulatedRef.current ? SIMULATE_DELAY_MS : 0;
     const timer = window.setTimeout(() => {
       hasSimulatedRef.current = true;
@@ -320,13 +351,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         // A response that arrives after a newer request, or after the wizard was closed, is dropped
         onCompleted: (simulated) => {
           if (isMountedRef.current && request === simulationRef.current) {
-            setIsSimulating(false);
             setResults(Object.fromEntries(simulated.map((result) => [`${result.type}/${result.key}`, result])));
           }
         },
         onError: (err) => {
           if (isMountedRef.current && request === simulationRef.current) {
-            setIsSimulating(false);
             // The results of the previous selection no longer describe this one
             setResults(null);
             if (getConfigPresetErrorReason(err) === 'file_missing') {
@@ -366,11 +395,14 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       {preview.ignored.length > 0 && (
         <Alert severity="info" title={t_i18n('Some files of the bundle cannot be imported')} description={preview.ignored.join(', ')} />
       )}
+      {/* While Apply waits for the save, a change would be saved after the import is sent, when the session is no longer a draft */}
       <ConfigPresetSelectionAccordion
         types={types}
         selection={selection}
         forced={forced}
         expandTypes
+        disabled={isStarting}
+        lockedTitle="Activate the Enterprise Edition to import this item"
         onSelectionChange={handleSelectionChange}
         renderTypeActions={(type) => {
           // From two items in conflict that are imported: with one, its own choice is enough, and an item that is not imported has none
@@ -384,6 +416,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
               purpose="Apply to all"
               modes={type.modes}
               value={sharedConfigImportMode(importModes, type.key, conflictKeys)}
+              disabled={isStarting}
               onChange={(mode) => handleTypeImportModeChange(type.key, conflictKeys, mode)}
             />
           );
@@ -401,9 +434,10 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
               <ConfigPresetItemRow
                 typeKey={type.key}
                 item={item}
-                description={isSingletonConfigPresetType(type) ? t_i18n(type.description) : undefined}
+                description={typeof item.isEnabled === 'boolean' ? describeEnabled(t_i18n, item.isEnabled) : (isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined)}
                 selection={selection}
                 forced={forced}
+                disabled={isStarting}
                 onSelectionChange={handleSelectionChange}
                 statusSlot={(hasChoice || (result && isResultShown(result, hasChoice))) ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
@@ -413,10 +447,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                         purpose="When it already exists"
                         modes={type.modes}
                         value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
+                        disabled={isStarting}
                         onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
                       />
                     )}
-                    {result && isResultShown(result, hasChoice) && <ConfigPresetResultLine status={result.status} reason={result.reason} />}
+                    {result && isResultShown(result, hasChoice) && <ConfigPresetResultLine status={result.status} reason={result.reason} code={result.code} />}
                   </div>
                 ) : undefined}
               />
@@ -452,13 +487,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       >
         <ConfigPresetImportMessages
           itemsCount={itemsCount}
-          isSimulating={isSimulating}
           isOtherImportRunning={isOtherImportRunning}
           startedBy={startedBy}
         />
         <ConfigPresetImportActions
           hasSelection={selections.length > 0}
-          isSimulating={isSimulating}
           isOtherImportRunning={isOtherImportRunning}
           isStarting={isStarting}
           onStartOver={() => setConfirmStartOver(true)}

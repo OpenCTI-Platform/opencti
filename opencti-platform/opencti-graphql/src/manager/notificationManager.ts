@@ -14,6 +14,7 @@ import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
 import type { StixCoreObject, StixId, StixObject, StixRelationshipObject } from '../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import {
   type BasicStoreEntityDigestTrigger,
   type BasicStoreEntityLiveTrigger,
@@ -108,8 +109,23 @@ export interface DigestEvent extends StreamNotifEvent {
   type: 'digest';
   target: NotificationUser;
   playbook_source?: string;
-  data: Array<{ notification_id: string; instance: StixObject; type: string; message: string; origin?: Partial<UserOrigin>; streamMessage?: string }>;
+  data: Array<{ notification_id: string; instance: StixObject | ActivityNotificationEvent['data']; type: string; message: string; origin?: Partial<UserOrigin>; streamMessage?: string }>;
 }
+
+// The live events a digest gathers: its triggers are either knowledge or activity live triggers
+export type DigestContentEvent = KnowledgeNotificationEvent | ActivityNotificationEvent;
+
+/**
+ * Tell whether the data of a digest event is a STIX object.
+ * A knowledge event carries a STIX object, whose message reads the type of its OpenCTI extension.
+ * An activity event carries the context data of the action instead, which has no such extension.
+ * @param data the data of a knowledge or activity event
+ * @returns true when the data has a STIX type and an OpenCTI extension with a type
+ */
+export const isStixObjectNotificationData = (data: DigestContentEvent['data']): data is StixObject => {
+  const candidate = data as Partial<StixObject>;
+  return typeof candidate.type === 'string' && typeof candidate.extensions?.[STIX_EXT_OCTI]?.type === 'string';
+};
 
 export const isLiveKnowledge = (n: ResolvedTrigger): n is ResolvedLive => {
   return n.trigger.trigger_scope === 'knowledge' && n.trigger.trigger_type === 'live';
@@ -133,6 +149,13 @@ export const isNotificationRecipientActive = (user: AuthUser): boolean => {
 // and service accounts cannot receive notifications at all (the publisher rejects them).
 export const canReceiveNotifications = (user: AuthUser): boolean => {
   return !user.user_service_account && isNotificationRecipientActive(user);
+};
+
+// Recipient check for the triggers a user defined that name the recipient directly: an active service
+// account is kept, because a machine identity subscribes to events through a webhook notifier. The publisher delivers
+// to a service account through a webhook notifier only (see publisherManager).
+export const canReceiveDefinedTriggerNotifications = (user: AuthUser): boolean => {
+  return isNotificationRecipientActive(user);
 };
 
 const generateAssigneeTrigger = (user: AuthUser) => {
@@ -200,8 +223,10 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
 
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
-  const platformUsers = (await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER))
-    .filter(canReceiveNotifications);
+  const activeUsers = (await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER))
+    .filter(canReceiveDefinedTriggerNotifications);
+  // Native triggers (assignee, platform, request access) target humans only.
+  const platformUsers = activeUsers.filter(canReceiveNotifications);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const isAssigneeAutoTriggerEnabled = settings.platform_notifier_auto_trigger_assignee ?? true;
   const notificationTriggers = [];
@@ -220,11 +245,12 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
   for (let index = 0; index < triggers.length; index += 1) {
     const trigger = triggers[index];
     const triggerAuthorizedMembersIds = trigger.restricted_members?.map((member) => member.id) ?? [];
+    // Groups and organizations reach humans only; a service account is a recipient when the trigger names it directly.
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
     const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
-    const usersFromIds = platformUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
+    const usersFromIds = activeUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
     const withoutInternalUsers = [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]
       .filter((u) => INTERNAL_USERS[u.id] === undefined);
     const users = R.uniqBy(R.prop('id'), withoutInternalUsers);
@@ -653,12 +679,12 @@ const notificationLiveStreamHandler = async (streamEvents: Array<SseEvent<DataEv
   }
 };
 
-interface DigestContentAccumulator { content: Array<KnowledgeNotificationEvent>; byteSize: number; truncated: boolean }
+interface DigestContentAccumulator { content: Array<DigestContentEvent>; byteSize: number; truncated: boolean }
 // Accumulate the digest-matching events of a notification batch into `acc`, bounded by the byte budget.
 // Returns false to stop the range iteration once the cumulative byte budget is reached.
 const collectDigestBatch = (
   acc: DigestContentAccumulator,
-  events: Array<SizedNotifEvent<KnowledgeNotificationEvent>>,
+  events: Array<SizedNotifEvent<DigestContentEvent>>,
   triggerIds: Set<string>,
   maxContentByteSize: number,
 ): boolean => {
@@ -688,7 +714,7 @@ export const collectDigestContent = async (
 ): Promise<DigestContentAccumulator> => {
   const acc: DigestContentAccumulator = { content: [], byteSize: 0, truncated: false };
   const triggerIdsSet = new Set(triggerIds);
-  await fetchRangeNotifications<KnowledgeNotificationEvent>(
+  await fetchRangeNotifications<DigestContentEvent>(
     fromDate,
     toDate,
     (events) => collectDigestBatch(acc, events, triggerIdsSet, maxContentByteSize),
@@ -696,46 +722,62 @@ export const collectDigestContent = async (
   return acc;
 };
 
+// Sends one digest to each of its users: the events of its live triggers during its last period
+const handleDigestNotification = async (context: AuthContext, baseDate: Moment, digest: ResolvedDigest) => {
+  const { trigger, users } = digest;
+  const { period, trigger_ids: triggerIds, notifiers, internal_id: notification_id, trigger_type: type } = trigger;
+  const fromDate = baseDate.clone().subtract(1, period).toDate();
+  // Read the range in batches and only keep the events related to this digest (bounded by MAX_DIGEST_CONTENT_SIZE)
+  const { content: digestContent, truncated, byteSize } = await collectDigestContent(fromDate, baseDate.toDate(), triggerIds);
+  if (truncated) {
+    logApp.warn('[OPENCTI-MODULE] Digest content truncated, memory budget reached', { notification_id, period, kept: digestContent.length, byteSize, maxByteSize: MAX_DIGEST_CONTENT_SIZE });
+  }
+  if (digestContent.length > 0) {
+    // Range of results must filtered to keep only data related to the digest
+    // And related to the users participating to the digest
+    for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
+      const user = users[userIndex];
+      const userNotifications = digestContent.filter((d) => d.targets
+        .map((t) => t.user.user_id).includes(user.internal_id));
+      if (userNotifications.length > 0) {
+        const version = EVENT_NOTIFICATION_VERSION;
+        const target = convertToNotificationUser(user, notifiers);
+        const dataPromises = userNotifications.map(async (n) => {
+          const userTarget = n.targets.find((t) => t.user.user_id === user.internal_id);
+          // A STIX object gets its message computed for the user (the from/to of a relationship may be restricted to them).
+          // Otherwise (activity event) the message is the one computed when the event matched, as the live alert uses it
+          const message = isStixObjectNotificationData(n.data)
+            ? await generateNotificationMessageForInstance(context, user, n.data)
+            : (userTarget?.message ?? '');
+          return ({
+            notification_id: n.notification_id,
+            type: userTarget?.type ?? type,
+            instance: n.data,
+            message,
+            origin: n.origin,
+            // Only a knowledge event has a stream message
+            streamMessage: 'streamMessage' in n ? n.streamMessage : undefined,
+          });
+        });
+        const data = await Promise.all(dataPromises);
+        const digestEvent: DigestEvent = { version, notification_id, type, target, data };
+        await storeNotificationEvent(context, digestEvent);
+      }
+    }
+  }
+};
+
 export const handleDigestNotifications = async (context: AuthContext) => {
   const baseDate = utcDate().startOf('minutes');
   // Get digest that need to be executed
   const digestNotifications = await getDigestNotifications(context, baseDate);
-  // Iter on each digest and generate the output
+  // Iter on each digest and generate the output: a failing digest is logged, the others are still sent
   for (let index = 0; index < digestNotifications.length; index += 1) {
-    const { trigger, users } = digestNotifications[index];
-    const { period, trigger_ids: triggerIds, notifiers, internal_id: notification_id, trigger_type: type } = trigger;
-    const fromDate = baseDate.clone().subtract(1, period).toDate();
-    // Read the range in batches and only keep the events related to this digest (bounded by MAX_DIGEST_CONTENT_SIZE)
-    const { content: digestContent, truncated, byteSize } = await collectDigestContent(fromDate, baseDate.toDate(), triggerIds);
-    if (truncated) {
-      logApp.warn('[OPENCTI-MODULE] Digest content truncated, memory budget reached', { notification_id, period, kept: digestContent.length, byteSize, maxByteSize: MAX_DIGEST_CONTENT_SIZE });
-    }
-    if (digestContent.length > 0) {
-      // Range of results must filtered to keep only data related to the digest
-      // And related to the users participating to the digest
-      for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
-        const user = users[userIndex];
-        const userNotifications = digestContent.filter((d) => d.targets
-          .map((t) => t.user.user_id).includes(user.internal_id));
-        if (userNotifications.length > 0) {
-          const version = EVENT_NOTIFICATION_VERSION;
-          const target = convertToNotificationUser(user, notifiers);
-          const dataPromises = userNotifications.map(async (n) => {
-            const userTarget = n.targets.find((t) => t.user.user_id === user.internal_id);
-            return ({
-              notification_id: n.notification_id,
-              type: userTarget?.type ?? type,
-              instance: n.data,
-              message: await generateNotificationMessageForInstance(context, user, n.data),
-              origin: n.origin,
-              streamMessage: n.streamMessage,
-            });
-          });
-          const data = await Promise.all(dataPromises);
-          const digestEvent: DigestEvent = { version, notification_id, type, target, data };
-          await storeNotificationEvent(context, digestEvent);
-        }
-      }
+    const digest = digestNotifications[index];
+    try {
+      await handleDigestNotification(context, baseDate, digest);
+    } catch (e) {
+      logApp.error('[OPENCTI-MODULE] Notification manager digest error', { cause: e, manager: 'NOTIFICATION_MANAGER', notification_id: digest.trigger.internal_id });
     }
   }
 };

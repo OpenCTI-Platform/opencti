@@ -49,11 +49,8 @@ vi.mock('../../../src/config/credentials', () => ({
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/config/conf')>();
   const confGet = vi.fn((key: string) => {
-    if (key === 'elasticsearch:engine_selector') {
-      return 'elk';
-    }
-    if (key === 'elasticsearch:engine_check') {
-      return false;
+    if (key === 'elasticsearch:engine_client') {
+      return 'elasticsearch8';
     }
     return actual.default.get(key);
   });
@@ -61,12 +58,7 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
   return {
     ...actual,
     default: { ...actual.default, get: confGet },
-    booleanConf: vi.fn((key: string, defaultValue: boolean) => {
-      if (key === 'elasticsearch:engine_check') {
-        return false;
-      }
-      return defaultValue;
-    }),
+    booleanConf: vi.fn((_key: string, defaultValue: boolean) => defaultValue),
     extendedErrors: vi.fn(() => ({})),
     loadCert: vi.fn(() => null),
     logApp: {

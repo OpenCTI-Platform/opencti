@@ -58,7 +58,6 @@ import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalR
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { getCustomFieldDefinitionsForEntityType } from '../modules/customField/custom-field-cache';
-import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../config/conf';
 
 export type FilterDefinition = {
   filterKey: string;
@@ -241,36 +240,34 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
   }
 
   // Add custom field filters dynamically from loaded definitions
-  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-    const customFieldDefs = await getCustomFieldDefinitionsForEntityType(context, user, type);
-    for (const cfDef of customFieldDefs) {
-      // Map custom field type to filter type
-      let filterType = 'string';
-      if (cfDef.field_type === 'integer') filterType = 'integer';
-      else if (cfDef.field_type === 'boolean') filterType = 'boolean';
-      else if (cfDef.field_type === 'date') filterType = 'date';
-      else if (cfDef.field_type === 'select' || cfDef.field_type === 'multi_select') filterType = 'enum';
+  const customFieldDefs = await getCustomFieldDefinitionsForEntityType(context, user, type);
+  for (const cfDef of customFieldDefs) {
+    // Map custom field type to filter type
+    let filterType = 'string';
+    if (cfDef.field_type === 'integer') filterType = 'integer';
+    else if (cfDef.field_type === 'boolean') filterType = 'boolean';
+    else if (cfDef.field_type === 'date') filterType = 'date';
+    else if (cfDef.field_type === 'select' || cfDef.field_type === 'multi_select') filterType = 'enum';
 
-      const isSelectLike = cfDef.field_type === 'select' || cfDef.field_type === 'multi_select';
-      const elementsForSearch = isSelectLike && cfDef.select_options
-        ? cfDef.select_options
-        : [];
-      // A custom field attached to several types keeps all of them, as a standard attribute
-      const existingSubEntityTypes = filterDefinitionsMap.get(cfDef.name)?.subEntityTypes ?? [];
+    const isSelectLike = cfDef.field_type === 'select' || cfDef.field_type === 'multi_select';
+    const elementsForSearch = isSelectLike && cfDef.select_options
+      ? cfDef.select_options
+      : [];
+    // A custom field attached to several types keeps all of them, as a standard attribute
+    const existingSubEntityTypes = filterDefinitionsMap.get(cfDef.name)?.subEntityTypes ?? [];
 
-      filterDefinitionsMap.set(
-        cfDef.name,
-        {
-          filterKey: cfDef.name,
-          type: filterType,
-          label: cfDef.label,
-          multiple: cfDef.multiple ?? false,
-          elementsForFilterValuesSearch: elementsForSearch,
-          subEntityTypes: uniq(existingSubEntityTypes.concat(subEntityTypes)),
-          subFilters: [],
-        },
-      );
-    }
+    filterDefinitionsMap.set(
+      cfDef.name,
+      {
+        filterKey: cfDef.name,
+        type: filterType,
+        label: cfDef.label,
+        multiple: cfDef.multiple ?? false,
+        elementsForFilterValuesSearch: elementsForSearch,
+        subEntityTypes: uniq(existingSubEntityTypes.concat(subEntityTypes)),
+        subFilters: [],
+      },
+    );
   }
 
   if (isStixCoreObject(type)) {

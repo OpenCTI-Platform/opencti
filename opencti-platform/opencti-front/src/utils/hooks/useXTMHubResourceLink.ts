@@ -10,10 +10,18 @@ export const useXTMHubResourceLink = (urlPath?: string | null) => {
     }
 
     let url: URL | undefined;
+    let hubOrigin: string;
     try {
+      hubOrigin = new URL(settings.platform_xtmhub_url).origin;
       url = new URL(urlPath, settings.platform_xtmhub_url);
     } catch (_) {
       // catch malformed URL
+      return undefined;
+    }
+
+    // URL parsing normalizes some paths (e.g. `/\evil.example`) into another host:
+    // whatever the path looks like, the link must stay on the Hub.
+    if (url.origin !== hubOrigin) {
       return undefined;
     }
 

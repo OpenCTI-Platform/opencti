@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { createUploadFromTestDataFile, queryAsAdmin, queryAsAdminWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER } from '../../../utils/testQuery';
+import { getClientBase, redisPushIngestionLog } from '../../../../src/database/redis';
 
 describe('TAXII push ingestion resolver — configuration export / import', () => {
   let createdTaxiiPushId: string = '';
@@ -101,7 +102,8 @@ describe('TAXII push ingestion resolver — configuration export / import', () =
     }
   });
 
-  it('should delete the TAXII push ingester', async () => {
+  it('should delete the TAXII push ingester and its log history', async () => {
+    await redisPushIngestionLog(createdTaxiiPushId, { level: 'info', type: 'taxii-collection', identifier: 'Taxii push for export test', message: 'before-delete' });
     const result = await queryAsAdminWithSuccess({
       query: gql`
         mutation deleteTaxiiPushIngester($id: ID!) {
@@ -111,5 +113,6 @@ describe('TAXII push ingestion resolver — configuration export / import', () =
       variables: { id: createdTaxiiPushId },
     });
     expect(result.data?.ingestionTaxiiCollectionDelete).toEqual(createdTaxiiPushId);
+    expect(await getClientBase().exists(`ingestion-log-${createdTaxiiPushId}-history`)).toBe(0);
   });
 });

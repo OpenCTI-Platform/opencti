@@ -10,6 +10,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { canUse } from '../../../../utils/authorizedMembers';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 
 const OptionIcon = styled('div')(({ theme }) => ({
   paddingTop: 4,
@@ -38,6 +39,8 @@ const CreatedByField = (props) => {
     clearable = false,
   } = props;
   const { t_i18n } = useFormatter();
+  // Form Intake: authors are never created on the fly, only selected
+  const { isDeferredMode } = useDeferredCreation();
   const { isFeatureEnable } = useHelper();
   const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
   const [identityCreation, setIdentityCreation] = useState(false);
@@ -116,6 +119,14 @@ const CreatedByField = (props) => {
     }
   };
 
+  // The server also matches aliases: the default label-only filter would hide those hits
+  const filterOptions = (options, inputValue) => {
+    const needle = inputValue.trim().toLowerCase();
+    if (!needle) return options;
+    return options.filter((option) => [option.label, ...(option.entity?.x_opencti_aliases ?? [])]
+      .some((candidate) => candidate?.toLowerCase().includes(needle)));
+  };
+
   const handleOpenIdentityCreation = () => {
     setIdentityCreation(true);
   };
@@ -136,9 +147,10 @@ const CreatedByField = (props) => {
         clearable={clearable}
         noOptionsText={t_i18n('No available options')}
         options={identities.sort((a, b) => a.label.localeCompare(b.label))}
+        filterOptions={filterOptions}
         onInputChange={handleSearch}
         onFocusInput={searchIdentities}
-        openCreate={handleOpenIdentityCreation}
+        openCreate={isDeferredMode ? undefined : handleOpenIdentityCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(option) => (
           <>

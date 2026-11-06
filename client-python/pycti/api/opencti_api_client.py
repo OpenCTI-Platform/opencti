@@ -12,6 +12,7 @@ import signal
 import tempfile
 import threading
 from typing import Any, Dict, Optional, Tuple, Union
+from urllib.parse import quote
 
 import requests
 
@@ -87,6 +88,10 @@ from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.utils.opencti_logger import logger
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 from pycti.utils.opencti_stix2_utils import NOT_PROVIDED, OpenCTIStix2Utils
+from pycti.utils.opencti_tls import (
+    get_tls_reject_unauthorized,
+    log_tls_verification_disabled,
+)
 
 # Global singleton variables for proxy certificate management
 _PROXY_CERT_BUNDLE = None
@@ -168,6 +173,7 @@ class OpenCTIApiClient:
     :param log_level: log level for the client
     :type log_level: str, optional
     :param ssl_verify: Requiring the requests to verify the TLS certificate at the server.
+        Defaults to the OPENCTI_TLS_REJECT_UNAUTHORIZED environment variable (false if unset).
     :type ssl_verify: bool, str, optional
     :param proxies: proxy configuration with "http" and "https" keys (e.g., {"http": "http://my_proxy:8080", "https": "http://my_proxy:8080"})
     :type proxies: dict, optional
@@ -192,7 +198,7 @@ class OpenCTIApiClient:
         url: str,
         token: str,
         log_level: str = "info",
-        ssl_verify: Union[bool, str] = False,
+        ssl_verify: Union[bool, str, None] = None,
         proxies: Union[Dict[str, str], None] = None,
         json_logging: bool = False,
         bundle_send_to_queue: bool = True,
@@ -211,7 +217,8 @@ class OpenCTIApiClient:
         :param log_level: logging level (default: "info")
         :type log_level: str
         :param ssl_verify: SSL certificate verification setting
-        :type ssl_verify: Union[bool, str]
+            (default: OPENCTI_TLS_REJECT_UNAUTHORIZED, false if unset)
+        :type ssl_verify: Union[bool, str, None]
         :param proxies: proxy configuration dictionary with "http" and "https" keys
         :type proxies: Dict[str, str] or None
         :param json_logging: whether to format logs as JSON (default: False)
@@ -234,7 +241,9 @@ class OpenCTIApiClient:
 
         # Check configuration
         self.bundle_send_to_queue = bundle_send_to_queue
-        self.ssl_verify = ssl_verify
+        self.ssl_verify = (
+            get_tls_reject_unauthorized() if ssl_verify is None else ssl_verify
+        )
         self.cert = cert
         self.proxies = proxies
         if url is None or len(url) == 0:
@@ -249,6 +258,9 @@ class OpenCTIApiClient:
 
         # Setup proxy certificates if provided
         self._setup_proxy_certificates()
+        # Proxy certificates enable the verification, warn only when the global default still disables it
+        if ssl_verify is None and self.ssl_verify is False:
+            log_tls_verification_disabled(self.app_logger)
 
         # Define API
         self.api_token = token
@@ -824,7 +836,9 @@ class OpenCTIApiClient:
         :return: returns either the file content as text, bytes, base64-encoded string, or None on failure
         :rtype: str, bytes, or None
         """
-        fetch_uri = f"{self.base_url}/storage/get/{file_id}"
+        # The file id keeps the uploaded file name as is: encode it so that a
+        # reserved character such as "#" or "?" is not read as a URL delimiter.
+        fetch_uri = f"{self.base_url}/storage/get/{quote(file_id, safe='/')}"
         return self.fetch_opencti_file(fetch_uri, binary=binary, serialize=serialize)
 
     def health_check(self):

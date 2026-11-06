@@ -1,7 +1,7 @@
 import { PassThrough, Readable } from 'node:stream';
 import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { Agent, type Dispatcher, fetch, FormData, Headers, type Response } from 'undici';
-import { getPlatformHttpProxyAgent } from '../config/conf';
+import { getPlatformHttpProxyAgent, TLS_REJECT_UNAUTHORIZED } from '../config/conf';
 import { fromBase64, isNotEmptyField } from '../database/utils';
 
 export class OpenCTIHeaders {
@@ -18,7 +18,7 @@ export type HttpResponseType = 'json' | 'arraybuffer' | 'text' | 'stream';
 
 export interface GetHttpClient {
   baseURL?: string;
-  rejectUnauthorized?: boolean;
+  rejectUnauthorized?: boolean | null;
   timeout?: number;
   responseType: HttpResponseType;
   headers?: Record<string, string>;
@@ -410,7 +410,7 @@ const toTransportError = (error: unknown, timeout: number, timeoutSignal: AbortS
 };
 
 export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, responseType, certificates, auth, beforeRedirect }: GetHttpClient) => {
-  const clientAgent = getAgent(rejectUnauthorized === true, certificates);
+  const clientAgent = getAgent(rejectUnauthorized ?? TLS_REJECT_UNAUTHORIZED, certificates);
   const defaultAgent = getAgent(true, undefined);
   const request = async (config: HttpRequestConfig, useClientTransport: boolean): Promise<HttpResponse> => {
     const method = (config.method ?? 'GET').toUpperCase();

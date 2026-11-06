@@ -6,6 +6,12 @@ vi.mock('../../../../../src/modules/theme/theme-domain', async (importOriginal) 
   checkExistingTheme: vi.fn(),
 }));
 
+vi.mock('../../../../../src/domain/settings', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/domain/settings')>()),
+  getSettingsFromDatabase: vi.fn(),
+}));
+
+import { getSettingsFromDatabase } from '../../../../../src/domain/settings';
 import { findById, checkExistingTheme } from '../../../../../src/modules/theme/theme-domain';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportPlan } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
@@ -29,16 +35,25 @@ const compute = (
   return family.importer!.compute(context, user, item, plan, mode);
 };
 
-const apply = (type: string, id: string, configuration: Record<string, unknown>, computed: ConfigPresetComputedItem, mode: ConfigImportMode = ConfigImportMode.Overwrite) => {
+const apply = (
+  type: string,
+  id: string,
+  configuration: Record<string, unknown>,
+  computed: ConfigPresetComputedItem,
+  mode: ConfigImportMode = ConfigImportMode.Overwrite,
+  plan: ConfigPresetImportPlan = { created: new Set() },
+) => {
   const family = CONFIG_PRESET_FAMILIES.find((candidate) => candidate.id === type)!;
   const item: ConfigPresetBundleItem = { type, id, path: `${id}.json`, configuration };
-  return family.importer!.apply(context, user, item, computed, mode);
+  return family.importer!.apply(context, user, item, computed, mode, plan);
 };
 
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(findById).mockResolvedValue(undefined as never);
   vi.mocked(checkExistingTheme).mockResolvedValue(false);
+  // A platform that has none of the settings of the bundle
+  vi.mocked(getSettingsFromDatabase).mockResolvedValue({} as never);
 });
 
 describe('Messages import (compute)', () => {
@@ -208,5 +223,12 @@ describe('Branding import (compute)', () => {
     expect(result).toMatchObject({ status: 'created', exists: false, conflict: false });
     expect(result.reason).toBeUndefined();
     expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
+  });
+});
+
+describe('Roles and groups import (compute)', () => {
+  it.each(['roles', 'groups'])('fails an item of %s whose name is blank, without failing the whole computation', async (type) => {
+    const results = await Promise.all(['', '   '].map((name) => compute(type, 'some-id', { name })));
+    results.forEach((computed) => expect(computed).toMatchObject({ status: 'failed', label: 'some-id' }));
   });
 });

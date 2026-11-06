@@ -147,7 +147,9 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
       .then(() => {
         let finalValue = value;
         if (name === 'bornIn' || name === 'ethnicity') {
-          finalValue = (value as FieldOption)?.value ?? '';
+          // A cleared country is sent as null, as the createdBy ref is, so the
+          // backend removes the relation instead of resolving an empty id.
+          finalValue = (value as FieldOption | null)?.value || null;
         }
         editor.fieldPatch({
           variables: {
@@ -168,14 +170,12 @@ const ThreatActorIndividualEditionDemographicsComponent = ({
     gender: threatActorIndividual.gender,
     marital_status: threatActorIndividual.marital_status,
     job_title: threatActorIndividual.job_title,
-    bornIn: {
-      label: threatActorIndividual.bornIn?.name ?? '',
-      value: threatActorIndividual.bornIn?.id ?? '',
-    },
-    ethnicity: {
-      label: threatActorIndividual.ethnicity?.name ?? '',
-      value: threatActorIndividual.ethnicity?.id ?? '',
-    },
+    bornIn: threatActorIndividual.bornIn
+      ? { label: threatActorIndividual.bornIn.name, value: threatActorIndividual.bornIn.id }
+      : null,
+    ethnicity: threatActorIndividual.ethnicity
+      ? { label: threatActorIndividual.ethnicity.name, value: threatActorIndividual.ethnicity.id }
+      : null,
   };
 
   return (

@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { extractResolvedFiltersFromInstance } from '../../../src/manager/cacheManager';
+import { logApp } from '../../../src/config/conf';
 import type { BasicStoreCommon } from '../../../src/types/store';
 
 const instanceOfPlaybookListenKnowledgeWithSelectedEntities = {
@@ -36,6 +37,60 @@ describe('Cache Manager', () => {
         const expectedResult: any[] = ['id2'];
         const result = extractResolvedFiltersFromInstance(instanceOfPlaybookListenPIR);
         expect(result).toEqual(expectedResult);
+      });
+
+      it('should ignore malformed inPirFilters when listening to PIR events', async () => {
+        const buildPlaybookListenPIR = (inPirFilters: unknown) => ({
+          playbook_definition: JSON.stringify({
+            nodes: [{
+              id: 'id1',
+              name: 'Listen PIR events',
+              position: { x: 0, y: 0 },
+              component_id: 'PLAYBOOK_DATA_STREAM_PIR',
+              configuration: JSON.stringify({ inPirFilters, create: true, update: false, delete: false }),
+            }],
+            links: [],
+          }),
+          internal_id: 'playbook-id',
+          entity_type: 'Playbook',
+        } as unknown as BasicStoreCommon);
+        const warnSpy = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+        try {
+          // Well formatted or empty values: no warning
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR([{ value: 'id2' }]))).toEqual(['id2']);
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR([]))).toEqual([]);
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR(null))).toEqual([]);
+          expect(warnSpy).not.toHaveBeenCalled();
+          // Malformed values: ignored with a warning
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR('id2'))).toEqual([]);
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR({ value: 'id2' }))).toEqual([]);
+          expect(extractResolvedFiltersFromInstance(buildPlaybookListenPIR(['id2', null, { value: 'id3' }]))).toEqual(['id3']);
+          expect(warnSpy).toHaveBeenCalledTimes(3);
+          expect(warnSpy).toHaveBeenLastCalledWith(expect.any(String), {
+            playbook_id: 'playbook-id',
+            node_id: 'id1',
+          });
+          // inPirFilters in a node that is not a "Listen PIR events" node: ignored without warning
+          warnSpy.mockClear();
+          const playbookWithInPirFiltersInOtherNode = {
+            playbook_definition: JSON.stringify({
+              nodes: [{
+                id: 'id1',
+                name: 'Listen knowledge events',
+                position: { x: 0, y: 0 },
+                component_id: 'PLAYBOOK_INTERNAL_DATA_STREAM',
+                configuration: JSON.stringify({ inPirFilters: [{ value: 'id2' }, 'id3'] }),
+              }],
+              links: [],
+            }),
+            internal_id: 'playbook-id',
+            entity_type: 'Playbook',
+          } as unknown as BasicStoreCommon;
+          expect(extractResolvedFiltersFromInstance(playbookWithInPirFiltersInOtherNode)).toEqual([]);
+          expect(warnSpy).not.toHaveBeenCalled();
+        } finally {
+          warnSpy.mockRestore();
+        }
       });
     });
   });

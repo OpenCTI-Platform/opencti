@@ -7,6 +7,7 @@ import {
   SETTINGS_SETACCESSES,
   SETTINGS_SETAUTH,
   SETTINGS_SETCASETEMPLATES,
+  SETTINGS_SETCUSTOMFIELDS,
   SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETDISSEMINATION,
   SETTINGS_SETKILLCHAINPHASES,
@@ -168,6 +169,14 @@ describe('Hook: useSettingsFallbackUrl', () => {
     const { hook } = testRenderHook(
       () => useSettingsFallbackUrl(),
       { userContext: buildUserContext([SETTINGS_SETCASETEMPLATES]) },
+    );
+    expect(hook.result.current).toBe('/dashboard/settings/vocabularies');
+  });
+
+  it('should return /dashboard/settings/vocabularies when user has SETTINGS_SETCUSTOMFIELDS', () => {
+    const { hook } = testRenderHook(
+      () => useSettingsFallbackUrl(),
+      { userContext: buildUserContext([SETTINGS_SETCUSTOMFIELDS]) },
     );
     expect(hook.result.current).toBe('/dashboard/settings/vocabularies');
   });
