@@ -636,7 +636,7 @@
   "Listen deletion": "リッスン削除",
   "Listen through http callback": "httpコールバックを介してリッスンする",
   "Local authentication": "ローカル認証",
-  "Local authentication lockout duration in seconds": "ローカル認証のロックアウト時間（秒）",
+  "Local authentication lockout duration in minutes": "ローカル認証のロックアウト時間（分）",
   "Local authentication lockout enabled": "ローカル認証のロックアウトを有効化",
   "Local authentication lockout final action": "ローカル認証ロックアウトの最終動作",
   "Local authentication lockout max attempts": "ローカル認証のロックアウトまでの最大試行回数",

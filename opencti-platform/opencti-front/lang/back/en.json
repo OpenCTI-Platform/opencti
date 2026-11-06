@@ -636,7 +636,7 @@
   "Listen deletion": "Listen deletion",
   "Listen through http callback": "Listen through http callback",
   "Local authentication": "Local authentication",
-  "Local authentication lockout duration in seconds": "Local authentication lockout duration in seconds",
+  "Local authentication lockout duration in minutes": "Local authentication lockout duration in minutes",
   "Local authentication lockout enabled": "Local authentication lockout enabled",
   "Local authentication lockout final action": "Local authentication lockout final action",
   "Local authentication lockout max attempts": "Local authentication lockout max attempts",

@@ -68,13 +68,14 @@ export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
   // Failed attempts older than the window are forgotten. 0 disables the window: failed attempts are only reset by a successful login
   local_auth_lockout_window: 15, // minutes
   // Duration of the lock applied by the temporary final action
-  local_auth_lockout_duration: 900, // seconds, 15 min
+  local_auth_lockout_duration: 15, // minutes
 };
 
 // Upper bounds of the lockout policy, mirrored by the local strategy form
 export const LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
 export const LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT = 1440; // minutes, the window is capped to 24h by the specification
-export const LOCAL_AUTH_LOCKOUT_DURATION_LIMIT = 10800; // seconds, locks are capped to 3h by the specification
+// minutes, the temporary lock is capped to 24h like the window, as it lasted a full window in the specification
+export const LOCAL_AUTH_LOCKOUT_DURATION_LIMIT = 1440;
 
 const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuthConfigInput) => {
   if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {

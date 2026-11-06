@@ -636,7 +636,7 @@
   "Listen deletion": "Удаление прослушивания",
   "Listen through http callback": "Слушайте через обратный вызов http",
   "Local authentication": "Локальная аутентификация",
-  "Local authentication lockout duration in seconds": "Длительность блокировки локальной аутентификации в секундах",
+  "Local authentication lockout duration in minutes": "Длительность блокировки локальной аутентификации в минутах",
   "Local authentication lockout enabled": "Блокировка локальной аутентификации включена",
   "Local authentication lockout final action": "Итоговое действие блокировки локальной аутентификации",
   "Local authentication lockout max attempts": "Максимальное число попыток до блокировки локальной аутентификации",

@@ -54,7 +54,7 @@ const LOCKOUT_INPUT = {
   local_auth_lockout_admin_max_attempts: 3,
   local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Permanent,
   local_auth_lockout_window: 60,
-  local_auth_lockout_duration: 600, // seconds
+  local_auth_lockout_duration: 10, // minutes
 };
 
 // The lockout policy is validated against the settings stored in the database
@@ -77,7 +77,7 @@ describe('updateLocalAuth - lockout policy', () => {
 
   it('should ignore the lockout policy when the feature flag is disabled', async () => {
     vi.mocked(isFeatureEnabled).mockReturnValue(false);
-    await updateLocalAuth(context, user, 'settings-id', { enabled: true, ...LOCKOUT_INPUT, local_auth_lockout_duration: 500 });
+    await updateLocalAuth(context, user, 'settings-id', { enabled: true, ...LOCKOUT_INPUT, local_auth_lockout_duration: 20 });
     expect(patchSentToDatabase()).toEqual({ local_auth: { enabled: true } });
   });
 

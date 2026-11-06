@@ -89,7 +89,7 @@ type Translate = (message: string, options?: { values: Record<string, number> })
 // Upper bounds of the lockout policy, mirrored from setting-auth.ts
 const LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
 const LOCKOUT_WINDOW_LIMIT = 1440; // minutes, the window is capped to 24h
-const LOCKOUT_DURATION_LIMIT = 10800; // seconds, locks are capped to 3h
+const LOCKOUT_DURATION_LIMIT = 1440; // minutes, the temporary lock is capped to 24h like the window
 
 // Action applied once the max attempts are reached, mirrored from the LocalAuthLockoutFinalAction enum
 const LOCKOUT_FINAL_ACTIONS = ['temporary', 'permanent'];
@@ -373,7 +373,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                     variant="outlined"
                     className="mt-5"
                     name="local_auth_lockout_window"
-                    label={`${t_i18n('Failed login attempts counter reset after (minutes)')} (${t_i18n('0 equals unlimited')})`}
+                    label={`${t_i18n('Failed login attempts counter reset after (minutes)')} (${t_i18n('0 = only reset by a successful login')})`}
                     fullWidth
                   />
                   {values.local_auth_lockout_final_action === 'temporary' && (
@@ -383,7 +383,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
                       variant="outlined"
                       className="mt-5"
                       name="local_auth_lockout_duration"
-                      label={t_i18n('Temporary lock duration (seconds)')}
+                      label={t_i18n('Temporary lock duration (minutes)')}
                       fullWidth
                     />
                   )}
