@@ -266,6 +266,9 @@ def test_prepare_export_stix_2_0_removes_nested_refs_excluded_by_access_filter(
         None,
         ACCESS_FILTER,
     ]
+    # Both lists are complete: a truncated unfiltered list would miss
+    # excluded targets beyond its first page.
+    assert all(call.kwargs.get("getAll") for call in list_calls)
 
 
 def test_prepare_export_stix_2_0_keeps_nested_refs_allowed_by_access_filter(
@@ -328,6 +331,100 @@ def test_prepare_export_stix_2_0_no_custom_attributes_has_no_dangling_marking(
 
     assert [obj["type"] for obj in result] == ["malware"]
     assert "object_marking_refs" not in result[0]
+
+
+def _raw_external_reference(with_file=False):
+    external_reference = {
+        "source_name": "mitre-attack",
+        "description": None,
+        "url": "https://example.com/report",
+        "hash": None,
+        "external_id": "S0001",
+        "importFiles": [],
+    }
+    if with_file:
+        external_reference["importFiles"] = [
+            {
+                "id": "import/External-Reference/report.pdf",
+                "name": "report.pdf",
+                "metaData": {"mimetype": "application/pdf", "version": None},
+            }
+        ]
+    return external_reference
+
+
+def test_generate_export_stix_2_0_embeds_external_reference_files(stix_helper):
+    """Files attached to external references are embedded, as in legacy."""
+    backend_payload = _backend_malware_payload()
+    backend_payload["external_references"] = [
+        {
+            "source_name": "mitre-attack",
+            "url": "https://example.com/report",
+            "external_id": "S0001",
+        }
+    ]
+    stix_helper.opencti.stix_core_object.to_stix.return_value = backend_payload
+    raw_entity = _raw_graphql_entity()
+    raw_entity["externalReferences"] = [_raw_external_reference(with_file=True)]
+
+    with patch.object(
+        stix_helper.opencti, "fetch_opencti_file_by_id", return_value="ZmFrZQ=="
+    ):
+        result = stix_helper.generate_export(raw_entity, stix_version=STIX_VERSION_2_0)
+
+    assert result["external_references"] == [
+        {
+            "source_name": "mitre-attack",
+            "url": "https://example.com/report",
+            "external_id": "S0001",
+            "x_opencti_files": [
+                {
+                    "name": "report.pdf",
+                    "data": "ZmFrZQ==",
+                    "mime_type": "application/pdf",
+                    "version": None,
+                }
+            ],
+        }
+    ]
+
+
+def test_generate_export_stix_2_0_no_custom_attributes_drops_legacy_keys(
+    stix_helper,
+):
+    """Without custom attributes, the keys omitted by legacy are omitted too."""
+    backend_payload = _backend_malware_payload()
+    backend_payload["kill_chain_phases"] = [
+        {
+            "kill_chain_name": "mitre-attack",
+            "phase_name": "execution",
+            "x_opencti_order": 1,
+        }
+    ]
+    backend_payload["external_references"] = [{"source_name": "mitre-attack"}]
+    stix_helper.opencti.stix_core_object.to_stix.return_value = backend_payload
+    raw_entity = _raw_graphql_entity()
+    raw_entity["externalReferences"] = [_raw_external_reference()]
+
+    result = stix_helper.generate_export(
+        raw_entity, no_custom_attributes=True, stix_version=STIX_VERSION_2_0
+    )
+
+    assert "kill_chain_phases" not in result
+    assert "external_references" not in result
+
+
+def test_generate_export_stix_2_0_without_external_references(stix_helper):
+    """No raw external reference: no `external_references` key."""
+    backend_payload = _backend_malware_payload()
+    backend_payload["external_references"] = []
+    stix_helper.opencti.stix_core_object.to_stix.return_value = backend_payload
+
+    result = stix_helper.generate_export(
+        _raw_graphql_entity(), stix_version=STIX_VERSION_2_0
+    )
+
+    assert "external_references" not in result
 
 
 def test_prepare_export_stix_2_0_restricted_author_has_no_created_by_ref(
@@ -458,3 +555,51 @@ def test_stix_core_object_to_stix_raises_on_invalid_json():
     ):
         with pytest.raises(json.JSONDecodeError):
             client.stix_core_object.to_stix(id=MALWARE_INTERNAL_ID)
+
+
+def _nested_refs_page(target_ids, has_next_page, end_cursor=None):
+    return {
+        "data": {
+            "stixNestedRefRelationships": {
+                "edges": [
+                    {"node": {"id": target_id, "to": {"standard_id": target_id}}}
+                    for target_id in target_ids
+                ],
+                "pageInfo": {
+                    "startCursor": None,
+                    "endCursor": end_cursor,
+                    "hasNextPage": has_next_page,
+                    "hasPreviousPage": False,
+                    "globalCount": 2,
+                },
+            }
+        }
+    }
+
+
+def test_stix_nested_ref_relationship_list_get_all_follows_pages():
+    client = _fake_client()
+    pages = [
+        _nested_refs_page(["file--1"], has_next_page=True, end_cursor="cursor-1"),
+        _nested_refs_page(["file--2"], has_next_page=False),
+    ]
+    with patch.object(client, "query", side_effect=pages) as query:
+        result = client.stix_nested_ref_relationship.list(
+            fromId=MALWARE_INTERNAL_ID, getAll=True
+        )
+
+    assert [ref["to"]["standard_id"] for ref in result] == ["file--1", "file--2"]
+    assert [call.args[1]["after"] for call in query.call_args_list] == [
+        None,
+        "cursor-1",
+    ]
+
+
+def test_stix_nested_ref_relationship_list_without_get_all_reads_one_page():
+    client = _fake_client()
+    page = _nested_refs_page(["file--1"], has_next_page=True, end_cursor="cursor-1")
+    with patch.object(client, "query", return_value=page) as query:
+        result = client.stix_nested_ref_relationship.list(fromId=MALWARE_INTERNAL_ID)
+
+    assert [ref["to"]["standard_id"] for ref in result] == ["file--1"]
+    query.assert_called_once()
