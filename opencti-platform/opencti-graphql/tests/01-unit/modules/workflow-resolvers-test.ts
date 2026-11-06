@@ -543,7 +543,7 @@ describe('workflow-resolvers', () => {
               diagnostics: [],
             },
           },
-          hasPublishedVersion: true,
+          publishedByScope: { GLOBAL: true },
         } as any);
 
         const result = await workflowResolvers.Query.workflowMigrationPreview(

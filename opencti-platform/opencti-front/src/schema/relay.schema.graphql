@@ -18102,6 +18102,7 @@ enum WorkflowMigrationDiagnosticType {
   MISSING_ORDER
   MISSING_TEMPLATE
   NAME_CONFLICT
+  REQUEST_ACCESS_OUTCOME_INVALID
 }
 
 type WorkflowMigrationPreview {
