@@ -134,8 +134,10 @@ const closeServer = (server: http.Server) => new Promise((resolve) => {
 beforeAll(async () => {
   baseURL = await startServer();
   otherHostBaseURL = await startServer();
-  closedPortURL = await startServer();
-  await closeServer(servers.pop() as http.Server);
+  // Port 2 is privileged and below the ephemeral range: listen(0) never assigns it, so no test server
+  // (in this file or a parallel worker) can take it over, unlike a freed ephemeral port (#19719).
+  // Port 1 is not usable: it is on the Fetch standard's bad-ports list, which undici refuses before connecting.
+  closedPortURL = 'http://127.0.0.1:2';
   selfSignedCertificate = buildSelfSignedCertificate();
   selfSignedBaseURL = await startServer(selfSignedCertificate);
   mutualTlsBaseURL = await startServer({ ...selfSignedCertificate, requestCert: true, rejectUnauthorized: false });
