@@ -14,6 +14,8 @@ import IconButton from '@common/button/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { useComputeLink } from '../../../../../utils/hooks/useAppData';
+import useAuth from '../../../../../utils/hooks/useAuth';
+import { resolveTypesForRelationship } from '../../../../../utils/Relation';
 import SecurityCoverageResultFormDrawer from './SecurityCoverageResultFormDrawer';
 import {
   SecurityCoverageResultLinesPaginationQuery,
@@ -273,7 +275,10 @@ const SecurityCoverageResultComponent = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const computeLink = useComputeLink();
+  const { schema } = useAuth();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
+  // the tested entities are the targets of has-covered, as defined by the relationships schema
+  const testedEntityTypes = resolveTypesForRelationship(schema.schemaRelationsTypesMapping, 'has-covered', 'to', 'Security-Coverage-Result');
   const LOCAL_STORAGE_KEY = `container-${id}-security-coverage-result`;
   const initialValues = {
     filters: { ...emptyFilterGroup },
@@ -364,7 +369,7 @@ const SecurityCoverageResultComponent = ({
           } as UsePreloadedPaginationFragment<SecurityCoverageResultLinesPaginationQuery>}
           entityTypes={['stix-core-relationship']}
           availableFilterKeys={['coverage_information', 'fromId', 'toId', 'toTypes', 'updated_at']}
-          availableRelationFilterTypes={{ fromId: ['Security-Coverage-Result'] }}
+          availableRelationFilterTypes={{ fromId: ['Security-Coverage-Result'], toId: testedEntityTypes, toTypes: testedEntityTypes }}
           resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationshipsFromResults?.edges?.map((n) => n?.node)}
           dataColumns={dataColumns}
           getComputeLink={(node) => computeLink({ ...node, from: undefined })}

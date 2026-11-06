@@ -213,6 +213,30 @@ describe('useSearchEntities', () => {
     expect(entityTypeOptions.some((e) => e.value === 'Campaign')).toBe(true);
   });
 
+  it('should populate toTypes with the observables, domain objects and relationships', () => {
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('toTypes', {}, vi.fn(), createEvent(''));
+    });
+
+    const toTypesValues = (result.current[0].toTypes ?? []).map((e) => e.value);
+    expect(toTypesValues).toEqual(expect.arrayContaining(['Malware', 'IPv4-Addr', 'targets', 'Stix-Domain-Object']));
+  });
+
+  it('should populate toTypes with only the types of its search scope', () => {
+    const options = { ...defaultOptions, searchScope: { toTypes: ['Vulnerability', 'Attack-Pattern'] } };
+    const { result } = renderHook(() => useSearchEntities(options));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('toTypes', {}, vi.fn(), createEvent(''));
+    });
+
+    expect((result.current[0].toTypes ?? []).map((e) => e.value)).toEqual(['Attack-Pattern', 'Vulnerability']);
+  });
+
   it('should populate markings from user allowed_marking', () => {
     const { result } = renderHook(() => useSearchEntities(defaultOptions));
     const [, searchEntities] = result.current;
