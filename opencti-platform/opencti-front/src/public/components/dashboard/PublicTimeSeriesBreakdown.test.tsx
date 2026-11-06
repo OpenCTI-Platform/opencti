@@ -133,6 +133,26 @@ describe('PublicTimeSeriesBreakdown', () => {
     expect((await drawn(mocks.lines)).series).toHaveLength(2);
   });
 
+  it('draws a long period in the coarser interval the API counted it in, and says so', async () => {
+    // A daily widget over two years: the API counts its dates in months
+    const months = Array.from({ length: 24 }, (_, i) => new Date(Date.UTC(2024, i, 1)).toISOString());
+    mocks.response = {
+      publicStixCoreObjectsTimeSeriesBreakdown: {
+        truncated: false,
+        interval: 'month',
+        dates: months,
+        series: [{ label: 'Type-0', isOther: false, entity: null, values: months.map((_, i) => i) }],
+      },
+    };
+    const { findByTestId } = testRender(
+      <PublicStixCoreObjectsTimeSeriesBreakdown uriKey="public-key" widget={makeWidget('line', { breakdownBy: 'entity_type', interval: 'day' })} />,
+    );
+    const lines = await drawn(mocks.lines);
+    expect(lines.interval).toEqual('month');
+    expect(lines.series[0].data).toHaveLength(24);
+    expect((await findByTestId('widget-warning')).textContent).toContain('Interval adjusted to Month');
+  });
+
   it('draws in the same shell as the dashboard widget, for the same plot height', () => {
     const { getByTestId } = testRender(<PublicStixCoreObjectsTimeSeriesBreakdown uriKey="public-key" widget={makeWidget('line', { breakdownBy: 'entity_type' })} />);
     expect(getByTestId('widget-container').getAttribute('data-padding')).toEqual('small');

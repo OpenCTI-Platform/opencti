@@ -387,8 +387,9 @@ export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthCont
   const { user, ...widget } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const breakdownArgs = buildPublicBreakdownArgs(args, widget, 'entities');
-  // Use standard API
-  return withPublicBreakdownRefusals(() => stixCoreObjectsTimeSeriesBreakdown(context, user, breakdownArgs));
+  // Use standard API, with the interval the dates are counted in
+  const breakdown = await withPublicBreakdownRefusals(() => stixCoreObjectsTimeSeriesBreakdown(context, user, breakdownArgs));
+  return breakdown && { ...breakdown, interval: breakdownArgs.interval };
 };
 
 // vertical-bar & line & area & heatmap of relationships with a breakdown
@@ -396,8 +397,9 @@ export const publicStixRelationshipsTimeSeriesBreakdown = async (context: AuthCo
   const { user, ...widget } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const breakdownArgs = buildPublicBreakdownArgs(args, widget, 'relationships');
-  // Use standard API
-  return withPublicBreakdownRefusals(() => stixRelationshipsTimeSeriesBreakdown(context, user, breakdownArgs));
+  // Use standard API, with the interval the dates are counted in
+  const breakdown = await withPublicBreakdownRefusals(() => stixRelationshipsTimeSeriesBreakdown(context, user, breakdownArgs));
+  return breakdown && { ...breakdown, interval: breakdownArgs.interval };
 };
 
 export const publicStixRelationshipsMultiTimeSeries = async (

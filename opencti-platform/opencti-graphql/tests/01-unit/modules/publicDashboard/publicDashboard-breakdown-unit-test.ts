@@ -8,6 +8,7 @@ import {
   buildPublicBreakdownArgs,
   canWidgetBreakDown,
   clampPublicBreakdownStartDate,
+  fitPublicBreakdownPeriod,
   getBreakdownEntityTypes,
   PUBLIC_BREAKDOWN_MAX_POINTS,
   withPublicBreakdownRefusals,
@@ -130,18 +131,18 @@ describe('buildPublicBreakdownArgs of relationships', () => {
     expect(() => relationshipsArgs(storedWidget(null, [relationships], breakdownParameters))).toThrow(refusal('This widget cannot be broken down'));
   });
 
-  it('should move the start date of a long period forward, keeping its end date', () => {
-    // 20 series and Other, hourly: the 238 most recent hours fit the 5,000 points of the public breakdowns
+  it('should count a long period in coarser intervals, keeping the whole period', () => {
+    // 20 series and Other, hourly: the 745 hours of January would be 15,645 points, its 32 days are 672
     const widget = storedWidget('relationships', [{ date_attribute: 'created_at', filters: targets }], { ...breakdownParameters, interval: 'hour' });
     const args = relationshipsArgs(widget);
-    expect(new Date(args.startDate).toISOString()).toEqual('2026-01-22T03:00:00.000Z');
-    expect(args.endDate).toBe(endDate);
-    expect(countTimeSeriesIntervals(args.startDate, new Date(endDate), 'hour') * 21).toBeLessThanOrEqual(PUBLIC_BREAKDOWN_MAX_POINTS);
-    // Without limit, the 10 series of the API: the 500 most recent hours
+    expect(args).toMatchObject({ interval: 'day', startDate, endDate });
+    expect(countTimeSeriesIntervals(args.startDate, new Date(endDate), args.interval) * 21).toBeLessThanOrEqual(PUBLIC_BREAKDOWN_MAX_POINTS);
+    // Without limit, the 10 series of the API: 7,450 hourly points, 320 daily ones
     const defaultLimit = relationshipsArgs(storedWidget('relationships', [{ date_attribute: 'created_at' }], { breakdownBy: 'toTypes', interval: 'hour' }));
-    expect(countTimeSeriesIntervals(defaultLimit.startDate, new Date(endDate), 'hour')).toEqual(500);
-    // A short period is left as it is
-    expect(relationshipsArgs(storedWidget('relationships', [{ date_attribute: 'created_at' }], breakdownParameters)).startDate).toBe(startDate);
+    expect(defaultLimit).toMatchObject({ interval: 'day', startDate });
+    // A short period keeps the interval of the widget
+    const shortPeriod = relationshipsArgs(storedWidget('relationships', [{ date_attribute: 'created_at' }], breakdownParameters));
+    expect(shortPeriod).toMatchObject({ interval: breakdownParameters.interval, startDate });
   });
 
   it('should break down every time series of a single relationships dataset', () => {
@@ -205,6 +206,55 @@ describe('buildPublicBreakdownArgs of entities', () => {
       const widget = storedWidget(perspective, dataSelection, { interval: 'day', breakdownBy: 'objectLabel' }, type);
       expect(() => entitiesArgs(widget)).toThrow(refusal('This widget cannot be broken down'));
     }
+  });
+});
+
+describe('fitPublicBreakdownPeriod', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should keep the interval and the period that fit', () => {
+    // 32 days of 11 series
+    expect(fitPublicBreakdownPeriod(startDate, endDate, 'day', 11)).toEqual({ interval: 'day', startDate });
+    // 51 series of the 98 weeks that fit exactly: the budget is reached, not exceeded
+    const start = new Date(Date.UTC(2024, 2, 18)).toISOString();
+    expect(fitPublicBreakdownPeriod(start, endDate, 'week', 51)).toEqual({ interval: 'week', startDate: start });
+  });
+
+  it('should take the first coarser interval that fits, the steps of the dashboards', () => {
+    // Two years of days: 731 days, 105 weeks, 24 months
+    const twoYears = '2024-02-01T00:00:00.000Z';
+    // 10 series and Other: 454 dates at most, the weeks fit
+    expect(fitPublicBreakdownPeriod(twoYears, endDate, 'day', 11)).toEqual({ interval: 'week', startDate: twoYears });
+    // 50 series and Other: 98 dates at most, the months fit
+    expect(fitPublicBreakdownPeriod(twoYears, endDate, 'day', 51)).toEqual({ interval: 'month', startDate: twoYears });
+    // 5 series: 1,000 dates at most, the days fit
+    expect(fitPublicBreakdownPeriod(twoYears, endDate, 'day', 5)).toEqual({ interval: 'day', startDate: twoYears });
+    // Hours go to days first: 745 hours of 11 series do not fit, 32 days do
+    expect(fitPublicBreakdownPeriod(startDate, endDate, 'hour', 11)).toEqual({ interval: 'day', startDate });
+    // 51 series over 30 years: 30 years, not 120 quarters
+    expect(fitPublicBreakdownPeriod('1996-01-01T00:00:00.000Z', endDate, 'month', 51)).toEqual({ interval: 'year', startDate: '1996-01-01T00:00:00.000Z' });
+  });
+
+  it('should move the start date forward only when even years do not fit', () => {
+    // 51 series: 98 years at most, the 127 years since 1900 are cut to the 98 most recent ones
+    const fitted = fitPublicBreakdownPeriod('1900-01-01T00:00:00.000Z', endDate, 'day', 51);
+    expect(fitted.interval).toEqual('year');
+    expect(new Date(fitted.startDate).toISOString()).toEqual('1929-01-01T00:00:00.000Z');
+    expect(countTimeSeriesIntervals(fitted.startDate, new Date(endDate), 'year')).toEqual(98);
+  });
+
+  it('should count the period up to now without end date', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-02-01T00:30:00.000Z'));
+    expect(fitPublicBreakdownPeriod(startDate, null, 'hour', 11)).toEqual({ interval: 'day', startDate });
+  });
+
+  it('should leave the limits the API refuses, and the unsupported intervals, to the API', () => {
+    expect(fitPublicBreakdownPeriod('2020-01-01T00:00:00.000Z', endDate, 'hour', 0)).toEqual({ interval: 'hour', startDate: '2020-01-01T00:00:00.000Z' });
+    expect(fitPublicBreakdownPeriod('2020-01-01T00:00:00.000Z', endDate, 'hour', 2.5)).toEqual({ interval: 'hour', startDate: '2020-01-01T00:00:00.000Z' });
+    expect(() => fitPublicBreakdownPeriod(startDate, endDate, 'minute', 11)).toThrow('Unsupported interval');
   });
 });
 

@@ -491,6 +491,12 @@ type TimeSeriesBreakdown {
   The series of the values kept by the limit, ranked, then Other when it is requested
   """
   series: [TimeSeriesBreakdownSeries!]!
+
+  """
+  Interval of the dates, given by the public breakdowns: they count a long period in coarser intervals than the one of the
+  widget, as the dashboards would draw it. Not given by the other breakdowns, whose dates are at the requested interval.
+  """
+  interval: String
 }
 
 input AuditsTimeSeriesParameters {
