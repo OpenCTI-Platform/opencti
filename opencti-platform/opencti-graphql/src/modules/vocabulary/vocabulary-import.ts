@@ -132,9 +132,11 @@ export const importVocabulary = async (
 export type VocabularyCategoryImportResult = ConfigImportResult<VocabularyCategoryImportConfiguration, VocabularyImportCode>;
 
 // The one place where the entries of a category are imported: each entry is imported by importVocabulary, so the rules are the ones of an entry
-// (found by its name and its category, created or overwritten, never deleted, no copy). A category is all or nothing: every entry is decided on
-// a dry run first, and nothing is written when one of them fails. A category that has no entry to create or overwrite is skipped.
-// The result is overwritten when an entry is overwritten, created when the entries are only created.
+// (found by its name and its category, created or overwritten, never deleted, no copy). Every entry is decided on a dry run first, and nothing
+// is written when one of them fails. In add mode an entry that exists is skipped, not a failure: an export holds the entries of the platform,
+// the ones that are new are still added. A category that has no entry to create or overwrite is skipped.
+// The result is overwritten when an entry is overwritten, created when the entries are only created. The writes are not a transaction: an entry
+// that fails on the real pass (it changed since the dry run) is reported, the entries written before it stay.
 export const importVocabularyCategory = async (
   context: AuthContext,
   user: AuthUser,
@@ -146,24 +148,31 @@ export const importVocabularyCategory = async (
     return { status: 'failed', code: 'invalid', reason: configImportValidationReason(parsed.error), exists: false };
   }
   const { category, entries } = parsed.data;
-  const decided: { entry: VocabularyImportConfiguration; result: VocabularyImportResult }[] = [];
-  for (const entry of entries) {
+  // A dry run writes nothing: the entries are read at the same time
+  const decided = await Promise.all(entries.map(async (entry) => {
     const entryConfiguration = { ...entry, category };
-    decided.push({ entry: entryConfiguration, result: await importVocabulary(context, user, entryConfiguration, { mode, dryRun: true }) });
-  }
+    return { entry: entryConfiguration, result: await importVocabulary(context, user, entryConfiguration, { mode, dryRun: true }) };
+  }));
+  const isKept = ({ result }: { result: VocabularyImportResult }) => mode === ConfigImportMode.Add && result.code === 'exists';
   const exists = decided.some(({ result }) => result.exists);
-  const failed = decided.filter(({ result }) => result.status === 'failed');
+  const failed = decided.filter((item) => item.result.status === 'failed' && !isKept(item));
   if (failed.length > 0) {
     const reason = failed.map(({ entry, result }) => `${entry.name}: ${result.reason}`).join(', ');
     return { status: 'failed', code: failed[0].result.code, reason, exists, configuration: parsed.data };
   }
-  const changes = decided.filter(({ result }) => result.status !== 'skipped');
+  const changes = decided.filter((item) => item.result.status !== 'skipped' && item.result.status !== 'failed');
   if (changes.length === 0) {
-    return { status: 'skipped', code: 'unchanged', reason: 'Already up to date', exists, configuration: parsed.data };
+    const onlyKept = decided.some(isKept) && decided.every((item) => isKept(item) || item.result.code === 'unchanged');
+    return onlyKept
+      ? { status: 'skipped', code: 'exists', reason: 'Vocabulary entries already exist', exists, configuration: parsed.data }
+      : { status: 'skipped', code: 'unchanged', reason: 'Already up to date', exists, configuration: parsed.data };
   }
   if (!dryRun) {
     for (const { entry } of changes) {
-      await importVocabulary(context, user, entry, { mode });
+      const written = await importVocabulary(context, user, entry, { mode });
+      if (written.status === 'failed') {
+        return { status: 'failed', code: written.code, reason: `${entry.name}: ${written.reason}`, exists, configuration: parsed.data };
+      }
     }
   }
   return { status: changes.some(({ result }) => result.status === 'overwritten') ? 'overwritten' : 'created', exists, configuration: parsed.data };
