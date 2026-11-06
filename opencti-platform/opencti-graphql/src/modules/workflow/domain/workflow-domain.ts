@@ -1737,7 +1737,7 @@ export const triggerWorkflowEvent = async (
     const projected = await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, newState, scope, resolvedClosingReason.closingReason);
     if (!projected && await isClosingReasonLostOnStoredEntity(executionContext, executionUser, resolvedClosingReason.closingReason, entity as BasicStoreEntity)) {
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-        { key: 'pendingError', value: [closingReasonNotWrittenError(resolvedClosingReason.closingReason)] },
+        { key: 'pendingError', value: [closingReasonNotWrittenError(resolvedClosingReason.closingReason ?? null)] },
       ]);
     }
 
@@ -1950,7 +1950,7 @@ const executeWorkflowBypass = async (
     const projected = await projectWorkflowState(executionContext, executionUser, entity, targetStatus.template_id, scope, pendingTransition.closingReason);
     if (!projected && isClosingReasonLost(pendingTransition.closingReason, entity)) {
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-        { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason)] },
+        { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason ?? null)] },
       ]);
     }
     return { success: true, newState: targetStatus.template_id, executionStatus: 'completed', entity };

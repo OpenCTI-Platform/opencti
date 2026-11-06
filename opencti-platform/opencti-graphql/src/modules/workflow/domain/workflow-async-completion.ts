@@ -267,7 +267,7 @@ const completeWorkflowAsyncActionResult = async (
   }
   if (!projected && isClosingReasonLost(pendingTransition.closingReason, fullEntity)) {
     await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-      { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason)] },
+      { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason ?? null)] },
     ]);
   }
 

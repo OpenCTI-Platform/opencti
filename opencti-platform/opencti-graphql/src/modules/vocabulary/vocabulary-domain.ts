@@ -55,7 +55,7 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
     throw UnsupportedError(`Cant find category for vocabulary ${vocabulary.name}`);
   }
   // A hidden category's field is not registered, so no filter can count it
-  if (!isVocabularyCategoryEnabled(categoryDefinition)) {
+  if (!isVocabularyCategoryEnabled(vocabularyDefinitions[categoryDefinition.key])) {
     return 0;
   }
   return countAllThings(context, user, {
