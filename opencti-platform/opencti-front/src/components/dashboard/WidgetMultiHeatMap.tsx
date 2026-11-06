@@ -54,20 +54,17 @@ const WidgetMultiHeatMap = ({
   const axisFormatter = useTimeSeriesAxisFormatter();
 
   const options: ApexOptions = useMemo(() => {
-    const interval = Math.trunc((maxValue - minValue) / 9);
-    const colorRanges = Array(10)
-      .fill(0)
-      .map((_, i) => ({
-        from:
-        minValue + (i + 1) * interval - interval === 0
-          ? 1
-          : minValue + (i + 1) * interval - interval,
-        to: minValue + (i + 1) * interval,
-        color:
-        theme.palette.mode === 'dark'
-          ? darkColors[i + 1]
-          : lightColors[i + 1],
-      }));
+    // The values are counts. Up to ten ranges of whole numbers, one after the other, color every value from 1 up to
+    // the hottest cell: they share a width, and the last one ends at the hottest cell. 0 keeps its own color.
+    // Without a value above 0 (or without values, whose bounds are infinite), only the color of 0 is used.
+    const lowestValue = Math.max(1, minValue);
+    const valuesCount = maxValue >= lowestValue ? maxValue - lowestValue + 1 : 0;
+    const rangeWidth = Math.max(1, Math.ceil(valuesCount / 10));
+    const colorRanges = Array.from({ length: Math.ceil(valuesCount / rangeWidth) }, (_, i) => ({
+      from: lowestValue + i * rangeWidth,
+      to: Math.min(lowestValue + (i + 1) * rangeWidth - 1, maxValue),
+      color: theme.palette.mode === 'dark' ? darkColors[i + 1] : lightColors[i + 1],
+    }));
     colorRanges.push({
       from: 0,
       to: 0,

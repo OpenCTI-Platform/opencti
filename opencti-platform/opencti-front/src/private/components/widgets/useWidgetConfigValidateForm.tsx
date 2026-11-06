@@ -4,7 +4,7 @@ import { checkIfDateAttributeValid, getCurrentAvailableParameters, isDataSelecti
 export const fintelTemplateVariableNameChecker = /^[A-Za-z0-9_-]+$/;
 
 const useWidgetConfigValidateForm = () => {
-  const { host, config, step } = useWidgetConfigContext();
+  const { host, config, step, breakdown } = useWidgetConfigContext();
   const { type, parameters, dataSelection } = config.widget;
 
   const alreadyUsedVariables = (host.kind === 'fintelTemplate' ? host.fintelWidgets : [])
@@ -63,6 +63,9 @@ const useWidgetConfigValidateForm = () => {
   // Check if the variable name is already used in an other widget
   const isWidgetVarNameAlreadyUsed = !!config.fintelVariableName && isVarNameAlreadyUsed(config.fintelVariableName);
 
+  // Check the breakdown can be kept or dropped: not while the saved filter of its dataset is read
+  const isBreakdownResolved = !(breakdown.field && breakdown.resolution === 'loading');
+
   return {
     isFormValid: (
       isLastStep
@@ -74,6 +77,7 @@ const useWidgetConfigValidateForm = () => {
       && isTitleFilled
       && isTypeFilled
       && !isWidgetVarNameAlreadyUsed
+      && isBreakdownResolved
     ),
     isWidgetVarNameAlreadyUsed,
     isVarNameAlreadyUsed,
