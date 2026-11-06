@@ -235,8 +235,8 @@ describe('Workflow bypass', () => {
       ],
       transitions: [{ from: 'open', to: 'closed', event: 'close', syncActions: [{ type: 'log', params: { message: 'edge' } }] }],
     };
-    target = { id: 'status-closed', entity_type: ENTITY_TYPE_STATUS, type: 'Incident', scope: StatusScope.Global, template_id: 'closed', order: 2 };
-    legacy = { ...target, id: 'status-open', template_id: 'open', order: 1 };
+    target = { id: 'status-closed', internal_id: 'status-closed', entity_type: ENTITY_TYPE_STATUS, type: 'Incident', scope: StatusScope.Global, template_id: 'closed', order: 2 };
+    legacy = { ...target, id: 'status-open', internal_id: 'status-open', template_id: 'open', order: 1 };
     vi.mocked(findByType).mockResolvedValue({ id: 'setting-id', workflow_id: 'definition-id' } as any);
     vi.mocked(storeLoadById).mockImplementation(async (_context, _user, id) => {
       if (id === 'entity-id') return entity;
@@ -258,6 +258,7 @@ describe('Workflow bypass', () => {
     });
     vi.mocked(resolveMappedStatusId).mockImplementation(async (_context, _user, _type, _scope, state) => `status-${state}`);
     vi.mocked(fullEntitiesList).mockResolvedValue([legacy, target]);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([legacy, target]);
     vi.spyOn(ActionRegistry, 'log').mockResolvedValue(undefined);
     vi.mocked(createListTask).mockResolvedValue({ work_id: 'work-id' } as any);
   });
@@ -3344,6 +3345,7 @@ describe('getWorkflowInstance', () => {
 
   it.each(['standard', StatusScope.RequestAccess])('hydrates current and destination statuses in scope %s', async (scope) => {
     makeBaseSetup();
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id', request_access_workflow: { workflow_definition_id: 'workflow-def-id' } });
     (loadEntity as any).mockResolvedValue({ id: 'inst-id', currentState: 'draft', history: '[]', scope });
     const currentStatus = { id: 'mapped-draft', template_id: 'draft', order: 0, type: 'Incident', scope: scope === 'standard' ? StatusScope.Global : scope };
     const toStatus = { ...currentStatus, id: 'mapped-closed', template_id: 'closed', order: 1 };
@@ -4001,11 +4003,11 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       if (id === 'workflow-def-id') {
         return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
       }
-      if (id === 'status-reviewing-id') {
-        return Promise.resolve({ id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global });
-      }
       return Promise.resolve(null);
     });
+    (getEntitiesListFromCache as any).mockResolvedValue([
+      { id: 'status-reviewing-id', internal_id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global },
+    ]);
 
     const entity = {
       id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', x_opencti_workflow_id: 'status-reviewing-id',
@@ -4029,11 +4031,11 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       if (id === 'workflow-def-id') {
         return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
       }
-      if (id === 'status-foreign-id') {
-        return Promise.resolve({ id: 'status-foreign-id', template_id: 'some-other-state', scope: StatusScope.Global });
-      }
       return Promise.resolve(null);
     });
+    (getEntitiesListFromCache as any).mockResolvedValue([
+      { id: 'status-foreign-id', internal_id: 'status-foreign-id', template_id: 'some-other-state', scope: StatusScope.Global },
+    ]);
 
     const entity = {
       id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', x_opencti_workflow_id: 'status-foreign-id',
@@ -4055,8 +4057,9 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       if (id === 'workflow-def-id') {
         return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
       }
-      return Promise.resolve(undefined); // status lookup misses entirely
+      return Promise.resolve(undefined);
     });
+    (getEntitiesListFromCache as any).mockResolvedValue([]); // status lookup misses entirely
 
     const entity = {
       id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', x_opencti_workflow_id: 'status-does-not-exist',
@@ -4083,11 +4086,11 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       if (id === 'workflow-def-id') {
         return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: transitionOnlyDefinition, validation_errors: [] } });
       }
-      if (id === 'status-reviewing-id') {
-        return Promise.resolve({ id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global });
-      }
       return Promise.resolve(null);
     });
+    (getEntitiesListFromCache as any).mockResolvedValue([
+      { id: 'status-reviewing-id', internal_id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global },
+    ]);
 
     const entity = {
       id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', x_opencti_workflow_id: 'status-reviewing-id',
@@ -5892,5 +5895,151 @@ describe('scope-aware workflow definitions', () => {
       expect(await isStatusOrphaned(mockContext, mockUser, statusOf('ra-new', 'new', StatusScope.RequestAccess) as any)).toBe(false);
       expect(await isStatusOrphaned(mockContext, mockUser, statusOf('global-new', 'new', StatusScope.Global) as any)).toBe(true);
     });
+  });
+});
+
+describe('Instance scope as the single source of truth', () => {
+  const stateContent = (initialState: string, states: string[], transitions: Record<string, string>[]) => JSON.stringify({
+    initialState,
+    states: states.map((statusId) => ({ statusId })),
+    transitions,
+  });
+  const globalContent = stateContent('open', ['open', 'closed'], [{ from: 'open', to: 'closed', event: 'close' }]);
+  const requestAccessContent = stateContent('new', ['new', 'approved'], [{ from: 'new', to: 'approved', event: 'Accept' }]);
+  const definitionEntity = (id: string, content: string) => ({
+    id, name: id, published_version: { id: `${id}-v1`, content, validation_errors: [] },
+  });
+  const status = (id: string, template_id: string, scope: StatusScope) => ({
+    id, internal_id: id, template_id, scope, type: 'Case-Rfi', order: 0,
+  });
+  const statuses = [
+    status('global-open', 'open', StatusScope.Global),
+    status('global-closed', 'closed', StatusScope.Global),
+    status('global-approved', 'approved', StatusScope.Global),
+    status('ra-new', 'new', StatusScope.RequestAccess),
+    status('ra-approved', 'approved', StatusScope.RequestAccess),
+  ];
+  const bothDefinitions = { id: 'setting-id', workflow_id: 'global-def', request_access_workflow: { workflow_definition_id: 'ra-def' } };
+  const globalOnly = { id: 'setting-id', workflow_id: 'global-def' };
+  const requestAccessOnly = { id: 'setting-id', request_access_workflow: { workflow_definition_id: 'ra-def' } };
+  const rfi = { id: 'rfi-id', internal_id: 'rfi-id', entity_type: 'Case-Rfi' };
+  const instanceOf = (entityId: string, currentState: string, scope: string) => ({
+    id: `instance-${entityId}`, internal_id: `instance-${entityId}`, entity_id: entityId, currentState, scope, history: '[]',
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    __resetReadRepairRateLimitForTest();
+    (booleanConf as any).mockReturnValue(false);
+    (findStatusesByType as any).mockResolvedValue(statuses);
+    (getEntitiesListFromCache as any).mockResolvedValue(statuses);
+    (loadEntity as any).mockResolvedValue(null);
+    (createEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id' });
+    (createRelation as any).mockResolvedValue({});
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'global-def') return Promise.resolve(definitionEntity(id, globalContent));
+      if (id === 'ra-def') return Promise.resolve(definitionEntity(id, requestAccessContent));
+      if (id === 'rfi-id') return Promise.resolve(rfi);
+      return Promise.resolve(null);
+    });
+    (WorkflowFactory.createDefinition as any).mockImplementation((data: any) => ({
+      getInitialState: () => data.initialState,
+      hasState: (state: string) => (data.states ?? []).some((s: any) => s.statusId === state),
+      getTransitions: (fromState: string) => (data.transitions ?? [])
+        .filter((t: any) => t.from === fromState)
+        .map((t: any) => ({ event: t.event, to: t.to, actionTypes: [] })),
+    }));
+  });
+
+  afterEach(() => {
+    (WorkflowFactory.createDefinition as any).mockImplementation(defaultCreateDefinition);
+  });
+
+  it('creating a request-access RFI without a request-access definition creates no instance', async () => {
+    (findByType as any).mockResolvedValue(globalOnly);
+
+    await initializeEntityWorkflow(mockContext, mockUser, { ...rfi, x_opencti_workflow_id: 'ra-new' });
+
+    expect(createEntity).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.anything(), ENTITY_TYPE_WORKFLOW_INSTANCE);
+    expect(createRelation).not.toHaveBeenCalled();
+  });
+
+  it('request-access RFI instance initializes against the request-access definition with scope REQUEST_ACCESS', async () => {
+    (findByType as any).mockResolvedValue(bothDefinitions);
+
+    await initializeEntityWorkflow(mockContext, mockUser, { ...rfi, x_opencti_workflow_id: 'ra-new' });
+
+    expect(createEntity).toHaveBeenCalledWith(
+      mockContext,
+      { ...mockUser, draft_context: undefined },
+      expect.objectContaining({ workflow_id: 'ra-def', currentState: 'new', scope: StatusScope.RequestAccess }),
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+    );
+    const [, , instanceInput] = (createEntity as any).mock.calls[0];
+    expect(instanceInput.pendingError).toBeUndefined();
+  });
+
+  it('read-repair never projects a Global status onto a REQUEST_ACCESS instance', async () => {
+    (findByType as any).mockResolvedValue(requestAccessOnly);
+    (loadEntity as any).mockResolvedValue(instanceOf('rfi-id', 'new', StatusScope.RequestAccess));
+    (resolveMappedStatusId as any).mockResolvedValue('ra-new');
+
+    await getWorkflowInstance(mockContext, mockUser, 'rfi-id');
+
+    expect(resolveMappedStatusId).toHaveBeenCalledWith(expect.anything(), WORKFLOW_MANAGER_USER, 'Case-Rfi', StatusScope.RequestAccess, 'new');
+    expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), WORKFLOW_MANAGER_USER, expect.anything(), 'new', StatusScope.RequestAccess);
+    expect(projectWorkflowState).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.anything(), expect.anything(), StatusScope.Global);
+  });
+
+  it('getAllowedTransitions uses the request-access definition for a REQUEST_ACCESS instance', async () => {
+    (findByType as any).mockResolvedValue(bothDefinitions);
+    (loadEntity as any).mockResolvedValue(instanceOf('rfi-id', 'new', StatusScope.RequestAccess));
+
+    const transitions = await getAllowedTransitions(mockContext, mockUser, 'rfi-id');
+
+    expect(transitions).toEqual([expect.objectContaining({ event: 'Accept', toState: 'approved', toStatus: statuses[4] })]);
+  });
+
+  it('getAllowedTransitions never evaluates a REQUEST_ACCESS instance against the Global definition', async () => {
+    (findByType as any).mockResolvedValue(globalOnly);
+    (loadEntity as any).mockResolvedValue(instanceOf('rfi-id', 'open', StatusScope.RequestAccess));
+
+    expect(await getAllowedTransitions(mockContext, mockUser, 'rfi-id')).toEqual([]);
+  });
+
+  it('getMassWorkflowTransitions with request-access scope never mixes Global statuses', async () => {
+    (findByType as any).mockResolvedValue(bothDefinitions);
+    const instances: Record<string, any> = {
+      'rfi-a': instanceOf('rfi-a', 'new', StatusScope.RequestAccess),
+      'rfi-b': instanceOf('rfi-b', 'new', StatusScope.RequestAccess),
+      'rfi-global': instanceOf('rfi-global', 'new', 'standard'),
+    };
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'global-def') return Promise.resolve(definitionEntity(id, globalContent));
+      if (id === 'ra-def') return Promise.resolve(definitionEntity(id, requestAccessContent));
+      return Promise.resolve(instances[id] ? { id, internal_id: id, entity_type: 'Case-Rfi' } : null);
+    });
+    (loadEntity as any).mockImplementation((_ctx: any, _user: any, _types: string[], opts: any) => Promise.resolve(instances[opts.filters.filters[0].values[0]]));
+
+    const requestAccessOnlySelection = await getMassWorkflowTransitions(mockContext, mockUser, 'Case-Rfi', { entityIds: ['rfi-a', 'rfi-b'] }, StatusScope.RequestAccess);
+    const withGlobalInstance = await getMassWorkflowTransitions(mockContext, mockUser, 'Case-Rfi', { entityIds: ['rfi-a', 'rfi-global'] }, StatusScope.RequestAccess);
+
+    expect(requestAccessOnlySelection).toEqual([expect.objectContaining({ event: 'Accept', toState: 'approved', toStatus: statuses[4] })]);
+    expect(withGlobalInstance).toEqual([]);
+  });
+
+  it('syncWorkflowInstanceFromExternalWrite resolves the definition from the instance scope', async () => {
+    (findByType as any).mockResolvedValue(requestAccessOnly);
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'ra-def') return Promise.resolve(definitionEntity(id, requestAccessContent));
+      if (id === 'rfi-id') return Promise.resolve({ ...rfi, x_opencti_workflow_id: 'ra-approved' });
+      return Promise.resolve(null);
+    });
+    (loadEntity as any).mockResolvedValue(instanceOf('rfi-id', 'new', StatusScope.RequestAccess));
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, { ...mockUser, capabilities: [{ name: 'BYPASS' }] }, rfi, 'ra-approved');
+
+    const [, , , , inputs] = (updateAttribute as any).mock.calls.at(-1);
+    expect(inputs).toContainEqual({ key: 'currentState', value: ['approved'] });
   });
 });
