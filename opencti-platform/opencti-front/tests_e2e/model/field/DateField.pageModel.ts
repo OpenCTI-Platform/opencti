@@ -37,6 +37,17 @@ export default class DateFieldPageModel {
   }
 
   /**
+   * Types the input with key presses after selecting every section, as a user does, so that the
+   * field's own keyboard editing stays covered (#19228). The field moves to the next section by
+   * itself once one is full, and ignores the separators, but reads a space as a 0.
+   */
+  async type(input: string) {
+    await this.fieldLocator.click();
+    await this.page.keyboard.press('ControlOrMeta+A');
+    await this.page.keyboard.type(input.replace(/\s+/g, ''), { delay: 100 });
+  }
+
+  /**
    * Enters each part of the input ("2023-12-05 12:00 AM": 2023, 12, 05, 12, 00, AM) in its own
    * section, in the order of the field's format, from an empty field.
    *

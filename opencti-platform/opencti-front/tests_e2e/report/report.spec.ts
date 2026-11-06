@@ -77,7 +77,9 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce'] }, asyn
 
   await reportForm.publicationDateField.clear();
   await expect(page.getByText('This field is required')).toBeVisible();
-  await reportForm.publicationDateField.fill('2023-12-05');
+  // Typed with the keyboard in the emptied field: every part reaches its own section.
+  await reportForm.publicationDateField.type('2023-12-05');
+  await expect(reportForm.publicationDateField.getSections()).toHaveText(/^2023-12-05 /);
   // A partly typed date is validated when the field loses the focus.
   await page.keyboard.press('Tab');
   await expect(page.getByText('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).toBeVisible();
