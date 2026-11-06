@@ -201,7 +201,7 @@ def test_generate_export_stix_2_0_raises_when_backend_returns_none(stix_helper):
 
 
 def test_prepare_export_stix_2_0_skips_nested_ref_enrichment(stix_helper):
-    """Backend refs are not duplicated by the nested-ref enrichment."""
+    """Without access filter, the backend refs are kept as they are."""
     backend_payload = _backend_malware_payload()
     stix_helper.opencti.stix_core_object.to_stix.return_value = backend_payload
     prepared = stix_helper.generate_export(
@@ -211,6 +211,79 @@ def test_prepare_export_stix_2_0_skips_nested_ref_enrichment(stix_helper):
     result = stix_helper.prepare_export(prepared, stix_version=STIX_VERSION_2_0)
 
     stix_helper.opencti.stix_nested_ref_relationship.list.assert_not_called()
+    malware = next(obj for obj in result if obj.get("type") == "malware")
+    assert malware["operating_system_refs"] == backend_payload["operating_system_refs"]
+    assert malware["sample_refs"] == backend_payload["sample_refs"]
+
+
+ACCESS_FILTER = {
+    "mode": "and",
+    "filters": [{"key": "objectMarking", "values": ["green-id"]}],
+    "filterGroups": [],
+}
+
+
+def _nested_ref(target_id):
+    return {"relationship_type": "sample", "to": {"standard_id": target_id}}
+
+
+def _mock_nested_refs(stix_helper, all_ids, allowed_ids):
+    """Nested refs listed without, then with, the export access filter."""
+
+    def list_nested_refs(**kwargs):
+        ids = allowed_ids if kwargs.get("filters") else all_ids
+        return [_nested_ref(target_id) for target_id in ids]
+
+    stix_helper.opencti.stix_nested_ref_relationship.list.side_effect = list_nested_refs
+
+
+def test_prepare_export_stix_2_0_removes_nested_refs_excluded_by_access_filter(
+    stix_helper,
+):
+    """Refs to objects above the export max markings are not exported."""
+    backend_payload = _backend_malware_payload()
+    stix_helper.opencti.stix_core_object.to_stix.return_value = backend_payload
+    operating_system_id = backend_payload["operating_system_refs"][0]
+    sample_id = backend_payload["sample_refs"][0]
+    _mock_nested_refs(
+        stix_helper,
+        all_ids=[operating_system_id, sample_id],
+        allowed_ids=[operating_system_id],
+    )
+    prepared = stix_helper.generate_export(
+        _raw_graphql_entity(), stix_version=STIX_VERSION_2_0
+    )
+
+    result = stix_helper.prepare_export(
+        prepared, access_filter=ACCESS_FILTER, stix_version=STIX_VERSION_2_0
+    )
+
+    malware = next(obj for obj in result if obj.get("type") == "malware")
+    assert malware["operating_system_refs"] == [operating_system_id]
+    assert "sample_refs" not in malware
+    list_calls = stix_helper.opencti.stix_nested_ref_relationship.list.call_args_list
+    assert [call.kwargs.get("filters") for call in list_calls] == [
+        None,
+        ACCESS_FILTER,
+    ]
+
+
+def test_prepare_export_stix_2_0_keeps_nested_refs_allowed_by_access_filter(
+    stix_helper,
+):
+    """Nothing is removed when the access filter excludes no nested ref."""
+    backend_payload = _backend_malware_payload()
+    stix_helper.opencti.stix_core_object.to_stix.return_value = backend_payload
+    ref_ids = backend_payload["operating_system_refs"] + backend_payload["sample_refs"]
+    _mock_nested_refs(stix_helper, all_ids=ref_ids, allowed_ids=ref_ids)
+    prepared = stix_helper.generate_export(
+        _raw_graphql_entity(), stix_version=STIX_VERSION_2_0
+    )
+
+    result = stix_helper.prepare_export(
+        prepared, access_filter=ACCESS_FILTER, stix_version=STIX_VERSION_2_0
+    )
+
     malware = next(obj for obj in result if obj.get("type") == "malware")
     assert malware["operating_system_refs"] == backend_payload["operating_system_refs"]
     assert malware["sample_refs"] == backend_payload["sample_refs"]
