@@ -215,6 +215,30 @@ export const getEntityTypeColor = (type: string) => {
 
 const HEX_COLOR = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 
+// The red, green and blue of a color written #rgb or #rrggbb
+const toRgb = (color: string) => {
+  const hex = color.length === 4 ? color.slice(1).split('').map((digit) => digit + digit).join('') : color.slice(1);
+  return [0, 2, 4].map((start) => parseInt(hex.slice(start, start + 2), 16));
+};
+
+// Below this distance between their red, green and blue, an own color can be taken for the one of the "Other" series
+const MIN_DISTANCE_TO_OTHER = 48;
+const isCloseTo = (color: string, reference: string) => {
+  if (!HEX_COLOR.test(reference)) return false;
+  const [r, g, b] = toRgb(color);
+  const [referenceR, referenceG, referenceB] = toRgb(reference);
+  return Math.hypot(r - referenceR, g - referenceG, b - referenceB) < MIN_DISTANCE_TO_OTHER;
+};
+
+/**
+ * The own color of a value as it can be drawn on the card: white (TLP:CLEAR, PAP:CLEAR) is drawn black in the light
+ * theme, as the donut widgets do.
+ */
+export const getReadableOwnColor = (color: string | null | undefined, mode: 'light' | 'dark') => {
+  const isWhite = !!color && ['#fff', '#ffffff'].includes(color.toLowerCase());
+  return mode === 'light' && isWhite ? '#000000' : color;
+};
+
 // Same key, same number, whatever the widget
 const hashKey = (key: string) => {
   let hash = 0;
@@ -226,10 +250,11 @@ const hashKey = (key: string) => {
 
 /**
  * Colors of the series of a breakdown. A value keeps its own color (`ownColor`: the one of its label, of its marking,
- * of its entity type), otherwise takes the one its `key` is hashed to in the first shade of the `palette`: a value has
- * the same color in every widget, whatever its rank. Two series of a widget never share a color: a color already
- * taken, by the series before or by a value of its own, goes on to the next free one of the palette.
- * The "Other" series takes `otherColor`, which no other series takes.
+ * of its entity type), otherwise takes the one its `key` is hashed to in the first shade of the `palette`.
+ * Two series of a widget never share a color: a color already taken goes on to the next free one of the palette.
+ * The colors are given in the order of the keys, not of the ranks, so that a value has the same color in every widget
+ * showing the same values, whatever their ranks.
+ * The "Other" series takes `otherColor`, which no other series takes, nor an own color close to it.
  */
 export const getBreakdownSeriesColors = (
   series: ReadonlyArray<{ key: string; isOther: boolean; ownColor?: string | null }>,
@@ -237,29 +262,39 @@ export const getBreakdownSeriesColors = (
   // The neutral color of the theme, a grey without theme
   otherColor: string = C.grey[500],
 ): string[] => {
-  const taken = new Set([otherColor.toLowerCase()]);
-  // The own colors first, the first series keeping a color two of them have
-  const ownColors = series.map(({ isOther, ownColor }) => {
+  const neutral = otherColor.toLowerCase();
+  const taken = new Set([neutral]);
+  const colors: string[] = series.map(({ isOther }) => (isOther ? otherColor : ''));
+  // Same order for any ranking of the same values: the one of their keys, compared code unit by code unit
+  const byKey = series
+    .map((serie, index) => ({ ...serie, index }))
+    .filter(({ isOther }) => !isOther)
+    .sort((a, b) => {
+      if (a.key === b.key) return 0;
+      return a.key < b.key ? -1 : 1;
+    });
+  // The own colors first: of two values of the same color, the first key keeps it
+  byKey.forEach(({ ownColor, index }) => {
     const color = ownColor?.toLowerCase();
-    if (isOther || !color || !HEX_COLOR.test(color) || taken.has(color)) return undefined;
+    if (!color || !HEX_COLOR.test(color) || taken.has(color) || isCloseTo(color, neutral)) return;
     taken.add(color);
-    return color;
+    colors[index] = color;
   });
   const sequence = palette.flat().map((color) => color.toLowerCase());
   const firstShadeSize = Math.max(1, palette[0]?.length ?? 0);
-  return series.map(({ key, isOther }, index) => {
-    if (isOther) return otherColor;
-    const ownColor = ownColors[index];
-    if (ownColor) return ownColor;
+  byKey.forEach(({ key, index }) => {
+    if (colors[index]) return;
     const start = hashKey(key) % firstShadeSize;
     for (let probe = 0; probe < sequence.length; probe += 1) {
       const color = sequence[(start + probe) % sequence.length];
       if (!taken.has(color)) {
         taken.add(color);
-        return color;
+        colors[index] = color;
+        return;
       }
     }
     // More series than colors: the hashed one is shared
-    return sequence[start] ?? otherColor;
+    colors[index] = sequence[start] ?? otherColor;
   });
+  return colors;
 };

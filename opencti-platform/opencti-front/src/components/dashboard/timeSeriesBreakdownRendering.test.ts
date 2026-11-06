@@ -8,6 +8,7 @@ import {
   getBreakdownPalette,
   getBreakdownSeriesColors,
   getEntityTypeColor,
+  getReadableOwnColor,
   getBreakdownTickAmount,
   getRenderedBarsBudget,
   getRenderedPointsBudget,
@@ -309,5 +310,45 @@ describe('getBreakdownSeriesColors', () => {
   it('ignores an own color that is not a color', () => {
     const [color] = getBreakdownSeriesColors([serie('label-a', 'red; background: url(x)')], palette, other);
     expect(color).toEqual(getBreakdownSeriesColors([serie('label-a')], palette, other)[0]);
+  });
+
+  it('gives each value the same color whatever the ranks of the values it is shown with', () => {
+    // Colors by key, for every order of the same series
+    const colorsByKey = (series: ReturnType<typeof serie>[]) => {
+      const colors = getBreakdownSeriesColors([...series, otherSerie], palette, other);
+      return Object.fromEntries(series.map(({ key }, index) => [key, colors[index]]));
+    };
+    const reversed = <T>(items: T[]) => [...items].reverse();
+    // Two values hashed to the same color of the palette: alone, each one takes it
+    const hashedColor = (key: string) => getBreakdownSeriesColors([serie(key)], palette, other)[0];
+    const keys = Array.from({ length: 40 }, (_, i) => `value-${i}`);
+    const [first, colliding] = keys.flatMap((key) => keys.filter((next) => next > key && hashedColor(next) === hashedColor(key)).map((next) => [key, next]))[0];
+    expect(hashedColor(colliding)).toEqual(hashedColor(first));
+    const hashed = [serie(first), serie(colliding), serie('ransomware'), serie('fraud')];
+    expect(colorsByKey(reversed(hashed))).toEqual(colorsByKey(hashed));
+    // Two values of the same own color, such as TLP:AMBER and TLP:AMBER+STRICT
+    const markings = [serie('TLP:AMBER', '#ffc000'), serie('TLP:AMBER+STRICT', '#FFC000'), serie('TLP:GREEN', '#2e7d32')];
+    expect(colorsByKey(reversed(markings))).toEqual(colorsByKey(markings));
+    expect(colorsByKey(markings)['TLP:AMBER']).toEqual('#ffc000');
+    expect(colorsByKey(markings)['TLP:AMBER+STRICT']).not.toEqual('#ffc000');
+  });
+
+  it('does not give a value an own color that can be taken for the Other series', () => {
+    // A grey label next to the grey of Other
+    const [botnet, phishing] = getBreakdownSeriesColors([serie('botnet', '#76828d'), serie('phishing', '#e91e63'), otherSerie], palette, other);
+    expect(botnet).not.toEqual('#76828d');
+    expect(palette.flat().map((color) => color.toLowerCase())).toContain(botnet);
+    expect(phishing).toEqual('#e91e63');
+  });
+});
+
+describe('getReadableOwnColor', () => {
+  it('draws white black on a light card, as the donut widgets do', () => {
+    expect(getReadableOwnColor('#FFFFFF', 'light')).toEqual('#000000');
+    expect(getReadableOwnColor('#fff', 'light')).toEqual('#000000');
+    expect(getReadableOwnColor('#ffffff', 'dark')).toEqual('#ffffff');
+    expect(getReadableOwnColor('#ffc000', 'light')).toEqual('#ffc000');
+    expect(getReadableOwnColor(null, 'light')).toBeNull();
+    expect(getReadableOwnColor(undefined, 'dark')).toBeUndefined();
   });
 });
