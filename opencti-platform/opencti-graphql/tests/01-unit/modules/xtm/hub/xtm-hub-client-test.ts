@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { mockPost } = vi.hoisted(() => ({ mockPost: vi.fn() }));
 
-vi.mock('../../../../../src/config/conf', () => ({
+vi.mock('../../../../../src/config/conf', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/config/conf')>()),
   default: { get: vi.fn(() => 'http://hub.test') },
   logApp: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
   PLATFORM_VERSION: '7.0.0-test',
