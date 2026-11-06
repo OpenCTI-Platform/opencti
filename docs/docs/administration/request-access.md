@@ -131,6 +131,8 @@ Users with the bypass capability can move a Request for Information to any statu
 
 Leaving the Approved state never removes the sharing that was done.
 
+The requested knowledge is always shared with the rights of the user who takes the decision. A transition into Approved triggered by an automated process (for example a playbook changing the workflow status with actions) is refused instead of sharing.
+
 ### Changing the status by other means
 
 The status of a workflow-driven Request for Information cannot be set directly into or out of Approved or Declined. Such changes are refused whatever their origin (API, synchronization, playbooks), and the **Status** field is not editable in the edition form of these requests. Use the workflow transitions or the bypass.
