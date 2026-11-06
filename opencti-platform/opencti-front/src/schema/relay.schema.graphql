@@ -10294,6 +10294,7 @@ enum WorkflowMigrationDiagnosticType {
   NAME_CONFLICT
   MISSING_TEMPLATE
   EXISTING_WORKFLOW
+  REQUEST_ACCESS_OUTCOME_INVALID
 }
 
 type WorkflowMigrationDiagnostic {

@@ -39896,7 +39896,8 @@ export enum WorkflowMigrationDiagnosticType {
   ExistingWorkflow = 'EXISTING_WORKFLOW',
   MissingOrder = 'MISSING_ORDER',
   MissingTemplate = 'MISSING_TEMPLATE',
-  NameConflict = 'NAME_CONFLICT'
+  NameConflict = 'NAME_CONFLICT',
+  RequestAccessOutcomeInvalid = 'REQUEST_ACCESS_OUTCOME_INVALID'
 }
 
 export type WorkflowMigrationPreview = {

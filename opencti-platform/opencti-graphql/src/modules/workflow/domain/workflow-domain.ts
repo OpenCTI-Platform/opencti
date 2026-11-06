@@ -64,17 +64,23 @@ import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } f
 import { appendWorkflowHistoryEntry, runWorkflowBypassActions } from './workflow-async-completion';
 import {
   type ConvertStatusToDefinitionResult,
-  convertRequestAccessGroup,
   convertStatusToDefinition,
   getPublishBlockingDiagnostics,
   pickMigrationScope,
+  tryConvertRequestAccessGroup,
   type WorkflowMigrationConversionResult,
 } from '../migration/status-to-definition-converter';
 import { applyRequestAccessOutcome, assertCanEnterRequestAccessOutcome, findStateOutcome, mirrorRequestAccessStatus } from './workflow-request-access';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
-const EE_ONLY_ACTION_TYPES = new Set<WorkflowActionConfig['type']>(['updateAuthorizedMembers', 'shareWithOrganizations', 'unshareFromOrganizations', 'asyncBulkAction']);
+const EE_ONLY_ACTION_TYPES = new Set<WorkflowActionConfig['type']>([
+  'updateAuthorizedMembers',
+  'shareWithOrganizations',
+  'unshareFromOrganizations',
+  'asyncBulkAction',
+  'shareRequestedEntities',
+]);
 const hasEEActions = (actions?: WorkflowActionConfig[]) => (actions ?? []).some((a) => EE_ONLY_ACTION_TYPES.has(a.type));
 const hasConditions = (conditions?: WorkflowSerializedTransition['conditions']) => Array.isArray(conditions?.filters) && conditions.filters.length > 0;
 
@@ -673,16 +679,35 @@ const convertLegacyStatuses = async (
   return { ...conversion, statuses };
 };
 
+// The legacy approved / declined ids point at REQUEST_ACCESS `Status` records; their templates are
+// the states the migrated definition marks as outcomes. When they cannot be, the group is kept as
+// is with a blocking REQUEST_ACCESS_OUTCOME_INVALID diagnostic.
+const convertRequestAccessScope = (
+  entitySetting: BasicStoreEntityEntitySetting | undefined,
+  statuses: BasicWorkflowStatus[],
+  result: WorkflowMigrationConversionResult,
+): WorkflowMigrationConversionResult => {
+  const resolveTemplateId = (statusId: string | undefined) => statuses
+    .find((status) => status.id === statusId && status.scope === StatusScope.RequestAccess)?.template_id;
+  const requestAccessConfiguration = entitySetting?.request_access_workflow;
+  return tryConvertRequestAccessGroup(
+    result,
+    resolveTemplateId(requestAccessConfiguration?.approved_workflow_id),
+    resolveTemplateId(requestAccessConfiguration?.declined_workflow_id),
+  );
+};
+
 export interface WorkflowMigrationPreviewData extends ConvertStatusToDefinitionResult {
-  hasPublishedVersion: boolean;
+  publishedByScope: Partial<Record<StatusScope, boolean>>;
 }
 
 /**
  * Read-only preview of what migrating an entity type's legacy `Status` set to a
- * `WorkflowDefinition` would produce, one result per `StatusScope` present — no persisted
- * changes. When the entity type already has a workflow, its GLOBAL statuses are managed by that
- * workflow rather than legacy data: the GLOBAL result then carries an EXISTING_WORKFLOW diagnostic,
- * and `hasPublishedVersion` reports whether that workflow has a published version.
+ * `WorkflowDefinition` would produce, one result per `StatusScope` the type can migrate (GLOBAL,
+ * plus REQUEST_ACCESS for Case-Rfi, converted as `workflowMigrate` would) — no persisted changes.
+ * When the entity type already has a workflow for a scope, that scope's statuses are managed by it
+ * rather than legacy data: its result then carries an EXISTING_WORKFLOW diagnostic, and
+ * `publishedByScope` reports whether that workflow has a published version.
  */
 export const getWorkflowMigrationPreview = async (
   context: AuthContext,
@@ -690,22 +715,32 @@ export const getWorkflowMigrationPreview = async (
   entityType: string,
 ): Promise<WorkflowMigrationPreviewData> => {
   assertMigratableEntityType(entityType);
-  const { byScope } = await convertLegacyStatuses(context, user, entityType);
+  const { byScope, statuses } = await convertLegacyStatuses(context, user, entityType);
   const entitySetting = await getWorkflowConfig(context, user, entityType);
-  if (!entitySetting?.workflow_id) {
-    return { byScope, hasPublishedVersion: false };
+  const scopes = entityType === ENTITY_TYPE_CONTAINER_CASE_RFI ? [StatusScope.Global, StatusScope.RequestAccess] : [StatusScope.Global];
+  const requestAccessResult = byScope[StatusScope.RequestAccess];
+  if (!scopes.includes(StatusScope.RequestAccess)) {
+    delete byScope[StatusScope.RequestAccess];
+  } else if (requestAccessResult && requestAccessResult.definition.states.length > 0) {
+    byScope[StatusScope.RequestAccess] = convertRequestAccessScope(entitySetting, statuses, requestAccessResult);
   }
-  const publishedVersionId = await getWorkflowPublishedVersionId(context, user, entitySetting);
-  // Reported even when no GLOBAL status is left to migrate, so the preview never hides the workflow.
-  const globalResult = byScope[StatusScope.Global] ?? { definition: { initialState: '', states: [], transitions: [] }, diagnostics: [] };
-  globalResult.diagnostics.push({
-    type: 'EXISTING_WORKFLOW',
-    message: publishedVersionId
-      ? 'Entity type already has a published workflow; its statuses are managed by that workflow, and migration cannot replace it.'
-      : 'Entity type already has a workflow with no published version; migrating replaces its draft only with overwrite: true.',
-  });
-  byScope[StatusScope.Global] = globalResult;
-  return { byScope, hasPublishedVersion: !!publishedVersionId };
+  const publishedByScope: Partial<Record<StatusScope, boolean>> = {};
+  for (const scope of scopes) {
+    if (!entitySetting || !resolveScopedDefinitionId(entitySetting, scope)) continue;
+    const isPublished = !!(await getWorkflowPublishedVersionId(context, user, entitySetting, scope));
+    const workflowLabel = scope === StatusScope.RequestAccess ? 'request access workflow' : 'workflow';
+    // Reported even when no status of the scope is left to migrate, so the preview never hides the workflow.
+    const scopeResult = byScope[scope] ?? { definition: { initialState: '', states: [], transitions: [] }, diagnostics: [] };
+    scopeResult.diagnostics.push({
+      type: 'EXISTING_WORKFLOW',
+      message: isPublished
+        ? `Entity type already has a published ${workflowLabel}; its statuses are managed by that workflow, and migration cannot replace it.`
+        : `Entity type already has a ${workflowLabel} with no published version; migrating replaces its draft only with overwrite: true.`,
+    });
+    byScope[scope] = scopeResult;
+    publishedByScope[scope] = isPublished;
+  }
+  return { byScope, publishedByScope };
 };
 
 const getWorkflowMigrateLockKey = (entityType: string): string => `workflow-migrate:${entityType}`;
@@ -718,29 +753,6 @@ const removeMigratedWorkflow = async (context: AuthContext, user: AuthUser, enti
   if (!definitionId) return;
   await deleteWorkflowDefinition(context, user, entityType, scope);
   await deleteElementById(bypassDraftContext(context), bypassDraftUser(user), definitionId, ENTITY_TYPE_WORKFLOW_DEFINITION);
-};
-
-// The legacy approved / declined ids point at REQUEST_ACCESS `Status` records; their templates are
-// the states the migrated definition marks as outcomes.
-const finishRequestAccessConversion = (
-  entityType: string,
-  entitySetting: BasicStoreEntityEntitySetting,
-  statuses: BasicWorkflowStatus[],
-  result: WorkflowMigrationConversionResult,
-): WorkflowMigrationConversionResult => {
-  const resolveTemplateId = (statusId: string | undefined) => statuses
-    .find((status) => status.id === statusId && status.scope === StatusScope.RequestAccess)?.template_id;
-  const { approved_workflow_id: approvedStatusId, declined_workflow_id: declinedStatusId } = entitySetting.request_access_workflow ?? {};
-  const approvedTemplateId = resolveTemplateId(approvedStatusId);
-  const declinedTemplateId = resolveTemplateId(declinedStatusId);
-  if (!approvedTemplateId || !declinedTemplateId) {
-    throw FunctionalError('Cannot migrate request access: the approved and declined statuses must be configured and be request access statuses of this entity type', {
-      entityType,
-      approvedStatusId,
-      declinedStatusId,
-    });
-  }
-  return convertRequestAccessGroup(result, approvedTemplateId, declinedTemplateId);
 };
 
 /**
@@ -792,8 +804,16 @@ export const migrateWorkflowFromStatuses = async (
     const { byScope, statuses } = await convertLegacyStatuses(context, user, entityType);
     const picked = pickMigrationScope(entityType, byScope, scope);
     const { definition, diagnostics } = scope === StatusScope.RequestAccess
-      ? finishRequestAccessConversion(entityType, entitySetting, statuses, picked)
+      ? convertRequestAccessScope(entitySetting, statuses, picked)
       : picked;
+    const invalidOutcomes = diagnostics.filter((diagnostic) => diagnostic.type === 'REQUEST_ACCESS_OUTCOME_INVALID');
+    if (invalidOutcomes.length > 0) {
+      throw FunctionalError(invalidOutcomes.map((diagnostic) => diagnostic.message).join('; '), {
+        entityType,
+        approvedStatusId: entitySetting.request_access_workflow?.approved_workflow_id,
+        declinedStatusId: entitySetting.request_access_workflow?.declined_workflow_id,
+      });
+    }
     // Validation only checks state ids that are not declared in `states`, and a migrated definition
     // declares them all: a state whose template is gone would pass a later plain publish. Refuse it
     // here, even for a draft.

@@ -61,6 +61,7 @@ enum WorkflowMigrationDiagnosticType {
     NAME_CONFLICT
     MISSING_TEMPLATE
     EXISTING_WORKFLOW
+    REQUEST_ACCESS_OUTCOME_INVALID
 }
 
 type WorkflowMigrationDiagnostic {
@@ -86,8 +87,8 @@ type WorkflowMigrationState {
 type WorkflowMigrationScopeResult {
     scope: StatusScope!
     initialState: String!
-    # Whether the entity type's existing workflow has a published version (GLOBAL scope only), in
-    # which case workflowMigrate refuses to replace it.
+    # Whether the entity type's existing workflow for this scope has a published version, in which
+    # case workflowMigrate refuses to replace it.
     hasPublishedVersion: Boolean!
     states: [WorkflowMigrationState!]!
     transitions: [WorkflowSerializedTransition!]!
