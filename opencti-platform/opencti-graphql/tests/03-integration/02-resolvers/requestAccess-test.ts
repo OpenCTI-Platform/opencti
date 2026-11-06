@@ -252,6 +252,19 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   let declinedStatusId: string;
   let amberGroupId: string;
   let greenGroupId: string;
+  const editionSpies: Array<{ mockRestore: () => void }> = [];
+
+  beforeAll(() => {
+    editionSpies.push(
+      vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue(),
+      vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true),
+      vi.spyOn(entrepriseEdition, 'isEnterpriseEditionFromSettings').mockReturnValue(true),
+    );
+  });
+
+  afterAll(() => {
+    editionSpies.forEach((spy) => spy.mockRestore());
+  });
 
   it('should enable platform organization', async () => {
     await setOrganization(TEST_ORGANIZATION);
@@ -823,7 +836,7 @@ describe('Request access decided through workflow transitions', async () => {
     const results = await Promise.all([accept(rfiId), accept(rfiId)]);
 
     expect(results.filter((result) => result.success)).toHaveLength(1);
-    expect(results.find((result) => !result.success)?.reason).toBeDefined();
+    expect(results.find((result) => !result.success)?.reason).toContain('is not available from status');
     expect(share).toHaveBeenCalledTimes(1);
     expect(notifyResult).toHaveBeenCalledTimes(1);
     expect(approvedCount).toHaveBeenCalledTimes(1);
