@@ -218,6 +218,22 @@ describe('importConnector overwrite and copy', () => {
     expect(managedConnectorAdd).not.toHaveBeenCalled();
   });
 
+  it('never overwrites another connector that only shares the display name', async () => {
+    withConnectors([{ ...mitreConnector, name: 'mitre-att-ck', manager_contract_image: 'opencti/connector-other' }]);
+    const configuration = connectorConfiguration({ name: 'MITRE ATT&CK' });
+    const result = await importConnector(context, user, configuration, { ...overwrite, bundleId: 'mitre', credentials: { MITRE_API_KEY: 'key' } });
+    expect(result).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true });
+    expectNothingWritten();
+  });
+
+  it('overwrites the connector of the same catalog and image created under the display name', async () => {
+    withConnectors([{ ...mitreConnector, name: 'mitre-att-ck', title: 'MITRE ATT&CK' }]);
+    const configuration = connectorConfiguration({ name: 'MITRE ATT&CK', manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }] });
+    const result = await importConnector(context, user, configuration, { ...overwrite, bundleId: 'mitre' });
+    expect(result).toMatchObject({ status: 'overwritten' });
+    expect(managedConnectorEdit).toHaveBeenCalledWith(context, user, expect.objectContaining({ name: 'mitre-att-ck' }));
+  });
+
   it('asks for a stored secret again when the connector is added as a copy', async () => {
     const result = await importConnector(context, user, connectorConfiguration(), { mode: ConfigImportMode.Copy, dryRun: true });
     expect(result).toMatchObject({ status: 'failed', code: 'credentials_required', credentials: [{ key: 'MITRE_API_KEY', required: true, stored: false }] });

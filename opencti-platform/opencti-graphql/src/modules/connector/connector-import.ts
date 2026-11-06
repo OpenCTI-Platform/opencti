@@ -7,6 +7,7 @@ import { userAlreadyExists } from '../user/user-domain';
 import { findDefaultIngestionGroups } from '../../domain/group';
 import { storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import type { BasicStoreEntityUser } from '../user/user-types';
 import { managedConnectorAdd, managedConnectorEdit, sanitizeContainerName } from './connector-domain';
 import { findConnectorManagers, findConnectors } from './connector-repository';
 import type { BasicStoreEntityConnector } from './connector-types';
@@ -86,11 +87,16 @@ export const importConnector = async (
     const name = connectorName(candidate);
     return !!reservedNames?.has(name) || connectors.some((connector) => connector.name === name);
   };
-  const existing = connectors.find(({ name }) => name === bundleId) ?? connectors.find(({ name }) => name === connectorName(bundleConnector.name));
+  const sameName = connectors.find(({ name }) => name === connectorName(bundleConnector.name));
+  const isSameConnector = sameName?.catalog_id === bundleConnector.catalog_id && sameName?.manager_contract_image === bundleConnector.manager_contract_image;
+  const existing = connectors.find(({ name }) => name === (bundleId ?? connectorName(bundleConnector.name))) ?? (isSameConnector ? sameName : undefined);
   if (existing && mode === ConfigImportMode.Add) {
     return refused('exists', 'Connector already exists', true, bundleConnector);
   }
   const isCopy = mode === ConfigImportMode.Copy;
+  if (!existing && sameName && !isCopy) {
+    return refused('name_conflict', 'Connector name already exists', true, bundleConnector);
+  }
   if (existing && !isCopy && !existing.catalog_id) {
     return refused('not_managed', 'A connector that is not managed by the platform has this name', true, bundleConnector);
   }
@@ -134,7 +140,7 @@ export const importConnector = async (
   const input = [...parameters, ...given.map(({ key }) => ({ key, value: credentials[key] })), ...keptSecrets];
   const { confidence_level: confidence } = bundleConnector;
   const connectorUser = target && confidence !== null && confidence !== undefined
-    ? await storeLoadById<AuthUser>(context, user, target.connector_user_id, ENTITY_TYPE_USER)
+    ? await storeLoadById<BasicStoreEntityUser>(context, user, target.connector_user_id, ENTITY_TYPE_USER)
     : undefined;
   const confidenceReason = connectorUser && connectorUser.user_confidence_level?.max_confidence !== confidence ? CONFIDENCE_NOT_CHANGED_REASON : undefined;
   if (target && given.length === 0 && (target.title ?? target.name) === title) {
