@@ -515,6 +515,17 @@ describe('Workflow bypass', () => {
       expect(notifyRequestAccessResult).not.toHaveBeenCalled();
     });
 
+    it.each(['missing', 'unparsable', 'not an object'])('bypass refused on an RFI on the request access workflow whose request is %s', async (request) => {
+      if (request === 'missing') delete rfi.x_opencti_request_access;
+      if (request === 'unparsable') rfi.x_opencti_request_access = '{not json';
+      if (request === 'not an object') rfi.x_opencti_request_access = '"NEW"';
+
+      await expect(setWorkflowStatus(context, user, 'rfi-id', 'ra-status-approved', true)).rejects.toThrow('RequestAccess workflow bypass is not supported');
+      await expect(getWorkflowBypassStatuses(context, user, 'rfi-id')).rejects.toThrow('RequestAccess workflow bypass is not supported');
+      expect(share).not.toHaveBeenCalled();
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
+
     it('bypass between intermediate states leaves the request status untouched', async () => {
       definition.states.push({ statusId: 'review' });
       startIn('new', 'NEW');
@@ -6016,6 +6027,17 @@ describe('triggerWorkflowEvent — request access outcomes', () => {
     expect(telemetryManager.addRequestAccessApprovedCount).toHaveBeenCalledTimes(1);
     expect(publishUserAction).toHaveBeenCalledTimes(1);
     expect(logApp.error).toHaveBeenCalled();
+  });
+
+  it('refuses an event chosen for another state than the current one', async () => {
+    setup(definitionContent(), 'approved');
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Accept', undefined, {}, { fromState: 'review' });
+
+    expect(result).toMatchObject({ success: false, reason: expect.stringContaining('The workflow state changed') });
+    expect(trigger).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
+    expect(telemetryManager.addRequestAccessApprovedCount).not.toHaveBeenCalled();
   });
 
   it('a failing status write records nothing else', async () => {
