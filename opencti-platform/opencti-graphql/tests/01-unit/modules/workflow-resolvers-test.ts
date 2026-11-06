@@ -15,6 +15,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { graphql } from 'graphql';
 import { authDirectiveBuilder } from '../../../src/graphql/authDirective';
 import type { BasicWorkflowStatus } from '../../../src/types/store';
+import { StatusScope } from '../../../src/generated/graphql';
 
 // Mock all workflow domain functions
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
@@ -417,6 +418,7 @@ describe('workflow-resolvers', () => {
           mockContext.user,
           'Case',
           false,
+          StatusScope.Global,
         );
         expect(result).toBe(mockDefinition);
       });
@@ -443,6 +445,7 @@ describe('workflow-resolvers', () => {
           mockContext.user,
           'Incident',
           true,
+          StatusScope.Global,
         );
         expect(result).toBe(mockDefinition);
       });
@@ -583,6 +586,7 @@ describe('workflow-resolvers', () => {
           mockContext.user,
           'Report',
           definitionJson,
+          StatusScope.Global,
         );
         expect(result).toBe(mockDefinition);
       });
@@ -609,6 +613,7 @@ describe('workflow-resolvers', () => {
           mockContext,
           mockContext.user,
           'Task',
+          StatusScope.Global,
         );
         expect(result).toBe(mockPublished);
       });
@@ -632,6 +637,7 @@ describe('workflow-resolvers', () => {
           mockContext,
           mockContext.user,
           'Case',
+          StatusScope.Global,
         );
         expect(result).toBe(mockDeleted);
       });
@@ -658,8 +664,34 @@ describe('workflow-resolvers', () => {
           mockContext,
           mockContext.user,
           'Incident',
+          StatusScope.Global,
         );
         expect(result).toBe(mockRestored);
+      });
+    });
+
+    describe('scope argument', () => {
+      it('forwards RequestAccess to every definition query and mutation', async () => {
+        const { Query, Mutation } = workflowResolvers;
+        const args = { entityType: 'Case-Rfi', scope: StatusScope.RequestAccess };
+
+        await Query.workflowDefinition({}, { ...args, allowDraft: true }, mockContext);
+        await Mutation.workflowDefinitionSet({}, { ...args, definition: '{}' }, mockContext);
+        await Mutation.workflowDefinitionPublish({}, args, mockContext);
+        await Mutation.workflowDefinitionRestorePublished({}, args, mockContext);
+        await Mutation.workflowDefinitionDelete({}, args, mockContext);
+
+        expect(workflowDomain.getWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', true, StatusScope.RequestAccess);
+        expect(workflowDomain.setWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', '{}', StatusScope.RequestAccess);
+        expect(workflowDomain.publishWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', StatusScope.RequestAccess);
+        expect(workflowDomain.restorePublishedWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', StatusScope.RequestAccess);
+        expect(workflowDomain.deleteWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', StatusScope.RequestAccess);
+      });
+
+      it('workflowDefinitionPublish passes scope', async () => {
+        await workflowResolvers.Mutation.workflowDefinitionPublish({}, { entityType: 'Case-Rfi', scope: StatusScope.RequestAccess }, mockContext);
+
+        expect(workflowDomain.publishWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', StatusScope.RequestAccess);
       });
     });
 

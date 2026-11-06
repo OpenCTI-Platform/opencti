@@ -9003,7 +9003,7 @@ type Query {
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixObjectOrStixRelationships(first: Int, after: ID, search: String, filters: FilterGroup): StixObjectOrStixRelationshipConnection
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
-  workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
+  workflowDefinition(entityType: String!, allowDraft: Boolean, scope: StatusScope): WorkflowSchema
   workflowDefinitionPublished(entityType: String!): Boolean
   workflowStatuses(entityType: String!): [Status!]!
   workflowMassTransitions(entityType: String!, entityIds: [String!], filters: String, search: String, excludedIds: [String!]): [WorkflowTransition!]!
@@ -9844,11 +9844,11 @@ type Mutation {
   stixRefRelationshipEdit(id: ID!): StixRefRelationshipEditMutations
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput!): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
-  workflowDefinitionSet(entityType: String!, definition: String!): WorkflowDefinitionMutationResult
-  workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
+  workflowDefinitionSet(entityType: String!, definition: String!, scope: StatusScope): WorkflowDefinitionMutationResult
+  workflowDefinitionPublish(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
   workflowMigrate(entityType: String!, publish: Boolean = false, overwrite: Boolean = false): WorkflowDefinitionMutationResult
-  workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult
-  workflowDefinitionDelete(entityType: String!): EntitySetting
+  workflowDefinitionRestorePublished(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
+  workflowDefinitionDelete(entityType: String!, scope: StatusScope): EntitySetting
   triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
   setWorkflowStatus(entityId: String!, targetStatusId: String!, applyTransitionActions: Boolean!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!
   clearWorkflowPendingState(entityId: String!): WorkflowInstance!
