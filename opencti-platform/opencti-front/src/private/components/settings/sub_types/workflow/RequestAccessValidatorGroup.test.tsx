@@ -32,8 +32,8 @@ vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
 
 // The real field loads the groups through the network: the stub only exposes what the form hands it.
 vi.mock('@components/common/form/GroupField', () => ({
-  default: ({ label, onChange }: { label: string; onChange: (name: string, value: unknown) => void }) => (
-    <div>
+  default: ({ label, clearable, onChange }: { label: string; clearable?: boolean; onChange: (name: string, value: unknown) => void }) => (
+    <div data-testid="group-field" data-clearable={String(clearable)}>
       <span>{label}</span>
       <button onClick={() => onChange('approvalAdmin', { label: 'SOC', value: 'group-soc' })}>pick</button>
       <button onClick={() => onChange('approvalAdmin', null)}>clear</button>
@@ -64,14 +64,18 @@ describe('RequestAccessValidatorGroup', () => {
     );
   });
 
-  it('saves an empty list when the group is cleared', async () => {
+  it('does not offer to clear the group', () => {
+    render(<RequestAccessValidatorGroup />);
+
+    expect(screen.getByTestId('group-field')).toHaveAttribute('data-clearable', 'false');
+  });
+
+  it('never saves an empty validator group', async () => {
     const user = userEvent.setup();
     render(<RequestAccessValidatorGroup />);
 
     await user.click(screen.getByText('clear'));
 
-    expect(mockCommit).toHaveBeenCalledWith(
-      expect.objectContaining({ variables: { input: { approval_admin: [] } } }),
-    );
+    expect(mockCommit).not.toHaveBeenCalled();
   });
 });
