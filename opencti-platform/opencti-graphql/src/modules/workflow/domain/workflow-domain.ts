@@ -1130,7 +1130,7 @@ const findRequestAccessOutcomeViolations = async (
     .filter((state) => state.requestAccessOutcome);
   const previousOutcomeStates = outcomeStatesOf(oldDefinitionData);
   const newOutcomeStateIds = new Map(outcomeStatesOf(newDefinitionData).map((state) => [state.requestAccessOutcome, state.statusId]));
-  const transitionKeys = (definitionData: WorkflowDefinitionData) => definitionData.transitions
+  const transitionKeys = (definitionData: WorkflowDefinitionData) => (definitionData.transitions ?? [])
     .flatMap((transition) => (Array.isArray(transition.from) ? transition.from : [transition.from]).map((from) => `${from}::${transition.event}::${transition.to}`));
   const previousTransitionKeys = new Set(transitionKeys(oldDefinitionData));
   const addedTransitionKeys = transitionKeys(newDefinitionData).filter((key) => !previousTransitionKeys.has(key));
@@ -1176,7 +1176,6 @@ const syncRequestAccessLegacyStatusIds = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
-  entitySetting: BasicStoreEntityEntitySetting,
   definitionData: WorkflowDefinitionData,
 ): Promise<void> => {
   const outcomeStates = (definitionData.states ?? []).filter((state) => state.requestAccessOutcome);
@@ -1186,6 +1185,10 @@ const syncRequestAccessLegacyStatusIds = async (
   const approvedId = statusIdByTemplateId.get(outcomeStates.find((state) => state.requestAccessOutcome === 'APPROVED')?.statusId as string);
   const declinedId = statusIdByTemplateId.get(outcomeStates.find((state) => state.requestAccessOutcome === 'DECLINED')?.statusId as string);
 
+  // Read the setting at write time: the one loaded when publishing started may predate a concurrent
+  // edit of the request access configuration, which the whole-object write below would overwrite.
+  const entitySetting = await getWorkflowConfig(context, user, entityType);
+  if (!entitySetting) return;
   const current = entitySetting.request_access_workflow;
   const approved = approvedId ?? current?.approved_workflow_id;
   const declined = declinedId ?? current?.declined_workflow_id;
@@ -1363,7 +1366,7 @@ export const publishWorkflowDefinition = async (
     if (publishedDefinitionData) {
       await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData, scope);
       if (scope === StatusScope.RequestAccess) {
-        await syncRequestAccessLegacyStatusIds(executionContext, executionUser, entityType, entitySetting as BasicStoreEntityEntitySetting, publishedDefinitionData);
+        await syncRequestAccessLegacyStatusIds(executionContext, executionUser, entityType, publishedDefinitionData);
       }
     }
 

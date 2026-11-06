@@ -6010,6 +6010,38 @@ describe('scope-aware workflow definitions', () => {
       }]);
     });
 
+    it('preserves the request access configuration as it is when the ids are written', async () => {
+      arrange(versionWith('ra-v2', baseStates, baseTransitions));
+      (findByType as any)
+        .mockResolvedValueOnce(bothSetting)
+        .mockResolvedValue({ ...bothSetting, request_access_workflow: { ...bothSetting.request_access_workflow, approval_admin: ['group-2'] } });
+      mockStore([]);
+
+      await publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess);
+
+      expect(updateAttribute).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-setting-id', 'EntitySetting', [{
+        key: 'request_access_workflow',
+        value: [expect.objectContaining({ approval_admin: ['group-2'], approved_workflow_id: 'ra-approved', declined_workflow_id: 'ra-declined' })],
+      }]);
+    });
+
+    it('reports the typed refusal, not a TypeError, when the published version has no transitions', async () => {
+      const withoutTransitions = { ...publishedVersion, content: JSON.stringify({ name: 'RA', initialState: 'new', states: baseStates }) };
+      (findByType as any).mockResolvedValue(bothSetting);
+      (storeLoadById as any).mockResolvedValue({ id: 'ra-def', name: 'RA', published_version: withoutTransitions, draft_version: movedMarkerDraft, all_versions: [movedMarkerDraft, withoutTransitions] });
+      mockStore([{ currentState: 'approved' }]);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess))
+        .rejects.toMatchObject(publishErrors('REQUEST_ACCESS_OUTCOME_MOVED'));
+    });
+
+    it('is not blocked by a Global instance sitting in a state of the same template', async () => {
+      arrange(movedMarkerDraft);
+      mockStore([{ currentState: 'approved', workflow_id: 'global-def' } as any]);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess)).resolves.toMatchObject({ published: true });
+    });
+
     it('leaves the request access configuration untouched when the ids already match', async () => {
       arrange(versionWith('ra-v2', baseStates, baseTransitions));
       (findByType as any).mockResolvedValue({
