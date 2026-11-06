@@ -10,6 +10,7 @@ import { markingsFamily } from './registry/markings-configPreset-registry';
 import { rolesFamily } from './registry/roles-configPreset-registry';
 import { groupsFamily } from './registry/groups-configPreset-registry';
 import { policiesFamily } from './registry/policies-configPreset-registry';
+import { connectorsFamily } from './registry/connectors-configPreset-registry';
 import { isEnterpriseEditionUpToDate } from '../../enterprise-edition/ee';
 
 export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
@@ -26,6 +27,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   rolesFamily,
   groupsFamily,
   policiesFamily,
+  connectorsFamily,
 ];
 
 // How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.

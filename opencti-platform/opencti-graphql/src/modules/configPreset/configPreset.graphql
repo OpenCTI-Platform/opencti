@@ -57,6 +57,13 @@ type ConfigPresetImportField {
     value: String
 }
 
+type ConfigPresetImportCredential {
+    key: String!
+    description: String!
+    required: Boolean!
+    stored: Boolean!
+}
+
 # An item of an uploaded bundle: type is the bare family id, key the bundle id (the pair the results of the import carry).
 type ConfigPresetImportItem {
     key: String!
@@ -68,6 +75,7 @@ type ConfigPresetImportItem {
     # The item conflicts with one of the platform: it exists, or another one has its name. The dialog offers a choice of what to do with it.
     conflict: Boolean!
     fields: [ConfigPresetImportField!]!
+    credentials: [ConfigPresetImportCredential!]!
     # A setting that is on or off: whether the bundle turns it on, shown under its label. Null for an item that is not one, or a setting the bundle does not set.
     isEnabled: Boolean
     # Items imported with this one, whatever the selection.
@@ -249,6 +257,23 @@ input ConfigPresetSelectionInput {
     item_modes: [ConfigPresetItemModeInput!]
 }
 
+input ConfigPresetItemCredentialsInput {
+    type: ID!
+    key: ID!
+    values: [ConfigPresetCredentialInput!]!
+}
+
+input ConfigPresetItemServiceAccountInput {
+    type: ID!
+    key: ID!
+    user_id: ID!
+}
+
+input ConfigPresetCredentialInput {
+    key: String!
+    secret: String!
+}
+
 input ConfigPresetItemModeInput {
     # Key of an item of the type
     key: ID!
@@ -265,7 +290,7 @@ extend type Mutation {
     # Start over (draft) or Close (finished): deletes the session, and the pending zip with delete_file.
     configPresetImportSessionClear(delete_file: Boolean): Boolean! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # Applies the selected items of the pending zip of the caller (and the items they depend on); with dry_run nothing is written and the expected results are returned.
-    configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean): ConfigPresetImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    configPresetImport(file_id: ID!, selections: [ConfigPresetSelectionInput!]!, dry_run: Boolean, credentials: [ConfigPresetItemCredentialsInput!], service_accounts: [ConfigPresetItemServiceAccountInput!]): ConfigPresetImportOutput! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # From an interrupted import: back to the selection, with the file and the selection kept.
     configPresetImportSessionBackToSelection: ConfigPresetImportSession! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 }

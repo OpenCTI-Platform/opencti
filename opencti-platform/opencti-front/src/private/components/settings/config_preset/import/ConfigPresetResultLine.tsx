@@ -77,6 +77,13 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'Requires Enterprise Edition': return t_i18n('Requires Enterprise Edition');
     case 'The password policy cannot be satisfied: its maximum length is below what its other rules require':
       return t_i18n('The password policy cannot be satisfied: its maximum length is below what its other rules require');
+    case 'Connector already exists': return t_i18n('Connector already exists');
+    case 'A connector that is not managed by the platform has this name': return t_i18n('A connector that is not managed by the platform has this name');
+    case 'Connector name already exists': return t_i18n('Connector name already exists');
+    case 'There is no connector manager configured': return t_i18n('There is no connector manager configured');
+    case 'You have not defined a default group for ingestion users': return t_i18n('You have not defined a default group for ingestion users');
+    case 'Service account not found': return t_i18n('Service account not found');
+    case 'The confidence level of the service account is not changed': return t_i18n('The confidence level of the service account is not changed');
     default: break;
   }
   const mainOrganization = reason.match(/^Sets the main organization: (.+)$/)?.[1];
@@ -94,6 +101,14 @@ const translateReason = (t_i18n: Translate, reason: string) => {
   const missingMarkings = reason.match(/^Markings not found: (.+)$/)?.[1];
   if (missingMarkings) {
     return t_i18n('Markings not found: {markings}', { values: { markings: missingMarkings } });
+  }
+  const missingCredentials = reason.match(/^Credentials to provide: (.+)$/)?.[1];
+  if (missingCredentials) {
+    return t_i18n('Credentials to provide: {keys}', { values: { keys: missingCredentials } });
+  }
+  const unavailableConnector = reason.match(/^Connector not available on this platform: (.+)$/)?.[1];
+  if (unavailableConnector) {
+    return t_i18n('Connector not available on this platform: {image}', { values: { image: unavailableConnector } });
   }
   const removedRoles = reason.match(/^Roles removed: (.+)$/)?.[1];
   if (removedRoles) {
