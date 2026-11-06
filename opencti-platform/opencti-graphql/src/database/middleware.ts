@@ -112,6 +112,7 @@ import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
 import { getCurrentStripSink, registerReconcileAssert } from './sequencer/sequencer-pending-refs';
 import { pendingIntentContext, pendingRecordInput, registerPendingIntentResubmit } from './sequencer/sequencer-pending-intents';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
+import { createInputCompletionOf } from './create-input-completion';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
 import { isStreamPublishable } from './stream/stream-utils';
@@ -4167,6 +4168,10 @@ const internalCreateEntityRaw = async (
   const { fromRule } = opts;
   // We need to check existing dependencies
   let resolvedInput = await inputResolveRefs(context, user, input, type, entitySetting, { searchCaller: isStixMetaObject(type) ? 'resolve1_meta' : 'resolve1_ent' });
+  const completion = fromRule ? undefined : createInputCompletionOf(type);
+  if (completion) {
+    resolvedInput = await completion(context, user, resolvedInput);
+  }
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
   const participantIds = getInputIds(type, resolvedInput, fromRule);

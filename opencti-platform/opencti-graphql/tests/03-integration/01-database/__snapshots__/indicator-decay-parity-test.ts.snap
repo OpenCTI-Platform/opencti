@@ -1,0 +1,164 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Indicator validity and decay at creation > should decide the same validity and decay as before the move 1`] = `
+{
+  "by_author": {
+    "applied_rule": {
+      "decay_lifetime": 20,
+      "decay_points": [
+        60,
+      ],
+      "decay_pound": 0.5,
+      "decay_revoke_score": 10,
+      "decay_rule_id": undefined,
+    },
+    "decay_base_score": 100,
+    "decay_base_score_date": "2030-01-01T00:00:00.000Z",
+    "decay_history": [
+      {
+        "score": 100,
+        "updated_at": 2030-01-01T00:00:00.000Z,
+      },
+    ],
+    "decay_next_reaction_date": 2030-01-06T01:25:53.263Z,
+    "exclusion": null,
+    "revoked": false,
+    "rule": "Parity author rule",
+    "score": 100,
+    "valid_from": "2030-01-01T00:00:00.000Z",
+    "valid_until": "2030-01-18T01:49:52.265Z",
+  },
+  "by_label": {
+    "applied_rule": {
+      "decay_lifetime": 10,
+      "decay_points": [
+        60,
+      ],
+      "decay_pound": 0.5,
+      "decay_revoke_score": 10,
+      "decay_rule_id": undefined,
+    },
+    "decay_base_score": 100,
+    "decay_base_score_date": "2030-01-01T00:00:00.000Z",
+    "decay_history": [
+      {
+        "score": 100,
+        "updated_at": 2030-01-01T00:00:00.000Z,
+      },
+    ],
+    "decay_next_reaction_date": 2030-01-03T12:42:56.631Z,
+    "exclusion": null,
+    "revoked": false,
+    "rule": "Parity label rule",
+    "score": 100,
+    "valid_from": "2030-01-01T00:00:00.000Z",
+    "valid_until": "2030-01-09T12:54:56.132Z",
+  },
+  "disabled": {
+    "applied_rule": null,
+    "decay_base_score": null,
+    "decay_base_score_date": null,
+    "decay_history": [],
+    "decay_next_reaction_date": null,
+    "exclusion": null,
+    "revoked": false,
+    "rule": null,
+    "score": 100,
+    "valid_from": "2030-01-01T00:00:00.000Z",
+    "valid_until": "2030-02-17T00:00:00.000Z",
+  },
+  "domain": {
+    "applied_rule": {
+      "decay_lifetime": 300,
+      "decay_points": [
+        80,
+        50,
+      ],
+      "decay_pound": 0.7,
+      "decay_revoke_score": 20,
+      "decay_rule_id": undefined,
+    },
+    "decay_base_score": 100,
+    "decay_base_score_date": "2030-01-01T00:00:00.000Z",
+    "decay_history": [
+      {
+        "score": 100,
+        "updated_at": 2030-01-01T00:00:00.000Z,
+      },
+    ],
+    "decay_next_reaction_date": 2030-01-11T05:11:09.231Z,
+    "exclusion": null,
+    "revoked": false,
+    "rule": "Built-in domain name",
+    "score": 100,
+    "valid_from": "2030-01-01T00:00:00.000Z",
+    "valid_until": "2030-07-07T18:18:51.110Z",
+  },
+  "excluded": {
+    "applied_rule": null,
+    "decay_base_score": null,
+    "decay_base_score_date": null,
+    "decay_history": [],
+    "decay_next_reaction_date": null,
+    "exclusion": "Parity exclusion",
+    "revoked": false,
+    "rule": null,
+    "score": 100,
+    "valid_from": "2030-01-01T00:00:00.000Z",
+    "valid_until": "5138-11-16T09:46:40.000Z",
+  },
+  "file": {
+    "applied_rule": {
+      "decay_lifetime": 460,
+      "decay_points": [
+        80,
+      ],
+      "decay_pound": 0.3,
+      "decay_revoke_score": 20,
+      "decay_rule_id": undefined,
+    },
+    "decay_base_score": 100,
+    "decay_base_score_date": "2030-01-01T00:00:00.000Z",
+    "decay_history": [
+      {
+        "score": 100,
+        "updated_at": 2030-01-01T00:00:00.000Z,
+      },
+    ],
+    "decay_next_reaction_date": 2030-04-19T01:33:31.054Z,
+    "exclusion": null,
+    "revoked": false,
+    "rule": "Built-in files and artifact",
+    "score": 100,
+    "valid_from": "2030-01-01T00:00:00.000Z",
+    "valid_until": "2031-01-12T07:17:44.492Z",
+  },
+  "ip": {
+    "applied_rule": {
+      "decay_lifetime": 47,
+      "decay_points": [
+        80,
+        50,
+      ],
+      "decay_pound": 0.55,
+      "decay_revoke_score": 20,
+      "decay_rule_id": undefined,
+    },
+    "decay_base_score": 100,
+    "decay_base_score_date": "2030-01-01T00:00:00.000Z",
+    "decay_history": [
+      {
+        "score": 100,
+        "updated_at": 2030-01-01T00:00:00.000Z,
+      },
+    ],
+    "decay_next_reaction_date": 2030-01-04T07:15:06.123Z,
+    "exclusion": null,
+    "revoked": false,
+    "rule": "Built-in IP and URL",
+    "score": 100,
+    "valid_from": "2030-01-01T00:00:00.000Z",
+    "valid_until": "2030-02-02T12:33:44.322Z",
+  },
+}
+`;

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
-import { createEntity, createRelation, distributionEntities, inputResolveRefs, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
+import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
@@ -57,9 +57,8 @@ import { checkObservableValue, isCacheEmpty } from '../../database/exclusionList
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
 import { checkDecayExclusionRules, getActiveDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
-import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
 import { pushAll } from '../../utils/arrayUtil';
-import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
+import { registerCreateInputCompletion } from '../../database/create-input-completion';
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
@@ -257,44 +256,15 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
   return { formattedPattern };
 };
 
-export const addIndicator = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
-  let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type as string;
-  if (observableType === 'File') {
-    observableType = 'StixFile';
-  }
-  const isKnownObservable = observableType !== 'Unknown';
-  if (!isKnownObservable && indicator.pattern_type.toLowerCase() === 'yara') {
-    observableType = 'StixFile';
-  }
-  if (isKnownObservable && !isStixCyberObservable(observableType)) {
-    throw FunctionalError(`Observable type ${observableType} is not supported.`);
-  }
-
-  const { formattedPattern } = await validateIndicatorPattern(context, user, indicator.pattern_type, indicator.pattern);
-
-  const indicatorBaseScore = indicator.x_opencti_score ?? INDICATOR_DEFAULT_SCORE;
-  checkScore(indicatorBaseScore);
-
-  const baseIndicator = {
-    ...indicator,
-    pattern: formattedPattern,
-    [X_SCORE]: indicatorBaseScore,
-  };
-  // Do not set Unknown to prevent upsert with Unknown value
-  // Unknown will be set at creation time thanks to the defaultNullValue of x_opencti_main_observable_type attribute
-  if (observableType !== 'Unknown') {
-    baseIndicator.x_opencti_main_observable_type = observableType;
-  }
-  delete baseIndicator.basedOn;
-  delete baseIndicator.createObservables;
-
+// The validity and decay of a new indicator, computed from its resolved references (author,
+// labels, markings) by the creation itself, after their resolution (middleware
+// registerCreateInputCompletion): under the sequencer, a reference written in the same batch is
+// resolved as a committed one would be, where a resolution before createEntity would miss it.
+export const completeIndicatorInput = async (context: AuthContext, user: AuthUser, resolvedIndicator: Record<string, any>) => {
   const isDecayActivated: boolean = await isDecayEnabled();
-
-  const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
-  const resolvedIndicator = await inputResolveRefs(context, user, baseIndicator, ENTITY_TYPE_INDICATOR, entitySetting as BasicStoreEntityEntitySetting);
-
+  const indicatorBaseScore = resolvedIndicator[X_SCORE];
   const decayRule = await checkDecayRules(context, user, resolvedIndicator);
-  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
+  const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(resolvedIndicator as IndicatorAddInput, decayRule.decay_lifetime);
 
   const activeDecayExclusionRuleList = await getActiveDecayExclusionRules(context, user);
   const exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
@@ -348,17 +318,54 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     finalIndicatorToCreate = { ...indicatorToCreate };
   }
 
-  // create the linked observables
-  let observablesToLink: string[] = [];
-  if (indicator.basedOn) {
-    observablesToLink = indicator.basedOn;
-  }
   if (!validPeriod) {
     throw DatabaseError('You cant create an indicator with valid_until less than valid_from', {
       input: finalIndicatorToCreate,
     });
   }
-  const created = await createEntity(context, user, finalIndicatorToCreate, ENTITY_TYPE_INDICATOR);
+  return finalIndicatorToCreate;
+};
+registerCreateInputCompletion(ENTITY_TYPE_INDICATOR, completeIndicatorInput);
+
+export const addIndicator = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
+  let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type as string;
+  if (observableType === 'File') {
+    observableType = 'StixFile';
+  }
+  const isKnownObservable = observableType !== 'Unknown';
+  if (!isKnownObservable && indicator.pattern_type.toLowerCase() === 'yara') {
+    observableType = 'StixFile';
+  }
+  if (isKnownObservable && !isStixCyberObservable(observableType)) {
+    throw FunctionalError(`Observable type ${observableType} is not supported.`);
+  }
+
+  const { formattedPattern } = await validateIndicatorPattern(context, user, indicator.pattern_type, indicator.pattern);
+
+  const indicatorBaseScore = indicator.x_opencti_score ?? INDICATOR_DEFAULT_SCORE;
+  checkScore(indicatorBaseScore);
+
+  const baseIndicator = {
+    ...indicator,
+    pattern: formattedPattern,
+    [X_SCORE]: indicatorBaseScore,
+  };
+  // Do not set Unknown to prevent upsert with Unknown value
+  // Unknown will be set at creation time thanks to the defaultNullValue of x_opencti_main_observable_type attribute
+  if (observableType !== 'Unknown') {
+    baseIndicator.x_opencti_main_observable_type = observableType;
+  }
+  delete baseIndicator.basedOn;
+  delete baseIndicator.createObservables;
+
+  // create the linked observables
+  let observablesToLink: string[] = [];
+  if (indicator.basedOn) {
+    observablesToLink = indicator.basedOn;
+  }
+  // validity and decay are completed from the resolved references inside the creation
+  // (completeIndicatorInput)
+  const created = await createEntity(context, user, baseIndicator, ENTITY_TYPE_INDICATOR);
   await Promise.all(
     observablesToLink.map((observableToLink) => {
       const input = {
