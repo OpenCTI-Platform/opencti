@@ -11,7 +11,7 @@ import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import Tag from '@common/tag/Tag';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@filigran/design-system';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 
 interface WidgetContainerProps {
   children: ReactNode;
@@ -43,22 +43,19 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
     ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
           {title}
-          {/* Its own provider: the widgets of the public dashboards are drawn outside the one of the application */}
-          <TooltipProvider>
-            <Tooltip>
-              {/* A bare button: reached with the keyboard too, and named with the warning for the screen readers */}
-              <TooltipTrigger type="button" aria-label={warning} style={{ display: 'inline-flex' }}>
-                <ReportProblemOutlinedIcon
-                  aria-hidden
-                  style={{
-                    fontSize: 15,
-                    color: theme.palette.designSystem.alert.warning.primary,
-                  }}
-                />
-              </TooltipTrigger>
-              <TooltipContent>{warning}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            {/* A bare button: reached with the keyboard too, and named with the warning for the screen readers */}
+            <TooltipTrigger type="button" aria-label={warning} style={{ display: 'inline-flex' }}>
+              <ReportProblemOutlinedIcon
+                aria-hidden
+                style={{
+                  fontSize: 15,
+                  color: theme.palette.designSystem.alert.warning.primary,
+                }}
+              />
+            </TooltipTrigger>
+            <TooltipContent>{warning}</TooltipContent>
+          </Tooltip>
         </div>
       )
     : title;
