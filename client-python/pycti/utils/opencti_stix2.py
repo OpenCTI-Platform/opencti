@@ -2078,9 +2078,13 @@ class OpenCTIStix2:
             } - {None}
 
         nested_ref_client = self.opencti.stix_nested_ref_relationship
-        all_ids = target_ids(nested_ref_client.list(fromId=entity["x_opencti_id"]))
+        all_ids = target_ids(
+            nested_ref_client.list(fromId=entity["x_opencti_id"], getAll=True)
+        )
         allowed_ids = target_ids(
-            nested_ref_client.list(fromId=entity["x_opencti_id"], filters=access_filter)
+            nested_ref_client.list(
+                fromId=entity["x_opencti_id"], filters=access_filter, getAll=True
+            )
         )
         excluded_ids = all_ids - allowed_ids
         if not excluded_ids:
@@ -2096,14 +2100,94 @@ class OpenCTIStix2:
                 else:
                     del entity[key]
 
-    def _generate_backend_stix_2_0_export(self, entity: Dict) -> Dict:
+    def _convert_external_references(
+        self, external_references: List[Dict], excluded_marking_ids: set
+    ) -> List:
+        """Convert raw GraphQL external references to STIX external references.
+
+        Empty values are left out and the attached files are embedded under
+        ``x_opencti_files``, with their content, unless they carry a marking
+        excluded by the export access filter.
+
+        :param external_references: raw ``externalReferences`` of an entity
+        :type external_references: List[Dict]
+        :param excluded_marking_ids: Internal ids of the excluded markings
+        :type excluded_marking_ids: set
+        :return: STIX external references
+        :rtype: List
+        """
+        result = []
+        for entity_external_reference in external_references:
+            external_reference = dict()
+            if self.opencti.not_empty(entity_external_reference["source_name"]):
+                external_reference["source_name"] = entity_external_reference[
+                    "source_name"
+                ]
+            if self.opencti.not_empty(entity_external_reference["description"]):
+                external_reference["description"] = entity_external_reference[
+                    "description"
+                ]
+            if self.opencti.not_empty(entity_external_reference["url"]):
+                external_reference["url"] = entity_external_reference["url"]
+            if self.opencti.not_empty(entity_external_reference["hash"]):
+                external_reference["hash"] = entity_external_reference["hash"]
+            if self.opencti.not_empty(entity_external_reference["external_id"]):
+                external_reference["external_id"] = entity_external_reference[
+                    "external_id"
+                ]
+            shareable_files = [
+                file
+                for file in entity_external_reference.get("importFiles") or []
+                if self._is_file_shareable(file, excluded_marking_ids)
+            ]
+            if len(shareable_files) > 0:
+                external_reference["x_opencti_files"] = []
+                for file in shareable_files:
+                    data = self.opencti.fetch_opencti_file_by_id(
+                        file["id"], binary=True, serialize=True
+                    )
+                    x_opencti_file = {
+                        "name": file["name"],
+                        "data": data,
+                        "mime_type": file["metaData"]["mimetype"],
+                        "version": file["metaData"].get("version", None),
+                    }
+                    if "objectMarking" in file:
+                        x_opencti_file["object_marking_refs"] = []
+                        for file_marking in file["objectMarking"]:
+                            marking_definition = self._marking_to_stix(file_marking)
+                            # Kept so prepare_export adds it to the bundle
+                            self.export_file_marking_definitions[
+                                marking_definition["id"]
+                            ] = marking_definition
+                            x_opencti_file["object_marking_refs"].append(
+                                marking_definition["id"]
+                            )
+                    external_reference["x_opencti_files"].append(x_opencti_file)
+            result.append(external_reference)
+        return result
+
+    def _generate_backend_stix_2_0_export(
+        self,
+        entity: Dict,
+        no_custom_attributes: bool = False,
+        excluded_marking_ids: Optional[set] = None,
+    ) -> Dict:
         """Get the STIX 2.0 representation of an entity from the backend.
 
         The raw GraphQL keys listed in ``_STIX_2_0_PRESERVED_KEYS`` are kept so
         that ``prepare_export`` can add the related objects to the bundle.
+        External references are rebuilt with the legacy rules, which embed the
+        attached files, and ``no_custom_attributes`` drops the same keys as the
+        legacy export.
 
         :param entity: OpenCTI entity dictionary, as returned by a reader
         :type entity: Dict
+        :param no_custom_attributes: Whether to exclude custom attributes, defaults to False
+        :type no_custom_attributes: bool, optional
+        :param excluded_marking_ids: Internal ids of the markings excluded by the
+            export access filter, defaults to None (no exclusion)
+        :type excluded_marking_ids: set, optional
         :return: STIX 2.0 entity dictionary
         :rtype: Dict
         :raises ValueError: if the backend returns no payload
@@ -2118,6 +2202,17 @@ class OpenCTIStix2:
             )
         for key in _STIX_2_0_REBUILT_KEYS:
             backend_stix.pop(key, None)
+        # The backend only outputs the external reference metadata, not the
+        # attached files. Without custom attributes, the legacy export omits
+        # the kill chain phases (`x_opencti_order`) and external references.
+        # TODO(stix-2-0-migration): SCOs output `x_opencti_external_references`.
+        backend_stix.pop("external_references", None)
+        if no_custom_attributes:
+            backend_stix.pop("kill_chain_phases", None)
+        elif entity.get("externalReferences"):
+            backend_stix["external_references"] = self._convert_external_references(
+                entity["externalReferences"], excluded_marking_ids or set()
+            )
         # Same filter as the end of the legacy `generate_export`: empty raw
         # keys are not kept (e.g. `importFiles: []` would leak into the export).
         for key in _STIX_2_0_PRESERVED_KEYS:
@@ -2149,7 +2244,9 @@ class OpenCTIStix2:
         """
         excluded_marking_ids = self._get_excluded_marking_ids(access_filter)
         if self._is_backend_stix_2_0(entity["entity_type"], stix_version):
-            return self._generate_backend_stix_2_0_export(entity)
+            return self._generate_backend_stix_2_0_export(
+                entity, no_custom_attributes, excluded_marking_ids
+            )
 
         # Handle model deviation
         original_entity_type = entity["entity_type"]
@@ -2291,55 +2388,9 @@ class OpenCTIStix2:
             and "externalReferences" in entity
             and len(entity["externalReferences"]) > 0
         ):
-            entity["external_references"] = []
-            for entity_external_reference in entity["externalReferences"]:
-                external_reference = dict()
-                if self.opencti.not_empty(entity_external_reference["source_name"]):
-                    external_reference["source_name"] = entity_external_reference[
-                        "source_name"
-                    ]
-                if self.opencti.not_empty(entity_external_reference["description"]):
-                    external_reference["description"] = entity_external_reference[
-                        "description"
-                    ]
-                if self.opencti.not_empty(entity_external_reference["url"]):
-                    external_reference["url"] = entity_external_reference["url"]
-                if self.opencti.not_empty(entity_external_reference["hash"]):
-                    external_reference["hash"] = entity_external_reference["hash"]
-                if self.opencti.not_empty(entity_external_reference["external_id"]):
-                    external_reference["external_id"] = entity_external_reference[
-                        "external_id"
-                    ]
-                shareable_files = [
-                    file
-                    for file in entity_external_reference.get("importFiles") or []
-                    if self._is_file_shareable(file, excluded_marking_ids)
-                ]
-                if len(shareable_files) > 0:
-                    external_reference["x_opencti_files"] = []
-                    for file in shareable_files:
-                        data = self.opencti.fetch_opencti_file_by_id(
-                            file["id"], binary=True, serialize=True
-                        )
-                        x_opencti_file = {
-                            "name": file["name"],
-                            "data": data,
-                            "mime_type": file["metaData"]["mimetype"],
-                            "version": file["metaData"].get("version", None),
-                        }
-                        if "objectMarking" in file:
-                            x_opencti_file["object_marking_refs"] = []
-                            for file_marking in file["objectMarking"]:
-                                marking_definition = self._marking_to_stix(file_marking)
-                                # Kept so prepare_export adds it to the bundle
-                                self.export_file_marking_definitions[
-                                    marking_definition["id"]
-                                ] = marking_definition
-                                x_opencti_file["object_marking_refs"].append(
-                                    marking_definition["id"]
-                                )
-                        external_reference["x_opencti_files"].append(x_opencti_file)
-                entity["external_references"].append(external_reference)
+            entity["external_references"] = self._convert_external_references(
+                entity["externalReferences"], excluded_marking_ids
+            )
         if "externalReferences" in entity:
             del entity["externalReferences"]
             del entity["externalReferencesIds"]

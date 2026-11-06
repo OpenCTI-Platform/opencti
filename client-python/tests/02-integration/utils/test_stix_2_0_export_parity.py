@@ -44,6 +44,12 @@ def rich_malware(api_client):
         external_id="PARITY-1",
         description="External reference of the parity malware",
     )
+    api_client.external_reference.add_file(
+        id=external_reference["id"],
+        file_name="stix-2-0-parity-report.txt",
+        data="External reference attachment of the parity malware",
+        no_trigger_import=True,
+    )
     sample = api_client.stix_cyber_observable.create(
         observableData={
             "type": "file",
@@ -106,6 +112,8 @@ def test_malware_stix_2_0_export_matches_legacy_export(api_stix, rich_malware, m
 
     malware = stix_2_0_objects[rich_malware["standard_id"]]
     assert malware["spec_version"] == "2.0"
+    attached_files = malware["external_references"][0]["x_opencti_files"]
+    assert attached_files[0]["name"] == "stix-2-0-parity-report.txt"
     for object_id, legacy_object in legacy_objects.items():
         assert _without_accepted_differences(
             stix_2_0_objects[object_id]
