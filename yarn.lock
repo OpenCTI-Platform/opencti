@@ -18313,7 +18313,7 @@ __metadata:
     re2: "npm:1.27.0"
     sanitize-html: "npm:2.18.1"
     semver: "npm:7.8.6"
-    set-interval-async: "npm:3.0.4"
+    set-interval-async: "npm:3.0.6"
     slug: "npm:12.0.1"
     source-map: "npm:0.8.0"
     tough-cookie: "npm:6.0.2"
@@ -21127,10 +21127,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"set-interval-async@npm:3.0.4":
-  version: 3.0.4
-  resolution: "set-interval-async@npm:3.0.4"
-  checksum: 10c0/4fb6cde981380308cecaf76c9c8460897c2bff00c893aa35ccdb76c842a7c0b9fd099c58ac77294e2327e1da1a13e6ffaaadf6748368c9dbb7c98c979cd0d4a2
+"set-interval-async@npm:3.0.6":
+  version: 3.0.6
+  resolution: "set-interval-async@npm:3.0.6"
+  checksum: 10c0/61b1fe6f2e4e3e61f4137c0ab7038c75b15fd3c6b93a5a11854ca0a34608e0f0de5fa8c7f3c8473a07bbe5fc3e0a5c116695c4eb68ed9623dba85e63340c9836
   languageName: node
   linkType: hard
 
