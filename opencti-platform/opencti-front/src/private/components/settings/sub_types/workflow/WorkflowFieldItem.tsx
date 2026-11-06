@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Field, FieldProps } from 'formik';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import ObjectOrganizationField from '@components/common/form/ObjectOrganizationField';
@@ -14,6 +15,8 @@ const WorkflowFieldItem = ({ field, isCondition }: WorkflowFieldItemProps) => {
   const { name, value } = field;
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const authorLabel = t_i18n('Author (requesting organization)');
+  const authorOptions = useMemo(() => [{ value: REQUEST_ACCESS_AUTHOR_KEY, label: authorLabel }], [authorLabel]);
 
   if (isCondition) {
     return <Field name={name} component={WorkflowConditionFilters} />;
@@ -39,7 +42,6 @@ const WorkflowFieldItem = ({ field, isCondition }: WorkflowFieldItemProps) => {
   }
 
   if (value.type === WorkflowActionType.shareRequestedEntities) {
-    const authorLabel = t_i18n('Author (requesting organization)');
     return (
       <ObjectOrganizationField
         name={`${name}.params.organizations`}
@@ -49,7 +51,7 @@ const WorkflowFieldItem = ({ field, isCondition }: WorkflowFieldItemProps) => {
         alert={false}
         style={{ width: '100%' }}
         disabled={!isEnterpriseEdition}
-        extraOptions={[{ value: REQUEST_ACCESS_AUTHOR_KEY, label: authorLabel }]}
+        extraOptions={authorOptions}
         getOptionLabel={(option: { value: string; label: string }) => (option.value === REQUEST_ACCESS_AUTHOR_KEY ? authorLabel : option.label)}
       />
     );

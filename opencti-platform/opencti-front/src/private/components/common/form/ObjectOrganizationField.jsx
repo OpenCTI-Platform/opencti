@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
@@ -33,6 +33,9 @@ export const searchObjectOrganizationFieldQuery = graphql`
   }
 `;
 
+// Stable default: a fresh [] per render would defeat the memo of the options.
+const NO_EXTRA_OPTIONS = [];
+
 const ObjectOrganizationField = (props) => {
   const {
     name,
@@ -46,7 +49,7 @@ const ObjectOrganizationField = (props) => {
     multiple = true,
     alert = true,
     filters = null,
-    extraOptions = [],
+    extraOptions = NO_EXTRA_OPTIONS,
     getOptionLabel,
   } = props;
 
@@ -56,6 +59,7 @@ const ObjectOrganizationField = (props) => {
   }));
   const [organizations, setOrganizations] = useState(defaultStateOrganizations);
   const { t_i18n } = useFormatter();
+  const options = useMemo(() => [...extraOptions, ...organizations], [extraOptions, organizations]);
 
   const searchOrganizations = (search) => {
     fetchQuery(searchObjectOrganizationFieldQuery, {
@@ -83,7 +87,7 @@ const ObjectOrganizationField = (props) => {
         label={label ? t_i18n(label) : ''}
         helperText={helpertext}
         noOptionsText={t_i18n('No available options')}
-        options={[...extraOptions, ...organizations]}
+        options={options}
         getOptionLabel={getOptionLabel}
         onInputChange={(search, meta) => {
           if (meta.cause === 'type') searchOrganizations(search);
@@ -113,7 +117,7 @@ const ObjectOrganizationField = (props) => {
       label={t_i18n(label) ?? ''}
       helperText={helpertext}
       noOptionsText={t_i18n('No available options')}
-      options={[...extraOptions, ...organizations]}
+      options={options}
       getOptionLabel={getOptionLabel}
       onInputChange={(search, meta) => {
         if (meta.cause === 'type') searchOrganizations(search);

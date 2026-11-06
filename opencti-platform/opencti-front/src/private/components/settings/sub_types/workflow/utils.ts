@@ -71,6 +71,19 @@ export enum WorkflowActionType {
   shareRequestedEntities = 'shareRequestedEntities',
 }
 
+const organizationIdsOf = (action: Action): string[] => ((action.params as { organizations?: (string | { value: string })[] } | undefined)?.organizations ?? [])
+  .map((o) => (typeof o === 'string' ? o : o.value));
+
+// The share action Approved adds by itself: the requesting organization only. An edited one is the admin's.
+const isDefaultShareRequestedEntitiesAction = (action: Action) => {
+  if (action.type !== WorkflowActionType.shareRequestedEntities) return false;
+  const ids = organizationIdsOf(action);
+  return ids.length === 1 && ids[0] === REQUEST_ACCESS_AUTHOR_KEY;
+};
+
+// What a state keeps on enter once it stops being Approved.
+export const withoutDefaultShareRequestedEntities = (actions: Action[] = []) => actions.filter((a) => !isDefaultShareRequestedEntitiesAction(a));
+
 export const NODE_SIZE = { width: 160, height: 50 };
 
 // Label weight for nodes lit by a hover. A text shadow, not font-weight: a bolder label could
