@@ -2662,7 +2662,7 @@ export const userEditContext = async (context: AuthContext, user: AuthUser, user
 };
 // endregion
 
-const buildCompleteUserFromCacheOrDb = async (context: AuthContext, user: AuthUser, userToLoad: Pick<BasicStoreEntityUser, 'id'>, cachedUsers: Map<string, AuthUser>) => {
+const buildCompleteUserFromCacheOrDb = async (context: AuthContext, user: AuthUser, userToLoad: Pick<BasicStoreEntityUser, 'id'>, cachedUsers: ReadonlyMap<string, AuthUser>) => {
   const cachedUser = cachedUsers.get(userToLoad.id);
   let completeUser;
   if (cachedUser) {

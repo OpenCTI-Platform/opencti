@@ -61,7 +61,7 @@ export async function processNotificationData(
   notificationMap: Map<string, BasicStoreEntityTrigger>,
   user: NotificationUser,
   data: NotificationData[],
-  usersMap: Map<string, AuthUser>,
+  usersMap: ReadonlyMap<string, AuthUser>,
 ) {
   // Keyed by element names: without prototype, a name such as constructor or __proto__ does not resolve to an inherited property
   const generatedContent: Record<string, NotificationContentEvent[]> = Object.create(null);
@@ -106,7 +106,7 @@ export type NotificationTemplateMarking = Pick<StoreMarkingDefinition, 'id' | 's
 **/
 export function resolveNotificationDataMarkings(
   data: NotificationData[],
-  markingsMap: Map<string, StoreMarkingDefinition>,
+  markingsMap: ReadonlyMap<string, StoreMarkingDefinition>,
   user: AuthUser | undefined,
 ): NotificationData[] {
   const canSeeAllMarkings = !!user && isBypassUser(user);
@@ -291,7 +291,7 @@ export const internalProcessNotification = async (
   notifier: BasicStoreEntityNotifier | NotifierTestInput,
   notificationData: NotificationData[],
   triggerList: BasicStoreEntityTrigger[],
-  usersMap: Map<string, AuthUser>,
+  usersMap: ReadonlyMap<string, AuthUser>,
 ): Promise<void> => {
   // A service account has no mailbox and no UI: it is reached through a webhook notifier only.
   if (notificationUser.user_service_account && notifier.notifier_connector_id !== NOTIFIER_CONNECTOR_WEBHOOK) {
@@ -342,7 +342,7 @@ export const processNotificationEvent = async (
   notificationId: string,
   user: NotificationUser,
   notificationData: NotificationData[],
-  usersMap: Map<string, AuthUser>,
+  usersMap: ReadonlyMap<string, AuthUser>,
 ): Promise<void> => {
   const storeSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
@@ -383,7 +383,7 @@ export const processNotificationEvent = async (
 
 const createFullNotificationMessage = (
   notificationMessage: string,
-  usersMap: Map<string, AuthUser>,
+  usersMap: ReadonlyMap<string, AuthUser>,
   streamMessage?: string,
   origin?: Partial<UserOrigin>,
   eventType?: string,

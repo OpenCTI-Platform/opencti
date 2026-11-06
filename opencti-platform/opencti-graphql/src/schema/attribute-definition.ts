@@ -56,7 +56,7 @@ type BasicDefinition = {
 };
 
 type GetRawIdsFn<T extends BasicStoreAttribute> = (item: T, getEntitiesMapFromCache:
-<Z extends BasicStoreIdentifier | StixObject>(type: string) => Promise<Map<string | StixId, Z>>) => Promise<{ id: string; source?: string }[]>;
+<Z extends BasicStoreIdentifier | StixObject>(type: string) => Promise<ReadonlyMap<string | StixId, Z>>) => Promise<{ id: string; source?: string }[]>;
 
 type RepresentativeFn<T extends BasicStoreAttribute> = (item: T, dict: Record<string, string>, opts: Formating) => string;
 
