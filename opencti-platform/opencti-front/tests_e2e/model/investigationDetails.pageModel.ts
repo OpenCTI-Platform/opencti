@@ -187,7 +187,7 @@ export default class InvestigationDetailsPage {
   }
 
   getExportPdfMenuItem(theme: 'Dark' | 'Light'): Locator {
-    return this.page.getByRole('menuitem', { name: theme, exact: true });
+    return this.page.getByRole('menuitem', { name: theme });
   }
 
   getUnplacedNote() {
