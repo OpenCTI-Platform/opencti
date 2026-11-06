@@ -24,7 +24,8 @@ const sourceFiles = SCANNED_DIRS.flatMap((dir) => fs.readdirSync(dir)
 
 const usedTokens = (source: string) => Array.from(source.matchAll(/var\((--[\w-]+)/g), (match) => match[1]);
 
-const escape = (token: string) => token.replace(/[-]/g, '\\-');
+// Escapes every regular expression special character, backslash included.
+const escape = (token: string) => token.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
 
 const isDefined = (css: string, token: string) => new RegExp(`(?<![\\w-])${escape(token)}\\s*:`).test(css);
 
