@@ -67,7 +67,7 @@ import { findInstancesInStates, isStatusReferencedByEntity } from './workflow-st
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
 import { appendWorkflowHistoryEntry, closingReasonNotWrittenError, isClosingReasonLost, runWorkflowBypassActions } from './workflow-async-completion';
 import { type ConvertStatusToDefinitionResult, convertStatusToDefinition, getPublishBlockingDiagnostics, pickMigrationScope } from '../migration/status-to-definition-converter';
-import { applyRequestAccessOutcome, assertCanEnterRequestAccessOutcome, findStateOutcome } from './workflow-request-access';
+import { applyRequestAccessOutcome, assertCanEnterRequestAccessOutcome, findStateOutcome, mirrorRequestAccessStatus } from './workflow-request-access';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -424,6 +424,17 @@ const resolveEntityDefinition = async (
   const instanceEntity = await findWorkflowInstanceEntity(context, user, (entity.internal_id || entity.id) as string);
   const suppliedStatus = instanceEntity ? null : await findStatusInCache(context, entity.x_opencti_workflow_id);
   return { instanceEntity, suppliedStatus, ...await resolveInstanceDefinition(context, user, entitySetting, instanceEntity, suppliedStatus) };
+};
+
+/** Scope of the published workflow an entity runs on, or null when it runs on none. */
+export const resolveEntityWorkflowScope = async (
+  context: AuthContext,
+  user: AuthUser,
+  entity: { id?: string; internal_id?: string; entity_type: string; x_opencti_workflow_id?: string },
+): Promise<StatusScope | null> => {
+  const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
+  const { scope, definitionData } = await resolveEntityDefinition(context, user, entity, entitySetting);
+  return definitionData ? scope : null;
 };
 
 const initializeWorkflowInstance = async (
@@ -2220,7 +2231,6 @@ const loadWorkflowBypass = async (context: AuthContext, user: AuthUser, entityId
   if (entity.entity_type !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
     throw FunctionalError('ENTITIES_WORKFLOW is disabled');
   }
-  if ('x_opencti_request_access' in entity && entity.x_opencti_request_access) throw FunctionalError('RequestAccess workflow bypass is not supported');
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
   const entitySetting = await getWorkflowConfig(executionContext, executionUser, entity.entity_type);
@@ -2229,7 +2239,9 @@ const loadWorkflowBypass = async (context: AuthContext, user: AuthUser, entityId
     ? await storeLoadById<BasicWorkflowStatus>(executionContext, executionUser, entity.x_opencti_workflow_id, ENTITY_TYPE_STATUS)
     : null;
   const { scope, definitionData } = await resolveInstanceDefinition(executionContext, executionUser, entitySetting, instanceEntity, suppliedStatus);
-  if (scope === StatusScope.RequestAccess) throw FunctionalError('RequestAccess workflow bypass is not supported');
+  // Only a request on the published request-access workflow can be bypassed: legacy requests keep their own flow
+  const isRequestAccess = ('x_opencti_request_access' in entity && !!entity.x_opencti_request_access) || scope === StatusScope.RequestAccess;
+  if (isRequestAccess && (scope !== StatusScope.RequestAccess || !definitionData)) throw FunctionalError('RequestAccess workflow bypass is not supported');
   const currentState = instanceEntity?.currentState ?? (definitionData?.states?.some((state) => state.statusId === suppliedStatus?.template_id)
     ? suppliedStatus?.template_id : definitionData?.initialState);
   return { entity, definitionData, instanceEntity, suppliedStatus, currentState, scope, executionContext, executionUser };
@@ -2339,6 +2351,11 @@ const executeWorkflowBypass = async (
   }
   const instanceEntity = await ensureWorkflowInstance(executionContext, executionUser, entity, definitionData, { instanceEntity: existingInstance, suppliedStatus, scope }, false);
   const instanceId = instanceEntity.internal_id || instanceEntity.id;
+  // A bypass decides a request only with actions; otherwise, and out of an outcome state, the request status just follows the state
+  const enteredOutcome = scope === StatusScope.RequestAccess ? findStateOutcome(definitionData, targetStatus.template_id) : undefined;
+  const leftOutcome = scope === StatusScope.RequestAccess ? findStateOutcome(definitionData, currentState) : undefined;
+  const requestAccessOutcome = applyTransitionActions ? enteredOutcome : undefined;
+  const requestAccessStatus = enteredOutcome ?? (leftOutcome ? 'NEW' : undefined);
   const pendingTransition: WorkflowPendingTransition = {
     event: 'event_bypass',
     toState: targetStatus.template_id,
@@ -2352,6 +2369,8 @@ const executeWorkflowBypass = async (
       ...(definitionData.states?.find((state) => state.statusId === instanceEntity.currentState)?.onExit ?? []),
       ...(definitionData.states?.find((state) => state.statusId === targetStatus.template_id)?.onEnter ?? []),
     ] : [],
+    ...(requestAccessOutcome ? { requestAccessOutcome } : {}),
+    ...(!requestAccessOutcome && requestAccessStatus === 'NEW' ? { requestAccessStatus } : {}),
   };
   try {
     const draftEntityIds: string[] = [];
@@ -2408,6 +2427,11 @@ const executeWorkflowBypass = async (
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
         { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason ?? null)] },
       ]);
+    }
+    if (requestAccessOutcome) {
+      await applyRequestAccessOutcome(executionContext, executionUser, entity as BasicStoreEntityCaseRfi, requestAccessOutcome);
+    } else if (requestAccessStatus) {
+      await mirrorRequestAccessStatus(executionContext, executionUser, entity.internal_id || entity.id, requestAccessStatus);
     }
     return { success: true, newState: targetStatus.template_id, executionStatus: 'completed', entity };
   } catch (error) {

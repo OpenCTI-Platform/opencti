@@ -53,6 +53,8 @@ export interface WorkflowPendingTransition {
   onEnterActions?: WorkflowActionConfig[]; // onEnter actions of the target state, serialized so phase 2 can replay them.
   /** Request-access definitions only: the decision recorded once the target outcome state is entered. */
   requestAccessOutcome?: 'APPROVED' | 'DECLINED';
+  /** Request-access bypass out of an outcome state: the request is reset to NEW once the target state is entered. */
+  requestAccessStatus?: 'NEW';
   draftEntityIds?: string[];
 }
 
