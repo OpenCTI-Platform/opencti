@@ -1,10 +1,10 @@
+import { isDeepStrictEqual } from 'node:util';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { INPUT_AUTHORIZED_MEMBERS } from '../../../schema/general';
 import { generateInternalType } from '../../../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
-import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../../utils/authorizedMembers';
 import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
@@ -75,8 +75,7 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
     }
     if (patchOperations.length > 0) {
       const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
-      const diff = jsonpatch.compare(bundle, patchedBundle);
-      if (isNotEmptyField(diff)) {
+      if (!isDeepStrictEqual(bundle, patchedBundle)) {
         return { output_port: 'out', bundle: patchedBundle };
       }
     }

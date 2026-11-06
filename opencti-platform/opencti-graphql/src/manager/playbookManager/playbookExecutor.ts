@@ -1,8 +1,8 @@
 import moment from 'moment';
-import * as jsonpatch from 'fast-json-patch';
 import type { ComponentDefinition, PlaybookExecution, PlaybookExecutionStep } from '../../modules/playbook/playbook-types';
 import type { StixBundle } from '../../types/stix-2-1-common';
 import { utcDate } from '../../utils/format';
+import { computeJsonPatch } from '../../utils/json-patch';
 import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../../types/playbookExecution';
 import { redisPlaybookUpdate } from '../../database/redis';
 import { logApp } from '../../config/conf';
@@ -35,7 +35,7 @@ type ObservationFn = {
 };
 
 const registerStepObservation = async (data: ObservationFn) => {
-  const patch = data.previousBundle && data.bundle ? jsonpatch.compare(data.previousBundle, data.bundle) : [];
+  const patch = data.previousBundle && data.bundle ? computeJsonPatch(data.previousBundle, data.bundle) : [];
   const bundlePatch = data.previousStepId && !data.forceBundleTracking ? { patch } : { bundle: data.bundle };
   const step: ExecutionEnvelopStep = {
     message: data.message,
