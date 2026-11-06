@@ -3,9 +3,10 @@ import { getRule, setRuleActivation } from '../../domain/rules';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { CONFIG_IMPORT_UNCHANGED_REASON, configImportValidationReason } from '../configImport/configImport-utils';
+import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } from '../user/sensitive-config-import';
 import { type RuleImportConfiguration, ruleImportSchema } from './rule-import-schema';
 
-export type RuleImportCode = 'invalid' | 'unknown_rule' | 'not_overwrite' | 'unchanged' | 'engine_disabled';
+export type RuleImportCode = 'invalid' | 'unknown_rule' | 'not_overwrite' | 'unchanged' | 'sensitive_config' | 'engine_disabled';
 
 export type RuleImportResult = ConfigImportResult<RuleImportConfiguration, RuleImportCode>;
 
@@ -40,6 +41,9 @@ export const importConfigPresetRule = async (
   const { active } = parsed.data;
   if ((rule.activated === true) === active) {
     return { status: 'skipped', code: 'unchanged', reason: CONFIG_IMPORT_UNCHANGED_REASON, exists: true, configuration: parsed.data };
+  }
+  if (!(await isConfigImportSensitiveChangeAllowed(context, user, 'rules'))) {
+    return { status: 'failed', code: 'sensitive_config', reason: CONFIG_IMPORT_SENSITIVE_REASON, exists: true, configuration: parsed.data };
   }
   // As in the rules screen: a rule switched while the engine is off would never be applied to the existing knowledge
   if (!(engineEnabled ?? await isRuleEngineEnabled())) {

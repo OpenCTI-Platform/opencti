@@ -2,9 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../../src/domain/rules', () => ({ getRule: vi.fn(), setRuleActivation: vi.fn() }));
 vi.mock('../../../../src/database/cluster-module', () => ({ isModuleActivated: vi.fn() }));
+vi.mock('../../../../src/modules/user/sensitive-config-import', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/user/sensitive-config-import')>()),
+  isConfigImportSensitiveChangeAllowed: vi.fn(),
+}));
 
 import { getRule, setRuleActivation } from '../../../../src/domain/rules';
 import { isModuleActivated } from '../../../../src/database/cluster-module';
+import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/user/sensitive-config-import';
 import { importConfigPresetRule, RULE_ACTIVATION_SCAN_REASON, RULE_DEACTIVATION_SCAN_REASON, RULE_ENGINE_DISABLED_REASON } from '../../../../src/modules/rule/rule-import';
 import { exportConfigPresetRule } from '../../../../src/modules/rule/rule-export';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
@@ -22,6 +27,7 @@ describe('Rule import', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(isModuleActivated).mockResolvedValue(true);
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(true);
   });
 
   it.each([
@@ -92,6 +98,22 @@ describe('Rule import', () => {
     expect(await importConfigPresetRule(context, user, RULE_ID, { active: true }, { mode }))
       .toEqual({ status: 'skipped', code: 'not_overwrite', reason: 'Already exists', exists: true, configuration: { active: true } });
     expect(setRuleActivation).not.toHaveBeenCalled();
+  });
+
+  it('fails the switch of a rule for a user who cannot manage the protected sensitive configuration, on a dry run too', async () => {
+    withRule(false);
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
+    const refused = { status: 'failed', code: 'sensitive_config', reason: 'Requires the right to manage the sensitive configuration', exists: true, configuration: { active: true } };
+    expect(await importConfigPresetRule(context, user, RULE_ID, { active: true }, { ...overwrite, dryRun: true })).toEqual(refused);
+    expect(await importConfigPresetRule(context, user, RULE_ID, { active: true }, overwrite)).toEqual(refused);
+    expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'rules');
+    expect(setRuleActivation).not.toHaveBeenCalled();
+  });
+
+  it('reports a rule already up to date to a user who cannot manage the protected sensitive configuration: nothing changes', async () => {
+    withRule(true);
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
+    expect(await importConfigPresetRule(context, user, RULE_ID, { active: true }, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
   });
 
   it('exports the activation as the import takes it back', () => {
