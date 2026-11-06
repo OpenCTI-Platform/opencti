@@ -247,6 +247,7 @@ import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDelet
 import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
+import { type IngestionDeduplication, isIngestionUnchanged, prepareIngestionDeduplication, recordIngestion } from './ingestionDeduplication';
 import { isCreateOnlyFormImport } from '../modules/form/form-submission-context';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
@@ -3893,6 +3894,7 @@ type CreateEntityRawOpts = PatchAttributeOpts & CreateEventOpts & {
   fromRuleDeletion?: boolean;
   bypassValidation?: boolean;
   bypassMandatoryAttributes?: boolean;
+  ingestionDeduplication?: IngestionDeduplication | null;
 };
 const cleanEntityForIdsCollision = (
   input: Record<string, any>,
@@ -3968,6 +3970,7 @@ const internalCreateEntityRaw = async (
   const participantIds = getInputIds(type, resolvedInput, fromRule);
   // Create the element
   let lock;
+  let hasFailed = false;
   try {
     // Try to get the lock in redis
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
@@ -4244,12 +4247,19 @@ const internalCreateEntityRaw = async (
     // Return created element after waiting for it.
     return { element: createdElement, event, isCreation: true };
   } catch (err: any) {
+    hasFailed = true;
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
     }
     throw err;
   } finally {
-    if (lock) await lock.unlock();
+    if (lock) {
+      // Recorded under the lock, so that a concurrent change clearing it cannot be overwritten
+      if (!hasFailed && opts.ingestionDeduplication) {
+        await recordIngestion(opts.ingestionDeduplication);
+      }
+      await lock.unlock();
+    }
   }
 };
 
@@ -4285,8 +4295,17 @@ export const createEntity = async (
   opts: { complete?: boolean; noEnrichOnUpdate?: boolean } & CreateEntityRawOpts = {},
 ) => {
   const isCompleteResult = opts.complete === true;
+  const ingestionDeduplication = await prepareIngestionDeduplication(context, user, input, type, opts);
+  if (ingestionDeduplication && await isIngestionUnchanged(ingestionDeduplication)) {
+    const existing = await storeLoadById(context, user, input.stix_id, type);
+    // Missing or no longer visible to this user: import it as usual
+    if (existing) {
+      const unchanged = { element: existing, event: null, isCreation: false };
+      return isCompleteResult ? unchanged : unchanged.element;
+    }
+  }
   // volumes of objects relationships must be controlled
-  const data = await createEntityRaw(context, user, input, type, opts);
+  const data = await createEntityRaw(context, user, input, type, { ...opts, ingestionDeduplication });
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await triggerCreateEntityAutoEnrichment(context, user, data.element);
