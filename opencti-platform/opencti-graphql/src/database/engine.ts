@@ -1900,6 +1900,29 @@ const BASE_SEARCH_HISTORY = [
   'context_data.history_changes.changes_added.raw',
   'context_data.history_changes.changes_removed.raw',
 ];
+// Text and select values of the custom fields, nested in custom_field_values
+const BASE_SEARCH_CUSTOM_FIELDS = [
+  'custom_field_values.string_value',
+  'custom_field_values.select_value',
+  'custom_field_values.select_values',
+];
+// Custom field values are nested: their queries are grouped in a single nested query, as the connections.
+// They get the same exact, word and phrase queries as the attributes.
+const buildCustomFieldValuesSearchShould = (cleanExactSearch: string[], searchPhrase: string) => {
+  const queries: unknown[] = cleanExactSearch.map((ex) => ({
+    multi_match: { type: 'phrase', query: ex, lenient: true, fields: BASE_SEARCH_CUSTOM_FIELDS },
+  }));
+  if (searchPhrase) {
+    queries.push(
+      { query_string: { query: searchPhrase, analyze_wildcard: true, fields: BASE_SEARCH_CUSTOM_FIELDS } },
+      { multi_match: { type: 'phrase', query: searchPhrase, lenient: true, fields: BASE_SEARCH_CUSTOM_FIELDS } },
+    );
+  }
+  if (queries.length === 0) {
+    return [];
+  }
+  return [{ nested: { path: 'custom_field_values', query: { bool: { should: queries, minimum_should_match: 1 } } } }];
+};
 const BASE_SEARCH_ATTRIBUTES = [
   // Pounds for attributes search
   `${ATTRIBUTE_NAME}^5`,
@@ -2186,6 +2209,7 @@ export const elGenerateFullTextSearchShould = (search: string, args: ProcessSear
         },
       ]);
     }
+    pushAll(shouldSearch, buildCustomFieldValuesSearchShould(cleanExactSearch, searchPhrase));
     pushAll(shouldSearch, buildConnectionsSearchShould(elGenerateConnectionsSearchQueries(search, args), args));
   }
   return shouldSearch;
