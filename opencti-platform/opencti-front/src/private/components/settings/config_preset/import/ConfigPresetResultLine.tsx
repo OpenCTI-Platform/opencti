@@ -54,6 +54,9 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
     case 'The id of the vocabulary category does not match its category': return t_i18n('The id of the vocabulary category does not match its category');
     case 'This vocabulary category is closed, new values cannot be added': return t_i18n('This vocabulary category is closed, new values cannot be added');
     case 'Vocabulary entries already exist': return t_i18n('Vocabulary entries already exist');
+    case 'Unknown rule': return t_i18n('Unknown rule');
+    case 'Activating the rule starts a scan of the knowledge base': return t_i18n('Activating the rule starts a scan of the knowledge base');
+    case 'Deactivating the rule starts a scan of the knowledge base': return t_i18n('Deactivating the rule starts a scan of the knowledge base');
     case 'The standard id of the theme does not match its id': return t_i18n('The standard id of the theme does not match its id');
     case 'The standard id of the theme is required to overwrite it': return t_i18n('The standard id of the theme is required to overwrite it');
     case 'Built-in theme': return t_i18n('Built-in theme');

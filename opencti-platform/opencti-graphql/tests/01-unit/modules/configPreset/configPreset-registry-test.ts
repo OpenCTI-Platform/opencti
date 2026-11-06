@@ -33,7 +33,13 @@ vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/user/user-domain')>()),
   roleCapabilities: vi.fn(),
 }));
+// The activation of the rules is read from the cache
+vi.mock('../../../../src/domain/rules', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/domain/rules')>()),
+  getRules: vi.fn(),
+}));
 
+import { getRules, RULES_DECLARATION } from '../../../../src/domain/rules';
 import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
 import { Readable } from 'node:stream';
 import { downloadFile } from '../../../../src/database/raw-file-storage';
@@ -90,6 +96,10 @@ const entitySettings = [
   { target_type: 'Channel', platform_hidden_type: true },
 ];
 
+// The first rule is the only one activated
+const [activatedRule, deactivatedRule] = RULES_DECLARATION;
+const withRules = () => vi.mocked(getRules).mockResolvedValue(RULES_DECLARATION.map((rule) => ({ ...rule, activated: rule.id === activatedRule.id })));
+
 const findFamily = (id: string) => CONFIG_PRESET_FAMILIES.find((family) => family.id === id)!;
 const findItem = async (familyId: string, itemId: string) => (await findFamily(familyId).resolveItems(context, user, [itemId], []))[0];
 const resolveAllItems = async () => (await Promise.all(CONFIG_PRESET_FAMILIES.map((family) => family.resolveItems(context, user, null, [])))).flat();
@@ -100,6 +110,7 @@ describe('Config preset registry', () => {
     vi.clearAllMocks();
     withSettings({});
     mockConfigPresetLoaders(entitySettings);
+    withRules();
     vi.mocked(roleCapabilities).mockImplementation(async (_ctx, _user, roleId, type = 'has-capability') => {
       return ROLE_CAPABILITIES[roleId][type].map((name) => ({ id: `${name}-id`, name })) as never;
     });
@@ -197,6 +208,14 @@ describe('Config preset registry', () => {
         itemIds: [fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id],
       },
       { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
+      // Every rule the platform declares, by its id
+      {
+        id: 'ruleEngine',
+        label: 'Rule engine',
+        description: 'Activation of the inference rules',
+        group: 'automationRules',
+        itemIds: RULES_DECLARATION.map(({ id }) => id),
+      },
     ]);
   });
 
@@ -239,6 +258,7 @@ describe('Config preset registry', () => {
       ['Fraud investigation', false],
       ['Phishing triage', false],
       ['MITRE', false],
+      ...RULES_DECLARATION.map(({ name }) => [name, true]),
     ]);
   });
 
@@ -280,6 +300,7 @@ describe('Config preset registry', () => {
       `taxonomy/case_templates/${fraudCaseTemplate.standard_id}.json`,
       `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
       'integrations/connectors/mitre.json',
+      ...RULES_DECLARATION.map(({ id }) => `automation_rules/rule_engine/${id}.json`),
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -388,6 +409,24 @@ describe('Config preset registry', () => {
     it('exports a whitemark that is not set as null, to keep a stable file shape', async () => {
       withSettings({ platform_whitemark: undefined });
       expect(await (await findItem('whitemark', 'whitemark')).exporter(context, user)).toEqual({ platform_whitemark: null });
+    });
+  });
+
+  describe('rule engine', () => {
+    it('exports the activation of a rule alone, under the id of the rule', async () => {
+      const family = findFamily('ruleEngine');
+      expect(await exportConfigPresetItem(context, user, family, await findItem('ruleEngine', activatedRule.id))).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'automationRules.ruleEngine',
+        id: activatedRule.id,
+        configuration: { active: true },
+      });
+      expect((await exportConfigPresetItem(context, user, family, await findItem('ruleEngine', deactivatedRule.id))).configuration).toEqual({ active: false });
+    });
+
+    it('lists each rule as enabled or not, as the platform runs it', async () => {
+      expect((await findItem('ruleEngine', activatedRule.id)).isEnabled).toBe(true);
+      expect((await findItem('ruleEngine', deactivatedRule.id)).isEnabled).toBe(false);
     });
   });
 
