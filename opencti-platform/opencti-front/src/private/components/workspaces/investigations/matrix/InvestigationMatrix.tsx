@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { PreloadedQuery } from 'react-relay';
 import * as R from 'ramda';
+import { LocalFireDepartmentOutlined } from '@mui/icons-material';
 import {
   Icon,
   IconButton,
@@ -31,6 +32,10 @@ import { MESSAGING$ } from '../../../../../relay/environment';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import usePreloadedFragment from '../../../../../utils/hooks/usePreloadedFragment';
 import { INVESTIGATION_MATRIX_EXPORT_ID } from '../InvestigationViewSwitcher';
+import { analyseTechniqueUsage } from './ttpAnalyser';
+import { computeHeatScale } from './heatScale';
+import { buildCellDecorations, MatrixTechniqueNode } from './buildCellDecorations';
+import HeatmapLegend from './HeatmapLegend';
 import {
   formatNameList,
   getInvestigationAttackPatterns,
@@ -59,6 +64,7 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
   const { t_i18n } = useFormatter();
   const [selectedKillChain, setSelectedKillChain] = useState<string>();
   const [isModeOnlyActive, setIsModeOnlyActive] = useState(false);
+  const [isHeatmapSelected, setIsHeatmapSelected] = useState(false);
   const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
   const { attackPatternIdsToOverlap, setSecurityPlatformIds, error: postureError } = useShouldCoverOverlap();
 
@@ -78,11 +84,34 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
     : pickDefaultKillChain(killChains);
 
   const attackPatterns = useMemo(() => getInvestigationAttackPatterns(rawObjects), [rawObjects]);
+  const killChainTechniqueIds = useMemo(() => getKillChainTechniqueIds(phases, killChain ?? ''), [phases, killChain]);
   const unplacedAttackPatterns = useMemo(
-    () => getUnplacedAttackPatterns(attackPatterns, getKillChainTechniqueIds(phases, killChain ?? '')),
-    [attackPatterns, phases, killChain],
+    () => getUnplacedAttackPatterns(attackPatterns, killChainTechniqueIds),
+    [attackPatterns, killChainTechniqueIds],
   );
   const isEmpty = attackPatterns.length === 0;
+
+  // Scores come from the whole, unfiltered investigation; the scale only from the selected kill chain.
+  const usage = useMemo(() => analyseTechniqueUsage(rawObjects), [rawObjects]);
+  const heatScale = useMemo(() => computeHeatScale(usage, killChainTechniqueIds), [usage, killChainTechniqueIds]);
+  const hasScores = !isEmpty && heatScale.max > 0;
+  // A kill chain without scores turns the heatmap off without forgetting the user's choice.
+  const isHeatmapOn = isHeatmapSelected && hasScores;
+  const killChainTechniques = useMemo(() => {
+    const byId = new Map<string, MatrixTechniqueNode>();
+    phases
+      .filter((phase) => phase.kill_chain_name === killChain)
+      .forEach((phase) => (phase.attackPatterns ?? []).forEach((technique) => byId.set(technique.attack_pattern_id, technique)));
+    return Array.from(byId.values());
+  }, [phases, killChain]);
+  const investigationIds = useMemo(() => new Set(attackPatterns.map(({ id }) => id)), [attackPatterns]);
+  // Without any score, cells render exactly as in US.1: no decoration at all.
+  const cellDecorations = useMemo(
+    () => (hasScores
+      ? buildCellDecorations({ usage, scale: heatScale, techniques: killChainTechniques, investigationIds, heatmapOn: isHeatmapOn, t: t_i18n })
+      : undefined),
+    [hasScores, usage, heatScale, killChainTechniques, investigationIds, isHeatmapOn],
+  );
 
   useEffect(() => {
     // Once per failed lookup: the matrix keeps rendering, without posture marks.
@@ -97,6 +126,23 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
   const onlyUsedLabel = isModeOnlyActive
     ? t_i18n('Display the whole matrix')
     : t_i18n('Display only used techniques');
+
+  const handleHeatmapToggle = () => {
+    setIsHeatmapSelected(!isHeatmapOn);
+  };
+
+  const heatmapLabel = t_i18n('Displays heat map of attack pattern use');
+  const heatmapToggle = (
+    <IconButton
+      variant="default"
+      priority="tertiary"
+      active={isHeatmapOn}
+      disabled={!hasScores}
+      aria-label={heatmapLabel}
+      onClick={handleHeatmapToggle}
+      icon={<LocalFireDepartmentOutlined fontSize="small" />}
+    />
+  );
 
   return (
     <div id={INVESTIGATION_MATRIX_EXPORT_ID} style={{ padding: '16px 24px' }}>
@@ -128,6 +174,22 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
           </TooltipTrigger>
           <TooltipContent>{onlyUsedLabel}</TooltipContent>
         </Tooltip>
+        {hasScores ? (
+          <Tooltip>
+            <TooltipTrigger asChild>{heatmapToggle}</TooltipTrigger>
+            <TooltipContent>{heatmapLabel}</TooltipContent>
+          </Tooltip>
+        ) : (
+          // A disabled button gets neither focus nor pointer events: this focusable wrapper triggers the tooltip instead.
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {/* FDS-WORKAROUND #68: a disabled IconButton cannot trigger its own tooltip, so this span takes the hover and focus — see fds-migration/LIBRARY-FEEDBACK.md #68 */}
+              {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+              <span tabIndex={0} style={{ display: 'inline-flex' }}>{heatmapToggle}</span>
+            </TooltipTrigger>
+            <TooltipContent>{t_i18n('No attack pattern is linked to an entity in this investigation')}</TooltipContent>
+          </Tooltip>
+        )}
         <div style={{ display: 'flex', minWidth: 300, maxWidth: 500, marginLeft: 'auto' }}>
           <EntitySelect
             multiple
@@ -144,9 +206,10 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
           <Tooltip>
             <TooltipTrigger asChild>
               <Text variant="content-caption" tabIndex={0}>
-                {t_i18n('{count} attack patterns in this investigation aren\'t shown in this kill chain', {
-                  values: { count: unplacedAttackPatterns.length },
-                })}
+                {t_i18n(
+                  '{count, plural, one {# attack pattern in this investigation isn\'t shown in this kill chain} other {# attack patterns in this investigation aren\'t shown in this kill chain}}',
+                  { values: { count: unplacedAttackPatterns.length } },
+                )}
               </Text>
             </TooltipTrigger>
             <TooltipContent>
@@ -157,6 +220,7 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
         {hasActiveGraphFilters(graphState) && (
           <Text variant="content-caption">{t_i18n('Graph filters don\'t apply to the matrix')}</Text>
         )}
+        {isHeatmapOn && <HeatmapLegend max={heatScale.max} />}
       </div>
       {isEmpty ? (
         <Text variant="content-compact" style={{ marginTop: 40, textAlign: 'center' }}>
@@ -172,6 +236,7 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
           // The hook gives [] for an empty selection, which would mark every cell: pass ids only once platforms are chosen.
           attackPatternIdsToOverlap={selectedSecurityPlatforms.length > 0 ? attackPatternIdsToOverlap : undefined}
           entityType="Investigation"
+          cellDecorations={cellDecorations}
         />
       )}
     </div>
@@ -190,7 +255,7 @@ const InvestigationMatrixProgress = ({ graphState: { loadingCurrent, loadingTota
   );
 };
 
-const InvestigationMatrix = (_props: { investigationId: string; investigationName: string }) => {
+const InvestigationMatrix = () => {
   const { rawObjects, graphState } = useGraphContext();
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 
@@ -203,7 +268,11 @@ const InvestigationMatrix = (_props: { investigationId: string; investigationNam
     <ErrorBoundary>
       <Suspense fallback={<Loader />}>
         {queryRef && (
-          <InvestigationMatrixContent queryRef={queryRef} rawObjects={rawObjects} graphState={graphState} />
+          <InvestigationMatrixContent
+            queryRef={queryRef}
+            rawObjects={rawObjects}
+            graphState={graphState}
+          />
         )}
       </Suspense>
     </ErrorBoundary>

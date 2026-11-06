@@ -49,7 +49,8 @@ const defaultConfig = (isCoverage: boolean): MatrixConfig => ({
 const investigationConfig: MatrixConfig = {
   formatLabel: (ap) => (ap.x_mitre_id ? `${ap.x_mitre_id} - ${ap.name}` : ap.name),
   compareTechniques: compareByMitreId,
-  badgeColors: { color: 'var(--black-800)', textColor: 'var(--gray-100)' },
+  // FDS-WORKAROUND #79: --black-800 is not compiled into dist/index.css — see fds-migration/LIBRARY-FEEDBACK.md #79
+  badgeColors: { color: 'var(--gray-800)', textColor: 'var(--gray-100)' },
   canAdd: false,
   keyboardCells: true,
   sortSubTechniques: true,

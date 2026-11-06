@@ -29,6 +29,7 @@ import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser
 import { useFormatter } from '../../../../components/i18n';
 import InvestigationViewSwitcher, { INVESTIGATION_MATRIX_EXPORT_ID, useInvestigationView } from './InvestigationViewSwitcher';
 import InvestigationMatrix from './matrix/InvestigationMatrix';
+import prepareMatrixCapture from './matrix/prepareMatrixCapture';
 
 const investigationGraphDataFragment = graphql`
   fragment InvestigationGraphData_fragment on Workspace {
@@ -318,6 +319,7 @@ const investigationGraphObjectsFragment = graphql`
               }
             }
             ... on StixRefRelationship {
+              relationship_type
               created_at
             }
             ... on StixCoreRelationship {
@@ -594,6 +596,7 @@ const InvestigationGraphComponent = ({
         adjust={undefined}
         exportElementId={view === 'matrix' ? INVESTIGATION_MATRIX_EXPORT_ID : undefined}
         exportName={view === 'matrix' ? `${investigation.name} - ${t_i18n('Tactics matrix')}` : undefined}
+        prepareExportCapture={view === 'matrix' ? prepareMatrixCapture : undefined}
         viewSwitcher={<InvestigationViewSwitcher investigationId={investigation.id} />}
       />
       <div style={graphContainerStyle} ref={ref}>
@@ -614,10 +617,7 @@ const InvestigationGraphComponent = ({
         </div>
         {view === 'matrix' && (
           <div style={{ position: 'absolute', inset: 0, overflow: 'auto' }}>
-            <InvestigationMatrix
-              investigationId={investigation.id}
-              investigationName={investigation.name}
-            />
+            <InvestigationMatrix />
           </div>
         )}
       </div>

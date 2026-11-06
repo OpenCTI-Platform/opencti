@@ -58,6 +58,8 @@ type WorkspaceHeaderProps = {
   handleExport?: (workspace: { id: string; name: string }) => void;
   exportElementId?: string;
   exportName?: string;
+  // Resizes the export element for the length of a capture. Returns the function that undoes it.
+  prepareExportCapture?: (element: HTMLElement) => () => void;
   viewSwitcher?: ReactNode;
 };
 
@@ -70,6 +72,7 @@ const WorkspaceHeader = ({
   handleExport = () => {},
   exportElementId = 'container',
   exportName,
+  prepareExportCapture,
   viewSwitcher,
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
@@ -122,9 +125,11 @@ const WorkspaceHeader = ({
             domElementId={exportElementId}
             name={exportName ?? workspace.name}
             type={workspace.type}
-            // An investigation is a graph: its toolbar exports the image of the drawing.
-            exportToImage={workspace.type !== 'investigation'}
+            // The investigation graph exports its image from its own toolbar. The matrix view has no
+            // such toolbar (it sets prepareExportCapture), so the header keeps the image export there.
+            exportToImage={workspace.type !== 'investigation' || prepareExportCapture !== undefined}
             adjust={adjust}
+            prepareCapture={prepareExportCapture}
             handleDownloadAsStixReport={handleDownloadAsStixReport}
             handleExportDashboard={handleExportDashboard}
           />
