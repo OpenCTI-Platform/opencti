@@ -484,4 +484,16 @@ describe('formSubmit', () => {
     const draftInput = vi.mocked(draftWorkspaceDomain.addDraftWorkspace).mock.calls[0][2] as any;
     expect(draftInput.bypassMandatoryAttributes).toBe(true);
   });
+
+  it('should reject submission when the form is not active', async () => {
+    const input = {
+      formId: 'form-1',
+      values: JSON.stringify({ name: 'Test Individual' }),
+    };
+
+    mockStoreLoadById.mockResolvedValue({ ...mockForm, active: false });
+
+    await expect(formSubmit(mockContext, mockUser, input, false)).rejects.toThrow('Form is inactive');
+    expect(rabbitmq.pushToWorkerForConnector).not.toHaveBeenCalled();
+  });
 });
