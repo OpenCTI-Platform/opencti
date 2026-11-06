@@ -18,6 +18,8 @@ export interface SerializedState {
   order?: number;
   onEnter?: ActionConfig[];
   onExit?: ActionConfig[];
+  /** Request-access definitions only: marks the state reached when the request is approved or declined. */
+  requestAccessOutcome?: 'APPROVED' | 'DECLINED';
 }
 
 /**

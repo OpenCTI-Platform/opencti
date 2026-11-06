@@ -30,11 +30,11 @@ vi.mock('../../../common/entreprise_edition/EEChip', () => ({
 // ---------------------------------------------------------------------------
 // Helper
 // ---------------------------------------------------------------------------
-const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType = 'DraftWorkspace') => {
+const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType = 'DraftWorkspace', scope?: 'GLOBAL' | 'REQUEST_ACCESS') => {
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <StatusForm entityType={entityType} />
+        <StatusForm entityType={entityType} scope={scope} />
       </Form>
     </Formik>,
   );
@@ -195,5 +195,155 @@ describe('StatusForm – entityType-based section visibility', () => {
     renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Report');
     expect(screen.queryByText(/on enter actions/i)).not.toBeNull();
     expect(screen.queryByText(/on exit actions/i)).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Request access outcome
+// ---------------------------------------------------------------------------
+describe('StatusForm – Request access outcome', () => {
+  const shareAction = (organizations: { value: string; label: string }[]) => ({ type: WorkflowActionType.shareRequestedEntities, params: { organizations } });
+
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
+  const submit = () => document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+  const pickOutcome = async (user: ReturnType<typeof renderForm>['user'], name: RegExp) => {
+    await user.click(screen.getByRole('combobox', { name: /request outcome/i }));
+    await user.click(await screen.findByRole('option', { name }));
+  };
+
+  it('shows Request outcome only in Request access scope', () => {
+    const { unmount } = renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Case-Rfi', 'REQUEST_ACCESS');
+    expect(screen.queryByRole('combobox', { name: /request outcome/i })).not.toBeNull();
+    unmount();
+    renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Case-Rfi', 'GLOBAL');
+    expect(screen.queryByRole('combobox', { name: /request outcome/i })).toBeNull();
+  });
+
+  it('does not show Request outcome when no scope is given', () => {
+    renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Case-Rfi');
+    expect(screen.queryByRole('combobox', { name: /request outcome/i })).toBeNull();
+  });
+
+  it('selecting Approved adds a shareRequestedEntities action with AUTHOR', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({ onEnter: [], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
+
+    await pickOutcome(user, /^approved$/i);
+    submit();
+
+    await waitFor(() => {
+      const values = onSubmit.mock.calls[0][0];
+      expect(values.requestAccessOutcome).toBe('APPROVED');
+      const shares = (values.onEnter as { type: string; params?: { organizations?: { value: string }[] } }[])
+        .filter((a) => a.type === WorkflowActionType.shareRequestedEntities);
+      expect(shares).toHaveLength(1);
+      expect(shares[0].params?.organizations?.map((o) => o.value)).toEqual(['AUTHOR']);
+    });
+  });
+
+  it('keeps an existing share action instead of adding a second one when Approved is selected', async () => {
+    const onSubmit = vi.fn();
+    const existing = shareAction([{ value: 'org-1', label: 'Org 1' }]);
+    const { user } = renderForm({ onEnter: [existing], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
+
+    await pickOutcome(user, /^approved$/i);
+    submit();
+
+    await waitFor(() => {
+      expect(onSubmit.mock.calls[0][0].onEnter).toEqual([existing]);
+    });
+  });
+
+  it('selecting Declined adds no share action', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({ onEnter: [], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
+
+    await pickOutcome(user, /^declined$/i);
+    submit();
+
+    await waitFor(() => {
+      const values = onSubmit.mock.calls[0][0];
+      expect(values.requestAccessOutcome).toBe('DECLINED');
+      expect(values.onEnter).toEqual([]);
+    });
+  });
+
+  it('selecting None clears the outcome with null and takes back the default share action', async () => {
+    const onSubmit = vi.fn();
+    const added = shareAction([{ value: 'AUTHOR', label: 'Author' }]);
+    const { user } = renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [added], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
+
+    await pickOutcome(user, /^none$/i);
+    submit();
+
+    await waitFor(() => {
+      const values = onSubmit.mock.calls[0][0];
+      expect(values.requestAccessOutcome).toBeNull();
+      expect(values.onEnter).toEqual([]);
+    });
+  });
+
+  it('selecting Declined on an Approved state takes back the default share action', async () => {
+    const onSubmit = vi.fn();
+    const added = shareAction([{ value: 'AUTHOR', label: 'Author' }]);
+    const { user } = renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [added], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
+
+    await pickOutcome(user, /^declined$/i);
+    submit();
+
+    await waitFor(() => {
+      const values = onSubmit.mock.calls[0][0];
+      expect(values.requestAccessOutcome).toBe('DECLINED');
+      expect(values.onEnter).toEqual([]);
+    });
+  });
+
+  it('keeps a customized share action when the state leaves Approved', async () => {
+    const onSubmit = vi.fn();
+    const customized = shareAction([{ value: 'AUTHOR', label: 'Author' }, { value: 'org-1', label: 'Org 1' }]);
+    const { user } = renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [customized], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
+
+    await pickOutcome(user, /^none$/i);
+    submit();
+
+    await waitFor(() => {
+      const values = onSubmit.mock.calls[0][0];
+      expect(values.requestAccessOutcome).toBeNull();
+      expect(values.onEnter).toEqual([customized]);
+    });
+  });
+
+  it('lists the automatic bookkeeping of an outcome state read-only', () => {
+    renderForm({ requestAccessOutcome: 'DECLINED', onEnter: [], onExit: [] }, vi.fn(), 'Case-Rfi', 'REQUEST_ACCESS');
+    expect(screen.getByTestId('workflow-status-outcome-bookkeeping')).toHaveTextContent(/declined/i);
+  });
+
+  it('shows no bookkeeping note on a state without outcome', () => {
+    renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Case-Rfi', 'REQUEST_ACCESS');
+    expect(screen.queryByTestId('workflow-status-outcome-bookkeeping')).toBeNull();
+  });
+
+  it('offers the share action as a removable On enter action in Request access scope', async () => {
+    const onSubmit = vi.fn();
+    const existing = shareAction([{ value: 'AUTHOR', label: 'Author' }]);
+    const { user } = renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [existing], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
+
+    const toggle = screen.getByRole('switch', { name: /share requested entities on enter/i }) as HTMLInputElement;
+    expect(toggle.checked).toBe(true);
+    await user.click(toggle);
+    submit();
+
+    await waitFor(() => {
+      expect(onSubmit.mock.calls[0][0].onEnter).toEqual([]);
+    });
+  });
+
+  it('does not offer the share action outside Request access scope', () => {
+    renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Case-Rfi', 'GLOBAL');
+    expect(screen.queryByRole('switch', { name: /share requested entities on enter/i })).toBeNull();
   });
 });

@@ -20986,22 +20986,26 @@ export type MutationWorkEditArgs = {
 
 export type MutationWorkflowDefinitionDeleteArgs = {
   entityType: Scalars['String']['input'];
+  scope?: InputMaybe<StatusScope>;
 };
 
 
 export type MutationWorkflowDefinitionPublishArgs = {
   entityType: Scalars['String']['input'];
+  scope?: InputMaybe<StatusScope>;
 };
 
 
 export type MutationWorkflowDefinitionRestorePublishedArgs = {
   entityType: Scalars['String']['input'];
+  scope?: InputMaybe<StatusScope>;
 };
 
 
 export type MutationWorkflowDefinitionSetArgs = {
   definition: Scalars['String']['input'];
   entityType: Scalars['String']['input'];
+  scope?: InputMaybe<StatusScope>;
 };
 
 
@@ -21009,6 +21013,7 @@ export type MutationWorkflowMigrateArgs = {
   entityType: Scalars['String']['input'];
   overwrite?: InputMaybe<Scalars['Boolean']['input']>;
   publish?: InputMaybe<Scalars['Boolean']['input']>;
+  scope?: InputMaybe<StatusScope>;
 };
 
 
@@ -28957,6 +28962,7 @@ export type QueryWorkflowBypassStatusesArgs = {
 export type QueryWorkflowDefinitionArgs = {
   allowDraft?: InputMaybe<Scalars['Boolean']['input']>;
   entityType: Scalars['String']['input'];
+  scope?: InputMaybe<StatusScope>;
 };
 
 
@@ -29877,6 +29883,7 @@ export type RequestAccessWorkflow = {
   approval_admin?: Maybe<Array<Maybe<Scalars['ID']['output']>>>;
   approved_workflow_id?: Maybe<Scalars['String']['output']>;
   declined_workflow_id?: Maybe<Scalars['String']['output']>;
+  workflow_definition_id?: Maybe<Scalars['String']['output']>;
 };
 
 export type RequestConnectorStatusInput = {
@@ -39889,7 +39896,8 @@ export enum WorkflowMigrationDiagnosticType {
   ExistingWorkflow = 'EXISTING_WORKFLOW',
   MissingOrder = 'MISSING_ORDER',
   MissingTemplate = 'MISSING_TEMPLATE',
-  NameConflict = 'NAME_CONFLICT'
+  NameConflict = 'NAME_CONFLICT',
+  RequestAccessOutcomeInvalid = 'REQUEST_ACCESS_OUTCOME_INVALID'
 }
 
 export type WorkflowMigrationPreview = {
@@ -39911,6 +39919,7 @@ export type WorkflowMigrationScopeResult = {
 export type WorkflowMigrationState = {
   __typename?: 'WorkflowMigrationState';
   order: Scalars['Int']['output'];
+  requestAccessOutcome?: Maybe<WorkflowRequestAccessOutcome>;
   statusId: Scalars['String']['output'];
 };
 
@@ -39936,6 +39945,11 @@ export type WorkflowPendingTransition = {
   triggeredAt: Scalars['DateTime']['output'];
 };
 
+export enum WorkflowRequestAccessOutcome {
+  Approved = 'APPROVED',
+  Declined = 'DECLINED'
+}
+
 export type WorkflowSchema = {
   __typename?: 'WorkflowSchema';
   errors?: Maybe<Array<WorkflowValidationError>>;
@@ -39953,6 +39967,7 @@ export type WorkflowSerializedState = {
   onEnter?: Maybe<Array<WorkflowActionConfig>>;
   onExit?: Maybe<Array<WorkflowActionConfig>>;
   order?: Maybe<Scalars['Int']['output']>;
+  requestAccessOutcome?: Maybe<WorkflowRequestAccessOutcome>;
   statusId: Scalars['String']['output'];
 };
 
@@ -39972,6 +39987,7 @@ export type WorkflowTransition = {
   actions?: Maybe<Array<Scalars['String']['output']>>;
   comment?: Maybe<Scalars['String']['output']>;
   event: Scalars['String']['output'];
+  requestAccessOutcome?: Maybe<WorkflowRequestAccessOutcome>;
   requiresShareOrganizationInput?: Maybe<Scalars['Boolean']['output']>;
   requiresUnshareOrganizationInput?: Maybe<Scalars['Boolean']['output']>;
   toState?: Maybe<Scalars['String']['output']>;
@@ -42466,6 +42482,7 @@ export type ResolversTypes = ResolversObject<{
   WorkflowMigrationState: ResolverTypeWrapper<WorkflowMigrationState>;
   WorkflowPendingAsyncAction: ResolverTypeWrapper<WorkflowPendingAsyncAction>;
   WorkflowPendingTransition: ResolverTypeWrapper<WorkflowPendingTransition>;
+  WorkflowRequestAccessOutcome: WorkflowRequestAccessOutcome;
   WorkflowSchema: ResolverTypeWrapper<WorkflowSchema>;
   WorkflowSerializedState: ResolverTypeWrapper<WorkflowSerializedState>;
   WorkflowSerializedTransition: ResolverTypeWrapper<WorkflowSerializedTransition>;
@@ -52405,6 +52422,7 @@ export type RequestAccessWorkflowResolvers<ContextType = any, ParentType extends
   approval_admin?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType>;
   approved_workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   declined_workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  workflow_definition_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type ResolvedInstanceFilterResolvers<ContextType = any, ParentType extends ResolversParentTypes['ResolvedInstanceFilter'] = ResolversParentTypes['ResolvedInstanceFilter']> = ResolversObject<{
@@ -55791,6 +55809,7 @@ export type WorkflowMigrationScopeResultResolvers<ContextType = any, ParentType 
 
 export type WorkflowMigrationStateResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowMigrationState'] = ResolversParentTypes['WorkflowMigrationState']> = ResolversObject<{
   order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  requestAccessOutcome?: Resolver<Maybe<ResolversTypes['WorkflowRequestAccessOutcome']>, ParentType, ContextType>;
   statusId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
@@ -55829,6 +55848,7 @@ export type WorkflowSerializedStateResolvers<ContextType = any, ParentType exten
   onEnter?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
   onExit?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
   order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  requestAccessOutcome?: Resolver<Maybe<ResolversTypes['WorkflowRequestAccessOutcome']>, ParentType, ContextType>;
   statusId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
@@ -55846,6 +55866,7 @@ export type WorkflowTransitionResolvers<ContextType = any, ParentType extends Re
   actions?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  requestAccessOutcome?: Resolver<Maybe<ResolversTypes['WorkflowRequestAccessOutcome']>, ParentType, ContextType>;
   requiresShareOrganizationInput?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   requiresUnshareOrganizationInput?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   toState?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -85,6 +85,13 @@ describe('WorkflowBypassStatus', () => {
     expect(commit).not.toHaveBeenCalled();
   });
 
+  it('names the share of the requested entities among the actions of a request access status', async () => {
+    fetchStatuses.mockResolvedValue({ workflowBypassStatuses: [{ ...statuses[104], onExit: [], onEnter: [{ type: 'shareRequestedEntities', params: null }] }] });
+    const { user } = await openDialog();
+    await selectStatus(user);
+    expect(screen.getByText('Share requested entities')).toBeVisible();
+  });
+
   it('dismisses stale confirmation when the source status changes', async () => {
     const { user, rerender } = await openDialog();
     await selectStatus(user);

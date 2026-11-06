@@ -50,6 +50,10 @@ export interface WorkflowPendingTransition {
   asyncActions: AsyncActionSlot[];
   syncActions: WorkflowActionConfig[];
   onEnterActions?: WorkflowActionConfig[]; // onEnter actions of the target state, serialized so phase 2 can replay them.
+  /** Request-access definitions only: the decision recorded once the target outcome state is entered. */
+  requestAccessOutcome?: 'APPROVED' | 'DECLINED';
+  /** Request-access bypass out of an outcome state: the request is reset to NEW once the target state is entered. */
+  requestAccessStatus?: 'NEW';
   draftEntityIds?: string[];
 }
 
@@ -154,7 +158,7 @@ export interface WorkflowValidationError {
  */
 export interface WorkflowActionConfig {
   type: string;
-  params?: string;
+  params?: unknown;
 }
 
 export interface WorkflowConditionConfig {
@@ -170,6 +174,8 @@ export interface WorkflowSerializedState {
   order?: number;
   onEnter?: WorkflowActionConfig[];
   onExit?: WorkflowActionConfig[];
+  /** Request-access definitions only: marks the state reached when the request is approved or declined. */
+  requestAccessOutcome?: 'APPROVED' | 'DECLINED';
 }
 
 export interface WorkflowSerializedTransition {

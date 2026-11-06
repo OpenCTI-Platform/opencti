@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { StatusScope } from '../../../src/generated/graphql';
 import {
   buildWorkflowMigrationPreviewResult,
+  convertRequestAccessGroup,
   convertStatusToDefinition,
   getPublishBlockingDiagnostics,
   pickMigrationScope,
+  tryConvertRequestAccessGroup,
 } from '../../../src/modules/workflow/migration/status-to-definition-converter';
 import type { WorkflowSerializedTransition } from '../../../src/modules/workflow/types/workflow-types';
+import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
 import type { BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../src/types/store';
 
 const buildStatus = (overrides: Partial<BasicWorkflowStatus> = {}): BasicWorkflowStatus => ({
@@ -391,7 +394,7 @@ describe('buildWorkflowMigrationPreviewResult', () => {
     expect(result.results.map((r) => r.scope)).toEqual([StatusScope.Global, StatusScope.RequestAccess]);
   });
 
-  it('reports hasPublishedVersion on the GLOBAL scope only', () => {
+  it('reports hasPublishedVersion per scope', () => {
     const statuses = [
       buildStatus({ id: 's1', template_id: 't1', order: 1, scope: StatusScope.Global }),
       buildStatus({ id: 's2', template_id: 't2', order: 1, scope: StatusScope.RequestAccess }),
@@ -399,11 +402,13 @@ describe('buildWorkflowMigrationPreviewResult', () => {
     const templates = [buildTemplate({ id: 't1', name: 'New' }), buildTemplate({ id: 't2', name: 'Pending' })];
     const { byScope } = convertStatusToDefinition(statuses, templates);
 
-    const result = buildWorkflowMigrationPreviewResult('Incident', byScope, true);
-
-    expect(result.results.map((r) => [r.scope, r.hasPublishedVersion])).toEqual([
+    expect(buildWorkflowMigrationPreviewResult('Case-Rfi', byScope, { [StatusScope.Global]: true }).results.map((r) => [r.scope, r.hasPublishedVersion])).toEqual([
       [StatusScope.Global, true],
       [StatusScope.RequestAccess, false],
+    ]);
+    expect(buildWorkflowMigrationPreviewResult('Case-Rfi', byScope, { [StatusScope.RequestAccess]: true }).results.map((r) => [r.scope, r.hasPublishedVersion])).toEqual([
+      [StatusScope.Global, false],
+      [StatusScope.RequestAccess, true],
     ]);
   });
 
@@ -470,7 +475,7 @@ describe('pickMigrationScope', () => {
 });
 
 describe('getPublishBlockingDiagnostics', () => {
-  it('blocks on MISSING_TEMPLATE and NAME_CONFLICT only', () => {
+  it('blocks on MISSING_TEMPLATE, NAME_CONFLICT and REQUEST_ACCESS_OUTCOME_INVALID only', () => {
     const diagnostics = [
       { type: 'MISSING_ORDER' as const, message: 'a' },
       { type: 'DUPLICATE_ORDER' as const, message: 'b' },
@@ -478,7 +483,131 @@ describe('getPublishBlockingDiagnostics', () => {
       { type: 'MISSING_TEMPLATE' as const, message: 'd' },
       { type: 'DUPLICATE_TEMPLATE' as const, message: 'e' },
       { type: 'EXISTING_WORKFLOW' as const, message: 'f' },
+      { type: 'REQUEST_ACCESS_OUTCOME_INVALID' as const, message: 'g' },
     ];
-    expect(getPublishBlockingDiagnostics(diagnostics).map((d) => d.type)).toEqual(['NAME_CONFLICT', 'MISSING_TEMPLATE']);
+    expect(getPublishBlockingDiagnostics(diagnostics).map((d) => d.type)).toEqual(['NAME_CONFLICT', 'MISSING_TEMPLATE', 'REQUEST_ACCESS_OUTCOME_INVALID']);
+  });
+});
+
+describe('convertRequestAccessGroup', () => {
+  // Store order is shuffled on purpose: the conversion must rank by legacy order, not by store order.
+  const requestAccessStatuses = [
+    buildStatus({ id: 'ra-approved', template_id: 't-approved', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 3 }),
+    buildStatus({ id: 'ra-review', template_id: 't-review', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 2 }),
+    buildStatus({ id: 'ra-declined', template_id: 't-declined', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 4 }),
+    buildStatus({ id: 'ra-new', template_id: 't-new', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 1 }),
+  ];
+  const requestAccessTemplates = [
+    buildTemplate({ id: 't-new', name: 'New' }),
+    buildTemplate({ id: 't-review', name: 'Under review' }),
+    buildTemplate({ id: 't-approved', name: 'Approved' }),
+    buildTemplate({ id: 't-declined', name: 'Declined' }),
+  ];
+  const convertSample = (approved = 't-approved', declined = 't-declined', statuses = requestAccessStatuses) => {
+    const { byScope } = convertStatusToDefinition(statuses, requestAccessTemplates);
+    return convertRequestAccessGroup(pickMigrationScope('Case-Rfi', byScope, StatusScope.RequestAccess), approved, declined);
+  };
+  const fromStates = (transition: WorkflowSerializedTransition) => (Array.isArray(transition.from) ? transition.from : [transition.from]);
+
+  it('request-access conversion names transitions into outcome states Accept and Reject', () => {
+    const { definition } = convertSample();
+
+    const intoApproved = definition.transitions.filter((t) => t.to === 't-approved');
+    const intoDeclined = definition.transitions.filter((t) => t.to === 't-declined');
+    expect(intoApproved.map((t) => t.from)).toEqual(['t-new', 't-review']);
+    expect(intoDeclined.map((t) => t.from)).toEqual(['t-new', 't-review']);
+    expect(new Set(intoApproved.map((t) => t.event))).toEqual(new Set(['Accept']));
+    expect(new Set(intoDeclined.map((t) => t.event))).toEqual(new Set(['Reject']));
+  });
+
+  it('drops every transition leaving Approved and Declined', () => {
+    const { definition } = convertSample();
+
+    expect(definition.transitions.filter((t) => fromStates(t).some((from) => ['t-approved', 't-declined'].includes(from)))).toEqual([]);
+  });
+
+  it('keeps the jump-anywhere transitions among the other request-access states', () => {
+    const { definition } = convertSample();
+
+    const others = definition.transitions.filter((t) => !['t-approved', 't-declined'].includes(t.to as string));
+    expect(others).toEqual([
+      { from: 't-review', to: 't-new', event: 'MOVE_TO_NEW' },
+      { from: 't-new', to: 't-review', event: 'MOVE_TO_UNDER_REVIEW' },
+    ]);
+  });
+
+  it('adds shareRequestedEntities with AUTHOR on Approved onEnter', () => {
+    const { definition } = convertSample();
+
+    const approved = definition.states.find((state) => state.statusId === 't-approved');
+    expect(approved?.requestAccessOutcome).toBe('APPROVED');
+    expect(approved?.onEnter).toEqual([{ type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } }]);
+    const declined = definition.states.find((state) => state.statusId === 't-declined');
+    expect(declined?.requestAccessOutcome).toBe('DECLINED');
+    expect(declined?.onEnter).toBeUndefined();
+    expect(definition.states.filter((state) => state.requestAccessOutcome)).toHaveLength(2);
+  });
+
+  it('initial state is the lowest-order request-access status', () => {
+    const { definition } = convertSample();
+
+    expect(definition.initialState).toBe('t-new');
+    expect(definition.states.map((state) => state.statusId)).toEqual(['t-new', 't-review', 't-approved', 't-declined']);
+  });
+
+  it('refuses when the lowest-order request-access status is an outcome state', () => {
+    const statuses = requestAccessStatuses.map((status) => (status.id === 'ra-approved' ? { ...status, order: 0 } : status));
+
+    expect(() => convertSample('t-approved', 't-declined', statuses)).toThrow('cannot be the initial state');
+  });
+
+  it('says a tie at the lowest order is broken by status id when it makes an outcome the initial state', () => {
+    // ra-approved sorts before ra-new, so it wins the tie at order 1.
+    const statuses = requestAccessStatuses.map((status) => (status.id === 'ra-approved' ? { ...status, order: 1 } : status));
+
+    expect(() => convertSample('t-approved', 't-declined', statuses)).toThrow('tie at the lowest order');
+  });
+
+  it('refuses when Approved and Declined share the same status template', () => {
+    expect(() => convertSample('t-approved', 't-approved')).toThrow('must use different status templates');
+  });
+
+  it('refuses when an outcome template is not one of the request-access states', () => {
+    expect(() => convertSample('t-approved', 't-unknown')).toThrow('not one of the request access statuses');
+  });
+
+  describe('tryConvertRequestAccessGroup', () => {
+    const rawGroup = () => {
+      const { byScope } = convertStatusToDefinition(requestAccessStatuses, requestAccessTemplates);
+      return pickMigrationScope('Case-Rfi', byScope, StatusScope.RequestAccess);
+    };
+
+    it('returns the converted group when the outcomes are valid', () => {
+      expect(tryConvertRequestAccessGroup(rawGroup(), 't-approved', 't-declined')).toEqual(convertSample());
+    });
+
+    it.each([
+      ['an unresolved approved status', undefined, 't-declined', 'must be configured'],
+      ['an unresolved declined status', 't-approved', undefined, 'must be configured'],
+      ['identical outcome templates', 't-approved', 't-approved', 'must use different status templates'],
+      ['an outcome outside the request access statuses', 't-approved', 't-unknown', 'not one of the request access statuses'],
+      ['an outcome as initial state', 't-new', 't-declined', 'cannot be the initial state'],
+    ])('keeps the raw group with a blocking REQUEST_ACCESS_OUTCOME_INVALID diagnostic for %s', (_label, approved, declined, message) => {
+      const raw = rawGroup();
+
+      const { definition, diagnostics } = tryConvertRequestAccessGroup(raw, approved, declined);
+
+      expect(definition).toEqual(raw.definition);
+      expect(diagnostics).toEqual([expect.objectContaining({ type: 'REQUEST_ACCESS_OUTCOME_INVALID', message: expect.stringContaining(message) })]);
+      expect(getPublishBlockingDiagnostics(diagnostics)).toHaveLength(1);
+    });
+  });
+
+  it('produces a definition that passes request access publish validation', async () => {
+    const { definition } = convertSample();
+
+    const errors = await validateWorkflowDefinitionData({} as any, {} as any, JSON.stringify(definition), 'Case-Rfi', undefined, StatusScope.RequestAccess);
+
+    expect(errors).toEqual([]);
   });
 });

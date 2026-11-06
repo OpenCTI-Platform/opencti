@@ -77,7 +77,7 @@ Here is an exhaustive list of the collected metrics:
 
 - The number of dissemination feature usages
 - The number of NLQ feature usages
-- The number of request access creations (RFI of request access type)
+- The number of request access creations (RFI of request access type); decisions are counted under [Workflows](#workflows)
 - The number of custom views created
 - The number of custom views enabled
 - The number of shared saved filters (i.e. saved filters shared with members other than the creator)
@@ -170,6 +170,10 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 ### Workflows
 
 - The number of workflow definitions published
+- The number of request-access workflow definitions published
+- The number of request-access workflow migrations
+- The number of access requests approved
+- The number of access requests declined
 
 ### Configuration presets
 

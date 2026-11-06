@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as middlewareLoader from '../../../src/database/middleware-loader';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
+import { StatusScope } from '../../../src/generated/graphql';
 import { WORKFLOW_ROLE_FILTER, WORKFLOW_USER_FILTER } from '../../../src/utils/filtering/filtering-constants';
 
 vi.mock('../../../src/database/middleware-loader', () => ({
@@ -15,7 +16,7 @@ vi.mock('../../../src/database/engine', () => ({
 }));
 
 vi.mock('../../../src/schema/stixCoreObject', () => ({
-  isBasicObject: vi.fn((type) => ['Incident', 'Report'].includes(type)),
+  isBasicObject: vi.fn((type) => ['Incident', 'Report', 'Case-Rfi'].includes(type)),
 }));
 
 vi.mock('../../../src/schema/stixDomainObject', async (importOriginal) => {
@@ -1094,6 +1095,171 @@ describe('Workflow Validation', () => {
       type: 'VALIDATE_DRAFT_ACTION_NOT_ALLOWED',
       message: "Action 'validateDraft' in transition 'publish' is only allowed for DraftWorkspace workflows",
     }));
+  });
+
+  describe('request access definitions', () => {
+    const shareAction = { type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } };
+    const requestAccessDefinition = (overrides: Record<string, unknown> = {}) => ({
+      id: 'request-access-id',
+      initialState: 'existing-state',
+      states: [
+        { statusId: 'existing-state' },
+        { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+        { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+      ],
+      transitions: [
+        { from: 'existing-state', to: 'approved', event: 'Accept' },
+        { from: 'existing-state', to: 'declined', event: 'Reject' },
+      ],
+      ...overrides,
+    });
+    const validate = (definition: unknown, entityType = 'Case-Rfi', scope = StatusScope.RequestAccess) => (
+      validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(definition), entityType, undefined, scope)
+    );
+    const errorTypes = (errors: { type: string }[]) => errors.map((e) => e.type);
+
+    it('should return no errors for a valid request-access definition', async () => {
+      expect(await validate(requestAccessDefinition())).toEqual([]);
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_COUNT when no state is marked Approved', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_COUNT');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_COUNT when two states are marked Approved', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_COUNT');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_COUNT when two states are marked Declined', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state', requestAccessOutcome: 'DECLINED' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_COUNT');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_UNREACHABLE when the Declined state cannot be reached', async () => {
+      const definition = requestAccessDefinition({
+        transitions: [{ from: 'existing-state', to: 'approved', event: 'Accept' }],
+      });
+      const errors = await validate(definition);
+      expect(errors.find((e) => e.type === 'REQUEST_ACCESS_OUTCOME_UNREACHABLE')?.message).toContain('declined');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_NOT_TERMINAL when a transition leaves the Approved state', async () => {
+      const definition = requestAccessDefinition({
+        transitions: [
+          { from: 'existing-state', to: 'approved', event: 'Accept' },
+          { from: 'existing-state', to: 'declined', event: 'Reject' },
+          { from: 'approved', to: 'declined', event: 'Revoke' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_NOT_TERMINAL');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_NOT_TERMINAL when a multi-source transition leaves the Declined state', async () => {
+      const definition = requestAccessDefinition({
+        transitions: [
+          { from: 'existing-state', to: 'approved', event: 'Accept' },
+          { from: 'existing-state', to: 'declined', event: 'Reject' },
+          { from: ['declined', 'existing-state'], to: 'existing-state', event: 'Reopen' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_NOT_TERMINAL');
+    });
+
+    it('should not treat a wildcard source transition as leaving an outcome state', async () => {
+      const definition = requestAccessDefinition({
+        transitions: [
+          { from: 'existing-state', to: 'approved', event: 'Accept' },
+          { from: 'existing-state', to: 'declined', event: 'Reject' },
+          { from: ['*'], to: 'existing-state', event: 'Reopen' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).not.toContain('REQUEST_ACCESS_OUTCOME_NOT_TERMINAL');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_NOT_ALLOWED for a marker in a Global definition', async () => {
+      const errors = await validate(requestAccessDefinition(), 'Case-Rfi', StatusScope.Global);
+      expect(errorTypes(errors)).toContain('REQUEST_ACCESS_OUTCOME_NOT_ALLOWED');
+    });
+
+    it('should return REQUEST_ACCESS_OUTCOME_NOT_ALLOWED for a marker on another entity type', async () => {
+      const errors = await validate(requestAccessDefinition(), 'Report', StatusScope.RequestAccess);
+      expect(errorTypes(errors)).toContain('REQUEST_ACCESS_OUTCOME_NOT_ALLOWED');
+    });
+
+    it('should return MISSING_REQUEST_ACCESS_SHARE_ACTION when the Approved state does not share on enter', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED' },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('MISSING_REQUEST_ACCESS_SHARE_ACTION');
+    });
+
+    it('should return MISSING_REQUEST_ACCESS_SHARE_ACTION when the share action is only on a transition', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED' },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+        transitions: [
+          { from: 'existing-state', to: 'approved', event: 'Accept', syncActions: [shareAction] },
+          { from: 'existing-state', to: 'declined', event: 'Reject' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('MISSING_REQUEST_ACCESS_SHARE_ACTION');
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_NOT_ALLOWED for the share action in a Global Case-Rfi definition', async () => {
+      const definition = {
+        initialState: 'existing-state',
+        states: [{ statusId: 'existing-state' }, { statusId: 'in-progress', onEnter: [shareAction] }],
+        transitions: [{ from: 'existing-state', to: 'in-progress', event: 'start' }],
+      };
+      const errors = await validate(definition, 'Case-Rfi', StatusScope.Global);
+      expect(errorTypes(errors)).toEqual(['REQUEST_ACCESS_SHARE_ACTION_NOT_ALLOWED']);
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_NOT_ALLOWED for the share action in a transition on another entity type', async () => {
+      const definition = {
+        initialState: 'existing-state',
+        states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+        transitions: [{ from: 'existing-state', to: 'in-progress', event: 'start', syncActions: [shareAction] }],
+      };
+      const errors = await validate(definition, 'Report', StatusScope.RequestAccess);
+      expect(errorTypes(errors)).toEqual(['REQUEST_ACCESS_SHARE_ACTION_NOT_ALLOWED']);
+    });
+
+    it('should not add request-access errors to a Global definition without markers or share action', async () => {
+      const definition = {
+        initialState: 'existing-state',
+        states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+        transitions: [{ from: 'existing-state', to: 'in-progress', event: 'start' }],
+      };
+      expect(await validate(definition, 'Case-Rfi', StatusScope.Global)).toEqual([]);
+    });
   });
 });
 

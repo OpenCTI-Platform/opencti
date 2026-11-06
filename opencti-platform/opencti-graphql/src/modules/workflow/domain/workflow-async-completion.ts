@@ -25,6 +25,17 @@ export const appendWorkflowHistoryEntry = (history: any[], entry: any): any[] =>
   return [...history, entry].slice(-MAX_WORKFLOW_HISTORY_ENTRIES);
 };
 
+const resolveTriggeringUser = async (context: AuthContext, userId: string): Promise<AuthUser | undefined> => {
+  try {
+    const { resolveUserById } = await import('../../user/user-domain');
+    const user = await resolveUserById(context, userId);
+    if (user) return { ...user, draft_context: undefined };
+  } catch (error) {
+    logApp.warn('[workflow-async-completion] Failed to resolve the triggering user', { userId, cause: error });
+  }
+  return undefined;
+};
+
 export const runWorkflowBypassActions = async (workflowContext: Context, pendingTransition: WorkflowPendingTransition): Promise<void> => {
   const slots: AsyncActionSlot[] = [];
   workflowContext.pendingAsyncSlots = slots;
@@ -127,8 +138,24 @@ const completeWorkflowAsyncActionResult = async (
       logApp.warn('[workflow-async-completion] Failed to load full entity, falling back to stub', { entityId: instanceEntity.entity_id, error: err });
       return null;
     });
+  // An access request is decided with the rights of the user who fired the transition, never the completion
+  // caller's (usually a platform admin): without that user, nothing runs.
+  let requestAccessDecider: AuthUser | undefined;
+  if (pendingTransition.requestAccessOutcome) {
+    requestAccessDecider = await resolveTriggeringUser(executionContext, pendingTransition.triggeredBy);
+    if (!requestAccessDecider) {
+      await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
+        { key: 'pendingStatus', value: ['error'] },
+        { key: 'pendingError', value: [`The user who decided this access request (${pendingTransition.triggeredBy}) cannot be resolved: the decision is not applied`] },
+      ]);
+      logApp.warn('[workflow-async-completion] Request access decider not resolved', { workflowInstanceId, userId: pendingTransition.triggeredBy });
+      return;
+    }
+  }
   const workflowContext = {
     user: executionUser,
+    ...(requestAccessDecider ? { triggeringUser: requestAccessDecider } : {}),
     entity: fullEntity ?? { id: instanceEntity.entity_id },
     context: executionContext,
     runtimeParams: pendingTransition.runtimeParams ?? {},
@@ -246,6 +273,14 @@ const completeWorkflowAsyncActionResult = async (
     await projectWorkflowState(executionContext, executionUser, fullEntity, pendingTransition.toState, resolveProjectionScope(instanceEntity.scope));
   } else {
     logApp.warn('[workflow-async-completion] Skipping status projection: entity could not be loaded', { entityId: instanceEntity.entity_id });
+  }
+
+  if (pendingTransition.requestAccessOutcome && requestAccessDecider && fullEntity) {
+    const { applyRequestAccessOutcome } = await import('./workflow-request-access');
+    await applyRequestAccessOutcome(executionContext, requestAccessDecider, fullEntity, pendingTransition.requestAccessOutcome);
+  } else if (pendingTransition.requestAccessStatus && fullEntity) {
+    const { mirrorRequestAccessStatus } = await import('./workflow-request-access');
+    await mirrorRequestAccessStatus(executionContext, executionUser, instanceEntity.entity_id, pendingTransition.requestAccessStatus);
   }
 
   logApp.info('[workflow-async-completion] Transition completed', {

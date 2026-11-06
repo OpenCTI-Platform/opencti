@@ -55,7 +55,8 @@ import {
   platformNotification,
   REQUEST_SHARE_ACCESS_INFO_TYPE,
 } from '../../manager/notificationManager';
-import { addRequestAccessCreationCount } from '../../manager/telemetryManager';
+import { addRequestAccessApprovedCount, addRequestAccessCreationCount, addRequestAccessDeclinedCount } from '../../manager/telemetryManager';
+import { fireRequestAccessOutcomeTransition, getRequestAccessWorkflow, isWorkflowDrivenRequestAccess, type RequestAccessOutcome } from '../workflow/domain/workflow-request-access';
 
 // having an id is required for Relay
 const REQUEST_ACCESS_CONFIGURATION_ID = '7059b2f9-86d4-419b-9fde-adf825090820';
@@ -131,6 +132,14 @@ export const findWorkflowStatusByTemplateId = async (context: AuthContext, user:
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   const allStatusesByScope = platformStatuses.filter((status) => status.scope === StatusScope.RequestAccess && status.template_id === templateId);
   return allStatusesByScope[0];
+};
+
+const findInitialWorkflowStatus = async (context: AuthContext, user: AuthUser, initialStateId: string) => {
+  const initialStatus = await findWorkflowStatusByTemplateId(context, user, initialStateId);
+  if (!initialStatus) {
+    throw FunctionalError('The initial state of the request access workflow has no status', { initialStateId });
+  }
+  return initialStatus;
 };
 
 export const findFirstWorkflowStatus = async (context: AuthContext, user: AuthUser) => {
@@ -338,6 +347,7 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
     approval_admin = input.approval_admin as string [];
   }
   const newConfiguration = {
+    ...rfiEntitySettings.request_access_workflow,
     approval_admin,
     approved_workflow_id,
     declined_workflow_id,
@@ -413,7 +423,10 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     workflowMapping: allActionStatuses,
     applicant_id: user.id,
   };
-  const firstStatus: BasicWorkflowStatus = await findFirstWorkflowStatus(context, user);
+  const requestAccessWorkflow = await getRequestAccessWorkflow(context, user);
+  const firstStatus: BasicWorkflowStatus = requestAccessWorkflow
+    ? await findInitialWorkflowStatus(context, user, requestAccessWorkflow.definitionData.initialState)
+    : await findFirstWorkflowStatus(context, user);
   const rfiInput: CaseRfiAddInput = {
     name: `Request Access for entity ${mainRepresentative} by ${user.name} via organization ${organizationData.name}`,
     objectParticipant: [user.id],
@@ -425,6 +438,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     objectMarking: elementData[RELATION_OBJECT_MARKING] ?? [],
     x_opencti_workflow_id: firstStatus.id,
     revoked: false,
+    ...(requestAccessWorkflow ? { createdBy: organizationData.id } : {}),
   };
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
   await addRequestAccessCreationCount();
@@ -490,9 +504,22 @@ export const notifyRequestAccessResult = async (
   await storeNotificationEvent(context, notificationEvent);
 };
 
+// A request on the request-access workflow is decided by the transition into its outcome state
+const decideRequestAccessOnWorkflow = async (context: AuthContext, user: AuthUser, id: string, outcome: RequestAccessOutcome) => {
+  const result = await fireRequestAccessOutcomeTransition(context, user, id, outcome);
+  if (!result.success) {
+    throw FunctionalError(result.reason ?? 'The request access decision failed', { id });
+  }
+  const element = await internalLoadById<BasicStoreEntityCaseRfi>(context, user, id);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, user);
+};
+
 export const approveRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkRequestAccessEnabled(context, user);
   logApp.debug('[OPENCTI-MODULE][Request Access] Approving request access:', { id });
+  if (await isWorkflowDrivenRequestAccess(context, id)) {
+    return decideRequestAccessOnWorkflow(context, user, id, 'APPROVED');
+  }
   const entityCaseRfi = await internalLoadById<BasicStoreEntityCaseRfi>(context, user, id);
   const isUserCanAction = await isUserCanActionRequestAccess(context, user, entityCaseRfi);
   if (!isUserCanAction) {
@@ -528,6 +555,7 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
     { key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] },
   ];
   const { element } = await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
+  addRequestAccessApprovedCount();
   const elementData = await elLoadById(context, SYSTEM_USER, targetInstanceToShare) as unknown as BasicStoreBase;
   const mainRepresentative = extractEntityRepresentativeName(elementData);
   await publishUserAction({
@@ -547,6 +575,9 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
 export const declineRequestAccess = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkRequestAccessEnabled(context, user);
   logApp.debug(`[OPENCTI-MODULE][Request Access] Reject for RFI ${id}`);
+  if (await isWorkflowDrivenRequestAccess(context, id)) {
+    return decideRequestAccessOnWorkflow(context, user, id, 'DECLINED');
+  }
   // region Check validity
   const { action, x_opencti_workflow_id } = await checkRequestActionAndGetWorkflow(context, user, id, ActionStatus.DECLINED);
   // endregion
@@ -563,6 +594,7 @@ export const declineRequestAccess = async (context: AuthContext, user: AuthUser,
     { key: 'x_opencti_workflow_id', value: [x_opencti_workflow_id] },
   ];
   const { element } = await updateAttribute(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT, RFIFieldPatch);
+  addRequestAccessDeclinedCount();
   const instanceToShare = await internalLoadById<BasicStoreEntity>(context, SYSTEM_USER, (action.entities ?? [])[0]);
   const mainRepresentative = extractEntityRepresentativeName(instanceToShare);
   await publishUserAction({

@@ -82,6 +82,10 @@ const caseRfiFragment = graphql`
     ...WorkflowStatusStixDomainObject_data
     revoked
     x_opencti_request_access
+    workflowInstance {
+      id
+      scope
+    }
     requestAccessConfiguration {
       isUserCanAction
       configuration {

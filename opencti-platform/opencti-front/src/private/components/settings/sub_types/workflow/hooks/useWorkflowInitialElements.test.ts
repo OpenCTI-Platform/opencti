@@ -3,7 +3,7 @@ import { MarkerType, Node } from 'reactflow';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SubTypeWorkflowQuery$data } from '../../__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery$data } from '../../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
-import { WorkflowNodeType } from '../utils';
+import { transformToWorkflowDefinition, WorkflowNodeType } from '../utils';
 import { useWorkflowInitialElements } from './useWorkflowInitialElements';
 
 vi.mock('@mui/material/styles', async (importOriginal) => ({
@@ -54,6 +54,7 @@ describe('useWorkflowInitialElements', () => {
       {
         statusId: 'status-open',
         order: 0,
+        requestAccessOutcome: null,
         onEnter: [
           {
             type: 'updateAuthorizedMembers',
@@ -159,6 +160,7 @@ describe('useWorkflowInitialElements', () => {
         {
           statusId: 'status-open',
           order: 0,
+          requestAccessOutcome: null,
           onEnter: [
             {
               type: 'updateAuthorizedMembers',
@@ -186,6 +188,56 @@ describe('useWorkflowInitialElements', () => {
       id: 'user-1',
       access_right: 'view',
       groups_restriction: [{ id: 'group-1', name: 'Analysts' }],
+    });
+  });
+
+  describe('request access', () => {
+    const requestAccessDefinition: SubTypeWorkflowQuery$data['workflowDefinition'] = {
+      ...mockWorkflowDefinition!,
+      states: [
+        { statusId: 'status-open', order: 0, onEnter: [], onExit: [], requestAccessOutcome: null },
+        {
+          statusId: 'status-closed',
+          order: 1,
+          onEnter: [{ type: 'shareRequestedEntities', params: { organizations: ['AUTHOR', 'org-1'] } }],
+          onExit: [],
+          requestAccessOutcome: 'APPROVED',
+        },
+      ],
+      transitions: [],
+    };
+    const membersWithOrg: SubTypeWorkflowDependenciesQuery$data['members'] = {
+      edges: [...mockMembers!.edges, { node: { id: 'org-1', name: 'Org One', entity_type: 'Organization' } }],
+    };
+
+    it('carries requestAccessOutcome onto the status node data', () => {
+      const { result } = renderHook(() => useWorkflowInitialElements(requestAccessDefinition, mockStatusTemplates, membersWithOrg));
+      expect(result.current.initialNodes.find((n: Node) => n.id === 'status-closed')?.data.requestAccessOutcome).toBe('APPROVED');
+      expect(result.current.initialNodes.find((n: Node) => n.id === 'status-open')?.data.requestAccessOutcome).toBeUndefined();
+    });
+
+    it('turns the organization ids of a shareRequestedEntities action into options', () => {
+      const { result } = renderHook(() => useWorkflowInitialElements(requestAccessDefinition, mockStatusTemplates, membersWithOrg));
+      const action = result.current.initialNodes.find((n: Node) => n.id === 'status-closed')?.data.onEnter[0];
+      expect(action.type).toBe('shareRequestedEntities');
+      expect(action.params.organizations).toEqual([
+        { value: 'AUTHOR', label: 'AUTHOR' },
+        { value: 'org-1', label: 'Org One' },
+      ]);
+    });
+
+    it('utils round-trips requestAccessOutcome', () => {
+      const { result } = renderHook(() => useWorkflowInitialElements(requestAccessDefinition, mockStatusTemplates, membersWithOrg));
+      const { states } = transformToWorkflowDefinition(result.current.initialNodes, result.current.initialEdges, requestAccessDefinition);
+      expect(states).toEqual([
+        { statusId: 'status-open', onEnter: [], onExit: [] },
+        {
+          statusId: 'status-closed',
+          onEnter: [{ type: 'shareRequestedEntities', params: { organizations: ['AUTHOR', 'org-1'] } }],
+          onExit: [],
+          requestAccessOutcome: 'APPROVED',
+        },
+      ]);
     });
   });
 

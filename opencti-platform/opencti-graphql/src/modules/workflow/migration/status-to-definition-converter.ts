@@ -3,7 +3,13 @@ import { StatusScope } from '../../../generated/graphql';
 import type { BasicWorkflowStatus, BasicWorkflowTemplateEntity } from '../../../types/store';
 import type { WorkflowSerializedState, WorkflowSerializedTransition } from '../types/workflow-types';
 
-export type WorkflowMigrationDiagnosticType = 'MISSING_ORDER' | 'DUPLICATE_ORDER' | 'DUPLICATE_TEMPLATE' | 'NAME_CONFLICT' | 'MISSING_TEMPLATE' | 'EXISTING_WORKFLOW';
+export type WorkflowMigrationDiagnosticType = 'MISSING_ORDER'
+  | 'DUPLICATE_ORDER'
+  | 'DUPLICATE_TEMPLATE'
+  | 'NAME_CONFLICT'
+  | 'MISSING_TEMPLATE'
+  | 'EXISTING_WORKFLOW'
+  | 'REQUEST_ACCESS_OUTCOME_INVALID';
 
 export interface WorkflowMigrationDiagnostic {
   type: WorkflowMigrationDiagnosticType;
@@ -241,6 +247,90 @@ export const convertStatusToDefinition = (
   return { byScope };
 };
 
+// Why the approved / declined templates cannot make a valid request access definition out of this
+// group, or undefined when they can.
+const findRequestAccessOutcomeProblem = (
+  definition: WorkflowMigrationDefinitionData,
+  approvedTemplateId: string | undefined,
+  declinedTemplateId: string | undefined,
+): string | undefined => {
+  if (!approvedTemplateId || !declinedTemplateId) {
+    return 'the approved and declined statuses must be configured and be request access statuses of this entity type';
+  }
+  if (approvedTemplateId === declinedTemplateId) {
+    return 'the approved and declined statuses must use different status templates';
+  }
+  const stateIds = new Set(definition.states.map((state) => state.statusId));
+  if (!stateIds.has(approvedTemplateId) || !stateIds.has(declinedTemplateId)) {
+    return 'the approved or declined status is not one of the request access statuses';
+  }
+  if (definition.initialState === approvedTemplateId || definition.initialState === declinedTemplateId) {
+    return 'the approved or declined status cannot be the initial state, which is the first request access status by order '
+      + '(a tie at the lowest order is broken by status id); give another request access status a lower order than both';
+  }
+  return undefined;
+};
+
+/**
+ * Turns the converted REQUEST_ACCESS group of Case-Rfi into a request access definition that passes
+ * publish validation: the states of the legacy approved / declined statuses (identified by their
+ * template) are marked as outcomes, the Approved one shares the requested entities with the
+ * requesting organization on enter, transitions into them are named `Accept` / `Reject`, and every
+ * transition leaving them is dropped. The other states keep their jump-anywhere transitions.
+ */
+export const convertRequestAccessGroup = (
+  result: WorkflowMigrationConversionResult,
+  approvedTemplateId: string,
+  declinedTemplateId: string,
+): WorkflowMigrationConversionResult => {
+  const { definition } = result;
+  const problem = findRequestAccessOutcomeProblem(definition, approvedTemplateId, declinedTemplateId);
+  if (problem) {
+    throw FunctionalError(`Cannot migrate request access: ${problem}`, { approvedTemplateId, declinedTemplateId, initialState: definition.initialState });
+  }
+  const outcomeIds = new Set([approvedTemplateId, declinedTemplateId]);
+  const states: WorkflowMigrationState[] = definition.states.map((state) => {
+    if (state.statusId === approvedTemplateId) {
+      return { ...state, requestAccessOutcome: 'APPROVED', onEnter: [...(state.onEnter ?? []), { type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } }] };
+    }
+    if (state.statusId === declinedTemplateId) {
+      return { ...state, requestAccessOutcome: 'DECLINED' };
+    }
+    return state;
+  });
+  const transitions = definition.transitions
+    .filter((transition) => !(Array.isArray(transition.from) ? transition.from : [transition.from]).some((from) => outcomeIds.has(from)))
+    .map((transition) => {
+      if (transition.to === approvedTemplateId) return { ...transition, event: 'Accept' };
+      if (transition.to === declinedTemplateId) return { ...transition, event: 'Reject' };
+      return transition;
+    });
+  return {
+    definition: { ...definition, states, transitions },
+    diagnostics: result.diagnostics,
+  };
+};
+
+/**
+ * Same as `convertRequestAccessGroup`, but when the outcomes cannot be converted it keeps the group
+ * as is and reports why in a blocking REQUEST_ACCESS_OUTCOME_INVALID diagnostic, so the preview can
+ * show it and the migration can refuse it before writing anything.
+ */
+export const tryConvertRequestAccessGroup = (
+  result: WorkflowMigrationConversionResult,
+  approvedTemplateId: string | undefined,
+  declinedTemplateId: string | undefined,
+): WorkflowMigrationConversionResult => {
+  const problem = findRequestAccessOutcomeProblem(result.definition, approvedTemplateId, declinedTemplateId);
+  if (problem || !approvedTemplateId || !declinedTemplateId) {
+    return {
+      definition: result.definition,
+      diagnostics: [...result.diagnostics, { type: 'REQUEST_ACCESS_OUTCOME_INVALID', message: `Cannot migrate request access: ${problem}` }],
+    };
+  }
+  return convertRequestAccessGroup(result, approvedTemplateId, declinedTemplateId);
+};
+
 // GraphQL-ready shape for a single scope's preview result, distinct from `WorkflowMigrationConversionResult`
 // because it also carries the `hasPublishedVersion` field expected by the `WorkflowMigrationScopeResult`
 // schema type.
@@ -270,14 +360,13 @@ const compareScopes = (a: string, b: string): number => {
  * Pure reshaping of `byScope` (keyed by `StatusScope`) into the flat `results` array expected by
  * the `WorkflowMigrationPreview` GraphQL type. Kept here, next to `convertStatusToDefinition`,
  * rather than in the resolver, so it stays unit-testable without a resolver/context and the
- * resolver stays a thin bridge to domain logic. `hasPublishedVersion` tells whether the entity
- * type's existing workflow has a published version; it only applies to the GLOBAL scope, the only
- * one a workflow covers.
+ * resolver stays a thin bridge to domain logic. `publishedByScope` tells, per scope, whether the
+ * entity type's existing workflow for that scope has a published version.
  */
 export const buildWorkflowMigrationPreviewResult = (
   entityType: string,
   byScope: WorkflowMigrationByScope,
-  hasPublishedVersion = false,
+  publishedByScope: Partial<Record<StatusScope, boolean>> = {},
 ): WorkflowMigrationPreviewResult => ({
   entityType,
   results: Object.entries(byScope)
@@ -286,7 +375,7 @@ export const buildWorkflowMigrationPreviewResult = (
     .map(([scope, result]) => ({
       scope: scope as StatusScope,
       initialState: result.definition.initialState,
-      hasPublishedVersion: hasPublishedVersion && scope === StatusScope.Global,
+      hasPublishedVersion: publishedByScope[scope as StatusScope] ?? false,
       states: result.definition.states,
       transitions: result.definition.transitions,
       diagnostics: result.diagnostics,
@@ -294,10 +383,11 @@ export const buildWorkflowMigrationPreviewResult = (
 });
 
 // Diagnostics that make a migrated definition unsafe to publish straight away: a state whose
-// template no longer exists, or two states a human cannot tell apart. Ordering and duplicate
+// template no longer exists, two states a human cannot tell apart, or request access outcomes that
+// cannot be converted. Ordering and duplicate
 // diagnostics (MISSING_ORDER / DUPLICATE_ORDER / DUPLICATE_TEMPLATE) are only warnings, the
 // converter resolves them deterministically. EXISTING_WORKFLOW is gated by `overwrite` instead.
-const PUBLISH_BLOCKING_DIAGNOSTIC_TYPES: WorkflowMigrationDiagnosticType[] = ['NAME_CONFLICT', 'MISSING_TEMPLATE'];
+const PUBLISH_BLOCKING_DIAGNOSTIC_TYPES: WorkflowMigrationDiagnosticType[] = ['NAME_CONFLICT', 'MISSING_TEMPLATE', 'REQUEST_ACCESS_OUTCOME_INVALID'];
 
 export const getPublishBlockingDiagnostics = (diagnostics: WorkflowMigrationDiagnostic[]): WorkflowMigrationDiagnostic[] => {
   return diagnostics.filter((diagnostic) => PUBLISH_BLOCKING_DIAGNOSTIC_TYPES.includes(diagnostic.type));
@@ -305,9 +395,8 @@ export const getPublishBlockingDiagnostics = (diagnostics: WorkflowMigrationDiag
 
 /**
  * Picks the result of one scope out of a conversion result, and throws when that scope has no
- * statuses to migrate. `workflowMigrate` only migrates GLOBAL today (an entity type's workflow).
- * REQUEST_ACCESS is previewed on purpose: Case statuses with that scope will need migrating next,
- * so keep its preview result and this scope parameter.
+ * statuses to migrate. GLOBAL is an entity type's workflow; REQUEST_ACCESS is the request access
+ * workflow of Case-Rfi, finished by `convertRequestAccessGroup`.
  */
 export const pickMigrationScope = (
   entityType: string,

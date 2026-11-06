@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
+import { ActionDefinitions, ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
+import { addOrganizationRestriction } from '../../../src/domain/stix';
+import { internalLoadById } from '../../../src/database/middleware-loader';
 
 vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-domain', () => ({
   validateDraftWorkspace: vi.fn(),
@@ -28,6 +30,14 @@ vi.mock('../../../src/utils/authorizedMembers', () => ({
 
 vi.mock('../../../src/utils/access', () => ({
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
+}));
+
+vi.mock('../../../src/domain/stix', () => ({
+  addOrganizationRestriction: vi.fn(),
+}));
+
+vi.mock('../../../src/database/middleware-loader', () => ({
+  internalLoadById: vi.fn(),
 }));
 
 // ---------------------------------------------------------------------------
@@ -625,5 +635,114 @@ describe('ActionRegistry.updateAuthorizedMembers (skipAdminValidation)', () => {
       expect.any(Array),
       { skipAdminValidation: true },
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// shareRequestedEntities
+// ---------------------------------------------------------------------------
+
+describe('ActionRegistry.shareRequestedEntities', () => {
+  const makeRfiCtx = (
+    requestAccess: Record<string, unknown> | null = { entities: ['entity-1', 'entity-2'], members: ['org-requester'] },
+    entityOverrides: Record<string, unknown> = {},
+  ) => ({
+    user: { id: 'workflow-manager-id' },
+    triggeringUser: { id: 'approver-id' },
+    context: { user: { id: 'approver-id' } },
+    entity: {
+      id: 'rfi-id',
+      internal_id: 'rfi-id',
+      entity_type: 'Case-Rfi',
+      'created-by': 'org-author',
+      ...(requestAccess ? { x_opencti_request_access: JSON.stringify(requestAccess) } : {}),
+      ...entityOverrides,
+    },
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => ({ id, internal_id: id }) as any);
+  });
+
+  it('is a sync-only action requiring at least one organization', () => {
+    const definition = ActionDefinitions.shareRequestedEntities;
+    expect(definition.allowedModes).toEqual(['sync']);
+    expect(definition.paramsSchema?.safeParse({ organizations: ['AUTHOR'] }).success).toBe(true);
+    expect(definition.paramsSchema?.safeParse({ organizations: [] }).success).toBe(false);
+  });
+
+  it('shares every requested entity with each resolved organization', async () => {
+    const ctx = makeRfiCtx();
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
+    expect(addOrganizationRestriction).toHaveBeenCalledTimes(2);
+    expect(addOrganizationRestriction).toHaveBeenNthCalledWith(1, ctx.context, ctx.triggeringUser, 'entity-1', ['org-author', 'org-extra']);
+    expect(addOrganizationRestriction).toHaveBeenNthCalledWith(2, ctx.context, ctx.triggeringUser, 'entity-2', ['org-author', 'org-extra']);
+  });
+
+  it('loads and shares with the triggering user, never the workflow manager', async () => {
+    const ctx = makeRfiCtx();
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+    const usersUsed = [
+      ...vi.mocked(internalLoadById).mock.calls.map((call) => call[1]),
+      ...vi.mocked(addOrganizationRestriction).mock.calls.map((call) => call[1]),
+    ];
+    expect(usersUsed).toHaveLength(4);
+    expect(usersUsed.every((u) => u === ctx.triggeringUser)).toBe(true);
+  });
+
+  it('falls back to the context user when there is no triggering user', async () => {
+    const ctx = { ...makeRfiCtx(), triggeringUser: undefined };
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+    expect(internalLoadById).toHaveBeenCalledWith(ctx.context, ctx.user, 'entity-1');
+    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.user, 'entity-1', ['org-author']);
+  });
+
+  it('resolves AUTHOR to the RFI createdBy', async () => {
+    const ctx = makeRfiCtx({ entities: ['entity-1'] }, { 'created-by': 'org-requesting' });
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-requesting']);
+  });
+
+  it('throws before sharing anything when one target has restricted_members', async () => {
+    vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+      { id, internal_id: id, ...(id === 'entity-2' ? { restricted_members: [{ id: 'member-1' }] } : {}) }
+    ) as any);
+    const ctx = makeRfiCtx();
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('throws before sharing anything when a target cannot be loaded', async () => {
+    vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
+      id === 'entity-2' ? undefined : { id, internal_id: id }
+    ) as any);
+    const ctx = makeRfiCtx();
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('throws when the entity is not a request-access RFI', async () => {
+    const notRfi = makeRfiCtx({ entities: ['entity-1'] }, { entity_type: 'Incident' });
+    await expect(ActionRegistry.shareRequestedEntities(notRfi, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    const noRequest = makeRfiCtx(null);
+    await expect(ActionRegistry.shareRequestedEntities(noRequest, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('throws a clear error when the request access data is malformed', async () => {
+    const invalidJson = makeRfiCtx(null, { x_opencti_request_access: '{not json' });
+    await expect(ActionRegistry.shareRequestedEntities(invalidJson, { organizations: ['AUTHOR'] })).rejects.toThrow('This RFI is not compatible');
+    const noEntities = makeRfiCtx({ members: ['org-requester'] });
+    await expect(ActionRegistry.shareRequestedEntities(noEntities, { organizations: ['AUTHOR'] })).rejects.toThrow('This RFI is not compatible');
+    const notAnObject = makeRfiCtx(null, { x_opencti_request_access: 'null' });
+    await expect(ActionRegistry.shareRequestedEntities(notAnObject, { organizations: ['AUTHOR'] })).rejects.toThrow('This RFI is not compatible');
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('throws when no organization can be resolved', async () => {
+    const ctx = makeRfiCtx({ entities: ['entity-1'] }, { 'created-by': undefined });
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
   });
 });
