@@ -22,7 +22,7 @@ import ObjectMembersField from '../../common/form/ObjectMembersField';
 import { NotifiersLinesPaginationQuery$variables } from './__generated__/NotifiersLinesPaginationQuery.graphql';
 import { NotifierTestDialogQuery } from './__generated__/NotifierTestDialogQuery.graphql';
 import NotifierTestDialog, { notifierTestQuery } from './NotifierTestDialog';
-import { uiSchema } from './NotifierUtils';
+import { buildNotifierUiSchema, notifierFormTemplates } from './NotifierUtils';
 import notifierValidator from './NotifierValidator';
 
 const notifierMutation = graphql`
@@ -179,10 +179,8 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
               }}
             >
               <JsonForm
-                uiSchema={{
-                  ...JSON.parse(connector.ui_schema ?? ' {}'),
-                  ...uiSchema,
-                }}
+                uiSchema={buildNotifierUiSchema(connector.ui_schema)}
+                templates={notifierFormTemplates}
                 ref={formRef}
                 tagName="div"
                 showErrorList={false}
