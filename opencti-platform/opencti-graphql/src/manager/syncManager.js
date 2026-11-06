@@ -24,6 +24,8 @@ import { InterruptibleTimer } from './interruptible-timer';
 import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
 import {
   ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET,
+  encodeEmbeddedStoragePathForMarkdownUrl,
+  extractEmbeddedStoragePathFromUrl,
   extractMarkdownImageReferences,
   MARKDOWN_FIELD_KEYS,
   resolveEmbeddedStoragePathWithContext,
@@ -158,12 +160,22 @@ export const encodeStorageRelativePath = (relativePath) => {
     .join('/');
 };
 
+// A relative or absolute markdown url of an embedded file. The url is the stored file name encoded once: it is decoded
+// once (never again, the name may hold a literal "%xx") and encoded once for the remote platform.
+const buildEmbeddedStorageFetchUri = (syncUri, markdownUri, { entityType, entityId }) => {
+  const embeddedStoragePath = extractEmbeddedStoragePathFromUrl(markdownUri);
+  if (!embeddedStoragePath?.startsWith('embedded/')) {
+    return null;
+  }
+  const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(embeddedStoragePath, { entityType, entityId });
+  return `${httpBase(syncUri)}storage/get/${encodeEmbeddedStoragePathForMarkdownUrl(resolvedEmbeddedPath)}`;
+};
+
 export const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
   if (typeof storageUri !== 'string') {
     return null;
   }
 
-  const { entityType, entityId } = options;
   const trimmedStorageUri = storageUri.trim();
   if (/^https?:\/\//i.test(trimmedStorageUri)) {
     try {
@@ -172,12 +184,7 @@ export const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
       if (extractedPath) {
         return `${httpBase(syncUri)}${extractedPath}`;
       }
-      const normalizedPath = decodeURIComponent((parsedUri.pathname || '').replace(/^\/+/, ''));
-      if (normalizedPath.startsWith('embedded/')) {
-        const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
-        return `${httpBase(syncUri)}storage/get/${encodeStorageRelativePath(resolvedEmbeddedPath)}`;
-      }
-      return null;
+      return buildEmbeddedStorageFetchUri(syncUri, trimmedStorageUri, options);
     } catch {
       return null;
     }
@@ -188,13 +195,7 @@ export const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
     return `${httpBase(syncUri)}${encodeStorageRelativePath(extractedPath)}`;
   }
 
-  const normalizedPath = decodeURIComponent(trimmedStorageUri.replace(/^\/+/, ''));
-  if (normalizedPath.startsWith('embedded/')) {
-    const resolvedEmbeddedPath = resolveEmbeddedStoragePathWithContext(normalizedPath, { entityType, entityId });
-    return `${httpBase(syncUri)}storage/get/${encodeStorageRelativePath(resolvedEmbeddedPath)}`;
-  }
-
-  return null;
+  return buildEmbeddedStorageFetchUri(syncUri, trimmedStorageUri, options);
 };
 
 export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
