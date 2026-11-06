@@ -38,6 +38,7 @@ import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtur
 import { ALL_MARKINGS, customMarking, papRed, tlpAmber } from './configPreset-markings-fixtures';
 import { BUILT_IN_MARKING_STANDARD_IDS } from '../../../../src/modules/markingDefinition/marking-import';
 import { roleCapabilities } from '../../../../src/modules/user/user-domain';
+import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -135,6 +136,8 @@ describe('Config preset registry', () => {
         itemIds: [administratorsGroup.standard_id, analystsGroup.standard_id],
       },
       { id: 'policies', label: 'Policies', description: 'Password policy, users visibility and main organization', group: 'securityAccess', itemIds: ['policies'] },
+      // The labels by value
+      { id: 'labels', label: 'Labels', description: 'Labels and their colors', group: 'taxonomy', itemIds: [otherLabel.standard_id, customLabel.standard_id] },
     ]);
   });
 
@@ -142,7 +145,7 @@ describe('Config preset registry', () => {
     expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark']);
   });
 
-  it('translates the static labels only, never a theme name', async () => {
+  it('translates the static labels only, never a theme name or a label value', async () => {
     const items = await resolveAllItems();
     expect(items.map((item) => [item.label, item.translatable])).toEqual([
       ['Platform configuration', true],
@@ -161,10 +164,12 @@ describe('Config preset registry', () => {
       ['Administrators', false],
       ['Analysts', false],
       ['Policies', true],
+      ['APT', false],
+      ['tlp:amber', false],
     ]);
   });
 
-  it('writes one distinct JSON file per item, in the folder of its category, a theme by its standard id', async () => {
+  it('writes one distinct JSON file per item, in the folder of its category, a theme or a label by its standard id', async () => {
     const paths = (await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
       const items = await family.resolveItems(context, user, null, []);
       return items.map((item) => configPresetItemFilePath(family, item));
@@ -186,6 +191,8 @@ describe('Config preset registry', () => {
       `security_access/groups/${administratorsGroup.standard_id}.json`,
       `security_access/groups/${analystsGroup.standard_id}.json`,
       'security_access/policies.json',
+      `taxonomy/labels/${otherLabel.standard_id}.json`,
+      `taxonomy/labels/${customLabel.standard_id}.json`,
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -323,6 +330,64 @@ describe('Config preset registry', () => {
     const file = await exportConfigPresetItem(context, user, findFamily('hiddenEntityTypes'), await findItem('hiddenEntityTypes', 'hiddenEntityTypes'));
     expect(file).toMatchObject({ type: 'dataModel.hiddenEntityTypes', id: 'hiddenEntityTypes' });
     expect(file.configuration).toEqual({ hidden_entity_types: ['Channel', 'Malware'] });
+  });
+
+  describe('labels', () => {
+    const labels = findFamily('labels');
+    const pageIds = async (args: Parameters<typeof labels.listItems>[2]) => (await labels.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('exports a label in the label import format only: its value and its color', async () => {
+      const file = await exportConfigPresetItem(context, user, labels, await findItem('labels', customLabel.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'taxonomy.labels',
+        id: customLabel.standard_id,
+        configuration: { value: 'tlp:amber', color: '#ffc107' },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|custom-label-id/);
+    });
+
+    it('leaves a missing color out, so the import gives the label its own', async () => {
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ ...customLabel, color: null }] as never);
+      const file = await exportConfigPresetItem(context, user, labels, await findItem('labels', customLabel.standard_id));
+      expect(file.configuration).toEqual({ value: 'tlp:amber' });
+    });
+
+    it('opens the first page with the labels by value, and counts them', async () => {
+      const page = await labels.listItems(context, user, { first: 1 });
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['Label'], {
+        first: 1,
+        after: undefined,
+        search: undefined,
+        orderBy: 'value',
+        orderMode: 'asc',
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([[otherLabel.standard_id, 'APT', false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
+      const all = await labels.listItems(context, user, { first: 10 });
+      expect(all.pageInfo).toMatchObject({ hasNextPage: false, globalCount: 2 });
+    });
+
+    it('applies search, ids and excluded ids to the labels', async () => {
+      expect(await pageIds({ search: 'tlp' })).toEqual([customLabel.standard_id]);
+      expect(await pageIds({ ids: [otherLabel.standard_id] })).toEqual([otherLabel.standard_id]);
+      expect(await pageIds({ excludedIds: [otherLabel.standard_id] })).toEqual([customLabel.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no label query, whose empty filter would match every label
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the labels to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await labels.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([otherLabel.standard_id, customLabel.standard_id]);
+      expect(await ids(null, [otherLabel.standard_id])).toEqual([customLabel.standard_id]);
+      expect(await ids([customLabel.standard_id], [])).toEqual([customLabel.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
   });
 
   describe('branding', () => {

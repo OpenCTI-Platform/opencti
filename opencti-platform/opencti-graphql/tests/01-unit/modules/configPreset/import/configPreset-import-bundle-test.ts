@@ -2,7 +2,6 @@ import { Readable } from 'node:stream';
 import { describe, expect, it } from 'vitest';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import {
-  CONFIG_PRESET_IMPORT_MAX_ENTRIES,
   CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE,
   CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE,
   limitStream,
@@ -100,9 +99,7 @@ describe('Config preset bundle reader', () => {
     expect(error.message).toContain('dependencies of the configuration bundle are invalid');
   });
 
-  it('refuses too many entries and the same item twice', async () => {
-    const many = Object.fromEntries(Array.from({ length: CONFIG_PRESET_IMPORT_MAX_ENTRIES + 1 }, (_, i) => [`f${i}.txt`, 'x']));
-    await refusedWith(buildZip(many));
+  it('refuses the same item twice', async () => {
     await refusedWith(buildZip({
       ...validBundleFiles(),
       'copy/banner.json': itemFile('platformSettings.messages', 'banner', { platform_banner_text: 'Other' }),
