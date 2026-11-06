@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import {
   ADMIN_USER,
   AMBER_GROUP,
+  getAuthUser,
   getGroupIdByName,
   GREEN_GROUP,
   PLATFORM_ORGANIZATION,
@@ -14,18 +15,36 @@ import {
 import { findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
 import { unSetOrganization, setOrganization, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
-import { ActionStatus, type RequestAccessAction } from '../../../src/modules/requestAccess/requestAccess-domain';
+import {
+  ActionStatus,
+  addRequestAccess,
+  findWorkflowStatusByTemplateId,
+  getRfiEntitySettings,
+  type RequestAccessAction,
+} from '../../../src/modules/requestAccess/requestAccess-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
-import { findTemplatePaginated } from '../../../src/domain/status';
+import { createStatusTemplate, findTemplatePaginated, statusTemplateDelete } from '../../../src/domain/status';
 import { FilterMode, OrderingMode, type RequestAccessConfigureInput, RequestAccessType, type StatusAddInput, StatusOrdering, StatusScope } from '../../../src/generated/graphql';
 import { logApp } from '../../../src/config/conf';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
-import { fullEntitiesList } from '../../../src/database/middleware-loader';
-import type { BasicWorkflowStatus } from '../../../src/types/store';
-import { internalDeleteElementById } from '../../../src/database/middleware';
+import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
+import type { BasicStoreEntity, BasicWorkflowStatus } from '../../../src/types/store';
+import { deleteElementById, internalDeleteElementById, loadEntity, storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
-import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import { INPUT_GRANTED_REFS, OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import * as requestAccessDomain from '../../../src/modules/requestAccess/requestAccess-domain';
+import { entitySettingEditField } from '../../../src/modules/entitySetting/entitySetting-domain';
+import type { BasicStoreEntityEntitySetting, RequestAccessFlow } from '../../../src/modules/entitySetting/entitySetting-types';
+import { addMalware } from '../../../src/domain/malware';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
+import { deleteWorkflowDefinition, publishWorkflowDefinition, setWorkflowDefinition, triggerWorkflowEvent } from '../../../src/modules/workflow/domain/workflow-domain';
+import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
+import * as telemetryManager from '../../../src/manager/telemetryManager';
+import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
+import { UnsupportedError } from '../../../src/config/errors';
+import type { AuthUser } from '../../../src/types/user';
 
 export const CREATE_REQUEST_ACCESS_QUERY = gql`
     mutation RequestAccessAdd($input: RequestAccessAddInput!) {
@@ -610,5 +629,204 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
 
     // revert platform orga
     await unSetOrganization();
+  });
+});
+
+describe('Request access decided through workflow transitions', async () => {
+  const suffix = Date.now();
+  const templateIds = { pending: '', approved: '', declined: '' };
+  let rfiEntitySettings: BasicStoreEntityEntitySetting;
+  let initialConfig: RequestAccessFlow | undefined;
+  let malwareId: string;
+  let testOrganizationId: string;
+  const createdRfiIds: string[] = [];
+  const editionSpies: Array<{ mockRestore: () => void }> = [];
+  let share: ReturnType<typeof vi.spyOn>;
+  let notifyResult: ReturnType<typeof vi.spyOn>;
+  let approvedCount: ReturnType<typeof vi.spyOn>;
+  let declinedCount: ReturnType<typeof vi.spyOn>;
+
+  const definition = () => JSON.stringify({
+    initialState: templateIds.pending,
+    states: [
+      { statusId: templateIds.pending },
+      { statusId: templateIds.approved, requestAccessOutcome: 'APPROVED', onEnter: [{ type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } }] },
+      { statusId: templateIds.declined, requestAccessOutcome: 'DECLINED' },
+    ],
+    transitions: [
+      { from: templateIds.pending, to: templateIds.approved, event: 'Accept' },
+      { from: templateIds.pending, to: templateIds.declined, event: 'Reject' },
+    ],
+  });
+  const requestAccess = async () => {
+    const rfiId = await addRequestAccess(testContext, ADMIN_USER, {
+      request_access_reason: 'Access needed for the workflow decision tests',
+      request_access_entities: [malwareId],
+      request_access_members: [testOrganizationId],
+      request_access_type: RequestAccessType.OrganizationSharing,
+    });
+    createdRfiIds.push(rfiId);
+    return rfiId;
+  };
+  const findInstance = (rfiId: string) => loadEntity<BasicStoreEntity & { currentState?: string }>(testContext, ADMIN_USER, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+    filters: { mode: FilterMode.And, filters: [{ key: ['entity_id'], values: [rfiId] }], filterGroups: [] },
+  });
+  const loadDecision = async (rfiId: string) => {
+    const rfi = await findRFIById(testContext, ADMIN_USER, rfiId);
+    return { statusId: rfi.x_opencti_workflow_id, action: JSON.parse(rfi.x_opencti_request_access) as RequestAccessAction };
+  };
+  const statusIdOf = async (templateId: string) => (await findWorkflowStatusByTemplateId(testContext, ADMIN_USER, templateId)).id;
+  const accept = (rfiId: string, user: AuthUser = ADMIN_USER) => triggerWorkflowEvent(testContext, user, rfiId, 'Accept');
+
+  beforeAll(async () => {
+    editionSpies.push(
+      vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue(),
+      vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true),
+      vi.spyOn(entrepriseEdition, 'isEnterpriseEditionFromSettings').mockReturnValue(true),
+    );
+    await setOrganization(TEST_ORGANIZATION);
+    testOrganizationId = (await getOrganizationEntity(TEST_ORGANIZATION)).id;
+    const amberGroupId = await getGroupIdByName(AMBER_GROUP.name);
+
+    rfiEntitySettings = await getRfiEntitySettings(testContext, ADMIN_USER);
+    initialConfig = rfiEntitySettings.request_access_workflow;
+    // The approvers group: USER_EDITOR (TEST_ORGANIZATION, AMBER_GROUP) can edit the RFIs but not share knowledge.
+    await entitySettingEditField(testContext, ADMIN_USER, rfiEntitySettings.id, [
+      { key: 'request_access_workflow', value: [{ ...initialConfig, approval_admin: [amberGroupId] }] },
+    ]);
+    for (const key of Object.keys(templateIds) as Array<keyof typeof templateIds>) {
+      const template = await createStatusTemplate(testContext, ADMIN_USER, { name: `RA decision ${key} ${suffix}`, color: '#b83f13' });
+      templateIds[key] = template.id;
+    }
+    const malware = await addMalware(testContext, ADMIN_USER, { name: `Request access decision malware ${suffix}` });
+    malwareId = malware.id;
+    await setWorkflowDefinition(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, definition(), StatusScope.RequestAccess);
+    await publishWorkflowDefinition(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, StatusScope.RequestAccess);
+    resetCacheForEntity(ENTITY_TYPE_STATUS);
+  });
+
+  beforeEach(() => {
+    share = vi.spyOn(ActionRegistry, 'shareRequestedEntities');
+    notifyResult = vi.spyOn(requestAccessDomain, 'notifyRequestAccessResult');
+    approvedCount = vi.spyOn(telemetryManager, 'addRequestAccessApprovedCount');
+    declinedCount = vi.spyOn(telemetryManager, 'addRequestAccessDeclinedCount');
+  });
+
+  afterEach(() => {
+    [share, notifyResult, approvedCount, declinedCount].forEach((spy) => spy.mockRestore());
+  });
+
+  afterAll(async () => {
+    for (const rfiId of createdRfiIds) {
+      await deleteElementById(testContext, ADMIN_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
+    }
+    await deleteElementById(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE);
+    // Unlinking leaves the definition entity, which would block the deletion of its status templates.
+    const definitionId = (await getRfiEntitySettings(testContext, ADMIN_USER)).request_access_workflow?.workflow_definition_id;
+    await deleteWorkflowDefinition(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, StatusScope.RequestAccess);
+    if (definitionId) {
+      await deleteElementById(testContext, ADMIN_USER, definitionId, ENTITY_TYPE_WORKFLOW_DEFINITION);
+    }
+    await entitySettingEditField(testContext, ADMIN_USER, rfiEntitySettings.id, [{ key: 'request_access_workflow', value: [initialConfig] }]);
+    const templateIdList = Object.values(templateIds).filter(Boolean);
+    for (const templateId of templateIdList) {
+      await statusTemplateDelete(testContext, ADMIN_USER, templateId);
+    }
+    resetCacheForEntity(ENTITY_TYPE_STATUS);
+    const leftoverStatuses = await fullEntitiesList<BasicWorkflowStatus>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS], {
+      filters: { mode: FilterMode.And, filters: [{ key: ['template_id'], values: templateIdList }], filterGroups: [] },
+    });
+    const leftoverDefinition = definitionId ? await storeLoadById(testContext, ADMIN_USER, definitionId, ENTITY_TYPE_WORKFLOW_DEFINITION) : undefined;
+    expect(leftoverStatuses).toHaveLength(0);
+    expect(leftoverDefinition).toBeUndefined();
+    editionSpies.forEach((spy) => spy.mockRestore());
+    await unSetOrganization();
+  });
+
+  it('Accept shares, sets APPROVED, notifies and counts once', async () => {
+    const rfiId = await requestAccess();
+
+    const result = await accept(rfiId);
+
+    expect(result).toMatchObject({ success: true, newState: templateIds.approved });
+    expect(share).toHaveBeenCalledTimes(1);
+    const malware = await storeLoadByIdWithRefs(testContext, ADMIN_USER, malwareId) as Record<string, any>;
+    expect(malware[INPUT_GRANTED_REFS].map((organization: BasicStoreEntity) => organization.internal_id)).toContain(testOrganizationId);
+    const { statusId, action } = await loadDecision(rfiId);
+    expect(statusId).toBe(await statusIdOf(templateIds.approved));
+    expect(action.status).toBe(ActionStatus.APPROVED);
+    expect(action.executionDate).toBeDefined();
+    expect((await findInstance(rfiId))?.currentState).toBe(templateIds.approved);
+    expect(notifyResult).toHaveBeenCalledTimes(1);
+    const approver = expect.objectContaining({ id: ADMIN_USER.id });
+    expect(notifyResult).toHaveBeenCalledWith(expect.anything(), approver, expect.anything(), ADMIN_USER.id, expect.any(String), ActionStatus.APPROVED);
+    expect(approvedCount).toHaveBeenCalledTimes(1);
+    expect(declinedCount).not.toHaveBeenCalled();
+  });
+
+  it('Reject sets DECLINED and counts declined', async () => {
+    const rfiId = await requestAccess();
+
+    const result = await triggerWorkflowEvent(testContext, ADMIN_USER, rfiId, 'Reject');
+
+    expect(result).toMatchObject({ success: true, newState: templateIds.declined });
+    expect(share).not.toHaveBeenCalled();
+    const { statusId, action } = await loadDecision(rfiId);
+    expect(statusId).toBe(await statusIdOf(templateIds.declined));
+    expect(action.status).toBe(ActionStatus.DECLINED);
+    expect(action.executionDate).toBeDefined();
+    expect(notifyResult).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.anything(), ADMIN_USER.id, expect.any(String), ActionStatus.DECLINED);
+    expect(declinedCount).toHaveBeenCalledTimes(1);
+    expect(approvedCount).not.toHaveBeenCalled();
+  });
+
+  it('user without KNOWLEDGE_ORGANIZATION_RESTRICT cannot enter Approved', async () => {
+    const rfiId = await requestAccess();
+    const editor = await getAuthUser(USER_EDITOR.id);
+
+    const result = await accept(rfiId, editor);
+
+    expect(result.success).toBe(false);
+    expect(result.reason).toContain('You need to be able to edit the RFI and share knowledge');
+    expect(share).not.toHaveBeenCalled();
+    const { statusId, action } = await loadDecision(rfiId);
+    expect(statusId).toBe(await statusIdOf(templateIds.pending));
+    expect(action.status).toBe(ActionStatus.NEW);
+    expect((await findInstance(rfiId))?.currentState).toBe(templateIds.pending);
+    expect(approvedCount).not.toHaveBeenCalled();
+  });
+
+  it('share failure leaves the RFI in its previous state with the error', async () => {
+    const rfiId = await requestAccess();
+    share.mockRejectedValueOnce(UnsupportedError('Element is not sharable at the moment (restricted)'));
+
+    const result = await accept(rfiId);
+
+    expect(result.success).toBe(false);
+    expect(result.reason).toContain('Element is not sharable at the moment (restricted)');
+    const { statusId, action } = await loadDecision(rfiId);
+    expect(statusId).toBe(await statusIdOf(templateIds.pending));
+    expect(action.status).toBe(ActionStatus.NEW);
+    expect((await findInstance(rfiId))?.currentState).toBe(templateIds.pending);
+    expect(notifyResult).not.toHaveBeenCalled();
+    expect(approvedCount).not.toHaveBeenCalled();
+
+    // The approver can retry once the share is possible again.
+    expect(await accept(rfiId)).toMatchObject({ success: true, newState: templateIds.approved });
+    expect((await loadDecision(rfiId)).action.status).toBe(ActionStatus.APPROVED);
+    expect(approvedCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('second concurrent Accept is rejected and shares nothing more', async () => {
+    const rfiId = await requestAccess();
+
+    const results = await Promise.all([accept(rfiId), accept(rfiId)]);
+
+    expect(results.filter((result) => result.success)).toHaveLength(1);
+    expect(results.find((result) => !result.success)?.reason).toBeDefined();
+    expect(share).toHaveBeenCalledTimes(1);
+    expect(notifyResult).toHaveBeenCalledTimes(1);
+    expect(approvedCount).toHaveBeenCalledTimes(1);
+    expect((await loadDecision(rfiId)).action.status).toBe(ActionStatus.APPROVED);
   });
 });
