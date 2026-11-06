@@ -224,7 +224,7 @@ const WidgetCreationDataSelection = () => {
         <FdsAlert
           severity="info"
           title={t_i18n('You can break this dataset down into one series per field value in the Parameters step.')}
-          style={{ marginTop: 20 }}
+          style={{ marginTop: 20, marginBottom: 20 }}
         />
       )}
 
