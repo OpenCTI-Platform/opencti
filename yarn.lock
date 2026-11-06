@@ -10992,10 +10992,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"d3-timer@npm:1 - 3, d3-timer@npm:3.0.1, d3-timer@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "d3-timer@npm:3.0.1"
-  checksum: 10c0/d4c63cb4bb5461d7038aac561b097cd1c5673969b27cbdd0e87fa48d9300a538b9e6f39b4a7f0e3592ef4f963d858c8a9f0e92754db73116770856f2fc04561a
+"d3-timer@npm:1 - 3, d3-timer@npm:3.0.2, d3-timer@npm:^3.0.1":
+  version: 3.0.2
+  resolution: "d3-timer@npm:3.0.2"
+  checksum: 10c0/79c189d9596fda50ddac39b1f0b3976d466504c9d0f4d68e2ff3616a3d7506901797de371cf88264f77759d1f0e0f01faedfb6ed3082bf4cabdde855d91ef378
   languageName: node
   linkType: hard
 
@@ -18058,7 +18058,7 @@ __metadata:
     convert: "npm:8.0.2"
     d3-hierarchy: "npm:3.1.3"
     d3-scale: "npm:4.0.2"
-    d3-timer: "npm:3.0.1"
+    d3-timer: "npm:3.0.2"
     date-fns: "npm:4.4.0"
     dom-accessibility-api: "npm:0.7.1"
     dompurify: "npm:3.4.17"
