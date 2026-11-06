@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import fileDownload from 'js-file-download';
 import { graphql, useFragment } from 'react-relay';
 import Typography from '@mui/material/Typography';
@@ -56,6 +56,9 @@ type WorkspaceHeaderProps = {
   handleAddWidget?: (widget: Widget) => void;
   handleImportWidget?: (widgetFile: File) => void;
   handleExport?: (workspace: { id: string; name: string }) => void;
+  exportElementId?: string;
+  exportName?: string;
+  viewSwitcher?: ReactNode;
 };
 
 const WorkspaceHeader = ({
@@ -65,6 +68,9 @@ const WorkspaceHeader = ({
   handleAddWidget = () => {},
   handleImportWidget = () => {},
   handleExport = () => {},
+  exportElementId = 'container',
+  exportName,
+  viewSwitcher,
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(workspaceHeaderFragment, data);
@@ -113,8 +119,8 @@ const WorkspaceHeader = ({
           style={DASHBOARD_BUTTONS_STYLE}
         >
           <ExportButtons
-            domElementId="container"
-            name={workspace.name}
+            domElementId={exportElementId}
+            name={exportName ?? workspace.name}
             type={workspace.type}
             // An investigation is a graph: its toolbar exports the image of the drawing.
             exportToImage={workspace.type !== 'investigation'}
@@ -145,6 +151,7 @@ const WorkspaceHeader = ({
               {t_i18n('Update')}
             </Button>
           </Security>
+          {viewSwitcher}
         </div>
       </div>
       <WorkspaceEditionContainer
