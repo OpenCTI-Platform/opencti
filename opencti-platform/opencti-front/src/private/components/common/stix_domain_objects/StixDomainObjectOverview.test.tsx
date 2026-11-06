@@ -19,19 +19,26 @@ vi.mock('../workflow/WorkflowTransitions', () => ({
   },
 }));
 vi.mock('../../analyses/opinions/StixCoreObjectOpinions', () => ({ default: () => null }));
-vi.mock('../../cases/case_rfis/ProcessingStatusOverview', () => ({ default: () => <span>Request access status</span> }));
+vi.mock('../../cases/case_rfis/ProcessingStatusOverview', () => ({
+  default: () => <span>Request access status</span>,
+  RequestAccessTransitions: ({ data }: { data: unknown }) => {
+    transitions(data);
+    return <button>Decide request</button>;
+  },
+}));
 
-const makeEntity = (entityType = 'Report', requestAccess = false) => ({
+const makeEntity = (entityType = 'Report', requestAccess = false, scope: string | null = null) => ({
   id: 'entity-1', entity_type: entityType, standard_id: 'report--1', x_opencti_stix_ids: [],
   objectMarking: [], createdBy: null, x_opencti_reliability: null, confidence: 50,
   created: '2024-01-01T00:00:00.000Z', modified: '2024-01-01T00:00:00.000Z', created_at: '2024-01-01T00:00:00.000Z',
   status: { id: 'legacy-1', template: { name: 'Legacy status', color: '#ff0000' } }, workflowEnabled: true,
   objectAssignee: [], objectParticipant: [], revoked: false, objectLabel: [], creators: [],
-  x_opencti_request_access: requestAccess, __fragments: { WorkflowStatusStixDomainObject_data: {} },
+  x_opencti_request_access: requestAccess, workflowInstance: scope ? { id: 'instance-1', scope } : null,
+  __fragments: { WorkflowStatusStixDomainObject_data: {} },
 });
 
-const renderOverview = ({ enabled = true, configured = true, capabilities = ['KNOWLEDGE_KNUPDATE'], entityType = 'Report', requestAccess = false, currentUserAccessRight = 'edit' } = {}) => {
-  const entity = { ...makeEntity(entityType, requestAccess), currentUserAccessRight };
+const renderOverview = ({ enabled = true, configured = true, capabilities = ['KNOWLEDGE_KNUPDATE'], entityType = 'Report', requestAccess = false, scope = null as string | null, currentUserAccessRight = 'edit' } = {}) => {
+  const entity = { ...makeEntity(entityType, requestAccess, scope), currentUserAccessRight };
   const resolved = {
     id: entity.id, entity_type: entityType, currentUserAccessRight,
     workflowInstance: configured ? {
@@ -94,11 +101,28 @@ describe('StixDomainObjectOverview workflow', () => {
     expect(transitions).not.toHaveBeenCalled();
   });
 
-  it('preserves the RequestAccess exclusion', () => {
-    renderOverview({ entityType: 'Case-Rfi', requestAccess: true, capabilities: ['BYPASS'] });
+  it('preserves the RequestAccess exclusion for legacy request access RFIs', () => {
+    renderOverview({ entityType: 'Case-Rfi', requestAccess: true, scope: 'GLOBAL', capabilities: ['BYPASS'] });
     expect(screen.getByText('Request access status')).toBeVisible();
     expect(screen.queryByText('Processing status')).toBeNull();
     expect(readFragment).not.toHaveBeenCalled();
+    expect(transitions).not.toHaveBeenCalled();
+  });
+
+  it('lifts the RequestAccess exclusion for workflow-driven RFIs', () => {
+    const entity = renderOverview({ entityType: 'Case-Rfi', requestAccess: true, scope: 'REQUEST_ACCESS' });
+    expect(screen.queryByText('Request access status')).toBeNull();
+    expect(screen.getByText('Processing status')).toBeVisible();
+    expect(screen.getByText('Workflow status')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Decide request' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Apply transition' })).toBeNull();
+    expect(transitions).toHaveBeenCalledWith(entity);
+  });
+
+  it('keeps legacy request access with the flag off even for a workflow-driven RFI', () => {
+    renderOverview({ enabled: false, entityType: 'Case-Rfi', requestAccess: true, scope: 'REQUEST_ACCESS' });
+    expect(screen.getByText('Request access status')).toBeVisible();
+    expect(screen.queryByText('Processing status')).toBeNull();
     expect(transitions).not.toHaveBeenCalled();
   });
 });

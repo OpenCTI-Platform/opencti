@@ -108,11 +108,12 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
     comment?: string | null,
     requiresShareOrg?: boolean | null,
     requiresUnshareOrg?: boolean | null,
+    requiresConfirmation = false,
   ) => {
     if (inFlight.current || approving || clearing || isPending) return;
     const requiresValidation = !!draftId && actions.includes('validateDraft');
     const hasComment = hasTransitionComment(comment);
-    if (!requiresShareOrg && !requiresUnshareOrg && !hasComment && !requiresValidation) {
+    if (!requiresShareOrg && !requiresUnshareOrg && !hasComment && !requiresValidation && !requiresConfirmation) {
       fireTransition(eventName, actions);
       return;
     }

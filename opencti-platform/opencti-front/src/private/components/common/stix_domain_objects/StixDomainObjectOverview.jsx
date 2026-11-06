@@ -34,7 +34,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useHelper from '../../../../utils/hooks/useHelper';
 import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
-import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOverview';
+import ProcessingStatusOverview, { RequestAccessTransitions } from '../../cases/case_rfis/ProcessingStatusOverview';
+import { isWorkflowDrivenRequestAccess } from '../../cases/CaseUtils';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
@@ -138,6 +139,9 @@ const StixDomainObjectOverview = ({
     : stixDomainObject.x_opencti_reliability;
 
   const isRequestAccessRFI = stixDomainObject.x_opencti_request_access;
+  const isWorkflowDrivenRequestAccessRFI = isRequestAccessRFI
+    && isWorkflowUiEnabledForType(stixDomainObject.entity_type, isFeatureEnable)
+    && isWorkflowDrivenRequestAccess(stixDomainObject.workflowInstance);
   const legacyStatus = (
     <ItemStatus status={stixDomainObject.status} disabled={!stixDomainObject.workflowEnabled} />
   );
@@ -146,7 +150,7 @@ const StixDomainObjectOverview = ({
     <>
       <Card title={t_i18n('Basic information')}>
         <Grid container={false} spacing={3}>
-          {isRequestAccessRFI && (
+          {isRequestAccessRFI && !isWorkflowDrivenRequestAccessRFI && (
             <ProcessingStatusOverview data={stixDomainObject} />
           )}
         </Grid>
@@ -226,7 +230,7 @@ const StixDomainObjectOverview = ({
                 <ItemPatternType label={stixDomainObject.pattern_type} />
               </>
             )}
-            {!isRequestAccessRFI && (
+            {(!isRequestAccessRFI || isWorkflowDrivenRequestAccessRFI) && (
               <>
                 <Label sx={{ marginTop: withPattern ? 2 : 0 }}>
                   {t_i18n('Processing status')}
@@ -235,7 +239,9 @@ const StixDomainObjectOverview = ({
                   <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
                     <WorkflowStatusForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} fallback={legacyStatus}>
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <WorkflowTransitionsForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
+                        {isWorkflowDrivenRequestAccessRFI
+                          ? <RequestAccessTransitions data={stixDomainObject} />
+                          : <WorkflowTransitionsForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />}
                       </Security>
                     </WorkflowStatusForEntity>
                   </Box>

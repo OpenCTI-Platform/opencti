@@ -10,6 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { CaseRfi_caseRfi$data } from './__generated__/CaseRfi_caseRfi.graphql';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { WorkflowAllowedTransition, WorkflowTransitionsForEntity } from '../../common/workflow/WorkflowTransitions';
 
 interface CaseRfiRequestAccessOverviewProps {
   data: CaseRfi_caseRfi$data;
@@ -20,6 +21,55 @@ export interface RequestAccessActionStatus {
   rfiStatusId: string;
   actionStatus: string;
 }
+
+const cannotActTooltip = (t_i18n: (message: string) => string, inDraft: boolean) => {
+  return inDraft ? t_i18n('Not available in draft') : t_i18n('You need to be able to edit the RFI and share knowledge');
+};
+
+const countRequestedEntities = (requestAccess: string | null | undefined) => {
+  try {
+    const action: { entities?: string[] } = JSON.parse(requestAccess ?? '{}');
+    return action.entities?.length ?? 0;
+  } catch {
+    return 0;
+  }
+};
+
+// Decision buttons of an RFI whose request access runs on the workflow engine
+export const RequestAccessTransitions = ({ data }: CaseRfiRequestAccessOverviewProps) => {
+  const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
+  const configuration = data.requestAccessConfiguration?.configuration;
+  // The Approved and Declined states of the definition are mapped to the configured approved and declined statuses
+  const outcomeOf = (transition: WorkflowAllowedTransition) => {
+    const targetStatusId = transition.toStatus?.id;
+    if (!targetStatusId) return undefined;
+    if (targetStatusId === configuration?.approved_status?.id) return 'APPROVED';
+    if (targetStatusId === configuration?.declined_status?.id) return 'DECLINED';
+    return undefined;
+  };
+  const describeOutcome = (transition: WorkflowAllowedTransition) => {
+    const outcome = outcomeOf(transition);
+    if (outcome === 'DECLINED') return t_i18n('The applicant will be notified.');
+    if (outcome !== 'APPROVED') return undefined;
+    const organization = data.createdBy?.name ?? t_i18n('the requesting organization');
+    const count = countRequestedEntities(data.x_opencti_request_access);
+    return count === 1
+      ? t_i18n('This will share the requested entity with {organization} and notify the applicant.', { values: { organization } })
+      : t_i18n('This will share {count} requested entities with {organization} and notify the applicant.', { values: { count, organization } });
+  };
+  const userCanAction = data.requestAccessConfiguration?.isUserCanAction;
+  return (
+    <WorkflowTransitionsForEntity
+      data={data}
+      entityType={data.entity_type}
+      transitionButtons={{
+        disabledReason: (transition) => (outcomeOf(transition) && !userCanAction ? cannotActTooltip(t_i18n, !!draftContext) : undefined),
+        effect: describeOutcome,
+      }}
+    />
+  );
+};
 
 const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
   const { t_i18n } = useFormatter();
@@ -66,7 +116,7 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
   };
 
   const userCanAction = data.requestAccessConfiguration?.isUserCanAction;
-  const disabledTooltip = draftContext ? t_i18n('Not available in draft') : t_i18n('You need to be able to edit the RFI and share knowledge');
+  const disabledTooltip = cannotActTooltip(t_i18n, !!draftContext);
   return (
     <Grid style={{ marginBottom: 20 }} size={12}>
       <Typography
