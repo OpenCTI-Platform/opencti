@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, fireEvent } from '@testing-library/react';
+import { act, fireEvent, waitFor } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import type { FilterDefinition } from '../../../utils/hooks/useAuth';
 import type { WidgetDataSelection } from '../../../utils/widget/widget';
@@ -280,6 +280,19 @@ describe('WidgetBreakdownSelection', () => {
       expect(await findByText(UNREADABLE)).toBeTruthy();
       expect(getAllByRole('combobox')[0].textContent).toContain('Report types');
       expect(mocks.setConfigWidget).not.toHaveBeenCalled();
+    });
+
+    it('says nothing of a saved filter that cannot be read while no field is chosen', async () => {
+      mocks.fetchSavedFilterContent.mockResolvedValue(null);
+      const savedFilter = { perspective: 'entities', filters_id: 'deleted-filter', filters: undefined } as unknown as WidgetDataSelection;
+      setWidget({ dataSelection: [savedFilter] });
+      const { getByText, queryByText } = testRender(<WidgetBreakdownSelection />);
+
+      await waitFor(() => expect(mocks.fetchSavedFilterContent).toHaveBeenCalledWith('deleted-filter'));
+      // The read has failed once its promise is settled
+      await act(async () => {});
+      expect(getByText('Break down by')).toBeTruthy();
+      expect(queryByText(UNREADABLE)).toBeNull();
     });
   });
 

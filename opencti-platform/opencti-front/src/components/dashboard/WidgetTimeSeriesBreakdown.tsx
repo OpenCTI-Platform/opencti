@@ -22,6 +22,7 @@ import {
   getBreakdownSeriesColors,
   getBreakdownTickAmount,
   getEntityTypeColor,
+  getReadableOwnColor,
   getRenderedPointsBudget,
   isSameBreakdown,
   nextBreakdownChartWidth,
@@ -104,12 +105,15 @@ const WidgetTimeSeriesBreakdown = ({
     const breakdownSeries = stableBreakdown?.series ?? [];
     const isTypeField = isBreakdownTypeField(breakdownBy);
     // A value has its color in every widget, two series of a widget never share one, and the "Other" serie
-    // gets a neutral color instead of one of the palette
+    // gets a neutral color instead of one of the palette. A white own color is drawn black on a light card.
     const seriesColors = getBreakdownSeriesColors(
       breakdownSeries.map((serie) => ({
         key: serie.label,
         isOther: serie.isOther,
-        ownColor: isTypeField ? getEntityTypeColor(serie.label) : (serie.entity?.color ?? serie.entity?.x_opencti_color),
+        ownColor: getReadableOwnColor(
+          isTypeField ? getEntityTypeColor(serie.label) : (serie.entity?.color ?? serie.entity?.x_opencti_color),
+          theme.palette.mode,
+        ),
       })),
       getBreakdownPalette(theme.palette.mode),
       theme.palette.common?.grey,
