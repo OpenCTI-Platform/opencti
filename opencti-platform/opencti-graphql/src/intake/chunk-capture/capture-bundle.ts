@@ -1,3 +1,4 @@
+import type { ChunkOperation } from '../../graphql/chunk-executor';
 import { Stix2Splitter } from '../../utils/stix2-splitter';
 import type { ImportContext } from '../stix-import/context';
 import { transformBundle } from '../stix-import/transform';
@@ -14,6 +15,8 @@ import { type ChunkContent, chunkContents, markMemberRefs } from './chunks';
 
 export interface CapturedBundle {
   chunks: ChunkContent[];
+  // The captured operations, in capture order (the worker-less intake's operation graph)
+  operations: ChunkOperation[];
   // Per object outcome of the transformation (transformed, or the Python error name)
   items: { id: string; outcome: string }[];
   // Objects the split sets aside
@@ -56,5 +59,5 @@ export const captureBundle = async (
   }
   const dangling = new Set<string>();
   const chunks = chunkContents(client.operations, Math.max(1, chunkSize), dangling, options.byLevel ? levels : undefined);
-  return { chunks, items, incompatible: incompatibleItems.map((item: StixObject) => item.id as string), dangling: [...dangling] };
+  return { chunks, operations: client.operations, items, incompatible: incompatibleItems.map((item: StixObject) => item.id as string), dangling: [...dangling] };
 };
