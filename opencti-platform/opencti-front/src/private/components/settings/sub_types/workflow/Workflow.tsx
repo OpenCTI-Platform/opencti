@@ -30,6 +30,7 @@ import PublishButton from './PublishButton';
 import RestoreConfirmDialog from './RestoreConfirmDialog';
 import WorkflowScopeSwitch from './WorkflowScopeSwitch';
 import RequestAccessValidatorGroup from './RequestAccessValidatorGroup';
+import RequestAccessMigrationDialog from './RequestAccessMigrationDialog';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { MESSAGING$ } from '../../../../../relay/environment';
@@ -382,6 +383,9 @@ const Workflow = ({
   // Edit status and transitions
   const [open, setOpen] = useState<boolean>(false);
   const [emptyStateRestoreConfirmOpen, setEmptyStateRestoreConfirmOpen] = useState(false);
+  const [migrationOpen, setMigrationOpen] = useState(false);
+  // The migration only builds a first request access workflow: an existing one, even empty, is edited instead.
+  const canMigrateRequestAccess = scope === 'REQUEST_ACCESS' && !workflowDefinition;
   const [selectedElement, setSelectedElement] = useState<Node | Edge>(emptyElement);
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
@@ -520,6 +524,11 @@ const Workflow = ({
                 >
                   {t_i18n('Restore published version')}
                 </Button>
+                {canMigrateRequestAccess && (
+                  <Button variant="secondary" onClick={() => setMigrationOpen(true)}>
+                    {t_i18n('Migrate request access statuses')}
+                  </Button>
+                )}
               </Panel>
             )}
           </ReactFlow>
@@ -543,6 +552,13 @@ const Workflow = ({
           handleRestore();
         }}
       />
+      {canMigrateRequestAccess && (
+        <RequestAccessMigrationDialog
+          open={migrationOpen}
+          onClose={() => setMigrationOpen(false)}
+          onMigrated={onRefetch}
+        />
+      )}
     </div>
   );
 };
