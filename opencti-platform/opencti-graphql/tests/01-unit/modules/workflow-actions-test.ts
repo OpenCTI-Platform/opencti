@@ -647,7 +647,8 @@ describe('ActionRegistry.shareRequestedEntities', () => {
     requestAccess: Record<string, unknown> | null = { entities: ['entity-1', 'entity-2'], members: ['org-requester'] },
     entityOverrides: Record<string, unknown> = {},
   ) => ({
-    user: { id: 'approver-id' },
+    user: { id: 'workflow-manager-id' },
+    triggeringUser: { id: 'approver-id' },
     context: { user: { id: 'approver-id' } },
     entity: {
       id: 'rfi-id',
@@ -675,14 +676,32 @@ describe('ActionRegistry.shareRequestedEntities', () => {
     const ctx = makeRfiCtx();
     await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
     expect(addOrganizationRestriction).toHaveBeenCalledTimes(2);
-    expect(addOrganizationRestriction).toHaveBeenNthCalledWith(1, ctx.context, ctx.user, 'entity-1', ['org-author', 'org-extra']);
-    expect(addOrganizationRestriction).toHaveBeenNthCalledWith(2, ctx.context, ctx.user, 'entity-2', ['org-author', 'org-extra']);
+    expect(addOrganizationRestriction).toHaveBeenNthCalledWith(1, ctx.context, ctx.triggeringUser, 'entity-1', ['org-author', 'org-extra']);
+    expect(addOrganizationRestriction).toHaveBeenNthCalledWith(2, ctx.context, ctx.triggeringUser, 'entity-2', ['org-author', 'org-extra']);
+  });
+
+  it('loads and shares with the triggering user, never the workflow manager', async () => {
+    const ctx = makeRfiCtx();
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+    const usersUsed = [
+      ...vi.mocked(internalLoadById).mock.calls.map((call) => call[1]),
+      ...vi.mocked(addOrganizationRestriction).mock.calls.map((call) => call[1]),
+    ];
+    expect(usersUsed).toHaveLength(4);
+    expect(usersUsed.every((u) => u === ctx.triggeringUser)).toBe(true);
+  });
+
+  it('falls back to the context user when there is no triggering user', async () => {
+    const ctx = { ...makeRfiCtx(), triggeringUser: undefined };
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+    expect(internalLoadById).toHaveBeenCalledWith(ctx.context, ctx.user, 'entity-1');
+    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.user, 'entity-1', ['org-author']);
   });
 
   it('resolves AUTHOR to the RFI createdBy', async () => {
     const ctx = makeRfiCtx({ entities: ['entity-1'] }, { 'created-by': 'org-requesting' });
     await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
-    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.user, 'entity-1', ['org-requesting']);
+    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-requesting']);
   });
 
   it('throws before sharing anything when one target has restricted_members', async () => {
@@ -708,6 +727,16 @@ describe('ActionRegistry.shareRequestedEntities', () => {
     await expect(ActionRegistry.shareRequestedEntities(notRfi, { organizations: ['AUTHOR'] })).rejects.toThrow();
     const noRequest = makeRfiCtx(null);
     await expect(ActionRegistry.shareRequestedEntities(noRequest, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it('throws a clear error when the request access data is malformed', async () => {
+    const invalidJson = makeRfiCtx(null, { x_opencti_request_access: '{not json' });
+    await expect(ActionRegistry.shareRequestedEntities(invalidJson, { organizations: ['AUTHOR'] })).rejects.toThrow('This RFI is not compatible');
+    const noEntities = makeRfiCtx({ members: ['org-requester'] });
+    await expect(ActionRegistry.shareRequestedEntities(noEntities, { organizations: ['AUTHOR'] })).rejects.toThrow('This RFI is not compatible');
+    const notAnObject = makeRfiCtx(null, { x_opencti_request_access: 'null' });
+    await expect(ActionRegistry.shareRequestedEntities(notAnObject, { organizations: ['AUTHOR'] })).rejects.toThrow('This RFI is not compatible');
     expect(addOrganizationRestriction).not.toHaveBeenCalled();
   });
 

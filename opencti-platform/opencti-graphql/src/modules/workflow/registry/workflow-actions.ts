@@ -108,11 +108,22 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     }
   },
   shareRequestedEntities: async (executionContext, params) => {
-    const { entity, context, user } = executionContext;
+    const { entity, context } = executionContext;
+    // Actions run as the workflow manager; sharing must use the rights of the user who fired the transition.
+    const user = (executionContext as any).triggeringUser ?? executionContext.user;
     if (entity?.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI || !entity.x_opencti_request_access) {
       throw UnsupportedError('shareRequestedEntities is only available on request access RFIs', { id: entity?.id });
     }
-    const requestedEntityIds: string[] = JSON.parse(entity.x_opencti_request_access).entities ?? [];
+    let requestAccess: { entities?: unknown } | undefined;
+    try {
+      requestAccess = JSON.parse(entity.x_opencti_request_access);
+    } catch {
+      requestAccess = undefined;
+    }
+    if (!requestAccess || typeof requestAccess !== 'object' || !Array.isArray(requestAccess.entities)) {
+      throw UnsupportedError('This RFI is not compatible', { id: entity.id });
+    }
+    const requestedEntityIds = requestAccess.entities as string[];
     // Reuses the dynamic key resolution of authorized members; the access right is irrelevant here.
     const organizationIds = [...new Set(
       resolveDynamicAuthorizedMembers(entity, (params?.organizations ?? []).map((id: string) => ({ id, access_right: 'view' })))
