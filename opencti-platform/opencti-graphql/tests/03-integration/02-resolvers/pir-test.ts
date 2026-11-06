@@ -240,6 +240,38 @@ describe('PIR resolver standard behavior', () => {
     resetCacheForEntity(ENTITY_TYPE_PIR);
   });
 
+  it('should not create a pir with filters not supported in stix matching', async () => {
+    const CREATE_QUERY = gql`
+      mutation PirAdd($input: PirAddInput!) {
+        pirAdd(input: $input) {
+          id
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: {
+        input: {
+          name: 'MyInvalidPir',
+          pir_type: PirType.ThreatLandscape,
+          pir_rescan_days: 0,
+          pir_filters: { mode: FilterMode.And, filterGroups: [], filters: [] },
+          pir_criteria: [{
+            weight: 1,
+            filters: {
+              mode: FilterMode.And,
+              filterGroups: [],
+              filters: [
+                { key: ['regardingOf'], values: [{ key: 'id', values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] }] },
+              ],
+            },
+          }],
+        },
+      },
+    });
+    expect(queryResult.errors?.[0].message).toEqual('Stix filtering is not compatible with the provided filter key');
+  });
+
   it('should pir loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: pirInternalId1 } });
     expect(queryResult).not.toBeNull();
