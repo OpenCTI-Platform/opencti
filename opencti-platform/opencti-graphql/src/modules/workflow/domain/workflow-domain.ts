@@ -990,9 +990,13 @@ export const setWorkflowDefinition = async (
   // Validate consistency after creation
   validateVersionConsistency(workflowDefinition);
 
-  // 3. Link it to the EntitySetting
+  // 3. Link it to the EntitySetting. The request access configuration is written as a whole object:
+  // read it again here so a concurrent edit made since the start of this call is not overwritten.
+  const currentRequestAccess = scope === StatusScope.RequestAccess
+    ? (await getWorkflowConfig(context, user, entityType) ?? entitySetting).request_access_workflow
+    : undefined;
   const linkInput: EditInput = scope === StatusScope.RequestAccess
-    ? { key: 'request_access_workflow', value: [{ approval_admin: [], ...entitySetting.request_access_workflow, workflow_definition_id: workflowDefinition.id }] }
+    ? { key: 'request_access_workflow', value: [{ approval_admin: [], ...currentRequestAccess, workflow_definition_id: workflowDefinition.id }] }
     : { key: 'workflow_id', value: [workflowDefinition.id] };
   const { element } = await updateAttribute(executionContext, executionUser, entitySetting.id, 'EntitySetting', [linkInput]);
 
@@ -1636,7 +1640,7 @@ export const getWorkflowInstance = async (
       logApp.warn('[OPENCTI-MODULE] Failed to lazily backfill WorkflowInstance for entity, falling back to synthesized instance', { cause: error, entityId: effectiveEntityId });
     }
   }
-  const currentState = instanceEntity?.currentState ?? definitionData.initialState;
+  const currentState = instanceEntity?.currentState ?? resolveSuppliedStatus(definitionData, resolved.suppliedStatus) ?? definitionData.initialState;
 
   // Read-repair: correct `x_opencti_workflow_id` divergence from `currentState`. Never runs
   // under the reading caller's identity, never fails/delays the read on error, and is
@@ -1742,7 +1746,7 @@ export const getWorkflowInstance = async (
     pendingStatus: instanceEntity?.pendingStatus ?? null,
     pendingError: instanceEntity?.pendingError ?? null,
     pendingTransition: pendingTransitionData,
-    scope: instanceEntity?.scope ?? 'standard',
+    scope: instanceEntity ? (instanceEntity.scope ?? 'standard') : resolved.scope,
   };
 };
 

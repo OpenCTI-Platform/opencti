@@ -168,11 +168,13 @@ const completeWorkflowAsyncActionResult = async (
       return;
     }
   }
+  // Sharing tasks and the decision record are created as the decider, not as the completion caller.
+  const actionContext = requestAccessDecider ? { ...executionContext, user: requestAccessDecider } : executionContext;
   const workflowContext = {
     user: executionUser,
     ...(requestAccessDecider ? { triggeringUser: requestAccessDecider } : {}),
     entity: fullEntity ?? { id: instanceEntity.entity_id },
-    context: executionContext,
+    context: actionContext,
     runtimeParams: pendingTransition.runtimeParams ?? {},
   };
 
@@ -300,7 +302,7 @@ const completeWorkflowAsyncActionResult = async (
 
   if (pendingTransition.requestAccessOutcome && requestAccessDecider && fullEntity) {
     const { applyRequestAccessOutcome } = await import('./workflow-request-access');
-    await applyRequestAccessOutcome(executionContext, requestAccessDecider, fullEntity, pendingTransition.requestAccessOutcome);
+    await applyRequestAccessOutcome(actionContext, requestAccessDecider, fullEntity, pendingTransition.requestAccessOutcome);
   } else if (pendingTransition.requestAccessStatus && fullEntity) {
     const { mirrorRequestAccessStatus } = await import('./workflow-request-access');
     await mirrorRequestAccessStatus(executionContext, executionUser, instanceEntity.entity_id, pendingTransition.requestAccessStatus);

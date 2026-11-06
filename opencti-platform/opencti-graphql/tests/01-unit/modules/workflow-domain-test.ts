@@ -932,6 +932,17 @@ describe('Workflow Domain', () => {
       expect(ee.checkEnterpriseEdition).toHaveBeenCalledWith(mockContext);
     });
 
+    it('links a new request access definition onto the setting read at write time', async () => {
+      const staleSetting = { id: 'entity-setting-id', target_type: 'Case-Rfi', request_access_workflow: { approval_admin: ['group-old'] } };
+      const freshSetting = { ...staleSetting, request_access_workflow: { approval_admin: ['group-new'], approved_workflow_id: 'ra-approved' } };
+      (findByType as any).mockResolvedValueOnce(staleSetting).mockResolvedValue(freshSetting);
+
+      await setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', ceDefinition(), StatusScope.RequestAccess);
+
+      const link = (updateAttribute as any).mock.calls.find((call: any[]) => call[4].some((input: any) => input.key === 'request_access_workflow'));
+      expect(link[4]).toEqual([{ key: 'request_access_workflow', value: [{ ...freshSetting.request_access_workflow, workflow_definition_id: 'workflow-id' }] }]);
+    });
+
     it('propagates the error thrown by checkEnterpriseEdition (CE instance rejects EE features)', async () => {
       vi.spyOn(ee, 'checkEnterpriseEdition').mockRejectedValue(new Error('Enterprise edition required'));
       const def = ceDefinition({
@@ -6742,6 +6753,18 @@ describe('Instance scope as the single source of truth', () => {
       expect(transitions).toEqual([expect.objectContaining({ event: 'Finish', toState: 'done' })]);
     });
 
+    it('reports the scope and the supplied status state when the lazy backfill fails', async () => {
+      (findByType as any).mockResolvedValue(bothDefinitions);
+      withoutInstanceAt('ra-review');
+      (createEntity as any).mockRejectedValue(new Error('store unavailable'));
+
+      const instance = await getWorkflowInstance(mockContext, mockUser, 'rfi-id');
+
+      expect(instance).toMatchObject({ id: 'initial-rfi-id', scope: StatusScope.RequestAccess, currentState: 'review' });
+      expect(instance.currentStatus).toMatchObject({ id: 'ra-review' });
+      expect(instance.allowedTransitions).toEqual([expect.objectContaining({ event: 'Finish' })]);
+    });
+
     it.each([
       ['no status', undefined],
       ['a status mapped to no state', 'global-closed'],
@@ -7100,6 +7123,37 @@ describe('triggerWorkflowEvent — request access outcomes', () => {
       expect(requestAccessWrites()).toHaveLength(0);
       expect(telemetryManager.addRequestAccessApprovedCount).not.toHaveBeenCalled();
       expect(notifyRequestAccessResult).not.toHaveBeenCalled();
+    } finally {
+      share.mockRestore();
+    }
+  });
+
+  it('async completion shares and records the decision with a context of the deciding user', async () => {
+    setup(definitionContent(), 'approved');
+    const decider = { id: 'user-id', name: 'decider' };
+    vi.mocked(resolveUserById).mockResolvedValue(decider as any);
+    const share = vi.spyOn(ActionRegistry, 'shareRequestedEntities').mockResolvedValue(undefined);
+    storedInstance = {
+      ...raInstance,
+      pendingStatus: 'pending',
+      pendingTransition: JSON.stringify({
+        event: 'Accept',
+        toState: 'approved',
+        requestAccessOutcome: 'APPROVED',
+        triggeredBy: 'user-id',
+        triggeredAt: new Date().toISOString(),
+        runtimeParams: {},
+        asyncActions: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' }],
+        syncActions: [],
+        onEnterActions: [shareAction],
+      }),
+    };
+
+    try {
+      await reportWorkflowAsyncActionResult({ user: { id: 'worker' } } as any, { id: 'worker' } as any, 'instance-rfi', 'slot-1', 'success');
+
+      expect(share).toHaveBeenCalledWith(expect.objectContaining({ triggeringUser: decider, context: expect.objectContaining({ user: decider }) }), shareAction.params);
+      expect(notifyRequestAccessResult).toHaveBeenCalledWith(expect.objectContaining({ user: decider }), decider, requestedEntity, 'applicant-1', 'Test Entity', 'APPROVED');
     } finally {
       share.mockRestore();
     }
