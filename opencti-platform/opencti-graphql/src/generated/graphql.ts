@@ -37032,6 +37032,11 @@ export type TimeSeriesBreakdown = {
   __typename?: 'TimeSeriesBreakdown';
   /** Dates shared by every series, sent once */
   dates: Array<Scalars['DateTime']['output']>;
+  /**
+   * Interval of the dates, given by the public breakdowns: they count a long period in coarser intervals than the one of the
+   * widget, as the dashboards would draw it. Not given by the other breakdowns, whose dates are at the requested interval.
+   */
+  interval?: Maybe<Scalars['String']['output']>;
   /** The series of the values kept by the limit, ranked, then Other when it is requested */
   series: Array<TimeSeriesBreakdownSeries>;
   /** Some values have no series of their own, beyond the limit: their documents are in Other when it is requested */
@@ -54875,6 +54880,7 @@ export type TimeSeriesResolvers<ContextType = any, ParentType extends ResolversP
 
 export type TimeSeriesBreakdownResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeSeriesBreakdown'] = ResolversParentTypes['TimeSeriesBreakdown']> = ResolversObject<{
   dates?: Resolver<Array<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  interval?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   series?: Resolver<Array<ResolversTypes['TimeSeriesBreakdownSeries']>, ParentType, ContextType>;
   truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;

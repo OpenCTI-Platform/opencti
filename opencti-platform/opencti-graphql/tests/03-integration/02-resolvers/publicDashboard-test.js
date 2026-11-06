@@ -188,6 +188,7 @@ const API_SCO_BREAKDOWN_QUERY = gql`
       widgetId : $widgetId
     ) {
       truncated
+      interval
       dates
       series {
         label
@@ -218,6 +219,7 @@ const API_SCR_BREAKDOWN_QUERY = gql`
       widgetId : $widgetId
     ) {
       truncated
+      interval
       dates
       series {
         label
@@ -858,10 +860,30 @@ describe('PublicDashboard resolver', () => {
             const { series } = publicStixCoreObjectsTimeSeriesBreakdown;
             expect(series.map((serie) => serie.label).sort()).toEqual(['Administrative-Area', 'Malware']);
             expect(series.every((serie) => serie.isOther === false)).toEqual(true);
-            // Without end date, the period ends now: yesterday and today
+            // Without end date, the period ends now: yesterday and today, at the interval of the widget
+            expect(publicStixCoreObjectsTimeSeriesBreakdown.interval).toEqual('day');
             expect(publicStixCoreObjectsTimeSeriesBreakdown.dates).toHaveLength(2);
             expect(series.every((serie) => serie.values.length === 2)).toEqual(true);
             const total = (label) => series.find((serie) => serie.label === label).values.reduce((sum, value) => sum + value, 0);
+            expect(total('Administrative-Area')).toEqual(2);
+            expect(total('Malware')).toEqual(3);
+          });
+
+          it('should count a long period in coarser intervals, keeping the whole period', async () => {
+            // 30 years of days for 5 series would be about 55,000 points: they come back as about 360 months
+            const startDate = new Date(Date.UTC(new Date().getUTCFullYear() - 30, 0, 1)).toISOString();
+            const { data, errors } = await queryAsAdmin({
+              query: API_SCO_BREAKDOWN_QUERY,
+              variables: { uriKey: publicDashboardUriKey, widgetId: 'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10', startDate },
+            });
+            expect(errors).toBeUndefined();
+            const breakdown = data.publicStixCoreObjectsTimeSeriesBreakdown;
+            expect(breakdown.interval).toEqual('month');
+            // The first month is the one of the start date: the period is not cut
+            const monthMs = 31 * 24 * 60 * 60 * 1000;
+            expect(Math.abs(new Date(breakdown.dates[0]).getTime() - new Date(startDate).getTime())).toBeLessThan(monthMs);
+            expect(breakdown.dates.length).toBeGreaterThan(360);
+            const total = (label) => breakdown.series.find((serie) => serie.label === label).values.reduce((sum, value) => sum + value, 0);
             expect(total('Administrative-Area')).toEqual(2);
             expect(total('Malware')).toEqual(3);
           });

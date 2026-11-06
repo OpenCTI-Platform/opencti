@@ -36,6 +36,8 @@ import { displayEntityTypeForTranslation } from '../../utils/String';
 // Structural type satisfied by the private and the public breakdown queries
 export interface WidgetTimeSeriesBreakdownData {
   readonly truncated: boolean;
+  // Interval of the dates when the API chose it: the public breakdowns count a long period in coarser intervals
+  readonly interval?: string | null;
   // Shared by every series: each series carries one value per date
   readonly dates: ReadonlyArray<unknown>;
   readonly series: ReadonlyArray<{
@@ -162,10 +164,12 @@ const WidgetTimeSeriesBreakdown = ({
   const pointsBudget = chartWidth === undefined ? undefined : getRenderedPointsBudget(type, chartWidth, series.length, isStacked);
 
   // The cost of every chart grows with its number of points, far past what its width can show:
-  // sum the points into coarser intervals when needed
+  // sum the points into coarser intervals when needed. The dates can already come in coarser intervals than the
+  // requested one (the public breakdowns), and the warning compares the drawn interval to the requested one.
+  const datesInterval = stableBreakdown?.interval ?? interval;
   const rendered = useMemo(
-    () => (pointsBudget !== undefined ? coarsenSeriesForRendering(series, interval, pointsBudget) : null),
-    [series, interval, pointsBudget],
+    () => (pointsBudget !== undefined ? coarsenSeriesForRendering(series, datesInterval, pointsBudget) : null),
+    [series, datesInterval, pointsBudget],
   );
 
   const truncated = stableBreakdown?.truncated ?? false;

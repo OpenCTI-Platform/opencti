@@ -18,6 +18,8 @@ const publicStixRelationshipsTimeSeriesBreakdownQuery = graphql`
       widgetId: $widgetId
     ) {
       truncated
+      # The interval of the dates: a long period comes counted in coarser intervals
+      interval
       dates
       series {
         label

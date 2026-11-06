@@ -88,7 +88,7 @@ const BUCKET_START_UNITS: Record<string, unitOfTime.StartOf> = { year: 'year', q
 /**
  * Start date of a public breakdown: the requested one, moved forward when the period would count more points than
  * PUBLIC_BREAKDOWN_MAX_POINTS for this many series, so that the axis keeps the most recent dates that fit. The end date
- * is kept, now without one, as for the API.
+ * is kept, now without one, as for the API. The last resort of fitPublicBreakdownPeriod, once the interval is the coarsest.
  */
 export const clampPublicBreakdownStartDate = (startDate: any, endDate: any, interval: string, seriesCount: number) => {
   // The API refuses the invalid limits itself
@@ -103,6 +103,31 @@ export const clampPublicBreakdownStartDate = (startDate: any, endDate: any, inte
   }
   // The bucket of the end date and the ones before it
   return moment.utc(end).startOf(BUCKET_START_UNITS[interval]).subtract(maxIntervals - 1, `${interval}s` as DurationInputArg2).toDate();
+};
+
+// Coarser intervals of a time series: the steps the dashboards sum the dates in to keep a chart drawable
+// (COARSER_INTERVAL in opencti-front/src/components/dashboard/timeSeriesBreakdownRendering.ts), the hours into days first
+const COARSER_INTERVAL: Record<string, string> = { hour: 'day', day: 'week', week: 'month', month: 'quarter', quarter: 'year' };
+
+/**
+ * Interval and start date of a public breakdown. Past PUBLIC_BREAKDOWN_MAX_POINTS points for this many series, the period
+ * is counted in coarser intervals, as the dashboards would draw it, so that the visitor still gets the whole period:
+ * two years of days come back as weeks or months. Only when even years would not fit is the start date moved forward
+ * (clampPublicBreakdownStartDate). The interval of the widget is kept for a period that fits.
+ */
+export const fitPublicBreakdownPeriod = (startDate: any, endDate: any, interval: string, seriesCount: number) => {
+  // The API refuses the invalid limits itself
+  if (!Number.isInteger(seriesCount) || seriesCount < 1) {
+    return { startDate, interval };
+  }
+  const maxIntervals = Math.max(1, Math.floor(PUBLIC_BREAKDOWN_MAX_POINTS / seriesCount));
+  const end = endDate ?? new Date();
+  let fittedInterval = interval;
+  // Refuses an unsupported interval, as the API does
+  while (countTimeSeriesIntervals(startDate, end, fittedInterval) > maxIntervals && COARSER_INTERVAL[fittedInterval]) {
+    fittedInterval = COARSER_INTERVAL[fittedInterval];
+  }
+  return { interval: fittedInterval, startDate: clampPublicBreakdownStartDate(startDate, endDate, fittedInterval, seriesCount) };
 };
 
 /**
@@ -132,19 +157,20 @@ export const buildPublicBreakdownArgs = (
   if (!args.startDate) {
     throw FunctionalError('A start date is required for a time series breakdown');
   }
-  // The API has none: daily, as the other time series of the public widgets (publicStixCoreObjectsMultiTimeSeries)
-  const interval = parameters.interval ?? 'day';
   // As many series as the API draws at most: its limit, and Other when it is requested
   const seriesCount = (parameters.breakdownLimit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT) + (parameters.breakdownOther === true ? 1 : 0);
+  // The API has no interval by default: daily, as the other time series of the public widgets
+  // (publicStixCoreObjectsMultiTimeSeries). A long period is counted in coarser intervals.
+  const period = fitPublicBreakdownPeriod(args.startDate, args.endDate, parameters.interval ?? 'day', seriesCount);
   // The settings the widget leaves out get the defaults of the breakdown API (timeSeriesBreakdown in middleware.ts):
   // 10 series, the highest values first, without Other
   const breakdownArgs = {
     field: parameters.breakdownBy,
     dateAttribute: selection.date_attribute,
-    // The dates of the response tell the period the visitor gets
-    startDate: clampPublicBreakdownStartDate(args.startDate, args.endDate, interval, seriesCount),
+    // The dates of the response, and its interval, tell the period the visitor gets
+    startDate: period.startDate,
     endDate: args.endDate,
-    interval,
+    interval: period.interval,
     limit: parameters.breakdownLimit,
     orderMode: parameters.breakdownOrder,
     includeOther: parameters.breakdownOther,
