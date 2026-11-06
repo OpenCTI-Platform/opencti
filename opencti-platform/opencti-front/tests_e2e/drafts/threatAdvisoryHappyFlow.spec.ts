@@ -144,7 +144,10 @@ test('Threat Advisory happy flow - phase 3: OrgC review (steps 10-13)', { tag: [
   });
 });
 
-test('Threat Advisory happy flow - phase 4: sharing, validation and Report access (steps 14-17, 19-24)', { tag: ['@ee', '@workflow'] }, async ({ browser, playwright, baseURL }, testInfo) => {
+// Quarantined (#19706): on some runs the "Report created" playbook started by the setup project never
+// fires, so step 18 waits 120 s on both tries and master goes red (runs 42006757234, 42197065093, 42237935897).
+// The cache fix #19630 did not cure it. Remove the fixme with the root fix of #19706.
+test.fixme('Threat Advisory happy flow - phase 4: sharing, validation and Report access (steps 14-17, 19-24)', { tag: ['@ee', '@workflow'] }, async ({ browser, playwright, baseURL }, testInfo) => {
   test.setTimeout(420000);
   const reportName = newReportName();
   // Starting state: the draft as steps 5, 8 and 11 leave it, at "OrgC manager review".
