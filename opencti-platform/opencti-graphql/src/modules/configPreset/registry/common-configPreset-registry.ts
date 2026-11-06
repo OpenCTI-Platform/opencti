@@ -87,6 +87,8 @@ export const toComputedItem = (
   fields?: ConfigPresetImportField[],
 ): ConfigPresetComputedItem => ({ ...label, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason, code: result.code, fields });
 
+export const toIsEnabled = (value: unknown) => (typeof value === 'boolean' ? value : null);
+
 // What an importer returns once a module has written an item: a failure is an error that makes the item failed,
 // and a status other than the computed one is reported
 export const toAppliedStatus = (result: ConfigImportResult, computed: ConfigPresetComputedItem) => {

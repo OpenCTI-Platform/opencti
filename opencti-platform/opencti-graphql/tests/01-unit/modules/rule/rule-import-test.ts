@@ -5,7 +5,7 @@ vi.mock('../../../../src/database/cluster-module', () => ({ isModuleActivated: v
 
 import { getRule, setRuleActivation } from '../../../../src/domain/rules';
 import { isModuleActivated } from '../../../../src/database/cluster-module';
-import { importConfigPresetRule, RULE_ACTIVATION_SCAN_REASON, RULE_DEACTIVATION_SCAN_REASON } from '../../../../src/modules/rule/rule-import';
+import { importConfigPresetRule, RULE_ACTIVATION_SCAN_REASON, RULE_DEACTIVATION_SCAN_REASON, RULE_ENGINE_DISABLED_REASON } from '../../../../src/modules/rule/rule-import';
 import { exportConfigPresetRule } from '../../../../src/modules/rule/rule-export';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { RuleRuntime } from '../../../../src/types/rules';
@@ -41,12 +41,25 @@ describe('Rule import', () => {
     expect(setRuleActivation).not.toHaveBeenCalled();
   });
 
-  it('warns of no scan when the rule engine does not run', async () => {
-    withRule(false);
+  it.each([true, false])('switches no rule (to active: %s) while the rule engine does not run, as the rules screen', async (active) => {
+    withRule(!active);
     vi.mocked(isModuleActivated).mockResolvedValue(false);
-    const result = await importConfigPresetRule(context, user, RULE_ID, { active: true }, overwrite);
-    expect(result).toEqual({ status: 'overwritten', exists: true, configuration: { active: true } });
-    expect(setRuleActivation).toHaveBeenCalledWith(context, user, RULE_ID, true);
+    expect(await importConfigPresetRule(context, user, RULE_ID, { active }, overwrite))
+      .toEqual({ status: 'skipped', code: 'engine_disabled', reason: RULE_ENGINE_DISABLED_REASON, exists: true, configuration: { active } });
+    expect(setRuleActivation).not.toHaveBeenCalled();
+  });
+
+  it('takes the state of the rule engine from the import when it gives it, without reading it again', async () => {
+    withRule(false);
+    expect(await importConfigPresetRule(context, user, RULE_ID, { active: true }, { ...overwrite, isRuleEngineEnabled: false })).toMatchObject({ code: 'engine_disabled' });
+    expect(await importConfigPresetRule(context, user, RULE_ID, { active: true }, { ...overwrite, isRuleEngineEnabled: true })).toMatchObject({ status: 'overwritten' });
+    expect(isModuleActivated).not.toHaveBeenCalled();
+  });
+
+  it('reports a rule already up to date whatever the state of the rule engine', async () => {
+    withRule(true);
+    vi.mocked(isModuleActivated).mockResolvedValue(false);
+    expect(await importConfigPresetRule(context, user, RULE_ID, { active: true }, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
   });
 
   it.each([[true, true], [false, false], [undefined, false]])('skips a rule already in the state of the bundle (stored: %s, bundle: %s), without a scan', async (activated, active) => {
@@ -68,9 +81,9 @@ describe('Rule import', () => {
     [{ active: 'yes' }, 'active: Invalid input: expected boolean, received string'],
     [{ active: true, other: 1 }, 'configuration: Unrecognized key: "other"'],
     [null, 'configuration: Invalid input: expected object, received null'],
-  ])('fails an invalid configuration %j', async (configuration, reason) => {
-    withRule(false);
-    expect(await importConfigPresetRule(context, user, RULE_ID, configuration, overwrite)).toEqual({ status: 'failed', code: 'invalid', reason, exists: true });
+  ])('fails an invalid configuration %j, without reading the rule', async (configuration, reason) => {
+    expect(await importConfigPresetRule(context, user, RULE_ID, configuration, overwrite)).toEqual({ status: 'failed', code: 'invalid', reason, exists: false });
+    expect(getRule).not.toHaveBeenCalled();
     expect(setRuleActivation).not.toHaveBeenCalled();
   });
 

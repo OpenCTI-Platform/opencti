@@ -75,10 +75,12 @@ describe('Config preset import: rule engine', () => {
     const [rule] = RULES_DECLARATION;
     const before = await readActivations();
     const active = !before[rule.id];
-    const scanReason = active ? 'Activating the rule starts a scan of the knowledge base' : 'Deactivating the rule starts a scan of the knowledge base';
-    const reason = (await isModuleActivated('RULE_ENGINE')) ? scanReason : null;
+    const scanReason = active ? 'Activating the rule starts a scan of the knowledge base' : 'Deactivating the rule starts a scan that deletes what it inferred';
+    const expected = (await isModuleActivated('RULE_ENGINE'))
+      ? { status: 'OVERWRITTEN', reason: scanReason }
+      : { status: 'SKIPPED', reason: 'The rule engine is disabled' };
     const dry = await importData(await uploadZip(await ruleBundle(rule.id, active)), true);
-    expect(dry).toEqual([{ type: 'ruleEngine', key: rule.id, status: 'OVERWRITTEN', reason }]);
+    expect(dry).toEqual([{ type: 'ruleEngine', key: rule.id, ...expected }]);
     expect(await readActivations()).toEqual(before);
   });
 
