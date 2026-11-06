@@ -4,7 +4,7 @@ import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportValidationReason } from '../configImport/configImport-utils';
+import { configImportRefusal, configImportValidationReason } from '../configImport/configImport-utils';
 import { type KillChainPhaseImportConfiguration, killChainPhaseImportSchema } from './killChainPhase-import-schema';
 import type { BasicStoreEntityKillChainPhase } from './killChainPhase-types';
 
@@ -18,13 +18,7 @@ export const getKillChainPhaseStandardId = ({ kill_chain_name: killChainName, ph
   return generateStandardId(ENTITY_TYPE_KILL_CHAIN_PHASE, { kill_chain_name: killChainName, phase_name: phaseName });
 };
 
-const refused = (
-  status: 'failed' | 'skipped',
-  code: KillChainPhaseImportCode,
-  reason: string,
-  exists: boolean,
-  configuration?: KillChainPhaseImportConfiguration,
-): KillChainPhaseImportResult => ({ status, code, reason, exists, configuration });
+const refused = configImportRefusal<KillChainPhaseImportConfiguration, KillChainPhaseImportCode>;
 
 // The one place where a kill chain phase is imported: validates, finds the phase by its kill chain name and phase name and writes it.
 // A refusal is a result, not an error. A dry run decides the same result and writes nothing.

@@ -3,7 +3,7 @@ import type { EditInput } from '../../../generated/graphql';
 import { generateStandardId } from '../../../schema/identifier';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../../configImport/configImport-types';
-import { configImportValidationReason } from '../../configImport/configImport-utils';
+import { configImportRefusal, configImportValidationReason } from '../../configImport/configImport-utils';
 import { taskTemplateAdd, taskTemplateEdit } from '../../task/task-template/task-template-domain';
 import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
 import { caseTemplateAdd, caseTemplateAddRelation, caseTemplateDeleteRelation, caseTemplateEdit, findAllCaseTemplateTasks, findCaseTemplatesByName } from './case-template-domain';
@@ -14,13 +14,7 @@ export type CaseTemplateImportCode = 'invalid' | 'exists' | 'copy_unsupported' |
 
 export type CaseTemplateImportResult = ConfigImportResult<CaseTemplateImportConfiguration, CaseTemplateImportCode>;
 
-const refused = (
-  status: 'failed' | 'skipped',
-  code: CaseTemplateImportCode,
-  reason: string,
-  exists: boolean,
-  configuration?: CaseTemplateImportConfiguration,
-): CaseTemplateImportResult => ({ status, code, reason, exists, configuration });
+const refused = configImportRefusal<CaseTemplateImportConfiguration, CaseTemplateImportCode>;
 
 type TaskConfiguration = NonNullable<CaseTemplateImportConfiguration['tasks']>[number];
 

@@ -4,7 +4,7 @@ import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportValidationReason } from '../configImport/configImport-utils';
+import { configImportRefusal, configImportValidationReason } from '../configImport/configImport-utils';
 import { type StatusTemplateImportConfiguration, statusTemplateImportSchema } from './statusTemplate-import-schema';
 import type { BasicStoreEntityStatusTemplate } from './statusTemplate-types';
 
@@ -15,13 +15,7 @@ export type StatusTemplateImportResult = ConfigImportResult<StatusTemplateImport
 // The standard id of a status template is derived from its name (case and surrounding spaces do not count): the same on every platform
 export const getStatusTemplateStandardId = (name: string) => generateStandardId(ENTITY_TYPE_STATUS_TEMPLATE, { name });
 
-const refused = (
-  status: 'failed' | 'skipped',
-  code: StatusTemplateImportCode,
-  reason: string,
-  exists: boolean,
-  configuration?: StatusTemplateImportConfiguration,
-): StatusTemplateImportResult => ({ status, code, reason, exists, configuration });
+const refused = configImportRefusal<StatusTemplateImportConfiguration, StatusTemplateImportCode>;
 
 // The one place where a status template is imported: validates, finds the template by its name and writes it.
 // A refusal is a result, not an error. A dry run decides the same result and writes nothing.
