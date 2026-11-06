@@ -46,6 +46,7 @@ import {
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+  resolveRefsReplaceBaseline,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE,
@@ -2814,7 +2815,17 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
               const newRelations = buildInstanceRelTo(refs, relType);
               pushAll(relationsToCreate, newRelations);
             }
-            updatedInputs.push({ key, value: refs, previous: updatedInstance[key] });
+            // A replace that only repairs the stored relationships (the loaded refs are already the targets)
+            // is not an update of the element: no input, so no empty stream event (#18634)
+            const baseline = await resolveRefsReplaceBaseline(newTargetsIds, updatedInstance[key], key, relType, async () => {
+              return await storeLoadByIdWithRefs(context, user, initial.internal_id, { type: initial.entity_type }) as Record<string, any> | null;
+            });
+            if (baseline.lockedInitial) {
+              Object.assign(initial, baseline.lockedInitial);
+            }
+            if (baseline.changed) {
+              updatedInputs.push({ key, value: refs, previous: baseline.previous });
+            }
             updatedInstance[key] = refs;
             updatedInstance[relType] = newTargetsIds;
           }
