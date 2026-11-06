@@ -10825,10 +10825,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"d3-hierarchy@npm:3.1.2":
-  version: 3.1.2
-  resolution: "d3-hierarchy@npm:3.1.2"
-  checksum: 10c0/6dcdb480539644aa7fc0d72dfc7b03f99dfbcdf02714044e8c708577e0d5981deb9d3e99bbbb2d26422b55bcc342ac89a0fa2ea6c9d7302e2fc0951dd96f89cf
+"d3-hierarchy@npm:3.1.3":
+  version: 3.1.3
+  resolution: "d3-hierarchy@npm:3.1.3"
+  checksum: 10c0/539382d5eabac5ef18b8f8c5b601511183e0496d9d42c15b802e7af37f76ae3bbe4f52326a686c21ff58e38f3fc0b0d4342640ddd5685243d5496da47c725561
   languageName: node
   linkType: hard
 
@@ -18056,7 +18056,7 @@ __metadata:
     apexcharts: "npm:4.7.0"
     babel-plugin-relay: "npm:21.0.1"
     convert: "npm:8.0.2"
-    d3-hierarchy: "npm:3.1.2"
+    d3-hierarchy: "npm:3.1.3"
     d3-scale: "npm:4.0.2"
     d3-timer: "npm:3.0.1"
     date-fns: "npm:4.4.0"
