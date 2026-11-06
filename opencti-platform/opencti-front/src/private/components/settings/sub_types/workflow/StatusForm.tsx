@@ -5,7 +5,7 @@ import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import { Alert, Box, FormControlLabel, Switch, Typography } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import WorkflowFieldList from './WorkflowFieldList';
-import { FEATURE_NAME, REQUEST_ACCESS_AUTHOR_KEY, RequestAccessOutcome, WorkflowActionType, WorkflowDataType } from './utils';
+import { FEATURE_NAME, REQUEST_ACCESS_AUTHOR_KEY, RequestAccessOutcome, withoutDefaultShareRequestedEntities, WorkflowActionType, WorkflowDataType } from './utils';
 import type { WorkflowScope } from '../SubTypeWorkflow';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '../../../common/entreprise_edition/EEChip';
@@ -54,11 +54,14 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
   };
 
   // Approving shares the requested entities: the action is added when missing, then stays a normal On enter action.
+  // Leaving Approved takes the action back only while it is still the one added by default.
   const handleOutcomeChange = (value: string) => {
-    const outcome = value === NO_OUTCOME ? undefined : value as RequestAccessOutcome;
+    const outcome = value === NO_OUTCOME ? null : value as RequestAccessOutcome;
     setFieldValue('requestAccessOutcome', outcome);
     if (outcome === 'APPROVED' && !hasShareRequestedEntitiesOnEnter) {
       setFieldValue('onEnter', [...(values.onEnter ?? []), buildShareRequestedEntitiesAction()]);
+    } else if (outcome !== 'APPROVED' && values.requestAccessOutcome === 'APPROVED') {
+      setFieldValue('onEnter', withoutDefaultShareRequestedEntities(values.onEnter));
     }
   };
 

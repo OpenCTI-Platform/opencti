@@ -272,18 +272,48 @@ describe('StatusForm – Request access outcome', () => {
     });
   });
 
-  it('selecting None clears the outcome and keeps the share action', async () => {
+  it('selecting None clears the outcome with null and takes back the default share action', async () => {
     const onSubmit = vi.fn();
-    const existing = shareAction([{ value: 'AUTHOR', label: 'Author' }]);
-    const { user } = renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [existing], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
+    const added = shareAction([{ value: 'AUTHOR', label: 'Author' }]);
+    const { user } = renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [added], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
 
     await pickOutcome(user, /^none$/i);
     submit();
 
     await waitFor(() => {
       const values = onSubmit.mock.calls[0][0];
-      expect(values.requestAccessOutcome).toBeUndefined();
-      expect(values.onEnter).toEqual([existing]);
+      expect(values.requestAccessOutcome).toBeNull();
+      expect(values.onEnter).toEqual([]);
+    });
+  });
+
+  it('selecting Declined on an Approved state takes back the default share action', async () => {
+    const onSubmit = vi.fn();
+    const added = shareAction([{ value: 'AUTHOR', label: 'Author' }]);
+    const { user } = renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [added], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
+
+    await pickOutcome(user, /^declined$/i);
+    submit();
+
+    await waitFor(() => {
+      const values = onSubmit.mock.calls[0][0];
+      expect(values.requestAccessOutcome).toBe('DECLINED');
+      expect(values.onEnter).toEqual([]);
+    });
+  });
+
+  it('keeps a customized share action when the state leaves Approved', async () => {
+    const onSubmit = vi.fn();
+    const customized = shareAction([{ value: 'AUTHOR', label: 'Author' }, { value: 'org-1', label: 'Org 1' }]);
+    const { user } = renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [customized], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
+
+    await pickOutcome(user, /^none$/i);
+    submit();
+
+    await waitFor(() => {
+      const values = onSubmit.mock.calls[0][0];
+      expect(values.requestAccessOutcome).toBeNull();
+      expect(values.onEnter).toEqual([customized]);
     });
   });
 
