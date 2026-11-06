@@ -22,6 +22,7 @@ const INGESTION_DEDUPLICATION_RULE_DEFINITION: ModuleDefinition<StoreEntityInges
     { name: 'user_id', label: 'User', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: INGESTION_DEDUPLICATION_FEATURE_FLAG },
     { name: 'target_type', label: 'Target type', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true, featureFlag: INGESTION_DEDUPLICATION_FEATURE_FLAG },
     { name: 'excluded_fields', label: 'Excluded fields', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false, featureFlag: INGESTION_DEDUPLICATION_FEATURE_FLAG },
+    { name: 'ttl', label: 'Expiration', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: INGESTION_DEDUPLICATION_FEATURE_FLAG },
   ],
   relations: [],
   representative: (stix: StixIngestionDeduplicationRule) => {

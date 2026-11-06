@@ -14355,6 +14355,7 @@ export type IngestionDeduplicationRule = BasicObject & InternalObject & {
   representative: Representative;
   standard_id: Scalars['String']['output'];
   target_type: Scalars['String']['output'];
+  ttl?: Maybe<Scalars['Int']['output']>;
   updated_at: Scalars['DateTime']['output'];
   user?: Maybe<Creator>;
   user_id: Scalars['String']['output'];
@@ -14363,6 +14364,7 @@ export type IngestionDeduplicationRule = BasicObject & InternalObject & {
 export type IngestionDeduplicationRuleAddInput = {
   excluded_fields?: InputMaybe<Array<Scalars['String']['input']>>;
   target_type: Scalars['String']['input'];
+  ttl?: InputMaybe<Scalars['Int']['input']>;
   user_id: Scalars['ID']['input'];
 };
 
@@ -25509,6 +25511,7 @@ export type Query = {
   ingestionCsvLogs?: Maybe<Array<Maybe<IngestionEntry>>>;
   ingestionCsvs?: Maybe<IngestionCsvConnection>;
   ingestionDeduplicationAllowedTypes: Array<Scalars['String']['output']>;
+  ingestionDeduplicationDefaultTtl: Scalars['Int']['output'];
   ingestionDeduplicationRules: Array<IngestionDeduplicationRule>;
   ingestionDeduplicationUserUsages: Array<IngestionDeduplicationUsage>;
   ingestionHealthSettings?: Maybe<IngestionHealthSettings>;
@@ -48426,6 +48429,7 @@ export type IngestionDeduplicationRuleResolvers<ContextType = any, ParentType ex
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   target_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ttl?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -51946,6 +51950,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionCsvLogs?: Resolver<Maybe<Array<Maybe<ResolversTypes['IngestionEntry']>>>, ParentType, ContextType, RequireFields<QueryIngestionCsvLogsArgs, 'id'>>;
   ingestionCsvs?: Resolver<Maybe<ResolversTypes['IngestionCsvConnection']>, ParentType, ContextType, Partial<QueryIngestionCsvsArgs>>;
   ingestionDeduplicationAllowedTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  ingestionDeduplicationDefaultTtl?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   ingestionDeduplicationRules?: Resolver<Array<ResolversTypes['IngestionDeduplicationRule']>, ParentType, ContextType, Partial<QueryIngestionDeduplicationRulesArgs>>;
   ingestionDeduplicationUserUsages?: Resolver<Array<ResolversTypes['IngestionDeduplicationUsage']>, ParentType, ContextType, RequireFields<QueryIngestionDeduplicationUserUsagesArgs, 'userId'>>;
   ingestionHealthSettings?: Resolver<Maybe<ResolversTypes['IngestionHealthSettings']>, ParentType, ContextType>;

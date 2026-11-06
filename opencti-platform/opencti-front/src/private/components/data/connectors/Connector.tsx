@@ -2,7 +2,6 @@ import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import IntegrationStatusChip from '@components/data/connectors/IntegrationStatusChip';
 import ConnectorHealthAlerts from '@components/data/connectors/ConnectorHealthAlerts';
 import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
-import ConnectorDeduplication from '@components/data/connectors/ConnectorDeduplication';
 import UpdateIcon from '@mui/icons-material/Update';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -37,7 +36,7 @@ import {
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useGranted, { INGESTION, MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { FIVE_SECONDS, formatUptime } from '../../../../utils/Time';
@@ -303,8 +302,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
   const { isFeatureEnable } = useHelper();
   const isConnectorUpdateEnabled = isFeatureEnable('DECOUPLING_VERSIONS');
-  const userHasIngestionCapability = useGranted([INGESTION]);
-  const isDeduplicationVisible = isFeatureEnable('INGESTION_DEDUPLICATION') && userHasIngestionCapability;
   const compatibleUpdateVersion = isConnectorUpdateEnabled && connector.update_available ? connector.latest_compatible_version : null;
 
   // Component for Overview content (without ConnectorWorks)
@@ -717,15 +714,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           </Card>
         </Grid>
       </Grid>
-      {isDeduplicationVisible && connector.connector_user_id && (
-        <div style={{ marginTop: theme.spacing(3) }}>
-          <ConnectorDeduplication connectorId={connector.id} connectorUserId={connector.connector_user_id} />
-        </div>
-      )}
     </>
   ), [
     connector,
-    isDeduplicationVisible,
     connectorFiltersEnabled,
     connectorOnlyContextualStatus,
     connectorTriggerStatus,

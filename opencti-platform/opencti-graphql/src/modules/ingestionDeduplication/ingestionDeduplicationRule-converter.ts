@@ -10,6 +10,7 @@ const convertIngestionDeduplicationRuleToStix = (instance: StoreEntityIngestionD
     user_id: instance.user_id,
     target_type: instance.target_type,
     excluded_fields: instance.excluded_fields,
+    ttl: instance.ttl,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

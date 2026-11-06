@@ -9148,6 +9148,7 @@ type Query {
   decayExclusionRules(first: Int, after: ID, orderBy: DecayExclusionRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayExclusionRuleConnection
   ingestionDeduplicationRules(userId: ID): [IngestionDeduplicationRule!]!
   ingestionDeduplicationAllowedTypes: [String!]!
+  ingestionDeduplicationDefaultTtl: Int!
   ingestionDeduplicationUserUsages(userId: ID!, excludeConnectorId: ID): [IngestionDeduplicationUsage!]!
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
@@ -14801,6 +14802,7 @@ type IngestionDeduplicationRule implements InternalObject & BasicObject {
   user: Creator
   target_type: String!
   excluded_fields: [String!]!
+  ttl: Int
 }
 
 type IngestionDeduplicationUsage {
@@ -14813,6 +14815,7 @@ input IngestionDeduplicationRuleAddInput {
   user_id: ID!
   target_type: String!
   excluded_fields: [String!]
+  ttl: Int
 }
 
 type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {

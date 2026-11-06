@@ -26,6 +26,8 @@ class MeterManager {
 
   private lockContentions: Counter | null = null;
 
+  private ingestionDeduplications: Counter | null = null;
+
   private migrationDurationHistogram: Histogram | null = null;
 
   private directBulkGauge: Gauge | null = null;
@@ -58,6 +60,13 @@ class MeterManager {
 
   lockContention(attributes?: any) {
     this.lockContentions?.add(1, attributes);
+  }
+
+  ingestionDeduplication(attributes: { entityType: string; result: 'skipped' | 'imported' }) {
+    this.ingestionDeduplications?.add(1, {
+      'opencti.entity.type': attributes.entityType,
+      'opencti.deduplication.result': attributes.result,
+    });
   }
 
   migrationDuration(val: number, attributes: {
@@ -96,6 +105,10 @@ class MeterManager {
     this.lockContentions = meter.createCounter('opencti_lock_contentions', {
       valueType: ValueType.INT,
       description: 'Counts lock acquisitions that needed more than one attempt',
+    });
+    this.ingestionDeduplications = meter.createCounter('opencti_ingestion_deduplication', {
+      valueType: ValueType.INT,
+      description: 'Counts imports checked against a deduplication rule, skipped or imported',
     });
     // - Histograms
     this.latencyHistogram = meter.createHistogram('opencti_api_latency', {

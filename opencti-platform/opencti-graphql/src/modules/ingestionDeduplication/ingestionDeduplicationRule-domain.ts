@@ -4,7 +4,7 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import { storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import { getEntitiesListFromCache } from '../../database/cache';
-import { INGESTION_DEDUPLICATION_ALLOWED_TYPES } from '../../database/ingestionDeduplication';
+import { INGESTION_DEDUPLICATION_ALLOWED_TYPES, INGESTION_DEDUPLICATION_TTL } from '../../database/ingestionDeduplication';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { enforceEnableFeatureFlag, SYSTEM_USER } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -33,6 +33,14 @@ export const findIngestionDeduplicationRules = async (context: AuthContext, user
 
 export const findAllowedTypes = () => INGESTION_DEDUPLICATION_ALLOWED_TYPES;
 
+export const findDefaultTtl = () => INGESTION_DEDUPLICATION_TTL;
+
+const checkTtl = (ttl: unknown) => {
+  if (ttl !== null && ttl !== undefined && (!Number.isInteger(ttl) || (ttl as number) <= 0)) {
+    throw FunctionalError('The expiration must be a positive number of seconds', { ttl });
+  }
+};
+
 const checkRule = async (context: AuthContext, userId: string, targetType: string, ruleId?: string) => {
   if (!INGESTION_DEDUPLICATION_ALLOWED_TYPES.includes(targetType)) {
     throw FunctionalError('Deduplication is not available for this entity type', { target_type: targetType });
@@ -46,6 +54,7 @@ const checkRule = async (context: AuthContext, userId: string, targetType: strin
 export const addIngestionDeduplicationRule = async (context: AuthContext, user: AuthUser, input: IngestionDeduplicationRuleAddInput) => {
   enforceEnableFeatureFlag(INGESTION_DEDUPLICATION_FEATURE_FLAG);
   await checkRule(context, input.user_id, input.target_type);
+  checkTtl(input.ttl);
   const ruleInput = { ...input, excluded_fields: input.excluded_fields ?? [] };
   const element = await createEntity(context, user, ruleInput, ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE) as StoreEntityIngestionDeduplicationRule;
   await publishUserAction({
@@ -65,9 +74,13 @@ export const fieldPatchIngestionDeduplicationRule = async (context: AuthContext,
   if (!rule) {
     throw FunctionalError(`Ingestion deduplication rule ${id} cannot be found`);
   }
-  const allowedKeys = ['target_type', 'excluded_fields'];
+  const allowedKeys = ['target_type', 'excluded_fields', 'ttl'];
   if (input.some((i) => !allowedKeys.includes(i.key))) {
-    throw FunctionalError('Only the entity type and the excluded fields of a deduplication rule can be changed');
+    throw FunctionalError('Only the entity type, the excluded fields and the expiration of a deduplication rule can be changed');
+  }
+  const ttlInput = input.find((i) => i.key === 'ttl');
+  if (ttlInput) {
+    checkTtl(ttlInput.value[0] ?? null);
   }
   const targetTypeInput = input.find((i) => i.key === 'target_type');
   if (targetTypeInput) {

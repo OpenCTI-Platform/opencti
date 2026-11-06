@@ -5,6 +5,7 @@ import {
   deleteIngestionDeduplicationRule,
   fieldPatchIngestionDeduplicationRule,
   findAllowedTypes,
+  findDefaultTtl,
   findIngestionDeduplicationRules,
   findUserIngestionUsages,
 } from './ingestionDeduplicationRule-domain';
@@ -13,6 +14,7 @@ const ingestionDeduplicationRuleResolver: Resolvers = {
   Query: {
     ingestionDeduplicationRules: (_, { userId }, context) => findIngestionDeduplicationRules(context, userId),
     ingestionDeduplicationAllowedTypes: () => findAllowedTypes(),
+    ingestionDeduplicationDefaultTtl: () => findDefaultTtl(),
     ingestionDeduplicationUserUsages: (_, { userId, excludeConnectorId }, context) => findUserIngestionUsages(context, userId, excludeConnectorId),
   },
   IngestionDeduplicationRule: {

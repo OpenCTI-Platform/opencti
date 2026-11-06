@@ -5,6 +5,7 @@ import { getEntitiesListFromCache } from './cache';
 import { redisDeleteIngestionHashes, redisGetIngestionHash, redisSetIngestionHash } from './redis';
 import { SYSTEM_USER } from '../utils/access';
 import { getDraftContext } from '../utils/draftContext';
+import { generateStandardId } from '../schema/identifier';
 import type { AuthContext, AuthUser } from '../types/user';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -30,22 +31,22 @@ export const INGESTION_DEDUPLICATION_ALLOWED_TYPES = [
   ENTITY_TYPE_LOCATION_REGION,
 ];
 
-const INGESTION_DEDUPLICATION_TTL = conf.get('ingestion_deduplication:ttl') || 86400;
+export const INGESTION_DEDUPLICATION_TTL: number = conf.get('ingestion_deduplication:ttl') || 86400;
 const NEVER_HASHED_FIELDS = ['clientMutationId'];
 
 export interface IngestionDeduplication {
-  stixId: string;
+  standardId: string;
   userId: string;
   hash: string;
+  ttl: number;
 }
 
 export const isIngestionDeduplicationType = (type: string) => {
   return isFeatureEnabled(INGESTION_DEDUPLICATION_FEATURE_FLAG) && INGESTION_DEDUPLICATION_ALLOWED_TYPES.includes(type);
 };
 
-export const findIngestionDeduplicationRule = async (context: AuthContext, userId: string, type: string) => {
-  const rules = await getEntitiesListFromCache<BasicStoreEntityIngestionDeduplicationRule>(context, SYSTEM_USER, ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE);
-  return rules.find((rule) => rule.user_id === userId && rule.target_type === type);
+const findIngestionDeduplicationRules = async (context: AuthContext) => {
+  return getEntitiesListFromCache<BasicStoreEntityIngestionDeduplicationRule>(context, SYSTEM_USER, ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE);
 };
 
 export const prepareIngestionDeduplication = async (
@@ -62,52 +63,78 @@ export const prepareIngestionDeduplication = async (
   if (input.file || input.files?.length > 0) {
     return null;
   }
-  const rule = await findIngestionDeduplicationRule(context, user.id, type);
+  const rules = await findIngestionDeduplicationRules(context);
+  const rule = rules.find((r) => r.user_id === user.id && r.target_type === type);
   if (!rule) {
+    return null;
+  }
+  // Allowed types build their standard id from plain fields only, so the input gives the one the entity gets
+  let standardId: string;
+  try {
+    standardId = generateStandardId(type, input);
+  } catch {
     return null;
   }
   const excludedFields = new Set([...NEVER_HASHED_FIELDS, ...(rule.excluded_fields ?? [])]);
   const content = Object.fromEntries(Object.entries(input).filter(([field]) => !excludedFields.has(field)));
-  const hash = createHash('sha256').update(jsonCanonicalize(content) ?? '').digest('hex');
-  return { stixId: input.stix_id, userId: user.id, hash };
+  // The rule version is hashed too: keys left while a rule was missing or different must not match
+  const ruleVersion = `${rule.id}:${rule.updated_at}`;
+  const hash = createHash('sha256').update(jsonCanonicalize({ rule: ruleVersion, input: content }) ?? '').digest('hex');
+  return { standardId, userId: user.id, hash, ttl: rule.ttl ?? INGESTION_DEDUPLICATION_TTL };
 };
 
 // Best effort: a Redis failure must never block an import
 export const isIngestionUnchanged = async (deduplication: IngestionDeduplication) => {
   try {
-    const lastHash = await redisGetIngestionHash(deduplication.stixId, deduplication.userId);
+    const lastHash = await redisGetIngestionHash(deduplication.standardId, deduplication.userId);
     return lastHash === deduplication.hash;
   } catch (err) {
-    logApp.warn('[INGESTION DEDUPLICATION] Unable to read the last imported content', { cause: err, stixId: deduplication.stixId });
+    logApp.warn('[INGESTION DEDUPLICATION] Unable to read the last imported content', { cause: err, standardId: deduplication.standardId });
     return false;
   }
 };
 
 export const recordIngestion = async (deduplication: IngestionDeduplication) => {
   try {
-    await redisSetIngestionHash(deduplication.stixId, deduplication.userId, deduplication.hash, INGESTION_DEDUPLICATION_TTL);
+    await redisSetIngestionHash(deduplication.standardId, deduplication.userId, deduplication.hash, deduplication.ttl);
   } catch (err) {
-    logApp.warn('[INGESTION DEDUPLICATION] Unable to record the imported content', { cause: err, stixId: deduplication.stixId });
+    logApp.warn('[INGESTION DEDUPLICATION] Unable to record the imported content', { cause: err, standardId: deduplication.standardId });
+  }
+};
+
+export const forgetIngestion = async (deduplication: IngestionDeduplication) => {
+  try {
+    await redisDeleteIngestionHashes([{ standardId: deduplication.standardId, userId: deduplication.userId }]);
+  } catch (err) {
+    logApp.warn('[INGESTION DEDUPLICATION] Unable to forget the imported content', { cause: err, standardId: deduplication.standardId });
   }
 };
 
 export const clearIngestionDeduplication = async (
   context: AuthContext,
   user: AuthUser,
-  instances: Array<{ entity_type: string; standard_id?: string; x_opencti_stix_ids?: string[] }>,
+  instances: Array<{ entity_type: string; standard_id?: string }>,
 ) => {
   // Called while storing stream events: must never throw
   try {
     if (getDraftContext(context, user)) {
       return;
     }
-    const stixIds = new Set<string>();
-    instances.filter((instance) => isIngestionDeduplicationType(instance.entity_type)).forEach((instance) => {
-      if (instance.standard_id) stixIds.add(instance.standard_id);
-      (instance.x_opencti_stix_ids ?? []).forEach((stixId) => stixIds.add(stixId));
+    const dedupInstances = instances.filter((instance) => instance.standard_id && isIngestionDeduplicationType(instance.entity_type));
+    if (dedupInstances.length === 0) {
+      return;
+    }
+    // Only users with a rule on the type can have a key: no need to scan Redis
+    const rules = await findIngestionDeduplicationRules(context);
+    const entries = new Map<string, { standardId: string; userId: string }>();
+    dedupInstances.forEach((instance) => {
+      rules.filter((rule) => rule.target_type === instance.entity_type).forEach((rule) => {
+        const standardId = instance.standard_id as string;
+        entries.set(`${standardId}:${rule.user_id}`, { standardId, userId: rule.user_id });
+      });
     });
-    if (stixIds.size > 0) {
-      await redisDeleteIngestionHashes(Array.from(stixIds));
+    if (entries.size > 0) {
+      await redisDeleteIngestionHashes(Array.from(entries.values()));
     }
   } catch (err) {
     logApp.warn('[INGESTION DEDUPLICATION] Unable to clear the imported content', { cause: err });

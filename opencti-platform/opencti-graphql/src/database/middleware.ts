@@ -215,7 +215,7 @@ import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttrib
 import { fillDefaultCustomFieldValues, fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
-import { telemetry } from '../config/tracing';
+import { meterManager, telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
@@ -247,7 +247,7 @@ import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDelet
 import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
-import { type IngestionDeduplication, isIngestionUnchanged, prepareIngestionDeduplication, recordIngestion } from './ingestionDeduplication';
+import { forgetIngestion, type IngestionDeduplication, isIngestionUnchanged, prepareIngestionDeduplication, recordIngestion } from './ingestionDeduplication';
 import { isCreateOnlyFormImport } from '../modules/form/form-submission-context';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
@@ -4300,12 +4300,20 @@ export const createEntity = async (
     const existing = await storeLoadById(context, user, input.stix_id, type);
     // Missing or no longer visible to this user: import it as usual
     if (existing) {
+      meterManager.ingestionDeduplication({ entityType: type, result: 'skipped' });
       const unchanged = { element: existing, event: null, isCreation: false };
       return isCompleteResult ? unchanged : unchanged.element;
     }
   }
   // volumes of objects relationships must be controlled
   const data = await createEntityRaw(context, user, input, type, { ...opts, ingestionDeduplication });
+  if (ingestionDeduplication) {
+    meterManager.ingestionDeduplication({ entityType: type, result: 'imported' });
+    // The entity found has another standard id (renamed, merged): changes to it would never clear the recorded key
+    if (data.element.standard_id !== ingestionDeduplication.standardId) {
+      await forgetIngestion(ingestionDeduplication);
+    }
+  }
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await triggerCreateEntityAutoEnrichment(context, user, data.element);

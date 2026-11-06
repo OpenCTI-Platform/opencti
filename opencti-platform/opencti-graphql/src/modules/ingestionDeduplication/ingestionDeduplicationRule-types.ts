@@ -7,16 +7,19 @@ export interface BasicStoreEntityIngestionDeduplicationRule extends BasicStoreEn
   user_id: string;
   target_type: string;
   excluded_fields: string[];
+  ttl?: number | null;
 }
 
 export interface StoreEntityIngestionDeduplicationRule extends StoreEntity {
   user_id: string;
   target_type: string;
   excluded_fields: string[];
+  ttl?: number | null;
 }
 
 export interface StixIngestionDeduplicationRule extends StixObject {
   user_id: string;
   target_type: string;
   excluded_fields: string[];
+  ttl?: number | null;
 }

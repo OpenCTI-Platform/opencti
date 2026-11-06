@@ -1311,23 +1311,19 @@ export const redisGetConfigPresetImportLastFinished = async (): Promise<string |
 // endregion - config preset import session
 
 // region - ingestion deduplication
-// dedup:${stixId} => Redis hash of the last imported content, one field per importing user
-const ingestionDeduplicationKey = (stixId: string) => `dedup:${stixId}`;
+// dedup:${standardId}:${userId} => hash of the last content this user imported for the entity, each key with its own TTL
+const ingestionDeduplicationKey = (standardId: string, userId: string) => `dedup:${standardId}:${userId}`;
 
-export const redisGetIngestionHash = async (stixId: string, userId: string): Promise<string | null> => {
-  return getClientBase().hget(ingestionDeduplicationKey(stixId), userId);
+export const redisGetIngestionHash = async (standardId: string, userId: string): Promise<string | null> => {
+  return getClientBase().get(ingestionDeduplicationKey(standardId, userId));
 };
 
-export const redisSetIngestionHash = async (stixId: string, userId: string, hash: string, ttl: number) => {
-  const key = ingestionDeduplicationKey(stixId);
-  await redisTx(getClientBase(), (tx) => {
-    tx.hset(key, userId, hash);
-    tx.expire(key, ttl);
-  });
+export const redisSetIngestionHash = async (standardId: string, userId: string, hash: string, ttl: number) => {
+  await getClientBase().set(ingestionDeduplicationKey(standardId, userId), hash, 'EX', ttl);
 };
 
 // One DEL per key: keys of one entity can live in different cluster slots
-export const redisDeleteIngestionHashes = async (stixIds: string[]) => {
-  await Promise.all(stixIds.map((stixId) => getClientBase().del(ingestionDeduplicationKey(stixId))));
+export const redisDeleteIngestionHashes = async (entries: Array<{ standardId: string; userId: string }>) => {
+  await Promise.all(entries.map(({ standardId, userId }) => getClientBase().del(ingestionDeduplicationKey(standardId, userId))));
 };
 // endregion - ingestion deduplication

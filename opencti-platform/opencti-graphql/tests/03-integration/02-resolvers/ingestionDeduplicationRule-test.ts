@@ -28,6 +28,7 @@ const RULE_ADD = gql`
       user_id
       target_type
       excluded_fields
+      ttl
     }
   }
 `;
@@ -38,6 +39,7 @@ const RULE_PATCH = gql`
       id
       target_type
       excluded_fields
+      ttl
     }
   }
 `;
@@ -71,9 +73,10 @@ describe('Ingestion deduplication rule', () => {
   it('should create a rule', async () => {
     const result = await queryAsAdminWithSuccess({
       query: RULE_ADD,
-      variables: { input: { user_id: userId, target_type: 'Attack-Pattern', excluded_fields: ['modified'] } },
+      variables: { input: { user_id: userId, target_type: 'Attack-Pattern', excluded_fields: ['modified'], ttl: 3600 } },
     });
     ruleId = result.data.ingestionDeduplicationRuleAdd.id;
+    expect(result.data.ingestionDeduplicationRuleAdd.ttl).toBe(3600);
     expect(result.data.ingestionDeduplicationRuleAdd.user_id).toBe(userId);
     expect(result.data.ingestionDeduplicationRuleAdd.excluded_fields).toEqual(['modified']);
   });
@@ -112,7 +115,19 @@ describe('Ingestion deduplication rule', () => {
       query: RULE_PATCH,
       variables: { id: ruleId, input: [{ key: 'user_id', value: ['another-user'] }] },
     });
-    expect(result.errors?.[0].message).toBe('Only the entity type and the excluded fields of a deduplication rule can be changed');
+    expect(result.errors?.[0].message).toBe('Only the entity type, the excluded fields and the expiration of a deduplication rule can be changed');
+  });
+
+  it('should update the expiration, and go back to the default', async () => {
+    const updated = await queryAsAdminWithSuccess({ query: RULE_PATCH, variables: { id: ruleId, input: [{ key: 'ttl', value: [7200] }] } });
+    expect(updated.data.ingestionDeduplicationRuleFieldPatch.ttl).toBe(7200);
+    const reset = await queryAsAdminWithSuccess({ query: RULE_PATCH, variables: { id: ruleId, input: [{ key: 'ttl', value: [null] }] } });
+    expect(reset.data.ingestionDeduplicationRuleFieldPatch.ttl).toBeNull();
+  });
+
+  it('should refuse an expiration that is not a positive number of seconds', async () => {
+    const result = await queryAsAdmin({ query: RULE_PATCH, variables: { id: ruleId, input: [{ key: 'ttl', value: [0] }] } });
+    expect(result.errors?.[0].message).toBe('The expiration must be a positive number of seconds');
   });
 
   it('should let a user who can access ingestion read the rules', async () => {
@@ -122,6 +137,13 @@ describe('Ingestion deduplication rule', () => {
 
   it('should forbid a user who cannot manage ingestion to create a rule', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: RULE_ADD,
+      variables: { input: { user_id: userId, target_type: 'Malware', excluded_fields: [] } },
+    });
+  });
+
+  it('should forbid a user who can manage ingestion but not users to create a rule', async () => {
+    await queryAsUserIsExpectedForbidden(USER_DISINFORMATION_ANALYST, {
       query: RULE_ADD,
       variables: { input: { user_id: userId, target_type: 'Malware', excluded_fields: [] } },
     });

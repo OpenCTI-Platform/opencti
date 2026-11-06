@@ -7,7 +7,7 @@ import { ENTITY_TYPE_ATTACK_PATTERN } from '../../../src/schema/stixDomainObject
 import { ENTITY_TYPE_VULNERABILITY } from '../../../src/modules/vulnerability/vulnerability-types';
 import { addIngestionDeduplicationRule, deleteIngestionDeduplicationRule } from '../../../src/modules/ingestionDeduplication/ingestionDeduplicationRule-domain';
 
-const lastImportedHash = (stixId: string) => redisGetIngestionHash(stixId, ADMIN_USER.id);
+const lastImportedHash = (standardId: string) => redisGetIngestionHash(standardId, ADMIN_USER.id);
 
 describe('Ingestion deduplication', () => {
   const stixId = `attack-pattern--${uuidv4()}`;
@@ -20,6 +20,7 @@ describe('Ingestion deduplication', () => {
   };
   let ruleId: string;
   let attackPatternId: string;
+  let standardId: string;
 
   beforeAll(async () => {
     const rule = await addIngestionDeduplicationRule(testContext, ADMIN_USER, {
@@ -40,8 +41,9 @@ describe('Ingestion deduplication', () => {
   it('should record the content of an imported entity', async () => {
     const result = await createEntity(testContext, ADMIN_USER, baseInput, ENTITY_TYPE_ATTACK_PATTERN, { complete: true });
     attackPatternId = result.element.id;
+    standardId = result.element.standard_id;
     expect(result.isCreation).toBe(true);
-    expect(await lastImportedHash(stixId)).toBeTruthy();
+    expect(await lastImportedHash(standardId)).toBeTruthy();
   });
 
   it('should skip an import where only excluded fields changed', async () => {
@@ -52,22 +54,22 @@ describe('Ingestion deduplication', () => {
   });
 
   it('should import a changed entity', async () => {
-    const hashBefore = await lastImportedHash(stixId);
+    const hashBefore = await lastImportedHash(standardId);
     const result = await createEntity(testContext, ADMIN_USER, { ...baseInput, description: 'changed at the source' }, ENTITY_TYPE_ATTACK_PATTERN, { complete: true });
     expect(result.element.description).toBe('changed at the source');
-    expect(await lastImportedHash(stixId)).not.toBe(hashBefore);
+    expect(await lastImportedHash(standardId)).not.toBe(hashBefore);
   });
 
   it('should import again after a change made elsewhere', async () => {
     await updateAttribute(testContext, ADMIN_USER, attackPatternId, ENTITY_TYPE_ATTACK_PATTERN, [{ key: 'description', value: ['edited in the platform'] }]);
-    expect(await lastImportedHash(stixId)).toBeNull();
+    expect(await lastImportedHash(standardId)).toBeNull();
     const result = await createEntity(testContext, ADMIN_USER, { ...baseInput, description: 'changed at the source' }, ENTITY_TYPE_ATTACK_PATTERN, { complete: true });
     expect(result.element.description).toBe('changed at the source');
   });
 
   it('should create the entity again after its deletion', async () => {
     await deleteElementById(testContext, ADMIN_USER, attackPatternId, ENTITY_TYPE_ATTACK_PATTERN);
-    expect(await lastImportedHash(stixId)).toBeNull();
+    expect(await lastImportedHash(standardId)).toBeNull();
     const result = await createEntity(testContext, ADMIN_USER, baseInput, ENTITY_TYPE_ATTACK_PATTERN, { complete: true });
     attackPatternId = result.element.id;
     expect(result.isCreation).toBe(true);
@@ -76,7 +78,7 @@ describe('Ingestion deduplication', () => {
   it('should never record a type outside the allowlist', async () => {
     const vulnerabilityStixId = `vulnerability--${uuidv4()}`;
     const result = await createEntity(testContext, ADMIN_USER, { stix_id: vulnerabilityStixId, name: `CVE-DEDUP-${uuidv4()}`, update: true }, ENTITY_TYPE_VULNERABILITY, { complete: true });
-    expect(await lastImportedHash(vulnerabilityStixId)).toBeNull();
+    expect(await lastImportedHash(result.element.standard_id)).toBeNull();
     await deleteElementById(testContext, ADMIN_USER, result.element.id, ENTITY_TYPE_VULNERABILITY);
   });
 });

@@ -33,11 +33,8 @@ import { fetchQuery } from '../../../relay/environment';
 import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
 import { paperBg, paperBorder } from './paperSurface';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
-import IngestionDeduplicationRules from '@components/integrations/deduplication/IngestionDeduplicationRules';
-import useHelper from '../../../utils/hooks/useHelper';
-import Card from '../../../components/common/card/Card';
 
-export type IntegrationsTab = 'deployed' | 'available' | 'deduplication';
+export type IntegrationsTab = 'deployed' | 'available';
 
 const FEEDS_PAGE_SIZE = 500;
 
@@ -240,12 +237,6 @@ const IntegrationsHero = ({ deployedCount }: IntegrationsHeroProps) => {
   );
 };
 
-const useIsDeduplicationTabVisible = () => {
-  const { isFeatureEnable } = useHelper();
-  const isIngestionReader = useGranted([INGESTION]);
-  return isFeatureEnable('INGESTION_DEDUPLICATION') && isIngestionReader;
-};
-
 interface IntegrationsComponentProps {
   tab: IntegrationsTab;
   data: IntegrationsData;
@@ -256,7 +247,6 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
   const { hasActiveManagers } = useConnectorManagerStatus();
   const { deploymentData, feedsData, formsData } = data;
   const [alertsSlot, setAlertsSlot] = useState<HTMLElement | null>(null);
-  const isDeduplicationTabVisible = useIsDeduplicationTabVisible();
 
   // Feed instances register a technical twin connector: excluded from the
   // connector count so deployed integrations are not counted twice.
@@ -312,22 +302,13 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
                 {t_i18n('Available')}
               </Link>
             </TabsTrigger>
-            {isDeduplicationTabVisible && (
-              <TabsTrigger value="deduplication" asChild>
-                <Link to="/dashboard/integrations/deduplication" data-testid="integrations-tab-deduplication">
-                  {t_i18n('Deduplication')}
-                </Link>
-              </TabsTrigger>
-            )}
           </TabsList>
         </Tabs>
 
-        {tab === 'deployed' && <IntegrationsDeployed data={data} alertsSlot={alertsSlot} />}
-        {tab === 'available' && <IntegrationsAvailable data={data} />}
-        {tab === 'deduplication' && (
-          <Card title={t_i18n('Deduplication rules')}>
-            <IngestionDeduplicationRules />
-          </Card>
+        {tab === 'deployed' ? (
+          <IntegrationsDeployed data={data} alertsSlot={alertsSlot} />
+        ) : (
+          <IntegrationsAvailable data={data} />
         )}
       </PageContainer>
     </div>
@@ -339,9 +320,8 @@ const Integrations = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Integrations'));
-  const isDeduplicationTabVisible = useIsDeduplicationTabVisible();
 
-  if (tab !== 'deployed' && tab !== 'available' && !(tab === 'deduplication' && isDeduplicationTabVisible)) {
+  if (tab !== 'deployed' && tab !== 'available') {
     return <Navigate to="/dashboard/integrations/deployed" replace={true} />;
   }
 

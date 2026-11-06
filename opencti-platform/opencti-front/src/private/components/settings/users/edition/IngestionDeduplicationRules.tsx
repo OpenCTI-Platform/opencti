@@ -6,28 +6,25 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import IngestionDeduplicationRuleForm, { type IngestionDeduplicationRuleValue } from './IngestionDeduplicationRuleForm';
 import { IngestionDeduplicationRulesQuery } from './__generated__/IngestionDeduplicationRulesQuery.graphql';
-import DeleteDialog from '../../../../components/DeleteDialog';
-import ItemIcon from '../../../../components/ItemIcon';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import Tag from '../../../../components/common/tag/Tag';
-import { useFormatter } from '../../../../components/i18n';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useDeletion from '../../../../utils/hooks/useDeletion';
-import useGranted, { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
+import DeleteDialog from '../../../../../components/DeleteDialog';
+import ItemIcon from '../../../../../components/ItemIcon';
+import Loader, { LoaderVariant } from '../../../../../components/Loader';
+import Tag from '../../../../../components/common/tag/Tag';
+import { useFormatter } from '../../../../../components/i18n';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import useDeletion from '../../../../../utils/hooks/useDeletion';
+import useGranted, { INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES } from '../../../../../utils/hooks/useGranted';
 
 const ingestionDeduplicationRulesQuery = graphql`
-  query IngestionDeduplicationRulesQuery($userId: ID) {
+  query IngestionDeduplicationRulesQuery($userId: ID!) {
     ingestionDeduplicationRules(userId: $userId) {
       id
-      user_id
-      user {
-        id
-        name
-      }
       target_type
       excluded_fields
+      ttl
     }
     ingestionDeduplicationAllowedTypes
+    ingestionDeduplicationDefaultTtl
   }
 `;
 
@@ -38,13 +35,12 @@ const ingestionDeduplicationRuleDeleteMutation = graphql`
 `;
 
 interface IngestionDeduplicationRulesProps {
-  // Rules of one user (connector page), or of every user with their name (integrations tab)
-  userId?: string | null;
+  userId: string;
 }
 
 const IngestionDeduplicationRulesComponent = ({ userId }: IngestionDeduplicationRulesProps) => {
   const { t_i18n } = useFormatter();
-  const canManage = useGranted([INGESTION_SETINGESTIONS]);
+  const canManage = useGranted([SETTINGS_SETACCESSES, INGESTION_SETINGESTIONS], true);
   const [fetchKey, setFetchKey] = useState(0);
   const [formOpen, setFormOpen] = useState(false);
   const [editedRule, setEditedRule] = useState<IngestionDeduplicationRuleValue | null>(null);
@@ -57,7 +53,6 @@ const IngestionDeduplicationRulesComponent = ({ userId }: IngestionDeduplication
   const refetch = () => setFetchKey((key) => key + 1);
   const [commitDelete] = useApiMutation(ingestionDeduplicationRuleDeleteMutation);
   const deletion = useDeletion({});
-  const showUser = !userId;
   const rules = data.ingestionDeduplicationRules;
 
   const submitDelete = () => {
@@ -86,12 +81,14 @@ const IngestionDeduplicationRulesComponent = ({ userId }: IngestionDeduplication
         <Stack key={rule.id} direction="row" sx={{ alignItems: 'center', gap: 1 }} data-testid="ingestion-deduplication-rule">
           <ItemIcon type={rule.target_type} />
           <Typography variant="body1" sx={{ minWidth: 160 }}>{t_i18n(`entity_${rule.target_type}`)}</Typography>
-          {showUser && (
-            <Typography variant="body2" color="textSecondary" sx={{ minWidth: 160 }}>{rule.user?.name ?? rule.user_id}</Typography>
-          )}
           <Stack direction="row" sx={{ gap: 0.5, flexWrap: 'wrap', flex: 1 }}>
             {rule.excluded_fields.map((field) => <Tag key={field} label={field} labelTextTransform="none" />)}
           </Stack>
+          <Typography variant="body2" color="textSecondary" sx={{ whiteSpace: 'nowrap' }}>
+            {rule.ttl
+              ? `${t_i18n('Expires after')} ${rule.ttl} s`
+              : `${t_i18n('Expires after')} ${data.ingestionDeduplicationDefaultTtl} s (${t_i18n('default')})`}
+          </Typography>
           {canManage && (
             <>
               <IconButton
@@ -116,7 +113,7 @@ const IngestionDeduplicationRulesComponent = ({ userId }: IngestionDeduplication
           )}
         </Stack>
       ))}
-      {canManage && (
+      {canManage && !formOpen && (
         <div>
           <Button
             variant="secondary"
@@ -131,12 +128,13 @@ const IngestionDeduplicationRulesComponent = ({ userId }: IngestionDeduplication
       )}
       {formOpen && (
         <IngestionDeduplicationRuleForm
-          open={formOpen}
+          key={editedRule?.id ?? 'new'}
+          userId={userId}
+          allowedTypes={data.ingestionDeduplicationAllowedTypes}
+          defaultTtl={data.ingestionDeduplicationDefaultTtl}
+          rule={editedRule}
           onClose={() => setFormOpen(false)}
           onCompleted={refetch}
-          allowedTypes={data.ingestionDeduplicationAllowedTypes}
-          userId={userId}
-          rule={editedRule}
         />
       )}
       <DeleteDialog
