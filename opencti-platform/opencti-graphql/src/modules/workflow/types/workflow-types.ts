@@ -158,7 +158,7 @@ export interface WorkflowValidationError {
  */
 export interface WorkflowActionConfig {
   type: string;
-  params?: string;
+  params?: unknown;
 }
 
 export interface WorkflowConditionConfig {

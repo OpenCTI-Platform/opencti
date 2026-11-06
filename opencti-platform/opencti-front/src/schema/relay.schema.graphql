@@ -9846,7 +9846,7 @@ type Mutation {
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   workflowDefinitionSet(entityType: String!, definition: String!, scope: StatusScope): WorkflowDefinitionMutationResult
   workflowDefinitionPublish(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
-  workflowMigrate(entityType: String!, publish: Boolean = false, overwrite: Boolean = false): WorkflowDefinitionMutationResult
+  workflowMigrate(entityType: String!, publish: Boolean = false, overwrite: Boolean = false, scope: StatusScope): WorkflowDefinitionMutationResult
   workflowDefinitionRestorePublished(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
   workflowDefinitionDelete(entityType: String!, scope: StatusScope): EntitySetting
   triggerWorkflowEvent(entityId: String!, eventName: String!, comment: String, runtimeParams: JSON): WorkflowTriggerResult!

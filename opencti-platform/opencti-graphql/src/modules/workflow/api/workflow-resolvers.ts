@@ -69,8 +69,12 @@ const workflowResolvers = {
     workflowDefinitionPublish: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope | null }, context: AuthContext) => {
       return publishWorkflowDefinition(context, context.user!, entityType, scope ?? StatusScope.Global);
     },
-    workflowMigrate: (_: any, { entityType, publish = false, overwrite = false }: { entityType: string; publish?: boolean; overwrite?: boolean }, context: AuthContext) => {
-      return migrateWorkflowFromStatuses(context, context.user!, entityType, publish, overwrite);
+    workflowMigrate: (
+      _: any,
+      { entityType, publish = false, overwrite = false, scope }: { entityType: string; publish?: boolean; overwrite?: boolean; scope?: StatusScope | null },
+      context: AuthContext,
+    ) => {
+      return migrateWorkflowFromStatuses(context, context.user!, entityType, publish, overwrite, scope ?? StatusScope.Global);
     },
     workflowDefinitionRestorePublished: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope | null }, context: AuthContext) => {
       return restorePublishedWorkflowDefinition(context, context.user!, entityType, scope ?? StatusScope.Global);
