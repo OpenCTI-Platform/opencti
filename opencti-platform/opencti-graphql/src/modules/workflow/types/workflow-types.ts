@@ -170,6 +170,8 @@ export interface WorkflowSerializedState {
   order?: number;
   onEnter?: WorkflowActionConfig[];
   onExit?: WorkflowActionConfig[];
+  /** Request-access definitions only: marks the state reached when the request is approved or declined. */
+  requestAccessOutcome?: 'APPROVED' | 'DECLINED';
 }
 
 export interface WorkflowSerializedTransition {

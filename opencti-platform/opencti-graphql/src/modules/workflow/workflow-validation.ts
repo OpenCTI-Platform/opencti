@@ -6,6 +6,7 @@ import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/in
 import { isBasicObject } from '../../schema/stixCoreObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { findUnreachableStates } from './domain/workflow-ordering';
 import { findEntitiesReferencingStatus } from './domain/workflow-status-usage';
@@ -50,6 +51,8 @@ export const workflowSerializedStateSchema = z.object({
   order: z.number().optional(),
   onEnter: z.array(workflowActionConfigSchema).optional(),
   onExit: z.array(workflowActionConfigSchema).optional(),
+  /** Request-access definitions only: marks the state reached when the request is approved or declined. */
+  requestAccessOutcome: z.enum(['APPROVED', 'DECLINED']).optional(),
 });
 
 export const workflowSerializedTransitionSchema = z.object({
@@ -442,9 +445,10 @@ export const validateWorkflowDefinitionData = async (
   // Reachability: every declared/referenced state must be reachable from initialState via some
   // transition path. An unreachable state is a definition bug (it can never be entered), so it is
   // always a hard error.
+  let unreachableStates: string[] = [];
   if (initialState !== '*') {
     const allStateIds = [...extractCanonicalStateIds(validationResult.data)];
-    const unreachableStates = findUnreachableStates(initialState, allStateIds, transitions);
+    unreachableStates = findUnreachableStates(initialState, allStateIds, transitions);
     unreachableStates.forEach((stateId) => {
       errors.push({
         type: 'STATE_UNREACHABLE',
@@ -454,6 +458,62 @@ export const validateWorkflowDefinitionData = async (
 
     // Ordering is derived automatically from the transition graph (longest-simple-path) and is
     // never required for validation.
+  }
+
+  const isShareRequestedEntitiesAction = (action: z.infer<typeof workflowActionConfigSchema>) => action.type === 'shareRequestedEntities';
+  const stateActions = (state: z.infer<typeof workflowSerializedStateSchema>) => [...(state.onEnter ?? []), ...(state.onExit ?? [])];
+  const hasShareAction = states.some((state) => stateActions(state).some(isShareRequestedEntitiesAction))
+    || transitions.some((transition) => [...(transition.asyncActions ?? []), ...(transition.syncActions ?? [])].some(isShareRequestedEntitiesAction));
+  const outcomeStates = states.filter((state) => state.requestAccessOutcome);
+  const isRequestAccessDefinition = scope === StatusScope.RequestAccess && entityType === ENTITY_TYPE_CONTAINER_CASE_RFI;
+  if (!isRequestAccessDefinition) {
+    if (outcomeStates.length > 0) {
+      errors.push({
+        type: 'REQUEST_ACCESS_OUTCOME_NOT_ALLOWED',
+        message: 'Request access outcome states are only allowed in Case-Rfi request access workflows',
+      });
+    }
+    if (hasShareAction) {
+      errors.push({
+        type: 'REQUEST_ACCESS_SHARE_ACTION_NOT_ALLOWED',
+        message: "Action 'shareRequestedEntities' is only allowed in Case-Rfi request access workflows",
+      });
+    }
+  } else {
+    const outcomeKinds = [['APPROVED', 'Approved'], ['DECLINED', 'Declined']] as const;
+    for (const [outcome, label] of outcomeKinds) {
+      const markedStates = outcomeStates.filter((state) => state.requestAccessOutcome === outcome);
+      if (markedStates.length !== 1) {
+        errors.push({
+          type: 'REQUEST_ACCESS_OUTCOME_COUNT',
+          message: `Request access workflow must have exactly one ${label} state, but found ${markedStates.length}`,
+        });
+      }
+      for (const state of markedStates) {
+        const stateId = state.statusId ?? state.name;
+        if (stateId && unreachableStates.includes(stateId)) {
+          errors.push({
+            type: 'REQUEST_ACCESS_OUTCOME_UNREACHABLE',
+            message: `${label} state '${stateId}' is not reachable from the initial state '${initialState}'`,
+          });
+        }
+        const hasOutgoingTransition = transitions.some((transition) => (
+          (Array.isArray(transition.from) ? transition.from : [transition.from]).some((fromState) => fromState === stateId || fromState === '*')
+        ));
+        if (hasOutgoingTransition) {
+          errors.push({
+            type: 'REQUEST_ACCESS_OUTCOME_NOT_TERMINAL',
+            message: `${label} state '${stateId}' must not have outgoing transitions`,
+          });
+        }
+        if (outcome === 'APPROVED' && !(state.onEnter ?? []).some(isShareRequestedEntitiesAction)) {
+          errors.push({
+            type: 'MISSING_REQUEST_ACCESS_SHARE_ACTION',
+            message: `Approved state '${stateId}' must have a shareRequestedEntities action on enter`,
+          });
+        }
+      }
+    }
   }
 
   if (existingWorkflowId) {
