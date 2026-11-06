@@ -125,6 +125,11 @@ describe('Stix Filtering', () => {
       .rejects.toThrow('The filter key x_opencti_cf_deleted does not match any existing custom field');
   });
 
+  it('rejects the coverage_information nested key, which has no stix tester', async () => {
+    const coverageFilter = { mode: 'and', filterGroups: [], filters: [{ key: ['coverage_information'], operator: 'eq', mode: 'and', values: [{ key: 'coverage_score', operator: 'lt', values: ['20'] }] }] } as FilterGroup;
+    await expect(() => validateFilterGroupForStixMatch(testContext, ADMIN_USER, coverageFilter)).rejects.toThrow('Stix filtering is not compatible with the provided filter key');
+  });
+
   it('matches stix objects with basic filter groups', async () => {
     let filterGroup = {
       mode: 'and',

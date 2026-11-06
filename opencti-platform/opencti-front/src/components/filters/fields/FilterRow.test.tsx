@@ -40,6 +40,12 @@ const filterKeysSchema = new Map([
       buildDefinition('relationship_type', 'id', 'Relationship type'),
       buildDefinition('dynamic', 'filters', 'Dynamic filter'),
     ])],
+    ['coverage_information', {
+      ...buildDefinition('coverage_information', 'nested_attribute', 'Coverage score', [
+        { ...buildDefinition('coverage_name', 'vocabulary', 'Coverage name'), multiple: false },
+        { ...buildDefinition('coverage_score', 'float', 'Score'), multiple: false },
+      ]),
+    }],
   ])],
 ]);
 
@@ -55,6 +61,7 @@ const buildHelpers = () => ({
   handleRemoveRepresentationFilter: vi.fn(),
   handleRemoveFilterById: vi.fn(),
   handleChangeOperatorFilters: vi.fn(),
+  handleChangeSubFilter: vi.fn(),
   handleAddSingleValueFilter: vi.fn(),
   handleAddRepresentationFilter: vi.fn(),
   handleAddFilterWithEmptyValue: vi.fn(),
@@ -75,7 +82,7 @@ describe('FilterRow', () => {
   const renderRow = (rowFilter: Filter = filter) => testRender(
     <FilterEditorProvider
       helpers={helpers}
-      availableFilterKeys={['name', 'description', 'dynamicRegardingOf']}
+      availableFilterKeys={['name', 'description', 'dynamicRegardingOf', 'coverage_information']}
       entityTypes={['Stix-Core-Object']}
       filtersRepresentativesMap={filtersRepresentativesMap}
     >
@@ -151,6 +158,41 @@ describe('FilterRow', () => {
       expect(within(relationshipType).queryByRole('button', { name: 'Remove Targets' })).toBeNull();
       expect(within(relationshipType).queryByLabelText('Clear all')).toBeNull();
       expect(within(screen.getByTestId('filter-row-operator-select')).getByLabelText('Condition')).toBeDisabled();
+    });
+  });
+
+  describe('generic nested filter (coverage_information)', () => {
+    const coverageFilter = {
+      id: 'filter-cov',
+      key: 'coverage_information',
+      operator: 'eq',
+      mode: 'and',
+      values: [{ key: 'coverage_name', operator: 'eq', values: ['detection'] }],
+    } as unknown as Filter;
+
+    it('renders the first operator in the operator column and the nested editor in the value column', () => {
+      renderRow(coverageFilter);
+      expect(within(screen.getByTestId('filter-row-operator-select')).getByLabelText('Condition')).toBeInTheDocument();
+      const value = screen.getByTestId('filter-row-value');
+      expect(within(value).getByLabelText('Coverage name')).toBeInTheDocument();
+      expect(within(value).getByLabelText('Score')).toBeInTheDocument();
+      // the coverage name operator is the one of the operator column: only the score keeps its own
+      expect(within(value).getAllByLabelText('Operator')).toHaveLength(1);
+    });
+
+    it('changes the operator of the first sub-filter with the operator column', async () => {
+      const { user } = renderRow(coverageFilter);
+      await user.click(within(screen.getByTestId('filter-row-operator-select')).getByRole('combobox'));
+      await user.click(await screen.findByText('Not equals'));
+      expect(helpers.handleChangeSubFilter).toHaveBeenCalledWith('filter-cov', 'coverage_name', { operator: 'not_eq' });
+      expect(helpers.handleChangeOperatorFilters).not.toHaveBeenCalled();
+    });
+
+    it('changes the parent operator with the operator column', async () => {
+      const { user } = renderRow(coverageFilter);
+      await user.click(within(screen.getByTestId('filter-row-operator-select')).getByRole('combobox'));
+      await user.click(await screen.findByText('Not empty'));
+      expect(helpers.handleChangeOperatorFilters).toHaveBeenCalledWith('filter-cov', 'not_nil');
     });
   });
 });

@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, VocabularyCategory } from '../../generated/graphql';
-import { FilterMode } from '../../generated/graphql';
+import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import { notify } from '../../database/redis';
@@ -54,14 +54,27 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
   if (!categoryDefinition) {
     throw UnsupportedError(`Cant find category for vocabulary ${vocabulary.name}`);
   }
+  // A composite field stores the vocabulary value in a sub-attribute of a nested attribute: it needs a nested filter
+  // (the generated category type does not expose `composite`, the definition does)
+  const { fields } = vocabularyDefinitions[vocabulary.category];
+  const plainFields = fields.filter((f) => !f.composite);
+  const compositeFields = fields.filter((f) => f.composite);
+  const usageFilters = [
+    ...(plainFields.length > 0 ? [{ key: plainFields.map((f) => f.key), values: [vocabulary.name] }] : []),
+    ...compositeFields.map((f) => ({
+      key: [f.key],
+      operator: FilterOperator.Eq,
+      mode: FilterMode.Or,
+      values: [{ key: f.composite, operator: FilterOperator.Eq, values: [vocabulary.name] }],
+    })),
+  ];
   return countAllThings(context, user, {
     filters: {
       mode: FilterMode.And,
       filters: [
         { key: ['entity_type'], values: categoryDefinition.entity_types },
-        { key: categoryDefinition.fields.map((f) => f.key), values: [vocabulary.name] },
       ],
-      filterGroups: [],
+      filterGroups: [{ mode: FilterMode.Or, filters: usageFilters, filterGroups: [] }],
     },
   });
 };

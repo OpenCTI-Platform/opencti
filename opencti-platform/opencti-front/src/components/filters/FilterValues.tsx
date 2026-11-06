@@ -7,7 +7,16 @@ import { ChipOwnProps } from '@mui/material/Chip';
 import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
-import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmptyShallow, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
+import {
+  convertOperatorToIcon,
+  FiltersRestrictions,
+  isFilterEditable,
+  isFilterGroupNotEmptyShallow,
+  isGenericNestedFilterDefinition,
+  isNumericFilter,
+  isRegardingOfFilterWarning,
+  useFilterDefinition,
+} from '../../utils/filters/filtersUtils';
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
@@ -151,6 +160,30 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
 
   // general cases
   const filterDefinition = useFilterDefinition(filterKey, entityTypes);
+
+  // generic nested keys (e.g. coverage_information): one operator per sub-filter, shown in the definition order
+  if (isGenericNestedFilterDefinition(filterDefinition)) {
+    const subFilterTexts = (filterDefinition?.subFilters ?? []).flatMap((subFilterDefinition) => {
+      const subFilter = (filterValues as unknown as Filter[]).find((value) => value.key === subFilterDefinition.filterKey);
+      if (!subFilter || subFilter.values.length === 0) {
+        return [];
+      }
+      const subValues = subFilter.values.join(', ');
+      if (isNumericFilter(subFilterDefinition.type)) {
+        // same symbols as the other filter chips, with their leading non-breaking space
+        return [{ key: subFilterDefinition.filterKey, text: <>{convertOperatorToIcon(subFilter.operator ?? 'eq')} {subValues}</> }];
+      }
+      return [{ key: subFilterDefinition.filterKey, text: <> {subFilter.operator === 'not_eq' ? `${t_i18n('not')} ${subValues}` : subValues}</> }];
+    });
+    return (
+      <>
+        {filterLabel}
+        {subFilterTexts.map(({ key, text }) => (
+          <span key={key}>{text}</span>
+        ))}
+      </>
+    );
+  }
   const values = filterValues.map((id) => {
     const isLocalModeSwitchable = isReadWriteFilter
       && handleSwitchLocalMode
