@@ -1133,6 +1133,17 @@ describe('Workflow Validation', () => {
       expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_COUNT');
     });
 
+    it('should return REQUEST_ACCESS_OUTCOME_COUNT when two states are marked Approved', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_COUNT');
+    });
+
     it('should return REQUEST_ACCESS_OUTCOME_COUNT when two states are marked Declined', async () => {
       const definition = requestAccessDefinition({
         states: [
@@ -1172,6 +1183,17 @@ describe('Workflow Validation', () => {
         ],
       });
       expect(errorTypes(await validate(definition))).toContain('REQUEST_ACCESS_OUTCOME_NOT_TERMINAL');
+    });
+
+    it('should not treat a wildcard source transition as leaving an outcome state', async () => {
+      const definition = requestAccessDefinition({
+        transitions: [
+          { from: 'existing-state', to: 'approved', event: 'Accept' },
+          { from: 'existing-state', to: 'declined', event: 'Reject' },
+          { from: ['*'], to: 'existing-state', event: 'Reopen' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).not.toContain('REQUEST_ACCESS_OUTCOME_NOT_TERMINAL');
     });
 
     it('should return REQUEST_ACCESS_OUTCOME_NOT_ALLOWED for a marker in a Global definition', async () => {

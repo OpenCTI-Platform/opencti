@@ -97,6 +97,51 @@ describe('Workflow bypass API', () => {
   });
 });
 
+describe('Workflow definition GraphQL contract', () => {
+  it('returns the request access outcome of a serialized state', async () => {
+    const schema = makeExecutableSchema({
+      typeDefs: [
+        `
+          enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS }
+          directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
+          directive @public on FIELD_DEFINITION
+          directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
+          enum StatusScope { GLOBAL REQUEST_ACCESS }
+          scalar JSON
+          scalar DateTime
+          scalar BasicObject
+          type Status { id: ID! }
+          type EntitySetting { id: ID! }
+          type DraftWorkspace { id: ID! }
+          type Query { health: Boolean @public }
+          type Mutation { health: Boolean @public }
+        `,
+        readFileSync(new URL('../../../src/modules/workflow/api/workflow.graphql', import.meta.url), 'utf8'),
+      ],
+      resolvers: { Query: workflowResolvers.Query },
+    });
+    vi.mocked(workflowDomain.getWorkflowDefinition).mockResolvedValue({
+      id: 'definition-id',
+      name: 'Request access',
+      initialState: 'new',
+      states: [{ statusId: 'new' }, { statusId: 'approved', requestAccessOutcome: 'APPROVED' }],
+      transitions: [],
+    } as any);
+    const result = await graphql({
+      schema: authDirectiveBuilder('auth').authDirectiveTransformer(schema),
+      source: '{ workflowDefinition(entityType: "Case-Rfi", scope: REQUEST_ACCESS) { states { statusId requestAccessOutcome } } }',
+      contextValue: { user: { id: 'admin', capabilities: [{ name: 'SETTINGS_SETCUSTOMIZATION' }] } },
+    });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.workflowDefinition).toEqual({
+      states: [
+        { statusId: 'new', requestAccessOutcome: null },
+        { statusId: 'approved', requestAccessOutcome: 'APPROVED' },
+      ],
+    });
+  });
+});
+
 describe('Workflow status GraphQL contract', () => {
   it.each(['destination', 'result'])('returns mapped identity and order for %s status', async (field) => {
     const status = { id: 'report-status-approved', template_id: 'template-approved', order: 1 };

@@ -18120,6 +18120,7 @@ type WorkflowMigrationScopeResult {
 
 type WorkflowMigrationState {
   order: Int!
+  requestAccessOutcome: WorkflowRequestAccessOutcome
   statusId: String!
 }
 
@@ -18143,6 +18144,11 @@ type WorkflowPendingTransition {
   triggeredAt: DateTime!
 }
 
+enum WorkflowRequestAccessOutcome {
+  APPROVED
+  DECLINED
+}
+
 type WorkflowSchema {
   errors: [WorkflowValidationError!]
   hasPublishedVersion: Boolean!
@@ -18158,6 +18164,7 @@ type WorkflowSerializedState {
   onEnter: [WorkflowActionConfig!]
   onExit: [WorkflowActionConfig!]
   order: Int
+  requestAccessOutcome: WorkflowRequestAccessOutcome
   statusId: String!
 }
 
