@@ -636,6 +636,7 @@
   "Listen deletion": "Ascolta eliminazione",
   "Listen through http callback": "Ascoltare tramite callback http",
   "Local authentication": "Autenticazione locale",
+  "Local authentication lockout duration in seconds": "Durata del blocco dell'autenticazione locale in secondi",
   "Local authentication lockout enabled": "Blocco dell'autenticazione locale abilitato",
   "Local authentication lockout final action": "Azione finale del blocco dell'autenticazione locale",
   "Local authentication lockout max attempts": "Numero massimo di tentativi prima del blocco dell'autenticazione locale",

@@ -104,5 +104,6 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   local_auth_lockout_admin_max_attempts?: number;
   local_auth_lockout_final_action?: LocalAuthLockoutFinalAction;
   local_auth_lockout_window?: number;
+  local_auth_lockout_duration?: number;
   smtp_configuration?: SmtpConfiguration;
 }

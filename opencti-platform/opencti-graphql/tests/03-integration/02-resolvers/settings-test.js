@@ -254,6 +254,7 @@ const READ_LOCKOUT_QUERY = gql`
       local_auth_lockout_admin_max_attempts
       local_auth_lockout_final_action
       local_auth_lockout_window
+      local_auth_lockout_duration
     }
   }
 `;
@@ -271,6 +272,7 @@ const UPDATE_LOCAL_AUTH_QUERY = gql`
         local_auth_lockout_admin_max_attempts
         local_auth_lockout_final_action
         local_auth_lockout_window
+        local_auth_lockout_duration
       }
     }
   }
@@ -285,6 +287,7 @@ describe('Settings resolver local authentication lockout policy', () => {
     local_auth_lockout_admin_max_attempts: null,
     local_auth_lockout_final_action: null,
     local_auth_lockout_window: null,
+    local_auth_lockout_duration: null,
   };
   let settingsInternalId;
   beforeAll(async () => {
@@ -308,6 +311,7 @@ describe('Settings resolver local authentication lockout policy', () => {
     expect(settings.local_auth_lockout_admin_max_attempts).toEqual(3);
     expect(settings.local_auth_lockout_final_action).toEqual('temporary');
     expect(settings.local_auth_lockout_window).toEqual(15);
+    expect(settings.local_auth_lockout_duration).toEqual(900);
   });
   it('should update the lockout policy', async () => {
     const queryResult = await queryAsAdmin({
@@ -321,6 +325,7 @@ describe('Settings resolver local authentication lockout policy', () => {
           local_auth_lockout_admin_max_attempts: 2,
           local_auth_lockout_final_action: 'permanent',
           local_auth_lockout_window: 60,
+          local_auth_lockout_duration: 600,
         },
       },
     });
@@ -331,6 +336,7 @@ describe('Settings resolver local authentication lockout policy', () => {
     expect(settings.local_auth_lockout_admin_max_attempts).toEqual(2);
     expect(settings.local_auth_lockout_final_action).toEqual('permanent');
     expect(settings.local_auth_lockout_window).toEqual(60);
+    expect(settings.local_auth_lockout_duration).toEqual(600);
   });
   it('should keep the lockout policy when the input omits it', async () => {
     const queryResult = await queryAsAdmin({
@@ -343,13 +349,16 @@ describe('Settings resolver local authentication lockout policy', () => {
     expect(settings.local_auth_lockout_admin_max_attempts).toEqual(2);
     expect(settings.local_auth_lockout_final_action).toEqual('permanent');
     expect(settings.local_auth_lockout_window).toEqual(60);
+    expect(settings.local_auth_lockout_duration).toEqual(600);
   });
   it.each([
     ['max attempts lower than 1', { local_auth_lockout_max_attempts: 0 }, 'Lockout max attempts must be greater than or equal to 1'],
     ['admin max attempts lower than 1', { local_auth_lockout_admin_max_attempts: 0 }, 'Lockout admin max attempts must be greater than or equal to 1'],
     ['admin max attempts above 100', { local_auth_lockout_admin_max_attempts: 101 }, 'Lockout admin max attempts must be lower than or equal to 100'],
-    ['window equal to 0', { local_auth_lockout_window: 0 }, 'Lockout window must be greater than 0'],
+    ['negative window', { local_auth_lockout_window: -1 }, 'Lockout window must be greater than or equal to 0'],
     ['window above 24 hours', { local_auth_lockout_window: 1441 }, 'Lockout window must be lower than or equal to 1440'],
+    ['duration equal to 0', { local_auth_lockout_duration: 0 }, 'Lockout duration must be greater than 0'],
+    ['duration above 3 hours', { local_auth_lockout_duration: 10801 }, 'Lockout duration must be lower than or equal to 10800'],
   ])('should reject a lockout policy with %s', async (_, lockoutInput, expectedMessage) => {
     const queryResult = await queryAsAdmin({
       query: UPDATE_LOCAL_AUTH_QUERY,
@@ -361,6 +370,7 @@ describe('Settings resolver local authentication lockout policy', () => {
     const readResult = await queryAsAdmin({ query: READ_LOCKOUT_QUERY, variables: {} });
     expect(readResult.data.settings.local_auth_lockout_max_attempts).toEqual(4);
     expect(readResult.data.settings.local_auth_lockout_window).toEqual(60);
+    expect(readResult.data.settings.local_auth_lockout_duration).toEqual(600);
   });
   it('should reject an unknown final action', async () => {
     const queryResult = await queryAsAdmin({
