@@ -254,8 +254,22 @@ test('Report CRUD', { tag: ['@report', '@knowledge', '@mutation', '@ce', '@group
   await expect(author).toBeVisible();
 
   await reportDetailsPage.getEditButton().click();
+  // Each selection commits its own relation mutation, and every response carries a full
+  // snapshot of the report. Chaining them lets the response of the first land after the
+  // second and overwrite it, so the added marking never reaches the overview panel.
+  // Wait for each mutation to land before triggering the next one. Nothing in the DOM can
+  // carry that wait: the details view is unmounted while the drawer is open, and the chips
+  // of the field only reflect the form state, so the wait is on the responses themselves.
+  const waitForMarkingMutation = (mutationName: string) => page.waitForResponse(
+    (response) => response.url().includes('/graphql')
+      && (response.request().postData() ?? '').includes(mutationName),
+  );
+  const markingRemoved = waitForMarkingMutation('ReportEditionOverviewRelationDeleteMutation');
   await reportForm.markingsAutocomplete.selectOption('PAP:CLEAR');
+  await markingRemoved;
+  const markingAdded = waitForMarkingMutation('ReportEditionOverviewRelationAddMutation');
   await reportForm.markingsAutocomplete.selectOption('PAP:GREEN');
+  await markingAdded;
   await reportForm.getUpdateTitle().click();
   await reportForm.getCloseButton().click();
   markingClear = reportDetailsPage.getTextForHeading('Marking', 'PAP:CLEAR');
