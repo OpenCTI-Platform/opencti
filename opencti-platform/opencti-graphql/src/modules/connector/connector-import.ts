@@ -99,6 +99,9 @@ export const importConfigPresetConnector = async (
   if (existing && !isCopy && !existing.catalog_id) {
     return refused('not_managed', 'A connector that is not managed by the platform has this name', true, bundleConnector);
   }
+  if (existing && !isCopy && (existing.catalog_id !== bundleConnector.catalog_id || existing.manager_contract_image !== bundleConnector.manager_contract_image)) {
+    return refused('name_conflict', 'Connector name already exists', true, bundleConnector);
+  }
   const title = isCopy ? await freeConfigImportName(bundleConnector.name, isNameTaken) : bundleConnector.name;
   if (!title) {
     return refused('name_conflict', 'Connector name already exists', !!existing, bundleConnector);

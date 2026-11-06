@@ -267,6 +267,13 @@ describe('importConfigPresetConnector overwrite and copy', () => {
     expectNothingWritten();
   });
 
+  it('never overwrites a connector of another catalog or image that has the same name', async () => {
+    withConnectors([{ ...mitreConnector, manager_contract_image: 'opencti/connector-other' }]);
+    const result = await importConfigPresetConnector(context, user, connectorConfiguration({ manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }] }), overwrite);
+    expect(result).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true });
+    expectNothingWritten();
+  });
+
   it('refuses a connector that exists on an add', async () => {
     expect(await importConfigPresetConnector(context, user, connectorConfiguration(), { mode: ConfigImportMode.Add, bundleId: 'mitre' })).toMatchObject({ status: 'failed', code: 'exists' });
   });
