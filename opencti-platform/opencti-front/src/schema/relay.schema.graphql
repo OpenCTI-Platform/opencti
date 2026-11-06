@@ -10242,11 +10242,17 @@ type WorkflowActionConfig {
   params: JSON
 }
 
+enum WorkflowRequestAccessOutcome {
+  APPROVED
+  DECLINED
+}
+
 type WorkflowSerializedState {
   statusId: String!
   order: Int
   onEnter: [WorkflowActionConfig!]
   onExit: [WorkflowActionConfig!]
+  requestAccessOutcome: WorkflowRequestAccessOutcome
 }
 
 type WorkflowSerializedTransition {
@@ -10300,6 +10306,7 @@ type WorkflowMigrationDiagnostic {
 type WorkflowMigrationState {
   statusId: String!
   order: Int!
+  requestAccessOutcome: WorkflowRequestAccessOutcome
 }
 
 type WorkflowMigrationScopeResult {

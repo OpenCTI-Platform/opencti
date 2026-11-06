@@ -498,7 +498,7 @@ export const validateWorkflowDefinitionData = async (
           });
         }
         const hasOutgoingTransition = transitions.some((transition) => (
-          (Array.isArray(transition.from) ? transition.from : [transition.from]).some((fromState) => fromState === stateId || fromState === '*')
+          (Array.isArray(transition.from) ? transition.from : [transition.from]).includes(stateId as string)
         ));
         if (hasOutgoingTransition) {
           errors.push({

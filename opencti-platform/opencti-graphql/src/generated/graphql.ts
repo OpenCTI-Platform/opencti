@@ -39917,6 +39917,7 @@ export type WorkflowMigrationScopeResult = {
 export type WorkflowMigrationState = {
   __typename?: 'WorkflowMigrationState';
   order: Scalars['Int']['output'];
+  requestAccessOutcome?: Maybe<WorkflowRequestAccessOutcome>;
   statusId: Scalars['String']['output'];
 };
 
@@ -39942,6 +39943,11 @@ export type WorkflowPendingTransition = {
   triggeredAt: Scalars['DateTime']['output'];
 };
 
+export enum WorkflowRequestAccessOutcome {
+  Approved = 'APPROVED',
+  Declined = 'DECLINED'
+}
+
 export type WorkflowSchema = {
   __typename?: 'WorkflowSchema';
   errors?: Maybe<Array<WorkflowValidationError>>;
@@ -39959,6 +39965,7 @@ export type WorkflowSerializedState = {
   onEnter?: Maybe<Array<WorkflowActionConfig>>;
   onExit?: Maybe<Array<WorkflowActionConfig>>;
   order?: Maybe<Scalars['Int']['output']>;
+  requestAccessOutcome?: Maybe<WorkflowRequestAccessOutcome>;
   statusId: Scalars['String']['output'];
 };
 
@@ -42472,6 +42479,7 @@ export type ResolversTypes = ResolversObject<{
   WorkflowMigrationState: ResolverTypeWrapper<WorkflowMigrationState>;
   WorkflowPendingAsyncAction: ResolverTypeWrapper<WorkflowPendingAsyncAction>;
   WorkflowPendingTransition: ResolverTypeWrapper<WorkflowPendingTransition>;
+  WorkflowRequestAccessOutcome: WorkflowRequestAccessOutcome;
   WorkflowSchema: ResolverTypeWrapper<WorkflowSchema>;
   WorkflowSerializedState: ResolverTypeWrapper<WorkflowSerializedState>;
   WorkflowSerializedTransition: ResolverTypeWrapper<WorkflowSerializedTransition>;
@@ -55798,6 +55806,7 @@ export type WorkflowMigrationScopeResultResolvers<ContextType = any, ParentType 
 
 export type WorkflowMigrationStateResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowMigrationState'] = ResolversParentTypes['WorkflowMigrationState']> = ResolversObject<{
   order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  requestAccessOutcome?: Resolver<Maybe<ResolversTypes['WorkflowRequestAccessOutcome']>, ParentType, ContextType>;
   statusId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
@@ -55836,6 +55845,7 @@ export type WorkflowSerializedStateResolvers<ContextType = any, ParentType exten
   onEnter?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
   onExit?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
   order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  requestAccessOutcome?: Resolver<Maybe<ResolversTypes['WorkflowRequestAccessOutcome']>, ParentType, ContextType>;
   statusId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
