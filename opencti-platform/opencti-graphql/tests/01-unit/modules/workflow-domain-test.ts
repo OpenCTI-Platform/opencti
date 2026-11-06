@@ -6067,6 +6067,55 @@ describe('Instance scope as the single source of truth', () => {
     expect(transitions).toEqual([expect.objectContaining({ event: 'Accept', toState: 'approved', toStatus: statuses[4] })]);
   });
 
+  describe('requestAccessOutcome of the allowed transitions', () => {
+    const outcomeContent = (initialState: string) => JSON.stringify({
+      initialState,
+      states: [
+        { statusId: initialState },
+        { statusId: 'review' },
+        { statusId: 'approved', requestAccessOutcome: 'APPROVED' },
+        { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+      ],
+      transitions: [
+        { from: initialState, to: 'review', event: 'Review' },
+        { from: initialState, to: 'approved', event: 'Accept' },
+        { from: initialState, to: 'declined', event: 'Reject' },
+      ],
+    });
+
+    beforeEach(() => {
+      (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+        if (id === 'global-def') return Promise.resolve(definitionEntity(id, outcomeContent('open')));
+        if (id === 'ra-def') return Promise.resolve(definitionEntity(id, outcomeContent('new')));
+        if (id === 'rfi-id') return Promise.resolve(rfi);
+        return Promise.resolve(null);
+      });
+    });
+
+    it('marks the transitions into Approved and Declined of a request-access instance, and only those', async () => {
+      (findByType as any).mockResolvedValue(bothDefinitions);
+      (loadEntity as any).mockResolvedValue(instanceOf('rfi-id', 'new', StatusScope.RequestAccess));
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'rfi-id');
+
+      expect(transitions.map(({ event, requestAccessOutcome }) => ({ event, requestAccessOutcome }))).toEqual([
+        { event: 'Review', requestAccessOutcome: null },
+        { event: 'Accept', requestAccessOutcome: 'APPROVED' },
+        { event: 'Reject', requestAccessOutcome: 'DECLINED' },
+      ]);
+    });
+
+    it('never marks the transitions of a Global instance', async () => {
+      (findByType as any).mockResolvedValue(bothDefinitions);
+      (loadEntity as any).mockResolvedValue(instanceOf('rfi-id', 'open', StatusScope.Global));
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'rfi-id');
+
+      expect(transitions).toHaveLength(3);
+      expect(transitions.every(({ requestAccessOutcome }) => requestAccessOutcome === null)).toBe(true);
+    });
+  });
+
   describe('getAllowedTransitions for an entity without instance yet', () => {
     const reviewContent = (initialState: string) => stateContent(initialState, [initialState, 'review', 'done'], [
       { from: initialState, to: 'review', event: 'Review' },

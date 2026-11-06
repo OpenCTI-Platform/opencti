@@ -46,6 +46,7 @@ export const workflowStatusWorkflowInstanceFragment = graphql`
       comment
       requiresShareOrganizationInput
       requiresUnshareOrganizationInput
+      requestAccessOutcome
       toStatus {
         id
         order

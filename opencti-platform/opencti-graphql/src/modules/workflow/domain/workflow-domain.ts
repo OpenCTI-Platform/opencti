@@ -70,7 +70,7 @@ import {
   tryConvertRequestAccessGroup,
   type WorkflowMigrationConversionResult,
 } from '../migration/status-to-definition-converter';
-import { applyRequestAccessOutcome, assertCanEnterRequestAccessOutcome, findStateOutcome, mirrorRequestAccessStatus } from './workflow-request-access';
+import { applyRequestAccessOutcome, assertCanEnterRequestAccessOutcome, findStateOutcome, mirrorRequestAccessStatus, type RequestAccessOutcome } from './workflow-request-access';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -1774,6 +1774,7 @@ const toAllowedTransition = (
   transition: ReturnType<ReturnType<typeof WorkflowFactory.createDefinition>['getTransitions']>[number],
   statuses: BasicWorkflowStatus[],
   scope: StatusScope,
+  definitionData: Pick<WorkflowDefinitionResponse, 'states'>,
 ) => ({
   event: transition.event,
   toState: transition.to ?? null,
@@ -1782,6 +1783,7 @@ const toAllowedTransition = (
   actions: transition.actionTypes || [],
   requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
   requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
+  requestAccessOutcome: (scope === StatusScope.RequestAccess ? findStateOutcome(definitionData, transition.to) : undefined) ?? null,
 });
 
 /**
@@ -1808,6 +1810,7 @@ export const getAllowedTransitions = async (
   actions: string[];
   requiresShareOrganizationInput: boolean;
   requiresUnshareOrganizationInput: boolean;
+  requestAccessOutcome: RequestAccessOutcome | null;
 }>> => {
   const entity = options?.entity ?? await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
@@ -1860,7 +1863,7 @@ export const getAllowedTransitions = async (
         const passes = await condition(conditionContext as any);
         if (!passes) return null;
       }
-      return toAllowedTransition(transition, statuses, scope);
+      return toAllowedTransition(transition, statuses, scope, definitionData);
     }),
   )).filter((t): t is NonNullable<typeof t> => t !== null);
 
@@ -1922,7 +1925,7 @@ export const getMassWorkflowTransitions = async (
   if (countedStatuses.some((status) => status && status.scope !== scope)) return [];
   const states = new Set(countedStatuses.map((status) => status?.template_id ?? definitionData.initialState));
   return keepCommonTransitions([...states].map((state) => {
-    return definition.getTransitions(state).map((transition) => toAllowedTransition(transition, statuses, scope));
+    return definition.getTransitions(state).map((transition) => toAllowedTransition(transition, statuses, scope, definitionData));
   }));
 };
 

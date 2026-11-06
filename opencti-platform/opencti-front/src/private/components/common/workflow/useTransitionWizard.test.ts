@@ -144,6 +144,22 @@ describe('useTransitionWizard consolidated submission', () => {
     expect(mockCommit).toHaveBeenCalledTimes(2);
   });
 
+  it('reports a business failure and a transport error to onFailed, never a success', async () => {
+    const onCompleted = vi.fn();
+    const onFailed = vi.fn();
+    const { result } = renderHook(() => useTransitionWizard({ entityId: 'entity-1', onCompleted, onFailed }));
+    act(() => result.current.handleTransition('approve', []));
+    await act(async () => mockCommit.mock.calls[0][0].onCompleted({ triggerWorkflowEvent: { success: false, reason: 'Denied' } }));
+    expect(onFailed).toHaveBeenCalledOnce();
+    act(() => result.current.handleTransition('approve', []));
+    await act(async () => mockCommit.mock.calls[1][0].onError(new Error('Network unavailable')));
+    expect(onFailed).toHaveBeenCalledTimes(2);
+    act(() => result.current.handleTransition('approve', []));
+    await act(async () => mockCommit.mock.calls[2][0].onCompleted({ triggerWorkflowEvent: { success: true, executionStatus: 'completed' } }));
+    expect(onFailed).toHaveBeenCalledTimes(2);
+    expect(onCompleted).toHaveBeenCalledOnce();
+  });
+
   it('never opens draft validation or exits a draft for a generic entity', () => {
     const { result } = renderWizard('entity-1');
     act(() => result.current.handleTransition('approve', ['validateDraft']));

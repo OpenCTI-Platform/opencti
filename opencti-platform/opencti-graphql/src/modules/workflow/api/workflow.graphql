@@ -160,6 +160,8 @@ type WorkflowTransition {
     actions: [String!]
     requiresShareOrganizationInput: Boolean
     requiresUnshareOrganizationInput: Boolean
+    # Outcome marked on the target state of a request access transition, null for any other transition.
+    requestAccessOutcome: WorkflowRequestAccessOutcome
 }
 
 type WorkflowBypassStatus {
