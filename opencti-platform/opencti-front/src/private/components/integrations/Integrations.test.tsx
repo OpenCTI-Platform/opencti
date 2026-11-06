@@ -78,6 +78,18 @@ vi.mock('@components/integrations/deployed/IntegrationsStatsStrip', () => ({
   default: () => null,
 }));
 
+vi.mock('@components/integrations/deduplication/IngestionDeduplicationRules', () => ({
+  default: () => null,
+}));
+
+vi.mock('../../../components/common/card/Card', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('../../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: () => false }),
+}));
+
 vi.mock('@components/integrations/deployed/useDeployedIntegrations', () => ({
   connectorIdFromIngestId: (id: string) => id,
 }));

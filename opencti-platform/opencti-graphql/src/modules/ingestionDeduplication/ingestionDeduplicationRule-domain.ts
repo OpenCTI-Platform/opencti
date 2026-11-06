@@ -10,8 +10,8 @@ import { enforceEnableFeatureFlag, SYSTEM_USER } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, IngestionDeduplicationRuleAddInput } from '../../generated/graphql';
 import { INGESTION_SOURCES } from '../../manager/ingestionHealthManager';
-import { getIngestorUserId, type HealthCheckIngestor } from '../ingestionHealth/ingestionHealth-registry';
 import { connectorIdFromIngestId } from '../../domain/connector';
+import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import {
   type BasicStoreEntityIngestionDeduplicationRule,
   ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE,
@@ -111,7 +111,9 @@ export const findUserIngestionUsages = async (context: AuthContext, userId: stri
     const elements = await INGESTION_SOURCES[i].load(context);
     const matching = elements.filter((element) => {
       const isExcluded = !!excludeConnectorId && (element.id === excludeConnectorId || connectorIdFromIngestId(element.id) === excludeConnectorId);
-      return !isExcluded && getIngestorUserId(element as unknown as HealthCheckIngestor) === userId;
+      const { connector_user_id, user_id } = element as { connector_user_id?: string | null; user_id?: string | null };
+      const ingestionUserId = element.entity_type === ENTITY_TYPE_CONNECTOR ? connector_user_id : user_id;
+      return !isExcluded && ingestionUserId === userId;
     });
     usages.push(...matching.map((element) => ({ id: element.id, name: element.name, entity_type: element.entity_type })));
   }
