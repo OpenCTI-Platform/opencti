@@ -139,7 +139,8 @@ const WidgetBreakdownSelection = () => {
         <div style={{ flex: 2 }}>{fieldSelect}</div>
         {field && <div style={{ flex: 1 }}>{limitSelect}</div>}
       </div>
-      {resolution === 'failed' && (
+      {/* Only a chosen field is checked against the saved filter */}
+      {resolution === 'failed' && field && (
         <Alert severity="warning" title={t_i18n('The saved filter could not be read: the breakdown field cannot be checked.')} />
       )}
       {field && (
