@@ -400,6 +400,9 @@ export const formSubmit = async (
   if (!form) {
     throw FunctionalError('Form not found', { id: input.formId });
   }
+  if (form.active === false) {
+    throw FunctionalError('Form is inactive', { id: input.formId });
+  }
 
   let values = {} as Record<string, any>;
   try {
