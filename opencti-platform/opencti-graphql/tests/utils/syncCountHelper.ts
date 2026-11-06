@@ -13,8 +13,9 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-// 2 created by ingestionDeduplication-test (an import, then the same import after the deletion)
-testCreatedCounter['attack-pattern'] = 27;
+// 2 created by ingestionDeduplication-test (an import, then the same import after the deletion),
+// 6 created and deleted by securityCoverage-results-filters-test (5) and vocabulary-coverage-usages-test (1) (tested entities)
+testCreatedCounter['attack-pattern'] = 33;
 testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
@@ -73,11 +74,12 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-// Includes 5 created and deleted by stixRelationship-test, and 1 created by publicDashboard-test, deleted with its target (time series breakdown)
-testCreatedCounter.relationship = 154;
-// Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
-// Plus 3 created and deleted by workflow-entity-write-test
-testCreatedCounter.report = 77;
+// Includes 5 created and deleted by stixRelationship-test, and 1 created by publicDashboard-test, deleted with its target (time series breakdown),
+// and 6 has-covered created by securityCoverage-results-filters-test (5) and vocabulary-coverage-usages-test (1), deleted with their targets
+testCreatedCounter.relationship = 160;
+// Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), 1 by audit-test (audits breakdown),
+// 3 by workflow-entity-write-test, and 2 by securityCoverage-results-filters-test and vocabulary-coverage-usages-test
+testCreatedCounter.report = 79;
 testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
@@ -91,8 +93,9 @@ testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 3;
 testCreatedCounter.vulnerability = 12;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['security-coverage'] = 27;
-testCreatedCounter['security-coverage-result'] = 22;
+// - 2 created and deleted by securityCoverage-results-filters-test and vocabulary-coverage-usages-test, with 3 results (2 + 1)
+testCreatedCounter['security-coverage'] = 29;
+testCreatedCounter['security-coverage-result'] = 25;
 
 export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 3;
@@ -160,8 +163,8 @@ testMergedCounter['intrusion-set'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-// 2 by ingestionDeduplication-test
-testDeletedCounter['attack-pattern'] = 22;
+// 2 by ingestionDeduplication-test, 6 by securityCoverage-results-filters-test (5) and vocabulary-coverage-usages-test (1)
+testDeletedCounter['attack-pattern'] = 28;
 testDeletedCounter.campaign = 2;
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;
@@ -214,9 +217,9 @@ testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
 testDeletedCounter.relationship = 10; // includes 5 created and deleted by stixRelationship-test (time series breakdown)
-// Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
-// Plus 3 created and deleted by workflow-entity-write-test
-testDeletedCounter.report = 68;
+// Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), 1 by audit-test (audits breakdown),
+// 3 by workflow-entity-write-test, and 2 by securityCoverage-results-filters-test and vocabulary-coverage-usages-test
+testDeletedCounter.report = 70;
 testDeletedCounter.sighting = 5; // 3 created and deleted by relations-deduplication-test
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
@@ -233,8 +236,9 @@ testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['security-coverage'] = 25;
-testDeletedCounter['security-coverage-result'] = 20;
+// - 2 created and deleted by securityCoverage-results-filters-test and vocabulary-coverage-usages-test, with 3 results (2 + 1)
+testDeletedCounter['security-coverage'] = 27;
+testDeletedCounter['security-coverage-result'] = 23;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);
