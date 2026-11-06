@@ -1,26 +1,28 @@
 import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
 import { StatusScope } from '../../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../../types/user';
+import { SYSTEM_USER } from '../../../utils/access';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
 import { getDefinitionData, getWorkflowConfig, type WorkflowDefinitionResponse } from './workflow-domain';
 
 /**
  * The request-access workflow of Case-Rfi, or null when requests run on the legacy flow: it takes
- * ENTITIES_WORKFLOW on and a request-access definition published.
+ * ENTITIES_WORKFLOW on and a request-access definition published. Read as the system: requesters
+ * are ordinary users, and one who cannot read the definition must not be silently moved to the legacy flow.
  */
 export const getRequestAccessWorkflow = async (
   context: AuthContext,
-  user: AuthUser,
+  _user: AuthUser,
 ): Promise<{ entitySetting: BasicStoreEntityEntitySetting; definitionData: WorkflowDefinitionResponse } | null> => {
   if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
     return null;
   }
-  const entitySetting = await getWorkflowConfig(context, user, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  const entitySetting = await getWorkflowConfig(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE_RFI);
   if (!entitySetting) {
     return null;
   }
-  const definitionData = await getDefinitionData(context, user, entitySetting, false, StatusScope.RequestAccess);
+  const definitionData = await getDefinitionData(context, SYSTEM_USER, entitySetting, false, StatusScope.RequestAccess);
   return definitionData ? { entitySetting, definitionData } : null;
 };
 

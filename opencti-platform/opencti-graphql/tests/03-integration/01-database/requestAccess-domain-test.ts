@@ -1,5 +1,15 @@
 import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
-import { ADMIN_USER, getGroupIdByName, getOrganizationIdByName, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
+import {
+  ADMIN_USER,
+  getAuthUser,
+  getGroupIdByName,
+  getOrganizationIdByName,
+  GREEN_GROUP,
+  PLATFORM_ORGANIZATION,
+  TEST_ORGANIZATION,
+  testContext,
+  USER_PARTICIPATE,
+} from '../../utils/testQuery';
 import { entitySettingEditField, findByType as findEntitySettingsByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 import {
@@ -28,8 +38,9 @@ import { logApp } from '../../../src/config/conf';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { addMalware } from '../../../src/domain/malware';
+import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { deleteElementById, loadEntity, storeLoadByIdWithRefs } from '../../../src/database/middleware';
-import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
+import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { deleteWorkflowDefinition, publishWorkflowDefinition, setWorkflowDefinition } from '../../../src/modules/workflow/domain/workflow-domain';
 import { findOutcomeState, getRequestAccessWorkflow } from '../../../src/modules/workflow/domain/workflow-request-access';
 import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
@@ -52,6 +63,7 @@ import { verifyRequestAccessEnabled } from '../../../src/modules/requestAccess/r
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import { getFakeAuthUser, getGroupEntity } from '../../utils/domainQueryHelper';
 import type { Group } from '../../../src/types/group';
+import type { AuthUser } from '../../../src/types/user';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 
 describe('Request access domain  - initialized status', async () => {
@@ -489,9 +501,10 @@ describe('Request access domain  - workflow-driven creation', async () => {
   let malwareId: string;
   let testOrganizationId: string;
   const createdRfiIds: string[] = [];
+  const spies: Array<{ mockRestore: () => void }> = [];
 
-  const requestAccess = async () => {
-    const rfiId = await addRequestAccess(testContext, ADMIN_USER, {
+  const requestAccess = async (user: AuthUser = ADMIN_USER) => {
+    const rfiId = await addRequestAccess(testContext, user, {
       request_access_reason: 'Access needed for the workflow tests',
       request_access_entities: [malwareId],
       request_access_members: [testOrganizationId],
@@ -526,9 +539,11 @@ describe('Request access domain  - workflow-driven creation', async () => {
   });
 
   beforeAll(async () => {
-    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
-    vi.spyOn(entrepriseEdition, 'isEnterpriseEditionFromSettings').mockReturnValue(true);
+    spies.push(
+      vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue(),
+      vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true),
+      vi.spyOn(entrepriseEdition, 'isEnterpriseEditionFromSettings').mockReturnValue(true),
+    );
     await setOrganization(PLATFORM_ORGANIZATION);
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     const greenGroupId = await getGroupIdByName(GREEN_GROUP.name);
@@ -549,15 +564,28 @@ describe('Request access domain  - workflow-driven creation', async () => {
 
   afterAll(async () => {
     for (const rfiId of createdRfiIds) {
-      await deleteElementById(testContext, ADMIN_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI).catch(() => undefined);
+      await deleteElementById(testContext, ADMIN_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
     }
-    await deleteElementById(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE).catch(() => undefined);
+    await deleteElementById(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE);
+    // Unlinking leaves the definition entity, which would block the deletion of its status templates.
+    const definitionId = (await getRfiEntitySettings(testContext, ADMIN_USER)).request_access_workflow?.workflow_definition_id;
     await deleteWorkflowDefinition(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, StatusScope.RequestAccess);
+    if (definitionId) {
+      await deleteElementById(testContext, ADMIN_USER, definitionId, ENTITY_TYPE_WORKFLOW_DEFINITION);
+    }
     await entitySettingEditField(testContext, ADMIN_USER, rfiEntitySettings.id, [{ key: 'request_access_workflow', value: [initialConfig] }]);
-    for (const templateId of Object.values(templateIds).filter(Boolean)) {
-      await statusTemplateDelete(testContext, ADMIN_USER, templateId).catch(() => undefined);
+    const templateIdList = Object.values(templateIds).filter(Boolean);
+    for (const templateId of templateIdList) {
+      await statusTemplateDelete(testContext, ADMIN_USER, templateId);
     }
     resetCacheForEntity(ENTITY_TYPE_STATUS);
+    const leftoverStatuses = await fullEntitiesList<BasicWorkflowStatus>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS], {
+      filters: { mode: FilterMode.And, filters: [{ key: ['template_id'], values: templateIdList }], filterGroups: [] },
+    });
+    const leftoverDefinition = definitionId ? await storeLoadById(testContext, ADMIN_USER, definitionId, ENTITY_TYPE_WORKFLOW_DEFINITION) : undefined;
+    expect(leftoverStatuses).toHaveLength(0);
+    expect(leftoverDefinition).toBeUndefined();
+    spies.forEach((spy) => spy.mockRestore());
     await unSetOrganization();
   });
 
@@ -614,6 +642,19 @@ describe('Request access domain  - workflow-driven creation', async () => {
 
       const rfi = await loadRfi(rfiId);
       expect(rfi[INPUT_CREATED_BY]?.internal_id).toBe(testOrganizationId);
+    });
+
+    it('workflow-driven request is created by a non-admin user', async () => {
+      const requester = await getAuthUser(USER_PARTICIPATE.id);
+      expect(await getRequestAccessWorkflow(testContext, requester)).not.toBeNull();
+
+      const rfiId = await requestAccess(requester);
+
+      const initialStatus = await findWorkflowStatusByTemplateId(testContext, ADMIN_USER, templateIds.pending);
+      const rfi = await loadRfi(rfiId);
+      expect(rfi.x_opencti_workflow_id).toBe(initialStatus.id);
+      expect(rfi[INPUT_CREATED_BY]?.internal_id).toBe(testOrganizationId);
+      expect((await findInstance(rfiId))?.scope).toBe(StatusScope.RequestAccess);
     });
 
     it('runs the legacy flow while ENTITIES_WORKFLOW is off', async () => {
