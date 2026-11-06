@@ -63,7 +63,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('history.context-data-attribution', TRANSFER, 'History', 'context_data.creator_ids[]'),
   row('history.context-data-payload', TRANSFER, 'History', 'context_data.history_changes / subject ids'),
   row('history.user-id', TRANSFER, 'History', 'user_id'),
-  row('ingestion.user-id', TRANSFER, 'IngestionCsv / IngestionJson / IngestionRss / IngestionTaxii / IngestionTaxiiCollection', 'user_id'),
+  row('ingestion.user-id', TRANSFER, 'IngestionCsv / IngestionJson / IngestionRss / IngestionTaxii / IngestionTaxiiCollection / IngestionDeduplicationRule', 'user_id'),
   row('internal-file.metadata-creator-id', TRANSFER, 'InternalFile', 'metaData.creator_id'),
   row('news-feed-item.user-id', TRANSFER, 'NewsFeedItem', 'user_id'),
   row('notification-terminal.user-id', TRANSFER, 'Notification (read or terminal)', 'user_id'),

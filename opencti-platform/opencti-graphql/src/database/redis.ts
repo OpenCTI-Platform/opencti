@@ -1309,3 +1309,21 @@ export const redisGetConfigPresetImportLastFinished = async (): Promise<string |
   return getClientBase().get(CONFIG_PRESET_IMPORT_LAST_FINISHED_KEY);
 };
 // endregion - config preset import session
+
+// region - ingestion deduplication
+// dedup:${standardId}:${userId} => hash of the last content this user imported for the entity, each key with its own TTL
+const ingestionDeduplicationKey = (standardId: string, userId: string) => `dedup:${standardId}:${userId}`;
+
+export const redisGetIngestionHash = async (standardId: string, userId: string): Promise<string | null> => {
+  return getClientBase().get(ingestionDeduplicationKey(standardId, userId));
+};
+
+export const redisSetIngestionHash = async (standardId: string, userId: string, hash: string, ttl: number) => {
+  await getClientBase().set(ingestionDeduplicationKey(standardId, userId), hash, 'EX', ttl);
+};
+
+// One DEL per key: keys of one entity can live in different cluster slots
+export const redisDeleteIngestionHashes = async (entries: Array<{ standardId: string; userId: string }>) => {
+  await Promise.all(entries.map(({ standardId, userId }) => getClientBase().del(ingestionDeduplicationKey(standardId, userId))));
+};
+// endregion - ingestion deduplication

@@ -30,7 +30,7 @@ describe('userMerge scalar targets', () => {
   });
 
   it('should group the entities sharing a register row into a single target', () => {
-    expect(targetById('ingestion-user-id').entityTypes).toHaveLength(5);
+    expect(targetById('ingestion-user-id').entityTypes).toHaveLength(6);
   });
 
   it('should read the cardinality from the schema rather than from a declaration', () => {
