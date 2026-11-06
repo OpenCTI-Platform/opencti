@@ -137,7 +137,10 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
           <Tabs value={currentTab} onValueChange={handleChangeTab}>
             <TabsList>
               <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
-              <TabsTrigger value="password" disabled={!!user.external || isServiceAccount === true}>{t_i18n('Password')}</TabsTrigger>
+              {/* Service accounts have no password at all, so the tab is not even offered */}
+              {!isServiceAccount && (
+                <TabsTrigger value="password" disabled={!!user.external}>{t_i18n('Password')}</TabsTrigger>
+              )}
               <TabsTrigger value="groups">{t_i18n('Groups')}</TabsTrigger>
               {hasSetAccess && (
                 <TabsTrigger
@@ -152,9 +155,11 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
             <TabsContent value="overview">
               <UserEditionOverview user={user} context={user.editContext} />
             </TabsContent>
-            <TabsContent value="password">
-              <UserEditionPassword user={user} />
-            </TabsContent>
+            {!isServiceAccount && (
+              <TabsContent value="password">
+                <UserEditionPassword user={user} />
+              </TabsContent>
+            )}
             <TabsContent value="groups"><UserEditionGroups user={user} /></TabsContent>
             <TabsContent value="organizations-admin">
               {hasSetAccess && <UserEditionOrganizationsAdmin user={user} />}
