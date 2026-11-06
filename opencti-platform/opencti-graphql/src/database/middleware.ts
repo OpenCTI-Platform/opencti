@@ -2563,6 +2563,9 @@ type UpdateAttributeMetaResolvedOpts = EventOpts & {
   bypassValidation?: boolean;
   // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
   skipUserIndividualSync?: boolean;
+  // Set by the workflow projection: its own write is not synced back as an external write,
+  // and the transition stands for the external references an enforced status change asks for
+  workflowInternalWrite?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2643,7 +2646,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
-    const isAllowedToByPass = isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE);
+    const isAllowedToByPass = opts.workflowInternalWrite || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE);
     if (!isAllowedToByPass && entitySetting?.enforce_reference) {
       const isNoReferenceKey = keys.length === 1 && noReferenceAttributes.includes(keys[0]);
       if (!isNoReferenceKey && isEmptyField(opts.references)) {
@@ -3063,10 +3066,7 @@ const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: Aut
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts & {
-  // Set by the workflow projection so its own write is not synced back as an external write
-  workflowInternalWrite?: boolean;
-};
+type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts;
 export const updateAttribute = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,

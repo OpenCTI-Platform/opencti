@@ -32,6 +32,7 @@ import {
 } from '../../../utils/access';
 import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext';
 import { now } from '../../../utils/format';
+import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
 import { addFilter } from '../../../utils/filtering/filtering-utils';
 import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
@@ -1287,6 +1288,35 @@ const toAllowedTransition = (
   requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
 });
 
+type TransitionRefusal = 'forbidden' | 'noLiveEntity' | 'confidence';
+
+const TRANSITION_REFUSAL_REASONS: Record<Exclude<TransitionRefusal, 'forbidden'>, string> = {
+  noLiveEntity: 'This entity has no live version to write the workflow status on',
+  confidence: 'Your confidence level is too low to update this entity',
+};
+
+// A transition writes the new status with the user's rights, on the live entity even from a draft:
+// refuse it when that write would fail, instead of moving the instance without the status.
+const getTransitionRefusal = async (context: AuthContext, user: AuthUser, entityId: string, entity: BasicStoreCommon): Promise<TransitionRefusal | null> => {
+  // View access alone isn't enough to trigger a transition (e.g. a user restricted by an authorized-members group)
+  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
+    return 'forbidden';
+  }
+  let statusWriteTarget = entity;
+  if (getDraftContext(context, user)) {
+    // From a draft, the user also needs edit access to the live entity, which must exist
+    const liveEntity = await storeLoadById(bypassDraftContext(context), bypassDraftUser(user), entityId, 'Basic-Object');
+    if (!liveEntity) {
+      return 'noLiveEntity';
+    }
+    if (!validateUserAccessOperation(user, liveEntity, AccessOperation.EDIT)) {
+      return 'forbidden';
+    }
+    statusWriteTarget = liveEntity;
+  }
+  return controlUserConfidenceAgainstElement(user, statusWriteTarget, true) ? null : 'confidence';
+};
+
 /**
  * Get allowed transitions for an entity.
  */
@@ -1315,12 +1345,6 @@ export const getAllowedTransitions = async (
     return [];
   }
 
-  // View access alone isn't enough to trigger a transition: a view-only user (e.g. restricted by
-  // an authorized-members group restriction) must not see any transition as available.
-  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
-    return [];
-  }
-
   const entitySetting = options?.entitySetting ?? await getWorkflowConfig(context, user, entity.entity_type);
   const definitionData = options?.definitionData ?? await getDefinitionData(context, user, entitySetting);
 
@@ -1331,6 +1355,10 @@ export const getAllowedTransitions = async (
   const effectiveEntityId = entity.internal_id || entity.id;
   const instanceEntity = options?.instanceEntity ?? await findWorkflowInstanceEntity(context, user, effectiveEntityId);
   if (instanceEntity?.completed) {
+    return [];
+  }
+  // Checked after the cheap checks: from a draft, it loads the live entity
+  if (await getTransitionRefusal(context, user, entityId, entity)) {
     return [];
   }
   const currentStateId = instanceEntity?.currentState ?? definitionData.initialState;
@@ -1460,13 +1488,6 @@ export const triggerWorkflowEvent = async (
     throw FunctionalError('Entity not found', { entityId });
   }
 
-  // View access alone isn't enough to trigger a transition: mirrors the check in
-  // getAllowedTransitions, which only hides transitions from the UI and does not itself
-  // prevent a view-only user from calling this mutation directly.
-  if (!validateUserAccessOperation(user, entity, AccessOperation.EDIT)) {
-    throw ForbiddenAccess();
-  }
-
   // 2. Fetch its EntitySetting to get the workflow configuration
   const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
   const definitionData = await getDefinitionData(context, user, entitySetting);
@@ -1476,6 +1497,16 @@ export const triggerWorkflowEvent = async (
       success: false,
       reason: `Workflows are not configured for entity type: ${entity.entity_type}`,
     };
+  }
+
+  // Same refusal as getAllowedTransitions, which only hides transitions from the UI:
+  // a user can still call this mutation directly.
+  const refusal = await getTransitionRefusal(context, user, entityId, entity);
+  if (refusal === 'forbidden') {
+    throw ForbiddenAccess();
+  }
+  if (refusal) {
+    return { success: false, reason: TRANSITION_REFUSAL_REASONS[refusal] };
   }
 
   let lock;
