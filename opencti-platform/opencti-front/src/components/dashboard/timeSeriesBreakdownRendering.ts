@@ -221,6 +221,9 @@ const toRgb = (color: string) => {
   return [0, 2, 4].map((start) => parseInt(hex.slice(start, start + 2), 16));
 };
 
+// A color written #rgb or #rrggbb, as #rrggbb in lower case
+const toHexColor = (color: string) => `#${toRgb(color).map((channel) => channel.toString(16).padStart(2, '0')).join('')}`;
+
 // Below this distance between their red, green and blue, an own color can be taken for the one of the "Other" series
 const MIN_DISTANCE_TO_OTHER = 48;
 const isCloseTo = (color: string, reference: string) => {
@@ -262,7 +265,7 @@ export const getBreakdownSeriesColors = (
   // The neutral color of the theme, a grey without theme
   otherColor: string = C.grey[500],
 ): string[] => {
-  const neutral = otherColor.toLowerCase();
+  const neutral = HEX_COLOR.test(otherColor) ? toHexColor(otherColor) : otherColor.toLowerCase();
   const taken = new Set([neutral]);
   const colors: string[] = series.map(({ isOther }) => (isOther ? otherColor : ''));
   // Same order for any ranking of the same values: the one of their keys, compared code unit by code unit
@@ -273,10 +276,12 @@ export const getBreakdownSeriesColors = (
       if (a.key === b.key) return 0;
       return a.key < b.key ? -1 : 1;
     });
-  // The own colors first: of two values of the same color, the first key keeps it
+  // The own colors first: of two values of the same color, the first key keeps it. Compared as #rrggbb, as #000 and
+  // #000000 are the same color
   byKey.forEach(({ ownColor, index }) => {
-    const color = ownColor?.toLowerCase();
-    if (!color || !HEX_COLOR.test(color) || taken.has(color) || isCloseTo(color, neutral)) return;
+    if (!ownColor || !HEX_COLOR.test(ownColor) || isCloseTo(ownColor, neutral)) return;
+    const color = toHexColor(ownColor);
+    if (taken.has(color)) return;
     taken.add(color);
     colors[index] = color;
   });

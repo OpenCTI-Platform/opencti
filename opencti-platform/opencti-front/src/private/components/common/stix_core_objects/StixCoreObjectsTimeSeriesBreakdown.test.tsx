@@ -278,8 +278,9 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     ]);
     render(makeWidget('line', { breakdownBy: 'objectLabel' }));
     const [red, alsoRed, withoutColor] = (await drawn(mocks.lines)).series.map((serie: { color: string }) => serie.color);
-    expect(red).toEqual('#ff0000');
-    expect(alsoRed).not.toEqual(red);
+    // Of two values of the same color, the first key keeps it, whatever their ranks
+    expect(alsoRed).toEqual('#ff0000');
+    expect(red).not.toEqual(alsoRed);
 
     // Ranked first in another widget, the value without color keeps its color
     vi.clearAllMocks();

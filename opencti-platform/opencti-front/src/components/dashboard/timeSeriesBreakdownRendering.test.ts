@@ -333,6 +333,18 @@ describe('getBreakdownSeriesColors', () => {
     expect(colorsByKey(markings)['TLP:AMBER+STRICT']).not.toEqual('#ffc000');
   });
 
+  it('compares the own colors whatever their spelling', () => {
+    // A white marking drawn black on a light card, next to a label written #000
+    const [marking, label] = getBreakdownSeriesColors([
+      serie('marking', getReadableOwnColor('#ffffff', 'light')),
+      serie('label', '#000'),
+    ], palette, other);
+    // The label comes first in key order and keeps black
+    expect(label).toEqual('#000000');
+    expect(marking).not.toEqual('#000000');
+    expect(getBreakdownSeriesColors([serie('label', '#ABC')], palette, other)).toEqual(['#aabbcc']);
+  });
+
   it('does not give a value an own color that can be taken for the Other series', () => {
     // A grey label next to the grey of Other
     const [botnet, phishing] = getBreakdownSeriesColors([serie('botnet', '#76828d'), serie('phishing', '#e91e63'), otherSerie], palette, other);
