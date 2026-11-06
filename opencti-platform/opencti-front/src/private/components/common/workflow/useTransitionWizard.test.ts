@@ -219,6 +219,17 @@ describe('useTransitionWizard – handleTransition', () => {
     expect(result.current.wizard?.commentMode).toBe(CommentMode.required);
   });
 
+  it('opens the form to confirm a transition whose effect must be stated', () => {
+    const { result } = renderWizard();
+
+    act(() => {
+      result.current.handleTransition('Accept', [], null, false, false, true);
+    });
+
+    expect(result.current.wizard?.event).toBe('Accept');
+    expect(mockCommit).not.toHaveBeenCalled();
+  });
+
   it('requires confirmation when draft actions include validateDraft', () => {
     const { result } = renderWizard(null, 'draft-1');
 

@@ -1,7 +1,8 @@
-import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useEffect, useRef, useState } from 'react';
 import { fetchQuery, useFragment, useRelayEnvironment } from 'react-relay';
 import type { Subscription } from 'relay-runtime';
 import {
+  Button as FdsButton,
   Dialog,
   DialogBody,
   DialogContent,
@@ -67,6 +68,16 @@ interface WorkflowTransitionsProps {
   entityType?: string;
 }
 
+export type WorkflowAllowedTransition = NonNullable<WorkflowStatus_data$data['workflowInstance']>['allowedTransitions'][number];
+
+// One button per transition, coloured by its target status, instead of the "Next status" menu
+export interface TransitionButtonsOptions {
+  // Why the current user cannot fire the transition: its button is then disabled and explains it
+  disabledReason?: (transition: WorkflowAllowedTransition) => string | undefined;
+  // What firing the transition does, stated in a dialog the user confirms before it runs
+  effect?: (transition: WorkflowAllowedTransition) => ReactNode;
+}
+
 interface WorkflowTransitionsViewProps {
   entityId: string;
   entityNavigationId?: string | null;
@@ -76,6 +87,7 @@ interface WorkflowTransitionsViewProps {
   entityType: string;
   refreshing?: boolean;
   onCompleted?: () => void;
+  transitionButtons?: TransitionButtonsOptions;
 }
 
 const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> = ({
@@ -87,6 +99,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   entityType,
   refreshing = false,
   onCompleted,
+  transitionButtons,
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
@@ -219,11 +232,58 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     return divergence;
   }
 
+  const fireTransition = (transition: WorkflowAllowedTransition) => handleTransition(
+    transition.event,
+    transition.actions ?? [],
+    transition.comment,
+    transition.requiresShareOrganizationInput,
+    transition.requiresUnshareOrganizationInput,
+    transition.closingReason,
+    !!transitionButtons?.effect?.(transition),
+  );
+
+  const renderTransitionButton = (transition: WorkflowAllowedTransition) => {
+    if (!transitionButtons) {
+      return (
+        <Button
+          key={transition.event}
+          variant="primary"
+          onClick={() => fireTransition(transition)}
+          disabled={approving || clearing || !!wizard}
+        >
+          {transition.event}
+        </Button>
+      );
+    }
+    const color = transition.toStatus?.template?.color;
+    const disabledReason = transitionButtons.disabledReason?.(transition);
+    const button = (
+      <FdsButton
+        key={transition.event}
+        priority="secondary"
+        style={color ? { color, borderColor: color } : undefined}
+        onClick={() => fireTransition(transition)}
+        disabled={approving || clearing || !!wizard || !!disabledReason}
+      >
+        {transition.event}
+      </FdsButton>
+    );
+    if (!disabledReason) return button;
+    return (
+      <Tooltip key={transition.event}>
+        <TooltipTrigger asChild>
+          <span>{button}</span>
+        </TooltipTrigger>
+        <TooltipContent>{disabledReason}</TooltipContent>
+      </Tooltip>
+    );
+  };
+
   return (
     <>
       <Box data-testid="workflow-transitions-actions" sx={{ display: 'contents' }}>
         {divergence}
-        {workflowInstance.allowedTransitions.length > 1 ? (
+        {!transitionButtons && workflowInstance.allowedTransitions.length > 1 ? (
           <Menu open={menuOpen} onOpenChange={setMenuOpen}>
             <MenuTrigger asChild>
               <Button
@@ -244,14 +304,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                   <MenuItem
                     key={transition.event}
                     disabled={approving || clearing || !!wizard}
-                    onSelect={() => handleTransition(
-                      transition.event,
-                      transition.actions ?? [],
-                      transition.comment,
-                      transition.requiresShareOrganizationInput,
-                      transition.requiresUnshareOrganizationInput,
-                      transition.closingReason,
-                    )}
+                    onSelect={() => fireTransition(transition)}
                     style={{ display: 'flex', justifyContent: 'space-between', gap: 16, height: 'auto', minHeight: 36, whiteSpace: 'normal' }}
                     endIcon={actionCount > 0 ? (
                       <span style={{ fontSize: 12, color: 'var(--text-default-secondary)', whiteSpace: 'nowrap' }}>
@@ -267,23 +320,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           </Menu>
         ) : (
           <>
-            {workflowInstance.allowedTransitions.map((transition) => (
-              <Button
-                key={transition.event}
-                variant="primary"
-                onClick={() => handleTransition(
-                  transition.event,
-                  transition.actions ?? [],
-                  transition.comment,
-                  transition.requiresShareOrganizationInput,
-                  transition.requiresUnshareOrganizationInput,
-                  transition.closingReason,
-                )}
-                disabled={approving || clearing || !!wizard}
-              >
-                {transition.event}
-              </Button>
-            ))}
+            {workflowInstance.allowedTransitions.map(renderTransitionButton)}
           </>
         )}
       </Box>
@@ -297,9 +334,11 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           {({ values, isSubmitting, isValid }) => {
             const disabled = isSubmitting || approving || clearing;
             const missingComment = wizard.commentMode === CommentMode.required && !canBypassMandatoryFields && !values.comment.trim();
-            // Radix gives every DialogDescription the same id, so the closing reason and validation prompts use it only when no comment prompt precedes them.
+            // Radix gives every DialogDescription the same id, so each prompt (closing reason, validation, confirmation) uses it only when no other prompt precedes it.
             const showComment = hasTransitionComment(wizard.commentMode);
-            const targetStatus = workflowInstance.allowedTransitions.find((transition) => transition.event === wizard.event)?.toStatus;
+            const wizardTransition = workflowInstance.allowedTransitions.find((transition) => transition.event === wizard.event);
+            const targetStatus = wizardTransition?.toStatus;
+            const effect = wizardTransition && transitionButtons?.effect?.(wizardTransition);
             return (
               <Dialog
                 open
@@ -340,9 +379,10 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                           disabled={disabled}
                           renderCommentPrompt={(prompt) => <DialogDescription className="flex flex-col gap-2">{prompt}</DialogDescription>}
                         />
+                        {effect && (showComment ? <Text variant="content-base">{effect}</Text> : <DialogDescription>{effect}</DialogDescription>)}
                         {wizard.requiresValidation && (
                           <>
-                            {showComment ? (
+                            {showComment || effect ? (
                               <Text variant="content-base">{t_i18n('Do you want to approve this draft and send it to ingestion?')}</Text>
                             ) : (
                               <DialogDescription>{t_i18n('Do you want to approve this draft and send it to ingestion?')}</DialogDescription>
@@ -400,7 +440,8 @@ const WorkflowPendingPoll = ({ refresh }: { refresh: () => void }) => {
 export const WorkflowTransitionsForEntity: FunctionComponent<{
   data: WorkflowStatusStixDomainObject_data$key;
   entityType: string;
-}> = ({ data, entityType }) => {
+  transitionButtons?: TransitionButtonsOptions;
+}> = ({ data, entityType, transitionButtons }) => {
   const entity = useFragment<WorkflowStatusStixDomainObject_data$key>(workflowStatusStixDomainObjectFragment, data);
   const environment = useRelayEnvironment();
   const { t_i18n } = useFormatter();
@@ -454,6 +495,7 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
         entityType={entityType}
         refreshing={refreshing}
         onCompleted={refresh}
+        transitionButtons={transitionButtons}
       />
     </>
   );
