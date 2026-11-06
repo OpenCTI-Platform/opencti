@@ -2054,6 +2054,48 @@ class OpenCTIStix2:
             and entity_type in _STIX_2_0_BACKEND_ENTITY_TYPES
         )
 
+    def _remove_nested_refs_excluded_by_filter(
+        self, entity: Dict, access_filter: Dict
+    ) -> None:
+        """Remove the nested refs that the export access filter excludes.
+
+        The backend STIX 2.0 converter resolves nested refs (``sample_refs``,
+        ``operating_system_refs``...) with the user's rights only, not with the
+        export access filter (e.g. the content max markings). The legacy path
+        applies that filter when it loads the nested refs, so do the same here:
+        the targets visible without the filter but not with it are removed.
+
+        :param entity: STIX 2.0 entity produced by the backend
+        :type entity: Dict
+        :param access_filter: Access filter of the export
+        :type access_filter: Dict
+        """
+
+        def target_ids(nested_refs: List[Dict]) -> set:
+            return {
+                (nested_ref.get("to") or {}).get("standard_id")
+                for nested_ref in nested_refs
+            } - {None}
+
+        nested_ref_client = self.opencti.stix_nested_ref_relationship
+        all_ids = target_ids(nested_ref_client.list(fromId=entity["x_opencti_id"]))
+        allowed_ids = target_ids(
+            nested_ref_client.list(fromId=entity["x_opencti_id"], filters=access_filter)
+        )
+        excluded_ids = all_ids - allowed_ids
+        if not excluded_ids:
+            return
+        for key in list(entity):
+            value = entity[key]
+            if key.endswith("_ref") and value in excluded_ids:
+                del entity[key]
+            elif key.endswith("_refs") and isinstance(value, list):
+                kept = [ref for ref in value if ref not in excluded_ids]
+                if kept:
+                    entity[key] = kept
+                else:
+                    del entity[key]
+
     def _generate_backend_stix_2_0_export(self, entity: Dict) -> Dict:
         """Get the STIX 2.0 representation of an entity from the backend.
 
@@ -2844,8 +2886,11 @@ class OpenCTIStix2:
                         )
 
         # StixRefRelationship
-        # TODO(stix-2-0-migration): DELETE once every entity is migrated.
-        if not is_backend_stix_2_0:
+        # TODO(stix-2-0-migration): DELETE the legacy branch once every entity is migrated.
+        if is_backend_stix_2_0:
+            if access_filter is not None:
+                self._remove_nested_refs_excluded_by_filter(entity, access_filter)
+        else:
             stix_nested_ref_relationships = (
                 self.opencti.stix_nested_ref_relationship.list(
                     fromId=entity["x_opencti_id"], filters=access_filter
