@@ -20,7 +20,7 @@ export interface ConnectorImportLoaded {
 }
 
 export interface ConnectorImportOptions extends ConfigImportOptions {
-  bundleId?: string;
+  bundleId: string;
   loaded?: ConnectorImportLoaded;
   reservedNames?: Set<string>;
   credentials?: Record<string, string>;
@@ -70,7 +70,7 @@ const sameConfiguration = (current: { key: string; value?: string | null }[], in
 
 // add: the connector must not exist yet. overwrite: the managed connector with the same name is updated, else it is created.
 // copy: the connector is created under a free name. A created connector is stopped.
-export const importConnector = async (
+export const importConfigPresetConnector = async (
   context: AuthContext,
   user: AuthUser,
   configuration: unknown,
@@ -87,7 +87,7 @@ export const importConnector = async (
     const name = connectorName(candidate);
     return !!reservedNames?.has(name) || connectors.some((connector) => connector.name === name);
   };
-  const existing = connectors.find(({ name }) => name === (bundleId ?? connectorName(bundleConnector.name)));
+  const existing = connectors.find(({ name }) => name === bundleId);
   const sameName = connectors.find(({ name }) => name === connectorName(bundleConnector.name));
   if (existing && mode === ConfigImportMode.Add) {
     return refused('exists', 'Connector already exists', true, bundleConnector);

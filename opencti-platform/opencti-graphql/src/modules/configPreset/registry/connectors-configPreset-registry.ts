@@ -3,7 +3,7 @@ import { fullEntitiesList, pageEntitiesConnection } from '../../../database/midd
 import { ENTITY_TYPE_CONNECTOR } from '../../../schema/internalObject';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { exportConnector } from '../../connector/connector-export';
-import { importConnector, loadConnectorImportContext } from '../../connector/connector-import';
+import { importConfigPresetConnector, loadConnectorImportContext } from '../../connector/connector-import';
 import type { BasicStoreEntityConnector } from '../../connector/connector-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
@@ -50,14 +50,14 @@ const connectorsImporter: ConfigPresetImporter = {
     plan.connectorsLoaded ??= loadConnectorImportContext(context, user);
     const loaded = await plan.connectorsLoaded;
     const options = { mode, dryRun: true, loaded, reservedNames: plan.connectorNames, ingestionGroupPlanned: plan.ingestionGroupPlanned, ...itemOptionsOf(plan, item.id) };
-    const result = await importConnector(context, user, item.configuration, options);
+    const result = await importConfigPresetConnector(context, user, item.configuration, options);
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(CONNECTORS_FAMILY_ID, item.id));
     }
     return { ...toComputedItem(label, result), credentials: result.credentials };
   },
   apply: async (context, user, item, computed, mode, plan) => {
-    return toAppliedStatus(await importConnector(context, user, item.configuration, { mode, ...itemOptionsOf(plan, item.id) }), computed);
+    return toAppliedStatus(await importConfigPresetConnector(context, user, item.configuration, { mode, ...itemOptionsOf(plan, item.id) }), computed);
   },
 };
 
