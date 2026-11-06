@@ -39,6 +39,7 @@ import { askEntityExport, askListExport } from '../../../src/domain/stix';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../utils/testQuery';
 import { addSavedFilter, deleteSavedFilter, savedFilterEditAuthorizedMembers } from '../../../src/modules/savedFilter/savedFilter-domain';
 import { awaitUntilCondition } from '../../utils/testQueryHelper';
+import { addWorkspace, workspaceDelete } from '../../../src/modules/workspace/workspace-domain';
 
 describe('Telemetry manager test coverage', () => {
   let filigranTelemetryMeterManager: TelemetryMeterManager;
@@ -266,5 +267,28 @@ describe('Telemetry manager test coverage', () => {
     }
     expect(await redisGetTelemetry(TELEMETRY_GAUGE_NLQ)).toBe(1);
     expect(await redisGetTelemetry(TELEMETRY_GAUGE_EXPORT_GENERATED)).toBe(2);
+  });
+
+  describe('Verify investigation telemetry metrics get collected', () => {
+    let investigationId: string;
+
+    beforeAll(async () => {
+      const investigation = await addWorkspace(testContext, ADMIN_USER, { name: 'telemetry-investigation', type: 'investigation' });
+      investigationId = investigation.id;
+    });
+
+    afterAll(async () => {
+      await workspaceDelete(testContext, ADMIN_USER, investigationId);
+    });
+
+    test('investigation gauge is read by the telemetry manager', async () => {
+      // WHEN telemetry data is fetched
+      await awaitUntilCondition(async () => {
+        await fetchTelemetryData(filigranTelemetryMeterManager);
+        return filigranTelemetryMeterManager.investigationCount >= 1;
+      }, 3000, { message: 'Investigation telemetry data was not updated in time' });
+      // THEN the investigation workspaces are counted
+      expect(filigranTelemetryMeterManager.investigationCount).toBeGreaterThanOrEqual(1);
+    });
   });
 });
