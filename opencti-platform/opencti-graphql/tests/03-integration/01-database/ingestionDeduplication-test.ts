@@ -2,12 +2,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { createEntity, deleteElementById, updateAttribute } from '../../../src/database/middleware';
-import { getClientBase } from '../../../src/database/redis';
+import { redisGetIngestionHash } from '../../../src/database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_VULNERABILITY } from '../../../src/modules/vulnerability/vulnerability-types';
 import { addIngestionDeduplicationRule, deleteIngestionDeduplicationRule } from '../../../src/modules/ingestionDeduplication/ingestionDeduplicationRule-domain';
 
-const lastImportedHash = (stixId: string) => getClientBase().hget(`dedup:${stixId}`, ADMIN_USER.id);
+const lastImportedHash = (stixId: string) => redisGetIngestionHash(stixId, ADMIN_USER.id);
 
 describe('Ingestion deduplication', () => {
   const stixId = `attack-pattern--${uuidv4()}`;

@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import jsonCanonicalize from 'canonicalize';
 import conf, { INGESTION_DEDUPLICATION_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
 import { getEntitiesListFromCache } from './cache';
-import { getClientBase, redisTx } from './redis';
+import { redisDeleteIngestionHashes, redisGetIngestionHash, redisSetIngestionHash } from './redis';
 import { SYSTEM_USER } from '../utils/access';
 import { getDraftContext } from '../utils/draftContext';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -33,11 +33,8 @@ export const INGESTION_DEDUPLICATION_ALLOWED_TYPES = [
 const INGESTION_DEDUPLICATION_TTL = conf.get('ingestion_deduplication:ttl') || 86400;
 const NEVER_HASHED_FIELDS = ['clientMutationId'];
 
-// dedup:${stixId} => Redis hash of the last imported content, one field per importing user
-const deduplicationKey = (stixId: string) => `dedup:${stixId}`;
-
 export interface IngestionDeduplication {
-  key: string;
+  stixId: string;
   userId: string;
   hash: string;
 }
@@ -72,28 +69,25 @@ export const prepareIngestionDeduplication = async (
   const excludedFields = new Set([...NEVER_HASHED_FIELDS, ...(rule.excluded_fields ?? [])]);
   const content = Object.fromEntries(Object.entries(input).filter(([field]) => !excludedFields.has(field)));
   const hash = createHash('sha256').update(jsonCanonicalize(content) ?? '').digest('hex');
-  return { key: deduplicationKey(input.stix_id), userId: user.id, hash };
+  return { stixId: input.stix_id, userId: user.id, hash };
 };
 
 // Best effort: a Redis failure must never block an import
 export const isIngestionUnchanged = async (deduplication: IngestionDeduplication) => {
   try {
-    const lastHash = await getClientBase().hget(deduplication.key, deduplication.userId);
+    const lastHash = await redisGetIngestionHash(deduplication.stixId, deduplication.userId);
     return lastHash === deduplication.hash;
   } catch (err) {
-    logApp.warn('[INGESTION DEDUPLICATION] Unable to read the last imported content', { cause: err, key: deduplication.key });
+    logApp.warn('[INGESTION DEDUPLICATION] Unable to read the last imported content', { cause: err, stixId: deduplication.stixId });
     return false;
   }
 };
 
 export const recordIngestion = async (deduplication: IngestionDeduplication) => {
   try {
-    await redisTx(getClientBase(), (tx) => {
-      tx.hset(deduplication.key, deduplication.userId, deduplication.hash);
-      tx.expire(deduplication.key, INGESTION_DEDUPLICATION_TTL);
-    });
+    await redisSetIngestionHash(deduplication.stixId, deduplication.userId, deduplication.hash, INGESTION_DEDUPLICATION_TTL);
   } catch (err) {
-    logApp.warn('[INGESTION DEDUPLICATION] Unable to record the imported content', { cause: err, key: deduplication.key });
+    logApp.warn('[INGESTION DEDUPLICATION] Unable to record the imported content', { cause: err, stixId: deduplication.stixId });
   }
 };
 
@@ -102,21 +96,20 @@ export const clearIngestionDeduplication = async (
   user: AuthUser,
   instances: Array<{ entity_type: string; standard_id?: string; x_opencti_stix_ids?: string[] }>,
 ) => {
-  if (getDraftContext(context, user)) {
-    return;
-  }
-  const stixIds = new Set<string>();
-  instances.filter((instance) => isIngestionDeduplicationType(instance.entity_type)).forEach((instance) => {
-    if (instance.standard_id) stixIds.add(instance.standard_id);
-    (instance.x_opencti_stix_ids ?? []).forEach((stixId) => stixIds.add(stixId));
-  });
-  if (stixIds.size === 0) {
-    return;
-  }
+  // Called while storing stream events: must never throw
   try {
-    // One DEL per key: keys of one entity can live in different cluster slots
-    await Promise.all(Array.from(stixIds).map((stixId) => getClientBase().del(deduplicationKey(stixId))));
+    if (getDraftContext(context, user)) {
+      return;
+    }
+    const stixIds = new Set<string>();
+    instances.filter((instance) => isIngestionDeduplicationType(instance.entity_type)).forEach((instance) => {
+      if (instance.standard_id) stixIds.add(instance.standard_id);
+      (instance.x_opencti_stix_ids ?? []).forEach((stixId) => stixIds.add(stixId));
+    });
+    if (stixIds.size > 0) {
+      await redisDeleteIngestionHashes(Array.from(stixIds));
+    }
   } catch (err) {
-    logApp.warn('[INGESTION DEDUPLICATION] Unable to clear the imported content', { cause: err, ids: Array.from(stixIds) });
+    logApp.warn('[INGESTION DEDUPLICATION] Unable to clear the imported content', { cause: err });
   }
 };

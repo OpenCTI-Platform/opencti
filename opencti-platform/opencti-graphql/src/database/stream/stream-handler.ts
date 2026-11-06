@@ -22,7 +22,7 @@ import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
 import { telemetry } from '../../config/tracing';
-import { logApp } from '../../config/conf';
+import { INGESTION_DEDUPLICATION_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../config/conf';
 import { getEntitiesMapFromCache } from '../cache';
 import { clearIngestionDeduplication } from '../ingestionDeduplication';
 import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
@@ -82,7 +82,9 @@ export const storeMergeEvent = async (
   opts: EventOpts,
 ) => {
   try {
-    await clearIngestionDeduplication(context, user, [initialInstance, mergedInstance, ...sourceEntities]);
+    if (isFeatureEnabled(INGESTION_DEDUPLICATION_FEATURE_FLAG)) {
+      await clearIngestionDeduplication(context, user, [initialInstance, mergedInstance, ...sourceEntities]);
+    }
     const event = await buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities);
     await pushToStream(context, user, event, opts);
     return event;
@@ -99,7 +101,9 @@ export const storeUpdateEvent = async (
   opts: UpdateEventOpts = {},
 ) => {
   try {
-    await clearIngestionDeduplication(context, user, [previous, instance]);
+    if (isFeatureEnabled(INGESTION_DEDUPLICATION_FEATURE_FLAG)) {
+      await clearIngestionDeduplication(context, user, [previous, instance]);
+    }
     if (isStixExportableInStreamData(instance)) {
       const [previousStatus, currentStatus] = await Promise.all([
         resolveWorkflowStatusName(context, user, previous),
@@ -150,7 +154,9 @@ export const storeCreateEntityEvent = async (context: AuthContext, user: AuthUse
 };
 export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, opts: EventOpts = {}) => {
   try {
-    await clearIngestionDeduplication(context, user, [instance]);
+    if (isFeatureEnabled(INGESTION_DEDUPLICATION_FEATURE_FLAG)) {
+      await clearIngestionDeduplication(context, user, [instance]);
+    }
     if (isStixExportableInStreamData(instance)) {
       const message = generateDeleteMessage(instance);
       const event = await buildDeleteEvent(user, instance, message);

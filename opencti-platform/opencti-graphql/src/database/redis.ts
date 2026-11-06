@@ -1309,3 +1309,25 @@ export const redisGetConfigPresetImportLastFinished = async (): Promise<string |
   return getClientBase().get(CONFIG_PRESET_IMPORT_LAST_FINISHED_KEY);
 };
 // endregion - config preset import session
+
+// region - ingestion deduplication
+// dedup:${stixId} => Redis hash of the last imported content, one field per importing user
+const ingestionDeduplicationKey = (stixId: string) => `dedup:${stixId}`;
+
+export const redisGetIngestionHash = async (stixId: string, userId: string): Promise<string | null> => {
+  return getClientBase().hget(ingestionDeduplicationKey(stixId), userId);
+};
+
+export const redisSetIngestionHash = async (stixId: string, userId: string, hash: string, ttl: number) => {
+  const key = ingestionDeduplicationKey(stixId);
+  await redisTx(getClientBase(), (tx) => {
+    tx.hset(key, userId, hash);
+    tx.expire(key, ttl);
+  });
+};
+
+// One DEL per key: keys of one entity can live in different cluster slots
+export const redisDeleteIngestionHashes = async (stixIds: string[]) => {
+  await Promise.all(stixIds.map((stixId) => getClientBase().del(ingestionDeduplicationKey(stixId))));
+};
+// endregion - ingestion deduplication
