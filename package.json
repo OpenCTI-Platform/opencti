@@ -40,7 +40,7 @@
     "@types/pdfmake": "0.3.3",
     "axios": "1.21.0",
     "chokidar": "6.0.0",
-    "d3-color": "3.1.0",
+    "d3-color": "3.1.1",
     "graphql": "patch:graphql@17.0.2#./patch/graphql-17.patch",
     "ioredis": "5.11.1",
     "json5": "2.2.3",
