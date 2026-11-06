@@ -362,6 +362,7 @@ export const runFunctionAsLongRunning = async (
   functionToRun: () => Promise<void>,
   executionId: string,
   lockId: string = executionId,
+  timeoutMs = 10000,
 ): Promise<boolean> => {
   let lock: { unlock: () => any } | undefined;
   try {
@@ -379,7 +380,7 @@ export const runFunctionAsLongRunning = async (
       // Otherwise, it means that either the rule apply wasn't started yet, or the node processing it went down and that the call couldn't finish.
       // In any case, we have to start it over
       await redisInitializeAsyncCall(executionId);
-      const timeoutPromise = wait(10000, { timeout: true });
+      const timeoutPromise = wait(timeoutMs, { timeout: true });
       const fullFunctionRun = async () => {
         try {
           await functionToRun();

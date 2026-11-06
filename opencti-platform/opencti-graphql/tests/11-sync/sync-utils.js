@@ -1,13 +1,16 @@
 import { expect } from 'vitest';
+import { createReadStream } from 'node:fs';
 import { elAggregationCount } from '../../src/database/engine';
-import { ADMIN_USER, createHttpClient, executeExternalQuery, testContext } from '../utils/testQuery';
-import { READ_DATA_INDICES } from '../../src/database/utils';
+import { ADMIN_USER, createHttpClient, DATA_FILE_TEST, executeExternalQuery, FIVE_MINUTES, testContext } from '../utils/testQuery';
+import { READ_DATA_INDICES, wait } from '../../src/database/utils';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 import { checkInstanceDiff } from '../utils/testStream';
-import { logApp } from '../../src/config/conf';
+import conf, { logApp } from '../../src/config/conf';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../../src/modules/deleteOperation/deleteOperation-types';
 
 import { convertStoreToStix_2_1 } from '../../src/database/stix-2-1-converter';
+import { SYSTEM_USER } from '../../src/utils/access';
+import { stixCoreObjectImportPush } from '../../src/domain/stixCoreObject';
 
 const STAT_QUERY = `query stats {
       about {
@@ -98,25 +101,86 @@ export const checkPreSyncContent = async () => {
   const initStixReport = convertStoreToStix_2_1(initReport);
   return { objectMap, relMap, initStixReport };
 };
-export const checkMapConsistency = (before, after) => {
+const computeMapDifferences = (before, after) => {
   const failedExpects = [];
-  after.forEach((value, key) => {
-    const compareValue = before.get(key);
-    const current = `${key} - ${value}`;
-    const expected = `${key} - ${compareValue}`;
+  // Both sides: a type can be missing on either one
+  new Set([...before.keys(), ...after.keys()]).forEach((key) => {
+    const current = `${key} - ${after.get(key)}`;
+    const expected = `${key} - ${before.get(key)}`;
     if (current !== expected) {
       failedExpects.push({ current, expected });
     }
-    // expect(`${key} - ${value}`).toEqual(`${key} - ${compareValue}`);
   });
+  return failedExpects;
+};
+export const checkMapConsistency = (before, after) => {
+  const failedExpects = computeMapDifferences(before, after);
   expect(failedExpects.length, `checkMapConsistency failed ${JSON.stringify(failedExpects)}`).toEqual(0);
 };
-export const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
-  const client = createHttpClient();
+const fetchRemoteStats = async (client, remoteUri) => {
   const data = await executeExternalQuery(client, remoteUri, STAT_QUERY);
   const { objects, relationships } = data.about.debugStats;
   const syncObjectMap = new Map(objects.map((i) => [i.label, i.value]));
   const syncRelMap = new Map(relationships.map((i) => [i.label, i.value]));
+  return { syncObjectMap, syncRelMap };
+};
+
+// The direct and backup/restore syncs check this file on their remote platform
+export const uploadReportFile = async () => {
+  const file = {
+    createReadStream: () => createReadStream('./tests/data/DATA-TEST-STIX2_v2.json'),
+    filename: DATA_FILE_TEST,
+    mimetype: 'application/json',
+  };
+  await stixCoreObjectImportPush(testContext, SYSTEM_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', file);
+};
+
+const POLL_INTERVAL = 5000;
+
+// The sync instances boot while the first test files run (see ci-test-backend.yml)
+export const waitForRemotePlatform = async (remoteUri, timeout = FIVE_MINUTES) => {
+  const healthUrl = new URL(`health?health_access_key=${conf.get('app:health_access_key')}`, remoteUri);
+  const deadline = Date.now() + timeout;
+  let lastAnswer = 'no response';
+  while (Date.now() < deadline) {
+    // No response while still booting
+    const response = await fetch(healthUrl).catch(() => undefined);
+    if (response) {
+      await response.body?.cancel();
+      if (response.ok) {
+        return;
+      }
+      if (response.status === 401) {
+        throw new Error(`Remote platform ${remoteUri} rejects app:health_access_key`);
+      }
+      lastAnswer = `HTTP ${response.status}`;
+    }
+    await wait(POLL_INTERVAL);
+  }
+  throw new Error(`Remote platform ${remoteUri} is not healthy after ${timeout} ms (last answer: ${lastAnswer})`);
+};
+
+// Poll until the remote platform holds the same content, twice in a row so a transient match does not count.
+// It never asserts: on timeout, checkPostSyncContent reports the remaining differences.
+export const waitForRemoteSync = async (remoteUri, objectMap, relMap, isRemoteReady = async () => true, timeout = FIVE_MINUTES) => {
+  const client = createHttpClient();
+  const deadline = Date.now() + timeout;
+  let consecutiveMatches = 0;
+  while (Date.now() < deadline && consecutiveMatches < 2) {
+    await wait(POLL_INTERVAL);
+    try {
+      const { syncObjectMap, syncRelMap } = await fetchRemoteStats(client, remoteUri);
+      const isSameContent = computeMapDifferences(objectMap, syncObjectMap).length === 0
+        && computeMapDifferences(relMap, syncRelMap).length === 0;
+      consecutiveMatches = isSameContent && await isRemoteReady() ? consecutiveMatches + 1 : 0;
+    } catch {
+      consecutiveMatches = 0;
+    }
+  }
+};
+export const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport) => {
+  const client = createHttpClient();
+  const { syncObjectMap, syncRelMap } = await fetchRemoteStats(client, remoteUri);
   checkMapConsistency(objectMap, syncObjectMap);
   checkMapConsistency(relMap, syncRelMap);
   const reportData = await executeExternalQuery(client, remoteUri, REPORT_QUERY, {
