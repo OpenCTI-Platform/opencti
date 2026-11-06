@@ -201,7 +201,7 @@ interface SubTypeWorkflowProps {
   entityType?: string;
 }
 
-const SubTypeWorkflow = ({ entityType = 'DraftWorkspace' }: SubTypeWorkflowProps) => {
+const SubTypeWorkflowForType = ({ entityType }: { entityType: string }) => {
   const [requestedScope, setRequestedScope] = useState<WorkflowScope>('GLOBAL');
   // The scope chosen on Case-Rfi must not follow the user to another entity type.
   const scope = entityType === REQUEST_ACCESS_ENTITY_TYPE ? requestedScope : 'GLOBAL';
@@ -209,6 +209,11 @@ const SubTypeWorkflow = ({ entityType = 'DraftWorkspace' }: SubTypeWorkflowProps
   // Keyed by scope: each scope edits its own definition, so nothing of the other one
   // (graph, publish status, pending autosave) may leak across the switch.
   return <ScopedSubTypeWorkflow key={scope} entityType={entityType} scope={scope} onScopeChange={setRequestedScope} />;
+};
+
+const SubTypeWorkflow = ({ entityType = 'DraftWorkspace' }: SubTypeWorkflowProps) => {
+  // Keyed by entity type: coming back to Case-Rfi reopens it on the Global scope.
+  return <SubTypeWorkflowForType key={entityType} entityType={entityType} />;
 };
 
 export default SubTypeWorkflow;

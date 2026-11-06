@@ -59,6 +59,7 @@ interface GroupFieldProps {
   disabled?: boolean;
   predefinedGroups?: GroupFieldOption[];
   showConfidence?: boolean;
+  clearable?: boolean;
 }
 
 const GroupField: React.FC<GroupFieldProps> = (props) => {
@@ -73,6 +74,7 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
     disabled = false,
     predefinedGroups,
     showConfidence = false,
+    clearable,
   } = props;
 
   const [groups, setGroups] = useState<GroupFieldOption[]>([]);
@@ -112,6 +114,7 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
       style={style}
       name={name}
       multiple={multiple}
+      clearable={clearable}
       disabled={disabled}
       label={label ?? t_i18n('Groups')}
       helperText={helpertext}

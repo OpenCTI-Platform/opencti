@@ -25,6 +25,7 @@ interface ValidatorGroupFormValues {
 }
 
 // Only the validator group is sent: the configuration keeps its statuses and its workflow definition.
+// The group can be changed but not emptied: without a validator group, requesting access fails.
 const RequestAccessValidatorGroup = () => {
   const { t_i18n } = useFormatter();
   const { subType } = useSubTypeOutletContext();
@@ -44,7 +45,8 @@ const RequestAccessValidatorGroup = () => {
   };
 
   const handleChange = (_name: string, value: GroupFieldOption | null) => {
-    commit({ variables: { input: { approval_admin: value ? [value.value] : [] } } });
+    if (!value) return;
+    commit({ variables: { input: { approval_admin: [value.value] } } });
   };
 
   return (
@@ -58,6 +60,7 @@ const RequestAccessValidatorGroup = () => {
         label={t_i18n('Validator group membership:')}
         onChange={handleChange}
         multiple={false}
+        clearable={false}
         style={{ width: 280 }}
       />
     </Formik>
