@@ -275,8 +275,10 @@ You have to install all the needed dependencies for the main application and the
 
 ```bash
 sudo apt-get update
-sudo apt-get install build-essential nodejs npm python3 python3-pip python3-dev
+sudo apt-get install build-essential nodejs npm python3 python3-dev
 ```
+
+The Python modules of the platform and of the workers are installed with [uv](https://docs.astral.sh/uv/): install it with its [standalone installer](https://docs.astral.sh/uv/getting-started/installation/). Python must be 3.10 or later.
 
 #### Download the application files
 
@@ -301,7 +303,7 @@ tar xvfz opencti-release-{RELEASE_VERSION}.tar.gz
 
 #### Configure the application
 
-The main application has just one JSON configuration file to change and a few Python modules to install
+The main application has just one JSON configuration file to change.
 
 ```bash
 cd opencti/opencti-platform/opencti-graphql
@@ -309,14 +311,6 @@ cp config/default.json config/production.json
 ```
 
 Change the *config/production.json* file according to your configuration of ElasticSearch, Redis, RabbitMQ and S3 bucket as well as default credentials (the `ADMIN_TOKEN` must be a [valid UUID](https://www.uuidgenerator.net/)).
-
-#### Install the Python modules
-
-```bash
-cd src/python
-pip3 install -r requirements.txt
-cd ../..
-```
 
 #### Start the application
 
@@ -333,7 +327,7 @@ corepack --version
 #0.34.0
 ```
 
-Once Node.js is setup, you can build and run with (from inside the `opencti/opencti-platform/opencti-graphql` folder):
+Once Node.js is setup, you can build and run with (from inside the `opencti/opencti-platform/opencti-graphql` folder, `yarn build` also installs the Python modules in `opencti/.venv`):
 ```bash
 yarn install
 yarn build
@@ -349,18 +343,19 @@ The OpenCTI worker is used to write the data coming from the RabbitMQ messages b
 #### Configure the worker
 
 ```bash
-cd ../../worker
-pip3 install -r requirements.txt
-cp config.yml.sample config.yml
+cd ../../opencti-worker/src
+cp ../config.yml.sample config.yml
 ```
 
 Change the *config.yml* file according to your OpenCTI token.
 
 #### Start as many workers as you need
 
+`uv run` installs the Python modules of the worker in `opencti/.venv` before starting it.
+
 ```bash
-python3 worker.py &
-python3 worker.py &
+uv run --locked worker.py &
+uv run --locked worker.py &
 ```
 
 !!! success "Installation done"
