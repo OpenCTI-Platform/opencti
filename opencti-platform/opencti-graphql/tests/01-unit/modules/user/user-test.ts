@@ -12,6 +12,7 @@ import {
   authenticateUserByUserId,
   checkPasswordInlinePolicy,
   generatePasswordFromPolicy,
+  isPasswordPolicySatisfiable,
   isSensitiveChangesAllowed,
   login,
 } from '../../../../src/modules/user/user-domain';
@@ -194,6 +195,21 @@ describe('password generator', () => {
       .toThrowError('password policy cannot be satisfied');
     expect(() => generatePasswordFromPolicy({ password_policy_max_length: 8, password_policy_min_uppercase: Number.MAX_SAFE_INTEGER }))
       .toThrowError('password policy cannot be satisfied');
+  });
+  it('should tell a policy satisfiable when the password checker accepts a password of at most its maximum length', async () => {
+    // The checker counts the empty words around a separator, and a separator as a symbol
+    const emptyWords = { password_policy_max_length: 3, password_policy_min_words: 3, password_policy_min_symbols: 2 };
+    expect(checkPasswordInlinePolicy(testContext, emptyWords, 'a--')).toEqual([]);
+    expect(isPasswordPolicySatisfiable(emptyWords)).toBe(true);
+    expect(isPasswordPolicySatisfiable({ password_policy_max_length: 0, password_policy_min_uppercase: 9 })).toBe(true);
+    expect(isPasswordPolicySatisfiable({
+      password_policy_max_length: 4,
+      password_policy_min_words: 3,
+      password_policy_min_uppercase: 1,
+      password_policy_min_lowercase: 1,
+      password_policy_min_numbers: 1,
+    })).toBe(false);
+    expect(isPasswordPolicySatisfiable({ password_policy_max_length: 10, password_policy_min_length: 12 })).toBe(false);
   });
 });
 

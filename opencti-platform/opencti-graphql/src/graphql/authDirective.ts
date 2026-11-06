@@ -5,7 +5,15 @@ import { AuthRequired, ForbiddenAccess, LtsRequiredActivation, OtpRequired, OtpR
 import { Capabilities } from '../generated/graphql';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
-import { BYPASS, checkOTPValidationStatus, OTPValidationStatus, PUBLIC_DASHBOARD_REFERER, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
+import {
+  BYPASS,
+  checkOTPValidationStatus,
+  KNOWLEDGE_KNUPDATE,
+  OTPValidationStatus,
+  PUBLIC_DASHBOARD_REFERER,
+  SETTINGS_SET_ACCESSES,
+  VIRTUAL_ORGANIZATION_ADMIN,
+} from '../utils/access';
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
@@ -117,6 +125,11 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
               }
 
               const userBaseCapabilities = authenticatedUser.capabilities.map((c) => c.name);
+              // The import of a verified Form Intake submission writes with Create / Update knowledge: this is the
+              // only capability the form capability gives, every other check (markings, confidence, ...) still applies.
+              if (context.form_submission === true) {
+                userBaseCapabilities.push(KNOWLEDGE_KNUPDATE);
+              }
               const userCapabilitiesInDraft = authenticatedUser.capabilitiesInDraft?.map((c) => c.name) ?? [];
 
               // Accept everything if bypass capability or the system user (protection).

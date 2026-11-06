@@ -247,6 +247,9 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={() => setAnchorEl(null)}
+            // The anchor lives in this fixed drawer, so page scroll cannot detach the menu. Locking
+            // scroll would hide the page scrollbar and slide the drawer into its gutter.
+            disableScrollLock
           >
             <StixCoreObjectFileExport
               onClose={() => setAnchorEl(null)}

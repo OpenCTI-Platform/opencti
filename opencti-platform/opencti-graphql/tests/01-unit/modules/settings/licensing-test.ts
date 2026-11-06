@@ -14,7 +14,7 @@ vi.mock('../../../../src/enterprise-edition/xtm_ca', () => ({
 }));
 
 import conf from '../../../../src/config/conf';
-import { getEnterpriseEditionInfo } from '../../../../src/modules/settings/licensing';
+import { decodeLicensePem, getEnterpriseEditionInfo } from '../../../../src/modules/settings/licensing';
 import { setCurrentXtmLicenseProof } from '../../../../src/modules/xtm/one/xtm-one-license';
 import { isEnterpriseEditionFromSettings } from '../../../../src/enterprise-edition/ee';
 import { PlatformEeSource } from '../../../../src/generated/graphql';
@@ -122,6 +122,41 @@ describe('getEnterpriseEditionInfo: the one Enterprise Edition decision', () => 
 
     setCurrentXtmLicenseProof(createTestXtmLicense(foreignCa));
     expect(getEnterpriseEditionInfo(settings({ enterprise_license: ownLicense() })).license_validated).toBe(true);
+  });
+
+  describe('a Filigran license pasted as the platform license', () => {
+    it('is the full Enterprise Edition when its OpenCTI sub-license is global', () => {
+      const filigranLicense = createTestXtmLicense(xtmCa, { openctiIds: ['global'], customer: 'Filigran customer' });
+      const edition = getEnterpriseEditionInfo(settings({ enterprise_license: filigranLicense }));
+      expect(edition).toMatchObject({
+        license_enterprise: true,
+        license_validated: true,
+        license_valid_cert: true,
+        license_source: PlatformEeSource.FiligranLicense,
+        license_customer: 'Filigran customer',
+        license_global: true,
+      });
+      expect(settingsCacheEnterpriseEdition(settings({ enterprise_license: filigranLicense }))).toBe(true);
+    });
+
+    it('is the Enterprise Edition for a license listing this platform id, refused for another platform', () => {
+      const filigranLicense = createTestXtmLicense(xtmCa, { openctiIds: [PLATFORM_ID] });
+      expect(decodeLicensePem(settings(), filigranLicense)).toMatchObject({ license_validated: true, license_global: false });
+      expect(decodeLicensePem(settings({ internal_id: 'platform-0002' }), filigranLicense).license_validated).toBe(false);
+    });
+
+    it.each([
+      ['the OpenCTI module is unchecked (empty list)', () => createTestXtmLicense(xtmCa, { openctiIds: [] })],
+      ['the OpenCTI sub-license is missing', () => createTestXtmLicense(xtmCa, { openctiIds: null })],
+      ['it is signed by another CA', () => createTestXtmLicense(foreignCa)],
+      ['it is past its 90-day grace period', () => createTestXtmLicense(xtmCa, { notAfter: new Date(Date.now() - 91 * DAY) })],
+    ])('is refused when %s', (_, license) => {
+      expect(decodeLicensePem(settings(), license()).license_validated).toBe(false);
+    });
+
+    it('keeps the legacy OpenCTI license unchanged', () => {
+      expect(decodeLicensePem(settings(), ownLicense())).toMatchObject({ license_validated: true, license_source: PlatformEeSource.OpenctiLicense });
+    });
   });
 
   it('falls back to the XTM license when the own license is not valid', () => {

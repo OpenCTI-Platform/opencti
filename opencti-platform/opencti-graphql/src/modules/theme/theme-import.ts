@@ -3,7 +3,7 @@ import { FunctionalError } from '../../config/errors';
 import type { EditInput } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportValidationReason } from '../configImport/configImport-utils';
+import { configImportReasonValue, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { BUILT_IN_THEME_STANDARD_IDS } from './theme-constants';
 import { addTheme, checkExistingTheme, fieldPatchTheme, findById } from './theme-domain';
@@ -29,31 +29,10 @@ const refused = (status: 'failed' | 'skipped', code: ThemeImportCode, reason: st
   return { status, code, reason, exists, configuration };
 };
 
-const MAX_COPIES = 100;
-
-// The name itself when it is free, else the first free `name (n)`; undefined when the first copies are all taken
-// Taken by a theme of the platform, or by one that a dry run would have created; not by one that a dry run would have renamed
 const isNameTaken = async (context: AuthContext, user: AuthUser, name: string, { reservedNames, releasedNames }: ThemeImportOptions, excludeId?: string) => {
   return !!reservedNames?.has(name) || (!releasedNames?.has(name) && await checkExistingTheme(context, user, name, excludeId));
 };
 
-const freeThemeName = async (context: AuthContext, user: AuthUser, name: string, options: ThemeImportOptions) => {
-  const isTaken = (candidate: string) => isNameTaken(context, user, candidate, options);
-  if (!(await isTaken(name))) {
-    return name;
-  }
-  for (let copy = 1; copy <= MAX_COPIES; copy += 1) {
-    const suffix = ` (${copy})`;
-    const candidate = `${name.slice(0, THEME_NAME_MAX_LENGTH - suffix.length)}${suffix}`;
-    // The next candidate depends on this answer
-    if (!(await isTaken(candidate))) {
-      return candidate;
-    }
-  }
-  return undefined;
-};
-
-// addTheme trusts its input: the standard id is the given one (absent: the platform gives one), and the theme is never built-in
 const createTheme = (context: AuthContext, user: AuthUser, theme: Omit<ThemeImportConfiguration, 'standard_id'>, standardId?: string) => {
   return addTheme(context, user, {
     ...theme,
@@ -97,11 +76,11 @@ export const importTheme = async (
   }
   // A copy is never refused for its name or its identity: it takes a free name, and a new standard id when its own is taken
   if (mode === ConfigImportMode.Copy) {
-    const name = await freeThemeName(context, user, theme.name, options);
+    const name = await freeConfigImportName(theme.name, (candidate) => isNameTaken(context, user, candidate, options), { maxLength: THEME_NAME_MAX_LENGTH });
     if (!name) {
       return refused('failed', 'name_conflict', 'Theme name already exists', !!existing, parsed.data);
     }
-    const copy: ThemeImportResult = { status: 'created', exists: !!existing, configuration: parsed.data, reason: name === theme.name ? undefined : `Added as "${name}"` };
+    const copy: ThemeImportResult = { status: 'created', exists: !!existing, configuration: parsed.data, reason: name === theme.name ? undefined : `Added as "${configImportReasonValue(name)}"` };
     if (dryRun) {
       reservedNames?.add(name);
       return copy;

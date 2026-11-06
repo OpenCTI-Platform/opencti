@@ -153,3 +153,12 @@
   margin-left: -1px;
 }
 
+
+/* FDS-WORKAROUND #75: the Alert sets its title and description as bare <p> and the
+   library ships no preflight, so the user-agent paragraph margin spaces them out —
+   remove when both paragraphs carry their own `m-0` — see
+   fds-migration/LIBRARY-FEEDBACK.md #75 */
+p.title-xs.text-alert,
+p.title-xs.text-alert + p.content-compact {
+  margin: 0;
+}

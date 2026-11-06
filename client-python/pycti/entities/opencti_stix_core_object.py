@@ -2088,13 +2088,16 @@ class StixCoreObject:
         :type element_id: str
         :param connector_id: the connector id
         :type connector_id: str
+        :param investigation_id: (optional) the investigation the enrichment is triggered from
+        :type investigation_id: str
         """
         element_id = kwargs.get("element_id", None)
         connector_id = kwargs.get("connector_id", None)
+        investigation_id = kwargs.get("investigation_id", None)
         query = """
-            mutation StixCoreObjectEdit($id: ID!, $connectorId: ID!) {
+            mutation StixCoreObjectEdit($id: ID!, $connectorId: ID!, $investigationId: ID) {
                 stixCoreObjectEdit(id: $id) {
-                    askEnrichment(connectorId: $connectorId) {
+                    askEnrichment(connectorId: $connectorId, investigationId: $investigationId) {
                       id
                     }
                 }
@@ -2105,6 +2108,7 @@ class StixCoreObject:
             {
                 "id": element_id,
                 "connectorId": connector_id,
+                "investigationId": investigation_id,
             },
         )
 
@@ -2115,13 +2119,16 @@ class StixCoreObject:
         :type element_id: str
         :param connector_ids: list of connector ids
         :type connector_ids: list
+        :param investigation_id: (optional) the investigation the enrichment is triggered from
+        :type investigation_id: str
         """
         element_id = kwargs.get("element_id", None)
         connector_ids = kwargs.get("connector_ids", None)
+        investigation_id = kwargs.get("investigation_id", None)
         query = """
-            mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!) {
+            mutation StixCoreObjectEdit($id: ID!, $connectorIds: [ID!]!, $investigationId: ID) {
                 stixCoreObjectEdit(id: $id) {
-                    askEnrichments(connectorIds: $connectorIds) {
+                    askEnrichments(connectorIds: $connectorIds, investigationId: $investigationId) {
                       id
                     }
                 }
@@ -2132,6 +2139,7 @@ class StixCoreObject:
             {
                 "id": element_id,
                 "connectorIds": connector_ids,
+                "investigationId": investigation_id,
             },
         )
 

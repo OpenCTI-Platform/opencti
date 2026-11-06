@@ -12,6 +12,7 @@ export interface ConfigPresetResultItem {
   readonly key: string;
   readonly status: string;
   readonly reason?: string | null;
+  readonly code?: string | null;
   // The name of the item, and whether the UI translates it
   readonly label: string;
   readonly translatable: boolean;
@@ -132,7 +133,7 @@ const ConfigPresetResultGroups: FunctionComponent<ConfigPresetResultGroupsProps>
                   nested
                 >
                   {type.items.map((item) => (
-                    <ConfigPresetResultLine key={item.key} label={resultLabel(item)} status={item.status} reason={item.reason} isDone={isImported(item)} />
+                    <ConfigPresetResultLine key={item.key} label={resultLabel(item)} status={item.status} reason={item.reason} code={item.code} isDone={isImported(item)} />
                   ))}
                 </ResultSection>
               ))}
