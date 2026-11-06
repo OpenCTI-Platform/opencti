@@ -13,6 +13,8 @@ const toCustomFieldAttributeDefinition = (definition: BasicStoreEntityCustomFiel
   switch (definition.field_type) {
     case 'integer':
       return { ...base, type: 'numeric', precision: 'integer', multiple: false };
+    case 'decimal':
+      return { ...base, type: 'numeric', precision: 'float', multiple: false };
     case 'boolean':
       return { ...base, type: 'boolean', multiple: false };
     case 'date':

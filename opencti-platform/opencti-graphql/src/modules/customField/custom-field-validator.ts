@@ -24,6 +24,9 @@ export const normalizeCustomFieldDate = (value: unknown): string | undefined => 
 // int_value is a GraphQL Int (and an Elasticsearch integer): a 32-bit signed integer
 const isCustomFieldInteger = (value: unknown): value is number => Number.isInteger(value)
   && (value as number) >= GRAPHQL_MIN_INT && (value as number) <= GRAPHQL_MAX_INT;
+// float_value is an Elasticsearch float, as the EPSS score of the vulnerabilities: a larger number fails the indexing
+const ES_FLOAT_MAX = 3.4028234663852886e38;
+const isCustomFieldDecimal = (value: unknown): value is number => typeof value === 'number' && Math.abs(value) <= ES_FLOAT_MAX;
 
 // Normalize stored-format entries (edit path). Clients may send every value key with the unset ones as null
 // (e.g. entries read back from the API): they are dropped, so that the stored entries and the history
@@ -137,6 +140,12 @@ const verifyAddInputValueType = (
         return false;
       }
       break;
+    case 'decimal':
+      if (customFieldValueAddInputValue.length != 1 || !isCustomFieldDecimal(customFieldValueAddInputValue[0])) {
+        logApp.warn('Invalid value type for decimal custom field', { field_name: customFieldDefinition.label });
+        return false;
+      }
+      break;
     case 'string':
     case 'markdown':
       if (customFieldValueAddInputValue.length != 1 || typeof customFieldValueAddInputValue[0] !== 'string') {
@@ -191,6 +200,9 @@ export const extractCustomFieldValueFromAddInputValue = (
   switch (customFieldDefinition.field_type) {
     case 'integer':
       customFieldValue.int_value = customFieldValueAddInputValue[0] as number;
+      break;
+    case 'decimal':
+      customFieldValue.float_value = customFieldValueAddInputValue[0] as number;
       break;
     case 'string':
     case 'markdown':
@@ -259,6 +271,11 @@ export const getCustomFieldDefaultValueFromEntitySettings = (
         const trimmedDefault = defaultValue.trim();
         const intValue = trimmedDefault === '' ? Number.NaN : Number(trimmedDefault);
         return isCustomFieldInteger(intValue) ? { ...customFieldDefaultValue, int_value: intValue } : undefined;
+      }
+      case 'decimal': {
+        const trimmedDefault = defaultValue.trim();
+        const floatValue = trimmedDefault === '' ? Number.NaN : Number(trimmedDefault);
+        return isCustomFieldDecimal(floatValue) ? { ...customFieldDefaultValue, float_value: floatValue } : undefined;
       }
       case 'markdown':
       case 'string':
@@ -432,6 +449,9 @@ const validateSingleCustomFieldValue = (
     case 'integer':
       validateIntegerField(value, definition);
       break;
+    case 'decimal':
+      validateDecimalField(value);
+      break;
     case 'string':
     case 'markdown':
       validateStringField(value, definition);
@@ -468,6 +488,16 @@ const validateIntegerField = (value: CustomFieldValue, definition: BasicStoreEnt
   }
   if (definition.max_value != null && value.int_value > definition.max_value) {
     throw FunctionalError('int_value is above maximum', { field_name: value.field_name, value: value.int_value, max: definition.max_value });
+  }
+};
+
+// No min / max bounds for a decimal, as for the EPSS score of the vulnerabilities, besides the float range
+const validateDecimalField = (value: CustomFieldValue): void => {
+  if (value.float_value === undefined || value.float_value === null) {
+    throw FunctionalError('float_value is required for decimal type custom field', { field_name: value.field_name });
+  }
+  if (!isCustomFieldDecimal(value.float_value)) {
+    throw FunctionalError('float_value must be a 32-bit float', { field_name: value.field_name, value: value.float_value, max: ES_FLOAT_MAX });
   }
 };
 
