@@ -134,7 +134,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
     >
       {user ? (
         <>
-          <Tabs value={currentTab} onValueChange={handleChangeTab}>
+          <Tabs value={isServiceAccount && currentTab === 'password' ? 'overview' : currentTab} onValueChange={handleChangeTab}>
             <TabsList>
               <TabsTrigger value="overview">{t_i18n('Overview')}</TabsTrigger>
               {/* Service accounts have no password at all, so the tab is not even offered */}
