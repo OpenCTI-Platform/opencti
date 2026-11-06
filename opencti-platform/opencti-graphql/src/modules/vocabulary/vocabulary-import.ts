@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { storeLoadById } from '../../database/middleware-loader';
 import type { EditInput } from '../../generated/graphql';
 import { generateStandardId, normalizeName } from '../../schema/identifier';
@@ -8,6 +9,9 @@ import { addVocabulary, editVocabulary, isVocabularyNameAllowed } from './vocabu
 import { type VocabularyCategoryImportConfiguration, vocabularyCategoryImportSchema, type VocabularyImportConfiguration, vocabularyImportSchema } from './vocabulary-import-schema';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
 import { cleanVocabularyAliases, isSameAliasSet } from './vocabulary-utils';
+
+// An entry costs a few reads: the dry run of a category reads a few entries at a time, whatever the number of entries of the file
+const DRY_RUN_BATCH_SIZE = 10;
 
 export type VocabularyImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged' | 'category_closed' | 'alias_conflict';
 
@@ -148,11 +152,14 @@ export const importVocabularyCategory = async (
     return { status: 'failed', code: 'invalid', reason: configImportValidationReason(parsed.error), exists: false };
   }
   const { category, entries } = parsed.data;
-  // A dry run writes nothing: the entries are read at the same time
-  const decided = await Promise.all(entries.map(async (entry) => {
-    const entryConfiguration = { ...entry, category };
-    return { entry: entryConfiguration, result: await importVocabulary(context, user, entryConfiguration, { mode, dryRun: true }) };
-  }));
+  // A dry run writes nothing: the entries are read a few at a time
+  const decided: { entry: VocabularyImportConfiguration; result: VocabularyImportResult }[] = [];
+  for (const batch of R.splitEvery(DRY_RUN_BATCH_SIZE, entries)) {
+    decided.push(...await Promise.all(batch.map(async (entry) => {
+      const entryConfiguration = { ...entry, category };
+      return { entry: entryConfiguration, result: await importVocabulary(context, user, entryConfiguration, { mode, dryRun: true }) };
+    })));
+  }
   const isKept = ({ result }: { result: VocabularyImportResult }) => mode === ConfigImportMode.Add && result.code === 'exists';
   const exists = decided.some(({ result }) => result.exists);
   const failed = decided.filter((item) => item.result.status === 'failed' && !isKept(item));
