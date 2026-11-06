@@ -278,6 +278,9 @@ const completeWorkflowAsyncActionResult = async (
   if (pendingTransition.requestAccessOutcome && requestAccessDecider && fullEntity) {
     const { applyRequestAccessOutcome } = await import('./workflow-request-access');
     await applyRequestAccessOutcome(executionContext, requestAccessDecider, fullEntity, pendingTransition.requestAccessOutcome);
+  } else if (pendingTransition.requestAccessStatus && fullEntity) {
+    const { mirrorRequestAccessStatus } = await import('./workflow-request-access');
+    await mirrorRequestAccessStatus(executionContext, executionUser, instanceEntity.entity_id, pendingTransition.requestAccessStatus);
   }
 
   logApp.info('[workflow-async-completion] Transition completed', {

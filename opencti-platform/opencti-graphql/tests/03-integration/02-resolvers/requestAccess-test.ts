@@ -13,7 +13,7 @@ import {
   USER_EDITOR,
 } from '../../utils/testQuery';
 import { findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
-import { unSetOrganization, setOrganization, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { unSetOrganization, setOrganization, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
 import {
   ActionStatus,
@@ -39,7 +39,13 @@ import type { BasicStoreEntityEntitySetting, RequestAccessFlow } from '../../../
 import { addMalware } from '../../../src/domain/malware';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
-import { deleteWorkflowDefinition, publishWorkflowDefinition, setWorkflowDefinition, triggerWorkflowEvent } from '../../../src/modules/workflow/domain/workflow-domain';
+import {
+  deleteWorkflowDefinition,
+  publishWorkflowDefinition,
+  setWorkflowDefinition,
+  setWorkflowStatus,
+  triggerWorkflowEvent,
+} from '../../../src/modules/workflow/domain/workflow-domain';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
@@ -246,6 +252,7 @@ const ADD_REQUEST_ACCESS_STATUS_MUTATION = gql`
 describe('Add Request Access to an entity and create an RFI.', async () => {
   let caseRfiIdForApproval: string;
   let caseRfiIdForReject: string;
+  let caseRfiIdForCounts: string;
   let malwareId: string;
   let testOrgId: string;
   let approvedStatusId: string;
@@ -635,10 +642,53 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     expect(queryResult?.data?.caseRfiApprove.x_opencti_workflow_id).toBe(approvedStatusId);
   });
 
+  it('legacy RFI keeps today\'s approve behavior', async () => {
+    const requestAccessData = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST, {
+      query: CREATE_REQUEST_ACCESS_QUERY,
+      variables: {
+        input: {
+          request_access_reason: 'Access needed for the legacy decision counters',
+          request_access_entities: [malwareId],
+          request_access_members: [testOrgId],
+          request_access_type: 'organization_sharing',
+        },
+      },
+    });
+    caseRfiIdForCounts = requestAccessData?.data?.requestAccessAdd;
+    const approvedCount = vi.spyOn(telemetryManager, 'addRequestAccessApprovedCount');
+    const declinedCount = vi.spyOn(telemetryManager, 'addRequestAccessDeclinedCount');
+    try {
+      const approvalResult = await queryAsAdminWithSuccess({ query: APPROVE_RFI_QUERY, variables: { id: caseRfiIdForCounts } });
+      expect(approvalResult?.data?.caseRfiApprove.x_opencti_workflow_id).toBe(approvedStatusId);
+      const approvedAction: RequestAccessAction = JSON.parse((await findRFIById(testContext, ADMIN_USER, caseRfiIdForCounts)).x_opencti_request_access);
+      expect(approvedAction.status).toBe(ActionStatus.APPROVED);
+      expect(approvedCount).toHaveBeenCalledTimes(1);
+      expect(declinedCount).not.toHaveBeenCalled();
+
+      const declineResult = await queryAsUserWithSuccess(USER_EDITOR, { query: DECLINE_RFI_QUERY, variables: { id: caseRfiIdForCounts } });
+      expect(declineResult?.data?.caseRfiDecline.x_opencti_workflow_id).toBe(declinedStatusId);
+      const declinedAction: RequestAccessAction = JSON.parse((await findRFIById(testContext, ADMIN_USER, caseRfiIdForCounts)).x_opencti_request_access);
+      expect(declinedAction.status).toBe(ActionStatus.DECLINED);
+      expect(declinedCount).toHaveBeenCalledTimes(1);
+      expect(approvedCount).toHaveBeenCalledTimes(1);
+    } finally {
+      approvedCount.mockRestore();
+      declinedCount.mockRestore();
+    }
+  });
+
+  it('bypass still refused on a legacy request-access RFI', async () => {
+    await expect(setWorkflowStatus(testContext, ADMIN_USER, caseRfiIdForCounts, approvedStatusId, false))
+      .rejects.toThrow('RequestAccess workflow bypass is not supported');
+    await expect(setWorkflowStatus(testContext, ADMIN_USER, caseRfiIdForCounts, approvedStatusId, true))
+      .rejects.toThrow('RequestAccess workflow bypass is not supported');
+  });
+
   it('should remove platform organization and test data', async () => {
     await internalDeleteElementById(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE);
     await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForApproval, ENTITY_TYPE_CONTAINER_CASE_RFI);
     await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForReject, ENTITY_TYPE_CONTAINER_CASE_RFI);
+    await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForCounts, ENTITY_TYPE_CONTAINER_CASE_RFI);
 
     // revert platform orga
     await unSetOrganization();
@@ -647,7 +697,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
 
 describe('Request access decided through workflow transitions', async () => {
   const suffix = Date.now();
-  const templateIds = { pending: '', approved: '', declined: '' };
+  const templateIds = { pending: '', escalated: '', review: '', approved: '', declined: '' };
   let rfiEntitySettings: BasicStoreEntityEntitySetting;
   let initialConfig: RequestAccessFlow | undefined;
   let malwareId: string;
@@ -663,12 +713,19 @@ describe('Request access decided through workflow transitions', async () => {
     initialState: templateIds.pending,
     states: [
       { statusId: templateIds.pending },
+      { statusId: templateIds.escalated },
+      { statusId: templateIds.review },
       { statusId: templateIds.approved, requestAccessOutcome: 'APPROVED', onEnter: [{ type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } }] },
       { statusId: templateIds.declined, requestAccessOutcome: 'DECLINED' },
     ],
     transitions: [
       { from: templateIds.pending, to: templateIds.approved, event: 'Accept' },
       { from: templateIds.pending, to: templateIds.declined, event: 'Reject' },
+      // Escalated requests must be reviewed before any decision, and their rejection must be explained.
+      { from: templateIds.pending, to: templateIds.escalated, event: 'Escalate' },
+      { from: templateIds.escalated, to: templateIds.review, event: 'Review' },
+      { from: templateIds.review, to: templateIds.approved, event: 'Accept' },
+      { from: templateIds.review, to: templateIds.declined, event: 'Reject', comment: 'required' },
     ],
   });
   const requestAccess = async () => {
@@ -841,5 +898,85 @@ describe('Request access decided through workflow transitions', async () => {
     expect(notifyResult).toHaveBeenCalledTimes(1);
     expect(approvedCount).toHaveBeenCalledTimes(1);
     expect((await loadDecision(rfiId)).action.status).toBe(ActionStatus.APPROVED);
+  });
+
+  it('caseRfiApprove on a workflow-driven RFI fires the Accept transition', async () => {
+    const rfiId = await requestAccess();
+
+    const approvalResult = await queryAsAdminWithSuccess({ query: APPROVE_RFI_QUERY, variables: { id: rfiId } });
+
+    expect(approvalResult.data.caseRfiApprove.x_opencti_workflow_id).toBe(await statusIdOf(templateIds.approved));
+    expect((await findInstance(rfiId))?.currentState).toBe(templateIds.approved);
+    expect(share).toHaveBeenCalledTimes(1);
+    expect((await loadDecision(rfiId)).action.status).toBe(ActionStatus.APPROVED);
+    expect(notifyResult).toHaveBeenCalledTimes(1);
+    expect(approvedCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('caseRfiApprove fails when the workflow requires an intermediate step', async () => {
+    const rfiId = await requestAccess();
+    expect(await triggerWorkflowEvent(testContext, ADMIN_USER, rfiId, 'Escalate')).toMatchObject({ success: true });
+
+    const approvalResult = await queryAsAdmin({ query: APPROVE_RFI_QUERY, variables: { id: rfiId } });
+
+    expect(approvalResult.errors?.[0].message).toBe('No transition to APPROVED is allowed from the current state');
+    expect((await findInstance(rfiId))?.currentState).toBe(templateIds.escalated);
+    expect((await loadDecision(rfiId)).action.status).toBe(ActionStatus.NEW);
+    expect(share).not.toHaveBeenCalled();
+    expect(approvedCount).not.toHaveBeenCalled();
+
+    // Once reviewed, the same mutation decides the request.
+    expect(await triggerWorkflowEvent(testContext, ADMIN_USER, rfiId, 'Review')).toMatchObject({ success: true });
+    await queryAsAdminWithSuccess({ query: APPROVE_RFI_QUERY, variables: { id: rfiId } });
+    expect((await findInstance(rfiId))?.currentState).toBe(templateIds.approved);
+    expect(approvedCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('caseRfiDecline fails when Reject requires a comment', async () => {
+    const rfiId = await requestAccess();
+    expect(await triggerWorkflowEvent(testContext, ADMIN_USER, rfiId, 'Escalate')).toMatchObject({ success: true });
+    expect(await triggerWorkflowEvent(testContext, ADMIN_USER, rfiId, 'Review')).toMatchObject({ success: true });
+
+    const declineResult = await queryAsAdmin({ query: DECLINE_RFI_QUERY, variables: { id: rfiId } });
+
+    expect(declineResult.errors?.[0].message).toBe('This transition requires a comment');
+    expect((await findInstance(rfiId))?.currentState).toBe(templateIds.review);
+    expect((await loadDecision(rfiId)).action.status).toBe(ActionStatus.NEW);
+    expect(notifyResult).not.toHaveBeenCalled();
+    expect(declinedCount).not.toHaveBeenCalled();
+  });
+
+  it('bypass is allowed on a workflow-driven RFI and runs the share only with actions', async () => {
+    const withoutActionsRfiId = await requestAccess();
+    const withActionsRfiId = await requestAccess();
+    const approvedStatusId = await statusIdOf(templateIds.approved);
+
+    expect(await setWorkflowStatus(testContext, ADMIN_USER, withoutActionsRfiId, approvedStatusId, false)).toMatchObject({ success: true, newState: templateIds.approved });
+    expect((await loadDecision(withoutActionsRfiId))).toMatchObject({ statusId: approvedStatusId, action: { status: ActionStatus.APPROVED } });
+    expect(share).not.toHaveBeenCalled();
+    expect(notifyResult).not.toHaveBeenCalled();
+    expect(approvedCount).not.toHaveBeenCalled();
+
+    expect(await setWorkflowStatus(testContext, ADMIN_USER, withActionsRfiId, approvedStatusId, true)).toMatchObject({ success: true, newState: templateIds.approved });
+    expect((await loadDecision(withActionsRfiId))).toMatchObject({ statusId: approvedStatusId, action: { status: ActionStatus.APPROVED } });
+    expect(share).toHaveBeenCalledTimes(1);
+    expect(share).toHaveBeenCalledWith(expect.objectContaining({ triggeringUser: expect.objectContaining({ id: ADMIN_USER.id }) }), expect.anything());
+    expect(notifyResult).toHaveBeenCalledTimes(1);
+    expect(approvedCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('bypass out of Approved never unshares', async () => {
+    const rfiId = await requestAccess();
+    expect(await accept(rfiId)).toMatchObject({ success: true, newState: templateIds.approved });
+    const pendingStatusId = await statusIdOf(templateIds.pending);
+
+    expect(await setWorkflowStatus(testContext, ADMIN_USER, rfiId, pendingStatusId, true)).toMatchObject({ success: true, newState: templateIds.pending });
+
+    expect((await findInstance(rfiId))?.currentState).toBe(templateIds.pending);
+    expect((await loadDecision(rfiId))).toMatchObject({ statusId: pendingStatusId, action: { status: ActionStatus.NEW } });
+    const malware = await storeLoadByIdWithRefs(testContext, ADMIN_USER, malwareId) as Record<string, any>;
+    expect(malware[INPUT_GRANTED_REFS].map((organization: BasicStoreEntity) => organization.internal_id)).toContain(testOrganizationId);
+    expect(approvedCount).toHaveBeenCalledTimes(1);
+    expect(declinedCount).not.toHaveBeenCalled();
   });
 });

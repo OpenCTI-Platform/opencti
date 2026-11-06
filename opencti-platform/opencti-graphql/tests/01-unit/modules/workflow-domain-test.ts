@@ -406,7 +406,7 @@ describe('Workflow bypass', () => {
     expect(await setWorkflowStatus(context, user, entity.id, target.id, false)).toMatchObject({ success: true });
   });
 
-  it.each(['entity', 'instance', 'legacy'])('rejects RequestAccess detected through %s for mutation and picker', async (source) => {
+  it.each(['entity', 'instance', 'legacy'])('bypass still refused on a legacy request-access RFI (detected through %s)', async (source) => {
     if (source === 'entity') entity.x_opencti_request_access = true;
     if (source === 'instance') instance.scope = StatusScope.RequestAccess;
     if (source === 'legacy') {
@@ -416,6 +416,136 @@ describe('Workflow bypass', () => {
     await expect(setWorkflowStatus(context, user, entity.id, target.id, false)).rejects.toThrow('RequestAccess');
     await expect(getWorkflowBypassStatuses(context, user, entity.id)).rejects.toThrow('RequestAccess');
     expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  describe('on a workflow-driven request access RFI', () => {
+    const requestAccess = { entities: ['malware-1'], members: ['org-1'], status: 'NEW', applicant_id: 'applicant-1' };
+    const shareAction = { type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } };
+    const asyncAction = { type: 'asyncBulkAction', params: { scope: 'KNOWLEDGE', actions: [{ type: 'SHARE', context: { values: ['static-org'] } }] } };
+    const executionUser = { ...user, draft_context: undefined };
+    let rfi: any;
+    let share: ReturnType<typeof vi.spyOn>;
+
+    const raStatus = (state: string) => ({ id: `ra-status-${state}`, entity_type: ENTITY_TYPE_STATUS, type: 'Case-Rfi', scope: StatusScope.RequestAccess, template_id: state, order: 1 });
+    const requestStatus = () => JSON.parse(rfi.x_opencti_request_access).status;
+    const startIn = (state: string, status: string) => {
+      instance = { id: 'instance-id', internal_id: 'instance-id', entity_id: 'rfi-id', currentState: state, scope: StatusScope.RequestAccess, history: '[]' };
+      rfi = { id: 'rfi-id', internal_id: 'rfi-id', entity_type: 'Case-Rfi', x_opencti_workflow_id: `ra-status-${state}`, x_opencti_request_access: JSON.stringify({ ...requestAccess, status }) };
+      vi.clearAllMocks();
+    };
+
+    beforeEach(() => {
+      startIn('new', 'NEW');
+      definition = {
+        initialState: 'new',
+        states: [
+          { statusId: 'new' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+        transitions: [{ from: 'new', to: 'approved', event: 'Accept' }, { from: 'new', to: 'declined', event: 'Reject' }],
+      };
+      vi.mocked(findByType).mockResolvedValue({ id: 'setting-id', request_access_workflow: { workflow_definition_id: 'ra-def' } } as any);
+      vi.mocked(storeLoadById).mockImplementation(async (_context, _user, id) => {
+        if (id === 'rfi-id') return rfi;
+        if (id === 'instance-id') return structuredClone(instance);
+        if (id.startsWith('ra-status-')) return raStatus(id.replace('ra-status-', '')) as any;
+        if (id === 'ra-def') return { id, published_version: { content: JSON.stringify(definition) } } as any;
+        return null;
+      });
+      vi.mocked(updateAttribute).mockImplementation(async (_context, _user, id, _type, patches) => {
+        const target = id === 'rfi-id' ? rfi : instance;
+        for (const patch of patches) target[patch.key] = patch.value[0];
+        return { element: target } as any;
+      });
+      vi.mocked(resolveMappedStatusId).mockImplementation(async (_context, _user, _type, _scope, state) => `ra-status-${state}`);
+      vi.mocked(fullEntitiesList).mockResolvedValue(['new', 'approved', 'declined'].map(raStatus) as any);
+      vi.mocked(internalLoadById).mockResolvedValue({ id: 'malware-1', standard_id: 'malware--1' } as any);
+      vi.mocked(isUserCanActionRequestAccess).mockResolvedValue(false);
+      share = vi.spyOn(ActionRegistry, 'shareRequestedEntities').mockResolvedValue(undefined);
+    });
+
+    afterEach(() => {
+      share.mockRestore();
+      vi.mocked(isUserCanActionRequestAccess).mockResolvedValue(true);
+    });
+
+    it('bypass is allowed on a workflow-driven RFI and runs the share only with actions', async () => {
+      expect((await getWorkflowBypassStatuses(context, user, 'rfi-id')).map(({ status }) => status.id)).toEqual(['ra-status-new', 'ra-status-approved', 'ra-status-declined']);
+
+      expect(await setWorkflowStatus(context, user, 'rfi-id', 'ra-status-approved', true)).toMatchObject({ success: true, newState: 'approved' });
+      expect(share).toHaveBeenCalledOnce();
+      expect(share).toHaveBeenCalledWith(expect.objectContaining({ triggeringUser: executionUser, user: WORKFLOW_MANAGER_USER }), shareAction.params);
+      expect(instance.currentState).toBe('approved');
+      expect(requestStatus()).toBe('APPROVED');
+      expect(telemetryManager.addRequestAccessApprovedCount).toHaveBeenCalledOnce();
+      expect(publishUserAction).toHaveBeenCalledOnce();
+      expect(notifyRequestAccessResult).toHaveBeenCalledWith(expect.anything(), executionUser, expect.anything(), 'applicant-1', 'Test Entity', 'APPROVED');
+      expect(isUserCanActionRequestAccess).not.toHaveBeenCalled();
+
+      startIn('new', 'NEW');
+      expect(await setWorkflowStatus(context, user, 'rfi-id', 'ra-status-declined', false)).toMatchObject({ success: true, newState: 'declined' });
+      expect(requestStatus()).toBe('DECLINED');
+      expect(share).not.toHaveBeenCalled();
+      expect(telemetryManager.addRequestAccessDeclinedCount).not.toHaveBeenCalled();
+      expect(publishUserAction).not.toHaveBeenCalled();
+      expect(notifyRequestAccessResult).not.toHaveBeenCalled();
+
+      startIn('new', 'NEW');
+      expect(await setWorkflowStatus(context, user, 'rfi-id', 'ra-status-approved', false)).toMatchObject({ success: true, newState: 'approved' });
+      expect(requestStatus()).toBe('APPROVED');
+      expect(share).not.toHaveBeenCalled();
+      expect(telemetryManager.addRequestAccessApprovedCount).not.toHaveBeenCalled();
+      expect(notifyRequestAccessResult).not.toHaveBeenCalled();
+    });
+
+    it.each([true, false])('bypass out of Approved never unshares (applyTransitionActions: %s)', async (applyTransitionActions) => {
+      startIn('approved', 'APPROVED');
+
+      expect(await setWorkflowStatus(context, user, 'rfi-id', 'ra-status-new', applyTransitionActions)).toMatchObject({ success: true, newState: 'new' });
+
+      expect(instance.currentState).toBe('new');
+      expect(requestStatus()).toBe('NEW');
+      const writes = vi.mocked(updateAttribute).mock.calls.filter((call) => call[2] === 'rfi-id');
+      expect(writes).toEqual([[context, executionUser, 'rfi-id', 'Case-Rfi', [{ key: 'x_opencti_request_access', value: [expect.any(String)] }], { workflowInternalWrite: true }]]);
+      expect(share).not.toHaveBeenCalled();
+      expect(ActionRegistry.log).not.toHaveBeenCalled();
+      expect(telemetryManager.addRequestAccessApprovedCount).not.toHaveBeenCalled();
+      expect(telemetryManager.addRequestAccessDeclinedCount).not.toHaveBeenCalled();
+      expect(notifyRequestAccessResult).not.toHaveBeenCalled();
+    });
+
+    it('bypass between intermediate states leaves the request status untouched', async () => {
+      definition.states.push({ statusId: 'review' });
+      startIn('new', 'NEW');
+
+      expect(await setWorkflowStatus(context, user, 'rfi-id', 'ra-status-review', false)).toMatchObject({ success: true, newState: 'review' });
+
+      expect(vi.mocked(updateAttribute).mock.calls.filter((call) => call[2] === 'rfi-id')).toHaveLength(0);
+    });
+
+    it('bypass with async actions records the request status only once the state is entered', async () => {
+      definition.states[1].onEnter = [asyncAction, shareAction];
+      vi.mocked(resolveUserById).mockResolvedValue({ id: 'admin' } as any);
+
+      expect(await setWorkflowStatus(context, user, 'rfi-id', 'ra-status-approved', true)).toMatchObject({ success: true, executionStatus: 'pending' });
+      expect(JSON.parse(instance.pendingTransition)).toMatchObject({ toState: 'approved', requestAccessOutcome: 'APPROVED' });
+      expect(requestStatus()).toBe('NEW');
+      await reportWorkflowAsyncActionResult(context, { id: 'worker' } as any, 'instance-id', JSON.parse(instance.pendingTransition).asyncActions[0].id, 'success');
+      expect(instance.currentState).toBe('approved');
+      expect(share).toHaveBeenCalledWith(expect.objectContaining({ triggeringUser: { id: 'admin' } }), shareAction.params);
+      expect(requestStatus()).toBe('APPROVED');
+      expect(telemetryManager.addRequestAccessApprovedCount).toHaveBeenCalledOnce();
+
+      definition.states[1].onExit = [asyncAction];
+      startIn('approved', 'APPROVED');
+      expect(await setWorkflowStatus(context, user, 'rfi-id', 'ra-status-new', true)).toMatchObject({ success: true, executionStatus: 'pending' });
+      expect(requestStatus()).toBe('APPROVED');
+      await reportWorkflowAsyncActionResult(context, { id: 'worker' } as any, 'instance-id', JSON.parse(instance.pendingTransition).asyncActions[0].id, 'success');
+      expect(instance.currentState).toBe('new');
+      expect(requestStatus()).toBe('NEW');
+      expect(telemetryManager.addRequestAccessApprovedCount).not.toHaveBeenCalled();
+    });
   });
 
   it('limits comments before any write', async () => {

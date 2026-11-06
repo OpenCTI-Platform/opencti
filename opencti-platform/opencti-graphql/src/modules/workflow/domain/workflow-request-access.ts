@@ -1,5 +1,5 @@
 import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../../config/conf';
-import { UnsupportedError } from '../../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../../config/errors';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { updateAttribute } from '../../../database/middleware';
 import { internalLoadById, storeLoadById } from '../../../database/middleware-loader';
@@ -12,7 +12,8 @@ import { SYSTEM_USER } from '../../../utils/access';
 import { type BasicStoreEntityCaseRfi, ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
 import { ActionStatus, isUserCanActionRequestAccess, notifyRequestAccessResult, type RequestAccessAction } from '../../requestAccess/requestAccess-domain';
-import { getDefinitionData, getWorkflowConfig, type WorkflowDefinitionResponse } from './workflow-domain';
+import type { TriggerResult } from '../types/workflow-types';
+import { getAllowedTransitions, getDefinitionData, getWorkflowConfig, resolveEntityWorkflowScope, triggerWorkflowEvent, type WorkflowDefinitionResponse } from './workflow-domain';
 
 export type RequestAccessOutcome = 'APPROVED' | 'DECLINED';
 
@@ -34,6 +35,15 @@ export const getRequestAccessWorkflow = async (
   }
   const definitionData = await getDefinitionData(context, SYSTEM_USER, entitySetting, false, StatusScope.RequestAccess);
   return definitionData ? { entitySetting, definitionData } : null;
+};
+
+/** Whether the request of an RFI is decided on the published request-access workflow rather than the legacy flow. */
+export const isWorkflowDrivenRequestAccess = async (context: AuthContext, rfiId: string): Promise<boolean> => {
+  if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    return false;
+  }
+  const rfi = await storeLoadById<BasicStoreEntityCaseRfi>(context, SYSTEM_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  return !!rfi && await resolveEntityWorkflowScope(context, SYSTEM_USER, rfi) === StatusScope.RequestAccess;
 };
 
 /** Id of the state marked as the Approved / Declined outcome of the definition. */
@@ -125,5 +135,55 @@ export const applyRequestAccessOutcome = async (
     await notifyRequestAccessResult(context, user, requestedEntity, requestAccessAction.applicant_id, mainRepresentative, ActionStatus[outcome]);
   } catch (error) {
     logApp.error('[OPENCTI-MODULE][Request access] Failed to notify the applicant of the request decision', { cause: error, id: rfiId, outcome });
+  }
+};
+
+/**
+ * Decides a workflow-driven request through the transition allowed from its current state into the outcome
+ * state. A transition that needs a comment is left to the UI, which can ask for it.
+ */
+export const fireRequestAccessOutcomeTransition = async (
+  context: AuthContext,
+  user: AuthUser,
+  rfiId: string,
+  outcome: RequestAccessOutcome,
+): Promise<TriggerResult> => {
+  const requestAccessWorkflow = await getRequestAccessWorkflow(context, user);
+  const outcomeState = requestAccessWorkflow ? findOutcomeState(requestAccessWorkflow.definitionData, outcome) : undefined;
+  const allowedTransitions = outcomeState ? await getAllowedTransitions(context, user, rfiId) : [];
+  const transition = allowedTransitions.find((allowedTransition) => allowedTransition.toState === outcomeState);
+  if (!transition) {
+    throw FunctionalError(`No transition to ${outcome} is allowed from the current state`, { id: rfiId });
+  }
+  if (transition.comment === 'required') {
+    throw FunctionalError('This transition requires a comment', { id: rfiId });
+  }
+  return triggerWorkflowEvent(context, user, rfiId, transition.event);
+};
+
+/**
+ * Makes the request status follow a state reached by bypass without deciding the request: no share,
+ * audit, notification or count. The state is already persisted, so a failure here is only logged.
+ */
+export const mirrorRequestAccessStatus = async (
+  context: AuthContext,
+  user: AuthUser,
+  rfiId: string,
+  status: RequestAccessOutcome | 'NEW',
+): Promise<void> => {
+  try {
+    const currentRfi = await storeLoadById<BasicStoreEntityCaseRfi>(context, SYSTEM_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
+    if (!currentRfi) {
+      throw UnsupportedError('Request access RFI not found', { id: rfiId });
+    }
+    const action: RequestAccessAction = JSON.parse(currentRfi.x_opencti_request_access);
+    if (action.status === status) {
+      return;
+    }
+    await updateAttribute(context, user, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI, [
+      { key: 'x_opencti_request_access', value: [JSON.stringify({ ...action, status })] },
+    ], { workflowInternalWrite: true });
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE][Request access] Failed to record the request status', { cause: error, id: rfiId, status });
   }
 };
