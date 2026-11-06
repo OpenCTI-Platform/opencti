@@ -44,18 +44,25 @@ describe('Time series chart widgets', () => {
           for (let value = Math.max(1, minValue); value <= maxValue; value += 1) {
             expect(rangeOf(ranges, value), `value ${value} of ${minValue} - ${maxValue}`).toBeGreaterThanOrEqual(0);
           }
-          // The hottest cells take the last range, and no range starts above them
+          // The hottest cells take the last range, and no range goes past them
           expect(rangeOf(ranges, maxValue)).toEqual(ranges.length - 1);
-          ranges.forEach(({ from }) => expect(from).toBeLessThanOrEqual(maxValue));
+          ranges.forEach(({ from, to }) => {
+            expect(from).toBeLessThanOrEqual(to);
+            expect(to).toBeLessThanOrEqual(maxValue);
+          });
+          // Whole numbers, one range after the other: none overlaps the next
+          ranges.slice(1).forEach(({ from }, i) => expect(from).toEqual(ranges[i].to + 1));
         });
       });
     });
 
-    it('gives the spread of the values a range per value up to 10, and ranges of a tenth of it beyond', () => {
-      expect(legend(valueRanges(0, 3))).toEqual(['1 - 1', '1 - 2', '2 - 3', '3 - 4']);
-      expect(legend(valueRanges(0, 17))).toEqual(['1 - 2', '2 - 4', '4 - 6', '6 - 8', '8 - 10', '10 - 12', '12 - 14', '14 - 16', '16 - 18']);
-      expect(legend(valueRanges(0, 100))).toEqual(['1 - 10', '10 - 20', '20 - 30', '30 - 40', '40 - 50', '50 - 60', '60 - 70', '70 - 80', '80 - 90', '90 - 100']);
-      expect(legend(valueRanges(5, 5))).toEqual(['5 - 6']);
+    it('gives the values above 0 a range per value up to 10, and ranges of a tenth of them beyond', () => {
+      expect(legend(valueRanges(0, 3))).toEqual(['1 - 1', '2 - 2', '3 - 3']);
+      expect(legend(valueRanges(0, 10))).toEqual(['1 - 1', '2 - 2', '3 - 3', '4 - 4', '5 - 5', '6 - 6', '7 - 7', '8 - 8', '9 - 9', '10 - 10']);
+      expect(legend(valueRanges(0, 17))).toEqual(['1 - 2', '3 - 4', '5 - 6', '7 - 8', '9 - 10', '11 - 12', '13 - 14', '15 - 16', '17 - 17']);
+      expect(legend(valueRanges(0, 100))).toEqual(['1 - 10', '11 - 20', '21 - 30', '31 - 40', '41 - 50', '51 - 60', '61 - 70', '71 - 80', '81 - 90', '91 - 100']);
+      expect(legend(valueRanges(5, 5))).toEqual(['5 - 5']);
+      expect(legend(valueRanges(5, 8))).toEqual(['5 - 5', '6 - 6', '7 - 7', '8 - 8']);
     });
 
     it('only colors 0 without a value above it, or without values', () => {
