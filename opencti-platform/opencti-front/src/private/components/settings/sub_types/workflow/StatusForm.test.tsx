@@ -302,7 +302,7 @@ describe('StatusForm – Request access outcome', () => {
     });
   });
 
-  it('keeps a customized share action when the state leaves Approved', async () => {
+  it('takes back a customized share action too when the state leaves Approved', async () => {
     const onSubmit = vi.fn();
     const customized = shareAction([{ value: 'AUTHOR', label: 'Author' }, { value: 'org-1', label: 'Org 1' }]);
     const { user } = renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [customized], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
@@ -313,8 +313,25 @@ describe('StatusForm – Request access outcome', () => {
     await waitFor(() => {
       const values = onSubmit.mock.calls[0][0];
       expect(values.requestAccessOutcome).toBeNull();
-      expect(values.onEnter).toEqual([customized]);
+      expect(values.onEnter).toEqual([]);
     });
+  });
+
+  it.each([
+    ['without outcome', undefined],
+    ['Declined', 'DECLINED' as const],
+  ])('does not offer the share action on a state %s', (_case, requestAccessOutcome) => {
+    renderForm({ requestAccessOutcome, onEnter: [], onExit: [] }, vi.fn(), 'Case-Rfi', 'REQUEST_ACCESS');
+    expect(screen.queryByRole('switch', { name: /share requested entities on enter/i })).toBeNull();
+  });
+
+  it('offers the share action once Approved is selected', async () => {
+    const { user } = renderForm({ onEnter: [], onExit: [] }, vi.fn(), 'Case-Rfi', 'REQUEST_ACCESS');
+    expect(screen.queryByRole('switch', { name: /share requested entities on enter/i })).toBeNull();
+
+    await pickOutcome(user, /^approved$/i);
+
+    expect((screen.getByRole('switch', { name: /share requested entities on enter/i }) as HTMLInputElement).checked).toBe(true);
   });
 
   it('lists the automatic bookkeeping of an outcome state read-only', () => {

@@ -28,8 +28,14 @@ vi.mock('../../../src/utils/authorizedMembers', () => ({
   editAuthorizedMembers: vi.fn(),
 }));
 
+const { SYSTEM_USER_ID, WORKFLOW_MANAGER_USER_ID } = vi.hoisted(() => ({
+  SYSTEM_USER_ID: '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505',
+  WORKFLOW_MANAGER_USER_ID: '0a9592ed-0e00-4585-a4e8-219e33f4db48',
+}));
+
 vi.mock('../../../src/utils/access', () => ({
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS: 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
+  isInternalUser: (user: { id: string }) => [SYSTEM_USER_ID, WORKFLOW_MANAGER_USER_ID].includes(user.id),
 }));
 
 vi.mock('../../../src/domain/stix', () => ({
@@ -691,11 +697,21 @@ describe('ActionRegistry.shareRequestedEntities', () => {
     expect(usersUsed.every((u) => u === ctx.triggeringUser)).toBe(true);
   });
 
-  it('falls back to the context user when there is no triggering user', async () => {
+  it('refuses to share when there is no triggering user', async () => {
     const ctx = { ...makeRfiCtx(), triggeringUser: undefined };
-    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
-    expect(internalLoadById).toHaveBeenCalledWith(ctx.context, ctx.user, 'entity-1');
-    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.user, 'entity-1', ['org-author']);
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(internalLoadById).not.toHaveBeenCalled();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['the system user', SYSTEM_USER_ID],
+    ['the workflow manager', WORKFLOW_MANAGER_USER_ID],
+  ])('refuses to share when the triggering user is %s', async (_label, internalUserId) => {
+    const ctx = { ...makeRfiCtx(), triggeringUser: { id: internalUserId } };
+    await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow();
+    expect(internalLoadById).not.toHaveBeenCalled();
+    expect(addOrganizationRestriction).not.toHaveBeenCalled();
   });
 
   it('resolves AUTHOR to the RFI createdBy', async () => {

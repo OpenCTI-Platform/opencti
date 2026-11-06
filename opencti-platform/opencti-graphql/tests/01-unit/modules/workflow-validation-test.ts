@@ -1232,6 +1232,70 @@ describe('Workflow Validation', () => {
       expect(errorTypes(await validate(definition))).toContain('MISSING_REQUEST_ACCESS_SHARE_ACTION');
     });
 
+    it('should return REQUEST_ACCESS_SHARE_ACTION_MISPLACED when the initial state shares on enter', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state', onEnter: [shareAction] },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      const errors = await validate(definition);
+      expect(errorTypes(errors)).toEqual(['REQUEST_ACCESS_SHARE_ACTION_MISPLACED']);
+      expect(errors[0].message).toContain('existing-state');
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_MISPLACED when an intermediate state shares on exit', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'in-progress', onExit: [shareAction] },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+        transitions: [
+          { from: 'existing-state', to: 'in-progress', event: 'Start' },
+          { from: 'in-progress', to: 'approved', event: 'Accept' },
+          { from: 'in-progress', to: 'declined', event: 'Reject' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toEqual(['REQUEST_ACCESS_SHARE_ACTION_MISPLACED']);
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_MISPLACED when the Declined state shares on enter', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED', onEnter: [shareAction] },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toEqual(['REQUEST_ACCESS_SHARE_ACTION_MISPLACED']);
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_MISPLACED when the Approved state shares on exit', async () => {
+      const definition = requestAccessDefinition({
+        states: [
+          { statusId: 'existing-state' },
+          { statusId: 'approved', requestAccessOutcome: 'APPROVED', onEnter: [shareAction], onExit: [shareAction] },
+          { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+        ],
+      });
+      expect(errorTypes(await validate(definition))).toEqual(['REQUEST_ACCESS_SHARE_ACTION_MISPLACED']);
+    });
+
+    it('should return REQUEST_ACCESS_SHARE_ACTION_MISPLACED when a transition carries the share action', async () => {
+      const definition = requestAccessDefinition({
+        transitions: [
+          { from: 'existing-state', to: 'approved', event: 'Accept', syncActions: [shareAction] },
+          { from: 'existing-state', to: 'declined', event: 'Reject', syncActions: [shareAction] },
+        ],
+      });
+      const errors = await validate(definition);
+      expect(errorTypes(errors).filter((type) => type === 'REQUEST_ACCESS_SHARE_ACTION_MISPLACED')).toHaveLength(2);
+      expect(errors.map((e) => e.message).join(' ')).toContain('Accept');
+    });
+
     it('should return REQUEST_ACCESS_SHARE_ACTION_NOT_ALLOWED for the share action in a Global Case-Rfi definition', async () => {
       const definition = {
         initialState: 'existing-state',

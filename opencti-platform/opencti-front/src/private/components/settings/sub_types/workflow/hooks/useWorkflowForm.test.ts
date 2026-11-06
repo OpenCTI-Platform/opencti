@@ -131,7 +131,7 @@ describe('useWorkflowForm', () => {
         expect(updater([approved])[0].data.requestAccessOutcome).toBeNull();
       });
 
-      it('takes the default share action back from the state that loses the Approved marker', () => {
+      it('takes every share action back from the state that loses the Approved marker', () => {
         const defaultShare = { type: 'shareRequestedEntities', params: { organizations: [{ value: 'AUTHOR', label: 'Author' }] } };
         const customShare = { type: 'shareRequestedEntities', params: { organizations: [{ value: 'AUTHOR', label: 'Author' }, { value: 'org-1', label: 'Org 1' }] } };
         const approved = statusNode('approved', { requestAccessOutcome: 'APPROVED', onEnter: [defaultShare] });
@@ -145,7 +145,36 @@ describe('useWorkflowForm', () => {
         expect(updater([approved, open])[0].data.onEnter).toEqual([]);
 
         const customApproved = statusNode('approved', { requestAccessOutcome: 'APPROVED', onEnter: [customShare] });
-        expect(updater([customApproved, open])[0].data.onEnter).toEqual([customShare]);
+        expect(updater([customApproved, open])[0].data.onEnter).toEqual([]);
+      });
+
+      it('strips the share action from a state saved without the Approved outcome', () => {
+        const share = { type: 'shareRequestedEntities', params: { organizations: [{ value: 'org-1', label: 'Org 1' }] } };
+        const other = { type: 'updateAuthorizedMembers', params: { authorized_members: [] } };
+        const open = statusNode('open', { onEnter: [share, other] });
+        const { result } = renderHook(() => useWorkflowForm(open, mockOnClose));
+
+        act(() => {
+          result.current.onSubmit({ ...formValues, requestAccessOutcome: null, onEnter: [share, other], onExit: [share] });
+        });
+
+        const updater = mockSetNodes.mock.calls[0][0] as (nds: Node[]) => Node[];
+        const [nextOpen] = updater([open]);
+        expect(nextOpen.data.onEnter).toEqual([other]);
+        expect(nextOpen.data.onExit).toEqual([]);
+      });
+
+      it('keeps the share action of a state saved as Approved', () => {
+        const share = { type: 'shareRequestedEntities', params: { organizations: [{ value: 'org-1', label: 'Org 1' }] } };
+        const approved = statusNode('approved', { requestAccessOutcome: 'APPROVED', onEnter: [share] });
+        const { result } = renderHook(() => useWorkflowForm(approved, mockOnClose));
+
+        act(() => {
+          result.current.onSubmit({ ...formValues, requestAccessOutcome: 'APPROVED', onEnter: [share] });
+        });
+
+        const updater = mockSetNodes.mock.calls[0][0] as (nds: Node[]) => Node[];
+        expect(updater([approved])[0].data.onEnter).toEqual([share]);
       });
 
       it('moves an outcome marker off the state that held it when adding a state', () => {

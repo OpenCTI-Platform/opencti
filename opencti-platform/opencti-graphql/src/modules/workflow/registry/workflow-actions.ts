@@ -5,7 +5,7 @@ import { generateInternalId } from '../../../schema/identifier';
 import { z } from 'zod';
 import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
 import type { MemberAccessInput } from '../../../generated/graphql';
-import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/access';
+import { isInternalUser, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/access';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
 import { addOrganizationRestriction } from '../../../domain/stix';
 import { internalLoadById } from '../../../database/middleware-loader';
@@ -110,7 +110,10 @@ export const ActionRegistry: Record<string, ActionFunction> = {
   shareRequestedEntities: async (executionContext, params) => {
     const { entity, context } = executionContext;
     // Actions run as the workflow manager; sharing must use the rights of the user who fired the transition.
-    const user = (executionContext as any).triggeringUser ?? executionContext.user;
+    const user = (executionContext as any).triggeringUser;
+    if (!user || isInternalUser(user)) {
+      throw UnsupportedError('shareRequestedEntities requires the user who decided the request', { id: entity?.id });
+    }
     if (entity?.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI || !entity.x_opencti_request_access) {
       throw UnsupportedError('shareRequestedEntities is only available on request access RFIs', { id: entity?.id });
     }

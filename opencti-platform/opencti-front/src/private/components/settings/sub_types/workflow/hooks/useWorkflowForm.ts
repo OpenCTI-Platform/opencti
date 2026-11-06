@@ -5,7 +5,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 import useAddStatus from './useAddStatus';
 import useDeleteElement from './useDeleteElement';
 import { WorkflowEditionFormValues } from '../WorkflowEditionDrawer';
-import { withoutDefaultShareRequestedEntities, WorkflowActionType, WorkflowNodeType } from '../utils';
+import { withoutShareRequestedEntities, WorkflowActionType, WorkflowNodeType } from '../utils';
 
 // Validation Factory
 const getValidationSchema = (isStatus: boolean, t: (s: string) => string) => {
@@ -27,7 +27,7 @@ const getValidationSchema = (isStatus: boolean, t: (s: string) => string) => {
 };
 
 // An outcome marks one state: setting it on a state takes it off the state that held it, along with
-// the share action Approved added by default.
+// its share action.
 const moveOutcomeMarker = (nodes: Node[], ownerId: string, outcome: WorkflowEditionFormValues['requestAccessOutcome']) => {
   if (!outcome) return nodes;
   return nodes.map((node) => (
@@ -37,11 +37,21 @@ const moveOutcomeMarker = (nodes: Node[], ownerId: string, outcome: WorkflowEdit
           data: {
             ...node.data,
             requestAccessOutcome: null,
-            ...(outcome === 'APPROVED' ? { onEnter: withoutDefaultShareRequestedEntities(node.data.onEnter) } : {}),
+            ...(outcome === 'APPROVED' ? { onEnter: withoutShareRequestedEntities(node.data.onEnter) } : {}),
           },
         }
       : node
   ));
+};
+
+// Only the Approved state may share the requested entities.
+const withShareOnlyWhenApproved = (values: WorkflowEditionFormValues): WorkflowEditionFormValues => {
+  if (values.requestAccessOutcome === 'APPROVED') return values;
+  return {
+    ...values,
+    ...(values.onEnter ? { onEnter: withoutShareRequestedEntities(values.onEnter) } : {}),
+    ...(values.onExit ? { onExit: withoutShareRequestedEntities(values.onExit) } : {}),
+  };
 };
 
 export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => void) => {
@@ -67,7 +77,8 @@ export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => voi
   );
 
   // 3. Handlers
-  const onSubmit = (values: WorkflowEditionFormValues) => {
+  const onSubmit = (submittedValues: WorkflowEditionFormValues) => {
+    const values = isStatus ? withShareOnlyWhenApproved(submittedValues) : submittedValues;
     if (isNewStatus) {
       addStatus(values);
       if (values.requestAccessOutcome) {

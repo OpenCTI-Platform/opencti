@@ -488,6 +488,25 @@ export const validateWorkflowDefinitionData = async (
       });
     }
   } else {
+    // The share must only run when entering Approved, the one state reached through a gated decision.
+    states.forEach((state) => {
+      const stateId = state.statusId ?? state.name;
+      const misplacedOnEnter = state.requestAccessOutcome !== 'APPROVED' && (state.onEnter ?? []).some(isShareRequestedEntitiesAction);
+      if (misplacedOnEnter || (state.onExit ?? []).some(isShareRequestedEntitiesAction)) {
+        errors.push({
+          type: 'REQUEST_ACCESS_SHARE_ACTION_MISPLACED',
+          message: `Action 'shareRequestedEntities' on state '${stateId}' is only allowed on enter of the Approved state`,
+        });
+      }
+    });
+    transitions.forEach((transition) => {
+      if ([...(transition.asyncActions ?? []), ...(transition.syncActions ?? [])].some(isShareRequestedEntitiesAction)) {
+        errors.push({
+          type: 'REQUEST_ACCESS_SHARE_ACTION_MISPLACED',
+          message: `Action 'shareRequestedEntities' in transition '${transition.event}' is only allowed on enter of the Approved state`,
+        });
+      }
+    });
     const outcomeKinds = [['APPROVED', 'Approved'], ['DECLINED', 'Declined']] as const;
     for (const [outcome, label] of outcomeKinds) {
       const markedStates = outcomeStates.filter((state) => state.requestAccessOutcome === outcome);

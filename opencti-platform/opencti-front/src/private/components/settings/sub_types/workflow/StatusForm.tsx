@@ -5,7 +5,7 @@ import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import { Alert, Box, FormControlLabel, Switch, Typography } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
 import WorkflowFieldList from './WorkflowFieldList';
-import { FEATURE_NAME, REQUEST_ACCESS_AUTHOR_KEY, RequestAccessOutcome, withoutDefaultShareRequestedEntities, WorkflowActionType, WorkflowDataType } from './utils';
+import { FEATURE_NAME, REQUEST_ACCESS_AUTHOR_KEY, RequestAccessOutcome, withoutShareRequestedEntities, WorkflowActionType, WorkflowDataType } from './utils';
 import type { WorkflowScope } from '../SubTypeWorkflow';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '../../../common/entreprise_edition/EEChip';
@@ -19,6 +19,7 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
   const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
   const isRequestAccess = scope === 'REQUEST_ACCESS';
+  const isApprovedOutcome = isRequestAccess && values.requestAccessOutcome === 'APPROVED';
   const supportsAuthorizedMembers = AUTHORIZED_MEMBERS_ENTITY_TYPES.includes(entityType);
   const hasShareRequestedEntitiesOnEnter = values.onEnter?.some((a) => a.type === WorkflowActionType.shareRequestedEntities);
   const hasUpdateAuthorizedMembersOnEnter = values.onEnter?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
@@ -53,15 +54,14 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
     }
   };
 
-  // Approving shares the requested entities: the action is added when missing, then stays a normal On enter action.
-  // Leaving Approved takes the action back only while it is still the one added by default.
+  // Approving shares the requested entities: the action is added when missing. Any other outcome takes it back.
   const handleOutcomeChange = (value: string) => {
     const outcome = value === NO_OUTCOME ? null : value as RequestAccessOutcome;
     setFieldValue('requestAccessOutcome', outcome);
     if (outcome === 'APPROVED' && !hasShareRequestedEntitiesOnEnter) {
       setFieldValue('onEnter', [...(values.onEnter ?? []), buildShareRequestedEntitiesAction()]);
-    } else if (outcome !== 'APPROVED' && values.requestAccessOutcome === 'APPROVED') {
-      setFieldValue('onEnter', withoutDefaultShareRequestedEntities(values.onEnter));
+    } else if (outcome !== 'APPROVED' && hasShareRequestedEntitiesOnEnter) {
+      setFieldValue('onEnter', withoutShareRequestedEntities(values.onEnter));
     }
   };
 
@@ -98,7 +98,7 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
           )}
         </Box>
       )}
-      {(supportsAuthorizedMembers || isRequestAccess) && (
+      {(supportsAuthorizedMembers || isApprovedOutcome) && (
         <Box data-testid="workflow-status-onenter-actions-container" sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
           <Typography variant="h6">
             {t_i18n('On enter actions')} <EEChip feature={t_i18n(FEATURE_NAME)} />
@@ -119,7 +119,7 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
               {hasUpdateAuthorizedMembersOnEnter && <WorkflowFieldList name={WorkflowDataType.onEnter} actionType={WorkflowActionType.updateAuthorizedMembers} />}
             </>
           )}
-          {isRequestAccess && (
+          {isApprovedOutcome && (
             <>
               <FormControlLabel
                 control={(
