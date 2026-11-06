@@ -26,7 +26,12 @@ import {
 import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
-import { cleanupEntityWorkflow, initializeEntityWorkflow, syncWorkflowInstanceFromExternalWrite } from '../modules/workflow/domain/workflow-domain';
+import {
+  assertExternalStatusWriteAllowed,
+  cleanupEntityWorkflow,
+  initializeEntityWorkflow,
+  syncWorkflowInstanceFromExternalWrite,
+} from '../modules/workflow/domain/workflow-domain';
 import {
   BREAKDOWN_REFUSAL_REASONS,
   computeAverage,
@@ -3043,8 +3048,8 @@ type UpdateAttributeMetaResolvedOpts = EventOpts & {
   bypassValidation?: boolean;
   // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
   skipUserIndividualSync?: boolean;
-  // Set by the workflow projection: its own write is not synced back as an external write,
-  // and it is the only non-bypass writer of the closing reason
+  // Set by the workflow engine writes (projection, outcomes): they are neither checked nor synced back as external writes,
+  // and they are the only non-bypass writers of the closing reason
   workflowInternalWrite?: boolean;
   // Set by the workflow projection: the transition stands for the external references that an enforced status change asks for
   skipReferenceEnforcement?: boolean;
@@ -3111,6 +3116,11 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   // The closing reason is owned by the workflow: only a transition or a bypass user can change it
   if (!opts.workflowInternalWrite && !isBypassUser(user) && updates.some((e) => e.key === X_CLOSING_REASON)) {
     throw FunctionalError('Closing reason can only be changed through a workflow transition', { id: initial.internal_id });
+  }
+  const workflowStatusInput = updates.find((input) => input.key === X_WORKFLOW_ID);
+  if (workflowStatusInput && !opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    const newStatusId = workflowStatusInput.operation === EditOperation.Remove ? null : (workflowStatusInput.value?.[0] ?? null);
+    await assertExternalStatusWriteAllowed(context, user, initial as BasicStoreBase, newStatusId);
   }
 
   await rewriteEmbeddedDataUriImagesInUpdateInputs(context, user, updates, {

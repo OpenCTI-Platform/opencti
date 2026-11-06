@@ -29,7 +29,7 @@ import { logApp } from '../../../src/config/conf';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../../../src/types/store';
-import { deleteElementById, internalDeleteElementById, loadEntity, storeLoadByIdWithRefs, updateAttribute } from '../../../src/database/middleware';
+import { createEntity, deleteElementById, internalDeleteElementById, loadEntity, storeLoadByIdWithRefs, updateAttribute } from '../../../src/database/middleware';
 import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
 import { INPUT_GRANTED_REFS, OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
@@ -126,6 +126,15 @@ export const DECLINE_RFI_QUERY = gql`
         caseRfiDecline(id: $id){
             id
             x_opencti_workflow_id
+        }
+    }`;
+
+const STATUS_FIELD_PATCH_QUERY = gql`
+    mutation RequestAccessStatusFieldPatch($id: ID!, $input: [EditInput]!) {
+        stixDomainObjectEdit(id: $id) {
+            fieldPatch(input: $input) {
+                id
+            }
         }
     }`;
 
@@ -1060,6 +1069,85 @@ describe('Request access decided through workflow transitions', async () => {
     expect(notifyResult).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.anything(), ADMIN_USER.id, expect.any(String), ActionStatus.DECLINED);
     expect(declinedCount).toHaveBeenCalledTimes(1);
     expect(approvedCount).not.toHaveBeenCalled();
+  });
+
+  describe('direct writes of the status', () => {
+    const outcomeRejection = 'Approved and Declined can only be reached or left through the workflow';
+    const patchStatus = async (rfiId: string, templateId: string) => queryAsAdmin({
+      query: STATUS_FIELD_PATCH_QUERY,
+      variables: { id: rfiId, input: [{ key: 'x_opencti_workflow_id', value: [await statusIdOf(templateId)] }] },
+    });
+
+    it('fieldPatch to the Approved status is rejected', async () => {
+      const rfiId = await requestAccess();
+
+      const patchResult = await patchStatus(rfiId, templateIds.approved);
+
+      expect(patchResult.errors?.[0].message).toBe(outcomeRejection);
+      expect((await loadDecision(rfiId))).toMatchObject({ statusId: await statusIdOf(templateIds.pending), action: { status: ActionStatus.NEW } });
+      expect((await findInstance(rfiId))?.currentState).toBe(templateIds.pending);
+      expect(share).not.toHaveBeenCalled();
+      expect(approvedCount).not.toHaveBeenCalled();
+    });
+
+    it('fieldPatch out of Declined is rejected', async () => {
+      const rfiId = await requestAccess();
+      expect(await triggerWorkflowEvent(testContext, ADMIN_USER, rfiId, 'Reject')).toMatchObject({ success: true });
+
+      const patchResult = await patchStatus(rfiId, templateIds.pending);
+
+      expect(patchResult.errors?.[0].message).toBe(outcomeRejection);
+      expect((await loadDecision(rfiId))).toMatchObject({ statusId: await statusIdOf(templateIds.declined), action: { status: ActionStatus.DECLINED } });
+      expect((await findInstance(rfiId))?.currentState).toBe(templateIds.declined);
+    });
+
+    it('fieldPatch between two intermediate states is still synced', async () => {
+      const rfiId = await requestAccess();
+
+      await queryAsAdminWithSuccess({
+        query: STATUS_FIELD_PATCH_QUERY,
+        variables: { id: rfiId, input: [{ key: 'x_opencti_workflow_id', value: [await statusIdOf(templateIds.escalated)] }] },
+      });
+
+      expect((await loadDecision(rfiId))).toMatchObject({ statusId: await statusIdOf(templateIds.escalated), action: { status: ActionStatus.NEW } });
+      expect((await findInstance(rfiId))?.currentState).toBe(templateIds.escalated);
+    });
+
+    it('workflow internal writes are not blocked', async () => {
+      const rfiId = await requestAccess();
+      const approvedStatusId = await statusIdOf(templateIds.approved);
+
+      await updateAttribute(testContext, ADMIN_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI, [
+        { key: 'x_opencti_workflow_id', value: [approvedStatusId] },
+      ], { workflowInternalWrite: true });
+
+      expect((await loadDecision(rfiId)).statusId).toBe(approvedStatusId);
+    });
+
+    it('fieldPatch of an RFI without instance yet into Approved is rejected', async () => {
+      const rfiId = await requestAccess();
+      await withoutInstanceAt(rfiId, templateIds.review);
+
+      const patchResult = await patchStatus(rfiId, templateIds.approved);
+
+      expect(patchResult.errors?.[0].message).toBe(outcomeRejection);
+      expect((await loadDecision(rfiId))).toMatchObject({ statusId: await statusIdOf(templateIds.review), action: { status: ActionStatus.NEW } });
+      expect(share).not.toHaveBeenCalled();
+    });
+
+    it('upsert into the Approved status is rejected', async () => {
+      const rfiId = await requestAccess();
+      const rfi = await findRFIById(testContext, ADMIN_USER, rfiId);
+
+      await expect(createEntity(testContext, ADMIN_USER, {
+        name: rfi.name,
+        created: rfi.created,
+        x_opencti_workflow_id: await statusIdOf(templateIds.approved),
+      }, ENTITY_TYPE_CONTAINER_CASE_RFI)).rejects.toThrow(outcomeRejection);
+
+      expect((await loadDecision(rfiId))).toMatchObject({ statusId: await statusIdOf(templateIds.pending), action: { status: ActionStatus.NEW } });
+      expect((await findInstance(rfiId))?.currentState).toBe(templateIds.pending);
+    });
   });
 
   it('a plain RFI on a request access status stays on the legacy flow', async () => {

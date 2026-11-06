@@ -18,6 +18,7 @@ import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/e
 import { addNotification } from '../../../src/modules/notification/notification-domain';
 import {
   __resetReadRepairRateLimitForTest,
+  assertExternalStatusWriteAllowed,
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
   getAllowedTransitions,
@@ -6384,6 +6385,48 @@ describe('Instance scope as the single source of truth', () => {
     expect(transitions).toEqual([expect.objectContaining({ event: 'Accept', toState: 'approved', toStatus: statuses[4] })]);
   });
 
+  describe('getAllowedTransitions for an entity without instance yet', () => {
+    const reviewContent = (initialState: string) => stateContent(initialState, [initialState, 'review', 'done'], [
+      { from: initialState, to: 'review', event: 'Review' },
+      { from: 'review', to: 'done', event: 'Finish' },
+    ]);
+    const withoutInstanceAt = (statusId?: string) => {
+      (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+        if (id === 'global-def') return Promise.resolve(definitionEntity(id, reviewContent('open')));
+        if (id === 'ra-def') return Promise.resolve(definitionEntity(id, reviewContent('new')));
+        if (id === 'rfi-id') return Promise.resolve({ ...rfi, ...(statusId ? { x_opencti_workflow_id: statusId } : {}) });
+        return Promise.resolve(null);
+      });
+      const reviewStatuses = [...statuses, status('global-review', 'review', StatusScope.Global), status('ra-review', 'review', StatusScope.RequestAccess)];
+      (getEntitiesListFromCache as any).mockResolvedValue(reviewStatuses);
+      (findStatusesByType as any).mockResolvedValue(reviewStatuses);
+    };
+
+    it.each([
+      ['Global', 'global-review'],
+      ['request-access', 'ra-review'],
+    ])('lists the transitions of the state its %s status maps to', async (_scope, statusId) => {
+      (findByType as any).mockResolvedValue(bothDefinitions);
+      withoutInstanceAt(statusId);
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'rfi-id');
+
+      expect(transitions).toEqual([expect.objectContaining({ event: 'Finish', toState: 'done' })]);
+    });
+
+    it.each([
+      ['no status', undefined],
+      ['a status mapped to no state', 'global-closed'],
+    ])('lists the transitions of the initial state for %s', async (_case, statusId) => {
+      (findByType as any).mockResolvedValue(bothDefinitions);
+      withoutInstanceAt(statusId);
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'rfi-id');
+
+      expect(transitions).toEqual([expect.objectContaining({ event: 'Review', toState: 'review' })]);
+    });
+  });
+
   it('getAllowedTransitions never evaluates a REQUEST_ACCESS instance against the Global definition', async () => {
     (findByType as any).mockResolvedValue(globalOnly);
     (loadEntity as any).mockResolvedValue(instanceOf('rfi-id', 'open', StatusScope.RequestAccess));
@@ -6763,5 +6806,119 @@ describe('triggerWorkflowEvent — request access outcomes', () => {
     } finally {
       share.mockRestore();
     }
+  });
+});
+
+describe('assertExternalStatusWriteAllowed', () => {
+  const definitionContent = JSON.stringify({
+    initialState: 'new',
+    states: [
+      { statusId: 'new' },
+      { statusId: 'review' },
+      { statusId: 'approved', requestAccessOutcome: 'APPROVED' },
+      { statusId: 'declined', requestAccessOutcome: 'DECLINED' },
+    ],
+    transitions: [
+      { from: 'new', to: 'review', event: 'Review' },
+      { from: 'review', to: 'approved', event: 'Accept' },
+      { from: 'review', to: 'declined', event: 'Reject' },
+    ],
+  });
+  const raStatus = (state: string) => ({ id: `ra-${state}`, internal_id: `ra-${state}`, type: 'Case-Rfi', scope: StatusScope.RequestAccess, template_id: state, order: 0 });
+  const statuses = [
+    ...['new', 'review', 'approved', 'declined'].map(raStatus),
+    { id: 'global-approved', internal_id: 'global-approved', type: 'Case-Rfi', scope: StatusScope.Global, template_id: 'approved', order: 0 },
+  ];
+  const rfiAt = (state: string | null) => ({
+    id: 'rfi-id',
+    internal_id: 'rfi-id',
+    entity_type: 'Case-Rfi',
+    x_opencti_request_access: JSON.stringify({ entities: ['malware-1'], members: ['org-1'], status: 'NEW' }),
+    ...(state ? { x_opencti_workflow_id: `ra-${state}` } : {}),
+  });
+  const instanceAt = (currentState: string) => ({
+    id: 'instance-rfi', internal_id: 'instance-rfi', entity_id: 'rfi-id', currentState, scope: StatusScope.RequestAccess, history: '[]',
+  });
+  const rejection = 'Approved and Declined can only be reached or left through the workflow';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (findByType as any).mockResolvedValue({ id: 'setting-id', request_access_workflow: { workflow_definition_id: 'ra-def' } });
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'ra-def') return Promise.resolve({ id, name: 'RA', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      return Promise.resolve(null);
+    });
+    (getEntitiesListFromCache as any).mockResolvedValue(statuses);
+    (loadEntity as any).mockResolvedValue(null);
+  });
+
+  afterEach(() => {
+    (getEntitiesListFromCache as any).mockResolvedValue([]);
+  });
+
+  it('rejects a write into the Approved status', async () => {
+    (loadEntity as any).mockResolvedValue(instanceAt('review'));
+
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('review'), 'ra-approved')).rejects.toThrow(rejection);
+  });
+
+  it('rejects a write out of the Declined status', async () => {
+    (loadEntity as any).mockResolvedValue(instanceAt('declined'));
+
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('declined'), 'ra-new')).rejects.toThrow(rejection);
+  });
+
+  it('rejects clearing the status of an Approved request', async () => {
+    (loadEntity as any).mockResolvedValue(instanceAt('approved'));
+
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('approved'), null)).rejects.toThrow(rejection);
+  });
+
+  it('decides from the instance state when the status diverges from it', async () => {
+    (loadEntity as any).mockResolvedValue(instanceAt('approved'));
+
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('review'), 'ra-new')).rejects.toThrow(rejection);
+  });
+
+  it('lets a write between two intermediate states through', async () => {
+    (loadEntity as any).mockResolvedValue(instanceAt('new'));
+
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('new'), 'ra-review')).resolves.toBeUndefined();
+  });
+
+  it('lets a write of the status the request already has through', async () => {
+    (loadEntity as any).mockResolvedValue(instanceAt('approved'));
+
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('approved'), 'ra-approved')).resolves.toBeUndefined();
+  });
+
+  it('protects an RFI without instance yet from the state its status maps to', async () => {
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('review'), 'ra-approved')).rejects.toThrow(rejection);
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('declined'), 'ra-review')).rejects.toThrow(rejection);
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('new'), 'ra-review')).resolves.toBeUndefined();
+  });
+
+  it('counts a status outside the request access workflow as no outcome', async () => {
+    (loadEntity as any).mockResolvedValue(instanceAt('review'));
+
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('review'), 'global-approved')).resolves.toBeUndefined();
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('review'), 'unknown-status')).resolves.toBeUndefined();
+  });
+
+  it('lets any write through on an RFI of the legacy flow', async () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id' });
+
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('review'), 'ra-approved')).resolves.toBeUndefined();
+    const { x_opencti_request_access: _request, ...plainRfi } = rfiAt('review');
+    (findByType as any).mockResolvedValue({ id: 'setting-id', request_access_workflow: { workflow_definition_id: 'ra-def' } });
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, plainRfi, 'ra-approved')).resolves.toBeUndefined();
+  });
+
+  it('returns without any lookup for an entity that is not an RFI', async () => {
+    await assertExternalStatusWriteAllowed(mockContext, mockUser, { internal_id: 'report-id', entity_type: 'Report', x_opencti_workflow_id: 'ra-review' }, 'ra-approved');
+
+    expect(findByType).not.toHaveBeenCalled();
+    expect(loadEntity).not.toHaveBeenCalled();
+    expect(getEntitiesListFromCache).not.toHaveBeenCalled();
   });
 });

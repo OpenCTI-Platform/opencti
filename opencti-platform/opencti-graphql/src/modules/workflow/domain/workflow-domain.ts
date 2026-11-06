@@ -1803,7 +1803,8 @@ export const getAllowedTransitions = async (
   if (await getTransitionRefusal(context, user, entityId, entity)) {
     return [];
   }
-  const currentStateId = instanceEntity?.currentState ?? options?.currentState ?? definitionData.initialState;
+  // Without instance yet, the entity is in the state its instance will be created at
+  const currentStateId = instanceEntity?.currentState ?? options?.currentState ?? resolveSuppliedStatus(definitionData, suppliedStatus) ?? definitionData.initialState;
 
   const definition = WorkflowFactory.createDefinition(definitionData);
   const effectiveStateId = currentStateId || definition.getInitialState();
@@ -2702,6 +2703,30 @@ export const syncWorkflowInstanceFromExternalWrite = async (
   } catch (error) {
     logApp.error('[OPENCTI-MODULE] Failed to sync WorkflowInstance from external status write', { cause: error, entityId, newStatusId });
     await recordFailedExternalSync(context, user, entityId, newStatusId);
+  }
+};
+
+/**
+ * Refuses a write of x_opencti_workflow_id made outside the workflow engine that moves a request into or
+ * out of its Approved / Declined state: only a transition or a bypass decides a request. Any other
+ * external write is left to the tolerant sync. Runs before the write is saved.
+ */
+export const assertExternalStatusWriteAllowed = async (
+  context: AuthContext,
+  _user: AuthUser,
+  entity: { entity_type: string; internal_id?: string; x_opencti_workflow_id?: string },
+  newStatusId: string | null,
+): Promise<void> => {
+  if (entity.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI || newStatusId === (entity.x_opencti_workflow_id ?? null)) return;
+  const workflowState = await resolveRequestAccessWorkflowState(context, entity as BasicStoreEntity);
+  if (!workflowState) return;
+  const { definitionData, currentState } = workflowState;
+  // A status of another type or scope maps to no state of the request access workflow
+  const newStatus = await findStatusInCache(context, newStatusId);
+  const newState = newStatus?.type === ENTITY_TYPE_CONTAINER_CASE_RFI && newStatus.scope === StatusScope.RequestAccess ? newStatus.template_id : null;
+  if (newState === currentState) return;
+  if (findStateOutcome(definitionData, currentState) || findStateOutcome(definitionData, newState)) {
+    throw FunctionalError('Approved and Declined can only be reached or left through the workflow', { id: entity.internal_id });
   }
 };
 
