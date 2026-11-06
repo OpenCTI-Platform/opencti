@@ -1477,7 +1477,6 @@ input LocalAuthConfigInput {
   local_auth_lockout_final_action: LocalAuthLockoutFinalAction
   local_auth_lockout_window: Int
   local_auth_lockout_duration: Int
-  local_auth_lockout_max_duration: Int
 }
 
 input CertAuthConfigInput {
@@ -1569,7 +1568,6 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   local_auth_lockout_final_action: LocalAuthLockoutFinalAction
   local_auth_lockout_window: Int
   local_auth_lockout_duration: Int
-  local_auth_lockout_max_duration: Int
   local_auth: LocalAuthConfig
   cert_auth: CertAuthConfig
   headers_auth: HeadersAuthConfig
