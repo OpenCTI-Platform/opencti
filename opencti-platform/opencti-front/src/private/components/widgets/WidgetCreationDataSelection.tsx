@@ -1,4 +1,3 @@
-import IconButton from '@common/button/IconButton';
 import { AddOutlined } from '@mui/icons-material';
 import WidgetFilters from '@components/widgets/WidgetFilters';
 import Button from '@common/button/Button';
@@ -229,24 +228,22 @@ const WidgetCreationDataSelection = () => {
       )}
 
       {perspective === 'entities' && canAddDataSelection && (
-        <div style={{ display: 'flex' }}>
+        // The same blue button as the other perspectives, so that its disabled state shows too
+        <Stack direction="row">
           {lockedByBreakdown(
-            <IconButton
-              aria-label={t_i18n('Add')}
+            <Button
               disabled={isBreakdownActive || getCurrentDataSelectionLimit(type) === dataSelection.length}
+              aria-label={t_i18n('Add')}
               color="secondary"
-              // The wrapper has no default size: omitting it resolves to `sm`, not `md`.
-              size="default"
+              startIcon={<AddOutlined />}
               onClick={() => handleAddDataSelection('entities')}
               style={{
                 width: '100%',
                 flex: 1,
               }}
-            >
-              <AddOutlined fontSize="small" />
-            </IconButton>,
+            />,
           )}
-        </div>
+        </Stack>
       )}
 
       {perspective === 'relationships' && canAddDataSelection && (isBreakdownActive ? (
