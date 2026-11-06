@@ -21212,6 +21212,7 @@ export type MutationWorkflowMigrateArgs = {
   entityType: Scalars['String']['input'];
   overwrite?: InputMaybe<Scalars['Boolean']['input']>;
   publish?: InputMaybe<Scalars['Boolean']['input']>;
+  scope?: InputMaybe<StatusScope>;
 };
 
 

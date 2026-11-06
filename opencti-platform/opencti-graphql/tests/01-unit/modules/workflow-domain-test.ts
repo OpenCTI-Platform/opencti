@@ -141,6 +141,7 @@ vi.mock('../../../src/modules/notification/notification-domain', () => ({
 vi.mock('../../../src/manager/telemetryManager', () => ({
   addWorkflowPublishCount: vi.fn(),
   addWorkflowRequestAccessPublishCount: vi.fn(),
+  addWorkflowRequestAccessMigrationCount: vi.fn(),
   addRequestAccessApprovedCount: vi.fn(),
   addRequestAccessDeclinedCount: vi.fn(),
 }));
@@ -5771,6 +5772,134 @@ describe('migrateWorkflowFromStatuses', () => {
       expect.arrayContaining([expect.objectContaining({ key: 'published_version' })]),
     );
     expect(result).toBeDefined();
+  });
+
+  it('does not count a Global migration as a request access migration', async () => {
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
+
+    await migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', false);
+
+    expect(telemetryManager.addWorkflowRequestAccessMigrationCount).not.toHaveBeenCalled();
+  });
+
+  describe('with the RequestAccess scope', () => {
+    const requestAccessStatuses = [
+      { id: 'g1', template_id: 't-open', type: 'Case-Rfi', scope: StatusScope.Global, order: 1 },
+      { id: 'ra-new', template_id: 't-new', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 1 },
+      { id: 'ra-review', template_id: 't-review', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 2 },
+      { id: 'ra-approved', template_id: 't-approved', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 3 },
+      { id: 'ra-declined', template_id: 't-declined', type: 'Case-Rfi', scope: StatusScope.RequestAccess, order: 4 },
+    ];
+    const requestAccessTemplates = [
+      { id: 't-open', name: 'Open' },
+      { id: 't-new', name: 'New' },
+      { id: 't-review', name: 'Under review' },
+      { id: 't-approved', name: 'Approved' },
+      { id: 't-declined', name: 'Declined' },
+    ];
+    const requestAccessConfiguration = { approval_admin: ['group-1'], approved_workflow_id: 'ra-approved', declined_workflow_id: 'ra-declined' };
+    const rfiSetting = { id: 'entity-setting-id', target_type: 'Case-Rfi', workflow_id: 'global-def', request_access_workflow: requestAccessConfiguration };
+    const requestAccessLink = (call: any[]) => call[2] === 'entity-setting-id' && call[4].some((input: any) => input.key === 'request_access_workflow');
+
+    beforeEach(() => {
+      (fullEntitiesList as any).mockResolvedValue(requestAccessStatuses);
+      (storeLoadByIds as any).mockResolvedValue(requestAccessTemplates);
+    });
+
+    it('migrate with RequestAccess refuses non Case-Rfi types', async () => {
+      await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', false, false, StatusScope.RequestAccess))
+        .rejects.toThrow('Workflow scope is not available for this entity type');
+
+      expect(lockResources).not.toHaveBeenCalled();
+      expect(findByType).not.toHaveBeenCalled();
+      expect(createEntity).not.toHaveBeenCalled();
+    });
+
+    it('migrate with RequestAccess writes workflow_definition_id and counts once', async () => {
+      (findByType as any).mockResolvedValue(rfiSetting);
+
+      await migrateWorkflowFromStatuses(mockContext, mockUser, 'Case-Rfi', false, false, StatusScope.RequestAccess);
+
+      expect(createEntity).toHaveBeenCalledTimes(1);
+      const [, , input] = (createEntity as any).mock.calls[0];
+      const content = JSON.parse(input.draft_version.content);
+      expect(content.initialState).toBe('t-new');
+      expect(content.states.map((state: any) => state.statusId)).toEqual(['t-new', 't-review', 't-approved', 't-declined']);
+      expect(content.transitions.filter((t: any) => t.to === 't-approved').map((t: any) => t.event)).toEqual(['Accept', 'Accept']);
+      const links = (updateAttribute as any).mock.calls.filter(requestAccessLink);
+      expect(links).toHaveLength(1);
+      expect(links[0][4]).toEqual([{ key: 'request_access_workflow', value: [{ ...requestAccessConfiguration, workflow_definition_id: 'workflow-id' }] }]);
+      expect((updateAttribute as any).mock.calls.some((call: any[]) => call[4].some((i: any) => i.key === 'workflow_id'))).toBe(false);
+      expect(telemetryManager.addWorkflowRequestAccessMigrationCount).toHaveBeenCalledOnce();
+    });
+
+    it('validates and publishes the migrated definition in the RequestAccess scope', async () => {
+      const draftVersion = { id: 'v1', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{"initialState":"t-new","states":[],"transitions":[]}', validation_errors: [] };
+      (findByType as any)
+        .mockResolvedValueOnce(rfiSetting)
+        .mockResolvedValueOnce(rfiSetting)
+        .mockResolvedValue({ ...rfiSetting, request_access_workflow: { ...requestAccessConfiguration, workflow_definition_id: 'workflow-id' } });
+      (storeLoadById as any).mockResolvedValue({ id: 'workflow-id', name: 'Workflow for Case-Rfi', draft_version: draftVersion, all_versions: [draftVersion] });
+
+      const result = await migrateWorkflowFromStatuses(mockContext, mockUser, 'Case-Rfi', true, false, StatusScope.RequestAccess);
+
+      expect(result.published).toBe(true);
+      expect(result.workflow_id).toBe('workflow-id');
+      const scopes = (validateWorkflowDefinitionData as any).mock.calls.map((call: any[]) => call[5]);
+      expect(scopes.length).toBeGreaterThan(0);
+      expect(scopes.every((scope: StatusScope) => scope === StatusScope.RequestAccess)).toBe(true);
+      expect(telemetryManager.addWorkflowRequestAccessPublishCount).toHaveBeenCalledOnce();
+      expect(telemetryManager.addWorkflowRequestAccessMigrationCount).toHaveBeenCalledOnce();
+    });
+
+    it('refuses when the approved or declined status cannot be resolved, and persists nothing', async () => {
+      (findByType as any).mockResolvedValue({ ...rfiSetting, request_access_workflow: { ...requestAccessConfiguration, declined_workflow_id: 'missing-status' } });
+
+      await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Case-Rfi', false, false, StatusScope.RequestAccess))
+        .rejects.toThrow('approved and declined statuses');
+      expect(createEntity).not.toHaveBeenCalled();
+      expect(updateAttribute).not.toHaveBeenCalled();
+      expect(telemetryManager.addWorkflowRequestAccessMigrationCount).not.toHaveBeenCalled();
+    });
+
+    it('refuses when request access has no approved and declined statuses configured', async () => {
+      (findByType as any).mockResolvedValue({ ...rfiSetting, request_access_workflow: undefined });
+
+      await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Case-Rfi', false, false, StatusScope.RequestAccess))
+        .rejects.toThrow('approved and declined statuses');
+      expect(createEntity).not.toHaveBeenCalled();
+    });
+
+    it('refuses to overwrite a request access definition without overwrite, whatever the Global workflow', async () => {
+      (findByType as any).mockResolvedValue({ ...rfiSetting, workflow_id: undefined, request_access_workflow: { ...requestAccessConfiguration, workflow_definition_id: 'ra-def' } });
+
+      await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Case-Rfi', false, false, StatusScope.RequestAccess))
+        .rejects.toThrow('already has a workflow');
+      expect(createEntity).not.toHaveBeenCalled();
+    });
+
+    it('never replaces a published request access definition, even with overwrite: true', async () => {
+      (findByType as any).mockResolvedValue({ ...rfiSetting, request_access_workflow: { ...requestAccessConfiguration, workflow_definition_id: 'ra-def' } });
+      (storeLoadById as any).mockImplementation(async (_context: any, _user: any, id: string) => (id === 'ra-def' ? { id: 'ra-def', published_version: { id: 'v1' } } : { id }));
+
+      await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Case-Rfi', false, true, StatusScope.RequestAccess))
+        .rejects.toThrow('already has a published workflow');
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
+
+    it('removes only the request access definition it created when the publish fails', async () => {
+      (findByType as any)
+        .mockResolvedValueOnce(rfiSetting)
+        .mockResolvedValueOnce(rfiSetting)
+        .mockResolvedValue({ ...rfiSetting, request_access_workflow: { ...requestAccessConfiguration, workflow_definition_id: 'workflow-id' } });
+      (storeLoadById as any).mockResolvedValue({ id: 'workflow-id' });
+
+      await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Case-Rfi', true, false, StatusScope.RequestAccess)).rejects.toThrow('No draft version to publish');
+
+      expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-setting-id', 'EntitySetting', [{ key: 'request_access_workflow', value: [requestAccessConfiguration] }]);
+      expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'workflow-id', 'WorkflowDefinition');
+      expect(telemetryManager.addWorkflowRequestAccessMigrationCount).not.toHaveBeenCalled();
+    });
   });
 });
 

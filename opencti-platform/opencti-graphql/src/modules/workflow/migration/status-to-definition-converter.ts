@@ -241,6 +241,53 @@ export const convertStatusToDefinition = (
   return { byScope };
 };
 
+/**
+ * Turns the converted REQUEST_ACCESS group of Case-Rfi into a request access definition that passes
+ * publish validation: the states of the legacy approved / declined statuses (identified by their
+ * template) are marked as outcomes, the Approved one shares the requested entities with the
+ * requesting organization on enter, transitions into them are named `Accept` / `Reject`, and every
+ * transition leaving them is dropped. The other states keep their jump-anywhere transitions.
+ */
+export const convertRequestAccessGroup = (
+  result: WorkflowMigrationConversionResult,
+  approvedTemplateId: string,
+  declinedTemplateId: string,
+): WorkflowMigrationConversionResult => {
+  const { definition } = result;
+  if (approvedTemplateId === declinedTemplateId) {
+    throw FunctionalError('Cannot migrate request access: the approved and declined statuses must use different status templates', { approvedTemplateId, declinedTemplateId });
+  }
+  const stateIds = new Set(definition.states.map((state) => state.statusId));
+  const missingTemplateIds = [approvedTemplateId, declinedTemplateId].filter((templateId) => !stateIds.has(templateId));
+  if (missingTemplateIds.length > 0) {
+    throw FunctionalError('Cannot migrate request access: the approved or declined status is not one of the request access statuses', { missingTemplateIds });
+  }
+  if (definition.initialState === approvedTemplateId || definition.initialState === declinedTemplateId) {
+    throw FunctionalError('Cannot migrate request access: the approved or declined status cannot be the initial state, it must not be the first request access status by order', { initialState: definition.initialState });
+  }
+  const outcomeIds = new Set([approvedTemplateId, declinedTemplateId]);
+  const states: WorkflowMigrationState[] = definition.states.map((state) => {
+    if (state.statusId === approvedTemplateId) {
+      return { ...state, requestAccessOutcome: 'APPROVED', onEnter: [...(state.onEnter ?? []), { type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } }] };
+    }
+    if (state.statusId === declinedTemplateId) {
+      return { ...state, requestAccessOutcome: 'DECLINED' };
+    }
+    return state;
+  });
+  const transitions = definition.transitions
+    .filter((transition) => !(Array.isArray(transition.from) ? transition.from : [transition.from]).some((from) => outcomeIds.has(from)))
+    .map((transition) => {
+      if (transition.to === approvedTemplateId) return { ...transition, event: 'Accept' };
+      if (transition.to === declinedTemplateId) return { ...transition, event: 'Reject' };
+      return transition;
+    });
+  return {
+    definition: { ...definition, states, transitions },
+    diagnostics: result.diagnostics,
+  };
+};
+
 // GraphQL-ready shape for a single scope's preview result, distinct from `WorkflowMigrationConversionResult`
 // because it also carries the `hasPublishedVersion` field expected by the `WorkflowMigrationScopeResult`
 // schema type.
@@ -305,9 +352,8 @@ export const getPublishBlockingDiagnostics = (diagnostics: WorkflowMigrationDiag
 
 /**
  * Picks the result of one scope out of a conversion result, and throws when that scope has no
- * statuses to migrate. `workflowMigrate` only migrates GLOBAL today (an entity type's workflow).
- * REQUEST_ACCESS is previewed on purpose: Case statuses with that scope will need migrating next,
- * so keep its preview result and this scope parameter.
+ * statuses to migrate. GLOBAL is an entity type's workflow; REQUEST_ACCESS is the request access
+ * workflow of Case-Rfi, finished by `convertRequestAccessGroup`.
  */
 export const pickMigrationScope = (
   entityType: string,
