@@ -5,16 +5,27 @@ import { platformFamily } from './registry/platform-configPreset-registry';
 import { brandingFamily } from './registry/branding-configPreset-registry';
 import { messagesFamily } from './registry/messages-configPreset-registry';
 import { hiddenEntityTypesFamily } from './registry/hiddenEntityTypes-configPreset-registry';
+import { whitemarkFamily } from './registry/whitemark-configPreset-registry';
+import { markingsFamily } from './registry/markings-configPreset-registry';
+import { rolesFamily } from './registry/roles-configPreset-registry';
+import { groupsFamily } from './registry/groups-configPreset-registry';
+import { policiesFamily } from './registry/policies-configPreset-registry';
+import { isEnterpriseEditionUpToDate } from '../../enterprise-edition/ee';
 
-export { BRANDING_FAMILY_ID } from './registry/branding-configPreset-registry';
+export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
 
-// In registry order, the categories of the spec table: Platform settings (platform, branding, messages), then Data model.
+// In registry order, the categories of the spec table: Platform settings (platform, branding, messages, whitemark), then Data model, then Security & Access.
 // Each family is defined in its own file under registry/.
 export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   platformFamily,
   brandingFamily,
   messagesFamily,
+  whitemarkFamily,
   hiddenEntityTypesFamily,
+  markingsFamily,
+  rolesFamily,
+  groupsFamily,
+  policiesFamily,
 ];
 
 // How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.
@@ -27,6 +38,13 @@ export const getConfigPresetFamilyDisplay = (type: string) => {
     type_index: Math.max(index, 0),
     group: family ? { key: family.group.id, label: family.group.label } : { key: type, label: type },
   };
+};
+
+// A family that requires the Enterprise Edition is only available on a platform that has it: the single place that knows
+// the rule, for the export and the import of any family that sets requiresEnterpriseEdition.
+// The license is read from the database: the screens ask right after a license was activated, which the settings cache may not know yet.
+export const isConfigPresetFamilyAvailable = async (context: AuthContext, family: ConfigPresetFamilyDefinition) => {
+  return !family.requiresEnterpriseEdition || isEnterpriseEditionUpToDate(context);
 };
 
 export const configPresetItemFilePath = (family: ConfigPresetFamilyDefinition, item: ConfigPresetItemDefinition) => {

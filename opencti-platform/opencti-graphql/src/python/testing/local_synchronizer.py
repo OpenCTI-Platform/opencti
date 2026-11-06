@@ -92,7 +92,14 @@ class TestLocalSynchronizer:
                     id=data["data"]["id"], object_ids=object_ids
                 )
             elif msg.event == "delete":
-                self.opencti_target_helper.api.stix.delete(id=data["data"]["id"])
+                try:
+                    self.opencti_target_helper.api.stix.delete(id=data["data"]["id"])
+                except ValueError as e:
+                    # The target can deduplicate relations differently than the source
+                    # (relations_deduplication config), so the element may already be gone
+                    if "cannot be found" not in str(e):
+                        raise
+                    logging.info("%s", f"Skipping delete of missing element {msg.id}")
             if self.count_number >= self.consuming_count:
                 self.stream.stop()
 

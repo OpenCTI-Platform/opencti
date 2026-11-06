@@ -6,14 +6,18 @@ vi.mock('../../../../src/domain/settings', () => ({
 }));
 
 import { getPlatformDefaultTheme, getSettingsFromDatabase } from '../../../../src/domain/settings';
-import { getMessagesConfigPresetConfigurations, getPlatformConfigPresetConfiguration } from '../../../../src/modules/settings/settings-export';
-import { messageConfigurationSchemas, platformConfigurationSchema } from '../../../../src/modules/settings/settings-import-schema';
+import {
+  getMessagesConfigPresetConfigurations,
+  getPlatformConfigPresetConfiguration,
+  getWhitemarkConfigPresetConfiguration,
+} from '../../../../src/modules/settings/settings-export';
+import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema } from '../../../../src/modules/settings/settings-import-schema';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { CUSTOM_THEME_ID } from '../../../utils/configPresetBundle';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'user-id' } as AuthUser;
-// Settings the allowlists must never let through: a secret, and the whitemark, which a configuration does not carry
+// Settings the allowlists must never let through: a secret, and the whitemark, which only the configuration of the whitemark carries
 const storedSettings = {
   platform_title: 'My platform',
   platform_favicon: 'https://example.com/favicon.ico',
@@ -61,7 +65,16 @@ describe('settings export', () => {
     });
   });
 
+  it('exports the whitemark in its own configuration, never in the platform or the messages', async () => {
+    expect(await getWhitemarkConfigPresetConfiguration(context)).toEqual({ platform_whitemark: true });
+    expect(await getPlatformConfigPresetConfiguration(context, user)).not.toHaveProperty('platform_whitemark');
+    Object.values(await getMessagesConfigPresetConfigurations(context)).forEach((configuration) => expect(configuration).not.toHaveProperty('platform_whitemark'));
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({} as never);
+    expect(await getWhitemarkConfigPresetConfiguration(context)).toEqual({ platform_whitemark: null });
+  });
+
   it('is accepted by the strict import validation, as it is', async () => {
+    expect(whitemarkConfigurationSchema.safeParse(await getWhitemarkConfigPresetConfiguration(context)).success).toBe(true);
     expect(platformConfigurationSchema.safeParse(await getPlatformConfigPresetConfiguration(context, user)).success).toBe(true);
     const messages = await getMessagesConfigPresetConfigurations(context);
     Object.entries(messages).forEach(([id, configuration]) => {

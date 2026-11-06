@@ -14,6 +14,7 @@ import setImagesWidth from './utils/pdfImageWidth';
 import setTableFullWidth, { defaultTableLayout, getMaxTableColumnCount, VERY_WIDE_TABLE_COLUMN_THRESHOLD, WIDE_TABLE_COLUMN_THRESHOLD } from './utils/pdfTableWidth';
 import addPageBreaks, { pdfPageBreaks } from './utils/pdfPageBreaks';
 import removeUnnecessaryHtml from './utils/pdfUnnecessarytHtml';
+import normalizeLineHeights from './utils/pdfLineHeight';
 import pdfBackground from './utils/pdfBackground';
 import pdfHeader from './utils/pdfHeader';
 import pdfFooter from './utils/pdfFooter';
@@ -80,6 +81,7 @@ export const htmlToPdf = (
     htmlData = renderToString(compiler(htmlData, { wrapper: null }));
   }
   htmlData = setTableFullWidth(htmlData);
+  htmlData = normalizeLineHeights(htmlData);
 
   // Detect CJK characters and pick a font that has CJK glyphs.
   // Roboto (the pdfmake default) has no CJK glyphs, so Japanese/Korean text
@@ -219,6 +221,7 @@ export const htmlToPdfReport = async (
   const pageMargins: [number, number] = containsVeryWideTable ? [8, 12] : containsWideTable ? [10, 20] : [20, 30];
   htmlData = setTableFullWidth(htmlData, pageWidth - 2 * pageMargins[0]);
   htmlData = addPageBreaks(htmlData);
+  htmlData = normalizeLineHeights(htmlData);
 
   const selectedFont = detectLanguage(htmlData);
 

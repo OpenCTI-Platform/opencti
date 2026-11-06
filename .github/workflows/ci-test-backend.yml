@@ -10,6 +10,11 @@ on:
       run-id:
         required: true
         type: string
+      search_engines:
+        description: "Search engines the integration and rules tests run against, as a JSON array of elasticsearch8, elasticsearch9 and opensearch"
+        type: string
+        required: false
+        default: '["elasticsearch8"]'
     secrets:
       CODECOV_TOKEN:
         description: "Token used to upload coverage reports to Codecov"
@@ -17,8 +22,14 @@ on:
 
 jobs:
   run-opencti-integration-test:
-    name: Integration tests
+    # Elasticsearch 8 keeps the plain name: it is a required status check on master
+    name: ${{ matrix.engine == 'elasticsearch8' && 'Integration tests' || matrix.engine == 'elasticsearch9' && 'Integration tests (Elasticsearch 9)' || 'Integration tests (OpenSearch)' }}
     runs-on: ubuntu-26.04
+    strategy:
+      # A failure on one search engine must not cancel the run on the others
+      fail-fast: false
+      matrix:
+        engine: ${{ fromJSON(inputs.search_engines) }}
 
     steps:
     - name: OpenCTI checkout
@@ -63,6 +74,10 @@ jobs:
           docker images
 
     - name: Set up Docker Compose for backends and sync instances
+      env:
+        # Elasticsearch 9 and OpenSearch: a file merged over docker-compose.yml replaces the search engine service
+        # image (and the settings, for OpenSearch). Kept in compose files, where Renovate finds the images.
+        COMPOSE_FILE: ${{ matrix.engine == 'elasticsearch9' && 'docker-compose.yml:docker-compose.elasticsearch9.yml' || matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
       run: |
          set -ex
          cd scripts/ci
@@ -106,6 +121,8 @@ jobs:
         docker cp api-tests:/opt/opencti/opencti-platform/opencti-graphql/coverage opencti-platform/opencti-graphql/
 
     - name: Upload coverage to Codecov
+      # Once per run, so coverage stays comparable whatever the matrix
+      if: matrix.engine == 'elasticsearch8'
       uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -125,17 +142,17 @@ jobs:
       if: always()
       continue-on-error: true
       with:
-        name: backend-test-results-integration
+        name: backend-test-results-integration-${{ matrix.engine }}
         path: ${{ github.workspace }}/opencti-platform/opencti-graphql/test-results
         retention-days: 10
 
     # Output all logs used during the job
-    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+    - name: Log backends (Minio, search engine, RabbitMQ, Redis)
       if: always()
       continue-on-error: true
       run: |
           echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
-          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs search engine \n\n"; sleep 1; docker logs elasticsearch
           echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
           echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
 
@@ -171,8 +188,14 @@ jobs:
       run: cat runner_resource_stat.log
 
   run-opencti-rules-test:
-    name: Rules and Taxii tests
+    # Elasticsearch 8 keeps the plain name: it is a required status check on master
+    name: ${{ matrix.engine == 'elasticsearch8' && 'Rules and Taxii tests' || matrix.engine == 'elasticsearch9' && 'Rules and Taxii tests (Elasticsearch 9)' || 'Rules and Taxii tests (OpenSearch)' }}
     runs-on: ubuntu-26.04
+    strategy:
+      # A failure on one search engine must not cancel the run on the others
+      fail-fast: false
+      matrix:
+        engine: ${{ fromJSON(inputs.search_engines) }}
 
     steps:
     - name: OpenCTI checkout
@@ -209,6 +232,10 @@ jobs:
           docker images
 
     - name: Set up Docker Compose for backends and sync instances
+      env:
+        # Elasticsearch 9 and OpenSearch: a file merged over docker-compose.yml replaces the search engine service
+        # image (and the settings, for OpenSearch). Kept in compose files, where Renovate finds the images.
+        COMPOSE_FILE: ${{ matrix.engine == 'elasticsearch9' && 'docker-compose.yml:docker-compose.elasticsearch9.yml' || matrix.engine == 'opensearch' && 'docker-compose.yml:docker-compose.opensearch.yml' || 'docker-compose.yml' }}
       run: |
          set -eux
          cd scripts/ci
@@ -241,6 +268,8 @@ jobs:
         docker cp api-tests:/opt/opencti/opencti-platform/opencti-graphql/coverage opencti-platform/opencti-graphql/
 
     - name: Upload coverage to Codecov
+      # Once per run, so coverage stays comparable whatever the matrix
+      if: matrix.engine == 'elasticsearch8'
       uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -251,12 +280,12 @@ jobs:
         override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
 
     # Output all logs used during the job
-    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+    - name: Log backends (Minio, search engine, RabbitMQ, Redis)
       if: always()
       continue-on-error: true
       run: |
           echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
-          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs search engine \n\n"; sleep 1; docker logs elasticsearch
           echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
           echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
 

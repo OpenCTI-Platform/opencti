@@ -1,4 +1,4 @@
-import { extractRefererPathFromReq, setCookieError } from '../../http/httpUtils';
+import { extractSafeRedirectFromReq, setCookieError } from '../../http/httpUtils';
 import type { Request, Response } from 'express';
 import { loginFromProvider, sessionAuthenticateUser } from '../user/user-domain';
 import { executionContext } from '../../utils/access';
@@ -19,7 +19,7 @@ export const registerCertStrategy = async () => {
   const handleCertAuthenticationRequest = async (req: Request, res: Response) => {
     const context = executionContext('cert_strategy');
     const { cert_auth } = await getSettings(context) as unknown as BasicStoreSettings;
-    const redirect = extractRefererPathFromReq(req) ?? '/';
+    const redirect = extractSafeRedirectFromReq(req);
     const isActivated = cert_auth?.enabled;
     if (!isActivated) {
       setCookieError(res, 'Cert authentication is not available');

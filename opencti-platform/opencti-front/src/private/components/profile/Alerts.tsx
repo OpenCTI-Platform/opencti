@@ -48,6 +48,7 @@ const alertsLineFragment = graphql`
         message
         operation
         instance_id
+        entity_internal_id
         entity_type
       }
     }
@@ -262,7 +263,7 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
     const isLinkAvailable = events.length === 1 && isNotEmptyField(firstEvent?.instance_id) && firstOperation !== 'delete';
     if (isLinkAvailable && firstEvent.instance_id) {
       markAsRead();
-      navigate(computeNotificationLink(firstEvent.instance_id, firstEvent.entity_type));
+      navigate(computeNotificationLink(firstEvent.entity_internal_id ?? firstEvent.instance_id, firstEvent.entity_type));
     }
   };
 

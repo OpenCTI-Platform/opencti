@@ -33,6 +33,13 @@ export interface StoreEntityWorkspace extends StoreEntity {
 }
 // endregion
 
+// region Investigation status of a work
+// Review state of a work linked to an investigation: TO_REVIEW once it completes with something new, DONE once reviewed.
+export const WORK_INVESTIGATION_STATUS_TO_REVIEW = 'TO_REVIEW';
+export const WORK_INVESTIGATION_STATUS_DONE = 'DONE';
+export const WORK_INVESTIGATION_STATUS_VALUES = [WORK_INVESTIGATION_STATUS_TO_REVIEW, WORK_INVESTIGATION_STATUS_DONE];
+// endregion
+
 // region Stix type
 export interface StixWorkspace extends StixDomainObject {
   name: string;
