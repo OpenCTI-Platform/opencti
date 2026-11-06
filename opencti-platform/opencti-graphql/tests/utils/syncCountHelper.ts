@@ -13,7 +13,7 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 25;
+testCreatedCounter['attack-pattern'] = 26; // +1 sub-technique created and deleted by attackPattern-test (x_mitre_id)
 testCreatedCounter.campaign = 6;
 testCreatedCounter['case-incident'] = 18;
 testCreatedCounter['case-rfi'] = 9;
@@ -58,7 +58,7 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 148;
+testCreatedCounter.relationship = 149; // +1 subtechnique-of created by attackPattern-test, removed with its sub-technique
 testCreatedCounter.report = 60;
 testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
 testCreatedCounter.software = 2;
@@ -129,7 +129,7 @@ testMergedCounter['intrusion-set'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 20;
+testDeletedCounter['attack-pattern'] = 21; // +1 sub-technique deleted by attackPattern-test (x_mitre_id)
 testDeletedCounter.campaign = 2;
 testDeletedCounter['case-incident'] = 16;
 testDeletedCounter['case-rfi'] = 9;
