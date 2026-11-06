@@ -2590,31 +2590,73 @@ describe('Workflow Domain', () => {
     expect(result.reason).toContain('not configured');
   });
 
-  it('should refuse a trigger when the user confidence level is too low, before the instance moves', async () => {
-    (storeLoadById as any).mockResolvedValue({ id: 'entity-1', entity_type: 'Incident', confidence: 90 });
-    vi.mocked(controlUserConfidenceAgainstElement).mockReturnValueOnce(false);
+  describe('refusal before the instance moves', () => {
+    const workflowVersion = {
+      id: 'v1',
+      content: JSON.stringify({ id: 'workflow-1', name: 'Incident Workflow', initialState: 'open', states: [{ statusId: 'open' }], transitions: [] }),
+      validation_errors: [],
+    };
+    // From a draft, the live entity is loaded with a user whose draft context was removed
+    const mockEntityVersions = (versions: { draft: any; live: any }) => {
+      (storeLoadById as any).mockImplementation((_ctx: any, user: any, _id: any, type: any) => {
+        if (type === 'Basic-Object') return Promise.resolve('draft_context' in user ? versions.live : versions.draft);
+        if (type === 'WorkflowDefinition') return Promise.resolve({ id: 'workflow-id', published_version: workflowVersion });
+        return Promise.resolve(null);
+      });
+      (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    };
 
-    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'test');
+    afterEach(() => {
+      vi.mocked(getDraftContext).mockReturnValue(undefined);
+      vi.mocked(controlUserConfidenceAgainstElement).mockReturnValue(true);
+    });
 
-    expect(result).toEqual({ success: false, reason: 'Your confidence level is too low to update this entity' });
-    expect(lockResources).not.toHaveBeenCalled();
-    expect(updateAttribute).not.toHaveBeenCalled();
-  });
+    it('should refuse a trigger when the user confidence level is too low', async () => {
+      const entity = { id: 'entity-1', entity_type: 'Incident', confidence: 90 };
+      mockEntityVersions({ draft: entity, live: entity });
+      vi.mocked(controlUserConfidenceAgainstElement).mockReturnValue(false);
 
-  it('should check the confidence level against the live entity when triggered from a draft', async () => {
-    // Draft version at 50, live entity at 90: the status is written on the live one
-    (storeLoadById as any).mockImplementation((_ctx: any, user: any) => Promise.resolve({
-      id: 'entity-1', entity_type: 'Incident', confidence: 'draft_context' in user ? 90 : 50,
-    }));
-    vi.mocked(getDraftContext).mockReturnValue('draft-id');
-    vi.mocked(controlUserConfidenceAgainstElement).mockImplementation((_user, element: any) => element.confidence <= 50);
+      const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'test');
 
-    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'test');
+      expect(result).toEqual({ success: false, reason: 'Your confidence level is too low to update this entity' });
+      expect(lockResources).not.toHaveBeenCalled();
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
 
-    expect(result).toEqual({ success: false, reason: 'Your confidence level is too low to update this entity' });
-    expect(lockResources).not.toHaveBeenCalled();
-    vi.mocked(getDraftContext).mockReturnValue(undefined);
-    vi.mocked(controlUserConfidenceAgainstElement).mockReturnValue(true);
+    it('should report a missing workflow before a too low confidence level', async () => {
+      (storeLoadById as any).mockResolvedValue({ id: 'entity-1', entity_type: 'Incident', confidence: 90 });
+      (findByType as any).mockResolvedValue(null);
+      vi.mocked(controlUserConfidenceAgainstElement).mockReturnValue(false);
+
+      const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'test');
+
+      expect(result.reason).toContain('not configured');
+    });
+
+    it('should check the confidence level against the live entity when triggered from a draft', async () => {
+      // Draft version at 50, live entity at 90: the status is written on the live one
+      mockEntityVersions({ draft: { id: 'entity-1', entity_type: 'Incident', confidence: 50 }, live: { id: 'entity-1', entity_type: 'Incident', confidence: 90 } });
+      vi.mocked(getDraftContext).mockReturnValue('draft-id');
+      vi.mocked(controlUserConfidenceAgainstElement).mockImplementation((_user, element: any) => element.confidence <= 50);
+
+      const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'test');
+
+      expect(result).toEqual({ success: false, reason: 'Your confidence level is too low to update this entity' });
+      expect(lockResources).not.toHaveBeenCalled();
+    });
+
+    it('should refuse a transition from a draft when the entity has no live version', async () => {
+      // Created inside the draft, or hidden from the user outside it: the status write would fail
+      mockEntityVersions({ draft: { id: 'entity-1', entity_type: 'Incident' }, live: null });
+      vi.mocked(getDraftContext).mockReturnValue('draft-id');
+
+      expect(await getAllowedTransitions(mockContext, mockUser, 'entity-1')).toEqual([]);
+      const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'test');
+
+      expect(result).toEqual({ success: false, reason: 'This entity has no live version to write the workflow status on' });
+      expect(lockResources).not.toHaveBeenCalled();
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
   });
 
   it('should return failure when entity setting not found', async () => {
@@ -2775,6 +2817,11 @@ describe('Transition comments – Domain', () => {
       (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
     });
 
+    afterEach(() => {
+      vi.mocked(getDraftContext).mockReturnValue(undefined);
+      vi.mocked(controlUserConfidenceAgainstElement).mockReturnValue(true);
+    });
+
     it('should check the confidence level against the live entity from a draft', async () => {
       // Draft version at 90, live entity at 50: the status is written on the live one
       (storeLoadById as any).mockImplementation((_ctx: any, user: any, id: string) => {
@@ -2789,8 +2836,6 @@ describe('Transition comments – Domain', () => {
       const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
 
       expect(transitions.map((transition) => transition.event)).toEqual(['review']);
-      vi.mocked(getDraftContext).mockReturnValue(undefined);
-      vi.mocked(controlUserConfidenceAgainstElement).mockReturnValue(true);
     });
 
     it('should expose the comment field on allowed transitions when comment is defined', async () => {
