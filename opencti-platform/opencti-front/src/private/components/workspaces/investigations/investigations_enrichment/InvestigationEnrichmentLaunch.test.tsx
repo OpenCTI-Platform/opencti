@@ -16,10 +16,10 @@ vi.mock('../../../common/background_task/BackgroundTaskLaunch', () => ({
 }));
 
 vi.mock('../../../data/connectors/EnrichmentConnectorSelection', () => ({
-  default: ({ onChange }: { onChange: (connectorIds: string[]) => void }) => (
+  default: ({ onChange }: { onChange: (connectors: { id: string; name: string }[]) => void }) => (
     <button
       type="button"
-      onClick={() => onChange(['connector-1'])}
+      onClick={() => onChange([{ id: 'connector-1', name: 'Coucou Enrichment' }])}
     >
       select connector
     </button>
@@ -64,13 +64,13 @@ const renderForm = ({ isSending = false, onCompleted = () => {} }: { isSending?:
 };
 
 describe('InvestigationEnrichmentLaunch', () => {
-  it('links the bulk enrichment to the investigation', () => {
+  it('links the bulk enrichment to the investigation, naming the connector for the launcher', () => {
     renderForm();
 
     expect(lastLaunchedActions()).toEqual([{
       type: 'ENRICHMENT',
       context: {
-        values: ['connector-1'],
+        values: [{ id: 'connector-1', value: 'Coucou Enrichment' }],
         options: { investigationId: 'investigation-1' },
       },
     }]);

@@ -4,16 +4,11 @@ import BackgroundTaskLaunch from '../../../common/background_task/BackgroundTask
 import { useGraphContext } from '../../../../../components/graph/GraphContext';
 import { registerGraphSelectionAction } from '../../../../../components/graph/badges';
 import { fetchQuery } from '../../../../../relay/environment';
-import { enrichmentConnectorsQuery } from '../../../data/connectors/EnrichmentConnectorSelection';
+import { EnrichmentConnector, enrichmentConnectorsQuery } from '../../../data/connectors/EnrichmentConnectorSelection';
 import { EnrichmentConnectorSelectionQuery } from '../../../data/connectors/__generated__/EnrichmentConnectorSelectionQuery.graphql';
 import { toEnrichmentSelection, toEnrichmentTaskActions } from './investigation-enrichment.utils';
 
 export const INVESTIGATION_ENRICHMENT_MENU_ACTION_ID = 'investigation-enrichment';
-
-interface EnrichmentConnector {
-  id: string;
-  name: string;
-}
 
 interface InvestigationEnrichmentMenuActionProps {
   investigationId: string;
@@ -43,7 +38,7 @@ const InvestigationEnrichmentMenuAction = ({
   // The connectors of the last entity type loaded: while another type is selected, its connectors are loading.
   const [loaded, setLoaded] = useState<{ type: string; connectors: EnrichmentConnector[] }>();
   const connectors = loaded && loaded.type === enrichmentType ? loaded.connectors : undefined;
-  const [connectorId, setConnectorId] = useState<string>();
+  const [connector, setConnector] = useState<EnrichmentConnector>();
   const [processing, setProcessing] = useState(false);
 
   // Loaded when the selection changes, so that the menu does not wait for them when it opens.
@@ -76,28 +71,28 @@ const InvestigationEnrichmentMenuAction = ({
         return undefined;
       },
       options: () => ({
-        items: (connectors ?? []).map((connector) => ({ key: connector.id, label: connector.name })),
-        onSelect: setConnectorId,
+        items: (connectors ?? []).map((c) => ({ key: c.id, label: c.name })),
+        onSelect: (key) => setConnector(connectors?.find((c) => c.id === key)),
       }),
     });
   }, [canLaunch, enrichmentType, connectors]);
 
   return (
     <BackgroundTaskLaunch
-      display={!!connectorId}
+      display={!!connector}
       processing={processing}
       selectedElements={selectionMap}
       numberOfSelectedElements={selectionSize}
       taskScope="KNOWLEDGE"
-      actions={toEnrichmentTaskActions(connectorId ? [connectorId] : [], investigationId)}
+      actions={toEnrichmentTaskActions(connector ? [connector] : [], investigationId)}
       onClose={() => {
-        setConnectorId(undefined);
+        setConnector(undefined);
         // A launch the API rejected never completes: closing the launcher must not leave it busy for the next one.
         setProcessing(false);
       }}
       onLaunch={() => setProcessing(true)}
       onCompleted={() => {
-        setConnectorId(undefined);
+        setConnector(undefined);
         setProcessing(false);
         onLaunched();
       }}

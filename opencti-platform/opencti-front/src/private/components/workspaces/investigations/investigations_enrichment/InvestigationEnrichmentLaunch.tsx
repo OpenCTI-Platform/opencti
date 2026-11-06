@@ -1,6 +1,6 @@
 import { Alert, Card, CardFooter, CardHeader, CardTitle, Spinner } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
-import EnrichmentConnectorSelection from '../../../data/connectors/EnrichmentConnectorSelection';
+import EnrichmentConnectorSelection, { EnrichmentConnector } from '../../../data/connectors/EnrichmentConnectorSelection';
 import { CardContent } from '@mui/material';
 import { useMemo, useState } from 'react';
 import Button from '../../../../../components/common/button/Button';
@@ -21,7 +21,7 @@ const InvestigationEnrichmentLaunch = ({
 }: InvestigationEnrichmentLaunchProps) => {
   const { t_i18n } = useFormatter();
 
-  const [selectedConnectors, setSelectedConnectors] = useState<string[]>([]);
+  const [selectedConnectors, setSelectedConnectors] = useState<EnrichmentConnector[]>([]);
   const [showValidation, setShowValidation] = useState(false);
   const [processing, setProcessing] = useState(false);
 

@@ -109,10 +109,14 @@ describe('Function: toEnrichmentSelection', () => {
 });
 
 describe('Function: toEnrichmentTaskActions', () => {
-  it('enriches with the connectors and tags the works with the investigation', () => {
-    expect(toEnrichmentTaskActions(['connector-1'], 'investigation-1')).toEqual([{
+  it('enriches with the connectors, named for the launcher, and tags the works with the investigation', () => {
+    const connectors = [{ id: 'connector-1', name: 'Coucou Enrichment' }, { id: 'connector-2', name: 'Shodan' }];
+    expect(toEnrichmentTaskActions(connectors, 'investigation-1')).toEqual([{
       type: 'ENRICHMENT',
-      context: { values: ['connector-1'], options: { investigationId: 'investigation-1' } },
+      context: {
+        values: [{ id: 'connector-1', value: 'Coucou Enrichment' }, { id: 'connector-2', value: 'Shodan' }],
+        options: { investigationId: 'investigation-1' },
+      },
     }]);
   });
 });

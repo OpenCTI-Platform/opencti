@@ -175,7 +175,7 @@ describe('InvestigationEnrichmentMenuAction', () => {
     expect(lastLaunchProps()).toMatchObject({
       display: true,
       numberOfSelectedElements: 2,
-      actions: [{ type: 'ENRICHMENT', context: { values: ['connector-2'], options: { investigationId: 'investigation-1' } } }],
+      actions: [{ type: 'ENRICHMENT', context: { values: [{ id: 'connector-2', value: 'Shodan' }], options: { investigationId: 'investigation-1' } } }],
     });
     expect(Object.keys(lastLaunchProps().selectedElements)).toEqual(['ip-1', 'ip-2']);
 
