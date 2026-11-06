@@ -9,7 +9,7 @@ import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorize
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { findUnreachableStates } from './domain/workflow-ordering';
-import { findEntitiesReferencingStatus } from './domain/workflow-status-usage';
+import { findEntitiesReferencingStatus, findInstancesInStates } from './domain/workflow-status-usage';
 import { ActionDefinitions } from './registry/workflow-actions';
 import type { WorkflowValidationError } from './types/workflow-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from './types/workflow-types';
@@ -160,19 +160,8 @@ export const findInstancesBlockingStateRemoval = async (
   const states = removedStates.filter((s) => statesWithOutgoingTransitions.has(s));
   if (states.length === 0) return { states, instances: [] };
 
-  // Note: 'workflow_id' is a reserved special filter key (WORKFLOW_FILTER) in OpenCTI that maps to
-  // entity workflow status (x_opencti_workflow_id). We cannot use it as a raw ES filter key.
-  // Instead, we filter by currentState in ES and post-filter by workflow_id.
-  const instancesInRemovedStates = await fullEntitiesList<any>(context, user, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
-    filters: {
-      mode: FilterMode.And,
-      filters: [
-        { key: ['currentState'], values: states, operator: FilterOperator.Eq, mode: FilterMode.Or },
-      ],
-      filterGroups: [],
-    },
-  });
-  return { states, instances: instancesInRemovedStates.filter((inst: any) => inst.workflow_id === workflowDefinitionId && !inst.completed) };
+  const instancesInRemovedStates = await findInstancesInStates(context, user, states, workflowDefinitionId);
+  return { states, instances: instancesInRemovedStates.filter((inst: any) => !inst.completed) };
 };
 
 const validateAction = (action: z.infer<typeof workflowActionConfigSchema>, source: string) => {
