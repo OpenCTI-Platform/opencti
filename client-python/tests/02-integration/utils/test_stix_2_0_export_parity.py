@@ -112,8 +112,10 @@ def test_malware_stix_2_0_export_matches_legacy_export(api_stix, rich_malware, m
 
     malware = stix_2_0_objects[rich_malware["standard_id"]]
     assert malware["spec_version"] == "2.0"
-    attached_files = malware["external_references"][0]["x_opencti_files"]
-    assert attached_files[0]["name"] == "stix-2-0-parity-report.txt"
+    # Files are only read, and embedded, in full mode.
+    if mode == "full":
+        attached_files = malware["external_references"][0]["x_opencti_files"]
+        assert attached_files[0]["name"] == "stix-2-0-parity-report.txt"
     for object_id, legacy_object in legacy_objects.items():
         assert _without_accepted_differences(
             stix_2_0_objects[object_id]
