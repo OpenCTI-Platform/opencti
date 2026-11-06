@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getRelationsFromOneEntityToAny, resolveRelationsTypes, resolveTypesForRelationshipRef } from './Relation';
+import { getRelationsFromOneEntityToAny, resolveRelationsTypes, resolveTypesForRelationship, resolveTypesForRelationshipRef } from './Relation';
 import { type SchemaType } from './hooks/useAuth';
 
 // Subset of schemas to tests utilities
@@ -117,5 +117,15 @@ describe('Test schema utilities functions', () => {
   it('should resolve relationship types for ref with a container', () => {
     const result = resolveTypesForRelationshipRef(testSchema.schemaRelationsRefTypesMapping, 'Report', 'objects');
     expect(result).toEqual(['Stix-Core-Object']);
+  });
+
+  it('should resolve the target types of a relationship type from a given source type', () => {
+    const mapping = new Map<string, readonly string[]>([
+      ['Security-Coverage-Result_Attack-Pattern', ['has-covered']],
+      ['Security-Coverage-Result_Vulnerability', ['has-covered']],
+      ['Security-Coverage_Indicator', ['has-covered']],
+      ['Security-Coverage-Result_Malware', ['related-to']],
+    ]);
+    expect(resolveTypesForRelationship(mapping, 'has-covered', 'to', 'Security-Coverage-Result')).toEqual(['Attack-Pattern', 'Vulnerability']);
   });
 });
