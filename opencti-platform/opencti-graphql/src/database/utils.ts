@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import moment, { type DurationInputArg2 } from 'moment/moment';
 import type { estypes } from '@elastic/elasticsearch';
-import { DatabaseError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { DatabaseError, FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../schema/stixDomainObject';
@@ -164,64 +164,17 @@ export const READ_RELATIONSHIPS_INDICES = [
 export const isNotEmptyField = <T>(field: T | undefined | null): field is T => !R.isEmpty(field) && !R.isNil(field);
 export const isEmptyField = <T>(field: T | undefined | null): field is undefined | null => !isNotEmptyField(field);
 
-// Whether replacing a multiple ref by the given target ids changes the refs the loaded instance carries.
-// The stored relationships can differ from the loaded refs (a relationship to a deleted target, a relationship
-// in the inferred index): repairing them is not a change of the element and must not produce an update event.
-export const isLoadedRefsChanged = (nextIds: string[], loadedRefs: unknown): boolean => {
-  if (isEmptyField(loadedRefs)) {
-    return nextIds.length > 0;
-  }
-  if (!Array.isArray(loadedRefs)) {
-    return true;
-  }
-  const loadedIds = loadedRefs.map((ref: { internal_id?: string; id?: string } | null) => ref?.internal_id ?? ref?.id);
-  if (loadedIds.some((id) => id === undefined)) {
-    return true;
-  }
-  return R.symmetricDifference(nextIds, loadedIds as string[]).length > 0;
-};
-
-export interface RefsReplaceBaseline {
-  // Whether the replace changes the refs of the element (an update input, so a stream event, is due)
-  changed: boolean;
-  // The refs the update input carries as its previous value
-  previous: unknown;
-  // When the refs read under the lock differ from the pre-lock snapshot: the fields the previous state of the
-  // event must carry, or the stale replace yields an identical pair and an empty patch
-  lockedInitial?: Record<string, unknown>;
-}
-
-// The baseline a multiple ref replace is compared with (#18634). The loaded refs are a pre-lock snapshot: when
-// they already are the targets, the element is read again under the lock (loadLocked), so that a concurrent change
-// of the refs is never taken for a repair and its replacement always produces an update.
-export const resolveRefsReplaceBaseline = async (
-  nextIds: string[],
-  loadedRefs: unknown,
-  key: string,
-  relType: string,
-  loadLocked: () => Promise<Record<string, unknown> | null | undefined>,
-): Promise<RefsReplaceBaseline> => {
-  if (isLoadedRefsChanged(nextIds, loadedRefs)) {
-    return { changed: true, previous: loadedRefs };
-  }
-  const locked = await loadLocked();
-  const lockedRefs = locked?.[key];
-  if (!isLoadedRefsChanged(nextIds, lockedRefs)) {
-    return { changed: false, previous: lockedRefs };
-  }
-  const lockedInitial: Record<string, unknown> = { [key]: lockedRefs };
-  if (locked && locked[relType] !== undefined) {
-    lockedInitial[relType] = locked[relType];
-  }
-  return { changed: true, previous: lockedRefs, lockedInitial };
-};
-
 export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: string | string[] | undefined | null): string => {
   const draftContext = getDraftContext(context, user);
   return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));
 };
 
-export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
+// Same refusal as elHistogramCount, for the intervals its date histogram cannot aggregate
+const unsupportedIntervalError = (interval: string) => {
+  return FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
+};
+
+const computeTimeSeriesRange = (startDate: Date, endDate: Date, interval: string) => {
   // Elasticsearch aggregates on UTC calendar boundaries and the front-end labels the
   // emitted instants as UTC: everything here must stay anchored on UTC, never on the
   // time zone of the platform process.
@@ -254,31 +207,112 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
       dateFormat = 'YYYY-MM-DD HH:mm:ss';
       startDateParsed = startDateParsed.startOf('hour');
       break;
-    default:
+    case 'day':
       dateFormat = 'YYYY-MM-DD';
+      break;
+    default:
+      throw unsupportedIntervalError(interval);
   }
   const formattedEndDate = moment.utc(endDateParsed.format(dateFormat), dateFormat);
   const formattedStartDate = moment.utc(startDateParsed.format(dateFormat), dateFormat);
   const duration: DurationInputArg2 = `${interval}s` as DurationInputArg2;
   const elementsOfInterval = formattedEndDate.diff(formattedStartDate, duration);
-  const newData = [];
-  for (let i = 0; i <= elementsOfInterval; i += 1) {
-    const workDate = startDateParsed.clone().add(i, duration);
-    // Looking for the value
-    let dataValue = 0;
-    for (let j = 0; j < data.length; j += 1) {
-      if (data[j].date === workDate.format(dateFormat)) {
-        dataValue = data[j].value;
-      }
-    }
-    // Cloned: startOf() mutates, and workDate is still needed unmodified above.
-    const intervalDate = workDate.clone().startOf(startOfInterval).toISOString();
-    newData[i] = {
-      date: intervalDate,
-      value: dataValue,
-    };
+  return { startDateParsed, elementsOfInterval };
+};
+
+// A period ending before it starts, or with an invalid date, holds no bucket, as its axis
+export const countTimeSeriesIntervals = (startDate: Date, endDate: Date, interval: string) => {
+  const count = computeTimeSeriesRange(startDate, endDate, interval).elementsOfInterval + 1;
+  return Number.isFinite(count) ? Math.max(0, count) : 0;
+};
+
+export type TimeSeriesAxis = {
+  keys: string[]; // bucket keys as formatted by the date histogram
+  dates: string[]; // start of each bucket, ISO formatted
+};
+
+const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
+// First day of a UTC month, months past December going on the next years (unlike Date.UTC, years 0 to 99 stay themselves)
+const startOfUtcMonth = (year: number, month: number) => new Date(0).setUTCFullYear(year, month, 1);
+// Start of the bucket at `index` from the start of the range, as moment add(index, interval) then startOf(interval)
+// gave it: months, quarters and years step on the UTC calendar, the others on their duration (UTC has no time change)
+const buildBucketStartAt = (rangeStart: number, interval: string): ((index: number) => number) => {
+  const start = new Date(rangeStart);
+  const year = start.getUTCFullYear();
+  const month = start.getUTCMonth();
+  switch (interval) {
+    case 'year':
+      return (index) => startOfUtcMonth(year + index, 0);
+    case 'quarter':
+      // The range starts on the first month of its quarter
+      return (index) => startOfUtcMonth(year, month + 3 * index);
+    case 'month':
+      return (index) => startOfUtcMonth(year, month + index);
+    case 'week':
+      // The range starts on a monday at midnight
+      return (index) => rangeStart + index * 7 * DAY_MS;
+    case 'day':
+      return (index) => Math.floor(rangeStart / DAY_MS) * DAY_MS + index * DAY_MS;
+    case 'hour':
+      // The range starts at the beginning of its hour
+      return (index) => rangeStart + index * HOUR_MS;
+    default:
+      throw unsupportedIntervalError(interval);
   }
-  return newData;
+};
+const HOURS = Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, '0'));
+// Key of a bucket as the date histogram of elHistogramCount formats it, from the day it starts on
+const toBucketKey = (isoDay: string, hour: string, interval: string) => {
+  switch (interval) {
+    case 'year':
+      return isoDay.slice(0, 4);
+    case 'quarter':
+    case 'month':
+      return isoDay.slice(0, 7);
+    case 'hour':
+      return `${isoDay} ${hour}:00:00`;
+    default:
+      return isoDay;
+  }
+};
+
+// The dates of a time series only depend on the period and the interval: compute them once, then
+// place the values of any number of series on them. The range is parsed once with moment, the buckets
+// are computed on UTC timestamps: moment for each of them blocked the event loop for about 120 ms
+// per series of 50,000 hours (5.7 years), against about 15 ms now.
+export const buildTimeSeriesAxis = (startDate: Date, endDate: Date, interval: string): TimeSeriesAxis => {
+  const { startDateParsed, elementsOfInterval } = computeTimeSeriesRange(startDate, endDate, interval);
+  const bucketStartAt = buildBucketStartAt(startDateParsed.valueOf(), interval);
+  const keys = [];
+  const dates = [];
+  // Every bucket starts on an exact UTC hour: its day is only formatted again when it changes
+  let day = NaN;
+  let isoDay = '';
+  for (let i = 0; i <= elementsOfInterval; i += 1) {
+    const bucketStart = bucketStartAt(i);
+    const bucketDay = Math.floor(bucketStart / DAY_MS) * DAY_MS;
+    if (bucketDay !== day) {
+      day = bucketDay;
+      isoDay = new Date(day).toISOString().slice(0, 10);
+    }
+    const hour = HOURS[(bucketStart - bucketDay) / HOUR_MS];
+    dates[i] = `${isoDay}T${hour}:00:00.000Z`;
+    keys[i] = toBucketKey(isoDay, hour, interval);
+  }
+  return { keys, dates };
+};
+
+export const fillTimeSeriesValues = (axis: TimeSeriesAxis, data: { date: string; value: number }[]) => {
+  // Last value wins on duplicated dates, as the former linear lookup did
+  const valuesByDate = new Map(data.map((d) => [d.date, d.value]));
+  return axis.keys.map((key) => (valuesByDate.has(key) ? valuesByDate.get(key) as number : 0));
+};
+
+export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: { date: string; value: number }[]) => {
+  const axis = buildTimeSeriesAxis(startDate, endDate, interval);
+  const values = fillTimeSeriesValues(axis, data);
+  return axis.dates.map((date, i) => ({ date, value: values[i] }));
 };
 
 export const offsetToCursor = (sort: estypes.SortResults): string => {

@@ -46,7 +46,6 @@ import {
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-  resolveRefsReplaceBaseline,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE,
@@ -194,6 +193,7 @@ import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2
 import { convertStoreToStix } from './stix-common-converter';
 import {
   buildAggregationRelationFilter,
+  buildConnectionRoleFilter,
   buildEntityFilters,
   buildThingsFilters,
   type EntityFilters,
@@ -813,32 +813,20 @@ export const buildRestrictedEntity = (resolvedEntity: BasicStoreEntity): BasicSt
 };
 
 // region Graphics
-const convertAggregateDistributions = async (
+const resolveAggregateDistributions = async <T extends { label: string; value: number }>(
   context: AuthContext,
   user: AuthUser,
-  limit: number,
-  orderingFunction: any,
-  distribution: { label: string; value: number }[],
-): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
-  const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
+  data: T[],
+): Promise<(T & { entity: BasicStoreEntity | null })[]> => {
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true }) as Record<string, BasicStoreEntity>;
   // filter out unresolved data (like the SYSTEM user for instance); keep the synthetic 'unknown' bucket
   const filteredData = data.filter((n) => n.label === 'unknown' || isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
-  // entities not granted shall be sent as "restricted" with limited information
-  const grantedIds: string[] = [];
-  for (let i = 0; i < filteredData.length; i += 1) {
-    // The 'unknown' bucket has no real entity — skip resolution and access check
-    if (filteredData[i].label === 'unknown') {
-      grantedIds.push('unknown');
-      continue;
-    }
-    const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
-    const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
-    if (canAccess) {
-      grantedIds.push(filteredData[i].label.toLowerCase());
-    }
-  }
+  // entities not granted shall be sent as "restricted" with limited information, all checked at once.
+  // The 'unknown' bucket has no real entity — skip its access check
+  const resolvedElements = filteredData.filter((n) => n.label !== 'unknown').map((n) => allResolveLabels[n.label.toLowerCase()]);
+  const grantedElements = await userFilterStoreElements(context, user, resolvedElements);
+  const grantedIds = new Set(grantedElements.map((element) => element.internal_id));
   return filteredData
     .map((n) => {
       // The 'unknown' bucket has no backing entity
@@ -846,7 +834,7 @@ const convertAggregateDistributions = async (
         return { ...n, entity: null };
       }
       const element = allResolveLabels[n.label.toLowerCase()];
-      if (grantedIds.includes(n.label.toLowerCase())) {
+      if (grantedIds.has(element.internal_id)) {
         return {
           ...n,
           entity: element,
@@ -857,6 +845,16 @@ const convertAggregateDistributions = async (
         entity: buildRestrictedEntity(element),
       };
     });
+};
+const convertAggregateDistributions = async (
+  context: AuthContext,
+  user: AuthUser,
+  limit: number,
+  orderingFunction: any,
+  distribution: { label: string; value: number }[],
+): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
+  const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
+  return resolveAggregateDistributions(context, user, data);
 };
 export const timeSeriesHistory = async (context: AuthContext, user: AuthUser, args: any) => {
   const { startDate, endDate, interval } = args;
@@ -2816,17 +2814,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
               const newRelations = buildInstanceRelTo(refs, relType);
               pushAll(relationsToCreate, newRelations);
             }
-            // A replace that only repairs the stored relationships (the loaded refs are already the targets)
-            // is not an update of the element: no input, so no empty stream event (#18634)
-            const baseline = await resolveRefsReplaceBaseline(newTargetsIds, updatedInstance[key], key, relType, async () => {
-              return await storeLoadByIdWithRefs(context, user, initial.internal_id, { type: initial.entity_type }) as Record<string, any> | null;
-            });
-            if (baseline.lockedInitial) {
-              Object.assign(initial, baseline.lockedInitial);
-            }
-            if (baseline.changed) {
-              updatedInputs.push({ key, value: refs, previous: baseline.previous });
-            }
+            updatedInputs.push({ key, value: refs, previous: updatedInstance[key] });
             updatedInstance[key] = refs;
             updatedInstance[relType] = newTargetsIds;
           }
@@ -3482,7 +3470,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [from.internal_id] },
-              { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+              buildConnectionRoleFilter(relationshipType, 'from'),
             ],
             values: [],
           },
@@ -3490,7 +3478,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [to.internal_id] },
-              { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+              buildConnectionRoleFilter(relationshipType, 'to'),
             ],
             values: [],
           },
