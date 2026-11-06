@@ -2,7 +2,7 @@ import { Suspense, useState } from 'react';
 import { DialogActions } from '@mui/material';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { Alert, Chip, Switch, Text } from '@filigran/design-system';
+import { Alert, Checkbox, Chip, Switch, Text } from '@filigran/design-system';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { ErrorBoundary } from '../../../Error';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
@@ -72,6 +72,7 @@ interface MigrationPreviewProps {
 const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
   const { t_i18n } = useFormatter();
   const [publish, setPublish] = useState(true);
+  const [replaceDraftConfirmed, setReplaceDraftConfirmed] = useState(false);
   const { workflowMigrationPreview, statusTemplates } = useLazyLoadQuery<RequestAccessMigrationDialogPreviewQuery>(
     requestAccessMigrationPreviewQuery,
     { entityType: REQUEST_ACCESS_ENTITY_TYPE },
@@ -97,7 +98,10 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
     );
   }
 
-  const blocked = preview.diagnostics.some((diagnostic) => isBlocking(diagnostic, publish));
+  // A request access workflow never published is only a draft: the migration may replace it once confirmed.
+  const replacesDraft = !preview.hasPublishedVersion && preview.diagnostics.some((diagnostic) => diagnostic.type === 'EXISTING_WORKFLOW');
+  const diagnostics = replacesDraft ? preview.diagnostics.filter((diagnostic) => diagnostic.type !== 'EXISTING_WORKFLOW') : preview.diagnostics;
+  const blocked = diagnostics.some((diagnostic) => isBlocking(diagnostic, publish)) || (replacesDraft && !replaceDraftConfirmed);
   const states = [...preview.states].sort((a, b) => a.order - b.order);
   // The migrated mesh has one transition per pair of statuses: the sources of a same event are listed together.
   const transitionLines = new Map<string, { event: string; from: string[]; to: string }>();
@@ -110,7 +114,7 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
 
   const handleConfirm = () => {
     commitMigration({
-      variables: { entityType: REQUEST_ACCESS_ENTITY_TYPE, publish, overwrite: false, scope: 'REQUEST_ACCESS' },
+      variables: { entityType: REQUEST_ACCESS_ENTITY_TYPE, publish, overwrite: replacesDraft, scope: 'REQUEST_ACCESS' },
       onCompleted: (_response, errors) => {
         if (errors?.length) return;
         onMigrated();
@@ -126,7 +130,22 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
       <Text variant="content-base" as="p" style={{ marginBottom: 16 }}>
         {t_i18n('The legacy request access statuses become a request access workflow. Existing statuses are reused, so requests keep their current status.')}
       </Text>
-      {preview.diagnostics.map((diagnostic, index) => (
+      {replacesDraft && (
+        <div data-testid="request-access-migration-replace-draft" style={{ marginBottom: 8 }}>
+          <Alert
+            severity="warning"
+            title={t_i18n('Warning')}
+            description={t_i18n('The current draft of the request access workflow will be replaced by the migrated statuses.')}
+            style={{ marginBottom: 8 }}
+          />
+          <Checkbox
+            label={t_i18n('Replace the current draft of the request access workflow')}
+            checked={replaceDraftConfirmed}
+            onCheckedChange={(checked) => setReplaceDraftConfirmed(checked === true)}
+          />
+        </div>
+      )}
+      {diagnostics.map((diagnostic, index) => (
         <Alert
           key={`${diagnostic.type}-${index}`}
           data-testid="request-access-migration-diagnostic"

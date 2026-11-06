@@ -95,7 +95,7 @@ const mockWorkflowDefinition = {
   published: false,
   errors: [],
 };
-let mockLoadedDefinition: typeof mockWorkflowDefinition | null = mockWorkflowDefinition;
+let mockLoadedDefinition: (typeof mockWorkflowDefinition & { hasPublishedVersion?: boolean }) | null = mockWorkflowDefinition;
 
 vi.mock('react-relay', async () => {
   const actual = await vi.importActual('react-relay');
@@ -933,8 +933,26 @@ describe('Workflow Component', () => {
         expect(screen.queryByRole('button', { name: 'Migrate request access statuses' })).not.toBeInTheDocument();
       });
 
-      it('does not offer the migration once a request access workflow exists', () => {
+      it('still offers the migration over a request access workflow never published', async () => {
+        const user = userEvent.setup();
         mockLoadedDefinition = mockWorkflowDefinition;
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
+
+        expect(screen.getByTestId('request-access-migration-dialog')).toBeInTheDocument();
+      });
+
+      it('offers the migration next to a draft that already has statuses', () => {
+        mockLoadedDefinition = mockWorkflowDefinition;
+        mockNodes = [{ id: 'node-1', type: WorkflowNodeType.status, data: { statusTemplate: { id: 'status-1', name: 'Open', color: '#00FF00' } }, position: { x: 0, y: 0 } }];
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        expect(screen.getByRole('button', { name: 'Migrate request access statuses' })).toBeInTheDocument();
+      });
+
+      it('does not offer the migration once the request access workflow has been published', () => {
+        mockLoadedDefinition = { ...mockWorkflowDefinition, hasPublishedVersion: true };
         renderRfi({ scope: 'REQUEST_ACCESS' });
 
         expect(screen.queryByRole('button', { name: 'Migrate request access statuses' })).not.toBeInTheDocument();

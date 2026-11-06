@@ -191,6 +191,49 @@ describe('RequestAccessMigrationDialog', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  describe('over a request access workflow never published', () => {
+    const existingDraft = { type: 'EXISTING_WORKFLOW', message: 'Entity type already has a request access workflow with no published version' };
+    const replaceCheckbox = () => screen.getByRole('checkbox', { name: 'Replace the current draft of the request access workflow' });
+
+    it('asks to confirm the draft replacement before migrating', async () => {
+      const user = userEvent.setup();
+      mockPreview = diagnosticsOf([existingDraft]);
+      renderDialog();
+
+      expect(screen.getByTestId('request-access-migration-replace-draft')).toHaveTextContent('The current draft of the request access workflow will be replaced by the migrated statuses.');
+      expect(screen.queryByText(existingDraft.message)).not.toBeInTheDocument();
+      expect(confirmButton()).toBeDisabled();
+
+      await user.click(replaceCheckbox());
+      expect(confirmButton()).toBeEnabled();
+      await user.click(confirmButton());
+
+      expect(mockCommit).toHaveBeenCalledWith(expect.objectContaining({
+        variables: { entityType: 'Case-Rfi', publish: true, overwrite: true, scope: 'REQUEST_ACCESS' },
+      }));
+    });
+
+    it('keeps other blocking diagnostics blocking once the replacement is confirmed', async () => {
+      const user = userEvent.setup();
+      mockPreview = diagnosticsOf([existingDraft, { type: 'MISSING_TEMPLATE', message: 'A template is gone' }]);
+      renderDialog();
+
+      await user.click(replaceCheckbox());
+
+      expect(confirmButton()).toBeDisabled();
+    });
+
+    it('cannot replace a published request access workflow', () => {
+      mockPreview = diagnosticsOf([{ type: 'EXISTING_WORKFLOW', message: 'Entity type already has a published request access workflow' }]);
+      mockPreview.workflowMigrationPreview.results[1].hasPublishedVersion = true;
+      renderDialog();
+
+      expect(screen.queryByTestId('request-access-migration-replace-draft')).not.toBeInTheDocument();
+      expect(screen.getByTestId('request-access-migration-diagnostic')).toHaveTextContent('Blocking');
+      expect(confirmButton()).toBeDisabled();
+    });
+  });
+
   it('has nothing to confirm when no request access status exists', () => {
     mockPreview = { ...diagnosticsOf([]) };
     mockPreview.workflowMigrationPreview.results = mockPreview.workflowMigrationPreview.results.filter((result) => result.scope === 'GLOBAL');

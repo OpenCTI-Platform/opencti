@@ -384,8 +384,8 @@ const Workflow = ({
   const [open, setOpen] = useState<boolean>(false);
   const [emptyStateRestoreConfirmOpen, setEmptyStateRestoreConfirmOpen] = useState(false);
   const [migrationOpen, setMigrationOpen] = useState(false);
-  // The migration only builds a first request access workflow: an existing one, even empty, is edited instead.
-  const canMigrateRequestAccess = scope === 'REQUEST_ACCESS' && !workflowDefinition;
+  // The migration builds the request access workflow until one is published: it may replace a draft, never a published one.
+  const canMigrateRequestAccess = scope === 'REQUEST_ACCESS' && !workflowDefinitionStatus.hasPublishedVersion;
   const [selectedElement, setSelectedElement] = useState<Node | Edge>(emptyElement);
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
@@ -489,6 +489,11 @@ const Workflow = ({
                 >
                   {t_i18n('Add Status')}
                 </Button>
+                {canMigrateRequestAccess && (
+                  <Button variant="secondary" onClick={() => setMigrationOpen(true)}>
+                    {t_i18n('Migrate request access statuses')}
+                  </Button>
+                )}
               </Panel>
             ) : (
               <Panel
