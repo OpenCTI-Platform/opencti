@@ -962,7 +962,19 @@ const useSearchEntities = ({
           break;
         case 'fromTypes':
         case 'toTypes':
-          // for source type and target type, we need:
+          // the search scope of the key, if any, restricts the types (e.g. the possible targets of a relationship type)
+          if (searchScope?.[filterKey]) {
+            unionSetEntities(
+              filterKey,
+              searchScope[filterKey].map((type) => ({
+                label: t_i18n(displayEntityTypeForTranslation(type)),
+                value: type,
+                type,
+              })).sort((a, b) => a.label.localeCompare(b.label)),
+            );
+            break;
+          }
+          // otherwise, for source type and target type, we need:
           // the observables
           // the stix domain objects
           // the stix core relationships
