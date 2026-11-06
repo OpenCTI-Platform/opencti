@@ -191,6 +191,7 @@ export const validateWorkflowDefinitionData = async (
   definitionStr: string,
   entityType: string,
   existingWorkflowId?: string,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<WorkflowValidationError[]> => {
   let parsed;
   const errors: WorkflowValidationError[] = [];
@@ -502,7 +503,7 @@ export const validateWorkflowDefinitionData = async (
               mode: FilterMode.And,
               filters: [
                 { key: ['type'], values: [entityType] },
-                { key: ['scope'], values: [StatusScope.Global] },
+                { key: ['scope'], values: [scope] },
                 { key: ['template_id'], values: removedStatusIds, operator: FilterOperator.Eq, mode: FilterMode.Or },
               ],
               filterGroups: [],

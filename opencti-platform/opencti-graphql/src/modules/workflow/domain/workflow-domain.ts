@@ -750,7 +750,7 @@ export const setWorkflowDefinition = async (
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);
 
-  const errors = await validateWorkflowDefinitionData(executionContext, executionUser, definition, entityType, existingDefinitionId);
+  const errors = await validateWorkflowDefinitionData(executionContext, executionUser, definition, entityType, existingDefinitionId, scope);
 
   // Check if the definition uses EE-only features (actions/conditions on transitions
   // or onEnter/onExit actions on states), except for the 'validateDraft' action which is CE.
@@ -896,7 +896,7 @@ export const deleteWorkflowDefinition = async (
  * the built-in DraftWorkspace workflow) may carry a stale/default `order`. Every republish
  * recomputes it here, so existing definitions naturally converge without requiring a migration.
  *
- * Only the Global scope is reconciled here — existing `Status` records in other scopes are
+ * Only the given scope is reconciled here — existing `Status` records in other scopes are
  * left untouched.
  */
 export const ensureFullStatusMapping = async (
@@ -904,6 +904,7 @@ export const ensureFullStatusMapping = async (
   user: AuthUser,
   entityType: string,
   definitionData: WorkflowDefinitionData,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<void> => {
   const canonicalStateIds = extractCanonicalStateIds(definitionData as Parameters<typeof extractCanonicalStateIds>[0]);
   if (canonicalStateIds.size === 0) return;
@@ -916,7 +917,7 @@ export const ensureFullStatusMapping = async (
       mode: FilterMode.And,
       filters: [
         { key: ['type'], values: [entityType] },
-        { key: ['scope'], values: [StatusScope.Global] },
+        { key: ['scope'], values: [scope] },
       ],
       filterGroups: [],
     },
@@ -932,7 +933,7 @@ export const ensureFullStatusMapping = async (
       await createStatus(executionContext, executionUser, entityType, {
         template_id: statusId,
         order,
-        scope: StatusScope.Global,
+        scope,
       });
     } else if (existingStatus.order !== order) {
       await updateAttribute(executionContext, executionUser, existingStatus.id, ENTITY_TYPE_STATUS, [{ key: 'order', value: [order] }]);
@@ -970,6 +971,7 @@ const reconcileOrphanedStatuses = async (
   entityType: string,
   oldDefinitionData: WorkflowDefinitionData,
   newDefinitionData: WorkflowDefinitionData,
+  scope: StatusScope = StatusScope.Global,
 ): Promise<void> => {
   const oldTemplateIds = extractCanonicalStateIds(oldDefinitionData as Parameters<typeof extractCanonicalStateIds>[0]);
   const newTemplateIds = extractCanonicalStateIds(newDefinitionData as Parameters<typeof extractCanonicalStateIds>[0]);
@@ -979,7 +981,7 @@ const reconcileOrphanedStatuses = async (
       mode: FilterMode.And,
       filters: [
         { key: ['type'], values: [entityType] },
-        { key: ['scope'], values: [StatusScope.Global] },
+        { key: ['scope'], values: [scope] },
       ],
       filterGroups: [],
     },
@@ -1023,7 +1025,7 @@ export const isStatusOrphaned = async (
   user: AuthUser,
   status: BasicWorkflowStatus,
 ): Promise<boolean> => {
-  const definitionData = await getWorkflowDefinition(context, user, status.type, false);
+  const definitionData = await getWorkflowDefinition(context, user, status.type, false, status.scope);
   const stillMapped = !!definitionData
     && extractCanonicalStateIds(definitionData as Parameters<typeof extractCanonicalStateIds>[0]).has(status.template_id);
   if (stillMapped) return false;
@@ -1091,6 +1093,7 @@ export const publishWorkflowDefinition = async (
     draftVersion.content,
     entityType,
     definitionId,
+    scope,
   );
   if (freshValidationErrors.length > 0) {
     throw FunctionalError('Cannot publish workflow with validation errors', {
@@ -1152,7 +1155,7 @@ export const publishWorkflowDefinition = async (
               mode: FilterMode.And,
               filters: [
                 { key: ['type'], values: [entityType] },
-                { key: ['scope'], values: [StatusScope.Global] },
+                { key: ['scope'], values: [scope] },
                 { key: ['template_id'], values: removedStatusIds, operator: FilterOperator.Eq, mode: FilterMode.Or },
               ],
               filterGroups: [],
@@ -1174,7 +1177,7 @@ export const publishWorkflowDefinition = async (
         // marked for deferred deletion (grace period) unless still referenced by an entity or by a
         // request-access workflow config; a Status still pending deletion that is reintroduced by
         // the new definition has its pending mark cleared (restore wins over a concurrent purge).
-        await reconcileOrphanedStatuses(executionContext, executionUser, entityType, oldDef, newDef);
+        await reconcileOrphanedStatuses(executionContext, executionUser, entityType, oldDef, newDef, scope);
       }
     }
 
@@ -1197,7 +1200,7 @@ export const publishWorkflowDefinition = async (
       // Malformed content will already have failed validation earlier; nothing to reconcile here.
     }
     if (publishedDefinitionData) {
-      await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData);
+      await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData, scope);
     }
 
     // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
@@ -1608,10 +1611,12 @@ export const getMassWorkflowTransitions = async (
   user: AuthUser,
   entityType: string,
   target: { entityIds?: string[] | null; filters?: string | null; search?: string | null; excludedIds?: string[] | null },
+  scope: StatusScope = StatusScope.Global,
 ): Promise<AllowedTransition[]> => {
   if (entityType !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return [];
+  assertScopeAllowed(entityType, scope);
   const entitySetting = await getWorkflowConfig(context, user, entityType);
-  const definitionData = await getDefinitionData(context, user, entitySetting);
+  const definitionData = await getDefinitionData(context, user, entitySetting, false, scope);
   if (!definitionData) return [];
   const statuses = await findStatusesByType(bypassDraftContext(context), bypassDraftUser(user), entityType);
   if (target.entityIds) {
@@ -1636,7 +1641,7 @@ export const getMassWorkflowTransitions = async (
     return statuses.find((status) => status.id === label)?.template_id ?? definitionData.initialState;
   }));
   return keepCommonTransitions([...states].map((state) => {
-    return definition.getTransitions(state).map((transition) => toAllowedTransition(transition, statuses, StatusScope.Global));
+    return definition.getTransitions(state).map((transition) => toAllowedTransition(transition, statuses, scope));
   }));
 };
 
@@ -1954,11 +1959,16 @@ export const getWorkflowBypassStatuses = async (context: AuthContext, user: Auth
  * Statuses of the published workflow of an entity type, for a mass status update. Exposed to
  * knowledge editors, unlike `workflowDefinition`.
  */
-export const getWorkflowStatuses = async (context: AuthContext, user: AuthUser, entityType: string): Promise<BasicWorkflowStatus[]> => {
+export const getWorkflowStatuses = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  scope: StatusScope = StatusScope.Global,
+): Promise<BasicWorkflowStatus[]> => {
   if (entityType !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return [];
-  const definitionData = await getWorkflowDefinition(context, user, entityType, false);
+  const definitionData = await getWorkflowDefinition(context, user, entityType, false, scope);
   if (!definitionData) return [];
-  return findWorkflowMappedStatuses(bypassDraftContext(context), bypassDraftUser(user), entityType, StatusScope.Global, definitionData);
+  return findWorkflowMappedStatuses(bypassDraftContext(context), bypassDraftUser(user), entityType, scope, definitionData);
 };
 
 const executeWorkflowBypass = async (
