@@ -1,5 +1,6 @@
 import { GraphQLError } from 'graphql';
 import type { AuthContext } from '../../../types/user';
+import type { QueryWorkflowMassTransitionsArgs } from '../../../generated/graphql';
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
 import {
   clearWorkflowPendingState,
@@ -8,6 +9,8 @@ import {
   getWorkflowDefinition,
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
+  getMassWorkflowTransitions,
+  getWorkflowStatuses,
   hasPublishedWorkflowDefinition,
   publishWorkflowDefinition,
   restorePublishedWorkflowDefinition,
@@ -27,6 +30,12 @@ const workflowResolvers = {
     },
     workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return hasPublishedWorkflowDefinition(context, context.user!, entityType);
+    },
+    workflowStatuses: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      return getWorkflowStatuses(context, context.user!, entityType);
+    },
+    workflowMassTransitions: (_: any, { entityType, ...target }: QueryWorkflowMassTransitionsArgs, context: AuthContext) => {
+      return getMassWorkflowTransitions(context, context.user!, entityType, target);
     },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);

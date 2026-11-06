@@ -45,4 +45,17 @@ describe('ConfigPresetSelectionAccordion', () => {
     await user.click(screen.getByRole('checkbox', { name: 'Branding (40/40)' }));
     expect(onSelectionChange).toHaveBeenCalledWith({ branding: { mode: 'some', ids: [] } });
   });
+
+  it('shows a singleton that has no description as its label alone', () => {
+    const type: ConfigPresetAccordionType = {
+      key: 'whitemark',
+      label: 'Remove Filigran logos',
+      description: '',
+      group,
+      items: [{ key: 'whitemark', label: 'Remove Filigran logos', translatable: true, isDefault: false, dependsOn: [] }],
+      itemsPageInfo: { globalCount: 1 },
+    };
+    testRender(<ConfigPresetSelectionAccordion types={[type]} selection={{}} forced={{}} onSelectionChange={vi.fn()} />);
+    expect(screen.getByRole('checkbox', { name: 'Remove Filigran logos' })).toBeInTheDocument();
+  });
 });

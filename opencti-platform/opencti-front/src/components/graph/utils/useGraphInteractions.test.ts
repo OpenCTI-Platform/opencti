@@ -77,4 +77,21 @@ describe('useGraphInteractions', () => {
     expect(graph.setGraphData).toHaveBeenCalled();
     expect(graph.graphRef2D.current.d3ReheatSimulation).toHaveBeenCalled();
   });
+
+  it('keeps the callback of an expand opened with one until the expand closes', () => {
+    const onSubmit = vi.fn();
+    const { interactions, state } = renderInteractions({ isExpandOpen: false });
+    interactions.setIsExpandOpen(true, onSubmit);
+    expect(state().isExpandOpen).toBe(true);
+    expect(state().onExpandSubmit).toBe(onSubmit);
+    interactions.setIsExpandOpen(false);
+    expect(state().isExpandOpen).toBe(false);
+    expect(state().onExpandSubmit).toBeUndefined();
+  });
+
+  it('drops the callback of a previous expand when an expand opens without one', () => {
+    const { interactions, state } = renderInteractions({ isExpandOpen: false, onExpandSubmit: vi.fn() });
+    interactions.setIsExpandOpen(true);
+    expect(state().onExpandSubmit).toBeUndefined();
+  });
 });

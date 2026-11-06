@@ -37,6 +37,7 @@ describe('ConfigPresetExportFooter', () => {
             label: 'Messages',
             description: 'Banner, login and consent messages',
             group: { key: 'platformSettings', label: 'Platform settings' },
+            lockedByEnterpriseEdition: false,
             items: [{ key: 'messages', label: 'Messages', translatable: true, isDefault: false, dependsOn: [] }],
             itemsPageInfo: { hasNextPage: false, globalCount: 1 },
           }],

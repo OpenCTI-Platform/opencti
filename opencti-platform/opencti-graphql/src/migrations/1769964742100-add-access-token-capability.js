@@ -3,7 +3,8 @@ import { fullEntitiesList } from '../database/middleware-loader';
 import { createRelation } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { logMigration } from '../config/conf';
-import { API_ACCESS_CAPABILITIES, createCapabilities } from '../database/data-initialization';
+import { createCapabilities } from '../database/data-initialization';
+import { API_ACCESS_CAPABILITIES } from '../schema/capabilities';
 import { generateStandardId } from '../schema/identifier';
 
 const message = '[MIGRATION] Add APIACCESS capability and grant to all roles';

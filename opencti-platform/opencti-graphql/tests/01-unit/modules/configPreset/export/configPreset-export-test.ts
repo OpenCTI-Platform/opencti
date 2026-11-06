@@ -7,10 +7,16 @@ import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } fr
 // @ts-expect-error unzipper ships no type declarations
 import unzipper from 'unzipper';
 
+const enterpriseEdition = vi.hoisted(() => ({ enabled: true }));
+vi.mock('../../../../../src/enterprise-edition/ee', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/enterprise-edition/ee')>()),
+  isEnterpriseEditionUpToDate: vi.fn(async () => enterpriseEdition.enabled),
+}));
 vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/database/middleware-loader')>()),
   topEntitiesList: vi.fn(),
   fullEntitiesList: vi.fn(),
+  fullRelationsList: vi.fn(),
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
@@ -45,7 +51,8 @@ import {
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import type { ConfigPresetItemDefinition } from '../../../../../src/modules/configPreset/configPreset-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
-import { builtInTheme, customTheme, mockThemeLoaders, otherCustomTheme } from '../configPreset-themes-fixtures';
+import { builtInTheme, customTheme, otherCustomTheme } from '../configPreset-themes-fixtures';
+import { mockConfigPresetLoaders } from '../configPreset-loaders-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const draftContext = { source: 'test', draft_context: 'draft-id' } as AuthContext;
@@ -136,13 +143,14 @@ const expectNothingWritten = () => {
 describe('Config preset export', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    enterpriseEdition.enabled = true;
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(NOW);
     createWriteStreamSpy = vi.spyOn(fs, 'createWriteStream');
     uploadedZip = undefined;
     tmpFileModeDuringUpload = undefined;
     vi.mocked(topEntitiesList).mockResolvedValue([storedSettings] as never);
-    mockThemeLoaders([{ target_type: 'Channel', platform_hidden_type: true }]);
+    mockConfigPresetLoaders([{ target_type: 'Channel', platform_hidden_type: true }]);
     mockUploadReadingTheZip();
   });
 
@@ -184,6 +192,25 @@ describe('Config preset export', () => {
     // No item has dependencies
     expect(entries['dependencies.json']).toEqual({});
     expect(JSON.stringify(entries)).not.toContain('secret-license');
+  });
+
+  it('writes the whitemark of a platform that has the Enterprise Edition', async () => {
+    await configPresetExport(context, bypassUser, [{ type: 'whitemark', items: ['whitemark'] }]);
+    const entries = await readZip(uploadedZip!);
+    expect(Object.keys(entries).sort()).toEqual(['dependencies.json', 'metadata.json', 'platform_settings/whitemark.json']);
+    expect(entries['platform_settings/whitemark.json']).toEqual({
+      openCTI_version: PLATFORM_VERSION,
+      type: 'platformSettings.whitemark',
+      id: 'whitemark',
+      configuration: { platform_whitemark: true },
+    });
+  });
+
+  it('refuses to export the whitemark of a platform without the Enterprise Edition, and writes nothing', async () => {
+    enterpriseEdition.enabled = false;
+    await expect(configPresetExport(context, bypassUser, [{ type: 'whitemark', items: ['whitemark'] }])).rejects.toThrow('Enterprise edition is not enabled');
+    await expect(configPresetExport(context, bypassUser, [{ type: 'whitemark' }])).rejects.toThrow('Enterprise edition is not enabled');
+    expectNothingWritten();
   });
 
   it('only writes the selected items and merges duplicated selections', async () => {
@@ -426,7 +453,7 @@ describe('Config preset export', () => {
 describe('Config preset selections', () => {
   beforeEach(() => {
     vi.mocked(topEntitiesList).mockResolvedValue([storedSettings] as never);
-    mockThemeLoaders();
+    mockConfigPresetLoaders();
   });
 
   const resolveIds = async (selections: Parameters<typeof resolveConfigPresetSelections>[2]) => {

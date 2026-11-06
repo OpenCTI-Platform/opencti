@@ -144,6 +144,8 @@ extend type DraftWorkspace {
 extend type Query {
     workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema @auth(for: [SETTINGS_SETCUSTOMIZATION])
     workflowDefinitionPublished(entityType: String!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
+    workflowStatuses(entityType: String!): [Status!]! @auth(for: [KNOWLEDGE_KNUPDATE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
+    workflowMassTransitions(entityType: String!, entityIds: [String!], filters: String, search: String, excludedIds: [String!]): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE]) @ff(flags: ["ENTITIES_WORKFLOW"], softFail: true, defaultValue: "[]")
     workflowInstance(entityId: String!): WorkflowInstance @auth(for: [KNOWLEDGE_KNUPDATE], forDraft: [KNOWLEDGE_KNUPDATE])
     allowedTransitions(entityId: String!): [WorkflowTransition!]! @auth(for: [KNOWLEDGE_KNUPDATE])
     workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]! @auth(for: [BYPASS])

@@ -131,6 +131,9 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
     standard_id
     parent_types
     entity_type
+    representative {
+      main
+    }
     created_at
     ... on AttackPattern {
       name

@@ -3,7 +3,6 @@ import * as jsonpatch from 'fast-json-patch';
 import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
-import { TAXIIAPI } from '../modules/user/user-domain';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
@@ -37,6 +36,7 @@ import {
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   OTPValidationStatus,
   SYSTEM_USER,
+  TAXIIAPI,
 } from '../utils/access';
 import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
@@ -61,7 +61,8 @@ import { buildFilterEventContext } from '../manager/playbookManager/playbookMana
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
-import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
+import { checkDraftInContext } from '../http/httpServer-draft';
+import { EVENT_CURRENT_VERSION, sanitizeStreamEventOrigin } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { extractStixRepresentative } from '../database/stix-representative';
 import { doYield } from '../utils/eventloop-utils';
@@ -145,6 +146,9 @@ export const authenticate = async (req, res, next) => {
         sendErrorStatus(req, res, 401);
         return;
       }
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used by the stream processor.
+      await checkDraftInContext(context);
       req.context = context;
       req.userId = context.user.id;
       req.user = context.user;
@@ -253,6 +257,9 @@ export const authenticateForPublic = async (req, res, next) => {
     sendErrorStatus(req, res, 401);
   } else {
     try {
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used by the stream processor.
+      await checkDraftInContext(context);
       const user = collection?.stream_public
         ? await resolvePublicUser(context, collection.stream_public_user_id)
         : context.user;
@@ -511,14 +518,13 @@ const createSseMiddleware = () => {
       }
       if (event) {
         message += 'data: ';
+        // Only publish the stream origin attributes
+        const sanitized = event.origin ? { ...event, origin: sanitizeStreamEventOrigin(event.origin) } : event;
         const isDataTopic = eventId && topic !== 'heartbeat' && topic !== 'consumer_metrics';
         if (isDataTopic && req.user && !isUserHasCapability(req.user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-          const filtered = { ...event };
-          delete filtered.data.extensions[STIX_EXT_OCTI].granted_refs;
-          message += JSON.stringify(filtered);
-        } else {
-          message += JSON.stringify(event);
+          delete sanitized.data.extensions[STIX_EXT_OCTI].granted_refs;
         }
+        message += JSON.stringify(sanitized);
         message += '\n';
       }
       message += '\n';

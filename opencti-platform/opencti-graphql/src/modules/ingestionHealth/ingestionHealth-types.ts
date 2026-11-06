@@ -1,4 +1,5 @@
 import type { IngestionHealthStatus } from '../../generated/graphql';
+import type { HealthCheckCode } from './ingestionHealth-registry';
 
 // A check as stored in Elasticsearch: kind, severity and message are derived from the code (see ingestionHealth-checks).
 export interface StoredHealthCheck {
@@ -24,6 +25,14 @@ export interface StoredIngestionHealth {
   last_event_date?: string;
   last_event_status?: IngestionHealthStatus;
   health_checks?: StoredHealthCheck[];
+}
+
+// Content of the ingestion_health_settings object of the platform settings, edited from the Parameters page
+export interface IngestionHealthSettings {
+  // ms a status must stay unchanged before it is notified
+  notification_delay?: number;
+  // Checks never evaluated on the platform: a check absent from the list is enabled, so is a check added later
+  disabled_health_checks?: HealthCheckCode[];
 }
 
 // ingestion_health is absent until the manager first evaluates the ingestion, and removed (null in a patch) when it is stopped

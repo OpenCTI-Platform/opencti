@@ -24,7 +24,7 @@ import { BUS_TOPICS } from '../config/conf';
 import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
-import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil } from '../modules/user/user-domain';
+import { propagatePasswordValidityChange } from '../modules/user/user-domain';
 
 export const buildAvailableProviders = async (platformSettings: BasicStoreSettings) => {
   const availableProviders = [...PROVIDERS];
@@ -75,14 +75,7 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
 
   // Propagate password_valid_until changes to all internal users
   if (input.password_policy_validity_days !== undefined) {
-    const newValidityDays = Number(input.password_policy_validity_days);
-    if (newValidityDays <= 0) {
-      // Policy disabled: clear all users' expiration dates
-      await clearAllUsersPasswordValidUntil(context);
-    } else if (newValidityDays !== oldValidityDays) {
-      // Policy duration changed: adjust all existing expiration dates
-      await adjustAllUsersPasswordValidUntil(context, oldValidityDays, newValidityDays);
-    }
+    await propagatePasswordValidityChange(context, oldValidityDays, Number(input.password_policy_validity_days));
   }
 
   await publishUserAction({

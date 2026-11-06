@@ -178,6 +178,34 @@ describe('getNotifications — excludes inactive/expired accounts', () => {
     expect(ids.has('service')).toBe(false);
   });
 
+  it('keeps an active service account a defined trigger names directly, and only in that trigger', async () => {
+    const humanUser = buildUser({ id: 'human', internal_id: 'human' });
+    const serviceAccount = buildUser({ id: 'service', internal_id: 'service', user_service_account: true });
+    const lockedServiceAccount = buildUser({ id: 'locked-service', internal_id: 'locked-service', user_service_account: true, account_status: ACCOUNT_STATUS_LOCKED });
+    const definedTrigger = {
+      internal_id: 'trigger-machine',
+      trigger_type: 'live',
+      trigger_scope: 'knowledge',
+      restricted_members: [{ id: 'service' }, { id: 'locked-service' }],
+    };
+
+    getEntitiesListFromCache.mockImplementation((_ctx: any, _user: any, type: string) => {
+      if (type === ENTITY_TYPE_USER) {
+        return Promise.resolve([humanUser, serviceAccount, lockedServiceAccount]);
+      }
+      return Promise.resolve([definedTrigger]);
+    });
+
+    const triggers = await getNotifications(context);
+    const definedResolved = triggers.find((t: any) => t.trigger.internal_id === 'trigger-machine');
+    const definedUserIds = new Set((definedResolved?.users ?? []).map((u: AuthUser) => u.id));
+    expect(definedUserIds.has('service')).toBe(true);
+    expect(definedUserIds.has('locked-service')).toBe(false);
+    const nativeIds = collectUserIds(triggers.filter((t: any) => t.trigger.internal_id !== 'trigger-machine'));
+    expect(nativeIds.has('human')).toBe(true);
+    expect(nativeIds.has('service')).toBe(false);
+  });
+
   afterAll(() => {
     vi.restoreAllMocks();
   });

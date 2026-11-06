@@ -57,12 +57,22 @@ from pycti.connector import opencti_connector_build
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
+from pycti.utils.opencti_tls import (
+    get_tls_reject_unauthorized,
+    log_tls_verification_disabled,
+)
 
 TRUTHY: List[str] = ["yes", "true", "True"]
 """List of string values considered as boolean True."""
 
 FALSY: List[str] = ["no", "false", "False"]
 """List of string values considered as boolean False."""
+
+BOOLEAN_TRUE_VALUES = frozenset({"true", "yes", "on", "1"})
+"""Values (compared case-insensitively) parsed as True for a boolean setting."""
+
+BOOLEAN_FALSE_VALUES = frozenset({"false", "no", "off", "0"})
+"""Values (compared case-insensitively) parsed as False for a boolean setting."""
 
 app = FastAPI()
 
@@ -97,6 +107,46 @@ def start_loop(loop) -> None:
     loop.run_forever()
 
 
+def parse_boolean_config(env_var: str, value, strict: bool = True):
+    """Parse the value of a boolean configuration setting.
+
+    Accepts real booleans, the integers 0 and 1, and the strings ``true``,
+    ``false``, ``yes``, ``no``, ``on``, ``off``, ``1`` and ``0`` in any case,
+    surrounding whitespace ignored.
+
+    :param env_var: Name of the setting, used in the error message
+    :type env_var: str
+    :param value: The raw value read from the environment or the YAML config
+    :type value: any
+    :param strict: If False, return an unrecognised value unchanged instead of
+        raising (for settings that take a boolean or a string, such as a TLS
+        verification flag that may also hold a CA bundle path)
+    :type strict: bool
+
+    :return: The parsed boolean, or the value itself when not strict and not
+        a recognised boolean
+    :rtype: bool or any
+
+    :raises ValueError: If strict and the value is not a recognised boolean
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int) and value in (0, 1):
+        return value == 1
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in BOOLEAN_TRUE_VALUES:
+            return True
+        if normalized in BOOLEAN_FALSE_VALUES:
+            return False
+    if not strict:
+        return value
+    raise ValueError(
+        f"The configuration {env_var} expects a boolean "
+        "(true/false, yes/no, on/off, 1/0), got " + repr(value)
+    )
+
+
 def get_config_variable(
     env_var: str,
     yaml_path: List,
@@ -104,6 +154,7 @@ def get_config_variable(
     isNumber: Optional[bool] = False,
     default=None,
     required=False,
+    isBoolean: Optional[bool] = None,
 ) -> Union[bool, int, None, str]:
     """Retrieve a configuration variable from environment or YAML config.
 
@@ -112,8 +163,15 @@ def get_config_variable(
     2. YAML configuration file
     3. Default value (lowest priority)
 
-    Boolean string values ("yes", "true", "True", "no", "false", "False")
-    are automatically converted to Python bool.
+    A setting is parsed as a boolean when ``isBoolean`` is True, or when
+    ``isBoolean`` is left to None, ``isNumber`` is False and ``default`` is a
+    bool. A boolean setting accepts true/false, yes/no, on/off and 1/0 in any
+    case (see :func:`parse_boolean_config`); any other value raises a
+    ValueError naming the setting, instead of being returned as a string that
+    would always be truthy.
+
+    For any other setting, the strings "yes", "true", "True", "no", "false"
+    and "False" are still converted to Python bool, as before.
 
     :param env_var: Name of the environment variable to check
     :type env_var: str
@@ -127,11 +185,15 @@ def get_config_variable(
     :type default: any
     :param required: If True and no value found, raise ValueError
     :type required: bool
+    :param isBoolean: True to parse the value as a boolean, False to never do
+        so, None (default) to infer it from a bool ``default``
+    :type isBoolean: bool or None
 
     :return: The configuration value as bool, int, str, or None
     :rtype: Union[bool, int, None, str]
 
-    :raises ValueError: If required=True and no value is found
+    :raises ValueError: If required=True and no value is found, or if a boolean
+        setting holds a value that is not a recognised boolean
 
     Example:
         >>> get_config_variable("OPENCTI_URL", ["opencti", "url"], config)
@@ -152,6 +214,15 @@ def get_config_variable(
             return default
     else:
         return default
+
+    if isBoolean is None:
+        isBoolean = not isNumber and isinstance(default, bool)
+    if isBoolean:
+        if result is None or (isinstance(result, str) and len(result.strip()) == 0):
+            if required and default is None:
+                raise ValueError("The configuration " + env_var + " is required")
+            return default
+        return parse_boolean_config(env_var, result)
 
     if result in TRUTHY:
         return True
@@ -407,6 +478,7 @@ def create_mq_ssl_context(config: Dict) -> ssl.SSLContext:
         - MQ_USE_SSL_CERT: Client certificate for mutual TLS
         - MQ_USE_SSL_KEY: Client private key for mutual TLS
         - MQ_USE_SSL_REJECT_UNAUTHORIZED: Whether to verify server certificate
+          (default: OPENCTI_TLS_REJECT_UNAUTHORIZED)
         - MQ_USE_SSL_PASSPHRASE: Optional passphrase for private key
 
     :param config: Configuration dictionary containing MQ SSL settings
@@ -425,7 +497,7 @@ def create_mq_ssl_context(config: Dict) -> ssl.SSLContext:
         ["mq", "use_ssl_reject_unauthorized"],
         config,
         False,
-        False,
+        get_tls_reject_unauthorized(config),
     )
     use_ssl_passphrase = get_config_variable(
         "MQ_USE_SSL_PASSPHRASE", ["mq", "use_ssl_passphrase"], config
@@ -2209,8 +2281,19 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             config,
             default=None,
         )
-        self.opencti_ssl_verify = get_config_variable(
-            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, False, False
+        # ssl_verify takes a boolean or a CA bundle path: parse the boolean
+        # spellings, keep any other string as a path
+        self.opencti_ssl_verify = parse_boolean_config(
+            "OPENCTI_SSL_VERIFY",
+            get_config_variable(
+                "OPENCTI_SSL_VERIFY",
+                ["opencti", "ssl_verify"],
+                config,
+                False,
+                get_tls_reject_unauthorized(config),
+                isBoolean=False,
+            ),
+            strict=False,
         )
         self.opencti_json_logging = get_config_variable(
             "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, False, True
@@ -2394,7 +2477,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.s3_secret_key = get_config_variable(
             "S3_SECRET_KEY", ["s3", "secret_key"], config
         )
-        self.s3_use_ssl = get_config_variable("S3_USE_SSL", ["s3", "use_ssl"], config)
+        self.s3_use_ssl = get_config_variable(
+            "S3_USE_SSL", ["s3", "use_ssl"], config, isBoolean=True
+        )
         self.s3_bucket_region = get_config_variable(
             "S3_BUCKET_REGION", ["s3", "bucket_region"], config
         )
@@ -2552,6 +2637,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         self.connector_logger = self.api.logger_class(self.connect_name)
         self.connector_info.logger = self.connector_logger
+        log_tls_verification_disabled(self.connector_logger, config)
         # For retro compatibility
         self.log_debug = self.connector_logger.debug
         self.log_info = self.connector_logger.info

@@ -49,6 +49,11 @@ enum State {
   timeout
 }
 
+enum WorkInvestigationStatus {
+  TO_REVIEW
+  DONE
+}
+
 enum Capabilities {
   BYPASS
   APIACCESS_USETOKEN
@@ -60,6 +65,7 @@ enum Capabilities {
   KNOWLEDGE_KNUPDATE_KNMERGE
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS
+  KNOWLEDGE_KNFORMINTAKE
   KNOWLEDGE_KNUPLOAD
   KNOWLEDGE_KNASKIMPORT
   KNOWLEDGE_KNGETEXPORT
@@ -93,6 +99,7 @@ enum Capabilities {
   SETTINGS_SETSTATUSTEMPLATES
   SETTINGS_SETKILLCHAINPHASES
   SETTINGS_SETCUSTOMIZATION
+  SETTINGS_SETCUSTOMFIELDS
   SETTINGS_SECURITYACTIVITY
   SETTINGS_FILEINDEXING
   SETTINGS_SUPPORT
@@ -898,6 +905,7 @@ type Work {
   timestamp: DateTime!
   status: State!
   event_source_id: String
+  eventSource: StixObjectOrStixRelationship
   received_time: DateTime
   processed_time: DateTime
   completed_time: DateTime
@@ -906,6 +914,8 @@ type Work {
   errors: [WorkMessage]
   tracking: WorkTracking
   draft_context: String
+  touchedElements(first: Int = 100): [StixObjectOrStixRelationship]
+  investigation_status: WorkInvestigationStatus
 }
 
 type WorkEdge {
@@ -1142,10 +1152,17 @@ enum BackgroundTasksOrdering {
   _score
 }
 
+type BackgroundTaskContextOptions {
+  includeNeighbours: Boolean
+  applyTransitionActions: Boolean
+  eventName: String
+}
+
 type BackgroundTaskContext {
   field: String
   type: BackgroundTaskContextType
   values: [String]!
+  options: BackgroundTaskContextOptions
 }
 
 type BackgroundTaskAction {
@@ -1236,6 +1253,12 @@ type BackgroundTaskConnection {
 
 input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
+  applyTransitionActions: Boolean
+  eventName: String
+  comment: String
+  shareOrganizationIds: [String!]
+  unshareOrganizationIds: [String!]
+  investigationId: String
 }
 
 input BackgroundTaskContextInput {
@@ -1347,6 +1370,7 @@ type PlatformEE {
 enum PlatformEESource {
   OPENCTI_LICENSE
   XTM_ONE_LICENSE
+  FILIGRAN_LICENSE
 }
 
 enum PlatformCriticalAlertType {
@@ -8758,7 +8782,9 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
+  fromId: String!
   from: StixObjectOrStixRelationshipOrCreator
+  toId: String!
   to: StixObjectOrStixRelationshipOrCreator
   x_opencti_inferences: [Inference]
   spec_version: String!
@@ -9103,6 +9129,8 @@ type Query {
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   workflowDefinition(entityType: String!, allowDraft: Boolean): WorkflowSchema
   workflowDefinitionPublished(entityType: String!): Boolean
+  workflowStatuses(entityType: String!): [Status!]!
+  workflowMassTransitions(entityType: String!, entityIds: [String!], filters: String, search: String, excludedIds: [String!]): [WorkflowTransition!]!
   workflowInstance(entityId: String!): WorkflowInstance
   allowedTransitions(entityId: String!): [WorkflowTransition!]!
   workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]!
@@ -9120,6 +9148,7 @@ type Query {
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
+  ingestionHealthSettings: IngestionHealthSettings
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
   catalogsRevisions: [CatalogRevision!]!
@@ -9298,7 +9327,7 @@ type Query {
   form(id: ID!): Form
   forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
   myNewsFeeds(first: Int, after: ID, orderBy: NewsFeedItemsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): NewsFeedItemConnection
-  myUnreadNewsFeedsCount: Int
+  myUnreadNewsFeedsCount(category: NewsFeedCategory): Int
   availableSecrets: [AvailableSecretInfo!]!
   authenticationProvider(id: String!): AuthenticationProvider
   authenticationProviders(first: Int, after: ID, orderBy: AuthenticationProviderOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): AuthenticationProviderConnection
@@ -9459,8 +9488,8 @@ type ExternalReferenceEditMutations {
   contextClean: ExternalReference
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
-  askEnrichment(connectorId: ID!): Work
-  askEnrichments(connectorIds: [ID!]!): [Work!]
+  askEnrichment(connectorId: ID!, investigationId: ID): Work
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!]
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, embedded: Boolean): File
 }
 
@@ -9515,8 +9544,8 @@ type StixCoreObjectEditMutations {
   clearAccessRestriction: StixCoreObject
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
   restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject
-  askEnrichment(connectorId: ID!): Work
-  askEnrichments(connectorIds: [ID!]!): [Work!]
+  askEnrichment(connectorId: ID!, investigationId: ID): Work
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!]
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean
@@ -9967,6 +9996,7 @@ type Mutation {
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
+  ingestionHealthSettingsEdit(input: IngestionHealthSettingsInput!): IngestionHealthSettings
   languageAdd(input: LanguageAddInput!): Language
   languageDelete(id: ID!): ID
   languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language
@@ -10070,6 +10100,7 @@ type Mutation {
   workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace
   workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace
   workspaceVariableDelete(id: ID!, variableId: ID!): Workspace
+  workInvestigationStatusEdit(workId: ID!, status: WorkInvestigationStatus!): Work
   malwareAnalysisAdd(input: MalwareAnalysisAddInput!): MalwareAnalysis
   malwareAnalysisDelete(id: ID!): ID
   malwareAnalysisFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): MalwareAnalysis
@@ -10260,7 +10291,7 @@ type Mutation {
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
   autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   contactUsXtmHub(message: String!): Success!
-  markAllNewsFeedItemsAsRead: Boolean
+  markAllNewsFeedItemsAsRead(category: NewsFeedCategory): Boolean
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
   oidcProviderAdd(input: OidcInput!): AuthenticationProvider
   oidcProviderEdit(id: ID!, input: OidcInput!): AuthenticationProvider
@@ -11015,14 +11046,33 @@ enum IngestionHealthCheckSeverity {
 type IngestionHealthCheck {
   health_check_code: String!
   health_check_message: String
+  health_check_metadata: JSON
   health_check_kind: IngestionHealthCheckKind!
   health_check_severity: IngestionHealthCheckSeverity!
+}
+
+type IngestionHealthCheckSetting {
+  health_check_code: String!
+  health_check_label: String!
+  health_check_kind: IngestionHealthCheckKind!
+  enabled: Boolean!
+}
+
+type IngestionHealthSettings {
+  notification_delay: Int!
+  disabled_health_checks: [String!]!
+  health_checks: [IngestionHealthCheckSetting!]!
 }
 
 type IngestionHealth {
   status: IngestionHealthStatus!
   status_since: DateTime!
   healthChecks: [IngestionHealthCheck!]!
+}
+
+input IngestionHealthSettingsInput {
+  notification_delay: Int
+  disabled_health_checks: [String!]
 }
 
 type Catalog implements InternalObject & BasicObject {
@@ -11701,6 +11751,7 @@ type NotificationCount {
 type NotificationEvent {
   message: String!
   instance_id: String
+  entity_internal_id: String
   operation: String!
   entity_type: String
 }
@@ -13174,6 +13225,7 @@ type Workspace implements InternalObject & BasicObject {
   toWidgetExport(widgetId: ID!): String!
   isShared: Boolean
   variables: [DashboardVariable!]!
+  enrichmentWorks(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup, entityIds: [String!]): WorkConnection
 }
 
 enum WorkspacesOrdering {
@@ -16681,6 +16733,7 @@ input FormAddInput {
 input FormSubmissionInput {
   formId: String!
   values: String!
+  files: [Upload!]
 }
 
 type FormSubmissionResponse {
@@ -16739,9 +16792,16 @@ type NewsFeedItemEdge {
   node: NewsFeedItem!
 }
 
+enum NewsFeedCategory {
+  BLOG_POST
+  RESOURCE
+}
+
 type NewsFeedCount {
   user_id: String
   count: Int
+  blog_post_count: Int
+  resource_count: Int
 }
 
 type Metric {
@@ -17888,6 +17948,7 @@ type ConfigPresetExportableItem {
   translatable: Boolean!
   dependsOn: [ConfigPresetItemReference!]!
   isDefault: Boolean!
+  isEnabled: Boolean
 }
 
 type ConfigPresetExportableItemEdge {
@@ -17910,6 +17971,7 @@ type ConfigPresetExportableType {
   label: String!
   description: String!
   group: ConfigPresetExportableGroup!
+  lockedByEnterpriseEdition: Boolean!
   items: [ConfigPresetExportableItem!]!
   itemsPageInfo: PageInfo!
 }
@@ -17927,6 +17989,7 @@ type ConfigPresetImportItem {
   exists: Boolean!
   conflict: Boolean!
   fields: [ConfigPresetImportField!]!
+  isEnabled: Boolean
   dependsOn: [ConfigPresetItemReference!]!
 }
 
@@ -17935,6 +17998,7 @@ type ConfigPresetImportType {
   label: String!
   description: String!
   group: ConfigPresetExportableGroup!
+  lockedByEnterpriseEdition: Boolean!
   items: [ConfigPresetImportItem!]!
   modes: [ConfigImportMode!]!
 }
@@ -17989,6 +18053,7 @@ type ConfigPresetImportResult {
   key: String!
   status: ConfigPresetImportResultStatus!
   reason: String
+  code: String
   label: String!
   translatable: Boolean!
   type_label: String!

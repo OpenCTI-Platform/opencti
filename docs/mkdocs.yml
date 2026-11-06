@@ -160,6 +160,7 @@ nav:
     - Breaking changes:
         - Index: deployment/breaking-changes.md
         - Migration guides:
+            - Elasticsearch 9 support: deployment/breaking-changes/elasticsearch-9-support.md
             - SSO Migration from environment variable to UI: deployment/breaking-changes/7.260224.0-SSO-authentication-migration.md
             - Metrics renamed in Client Python: deployment/breaking-changes/6.8-client-python-metrics.md
             - OpenBAS scenario generation: deployment/breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders.md
@@ -258,6 +259,7 @@ nav:
         - Policies: administration/policies.md
         - Users and RBAC:
           - Users and RBAC: administration/users.md
+          - Merging users: administration/users-merge.md
           - Protect sensitive configuration: administration/protect-sensitive-configuration.md
         - Data segregation:
           - Marking restriction: administration/segregation.md
@@ -271,6 +273,7 @@ nav:
         - Email templates: administration/email-templates.md
       - Customization:
         - Entity types: administration/entities.md
+        - Custom fields: administration/custom-fields.md
         - Rules engine: administration/reasoning.md
         - Notifiers:
           - Custom notifiers: administration/notifiers.md

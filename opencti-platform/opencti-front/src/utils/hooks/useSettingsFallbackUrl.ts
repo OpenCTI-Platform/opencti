@@ -4,6 +4,7 @@ import useGranted, {
   SETTINGS_SETACCESSES,
   SETTINGS_SETAUTH,
   SETTINGS_SETCASETEMPLATES,
+  SETTINGS_SETCUSTOMFIELDS,
   SETTINGS_SETCUSTOMIZATION,
   SETTINGS_SETDISSEMINATION,
   SETTINGS_SETKILLCHAINPHASES,
@@ -29,11 +30,13 @@ const useSettingsFallbackUrl = (): string => {
   const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
   const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
   const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
+  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMFIELDS]);
   const isGrantedToTaxonomies = isGrantedToLabels
     || isGrantedToVocabularies
     || isGrantedToKillChainPhases
     || isGrantedToCaseTemplates
-    || isGrantedToStatusTemplates;
+    || isGrantedToStatusTemplates
+    || isGrantedToCustomFields;
   const isGrantedToActivity = useGranted([SETTINGS_SECURITYACTIVITY]);
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToExperience = useGranted([SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
