@@ -7,6 +7,10 @@ import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
 import type { MemberAccessInput } from '../../../generated/graphql';
 import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/access';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
+import { addOrganizationRestriction } from '../../../domain/stix';
+import { internalLoadById } from '../../../database/middleware-loader';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
+import { UnsupportedError } from '../../../config/errors';
 
 /**
  * Resolves dynamic authorized member keys (AUTHOR, CREATORS, ASSIGNEES, PARTICIPANTS)
@@ -103,6 +107,34 @@ export const ActionRegistry: Record<string, ActionFunction> = {
       });
     }
   },
+  shareRequestedEntities: async (executionContext, params) => {
+    const { entity, context, user } = executionContext;
+    if (entity?.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI || !entity.x_opencti_request_access) {
+      throw UnsupportedError('shareRequestedEntities is only available on request access RFIs', { id: entity?.id });
+    }
+    const requestedEntityIds: string[] = JSON.parse(entity.x_opencti_request_access).entities ?? [];
+    // Reuses the dynamic key resolution of authorized members; the access right is irrelevant here.
+    const organizationIds = [...new Set(
+      resolveDynamicAuthorizedMembers(entity, (params?.organizations ?? []).map((id: string) => ({ id, access_right: 'view' })))
+        .map((member) => member.id),
+    )];
+    if (requestedEntityIds.length === 0 || organizationIds.length === 0) {
+      throw UnsupportedError('Nothing to share: no requested entity or no organization resolved', { id: entity.id });
+    }
+    // Every target is checked before the first share so a refused target leaves nothing shared.
+    for (const targetId of requestedEntityIds) {
+      const target = await internalLoadById<any>(context, user, targetId);
+      if (!target) {
+        throw UnsupportedError('You cant share the requested element (restrictions or markings)', { targetId });
+      }
+      if (target.restricted_members?.length) {
+        throw UnsupportedError('Element is not sharable at the moment (restricted)', { targetId });
+      }
+    }
+    for (const targetId of requestedEntityIds) {
+      await addOrganizationRestriction(context, user, targetId, organizationIds);
+    }
+  },
   /**
    * asyncBulkAction: spawns a BackgroundTask + Work via createListTask.
    * The slot is pushed onto ctx.pendingAsyncSlots (mutable accumulator).
@@ -194,6 +226,11 @@ export const ActionDefinitions: Record<string, ActionDefinition> = {
       })).optional(),
     }).optional(),
     allowedModes: ['sync', 'async'],
+  },
+  shareRequestedEntities: {
+    fn: ActionRegistry.shareRequestedEntities,
+    paramsSchema: z.object({ organizations: z.array(z.string()).min(1) }),
+    allowedModes: ['sync'],
   },
   asyncBulkAction: {
     fn: ActionRegistry.asyncBulkAction,
