@@ -2,18 +2,40 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const getSchemaURL = () => {
-  if (process.env.OPENCTI_MANIFEST_URL) {
-    return process.env.OPENCTI_MANIFEST_URL;
-  }
+const CONNECTORS_RAW_URL = 'https://raw.githubusercontent.com/OpenCTI-Platform/connectors';
+const MASTER_MANIFEST_URL = `${CONNECTORS_RAW_URL}/refs/heads/master/manifest.json`;
+const tagManifestUrl = (tag: string) => `${CONNECTORS_RAW_URL}/refs/tags/${tag}/manifest.json`;
 
+// --lts: rolling builds of an LTS branch use the manifest of the last LTS release (package.json version)
+// instead of the master one, so that xtm-composer deploys LTS connectors.
+const IS_LTS = process.argv.includes('--lts');
+
+const getPackageVersion = (): string => {
+  const packageJsonPath = fileURLToPath(new URL('../package.json', import.meta.url));
+  return JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')).version;
+};
+
+interface ManifestSource {
+  url: string;
+  // URL to use instead when `url` does not exist (HTTP 404)
+  fallbackUrl?: string;
+}
+
+const getManifestSource = (): ManifestSource => {
+  if (process.env.OPENCTI_MANIFEST_URL) {
+    return { url: process.env.OPENCTI_MANIFEST_URL };
+  }
+  // use tags instead of master if env from CI TAG is set
   if (process.env.TAG_VERSION) {
-    return `https://raw.githubusercontent.com/OpenCTI-Platform/connectors/refs/tags/${process.env.TAG_VERSION}/manifest.json`;
+    return { url: tagManifestUrl(process.env.TAG_VERSION) };
+  }
+  if (IS_LTS) {
+    // The connectors tag may not exist yet (version bumped during a release, before the connectors tag)
+    return { url: tagManifestUrl(getPackageVersion()), fallbackUrl: MASTER_MANIFEST_URL };
   }
   // rolling
-  return 'https://raw.githubusercontent.com/OpenCTI-Platform/connectors/refs/heads/master/manifest.json';
+  return { url: MASTER_MANIFEST_URL };
 };
-// use tags instead of master if env from circle TAG is set
 
 const getFetchHeaders = () => {
   const headersEnv = process.env.OPENCTI_MANIFEST_HEADERS;
@@ -29,13 +51,14 @@ const sleep = (ms: number) => new Promise((resolve) => {
 });
 
 // A transient network reset or a 5xx from GitHub must not fail the build: retry
-// those, fail at once on any other HTTP error.
-const fetchManifest = async (url: string): Promise<string> => {
+// those, fail at once on any other HTTP error. Returns null when `url` does not exist (HTTP 404).
+const fetchWithRetry = async (url: string): Promise<string | null> => {
   let lastError: unknown;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     try {
       const res = await fetch(url, { headers: getFetchHeaders() });
       if (res.ok) return await res.text();
+      if (res.status === 404) return null;
       lastError = new Error(`HTTP ${res.status}`);
       if (!RETRYABLE_STATUSES.has(res.status)) throw lastError;
     } catch (err) {
@@ -50,16 +73,23 @@ const fetchManifest = async (url: string): Promise<string> => {
   throw lastError;
 };
 
+const fetchManifest = async ({ url, fallbackUrl }: ManifestSource): Promise<string> => {
+  console.info(`➡️ Fetching manifest from: ${url}`);
+  const data = await fetchWithRetry(url);
+  if (data !== null) return data;
+  if (!fallbackUrl) throw new Error('HTTP 404');
+  console.warn(`⚠️ Manifest not found (HTTP 404) at ${url}, falling back to: ${fallbackUrl}`);
+  return fetchManifest({ url: fallbackUrl });
+};
+
 const OUTPUT_DIR = '../src/__generated__';
 const OUTPUT_FILE = 'opencti-manifest.json';
 
 const getConnectorManifest = async () => {
   console.info('📝 Getting connectors manifest');
-  const schemaUrl = getSchemaURL();
   try {
     // fetch file
-    console.info(`➡️ Fetching manifest from: ${schemaUrl}`);
-    const data = await fetchManifest(schemaUrl);
+    const data = await fetchManifest(getManifestSource());
 
     // try to parse as json
     console.info('➡️ Parsing manifest...');
