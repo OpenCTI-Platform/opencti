@@ -913,34 +913,35 @@ export const localAuthLockoutKeys = (emailHash: string) => ({
 });
 
 export type LocalAuthLockType = 'temporary' | 'permanent';
-export type LocalAuthLockoutTimings = { maxAttempts: number; windowMs: number; durationMs: number; maxDurationMs: number; finalAction: LocalAuthLockType };
+export type LocalAuthLockoutTimings = { maxAttempts: number; windowMs: number; finalLockMs: number; finalAction: LocalAuthLockType };
 
-// Records an attempt as a failure and locks the email before its password is checked, in one atomic step with the lock check,
-// so that concurrent attempts never check more than one password per lock. An accepted attempt clears or releases it.
-// - The failure window starts on the first failure and is never extended.
-// - Below the max attempts, each failure locks temporarily, with a duration doubled on each failure, up to the max duration
-//   (window / max attempts), so that the max attempts are always reached within the window.
-// - From the max attempts, the final action locks for the whole window. The lock holds the final action,
+// Records an attempt as a failure before its password is checked, in one atomic step with the lock check,
+// so that concurrent attempts never check more passwords than the max attempts. An accepted attempt clears or releases it.
+// - The failure window starts on the first failure and is never extended. A window of 0 disables it:
+//   the failures never expire, only an accepted login or an administrator resets them.
+// - Below the max attempts, a failure is only counted: no lock.
+// - At the max attempts, the final action locks the email for finalLockMs. The lock holds the final action,
 //   so that a permanent lock is reported the same way for an existing account and an unknown email.
+//   The failures expire with the lock, so that the count starts over once the lock is lifted.
 // Returns [allowed, remainingMs, lockType, isFinal]:
 // - [0, remaining, type, 0]: the email is locked, the attempt is neither checked nor counted
-// - [1, duration, type, isFinal]: the attempt is counted and locks the email, its password can be checked
+// - [1, 0, type, 0]: the attempt is counted, below the max attempts, its password can be checked
+// - [1, finalLockMs, type, 1]: the attempt reaches the max attempts and locks the email, its password can still be checked
 const LOCAL_AUTH_LOCKOUT_ATTEMPT_SCRIPT = `
 local lockRemaining = redis.call('PTTL', KEYS[2])
 if lockRemaining > 0 then
   return {0, lockRemaining, redis.call('GET', KEYS[2]), 0}
 end
 local failures = redis.call('INCR', KEYS[1])
-if failures == 1 then
+if failures == 1 and tonumber(ARGV[1]) > 0 then
   redis.call('PEXPIRE', KEYS[1], ARGV[1])
 end
 if failures >= tonumber(ARGV[2]) then
-  redis.call('SET', KEYS[2], ARGV[5], 'PX', ARGV[1])
-  return {1, tonumber(ARGV[1]), ARGV[5], 1}
+  redis.call('SET', KEYS[2], ARGV[4], 'PX', ARGV[3])
+  redis.call('PEXPIRE', KEYS[1], ARGV[3])
+  return {1, tonumber(ARGV[3]), ARGV[4], 1}
 end
-local duration = math.floor(math.min(tonumber(ARGV[3]) * (2 ^ (failures - 1)), tonumber(ARGV[4])))
-redis.call('SET', KEYS[2], 'temporary', 'PX', duration)
-return {1, duration, 'temporary', 0}
+return {1, 0, ARGV[4], 0}
 `;
 
 export const redisRecordLocalAuthAttempt = async (emailHash: string, timings: LocalAuthLockoutTimings) => {
@@ -952,8 +953,7 @@ export const redisRecordLocalAuthAttempt = async (emailHash: string, timings: Lo
     keys.lock,
     timings.windowMs,
     timings.maxAttempts,
-    timings.durationMs,
-    timings.maxDurationMs,
+    timings.finalLockMs,
     timings.finalAction,
   ) as [number, number, LocalAuthLockType, number];
   return { allowed: Number(allowed) === 1, remainingMs: Number(remainingMs), lockType, isFinal: Number(isFinal) === 1 };
