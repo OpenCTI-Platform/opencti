@@ -42,6 +42,7 @@ import {
   syncWorkflowInstanceFromExternalWrite,
   resolveScopedDefinitionId,
   assertScopeAllowed,
+  isStatusOrphaned,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { projectWorkflowState, resolveMappedStatusId } from '../../../src/modules/workflow/domain/workflow-projection';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
@@ -824,7 +825,7 @@ describe('Workflow Domain', () => {
 
     await setWorkflowDefinition(mockContext, mockUser, 'Incident', definition);
 
-    expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Incident', 'workflow-id');
+    expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Incident', 'workflow-id', StatusScope.Global);
     expect(updateAttribute).toHaveBeenCalledWith(
       mockContext,
       mockUser,
@@ -856,7 +857,7 @@ describe('Workflow Domain', () => {
 
     const result = await setWorkflowDefinition(mockContext, mockUser, 'Incident', definition);
 
-    expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Incident', undefined);
+    expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Incident', undefined, StatusScope.Global);
     expect(createEntity).toHaveBeenCalledWith(
       mockContext,
       mockUser,
@@ -5073,6 +5074,22 @@ describe('getWorkflowStatuses', () => {
     expect(result.map((status) => status.id)).toEqual(['status-new', 'status-analyse']);
   });
 
+  it('should list the request access statuses of the request access workflow for RequestAccess', async () => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id', request_access_workflow: { workflow_definition_id: 'ra-def-id' } });
+    (storeLoadById as any).mockImplementation(async (_context: any, _user: any, id: string) => ({
+      id,
+      published_version: { id: 'v1', content: JSON.stringify(id === 'ra-def-id' ? { initialState: 'new', states: [{ statusId: 'new' }], transitions: [] } : definition) },
+    }));
+    (fullEntitiesList as any).mockResolvedValue([
+      { ...makeStatus('status-new', 'new', 0), type: 'Case-Rfi' },
+      { ...makeStatus('status-new-request', 'new', 0, 'REQUEST_ACCESS'), type: 'Case-Rfi' },
+    ]);
+
+    const result = await getWorkflowStatuses(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess);
+
+    expect(result.map((status) => status.id)).toEqual(['status-new-request']);
+  });
+
   it('should list nothing when the entity type has no published workflow', async () => {
     (findByType as any).mockResolvedValue(undefined);
 
@@ -5682,7 +5699,7 @@ describe('scope-aware workflow definitions', () => {
 
       const result = await setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', definition, StatusScope.RequestAccess);
 
-      expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Case-Rfi', undefined);
+      expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Case-Rfi', undefined, StatusScope.RequestAccess);
       expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-setting-id', 'EntitySetting', [
         {
           key: 'request_access_workflow',
@@ -5710,7 +5727,7 @@ describe('scope-aware workflow definitions', () => {
 
       await setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', definition, StatusScope.RequestAccess);
 
-      expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Case-Rfi', 'ra-def');
+      expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Case-Rfi', 'ra-def', StatusScope.RequestAccess);
       expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'ra-def', 'WorkflowDefinition', expect.any(Array));
       expect(updateAttribute).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-setting-id', 'EntitySetting', expect.anything());
       expect(createEntity).not.toHaveBeenCalled();
@@ -5797,6 +5814,83 @@ describe('scope-aware workflow definitions', () => {
 
       expect(updateAttribute).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'ra-def', 'WorkflowDefinition', [{ key: 'draft_version', value: [] }]);
       expect(result).toMatchObject({ workflow_id: 'ra-def', published: true });
+    });
+  });
+
+  describe('status mapping and reconciliation', () => {
+    const versionOf = (id: string, stateIds: string[]) => ({
+      id,
+      timestamp: '',
+      createdBy: '',
+      content: JSON.stringify({
+        name: 'RA',
+        initialState: stateIds[0],
+        states: stateIds.map((statusId) => ({ statusId })),
+        transitions: stateIds.slice(1).map((to) => ({ from: stateIds[0], to, event: `to_${to}` })),
+      }),
+      validation_errors: [],
+    });
+    const statusOf = (id: string, template_id: string, scope: StatusScope) => ({ id, entity_type: ENTITY_TYPE_STATUS, type: 'Case-Rfi', scope, template_id, order: 0 });
+    // Applies the type, scope and template filters the way the store does; every other lookup is empty
+    const mockStatusStore = (statuses: ReturnType<typeof statusOf>[]) => {
+      (fullEntitiesList as any).mockImplementation(async (_context: any, _user: any, types: string[], opts: any) => {
+        if (!types.includes(ENTITY_TYPE_STATUS)) return [];
+        const filters: { key: string[]; values: string[] }[] = opts?.filters?.filters ?? [];
+        return statuses.filter((status: any) => filters.every(({ key, values }) => !['type', 'scope', 'template_id'].includes(key[0]) || values.includes(status[key[0]])));
+      });
+    };
+    const statusQueryScopes = () => (fullEntitiesList as any).mock.calls
+      .filter(([, , types]: any[]) => types.includes(ENTITY_TYPE_STATUS))
+      .map(([, , , opts]: any[]) => opts.filters.filters.find((filter: any) => filter.key[0] === 'scope').values);
+
+    it('publish of a RequestAccess definition creates REQUEST_ACCESS-scoped Status records only', async () => {
+      const draft = versionOf('ra-draft', ['new', 'approved']);
+      (findByType as any).mockResolvedValue(bothSetting);
+      (storeLoadById as any).mockResolvedValue({ id: 'ra-def', name: 'RA', draft_version: draft, all_versions: [draft] });
+      mockStatusStore([statusOf('global-new', 'new', StatusScope.Global)]);
+
+      await publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess);
+
+      expect(createStatus).toHaveBeenCalledTimes(2);
+      expect((createStatus as any).mock.calls.map(([, , , input]: any[]) => [input.template_id, input.scope])).toEqual([
+        ['new', StatusScope.RequestAccess],
+        ['approved', StatusScope.RequestAccess],
+      ]);
+      expect(updateAttribute).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'global-new', ENTITY_TYPE_STATUS, expect.anything());
+      expect(statusQueryScopes()).toEqual([[StatusScope.RequestAccess]]);
+    });
+
+    it('reconcileOrphanedStatuses with RequestAccess never deletes Global statuses', async () => {
+      const published = versionOf('ra-v1', ['new', 'approved', 'declined']);
+      const draft = versionOf('ra-v2', ['new', 'approved']);
+      (findByType as any).mockResolvedValue(bothSetting);
+      (storeLoadById as any).mockResolvedValue({ id: 'ra-def', name: 'RA', published_version: published, draft_version: draft, all_versions: [draft, published] });
+      mockStatusStore([
+        statusOf('ra-new', 'new', StatusScope.RequestAccess),
+        statusOf('ra-approved', 'approved', StatusScope.RequestAccess),
+        statusOf('ra-declined', 'declined', StatusScope.RequestAccess),
+        statusOf('global-declined', 'declined', StatusScope.Global),
+      ]);
+
+      await publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess);
+
+      const markedStatusIds = (updateAttribute as any).mock.calls
+        .filter(([, , , type, input]: any[]) => type === ENTITY_TYPE_STATUS && input[0].key === 'to_be_deleted_at')
+        .map(([, , id]: any[]) => id);
+      expect(markedStatusIds).toEqual(['ra-declined']);
+      expect(statusQueryScopes().every((values: string[]) => values.length === 1 && values[0] === StatusScope.RequestAccess)).toBe(true);
+    });
+
+    it('isStatusOrphaned checks a REQUEST_ACCESS status against the request-access definition', async () => {
+      (findByType as any).mockResolvedValue(bothSetting);
+      (storeLoadById as any).mockImplementation(async (_context: any, _user: any, id: string) => ({
+        id,
+        published_version: versionOf(`${id}-v1`, id === 'ra-def' ? ['new'] : ['other']),
+      }));
+      mockStatusStore([]);
+
+      expect(await isStatusOrphaned(mockContext, mockUser, statusOf('ra-new', 'new', StatusScope.RequestAccess) as any)).toBe(false);
+      expect(await isStatusOrphaned(mockContext, mockUser, statusOf('global-new', 'new', StatusScope.Global) as any)).toBe(true);
     });
   });
 });

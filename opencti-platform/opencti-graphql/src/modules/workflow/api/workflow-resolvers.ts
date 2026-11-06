@@ -30,10 +30,10 @@ const workflowResolvers = {
   Query: {
     workflowDefinition: (
       _: any,
-      { entityType, allowDraft = false, scope = StatusScope.Global }: { entityType: string; allowDraft?: boolean; scope?: StatusScope },
+      { entityType, allowDraft = false, scope }: { entityType: string; allowDraft?: boolean; scope?: StatusScope | null },
       context: AuthContext,
     ) => {
-      return getWorkflowDefinition(context, context.user!, entityType, allowDraft, scope);
+      return getWorkflowDefinition(context, context.user!, entityType, allowDraft, scope ?? StatusScope.Global);
     },
     workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return hasPublishedWorkflowDefinition(context, context.user!, entityType);
@@ -61,22 +61,22 @@ const workflowResolvers = {
   Mutation: {
     workflowDefinitionSet: (
       _: any,
-      { entityType, definition, scope = StatusScope.Global }: { entityType: string; definition: string; scope?: StatusScope },
+      { entityType, definition, scope }: { entityType: string; definition: string; scope?: StatusScope | null },
       context: AuthContext,
     ) => {
-      return setWorkflowDefinition(context, context.user!, entityType, definition, scope);
+      return setWorkflowDefinition(context, context.user!, entityType, definition, scope ?? StatusScope.Global);
     },
-    workflowDefinitionPublish: (_: any, { entityType, scope = StatusScope.Global }: { entityType: string; scope?: StatusScope }, context: AuthContext) => {
-      return publishWorkflowDefinition(context, context.user!, entityType, scope);
+    workflowDefinitionPublish: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope | null }, context: AuthContext) => {
+      return publishWorkflowDefinition(context, context.user!, entityType, scope ?? StatusScope.Global);
     },
     workflowMigrate: (_: any, { entityType, publish = false, overwrite = false }: { entityType: string; publish?: boolean; overwrite?: boolean }, context: AuthContext) => {
       return migrateWorkflowFromStatuses(context, context.user!, entityType, publish, overwrite);
     },
-    workflowDefinitionRestorePublished: (_: any, { entityType, scope = StatusScope.Global }: { entityType: string; scope?: StatusScope }, context: AuthContext) => {
-      return restorePublishedWorkflowDefinition(context, context.user!, entityType, scope);
+    workflowDefinitionRestorePublished: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope | null }, context: AuthContext) => {
+      return restorePublishedWorkflowDefinition(context, context.user!, entityType, scope ?? StatusScope.Global);
     },
-    workflowDefinitionDelete: (_: any, { entityType, scope = StatusScope.Global }: { entityType: string; scope?: StatusScope }, context: AuthContext) => {
-      return deleteWorkflowDefinition(context, context.user!, entityType, scope);
+    workflowDefinitionDelete: (_: any, { entityType, scope }: { entityType: string; scope?: StatusScope | null }, context: AuthContext) => {
+      return deleteWorkflowDefinition(context, context.user!, entityType, scope ?? StatusScope.Global);
     },
     triggerWorkflowEvent: (_: any, {
       entityId,

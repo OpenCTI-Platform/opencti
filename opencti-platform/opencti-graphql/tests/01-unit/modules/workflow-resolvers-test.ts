@@ -726,6 +726,23 @@ describe('workflow-resolvers', () => {
         expect(workflowDomain.deleteWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case-Rfi', StatusScope.RequestAccess);
       });
 
+      it('treats an explicit null scope as Global on every definition query and mutation', async () => {
+        const { Query, Mutation } = workflowResolvers;
+        const args = { entityType: 'Report', scope: null } as any;
+
+        await Query.workflowDefinition({}, { ...args, allowDraft: false }, mockContext);
+        await Mutation.workflowDefinitionSet({}, { ...args, definition: '{}' }, mockContext);
+        await Mutation.workflowDefinitionPublish({}, args, mockContext);
+        await Mutation.workflowDefinitionRestorePublished({}, args, mockContext);
+        await Mutation.workflowDefinitionDelete({}, args, mockContext);
+
+        expect(workflowDomain.getWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Report', false, StatusScope.Global);
+        expect(workflowDomain.setWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Report', '{}', StatusScope.Global);
+        expect(workflowDomain.publishWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Report', StatusScope.Global);
+        expect(workflowDomain.restorePublishedWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Report', StatusScope.Global);
+        expect(workflowDomain.deleteWorkflowDefinition).toHaveBeenCalledWith(mockContext, mockContext.user, 'Report', StatusScope.Global);
+      });
+
       it('workflowDefinitionPublish passes scope', async () => {
         await workflowResolvers.Mutation.workflowDefinitionPublish({}, { entityType: 'Case-Rfi', scope: StatusScope.RequestAccess }, mockContext);
 
