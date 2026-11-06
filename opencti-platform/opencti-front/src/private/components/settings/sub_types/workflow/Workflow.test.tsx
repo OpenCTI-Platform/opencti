@@ -95,13 +95,14 @@ const mockWorkflowDefinition = {
   published: false,
   errors: [],
 };
+let mockLoadedDefinition: typeof mockWorkflowDefinition | null = mockWorkflowDefinition;
 
 vi.mock('react-relay', async () => {
   const actual = await vi.importActual('react-relay');
   return {
     ...actual,
     usePreloadedQuery: vi.fn(() => ({
-      workflowDefinition: mockWorkflowDefinition,
+      workflowDefinition: mockLoadedDefinition,
       statusTemplates: {
         edges: [{ node: { id: 'status-1', name: 'Open', color: '#00FF00' } }],
       },
@@ -252,6 +253,17 @@ vi.mock('./RequestAccessValidatorGroup', () => ({
   default: () => <div data-testid="validator-group-field" />,
 }));
 
+vi.mock('./RequestAccessMigrationDialog', () => ({
+  default: ({ open, onClose, onMigrated }: { open: boolean; onClose: () => void; onMigrated: () => void }) => (
+    open ? (
+      <div data-testid="request-access-migration-dialog">
+        <button onClick={onMigrated}>migrated</button>
+        <button onClick={onClose}>close migration</button>
+      </div>
+    ) : null
+  ),
+}));
+
 // Mock MESSAGING$ to capture toast calls — must use vi.hoisted because vi.mock is hoisted
 const { mockNotifyError, mockNotifySuccess } = vi.hoisted(() => ({
   mockNotifyError: vi.fn(),
@@ -272,6 +284,7 @@ describe('Workflow Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useApiMutationCallIndex = 0;
+    mockLoadedDefinition = mockWorkflowDefinition;
     vi.mocked(useEnterpriseEdition).mockReturnValue(true);
     vi.mocked(useSubTypeOutletContext).mockReturnValue({
       subType: { settings: { availableSettings: ['workflow_configuration', 'request_access_workflow'] } },
@@ -874,6 +887,58 @@ describe('Workflow Component', () => {
 
       renderRfi({ scope: 'GLOBAL' });
       expect(screen.queryByTestId('validator-group-field')).not.toBeInTheDocument();
+    });
+
+    describe('migration entry point', () => {
+      beforeEach(() => {
+        mockNodes = [];
+        mockEdges = [];
+        mockLoadedDefinition = null;
+      });
+
+      it('offers to migrate the request access statuses when no request access workflow exists', async () => {
+        const user = userEvent.setup();
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        expect(screen.queryByTestId('request-access-migration-dialog')).not.toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
+
+        expect(screen.getByTestId('request-access-migration-dialog')).toBeInTheDocument();
+      });
+
+      it('shows the new workflow once the migration is done', async () => {
+        const user = userEvent.setup();
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
+        await user.click(screen.getByText('migrated'));
+
+        expect(mockOnRefetch).toHaveBeenCalledTimes(1);
+      });
+
+      it('closes the dialog without refetching when it is dismissed', async () => {
+        const user = userEvent.setup();
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
+        await user.click(screen.getByText('close migration'));
+
+        expect(screen.queryByTestId('request-access-migration-dialog')).not.toBeInTheDocument();
+        expect(mockOnRefetch).not.toHaveBeenCalled();
+      });
+
+      it('does not offer the migration on the Global scope', () => {
+        renderRfi({ scope: 'GLOBAL' });
+
+        expect(screen.queryByRole('button', { name: 'Migrate request access statuses' })).not.toBeInTheDocument();
+      });
+
+      it('does not offer the migration once a request access workflow exists', () => {
+        mockLoadedDefinition = mockWorkflowDefinition;
+        renderRfi({ scope: 'REQUEST_ACCESS' });
+
+        expect(screen.queryByRole('button', { name: 'Migrate request access statuses' })).not.toBeInTheDocument();
+      });
     });
   });
 });
