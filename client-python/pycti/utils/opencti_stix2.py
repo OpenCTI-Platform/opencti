@@ -40,6 +40,7 @@ from pycti.utils.opencti_stix2_utils import (
     STIX_CYBER_OBSERVABLE_MAPPING,
     STIX_META_OBJECTS,
     OpenCTIStix2Utils,
+    is_custom_field_input_value,
 )
 
 utc = pytz.UTC
@@ -66,6 +67,21 @@ EXPECTED_FUNCTIONAL_ERROR_DOC_CODES = [
 
 #: Maximum size of the item payload reported as bundle too large
 MAX_REPORTED_SOURCE_LENGTH = 50000
+
+#: STIX types of the containers whose object_refs prepare_export builds;
+#: an empty one is exported with object_refs: [] like the server-side converter.
+CONTAINER_STIX_TYPES = (
+    "report",
+    "note",
+    "opinion",
+    "observed-data",
+    "grouping",
+    "x-opencti-case-incident",
+    "x-opencti-feedback",
+    "x-opencti-case-rfi",
+    "x-opencti-case-rft",
+    "x-opencti-task",
+)
 
 #: STIX Extension ID for OpenCTI custom objects and properties
 STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
@@ -1721,7 +1737,9 @@ class OpenCTIStix2:
         """Extract the x_ custom properties of a STIX object as custom field inputs.
 
         Top-level properties take precedence over the ones nested in extensions.
-        The platform only keeps the ones matching a custom field definition.
+        The platform only keeps the ones matching a custom field definition, so
+        the values that can never match one (objects, such as ``x_opencti_files``)
+        are not sent.
 
         :param stix_object: STIX2 object
         :type stix_object: Dict
@@ -1732,8 +1750,10 @@ class OpenCTIStix2:
         seen_custom_fields = set()
         for key, value in stix_object.items():
             if key.startswith("x_") and value is not None:
-                custom_field_values.append({"field_name": key, "value": value})
+                # A top-level value takes precedence even if it cannot be sent
                 seen_custom_fields.add(key)
+                if is_custom_field_input_value(value):
+                    custom_field_values.append({"field_name": key, "value": value})
         # Also extract x_ custom properties nested inside all extensions
         extensions = stix_object.get("extensions")
         if isinstance(extensions, dict):
@@ -1745,7 +1765,7 @@ class OpenCTIStix2:
                     if (
                         key.startswith("x_")
                         and key not in seen_custom_fields
-                        and value is not None
+                        and is_custom_field_input_value(value)
                     ):
                         custom_field_values.append({"field_name": key, "value": value})
                         seen_custom_fields.add(key)
@@ -2470,6 +2490,14 @@ class OpenCTIStix2:
                     and "stix-ref-relationship" not in entity_object["parent_types"]
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
+        # OpenCTI permits empty containers, so retain object_refs for consistency with
+        # server-side exports (convertObjectReferences emits object_refs: [] for every container).
+        if (
+            entity["type"] in CONTAINER_STIX_TYPES
+            and "object_refs" not in entity
+            and "objects" not in entity
+        ):
+            entity["object_refs"] = []
         if "objects" in entity:
             del entity["objects"]
             del entity["objectsIds"]
@@ -3598,8 +3626,13 @@ class OpenCTIStix2:
             )
             if connector_ids is None:
                 connector_ids = item["connector_ids"]
+            investigation_id = self.opencti.get_attribute_in_extension(
+                "investigation_id", item
+            )
             self.opencti.stix_core_object.ask_enrichments(
-                element_id=item["id"], connector_ids=connector_ids
+                element_id=item["id"],
+                connector_ids=connector_ids,
+                investigation_id=investigation_id,
             )
         elif operation == "add_organizations":
             self.element_add_organizations(item)

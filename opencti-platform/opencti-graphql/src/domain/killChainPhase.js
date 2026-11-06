@@ -5,6 +5,10 @@ import { pageEntitiesConnection, storeLoadById } from '../database/middleware-lo
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
+import { generateStandardId } from '../schema/identifier';
+import { isUserHasCapability, SETTINGS_SETKILLCHAINPHASES } from '../utils/access';
+import { getDraftContext } from '../utils/draftContext';
+import { ForbiddenAccess } from '../config/errors';
 
 export const findById = (context, user, killChainPhaseId) => {
   return storeLoadById(context, user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
@@ -14,7 +18,18 @@ export const findKillChainPhasePaginated = (context, user, args) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], args);
 };
 
+// An import upserts the kill chain phases of the objects it writes: attaching an existing phase is part of updating the
+// knowledge, only creating a phase changes the taxonomy and needs the right to manage kill chain phases.
 export const addKillChainPhase = async (context, user, killChainPhase) => {
+  const canManage = isUserHasCapability(user, SETTINGS_SETKILLCHAINPHASES, { forceCapabilityInDraft: !!getDraftContext(context, user) });
+  if (!canManage) {
+    const standardId = generateStandardId(ENTITY_TYPE_KILL_CHAIN_PHASE, killChainPhase);
+    const existing = await storeLoadById(context, user, standardId, ENTITY_TYPE_KILL_CHAIN_PHASE);
+    if (!existing) {
+      throw ForbiddenAccess('You are not allowed to create kill chain phases.', { capability: SETTINGS_SETKILLCHAINPHASES });
+    }
+    return existing;
+  }
   const phaseOrder = killChainPhase.x_opencti_order ? killChainPhase.x_opencti_order : 0;
   const killChainPhaseToCreate = assoc('x_opencti_order', phaseOrder, killChainPhase);
   const element = await createEntity(context, user, killChainPhaseToCreate, ENTITY_TYPE_KILL_CHAIN_PHASE);

@@ -6,16 +6,13 @@ import type { Theme } from '../../../../../components/Theme';
 
 interface ConfigPresetImportMessagesProps {
   itemsCount: number;
-  // The expected results are being computed
-  isSimulating: boolean;
   isOtherImportRunning: boolean;
   startedBy?: string | null;
 }
 
-// What the admin reads above the actions of the preview: the compatibility of the bundle, who blocks Apply, the state of the selection
+// What the admin reads above the actions of the preview: the compatibility of the bundle and who blocks Apply
 const ConfigPresetImportMessages: FunctionComponent<ConfigPresetImportMessagesProps> = ({
   itemsCount,
-  isSimulating,
   isOtherImportRunning,
   startedBy,
 }) => {
@@ -30,7 +27,6 @@ const ConfigPresetImportMessages: FunctionComponent<ConfigPresetImportMessagesPr
       />
       {isOtherImportRunning && <Text variant="content-compact">{t_i18n('Apply is available once the import in progress is over.')}</Text>}
       {startedBy && <Text variant="content-compact">{t_i18n('Started by {name}', { values: { name: startedBy } })}</Text>}
-      {isSimulating && <Text variant="content-compact">{t_i18n('Checking what the import would do')}</Text>}
     </div>
   );
 };

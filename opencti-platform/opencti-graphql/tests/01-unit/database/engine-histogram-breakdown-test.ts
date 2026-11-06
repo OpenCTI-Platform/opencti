@@ -123,8 +123,8 @@ describe('engine: requests of the time series breakdowns', () => {
   beforeAll(async () => {
     const realGet = conf.get.bind(conf);
     vi.spyOn(conf, 'get').mockImplementation((key?: string) => {
-      if (key === 'elasticsearch:engine_selector') return 'elk';
-      if (key === 'elasticsearch:engine_check') return false;
+      // The stubbed Elasticsearch 8 client, without probing a server
+      if (key === 'elasticsearch:engine_client') return 'elasticsearch8';
       return realGet(key as string);
     });
     await searchEngineInit();

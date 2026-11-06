@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import * as Yup from 'yup';
+import { FormikConfig, FormikValues } from 'formik';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 
@@ -16,6 +17,19 @@ vi.mock('../../../../utils/hooks/useEntitySettings', async (importOriginal) => {
     useSchemaCreationValidation: (_id: string, shape: Yup.ObjectShape) => Yup.object().shape(shape),
   };
 });
+
+// Custom fields are tested separately: use the plain Formik, without the query of the custom field definitions.
+vi.mock('../custom_fields/CustomFieldsFormik', async (importOriginal) => {
+  const { Formik } = await import('formik');
+  return {
+    ...await importOriginal<typeof import('../custom_fields/CustomFieldsFormik')>(),
+    default: ({ entityType: _entityType, enabled: _enabled, ...props }: FormikConfig<FormikValues> & { entityType?: string; enabled?: boolean }) => <Formik {...props} />,
+  };
+});
+vi.mock('../custom_fields/CustomFieldValuesCreation', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 
 describe('Component: StixCoreRelationshipCreationForm', () => {
   const userContext = createMockUserContext({

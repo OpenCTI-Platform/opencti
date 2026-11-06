@@ -1,4 +1,3 @@
-import { CUSTOM_FIELDS_FEATURE_FLAG, isFeatureEnabled } from '../../config/conf';
 import { isEmptyField } from '../../database/utils';
 import type { AttributeDefinition } from '../../schema/attribute-definition';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -32,7 +31,7 @@ export const getCustomFieldAttributeDefinitions = async (
   attributeKeys: string[],
 ): Promise<Map<string, AttributeDefinition>> => {
   // Only load the definitions when a custom field is used
-  if (!isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) || !attributeKeys.some((key) => key.startsWith(CUSTOM_FIELD_PREFIX))) {
+  if (!attributeKeys.some((key) => key.startsWith(CUSTOM_FIELD_PREFIX))) {
     return new Map();
   }
   const definitions = await getCustomFieldDefinitionsForEntityType(context, user, entityType);

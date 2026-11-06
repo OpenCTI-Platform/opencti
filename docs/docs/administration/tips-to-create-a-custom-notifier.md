@@ -120,12 +120,16 @@ Each notifier template has access to four main variables:
                 {
                     "operation": "update",
                     "message": "[report] This is my Report title - John Doe adds menu issues in Label",
-                    "instance_id": "report--74192245-2790-59f5-84a0-d04ce249bb84"
+                    "instance_id": "report--74192245-2790-59f5-84a0-d04ce249bb84",
+                    "entity_internal_id": "5d1c3f6e-3c1b-4a8e-9f3d-5b1f0a2c7d10",
+                    "entity_type": "Report"
                 }
             ]
         }
     ]
     ```
+
+    `instance_id` is the id of the instance (the STIX standard id for knowledge events). The standard id changes when an attribute it is computed from changes (a rename for example), so build links to the platform on `entity_internal_id`, which never changes: `/dashboard/id/<%= event.entity_internal_id || event.instance_id %>` (the fallback covers notifications created before `entity_internal_id` existed).
     
 
 ### Notification

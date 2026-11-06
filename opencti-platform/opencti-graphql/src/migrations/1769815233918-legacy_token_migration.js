@@ -2,7 +2,7 @@ import { logMigration } from '../config/conf';
 import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { generateTokenHmac } from '../modules/user/user-domain';
+import { generateTokenHmac, maskToken } from '../modules/user/user-domain';
 import { elUpdate } from '../database/engine';
 
 const message = '[MIGRATION] Legacy Token Migration';
@@ -28,7 +28,7 @@ export const up = async (next) => {
           name: 'Legacy Token',
           hash: legacyTokenHash,
           created_at: new Date().toISOString(),
-          masked_token: `****${user.api_token.slice(-4)}`,
+          masked_token: maskToken(user.api_token),
           // Legacy tokens do not expire by default, or we could set a policy.
           // Acceptance Criteria says "ensure backward compatibility", so null (no expiration) is safest.
           expires_at: null,

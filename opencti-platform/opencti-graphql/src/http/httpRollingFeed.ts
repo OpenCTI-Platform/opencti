@@ -1,10 +1,9 @@
 import * as R from 'ramda';
 import type Express from 'express';
 import nconf from 'nconf';
-import { TAXIIAPI } from '../modules/user/user-domain';
 import { basePath } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
-import { isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER, TAXIIAPI } from '../utils/access';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -16,10 +15,11 @@ import { isNotEmptyField } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { isMultipleAttribute, isObjectAttribute } from '../schema/schema-attributes';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import { checkDraftInContext } from './httpServer-draft';
 import type { BasicStoreBase, BasicStoreEntityFeed, BasicStoreRelation } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
-import { FilterMode, FilterOperator } from '../generated/graphql';
-import { fullRelationsList } from '../database/middleware-loader';
+import { FilterMode } from '../generated/graphql';
+import { buildConnectionRoleFilter, fullRelationsList } from '../database/middleware-loader';
 import type { FilterGroupWithNested, FiltersWithNested } from '../database/middleware-loader';
 import { elFindByIds } from '../database/engine';
 import { READ_RELATIONSHIPS_INDICES } from '../database/utils';
@@ -93,7 +93,7 @@ export const resolveNeighborsForFeed = async (
       values: [],
       nested: [
         { key: 'internal_id', values: elementIds },
-        { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+        buildConnectionRoleFilter(relType, 'from'),
       ],
     };
     const toTypeFilter: FiltersWithNested = {
@@ -101,7 +101,7 @@ export const resolveNeighborsForFeed = async (
       values: [],
       nested: [
         { key: 'types', values: [targetType] },
-        { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+        buildConnectionRoleFilter(relType, 'to'),
       ],
     };
     const filtersFrom: FilterGroupWithNested = {
@@ -115,7 +115,7 @@ export const resolveNeighborsForFeed = async (
       values: [],
       nested: [
         { key: 'internal_id', values: elementIds },
-        { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+        buildConnectionRoleFilter(relType, 'to'),
       ],
     };
     const fromTypeFilter: FiltersWithNested = {
@@ -123,7 +123,7 @@ export const resolveNeighborsForFeed = async (
       values: [],
       nested: [
         { key: 'types', values: [targetType] },
-        { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+        buildConnectionRoleFilter(relType, 'from'),
       ],
     };
     const filtersTo: FilterGroupWithNested = {
@@ -313,6 +313,11 @@ const initHttpRollingFeeds = (app: Express.Application) => {
           throw ForbiddenAccess();
         }
       }
+      // This route doesn't go through the GraphQL `checkDraftInContext` middleware,
+      // so validate the draft context explicitly before it is used to resolve entities
+      // below. Without this guard a caller could forge an `opencti-draft-id` header and
+      // leak staged content from a draft they don't have access to.
+      await checkDraftInContext(context);
       // User is available or feed is public
       const user = await resolveUserForFeed(context, feed);
       if (feed.feed_public) {

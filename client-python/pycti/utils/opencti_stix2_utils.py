@@ -15,6 +15,26 @@ from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpressio
 datefinder.ValueError = ValueError, OverflowError
 
 
+def is_custom_field_input_value(value: Any) -> bool:
+    """Tell whether the value of a STIX ``x_*`` property can fill a custom field.
+
+    A custom field holds a scalar (string, number, boolean or date), or a list of
+    strings for a multi select. An object, or a list holding one, never matches a
+    custom field (e.g. the files of ``x_opencti_files`` with their base64 content,
+    already sent as uploads) and is not sent as a custom field value.
+
+    :param value: value of a STIX custom property
+    :type value: Any
+    :return: True if the value can be sent as a custom field value
+    :rtype: bool
+    """
+    if value is None or isinstance(value, dict):
+        return False
+    if isinstance(value, (list, tuple)):
+        return all(not isinstance(item, (dict, list, tuple)) for item in value)
+    return True
+
+
 def build_custom_field_values_input(
     custom_field_values: Optional[List[Dict]],
     custom_properties: Any,
@@ -58,7 +78,7 @@ def build_custom_field_values_input(
         for key, value in custom_properties.items()
         if isinstance(key, str)
         and key.startswith("x_")
-        and value is not None
+        and is_custom_field_input_value(value)
         and key not in explicit_names
     ]
     if len(converted) == 0:
