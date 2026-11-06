@@ -1,7 +1,7 @@
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
-import React, { type Dispatch, type SetStateAction, Suspense, useCallback, useEffect } from 'react';
+import React, { type Dispatch, type SetStateAction, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from '@mui/icons-material';
 import { ButtonGroup } from '@mui/material';
 import IconButton from '@common/button/IconButton';
@@ -11,6 +11,7 @@ import { useFormatter } from '../i18n';
 import { NumberOfElements } from '../../utils/hooks/useLocalStorage';
 import NestedMenuButton from '../nested_menu/NestedMenuButton';
 import { useDataTableContext } from './components/DataTableContext';
+import DataTableColumnsPanel from './components/DataTableColumnsPanel';
 
 const DataTablePagination = ({
   page,
@@ -27,8 +28,8 @@ const DataTablePagination = ({
 
   const {
     columns,
-    setColumns,
     resetColumns,
+    isColumnsCustomized,
     useDataTablePaginationLocalStorage: {
       viewStorage: {
         pageSize,
@@ -62,24 +63,8 @@ const DataTablePagination = ({
     }
   }, [page, pageSize]);
 
-  const handleToggleVisibility = (columnId: string) => {
-    setColumns((prevColumns) => prevColumns.map((column) => (
-      column.id === columnId
-        ? { ...column, visible: !column.visible }
-        : column
-    )));
-  };
-
-  const computeDataColumnOptions = () => (columns ?? [])
-    .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
-    .map((column) => ({
-      value: column.id,
-      label: t_i18n(column.label ?? column.id),
-      selected: column.visible,
-      onClick: () => handleToggleVisibility(column.id),
-      menuLevel: 1,
-      keepMenuOpen: true,
-    }));
+  const settingsRef = useRef<HTMLDivElement>(null);
+  const [columnsPanelAnchor, setColumnsPanelAnchor] = useState<HTMLElement | null>(null);
 
   const resetTable = () => {
     resetColumns();
@@ -98,7 +83,8 @@ const DataTablePagination = ({
             value: 'menu-columns',
             label: t_i18n('Columns'),
             menuLevel: 0,
-            nestedOptions: computeDataColumnOptions(),
+            // Opens the "Manage columns" panel, anchored under the settings button.
+            onClick: () => setColumnsPanelAnchor(settingsRef.current),
           }] : []),
     {
       value: 'menu-rows-per-page',
@@ -230,12 +216,34 @@ const DataTablePagination = ({
         </IconButton>
       </ButtonGroup>
       <Suspense>
-        <NestedMenuButton
-          menuButtonLabel={t_i18n('Table settings')}
-          menuButtonChildren={<FiligranIcon icon={TableTuneIcon} size={20} />}
-          options={nestedMenuOptions}
-          menuLevels={2}
-        />
+        <Box ref={settingsRef} sx={{ position: 'relative', display: 'flex' }}>
+          <NestedMenuButton
+            menuButtonLabel={t_i18n('Table settings')}
+            menuButtonChildren={<FiligranIcon icon={TableTuneIcon} size={20} />}
+            options={nestedMenuOptions}
+            menuLevels={2}
+          />
+          {isColumnsCustomized && (
+            // Signals a customized view: the columns differ from the default ones of the list.
+            <Box
+              data-testid="columns-customized-dot"
+              aria-hidden
+              sx={{
+                position: 'absolute',
+                top: 4,
+                right: 4,
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: 'primary.main',
+                pointerEvents: 'none',
+              }}
+            />
+          )}
+        </Box>
+        {columnsPanelAnchor && (
+          <DataTableColumnsPanel anchorEl={columnsPanelAnchor} onClose={() => setColumnsPanelAnchor(null)} />
+        )}
       </Suspense>
     </Box>
   );

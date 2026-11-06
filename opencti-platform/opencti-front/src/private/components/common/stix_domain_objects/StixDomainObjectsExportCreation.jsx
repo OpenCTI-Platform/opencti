@@ -2,6 +2,7 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import Slide from '@mui/material/Slide';
+import Typography from '@mui/material/Typography';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import { filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
@@ -91,7 +92,8 @@ class StixDomainObjectsExportCreation extends Component {
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
 
-    const updatedExportContext = { ...exportContext };
+    // The labels of the visible columns only describe the "Current view" in this dialog.
+    const { visible_columns_labels: _, ...updatedExportContext } = exportContext ?? {};
     // Only forward visible_columns for a "Current view" CSV export. The column
     // selector is hidden for other formats, so clear it otherwise (including
     // after the format is switched away from CSV) to avoid sending a stale
@@ -221,6 +223,13 @@ class StixDomainObjectsExportCreation extends Component {
                             </SelectItem>
                           </Field>
                         ) : undefined}
+                    {visibleColumnExportEnabledFormats.includes(values.format)
+                      && values.columns === 'view'
+                      && (this.props.exportContext?.visible_columns_labels ?? []).length > 0 && (
+                      <Typography variant="caption" color="textSecondary" component="p" sx={{ marginTop: 1 }}>
+                        {`${this.props.exportContext.visible_columns_labels.length} ${t('columns, in the displayed order:')} ${this.props.exportContext.visible_columns_labels.join(', ')}. ${t('Choose "All attributes" to export every attribute.')}`}
+                      </Typography>
+                    )}
                     <DialogActions>
                       <Button
                         variant="secondary"

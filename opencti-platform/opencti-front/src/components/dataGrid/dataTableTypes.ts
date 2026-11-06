@@ -36,6 +36,8 @@ export interface DataTableColumn {
   visible?: boolean;
   order: number;
   lastX?: number;
+  /** Kind of value, displayed next to the column name when managing columns (e.g. Date, References). */
+  typeLabel?: string;
 }
 
 export type DataTableColumns = DataTableColumn[];
@@ -65,6 +67,15 @@ export interface DataTableContextProps {
   rootRef?: DataTableProps['rootRef'];
   createButton?: DataTableProps['createButton'];
   resetColumns: () => void;
+  /** Columns that can be displayed: the default ones then the attributes that can be added, by id. */
+  columnsCatalog: Record<string, Partial<DataTableColumn>>;
+  defaultColumnIds: string[];
+  /** The main identifying column (e.g. name), which cannot be hidden. */
+  lockedColumnId?: string;
+  isColumnsCustomized: boolean;
+  /** Displays these columns, in this order: the other ones of the catalog are not displayed. */
+  applyColumnsSelection: (selection: { id: string; visible: boolean }[]) => void;
+  columnsScopeLabel?: string;
   disableNavigation: DataTableProps['disableNavigation'];
   disableToolBar: DataTableProps['disableToolBar'];
   disableColumnMenu: DataTableProps['disableColumnMenu'];
@@ -89,6 +100,10 @@ export interface DataTableContextProps {
 
 export interface DataTableProps {
   dataColumns: Record<string, Partial<DataTableColumn>>;
+  /** Attributes the user can add as columns, in addition to the default ones (dataColumns). */
+  availableColumns?: Record<string, Partial<DataTableColumn>>;
+  /** Name of the list in the columns panel (e.g. Reports). */
+  columnsScopeLabel?: string;
   resolvePath: (data: any) => any;
   storageKey: string;
   initialValues: LocalStorage;

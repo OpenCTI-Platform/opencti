@@ -220,6 +220,7 @@ const meUserFragment = graphql`
     submenu_show_icons
     submenu_auto_collapse
     monochrome_labels
+    list_columns
     default_dashboards {
       id
       name

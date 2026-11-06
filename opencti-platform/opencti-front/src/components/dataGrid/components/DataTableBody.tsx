@@ -144,6 +144,8 @@ const DataTableBody = ({
   const endActionsWidth = actionsColumnWidth ?? SELECT_COLUMN_SIZE;
   const rowWidth = useMemo(() => (
     Math.floor(columns.reduce((acc, col) => {
+      // A hidden column takes no room in the row.
+      if (!col.visible) return acc;
       if (col.percentWidth) {
         return acc + tableWidth * (col.percentWidth / 100);
       }
