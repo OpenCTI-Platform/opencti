@@ -1191,9 +1191,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elastic/elasticsearch-v9@npm:@elastic/elasticsearch@9.4.3":
-  version: 9.4.3
-  resolution: "@elastic/elasticsearch@npm:9.4.3"
+"@elastic/elasticsearch-v9@npm:@elastic/elasticsearch@9.5.1":
+  version: 9.5.1
+  resolution: "@elastic/elasticsearch@npm:9.5.1"
   dependencies:
     "@elastic/transport": "npm:^9.4.0"
     tslib: "npm:^2.4.0"
@@ -1202,7 +1202,7 @@ __metadata:
   peerDependenciesMeta:
     apache-arrow:
       optional: true
-  checksum: 10c0/acc5e24d22a5682eaeaa66e0492b63bed96e863f527d0f4ea017c95a6641786930e768505114486f55ccf7f0bb32bc678fb621f3cbe64b834cb1f01fd9b8e42f
+  checksum: 10c0/6e379c22b799edfec8315c6a4fa9bed02e9e2eb8c7c7d6d2644ba3638ccad47cac7e9da9ef8961ff91f91f820e8155be77bfd8985d8b531bafe830447f659a38
   languageName: node
   linkType: hard
 
@@ -18187,7 +18187,7 @@ __metadata:
     "@aws-sdk/lib-storage": "npm:3.1161.0"
     "@aws-sdk/types": "npm:3.975.0"
     "@elastic/elasticsearch": "npm:8.19.2"
-    "@elastic/elasticsearch-v9": "npm:@elastic/elasticsearch@9.4.3"
+    "@elastic/elasticsearch-v9": "npm:@elastic/elasticsearch@9.5.1"
     "@escape.tech/graphql-armor": "npm:3.2.0"
     "@eslint/js": "npm:10.0.1"
     "@graphql-codegen/cli": "npm:7.4.6"
