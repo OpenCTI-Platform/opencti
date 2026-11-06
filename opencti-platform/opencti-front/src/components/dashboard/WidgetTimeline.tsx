@@ -14,7 +14,7 @@ import { itemColor } from '../../utils/Colors';
 import { useFormatter } from '../i18n';
 import FieldOrEmpty from '../FieldOrEmpty';
 import Card from '../common/card/Card';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../Theme';
 
 interface WidgetTimelineProps {

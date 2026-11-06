@@ -6,12 +6,13 @@ import ChartExportPopover from '../../private/components/common/charts/ChartExpo
 import { ErrorBoundary } from '@components/Error';
 import WidgetNoData from './WidgetNoData';
 import Stack from '@mui/material/Stack';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import Tag from '@common/tag/Tag';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
-import { Tooltip } from '@mui/material';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@filigran/design-system';
+
 interface WidgetContainerProps {
   children: ReactNode;
   height?: CSSProperties['height'];
@@ -42,16 +43,22 @@ const WidgetContainer: FunctionComponent<WidgetContainerProps> = ({
     ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.5) }}>
           {title}
-          <Tooltip
-            title={warning}
-          >
-            <ReportProblemOutlinedIcon
-              style={{
-                fontSize: 15,
-                color: theme.palette.designSystem.alert.warning.primary,
-              }}
-            />
-          </Tooltip>
+          {/* Its own provider: the widgets of the public dashboards are drawn outside the one of the application */}
+          <TooltipProvider>
+            <Tooltip>
+              {/* A bare button: reached with the keyboard too, and named with the warning for the screen readers */}
+              <TooltipTrigger type="button" aria-label={warning} style={{ display: 'inline-flex' }}>
+                <ReportProblemOutlinedIcon
+                  aria-hidden
+                  style={{
+                    fontSize: 15,
+                    color: theme.palette.designSystem.alert.warning.primary,
+                  }}
+                />
+              </TooltipTrigger>
+              <TooltipContent>{warning}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       )
     : title;

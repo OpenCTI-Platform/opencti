@@ -10,7 +10,7 @@ import Tag from '../../../components/common/tag/Tag';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Label from '../../../components/common/label/Label';
 import FieldOrEmpty from '../../../components/FieldOrEmpty';
 import { EMPTY_VALUE } from '../../../utils/String';

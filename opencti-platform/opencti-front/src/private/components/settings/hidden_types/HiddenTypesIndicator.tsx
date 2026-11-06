@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import type { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
@@ -30,13 +29,9 @@ const hiddenTypesIndicatorQuery = graphql`
   }
 `;
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  indication: {
-    fontSize: 12,
-    color: theme.palette.primary.main,
-  },
+const Indication = styled('span')(({ theme }) => ({
+  fontSize: 12,
+  color: theme.palette.primary.main,
 }));
 
 interface HiddenTypesIndicatorComponentProps {
@@ -49,7 +44,6 @@ const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorCompo
   queryRef,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   const data = usePreloadedQuery<HiddenTypesIndicatorQuery>(hiddenTypesIndicatorQuery, queryRef);
   const groups = data.groups?.edges?.map((e) => e?.node) ?? [];
@@ -79,14 +73,14 @@ const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorCompo
     <span>
       {(groupsName.length > 0 || orgsName.length > 0)
         && (
-          <span className={classes.indication}>
+          <Indication>
               &emsp;
             {`(${t_i18n('Hidden in ')}`}
             {groupsName.length > 0 && `${t_i18n('Groups')} : ${groupsName}`}
             {(groupsName.length > 0 && orgsName.length > 0) && `${t_i18n(' & ')}`}
             {orgsName.length > 0 && `${t_i18n('Organizations')} : ${orgsName}`}
             )
-          </span>
+          </Indication>
         )
       }
     </span>

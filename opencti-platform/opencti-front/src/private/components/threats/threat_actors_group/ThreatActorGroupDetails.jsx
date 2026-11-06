@@ -27,7 +27,7 @@ class ThreatActorGroupDetailsComponent extends Component {
     return (
       <Card title={t('Details')}>
         <Grid container={true} spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t('Description')}
             </Label>
@@ -36,14 +36,14 @@ class ThreatActorGroupDetailsComponent extends Component {
               limit={hasImages ? 400 : 600}
             />
           </Grid>
-          <Grid item xs={hasImages ? 7 : 6}>
+          <Grid size={hasImages ? 7 : 6}>
             <Grid container={true} spacing={2}>
               {hasImages && (
-                <Grid item xs={4}>
+                <Grid size={4}>
                   <ImageCarousel data={threatActorGroup} />
                 </Grid>
               )}
-              <Grid item xs={hasImages ? 8 : 12}>
+              <Grid size={hasImages ? 8 : 12}>
                 <Label>
                   {t('Threat actor types')}
                 </Label>
@@ -69,7 +69,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               </Grid>
             </Grid>
           </Grid>
-          <Grid item xs={hasImages ? 5 : 6}>
+          <Grid size={hasImages ? 5 : 6}>
             <ThreatActorGroupLocation threatActorGroup={threatActorGroup} />
             <Label
               sx={{ marginTop: 2 }}
@@ -86,7 +86,7 @@ class ThreatActorGroupDetailsComponent extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={2}>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label
               sx={{ marginTop: 2 }}
             >
@@ -99,7 +99,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label
               sx={{ marginTop: 2 }}
             >
@@ -112,7 +112,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label
               sx={{ marginTop: 2 }}
             >
@@ -125,7 +125,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label>
               {t('Roles')}
             </Label>
@@ -133,13 +133,13 @@ class ThreatActorGroupDetailsComponent extends Component {
               list={threatActorGroup.roles}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label>
               {t('Score')}
             </Label>
             <ItemScore score={threatActorGroup.x_opencti_score} />
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label>
               {t('Goals')}
             </Label>
@@ -147,7 +147,7 @@ class ThreatActorGroupDetailsComponent extends Component {
               list={threatActorGroup.goals}
             />
           </Grid>
-          <Grid item xs={4}>
+          <Grid size={4}>
             <Label>
               {t('Secondary motivations')}
             </Label>

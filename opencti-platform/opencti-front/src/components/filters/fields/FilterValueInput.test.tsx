@@ -240,7 +240,7 @@ describe('FilterValueInput with dashboard variables (date and free inputs)', () 
     const filter = buildFilter('created_at', 'lte', [token(DATE_VARIABLE_ID)]);
     const { user } = renderInput(filter, { variables: [dateVariable] });
     await user.click(fixedRadio() as HTMLElement);
-    expect(screen.getByLabelText('Creation date')).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Creation date' })).toBeInTheDocument();
     expect(dateFiltersValueForDisplay).not.toHaveBeenCalledWith(expect.stringContaining('$var:'), expect.anything());
   });
 

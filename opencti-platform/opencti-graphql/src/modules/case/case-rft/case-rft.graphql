@@ -100,7 +100,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
   filesFromTemplate(
     first: Int
     prefixMimeType: String

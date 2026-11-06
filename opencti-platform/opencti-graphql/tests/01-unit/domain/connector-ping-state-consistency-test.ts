@@ -3,6 +3,8 @@ import { pingConnector, resetStateConnector } from '../../../src/modules/connect
 import { patchAttribute } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { registerConnectorQueues, purgeConnectorQueues } from '../../../src/modules/connector/connector-rabbitmq';
+import { redisSetConnectorErrors } from '../../../src/modules/connector/connector-redis';
+import { logApp } from '../../../src/config/conf';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
@@ -48,6 +50,7 @@ vi.mock('../../../src/modules/connector/connector-redis', async (importOriginal)
   ...(await importOriginal<typeof import('../../../src/modules/connector/connector-redis')>()),
   redisSetConnectorHeartbeat: vi.fn(),
   redisGetConnectorHeartbeat: vi.fn().mockResolvedValue(null),
+  redisSetConnectorErrors: vi.fn(),
 }));
 
 vi.mock('../../../src/listener/UserActionListener', () => ({
@@ -133,5 +136,65 @@ describe('pingConnector', () => {
 
     expect(patchAttribute).toHaveBeenCalledWith(testContext, testUser, 'connector-1', 'Connector', { connector_state_reset: false });
     expect(result.connector_state).toBe('');
+  });
+});
+
+describe('pingConnector errors', () => {
+  const baseConnectorInfo = { run_and_terminate: false, buffering: false, queue_threshold: 500, queue_messages_size: 0 };
+  const connectorInfo = {
+    ...baseConnectorInfo,
+    errors: [
+      { code: 'RATE_LIMITED', message: 'Too many requests', criticity: 1 },
+      { code: '   ', message: 'blank code', criticity: 3 },
+      { code: 'API_UNREACHABLE', message: 'Source API returned 503', criticity: 2 },
+    ],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(storeLoadById).mockReset();
+    vi.mocked(patchAttribute).mockReset();
+    vi.mocked(redisSetConnectorErrors).mockReset();
+    vi.mocked(registerConnectorQueues).mockResolvedValue(undefined as never);
+    vi.mocked(storeLoadById).mockResolvedValueOnce({ ...baseConnector } as never);
+    vi.mocked(patchAttribute).mockResolvedValueOnce({ element: { ...baseConnector } } as never);
+  });
+
+  it('should replace the recorded errors with the sanitized list, in redis and not in elasticsearch', async () => {
+    await pingConnector(testContext, testUser, 'connector-1', 'state', connectorInfo);
+
+    expect(redisSetConnectorErrors).toHaveBeenCalledWith('connector-1', [
+      { code: 'API_UNREACHABLE', message: 'Source API returned 503', criticity: 2 },
+      { code: 'RATE_LIMITED', message: 'Too many requests', criticity: 1 },
+    ]);
+    const patch = vi.mocked(patchAttribute).mock.calls[0][4] as { connector_info: Record<string, unknown> };
+    expect(patch.connector_info).not.toHaveProperty('errors');
+  });
+
+  it('should clear the recorded errors on an explicit empty list', async () => {
+    await pingConnector(testContext, testUser, 'connector-1', 'state', { ...baseConnectorInfo, errors: [] });
+
+    expect(redisSetConnectorErrors).toHaveBeenCalledWith('connector-1', []);
+  });
+
+  it.each([
+    ['without an errors list', baseConnectorInfo],
+    ['with a null errors list', { ...baseConnectorInfo, errors: null }],
+    ['without connector info (legacy ping)', undefined],
+  ])('should leave the recorded errors untouched on a ping %s', async (_, info) => {
+    await pingConnector(testContext, testUser, 'connector-1', 'state', info as never);
+
+    expect(redisSetConnectorErrors).not.toHaveBeenCalled();
+  });
+
+  it('should not fail the ping when errors cannot be recorded', async () => {
+    const warnSpy = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+    vi.mocked(redisSetConnectorErrors).mockRejectedValueOnce(new Error('redis down'));
+
+    const result = await pingConnector(testContext, testUser, 'connector-1', 'state', connectorInfo);
+
+    expect(result.id).toBe('connector-1');
+    expect(warnSpy).toHaveBeenCalledWith('[OPENCTI-MODULE] Unable to record connector errors', expect.objectContaining({ connectorId: 'connector-1' }));
+    warnSpy.mockRestore();
   });
 });

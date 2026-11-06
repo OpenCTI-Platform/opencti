@@ -189,11 +189,12 @@ describe('Function extractObjectsPirsFromInputs()', () => {
   });
 });
 
+// The process time zone must never leak into the emitted buckets: Elasticsearch
+// aggregates on UTC calendar boundaries, and the front-end labels the returned
+// instants as UTC. See https://github.com/OpenCTI-Platform/opencti/issues/12150
+const SERVER_TIME_ZONES = ['UTC', 'Europe/Paris', 'America/New_York', 'Asia/Tokyo', 'Pacific/Kiritimati'];
+
 describe('Function fillTimeSeries()', () => {
-  // The process time zone must never leak into the emitted buckets: Elasticsearch
-  // aggregates on UTC calendar boundaries, and the front-end labels the returned
-  // instants as UTC. See https://github.com/OpenCTI-Platform/opencti/issues/12150
-  const SERVER_TIME_ZONES = ['UTC', 'Europe/Paris', 'America/New_York', 'Asia/Tokyo', 'Pacific/Kiritimati'];
   const initialTimeZone = process.env.TZ;
 
   const withTimeZone = <T>(timeZone: string, fn: () => T): T => {
@@ -315,6 +316,23 @@ describe('Function fillTimeSeries() range helpers', () => {
     expect(fillTimeSeries(startDate, endDate, 'day', [])).toHaveLength(5);
   });
 
+  it('should count no interval for a period ending before it starts, as its axis holds none', () => {
+    expect(countTimeSeriesIntervals(endDate, startDate, 'day')).toEqual(0);
+    expect(fillTimeSeries(endDate, startDate, 'day', [])).toHaveLength(0);
+  });
+
+  it('should count no interval for an invalid date, as its axis holds none', () => {
+    expect(countTimeSeriesIntervals(new Date('invalid'), endDate, 'day')).toEqual(0);
+    expect(fillTimeSeries(new Date('invalid'), endDate, 'day', [])).toHaveLength(0);
+  });
+
+  it('should refuse to count an interval the date histogram does not support, as the axis refuses it', () => {
+    expect(() => countTimeSeriesIntervals(startDate, endDate, 'minute')).toThrow(expect.objectContaining({
+      message: expect.stringContaining('Unsupported interval'),
+      extensions: expect.objectContaining({ code: 'FUNCTIONAL_ERROR' }),
+    }));
+  });
+
   it('should keep known values and fill missing dates with zero', () => {
     const series = fillTimeSeries(startDate, endDate, 'day', [
       { date: '2026-01-02', value: 3 },
@@ -359,20 +377,25 @@ describe('Function buildTimeSeriesAxis()', () => {
     }
   });
 
-  // The axis as it was built with moment for every bucket: the same range, then add(i, interval) formatted
-  // as the date histogram keys and truncated with startOf(interval)
+  // The axis as it was built with moment for every bucket: the same range, counted as the former loop
+  // did (both bounds formatted as keys, then diffed in intervals), then add(i, interval) formatted as
+  // the date histogram keys and truncated with startOf(interval)
   const TRUNCATED_STARTS: Record<string, moment.unitOfTime.StartOf> = { quarter: 'quarter', week: 'isoWeek', hour: 'hour' };
+  const TRUNCATED_ENDS: Record<string, moment.unitOfTime.StartOf> = { quarter: 'quarter', week: 'isoWeek' };
   const KEY_FORMATS: Record<string, string> = { year: 'YYYY', quarter: 'YYYY-MM', month: 'YYYY-MM', week: 'YYYY-MM-DD', day: 'YYYY-MM-DD', hour: 'YYYY-MM-DD HH:mm:ss' };
   const momentAxis = (startDate: Date, endDate: Date, interval: string) => {
     const truncation = TRUNCATED_STARTS[interval];
     const start = truncation ? moment.utc(startDate).startOf(truncation) : moment.utc(startDate);
+    const end = TRUNCATED_ENDS[interval] ? moment.utc(endDate).startOf(TRUNCATED_ENDS[interval]) : moment.utc(endDate);
     const startOfInterval = (interval === 'week' ? 'isoWeek' : interval) as moment.unitOfTime.StartOf;
-    const count = countTimeSeriesIntervals(startDate, endDate, interval);
+    const format = KEY_FORMATS[interval];
+    const duration = `${interval}s` as moment.unitOfTime.DurationConstructor;
+    const elementsOfInterval = moment.utc(end.format(format), format).diff(moment.utc(start.format(format), format), duration);
     const keys = [];
     const dates = [];
-    for (let i = 0; i < count; i += 1) {
-      const workDate = start.clone().add(i, `${interval}s` as moment.unitOfTime.DurationConstructor);
-      keys.push(workDate.format(KEY_FORMATS[interval]));
+    for (let i = 0; i <= elementsOfInterval; i += 1) {
+      const workDate = start.clone().add(i, duration);
+      keys.push(workDate.format(format));
       dates.push(workDate.clone().startOf(startOfInterval).toISOString());
     }
     return { keys, dates };
@@ -404,7 +427,7 @@ describe('Function buildTimeSeriesAxis()', () => {
 
   it('should build the same keys and dates as moment, for every interval and time zone', () => {
     const random = randomGenerator(11384);
-    ['UTC', 'Pacific/Kiritimati', 'America/New_York'].forEach((timeZone) => {
+    SERVER_TIME_ZONES.forEach((timeZone) => {
       process.env.TZ = timeZone;
       Object.entries(SPANS_MS).forEach(([interval, span]) => {
         const ranges = EDGE_DATES.flatMap((start) => [
@@ -428,6 +451,9 @@ describe('Function buildTimeSeriesAxis()', () => {
   });
 
   it('should refuse an interval the date histogram does not support', () => {
-    expect(() => buildTimeSeriesAxis(new Date('2026-01-01T00:00:00.000Z'), new Date('2026-01-02T00:00:00.000Z'), 'minute')).toThrow('Unsupported interval');
+    expect(() => buildTimeSeriesAxis(new Date('2026-01-01T00:00:00.000Z'), new Date('2026-01-02T00:00:00.000Z'), 'minute')).toThrow(expect.objectContaining({
+      message: expect.stringContaining('Unsupported interval'),
+      extensions: expect.objectContaining({ code: 'FUNCTIONAL_ERROR' }),
+    }));
   });
 });

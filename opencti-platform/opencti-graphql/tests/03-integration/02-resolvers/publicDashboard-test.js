@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithError } from '../../utils/testQueryHelper';
 import { PRIVATE_DASHBOARD_MANIFEST } from './publicDashboard-data';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboard/publicDashboard-types';
@@ -172,6 +172,75 @@ const API_SCR_NUMBER_QUERY = gql`
             count
         }
     }
+`;
+
+const API_SCO_BREAKDOWN_QUERY = gql`
+  query PublicStixCoreObjectsTimeSeriesBreakdown(
+    $startDate: DateTime
+    $endDate: DateTime
+    $uriKey: String!
+    $widgetId : String!
+  ) {
+    publicStixCoreObjectsTimeSeriesBreakdown(
+      startDate: $startDate
+      endDate: $endDate
+      uriKey: $uriKey
+      widgetId : $widgetId
+    ) {
+      truncated
+      dates
+      series {
+        label
+        entity {
+          ... on Organization {
+            name
+          }
+        }
+        total
+        isOther
+        values
+      }
+    }
+  }
+`;
+
+const API_SCR_BREAKDOWN_QUERY = gql`
+  query PublicStixRelationshipsTimeSeriesBreakdown(
+    $startDate: DateTime
+    $endDate: DateTime
+    $uriKey: String!
+    $widgetId : String!
+  ) {
+    publicStixRelationshipsTimeSeriesBreakdown(
+      startDate: $startDate
+      endDate: $endDate
+      uriKey: $uriKey
+      widgetId : $widgetId
+    ) {
+      truncated
+      dates
+      series {
+        label
+        total
+        isOther
+        values
+      }
+    }
+  }
+`;
+
+const REPORT_ADD_QUERY = gql`
+  mutation PublicDashboardTestReportAdd($input: ReportAddInput!) {
+    reportAdd(input: $input) { id }
+  }
+`;
+
+const REPORT_DELETE_QUERY = gql`
+  mutation PublicDashboardTestReportDelete($id: ID!) {
+    reportEdit(id: $id) {
+      delete
+    }
+  }
 `;
 
 describe('PublicDashboard resolver', () => {
@@ -769,29 +838,6 @@ describe('PublicDashboard resolver', () => {
         });
 
         describe('SCO Time series breakdown', () => {
-          const API_SCO_BREAKDOWN_QUERY = gql`
-            query PublicStixCoreObjectsTimeSeriesBreakdown(
-              $startDate: DateTime
-              $endDate: DateTime
-              $uriKey: String!
-              $widgetId : String!
-            ) {
-              publicStixCoreObjectsTimeSeriesBreakdown(
-                startDate: $startDate
-                endDate: $endDate
-                uriKey: $uriKey
-                widgetId : $widgetId
-              ) {
-                truncated
-                dates
-                series {
-                  label
-                  isOther
-                  values
-                }
-              }
-            }
-          `;
           const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
           it('should return the data for API: SCO Time series breakdown', async () => {
@@ -821,29 +867,45 @@ describe('PublicDashboard resolver', () => {
           });
 
           it('should refuse the breakdown of a widget without breakdown', async () => {
-            const { data, errors } = await queryAsAdmin({
-              query: API_SCO_BREAKDOWN_QUERY,
-              variables: {
-                uriKey: publicDashboardUriKey,
-                widgetId: '0a471055-7426-4840-9501-33770b845f92',
-                startDate: yesterday,
+            const { data } = await queryAsAdminWithError(
+              {
+                query: API_SCO_BREAKDOWN_QUERY,
+                variables: {
+                  uriKey: publicDashboardUriKey,
+                  widgetId: '0a471055-7426-4840-9501-33770b845f92',
+                  startDate: yesterday,
+                },
               },
-            });
-            expect(errors).toBeDefined();
-            expect(errors.length).toEqual(1);
+              'This widget has no breakdown',
+              'UNSUPPORTED_ERROR',
+            );
+            expect(data.publicStixCoreObjectsTimeSeriesBreakdown).toBeNull();
+          });
+
+          it('should refuse the breakdown of a relationships widget through the query of the entities', async () => {
+            const { data } = await queryAsAdminWithError(
+              {
+                query: API_SCO_BREAKDOWN_QUERY,
+                variables: { uriKey: publicDashboardUriKey, widgetId: 'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38', startDate: yesterday },
+              },
+              'This widget is broken down on another perspective',
+              'FUNCTIONAL_ERROR',
+            );
             expect(data.publicStixCoreObjectsTimeSeriesBreakdown).toBeNull();
           });
 
           it('should refuse the breakdown without start date', async () => {
-            const { errors } = await queryAsAdmin({
-              query: API_SCO_BREAKDOWN_QUERY,
-              variables: {
-                uriKey: publicDashboardUriKey,
-                widgetId: 'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10',
+            await queryAsAdminWithError(
+              {
+                query: API_SCO_BREAKDOWN_QUERY,
+                variables: {
+                  uriKey: publicDashboardUriKey,
+                  widgetId: 'd7a1c3e2-5b64-4f0e-8a39-2c1f6e9b7a10',
+                },
               },
-            });
-            expect(errors).toBeDefined();
-            expect(errors.length).toEqual(1);
+              'A start date is required for a time series breakdown',
+              'FUNCTIONAL_ERROR',
+            );
           });
         });
 
@@ -882,30 +944,6 @@ describe('PublicDashboard resolver', () => {
         });
 
         describe('SCR Time series breakdown', () => {
-          const API_SCR_BREAKDOWN_QUERY = gql`
-            query PublicStixRelationshipsTimeSeriesBreakdown(
-              $startDate: DateTime
-              $endDate: DateTime
-              $uriKey: String!
-              $widgetId : String!
-            ) {
-              publicStixRelationshipsTimeSeriesBreakdown(
-                startDate: $startDate
-                endDate: $endDate
-                uriKey: $uriKey
-                widgetId : $widgetId
-              ) {
-                truncated
-                dates
-                series {
-                  label
-                  value
-                  isOther
-                  values
-                }
-              }
-            }
-          `;
           const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
           it('should return the data for API: SCR Time series breakdown', async () => {
@@ -924,37 +962,59 @@ describe('PublicDashboard resolver', () => {
             expect(publicStixRelationshipsTimeSeriesBreakdown.truncated).toEqual(false);
             const { series } = publicStixRelationshipsTimeSeriesBreakdown;
             // The 4 targets of the malwares of the dynamic source, all of them on areas, and the Other serie of the widget
-            expect(series.map((serie) => [serie.label, serie.value, serie.isOther])).toEqual([['Administrative-Area', 4, false], ['Other', 0, true]]);
+            expect(series.map((serie) => [serie.label, serie.total, serie.isOther])).toEqual([['Administrative-Area', 4, false], ['Other', 0, true]]);
             // Without end date, the period ends now: yesterday and today
             expect(publicStixRelationshipsTimeSeriesBreakdown.dates).toHaveLength(2);
             expect(series.every((serie) => serie.values.length === 2)).toEqual(true);
             expect(series[0].values.reduce((sum, value) => sum + value, 0)).toEqual(4); // same total as the 'Evolution of attacks' widget
           });
 
-          it('should refuse the breakdown of a relationships widget without breakdown', async () => {
+          it('should only break down the relationships the widgets display, without relationship type filter', async () => {
+            const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
             const { data, errors } = await queryAsAdmin({
               query: API_SCR_BREAKDOWN_QUERY,
               variables: {
                 uriKey: publicDashboardUriKey,
-                widgetId: '9e6afa7e-0db7-424c-8951-16b867245583',
-                startDate: yesterday,
+                widgetId: '2f27537c-a5ae-45de-b8d4-1e85e325a71c',
+                startDate,
               },
             });
-            expect(errors).toBeDefined();
-            expect(errors.length).toEqual(1);
+            expect(errors).toBeUndefined();
+            const { truncated, series } = data.publicStixRelationshipsTimeSeriesBreakdown;
+            // The dataset of the 'Evolution of attacks without filters' widget, whose 7 relationships include references
+            // of their sources: only the 4 targets are displayed by the widgets, no reference gets a serie
+            expect(truncated).toEqual(false);
+            expect(series.map((serie) => [serie.label, serie.total])).toEqual([['targets', 4]]);
+          });
+
+          it('should refuse the breakdown of a relationships widget without breakdown', async () => {
+            const { data } = await queryAsAdminWithError(
+              {
+                query: API_SCR_BREAKDOWN_QUERY,
+                variables: {
+                  uriKey: publicDashboardUriKey,
+                  widgetId: '9e6afa7e-0db7-424c-8951-16b867245583',
+                  startDate: yesterday,
+                },
+              },
+              'This widget has no breakdown',
+              'UNSUPPORTED_ERROR',
+            );
             expect(data.publicStixRelationshipsTimeSeriesBreakdown).toBeNull();
           });
 
           it('should refuse the relationships breakdown without start date', async () => {
-            const { errors } = await queryAsAdmin({
-              query: API_SCR_BREAKDOWN_QUERY,
-              variables: {
-                uriKey: publicDashboardUriKey,
-                widgetId: 'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38',
+            await queryAsAdminWithError(
+              {
+                query: API_SCR_BREAKDOWN_QUERY,
+                variables: {
+                  uriKey: publicDashboardUriKey,
+                  widgetId: 'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38',
+                },
               },
-            });
-            expect(errors).toBeDefined();
-            expect(errors.length).toEqual(1);
+              'A start date is required for a time series breakdown',
+              'FUNCTIONAL_ERROR',
+            );
           });
         });
 
@@ -1202,7 +1262,25 @@ describe('PublicDashboard resolver', () => {
       let savedFilterDashboardId;
       let savedFilterId;
       let dynamicFromSavedFilterId;
+      let reportsSavedFilterId;
       let publicDashboardId;
+      const reportIds = [];
+      // In quotes: the search matches the phrase, not any report holding one of its words
+      const reportsDescription = { key: 'description', values: ['"public breakdown by report types"'], operator: 'search', mode: 'or' };
+      // Reports through a saved filter: the breakdown reads their type once it is resolved in the private manifest
+      const reportsFilterContent = {
+        mode: 'and',
+        filters: [{ key: 'entity_type', values: ['Report'], operator: 'eq', mode: 'or' }, reportsDescription],
+        filterGroups: [],
+      };
+      const reportTypesBreakdown = (label, dataSelection) => ({
+        id: label,
+        type: 'vertical-bar',
+        perspective: 'entities',
+        dataSelection: [{ label, date_attribute: 'created_at', perspective: 'entities', ...dataSelection }],
+        parameters: { title: label, interval: 'day', breakdownBy: 'report_types' },
+        layout: { w: 4, h: 2, x: 4, y: 0, i: label, moved: false, static: false },
+      });
 
       const savedFilterContent = {
         mode: 'and',
@@ -1231,6 +1309,29 @@ describe('PublicDashboard resolver', () => {
         });
         dynamicFromSavedFilterId = dynamicFromSavedFilter.id;
 
+        const reportsSavedFilter = await addSavedFilter(testContext, ADMIN_USER, {
+          name: 'public-dashboard-test-reports-filter',
+          filters: JSON.stringify(reportsFilterContent),
+          scope: 'Stix-Core-Object',
+        });
+        reportsSavedFilterId = reportsSavedFilter.id;
+
+        // Two threat reports and an internal one, without marking: the public dashboard reads them
+        for (const [index, reportType] of ['threat-report', 'threat-report', 'internal-report'].entries()) {
+          const report = await queryAsAdmin({
+            query: REPORT_ADD_QUERY,
+            variables: {
+              input: {
+                name: `public breakdown report ${index}`,
+                description: 'public breakdown by report types',
+                published: new Date().toISOString(),
+                report_types: [reportType],
+              },
+            },
+          });
+          reportIds.push(report.data.reportAdd.id);
+        }
+
         // Build a manifest with saved filter references (filters_id and dynamicFrom_id)
         const manifestWithSavedFilters = {
           widgets: {
@@ -1249,6 +1350,11 @@ describe('PublicDashboard resolver', () => {
               parameters: { title: 'Saved filter resolution test' },
               layout: { w: 4, h: 2, x: 0, y: 0, i: 'widget-saved-filter-test', moved: false, static: false },
             },
+            'widget-saved-filter-report-types': reportTypesBreakdown('widget-saved-filter-report-types', { filters_id: reportsSavedFilterId }),
+            // The same reports, without the type: every entity
+            'widget-report-types-without-type': reportTypesBreakdown('widget-report-types-without-type', {
+              filters: { mode: 'and', filters: [reportsDescription], filterGroups: [] },
+            }),
           },
           config: {},
         };
@@ -1287,6 +1393,7 @@ describe('PublicDashboard resolver', () => {
         });
         expect(publicDashboard.data.publicDashboardAdd).not.toBeNull();
         publicDashboardId = publicDashboard.data.publicDashboardAdd.id;
+        resetCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD);
       });
 
       afterAll(async () => {
@@ -1301,6 +1408,10 @@ describe('PublicDashboard resolver', () => {
         });
         await deleteSavedFilter(testContext, ADMIN_USER, savedFilterId);
         await deleteSavedFilter(testContext, ADMIN_USER, dynamicFromSavedFilterId);
+        await deleteSavedFilter(testContext, ADMIN_USER, reportsSavedFilterId);
+        for (let i = 0; i < reportIds.length; i += 1) {
+          await queryAsAdmin({ query: REPORT_DELETE_QUERY, variables: { id: reportIds[i] } });
+        }
       });
 
       it('should resolve saved filter references into inline filters in private_manifest', async () => {
@@ -1325,6 +1436,35 @@ describe('PublicDashboard resolver', () => {
         expect(selection.dynamicFrom_id).toBeUndefined();
         expect(selection.dynamicFrom).toEqual(dynamicFromFilterContent);
       });
+
+      it('should break the reports of a saved filter down by a field of the reports, read from the type it stores', async () => {
+        // Computed right before the query, as in the breakdown tests above
+        const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { data, errors } = await queryAsAdmin({
+          query: API_SCO_BREAKDOWN_QUERY,
+          variables: { uriKey: 'public-dashboard-saved-filters-test', widgetId: 'widget-saved-filter-report-types', startDate },
+        });
+        // report_types is a field of the reports only: accepted because the saved filter restricts the dataset to them
+        expect(errors).toBeUndefined();
+        const { truncated, series } = data.publicStixCoreObjectsTimeSeriesBreakdown;
+        expect(truncated).toEqual(false);
+        expect(series.map((serie) => [serie.label, serie.total, serie.isOther])).toEqual([['threat-report', 2, false], ['internal-report', 1, false]]);
+      });
+
+      it('should refuse a field of the reports on a dataset of every entity, saying why and nothing of the stored filters', async () => {
+        const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { data, errors } = await queryAsAdminWithError(
+          {
+            query: API_SCO_BREAKDOWN_QUERY,
+            variables: { uriKey: 'public-dashboard-saved-filters-test', widgetId: 'widget-report-types-without-type', startDate },
+          },
+          'Time series breakdown does not support this field for these entity types',
+          'FUNCTIONAL_ERROR',
+        );
+        expect(data.publicStixCoreObjectsTimeSeriesBreakdown).toBeNull();
+        // The public dashboards tell the reason to their visitors: the field and the types stay in the stored widget
+        expect(errors[0].extensions.data).toEqual({ http_status: 400, genre: 'BUSINESS', reason: 'unsupported_field' });
+      });
     });
 
     describe('Tests widgets API with markings', () => {
@@ -1334,6 +1474,12 @@ describe('PublicDashboard resolver', () => {
       let spainId;
       let raditzId;
       let vegetaId;
+      // Above the markings of both public dashboards
+      let portugalId;
+      let nappaId;
+      // The author of clear reports, above the markings of both public dashboards
+      let authorId;
+      const authorReportIds = [];
 
       afterAll(async () => {
         // region Delete areas.
@@ -1345,6 +1491,10 @@ describe('PublicDashboard resolver', () => {
         await queryAsAdmin({
           query: DELETE_AREA,
           variables: { id: spainId },
+        });
+        await queryAsAdmin({
+          query: DELETE_AREA,
+          variables: { id: portugalId },
         });
         // endregion
         // region Delete malwares.
@@ -1362,6 +1512,23 @@ describe('PublicDashboard resolver', () => {
         await queryAsAdmin({
           query: DELETE_MALWARE,
           variables: { id: vegetaId },
+        });
+        await queryAsAdmin({
+          query: DELETE_MALWARE,
+          variables: { id: nappaId },
+        });
+        // endregion
+        // region Delete the reports, then their author.
+        for (let i = 0; i < authorReportIds.length; i += 1) {
+          await queryAsAdmin({ query: REPORT_DELETE_QUERY, variables: { id: authorReportIds[i] } });
+        }
+        await queryAsAdmin({
+          query: gql`
+            mutation PublicDashboardTestOrganizationDelete($id: ID!) {
+              organizationDelete(id: $id)
+            }
+          `,
+          variables: { id: authorId },
         });
         // endregion
         // region Delete the publicDashboards.
@@ -1487,6 +1654,57 @@ describe('PublicDashboard resolver', () => {
           },
         });
         // endregion
+        // region Create an area, a malware and a targets relationship above the markings of both public dashboards.
+        const portugal = await queryAsAdmin({
+          query: CREATE_AREA,
+          variables: { input: { name: 'portugal', description: 'widget tests', objectMarking: [tlpAmber.id] } },
+        });
+        portugalId = portugal.data.administrativeAreaAdd.id;
+        const nappa = await queryAsAdmin({
+          query: CREATE_MALWARES,
+          variables: { input: { name: 'nappa', malware_types: ['ddos'], description: 'widget tests', objectMarking: [tlpAmber.id] } },
+        });
+        nappaId = nappa.data.malwareAdd.id;
+        // From a green malware: only the marking of the relationship itself hides it
+        await queryAsAdmin({
+          query: ADD_TARGETS_REL,
+          variables: {
+            input: {
+              relationship_type: 'targets',
+              fromId: vegetaId,
+              toId: portugalId,
+              objectMarking: [tlpAmber.id],
+            },
+          },
+        });
+        // endregion
+        // region Create a red author and two of its reports, clear.
+        const author = await queryAsAdmin({
+          query: gql`
+            mutation PublicDashboardTestOrganizationAdd($input: OrganizationAddInput!) {
+              organizationAdd(input: $input) { id }
+            }
+          `,
+          variables: { input: { name: 'public breakdown author', objectMarking: [tlpRed.id] } },
+        });
+        authorId = author.data.organizationAdd.id;
+        for (let i = 0; i < 2; i += 1) {
+          const report = await queryAsAdmin({
+            query: REPORT_ADD_QUERY,
+            variables: {
+              input: {
+                name: `public breakdown report by author ${i}`,
+                description: 'public breakdown by author',
+                published: new Date().toISOString(),
+                report_types: ['threat-report'],
+                createdBy: authorId,
+                objectMarking: [tlpClear.id],
+              },
+            },
+          });
+          authorReportIds.push(report.data.reportAdd.id);
+        }
+        // endregion
       });
 
       it('should return the data for API: SCR Number', async () => {
@@ -1514,6 +1732,45 @@ describe('PublicDashboard resolver', () => {
         const result = aaa.data.publicStixRelationshipsNumber;
         expect(result.total).toEqual(0);
         expect(result.count).toEqual(0);
+      });
+
+      // Computed right before each query, as in the breakdown tests above
+      const breakdownOf = async (query, uriKey, widgetId) => {
+        const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { data, errors } = await queryAsAdmin({ query, variables: { uriKey, widgetId, startDate } });
+        expect(errors).toBeUndefined();
+        return Object.values(data)[0];
+      };
+      const seriesOf = ({ series }) => series.map((serie) => [serie.label, serie.total, serie.isOther]);
+
+      it('should only break down the elements under the markings of the dashboard, in the series and in Other', async () => {
+        // Green: spain, raditz and vegeta, not the amber portugal and nappa. The top type is Malware, the areas are
+        // counted in Other: with the amber elements, Malware would count 3 and Other 2.
+        const green = await breakdownOf(API_SCO_BREAKDOWN_QUERY, 'public-dashboard-marking-green', '65b10e7f-f502-4fed-a192-085f460fb94a');
+        expect(seriesOf(green)).toEqual([['Malware', 2, false], ['Other', 1, true]]);
+        expect(green.truncated).toEqual(true);
+      });
+
+      it('should only break down the elements under the markings of the dashboard, with more restricted markings', async () => {
+        // Clear: every element is above, none is counted, not even in Other
+        const clear = await breakdownOf(API_SCO_BREAKDOWN_QUERY, 'public-dashboard-marking-clear', '65b10e7f-f502-4fed-a192-085f460fb94a');
+        expect(seriesOf(clear)).toEqual([['Other', 0, true]]);
+        expect(clear.truncated).toEqual(false);
+      });
+
+      it('should break the reports the dashboard reads down by an author it cannot read, as a restricted entity', async () => {
+        // The clear reports are counted, under the id of their red author, whose name the visitors never get
+        for (const uriKey of ['public-dashboard-marking-clear', 'public-dashboard-marking-green']) {
+          const byAuthor = await breakdownOf(API_SCO_BREAKDOWN_QUERY, uriKey, 'c3f1a7d2-8e4b-4c6a-9d15-7b2e0f4a6c91');
+          expect(byAuthor.series.map((serie) => [serie.label, serie.entity?.name, serie.total, serie.isOther])).toEqual([[authorId, 'Restricted', 2, false]]);
+          expect(byAuthor.truncated).toEqual(false);
+        }
+      });
+
+      it('should only break down the relationships under the markings of the dashboard', async () => {
+        // The two green targets of spain, not the amber one of portugal, whose source vegeta is green
+        const green = await breakdownOf(API_SCR_BREAKDOWN_QUERY, 'public-dashboard-marking-green', 'e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38');
+        expect(seriesOf(green)).toEqual([['Administrative-Area', 2, false], ['Other', 0, true]]);
       });
     });
   });
@@ -1563,6 +1820,10 @@ describe('Public dashboards and dashboard variables', () => {
     expect(Object.keys(publicManifest.widgets)).toHaveLength(Object.keys(PRIVATE_DASHBOARD_MANIFEST.widgets).length);
     expect(publicManifest.variables).toBeUndefined();
     expect(publicManifest.presets).toBeUndefined();
+    // The datasets keep their perspective, which routes a widget to its breakdown, and never their filters
+    expect(publicManifest.widgets['e4b9f2a6-1c3d-4e8f-9a07-6b5c2d1e0f38'].dataSelection).toEqual([
+      { label: 'attacks by target type', attribute: 'entity_type', date_attribute: 'created_at', perspective: 'relationships' },
+    ]);
   });
 
   const READ_PRIVATE_MANIFEST_QUERY = gql`

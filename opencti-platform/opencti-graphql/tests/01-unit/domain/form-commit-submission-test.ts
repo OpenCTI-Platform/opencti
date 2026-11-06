@@ -16,7 +16,7 @@ vi.mock('../../../src/manager/telemetryManager', () => ({
   addFormIntakeSubmittedCount: vi.fn().mockResolvedValue(undefined),
 }));
 
-const mockUser: any = { id: 'user-1' };
+const mockUser: any = { id: 'user-1', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] };
 const mockContext: any = {};
 
 describe('commitSubmission', () => {
@@ -48,11 +48,34 @@ describe('commitSubmission', () => {
         applicant_id: mockUser.id,
         content: Buffer.from(JSON.stringify(plan.bundle), 'utf-8').toString('base64'),
         work_id: 'work-1',
-        draft_id: null,
+        draft_id: '',
         update: true,
         no_split: true,
       },
     );
+  });
+
+  it('never lets a submission without Create / Update knowledge in its destination update existing objects', async () => {
+    const plan: any = { bundle: { id: 'bundle--1', objects: [] }, mainEntityStixId: 'stix-1', finalIsDraft: false, draftPlan: null };
+    const formOnly = { id: 'user-1', capabilities: [{ name: 'KNOWLEDGE_KNFORMINTAKE' }], capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE' }] };
+    await commitSubmission(mockContext, formOnly as any, 'form-1', plan);
+    expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[0][3]).toMatchObject({ draft_id: '', update: false });
+    // the right of the draft scope counts in a draft
+    await commitSubmission({ draft_context: 'draft-current' } as any, formOnly as any, 'form-1', plan);
+    expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[1][3]).toMatchObject({ draft_id: 'draft-current', update: true });
+    // an empty draft context (the applicant left a draft) is main
+    await commitSubmission({ draft_context: '' } as any, formOnly as any, 'form-1', plan);
+    expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[2][3]).toMatchObject({ draft_id: '', update: false });
+  });
+
+  it('binds a submission without a draft to the current draft and never deletes it on a failure', async () => {
+    const plan: any = { bundle: { id: 'bundle--3', objects: [] }, mainEntityStixId: 'stix-1', finalIsDraft: false, draftPlan: null };
+    vi.mocked(rabbitmq.pushBundleToWorker).mockRejectedValueOnce(new Error('broker down'));
+
+    await expect(commitSubmission({ draft_context: 'draft-current' } as any, mockUser, 'form-1', plan)).rejects.toThrow('Failed to process form submission');
+
+    expect(vi.mocked(rabbitmq.pushBundleToWorker).mock.calls[0][3]).toMatchObject({ draft_id: 'draft-current' });
+    expect(vi.mocked(draftWorkspaceDomain.deleteDraftWorkspace)).not.toHaveBeenCalled();
   });
 
   it('creates a draft workspace and patches its creator_id when finalIsDraft is true', async () => {

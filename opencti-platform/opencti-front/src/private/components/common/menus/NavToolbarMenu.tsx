@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import { Theme } from '../../../../components/Theme';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import useTopBanner from '../../../../utils/hooks/useTopBanner';
 
 const StyledDrawer = styled(Drawer)(() => ({

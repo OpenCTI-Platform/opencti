@@ -1,5 +1,5 @@
 import { Handle, NodeProps, Position } from 'reactflow';
-import { useTheme } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { Chip } from '@filigran/design-system';
 import { hexToRGB } from '../../../../../../utils/Colors';
 import { HIGHLIGHT_LABEL_SHADOW, NODE_SIZE } from '../utils';
@@ -29,6 +29,7 @@ const StatusNode = ({ id, data }: NodeProps) => {
       />
       <Chip
         key={id}
+        data-testid={`workflow-status-node-${id}`}
         // NOT `color`: its wash is merged over the caller's own background.
         style={{
           height: NODE_SIZE.height,

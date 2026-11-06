@@ -12,7 +12,8 @@ vi.mock('../../../../../../components/i18n', () => ({
   useFormatter: () => ({ t_i18n: (key: string) => key }),
 }));
 
-vi.mock('@mui/styles', () => ({
+vi.mock('@mui/material/styles', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@mui/material/styles')>()),
   useTheme: () => ({
     palette: {
       primary: { main: '#1976d2' },

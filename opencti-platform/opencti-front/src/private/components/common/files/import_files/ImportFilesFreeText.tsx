@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Button from '@common/button/Button';
 import { Box, Stack, TextField } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Formik } from 'formik';
 import { FormikHelpers } from 'formik/dist/types';
 import type { Theme } from '../../../../../components/Theme';

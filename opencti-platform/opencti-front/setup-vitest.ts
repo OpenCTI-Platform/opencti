@@ -1,7 +1,6 @@
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { expect, afterEach, vi } from 'vitest';
-import * as muiStyles from '@mui/styles';
 
 // vitest.config.ts sets isolate: false, so one worker and one jsdom run many
 // test files in a row. This file runs before each of them: undo what the
@@ -37,8 +36,6 @@ evaluatedModules.idToModuleMap.forEach((node, id) => {
   evaluatedModules.invalidateModule(node);
   node.importers.clear();
 });
-// makeStyles registers each style creator here and never drops the key.
-(muiStyles as unknown as { sheetsManager: Map<unknown, unknown> }).sheetsManager.clear();
 vi.restoreAllMocks();
 vi.unstubAllGlobals();
 vi.unstubAllEnvs();

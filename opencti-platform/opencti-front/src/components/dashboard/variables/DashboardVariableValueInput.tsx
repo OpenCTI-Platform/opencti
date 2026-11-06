@@ -30,8 +30,8 @@ export type ValueInputProps = Required<Omit<DashboardVariableValueInputProps, 'd
 
 /**
  * Input of the value of a dashboard variable, by family of type.
- * A selection restriction narrows every family to its list of values. A filters restriction is not computed yet
- * (PR 2b): such a variable falls back to the free search of its type.
+ * A selection restriction narrows every family to its list of values. A filters restriction (entity variables only)
+ * narrows the search to the entities that match its rule.
  */
 const DashboardVariableValueInput = ({ label, commitOn = 'change', ...props }: DashboardVariableValueInputProps) => {
   const { t_i18n } = useFormatter();

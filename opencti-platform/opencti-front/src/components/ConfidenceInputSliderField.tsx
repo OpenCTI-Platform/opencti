@@ -74,7 +74,7 @@ const ConfidenceInputSliderField: FunctionComponent<InputSliderFieldProps & Fiel
             alignItems: 'flex-end',
           }}
         >
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Field
               component={TextField}
               fullWidth
@@ -89,7 +89,7 @@ const ConfidenceInputSliderField: FunctionComponent<InputSliderFieldProps & Fiel
               ) : undefined}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Select
               value={currentLevel.level.value?.toString() ?? ''}
               onValueChange={updateFromSelect}
@@ -138,7 +138,7 @@ const ConfidenceInputSliderField: FunctionComponent<InputSliderFieldProps & Fiel
           alignItems: 'flex-end',
         }}
       >
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Field
             component={TextField}
             fullWidth
@@ -148,7 +148,7 @@ const ConfidenceInputSliderField: FunctionComponent<InputSliderFieldProps & Fiel
             disabled={disabled}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Select
             value={currentLevel.level.value?.toString() ?? ''}
             onValueChange={(newValue) => setFieldValue(name, newValue)}

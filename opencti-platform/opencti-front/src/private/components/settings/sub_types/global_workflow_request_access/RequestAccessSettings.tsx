@@ -5,7 +5,7 @@ import { graphql, useFragment } from 'react-relay';
 import RequestAccessConfigurationPopover from '@components/settings/sub_types/global_workflow_request_access/RequestAccessConfigurationPopover';
 import RequestAccessStatus from '@components/settings/sub_types/global_workflow_request_access/RequestAccessStatus';
 import { Paper } from '@filigran/design-system';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import { StatusScopeEnum } from '../../../../../utils/statusConstants';
 import ItemStatusTemplate from '../../../../../components/ItemStatusTemplate';

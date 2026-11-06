@@ -255,7 +255,7 @@ Based on development source you can build the package for production.
 This package will be minified and optimized with esbuild.
 
 ```bash
-$ cd opencti-frontend
+$ cd opencti-front
 $ yarn build
 $ cd ../opencti-graphql
 $ yarn build

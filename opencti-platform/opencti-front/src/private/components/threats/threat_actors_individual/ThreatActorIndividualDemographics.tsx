@@ -57,7 +57,7 @@ const ThreatActorIndividualDemographics = ({
   return (
     <Card title={t_i18n('Demographic Information')}>
       <Grid container={true} spacing={3}>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label action={(
             <Security
               needs={[KNOWLEDGE_KNUPDATE]}
@@ -85,7 +85,7 @@ const ThreatActorIndividualDemographics = ({
             </FieldOrEmpty>
           </div>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label action={(
             <Security
               needs={[KNOWLEDGE_KNUPDATE]}
@@ -113,7 +113,7 @@ const ThreatActorIndividualDemographics = ({
             </FieldOrEmpty>
           </div>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Place of Birth')}
           </Label>
@@ -121,7 +121,7 @@ const ThreatActorIndividualDemographics = ({
             {t_i18n(countryRelationship.place_of_birth ?? EMPTY_VALUE)}
           </div>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Date of Birth')}
           </Label>
@@ -131,7 +131,7 @@ const ThreatActorIndividualDemographics = ({
               : EMPTY_VALUE}
           </div>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label action={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <AddThreatActorIndividualDemographic
@@ -157,13 +157,13 @@ const ThreatActorIndividualDemographics = ({
             </FieldOrEmpty>
           </div>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Ethnicity')}
           </Label>
           <div id="ethnicity">{t_i18n(countryRelationship.ethnicity ?? EMPTY_VALUE)}</div>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Gender')}
           </Label>
@@ -175,7 +175,7 @@ const ThreatActorIndividualDemographics = ({
             />
           </FieldOrEmpty>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Marital Status')}
           </Label>
@@ -187,7 +187,7 @@ const ThreatActorIndividualDemographics = ({
             />
           </FieldOrEmpty>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Label>
             {t_i18n('Job Title')}
           </Label>

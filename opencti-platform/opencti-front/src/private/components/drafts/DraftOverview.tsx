@@ -40,13 +40,13 @@ const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
               switch (key) {
                 case 'details':
                   return (
-                    <Grid key={key} item xs={width}>
+                    <Grid key={key} size={width}>
                       <DraftDetails draft={draft} />
                     </Grid>
                   );
                 case 'basicInformation':
                   return (
-                    <Grid key={key} item xs={width}>
+                    <Grid key={key} size={width}>
                       <DraftBasicInformation draft={draft} />
                     </Grid>
                   );

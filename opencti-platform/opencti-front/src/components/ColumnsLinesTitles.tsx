@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { toPairs } from 'ramda';
@@ -9,30 +9,24 @@ import { useFormatter } from './i18n';
 import { DataColumns } from './list_lines';
 import { onActivationKey } from '../utils/domEvent';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  item: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-  },
-  headerItem: {
-    float: 'left',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  sortIcon: {
-    position: 'absolute',
-    margin: '7px 0 0 5px',
-    padding: 0,
-  },
-  sortableHeaderItem: {
-    float: 'left',
-    fontSize: 12,
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-}));
+const HeaderItem = styled('div')({
+  float: 'left',
+  fontSize: 12,
+  fontWeight: '700',
+});
+
+const SortableHeaderItem = styled('div')({
+  float: 'left',
+  fontSize: 12,
+  fontWeight: '700',
+  cursor: 'pointer',
+});
+
+const sortIconSx = {
+  position: 'absolute',
+  margin: '7px 0 0 5px',
+  padding: 0,
+} as const;
 
 interface TriggerLineTitlesProps {
   dataColumns: DataColumns;
@@ -49,7 +43,6 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
   handleSort,
   secondaryAction,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const reverseBy = (field: string) => {
     if (handleSort) {
@@ -65,16 +58,15 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
     if (isSortable) {
       const orderComponent = orderAsc ? (
         <ArrowDropDown
-          classes={{ root: classes.sortIcon }}
+          sx={sortIconSx}
           style={{ top: 0 }}
         />
       ) : (
-        <ArrowDropUp classes={{ root: classes.sortIcon }} style={{ top: 0 }} />
+        <ArrowDropUp sx={sortIconSx} style={{ top: 0 }} />
       );
       return (
-        <div
+        <SortableHeaderItem
           key={field}
-          className={classes.sortableHeaderItem}
           style={{ width }}
           onClick={() => reverseBy(field)}
           role="button"
@@ -83,18 +75,21 @@ const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({
         >
           <span>{t_i18n(label)}</span>
           {sortBy === field ? orderComponent : ''}
-        </div>
+        </SortableHeaderItem>
       );
     }
     return (
-      <div className={classes.headerItem} style={{ width }} key={field}>
+      <HeaderItem style={{ width }} key={field}>
         <span>{t_i18n(label)}</span>
-      </div>
+      </HeaderItem>
     );
   };
   return (
     <ListItem
-      classes={{ root: classes.item }}
+      sx={{
+        paddingLeft: '10px',
+        textTransform: 'uppercase',
+      }}
       divider={false}
       secondaryAction={secondaryAction && (
         <> &nbsp; </>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { GetAppOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import Divider from '@mui/material/Divider';

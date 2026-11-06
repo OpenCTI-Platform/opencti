@@ -84,19 +84,19 @@ const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) =
             switch (key) {
               case 'details':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <CourseOfActionDetails courseOfAction={courseOfAction} />
                   </Grid>
                 );
               case 'basicInformation':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixDomainObjectOverview stixDomainObject={courseOfAction} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                       stixObjectOrStixRelationshipId={courseOfAction.id}
                       stixObjectOrStixRelationshipLink={`/dashboard/techniques/courses_of_action/${courseOfAction.id}/knowledge`}
@@ -105,7 +105,7 @@ const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) =
                 );
               case 'latestContainers':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixRelationshipLastContainers
                       stixCoreObjectOrStixRelationshipId={courseOfAction.id}
                     />
@@ -113,7 +113,7 @@ const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) =
                 );
               case 'externalReferences':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectExternalReferences
                       stixCoreObjectId={courseOfAction.id}
                     />
@@ -121,7 +121,7 @@ const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) =
                 );
               case 'mostRecentHistory':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={courseOfAction.id}
                     />
@@ -129,7 +129,7 @@ const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) =
                 );
               case 'notes':
                 return (
-                  <Grid key={key} item xs={width}>
+                  <Grid key={key} size={width}>
                     <StixCoreObjectOrStixCoreRelationshipNotes
                       stixCoreObjectOrStixCoreRelationshipId={courseOfAction.id}
                       defaultMarkings={courseOfAction.objectMarking ?? []}

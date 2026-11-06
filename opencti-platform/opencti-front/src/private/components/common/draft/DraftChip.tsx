@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { SimplePaletteColorOptions } from '@mui/material';
 import { Chip } from '@filigran/design-system';
 import type { Theme } from '../../../../components/Theme';

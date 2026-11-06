@@ -1,17 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { styled } from '@mui/material/styles';
 import { ColumnSizer, InfiniteLoader, Grid } from 'react-virtualized';
 import { AutoSizer } from 'react-virtualized-auto-sizer';
 import inject18n from '../i18n';
 
 const numberOfCardsPerLine = 4;
 
-const styles = () => ({
-  defaultCard: {
-    padding: '0 15px 30px 15px',
-  },
+const Card = styled('div')({
+  padding: '0 15px 30px 15px',
 });
 
 class ListCardsContent extends Component {
@@ -108,7 +106,6 @@ class ListCardsContent extends Component {
 
   _cellRenderer({ columnIndex, key, rowIndex, style }) {
     const {
-      classes,
       dataList,
       dataListId,
       bookmarkList,
@@ -120,17 +117,16 @@ class ListCardsContent extends Component {
     const finalStyle = { ...style, width: style.width + 10 };
     const bookmarksIds = R.map((n) => n.node.id, bookmarkList || []);
     const index = rowIndex * numberOfCardsPerLine + columnIndex;
-    const className = classes.defaultCard;
     if (initialLoading || !this._isCellLoaded({ index })) {
       return (
-        <div className={className} key={key} style={finalStyle}>
+        <Card key={key} style={finalStyle}>
           {/* TODO remove this when all components are pure function without compose() */}
           {!React.isValidElement(DummyCardComponent) ? (
             <DummyCardComponent />
           ) : (
             React.cloneElement(DummyCardComponent)
           )}
-        </div>
+        </Card>
       );
     }
     const edge = dataList[index];
@@ -143,7 +139,7 @@ class ListCardsContent extends Component {
     }
     const node = edge.node ?? edge;
     return (
-      <div className={className} key={`${rowIndex}-${key}-${node.__id}`} style={finalStyle}>
+      <Card key={`${rowIndex}-${key}-${node.__id}`} style={finalStyle}>
         {/* TODO remove this when all components are pure function without compose() */}
         {!React.isValidElement(CardComponent) ? (
           <CardComponent
@@ -159,7 +155,7 @@ class ListCardsContent extends Component {
             onLabelClick,
           })
         )}
-      </div>
+      </Card>
     );
   }
 
@@ -230,7 +226,6 @@ class ListCardsContent extends Component {
 }
 
 ListCardsContent.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   initialLoading: PropTypes.bool,
   loadMore: PropTypes.func,
@@ -248,4 +243,4 @@ ListCardsContent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-export default R.compose(inject18n, withStyles(styles))(ListCardsContent);
+export default inject18n(ListCardsContent);

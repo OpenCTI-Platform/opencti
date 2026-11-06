@@ -12,7 +12,7 @@ import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../Loader';
 import { FilterValuesForDynamicSubKeyQuery } from './__generated__/FilterValuesForDynamicSubKeyQuery.graphql';
 import { normalizeFilterGroupForBackend } from '../../utils/filters/filtersUtils';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../components/Theme';
 
 // TODO, use MAX_RUNTIME_RESOLUTION_SIZE from backend

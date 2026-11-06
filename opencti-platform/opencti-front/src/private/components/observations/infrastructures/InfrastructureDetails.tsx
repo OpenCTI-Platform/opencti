@@ -88,13 +88,13 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
     <div style={{ height: '100%' }}>
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
             <ExpandableMarkdown source={data.description} limit={400} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Infrastructure types')}
             </Label>
@@ -117,19 +117,19 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
               </Stack>
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('First seen')}
             </Label>
             {data.first_seen ? fldt(data.first_seen) : EMPTY_VALUE}
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Last seen')}
             </Label>
             {data.last_seen ? fldt(data.last_seen) : EMPTY_VALUE}
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <StixCoreObjectKillChainPhasesView killChainPhases={killChainPhases} />
           </Grid>
           <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />

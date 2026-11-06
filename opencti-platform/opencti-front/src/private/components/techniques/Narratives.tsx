@@ -1,7 +1,7 @@
 import { NarrativeWithSubnarrativeLineDummy } from '@components/techniques/narratives/NarrativeWithSubnarrativeLine';
 import { NarrativesLines_data$data } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
 import { Stack } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React, { FunctionComponent } from 'react';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import SearchInput from '../../../components/SearchInput';

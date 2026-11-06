@@ -10,7 +10,7 @@ import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import { verticalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 import { SecurityCoverageTestedEntitiesChart_securityCoverage$key } from './__generated__/SecurityCoverageTestedEntitiesChart_securityCoverage.graphql';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';

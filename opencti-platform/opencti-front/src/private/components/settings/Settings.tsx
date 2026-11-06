@@ -9,12 +9,13 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import React, { ChangeEvent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { availableLanguage } from '../../../components/AppIntlProvider';
+import { dateFormatOptions, timeFormatOptions } from '../../../utils/dateDisplay';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -29,6 +30,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
+import useHelper from '../../../utils/hooks/useHelper';
 import DangerZoneChip from '../common/danger_zone/DangerZoneChip';
 import EEChip from '../common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
@@ -38,6 +40,7 @@ import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsMapSource from './settings_map_source/SettingsMapSource';
 import SettingsManagers from './settings_managers/SettingsManagers';
+import SettingsIngestionHealth from './settings_ingestion_health/SettingsIngestionHealth';
 import SettingsDependencies from './settings_platform/SettingsDependencies';
 import SettingsInfoRow from './settings_platform/SettingsInfoRow';
 import SettingsPlatformSummary from './settings_platform/SettingsPlatformSummary';
@@ -73,6 +76,8 @@ const settingsQuery = graphql`
         name
       }
       platform_language
+      platform_date_format
+      platform_time_format
       platform_type
       platform_whitemark
       platform_login_message
@@ -133,6 +138,9 @@ const settingsQuery = graphql`
         version
       }
     }
+    ingestionHealthSettings {
+      ...SettingsIngestionHealth_settings
+    }
     ...ThemeManager_themes
   }
 `;
@@ -155,6 +163,8 @@ export const settingsMutationFieldPatch = graphql`
           name
         }
         platform_language
+        platform_date_format
+        platform_time_format
         platform_whitemark
         platform_enterprise_edition {
           license_enterprise
@@ -197,6 +207,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   const { isSensitive: isEnterpriseToggleSensitive, isAllowed: isEnterpriseToggleAllowed } = useSensitiveModifications('ce_ee_toggle');
 
   const { t_i18n, fldt } = useFormatter();
+  const { isFeatureEnable } = useHelper();
   const { setTitle } = useConnectedDocumentModifier();
 
   const { settings, about } = usePreloadedQuery<SettingsQuery>(settingsQuery, queryRef);
@@ -216,6 +227,8 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
     platform_email: settings.platform_email,
     platform_theme: settings.platform_theme?.id,
     platform_language: settings.platform_language,
+    platform_date_format: settings.platform_date_format,
+    platform_time_format: settings.platform_time_format,
     platform_login_message: settings.platform_login_message,
     platform_banner_text: settings.platform_banner_text,
     platform_banner_level: settings.platform_banner_level,
@@ -255,6 +268,8 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       .email(t_i18n('The value must be an email address')),
     platform_theme: Yup.string().nullable(),
     platform_language: Yup.string().nullable(),
+    platform_date_format: Yup.string().nullable(),
+    platform_time_format: Yup.string().nullable(),
     platform_whitemark: Yup.string().nullable(),
     enterprise_license: Yup.string().nullable(),
     platform_login_message: Yup.string().nullable(),
@@ -574,6 +589,30 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     </SelectItem>
                     {availableLanguage.map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
                   </Field>
+                  <Field
+                    component={SelectFieldFds}
+                    name="platform_date_format"
+                    label={t_i18n('Date format in tables')}
+                    fullWidth
+                    containerstyle={fieldSpacingContainerStyle}
+                    onFocus={(name: string) => handleChangeFocus(name)}
+                    onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                    helpertext={focusHelper('platform_date_format')}
+                  >
+                    {dateFormatOptions(t_i18n, 'platform').map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                  </Field>
+                  <Field
+                    component={SelectFieldFds}
+                    name="platform_time_format"
+                    label={t_i18n('Time in tables')}
+                    fullWidth
+                    containerstyle={fieldSpacingContainerStyle}
+                    onFocus={(name: string) => handleChangeFocus(name)}
+                    onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                    helpertext={focusHelper('platform_time_format')}
+                  >
+                    {timeFormatOptions(t_i18n, 'platform').map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
+                  </Field>
                   <HiddenTypesField />
                   <div style={fieldSpacingContainerStyle}>
                     <SettingsInfoRow
@@ -627,6 +666,8 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           modules={modules ?? []}
           isEnterpriseEditionValid={isEnterpriseEditionValid}
         />
+
+        {isFeatureEnable('INGESTION_HEALTH') && <SettingsIngestionHealth settings={data.ingestionHealthSettings} />}
       </Box>
     </div>
   );

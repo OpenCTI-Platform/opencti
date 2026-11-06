@@ -1,7 +1,7 @@
 import React from 'react';
 import { Field, Form } from 'formik';
 import { ArrowRightAlt } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import * as R from 'ramda';
@@ -27,63 +27,67 @@ import FormButtonContainer from '../../../../components/common/form/FormButtonCo
 import CustomFieldsFormik from '../custom_fields/CustomFieldsFormik';
 import CustomFieldValuesCreation from '../custom_fields/CustomFieldValuesCreation';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  containerRelation: {
-    padding: '10px 20px 20px 20px',
-  },
-  item: {
-    position: 'absolute',
-    width: 180,
-    height: 80,
-    borderRadius: 10,
-  },
-  itemHeader: {
-    padding: '10px 0',
-  },
-  icon: {
-    position: 'absolute',
-    top: 8,
-    left: 5,
-    fontSize: 8,
-  },
-  type: {
-    width: '100%',
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-    fontSize: 11,
-  },
-  content: {
-    width: '100%',
-    height: 40,
-    maxHeight: 40,
-    lineHeight: '40px',
-    color: theme.palette.text.primary,
-    textAlign: 'center',
-  },
-  name: {
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-    textOverflow: 'ellipsis',
-    maxWidth: 180,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    padding: 8,
-  },
-  relationCreate: {
-    position: 'relative',
-    height: 100,
-  },
-  middle: {
-    margin: '0 auto',
-    width: 200,
-    textAlign: 'center',
-    padding: 0,
-    color: theme.palette.text.primary,
-  },
+const ContainerRelation = styled('div')({
+  padding: '10px 20px 20px 20px',
+});
+
+const Item = styled('div')({
+  position: 'absolute',
+  width: 180,
+  height: 80,
+  borderRadius: 10,
+});
+
+const ItemHeader = styled('div')({
+  padding: '10px 0',
+});
+
+const ItemIconContainer = styled('div')({
+  position: 'absolute',
+  top: 8,
+  left: 5,
+  fontSize: 8,
+});
+
+const ItemType = styled('div')(({ theme }) => ({
+  width: '100%',
+  textAlign: 'center',
+  color: theme.palette.text.primary,
+  fontSize: 11,
+}));
+
+const ItemContent = styled('div')(({ theme }) => ({
+  width: '100%',
+  height: 40,
+  maxHeight: 40,
+  lineHeight: '40px',
+  color: theme.palette.text.primary,
+  textAlign: 'center',
+}));
+
+const ItemName = styled('span')({
+  display: 'inline-block',
+  lineHeight: 1,
+  fontSize: 12,
+  verticalAlign: 'middle',
+  textOverflow: 'ellipsis',
+  maxWidth: 180,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  padding: 8,
+});
+
+const RelationCreate = styled('div')({
+  position: 'relative',
+  height: 100,
+});
+
+const Middle = styled('div')(({ theme }) => ({
+  margin: '0 auto',
+  width: 200,
+  textAlign: 'center',
+  padding: 0,
+  color: theme.palette.text.primary,
 }));
 
 export const stixCoreRelationshipBasicShape = (t, isCoverage = false) => {
@@ -139,7 +143,6 @@ const StixCoreRelationshipCreationForm = ({
   isCoverage = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t_i18n, isCoverage));
 
   const fromEntity = fromEntities[0];
@@ -182,44 +185,42 @@ const StixCoreRelationshipCreationForm = ({
     >
       {({ submitForm, isSubmitting, setFieldValue, values }) => (
         <Form style={{ paddingBottom: 50 }}>
-          <div className={classes.containerRelation}>
-            <div className={classes.relationCreate}>
-              <div
-                className={classes.item}
+          <ContainerRelation>
+            <RelationCreate>
+              <Item
                 style={{
                   border: `2px solid ${itemColor(fromEntity.entity_type)}`,
                   top: 10,
                   left: 0,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(fromEntity.entity_type)}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <ItemIconContainer>
                     <ItemIcon
                       type={fromEntity.entity_type}
                       color={itemColor(fromEntity.entity_type)}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </ItemIconContainer>
+                  <ItemType>
                     {fromEntity.relationship_type
                       ? t_i18n(`relationship_${fromEntity.entity_type}`)
                       : t_i18n(`entity_${fromEntity.entity_type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
+                  </ItemType>
+                </ItemHeader>
+                <ItemContent>
+                  <ItemName>
                     {isMultipleFrom
                       ? (<em>{t_i18n('Multiple entities selected')}</em>)
                       : (getMainRepresentative(fromEntity))}
-                  </span>
-                </div>
-              </div>
-              <div className={classes.middle} style={{ paddingTop: 25 }}>
+                  </ItemName>
+                </ItemContent>
+              </Item>
+              <Middle style={{ paddingTop: 25 }}>
                 <ArrowRightAlt fontSize="large" />
                 <br />
                 {typeof handleReverseRelation === 'function' && (
@@ -231,43 +232,41 @@ const StixCoreRelationshipCreationForm = ({
                     {t_i18n('Reverse')}
                   </Button>
                 )}
-              </div>
-              <div
-                className={classes.item}
+              </Middle>
+              <Item
                 style={{
                   border: `2px solid ${itemColor(toEntity.entity_type)}`,
                   top: 10,
                   right: 0,
                 }}
               >
-                <div
-                  className={classes.itemHeader}
+                <ItemHeader
                   style={{
                     borderBottom: `1px solid ${itemColor(toEntity.entity_type)}`,
                   }}
                 >
-                  <div className={classes.icon}>
+                  <ItemIconContainer>
                     <ItemIcon
                       type={toEntity.entity_type}
                       color={itemColor(toEntity.entity_type)}
                       size="small"
                     />
-                  </div>
-                  <div className={classes.type}>
+                  </ItemIconContainer>
+                  <ItemType>
                     {toEntity.relationship_type
                       ? t_i18n(`relationship_${toEntity.entity_type}`)
                       : t_i18n(`entity_${toEntity.entity_type}`)}
-                  </div>
-                </div>
-                <div className={classes.content}>
-                  <span className={classes.name}>
+                  </ItemType>
+                </ItemHeader>
+                <ItemContent>
+                  <ItemName>
                     {isMultipleTo
                       ? (<em>{t_i18n('Multiple entities selected')}</em>)
                       : (getMainRepresentative(toEntity))}
-                  </span>
-                </div>
-              </div>
-            </div>
+                  </ItemName>
+                </ItemContent>
+              </Item>
+            </RelationCreate>
             <Field
               component={SelectFieldFds}
               variant="outlined"
@@ -372,7 +371,7 @@ const StixCoreRelationshipCreationForm = ({
                 {t_i18n('Create')}
               </Button>
             </FormButtonContainer>
-          </div>
+          </ContainerRelation>
         </Form>
       )}
     </CustomFieldsFormik>

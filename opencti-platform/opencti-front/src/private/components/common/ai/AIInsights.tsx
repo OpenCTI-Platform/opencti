@@ -15,14 +15,12 @@ import { Combobox, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInp
 import DialogActions from '@mui/material/DialogActions';
 
 import Tooltip from '@mui/material/Tooltip';
-import { createStyles } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { type CSSObject, styled, type Theme } from '@mui/material/styles';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import React, { useEffect, useMemo, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import type { Theme } from '../../../../components/Theme';
 import { canonicalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useAI from '../../../../utils/hooks/useAI';
@@ -33,89 +31,41 @@ import { useChatbot } from '../../chatbox/ChatbotContext';
 import { type AgentOption, fetchAgentsForIntent } from '../../../../utils/ai/agentApi';
 import Drawer from '../drawer/Drawer';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => createStyles({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    paddingTop: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
-    paddingBottom: ({ bannerHeightNumber }) => `${bannerHeightNumber}px`,
+const aiChipStyle = (theme: Theme): CSSObject => ({
+  display: 'inline-flex',
+  fontWeight: 500,
+  justifyContent: 'center',
+  alignItems: 'center',
+  fontSize: 12,
+  marginLeft: 6,
+  borderRadius: theme.borderRadius,
+  border: `1px solid ${theme.palette.ai?.main}`,
+  color: theme.palette.ai?.main,
+  backgroundColor: theme.palette.ai?.background,
+  cursor: 'pointer',
+  '&:hover': {
+    border: `1px solid ${theme.palette.ai?.light}`,
+    color: theme.palette.ai?.light,
   },
-  header: {
-    backgroundColor: theme.palette.mode === 'light' ? theme.palette.background.default : theme.palette.background.nav,
-    padding: '10px 0',
-    display: 'inline-flex',
-    alignItems: 'center',
-  },
-  container: {
-    padding: `0 ${theme.spacing(2)} ${theme.spacing(2)}`,
-    height: '100%',
-    overflowY: 'auto',
-  },
-  chip: {
-    display: 'inline-flex',
-    fontWeight: 500,
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: 12,
-    marginLeft: 6,
-    borderRadius: theme.borderRadius,
-    border: `1px solid ${theme.palette.ai.main}`,
-    color: theme.palette.ai.main,
-    backgroundColor: theme.palette.ai.background,
-    cursor: 'pointer',
-    '&:hover': {
-      border: `1px solid ${theme.palette.ai.light}`,
-      color: theme.palette.ai.light,
-    },
-  },
-  chipFloating: {
+});
+
+const AiChip = styled(IconButton)(({ theme }) => ({
+  '&&': aiChipStyle(theme),
+}));
+
+const AiChipFloating = styled(IconButton)(({ theme }) => ({
+  '&&': {
+    ...aiChipStyle(theme),
     float: 'right',
-    fontSize: 12,
-    fontWeight: 500,
     height: 25,
-    display: 'inline-flex',
-    justifyContent: 'center',
-    alignItems: 'center',
     marginTop: -7,
-    marginLeft: 6,
-    borderRadius: theme.borderRadius,
-    border: `1px solid ${theme.palette.ai.main}`,
-    color: theme.palette.ai.main,
-    backgroundColor: theme.palette.ai.background,
-    cursor: 'pointer',
-    '&:hover': {
-      border: `1px solid ${theme.palette.ai.light}`,
-      color: theme.palette.ai.light,
-    },
   },
-  chipNoAction: {
-    display: 'flex',
-    alignItems: 'center',
-    textWrap: 'nowrap',
-    position: 'absolute',
-    right: 10,
-    fontWeight: 500,
-    justifyContent: 'center',
-    fontSize: 12,
-    marginLeft: 6,
-    borderRadius: theme.borderRadius,
-    border: `1px solid ${theme.palette.ai.main}`,
-    color: theme.palette.ai.main,
-    backgroundColor: theme.palette.ai.background,
-    cursor: 'default',
-    '&:hover': {
-      border: `1px solid ${theme.palette.ai.light}`,
-      color: theme.palette.ai.light,
-    },
-  },
+}));
+
+const Content = styled('div')(({ theme }) => ({
+  padding: `0 ${theme.spacing(2)} ${theme.spacing(2)}`,
+  height: '100%',
+  overflowY: 'auto',
 }));
 
 type AIInsightsTab = 'activity' | 'containers' | 'forecast' | 'history';
@@ -140,25 +90,23 @@ interface AiInsightButtonProps {
 
 const AiInsightButton = ({ onlyIcon = false, floating = false, onClick, showEEChip = false, disabled = false, tooltipTitle }: AiInsightButtonProps) => {
   const { t_i18n } = useFormatter();
-  const { bannerSettings: { bannerHeightNumber } } = useAuth();
-  const classes = useStyles({ bannerHeightNumber });
+  const ChipButton = floating ? AiChipFloating : AiChip;
   const buttonLabel = tooltipTitle || t_i18n('AI Insights');
 
   return (
     <Tooltip title={buttonLabel}>
       <span style={{ display: 'inline-flex' }}>
         {onlyIcon ? (
-          <IconButton
+          <ChipButton
             size="small"
             aria-label={buttonLabel}
             onClick={onClick}
-            className={floating ? classes.chipFloating : classes.chip}
             disabled={disabled}
           >
             {/* 16, not `size="small"`: FiligranIcon's `small` is MUI's 20px, which overflowed the 24px small button
                 by a pixel and sat off its centre line. 16 is the library's own small-button glyph. */}
             <FiligranIcon icon={LogoXtmOneIcon} size={16} />
-          </IconButton>
+          </ChipButton>
         ) : (
           <Button
             variant="tertiary"
@@ -187,8 +135,7 @@ const AIInsights = ({
   onlyIcon = false,
   isContainer = false,
 }: AIInsightProps) => {
-  const { bannerSettings: { bannerHeightNumber }, settings: { id: settingsId } } = useAuth();
-  const classes = useStyles({ bannerHeightNumber });
+  const { settings: { id: settingsId } } = useAuth();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
   const [display, setDisplay] = useState(false);
@@ -381,7 +328,7 @@ const AIInsights = ({
           </Combobox>
         ) : undefined}
       >
-        <div className={classes.container}>
+        <Content>
           <Tabs value={currentTab} onValueChange={handleChangeTab}>
             <TabsList
               actions={loading && (
@@ -430,7 +377,7 @@ const AIInsights = ({
               />
             </TabsContent>
           </Tabs>
-        </div>
+        </Content>
       </Drawer>
     </>
   );

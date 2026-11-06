@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import { Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import FintelTemplatePopover from './FintelTemplatePopover';
 import { FintelTemplateHeader_template$key } from './__generated__/FintelTemplateHeader_template.graphql';

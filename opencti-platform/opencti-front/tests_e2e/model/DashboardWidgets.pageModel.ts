@@ -95,17 +95,30 @@ export default class DashboardWidgetsPageModel {
   /**
    * Jumps to one step of the widget config stepper.
    * Scoped to the dialog and exact, otherwise 'Filters' also matches the 'Clear filters' and
-   * 'Validate filters' buttons of the filter step itself. MUI marks the current step with
-   * `aria-current="step"` AND disables its button, so clicking it would hang: no-op instead.
+   * 'Validate filters' buttons of the filter step itself. The steps are tabs: MUI marks the
+   * current one with `aria-selected="true"` AND disables it, so clicking it would hang: no-op instead.
    */
   async goToStep(step: 'Visualization' | 'Perspective' | 'Filters' | 'Parameters') {
-    const stepButton = this.page.getByRole('dialog').getByRole('button', { name: step, exact: true });
-    if (await stepButton.getAttribute('aria-current') === 'step') return;
+    const stepButton = this.page.getByRole('dialog').getByRole('tab', { name: step, exact: true });
+    if (await stepButton.getAttribute('aria-selected') === 'true') return;
     await stepButton.click();
   }
 
   getBreakdownSelection() {
     return this.page.getByTestId('widget-breakdown-selection');
+  }
+
+  /**
+   * Hovers the breakdown controls, to show the tooltip of the disabled ones. A disabled control gets no pointer
+   * events (FDS-WORKAROUND #68: its wrapper carries the tooltip), so the pointer lands on that wrapper.
+   */
+  hoverBreakdownSelection() {
+    return this.getBreakdownSelection().hover();
+  }
+
+  /** The dataset of the Filters step at this index, from 0. */
+  getDataSelection(index: number) {
+    return this.page.getByTestId(`widget-selection-${index}`);
   }
 
   /** Alert of the Filters step, shown when the widget can be broken down in the Parameters step. */
@@ -126,12 +139,22 @@ export default class DashboardWidgetsPageModel {
     return this.page.getByRole('button', { name: 'Add', exact: true }).click();
   }
 
-  getChartCanvas() {
-    return this.page.locator('.apexcharts-canvas');
+  /** The cell of a widget in the dashboard grid, found by its title: its chart is never one of another widget. */
+  getWidgetCard(title: string) {
+    return this.page.locator('.react-grid-item').filter({ hasText: title });
   }
 
-  getChartLegendEntry(name: string): Locator {
-    return this.page.locator('.apexcharts-legend-text').filter({ hasText: name });
+  getChartCanvas(widgetTitle: string) {
+    return this.getWidgetCard(widgetTitle).locator('.apexcharts-canvas');
+  }
+
+  /** The names of the legend of the chart of a widget, in their order. */
+  getChartLegendEntries(widgetTitle: string): Locator {
+    return this.getWidgetCard(widgetTitle).locator('.apexcharts-legend-text');
+  }
+
+  getChartLegendEntry(widgetTitle: string, name: string): Locator {
+    return this.getChartLegendEntries(widgetTitle).filter({ hasText: name });
   }
 
   getItemFromWidgetList(name: string) {

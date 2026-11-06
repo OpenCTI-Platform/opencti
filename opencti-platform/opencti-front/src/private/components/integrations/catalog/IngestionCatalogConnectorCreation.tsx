@@ -3,7 +3,7 @@ import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Drawer from '@components/common/drawer/Drawer';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';

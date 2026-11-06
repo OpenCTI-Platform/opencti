@@ -130,10 +130,7 @@ const ConnectorActions = ({
         >
           <Security needs={[INGESTION_SETINGESTIONS]}>
             {showEnterpriseUpsell ? (
-              <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
-                {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
-                <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip />
-              </Box>
+              <EnterpriseEditionButton title="Deploy" feature="Connector deployment" withEEChip inLine />
             ) : (
               <IngestionCatalogCardDeployButton
                 deploymentCount={deploymentCount}

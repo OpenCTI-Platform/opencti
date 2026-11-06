@@ -1,6 +1,8 @@
 import type { GraphQLError } from 'graphql';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Client as ElkClient } from '@elastic/elasticsearch';
+import { Client as Elk9Client } from '@elastic/elasticsearch-v9';
+import { checkEngineReachable, ENGINE_CLIENT_AUTO, probeEngine, resolveEngineClient } from './engine-detection';
 import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { AwsSigv4Signer } from '@opensearch-project/opensearch/aws';
 import { Promise as BluePromise } from 'bluebird';
@@ -9,6 +11,7 @@ import semver from 'semver';
 import { ATTR_DB_QUERY_TEXT, ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION, SEMATTRS_DB_STATEMENT } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import {
+  BREAKDOWN_REFUSAL_REASONS,
   buildPagination,
   buildPaginationFromEdges,
   cursorToOffset,
@@ -86,6 +89,7 @@ import {
   ID_STANDARD,
   IDS_STIX,
   isAbstract,
+  REF_RELATION_ID_FIELDS,
   REL_INDEX_PREFIX,
 } from '../schema/general';
 import { isModifiedObject, isUpdatedAtObject } from '../schema/fieldDataAdapter';
@@ -127,6 +131,7 @@ import { refang } from '../utils/refang';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
 import { meterManager, telemetry } from '../config/tracing';
 import {
+  getRegisteredTypeFromIndexedName,
   isBooleanAttribute,
   isDateAttribute,
   isDateNumericOrBooleanAttribute,
@@ -231,6 +236,9 @@ export const ES_RETRY_ON_CONFLICT = 30;
 export const BULK_TIMEOUT = '1h';
 const ES_MAX_MAPPINGS = Number(conf.get('elasticsearch:max_mapping_fields') ?? 3500);
 export const MAX_AGGREGATION_SIZE = 100;
+// Values ranked at once, every shard returning all of its own, when the lowest values are asked: within it the
+// ranking is exact, beyond it the request is refused. As the default maximum pagination, far under max_buckets (65,535).
+export const MAX_EXACT_RANKING_SIZE = 5000;
 
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
@@ -284,8 +292,20 @@ export const isImpactedRole = (type: string, fromType: string, toType: string, r
 };
 
 export let engine: ElkClient | OpenClient;
+let engineIsElk = false;
 let isRuntimeSortingEnable = false;
 let attachmentProcessorEnabled = false;
+
+const setEngine = (client: ElkClient | OpenClient, isElk: boolean) => {
+  engine = client;
+  engineIsElk = isElk;
+};
+
+// True when the selected engine is Elasticsearch, whatever the client major.
+// `instanceof ElkClient` cannot be used anymore: the 9.x client (@elastic/elasticsearch-v9)
+// is a distinct class, typed as ElkClient at creation because it exposes the same API
+// surface for every call OpenCTI makes (both majors compile against the 8.x types).
+export const isElkEngine = (_e: ElkClient | OpenClient = engine): _e is ElkClient => engineIsElk;
 
 export const isAttachmentProcessorEnabled = () => {
   return attachmentProcessorEnabled;
@@ -295,7 +315,7 @@ export const isAttachmentProcessorEnabled = () => {
 // Starting ELK8+, response are no longer inside a body envelop
 // Query wrapping is still accepted in ELK8
 export const oebp = (queryResult: any): any => {
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     return queryResult;
   }
   return queryResult.body;
@@ -303,7 +323,7 @@ export const oebp = (queryResult: any): any => {
 
 export const elConfigureAttachmentProcessor = async (): Promise<boolean> => {
   let success = true;
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     await engine.ingest.putPipeline({
       id: 'attachment',
       description: 'Extract attachment information',
@@ -441,50 +461,59 @@ export const searchEngineInit = async (): Promise<boolean> => {
     ...(region ? AwsSigv4Signer({
       region,
       service: conf.get('opensearch:service') || 'es',
-      getCredentials: () => {
-        const credentialsProvider = defaultProvider({
-          roleAssumerWithWebIdentity: getRoleAssumerWithWebIdentity({ region }),
-        });
-        return credentialsProvider();
-      },
+      // One provider for the whole client, created once here (no AWS call at creation): the SigV4 signer
+      // asks for credentials before each request, and the provider memoizes them instead of calling STS every time.
+      getCredentials: defaultProvider({
+        roleAssumerWithWebIdentity: getRoleAssumerWithWebIdentity({ region }),
+      }),
     }) : {}),
   };
-  // Select the correct engine
-  let engineVersion;
-  let enginePlatform;
-  const engineSelector = conf.get('elasticsearch:engine_selector') || 'auto';
-  const engineCheck = booleanConf('elasticsearch:engine_check', true);
-  const elasticSearchClient = new ElkClient(elkSearchConfiguration);
-  const openSearchClient = new OpenClient(openSearchConfiguration);
-  if (engineSelector === ELK_ENGINE) {
-    logApp.info(`[SEARCH] Engine ${ELK_ENGINE} client selected by configuration`);
-    engine = elasticSearchClient;
-    const searchVersion = await searchEngineVersion();
-    if (engineCheck && searchVersion.platform !== ELK_ENGINE) {
-      throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
-    }
-    enginePlatform = ELK_ENGINE;
-    engineVersion = searchVersion.version;
-  } else if (engineSelector === OPENSEARCH_ENGINE) {
-    logApp.info(`[SEARCH] Engine ${OPENSEARCH_ENGINE} client selected by configuration`);
-    engine = openSearchClient;
-    const searchVersion = await searchEngineVersion();
-    if (engineCheck && searchVersion.platform !== OPENSEARCH_ENGINE) {
-      throw ConfigurationError('Invalid Search engine selector', { configured: engineSelector, detected: searchVersion.platform });
-    }
-    enginePlatform = OPENSEARCH_ENGINE;
-    engineVersion = searchVersion.version;
-  } else {
-    logApp.info(`[SEARCH] Engine client not specified, trying to discover it with ${OPENSEARCH_ENGINE} client`);
-    engine = openSearchClient;
-    const searchVersion = await searchEngineVersion();
-    enginePlatform = searchVersion.platform;
-    logApp.info(`[SEARCH] Engine detected to ${enginePlatform}`);
-    engineVersion = searchVersion.version;
-    engine = enginePlatform === ELK_ENGINE ? elasticSearchClient : openSearchClient;
+  // Select the client: forced, AWS SigV4 or detected from the server (see engine-detection.ts)
+  const legacyKeys = ['elasticsearch:engine_selector', 'elasticsearch:engine_check'].filter((key) => conf.get(key) !== undefined);
+  if (legacyKeys.length > 0) {
+    logApp.warn(`[SEARCH] ${legacyKeys.join(' and ')} no longer apply and are ignored: the client is detected from the server, or forced with elasticsearch:engine_client`);
   }
-  // Setup the platform runtime field option
-  isRuntimeSortingEnable = enginePlatform === ELK_ENGINE && semver.satisfies(engineVersion, '>=7.12.x');
+  const decision = await resolveEngineClient(
+    conf.get('elasticsearch:engine_client') || ENGINE_CLIENT_AUTO,
+    region,
+    () => probeEngine({
+      url: elkSearchConfiguration.node,
+      auth: elkSearchConfiguration.auth,
+      ca,
+      rejectUnauthorized: elkSearchConfiguration.tls.rejectUnauthorized,
+      proxy: elkSearchConfiguration.proxy,
+      timeout: elkSearchConfiguration.requestTimeout,
+    }),
+  );
+  if (decision.client === 'opensearch') {
+    setEngine(new OpenClient(openSearchConfiguration), false);
+  } else if (decision.client === 'elasticsearch9') {
+    // Single type bridge for the dual Elastic client: the 9.x instance is handled through the
+    // 8.x types everywhere (same call shapes at runtime, response envelope unchanged).
+    setEngine(new Elk9Client(elkSearchConfiguration) as unknown as ElkClient, true);
+  } else {
+    setEngine(new ElkClient(elkSearchConfiguration), true);
+  }
+  const enginePlatform = decision.client === 'opensearch' ? OPENSEARCH_ENGINE : ELK_ENGINE;
+  const engineVersion = decision.version ?? 'version not read';
+  const origin = {
+    detection: `detected from ${enginePlatform} ${engineVersion}`,
+    aws: 'AWS SigV4 (opensearch:region)',
+    configuration: 'forced by elasticsearch:engine_client',
+  }[decision.source];
+  logApp.info(`[SEARCH] Search engine client ${decision.client} selected, ${origin}`);
+  // The server was not read to choose the client: it must still answer, or the platform does not start
+  if (decision.source !== 'detection') {
+    await checkEngineReachable(() => (engine as OpenClient).info());
+  }
+  // Announced only when the server was read: a forced client says nothing about the server version
+  if (decision.source === 'detection' && decision.client === 'elasticsearch8') {
+    logApp.warn('[SEARCH] Elasticsearch versions before 9 are deprecated and their support will be removed in a future release. Plan the upgrade to Elasticsearch 9.x (or OpenSearch).');
+  }
+  // Setup the platform runtime field option: from the detected version, or trusted from the client
+  const detectedVersion = decision.version ? semver.coerce(decision.version) : null;
+  isRuntimeSortingEnable = enginePlatform === ELK_ENGINE
+    && (decision.client === 'elasticsearch9' || !detectedVersion || semver.gte(detectedVersion, '7.12.0'));
   const runtimeStatus = isRuntimeSortingEnable ? 'enabled' : 'disabled';
   // configure attachment processor
   attachmentProcessorEnabled = await elConfigureAttachmentProcessor();
@@ -499,7 +528,7 @@ export const isRuntimeSortEnable = (): boolean => isRuntimeSortingEnable;
  * - ElkClient: passes the signal as an option natively.
  * - OpenSearch: manually hooks up the abort signal to call .abort() on the promise.
  */
-const elExecuteWithAbortSignal = async (
+export const elExecuteWithAbortSignal = async (
   abortSignal: AbortSignal | undefined,
   elkOperation: (opts: { signal: AbortSignal | undefined }) => Promise<any>,
   openSearchOperation: () => Promise<any>,
@@ -507,7 +536,7 @@ const elExecuteWithAbortSignal = async (
   if (abortSignal?.aborted) {
     throw new AbortError('The http call was aborted before el request started.');
   }
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await elkOperation({ signal: abortSignal });
     return oebp(r);
   }
@@ -644,6 +673,23 @@ export const retryElOperations = async (
   }
 };
 
+// The OpenSearch client sends _source as a query string parameter, where an { includes, excludes }
+// object is lost (sent as an empty _source): it goes in the body, as the Elasticsearch client does.
+// Only when it lists the fields to return (includes, the base data reads): OpenSearch rebuilds a
+// filtered _source and loses the order of the keys of its objects, which some objects keep meaning
+// in (the options of a connector contract). An excludes alone only lightens the answer: it is dropped,
+// and OpenSearch returns the whole _source as stored.
+export const toOpenSearchQuery = (query: any) => {
+  const { _source, ...rest } = query;
+  if (!_source || typeof _source !== 'object' || Array.isArray(_source)) {
+    return query;
+  }
+  if (!_source.includes?.length) {
+    return rest;
+  }
+  return { ...rest, body: { ...rest.body, _source } };
+};
+
 export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[] | string | null, query: any) => {
   // Add default signal to prevent unwanted warning
   // Waiting for https://github.com/elastic/elastic-transport-js/issues/63
@@ -652,7 +698,7 @@ export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[
     const parsedSearch = await elExecuteWithAbortSignal(
       requestAbortSignal,
       (opts) => (engine as ElkClient).search(query, opts),
-      () => (engine as OpenClient).search(query),
+      () => (engine as OpenClient).search(toOpenSearchQuery(query)),
     );
     if (parsedSearch._shards.failed > 0) {
     // We do not support response with shards failure.
@@ -682,7 +728,7 @@ export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[
 
 export const elRawGet = async (args: { id: string; index: string }) => {
   const rawGetOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.get(args);
       return oebp(r);
     }
@@ -693,7 +739,7 @@ export const elRawGet = async (args: { id: string; index: string }) => {
 };
 export const elRawIndex = async (args: any) => {
   const rawIndexOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.index(args);
       return oebp(r);
     }
@@ -704,7 +750,7 @@ export const elRawIndex = async (args: any) => {
 };
 export const elRawDelete = async (args: any) => {
   const rawDeleteOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.delete(args);
       return oebp(r);
     }
@@ -715,7 +761,7 @@ export const elRawDelete = async (args: any) => {
 };
 export const elRawDeleteByQuery = async (query: any) => {
   const rawDeleteOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.deleteByQuery(query);
       return oebp(r);
     }
@@ -736,7 +782,7 @@ export const elRawBulk = async (context: AuthContext, args: any) => {
 };
 export const elRawUpdateByQuery = async (query: any) => {
   const rawUpdateOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.updateByQuery(query);
       return oebp(r);
     }
@@ -747,7 +793,7 @@ export const elRawUpdateByQuery = async (query: any) => {
 };
 export const elRawReindexByQuery = async (query: any) => {
   const rawReindexOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.reindex(query);
       return oebp(r);
     }
@@ -760,7 +806,7 @@ export const elRawReindexByQuery = async (query: any) => {
 const elOperationForMigration = (operation: (query: any) => Promise<any>): (message: string, index: string, body: any) => Promise<any> => {
   const elGetTask = async (taskId: string): Promise<any> => {
     const taskArgs = { task_id: taskId };
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const r = await engine.tasks.get(taskArgs);
       return oebp(r);
     }
@@ -1031,7 +1077,7 @@ export const buildDataRestrictions = async (
 
 export const elIndexExists = async (indexName: string): Promise<boolean> => {
   const indexExistsArg = { index: indexName };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     return engine.indices.exists(indexExistsArg);
   }
   const existOpenSearchResult = await engine.indices.exists(indexExistsArg);
@@ -1039,7 +1085,7 @@ export const elIndexExists = async (indexName: string): Promise<boolean> => {
 };
 export const elRefreshIndices = async (indices: string[]): Promise<void> => {
   const args = { index: indices };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     await engine.indices.refresh(args);
     return;
   }
@@ -1047,7 +1093,7 @@ export const elRefreshIndices = async (indices: string[]): Promise<void> => {
 };
 export const elIndexGetAlias = async (indexName: string): Promise<any> => {
   const args = { index: indexName };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await engine.indices.getAlias(args);
     return oebp(r);
   }
@@ -1056,7 +1102,7 @@ export const elIndexGetAlias = async (indexName: string): Promise<any> => {
 };
 export const elPlatformIndices = async (): Promise<any> => {
   const args = { index: `${ES_INDEX_PREFIX}*`, format: 'json' as const };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await engine.cat.indices(args);
     return oebp(r);
   }
@@ -1064,7 +1110,7 @@ export const elPlatformIndices = async (): Promise<any> => {
   return oebp(r_1);
 };
 export const elPlatformMapping = async (index: any): Promise<Record<string, any>> => {
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await engine.indices.getMapping({ index });
     return oebp(r)[index].mappings.properties;
   }
@@ -1073,7 +1119,7 @@ export const elPlatformMapping = async (index: any): Promise<Record<string, any>
 };
 export const elIndexSetting = async (index: any): Promise<{ settings: any; rollover_alias: string }> => {
   let settings;
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await engine.indices.getSettings({ index });
     settings = oebp(r)[index].settings;
   } else {
@@ -1081,13 +1127,13 @@ export const elIndexSetting = async (index: any): Promise<{ settings: any; rollo
     settings = oebp(r_1)[index].settings;
   }
 
-  const rollover_alias = engine instanceof ElkClient ? settings.index.lifecycle?.rollover_alias
+  const rollover_alias = isElkEngine(engine) ? settings.index.lifecycle?.rollover_alias
     : settings.index.plugins?.index_state_management?.rollover_alias;
   return { settings, rollover_alias };
 };
 export const elPlatformTemplates = async (): Promise<any[]> => {
   const args = { name: `${ES_INDEX_PREFIX}*`, format: 'json' as const };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const r = await engine.cat.templates(args);
     return oebp(r);
   }
@@ -1095,7 +1141,7 @@ export const elPlatformTemplates = async (): Promise<any[]> => {
   return oebp(r_1);
 };
 const elCreateLifecyclePolicy = async () => {
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     await engine.ilm.putLifecycle({
       name: `${ES_INDEX_PREFIX}-ilm-policy`,
       body: {
@@ -1192,7 +1238,7 @@ const updateCoreSettings = async (): Promise<void> => {
       },
     },
   };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     await engine.cluster.putComponentTemplate(putComponentTemplateArgs).catch((e) => {
       throw DatabaseError('Creating component template fail', { cause: e });
     });
@@ -1204,7 +1250,7 @@ const updateCoreSettings = async (): Promise<void> => {
 };
 
 const computeIndexSettings = (rolloverAlias: string | null | undefined): any => {
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     // Rollover alias can be undefined for platform initialized <= 5.8
     const cycle = rolloverAlias ? {
       lifecycle: {
@@ -1253,7 +1299,7 @@ const updateIndexTemplate = async (name: string, mapping_properties: Record<stri
       template: {
         settings: computeIndexSettings(name),
         mappings: ES_IS_OLD_MAPPING ? {
-          properties: getRetroCompatibleMappings(engine),
+          properties: getRetroCompatibleMappings(isElkEngine(engine)),
         } : {
           // Global option to prevent elastic to try any magic
           dynamic: 'strict' as const,
@@ -1269,7 +1315,7 @@ const updateIndexTemplate = async (name: string, mapping_properties: Record<stri
       },
     },
   };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     return engine.indices.putIndexTemplate(putIndexTemplateArg).catch((e) => {
       throw DatabaseError('Creating index template fail', { cause: e });
     });
@@ -1283,7 +1329,7 @@ const elCreateIndexTemplate = async (index: string, mappingProperties: Record<st
   // Compat with platform initiated prior 5.9.X
   const existsIndexTemplateArgs = { name: `${ES_INDEX_PREFIX}-index-template` };
   let isPriorVersionExist;
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     isPriorVersionExist = await engine.indices.existsIndexTemplate(existsIndexTemplateArgs).then((r) => oebp(r));
   } else {
     isPriorVersionExist = await engine.indices.existsIndexTemplate(existsIndexTemplateArgs).then((r) => oebp(r));
@@ -1294,7 +1340,7 @@ const elCreateIndexTemplate = async (index: string, mappingProperties: Record<st
   // Create / update template
   const existsComponentTemplateArgs = { name: `${ES_INDEX_PREFIX}-core-settings` };
   let componentTemplateExist;
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     componentTemplateExist = await engine.cluster.existsComponentTemplate(existsComponentTemplateArgs);
   } else {
     componentTemplateExist = await engine.cluster.existsComponentTemplate(existsComponentTemplateArgs);
@@ -1310,7 +1356,7 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
   // Update core settings
   await updateCoreSettings();
   // Reset the templates
-  const mappingProperties = engineMappingGenerator(engine);
+  const mappingProperties = engineMappingGenerator(isElkEngine(engine));
   const templates = await elPlatformTemplates();
   for (let index = 0; index < templates.length; index += 1) {
     const template = templates[index];
@@ -1324,7 +1370,7 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
     const indexMappingProperties = await elPlatformMapping(index);
     const platformSettings = computeIndexSettings(rollover_alias);
     const putSettingsArgs = { index, body: platformSettings };
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       await engine.indices.putSettings(putSettingsArgs).catch((e) => {
         throw DatabaseError('Updating index settings fail', { index, cause: e });
       });
@@ -1368,7 +1414,7 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
       const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument;
       const body = { properties };
       const putMappingArgs = { index, body };
-      if (engine instanceof ElkClient) {
+      if (isElkEngine(engine)) {
         await engine.indices.putMapping(putMappingArgs).catch((e) => {
           throw DatabaseError('Updating index mapping fail', { index, cause: e });
         });
@@ -1385,7 +1431,7 @@ export const elDeleteIndex = async (index: string) => {
   try {
     let response;
     const deleteArgs = { index: Object.keys(indexesToRemove) };
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       response = await engine.indices.delete(deleteArgs);
     } else {
       response = await engine.indices.delete(deleteArgs);
@@ -1396,7 +1442,7 @@ export const elDeleteIndex = async (index: string) => {
   }
 };
 export const elCreateIndex = async (index: string) => {
-  const mappingProperties = engineMappingGenerator(engine);
+  const mappingProperties = engineMappingGenerator(isElkEngine(engine));
   return elCreateIndexWithMapping(index, mappingProperties);
 };
 const elCreateIndexWithMapping = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
@@ -1404,14 +1450,14 @@ const elCreateIndexWithMapping = async (index: string, mappingProperties: Record
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
   let isExist;
   const existsArgs = { index: indexName };
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     isExist = await engine.indices.exists(existsArgs).then((r) => oebp(r));
   } else {
     isExist = await engine.indices.exists(existsArgs).then((r) => oebp(r));
   }
   if (!isExist) {
     const createArgs = { index: indexName, body: { aliases: { [index]: {} } } };
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       return engine.indices.create(createArgs);
     }
     return engine.indices.create(createArgs);
@@ -1422,7 +1468,7 @@ export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES):
   await updateCoreSettings();
   await elCreateLifecyclePolicy();
   const createdIndices = [];
-  const mappingProperties = engineMappingGenerator(engine);
+  const mappingProperties = engineMappingGenerator(isElkEngine(engine));
   for (let i = 0; i < indexesToCreate.length; i += 1) {
     const index = indexesToCreate[i];
     const createdIndex = await elCreateIndexWithMapping(index, mappingProperties);
@@ -1451,7 +1497,7 @@ export const initializeSchema = async () => {
 export const elDeleteIndices = async (indexesToDelete: string[]): Promise<any[]> => {
   return Promise.all(
     indexesToDelete.map((index) => {
-      if (engine instanceof ElkClient) {
+      if (isElkEngine(engine)) {
         return engine.indices.delete({ index })
           .then((response) => oebp(response))
           .catch((err) => {
@@ -1558,25 +1604,26 @@ export const computeQueryIndices = (
 // Default fetch used by loadThroughDenormalized
 // This rel_ must be low volume
 // DO NOT ADD Anything here if you are not sure about that you doing
-const REL_DEFAULT_SUFFIX = '*.keyword';
+// Exact field names, never wildcard patterns: every shard of every search resolves
+// each docvalue_fields pattern against its whole mapping when it parses the request.
 const REL_DEFAULT_FETCH = [
   // SECURITY
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_GRANTED_TO}${REL_DEFAULT_SUFFIX}`,
+  RELATION_OBJECT_MARKING,
+  RELATION_GRANTED_TO,
   // DEFAULT (LOW VOLUME)
-  `${REL_INDEX_PREFIX}${RELATION_COVERED}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_RESULT_OF}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_PARTICIPANT}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_ASSIGNEE}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_BORN_IN}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_ETHNICITY}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_SAMPLE}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_PARTICIPATE_TO}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_IN_PIR}${REL_DEFAULT_SUFFIX}`,
-];
+  RELATION_COVERED,
+  RELATION_RESULT_OF,
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_PARTICIPANT,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_BORN_IN,
+  RELATION_ETHNICITY,
+  RELATION_SAMPLE,
+  RELATION_PARTICIPATE_TO,
+  RELATION_IN_PIR,
+].flatMap((relationType) => REF_RELATION_ID_FIELDS.map((field) => buildRefRelationSearchKey(relationType, field)));
 const REL_COUNT_SCRIPT_FIELD = {
   script: {
     lang: 'painless',
@@ -1644,6 +1691,13 @@ export const specialElasticCharsEscape = (query: string) => {
 // Keep * as wildcard, fuzzy ~ is handled separately as it is only valid at the end of a term
 const specialElasticCharsEscapeWithLuceneSyntax = (query: string) => {
   return query.replace(/([/+|\-()^~={}[\]:?!"\\])/g, '\\$1');
+};
+// Keep * and ? as wildcards and whitespace as terms separator (each term is matched against the analyzed tokens),
+// but escape everything else, including AND / OR / NOT keywords
+const specialElasticCharsEscapeKeepWildcards = (query: string) => {
+  return query.trim().split(/\s+/)
+    .map((term) => term.replace(/([/+|\-()^~={}[\]:!"\\&])/g, '\\$1').replace(/^(AND|OR|NOT)$/, '\\$1'))
+    .join(' ');
 };
 // Lucene fuzzy operator: a term ending with ~ and an optional edit distance of 0, 1 or 2 (lazarous~, lazarous~1)
 const LUCENE_FUZZY_TERM_REGEX = /^(.+?)(~[0-2]?)$/;
@@ -1822,6 +1876,21 @@ export const elBatchIds = async <T extends BasicStoreBase>(
     }
   }
   return findHits;
+};
+/**
+ * Like elBatchIds, but an element is found from any of its ids (internal id, standard id or other stix ids),
+ * for fields that store an id other than the internal one, such as a standard id that may since have moved to
+ * the stix ids (merge, observable upgrade). The type filter is the union of the requested types.
+ */
+export const elBatchAnyIds = async <T extends BasicStoreBase>(
+  context: AuthContext,
+  user: AuthUser,
+  elements: { id: string; type: string | string[] }[],
+) => {
+  const ids = elements.map((e) => e.id);
+  const types = R.uniq(elements.flatMap((e) => (Array.isArray(e.type) ? e.type : [e.type])));
+  const mapHits = await elFindByIds<T>(context, user, ids, { type: types, includeDeletedInDraft: true, toMap: true, mapWithAllIds: true }) as Record<string, T>;
+  return ids.map((id) => mapHits[id]);
 };
 export const elBatchIdsWithRelCount = async <T extends BasicStoreBase>(
   context: AuthContext,
@@ -2249,7 +2318,7 @@ export const buildLocalMustFilter = (validFilter: any) => {
           for (let i = 0; i < nestedValues.length; i += 1) {
             const nestedSearchValue = nestedValues[i].toString();
             if (nestedOperator === 'wildcard') {
-              nestedShould.push({ query_string: { query: `${nestedSearchValue}`, fields: [nestedFieldKey] } });
+              nestedShould.push({ query_string: { query: specialElasticCharsEscapeKeepWildcards(nestedSearchValue), fields: [nestedFieldKey] } });
             } else if (nestedOperator === 'not_eq') {
               nestedMustNot.push({
                 multi_match: {
@@ -3382,7 +3451,7 @@ export const elLoadBy = async <T extends BasicStoreBase>(
 };
 
 export const elRawCount = async (query: any): Promise<number> => {
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     return engine.count(query)
       .then((data) => {
         return oebp(data).count;
@@ -3498,73 +3567,68 @@ export const elHistogramCount = async (
     body,
   };
   logApp.debug('[SEARCH] histogramCount', { query });
-  return elRawSearch(context, user, types, query).then((data) => {
-    const { buckets } = data.aggregations.count_over_time;
-    const dataToPairs = R.toPairs(buckets);
-    return R.map((b) => ({ date: R.head(b), value: R.last(b)[unique ? 'unique' : 'weight'].value }), dataToPairs);
-  });
+  return elRawSearch(context, user, types, query)
+    .then((data) => {
+      const { buckets } = data.aggregations.count_over_time;
+      const dataToPairs = R.toPairs(buckets);
+      return R.map((b) => ({ date: R.head(b), value: R.last(b)[unique ? 'unique' : 'weight'].value }), dataToPairs);
+    })
+    .catch((err) => {
+      throw wrapEngineError('Histogram computation count fail', err, { query });
+    });
 };
-// Types are indexed in lowercase: give back the label of the right entity type
-const convertEntityTypeKeyToLabel = (key: string) => (isStixCoreRelationship(key) ? key : generateInternalType({ type: key }));
+// Types are indexed in lowercase: give back the registered type, or a label converted from the key for a name of
+// no registered type
+const convertEntityTypeKeyToLabel = (key: string) => getRegisteredTypeFromIndexedName(key)
+  ?? (isStixCoreRelationship(key) ? key : generateInternalType({ type: key }));
+// Weighted total of the documents, as the time series count them: the inference weight of a relationship,
+// 1 for a document without weight
+const INFERENCE_WEIGHT_AGGREGATION = { weight: { sum: { field: 'i_inference_weight', missing: 1 } } };
+export type RankingOrder = 'asc' | 'desc';
+// Terms options ranking the values on their weighted total, `weightPath` pointing to its sum in each bucket. The
+// highest values are kept from the top of each shard, as by any terms aggregation. The lowest cannot be: a value
+// rare on a shard but frequent on another would be taken for one of them. Every shard returns all of its values
+// instead, up to MAX_EXACT_RANKING_SIZE: when none is left out, each value is summed over every shard, exactly.
+const buildRankingTerms = (rankingOrder: RankingOrder, weightPath: string) => (rankingOrder === 'asc'
+  ? { size: MAX_EXACT_RANKING_SIZE, shard_size: MAX_EXACT_RANKING_SIZE, order: { [weightPath]: 'asc' } }
+  : { size: MAX_AGGREGATION_SIZE, order: { [weightPath]: 'desc' } });
+// The documents of the values a shard or the final reduction left out are counted in sum_other_doc_count:
+// the lowest values may be among them, the ranking is refused rather than wrong
+const checkExactRanking = (sumOtherDocCount: number) => {
+  if (sumOtherDocCount > 0) {
+    throw FunctionalError('Too many values to rank the lowest ones, narrow the filters or the period', {
+      reason: BREAKDOWN_REFUSAL_REASONS.TOO_MANY_VALUES,
+      max: MAX_EXACT_RANKING_SIZE,
+    });
+  }
+};
+export type AggregationBucket = { key: string; label: string; value: number; count: number };
+// The values kept by the size cap, and the number of documents of the values left out (0: every value is there)
+export type AggregationRanking = { buckets: AggregationBucket[]; sumOtherDocCount: number };
 type AggregationCountOpts = QueryBodyBuilderOpts & {
   field: string;
   weightField?: string | null;
   normalizeLabel?: boolean | null;
   convertEntityTypeLabel?: boolean | null;
-  // Orders the buckets by value, so the ones kept by the size cap are the lowest or the highest values.
-  // Without it, the buckets are ordered by number of documents. Not named `order`: the distribution APIs
-  // spread their GraphQL arguments here, and their own `order` only sorts the result after the aggregation.
-  bucketsOrder?: 'asc' | 'desc' | null;
-  // Ranks the buckets on their number of documents only, without the weight sum nor the missing bucket:
-  // a much cheaper request when only the ranking of the values is needed. `value` is then the number of documents.
-  rankByCount?: boolean | null;
 };
-export const elAggregationCount = async (
+// Terms on a field, each bucket with its weighted total as value, `terms` completing the terms aggregation
+const aggregationTermsCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
-  options: AggregationCountOpts = { field: '' },
-): Promise<{ key: string; label: string; value: any; count: number }[]> => {
-  const {
-    field,
-    types = null,
-    weightField = 'i_inference_weight',
-    normalizeLabel = true,
-    convertEntityTypeLabel = false,
-    bucketsOrder = null,
-    rankByCount = false,
-  } = options;
+  options: AggregationCountOpts,
+  terms: Record<string, unknown>,
+): Promise<AggregationRanking> => {
+  const { field, types = null, weightField = 'i_inference_weight', normalizeLabel = true, convertEntityTypeLabel = false } = options;
   const isIdFields = field?.endsWith('internal_id') || field?.endsWith('.id');
-  const queryField = buildFieldForQuery(field);
-  // Only keyword fields accept a string missing value; date/numeric/boolean/object-flat fields do not.
-  const isKeywordField = queryField.endsWith('.keyword');
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
-  const genres: any = {
-    terms: {
-      field: queryField,
-      size: MAX_AGGREGATION_SIZE,
+  body.aggs = {
+    genres: {
+      terms: { field: buildFieldForQuery(field), size: MAX_AGGREGATION_SIZE, ...terms },
+      aggs: { weight: { sum: { field: weightField, missing: 1 } } },
     },
   };
-  if (rankByCount) {
-    genres.terms.order = { _count: bucketsOrder === 'asc' ? 'asc' : 'desc' };
-  } else {
-    genres.aggs = {
-      weight: {
-        sum: {
-          field: weightField,
-          missing: 1,
-        },
-      },
-    };
-    if (isKeywordField) {
-      genres.terms.missing = 'unknown';
-    }
-    if (bucketsOrder === 'asc' || bucketsOrder === 'desc') {
-      genres.terms.order = { weight: bucketsOrder };
-    }
-  }
-  body.aggs = { genres };
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     body,
@@ -3572,23 +3636,60 @@ export const elAggregationCount = async (
   logApp.debug('[SEARCH] aggregationCount', { query });
   return elRawSearch(context, user, types, query)
     .then((data) => {
-      const { buckets } = data.aggregations.genres;
-      return buckets.map((b: any) => {
-        let label = b.key;
-        if (typeof label === 'number') {
-          label = String(b.key);
-        } else if (field === 'entity_type' && convertEntityTypeLabel) {
-          label = convertEntityTypeKeyToLabel(b.key);
-        } else if (!isIdFields && normalizeLabel) {
-          label = pascalize(b.key);
-        }
-        // key is the raw term as indexed, usable to target the same bucket in a later aggregation
-        return { key: String(b.key), label, value: rankByCount ? b.doc_count : b.weight.value, count: b.doc_count };
-      });
+      const { buckets, sum_other_doc_count: sumOtherDocCount = 0 } = data.aggregations.genres;
+      return {
+        sumOtherDocCount,
+        buckets: buckets.map((b: any) => {
+          let label = b.key;
+          if (typeof label === 'number') {
+            label = String(b.key);
+          } else if (field === 'entity_type' && convertEntityTypeLabel) {
+            label = convertEntityTypeKeyToLabel(b.key);
+          } else if (!isIdFields && normalizeLabel) {
+            label = pascalize(b.key);
+          }
+          // key is the raw term as indexed, usable to target the same bucket in a later aggregation
+          return { key: String(b.key), label, value: b.weight.value, count: b.doc_count };
+        }),
+      };
     })
     .catch((err) => {
-      throw DatabaseError('Aggregation computation count fail', { cause: err, query });
+      throw wrapEngineError('Aggregation computation count fail', err, { query });
     });
+};
+// The top values of a field by number of documents, with their weighted total, and the documents without value
+// in an "unknown" bucket for a keyword field
+export const elAggregationCount = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  options: AggregationCountOpts = { field: '' },
+): Promise<AggregationBucket[]> => {
+  // Only keyword fields accept a string missing value; date/numeric/boolean/object-flat fields do not.
+  const isKeywordField = buildFieldForQuery(options.field).endsWith('.keyword');
+  const { buckets } = await aggregationTermsCount(context, user, indexName, options, isKeywordField ? { missing: 'unknown' } : {});
+  return buckets;
+};
+export type AggregationRankingOpts = QueryBodyBuilderOpts & {
+  field: string;
+  rankingOrder: RankingOrder;
+};
+// The values of a field ranked on their weighted total, the same sum the time series count, the highest (desc)
+// or the lowest (asc) first, as they are indexed. No missing bucket: a real "unknown" value is a value like any
+// other. The lowest values are ranked exactly, or refused beyond MAX_EXACT_RANKING_SIZE values.
+export const elAggregationRanking = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  options: AggregationRankingOpts,
+): Promise<AggregationRanking> => {
+  const { rankingOrder } = options;
+  const ranking = await aggregationTermsCount(context, user, indexName, { ...options, normalizeLabel: false }, buildRankingTerms(rankingOrder, 'weight'));
+  // Checked out of the request: a refusal is not an engine failure
+  if (rankingOrder === 'asc') {
+    checkExactRanking(ranking.sumOtherDocCount);
+  }
+  return ranking;
 };
 // Source or target of a relationship, stored in its nested connections
 export type ConnectionSide = 'from' | 'to';
@@ -3614,37 +3715,50 @@ const buildConnectionTypesAggregation = (side: ConnectionSide, terms: Record<str
     },
   },
 });
-const INFERENCE_WEIGHT_AGGREGATION = { weight: { sum: { field: 'i_inference_weight', missing: 1 } } };
-export type ConnectionTypesAggregationCountOpts = QueryBodyBuilderOpts & {
+export type ConnectionTypesRankingOpts = QueryBodyBuilderOpts & {
   connectionSide: ConnectionSide;
-  bucketsOrder?: 'asc' | 'desc' | null;
+  rankingOrder: RankingOrder;
 };
-// Ranks the types of the source or target of the relationships on their number of relationships, as
-// elAggregationCount with rankByCount does for a field of the relationships themselves
-export const elConnectionTypesAggregationCount = async (
+// Ranks the types of the source or target of the relationships on the weighted total of their relationships,
+// as elAggregationRanking does for a field of the relationships themselves
+export const elConnectionTypesRanking = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
-  options: ConnectionTypesAggregationCountOpts,
-): Promise<{ key: string; label: string; value: number; count: number }[]> => {
-  const { connectionSide, types = null, bucketsOrder = null } = options;
+  options: ConnectionTypesRankingOpts,
+): Promise<AggregationRanking> => {
+  const { connectionSide, types = null, rankingOrder } = options;
   const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
   body.size = 0;
-  const terms = { size: MAX_AGGREGATION_SIZE, exclude: CONNECTION_ABSTRACT_TYPES, order: { _count: bucketsOrder === 'asc' ? 'asc' : 'desc' } };
-  body.aggs = { connections: buildConnectionTypesAggregation(connectionSide, terms) };
+  // The weight is summed on the relationships of each type. The abstract types are excluded before the ranking:
+  // they are not values left out.
+  const terms = { ...buildRankingTerms(rankingOrder, 'relationships>weight'), exclude: CONNECTION_ABSTRACT_TYPES };
+  body.aggs = { connections: buildConnectionTypesAggregation(connectionSide, terms, INFERENCE_WEIGHT_AGGREGATION) };
   const query = {
     index: getIndicesToQuery(context, user, indexName),
     body,
   };
-  logApp.debug('[SEARCH] connectionTypesAggregationCount', { query });
-  return elRawSearch(context, user, types, query)
+  logApp.debug('[SEARCH] connectionTypesRanking', { query });
+  const ranking: AggregationRanking = await elRawSearch(context, user, types, query)
     .then((data) => {
-      const { buckets } = data.aggregations.connections.side.types;
-      return buckets.map((b: any) => ({ key: String(b.key), label: convertEntityTypeKeyToLabel(b.key), value: b.doc_count, count: b.doc_count }));
+      const { buckets, sum_other_doc_count: sumOtherDocCount = 0 } = data.aggregations.connections.side.types;
+      return {
+        sumOtherDocCount,
+        buckets: buckets.map((b: any) => ({
+          key: String(b.key),
+          label: convertEntityTypeKeyToLabel(b.key),
+          value: b.relationships.weight.value,
+          count: b.doc_count,
+        })),
+      };
     })
     .catch((err) => {
-      throw DatabaseError('Connection types aggregation count fail', { cause: err, query });
+      throw wrapEngineError('Connection types ranking fail', err, { query });
     });
+  if (rankingOrder === 'asc') {
+    checkExactRanking(ranking.sumOtherDocCount);
+  }
+  return ranking;
 };
 export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
   field: string;
@@ -3658,8 +3772,7 @@ export type HistogramBreakdownCountOpts = QueryBodyBuilderOpts & {
   // types: the terms aggregation restricted to the keys is used, whatever `filterPerKey`.
   connectionSide?: ConnectionSide | null;
 };
-// Reserved key of the histogram of the entities carrying none of the requested keys
-export const HISTOGRAM_BREAKDOWN_OTHER_KEY = '__other__';
+export type HistogramBreakdownPoint = { date: string; value: number };
 // Filters are keyed by position: a value, which may contain dots, never becomes a field name of the response
 const breakdownFilterKeyOf = (index: number) => `k${index}`;
 // Aggregations of elHistogramBreakdownCount: `breakdown` holds one bucket per key, `other` the documents carrying none of them
@@ -3713,12 +3826,13 @@ export const buildHistogramBreakdownAggregations = (
 };
 // One date histogram per term of `field`, restricted to the given raw `keys`, in a single query.
 // With `withOther`, a sibling aggregation counts the entities carrying none of the keys (entities without value included).
+// Its histogram is returned apart from the ones of the keys, whatever the keys are named (null without `withOther`).
 export const elHistogramBreakdownCount = async (
   context: AuthContext,
   user: AuthUser,
   indexName: string[] | string | undefined,
   options: HistogramBreakdownCountOpts,
-): Promise<Map<string, { date: string; value: number }[]>> => {
+): Promise<{ histograms: Map<string, HistogramBreakdownPoint[]>; other: HistogramBreakdownPoint[] | null }> => {
   const { interval, keys, withOther = false, filterPerKey = false, connectionSide = null, types = null } = options;
   const dateAttribute = options.dateAttribute || 'created_at';
   const dateFormat = getHistogramDateFormat(interval);
@@ -3738,7 +3852,6 @@ export const elHistogramBreakdownCount = async (
   body.aggs = buildHistogramBreakdownAggregations(options, countOverTime);
   const query = {
     index: getIndicesToQuery(context, user, indexName),
-    _source_excludes: '*',
     // Only what is read below: the response of 50 series over a long period weighs megabytes otherwise
     filter_path: [
       '_shards',
@@ -3754,14 +3867,14 @@ export const elHistogramBreakdownCount = async (
   };
   logApp.debug('[SEARCH] histogramBreakdownCount', { query });
   // A histogram without any document is removed from the filtered response
-  const toPoints = (countOverTimeAggregation: any) => {
+  const toPoints = (countOverTimeAggregation: any): HistogramBreakdownPoint[] => {
     const dateBuckets = R.toPairs(countOverTimeAggregation?.buckets ?? {}) as [string, any][];
     return dateBuckets.map(([date, dateBucket]) => ({ date, value: dateBucket.weight.value }));
   };
   return elRawSearch(context, user, types, query)
     .then((data) => {
       const aggregations = data.aggregations ?? {};
-      const histograms = new Map<string, { date: string; value: number }[]>();
+      const histograms = new Map<string, HistogramBreakdownPoint[]>();
       if (connectionSide) {
         (aggregations.breakdown?.side?.types?.buckets ?? []).forEach((bucket: any) => {
           histograms.set(String(bucket.key), toPoints(bucket.relationships?.count_over_time));
@@ -3773,13 +3886,58 @@ export const elHistogramBreakdownCount = async (
           histograms.set(String(bucket.key), toPoints(bucket.count_over_time));
         });
       }
-      if (withOther) {
-        histograms.set(HISTOGRAM_BREAKDOWN_OTHER_KEY, toPoints(aggregations.other?.count_over_time));
-      }
-      return histograms;
+      const other = withOther ? toPoints(aggregations.other?.count_over_time) : null;
+      return { histograms, other };
     })
     .catch((err) => {
-      throw DatabaseError('Histogram breakdown computation fail', { cause: err, query });
+      throw wrapEngineError('Histogram breakdown computation fail', err, { query });
+    });
+};
+export type KeywordWrittenFormsOpts = QueryBodyBuilderOpts & {
+  // A single valued keyword field
+  field: string;
+  // Indexed forms of the field, as a terms aggregation on it returns them
+  keys: string[];
+};
+// Written form of indexed values of a keyword field: the value of one of the documents of each of them, by indexed
+// form. The keyword normalizer lowercases and folds every value to its indexed form, which only the engine
+// computes exactly for any letter: the documents are matched on the indexed form of the field itself.
+export const elKeywordWrittenForms = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string[] | string | undefined,
+  options: KeywordWrittenFormsOpts,
+): Promise<Map<string, string>> => {
+  const { field, keys, types = null } = options;
+  if (keys.length === 0) {
+    return new Map();
+  }
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
+  body.size = 0;
+  body.aggs = {
+    keys: {
+      terms: { field: buildFieldForQuery(field), include: keys, size: keys.length },
+      aggs: { written: { top_hits: { size: 1, _source: [field] } } },
+    },
+  };
+  const query = {
+    index: getIndicesToQuery(context, user, indexName),
+    body,
+  };
+  logApp.debug('[SEARCH] keywordWrittenForms', { query });
+  return elRawSearch(context, user, types, query)
+    .then((data) => {
+      const writtenForms = new Map<string, string>();
+      (data.aggregations?.keys?.buckets ?? []).forEach((bucket: any) => {
+        const written = bucket.written?.hits?.hits?.[0]?._source?.[field];
+        if (typeof written === 'string') {
+          writtenForms.set(String(bucket.key), written);
+        }
+      });
+      return writtenForms;
+    })
+    .catch((err) => {
+      throw wrapEngineError('Keyword written forms computation fail', err, { query });
     });
 };
 
@@ -3915,7 +4073,7 @@ export const elAggregationRelationsCount = async (
       });
     })
     .catch((e) => {
-      throw DatabaseError('Processing aggregation relations count fail', { cause: e });
+      throw wrapEngineError('Processing aggregation relations count fail', e);
     });
 };
 type AggregationNestedTermsWithFilterOpts = QueryBodyBuilderOpts & {
@@ -3964,7 +4122,7 @@ export const elAggregationNestedTermsWithFilter = async (
       });
     })
     .catch((err) => {
-      throw DatabaseError('Aggregation computation count fail', { cause: err, query });
+      throw wrapEngineError('Aggregation computation count fail', err, { query });
     });
 };
 type AggregationsListOpts = QueryBodyBuilderOpts & {
@@ -4294,7 +4452,7 @@ export const elIndex = async (
   }
   const indexOperation = async () => {
     // Branching kept to please tsc
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       return await engine.index(indexParams);
     } else {
       return await engine.index(indexParams);
@@ -4373,7 +4531,7 @@ export const elDelete = (indexName: string, documentId: string) => {
     refresh: true,
   };
   const deleteOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       return await engine.delete(deleteRequest);
     }
     return await engine.delete(deleteRequest);
@@ -4631,7 +4789,7 @@ export const elReindexElements = async (
     refresh: true,
   };
   const reindexOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       return await engine.reindex(reindexParams);
     }
     return await engine.reindex(reindexParams);
@@ -5344,7 +5502,7 @@ export const elUpdateElement = async (context: AuthContext, user: AuthUser, inst
 
 export const getStats = (indices = READ_PLATFORM_INDICES) => {
   const statsOperation = async () => {
-    if (engine instanceof ElkClient) {
+    if (isElkEngine(engine)) {
       const engineIndicesStats = await engine.indices.stats({ index: indices });
       return oebp(engineIndicesStats)._all.primaries;
     }
@@ -5359,7 +5517,7 @@ export const getStats = (indices = READ_PLATFORM_INDICES) => {
 // Scoped to `${ES_INDEX_PREFIX}*` (not '*'): on a cluster shared with other applications,
 // a plain wildcard would sum every index in the cluster, not just OpenCTI's own size.
 const fetchEngineUsedSize = async (): Promise<number> => {
-  if (engine instanceof ElkClient) {
+  if (isElkEngine(engine)) {
     const engineIndicesStats = await engine.indices.stats({ index: `${ES_INDEX_PREFIX}*`, metric: ['store'], expand_wildcards: 'all' as any });
     return Number(oebp(engineIndicesStats)?._all?.primaries?.store?.size_in_bytes ?? 0);
   }

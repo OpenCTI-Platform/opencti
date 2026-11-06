@@ -4,12 +4,15 @@ import { isDraftWorkspaceFilterGroup } from '../filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { FilterDefinition } from '../hooks/useAuth';
 import { isCustomFieldAttribute } from '../customFields';
-import { daysAgo, monthsAgo } from '../Time';
+import { dayStartDate, daysAgo, monthsAgo, parse } from '../Time';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
 import { parseVariableToken } from '../../components/dashboard/dashboardVariablesResolution';
 
 export const BREAKDOWN_LIMIT_OPTIONS = [5, 10, 20, 50];
 export const DEFAULT_BREAKDOWN_LIMIT = 10;
+
+// Draft workspaces cannot be broken down: read on the filters of the widget, or on the content of its saved filter
+const isDraftWorkspaceDataset = (dataSelection: Widget['dataSelection']) => isDraftWorkspaceFilterGroup(dataSelection[0]?.filters);
 
 // Relation refs and id attributes with a small, stable cardinality. Vocabularies and enums are
 // always allowed, whatever their key. The backend enforces the same fields, split in three
@@ -40,7 +43,7 @@ export const AUDITS_BREAKDOWN_FIELDS: { key: string; label: string }[] = [
 // Fields of the logs whose values are entity types (History or Activity, the type of the related entity)
 const AUDITS_TYPE_FIELDS = ['entity_type', 'context_data.entity_type'];
 
-type BreakdownField = { key: string; label: string };
+export type BreakdownField = { key: string; label: string };
 interface BreakdownPerspective {
   // Filter key restricting the types of the dataset
   typeFilterKey: string;
@@ -100,7 +103,9 @@ export const getBreakdownEntityTypes = (filters?: FilterGroup | null, perspectiv
   if (!filters || !typeFilterKey) return [];
   const isRestrictingGroup = filters.mode === 'and' || filters.filters.length + filters.filterGroups.length === 1;
   const typeFilter = filters.filters.find((filter) => filter.key === typeFilterKey);
-  if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== 'eq') || typeFilter.mode === 'and') {
+  // Several types in "and" only keep the elements of every type, while a single one restricts the type whatever the mode
+  const isTypeIntersection = typeFilter?.mode === 'and' && typeFilter.values.length > 1;
+  if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== 'eq') || isTypeIntersection) {
     return [];
   }
   return typeFilter.values.filter((value): value is string => typeof value === 'string');
@@ -131,11 +136,13 @@ export const resolveBreakdownTypeVariables = (types: string[], variables?: Dashb
  * (BREAKDOWN_ALLOWED_REFS, vocabularies and enums); with several types, the ones they have in common,
  * plus the type itself, also offered for a single abstract type, which holds several concrete ones.
  * Relationships can also be broken down by the type of their source or target.
+ * The fields are ordered by their label as shown, `translate`d.
  */
 export const getBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   entityTypes: string[],
   perspective: WidgetPerspective = 'entities',
+  translate: (label: string) => string = (label) => label,
 ): BreakdownField[] => {
   const breakdownPerspective = getBreakdownPerspective(perspective);
   if (!breakdownPerspective) return [];
@@ -157,48 +164,66 @@ export const getBreakdownFieldOptions = (
   if (entityTypes.length !== 1 || isAbstractType) {
     options.push(breakdownPerspective.typeField);
   }
-  return options.sort((a, b) => a.label.localeCompare(b.label));
+  return options.sort((a, b) => translate(a.label).localeCompare(translate(b.label)));
 };
 
 /**
  * Fields the first dataset of the widget can be broken down by: the fields of its entity or relationship
  * types for the entities and the relationships, the allowed fields of the logs for the audits.
  * The dataset filters are the ones of the widget, its saved filters read: its type variables are
- * resolved with the dashboard `variables`.
+ * resolved with the dashboard `variables`. None for draft workspaces, which a saved filter can select.
+ * The audits fields keep their order, the others are ordered by their `translate`d label.
  */
 export const getWidgetBreakdownFieldOptions = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   widget: Pick<Widget, 'perspective' | 'dataSelection'>,
   variables?: DashboardVariable[],
+  translate?: (label: string) => string,
 ): BreakdownField[] => {
+  if (isDraftWorkspaceDataset(widget.dataSelection)) {
+    return [];
+  }
   if (widget.perspective === 'audits') {
     return AUDITS_BREAKDOWN_FIELDS;
   }
   const perspective = widget.perspective ?? 'entities';
   const types = resolveBreakdownTypeVariables(getBreakdownEntityTypes(widget.dataSelection[0]?.filters, perspective), variables);
-  return getBreakdownFieldOptions(filterKeysSchema, types, perspective);
+  return getBreakdownFieldOptions(filterKeysSchema, types, perspective, translate);
 };
 
 /**
- * Whether the widget breakdown field can be used on its dataset, once its saved filters and variables
- * are resolved: saved or imported widgets can carry a field the API refuses for the entity types of
- * their filters, or for their perspective.
+ * Whether the widget breakdown field can be used on its dataset, once its saved filters are resolved:
+ * saved or imported widgets can carry a field the API refuses for the entity types of their filters,
+ * or for their perspective. Its type variables are read as the types they allow, given the dashboard `variables`.
  */
 export const isBreakdownFieldSupported = (
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
   widget: Pick<Widget, 'perspective' | 'dataSelection' | 'parameters'>,
+  variables?: DashboardVariable[],
 ) => {
   const breakdownBy = widget.parameters?.breakdownBy;
+  if (!breakdownBy || isDraftWorkspaceDataset(widget.dataSelection)) {
+    return false;
+  }
   // The API accepts the type itself for any dataset: it is only not offered for a single type, a single series.
   // A type variable may well hold a single type once resolved.
-  if (breakdownBy && getBreakdownPerspective(widget.perspective ?? 'entities')?.typeField.key === breakdownBy) {
+  if (getBreakdownPerspective(widget.perspective ?? 'entities')?.typeField.key === breakdownBy) {
     return true;
   }
-  return getWidgetBreakdownFieldOptions(filterKeysSchema, widget).some(({ key }) => key === breakdownBy);
+  return getWidgetBreakdownFieldOptions(filterKeysSchema, widget, variables).some(({ key }) => key === breakdownBy);
 };
 
 export const getWidgetBreakdownLimit = (parameters?: WidgetParameters | null) => {
   return parameters?.breakdownLimit ?? DEFAULT_BREAKDOWN_LIMIT;
+};
+
+/**
+ * Numbers of series offered, with the one of the widget among them: the API accepts any from 1 to 50,
+ * so an imported widget, or one written through the API, can hold another.
+ */
+export const getBreakdownLimitOptions = (parameters?: WidgetParameters | null) => {
+  const limit = getWidgetBreakdownLimit(parameters);
+  return BREAKDOWN_LIMIT_OPTIONS.includes(limit) ? BREAKDOWN_LIMIT_OPTIONS : [...BREAKDOWN_LIMIT_OPTIONS, limit].sort((a, b) => a - b);
 };
 
 export const getWidgetBreakdownOrder = (parameters?: WidgetParameters | null): 'asc' | 'desc' => {
@@ -211,13 +236,18 @@ export const getWidgetBreakdownOther = (parameters?: WidgetParameters | null) =>
 
 /**
  * Start date used when the dashboard sets none: a daily breakdown over the default 12 months
- * would draw too many bars, so it only looks back 30 days.
+ * would draw too many bars, so it only looks back 30 days. It looks back from the `endDate` of the
+ * dashboard when it sets one, from today otherwise: an end date in the past keeps a period to draw.
  */
-export const getBreakdownDefaultStartDate = (interval: string) => {
-  return interval === 'day' ? daysAgo(30) : monthsAgo(12);
+export const getBreakdownDefaultStartDate = (interval: string, endDate?: string | null) => {
+  if (!endDate) {
+    return interval === 'day' ? daysAgo(30) : monthsAgo(12);
+  }
+  return interval === 'day' ? daysAgo(30, endDate) : parse(dayStartDate(endDate)).subtract(12, 'months').format();
 };
 
 type BreakdownWidget = Pick<Widget, 'type' | 'perspective' | 'dataSelection'>;
+type ConfiguredWidget = { parameters?: WidgetParameters | null };
 
 // Audits lines and areas can count the distinct values of an attribute instead of the events
 const AUDITS_DISTINCT_COUNT_TYPES = ['line', 'area'];
@@ -227,272 +257,171 @@ const isCountingDistinctValues = (widget: BreakdownWidget) => {
     && widget.dataSelection.some((selection) => selection.unique === true);
 };
 
-// A breakdown expands the single dataset of a time series widget, counting its entities, relationships or events.
-// A relationships widget can also hold entities datasets: they cannot be broken down as relationships.
-const canWidgetBeBrokenDown = (widget: BreakdownWidget) => {
-  const [dataset] = widget.dataSelection;
-  return isBreakdownPerspective(widget.perspective)
-    && getCurrentCategory(widget.type) === 'timeseries'
-    && widget.dataSelection.length === 1
-    && (dataset.perspective ?? widget.perspective) === widget.perspective
-    && !isDraftWorkspaceFilterGroup(dataset.filters)
-    && !isCountingDistinctValues(widget);
-};
-
 // Hosts whose widgets can be broken down: the dashboards, and the custom views, whose widgets read the
 // platform data the same way, around their entity. A fintel template writes its widgets in a document.
 const BREAKDOWN_HOST_KINDS: WidgetHost['kind'][] = ['workspace', 'custom-view'];
-const isBreakdownHost = (host?: WidgetHost) => !!host && BREAKDOWN_HOST_KINDS.includes(host.kind);
 
 /**
- * Whether the breakdown can be configured: in workspace dashboards and custom views.
+ * Whether the widget can be broken down: a breakdown expands the single dataset of a time series widget,
+ * counting its entities, relationships or events, outside the drafts. A relationships widget can also hold
+ * entities datasets: they cannot be broken down as relationships. With a `host`, whether it breaks its
+ * widgets down too (the workspace dashboards and the custom views); without one, the widget alone decides.
  */
-export const isWidgetBreakdownEligible = (widget: BreakdownWidget, host?: WidgetHost) => {
-  return isBreakdownHost(host) && canWidgetBeBrokenDown(widget);
+export const canWidgetBreakDown = (widget: BreakdownWidget, host?: WidgetHost) => {
+  const [dataset] = widget.dataSelection;
+  return (!host || BREAKDOWN_HOST_KINDS.includes(host.kind))
+    && isBreakdownPerspective(widget.perspective)
+    && getCurrentCategory(widget.type) === 'timeseries'
+    && widget.dataSelection.length === 1
+    && (dataset.perspective ?? widget.perspective) === widget.perspective
+    && !isDraftWorkspaceDataset(widget.dataSelection)
+    && !isCountingDistinctValues(widget);
 };
 
 /**
- * Whether the breakdown controls are shown: the widget could be broken down once reduced to its
- * first dataset, counting every event. getWidgetBreakdownLockReason says why they are disabled.
+ * Whether the widget is configured with a breakdown, whatever renders it: its field is set and the widget
+ * can be broken down.
  */
-export const isWidgetBreakdownConfigurable = (widget: BreakdownWidget, host?: WidgetHost) => {
+export const hasWidgetBreakdown = (widget: BreakdownWidget & ConfiguredWidget) => {
+  return isBreakdownField(widget.parameters?.breakdownBy) && canWidgetBreakDown(widget);
+};
+
+/**
+ * Whether the widget must be rendered as a breakdown: configured with one, in a `host` that breaks its widgets down.
+ */
+export const isWidgetBreakdownActive = (widget: BreakdownWidget & ConfiguredWidget, host?: WidgetHost) => {
+  return !!host && isBreakdownField(widget.parameters?.breakdownBy) && canWidgetBreakDown(widget, host);
+};
+
+/**
+ * How the editor shows the breakdown: 'hidden' when the widget could not be broken down even reduced to its
+ * first dataset counting every event, 'editable' when it can be, disabled otherwise, for the reason given:
+ * a breakdown uses a single dataset ('several-datasets'), and counts every event ('distinct-values').
+ */
+export type BreakdownEditorState = 'hidden' | 'editable' | 'several-datasets' | 'distinct-values';
+export const getBreakdownEditorState = (widget: BreakdownWidget, host: WidgetHost): BreakdownEditorState => {
   const [firstSelection] = widget.dataSelection;
-  return !!firstSelection && isWidgetBreakdownEligible({ ...widget, dataSelection: [{ ...firstSelection, unique: false }] }, host);
-};
-
-/**
- * Why the breakdown of a configurable widget cannot be changed: a breakdown uses a single dataset,
- * and counts every event of the logs.
- */
-export const getWidgetBreakdownLockReason = (widget: BreakdownWidget): 'several-datasets' | 'distinct-values' | undefined => {
+  if (!firstSelection || !canWidgetBreakDown({ ...widget, dataSelection: [{ ...firstSelection, unique: false }] }, host)) {
+    return 'hidden';
+  }
   if (widget.dataSelection.length > 1) {
     return 'several-datasets';
   }
   if (isCountingDistinctValues(widget)) {
     return 'distinct-values';
   }
-  return undefined;
+  return 'editable';
 };
+
+// Cleared together with the field: the settings only make sense for a broken down widget
+const NO_BREAKDOWN = { breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null };
 
 /**
- * Whether the widget is configured with a breakdown, whatever renders it.
+ * The widget without breakdown: its field, and its settings with it.
  */
-export const hasWidgetBreakdown = (widget: Widget) => {
-  return isBreakdownField(widget.parameters?.breakdownBy) && canWidgetBeBrokenDown(widget);
-};
+export const clearBreakdown = <T extends ConfiguredWidget>(widget: T): T => ({
+  ...widget,
+  parameters: { ...widget.parameters, ...NO_BREAKDOWN },
+});
 
 /**
- * Whether the widget must be rendered as a breakdown.
+ * Whether the saved filter of the dataset is read: until then, or when it cannot be, the types of the dataset
+ * are unknown. A dataset without saved filter is resolved.
  */
-export const isWidgetBreakdownActive = (widget: Widget, host?: WidgetHost) => {
-  return isBreakdownHost(host) && hasWidgetBreakdown(widget);
-};
-
-// ApexCharts bar rendering cost grows with the square of the number of bars (every bar is
-// revealed again for each bar drawn), so bar charts are kept under these sizes. The bar budget follows
-// the width of the chart: bars thinner than PIXELS_PER_BAR add cost without adding readable detail.
-export const MIN_RENDERED_BARS = 150;
-export const MAX_RENDERED_BARS = 600;
-export const PIXELS_PER_BAR = 2;
-// Lines, areas and heatmaps draw every series across the whole width: a point closer than
-// PIXELS_PER_LINE_POINT to the next one, or a heatmap cell thinner than PIXELS_PER_HEATMAP_CELL,
-// adds cost (SVG nodes, path length, hover lookups) without adding readable detail
-export const PIXELS_PER_LINE_POINT = 2;
-export const PIXELS_PER_HEATMAP_CELL = 6;
-const MIN_RENDERED_POINTS_PER_SERIES = 10;
-// Whatever the width, a chart draws at most this many points: past them, a wide chart with many series
-// still blocks the main thread (about 0.12 ms per heatmap cell)
-export const MAX_RENDERED_LINE_POINTS = 5000;
-export const MAX_RENDERED_HEATMAP_CELLS = 1500;
-export const PIXELS_PER_X_LABEL = 60;
-// Animating more points than this blocks the main thread for seconds, whatever the chart type
-export const ANIMATION_POINTS_THRESHOLD = 300;
-// Relative change under which a new chart width is ignored, to not redraw the chart on small resizes
-const CHART_WIDTH_HYSTERESIS = 0.2;
+export type BreakdownResolution = 'resolved' | 'loading' | 'failed';
 
 /**
- * Number of bars the chart can draw for a given width in pixels, an unknown width gives the maximum.
+ * The breakdown of a widget in the editor, derived once for the whole editor.
  */
-export const getRenderedBarsBudget = (width: number) => {
-  if (!(width > 0)) return MAX_RENDERED_BARS;
-  return Math.min(MAX_RENDERED_BARS, Math.max(MIN_RENDERED_BARS, Math.floor(width / PIXELS_PER_BAR)));
+export interface WidgetBreakdownState {
+  // Whether the controls are shown, and why they are disabled
+  editorState: BreakdownEditorState;
+  // Fields offered for the dataset its query reads, ordered as their labels are shown
+  fieldOptions: BreakdownField[];
+  resolution: BreakdownResolution;
+  // Field the widget is broken down by, kept on submit: none when the widget, or its dataset, cannot be broken down by it
+  field: string | null;
+  // The field, when it is not among the options: the type of a dataset of a single type, which the API accepts,
+  // or any field while the types of the dataset are unknown
+  unlistedField: BreakdownField | null;
+}
+
+export const NO_BREAKDOWN_STATE: WidgetBreakdownState = {
+  editorState: 'hidden',
+  fieldOptions: [],
+  resolution: 'resolved',
+  field: null,
+  unlistedField: null,
 };
 
-/**
- * Number of points the chart can draw for a given width in pixels: bars share the width between
- * every series, while lines, areas and heatmaps draw each series across the whole width.
- */
-export const getRenderedPointsBudget = (type: string, width: number, seriesCount: number) => {
-  if (type === 'vertical-bar') return getRenderedBarsBudget(width);
-  const chartWidth = width > 0 ? width : MAX_RENDERED_BARS * PIXELS_PER_BAR;
-  const isHeatmap = type === 'heatmap';
-  const pixelsPerPoint = isHeatmap ? PIXELS_PER_HEATMAP_CELL : PIXELS_PER_LINE_POINT;
-  const series = Math.max(1, seriesCount);
-  const pointsPerSeries = Math.max(MIN_RENDERED_POINTS_PER_SERIES, Math.floor(chartWidth / pixelsPerPoint));
-  const maxPoints = Math.max(isHeatmap ? MAX_RENDERED_HEATMAP_CELLS : MAX_RENDERED_LINE_POINTS, MIN_RENDERED_POINTS_PER_SERIES * series);
-  return Math.min(pointsPerSeries * series, maxPoints);
-};
-
-type ComparableBreakdown = {
-  readonly truncated: boolean;
-  readonly dates: ReadonlyArray<unknown>;
-  readonly series: ReadonlyArray<{
-    readonly label: string;
-    readonly isOther: boolean;
-    readonly entity?: { readonly id?: string; readonly name?: string; readonly representative?: { readonly main: string } } | null;
-    readonly values: ReadonlyArray<number>;
-  }>;
-};
-
-/**
- * Whether two breakdowns draw the same chart. A refresh hands a new breakdown even when nothing changed
- * (its end date moved), and redrawing every chart of a dashboard for nothing blocks the page for seconds.
- */
-export const isSameBreakdown = (a?: ComparableBreakdown | null, b?: ComparableBreakdown | null) => {
-  if (a === b) return true;
-  if (!a || !b || a.truncated !== b.truncated || a.dates.length !== b.dates.length || a.series.length !== b.series.length) {
-    return false;
-  }
-  if (a.dates.some((date, index) => date !== b.dates[index])) return false;
-  return a.series.every((serie, index) => {
-    const other = b.series[index];
-    return serie.label === other.label
-      && serie.isOther === other.isOther
-      && serie.entity?.id === other.entity?.id
-      && serie.entity?.name === other.entity?.name
-      && serie.entity?.representative?.main === other.entity?.representative?.main
-      && serie.values.length === other.values.length
-      && serie.values.every((value, valueIndex) => value === other.values[valueIndex]);
-  });
-};
-
-// Charts measured together (a dashboard mounting its widgets) would all be drawn in one long task:
-// the first one is drawn at once, the next ones one per task, so that the page responds between them
-const pendingChartDraws: (() => void)[] = [];
-let isChartDrawTaskBusy = false;
-const drawNextChart = () => {
-  const draw = pendingChartDraws.shift();
-  if (draw) {
-    draw();
-    setTimeout(drawNextChart, 0);
-  } else {
-    isChartDrawTaskBusy = false;
-  }
-};
-
-/**
- * Runs the first draw of a chart, at once or in a later task when another chart was just drawn.
- * Returns a function cancelling the draw if it did not run yet.
- */
-export const scheduleChartDraw = (draw: () => void) => {
-  if (!isChartDrawTaskBusy) {
-    isChartDrawTaskBusy = true;
-    draw();
-    setTimeout(drawNextChart, 0);
-    return () => {};
-  }
-  const pendingDraw = () => draw();
-  pendingChartDraws.push(pendingDraw);
-  return () => {
-    const index = pendingChartDraws.indexOf(pendingDraw);
-    if (index >= 0) pendingChartDraws.splice(index, 1);
-  };
-};
-
-/**
- * Width the chart is laid out for after a resize: the previous one is kept until the new one differs
- * by 20 % or more, so that the bars budget and the x axis labels do not change on every pixel.
- */
-export const nextBreakdownChartWidth = (previous: number | undefined, width: number) => {
-  if (previous === undefined || !(previous > 0)) return width;
-  return Math.abs(width - previous) < previous * CHART_WIDTH_HYSTERESIS ? previous : width;
-};
-
-/**
- * Number of labels of the x axis for a given width in pixels.
- */
-export const getBreakdownTickAmount = (width: number) => {
-  return Math.max(2, Math.floor(width / PIXELS_PER_X_LABEL));
-};
-
-const COARSER_INTERVAL: Record<string, string> = {
-  day: 'week',
-  week: 'month',
-  month: 'quarter',
-  quarter: 'year',
-};
-
-// Start of the UTC calendar bucket, matching the backend date histogram (weeks start on Monday)
-const getBucketStart = (date: Date, interval: string) => {
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth();
-  switch (interval) {
-    case 'week': {
-      const daysSinceMonday = (date.getUTCDay() + 6) % 7;
-      return Date.UTC(year, month, date.getUTCDate() - daysSinceMonday);
-    }
-    case 'month':
-      return Date.UTC(year, month, 1);
-    case 'quarter':
-      return Date.UTC(year, month - (month % 3), 1);
-    case 'year':
-      return Date.UTC(year, 0, 1);
-    default:
-      return Date.UTC(year, month, date.getUTCDate());
-  }
-};
-
-type TimeSeriesPoint = { x: Date; y: number };
-
-const sumByInterval = (data: TimeSeriesPoint[], interval: string): TimeSeriesPoint[] => {
-  const sums = new Map<number, number>();
-  data.forEach(({ x, y }) => {
-    const bucketStart = getBucketStart(x, interval);
-    sums.set(bucketStart, (sums.get(bucketStart) ?? 0) + y);
-  });
-  return Array.from(sums, ([bucketStart, y]) => ({ x: new Date(bucketStart), y }));
-};
-
-/**
- * Sums the series into coarser intervals until the chart draws at most `maxPoints` points.
- * Buckets are always rebuilt from the original points, so counts stay exact when starting
- * from days; starting from weeks, a week overlapping two months counts in the month of its Monday
- * (`weeksCountedByMonday`, for the warning to say so).
- */
-export const coarsenSeriesForRendering = <T extends { data: TimeSeriesPoint[] }>(
-  series: T[],
-  interval: string,
-  maxPoints = MAX_RENDERED_BARS,
+// Label of a field the options do not hold: the one of the perspective, or of the schema, the key itself otherwise
+const getBreakdownFieldLabel = (
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>,
+  perspective: WidgetPerspective,
+  key: string,
 ) => {
-  const countPoints = (candidate: T[]) => candidate.reduce((count, serie) => count + serie.data.length, 0);
-  let renderedInterval = interval;
-  let renderedSeries = series;
-  while (countPoints(renderedSeries) > maxPoints && COARSER_INTERVAL[renderedInterval]) {
-    const coarserInterval = COARSER_INTERVAL[renderedInterval];
-    renderedInterval = coarserInterval;
-    renderedSeries = series.map((serie) => ({ ...serie, data: sumByInterval(serie.data, coarserInterval) }));
+  const breakdownPerspective = getBreakdownPerspective(perspective);
+  const perspectiveFields = breakdownPerspective ? [breakdownPerspective.typeField, ...breakdownPerspective.fields] : AUDITS_BREAKDOWN_FIELDS;
+  const perspectiveField = perspectiveFields.find((field) => field.key === key);
+  if (perspectiveField) {
+    return perspectiveField.label;
   }
-  return {
-    series: renderedSeries,
-    interval: renderedInterval,
-    pointsCount: countPoints(renderedSeries),
-    // Months, quarters and years do not start on a Monday: each week is counted in the one of its Monday
-    weeksCountedByMonday: interval === 'week' && renderedInterval !== interval,
-  };
+  const definitions = [...filterKeysSchema.values()].find((typeDefinitions) => typeDefinitions.has(key));
+  return definitions?.get(key)?.label ?? key;
 };
 
 /**
- * Names of the series, numbered by order when several share one: the entities the user cannot access are
- * all named "Restricted" and nothing else of them can be shown, while the legend must tell them apart.
+ * Breakdown of the edited widget, on the dataset its query reads: the content of its saved filter once read
+ * (`savedFilter`), and the types its type variables allow, given the dashboard `variables`.
+ * Its field is kept while the saved filter is read, or when it cannot be: the types of the dataset are unknown.
+ * Once they are known, a field the dataset cannot be broken down by is not kept. The labels are `translate`d to order the options.
  */
-export const numberSharedSeriesNames = (names: string[]) => {
-  const counts = new Map<string, number>();
-  names.forEach((name) => counts.set(name, (counts.get(name) ?? 0) + 1));
-  const ranks = new Map<string, number>();
-  return names.map((name) => {
-    if ((counts.get(name) ?? 0) < 2) return name;
-    const rank = (ranks.get(name) ?? 0) + 1;
-    ranks.set(name, rank);
-    return `${name} (${rank})`;
-  });
+export const getWidgetBreakdownState = ({
+  filterKeysSchema,
+  widget,
+  host,
+  savedFilter,
+  variables,
+  translate,
+}: {
+  filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
+  widget: BreakdownWidget & ConfiguredWidget;
+  host: WidgetHost;
+  savedFilter: { resolution: BreakdownResolution; filters?: FilterGroup | null };
+  variables?: DashboardVariable[];
+  translate?: (label: string) => string;
+}): WidgetBreakdownState => {
+  const [firstSelection, ...otherSelections] = widget.dataSelection;
+  const resolvedWidget = firstSelection && savedFilter.filters
+    ? { ...widget, dataSelection: [{ ...firstSelection, filters: savedFilter.filters }, ...otherSelections] }
+    : widget;
+  // Read on the content of the saved filter: it can select draft workspaces
+  const editorState = getBreakdownEditorState(resolvedWidget, host);
+  if (editorState === 'hidden') {
+    return { ...NO_BREAKDOWN_STATE, resolution: savedFilter.resolution };
+  }
+  const fieldOptions = getWidgetBreakdownFieldOptions(filterKeysSchema, resolvedWidget, variables, translate);
+  const breakdownBy = widget.parameters?.breakdownBy;
+  const storedField = isBreakdownField(breakdownBy) ? breakdownBy : null;
+  const isFieldKept = editorState === 'editable'
+    && !!storedField
+    && (savedFilter.resolution !== 'resolved' || isBreakdownFieldSupported(filterKeysSchema, resolvedWidget, variables));
+  const field = isFieldKept ? storedField : null;
+  const unlistedField = field && !fieldOptions.some(({ key }) => key === field)
+    ? { key: field, label: getBreakdownFieldLabel(filterKeysSchema, widget.perspective ?? 'entities', field) }
+    : null;
+  return { editorState, fieldOptions, resolution: savedFilter.resolution, field, unlistedField };
+};
+
+/**
+ * The widget as submitted: without breakdown when the editor does not keep its field (WidgetBreakdownState),
+ * as the widget, or its dataset, can no longer be broken down by it, instead of keeping a setting that
+ * would be silently ignored. Applied once, on submit: until then the field stays, so that a widget turned
+ * into another visualization and back, or whose filters are changed and changed back, keeps its breakdown.
+ */
+export const applyBreakdownCompatibility = <T extends ConfiguredWidget>(widget: T, breakdown: Pick<WidgetBreakdownState, 'field'>): T => {
+  if (!widget.parameters?.breakdownBy || breakdown.field) {
+    return widget;
+  }
+  return clearBreakdown(widget);
 };

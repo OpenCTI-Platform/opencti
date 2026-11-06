@@ -14,12 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React, { useRef, useState, useEffect } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Alert from '@mui/material/Alert';
 import { CSVLink } from 'react-csv';
 import { graphql } from 'react-relay';
-import type { Theme } from '../../../../../components/Theme';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
@@ -37,14 +36,10 @@ import useGranted, { KNOWLEDGE, SETTINGS_SECURITYACTIVITY } from '../../../../..
 import useConnectedDocumentModifier from '../../../../../utils/hooks/useConnectedDocumentModifier';
 import { Checkbox } from '@filigran/design-system';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 50px 0',
+});
 
 const LOCAL_STORAGE_KEY = 'audit';
 
@@ -177,7 +172,6 @@ export const buildAuditCsvData = (nodes: Array<{ node: AuditCsvNode }>): AuditCs
 }));
 
 const Audit = () => {
-  const classes = useStyles();
   const csvLink = useRef<
   CSVLink & HTMLAnchorElement & { link: HTMLAnchorElement }
   >(null);
@@ -286,7 +280,7 @@ const Audit = () => {
     </div>
   ) : <></>;
   return (
-    <div className={classes.container} data-testid="audit-page">
+    <Container data-testid="audit-page">
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Activity') },
@@ -348,7 +342,7 @@ const Audit = () => {
         )}
       </ListLines>
       <CSVLink filename={`${t_i18n('Audit logs')}.csv`} ref={csvLink} data={data} />
-    </div>
+    </Container>
   );
 };
 

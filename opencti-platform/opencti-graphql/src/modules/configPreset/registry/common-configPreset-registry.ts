@@ -1,0 +1,96 @@
+import { type Filter, FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
+import type { AuthContext, AuthUser } from '../../../types/user';
+import { buildPaginationFromEdges } from '../../../database/utils';
+import { FunctionalError } from '../../../config/errors';
+import type { ConfigImportResult } from '../../configImport/configImport-types';
+import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition, ConfigPresetListItemsArgs } from '../configPreset-types';
+import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportField } from '../import/configPreset-import-types';
+
+// Export groups of the spec table; a group is added with its first category
+export const platformSettingsGroup = { id: 'platformSettings', label: 'Platform settings' };
+export const dataModelGroup = { id: 'dataModel', label: 'Data model' };
+export const securityAccessGroup = { id: 'securityAccess', label: 'Security & Access' };
+
+// The families the items of another family depend on (the roles of a group, the default theme of the platform):
+// their ids are shared here, so that registries do not import each other
+export const ROLES_FAMILY_ID = 'roles';
+export const MARKINGS_FAMILY_ID = 'markings';
+export const BRANDING_FAMILY_ID = 'branding';
+
+// The search does not apply to static items: their label is a source string the UI translates,
+// so a match on it would not be the text the user sees. They are always listed.
+export const matchesListArgs = (item: ConfigPresetItemDefinition, { ids, excludedIds }: ConfigPresetListItemsArgs) => {
+  return (!ids || ids.includes(item.id)) && !(excludedIds ?? []).includes(item.id);
+};
+
+// The listing arguments of a family whose items are entities found by standard id: the ids listed, without the excluded ones,
+// after the filters of the family (a family adds its ordering, whose enum is its own)
+export const standardIdListArgs = (ids?: string[] | null, excludedIds?: string[] | null, filters: Filter[] = []) => ({
+  orderMode: OrderingMode.Asc,
+  filters: {
+    mode: FilterMode.And,
+    filters: [
+      ...filters,
+      ...(ids ? [{ key: ['standard_id'], values: ids }] : []),
+      ...(excludedIds && excludedIds.length > 0 ? [{ key: ['standard_id'], values: excludedIds, operator: FilterOperator.NotEq }] : []),
+    ],
+    filterGroups: [],
+  },
+});
+
+// The bundle id of an item named by its entity (a role, a group) is the standard id the platform computes from the name.
+// A consistency check between the item and its payload, not a rule of the module: an item whose id is another one is failed.
+// A blank name is left to the validation of the module, the standard id is not computed from it
+export const namedItemIdentity = (item: ConfigPresetBundleItem, standardIdOf: (name: string) => string, mismatchReason: string) => {
+  const { name } = item.configuration;
+  const validName = typeof name === 'string' && name.trim() ? name : undefined;
+  const label = { label: validName ?? item.id, translatable: false };
+  const failed: ConfigPresetComputedItem | undefined = validName !== undefined && standardIdOf(validName) !== item.id
+    ? { ...label, exists: false, conflict: false, status: 'failed', reason: mismatchReason }
+    : undefined;
+  return { label, failed };
+};
+
+// A connection of the edges of a page, whose next page is known by the caller (the cursor of a static item is its id)
+export const buildConfigPresetConnection = <T>(
+  { first, after }: ConfigPresetListItemsArgs,
+  edges: { node: T; cursor: string }[],
+  globalCount: number,
+  hasNextPage: boolean,
+) => {
+  const connection = buildPaginationFromEdges(first ?? undefined, after, edges, globalCount);
+  return { ...connection, pageInfo: { ...connection.pageInfo, hasNextPage } };
+};
+
+// A category of static items (one for a singleton), paged on their ids
+export const staticFamily = (
+  family: Pick<ConfigPresetFamilyDefinition, 'id' | 'label' | 'description' | 'group' | 'directory'>,
+  getItems: (context: AuthContext, user: AuthUser) => Promise<ConfigPresetItemDefinition[]>,
+): ConfigPresetFamilyDefinition => ({
+  ...family,
+  listItems: async (context, user, args) => {
+    const items = (await getItems(context, user)).filter((item) => matchesListArgs(item, args));
+    const start = args.after ? items.findIndex((item) => item.id === args.after) + 1 : 0;
+    const page = args.first ? items.slice(start, start + args.first) : items.slice(start);
+    return buildConfigPresetConnection(args, page.map((node) => ({ node, cursor: node.id })), items.length, start + page.length < items.length);
+  },
+  resolveItems: async (context, user, ids, excludedIds) => {
+    return (await getItems(context, user)).filter((item) => matchesListArgs(item, { ids, excludedIds }));
+  },
+});
+
+// What an importer reports of an item a module has decided (a dry run): the result of the module with the label, and the fields of the preview when it shows some
+export const toComputedItem = (
+  label: Pick<ConfigPresetComputedItem, 'label' | 'translatable'>,
+  result: ConfigImportResult,
+  fields?: ConfigPresetImportField[],
+): ConfigPresetComputedItem => ({ ...label, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason, code: result.code, fields });
+
+// What an importer returns once a module has written an item: a failure is an error that makes the item failed,
+// and a status other than the computed one is reported
+export const toAppliedStatus = (result: ConfigImportResult, computed: ConfigPresetComputedItem) => {
+  if (result.status === 'failed') {
+    throw FunctionalError(result.reason ?? 'Item cannot be imported');
+  }
+  return result.status === computed.status ? undefined : result.status;
+};

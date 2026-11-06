@@ -166,7 +166,8 @@ const resolveKey = async (header: JWTHeaderParameters, token: FlattenedJWSInput)
   if (isOwnIssuer(iss)) {
     const keyPair = await getJWTKeyPair();
     const { kid } = header;
-    const publicKey = kid && keyPair.publicKeys[kid];
+    // kid comes from the token header: only own keys are platform keys
+    const publicKey = kid && Object.hasOwn(keyPair.publicKeys, kid) ? keyPair.publicKeys[kid] : undefined;
     if (!publicKey) {
       throw AuthenticationFailure('JWT kid does not match any platform key', { kid });
     }

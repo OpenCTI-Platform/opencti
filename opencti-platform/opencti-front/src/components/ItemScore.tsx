@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
 import { isEmptyField } from '../utils/utils';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Tag from '@common/tag/Tag';
 import { EMPTY_VALUE } from '../utils/String';
 import { Theme } from './Theme';

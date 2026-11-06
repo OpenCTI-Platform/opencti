@@ -1,8 +1,9 @@
 import React from 'react';
 import { GraphiQL } from 'graphiql';
+import 'graphiql/setup-workers/vite';
 import { createGraphiQLFetcher } from '@graphiql/toolkit';
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { APP_BASE_PATH } from '../../relay/environment';
 import { useFormatter } from '../../components/i18n';
 import PublicTopBar from './PublicTopBar';

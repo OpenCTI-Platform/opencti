@@ -20,7 +20,8 @@ vi.mock('reactflow', () => ({
   useReactFlow: () => ({ getEdges: mockGetEdges }),
 }));
 
-vi.mock('@mui/styles', () => ({
+vi.mock('@mui/material/styles', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@mui/material/styles')>()),
   useTheme: () => ({
     palette: {
       mode: 'dark',

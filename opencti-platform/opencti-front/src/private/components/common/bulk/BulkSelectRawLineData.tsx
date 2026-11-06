@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import { truncate } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { RelationsToEntity } from '../../../../utils/Relation';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 
 interface BulkSelectRawLineDataProps {

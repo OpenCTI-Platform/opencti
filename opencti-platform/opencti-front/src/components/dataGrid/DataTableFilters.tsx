@@ -8,7 +8,7 @@ import { Stack, ToggleButtonGroup } from '@mui/material';
 import { Theme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ExportContext } from '../../utils/ExportContextProvider';
 import { isFilterGroupNotEmpty, canonicalizeFilterGroupForBackend } from '../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';

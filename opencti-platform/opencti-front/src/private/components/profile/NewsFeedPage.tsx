@@ -16,7 +16,9 @@ import type { NewsFeedPageQuery } from './__generated__/NewsFeedPageQuery.graphq
 import NewsFeed from './NewsFeed';
 import NewsFeedSettings from './NewsFeedSettings';
 import XtmHubDisconnectedBanner from '../xtm_hub/XtmHubDisconnectedBanner';
-import { CampaignOutlined } from '@mui/icons-material';
+import { ArticleOutlined, CampaignOutlined } from '@mui/icons-material';
+import NewsFeedBlogPosts from './NewsFeedBlogPosts';
+import { NEWS_FEED_BLOG_POST_TYPE } from '../../../utils/NewsFeed';
 
 const newsFeedPageFieldPatch = graphql`
   mutation NewsFeedPageFieldPatchMutation(
@@ -38,7 +40,8 @@ const newsFeedPageSettingsFragment = graphql`
 
 const newsFeedPageQuery = graphql`
   query NewsFeedPageQuery {
-    myUnreadNewsFeedsCount
+    myUnreadResourcesCount: myUnreadNewsFeedsCount(category: RESOURCE)
+    myUnreadBlogPostsCount: myUnreadNewsFeedsCount(category: BLOG_POST)
     settings {
       ...NewsFeedPageSettings_settings
     }
@@ -48,10 +51,13 @@ const newsFeedPageQuery = graphql`
 const newsFeedNumberSubscription = graphql`
   subscription NewsFeedPageNewsFeedNumberSubscription {
     newsFeedsNumber {
-      count
+      resource_count
+      blog_post_count
     }
   }
 `;
+
+type NewsFeedTab = 'news-feed' | 'blog-posts' | 'settings';
 
 const NewsFeedPage: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
@@ -63,20 +69,24 @@ const NewsFeedPage: FunctionComponent = () => {
   setTitle(t_i18n('News Feed'));
 
   const data = useLazyLoadQuery<NewsFeedPageQuery>(newsFeedPageQuery, {});
-  const [activeTab, setActiveTab] = useState<'news-feed' | 'settings'>('news-feed');
-  const [liveNewsFeedsCount, setLiveNewsFeedsCount] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<NewsFeedTab>('news-feed');
+  const [liveCounts, setLiveCounts] = useState<{ resources: number | null; blogPosts: number | null }>({ resources: null, blogPosts: null });
 
   const isUnsubscribedFromAllNewsFeeds = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const handleNewNewsFeedNumber = useCallback((
     response: NewsFeedPageNewsFeedNumberSubscription$data | null | undefined | unknown,
   ) => {
-    const count = response ? (response as NewsFeedPageNewsFeedNumberSubscription$data).newsFeedsNumber?.count : null;
-    setLiveNewsFeedsCount(count ?? null);
-  }, [setLiveNewsFeedsCount]);
+    const newsFeedsNumber = response ? (response as NewsFeedPageNewsFeedNumberSubscription$data).newsFeedsNumber : null;
+    setLiveCounts({ resources: newsFeedsNumber?.resource_count ?? null, blogPosts: newsFeedsNumber?.blog_post_count ?? null });
+  }, [setLiveCounts]);
 
   const shouldSubscribeToNewsFeed = isXTMHubRegistered && !isUnsubscribedFromAllNewsFeeds;
   useEffect(() => {
-    if (!shouldSubscribeToNewsFeed) return undefined;
+    if (!shouldSubscribeToNewsFeed) {
+      // the last live counts would be stale, and win over the query, once the feed is enabled again
+      setLiveCounts({ resources: null, blogPosts: null });
+      return undefined;
+    }
     const sub = requestSubscription({
       subscription: newsFeedNumberSubscription,
       variables: {},
@@ -85,9 +95,9 @@ const NewsFeedPage: FunctionComponent = () => {
     return () => sub.dispose();
   }, [shouldSubscribeToNewsFeed, handleNewNewsFeedNumber]);
 
-  const unreadNewsFeedsCount = shouldSubscribeToNewsFeed && liveNewsFeedsCount !== null
-    ? liveNewsFeedsCount
-    : (shouldSubscribeToNewsFeed ? (data.myUnreadNewsFeedsCount ?? 0) : 0);
+  // Resources and blogposts are counted, and read, independently: each tab shows its own unread count.
+  const unreadResourcesCount = shouldSubscribeToNewsFeed ? (liveCounts.resources ?? data.myUnreadResourcesCount ?? 0) : 0;
+  const unreadBlogPostsCount = shouldSubscribeToNewsFeed ? (liveCounts.blogPosts ?? data.myUnreadBlogPostsCount ?? 0) : 0;
 
   const handleSubmitField = (name: string, value: string[]) => {
     const variables: NewsFeedPageFieldPatchMutation$variables = {
@@ -110,6 +120,10 @@ const NewsFeedPage: FunctionComponent = () => {
     data.settings,
   );
 
+  // The blogposts tab only exists when the XTM Hub provisions blogposts for this platform version.
+  const isBlogPostAvailable = settingsFragmentData.xtm_hub_available_news_feed_types?.includes(NEWS_FEED_BLOG_POST_TYPE) ?? false;
+  const displayedTab = activeTab === 'blog-posts' && !isBlogPostAvailable ? 'news-feed' : activeTab;
+
   return (
     <div>
       <Breadcrumbs elements={[{ label: t_i18n('XTM Hub News Feed'), current: true }]} />
@@ -125,18 +139,30 @@ const NewsFeedPage: FunctionComponent = () => {
           <XtmHubDisconnectedBanner />
         </div>
       )}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'news-feed' | 'settings')} panels="external">
+      <Tabs value={displayedTab} onValueChange={(value) => setActiveTab(value as NewsFeedTab)} panels="external">
         <TabsList>
           <TabsTrigger
             value="news-feed"
             icon={<CampaignOutlined fontSize="small" />}
-            badge={unreadNewsFeedsCount}
+            badge={unreadResourcesCount}
             badgeMax={99}
             badgeColor="error"
-            badgeInvisible={unreadNewsFeedsCount === 0}
+            badgeInvisible={unreadResourcesCount === 0}
           >
             {t_i18n('News feed')}
           </TabsTrigger>
+          {isBlogPostAvailable && (
+            <TabsTrigger
+              value="blog-posts"
+              icon={<ArticleOutlined fontSize="small" />}
+              badge={unreadBlogPostsCount}
+              badgeMax={99}
+              badgeColor="error"
+              badgeInvisible={unreadBlogPostsCount === 0}
+            >
+              {t_i18n('Blogpost')}
+            </TabsTrigger>
+          )}
           <TabsTrigger
             value="settings"
             icon={<SettingsOutlinedIcon fontSize="small" />}
@@ -146,9 +172,9 @@ const NewsFeedPage: FunctionComponent = () => {
         </TabsList>
       </Tabs>
       <div style={{ marginTop: 20 }}>
-        {activeTab === 'news-feed' ? (
-          <NewsFeed />
-        ) : (
+        {displayedTab === 'news-feed' && <NewsFeed markBlogPostsAsRead={!isBlogPostAvailable} />}
+        {displayedTab === 'blog-posts' && <NewsFeedBlogPosts />}
+        {displayedTab === 'settings' && (
           <Stack spacing={3} sx={{ width: '50%' }}>
             <Card title={t_i18n('XTM Hub News Feed settings')}>
               <NewsFeedSettings

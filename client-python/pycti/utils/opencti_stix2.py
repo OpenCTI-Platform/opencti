@@ -40,6 +40,7 @@ from pycti.utils.opencti_stix2_utils import (
     STIX_CYBER_OBSERVABLE_MAPPING,
     STIX_META_OBJECTS,
     OpenCTIStix2Utils,
+    is_custom_field_input_value,
 )
 
 utc = pytz.UTC
@@ -66,6 +67,21 @@ EXPECTED_FUNCTIONAL_ERROR_DOC_CODES = [
 
 #: Maximum size of the item payload reported as bundle too large
 MAX_REPORTED_SOURCE_LENGTH = 50000
+
+#: STIX types of the containers whose object_refs prepare_export builds;
+#: an empty one is exported with object_refs: [] like the server-side converter.
+CONTAINER_STIX_TYPES = (
+    "report",
+    "note",
+    "opinion",
+    "observed-data",
+    "grouping",
+    "x-opencti-case-incident",
+    "x-opencti-feedback",
+    "x-opencti-case-rfi",
+    "x-opencti-case-rft",
+    "x-opencti-task",
+)
 
 #: STIX Extension ID for OpenCTI custom objects and properties
 STIX_EXT_OCTI: str = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
@@ -1395,7 +1411,7 @@ class OpenCTIStix2:
                 embedded_flags.append(file_obj.get("embedded", False))
 
         # Extract all custom properties
-        custom_properties = self.extract_custom_properties(stix_object)
+        custom_field_values = self.extract_custom_field_values(stix_object)
 
         # Extra
         extras = {
@@ -1413,7 +1429,7 @@ class OpenCTIStix2:
             "filesMarkings": files_markings if files_markings else None,
             "noTriggerImport": no_trigger_import if no_trigger_import else None,
             "embedded": embedded_flags if embedded_flags else None,
-            "custom_properties": custom_properties,
+            "custom_field_values": custom_field_values,
         }
 
         stix_helper = self.get_stix_helper().get(stix_object["type"])
@@ -1717,23 +1733,27 @@ class OpenCTIStix2:
         return entity
 
     @staticmethod
-    def extract_custom_properties(stix_object: Dict) -> Optional[List[Dict]]:
+    def extract_custom_field_values(stix_object: Dict) -> Optional[List[Dict]]:
         """Extract the x_ custom properties of a STIX object as custom field inputs.
 
         Top-level properties take precedence over the ones nested in extensions.
-        The platform only keeps the ones matching a custom field definition.
+        The platform only keeps the ones matching a custom field definition, so
+        the values that can never match one (objects, such as ``x_opencti_files``)
+        are not sent.
 
         :param stix_object: STIX2 object
         :type stix_object: Dict
         :return: list of ``{"field_name", "value"}`` inputs, or None if there is none
         :rtype: Optional[List[Dict]]
         """
-        custom_properties = []
+        custom_field_values = []
         seen_custom_fields = set()
         for key, value in stix_object.items():
             if key.startswith("x_") and value is not None:
-                custom_properties.append({"field_name": key, "value": value})
+                # A top-level value takes precedence even if it cannot be sent
                 seen_custom_fields.add(key)
+                if is_custom_field_input_value(value):
+                    custom_field_values.append({"field_name": key, "value": value})
         # Also extract x_ custom properties nested inside all extensions
         extensions = stix_object.get("extensions")
         if isinstance(extensions, dict):
@@ -1745,11 +1765,11 @@ class OpenCTIStix2:
                     if (
                         key.startswith("x_")
                         and key not in seen_custom_fields
-                        and value is not None
+                        and is_custom_field_input_value(value)
                     ):
-                        custom_properties.append({"field_name": key, "value": value})
+                        custom_field_values.append({"field_name": key, "value": value})
                         seen_custom_fields.add(key)
-        return custom_properties if len(custom_properties) > 0 else None
+        return custom_field_values if len(custom_field_values) > 0 else None
 
     def import_relationship(
         self, stix_relation: Dict, update: bool = False, types: List = None
@@ -1793,7 +1813,7 @@ class OpenCTIStix2:
             "external_references_ids": external_references_ids,
             "reports": reports,
             "sample_ids": sample_refs_ids,
-            "custom_properties": self.extract_custom_properties(stix_relation),
+            "custom_field_values": self.extract_custom_field_values(stix_relation),
         }
 
         # Create the relation
@@ -1966,7 +1986,7 @@ class OpenCTIStix2:
                 else None
             ),
             upsert_operations=upsert_operations,
-            custom_properties=self.extract_custom_properties(stix_sighting),
+            custom_field_values=self.extract_custom_field_values(stix_sighting),
         )
         if stix_sighting_result is not None:
             self.set_in_cache(
@@ -2470,6 +2490,14 @@ class OpenCTIStix2:
                     and "stix-ref-relationship" not in entity_object["parent_types"]
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
+        # OpenCTI permits empty containers, so retain object_refs for consistency with
+        # server-side exports (convertObjectReferences emits object_refs: [] for every container).
+        if (
+            entity["type"] in CONTAINER_STIX_TYPES
+            and "object_refs" not in entity
+            and "objects" not in entity
+        ):
+            entity["object_refs"] = []
         if "objects" in entity:
             del entity["objects"]
             del entity["objectsIds"]
@@ -3598,8 +3626,13 @@ class OpenCTIStix2:
             )
             if connector_ids is None:
                 connector_ids = item["connector_ids"]
+            investigation_id = self.opencti.get_attribute_in_extension(
+                "investigation_id", item
+            )
             self.opencti.stix_core_object.ask_enrichments(
-                element_id=item["id"], connector_ids=connector_ids
+                element_id=item["id"],
+                connector_ids=connector_ids,
+                investigation_id=investigation_id,
             )
         elif operation == "add_organizations":
             self.element_add_organizations(item)

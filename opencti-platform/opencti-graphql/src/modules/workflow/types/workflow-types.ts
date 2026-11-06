@@ -41,6 +41,8 @@ export interface AsyncActionSlot {
 export interface WorkflowPendingTransition {
   event: string;
   toState: string;
+  /** Terminal transitions retain the source status in toState for persistence. */
+  completesWorkflow?: boolean;
   triggeredBy: string;
   triggeredAt: string; // ISO 8601
   runtimeParams: Record<string, unknown>;
@@ -82,7 +84,7 @@ export type SideEffect<TContext extends Context = Context> = (
  */
 export interface Transition<TContext extends Context = Context> {
   from: State;
-  to: State;
+  to?: State | null;
   event: Event;
   comment?: string;
   conditions?: ConditionValidator<TContext>[];
@@ -122,6 +124,7 @@ export interface MachineDefinition<TContext extends Context = Context> {
  */
 export interface TriggerResult {
   success: boolean;
+  workflowCompleted?: boolean;
   reason?: string;
   newState?: string;
   status?: any;
@@ -130,6 +133,8 @@ export interface TriggerResult {
   /** Present when the transition spawned async background tasks. */
   executionStatus?: 'pending' | 'completed' | 'error';
   asyncActionSlots?: AsyncActionSlot[];
+  /** The entity was already in the target status: no action ran and no history was recorded. */
+  unchanged?: boolean;
 }
 
 // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.graphql.ts

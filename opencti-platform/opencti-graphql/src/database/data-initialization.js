@@ -1,6 +1,6 @@
 import validator from 'validator';
 import { addSettings } from '../domain/settings';
-import { AUTOMATION, BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
+import { BYPASS, KNOWLEDGE, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
@@ -12,12 +12,11 @@ import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
 import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
-import { TAXIIAPI } from '../modules/user/user-domain';
-import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_SHARE_FILTERS, KNOWLEDGE_UPDATE } from '../schema/general';
+import { CAPABILITIES } from '../schema/capabilities';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import conf, { logApp } from '../config/conf';
+import conf, { CONFIG_PRESET_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
 import { isNotEmptyField } from './utils';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
@@ -26,172 +25,6 @@ import { initDefaultTheme } from '../modules/theme/theme-domain';
 import { addEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
 import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
 import { createRetentionRule } from '../modules/retentionRules/retentionRules-domain';
-
-// region Platform capabilities definition
-const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
-const BYPASS_CAPABILITIES = { name: BYPASS, description: 'Bypass all capabilities', attribute_order: 1 };
-export const TAXII_CAPABILITIES = {
-  name: TAXIIAPI,
-  attribute_order: 2500,
-  description: 'Access data sharing',
-  dependencies: [
-    { name: 'SETCOLLECTIONS', description: 'Manage data sharing', attribute_order: 2510 },
-  ],
-};
-export const SHARE_FILTERS_CAPABILITY = { name: KNOWLEDGE_SHARE_FILTERS, description: 'Share filters', attribute_order: 950 };
-const KNOWLEDGE_CAPABILITIES = {
-  name: KNOWLEDGE_CAPABILITY,
-  description: 'Access knowledge',
-  attribute_order: 100,
-  dependencies: [
-    { name: KNOWLEDGE_COLLABORATION, description: 'Access to collaborative creation', attribute_order: 150 },
-    { name: KNOWLEDGE_FRONTEND_EXPORT, description: 'Can use web interface export functions (PDF, PNG, etc.)', attribute_order: 160 },
-    {
-      name: KNOWLEDGE_UPDATE,
-      description: 'Create / Update knowledge',
-      attribute_order: 200,
-      dependencies: [
-        { name: 'KNORGARESTRICT', description: 'Restrict organization access', attribute_order: 290 },
-        { name: 'KNDELETE', description: 'Delete knowledge', attribute_order: 300 },
-        { name: 'KNMERGE', description: 'Merge knowledge', attribute_order: 305 },
-        { name: 'KNMANAGEAUTHMEMBERS', description: 'Manage authorized members', attribute_order: 310 },
-        { name: 'KNBYPASSREFERENCE', description: 'Bypass enforced reference', attribute_order: 320 },
-        { name: 'KNBYPASSFIELDS', description: 'Bypass mandatory fields', attribute_order: 330 },
-      ],
-    },
-    { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
-    { name: 'KNASKIMPORT', description: 'Import knowledge', attribute_order: 500 },
-    {
-      name: 'KNGETEXPORT',
-      description: 'Download knowledge export',
-      attribute_order: 700,
-      dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', attribute_order: 710 }],
-    },
-    { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', attribute_order: 800 },
-    { name: 'KNDISSEMINATION', description: 'Disseminate files by email', attribute_order: 900 },
-    SHARE_FILTERS_CAPABILITY,
-  ],
-};
-export const SETTINGS_CAPABILITIES = {
-  name: 'SETTINGS',
-  description: 'Access to admin functionalities',
-  attribute_order: 3000,
-  dependencies: [
-    { name: 'SETPARAMETERS', description: 'Manage parameters', attribute_order: 3100 },
-    { name: 'SETACCESSES', description: 'Manage credentials', attribute_order: 3200 },
-    { name: 'SETAUTH', description: 'Manage authentication', attribute_order: 3220 },
-    { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
-    { name: 'SETDISSEMINATION', description: 'Manage dissemination lists', attribute_order: 3320 },
-    { name: 'SETCUSTOMIZATION', description: 'Manage customization', attribute_order: 3350 },
-    { name: 'SETLABELS', description: 'Manage labels', attribute_order: 3400 },
-    { name: 'SETVOCABULARIES', description: 'Manage vocabularies', attribute_order: 3410 },
-    { name: 'SETCASETEMPLATES', description: 'Manage case templates', attribute_order: 3420 },
-    { name: 'SETSTATUSTEMPLATES', description: 'Manage status templates', attribute_order: 3430 },
-    { name: 'SETKILLCHAINPHASES', description: 'Manage kill chain phases', attribute_order: 3440 },
-    { name: 'SETMANAGEXTMHUB', description: 'Manage XTM Hub', attribute_order: 3450 },
-    { name: 'SECURITYACTIVITY', description: 'Access security activity', attribute_order: 3500 },
-    { name: 'FILEINDEXING', description: 'Access to file indexing', attribute_order: 3600 },
-    { name: 'SUPPORT', description: 'Access to support data', attribute_order: 3700 },
-  ],
-};
-const PIR_CAPABILITIES = {
-  name: 'PIRAPI',
-  description: 'Access PIR',
-  attribute_order: 2900,
-  dependencies: [
-    {
-      name: 'PIRUPDATE',
-      description: 'Create / Update / Delete PIR',
-      attribute_order: 2950,
-    },
-  ],
-};
-const AUTOMATION_CAPABILITIES = {
-  name: AUTOMATION,
-  description: 'Use Playbooks',
-  attribute_order: 2800,
-  dependencies: [
-    {
-      name: 'AUTMANAGE',
-      description: 'Manage Playbooks',
-      attribute_order: 2850,
-    },
-  ],
-};
-export const API_ACCESS_CAPABILITIES = {
-  name: 'APIACCESS',
-  attribute_order: 2200,
-  description: 'API usage with authorization header',
-  dependencies: [
-    { name: 'USETOKEN', description: 'Allow token usage', attribute_order: 2250 },
-    { name: 'USEBASICAUTH', description: 'Allow basic auth usage', attribute_order: 2290 },
-  ],
-};
-export const CAPABILITIES = [
-  BYPASS_CAPABILITIES,
-  KNOWLEDGE_CAPABILITIES,
-  {
-    name: 'EXPLORE',
-    description: 'Access dashboards',
-    attribute_order: 1000,
-    dependencies: [
-      {
-        name: 'EXUPDATE',
-        description: 'Create / Update dashboards',
-        attribute_order: 1100,
-        dependencies: [
-          { name: 'EXDELETE', description: 'Delete dashboards', attribute_order: 1200 },
-          { name: 'PUBLISH', description: 'Manage public dashboards', attribute_order: 1300 },
-        ],
-      },
-    ],
-  },
-  {
-    name: 'INVESTIGATION',
-    description: 'Access investigations',
-    attribute_order: 1400,
-    dependencies: [
-      {
-        name: 'INUPDATE',
-        description: 'Create / Update investigations',
-        attribute_order: 1410,
-        dependencies: [
-          { name: 'INDELETE', description: 'Delete investigations', attribute_order: 1420 },
-        ],
-      },
-    ],
-  },
-  {
-    name: 'MODULES',
-    description: 'Access connectors',
-    attribute_order: 2000,
-    dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', attribute_order: 2100 }],
-  },
-  TAXII_CAPABILITIES,
-  PIR_CAPABILITIES,
-  AUTOMATION_CAPABILITIES,
-  SETTINGS_CAPABILITIES,
-  API_ACCESS_CAPABILITIES,
-  {
-    name: 'CONNECTORAPI',
-    attribute_order: 2300,
-    description: 'Connectors API usage: register, ping, export push ...',
-  },
-  {
-    name: 'INGESTION',
-    attribute_order: 2600,
-    description: 'Access ingestion',
-    dependencies: [
-      { name: 'SETINGESTIONS', description: 'Manage ingestion', attribute_order: 2610 },
-    ],
-  },
-  {
-    name: 'CSVMAPPERS',
-    description: 'Manage data mappers',
-    attribute_order: 2700,
-  },
-];
-// endregion
 
 const createMarkingDefinitions = async (context) => {
   // Create marking defs for TLP
@@ -374,7 +207,7 @@ const createBasicRolesAndCapabilities = async (context) => {
     name: ROLE_DEFAULT,
     description: 'Default role associated to the default group',
     capabilities: [
-      KNOWLEDGE_CAPABILITY,
+      KNOWLEDGE,
     ],
     can_manage_sensitive_config: false,
   });
@@ -433,6 +266,8 @@ const createBasicRolesAndCapabilities = async (context) => {
       'SETTINGS_SETLABELS',
       'SETTINGS_SETVOCABULARIES',
       'SETTINGS_SETKILLCHAINPHASES',
+      // Granted to every role with Create / Update knowledge by the migration that added it: same on a fresh install
+      'KNOWLEDGE_KNFORMINTAKE',
     ],
     can_manage_sensitive_config: false,
   };
@@ -468,6 +303,8 @@ export const initializeData = async (context, withMarkings = true) => {
     platform_email: 'admin@opencti.io',
     platform_theme: darkTheme.id,
     platform_language: 'auto',
+    // Only a new platform goes through here: the wizard opens at the first login
+    ...(isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG) ? { platform_bootstrap_status: 'pending' } : {}),
     view_all_users: false,
     local_auth: { enabled: true },
     cert_auth: {

@@ -4,11 +4,10 @@ import { Field, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import { TextField } from 'formik-mui';
 import * as Yup from 'yup';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import formikFieldToEditInput from '../../../../utils/FormikUtils';
-import type { Theme } from '../../../../components/Theme';
 import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -17,17 +16,10 @@ import { RelayError } from '../../../../relay/relayTypes';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import SwitchField from '../../../../components/fields/SwitchField';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
+const Buttons = styled('div')({
+  marginTop: 20,
+  textAlign: 'right',
+});
 
 const vocabularyMutationUpdate = graphql`
   mutation VocabularyEditionUpdateMutation($id: ID!, $input: [EditInput!]!) {
@@ -60,7 +52,6 @@ const VocabularyEdition = ({
   vocab: useVocabularyCategory_Vocabularynode$data;
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
 
   const [commitUpdateMutation] = useApiMutation(vocabularyMutationUpdate);
 
@@ -145,7 +136,7 @@ const VocabularyEdition = ({
               label: n,
             }))}
             renderOption={(option: FieldOption) => (
-              <div className={classes.text}>{option.label}</div>
+              <div>{option.label}</div>
             )}
           />
           <Field
@@ -164,15 +155,15 @@ const VocabularyEdition = ({
             label={t_i18n('Hidden')}
             containerstyle={fieldSpacingContainerStyle}
           />
-          <div className={classes.buttons}>
+          <Buttons>
             <Button
               onClick={submitForm}
               disabled={isSubmitting || !isValid}
-              classes={{ root: classes.button }}
+              sx={{ marginLeft: 2 }}
             >
               {t_i18n('Update')}
             </Button>
-          </div>
+          </Buttons>
         </Form>
       )}
     </Formik>

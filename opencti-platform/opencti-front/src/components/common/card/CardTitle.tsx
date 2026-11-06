@@ -1,6 +1,6 @@
 import { CSSProperties, PropsWithChildren, ReactNode } from 'react';
 import { Stack, SxProps, Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../Theme';
 import { mergeSx } from '../../../utils/sx';
 

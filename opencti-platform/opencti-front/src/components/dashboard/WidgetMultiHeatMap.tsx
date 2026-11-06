@@ -1,6 +1,6 @@
 import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ApexOptions } from 'apexcharts';
 import { heatMapOptions, withChartAnimations } from '../../utils/Charts';
 import type { Theme } from '../Theme';
@@ -61,10 +61,14 @@ const WidgetMultiHeatMap = ({
   const axisFormatter = useTimeSeriesAxisFormatter(interval);
 
   const options: ApexOptions = useMemo(() => {
-    // Width of each color range, not to be confused with the time interval of the series. At least 1:
-    // with values spread over less than 9, a width of 0 left every range empty ("1 - 0") and no intensity
-    const rangeWidth = Math.max(1, Math.trunc((maxValue - minValue) / 9));
-    const colorRanges = Array(10)
+    // Width of each color range, not to be confused with the time interval of the series: ten ranges of at
+    // least 1 cover the whole spread, up to the hottest cell. A value on the bound of two ranges takes the
+    // upper one: the last range is the one the highest value starts or falls in, none lies entirely above it.
+    // Without a value above 0 (or without values, whose bounds are infinite), only the color of 0 is used.
+    const spread = Math.max(0, maxValue - minValue) || 0;
+    const rangeWidth = Math.max(1, Math.ceil(spread / 10));
+    const rangesCount = maxValue > 0 ? Math.min(10, Math.floor(spread / rangeWidth) + 1) : 0;
+    const colorRanges = Array(rangesCount)
       .fill(0)
       .map((_, i) => ({
         from:

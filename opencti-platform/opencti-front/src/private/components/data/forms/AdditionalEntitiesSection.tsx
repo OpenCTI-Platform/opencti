@@ -1,4 +1,3 @@
-import Button from '@common/button/Button';
 import { Add, DeleteOutlined } from '@mui/icons-material';
 // fds:keep-mui Switch/TextField predate this PR; entity form fields still use MUI here.
 import { FormControlLabel, Stack, Switch, TextField, Typography } from '@mui/material';
@@ -7,7 +6,7 @@ import React from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import type { AdditionalEntity, EntitySettings, EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
 import { getInitialMandatoryFields, removeFieldsSupersededByParsedMapping } from './FormUtils';
-import useStyles from './useFormSchemaEditorStyles';
+import { AddButton, EntityHeader, entitySectionSx, TabPanel } from './formSchemaEditorStyles';
 
 export interface AdditionalEntitiesSectionProps {
   formData: FormBuilderData;
@@ -36,7 +35,6 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
   handleAddField,
   handleAddAdditionalEntity,
 }) => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const renderAdditionalEntity = (entity: AdditionalEntity, index: number) => {
@@ -48,12 +46,12 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
     return (
       <Stack
         key={entity.id}
-        className={classes.entitySection}
         sx={{
+          ...entitySectionSx,
           gap: 2,
         }}
       >
-        <div className={classes.entityHeader}>
+        <EntityHeader>
           <Typography variant="h6">
             {displayLabel}
           </Typography>
@@ -66,7 +64,7 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
             className="self-start"
             icon={<DeleteOutlined />}
           />
-        </div>
+        </EntityHeader>
 
         <Select
           value={entity.entityType}
@@ -312,14 +310,13 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
             </Typography>
             {entityFields.map((field, idx) => renderField(field, idx, entity.entityType, entityFields))}
             <div>
-              <Button
+              <AddButton
                 variant="secondary"
                 startIcon={<Add />}
                 onClick={() => handleAddField(entity.id, entity.entityType)}
-                className={classes.addButton}
               >
                 {t_i18n('Add field')}
-              </Button>
+              </AddButton>
             </div>
           </>
         )}
@@ -333,14 +330,13 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
               const parsedModeFields = entityFields.filter((field) => field.attributeMapping.attributeName !== entity.parseFieldMapping);
               return parsedModeFields.map((field, idx) => renderField(field, idx, entity.entityType, parsedModeFields));
             })()}
-            <Button
+            <AddButton
               variant="secondary"
               startIcon={<Add />}
               onClick={() => handleAddField(entity.id, entity.entityType)}
-              className={classes.addButton}
             >
               {t_i18n('Add field')}
-            </Button>
+            </AddButton>
           </>
         )}
       </Stack>
@@ -348,24 +344,23 @@ const AdditionalEntitiesSection: React.FC<AdditionalEntitiesSectionProps> = ({
   };
 
   return (
-    <div className={classes.tabPanel}>
+    <TabPanel>
       <Stack sx={{
         gap: 1,
       }}
       >
         {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
         <div>
-          <Button
+          <AddButton
             variant="secondary"
             startIcon={<Add />}
             onClick={handleAddAdditionalEntity}
-            className={classes.addButton}
           >
             {t_i18n('Add additional entity')}
-          </Button>
+          </AddButton>
         </div>
       </Stack>
-    </div>
+    </TabPanel>
   );
 };
 

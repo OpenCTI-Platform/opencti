@@ -4,7 +4,7 @@ import { ViewColumnOutlined } from '@mui/icons-material';
 import { Box, Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ChartTimeline, VectorLink, VectorPolygon } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { createFragmentContainer, graphql, useLazyLoadQuery } from 'react-relay';

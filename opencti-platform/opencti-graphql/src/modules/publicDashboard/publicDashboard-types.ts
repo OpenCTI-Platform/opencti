@@ -2,6 +2,7 @@ import type { BasicStoreEntity, BasicStoreIdentifier, StoreEntity, StoreMarkingD
 import type { StixDomainObject, StixId, StixOpenctiExtensionSDO } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { FilterGroup } from '../../generated/graphql';
+import type { WIDGET_BREAKDOWN_PARAMETERS } from './publicDashboard-utils';
 
 export const ENTITY_TYPE_PUBLIC_DASHBOARD = 'PublicDashboard';
 
@@ -36,6 +37,16 @@ export interface StoreEntityPublicDashboard extends StoreEntity {
 // endregion
 
 // region cache type
+type WidgetBreakdownParameter = typeof WIDGET_BREAKDOWN_PARAMETERS[number];
+// Value of each breakdown parameter, the parameters themselves being the ones of WIDGET_BREAKDOWN_PARAMETERS: a
+// parameter of the list without a value here does not compile
+interface WidgetBreakdownParameterValues {
+  breakdownBy: string;
+  breakdownLimit: number;
+  breakdownOrder: 'asc' | 'desc';
+  breakdownOther: boolean;
+}
+
 export interface PublicDashboardCachedWidget {
   id: string;
   perspective: 'entities' | 'relationships' | 'audits' | null;
@@ -55,11 +66,7 @@ export interface PublicDashboardCachedWidget {
     stacked?: boolean;
     legend?: boolean;
     distributed?: boolean;
-    breakdownBy?: string;
-    breakdownLimit?: number;
-    breakdownOrder?: 'asc' | 'desc';
-    breakdownOther?: boolean;
-  };
+  } & { [K in WidgetBreakdownParameter]?: WidgetBreakdownParameterValues[K] };
   dataSelection: {
     filters?: FilterGroup;
     dynamicFrom?: FilterGroup;
@@ -74,6 +81,8 @@ export interface PublicDashboardCachedWidget {
     number?: boolean;
     toTypes?: string[];
     perspective?: 'entities' | 'relationships' | 'audits' | null;
+    // Counting the distinct values of an attribute instead of the events, for the audits
+    unique?: boolean;
     sort_by?: string;
     sort_mode?: string;
   }[];

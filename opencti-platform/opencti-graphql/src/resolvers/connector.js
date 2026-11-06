@@ -28,9 +28,11 @@ import {
   updateExpectationsNumber,
   updateProcessedTime,
   updateReceivedTime,
+  workTouchedElements,
   worksForConnector,
 } from '../domain/work';
 import { now } from '../utils/format';
+import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { connector } from '../modules/connector/connector-domain';
 import { getConnectorQueueSize } from '../modules/connector/connector-rabbitmq';
 import { loadCreator } from '../database/members';
@@ -56,6 +58,11 @@ const connectorResolvers = {
     connector: (work, _, context) => connectorForWork(context, context.user, work.id),
     user: (work, _, context) => loadCreator(context, context.user, work.user_id),
     tracking: (work) => computeWorkStatus(work),
+    // event_source_id can be a file or a connector id: only STIX elements are resolved
+    eventSource: (work, _, context) => (work.event_source_id
+      ? context.batch.anyIdsBatchLoader.load({ id: work.event_source_id, type: [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP] })
+      : null),
+    touchedElements: (work, { first }, context) => workTouchedElements(context, context.user, work.touched_ids, first),
   },
   Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),

@@ -15,7 +15,7 @@ const stixRelationshipsTimeSeriesBreakdownQuery = graphql`
     $endDate: DateTime
     $interval: String!
     $limit: Int
-    $order: OrderingMode
+    $orderMode: OrderingMode
     $includeOther: Boolean
     $relationship_type: [String!]
     $filters: FilterGroup
@@ -29,7 +29,7 @@ const stixRelationshipsTimeSeriesBreakdownQuery = graphql`
       endDate: $endDate
       interval: $interval
       limit: $limit
-      order: $order
+      orderMode: $orderMode
       includeOther: $includeOther
       relationship_type: $relationship_type
       filters: $filters
@@ -55,6 +55,13 @@ const stixRelationshipsTimeSeriesBreakdownQuery = graphql`
           ... on Creator {
             id
             name
+          }
+          # the colors of the values that have one
+          ... on Label {
+            color
+          }
+          ... on MarkingDefinition {
+            x_opencti_color
           }
         }
         values

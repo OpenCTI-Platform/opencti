@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import React from 'react';
 import Card from '../../../../components/common/card/Card';
 import CardTitle from '../../../../components/common/card/CardTitle';

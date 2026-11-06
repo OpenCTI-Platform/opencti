@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box, List, ListItem, Stack, Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from 'src/components/Theme';
 import { useFormatter } from 'src/components/i18n';
 import type { WidgetColumn, WidgetHost } from 'src/utils/widget/widget';

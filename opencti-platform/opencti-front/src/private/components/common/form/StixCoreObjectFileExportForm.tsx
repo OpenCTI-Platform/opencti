@@ -9,7 +9,7 @@ import { AbcOutlined, DataObjectOutlined, HtmlOutlined, NumbersOutlined } from '
 import { Stack } from '@mui/material';
 import CardContent from '@mui/material/CardContent';
 import DialogActions from '@mui/material/DialogActions';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
@@ -417,7 +417,7 @@ const StixCoreObjectFileExportForm = ({
                 <Grid
                   container={true}
                   spacing={3}
-                  style={{ marginTop: 0, marginBottom: 0 }}
+                  style={{ marginTop: 24, marginBottom: 0 }}
                 >
                   {connectorScopes.map((scope) => (
                     <Grid key={scope} size={{ xs: 4 }}>

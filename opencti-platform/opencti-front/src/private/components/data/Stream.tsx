@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
 import { Stream as StreamIcon } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import SharingMenu from './SharingMenu';
@@ -10,7 +9,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import { useTheme } from '@mui/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
 import { TAXIIAPI, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
@@ -19,6 +18,7 @@ import ItemCopy from '../../../components/ItemCopy';
 import { StreamLine_node$data } from '@components/data/__generated__/StreamLine_node.graphql';
 import ItemBoolean from '../../../components/ItemBoolean';
 import { EMPTY_VALUE } from '../../../utils/String';
+import { stopLinkNavigation } from '../../../utils/domEvent';
 import Tag from '@common/tag/Tag';
 import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty } from '../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../components/FilterIconButton';
@@ -29,12 +29,10 @@ import { StreamLines_data$data } from '@components/data/__generated__/StreamLine
 
 const LOCAL_STORAGE_KEY = 'stream';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 200px 50px 0',
+});
 
 const streamLineFragment = graphql`
     fragment StreamLine_node on StreamCollection {
@@ -104,7 +102,6 @@ export const streamLinesPaginationQuery = graphql`
 
 const Stream = () => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const theme = useTheme<Theme>();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Live Streams | Data Sharing | Data'));
@@ -219,12 +216,15 @@ const Stream = () => {
         const deserializedFilters = deserializeFilterGroupForFrontend(filters);
         return isFilterGroupNotEmpty(deserializedFilters)
           ? (
-              <FilterIconButton
-                filters={deserializedFilters}
-                variant="small"
-                // as the stream edition form, so that a custom field filter is shown with its label
-                entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
-              />
+              <div role="presentation" onClick={stopLinkNavigation}>
+                <FilterIconButton
+                  filters={deserializedFilters}
+                  variant="small"
+                  showGroupsSummaryButtonOnReadOnly
+                  // as the stream edition form, so that a custom field filter is shown with its label
+                  entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+                />
+              </div>
             )
           : EMPTY_VALUE;
       },
@@ -240,7 +240,7 @@ const Stream = () => {
   } as UsePreloadedPaginationFragment<StreamLinesPaginationQuery>;
 
   return (
-    <div className={classes.container} data-testid="sharing-streams-page">
+    <Container data-testid="sharing-streams-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('Live streams'), current: true }]} />
       <SharingMenu />
       {queryRef && (
@@ -260,7 +260,7 @@ const Stream = () => {
             />
           )}
           actions={(node) => (
-            <div>
+            <div role="presentation" onClick={stopLinkNavigation}>
               <Security needs={[TAXIIAPI]}>
                 <StreamPopover
                   streamCollection={node}
@@ -291,7 +291,7 @@ const Stream = () => {
           }}
         />
       </Security>
-    </div>
+    </Container>
   );
 };
 

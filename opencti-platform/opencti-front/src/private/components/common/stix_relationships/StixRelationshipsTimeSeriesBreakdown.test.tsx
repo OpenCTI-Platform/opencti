@@ -24,16 +24,15 @@ vi.mock('react-relay', async (importOriginal) => ({
     return mocks.response;
   },
 }));
-vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
-  default: (args: unknown) => {
-    mocks.dashboardViz(args);
-    // Resolved as is, unless the test sets what its saved filters and variables resolve to
-    const resolvedDataSelection = mocks.resolvedDataSelection ?? (args as { dataSelection: unknown[] }).dataSelection;
-    return { renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false }, isPreviewMode: false, queryRef: {}, resolvedDataSelection };
-  },
+// Resolved as is, unless the test sets what its saved filters and variables resolve to. The query is kept until a load.
+vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
+  default: (await import('../../../../utils/tests/dashboardVizMock')).mockDashboardViz(mocks),
 }));
+// The guards pass: a loader waits for the query, unless none is run on purpose
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  default: ({ children, queryRef, isQuerySkipped }: { children: React.ReactNode; queryRef?: unknown; isQuerySkipped?: boolean }) => (
+    queryRef || isQuerySkipped ? <>{children}</> : <div data-testid="loader" />
+  ),
 }));
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
   default: ({ children, warning }: { children: React.ReactNode; warning?: string }) => (
@@ -60,6 +59,8 @@ import StixRelationshipsTimeSeriesBreakdown from './StixRelationshipsTimeSeriesB
 
 const config = { relativeDate: null, startDate: '2025-10-01T00:00:00.000Z', endDate: '2026-10-01T00:00:00.000Z' };
 const host = { kind: 'workspace' } as const;
+// The menu of the widget, given to the users who can edit it
+const editorMenu = <div data-testid="widget-menu" />;
 const malwares = { mode: 'and', filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq', mode: 'or' }], filterGroups: [] };
 const sectors = { mode: 'and', filters: [{ key: 'entity_type', values: ['Sector'], operator: 'eq', mode: 'or' }], filterGroups: [] };
 const targets = {
@@ -98,7 +99,7 @@ const respond = (series: SerieFixture[], truncated = false) => {
 };
 
 const render = (widget: Widget) => testRender(
-  <StixRelationshipsTimeSeriesBreakdown widget={widget} config={config} host={host} />,
+  <StixRelationshipsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />,
   { userContext },
 );
 
@@ -134,7 +135,7 @@ describe('StixRelationshipsTimeSeriesBreakdown', () => {
       endDate: config.endDate,
       interval: 'week',
       limit: 20,
-      order: 'asc',
+      orderMode: 'asc',
       includeOther: true,
       // the API checks the field against the relationship types the filters restrict to
       relationship_type: ['targets'],
@@ -189,10 +190,10 @@ describe('StixRelationshipsTimeSeriesBreakdown', () => {
     expect((await drawn(mocks.lines)).series[0].name).toEqual('TLP:GREEN');
   });
 
-  it('warns when only the top values are displayed', () => {
+  it('warns when only the highest values are displayed', () => {
     respond([{ label: 'targets', entity: null, values: [1, 2, 3] }], true);
     const { getByTestId } = render(makeWidget('line', { breakdownBy: 'relationship_type', breakdownLimit: 5 }, allRelationships));
-    expect(getByTestId('widget-warning').textContent).toContain('Only the top 5 values are displayed.');
+    expect(getByTestId('widget-warning').textContent).toContain('Only the 5 highest values are displayed.');
   });
 
   it('does not query a field the relationships do not support, and says so', () => {

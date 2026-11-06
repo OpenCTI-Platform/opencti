@@ -97,7 +97,7 @@ const Triggers: FunctionComponent<TriggersProps> = ({
   const [openLive, setOpenLive] = useState(false);
   const [openDigest, setOpenDigest] = useState(false);
   return (
-    <Grid item xs={12} style={{ marginTop: 10 }}>
+    <Grid style={{ marginTop: 10 }} size={12}>
       <Card
         title={t_i18n('Triggers and Digests')}
         action={(

@@ -39,6 +39,28 @@ export const ingestionHealthAttributes: AttributeDefinition[] = [
         isFilterable: false,
       },
       {
+        name: 'last_event_date',
+        label: 'Health last event date',
+        type: 'date',
+        mandatoryType: 'no',
+        editDefault: false,
+        multiple: false,
+        upsert: false,
+        isFilterable: false,
+      },
+      {
+        name: 'last_event_status',
+        label: 'Health last event status',
+        type: 'string',
+        format: 'enum',
+        values: Object.values(IngestionHealthStatus),
+        mandatoryType: 'no',
+        editDefault: false,
+        multiple: false,
+        upsert: false,
+        isFilterable: false,
+      },
+      {
         name: 'health_checks',
         label: 'Health checks',
         type: 'object',
@@ -49,10 +71,28 @@ export const ingestionHealthAttributes: AttributeDefinition[] = [
         upsert: false,
         isFilterable: false,
         mappings: [
-          { name: 'health_check_code', label: 'Health check code', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
-          { name: 'health_check_metadata', label: 'Health check metadata', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: INGESTION_HEALTH_FEATURE_FLAG },
+          { name: 'health_check_code', label: 'Health check code', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+          { name: 'health_check_metadata', label: 'Health check metadata', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
         ],
       },
     ],
   },
 ];
+
+// Stored in the platform settings, registered on them by the module (see ingestionHealth)
+export const ingestionHealthSettingsAttribute: AttributeDefinition = {
+  name: 'ingestion_health_settings',
+  label: 'Ingestion health settings',
+  type: 'object',
+  format: 'standard',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
+  featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
+  mappings: [
+    { name: 'notification_delay', label: 'Notification delay (in minute)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'disabled_health_checks', label: 'Disabled health checks', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+  ],
+};

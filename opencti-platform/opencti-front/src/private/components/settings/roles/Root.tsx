@@ -5,7 +5,7 @@ import { Box, Stack } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import RoleDeletionDialog from '@components/settings/roles/RoleDeletionDialog';
 import RoleEdition from '@components/settings/roles/RoleEdition';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Role from './Role';

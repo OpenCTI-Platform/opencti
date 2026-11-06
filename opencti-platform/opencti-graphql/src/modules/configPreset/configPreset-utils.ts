@@ -1,5 +1,9 @@
 import { PLATFORM_VERSION } from '../../config/conf';
-import type { UserConfigPresetExportActionContextData } from '../../listener/UserActionListener';
+import type { UserConfigPresetExportActionContextData, UserConfigPresetImportActionContextData } from '../../listener/UserActionListener';
+
+// The files of a bundle that are not items
+export const CONFIG_PRESET_METADATA_FILE = 'metadata.json';
+export const CONFIG_PRESET_DEPENDENCIES_FILE = 'dependencies.json';
 
 const BUNDLE_NAME_MAX_LENGTH = 80;
 
@@ -31,4 +35,10 @@ export const buildConfigPresetFileName = (date: Date) => {
 export const buildConfigPresetExportMessage = ({ file_name, input: { entity_types, counts } }: UserConfigPresetExportActionContextData) => {
   const exported = entity_types.map((type) => `${type}: ${counts[type] ?? 0}`).join(', ');
   return `exports the configuration preset \`${file_name}\` (${exported})`;
+};
+
+// Message of the activity log of an import: the number of items per result, and the report when it was written
+export const buildConfigPresetImportMessage = ({ file_id: fileId, file_name: fileName, input: { counts } }: UserConfigPresetImportActionContextData) => {
+  const report = fileId ? `report \`${fileName}\`` : 'the report could not be written';
+  return `imports a configuration preset (created: ${counts.created}, overwritten: ${counts.overwritten}, skipped: ${counts.skipped}, failed: ${counts.failed}), ${report}`;
 };

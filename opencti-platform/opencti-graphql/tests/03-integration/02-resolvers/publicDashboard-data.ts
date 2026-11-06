@@ -578,6 +578,149 @@ export const PRIVATE_DASHBOARD_MANIFEST = {
         static: false,
       },
     },
+    '2f27537c-a5ae-45de-b8d4-1e85e325a71c': {
+      id: '2f27537c-a5ae-45de-b8d4-1e85e325a71c',
+      type: 'line',
+      perspective: 'relationships',
+      dataSelection: [
+        {
+          label: 'relationships by type',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'relationships',
+          isTo: true,
+          // No relationship type: the same relationships as the 'Evolution of attacks without filters' widget
+          filters: undefined,
+          dynamicFrom: {
+            mode: 'and',
+            filters: [{
+              key: ['description'],
+              values: ['widget tests'],
+              operator: 'search',
+              mode: 'or',
+            }],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: {
+        title: 'Evolution of relationships by type',
+        interval: 'day',
+        breakdownBy: 'relationship_type',
+        breakdownLimit: 5,
+        breakdownOrder: 'desc',
+        breakdownOther: false,
+      },
+      layout: {
+        w: 4,
+        h: 2,
+        x: 8,
+        y: 8,
+        i: '2f27537c-a5ae-45de-b8d4-1e85e325a71c',
+        moved: false,
+        static: false,
+      },
+    },
+    '65b10e7f-f502-4fed-a192-085f460fb94a': {
+      id: '65b10e7f-f502-4fed-a192-085f460fb94a',
+      type: 'area',
+      perspective: 'entities',
+      dataSelection: [
+        {
+          label: 'top type of areas and malwares',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'entities',
+          isTo: true,
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: ['entity_type'],
+                values: ['Administrative-Area', 'Malware'],
+                operator: 'eq',
+                mode: 'or',
+              },
+              {
+                key: 'description',
+                values: ['widget tests'],
+                operator: 'search',
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: {
+        title: 'Evolution of the top type of areas and malwares',
+        interval: 'day',
+        // A single serie: the other type is counted in the Other serie
+        breakdownBy: 'entity_type',
+        breakdownLimit: 1,
+        breakdownOrder: 'desc',
+        breakdownOther: true,
+      },
+      layout: {
+        w: 4,
+        h: 2,
+        x: 0,
+        y: 10,
+        i: '65b10e7f-f502-4fed-a192-085f460fb94a',
+        moved: false,
+        static: false,
+      },
+    },
+    'c3f1a7d2-8e4b-4c6a-9d15-7b2e0f4a6c91': {
+      id: 'c3f1a7d2-8e4b-4c6a-9d15-7b2e0f4a6c91',
+      type: 'vertical-bar',
+      perspective: 'entities',
+      dataSelection: [
+        {
+          label: 'reports by author',
+          attribute: 'entity_type',
+          date_attribute: 'created_at',
+          perspective: 'entities',
+          isTo: true,
+          filters: {
+            mode: 'and',
+            filters: [
+              {
+                key: ['entity_type'],
+                values: ['Report'],
+                operator: 'eq',
+                mode: 'or',
+              },
+              {
+                key: 'description',
+                // In quotes: the search matches the phrase, not any report holding one of its words
+                values: ['"public breakdown by author"'],
+                operator: 'search',
+                mode: 'or',
+              },
+            ],
+            filterGroups: [],
+          },
+        },
+      ],
+      parameters: {
+        title: 'Evolution of reports by author',
+        interval: 'day',
+        breakdownBy: 'createdBy',
+        breakdownLimit: 5,
+        breakdownOrder: 'desc',
+        breakdownOther: false,
+      },
+      layout: {
+        w: 4,
+        h: 2,
+        x: 4,
+        y: 10,
+        i: 'c3f1a7d2-8e4b-4c6a-9d15-7b2e0f4a6c91',
+        moved: false,
+        static: false,
+      },
+    },
   },
   config: {
 

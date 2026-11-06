@@ -72,7 +72,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
     <div style={{ height: '100%' }} data-testid="case-rft-details-page">
       <Card title={t_i18n('Details')}>
         <Grid container={true} spacing={2} sx={{ marginBottom: 2 }}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Label>
               {t_i18n('Description')}
             </Label>
@@ -80,7 +80,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               <ExpandableMarkdown source={data.description} limit={300} />
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Request for takedown types')}
             </Label>
@@ -101,7 +101,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               </Stack>
             </FieldOrEmpty>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Priority')}
             </Label>
@@ -113,7 +113,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               displayMode="chip"
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             <Label>
               {t_i18n('Severity')}
             </Label>

@@ -25,6 +25,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
+import { authorizedMembersToInput } from '../../../utils/authorizedMembers';
 
 export const draftCreationMutation = graphql`
     mutation DraftCreationMutation($input: DraftWorkspaceAddInput!) {
@@ -120,17 +121,7 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectParticipant: values.objectParticipant.map(({ value }) => value),
       createdBy: values.createdBy?.value,
-      authorized_members: !values.authorized_members ? null : (
-        values.authorized_members
-          .filter((v) => v.accessRight !== 'none')
-          .map((member) => ({
-            id: member.value,
-            access_right: member.accessRight,
-            groups_restriction_ids: member.groupsRestriction?.length > 0
-              ? member.groupsRestriction.map((group) => group.value)
-              : undefined,
-          }))
-      ),
+      authorized_members: values.authorized_members ? authorizedMembersToInput(values.authorized_members) : null,
     };
     commitCreationMutation({
       variables: {

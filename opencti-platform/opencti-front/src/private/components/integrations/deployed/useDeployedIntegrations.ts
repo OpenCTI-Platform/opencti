@@ -3,9 +3,11 @@ import { v5 as uuidv5 } from 'uuid';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import type { IngestionHealthChip_ingestionHealth$key } from '@components/data/connectors/__generated__/IngestionHealthChip_ingestionHealth.graphql';
+import type { IngestionHealthSummary_ingestionHealth$key } from '@components/integrations/deployed/__generated__/IngestionHealthSummary_ingestionHealth.graphql';
+import { HealthIssue, readHealthIssue, readHealthStatus } from '@components/integrations/deployed/IngestionHealthSummary';
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
-import { computeConnectorStatus } from '../../../../utils/Connector';
+import { computeConnectorStatus, type IntegrationStatus } from '../../../../utils/Connector';
 
 // Mirrors the backend: every built-in feed registers a technical queue
 // connector whose id is derived from the ingestion id (uuid v5 in the OpenCTI
@@ -13,7 +15,7 @@ import { computeConnectorStatus } from '../../../../utils/Connector';
 const OPENCTI_NAMESPACE = 'b639ff3b-00eb-42ed-aa36-a8dd6f8fb4cf';
 export const connectorIdFromIngestId = (id: string) => uuidv5(id, OPENCTI_NAMESPACE);
 
-export type DeployedIntegrationStatus = 'active' | 'inactive' | 'processing';
+export type DeployedIntegrationStatus = IntegrationStatus;
 
 export interface DeployedIntegrationItem {
   id: string;
@@ -25,7 +27,6 @@ export interface DeployedIntegrationItem {
   description?: string | null;
   logo?: string;
   status: DeployedIntegrationStatus;
-  statusLabel: string;
   running?: boolean;
   messagesCount: number | null;
   // Current bundles/second consumed from the integration queues (RabbitMQ ack
@@ -44,7 +45,11 @@ export interface DeployedIntegrationItem {
   detailUrl: string;
   searchText: string;
   // Ingestion health (connectors, feeds and syncs; forms have none)
-  ingestionHealth?: IngestionHealthChip_ingestionHealth$key | null;
+  ingestionHealth?: (IngestionHealthChip_ingestionHealth$key & IngestionHealthSummary_ingestionHealth$key) | null;
+  // Derived from ingestionHealth: null when healthy or not evaluated
+  healthIssue?: HealthIssue | null;
+  // Derived from ingestionHealth, for the health facet: null when not evaluated
+  healthStatus?: string | null;
   // Raw merged connector record, needed by connector row actions
   connector?: ConnectorsListQuery['response']['connectors'][number] & Partial<ConnectorsStateQuery['response']['connectors'][number]>;
 }
@@ -57,6 +62,8 @@ interface UseDeployedIntegrationsProps {
   logosBySlug: Map<string, string>;
   // Connector update detection is part of the decoupled versions (DECOUPLING_VERSIONS feature flag)
   isConnectorUpdateEnabled: boolean;
+  // A connector is stopped under other conditions with the ingestion health (INGESTION_HEALTH feature flag): see computeConnectorStatus
+  isIngestionHealthEnabled: boolean;
 }
 
 const toSafeNumber = (value: unknown): number => {
@@ -67,7 +74,6 @@ const toSafeNumber = (value: unknown): number => {
 const feedStatus = (running: boolean | null | undefined) => {
   return {
     status: (running ? 'active' : 'inactive') as DeployedIntegrationStatus,
-    statusLabel: running ? 'active' : 'inactive',
   };
 };
 
@@ -88,6 +94,7 @@ const useDeployedIntegrations = ({
   formsData,
   logosBySlug,
   isConnectorUpdateEnabled,
+  isIngestionHealthEnabled,
 }: UseDeployedIntegrationsProps): DeployedIntegrationItem[] => {
   return useMemo(() => {
     const items: DeployedIntegrationItem[] = [];
@@ -137,19 +144,11 @@ const useDeployedIntegrations = ({
       if (feedTwinConnectorIds.has(connector.id)) continue;
       const state = connectorsStateData?.connectors?.find((s) => s.id === connector.id);
       const merged = { ...connector, ...state };
-      const { status, label, processing } = computeConnectorStatus({
+      const { integrationStatus } = computeConnectorStatus({
         manager_current_status: state?.manager_current_status,
         manager_requested_status: state?.manager_requested_status,
         active: state?.active,
-      });
-      let itemStatus: DeployedIntegrationStatus;
-      if (processing) {
-        itemStatus = 'processing';
-      } else if (status === 'active') {
-        itemStatus = 'active';
-      } else {
-        itemStatus = 'inactive';
-      }
+      }, isIngestionHealthEnabled);
       const logoSlug = connector.manager_contract_excerpt?.slug;
       items.push({
         id: connector.id,
@@ -158,8 +157,7 @@ const useDeployedIntegrations = ({
         name: connector.title ?? connector.name,
         description: connector.manager_contract_excerpt?.title,
         logo: logoSlug ? logosBySlug.get(logoSlug) : undefined,
-        status: itemStatus,
-        statusLabel: label,
+        status: integrationStatus,
         messagesCount: queueMessagesByConnector.get(connector.id) ?? 0,
         throughputRate: queueRateByConnector.get(connector.id) ?? null,
         lastRunDate: null,
@@ -285,8 +283,12 @@ const useDeployedIntegrations = ({
       });
     }
 
-    return items;
-  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug, isConnectorUpdateEnabled]);
+    return items.map((item) => ({
+      ...item,
+      healthIssue: readHealthIssue(item.ingestionHealth),
+      healthStatus: readHealthStatus(item.ingestionHealth),
+    }));
+  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug, isConnectorUpdateEnabled, isIngestionHealthEnabled]);
 };
 
 export default useDeployedIntegrations;

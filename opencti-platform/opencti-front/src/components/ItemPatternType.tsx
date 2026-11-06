@@ -1,5 +1,5 @@
 import Tag from '@common/tag/Tag';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FunctionComponent } from 'react';
 import { Theme } from '../components/Theme';
 

@@ -111,7 +111,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
   index,
 }) => {
   const theme = useTheme();
-  const { fd } = useFormatter();
+  const { ftd } = useFormatter();
   const data = useFragment(narrativeLineFragment, node);
   return (
     <ListItem
@@ -156,10 +156,10 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
               />
             </div>
             <div style={commonTextStyle(theme, dataColumns.created.width)}>
-              {fd(data.created)}
+              {ftd(data.created)}
             </div>
             <div style={commonTextStyle(theme, dataColumns.modified.width)}>
-              {fd(data.modified)}
+              {ftd(data.modified)}
             </div>
           </>
         )}

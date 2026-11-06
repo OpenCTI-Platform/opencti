@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { createPaginationContainer, graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import { Form, Formik } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation } from '../../../../relay/environment';
@@ -15,39 +14,6 @@ import { insertNode } from '../../../../utils/store';
 import CommitMessage from '../form/CommitMessage';
 
 const nbOfRowsToLoad = 50;
-
-const styles = (theme) => ({
-  container: {
-    padding: '20px 0 20px 0',
-  },
-  heading: {
-    fontSize: theme.typography.pxToRem(15),
-    flexBasis: '33.33%',
-    flexShrink: 0,
-  },
-  secondaryHeading: {
-    fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary,
-  },
-  expansionPanelContent: {
-    padding: 0,
-  },
-  list: {
-    width: '100%',
-  },
-  listItem: {
-    width: '100%',
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-  tooltip: {
-    maxWidth: '80%',
-    lineHeight: 2,
-    padding: 10,
-    backgroundColor: '#323232',
-  },
-});
 
 export const containerAddStixCoreObjectsLinesRelationAddMutation = graphql`
   mutation ContainerAddStixCoreObjectsLinesRelationAddMutation(
@@ -361,7 +327,6 @@ ContainerAddStixCoreObjectsLinesComponent.propTypes = {
   containerId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   paginationOptions: PropTypes.object,
@@ -480,7 +445,4 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
   },
 );
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(ContainerAddStixCoreObjectsLines);
+export default inject18n(ContainerAddStixCoreObjectsLines);

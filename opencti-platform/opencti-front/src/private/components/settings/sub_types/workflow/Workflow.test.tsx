@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ThemeProvider, createTheme, ThemeOptions } from '@mui/material/styles';
+import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import Workflow from './Workflow';
 import useWorkflowLayout from './hooks/useWorkflowLayout';
 import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';

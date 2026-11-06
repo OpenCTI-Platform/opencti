@@ -35,6 +35,7 @@ import threading
 import time
 import uuid
 from collections import deque
+from collections.abc import Iterable, Mapping
 from enum import Enum
 from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
@@ -49,19 +50,29 @@ from fastapi.responses import JSONResponse
 from filigran_sseclient import SSEClient
 from jwt import PyJWKSet
 from pika.exceptions import NackError, UnroutableError
-from pydantic import TypeAdapter
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector import opencti_connector_build
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
+from pycti.utils.opencti_tls import (
+    get_tls_reject_unauthorized,
+    log_tls_verification_disabled,
+)
 
 TRUTHY: List[str] = ["yes", "true", "True"]
 """List of string values considered as boolean True."""
 
 FALSY: List[str] = ["no", "false", "False"]
 """List of string values considered as boolean False."""
+
+BOOLEAN_TRUE_VALUES = frozenset({"true", "yes", "on", "1"})
+"""Values (compared case-insensitively) parsed as True for a boolean setting."""
+
+BOOLEAN_FALSE_VALUES = frozenset({"false", "no", "off", "0"})
+"""Values (compared case-insensitively) parsed as False for a boolean setting."""
 
 app = FastAPI()
 
@@ -96,6 +107,46 @@ def start_loop(loop) -> None:
     loop.run_forever()
 
 
+def parse_boolean_config(env_var: str, value, strict: bool = True):
+    """Parse the value of a boolean configuration setting.
+
+    Accepts real booleans, the integers 0 and 1, and the strings ``true``,
+    ``false``, ``yes``, ``no``, ``on``, ``off``, ``1`` and ``0`` in any case,
+    surrounding whitespace ignored.
+
+    :param env_var: Name of the setting, used in the error message
+    :type env_var: str
+    :param value: The raw value read from the environment or the YAML config
+    :type value: any
+    :param strict: If False, return an unrecognised value unchanged instead of
+        raising (for settings that take a boolean or a string, such as a TLS
+        verification flag that may also hold a CA bundle path)
+    :type strict: bool
+
+    :return: The parsed boolean, or the value itself when not strict and not
+        a recognised boolean
+    :rtype: bool or any
+
+    :raises ValueError: If strict and the value is not a recognised boolean
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int) and value in (0, 1):
+        return value == 1
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in BOOLEAN_TRUE_VALUES:
+            return True
+        if normalized in BOOLEAN_FALSE_VALUES:
+            return False
+    if not strict:
+        return value
+    raise ValueError(
+        f"The configuration {env_var} expects a boolean "
+        "(true/false, yes/no, on/off, 1/0), got " + repr(value)
+    )
+
+
 def get_config_variable(
     env_var: str,
     yaml_path: List,
@@ -103,6 +154,7 @@ def get_config_variable(
     isNumber: Optional[bool] = False,
     default=None,
     required=False,
+    isBoolean: Optional[bool] = None,
 ) -> Union[bool, int, None, str]:
     """Retrieve a configuration variable from environment or YAML config.
 
@@ -111,8 +163,15 @@ def get_config_variable(
     2. YAML configuration file
     3. Default value (lowest priority)
 
-    Boolean string values ("yes", "true", "True", "no", "false", "False")
-    are automatically converted to Python bool.
+    A setting is parsed as a boolean when ``isBoolean`` is True, or when
+    ``isBoolean`` is left to None, ``isNumber`` is False and ``default`` is a
+    bool. A boolean setting accepts true/false, yes/no, on/off and 1/0 in any
+    case (see :func:`parse_boolean_config`); any other value raises a
+    ValueError naming the setting, instead of being returned as a string that
+    would always be truthy.
+
+    For any other setting, the strings "yes", "true", "True", "no", "false"
+    and "False" are still converted to Python bool, as before.
 
     :param env_var: Name of the environment variable to check
     :type env_var: str
@@ -126,11 +185,15 @@ def get_config_variable(
     :type default: any
     :param required: If True and no value found, raise ValueError
     :type required: bool
+    :param isBoolean: True to parse the value as a boolean, False to never do
+        so, None (default) to infer it from a bool ``default``
+    :type isBoolean: bool or None
 
     :return: The configuration value as bool, int, str, or None
     :rtype: Union[bool, int, None, str]
 
-    :raises ValueError: If required=True and no value is found
+    :raises ValueError: If required=True and no value is found, or if a boolean
+        setting holds a value that is not a recognised boolean
 
     Example:
         >>> get_config_variable("OPENCTI_URL", ["opencti", "url"], config)
@@ -151,6 +214,15 @@ def get_config_variable(
             return default
     else:
         return default
+
+    if isBoolean is None:
+        isBoolean = not isNumber and isinstance(default, bool)
+    if isBoolean:
+        if result is None or (isinstance(result, str) and len(result.strip()) == 0):
+            if required and default is None:
+                raise ValueError("The configuration " + env_var + " is required")
+            return default
+        return parse_boolean_config(env_var, result)
 
     if result in TRUTHY:
         return True
@@ -406,6 +478,7 @@ def create_mq_ssl_context(config: Dict) -> ssl.SSLContext:
         - MQ_USE_SSL_CERT: Client certificate for mutual TLS
         - MQ_USE_SSL_KEY: Client private key for mutual TLS
         - MQ_USE_SSL_REJECT_UNAUTHORIZED: Whether to verify server certificate
+          (default: OPENCTI_TLS_REJECT_UNAUTHORIZED)
         - MQ_USE_SSL_PASSPHRASE: Optional passphrase for private key
 
     :param config: Configuration dictionary containing MQ SSL settings
@@ -424,7 +497,7 @@ def create_mq_ssl_context(config: Dict) -> ssl.SSLContext:
         ["mq", "use_ssl_reject_unauthorized"],
         config,
         False,
-        False,
+        get_tls_reject_unauthorized(config),
     )
     use_ssl_passphrase = get_config_variable(
         "MQ_USE_SSL_PASSPHRASE", ["mq", "use_ssl_passphrase"], config
@@ -1032,7 +1105,7 @@ class PingAlive(threading.Thread):
         self.set_state = set_state
         self.exit_event = threading.Event()
         self.metric = metric
-        self.connector_info = connector_info
+        self.connector_info: ConnectorInfo = connector_info
 
     def ping(self) -> None:
         """Execute the ping loop to maintain connector heartbeat.
@@ -1806,6 +1879,72 @@ class ListenStream(threading.Thread):
             self.callback.stop()
 
 
+CONNECTOR_ERRORS_MAX_COUNT = 20
+CONNECTOR_ERROR_CODE_MAX_LENGTH = 256
+CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024
+
+
+# The platform only accepts a GraphQL Int (32 bits)
+_GRAPHQL_INT_MIN = -(2**31)
+_GRAPHQL_INT_MAX = 2**31 - 1
+
+
+# Private for now: returned dicts and add_error are the documented contract, exporting it later stays compatible
+class _ConnectorRunError(BaseModel):
+    """Error returned by a connector run"""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    code: str
+    message: str
+    criticity: int = Field(ge=_GRAPHQL_INT_MIN, le=_GRAPHQL_INT_MAX)
+
+
+def _parse_criticity(value) -> int:
+    # bool is an int subclass
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"criticity must be an integer, got {type(value).__name__}")
+    if not _GRAPHQL_INT_MIN <= value <= _GRAPHQL_INT_MAX:
+        raise ValueError(f"criticity {value} is out of the GraphQL Int range")
+    return value
+
+
+def _sanitize_connector_error(error) -> Optional[Dict]:
+    try:
+        code = error.get("code")
+        if code is None:
+            return None
+        code = str(code).strip()[:CONNECTOR_ERROR_CODE_MAX_LENGTH]
+        if not code:
+            return None
+        message = error.get("message")
+        message = ("" if message is None else str(message).strip())[
+            :CONNECTOR_ERROR_MESSAGE_MAX_LENGTH
+        ]
+        criticity = _parse_criticity(error.get("criticity"))
+        return {"code": code, "message": message, "criticity": criticity}
+    # A malformed error must never make the ping mutation fail.
+    except Exception:  # pylint: disable=broad-except
+        return None
+
+
+def _sanitize_connector_errors(errors) -> List[Dict]:
+    try:
+        sanitized = [
+            sanitized_error
+            for sanitized_error in map(_sanitize_connector_error, errors)
+            if sanitized_error is not None
+        ]
+    except Exception:  # pylint: disable=broad-except
+        return []
+    # The platform merges errors by code, the last report wins: a repeated code takes a single slot
+    last_error_by_code = {error["code"]: error for error in sanitized}
+    deduplicated = sorted(
+        last_error_by_code.values(), key=lambda error: error["criticity"], reverse=True
+    )
+    return deduplicated[:CONNECTOR_ERRORS_MAX_COUNT]
+
+
 class ConnectorInfo:
     """Container for connector runtime information and status.
 
@@ -1824,6 +1963,10 @@ class ConnectorInfo:
     :type next_run_datetime: datetime or None
     :param last_run_datetime: Datetime of the last connector run
     :type last_run_datetime: datetime or None
+    :param errors: List of errors reported to the platform, each a dict with
+        ``code`` (str), ``message`` (str) and ``criticity`` (int, higher is
+        more critical)
+    :type errors: list or None
 
     Example:
         >>> info = ConnectorInfo(run_and_terminate=False, queue_threshold=500.0)
@@ -1840,6 +1983,8 @@ class ConnectorInfo:
         queue_messages_size: float = 0.0,
         next_run_datetime: datetime = None,
         last_run_datetime: datetime = None,
+        errors: Optional[List[Dict]] = None,
+        logger=None,
     ):
         """Initialize ConnectorInfo with runtime parameters.
 
@@ -1855,6 +2000,9 @@ class ConnectorInfo:
         :type next_run_datetime: datetime or None
         :param last_run_datetime: Last run time
         :type last_run_datetime: datetime or None
+        :param errors: Errors to report (dicts with code, message, criticity)
+        :type errors: list or None
+        :param logger: Connector logger, used to warn about an error that add_error ignores
         """
         self._run_and_terminate = run_and_terminate
         self._buffering = buffering
@@ -1862,6 +2010,10 @@ class ConnectorInfo:
         self._queue_messages_size = queue_messages_size
         self._next_run_datetime = next_run_datetime
         self._last_run_datetime = last_run_datetime
+        self._errors: List[Dict] = list(errors) if errors else []
+        # Until errors are reported, none are sent: a restarted process must not clear the previous one's
+        self._errors_reported = errors is not None
+        self.logger = logger
 
     @property
     def all_details(self):
@@ -1870,7 +2022,7 @@ class ConnectorInfo:
         :return: Dictionary containing all connector status information
         :rtype: dict
         """
-        return {
+        details = {
             "run_and_terminate": self._run_and_terminate,
             "buffering": self._buffering,
             "queue_threshold": self._queue_threshold,
@@ -1878,6 +2030,10 @@ class ConnectorInfo:
             "next_run_datetime": self._next_run_datetime,
             "last_run_datetime": self._last_run_datetime,
         }
+        # An explicit list, even empty, replaces the errors stored by the platform
+        if self._errors_reported:
+            details["errors"] = _sanitize_connector_errors(self._errors)
+        return details
 
     @property
     def run_and_terminate(self) -> bool:
@@ -1987,6 +2143,64 @@ class ConnectorInfo:
         """
         self._last_run_datetime = value
 
+    @property
+    def errors(self) -> List[Dict]:
+        """Get the errors reported to the platform.
+
+        :return: List of dicts with ``code``, ``message`` and ``criticity``
+        :rtype: list
+        """
+        return self._errors
+
+    @errors.setter
+    def errors(self, value: Optional[List[Dict]]) -> None:
+        """Replace the errors reported to the platform.
+
+        :param value: List of dicts with ``code``, ``message`` and ``criticity``
+        :type value: list or None
+        """
+        self._errors = list(value) if value else []
+        self._errors_reported = True
+
+    def add_error(
+        self,
+        code: str,
+        message: str,
+        criticity: int,
+    ) -> None:
+        """Add an error, sent on every ping until the errors are cleared.
+
+        A scheduled connector's errors are cleared before each run. An invalid
+        error is ignored with a warning, never raised. When sent, code and
+        message are truncated, a repeated code keeps its last report, and only
+        the most critical errors are kept.
+
+        :param code: Error code
+        :type code: str
+        :param message: Human readable error message
+        :type message: str
+        :param criticity: Criticity level, higher is more critical
+        :type criticity: int
+        """
+        try:
+            error = _ConnectorRunError.model_validate(
+                {"code": code, "message": message, "criticity": criticity}
+            )
+        except ValidationError as e:
+            if self.logger is not None:
+                self.logger.warning(
+                    "Malformed error ignored by add_error",
+                    {"received": repr((code, message, criticity)), "reason": str(e)},
+                )
+            return
+        self._errors.append(error.model_dump())
+        self._errors_reported = True
+
+    def clear_errors(self) -> None:
+        """Remove all reported errors."""
+        self._errors = []
+        self._errors_reported = True
+
 
 class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     """Main helper class for developing OpenCTI connectors.
@@ -2067,8 +2281,19 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             config,
             default=None,
         )
-        self.opencti_ssl_verify = get_config_variable(
-            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, False, False
+        # ssl_verify takes a boolean or a CA bundle path: parse the boolean
+        # spellings, keep any other string as a path
+        self.opencti_ssl_verify = parse_boolean_config(
+            "OPENCTI_SSL_VERIFY",
+            get_config_variable(
+                "OPENCTI_SSL_VERIFY",
+                ["opencti", "ssl_verify"],
+                config,
+                False,
+                get_tls_reject_unauthorized(config),
+                isBoolean=False,
+            ),
+            strict=False,
         )
         self.opencti_json_logging = get_config_variable(
             "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, False, True
@@ -2252,7 +2477,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.s3_secret_key = get_config_variable(
             "S3_SECRET_KEY", ["s3", "secret_key"], config
         )
-        self.s3_use_ssl = get_config_variable("S3_USE_SSL", ["s3", "use_ssl"], config)
+        self.s3_use_ssl = get_config_variable(
+            "S3_USE_SSL", ["s3", "use_ssl"], config, isBoolean=True
+        )
         self.s3_bucket_region = get_config_variable(
             "S3_BUCKET_REGION", ["s3", "bucket_region"], config
         )
@@ -2409,6 +2636,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             bundle_send_to_queue=self.bundle_send_to_queue,
         )
         self.connector_logger = self.api.logger_class(self.connect_name)
+        self.connector_info.logger = self.connector_logger
+        log_tls_verification_disabled(self.connector_logger, config)
         # For retro compatibility
         self.log_debug = self.connector_logger.debug
         self.log_info = self.connector_logger.info
@@ -3077,7 +3306,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def schedule_iso(
-        self, message_callback: Callable[[], None], duration_period: str
+        self, message_callback: Callable[[], Optional[List[Dict]]], duration_period: str
     ) -> None:
         """Schedule connector execution using ISO 8601 duration format.
 
@@ -3106,10 +3335,44 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
             sys.excepthook(*sys.exc_info())
 
+    def _run_and_collect_errors(
+        self, message_callback: Callable[[], Optional[List[Dict]]]
+    ) -> None:
+        # Errors belong to a run: cleared before it so those added with add_error during it are kept
+        self.connector_info.clear_errors()
+        error_list = message_callback()
+        # Other non-list returns (True, a status string...) predate errors reporting and stay silent
+        if isinstance(error_list, Mapping):
+            self.connector_logger.warning(
+                "Connector run returned a single error instead of a list, ignored",
+                {"received": repr(error_list)},
+            )
+        # Strings, bytes and mappings are iterable but are not a list of errors
+        if isinstance(error_list, Iterable) and not isinstance(
+            error_list, (str, bytes, Mapping)
+        ):
+            returned_errors: List[Dict] = []
+            for error in error_list:
+                try:
+                    returned_errors.append(
+                        _ConnectorRunError.model_validate(error).model_dump()
+                    )
+                except ValidationError as e:
+                    self.connector_logger.warning(
+                        "Malformed error response from the connector",
+                        {"received": repr(error), "reason": str(e)},
+                    )
+            self.connector_info.errors = self.connector_info.errors + returned_errors
+        if self.connector_info.errors:
+            self.connector_logger.info(
+                "Errors reported by the connector run",
+                {"errors": self.connector_info.errors},
+            )
+
     def _schedule_process(
         self,
         scheduler: sched.scheduler,
-        message_callback: Callable[[], None],
+        message_callback: Callable[[], Optional[List[Dict]]],
         duration_period: Union[int, float],
     ) -> None:
         """Execute scheduled connector process if queue is not buffering.
@@ -3120,7 +3383,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param scheduler: Scheduler containing tasks to be started
         :type scheduler: sched.scheduler
         :param message_callback: The connector process callback function
-        :type message_callback: Callable[[], None]
+        :type message_callback: Callable[[], Optional[List[Dict]]]
         :param duration_period: The connector's interval in seconds
         :type duration_period: Union[int, float]
         """
@@ -3130,7 +3393,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
             if not check_connector_buffering:
                 # Start running the connector
-                message_callback()
+                self._run_and_collect_errors(message_callback)
                 # Lets you know what is the last run of the connector datetime
                 self.last_run_datetime()
 
@@ -3154,7 +3417,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
 
     def schedule_process(
-        self, message_callback: Callable[[], None], duration_period: Union[int, float]
+        self,
+        message_callback: Callable[[], Optional[List[Dict]]],
+        duration_period: Union[int, float],
     ) -> None:
         """Schedule the execution of a connector process.
 
@@ -3163,7 +3428,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         the next run based on the interval.
 
         :param message_callback: The connector process callback function
-        :type message_callback: Callable[[], None]
+        :type message_callback: Callable[[], Optional[List[Dict]]]
         :param duration_period: The connector's interval in seconds
         :type duration_period: Union[int, float]
         """
@@ -3177,7 +3442,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
                 if not check_connector_buffering:
                     # Start running the connector
-                    message_callback()
+                    self._run_and_collect_errors(message_callback)
 
                 # Lets you know what is the last run of the connector datetime
                 self.last_run_datetime()
@@ -3186,7 +3451,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 sys.exit(0)
             else:
                 # Start running the connector
-                message_callback()
+                self._run_and_collect_errors(message_callback)
+
                 # Set queue_threshold and queue_messages_size for the first run
                 self.check_connector_buffering()
                 # Lets you know what is the last run of the connector datetime
