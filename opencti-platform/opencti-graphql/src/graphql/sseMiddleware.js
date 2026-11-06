@@ -48,7 +48,7 @@ import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resol
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { fullRelationsList } from '../database/middleware-loader';
-import { RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -295,12 +295,21 @@ const loadMissingElements = async (state, ids) => {
     const missingElement = missingElements[index];
     if (!loadedInternalIds.has(missingElement.internal_id)) {
       loadedInternalIds.add(missingElement.internal_id);
-      const stix = convertStoreToStix_2_1(missingElement);
       // Loads also match alias ids: index the entry under them too, or a ref matching only an alias would never be walked
       const elementIds = [...extractIdsFromStoreObject(missingElement), ...(missingElement.i_aliases_ids ?? [])];
-      // Only relationships and sightings are looked ahead: they always have few refs, unlike containers
-      const isLookAhead = stix.type === STIX_TYPE_RELATION || stix.type === STIX_TYPE_SIGHTING;
-      const entry = { message: generateCreateMessage(missingElement), stix, refs: stixRefsExtractor(stix), ids: elementIds, isLookAhead };
+      let entry;
+      if (isStixRefRelationship(missingElement.entity_type)) {
+        // A ref relationship (e.g. email-message "to" email-addr, added to a container from its graph) has no STIX
+        // representation: its source carries it as a *_ref(s) property. Walk its source instead, whose refs bring the
+        // target first, and publish nothing for it. Looked ahead, as it only has one ref, like a relationship.
+        const sourceId = missingElement.from?.standard_id ?? missingElement.fromId;
+        entry = { refs: [sourceId], ids: elementIds, isLookAhead: true };
+      } else {
+        const stix = convertStoreToStix_2_1(missingElement);
+        // Only relationships and sightings are looked ahead: they always have few refs, unlike containers
+        const isLookAhead = stix.type === STIX_TYPE_RELATION || stix.type === STIX_TYPE_SIGHTING;
+        entry = { message: generateCreateMessage(missingElement), stix, refs: stixRefsExtractor(stix), ids: elementIds, isLookAhead };
+      }
       elementIds.forEach((id) => {
         seenIds.add(id);
         pending.set(id, entry);
@@ -401,7 +410,8 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
     if (frame.index >= frame.refs.length) {
       // All refs of the element are published, the element can be
       stack.pop();
-      if (frame.entry) {
+      // Ref relationships are only walked to reach their source, they have nothing to publish
+      if (frame.entry?.stix) {
         toPublish.push({ message: frame.entry.message, stix: frame.entry.stix });
         if (!(await publish(false))) {
           return false;
