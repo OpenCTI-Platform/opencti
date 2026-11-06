@@ -252,7 +252,7 @@ const customFieldStixFilterKeysQuery = graphql`
  * each implement their own loading strategy (query, caching...).
  * Returns an empty array while loading.
  */
-const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
+export const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
   const [customFieldFilterKeys, setCustomFieldFilterKeys] = useState<string[]>([]);
   useEffect(() => {
     let isMounted = true;
