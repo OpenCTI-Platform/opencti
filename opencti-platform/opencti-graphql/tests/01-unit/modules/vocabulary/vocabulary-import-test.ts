@@ -510,6 +510,22 @@ describe('importVocabularyCategory', () => {
     expect(addVocabulary).not.toHaveBeenCalled();
   });
 
+  it('reads a few entries at a time, whatever the number of entries of the file', async () => {
+    let running = 0;
+    let peak = 0;
+    vi.mocked(storeLoadById).mockImplementation((async () => {
+      running += 1;
+      peak = Math.max(peak, running);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      running -= 1;
+      return undefined;
+    }) as never);
+    const many = Array.from({ length: 45 }, (_, index) => ({ name: `entry-${index}` }));
+    expect(await overwrite({ category, entries: many }, true)).toMatchObject({ status: 'created' });
+    expect(peak).toBeGreaterThan(1);
+    expect(peak).toBeLessThanOrEqual(10);
+  });
+
   it('reports the entry that fails on the real pass, and stops there', async () => {
     const holder = { id: 'holder-id', name: 'holder', category, aliases: ['taken'] } as unknown as BasicStoreEntityVocabulary;
     // The alias is taken by another entry after the dry run: only the real pass sees it
