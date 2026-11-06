@@ -2,7 +2,8 @@ import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import type { ConnectorInfo, Connector } from '../../../src/generated/graphql';
 import { BACKGROUND_TASK_QUEUES } from '../../../src/database/rabbitmq';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../../src/schema/internalObject';
@@ -193,6 +194,27 @@ describe('Connector resolver standard behaviour', () => {
     expect(queryResult.data.connectors.filter((c: Connector) => c.id === IMPORT_CSV_CONNECTOR.id).length).toEqual(1);
     // check built_in draft validation connector
     expect(queryResult.data.connectors.filter((c: Connector) => c.id === DRAFT_VALIDATION_CONNECTOR.id).length).toEqual(1);
+  });
+
+  it('should not expose the manager contract configuration to a user without the connectors capability', async () => {
+    const queryResult = await queryAsUser(USER_EDITOR, {
+      query: gql`
+        query ListImportConnectorsWithConfiguration {
+          connectorsForImport {
+            id
+            manager_contract_configuration {
+              key
+              value
+            }
+          }
+        }
+      `,
+      variables: {},
+    });
+    expect(queryResult.data?.connectorsForImport?.length).toBeGreaterThan(0);
+    expect(queryResult.data?.connectorsForImport.every((c: Connector) => c.manager_contract_configuration === null)).toBe(true);
+    expect(queryResult.errors?.length).toBeGreaterThan(0);
+    expect(queryResult.errors?.every((e: any) => e.extensions?.code === FORBIDDEN_ACCESS)).toBe(true);
   });
   it('should create work', async () => {
     const WORK_TO_CREATE = {

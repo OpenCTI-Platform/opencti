@@ -12,7 +12,7 @@ import { shortHash } from '../schema/schemaUtils';
 import { encryptValue, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
-import { SYSTEM_USER } from '../utils/access';
+import { isPublicDashboardUser, SYSTEM_USER } from '../utils/access';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
@@ -187,6 +187,9 @@ export const computeManagerContractHash = async (context, user, cn) => {
 };
 
 export const connectors = async (context, user) => {
+  if (isPublicDashboardUser(user)) {
+    return [];
+  }
   const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR]);
   const builtInElements = await builtInConnectorsRuntime(context, user);
   return map((conn) => completeConnector(conn), [...elements, ...builtInElements]);
