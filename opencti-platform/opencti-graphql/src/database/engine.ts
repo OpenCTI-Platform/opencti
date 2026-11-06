@@ -87,6 +87,7 @@ import {
   ID_STANDARD,
   IDS_STIX,
   isAbstract,
+  REF_RELATION_ID_FIELDS,
   REL_INDEX_PREFIX,
 } from '../schema/general';
 import { isModifiedObject, isUpdatedAtObject } from '../schema/fieldDataAdapter';
@@ -1597,25 +1598,26 @@ export const computeQueryIndices = (
 // Default fetch used by loadThroughDenormalized
 // This rel_ must be low volume
 // DO NOT ADD Anything here if you are not sure about that you doing
-const REL_DEFAULT_SUFFIX = '*.keyword';
+// Exact field names, never wildcard patterns: every shard of every search resolves
+// each docvalue_fields pattern against its whole mapping when it parses the request.
 const REL_DEFAULT_FETCH = [
   // SECURITY
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_GRANTED_TO}${REL_DEFAULT_SUFFIX}`,
+  RELATION_OBJECT_MARKING,
+  RELATION_GRANTED_TO,
   // DEFAULT (LOW VOLUME)
-  `${REL_INDEX_PREFIX}${RELATION_COVERED}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_RESULT_OF}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_PARTICIPANT}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_ASSIGNEE}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_BORN_IN}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_ETHNICITY}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_SAMPLE}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_PARTICIPATE_TO}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_IN_PIR}${REL_DEFAULT_SUFFIX}`,
-];
+  RELATION_COVERED,
+  RELATION_RESULT_OF,
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_PARTICIPANT,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_BORN_IN,
+  RELATION_ETHNICITY,
+  RELATION_SAMPLE,
+  RELATION_PARTICIPATE_TO,
+  RELATION_IN_PIR,
+].flatMap((relationType) => REF_RELATION_ID_FIELDS.map((field) => buildRefRelationSearchKey(relationType, field)));
 const REL_COUNT_SCRIPT_FIELD = {
   script: {
     lang: 'painless',
