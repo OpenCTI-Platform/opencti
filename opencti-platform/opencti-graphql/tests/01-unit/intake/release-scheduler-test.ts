@@ -10,12 +10,12 @@ const flush = () => new Promise((resolve) => {
 });
 
 // A fake sequencer: the queue depth is set by hand, each started operation is driven by hand
-const harness = (initialSetPoint = 100) => {
+const harness = (initialSetPoint = 100, quantum?: number) => {
   let depth = 0;
   let setPoint = initialSetPoint;
   const started: string[] = [];
   const controls = new Map<string, { hooks: ReleaseHooks; settle: (result: string) => void }>();
-  const scheduler = createReleaseScheduler({ queueDepth: () => depth, setPoint: () => setPoint });
+  const scheduler = createReleaseScheduler({ queueDepth: () => depth, setPoint: () => setPoint, quantum });
   const runOf = (name: string) => (index: number, hooks: ReleaseHooks) => new Promise<string>((resolve) => {
     const key = `${name}:${index}`;
     started.push(key);
@@ -106,6 +106,25 @@ describe('Release scheduler', () => {
     await flush();
     // one operation of each source in turn, each source in its own order
     expect(h.started).toEqual(['a:0', 'b:0', 'a:1', 'b:1', 'a:2']);
+  });
+
+  it('should release up to quantum operations of a source per turn', async () => {
+    const h = harness(0, 2);
+    void h.scheduler.admit({ source: 'a', lane: 'w', nodes: [node('sequenced'), node('sequenced'), node('sequenced')], run: h.runOf('a') });
+    void h.scheduler.admit({ source: 'a', lane: 'w', nodes: [node('sequenced')], run: h.runOf('a2') });
+    void h.scheduler.admit({ source: 'b', lane: 'w', nodes: [node('sequenced'), node('sequenced'), node('sequenced')], run: h.runOf('b') });
+    void h.scheduler.admit({ source: 'c', lane: 'w', nodes: [node('sequenced')], run: h.runOf('c') });
+    await flush();
+    h.setSetPoint(6);
+    h.scheduler.notify();
+    await flush();
+    // two of a, two of b, the only one of c, then a's turn again across its messages
+    expect(h.started).toEqual(['a:0', 'a:1', 'b:0', 'b:1', 'c:0', 'a:2']);
+    h.setSetPoint(8);
+    h.scheduler.notify();
+    await flush();
+    // a's turn goes on (one served), then b's last
+    expect(h.started.slice(6)).toEqual(['a2:0', 'b:2']);
   });
 
   it('should make an operation wait for an id an earlier message creates, until that write is queued', async () => {

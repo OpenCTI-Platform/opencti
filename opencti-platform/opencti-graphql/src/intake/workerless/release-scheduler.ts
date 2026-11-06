@@ -20,8 +20,8 @@
 // Set point. The ready depth R is the intents queued in the sequencer plus the operations released
 // and not yet queued. The sequencer cuts its batch from its queue: R at max_batch keeps the batches
 // full, more only adds latency (Little: R / throughput) and memory. Ready operations are released
-// while R < R*, one source after the other (round-robin, the sequencer queue's own fairness; to
-// compare later with favouring one source's objects together, KB note D9).
+// while R < R*, one source after the other: up to `quantum` ready operations of a source per turn
+// (1 = the sequencer queue's own round-robin; more keeps a source's objects together, KB note D9).
 
 import type { OperationKind } from './operation-graph';
 
@@ -57,6 +57,8 @@ export interface SchedulerDeps {
   queueDepth: () => number;
   // R*, the ready depth to hold
   setPoint: () => number;
+  // Ready operations released from one source before the next source's turn (default 1)
+  quantum?: number;
 }
 
 type State = 'waiting' | 'ready' | 'released' | 'queued' | 'settled';
@@ -87,10 +89,13 @@ export const createReleaseScheduler = (deps: SchedulerDeps) => {
   let seq = 0;
   // Released, not yet queued nor settled: counted in the ready depth
   let inPreLoop = 0;
-  // Ready operations per source, in readiness order; sources served round-robin
+  // Ready operations per source, in readiness order; sources served round-robin, `quantum` each
   const ready = new Map<string, Operation[]>();
-  let ring: string[] = [];
+  const ring: string[] = [];
   let ringIndex = 0;
+  const quantum = Math.max(1, deps.quantum ?? 1);
+  // Released from the source at ringIndex in its current turn
+  let served = 0;
   // In-flight index: id -> the operation of an earlier message creating it, until it settles
   const inFlight = new Map<string, Operation>();
   let waiting = 0;
@@ -110,21 +115,24 @@ export const createReleaseScheduler = (deps: SchedulerDeps) => {
     }
   };
 
+  // A source in the ring always has a ready operation (removed with its last one)
   const nextReady = (): Operation | undefined => {
-    for (let tries = 0; tries < ring.length; tries += 1) {
-      ringIndex %= ring.length;
-      const source = ring[ringIndex];
-      const queue = ready.get(source) as Operation[];
+    if (ring.length === 0) return undefined;
+    ringIndex %= ring.length;
+    const source = ring[ringIndex];
+    const queue = ready.get(source) as Operation[];
+    const operation = queue.shift() as Operation;
+    served += 1;
+    if (queue.length === 0) {
+      // the next source takes its place in the ring and starts its turn
+      ready.delete(source);
+      ring.splice(ringIndex, 1);
+      served = 0;
+    } else if (served >= quantum) {
       ringIndex += 1;
-      const operation = queue.shift();
-      if (queue.length === 0) {
-        ready.delete(source);
-        ring = ring.filter((name) => name !== source);
-        ringIndex -= 1;
-      }
-      if (operation) return operation;
+      served = 0;
     }
-    return undefined;
+    return operation;
   };
 
   const readyDepth = () => deps.queueDepth() + inPreLoop;

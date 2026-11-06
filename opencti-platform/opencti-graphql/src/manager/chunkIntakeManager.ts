@@ -78,6 +78,9 @@ const PUSH_MAX_IN_FLIGHT_BYTES = Number(conf.get('chunk_intake_manager:push_max_
 // at least one batch keeps the batches full, more only adds write latency (KB note
 // opencti-workerless-intake-target-design §4.3; the value comes from a 1 / 2 / 4 ladder)
 const PUSH_READY_DEPTH_FACTOR = Number(conf.get('chunk_intake_manager:push_ready_depth_factor') ?? 2);
+// Ready operations released from one push queue before the next queue's turn: 1 alternates the
+// queues operation by operation, more keeps a connector's objects together (KB note D9, to measure)
+const PUSH_RELEASE_QUANTUM = Number(conf.get('chunk_intake_manager:push_release_quantum') ?? 1);
 // Transformations running at once: their reads reach the engine outside the pre-loop gate (a read
 // per open vocabulary value, author or marking not yet cached)
 const PUSH_TRANSFORM_CONCURRENCY = Number(conf.get('chunk_intake_manager:push_transform_concurrency') ?? 16);
@@ -788,7 +791,7 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
   };
   // The operations are released against the sequencer's queue: R* = factor x max batch
   const setPoint = Math.max(1, Math.round(PUSH_READY_DEPTH_FACTOR * SEQUENCER_CONFIG.maxBatchSize));
-  const scheduler = createReleaseScheduler({ queueDepth: sequencerQueueDepth, setPoint: () => setPoint });
+  const scheduler = createReleaseScheduler({ queueDepth: sequencerQueueDepth, setPoint: () => setPoint, quantum: PUSH_RELEASE_QUANTUM });
   workerlessScheduler = scheduler;
   const unsubscribe = onSequencerQueueTaken(scheduler.notify);
   if (!workerlessGaugeRegistered) {
