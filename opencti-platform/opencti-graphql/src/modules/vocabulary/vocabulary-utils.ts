@@ -14,7 +14,10 @@ export const cleanVocabularyAliases = (name: string, aliases: string[] | null = 
 };
 
 // The aliases of an entry are a set: their order is not a change
-export const isSameAliasSet = (a: string[] = [], b: string[] = []) => a.length === b.length && [...a].sort().every((alias, index) => alias === [...b].sort()[index]);
+export const isSameAliasSet = (a: string[] = [], b: string[] = []) => {
+  const sortedB = [...b].sort();
+  return a.length === b.length && [...a].sort().every((alias, index) => alias === sortedB[index]);
+};
 
 export const builtInOv = [
   'pattern_type_ov',

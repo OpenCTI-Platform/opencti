@@ -495,9 +495,29 @@ describe('importVocabularyCategory', () => {
     expect(addVocabulary).not.toHaveBeenCalled();
   });
 
-  it('refuses an existing entry when the mode is add, and writes nothing', async () => {
-    withPlatform(stored);
-    expect(await importVocabularyCategory(context, user, { category, entries }, { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists', exists: true });
+  it('skips the entries that exist when the mode is add, and adds the others', async () => {
+    withPlatform(stored, otherStored);
+    const result = await importVocabularyCategory(context, user, { category, entries: [...entries, { name: 'brand-new' }] }, { mode: ConfigImportMode.Add });
+    expect(result).toMatchObject({ status: 'created', exists: true });
+    expect(addVocabulary).toHaveBeenCalledTimes(1);
+    expect(editVocabulary).not.toHaveBeenCalled();
+  });
+
+  it('is skipped when every entry exists and the mode is add, and writes nothing', async () => {
+    withPlatform(stored, otherStored);
+    expect(await importVocabularyCategory(context, user, { category, entries }, { mode: ConfigImportMode.Add }))
+      .toMatchObject({ status: 'skipped', code: 'exists', exists: true });
     expect(addVocabulary).not.toHaveBeenCalled();
+  });
+
+  it('reports the entry that fails on the real pass, and stops there', async () => {
+    const holder = { id: 'holder-id', name: 'holder', category, aliases: ['taken'] } as unknown as BasicStoreEntityVocabulary;
+    // The alias is taken by another entry after the dry run: only the real pass sees it
+    vi.mocked(storeLoadById).mockImplementation((async (_ctx: unknown, _user: unknown, id: string) => {
+      return id === getVocabularyStandardId({ name: 'taken', category }) && vi.mocked(addVocabulary).mock.calls.length > 0 ? holder : undefined;
+    }) as never);
+    const result = await overwrite({ category, entries: [{ name: 'first-report' }, { name: 'late-report', aliases: ['taken'] }] });
+    expect(result).toMatchObject({ status: 'failed', code: 'alias_conflict', reason: 'late-report: The alias taken belongs to another vocabulary entry' });
+    expect(addVocabulary).toHaveBeenCalledTimes(1);
   });
 });
