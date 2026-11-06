@@ -10,11 +10,14 @@ export type Action = {
   params?: unknown;
 };
 
+export type RequestAccessOutcome = 'APPROVED' | 'DECLINED';
+
 export type Status = {
   statusTemplate: { id: string; name: string; color: string };
   color?: string;
   onEnter?: Action[];
   onExit?: Action[];
+  requestAccessOutcome?: RequestAccessOutcome | null;
 };
 
 export enum CommentMode {
@@ -41,6 +44,9 @@ export const NEW_STATUS_NAME = 'NEW_STATUS';
 // Request access exists for Case-Rfi only; the backend rejects the REQUEST_ACCESS scope for any other type.
 export const REQUEST_ACCESS_ENTITY_TYPE = 'Case-Rfi';
 
+// Dynamic organization of a shareRequestedEntities action: the organization of the RFI author, i.e. the requesting one.
+export const REQUEST_ACCESS_AUTHOR_KEY = 'AUTHOR';
+
 export enum WorkflowNodeType {
   status = 'status',
   transition = 'transition',
@@ -61,6 +67,7 @@ export enum WorkflowActionType {
   validateDraft = 'validateDraft',
   shareWithOrganizations = 'shareWithOrganizations',
   unshareFromOrganizations = 'unshareFromOrganizations',
+  shareRequestedEntities = 'shareRequestedEntities',
 }
 
 export const NODE_SIZE = { width: 160, height: 50 };
@@ -97,6 +104,10 @@ const formatActions = (actions: Action[] = []) => {
           failOnAnyError: true,
         },
       };
+    }
+    if (type === 'shareRequestedEntities') {
+      const orgIds = ((params as { organizations?: (string | { value: string })[] })?.organizations ?? []).map((o) => (typeof o === 'string' ? o : o.value));
+      return { type, params: { organizations: orgIds } };
     }
     if (type === 'unshareFromOrganizations') {
       const orgIds = ((params as { organizations?: (string | { value: string })[] })?.organizations ?? []).map((o) => (typeof o === 'string' ? o : o.value));
@@ -138,12 +149,13 @@ const transformToWorkflowDefinition = (
   workflowDefinition: { readonly id?: string; readonly name?: string; readonly initialState?: string | null } | null | undefined,
 ) => {
   // 1. Extract States
-  const states = nodes.flatMap(({ type, data: { onEnter = [], onExit = [], statusTemplate } }) => {
+  const states = nodes.flatMap(({ type, data: { onEnter = [], onExit = [], statusTemplate, requestAccessOutcome } }) => {
     if (type === WorkflowNodeType.status) {
       return [{
         statusId: statusTemplate.id,
         onEnter: formatActions(onEnter),
         onExit: formatActions(onExit),
+        ...(requestAccessOutcome ? { requestAccessOutcome: requestAccessOutcome as RequestAccessOutcome } : {}),
       }];
     }
     return [];

@@ -46,6 +46,8 @@ const ObjectOrganizationField = (props) => {
     multiple = true,
     alert = true,
     filters = null,
+    extraOptions = [],
+    getOptionLabel,
   } = props;
 
   const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({
@@ -81,7 +83,8 @@ const ObjectOrganizationField = (props) => {
         label={label ? t_i18n(label) : ''}
         helperText={helpertext}
         noOptionsText={t_i18n('No available options')}
-        options={organizations}
+        options={[...extraOptions, ...organizations]}
+        getOptionLabel={getOptionLabel}
         onInputChange={(search, meta) => {
           if (meta.cause === 'type') searchOrganizations(search);
         }}
@@ -92,7 +95,7 @@ const ObjectOrganizationField = (props) => {
             <OptionIcon>
               <ItemIcon type="Organization" />
             </OptionIcon>
-            <OptionText>{option.label}</OptionText>
+            <OptionText>{getOptionLabel ? getOptionLabel(option) : option.label}</OptionText>
           </>
         )}
       />
@@ -110,7 +113,8 @@ const ObjectOrganizationField = (props) => {
       label={t_i18n(label) ?? ''}
       helperText={helpertext}
       noOptionsText={t_i18n('No available options')}
-      options={organizations}
+      options={[...extraOptions, ...organizations]}
+      getOptionLabel={getOptionLabel}
       onInputChange={(search, meta) => {
         if (meta.cause === 'type') searchOrganizations(search);
       }}
@@ -121,7 +125,7 @@ const ObjectOrganizationField = (props) => {
           <OptionIcon>
             <ItemIcon type="Organization" />
           </OptionIcon>
-          <OptionText>{option.label}</OptionText>
+          <OptionText>{getOptionLabel ? getOptionLabel(option) : option.label}</OptionText>
         </>
       )}
     />

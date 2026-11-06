@@ -337,14 +337,18 @@ const Workflow = ({
         });
       },
       onError: (error) => {
-        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: { removedStates?: string[]; entityType?: string } } }> } })
+        type PublishErrorData = { removedStates?: string[]; entityType?: string; errors?: Array<{ type: string; message: string }> };
+        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: PublishErrorData } }> } })
           ?.res?.errors?.[0];
         const data = firstError?.extensions?.data;
-        const publishErrors: WorkflowValidationError[] = [{
-          type: 'PUBLISH_ERROR',
-          message: firstError?.message ?? t_i18n('An error occurred while publishing the workflow'),
-          path: data?.removedStates?.map((s: string) => ({ id: s, entity_type: 'StatusTemplate' })) ?? [],
-        }];
+        // A publish refused for validation reasons lists each error (request access outcome rules, ...).
+        const publishErrors: WorkflowValidationError[] = data?.errors?.length
+          ? data.errors.map((e) => ({ type: e.type, message: e.message }))
+          : [{
+              type: 'PUBLISH_ERROR',
+              message: firstError?.message ?? t_i18n('An error occurred while publishing the workflow'),
+              path: data?.removedStates?.map((s: string) => ({ id: s, entity_type: 'StatusTemplate' })) ?? [],
+            }];
         MESSAGING$.notifyError(
           <WorkflowValidationErrorsToastContent errors={publishErrors} t_i18n={t_i18n} statusTemplates={statusTemplates} />,
         );
@@ -525,6 +529,7 @@ const Workflow = ({
         open={open}
         selectedElement={selectedElement}
         entityType={entityType}
+        scope={scope}
         onClose={() => {
           setSelectedElement(emptyElement);
           setOpen(false);
