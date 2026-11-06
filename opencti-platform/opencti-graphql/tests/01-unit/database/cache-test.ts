@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, refreshCacheForEntity, resetCacheForEntity, writeCacheForEntity } from '../../../src/database/cache';
+import {
+  getEntitiesListFromCache,
+  getEntitiesMapFromCache,
+  MAX_CACHE_DISCARDS,
+  refreshCacheForEntity,
+  resetCacheForEntity,
+  writeCacheForEntity,
+} from '../../../src/database/cache';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import type { AuthContext } from '../../../src/types/user';
 
@@ -57,9 +64,15 @@ const createControlledLoader = () => {
   const fn = () => new Promise<unknown[]>((resolve) => {
     pending.push(resolve);
   });
-  // Yields to the event loop until the cache started a load (never resolves a load before it exists)
+  // Yields to the event loop until the cache started a load (never resolves a load before it exists).
+  // Bounded, so a load that never starts fails the test at once instead of at the vitest timeout.
   const waitForLoad = async () => {
+    let ticks = 0;
     while (pending.length === 0) {
+      ticks += 1;
+      if (ticks > 50) {
+        throw new Error('The cache did not start the expected load');
+      }
       await new Promise((resolve) => {
         setImmediate(resolve);
       });
@@ -90,6 +103,7 @@ describe('Cache invalidation while a load is in flight', () => {
 
     expect(await read).toEqual([after]);
     expect(await getEntitiesListFromCache(testContext, SYSTEM_USER, ENTITY_TYPE_TEST_RACE)).toEqual([after]);
+    expect(loader.pendingCount()).toBe(0);
   });
 
   it('should not keep the values of a load overtaken by a reset of the cached type', async () => {
@@ -103,6 +117,28 @@ describe('Cache invalidation while a load is in flight', () => {
     await loader.resolveNext([after]);
 
     expect(await read).toEqual([after]);
+    expect(loader.pendingCount()).toBe(0);
+  });
+
+  it('should serve the waiting readers without storing the values once every load was overtaken up to the cap', async () => {
+    const loader = createControlledLoader();
+    writeCacheForEntity(ENTITY_TYPE_TEST_RACE, { values: undefined, fn: loader.fn });
+
+    const read = getEntitiesListFromCache(testContext, SYSTEM_USER, ENTITY_TYPE_TEST_RACE);
+    for (let load = 1; load <= MAX_CACHE_DISCARDS; load += 1) {
+      await loader.waitForLoad();
+      resetCacheForEntity(ENTITY_TYPE_TEST_RACE);
+      await loader.resolveNext([{ ...before, load }]);
+    }
+
+    // The reader gets the last loaded values instead of waiting for the invalidations to stop
+    expect(await read).toEqual([{ ...before, load: MAX_CACHE_DISCARDS }]);
+    expect(loader.pendingCount()).toBe(0);
+    // Those values were not stored: the next read loads again
+    const next = getEntitiesListFromCache(testContext, SYSTEM_USER, ENTITY_TYPE_TEST_RACE);
+    await loader.resolveNext([after]);
+    expect(await next).toEqual([after]);
+    expect(loader.pendingCount()).toBe(0);
   });
 
   it('should keep the values of a load that no change overtook', async () => {

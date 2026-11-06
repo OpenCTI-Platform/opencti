@@ -35,6 +35,10 @@ export const STORE_ENTITIES_LINKS: Record<string, string[]> = {
 
 const cache: any = {};
 
+// Consecutive loads an invalidation may overtake before the waiting readers are served the last loaded values
+// (without storing them), so a burst of invalidations cannot keep readers waiting until it ends.
+export const MAX_CACHE_DISCARDS = 3;
+
 /**
  * Drops the values of a cache entry and bumps its generation. A load in flight started before this
  * call reads the generation it was started with: when it finishes, it sees that an invalidation
@@ -147,20 +151,30 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
     while (!fromCache.values) {
       if (!fromCache.inProgress) {
         const startGeneration = fromCache.generation ?? 0;
-        const loadFromFn = async () => {
+        // Resolves with the values to serve without storing them (discard cap reached), undefined otherwise
+        const loadFromFn = async (): Promise<unknown> => {
           try {
             let cacheData = await fromCache.fn();
-            if ((fromCache.generation ?? 0) !== startGeneration) {
-              // Invalidated while loading: the data may predate the change, load again.
-              logApp.debug('[CACHE] Cache invalidated while loading, discarding the loaded values', { type });
-              return;
-            }
             if (!cacheData) {
               // This situation must be adapted with code evolution
               logApp.warn('[CACHE] Cache function refresh return undefined values', { type });
               cacheData = type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : [];
             }
+            if ((fromCache.generation ?? 0) !== startGeneration) {
+              // Invalidated while loading: the data may predate the change, never store it.
+              fromCache.discards = (fromCache.discards ?? 0) + 1;
+              if (fromCache.discards >= MAX_CACHE_DISCARDS) {
+                // Serve the waiting readers, the next read loads again.
+                logApp.warn('[CACHE] Cache invalidated during consecutive loads, serving the loaded values without storing them', { type, discards: fromCache.discards });
+                fromCache.discards = 0;
+                return cacheData;
+              }
+              logApp.debug('[CACHE] Cache invalidated while loading, discarding the loaded values', { type, discards: fromCache.discards });
+              return undefined;
+            }
+            fromCache.discards = 0;
             fromCache.values = cacheData;
+            return undefined;
           } finally {
             fromCache.inProgress = undefined;
           }
@@ -169,7 +183,10 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
       }
 
       try {
-        await fromCache.inProgress;
+        const served = await fromCache.inProgress;
+        if (served !== undefined) {
+          return served as Array<T> | Map<string, T>;
+        }
       } catch (err: any) {
         retries += 1;
         logApp.error('[CACHE] Error loading cache', { type, attempt: retries, maxRetries: MAX_CACHE_RETRIES, cause: err });
