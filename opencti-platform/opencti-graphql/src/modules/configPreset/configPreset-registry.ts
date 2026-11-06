@@ -10,11 +10,13 @@ import { markingsFamily } from './registry/markings-configPreset-registry';
 import { rolesFamily } from './registry/roles-configPreset-registry';
 import { groupsFamily } from './registry/groups-configPreset-registry';
 import { policiesFamily } from './registry/policies-configPreset-registry';
+import { ruleEngineFamily } from './registry/ruleEngine-configPreset-registry';
 import { isEnterpriseEditionUpToDate } from '../../enterprise-edition/ee';
 
 export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
 
-// In registry order, the categories of the spec table: Platform settings (platform, branding, messages, whitemark), then Data model, then Security & Access.
+// In registry order, the categories of the spec table: Platform settings (platform, branding, messages, whitemark), then Data model,
+// then Security & Access, then Automation & Rules.
 // Each family is defined in its own file under registry/.
 export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   platformFamily,
@@ -26,6 +28,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   rolesFamily,
   groupsFamily,
   policiesFamily,
+  ruleEngineFamily,
 ];
 
 // How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.

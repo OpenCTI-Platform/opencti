@@ -10,6 +10,7 @@ import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImpo
 export const platformSettingsGroup = { id: 'platformSettings', label: 'Platform settings' };
 export const dataModelGroup = { id: 'dataModel', label: 'Data model' };
 export const securityAccessGroup = { id: 'securityAccess', label: 'Security & Access' };
+export const automationRulesGroup = { id: 'automationRules', label: 'Automation & Rules' };
 
 // The families the items of another family depend on (the roles of a group, the default theme of the platform):
 // their ids are shared here, so that registries do not import each other
@@ -85,6 +86,8 @@ export const toComputedItem = (
   result: ConfigImportResult,
   fields?: ConfigPresetImportField[],
 ): ConfigPresetComputedItem => ({ ...label, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason, code: result.code, fields });
+
+export const toIsEnabled = (value: unknown) => (typeof value === 'boolean' ? value : null);
 
 // What an importer returns once a module has written an item: a failure is an error that makes the item failed,
 // and a status other than the computed one is reported
