@@ -520,6 +520,17 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setDraftCount(draftWorkspaces.length);
     // endregion
 
+    // region Investigation information
+    // Investigations are restricted to their authorized members: includeAuthorities lets the
+    // bypass telemetry user count all of them.
+    const investigationCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      types: [ENTITY_TYPE_WORKSPACE],
+      includeAuthorities: true,
+      filters: { mode: FilterMode.And, filters: [{ key: ['type'], values: ['investigation'] }], filterGroups: [] },
+    });
+    manager.setInvestigationCount(investigationCount);
+    // endregion
+
     // region Workbenches information
     const pendingFileFilter = {
       mode: FilterMode.And,

@@ -135,6 +135,7 @@ export class TelemetryMeterManager {
 
   // Number of active drafts
   draftCount = 0;
+  investigationCount = 0;
 
   draftCreationCount = 0;
 
@@ -448,6 +449,10 @@ export class TelemetryMeterManager {
 
   setDraftCount(n: number) {
     this.draftCount = n;
+  }
+
+  setInvestigationCount(n: number) {
+    this.investigationCount = n;
   }
 
   setDraftCreationCount(n: number) {
@@ -772,6 +777,7 @@ export class TelemetryMeterManager {
     this.registerGauge('roles_with_capability_in_draft_count', 'number of roles with capability in draft', 'rolesWithCapabilityInDraftCount');
     this.registerGauge('capabilities_in_draft_tab_loaded_count', 'number of times the capabilities in draft tab is loaded', 'capabilitiesInDraftTabLoadedCount');
     this.registerGauge('active_drafts_count', 'number of active drafts', 'draftCount');
+    this.registerGauge('investigations_count', 'number of investigations', 'investigationCount');
     this.registerGauge('draft_creation_count', 'number of draft creation', 'draftCreationCount');
     this.registerGauge('draft_validation_count', 'number of draft validation', 'draftValidationCount');
     this.registerGauge('active_workbenches_count', 'number of active workbenches', 'workbenchCount');
