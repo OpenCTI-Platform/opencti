@@ -1448,6 +1448,16 @@ export const getMassWorkflowTransitions = async (
   }));
 };
 
+// The entity is read before the lock: a reason written meanwhile only shows once the entity is read again
+const isClosingReasonLostOnStoredEntity = async (context: AuthContext, user: AuthUser, closingReason: string | null | undefined, entity: BasicStoreEntity) => {
+  if (closingReason !== null) return isClosingReasonLost(closingReason, entity);
+  try {
+    return isClosingReasonLost(null, await storeLoadById<BasicStoreEntity>(context, user, entity.internal_id, 'Basic-Object'));
+  } catch {
+    return true;
+  }
+};
+
 const isClosingReasonMode = (mode: string | undefined) => mode === 'allowed' || mode === 'required';
 
 // A closing reason is only asked on the way into a final state (no transition leaves it), and kept while the entity
@@ -1725,7 +1735,7 @@ export const triggerWorkflowEvent = async (
     // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
     const scope = resolveProjectionScope(instanceEntity.scope);
     const projected = await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, newState, scope, resolvedClosingReason.closingReason);
-    if (!projected && isClosingReasonLost(resolvedClosingReason.closingReason, entity)) {
+    if (!projected && await isClosingReasonLostOnStoredEntity(executionContext, executionUser, resolvedClosingReason.closingReason, entity as BasicStoreEntity)) {
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
         { key: 'pendingError', value: [closingReasonNotWrittenError(resolvedClosingReason.closingReason)] },
       ]);

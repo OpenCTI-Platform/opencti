@@ -4973,6 +4973,41 @@ describe('triggerWorkflowEvent — closing reason', () => {
     expect((updateAttribute as any).mock.calls.at(-1)[4]).toEqual([{ key: 'pendingError', value: [expect.stringContaining('could not be cleared')] }]);
   });
 
+  it('reports a failed clear of a closing reason written after the entity was read', async () => {
+    const closedEntity = { ...entity, x_opencti_closing_reason: 'duplicate' };
+    const workflowContent = {
+      initialState: 'open',
+      states: [{ statusId: 'open' }, { statusId: 'triaged' }, { statusId: 'closed' }],
+      transitions: [
+        { from: 'open', to: 'triaged', event: 'triage' },
+        { from: 'triaged', to: 'closed', event: 'close', closingReason: 'required' },
+      ],
+    };
+    const version = { id: 'v1', content: JSON.stringify(workflowContent), validation_errors: [] };
+    let entityReads = 0;
+    (storeLoadById as any).mockImplementation((ctx: any, user: any, id: any, type: any) => {
+      if (type === 'WorkflowDefinition') return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
+      if (id === 'workflow-id') return null;
+      entityReads += 1;
+      // Read before the lock without a reason; a close wrote one before this transition held the lock
+      return entityReads === 1 ? entity : closedEntity;
+    });
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (loadEntity as any).mockResolvedValue(existingInstance);
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({ success: true }),
+      getCurrentState: vi.fn().mockReturnValue('triaged'),
+    });
+    (projectWorkflowState as any).mockResolvedValueOnce(false);
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'triage');
+
+    expect(result.success).toBe(true);
+    expect((updateAttribute as any).mock.calls.at(-1)[4]).toEqual([{ key: 'pendingError', value: [expect.stringContaining('could not be cleared')] }]);
+  });
+
   it('writes the vocabulary value name rather than the given spelling', async () => {
     setup('allowed');
 
