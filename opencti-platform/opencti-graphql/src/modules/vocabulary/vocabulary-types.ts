@@ -499,6 +499,8 @@ export interface BasicStoreEntityVocabulary extends BasicStoreEntity {
   name: string;
   description: string;
   category: VocabularyCategory;
+  order?: number;
+  is_hidden?: boolean;
   builtIn?: boolean;
 }
 

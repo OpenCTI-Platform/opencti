@@ -1,3 +1,5 @@
+import type { ConfigImportResult } from './configImport-types';
+
 export const configImportReasonValue = (value: string) => value.replace(/[\r\n]+/g, ' ');
 
 // The reason of an import that failed its validation: one `path: message` per issue of the Zod error
@@ -37,3 +39,12 @@ export const joinConfigImportReasons = (reasons: (string | undefined)[]) => {
   const present = reasons.filter((reason): reason is string => !!reason);
   return present.length > 0 ? present.join(CONFIG_IMPORT_REASON_SEPARATOR) : undefined;
 };
+
+// An item that is not imported: the result of a refusal, shared by the importers (the codes are the ones of the module)
+export const configImportRefusal = <TConfiguration, TCode extends string>(
+  status: 'failed' | 'skipped',
+  code: TCode,
+  reason: string,
+  exists: boolean,
+  configuration?: TConfiguration,
+): ConfigImportResult<TConfiguration, TCode> => ({ status, code, reason, exists, configuration });

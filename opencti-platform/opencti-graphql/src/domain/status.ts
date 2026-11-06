@@ -6,7 +6,7 @@ import { telemetry } from '../config/tracing';
 import { getEntitiesListFromCache } from '../database/cache';
 import { elCount } from '../database/engine';
 import { createEntity, deleteElementById, internalDeleteElementById, updateAttribute } from '../database/middleware';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import {
@@ -26,6 +26,7 @@ import {
 import { publishUserAction } from '../listener/UserActionListener';
 import { validateSetting } from '../modules/entitySetting/entitySetting-validators';
 import { isStatusTemplateUsedInWorkflows, isStatusUsedInWorkflow } from '../modules/workflow/domain/workflow-domain';
+import type { BasicStoreEntityStatusTemplate } from '../modules/statusTemplate/statusTemplate-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import type { BasicStoreEntity, BasicWorkflowStatus, StoreEntity } from '../types/store';
@@ -37,6 +38,9 @@ export const findTemplateById = (context: AuthContext, user: AuthUser, statusTem
 };
 export const findTemplatePaginated = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesArgs) => {
   return pageEntitiesConnection<BasicStoreEntity>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
+};
+export const findAllStatusTemplates = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityStatusTemplate> = {}) => {
+  return fullEntitiesList<BasicStoreEntityStatusTemplate>(context, user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
 };
 export const findAllTemplatesByStatusScope = async (context: AuthContext, user: AuthUser, args: QueryStatusTemplatesByStatusScopeArgs) => {
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);

@@ -41,7 +41,10 @@ testCreatedCounter.infrastructure = 1;
 // - 2 created and deleted by enrichment-liveness-test
 testCreatedCounter['intrusion-set'] = 54;
 testCreatedCounter['ipv4-addr'] = 1;
-testCreatedCounter['kill-chain-phase'] = 4;
+// Counts for:
+// - 1 created and deleted by form-submission-test
+// - 3 created and deleted by killChainPhase-import-test
+testCreatedCounter['kill-chain-phase'] = 7;
 // Counts for:
 // - 3 created and deleted by investigation-enrichment-test
 // - 3 created and deleted by label-import-test
@@ -69,7 +72,9 @@ testCreatedCounter.task = 1;
 testCreatedCounter['threat-actor'] = 33;
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
-testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
+// Counts for:
+// - 3 created and deleted by vocabulary-import-test
+testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 3;
 testCreatedCounter.vulnerability = 11;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -97,6 +102,9 @@ testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
 testUpdatedCounter.indicator = 33;
 // Counts for:
+// - 3 updated by killChainPhase-import-test
+testUpdatedCounter['kill-chain-phase'] = 3;
+// Counts for:
 // - 1 updated by label-import-test
 testUpdatedCounter.label = 2;
 testUpdatedCounter['malware-analysis'] = 3;
@@ -114,7 +122,9 @@ testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
 testUpdatedCounter['threat-actor'] = 18;
-testUpdatedCounter.vocabulary = 3;
+// Counts for:
+// - 9 updated by vocabulary-import-test
+testUpdatedCounter.vocabulary = 3 + 9;
 testUpdatedCounter.vulnerability = 5;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
@@ -158,7 +168,10 @@ testDeletedCounter.infrastructure = 1;
 // - 2 created and deleted by enrichment-liveness-test
 testDeletedCounter['intrusion-set'] = 52;
 testDeletedCounter['ipv4-addr'] = 1;
-testDeletedCounter['kill-chain-phase'] = 1; // created and deleted by form-submission-test
+// Counts for:
+// - 1 created and deleted by form-submission-test
+// - 3 deleted by killChainPhase-import-test
+testDeletedCounter['kill-chain-phase'] = 4;
 // Counts for:
 // - 3 created and deleted by investigation-enrichment-test
 // - 3 deleted by label-import-test
@@ -183,6 +196,9 @@ testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
 testDeletedCounter['threat-actor'] = 20;
 testDeletedCounter.tool = 5;
+// Counts for:
+// - 3 deleted by vocabulary-import-test
+testDeletedCounter.vocabulary = 3;
 testDeletedCounter.vulnerability = 5;
 testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
