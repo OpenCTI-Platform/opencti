@@ -463,15 +463,19 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
     const targetUser: any = users.get(connectorEntity.connector_user_id);
     const tokenName = 'Composer managed token';
     const existingToken = (targetUser.api_tokens ?? []).find((token: any) => token.name === tokenName);
+    const [manager] = await findConnectorManagers(context, SYSTEM_USER);
+    if (!manager) {
+      throw FunctionalError('No connector manager registered', { connectorId: connectorEntity.internal_id });
+    }
     const redisClient = getClientBase();
-    const key = `composer:${connectorEntity.catalog_id}:token:${connectorEntity.connector_user_id}`;
+    // The token is encrypted with the manager public key: a new key must miss the cache, not serve a token it cannot decrypt
+    const key = `composer:${connectorEntity.catalog_id}:token:${connectorEntity.connector_user_id}:${shortHash(manager.public_key)}`;
     let encryptedToken = await redisClient.get(key);
     if (isEmptyField(existingToken) || isEmptyField(encryptedToken)) {
       if (existingToken) {
         await revokeUserTokenByAdmin(context, SYSTEM_USER, connectorEntity.connector_user_id, existingToken.id);
       }
       const { plaintext_token } = await addUserTokenByAdmin(context, SYSTEM_USER, connectorEntity.connector_user_id, { name: tokenName } as any);
-      const [manager] = await findConnectorManagers(context, SYSTEM_USER);
       encryptedToken = encryptValue(manager.public_key, plaintext_token);
       await redisClient.setex(key, COMPOSER_TOKEN_REDIS_EXPIRATION, encryptedToken);
     } else {
