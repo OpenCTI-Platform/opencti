@@ -14385,6 +14385,7 @@ export type IngestionHealthCheckSetting = {
   __typename?: 'IngestionHealthCheckSetting';
   enabled: Scalars['Boolean']['output'];
   health_check_code: Scalars['String']['output'];
+  health_check_description?: Maybe<Scalars['String']['output']>;
   health_check_kind: IngestionHealthCheckKind;
   health_check_label: Scalars['String']['output'];
 };
@@ -48377,6 +48378,7 @@ export type IngestionHealthCheckResolvers<ContextType = any, ParentType extends 
 export type IngestionHealthCheckSettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealthCheckSetting'] = ResolversParentTypes['IngestionHealthCheckSetting']> = ResolversObject<{
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   health_check_code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  health_check_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   health_check_kind?: Resolver<ResolversTypes['IngestionHealthCheckKind'], ParentType, ContextType>;
   health_check_label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;

@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { ArrowForwardOutlined } from '@mui/icons-material';
-import { useHealthIssueDisplay, type HealthIssue } from '@components/integrations/deployed/IngestionHealthSummary';
+import { formatOthersCount, useHealthIssueDisplay, type HealthIssue } from '@components/integrations/deployed/IngestionHealthSummary';
 import useHealthCheckMessage from '@components/data/connectors/useHealthCheckMessage';
 import { useFormatter } from '../../../../components/i18n';
 import { capitalizeFirstLetter } from '../../../../utils/String';
@@ -47,6 +47,12 @@ const IngestionHealthTileBanner = ({ issue, to }: IngestionHealthTileBannerProps
       <Typography noWrap sx={{ flex: 1, minWidth: 0, color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit' }}>
         {issue.check ? getHealthCheckMessage(issue.check) : t_i18n(capitalizeFirstLetter(issue.severity))}
       </Typography>
+      {/* Apart from the message: it is truncated when long, the count of the other checks must stay visible */}
+      {issue.check && issue.othersCount > 0 && (
+        <Typography data-testid="integration-health-banner-others" sx={{ color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', whiteSpace: 'nowrap' }}>
+          {formatOthersCount(issue.othersCount)}
+        </Typography>
+      )}
       <Typography sx={{ color: 'inherit', fontSize: 'inherit', fontWeight: 'inherit', whiteSpace: 'nowrap' }}>
         {t_i18n('Review')}
       </Typography>

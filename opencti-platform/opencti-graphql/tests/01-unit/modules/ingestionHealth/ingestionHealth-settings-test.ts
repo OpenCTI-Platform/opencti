@@ -8,9 +8,14 @@ import {
   validateIngestionHealthSettingsInput,
 } from '../../../../src/modules/ingestionHealth/ingestionHealth-settings';
 import {
+  HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED,
+  HEALTH_CHECK_CONNECTOR_ERROR_REPORTED,
   HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED,
   HEALTH_CHECK_HEARTBEAT_MISSING,
+  HEALTH_CHECK_LAST_RUN_FAILED,
+  HEALTH_CHECK_SOURCE_ACCESS_DENIED,
   HEALTH_CHECK_USER_MISSING,
+  HEALTH_CHECK_USER_ACCOUNT_NOT_ACTIVE,
   HEALTH_CHECK_USER_MISSING_CAPABILITY,
   HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT,
   type HealthCheckCode,
@@ -60,8 +65,8 @@ describe('resolveIngestionHealthSettings', () => {
 });
 
 describe('toGraphqlIngestionHealthSettings', () => {
-  const enabledCheck = (code: HealthCheckCode, label: string, kind: IngestionHealthCheckKind) => (
-    { health_check_code: code, health_check_label: label, health_check_kind: kind, enabled: true }
+  const enabledCheck = (code: HealthCheckCode, label: string, kind: IngestionHealthCheckKind, description?: string) => (
+    { health_check_code: code, health_check_label: label, health_check_description: description, health_check_kind: kind, enabled: true }
   );
 
   it('should list every check of the registry with its kind, enabled when not configured', () => {
@@ -71,11 +76,24 @@ describe('toGraphqlIngestionHealthSettings', () => {
       health_checks: [
         enabledCheck(HEALTH_CHECK_USER_MISSING, 'User is missing', IngestionHealthCheckKind.Configuration),
         enabledCheck(HEALTH_CHECK_USER_MISSING_CAPABILITY, 'User lacks required capability', IngestionHealthCheckKind.Configuration),
-        enabledCheck(HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, 'User is not a service account', IngestionHealthCheckKind.Configuration),
+        enabledCheck(HEALTH_CHECK_USER_ACCOUNT_NOT_ACTIVE, 'User account is not active', IngestionHealthCheckKind.Configuration),
+        enabledCheck(HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, 'User is not a service account', IngestionHealthCheckKind.Configuration, 'Not necessarily blocking but using a service account is highly recommended'),
         enabledCheck(HEALTH_CHECK_HEARTBEAT_MISSING, 'No heartbeat received', IngestionHealthCheckKind.Runtime),
         enabledCheck(HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, 'Feed or sync execution failed', IngestionHealthCheckKind.Runtime),
+        enabledCheck(HEALTH_CHECK_SOURCE_ACCESS_DENIED, 'Feed or sync source denied access', IngestionHealthCheckKind.Runtime, 'Feed or sync whose last execution was refused by the source: HTTP 401/402/403'),
+        enabledCheck(HEALTH_CHECK_LAST_RUN_FAILED, 'Last run failed', IngestionHealthCheckKind.Runtime),
+        enabledCheck(HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, 'Connector reported an error', IngestionHealthCheckKind.Runtime),
+        enabledCheck(HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED, 'Connector reported a critical error', IngestionHealthCheckKind.Runtime),
       ],
     });
+  });
+
+  it('should give a description to the checks whose label does not tell what they look at, and only to them', () => {
+    const described = toGraphqlIngestionHealthSettings(undefined).health_checks.filter((check) => check.health_check_description !== undefined);
+    expect(described.map((check) => [check.health_check_code, check.health_check_description])).toEqual([
+      [HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, 'Not necessarily blocking but using a service account is highly recommended'],
+      [HEALTH_CHECK_SOURCE_ACCESS_DENIED, 'Feed or sync whose last execution was refused by the source: HTTP 401/402/403'],
+    ]);
   });
 
   it('should mark the disabled checks only', () => {
@@ -84,9 +102,14 @@ describe('toGraphqlIngestionHealthSettings', () => {
     expect(enabledByCode).toEqual({
       [HEALTH_CHECK_USER_MISSING]: true,
       [HEALTH_CHECK_USER_MISSING_CAPABILITY]: true,
+      [HEALTH_CHECK_USER_ACCOUNT_NOT_ACTIVE]: true,
       [HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT]: true,
       [HEALTH_CHECK_HEARTBEAT_MISSING]: false,
       [HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]: true,
+      [HEALTH_CHECK_SOURCE_ACCESS_DENIED]: true,
+      [HEALTH_CHECK_LAST_RUN_FAILED]: true,
+      [HEALTH_CHECK_CONNECTOR_ERROR_REPORTED]: true,
+      [HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED]: true,
     });
   });
 });
@@ -127,7 +150,7 @@ describe('validateIngestionHealthSettingsInput', () => {
   it.each([
     ['empty', []],
     ['one check', [HEALTH_CHECK_HEARTBEAT_MISSING]],
-    ['every check', [HEALTH_CHECK_USER_MISSING, HEALTH_CHECK_USER_MISSING_CAPABILITY, HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED]],
+    ['every check', [HEALTH_CHECK_USER_MISSING, HEALTH_CHECK_USER_MISSING_CAPABILITY, HEALTH_CHECK_USER_ACCOUNT_NOT_ACTIVE, HEALTH_CHECK_USER_NOT_SERVICE_ACCOUNT, HEALTH_CHECK_HEARTBEAT_MISSING, HEALTH_CHECK_FEED_AND_SYNC_EXECUTION_FAILED, HEALTH_CHECK_SOURCE_ACCESS_DENIED, HEALTH_CHECK_LAST_RUN_FAILED, HEALTH_CHECK_CONNECTOR_ERROR_REPORTED, HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED]],
   ])('should accept disabled checks %s, sent without the delay', async (_, disabled) => {
     await expect(validate({ disabled_health_checks: disabled })).resolves.toBeUndefined();
   });
