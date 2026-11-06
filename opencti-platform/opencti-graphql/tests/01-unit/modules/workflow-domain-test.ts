@@ -137,6 +137,7 @@ vi.mock('../../../src/modules/notification/notification-domain', () => ({
 
 vi.mock('../../../src/manager/telemetryManager', () => ({
   addWorkflowPublishCount: vi.fn(),
+  addWorkflowRequestAccessPublishCount: vi.fn(),
 }));
 
 vi.mock('../../../src/database/engine', async (importOriginal) => {
@@ -5893,6 +5894,166 @@ describe('scope-aware workflow definitions', () => {
 
       expect(await isStatusOrphaned(mockContext, mockUser, statusOf('ra-new', 'new', StatusScope.RequestAccess) as any)).toBe(false);
       expect(await isStatusOrphaned(mockContext, mockUser, statusOf('global-new', 'new', StatusScope.Global) as any)).toBe(true);
+    });
+  });
+
+  describe('request access publish', () => {
+    const outcomeState = (statusId: string, requestAccessOutcome?: 'APPROVED' | 'DECLINED') => ({ statusId, ...(requestAccessOutcome ? { requestAccessOutcome } : {}) });
+    const versionWith = (id: string, states: ReturnType<typeof outcomeState>[], transitions: { from: string; to: string }[]) => ({
+      id,
+      timestamp: '',
+      createdBy: '',
+      content: JSON.stringify({
+        name: 'RA',
+        initialState: 'new',
+        states,
+        transitions: transitions.map(({ from, to }) => ({ from, to, event: `${from}_${to}` })),
+      }),
+      validation_errors: [],
+    });
+    const baseTransitions = [{ from: 'new', to: 'review' }, { from: 'review', to: 'approved' }, { from: 'review', to: 'declined' }];
+    const baseStates = [outcomeState('new'), outcomeState('review'), outcomeState('approved', 'APPROVED'), outcomeState('declined', 'DECLINED')];
+    const publishedVersion = versionWith('ra-v1', baseStates, baseTransitions);
+    const statusOf = (id: string, template_id: string) => ({ id, entity_type: ENTITY_TYPE_STATUS, type: 'Case-Rfi', scope: StatusScope.RequestAccess, template_id, order: 0 });
+    const statuses = ['new', 'review', 'approved', 'declined', 'approved-v2'].map((templateId) => statusOf(`ra-${templateId}`, templateId));
+
+    const mockStore = (instances: { currentState: string; completed?: boolean }[] = [], referencingEntities: Record<string, string[]> = {}) => {
+      (fullEntitiesList as any).mockImplementation(async (_context: any, _user: any, types: string[], opts: any) => {
+        if (types.includes(ENTITY_TYPE_STATUS)) {
+          const filters: { key: string[]; values: string[] }[] = opts?.filters?.filters ?? [];
+          return statuses.filter((status: any) => filters.every(({ key, values }) => !['type', 'scope', 'template_id'].includes(key[0]) || values.includes(status[key[0]])));
+        }
+        if (types.includes(ENTITY_TYPE_WORKFLOW_INSTANCE)) {
+          const states: string[] = opts?.filters?.filters?.find((filter: any) => filter.key[0] === 'currentState')?.values ?? [];
+          return instances
+            .map((instance, index) => ({ id: `instance-${index}`, workflow_id: 'ra-def', ...instance }))
+            .filter((instance) => states.includes(instance.currentState));
+        }
+        const statusId = opts?.filters?.filters?.find((filter: any) => filter.key[0] === 'x_opencti_workflow_id')?.values?.[0];
+        return (referencingEntities[statusId] ?? []).map((id) => ({ id }));
+      });
+    };
+    const arrange = (draft: ReturnType<typeof versionWith>, withPublished = true) => {
+      (findByType as any).mockResolvedValue(bothSetting);
+      (storeLoadById as any).mockResolvedValue({
+        id: 'ra-def',
+        name: 'RA',
+        ...(withPublished ? { published_version: publishedVersion } : {}),
+        draft_version: draft,
+        all_versions: [draft, ...(withPublished ? [publishedVersion] : [])],
+      });
+    };
+    const publishErrors = (type: string) => ({ extensions: { data: { errors: [expect.objectContaining({ type })] } } });
+    const movedMarkerDraft = versionWith('ra-v2', [
+      outcomeState('new'), outcomeState('review'), outcomeState('approved'), outcomeState('approved-v2', 'APPROVED'), outcomeState('declined', 'DECLINED'),
+    ], [...baseTransitions, { from: 'review', to: 'approved-v2' }]);
+
+    it('refuses to move the Approved marker from a state holding instances', async () => {
+      arrange(movedMarkerDraft);
+      mockStore([{ currentState: 'approved', completed: true }]);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess))
+        .rejects.toMatchObject(publishErrors('REQUEST_ACCESS_OUTCOME_MOVED'));
+      expect(updateAttribute).not.toHaveBeenCalled();
+      expect(createStatus).not.toHaveBeenCalled();
+    });
+
+    it('refuses to move a marker from a state whose Status is still assigned to an RFI', async () => {
+      arrange(movedMarkerDraft);
+      mockStore([], { 'ra-approved': ['rfi-1'] });
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess))
+        .rejects.toMatchObject(publishErrors('REQUEST_ACCESS_OUTCOME_MOVED'));
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
+
+    it('refuses to drop a marker from a state holding instances', async () => {
+      arrange(versionWith('ra-v2', [outcomeState('new'), outcomeState('review'), outcomeState('approved'), outcomeState('declined', 'DECLINED')], baseTransitions));
+      mockStore([{ currentState: 'approved' }]);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess))
+        .rejects.toMatchObject(publishErrors('REQUEST_ACCESS_OUTCOME_MOVED'));
+    });
+
+    it('lets a marker move off a state holding no RFI', async () => {
+      arrange(movedMarkerDraft);
+      mockStore([{ currentState: 'review' }]);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess)).resolves.toMatchObject({ published: true });
+    });
+
+    it('refuses a new transition out of a state that held the Approved marker in the published version', async () => {
+      arrange(versionWith('ra-v2', baseStates, [...baseTransitions, { from: 'approved', to: 'review' }]));
+      mockStore([{ currentState: 'approved' }]);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess))
+        .rejects.toMatchObject(publishErrors('REQUEST_ACCESS_OUTCOME_NOT_TERMINAL'));
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
+
+    it('does not compare against a published version on the first publish', async () => {
+      arrange(movedMarkerDraft, false);
+      mockStore([{ currentState: 'approved' }]);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess)).resolves.toMatchObject({ published: true });
+    });
+
+    it('resyncs approved and declined ids on publish', async () => {
+      arrange(movedMarkerDraft);
+      mockStore([]);
+
+      await publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess);
+
+      expect(updateAttribute).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-setting-id', 'EntitySetting', [{
+        key: 'request_access_workflow',
+        value: [{ approval_admin: ['group-1'], approved_workflow_id: 'ra-approved-v2', declined_workflow_id: 'ra-declined', workflow_definition_id: 'ra-def' }],
+      }]);
+    });
+
+    it('leaves the request access configuration untouched when the ids already match', async () => {
+      arrange(versionWith('ra-v2', baseStates, baseTransitions));
+      (findByType as any).mockResolvedValue({
+        ...bothSetting,
+        request_access_workflow: { ...bothSetting.request_access_workflow, approved_workflow_id: 'ra-approved', declined_workflow_id: 'ra-declined' },
+      });
+      mockStore([]);
+
+      await publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess);
+
+      expect(updateAttribute).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-setting-id', 'EntitySetting', expect.anything());
+    });
+
+    it('calls addWorkflowRequestAccessPublishCount and addWorkflowPublishCount once for a RequestAccess publish', async () => {
+      arrange(versionWith('ra-v2', baseStates, baseTransitions));
+      mockStore([]);
+
+      await publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess);
+
+      expect(telemetryManager.addWorkflowPublishCount).toHaveBeenCalledTimes(1);
+      expect(telemetryManager.addWorkflowRequestAccessPublishCount).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not count a refused RequestAccess publish', async () => {
+      arrange(movedMarkerDraft);
+      mockStore([{ currentState: 'approved' }]);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess)).rejects.toBeDefined();
+
+      expect(telemetryManager.addWorkflowPublishCount).not.toHaveBeenCalled();
+      expect(telemetryManager.addWorkflowRequestAccessPublishCount).not.toHaveBeenCalled();
+    });
+
+    it('only calls addWorkflowPublishCount for Global', async () => {
+      const draft = { id: 'global-v1', timestamp: '', createdBy: '', content: '{"initialState":"new","states":[],"transitions":[]}', validation_errors: [] };
+      (findByType as any).mockResolvedValue(bothSetting);
+      (storeLoadById as any).mockResolvedValue({ id: 'global-def', name: 'Global', draft_version: draft, all_versions: [draft] });
+      mockStore([]);
+
+      await publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi');
+
+      expect(telemetryManager.addWorkflowPublishCount).toHaveBeenCalledTimes(1);
+      expect(telemetryManager.addWorkflowRequestAccessPublishCount).not.toHaveBeenCalled();
+      expect(updateAttribute).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-setting-id', 'EntitySetting', expect.anything());
     });
   });
 });

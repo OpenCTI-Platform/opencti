@@ -17,7 +17,7 @@ import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
 import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode, VocabularyCategory } from '../../../generated/graphql';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from '../../vocabulary/vocabulary-types';
 import { lockResources } from '../../../lock/master-lock';
-import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
+import { addWorkflowPublishCount, addWorkflowRequestAccessPublishCount } from '../../../manager/telemetryManager';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
@@ -63,7 +63,7 @@ import {
 } from '../types/workflow-types';
 import { extractCanonicalStateIds, findInstancesBlockingStateRemoval, validateWorkflowDefinitionData } from '../workflow-validation';
 import { computeStateOrder, findStatesWithOutgoingTransitions } from './workflow-ordering';
-import { isStatusReferencedByEntity } from './workflow-status-usage';
+import { findInstancesInStates, isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
 import { appendWorkflowHistoryEntry, closingReasonNotWrittenError, isClosingReasonLost, runWorkflowBypassActions } from './workflow-async-completion';
 import { type ConvertStatusToDefinitionResult, convertStatusToDefinition, getPublishBlockingDiagnostics, pickMigrationScope } from '../migration/status-to-definition-converter';
@@ -1095,6 +1095,106 @@ export const isStatusOrphaned = async (
  */
 export const getWorkflowStatusLockKey = (entityType: string): string => `workflow-status-lifecycle:${entityType}`;
 
+const findStatusesByTemplateIds = (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  templateIds: string[],
+  scope: StatusScope,
+) => fullEntitiesList<BasicWorkflowStatus>(context, user, [ENTITY_TYPE_STATUS], {
+  filters: {
+    mode: FilterMode.And,
+    filters: [
+      { key: ['type'], values: [entityType] },
+      { key: ['scope'], values: [scope] },
+      { key: ['template_id'], values: templateIds, operator: FilterOperator.Eq, mode: FilterMode.Or },
+    ],
+    filterGroups: [],
+  },
+});
+
+/**
+ * Request access Approved / Declined markers of the published version cannot leave a state that
+ * still holds RFIs, and no transition may be added out of such a state. A state holds RFIs when a
+ * workflow instance sits in it or an RFI still carries its REQUEST_ACCESS `Status`.
+ */
+const findRequestAccessOutcomeViolations = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  workflowDefinitionId: string,
+  oldDefinitionData: WorkflowDefinitionData,
+  newDefinitionData: WorkflowDefinitionData,
+): Promise<WorkflowValidationError[]> => {
+  const outcomeStatesOf = (definitionData: WorkflowDefinitionData) => (definitionData.states ?? [])
+    .filter((state) => state.requestAccessOutcome);
+  const previousOutcomeStates = outcomeStatesOf(oldDefinitionData);
+  const newOutcomeStateIds = new Map(outcomeStatesOf(newDefinitionData).map((state) => [state.requestAccessOutcome, state.statusId]));
+  const transitionKeys = (definitionData: WorkflowDefinitionData) => definitionData.transitions
+    .flatMap((transition) => (Array.isArray(transition.from) ? transition.from : [transition.from]).map((from) => `${from}::${transition.event}::${transition.to}`));
+  const previousTransitionKeys = new Set(transitionKeys(oldDefinitionData));
+  const addedTransitionKeys = transitionKeys(newDefinitionData).filter((key) => !previousTransitionKeys.has(key));
+
+  const errors: WorkflowValidationError[] = [];
+  for (const state of previousOutcomeStates) {
+    const moved = newOutcomeStateIds.get(state.requestAccessOutcome) !== state.statusId;
+    const gainsTransition = addedTransitionKeys.some((key) => key.startsWith(`${state.statusId}::`));
+    if (!moved && !gainsTransition) continue;
+
+    let holdsRfis = (await findInstancesInStates(context, user, [state.statusId], workflowDefinitionId)).length > 0;
+    if (!holdsRfis) {
+      const statuses = await findStatusesByTemplateIds(context, user, entityType, [state.statusId], StatusScope.RequestAccess);
+      for (const status of statuses) {
+        holdsRfis = holdsRfis || await isStatusReferencedByEntity(context, user, entityType, status.id);
+      }
+    }
+    if (!holdsRfis) continue;
+
+    const label = state.requestAccessOutcome === 'APPROVED' ? 'Approved' : 'Declined';
+    if (moved) {
+      errors.push({
+        type: 'REQUEST_ACCESS_OUTCOME_MOVED',
+        message: `The ${label} marker cannot leave state '${state.statusId}' while it still holds requests`,
+      });
+    }
+    if (gainsTransition) {
+      errors.push({
+        type: 'REQUEST_ACCESS_OUTCOME_NOT_TERMINAL',
+        message: `No transition can be added out of state '${state.statusId}', the ${label} state of the published version, while it still holds requests`,
+      });
+    }
+  }
+  return errors;
+};
+
+/**
+ * Points the legacy `approved_workflow_id` / `declined_workflow_id` at the REQUEST_ACCESS `Status`
+ * mapped to the Approved / Declined states, so every legacy reader keeps working.
+ * Must run once the full status mapping exists.
+ */
+const syncRequestAccessLegacyStatusIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  entitySetting: BasicStoreEntityEntitySetting,
+  definitionData: WorkflowDefinitionData,
+): Promise<void> => {
+  const outcomeStates = (definitionData.states ?? []).filter((state) => state.requestAccessOutcome);
+  if (outcomeStates.length === 0) return;
+  const statuses = await findStatusesByTemplateIds(context, user, entityType, outcomeStates.map((state) => state.statusId), StatusScope.RequestAccess);
+  const statusIdByTemplateId = new Map(statuses.map((status) => [status.template_id, status.id]));
+  const approvedId = statusIdByTemplateId.get(outcomeStates.find((state) => state.requestAccessOutcome === 'APPROVED')?.statusId as string);
+  const declinedId = statusIdByTemplateId.get(outcomeStates.find((state) => state.requestAccessOutcome === 'DECLINED')?.statusId as string);
+
+  const current = entitySetting.request_access_workflow;
+  const approved = approvedId ?? current?.approved_workflow_id;
+  const declined = declinedId ?? current?.declined_workflow_id;
+  if (approved === current?.approved_workflow_id && declined === current?.declined_workflow_id) return;
+  await updateAttribute(context, user, entitySetting.id, ENTITY_TYPE_ENTITY_SETTING, [
+    { key: 'request_access_workflow', value: [{ approval_admin: [], ...current, approved_workflow_id: approved, declined_workflow_id: declined }] },
+  ]);
+};
+
 /**
  * Publish the draft workflow definition (copy draft_version to published_version).
  */
@@ -1175,6 +1275,17 @@ export const publishWorkflowDefinition = async (
       }
 
       if (oldDef && newDef) {
+        if (scope === StatusScope.RequestAccess) {
+          const outcomeErrors = await findRequestAccessOutcomeViolations(executionContext, executionUser, entityType, workflowDefinitionEntity.id, oldDef, newDef);
+          if (outcomeErrors.length > 0) {
+            throw FunctionalError('Cannot publish workflow with validation errors', {
+              entityType,
+              errorCount: outcomeErrors.length,
+              errors: outcomeErrors,
+            });
+          }
+        }
+
         // Same rule as validation (shared function): instances in a removed non-ending state block the
         // removal, ending states and completed instances do not.
         const { states: blockingStates, instances: blockingInstances } = await findInstancesBlockingStateRemoval(
@@ -1251,6 +1362,9 @@ export const publishWorkflowDefinition = async (
     }
     if (publishedDefinitionData) {
       await ensureFullStatusMapping(executionContext, executionUser, entityType, publishedDefinitionData, scope);
+      if (scope === StatusScope.RequestAccess) {
+        await syncRequestAccessLegacyStatusIds(executionContext, executionUser, entityType, entitySetting as BasicStoreEntityEntitySetting, publishedDefinitionData);
+      }
     }
 
     // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
@@ -1275,6 +1389,9 @@ export const publishWorkflowDefinition = async (
   validateVersionConsistency(updatedWorkflow);
 
   addWorkflowPublishCount();
+  if (scope === StatusScope.RequestAccess) {
+    addWorkflowRequestAccessPublishCount();
+  }
 
   const entitySettingWithWorkflow = entitySetting as BasicStoreEntityEntitySetting;
   return {
