@@ -10,6 +10,7 @@ import { createByteBudget, createQueueOrder, handlePushMessage, isEventMessage, 
 // a connector registered after the start is consumed from the next tick.
 
 const LOG_PREFIX = '[OPENCTI-MODULE] Worker-less intake:';
+const REQUEUE_DELAY_MS = 2000;
 
 export interface PushConsumerOptions {
   // Unacked messages per queue
@@ -52,19 +53,25 @@ export const consumePushQueues = async (
     await budget.acquire(bytes);
     let outcome: PushOutcome;
     try {
-      outcome = await handlePushMessage(data, deps);
+      outcome = await handlePushMessage(data, queue, deps);
     } catch (cause) {
       logApp.error(`${LOG_PREFIX} push message handling failed`, { queue, cause });
-      outcome = { ack: false, reason: 'transformation_failed', chunks: 0, objects: 0 };
+      outcome = { ack: false, reason: 'transformation_failed', operations: 0, objects: 0 };
     } finally {
       budget.release(bytes);
+    }
+    if (outcome.requeue) {
+      // given back after a pause: a classic queue redelivers it at once, and the engine needs time
+      await new Promise((resolve) => {
+        setTimeout(resolve, REQUEUE_DELAY_MS);
+      });
     }
     if (open()) {
       try {
         if (outcome.ack) {
           channel.ack(message);
         } else {
-          channel.nack(message, false, false);
+          channel.nack(message, false, !!outcome.requeue);
         }
       } catch (cause) {
         logApp.warn(`${LOG_PREFIX} answer failed, the broker redelivers the message`, { queue, cause });

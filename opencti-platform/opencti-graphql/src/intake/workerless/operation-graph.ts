@@ -45,6 +45,10 @@ export interface OperationNode {
   kind: OperationKind;
   // Indexes of the operations it depends on, all earlier in capture order
   deps: number[];
+  // The STIX ids it creates first in the message
+  creates: string[];
+  // The STIX ids it references and no operation of the message creates (another message may)
+  external: string[];
 }
 
 export interface OperationGraph {
@@ -57,6 +61,8 @@ export interface OperationGraph {
   // References to an operation captured later (a cycle): not edges
   forward: { index: number; id: string }[];
 }
+
+const STIX_ID = /^[a-z][a-z0-9-]*--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 const referencedIds = (value: unknown, ids: Set<string>, marked: Set<string>) => {
   if (isFileValue(value)) return;
@@ -92,17 +98,20 @@ export const buildOperationGraph = (operations: ChunkOperation[]): OperationGrap
     referencedIds(operation.variables, ids, marked);
     if (operation.object_id) ids.add(operation.object_id);
     const deps = new Set<number>();
+    const external: string[] = [];
     ids.forEach((id) => {
       const producer = firstOf.get(id);
       if (producer === undefined) {
         if (id.startsWith(ECHO_PREFIX)) dangling.add(id);
         else if (marked.has(id)) unproduced.add(id);
+        else if (STIX_ID.test(id)) external.push(id);
         return;
       }
       if (producer < index) deps.add(producer);
       else if (producer > index) forward.push({ index, id });
     });
-    return { operation, kind: operationKindOf(operation), deps: [...deps].sort((a, b) => a - b) };
+    const creates = operation.object_id && firstOf.get(operation.object_id) === index ? [operation.object_id] : [];
+    return { operation, kind: operationKindOf(operation), deps: [...deps].sort((a, b) => a - b), creates, external };
   });
   return { nodes, dangling: [...dangling], unproduced: [...unproduced], forward };
 };

@@ -1,14 +1,29 @@
-import { describe, expect, it, vi } from 'vitest';
+import { join } from 'node:path';
+import { describe, expect, it } from 'vitest';
 import { DraftLockedError, WorkNotALiveError } from '../../../src/config/errors';
-import { createByteBudget, createQueueOrder, handlePushMessage, type PushChunk, type PushIntakeDeps } from '../../../src/intake/workerless/push-intake';
+import type { ChunkOperation } from '../../../src/graphql/chunk-executor';
+import { describeOperation } from '../../../src/intake/dry-intake/simulated-answers';
+import {
+  createByteBudget,
+  createLimiter,
+  createQueueOrder,
+  handlePushMessage,
+  type PushIntakeDeps,
+  type PushOperationOutcome,
+  type PushOperationRun,
+  PushRefusedError,
+} from '../../../src/intake/workerless/push-intake';
+import { createReleaseScheduler } from '../../../src/intake/workerless/release-scheduler';
 import { createImportContext } from '../../../src/intake/stix-import/context';
 import { RecordingClient } from '../import-conformance/import-conformance-client';
 import { FIXTURES_DIR } from '../import-conformance/import-conformance-utils';
+import { readFileSync } from 'node:fs';
 
 // The worker-less intake: a push message decoded as the worker decodes it, transformed with its
-// mutations captured, its chunks run in process; the message answered once all its chunks are.
+// mutations captured, its operations released by the scheduler as their dependencies allow; the
+// message answered once all its operations are terminal.
 
-const malware = (index: number) => ({
+const malware = (index: number, extra: Record<string, unknown> = {}) => ({
   type: 'malware',
   spec_version: '2.1',
   id: `malware--00000000-0000-4000-8000-00000000000${index}`,
@@ -16,7 +31,9 @@ const malware = (index: number) => ({
   modified: '2024-01-01T00:00:00.000Z',
   name: `Malware ${index}`,
   is_family: true,
+  ...extra,
 });
+const author = { type: 'identity', spec_version: '2.1', id: 'identity--00000000-0000-4000-8000-0000000000a1', name: 'Author', identity_class: 'organization' };
 const pushMessage = (content: unknown, envelope: Record<string, unknown> = {}) => ({
   type: 'bundle',
   applicant_id: 'applicant-1',
@@ -25,57 +42,174 @@ const pushMessage = (content: unknown, envelope: Record<string, unknown> = {}) =
   ...envelope,
 });
 const bundleOf = (...objects: unknown[]) => ({ type: 'bundle', id: 'bundle--00000000-0000-4000-8000-000000000000', objects });
+const rootOf = (operation: ChunkOperation) => describeOperation(operation.query).root;
 
-const depsWith = (runChunk: PushIntakeDeps['runChunk'], reads = () => new RecordingClient(FIXTURES_DIR, false) as any): PushIntakeDeps => {
-  const context = createImportContext(new RecordingClient(FIXTURES_DIR, false), { error: () => {}, warn: () => {} });
-  return { runChunk, readsClient: reads, contextFor: () => context, chunkSize: 1 };
+// A message run against the real scheduler; each operation's run is recorded and driven by `drive`
+const intake = (options: {
+  drive?: (run: PushOperationRun, events: string[]) => Promise<PushOperationOutcome>;
+  reads?: () => any;
+  writeContext?: PushIntakeDeps['writeContext'];
+  fixtureDir?: string;
+} = {}) => {
+  const events: string[] = [];
+  const runs: PushOperationRun[] = [];
+  const reported: { key: string; outcomes: PushOperationOutcome[] }[] = [];
+  const context = createImportContext(new RecordingClient(options.fixtureDir ?? FIXTURES_DIR, false), { error: () => {}, warn: () => {} });
+  const deps: PushIntakeDeps = {
+    scheduler: createReleaseScheduler({ queueDepth: () => 0, setPoint: () => 100 }),
+    transformations: createLimiter(4),
+    isTransient: (error) => error instanceof Error && error.message === 'engine overloaded',
+    readsClient: options.reads ?? (() => new RecordingClient(options.fixtureDir ?? FIXTURES_DIR, false) as any),
+    contextFor: () => context,
+    writeContext: options.writeContext ?? (async () => ({ context: {} as any, user: {} as any })),
+    runOperation: async (run) => {
+      runs.push(run);
+      events.push(`start ${rootOf(run.operation)}`);
+      const outcome = options.drive ? await options.drive(run, events) : {};
+      run.onQueued();
+      events.push(`end ${rootOf(run.operation)}`);
+      return outcome;
+    },
+    report: async (key, _context, _user, _envelope, _operations, outcomes) => {
+      reported.push({ key, outcomes });
+    },
+  };
+  return { deps, events, runs, reported };
 };
 
 describe('Worker-less push message', () => {
-  it('should run the chunks of a message under its envelope and ack it once all are written', async () => {
-    const chunks: PushChunk[] = [];
-    const outcome = await handlePushMessage(pushMessage(bundleOf(malware(1), malware(2)), { draft_id: 'draft-1', event_id: 'event-1' }), depsWith(async (chunk) => {
-      chunks.push(chunk);
-      return 'acked';
-    }));
-    expect(outcome).toEqual({ ack: true, reason: 'written', chunks: 2, objects: 2 });
-    expect(chunks.map((chunk) => chunk.operations.map((operation) => operation.object_id))).toEqual([[malware(1).id], [malware(2).id]]);
-    expect(chunks[0]).toMatchObject({ applicant_id: 'applicant-1', work_id: 'work-1', draft_id: 'draft-1', event_id: 'event-1', retry_number: 0, work_objects: 1 });
-    expect(new Set(chunks.map((chunk) => chunk.chunk_id)).size).toEqual(2);
+  it('should run the operations of a message under its envelope and ack it once all are terminal', async () => {
+    const h = intake();
+    const outcome = await handlePushMessage(pushMessage(bundleOf(malware(1), malware(2)), { draft_id: 'draft-1', event_id: 'event-1' }), 'queue-a', h.deps);
+    expect(outcome).toEqual({ ack: true, reason: 'written', operations: 2, objects: 2 });
+    expect(h.runs.map((run) => run.operation.object_id)).toEqual([malware(1).id, malware(2).id]);
+    expect(h.runs[0].envelope).toMatchObject({ applicant_id: 'applicant-1', work_id: 'work-1', draft_id: 'draft-1', event_id: 'event-1', retry_number: 0 });
+    expect(h.reported).toHaveLength(1);
   });
 
-  it('should nack a message one of whose chunks is dead-lettered, after all its chunks ran', async () => {
-    const run = vi.fn().mockResolvedValueOnce('acked').mockResolvedValueOnce('dead_lettered');
-    const outcome = await handlePushMessage(pushMessage(bundleOf(malware(1), malware(2))), depsWith(run));
-    expect(outcome).toMatchObject({ ack: false, reason: 'chunk_dead_lettered', chunks: 2 });
-    expect(run).toHaveBeenCalledTimes(2);
+  it('should start an object once the author it references in the bundle is queued, not before', async () => {
+    let queueAuthor: () => void = () => {};
+    const authorQueued = new Promise<void>((resolve) => {
+      queueAuthor = resolve;
+    });
+    const h = intake({
+      drive: async (run, events) => {
+        if (run.operation.object_id === author.id) {
+          // the author is queued, then written later
+          await authorQueued;
+          events.push('author queued');
+          run.onQueued();
+        }
+        return {};
+      },
+    });
+    const handled = handlePushMessage(pushMessage(bundleOf(author, malware(1, { created_by_ref: author.id }))), 'queue-a', h.deps);
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
+    expect(h.events).toEqual(['start organizationAdd']);
+    queueAuthor();
+    expect(await handled).toMatchObject({ ack: true, reason: 'written' });
+    expect(h.events.indexOf('author queued')).toBeLessThan(h.events.indexOf('start malwareAdd'));
+    // the member mark is gone from what the platform executes only when the write context strips it:
+    // here the stub does not, the ref still points to the author
+    expect(JSON.stringify(h.runs[1].operation.variables)).toContain(author.id);
+  });
+
+  it('should give a producer that runs first its platform id in what waits for it', async () => {
+    // pycti reads an external reference as a report: the reference and the report are created
+    // first (echo ids), the report's id answered by the platform, then the malware is added to it
+    const fixtureDir = join(FIXTURES_DIR, 'sdo/malware/handwritten-external-reference-as-report.legacy');
+    const bundle = JSON.parse(readFileSync(join(fixtureDir, 'input.json'), 'utf-8'));
+    const h = intake({
+      fixtureDir,
+      drive: async (run) => (rootOf(run.operation) === 'reportAdd' ? { id: 'report-platform-id' } : {}),
+    });
+    const call = JSON.parse(readFileSync(join(fixtureDir, 'call.json'), 'utf-8'));
+    expect(await handlePushMessage(pushMessage(bundle, { entities_types: call.types }), 'queue-a', h.deps)).toMatchObject({ ack: true, reason: 'written' });
+    const roots = h.runs.map((run) => rootOf(run.operation));
+    const relationAdd = h.runs[roots.indexOf('reportEdit')];
+    expect(relationAdd.operation.variables?.id).toEqual('report-platform-id');
+    expect(roots.indexOf('reportEdit')).toBeGreaterThan(roots.indexOf('reportAdd'));
+    // the external reference, a producer with a standard id, is referenced by it
+    const report = h.runs[roots.indexOf('reportAdd')];
+    expect(JSON.stringify(report.operation.variables)).toMatch(/external-reference--/);
+    expect(h.runs.find((run) => rootOf(run.operation) === 'reportAdd')?.producerFirst).toBe(true);
   });
 
   it('should nack what the worker cannot decode or split, without running anything', async () => {
-    const run = vi.fn();
-    expect(await handlePushMessage(null, depsWith(run))).toMatchObject({ ack: false, reason: 'undecodable' });
-    expect(await handlePushMessage({ type: 'bundle', content: 42 }, depsWith(run))).toMatchObject({ ack: false, reason: 'undecodable' });
-    expect(await handlePushMessage(pushMessage({ type: 'bundle', objects: [] }), depsWith(run))).toMatchObject({ ack: false, reason: 'undecodable' });
+    const h = intake();
+    expect(await handlePushMessage(null, 'q', h.deps)).toMatchObject({ ack: false, reason: 'undecodable' });
+    expect(await handlePushMessage({ type: 'bundle', content: 42 }, 'q', h.deps)).toMatchObject({ ack: false, reason: 'undecodable' });
+    expect(await handlePushMessage(pushMessage({ type: 'bundle', objects: [] }), 'q', h.deps)).toMatchObject({ ack: false, reason: 'undecodable' });
     // a defect of the transformation (here a read failing with a native error): nacked as the worker nacks
-    const broken = () => ({ query: async () => {
+    const broken = intake({ reads: () => ({ query: async () => {
       throw new TypeError('defect');
-    } });
-    expect(await handlePushMessage(pushMessage(bundleOf({ ...malware(1), malware_types: ['ransomware'] })), depsWith(run, broken))).toMatchObject({ ack: false, reason: 'transformation_failed' });
-    expect(run).not.toHaveBeenCalled();
+    } }) });
+    expect(await handlePushMessage(pushMessage(bundleOf(malware(1, { malware_types: ['ransomware'] }))), 'q', broken.deps)).toMatchObject({ ack: false, reason: 'transformation_failed' });
+    expect([...h.runs, ...broken.runs]).toEqual([]);
   });
 
-  it('should skip, acked, a message whose work is deleted or whose draft is closed when it reads', async () => {
+  it('should skip, acked, a message whose work is deleted or whose draft is closed, nack one whose writer is unknown', async () => {
     // an open vocabulary makes the transformation read: the read context is refused
-    const withRead = bundleOf({ ...malware(1), malware_types: ['ransomware'] });
-    const refusing = (error: Error) => () => ({ query: async () => {
+    const withRead = bundleOf(malware(1, { malware_types: ['ransomware'] }));
+    const refusing = (error: Error) => intake({ reads: () => ({ query: async () => {
       throw error;
+    } }) }).deps;
+    expect(await handlePushMessage(pushMessage(withRead), 'q', refusing(WorkNotALiveError()))).toMatchObject({ ack: true, reason: 'work_not_alive', operations: 0 });
+    expect(await handlePushMessage(pushMessage(withRead), 'q', refusing(DraftLockedError()))).toMatchObject({ ack: true, reason: 'draft_locked', operations: 0 });
+    // the write context refuses: same outcomes
+    const writeRefusing = (reason: 'work_not_alive' | 'unknown_writer') => intake({ writeContext: async () => {
+      throw new PushRefusedError('refused', reason);
     } });
-    expect(await handlePushMessage(pushMessage(withRead), depsWith(vi.fn(), refusing(WorkNotALiveError())))).toMatchObject({ ack: true, reason: 'work_not_alive', chunks: 0 });
-    expect(await handlePushMessage(pushMessage(withRead), depsWith(vi.fn(), refusing(DraftLockedError())))).toMatchObject({ ack: true, reason: 'draft_locked', chunks: 0 });
+    const unknown = writeRefusing('unknown_writer');
+    expect(await handlePushMessage(pushMessage(bundleOf(malware(1))), 'q', unknown.deps)).toMatchObject({ ack: false, reason: 'unknown_writer' });
+    expect(await handlePushMessage(pushMessage(bundleOf(malware(1))), 'q', writeRefusing('work_not_alive').deps)).toMatchObject({ ack: true, reason: 'work_not_alive' });
+    expect(unknown.runs).toEqual([]);
+  });
+  it('should give back to its queue a message that met a transient failure before any write', async () => {
+    const h = intake({ writeContext: async () => {
+      throw new Error('engine overloaded');
+    } });
+    expect(await handlePushMessage(pushMessage(bundleOf(malware(1))), 'q', h.deps)).toMatchObject({ ack: false, requeue: true, reason: 'transient' });
+    expect(h.runs).toEqual([]);
+    // any other failure of the write context is not retried
+    const broken = intake({ writeContext: async () => {
+      throw new Error('defect');
+    } });
+    await expect(handlePushMessage(pushMessage(bundleOf(malware(1))), 'q', broken.deps)).rejects.toThrow('defect');
   });
 });
 
 describe('Worker-less intake flow control', () => {
+  it('should run at most the limit at once, the others in turn', async () => {
+    const limiter = createLimiter(2);
+    const releases: (() => void)[] = [];
+    const started: number[] = [];
+    const runs = [0, 1, 2, 3].map((index) => limiter.run(() => new Promise<void>((resolve) => {
+      started.push(index);
+      releases[index] = resolve;
+    })));
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
+    expect(started).toEqual([0, 1]);
+    releases[1]();
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
+    expect(started).toEqual([0, 1, 2]);
+    releases[0]();
+    releases[2]();
+    await new Promise((resolve) => {
+      setImmediate(resolve);
+    });
+    releases[3]();
+    await Promise.all(runs);
+    expect(started).toEqual([0, 1, 2, 3]);
+    expect(limiter.running()).toEqual(0);
+  });
+
   it('should start a message once the bytes in flight leave room for it, alone always', async () => {
     const budget = createByteBudget(100);
     await budget.acquire(80);
@@ -140,35 +274,5 @@ describe('Worker-less intake flow control', () => {
     expect(events.indexOf('end create')).toBeLessThan(events.indexOf('start delete'));
     expect(order.isOrdered('sync')).toBe(true);
     expect(order.isOrdered('feed')).toBe(false);
-  });
-});
-
-describe('Worker-less push message levels', () => {
-  it('should write a level of the bundle before starting the next one', async () => {
-    const author = { type: 'identity', spec_version: '2.1', id: 'identity--00000000-0000-4000-8000-0000000000a1', name: 'Author', identity_class: 'organization' };
-    const events: string[] = [];
-    let releaseFirst: () => void = () => {};
-    const run = async (chunk: PushChunk) => {
-      const ids = chunk.operations.filter((operation) => !operation.echo_id).map((operation) => operation.object_id);
-      events.push(`start ${ids.join(',')}`);
-      if (ids.includes(author.id)) {
-        await new Promise<void>((resolve) => {
-          releaseFirst = resolve;
-        });
-      }
-      events.push(`end ${ids.join(',')}`);
-      return 'acked' as const;
-    };
-    const message = pushMessage(bundleOf(author, { ...malware(1), created_by_ref: author.id }));
-    const deps = { ...depsWith(run), chunkSize: 24 };
-    const handled = handlePushMessage(message, deps);
-    await new Promise((resolve) => {
-      setImmediate(resolve);
-    });
-    // the malware (level 1) waits for its author (level 0) to be written
-    expect(events).toEqual([`start ${author.id}`]);
-    releaseFirst();
-    expect(await handled).toMatchObject({ ack: true, chunks: 2 });
-    expect(events).toEqual([`start ${author.id}`, `end ${author.id}`, `start ${malware(1).id}`, `end ${malware(1).id}`]);
   });
 });

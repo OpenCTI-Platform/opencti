@@ -354,9 +354,10 @@
     "max_transient_attempts": 20,
     "defer_missing_refs": true,
     "source": "chunk_queue",
-    "push_prefetch": 10,
+    "push_prefetch": 100,
     "push_max_in_flight_bytes": 268435456,
-    "push_chunk_size": 24
+    "push_ready_depth_factor": 2,
+    "push_transform_concurrency": 16
   },
   "publisher_manager": {
     "enabled": true,

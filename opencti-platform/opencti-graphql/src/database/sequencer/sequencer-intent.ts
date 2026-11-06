@@ -68,6 +68,9 @@ const intentSize = (input: Record<string, any>) => {
   }
 };
 
+// The source of a writer's intents: the queue is FIFO per source and round-robin across sources
+export const intentSourceOf = (user: AuthUser) => user.origin?.applicant_id ?? user.id;
+
 export const buildIntent = (args: BuildIntentArgs): SequencerIntent => {
   let resolve: (value: any) => void = () => {};
   let reject: (err: any) => void = () => {};
@@ -84,7 +87,7 @@ export const buildIntent = (args: BuildIntentArgs): SequencerIntent => {
     context: args.context,
     opts: args.opts,
     arrivedAt: Date.now(),
-    source: args.user.origin?.applicant_id ?? args.user.id,
+    source: intentSourceOf(args.user),
     sizeBytes: intentSize(args.input),
     candidateIds: args.candidateIds,
     referencedIds: args.referencedIds ?? [],

@@ -31,16 +31,24 @@ describe('Operation graph', () => {
       op('reportEdit', { id: 'echo--2', input: { toId: 'malware--1', relationship_type: 'object' } }, { echo_id: 'echo--3' }, 'relationAdd'),
     ];
     const graph = buildOperationGraph(operations);
-    expect(graph.nodes.map(({ deps, kind }) => ({ deps, kind }))).toEqual([
-      { deps: [], kind: 'sequenced' },
-      { deps: [0], kind: 'sequenced' },
-      { deps: [], kind: 'sequenced' },
-      { deps: [1, 2], kind: 'direct' },
+    expect(graph.nodes.map(({ deps, kind, creates }) => ({ deps, kind, creates }))).toEqual([
+      { deps: [], kind: 'sequenced', creates: [] },
+      { deps: [0], kind: 'sequenced', creates: [] },
+      { deps: [], kind: 'sequenced', creates: ['malware--1'] },
+      { deps: [1, 2], kind: 'direct', creates: [] },
     ]);
     // the author is a member of the bundle that no operation creates (its transformation failed)
     expect(graph.unproduced).toEqual(['identity--1']);
     expect(graph.dangling).toEqual([]);
     expect(graph.forward).toEqual([]);
+  });
+
+  it('should list the STIX ids an operation references and its message does not create', () => {
+    const author = 'identity--7c9a6e2f-1d3b-4e5a-9b8c-0d1e2f3a4b5c';
+    const graph = buildOperationGraph([
+      op('malwareAdd', { input: { stix_id: 'malware--1', name: author.toUpperCase(), createdBy: author, description: 'not an id' } }, { object_id: 'malware--1' }),
+    ]);
+    expect(graph.nodes[0].external).toEqual([author]);
   });
 
   it('should order a later operation on an object after its creation, and never link backwards in a cycle', () => {

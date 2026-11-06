@@ -104,6 +104,21 @@ export const describeIntentLocation = (ids: string[]): IntentLocation => {
   }
   return 'unknown';
 };
+// Intents waiting in the queue, and the listeners told when the loop took a batch from it (the
+// worker-less intake releases operations against the queue depth, intake/workerless)
+export const sequencerQueueDepth = () => queue.size();
+const queueTakenListeners = new Set<() => void>();
+export const onSequencerQueueTaken = (listener: () => void) => {
+  queueTakenListeners.add(listener);
+  return () => queueTakenListeners.delete(listener);
+};
+const notifyQueueTaken = () => queueTakenListeners.forEach((listener) => {
+  try {
+    listener();
+  } catch (e) {
+    logApp.warn('[SEQUENCER] queue taken listener failed', { cause: e });
+  }
+});
 export const sequencerLoopGauges = () => {
   const snapshot = loopSnapshot?.();
   return { alive: isSequencerLoopAlive(), queue: queue.size(), lanes: snapshot?.lanes ?? 0, parked: snapshot?.parked ?? 0, batch: snapshot?.batch ?? 0 };
@@ -677,6 +692,7 @@ const runBatchLoop = async () => {
     }
     if (batch.length === 0) continue;
     sequencerMetrics.queueDepth(queue.size());
+    notifyQueueTaken();
     // 2. pre-resolve (optimization: on failure the batch still applies through ES)
     try {
       sequencerIdentityMap.beginBatch(Date.now());

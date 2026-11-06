@@ -20,8 +20,8 @@ import { executeChunkOperation, executeInProcessRead, substituteEchoIds, type Ch
 import { splitEchoIds } from './chunkIntakeEchoes';
 import { PreLoopGate } from './chunkIntakePreLoop';
 import { resolveProducerIds } from './chunkIntakeProducers';
-import { isSequencerEnabled } from '../database/sequencer/sequencer-config';
-import { describeIntentLocation, sequencerLoopGauges, startSequencerLoop } from '../database/sequencer/sequencer-loop';
+import { describeIntentLocation, onSequencerQueueTaken, sequencerLoopGauges, sequencerQueueDepth, startSequencerLoop } from '../database/sequencer/sequencer-loop';
+import { isSequencerEnabled, SEQUENCER_CONFIG } from '../database/sequencer/sequencer-config';
 import { chunkOperationRootField } from './chunkIntakeProducers';
 import { stripMemberRefMarks } from '../database/sequencer/sequencer-eligibility';
 import {
@@ -37,7 +37,8 @@ import {
 import { DatabaseError, DRAFT_LOCKED_ERROR, EngineShardsError, MISSING_REF_ERROR, SEQUENCER_DEFERRED_ERROR, WORK_NOT_ALIVE_ERROR } from '../config/errors';
 import { createIntakeContext } from '../intake/intake-context';
 import { consumePushQueues } from '../intake/workerless/push-consumer';
-import type { ChunkVerdict, PushChunk } from '../intake/workerless/push-intake';
+import { createLimiter, PushRefusedError } from '../intake/workerless/push-intake';
+import { createReleaseScheduler, type ReleaseScheduler } from '../intake/workerless/release-scheduler';
 import { createImportContext, type ImportContext } from '../intake/stix-import/context';
 import { type ImportClient, ImportClientError, type ImportLogger } from '../intake/stix-import/types';
 import { connectorsForWorker } from '../modules/connector/connector-domain';
@@ -68,10 +69,18 @@ const DEFER_MISSING_REFS = booleanConf('chunk_intake_manager:defer_missing_refs'
 // place of the workers (transformation, capture and chunks in process); 'chunk_queue' consumes the
 // chunks the workers publish
 const CHUNK_INTAKE_SOURCE = conf.get('chunk_intake_manager:source') ?? 'chunk_queue';
-const PUSH_PREFETCH = Number(conf.get('chunk_intake_manager:push_prefetch') ?? 10);
+// Unacked messages per push queue: a buffer of decoded messages for the release scheduler, not the
+// regulator (the set point below is); 100 x 4.2 objects on average per mix140k bundle keeps the
+// sequencer fed where 10 left it starved (2026-11-05 runs). Memory is bounded by the bytes.
+const PUSH_PREFETCH = Number(conf.get('chunk_intake_manager:push_prefetch') ?? 100);
 const PUSH_MAX_IN_FLIGHT_BYTES = Number(conf.get('chunk_intake_manager:push_max_in_flight_bytes') ?? 268435456);
-// Objects per chunk, the worker's ingest chunk size
-const PUSH_CHUNK_SIZE = Number(conf.get('chunk_intake_manager:push_chunk_size') ?? 24);
+// The ready depth the release scheduler holds, in sequencer batches (R* = factor x max_batch_size):
+// at least one batch keeps the batches full, more only adds write latency (KB note
+// opencti-workerless-intake-target-design §4.3; the value comes from a 1 / 2 / 4 ladder)
+const PUSH_READY_DEPTH_FACTOR = Number(conf.get('chunk_intake_manager:push_ready_depth_factor') ?? 2);
+// Transformations running at once: their reads reach the engine outside the pre-loop gate (a read
+// per open vocabulary value, author or marking not yet cached)
+const PUSH_TRANSFORM_CONCURRENCY = Number(conf.get('chunk_intake_manager:push_transform_concurrency') ?? 16);
 // Per-OPERATION transient policy (depth campaign v2, 2026-09-14: a 240-rejection burst of the
 // ES search pool cost 34 indicators at prefetch 48, where pycti's ladder retried them on
 // HTTP). A transient engine error inside one operation (rejected execution, circuit breaker,
@@ -343,9 +352,11 @@ export const createChunkContext = async (message: ChunkMessage, operations: Chun
 // the INTENT (SEQUENCER_DEFERRED), the manager retains the OPERATION when the reference
 // check failed OUTSIDE the loop (MISSING_REFERENCE_ERROR reaching the executor: a domain
 // pre-resolve such as addIndicator's, which the loop hooks never see).
-interface OperationOutcome {
+export interface OperationOutcome {
   error?: string;
   deferred?: boolean;
+  // The id the platform gave a producer whose id is substituted
+  id?: string;
 }
 
 // A GraphQL error out of execute wraps the resolver's error as originalError; engine errors
@@ -442,6 +453,143 @@ const reportRefusedChunkWork = async (message: ChunkMessage, operations: ChunkOp
   await reportChunkWork(executionContext(CHUNK_INTAKE_MANAGER_CONTEXT), SYSTEM_USER, message, operations, results);
 };
 
+// One operation of the intake run to its end, for a chunk (processChunk) or a push message
+// (worker-less intake): a pre-loop permit per attempt, released once its intent is queued (or it
+// settled without reaching the loop); transient engine errors retried in place, then the operation
+// retained; a reference missing outside the loop retains the operation; a producer whose id is
+// substituted (producerFirst) returns the id the platform gave it.
+export interface IntakeOperationRun {
+  // The chunk or the message, for the logs
+  key?: string;
+  context: AuthContext;
+  user: AuthUser;
+  envelope: PendingOperationEnvelope;
+  operation: ChunkOperation;
+  producerFirst: boolean;
+  // Its intent is queued in the sequencer, or it settled without reaching it (called again after)
+  onQueued: () => void;
+  onPhase?: (phase: OperationPhase) => void;
+}
+
+// Transient engine error on a consumer: retry in place with backoff, then retain.
+const transientOutcome = async (run: IntakeOperationRun, err: any, attempt: number): Promise<OperationOutcome | null> => {
+  const { operation, key, user } = run;
+  if (!isTransientOperationError(err)) return null;
+  preLoopGate.onEngineError(); // the adaptive gate halves on engine trouble, whatever becomes of the operation
+  if (run.producerFirst) return null;
+  if (attempt < OP_TRANSIENT_ATTEMPTS) {
+    const backoffMs = Math.min(OP_TRANSIENT_BACKOFF_MS * 2 ** attempt, 4000);
+    logApp.warn('[CHUNK-INTAKE] Operation retried (transient engine error)', {
+      key, object_id: operation.object_id, attempt: attempt + 1, backoffMs, cause: String(err?.message ?? err),
+    });
+    operationsCounter?.add(1, { outcome: 'transient_retry' });
+    await wait(backoffMs);
+    return { deferred: false }; // sentinel: retry
+  }
+  if (DEFER_MISSING_REFS && pendingIntentsAccepting()) {
+    const retained = await deferOperation({ operation, envelope: run.envelope, user, missing: [] });
+    if (retained) {
+      logApp.warn('[CHUNK-INTAKE] Operation retained after transient retries (sweeper will re-execute)', {
+        key, object_id: operation.object_id, attempts: attempt, cause: String(err?.message ?? err),
+      });
+      return { deferred: true };
+    }
+  }
+  return null;
+};
+const runOperationOnce = async (run: IntakeOperationRun, attempt: number): Promise<OperationOutcome> => {
+  const { operation, key, user } = run;
+  // one pre-loop permit per attempt, released by the boundary hook (intent queued) or,
+  // for operations that never reach the loop, when the operation settles
+  run.onPhase?.('gate');
+  const waited = await preLoopGate.acquire();
+  if (waited) operationsCounter?.add(1, { outcome: 'paced' });
+  run.onPhase?.('preloop');
+  let released = false;
+  const releaseOnce = () => {
+    if (released) return;
+    released = true;
+    preLoopGate.release();
+  };
+  const opContext: AuthContext = {
+    ...run.context,
+    onIntentQueued: () => {
+      releaseOnce();
+      run.onQueued();
+      run.onPhase?.('queued');
+    },
+  };
+  try {
+    if (faultTransientBudget > 0 && attempt === 0 && !operation.echo_id) {
+      faultTransientBudget -= 1;
+      // the REAL shape of an ES shard rejection on the chunk path (ref campaign w2 pf96):
+      // DatabaseError('Find direct ids fail') wrapping EngineShardsError({ shards })
+      throw DatabaseError('Find direct ids fail (synthetic transient fault, chunk_intake_manager.fault_transient_ops)', {
+        cause: EngineShardsError({ shards: { total: 1, successful: 0, failed: 1, failures: [{ reason: { type: 'es_rejected_execution_exception', reason: 'rejected execution (synthetic)' } }] } }),
+      });
+    }
+    const result = await executeChunkOperation(opContext, operation);
+    if (result.errors?.length) {
+      const first: any = result.errors[0];
+      const code = first?.extensions?.code;
+      if (code === SEQUENCER_DEFERRED_ERROR) {
+        return { deferred: true };
+      }
+      const transient = await transientOutcome(run, first, attempt);
+      if (transient) return transient;
+      // A consumer refused for a missing reference before it reached the loop: retain
+      // the operation (a producer executed first keeps the error path: its consumers
+      // already ran).
+      if (code === MISSING_REF_ERROR && !run.producerFirst && DEFER_MISSING_REFS && pendingIntentsAccepting()) {
+        const { resolvable: missing, echoes } = splitEchoIds(unresolvedIdsOf(first));
+        if (echoes.length > 0) {
+          // B12: an unresolved echo id has no producer that can still land (it leaked
+          // from another capture window, A9, or its producer failed): retaining the
+          // operation would park it until expiry. Fail it, visibly.
+          logApp.error('[CHUNK-INTAKE] Operation refused: unresolved echo id (no producer in its chunk)', {
+            key, object_id: operation.object_id, echoes, missing,
+          });
+          operationsCounter?.add(1, { outcome: 'echo_unresolved' });
+          return { error: `unresolved echo id: ${echoes.join(', ')}` };
+        }
+        const retained = await deferOperation({ operation, envelope: run.envelope, user, missing });
+        if (retained) {
+          logApp.info('[CHUNK-INTAKE] Operation retained (missing reference outside the loop)', {
+            key, object_id: operation.object_id, missing,
+          });
+          return { deferred: true };
+        }
+      }
+      return { error: String(first.message) };
+    }
+    if (operation.echo_id && run.producerFirst) {
+      const root: any = result.data ? Object.values(result.data)[0] : undefined;
+      if (root?.id) return { id: String(root.id) };
+    }
+    return {};
+  } catch (e: any) {
+    const transient = await transientOutcome(run, e, attempt);
+    if (transient) return transient;
+    return { error: String(e.message ?? e) };
+  } finally {
+    releaseOnce();
+  }
+};
+// deferred === false is the retry sentinel of transientOutcome: loop until a real outcome
+// Settled without reaching the loop (or after it) counts as queued for what waits on it, once
+// the last attempt is over: a transient retry is not an end.
+export const runIntakeOperation = async (run: IntakeOperationRun): Promise<OperationOutcome> => {
+  try {
+    for (let attempt = 0; ; attempt += 1) {
+      const outcome = await runOperationOnce(run, attempt);
+      if (outcome.deferred !== false) return outcome;
+    }
+  } finally {
+    run.onQueued();
+    run.onPhase?.('settled');
+  }
+};
+
 export const processChunkMessage = async (payload: string, controls: ChunkControls) => {
   let message: ChunkMessage;
   try {
@@ -510,116 +658,19 @@ export const processChunk = async (message: ChunkMessage, controls: ChunkControl
         release();
       }
     };
-    // Transient engine error on a consumer: retry in place with backoff, then retain.
-    const transientOutcome = async (operation: ChunkOperation, err: any, attempt: number): Promise<OperationOutcome | null> => {
-      if (!isTransientOperationError(err)) return null;
-      preLoopGate.onEngineError(); // the adaptive gate halves on engine trouble, whatever becomes of the operation
-      if (producerFirst.has(operation)) return null;
-      if (attempt < OP_TRANSIENT_ATTEMPTS) {
-        const backoffMs = Math.min(OP_TRANSIENT_BACKOFF_MS * 2 ** attempt, 4000);
-        logApp.warn('[CHUNK-INTAKE] Operation retried (transient engine error)', {
-          chunk_id: message.chunk_id, object_id: operation.object_id, attempt: attempt + 1, backoffMs, cause: String(err?.message ?? err),
-        });
-        operationsCounter?.add(1, { outcome: 'transient_retry' });
-        await wait(backoffMs);
-        return { deferred: false }; // sentinel: retry
-      }
-      if (DEFER_MISSING_REFS && pendingIntentsAccepting()) {
-        const retained = await deferOperation({ operation, envelope: envelopeOf(message), user, missing: [] });
-        if (retained) {
-          logApp.warn('[CHUNK-INTAKE] Operation retained after transient retries (sweeper will re-execute)', {
-            chunk_id: message.chunk_id, object_id: operation.object_id, attempts: attempt, cause: String(err?.message ?? err),
-          });
-          return { deferred: true };
-        }
-      }
-      return null;
-    };
-    const runOperationOnce = async (operation: ChunkOperation, attempt: number): Promise<OperationOutcome> => {
-      // one pre-loop permit per attempt, released by the boundary hook (intent queued) or,
-      // for operations that never reach the loop, when the operation settles
-      trackPhase(tracked, operation, 'gate');
-      const waited = await preLoopGate.acquire();
-      if (waited) operationsCounter?.add(1, { outcome: 'paced' });
-      trackPhase(tracked, operation, 'preloop');
-      let released = false;
-      const releaseOnce = () => {
-        if (released) return;
-        released = true;
-        preLoopGate.release();
-      };
-      const opContext: AuthContext = {
-        ...context,
-        onIntentQueued: () => {
-          releaseOnce();
-          markQueued(operation);
-          trackPhase(tracked, operation, 'queued');
-        },
-      };
-      try {
-        if (faultTransientBudget > 0 && attempt === 0 && !operation.echo_id) {
-          faultTransientBudget -= 1;
-          // the REAL shape of an ES shard rejection on the chunk path (ref campaign w2 pf96):
-          // DatabaseError('Find direct ids fail') wrapping EngineShardsError({ shards })
-          throw DatabaseError('Find direct ids fail (synthetic transient fault, chunk_intake_manager.fault_transient_ops)', {
-            cause: EngineShardsError({ shards: { total: 1, successful: 0, failed: 1, failures: [{ reason: { type: 'es_rejected_execution_exception', reason: 'rejected execution (synthetic)' } }] } }),
-          });
-        }
-        const result = await executeChunkOperation(opContext, operation);
-        if (result.errors?.length) {
-          const first: any = result.errors[0];
-          const code = first?.extensions?.code;
-          if (code === SEQUENCER_DEFERRED_ERROR) {
-            return { deferred: true };
-          }
-          const transient = await transientOutcome(operation, first, attempt);
-          if (transient) return transient;
-          // A consumer refused for a missing reference before it reached the loop: retain
-          // the operation (a producer executed first keeps the error path: its consumers
-          // already ran).
-          if (code === MISSING_REF_ERROR && !producerFirst.has(operation) && DEFER_MISSING_REFS && pendingIntentsAccepting()) {
-            const { resolvable: missing, echoes } = splitEchoIds(unresolvedIdsOf(first));
-            if (echoes.length > 0) {
-              // B12: an unresolved echo id has no producer that can still land (it leaked
-              // from another capture window, A9, or its producer failed): retaining the
-              // operation would park it until expiry. Fail it, visibly.
-              logApp.error('[CHUNK-INTAKE] Operation refused: unresolved echo id (no producer in its chunk)', {
-                chunk_id: message.chunk_id, object_id: operation.object_id, echoes, missing,
-              });
-              operationsCounter?.add(1, { outcome: 'echo_unresolved' });
-              return { error: `unresolved echo id: ${echoes.join(', ')}` };
-            }
-            const retained = await deferOperation({ operation, envelope: envelopeOf(message), user, missing });
-            if (retained) {
-              logApp.info('[CHUNK-INTAKE] Operation retained (missing reference outside the loop)', {
-                chunk_id: message.chunk_id, object_id: operation.object_id, missing,
-              });
-              return { deferred: true };
-            }
-          }
-          return { error: String(first.message) };
-        }
-        if (operation.echo_id && producerFirst.has(operation)) {
-          const root: any = result.data ? Object.values(result.data)[0] : undefined;
-          if (root?.id) resolved.set(operation.echo_id, String(root.id));
-        }
-        return {};
-      } catch (e: any) {
-        const transient = await transientOutcome(operation, e, attempt);
-        if (transient) return transient;
-        return { error: String(e.message ?? e) };
-      } finally {
-        releaseOnce();
-        trackPhase(tracked, operation, 'settled');
-      }
-    };
-    // deferred === false is the retry sentinel of transientOutcome: loop until a real outcome
-    const runOperation = async (operation: ChunkOperation): Promise<OperationOutcome> => {
-      for (let attempt = 0; ; attempt += 1) {
-        const outcome = await runOperationOnce(operation, attempt);
-        if (outcome.deferred !== false) return outcome;
-      }
-    };
+    const runOperation = (operation: ChunkOperation) => runIntakeOperation({
+      key: message.chunk_id,
+      context,
+      user,
+      envelope: envelopeOf(message),
+      operation,
+      producerFirst: producerFirst.has(operation),
+      onQueued: () => markQueued(operation),
+      onPhase: (phase) => trackPhase(tracked, operation, phase),
+    }).then((outcome) => {
+      if (operation.echo_id && outcome.id) resolved.set(operation.echo_id, outcome.id);
+      return outcome;
+    });
     // Wave 1 = the producers that must execute first (legacy path, or unresolvable up
     // front); wave 2 = everything else at once. With every producer resolved by standard
     // id, wave 1 is empty and the chunk is a single wave.
@@ -636,7 +687,7 @@ export const processChunk = async (message: ChunkMessage, controls: ChunkControl
     const producers = rest.filter((operation) => !!operation.echo_id);
     const consumers = rest.filter((operation) => !operation.echo_id);
     const producerGates = producers.map((operation) => queuedOrSettled(operation));
-    const producerRuns = producers.map((operation) => runOperation(operation).finally(() => markQueued(operation)));
+    const producerRuns = producers.map((operation) => runOperation(operation));
     await Promise.all(producerGates);
     const consumerRuns = consumers.map((operation) => runOperation(operation));
     const restErrors = await Promise.all([...producerRuns, ...consumerRuns]);
@@ -691,23 +742,6 @@ export const processChunk = async (message: ChunkMessage, controls: ChunkControl
 };
 
 // region worker-less intake (POC): the push queues consumed in place of the workers
-// A chunk run to its end in process: a retry (transient failure, after its backoff) runs it again,
-// the attempts cap of processChunk still bounds it
-const runChunkInProcess = (chunk: PushChunk) => new Promise<ChunkVerdict>((resolve) => {
-  const attempt = () => {
-    processChunk(chunk as ChunkMessage, {
-      redelivered: false,
-      ack: () => resolve('acked'),
-      retry: () => setImmediate(attempt),
-      deadLetter: () => resolve('dead_lettered'),
-    }).catch((cause) => {
-      logApp.error('[CHUNK-INTAKE] Unexpected chunk handling error', { cause, chunk_id: chunk.chunk_id });
-      resolve('dead_lettered');
-    });
-  };
-  attempt();
-});
-
 // The reads of the transformation, in process under the message's context (built on the first read)
 const readsClientFor = (envelope: IntakeEnvelope): ImportClient => {
   let built: ReturnType<typeof createIntakeContext> | null = null;
@@ -726,6 +760,9 @@ const readsClientFor = (envelope: IntakeEnvelope): ImportClient => {
 };
 
 let pushMessagesCounter: Counter | null = null;
+// The scheduler of the running consumer, read by the gauge registered once (a re-election builds a new one)
+let workerlessScheduler: ReleaseScheduler | null = null;
+let workerlessGaugeRegistered = false;
 const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
   pushMessagesCounter = meterManager.meterProvider.getMeter('opencti-chunk-intake').createCounter('opencti_workerless_intake_messages_total', {
     valueType: ValueType.INT,
@@ -749,12 +786,65 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     // One consumer per queue, as the worker: connectorsForWorker lists some queues twice (background tasks)
     return [...new Set((await connectorsForWorker(context, SYSTEM_USER)).map((connector: any) => connector.config?.push).filter((queue: unknown): queue is string => typeof queue === 'string'))];
   };
-  return consumePushQueues(
+  // The operations are released against the sequencer's queue: R* = factor x max batch
+  const setPoint = Math.max(1, Math.round(PUSH_READY_DEPTH_FACTOR * SEQUENCER_CONFIG.maxBatchSize));
+  const scheduler = createReleaseScheduler({ queueDepth: sequencerQueueDepth, setPoint: () => setPoint });
+  workerlessScheduler = scheduler;
+  const unsubscribe = onSequencerQueueTaken(scheduler.notify);
+  if (!workerlessGaugeRegistered) {
+    workerlessGaugeRegistered = true;
+    meterManager.meterProvider.getMeter('opencti-chunk-intake').createObservableGauge('opencti_workerless_intake_operations', {
+      valueType: ValueType.INT,
+      description: 'Operations of the worker-less intake by state (waiting, ready, pre_loop) and the ready depth with its set point',
+    }).addCallback((result) => {
+      const stats: Record<string, number> = workerlessScheduler?.stats() ?? {};
+      Object.entries(stats).forEach(([state, value]) => result.observe(value, { state }));
+    });
+  }
+  // The write context of a message: the chunk context rules (intake-context.ts), its refusals
+  const writeContext = async (envelope: IntakeEnvelope, operations: ChunkOperation[], memberIds: Iterable<string>) => {
+    try {
+      return await createChunkContext(envelope, operations, memberIds);
+    } catch (e: any) {
+      if (e instanceof ChunkRefusedError) {
+        if (e.reason === 'draft_locked') await reportRefusedChunkWork(envelope, operations, e.message);
+        throw new PushRefusedError(e.message, e.reason);
+      }
+      if (e instanceof ChunkPoisonError) throw new PushRefusedError(e.message, 'unknown_writer');
+      throw e;
+    }
+  };
+  const report = async (key: string, context: AuthContext, user: AuthUser, envelope: IntakeEnvelope, operations: ChunkOperation[], outcomes: OperationOutcome[]) => {
+    const message: ChunkMessage = { ...envelope, chunk_id: key };
+    for (let index = 0; index < operations.length; index += 1) {
+      await reportChunkOutcome(context, user, message, operations[index], outcomes[index]);
+    }
+    await reportChunkWork(context, user, message, operations, outcomes);
+    objectsCounter?.add(new Set(operations.map((operation) => operation.object_id).filter((id) => !!id)).size);
+  };
+  logApp.info('[OPENCTI-MODULE] Worker-less intake: operations released against the sequencer queue', { set_point: setPoint, factor: PUSH_READY_DEPTH_FACTOR });
+  const consumer = await consumePushQueues(
     listQueues,
-    { runChunk: runChunkInProcess, readsClient: readsClientFor, contextFor, chunkSize: PUSH_CHUNK_SIZE },
+    {
+      scheduler,
+      transformations: createLimiter(PUSH_TRANSFORM_CONCURRENCY),
+      isTransient: isTransientOperationError,
+      readsClient: readsClientFor,
+      contextFor,
+      writeContext,
+      runOperation: runIntakeOperation,
+      report,
+    },
     { prefetch: PUSH_PREFETCH, maxInFlightBytes: PUSH_MAX_IN_FLIGHT_BYTES },
     (outcome) => pushMessagesCounter?.add(1, { outcome: outcome.reason }),
   );
+  return {
+    ...consumer,
+    close: async () => {
+      unsubscribe();
+      await consumer.close();
+    },
+  };
 };
 // endregion
 

@@ -1,47 +1,82 @@
 import { randomUUID } from 'node:crypto';
 import { DRAFT_LOCKED_ERROR, WORK_NOT_ALIVE_ERROR } from '../../config/errors';
-import type { ChunkOperation } from '../../graphql/chunk-executor';
-import { captureBundle } from '../chunk-capture/capture-bundle';
+import { type ChunkOperation, substituteEchoIds } from '../../graphql/chunk-executor';
+import { intentSourceOf } from '../../database/sequencer/sequencer-intent';
+import { resolveProducerIds } from '../../manager/chunkIntakeProducers';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { captureOperations } from '../chunk-capture/capture-bundle';
 import { bundleOf, decodeData } from '../dry-intake/dry-intake-message';
 import { type IntakeEnvelope, intakeEnvelopeOfMessage } from '../intake-envelope';
 import type { ImportContext } from '../stix-import/context';
 import type { ImportClient } from '../stix-import/types';
+import { buildOperationGraph } from './operation-graph';
+import type { ReleaseScheduler } from './release-scheduler';
 
 // The worker-less intake (POC): the platform consumes the connector push queues in place of the
 // workers. A push message is decoded as the worker decodes it, its bundle transformed with the
-// mutations captured (chunk-capture), the captured operations run in process as the chunks the
-// worker would have published, through the chunk intake machinery (the sequencer included). The
-// push message is answered once all its chunks are: acked when every chunk is written, nacked
-// (not requeued) when one is dead-lettered or when the message cannot be decoded or transformed,
-// as the worker nacks it.
+// mutations captured (chunk-capture), and its operations admitted to the release scheduler as a
+// dependency graph (KB note opencti-workerless-intake-target-design): each operation runs once
+// what it depends on is queued or written and the sequencer has room. The message is answered once
+// every operation is terminal: acked (written, failed and reported, or retained), nacked (not
+// requeued) when it cannot be decoded or transformed or its writer is unknown, as the worker nacks.
 
-// A chunk of a push message: the envelope of the message, its operations
-export interface PushChunk extends IntakeEnvelope {
-  v: number;
-  chunk_id: string;
-  operations: ChunkOperation[];
-  work_objects: number;
+// How an operation ended (the chunk intake manager's runIntakeOperation)
+export interface PushOperationOutcome {
+  error?: string;
+  deferred?: boolean;
+  // The id the platform gave a producer whose id is substituted
+  id?: string;
 }
 
-// How a chunk ended: written (or refused, acked as the worker skips it), or dead-lettered
-export type ChunkVerdict = 'acked' | 'dead_lettered';
+// One operation to run, under the write context of its message
+export interface PushOperationRun {
+  key: string;
+  context: AuthContext;
+  user: AuthUser;
+  envelope: IntakeEnvelope;
+  operation: ChunkOperation;
+  producerFirst: boolean;
+  onQueued: () => void;
+}
+
+// A message whose writes the platform refuses before they run, as the HTTP edge refuses the worker
+export class PushRefusedError extends Error {
+  readonly reason: PushReason;
+
+  constructor(message: string, reason: PushReason) {
+    super(message);
+    this.reason = reason;
+  }
+}
 
 export interface PushIntakeDeps {
-  // Runs one chunk to its end (the chunk intake manager's processChunk)
-  runChunk: (chunk: PushChunk) => Promise<ChunkVerdict>;
+  scheduler: ReleaseScheduler;
+  // Bounds the transformations running at once: their reads reach the engine outside the
+  // pre-loop gate, and the prefetch holds many messages
+  transformations: Limiter;
+  // An error that a later attempt may not meet (engine overloaded or unreachable)
+  isTransient: (error: unknown) => boolean;
   // The transformation's reads for a message, run in process under its context
   readsClient: (envelope: IntakeEnvelope) => ImportClient;
   // The transformation context of a draft, kept for the life of the intake (pycti's caches)
   contextFor: (draftId: string) => ImportContext;
-  chunkSize: number;
+  // The write context of a message (intake context rules), its member marks stripped from the
+  // operations; throws PushRefusedError
+  writeContext: (envelope: IntakeEnvelope, operations: ChunkOperation[], memberIds: Iterable<string>) => Promise<{ context: AuthContext; user: AuthUser }>;
+  // Runs one operation to its end
+  runOperation: (run: PushOperationRun) => Promise<PushOperationOutcome>;
+  // The operations' outcomes, once all are terminal (metrics, work)
+  report: (key: string, context: AuthContext, user: AuthUser, envelope: IntakeEnvelope, operations: ChunkOperation[], outcomes: PushOperationOutcome[]) => Promise<void>;
 }
 
-export type PushReason = 'written' | 'undecodable' | 'transformation_failed' | 'chunk_dead_lettered' | 'work_not_alive' | 'draft_locked';
+export type PushReason = 'written' | 'undecodable' | 'transformation_failed' | 'transient' | 'unknown_writer' | 'work_not_alive' | 'draft_locked';
 
 export interface PushOutcome {
   ack: boolean;
+  // Not acked, given back to its queue to run again (a transient failure before any write)
+  requeue?: boolean;
   reason: PushReason;
-  chunks: number;
+  operations: number;
   objects: number;
 }
 
@@ -57,9 +92,51 @@ export const parsePushMessage = (body: string): Record<string, any> | null => {
 
 export const isEventMessage = (data: Record<string, any>) => data.type === 'event';
 
-export const handlePushMessage = async (data: Record<string, any> | null, deps: PushIntakeDeps): Promise<PushOutcome> => {
+const refusalOf = (error: any): PushReason | null => {
+  if (error instanceof PushRefusedError) return error.reason;
+  const code = error?.extensions?.code;
+  if (code === WORK_NOT_ALIVE_ERROR) return 'work_not_alive';
+  if (code === DRAFT_LOCKED_ERROR) return 'draft_locked';
+  return null;
+};
+
+// At most `limit` runs at once, the others wait their turn in order
+export const createLimiter = (limit: number) => {
+  let running = 0;
+  const waiting: (() => void)[] = [];
+  return {
+    run: async <T>(fn: () => Promise<T>): Promise<T> => {
+      if (running < limit) {
+        running += 1;
+      } else {
+        // the slot is handed over by the run that ends
+        await new Promise<void>((resolve) => {
+          waiting.push(resolve);
+        });
+      }
+      try {
+        return await fn();
+      } finally {
+        const next = waiting.shift();
+        if (next) next();
+        else running -= 1;
+      }
+    },
+    running: () => running,
+    waiting: () => waiting.length,
+  };
+};
+export type Limiter = ReturnType<typeof createLimiter>;
+
+const transient = (objects: number): PushOutcome => ({ ack: false, requeue: true, reason: 'transient', operations: 0, objects });
+
+// A refused message is skipped as the worker skips it (acked: a deleted work, a closed draft), or
+// nacked when no redelivery can make it run (an unknown writer)
+const refused = (reason: PushReason, objects: number): PushOutcome => ({ ack: reason !== 'unknown_writer', reason, operations: 0, objects });
+
+export const handlePushMessage = async (data: Record<string, any> | null, queue: string, deps: PushIntakeDeps): Promise<PushOutcome> => {
   if (!data) {
-    return { ack: false, reason: 'undecodable', chunks: 0, objects: 0 };
+    return { ack: false, reason: 'undecodable', operations: 0, objects: 0 };
   }
   let decoded: ReturnType<typeof decodeData>;
   let bundle: Record<string, any>;
@@ -68,47 +145,66 @@ export const handlePushMessage = async (data: Record<string, any> | null, deps: 
     decoded = decodeData(data);
     ({ bundle, update } = bundleOf(decoded));
   } catch {
-    return { ack: false, reason: 'undecodable', chunks: 0, objects: 0 };
+    return { ack: false, reason: 'undecodable', operations: 0, objects: 0 };
   }
   const objects = Array.isArray(bundle.objects) ? bundle.objects.length : 0;
   // The worker sends retry number 0 on the first attempt: worker origin (sequencer eligibility)
   const envelope: IntakeEnvelope = { ...intakeEnvelopeOfMessage(data), retry_number: 0 };
-  let chunkContents: Awaited<ReturnType<typeof captureBundle>>['chunks'];
+  let operations: ChunkOperation[];
   try {
     const context = { ...deps.contextFor(decoded.draftId), client: deps.readsClient(envelope) };
-    ({ chunks: chunkContents } = await captureBundle(context, bundle, update, decoded.types, deps.chunkSize, { byLevel: true }));
+    ({ operations } = await deps.transformations.run(() => captureOperations(context, bundle, update, decoded.types)));
   } catch (error: any) {
-    // A read of the transformation refused by the context checks (the HTTP edge's): a deleted work
-    // or a closed draft, skipped as the worker skips it (the chunks report the draft case)
-    const code = error?.extensions?.code;
-    if (code === WORK_NOT_ALIVE_ERROR) {
-      return { ack: true, reason: 'work_not_alive', chunks: 0, objects };
-    }
-    if (code === DRAFT_LOCKED_ERROR) {
-      return { ack: true, reason: 'draft_locked', chunks: 0, objects };
-    }
+    // A read of the transformation refused by the context checks (the HTTP edge's)
+    const reason = refusalOf(error);
+    if (reason) return refused(reason, objects);
+    // Nothing written yet: run it again later (a read failing on a GraphQL error is an outcome of
+    // its object, as pycti's ValueError, and never reaches here)
+    if (deps.isTransient(error)) return transient(objects);
     // The split fails (a malformed message) or the transformation has a defect: the worker nacks
-    return { ack: false, reason: 'transformation_failed', chunks: 0, objects };
+    return { ack: false, reason: 'transformation_failed', operations: 0, objects };
   }
-  const chunks: (PushChunk & { level?: number })[] = chunkContents.map((chunk) => ({
-    ...envelope,
-    v: 1,
-    chunk_id: randomUUID(),
-    operations: chunk.operations,
-    work_objects: chunk.work_objects,
-    level: chunk.level,
-  }));
-  // Level by level, the chunks of a level at once: a level starts once the previous one is written
-  // (a chunk ends after the commit), so an object never runs before its in-bundle dependencies.
-  // A dead-lettered chunk does not stop the next levels, as the worker's inline import went on.
-  const verdicts: ChunkVerdict[] = [];
-  const levels = [...new Set(chunks.map((chunk) => chunk.level ?? 0))];
-  for (const level of levels) {
-    const levelChunks = chunks.filter((chunk) => (chunk.level ?? 0) === level);
-    verdicts.push(...(await Promise.all(levelChunks.map(({ level: _level, ...chunk }) => deps.runChunk(chunk)))));
+  // The graph is read from the operations as captured (echo ids, ||M|| marks), before the producer
+  // ids are substituted and the marks stripped
+  const graph = buildOperationGraph(operations);
+  // Producers with a standard id computable from their input (labels, external references...):
+  // their consumers carry it and only need them queued. The others run first: their consumers wait
+  // for the id the platform gives them.
+  const { resolved, unresolved } = resolveProducerIds(operations);
+  const answerNeeded = new Set(unresolved);
+  if (resolved.size > 0) {
+    operations.forEach((operation) => {
+      if (operation.variables) substituteEchoIds(operation.variables, resolved);
+    });
   }
-  const written = verdicts.every((verdict) => verdict === 'acked');
-  return { ack: written, reason: written ? 'written' : 'chunk_dead_lettered', chunks: chunks.length, objects };
+  let written: { context: AuthContext; user: AuthUser };
+  try {
+    written = await deps.writeContext(envelope, operations, resolved.values());
+  } catch (error: any) {
+    const reason = refusalOf(error);
+    if (reason) return refused(reason, objects);
+    if (deps.isTransient(error)) return transient(objects);
+    throw error;
+  }
+  const { context, user } = written;
+  const key = randomUUID();
+  const outcomes = await deps.scheduler.admit<PushOperationOutcome>({
+    source: queue,
+    lane: intentSourceOf(user),
+    nodes: graph.nodes.map(({ operation, kind, deps: operationDeps, creates, external }) => ({
+      kind, deps: operationDeps, creates, external, answerNeeded: answerNeeded.has(operation),
+    })),
+    run: async (index, hooks) => {
+      const operation = operations[index];
+      // the ids of the producers it waited for, once they ran
+      if (operation.variables && resolved.size > 0) substituteEchoIds(operation.variables, resolved);
+      const outcome = await deps.runOperation({ key, context, user, envelope, operation, producerFirst: answerNeeded.has(operation), onQueued: hooks.queued });
+      if (operation.echo_id && outcome.id) resolved.set(operation.echo_id, outcome.id);
+      return outcome;
+    },
+  });
+  await deps.report(key, context, user, envelope, operations, outcomes);
+  return { ack: true, reason: 'written', operations: operations.length, objects };
 };
 
 // The bytes of the messages in flight: a message starts once the budget has room for it (alone, it
