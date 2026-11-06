@@ -204,8 +204,8 @@ describe('Workflow bypass', () => {
       ],
       transitions: [{ from: 'open', to: 'closed', event: 'close', syncActions: [{ type: 'log', params: { message: 'edge' } }] }],
     };
-    target = { id: 'status-closed', internal_id: 'status-closed', entity_type: ENTITY_TYPE_STATUS, type: 'Incident', scope: StatusScope.Global, template_id: 'closed', order: 2 };
-    legacy = { ...target, id: 'status-open', internal_id: 'status-open', template_id: 'open', order: 1 };
+    target = { id: 'status-closed', entity_type: ENTITY_TYPE_STATUS, type: 'Incident', scope: StatusScope.Global, template_id: 'closed', order: 2 };
+    legacy = { ...target, id: 'status-open', template_id: 'open', order: 1 };
     vi.mocked(findByType).mockResolvedValue({ id: 'setting-id', workflow_id: 'definition-id' } as any);
     vi.mocked(storeLoadById).mockImplementation(async (_context, _user, id) => {
       if (id === 'entity-id') return entity;
@@ -227,7 +227,6 @@ describe('Workflow bypass', () => {
     });
     vi.mocked(resolveMappedStatusId).mockImplementation(async (_context, _user, _type, _scope, state) => `status-${state}`);
     vi.mocked(fullEntitiesList).mockResolvedValue([legacy, target]);
-    vi.mocked(getEntitiesListFromCache).mockResolvedValue([legacy, target]);
     vi.spyOn(ActionRegistry, 'log').mockResolvedValue(undefined);
     vi.mocked(createListTask).mockResolvedValue({ work_id: 'work-id' } as any);
   });
@@ -5394,6 +5393,43 @@ describe('Instance scope as the single source of truth', () => {
     expect(projectWorkflowState).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.anything(), expect.anything(), StatusScope.Global);
   });
 
+  it('creates the instance with the scope that resolved the definition, even when the status maps to no state', async () => {
+    (findByType as any).mockResolvedValue(bothDefinitions);
+    (getEntitiesListFromCache as any).mockResolvedValue([status('ra-unmapped', 'unmapped', StatusScope.RequestAccess)]);
+
+    await initializeEntityWorkflow(mockContext, mockUser, { ...rfi, x_opencti_workflow_id: 'ra-unmapped' });
+
+    expect(createEntity).toHaveBeenCalledWith(
+      mockContext,
+      { ...mockUser, draft_context: undefined },
+      expect.objectContaining({ workflow_id: 'ra-def', currentState: 'new', scope: StatusScope.RequestAccess, pendingError: expect.any(String) }),
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+    );
+  });
+
+  it('searches the instance once when it initializes the workflow of a new entity', async () => {
+    (findByType as any).mockResolvedValue(bothDefinitions);
+
+    await initializeEntityWorkflow(mockContext, mockUser, { ...rfi, x_opencti_workflow_id: 'ra-new' });
+
+    expect(loadEntity).toHaveBeenCalledTimes(1);
+    expect(createEntity).toHaveBeenCalledTimes(1);
+  });
+
+  it('searches the instance once before it runs a triggered event', async () => {
+    (findByType as any).mockResolvedValue(bothDefinitions);
+    (loadEntity as any).mockResolvedValue(instanceOf('rfi-id', 'new', StatusScope.RequestAccess));
+    let searchesBeforeRun = 0;
+    (WorkflowFactory.getInstance as any).mockImplementationOnce(() => {
+      searchesBeforeRun = (loadEntity as any).mock.calls.length;
+      return { start: vi.fn(), trigger: vi.fn().mockResolvedValue({ success: true }), getCurrentState: () => 'approved' };
+    });
+
+    await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Accept');
+
+    expect(searchesBeforeRun).toBe(1);
+  });
+
   it('getAllowedTransitions uses the request-access definition for a REQUEST_ACCESS instance', async () => {
     (findByType as any).mockResolvedValue(bothDefinitions);
     (loadEntity as any).mockResolvedValue(instanceOf('rfi-id', 'new', StatusScope.RequestAccess));
@@ -5444,5 +5480,6 @@ describe('Instance scope as the single source of truth', () => {
 
     const [, , , , inputs] = (updateAttribute as any).mock.calls.at(-1);
     expect(inputs).toContainEqual({ key: 'currentState', value: ['approved'] });
+    expect(loadEntity).toHaveBeenCalledTimes(1);
   });
 });
