@@ -38,6 +38,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             ssl_verify=self.ssl_verify,
             provider="worker/" + __version__,
         )
+        # A sync pushes to the queue named after its id, so the queue id is the sync id.
+        self.api.sync_id = self.connector_id
 
     def send_bundle_to_specific_queue(
         self,
