@@ -20,6 +20,8 @@ interface WidgetRenderContentProps extends WidgetRenderGuards {
   queryRef: unknown;
   host?: WidgetHost;
   isGranted?: boolean;
+  // The widget runs no query on purpose, and its children say why: no loader waits for one
+  isQuerySkipped?: boolean;
   children: ReactNode;
 }
 
@@ -37,6 +39,7 @@ const WidgetRenderContent = ({
   isGranted,
   queryRef,
   host,
+  isQuerySkipped = false,
   children,
 }: WidgetRenderContentProps) => {
   if (isMissingHostEntity) {
@@ -55,7 +58,7 @@ const WidgetRenderContent = ({
     return <WidgetAccessDenied />;
   }
 
-  if (!queryRef) {
+  if (!queryRef && !isQuerySkipped) {
     return <Loader variant={LoaderVariant.inElement} />;
   }
 

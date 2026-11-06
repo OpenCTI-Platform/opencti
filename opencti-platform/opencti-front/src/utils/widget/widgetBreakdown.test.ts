@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Widget, WidgetHost } from './widget';
+import { dayStartDate, daysAgo, monthsAgo } from '../Time';
 import type { FilterDefinition } from '../hooks/useAuth';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
@@ -10,6 +11,7 @@ import {
   BREAKDOWN_LIMIT_OPTIONS,
   canWidgetBreakDown,
   clearBreakdown,
+  getBreakdownDefaultStartDate,
   getBreakdownEditorState,
   getBreakdownEntityTypes,
   getBreakdownFieldOptions,
@@ -19,7 +21,10 @@ import {
   getWidgetBreakdownOrder,
   getWidgetBreakdownOther,
   getWidgetBreakdownState,
+  hasWidgetBreakdown,
   isBreakdownFieldSupported,
+  isBreakdownTypeField,
+  isWidgetBreakdownActive,
   resolveBreakdownTypeVariables,
 } from './widgetBreakdown';
 
@@ -124,6 +129,69 @@ describe('canWidgetBreakDown', () => {
     expect(getWidgetBreakdownOther(undefined)).toBe(false);
     expect(getWidgetBreakdownOther({ breakdownOther: null })).toBe(false);
     expect(getWidgetBreakdownOther({ breakdownOther: true })).toBe(true);
+  });
+});
+
+describe('isWidgetBreakdownActive', () => {
+  it('renders the breakdown of a widget that has a field and can be broken down, in the dashboards and custom views', () => {
+    ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
+      expect(isWidgetBreakdownActive(makeWidget({ type }), workspace)).toBe(true);
+      expect(isWidgetBreakdownActive(makeRelationshipsWidget({ type }), workspace)).toBe(true);
+    });
+    expect(isWidgetBreakdownActive(makeWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
+  });
+
+  it('needs a breakdown field, and a widget that can be broken down', () => {
+    expect(isWidgetBreakdownActive(makeWidget({ parameters: { breakdownBy: null } }), workspace)).toBe(false);
+    expect(isWidgetBreakdownActive(makeWidget({ type: 'donut' }), workspace)).toBe(false);
+    expect(isWidgetBreakdownActive(makeWidget({}, ['DraftWorkspace']), workspace)).toBe(false);
+    const widget = makeWidget();
+    expect(isWidgetBreakdownActive({ ...widget, dataSelection: [...widget.dataSelection, ...widget.dataSelection] }, workspace)).toBe(false);
+  });
+
+  it('needs a host that breaks its widgets down, while still knowing the widget is broken down', () => {
+    // A fintel template writes its widgets in a document
+    const fintelTemplate = { kind: 'fintelTemplate' as const, fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+    expect(isWidgetBreakdownActive(makeWidget(), fintelTemplate)).toBe(false);
+    expect(isWidgetBreakdownActive(makeWidget(), undefined)).toBe(false);
+    // ...but the widget is broken down, to be refused elsewhere
+    expect(hasWidgetBreakdown(makeWidget())).toBe(true);
+    expect(hasWidgetBreakdown(makeWidget({ parameters: { breakdownBy: null } }))).toBe(false);
+    expect(hasWidgetBreakdown(makeWidget({ type: 'donut' }))).toBe(false);
+  });
+});
+
+describe('isBreakdownTypeField', () => {
+  it('knows the fields whose values are entity or relationship types', () => {
+    ['entity_type', 'relationship_type', 'fromTypes', 'toTypes'].forEach((field) => expect(isBreakdownTypeField(field)).toBe(true));
+    ['objectLabel', 'creator_id', null, undefined].forEach((field) => expect(isBreakdownTypeField(field)).toBe(false));
+  });
+});
+
+describe('getBreakdownDefaultStartDate', () => {
+  it('only looks back 30 days for a daily breakdown', () => {
+    expect(getBreakdownDefaultStartDate('day')).toEqual(daysAgo(30));
+  });
+
+  it('looks back 12 months for the other intervals', () => {
+    ['week', 'month', 'quarter', 'year'].forEach((interval) => {
+      expect(getBreakdownDefaultStartDate(interval)).toEqual(monthsAgo(12));
+    });
+  });
+
+  it('looks back from the end date of the dashboard, which can be long ago', () => {
+    const endDate = '2024-03-31T12:00:00.000Z';
+    const endDay = dayStartDate(endDate);
+    const dailyStart = new Date(getBreakdownDefaultStartDate('day', endDate));
+    expect(dailyStart.getTime()).toEqual(new Date(endDay.getFullYear(), endDay.getMonth(), endDay.getDate() - 30).getTime());
+    expect(dailyStart.getTime()).toBeLessThan(new Date(endDate).getTime());
+    ['week', 'month', 'quarter', 'year'].forEach((interval) => {
+      const start = new Date(getBreakdownDefaultStartDate(interval, endDate));
+      expect(start.getTime()).toEqual(new Date(endDay.getFullYear() - 1, endDay.getMonth(), endDay.getDate()).getTime());
+    });
+    // Without end date, from today
+    expect(getBreakdownDefaultStartDate('day', null)).toEqual(daysAgo(30));
+    expect(getBreakdownDefaultStartDate('month', undefined)).toEqual(monthsAgo(12));
   });
 });
 
@@ -427,6 +495,8 @@ describe('audits breakdown', () => {
     expect(canWidgetBreakDown(makeAuditsWidget({ type: 'donut' }), workspace)).toBe(false);
     // The history of the entity of a custom view
     expect(canWidgetBreakDown(makeAuditsWidget(), { kind: 'custom-view', customViewTargetEntityType: 'Report' })).toBe(true);
+    expect(isWidgetBreakdownActive(makeAuditsWidget(), workspace)).toBe(true);
+    expect(isWidgetBreakdownActive(makeAuditsWidget({ type: 'line' }, { unique: true }), workspace)).toBe(false);
   });
 
   it('refuses a dataset counting distinct values, the breakdown counting every event', () => {
@@ -473,6 +543,13 @@ describe('audits breakdown', () => {
     // An entities field carried over to an audits widget is not supported, and the reverse
     expect(isBreakdownFieldSupported(emptyMap, makeAuditsWidget({ parameters: { breakdownBy: 'objectLabel' } }))).toBe(false);
     expect(isBreakdownFieldSupported(emptyMap, makeWidget({ parameters: { breakdownBy: 'event_scope' } }))).toBe(false);
+  });
+
+  it('names the values of the type fields of the logs after the entity types', () => {
+    expect(isBreakdownTypeField('entity_type')).toBe(true);
+    expect(isBreakdownTypeField('context_data.entity_type')).toBe(true);
+    expect(isBreakdownTypeField('event_scope')).toBe(false);
+    expect(isBreakdownTypeField(null)).toBe(false);
   });
 });
 
