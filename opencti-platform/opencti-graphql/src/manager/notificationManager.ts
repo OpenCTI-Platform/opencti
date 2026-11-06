@@ -150,13 +150,6 @@ export const canReceiveNotifications = (user: AuthUser): boolean => {
   return !user.user_service_account && isUserAccountActive(user);
 };
 
-// Recipient check for the triggers a user defined that name the recipient directly: an active service
-// account is kept, because a machine identity subscribes to events through a webhook notifier. The publisher delivers
-// to a service account through a webhook notifier only (see publisherManager).
-export const canReceiveDefinedTriggerNotifications = (user: AuthUser): boolean => {
-  return isNotificationRecipientActive(user);
-};
-
 const generateAssigneeTrigger = (user: AuthUser) => {
   const filters = {
     mode: 'or',
@@ -222,8 +215,10 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
 
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
+  // The triggers a user defined name the recipient directly: an active service account is kept, because a machine identity
+  // subscribes to events through a webhook notifier. The publisher delivers to a service account through a webhook notifier only (see publisherManager).
   const activeUsers = (await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER))
-    .filter(canReceiveDefinedTriggerNotifications);
+    .filter((user) => isUserAccountActive(user));
   // Native triggers (assignee, platform, request access) target humans only.
   const platformUsers = activeUsers.filter(canReceiveNotifications);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
