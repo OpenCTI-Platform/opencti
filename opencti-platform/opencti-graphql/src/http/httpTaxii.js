@@ -19,7 +19,7 @@ import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
 import { handleConfidenceToScoreTransformation } from '../modules/ingestion/ingestion-taxii-utils';
 import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
-import { getMaxPayloadBodySize } from './httpConfig';
+import { getMaxPayloadBodySize, getMaxPayloadBodySizeInBytes } from './httpConfig';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { checkDraftInContext } from './httpServer-draft';
 import { pushBundleToConnectorQueue } from '../manager/ingestionManager/ingestionManagerPushToQueue';
@@ -134,7 +134,7 @@ const initTaxiiApi = (app) => {
       const rootContent = {
         title: 'OpenCTI TAXII Server',
         description: 'A global and natively segregate taxii root',
-        max_content_length: 100 * 1024 * 1024, // '100mb'
+        max_content_length: getMaxPayloadBodySizeInBytes(),
         versions: [TAXII_RESPONSE_CONTENT_TYPE],
       };
       sendJsonResponse(res, rootContent);
