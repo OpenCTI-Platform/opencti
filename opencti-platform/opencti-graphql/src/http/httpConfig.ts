@@ -1,3 +1,4 @@
+import bytes from 'bytes';
 import nconf from 'nconf';
 import { booleanConf, DEV_MODE } from '../config/conf';
 import { stringArrayConf } from '../config/conf-utils';
@@ -52,6 +53,10 @@ export const getRateProtectionMaxRequests = () => {
 const MAX_PAYLOAD_BODY_SIZE: string | number = nconf.get('app:max_payload_body_size') || (HTTP_SECURE_BY_DEFAULT ? '10mb' : '50mb');
 export const getMaxPayloadBodySize = () => {
   return MAX_PAYLOAD_BODY_SIZE;
+};
+// Same limit in bytes, as parsed by express.json, for the TAXII API root to advertise what it accepts.
+export const getMaxPayloadBodySizeInBytes = () => {
+  return bytes.parse(MAX_PAYLOAD_BODY_SIZE);
 };
 
 // Number of redirects followed by the outgoing requests of the platform HTTP client (feeds, synchronizers, notifiers...).

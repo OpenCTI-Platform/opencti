@@ -21,6 +21,7 @@ describe('HTTP secure defaults', () => {
     expect(httpConfig.getRateProtectionTimeWindowMs()).toBe(1000);
     expect(httpConfig.getRateProtectionMaxRequests()).toBe(10000);
     expect(httpConfig.getMaxPayloadBodySize()).toBe('50mb');
+    expect(httpConfig.getMaxPayloadBodySizeInBytes()).toBe(50 * 1024 * 1024);
     expect(httpConfig.getHttpMaxRedirects()).toBe(21);
   });
 
@@ -32,6 +33,7 @@ describe('HTTP secure defaults', () => {
     expect(httpConfig.getRateProtectionTimeWindowMs()).toBe(60000);
     expect(httpConfig.getRateProtectionMaxRequests()).toBe(30000);
     expect(httpConfig.getMaxPayloadBodySize()).toBe('10mb');
+    expect(httpConfig.getMaxPayloadBodySizeInBytes()).toBe(10 * 1024 * 1024);
     expect(httpConfig.getHttpMaxRedirects()).toBe(5);
   });
 
@@ -61,6 +63,12 @@ describe('HTTP secure defaults', () => {
     expect(httpConfig.isHttpSecureByDefault()).toBe(false);
     expect(httpConfig.isUnsecureHttpResourceAllowed()).toBe(false);
     expect(httpConfig.getHttpMaxRedirects()).toBe(0);
+  });
+
+  it('should give the body size in bytes when the option is a number of bytes', async () => {
+    const httpConfig = await loadHttpConfig({ APP__MAX_PAYLOAD_BODY_SIZE: '2097152' });
+
+    expect(httpConfig.getMaxPayloadBodySizeInBytes()).toBe(2097152);
   });
 
   it.each(['many', '0.5', '21garbage', '-1', '9'.repeat(400)])('should fall back to the default number of redirects when the option is %s', async (maxRedirects) => {
