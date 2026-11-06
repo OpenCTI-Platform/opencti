@@ -164,7 +164,7 @@
     "rate-limiter-flexible": "11.2.3",
     "re2": "1.27.0",
     "sanitize-html": "2.18.1",
-    "semver": "7.8.5",
+    "semver": "7.8.6",
     "set-interval-async": "3.0.4",
     "slug": "12.0.1",
     "source-map": "0.8.0",
