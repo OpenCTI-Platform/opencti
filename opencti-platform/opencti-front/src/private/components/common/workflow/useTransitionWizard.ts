@@ -30,9 +30,10 @@ interface UseTransitionWizardArgs {
   draftId?: string;
   isPending?: boolean;
   onCompleted?: () => void;
+  onFailed?: () => void;
 }
 
-export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isPending = false, onCompleted }: UseTransitionWizardArgs) => {
+export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isPending = false, onCompleted, onFailed }: UseTransitionWizardArgs) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const { exitDraft } = useSwitchDraft();
@@ -81,6 +82,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
           const result = response.triggerWorkflowEvent;
           if (!result?.success) {
             MESSAGING$.notifyError(result?.reason || t_i18n('An error has occurred'));
+            onFailed?.();
             return;
           }
           setWizard(null);
@@ -99,6 +101,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
         onError: (error) => {
           finish();
           relayErrorHandling(error);
+          onFailed?.();
         },
       });
     });

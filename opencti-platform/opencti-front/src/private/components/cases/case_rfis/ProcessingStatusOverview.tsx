@@ -4,13 +4,18 @@ import Typography from '@mui/material/Typography';
 import Button from '@common/button/Button';
 import Divider from '@mui/material/Divider';
 import React from 'react';
-import { declineRequestAccessMutation, validateRequestAccessMutation } from '@components/cases/CaseUtils';
+import { declineRequestAccessMutation, isWorkflowDrivenRequestAccess, validateRequestAccessMutation } from '@components/cases/CaseUtils';
 import ItemStatus from '../../../../components/ItemStatus';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseRfi_caseRfi$data } from './__generated__/CaseRfi_caseRfi.graphql';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { WorkflowAllowedTransition, WorkflowTransitionsForEntity } from '../../common/workflow/WorkflowTransitions';
+import { WorkflowStatusForEntity } from '../../common/workflow/WorkflowStatus';
+import { isWorkflowUiEnabledForType } from '../../common/workflow/workflowFeatureFlag';
+import useHelper from '../../../../utils/hooks/useHelper';
+import Security from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 interface CaseRfiRequestAccessOverviewProps {
   data: CaseRfi_caseRfi$data;
@@ -36,22 +41,12 @@ const countRequestedEntities = (requestAccess: string | null | undefined) => {
 };
 
 // Decision buttons of an RFI whose request access runs on the workflow engine
-export const RequestAccessTransitions = ({ data }: CaseRfiRequestAccessOverviewProps) => {
+const RequestAccessTransitions = ({ data }: CaseRfiRequestAccessOverviewProps) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
-  const configuration = data.requestAccessConfiguration?.configuration;
-  // The Approved and Declined states of the definition are mapped to the configured approved and declined statuses
-  const outcomeOf = (transition: WorkflowAllowedTransition) => {
-    const targetStatusId = transition.toStatus?.id;
-    if (!targetStatusId) return undefined;
-    if (targetStatusId === configuration?.approved_status?.id) return 'APPROVED';
-    if (targetStatusId === configuration?.declined_status?.id) return 'DECLINED';
-    return undefined;
-  };
   const describeOutcome = (transition: WorkflowAllowedTransition) => {
-    const outcome = outcomeOf(transition);
-    if (outcome === 'DECLINED') return t_i18n('The applicant will be notified.');
-    if (outcome !== 'APPROVED') return undefined;
+    if (transition.requestAccessOutcome === 'DECLINED') return t_i18n('The applicant will be notified.');
+    if (transition.requestAccessOutcome !== 'APPROVED') return undefined;
     const organization = data.createdBy?.name ?? t_i18n('the requesting organization');
     const count = countRequestedEntities(data.x_opencti_request_access);
     return count === 1
@@ -63,15 +58,46 @@ export const RequestAccessTransitions = ({ data }: CaseRfiRequestAccessOverviewP
     <WorkflowTransitionsForEntity
       data={data}
       entityType={data.entity_type}
+      refreshOnFailure
       transitionButtons={{
-        disabledReason: (transition) => (outcomeOf(transition) && !userCanAction ? cannotActTooltip(t_i18n, !!draftContext) : undefined),
+        disabledReason: (transition) => (transition.requestAccessOutcome && !userCanAction ? cannotActTooltip(t_i18n, !!draftContext) : undefined),
         effect: describeOutcome,
       }}
     />
   );
 };
 
-const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
+const WorkflowProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <Grid style={{ marginBottom: 20 }} size={12}>
+      <Typography
+        variant="h3"
+        gutterBottom={true}
+        style={{ marginTop: 0 }}
+      >
+        {t_i18n('Processing status')}
+      </Typography>
+      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+        <WorkflowStatusForEntity
+          data={data}
+          entityType={data.entity_type}
+          fallback={<ItemStatus status={data.status} />}
+        >
+          {/* Rendered after the status chip, on the right of the banner */}
+          <div style={{ order: 1, marginLeft: 'auto', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <RequestAccessTransitions data={data} />
+            </Security>
+          </div>
+        </WorkflowStatusForEntity>
+      </div>
+      <Divider style={{ marginTop: 20 }} />
+    </Grid>
+  );
+};
+
+const LegacyProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const approvedStatus = data.requestAccessConfiguration?.configuration?.approved_status;
@@ -175,6 +201,12 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
       <Divider style={{ marginTop: 20 }} />
     </Grid>
   );
+};
+
+const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
+  const { isFeatureEnable } = useHelper();
+  const isWorkflowDriven = isWorkflowUiEnabledForType(data.entity_type, isFeatureEnable) && isWorkflowDrivenRequestAccess(data.workflowInstance);
+  return isWorkflowDriven ? <WorkflowProcessingStatusOverview data={data} /> : <LegacyProcessingStatusOverview data={data} />;
 };
 
 export default ProcessingStatusOverview;

@@ -626,7 +626,7 @@ describe('workflow-resolvers', () => {
 
     describe('allowedTransitions', () => {
       it('should call getAllowedTransitions with correct arguments', async () => {
-        const mockTransitions = [{ event: 'close', toState: 'closed', toStatus: null, actions: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false }];
+        const mockTransitions = [{ event: 'close', toState: 'closed', toStatus: null, actions: [], requiresShareOrganizationInput: false, requiresUnshareOrganizationInput: false, requestAccessOutcome: null }];
         vi.mocked(workflowDomain.getAllowedTransitions).mockResolvedValue(mockTransitions);
 
         const result = await workflowResolvers.Query.allowedTransitions(

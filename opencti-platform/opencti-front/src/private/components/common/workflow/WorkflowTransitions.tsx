@@ -87,6 +87,7 @@ interface WorkflowTransitionsViewProps {
   entityType: string;
   refreshing?: boolean;
   onCompleted?: () => void;
+  onFailed?: () => void;
   transitionButtons?: TransitionButtonsOptions;
 }
 
@@ -99,6 +100,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   entityType,
   refreshing = false,
   onCompleted,
+  onFailed,
   transitionButtons,
 }) => {
   const { t_i18n } = useFormatter();
@@ -119,7 +121,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     handleApplyWizard,
     handleClear,
     notifyBackgroundTransitionComplete,
-  } = useTransitionWizard({ entityId, entityNavigationId, draftId, isPending, onCompleted });
+  } = useTransitionWizard({ entityId, entityNavigationId, draftId, isPending, onCompleted, onFailed });
   const approving = submitting || refreshing;
 
   const pendingTransition = workflowInstance?.pendingTransition ?? null;
@@ -441,7 +443,9 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
   data: WorkflowStatusStixDomainObject_data$key;
   entityType: string;
   transitionButtons?: TransitionButtonsOptions;
-}> = ({ data, entityType, transitionButtons }) => {
+  // Reload the transitions when one fails, as a concurrent change may have made them stale
+  refreshOnFailure?: boolean;
+}> = ({ data, entityType, transitionButtons, refreshOnFailure = false }) => {
   const entity = useFragment<WorkflowStatusStixDomainObject_data$key>(workflowStatusStixDomainObjectFragment, data);
   const environment = useRelayEnvironment();
   const { t_i18n } = useFormatter();
@@ -495,6 +499,7 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
         entityType={entityType}
         refreshing={refreshing}
         onCompleted={refresh}
+        onFailed={refreshOnFailure ? refresh : undefined}
         transitionButtons={transitionButtons}
       />
     </>

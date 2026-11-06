@@ -18185,6 +18185,7 @@ type WorkflowTransition {
   closingReason: String
   comment: String
   event: String!
+  requestAccessOutcome: WorkflowRequestAccessOutcome
   requiresShareOrganizationInput: Boolean
   requiresUnshareOrganizationInput: Boolean
   toState: String
