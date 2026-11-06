@@ -1,7 +1,10 @@
 import { Field, FieldProps } from 'formik';
 import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
+import ObjectOrganizationField from '@components/common/form/ObjectOrganizationField';
 import WorkflowConditionFilters from './WorkflowConditionFilters';
-import { WorkflowActionType } from './utils';
+import { REQUEST_ACCESS_AUTHOR_KEY, WorkflowActionType } from './utils';
+import { useFormatter } from '../../../../../components/i18n';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 
 interface WorkflowFieldItemProps extends FieldProps {
   isCondition?: boolean;
@@ -9,6 +12,8 @@ interface WorkflowFieldItemProps extends FieldProps {
 
 const WorkflowFieldItem = ({ field, isCondition }: WorkflowFieldItemProps) => {
   const { name, value } = field;
+  const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   if (isCondition) {
     return <Field name={name} component={WorkflowConditionFilters} />;
@@ -29,6 +34,23 @@ const WorkflowFieldItem = ({ field, isCondition }: WorkflowFieldItemProps) => {
         canDeactivate={false}
         enableAccesses
         hideInfo
+      />
+    );
+  }
+
+  if (value.type === WorkflowActionType.shareRequestedEntities) {
+    const authorLabel = t_i18n('Author (requesting organization)');
+    return (
+      <ObjectOrganizationField
+        name={`${name}.params.organizations`}
+        label="Organizations"
+        outlined={false}
+        multiple
+        alert={false}
+        style={{ width: '100%' }}
+        disabled={!isEnterpriseEdition}
+        extraOptions={[{ value: REQUEST_ACCESS_AUTHOR_KEY, label: authorLabel }]}
+        getOptionLabel={(option: { value: string; label: string }) => (option.value === REQUEST_ACCESS_AUTHOR_KEY ? authorLabel : option.label)}
       />
     );
   }

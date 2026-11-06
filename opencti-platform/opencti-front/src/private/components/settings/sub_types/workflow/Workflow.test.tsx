@@ -710,6 +710,38 @@ describe('Workflow Component', () => {
       expect(getByText(/unknown-status-id/)).toBeInTheDocument();
     });
 
+    it('should list the request access errors of a refused publish with their messages', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="Case-Rfi" scope="REQUEST_ACCESS" />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
+      publishCall?.[0]?.onError?.({
+        res: {
+          errors: [{
+            message: 'Cannot publish workflow with validation errors',
+            extensions: {
+              data: {
+                errors: [
+                  { type: 'REQUEST_ACCESS_OUTCOME_MOVED', message: "The Approved marker cannot leave state 'approved' while it still holds requests" },
+                  { type: 'REQUEST_ACCESS_OUTCOME_NOT_TERMINAL', message: "No transition can be added out of state 'declined'" },
+                ],
+              },
+            },
+          }],
+        },
+      });
+
+      const toastElement = mockNotifyError.mock.calls[0][0];
+      const { getByText, queryByText } = render(
+        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
+      );
+      expect(getByText(/The Approved marker cannot leave state 'approved'/)).toBeInTheDocument();
+      expect(getByText(/No transition can be added out of state 'declined'/)).toBeInTheDocument();
+      expect(queryByText(/Cannot publish workflow with validation errors/)).toBeNull();
+    });
+
     it('should handle publish API error with no removedStates gracefully', async () => {
       const user = userEvent.setup();
       renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);

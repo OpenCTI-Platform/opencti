@@ -1,5 +1,5 @@
 import Workflow from './workflow/Workflow';
-import { REQUEST_ACCESS_ENTITY_TYPE } from './workflow/utils';
+import { REQUEST_ACCESS_AUTHOR_KEY, REQUEST_ACCESS_ENTITY_TYPE } from './workflow/utils';
 import { ReactFlowProvider } from 'reactflow';
 import { ErrorBoundary } from '../../Error';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
@@ -28,6 +28,7 @@ export const workflowQuery = graphql`
       states {
         statusId
         order
+        requestAccessOutcome
         onExit{
           type
           params
@@ -83,6 +84,7 @@ export const workflowDependenciesQuery = graphql`
 type ActionParams = {
   authorized_members?: { id: string; groups_restriction_ids?: string[] }[];
   actions?: { context?: { values?: string[] } }[];
+  organizations?: string[];
 };
 
 type ActionList = { type: string; params: unknown }[];
@@ -113,7 +115,13 @@ export const extractWorkflowMembersIds = (
       ?.filter((action) => action.type === 'asyncBulkAction')
       .flatMap((action) => (action.params as ActionParams).actions?.[0]?.context?.values ?? []);
 
-    return [...memberIds, ...orgIds];
+    // Get organization IDs from shareRequestedEntities actions ('AUTHOR' is a dynamic key, not an entity)
+    const requestedEntitiesOrgIds = (actions ?? [] as ActionList)
+      ?.filter((action) => action.type === 'shareRequestedEntities')
+      .flatMap((action) => (action.params as ActionParams).organizations ?? [])
+      .filter((id) => id !== REQUEST_ACCESS_AUTHOR_KEY);
+
+    return [...memberIds, ...orgIds, ...requestedEntitiesOrgIds];
   });
 
   // Remove duplicates and falsy values

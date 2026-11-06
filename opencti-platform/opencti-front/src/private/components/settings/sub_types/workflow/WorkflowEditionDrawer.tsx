@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import { useWorkflowForm } from './hooks/useWorkflowForm';
 import { findTargetStatusExits, Status, Transition, WorkflowDataType } from './utils';
 import { Node, Edge, useReactFlow } from 'reactflow';
+import type { WorkflowScope } from '../SubTypeWorkflow';
 
 export type WorkflowEditionFormValues = Status & Transition;
 export type WorkflowFormStatus = {
@@ -21,9 +22,10 @@ interface WorkflowEditionDrawerProps {
   selectedElement: Node | Edge;
   onClose: () => void;
   entityType: string;
+  scope?: WorkflowScope;
 }
 
-const WorkflowEditionDrawer = ({ open, selectedElement, onClose, entityType }: WorkflowEditionDrawerProps) => {
+const WorkflowEditionDrawer = ({ open, selectedElement, onClose, entityType, scope }: WorkflowEditionDrawerProps) => {
   const { t_i18n } = useFormatter();
   const {
     drawerTitle,
@@ -47,7 +49,7 @@ const WorkflowEditionDrawer = ({ open, selectedElement, onClose, entityType }: W
         >
           {({ submitForm, isSubmitting }) => (
             <Form style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {isStatus ? (<StatusForm entityType={entityType} />) : (<TransitionForm entityType={entityType} targetStatusExits={targetStatusExits} />)}
+              {isStatus ? (<StatusForm entityType={entityType} scope={scope} />) : (<TransitionForm entityType={entityType} targetStatusExits={targetStatusExits} />)}
               <FormButtonContainer>
                 {isNewStatus ? (
                   <Button data-testid="workflow-edition-cancel-button" variant="secondary" onClick={onDelete} disabled={isSubmitting}>

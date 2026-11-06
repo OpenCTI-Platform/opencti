@@ -99,6 +99,58 @@ describe('useWorkflowForm', () => {
       expect(mockOnClose).toHaveBeenCalled();
     });
 
+    describe('request access outcome', () => {
+      const statusNode = (id: string, data: Record<string, unknown> = {}): Node => ({ id, type: WorkflowNodeType.status, position: { x: 0, y: 0 }, data });
+
+      it('moves an outcome marker off the state that held it when editing a state', () => {
+        const approved = statusNode('approved', { requestAccessOutcome: 'APPROVED' });
+        const declined = statusNode('declined', { requestAccessOutcome: 'DECLINED' });
+        const open = statusNode('open');
+        const { result } = renderHook(() => useWorkflowForm(open, mockOnClose));
+
+        act(() => {
+          result.current.onSubmit({ ...formValues, requestAccessOutcome: 'APPROVED' });
+        });
+
+        const updater = mockSetNodes.mock.calls[0][0] as (nds: Node[]) => Node[];
+        const [nextApproved, nextDeclined, nextOpen] = updater([approved, declined, open]);
+        expect(nextOpen.data.requestAccessOutcome).toBe('APPROVED');
+        expect(nextApproved.data.requestAccessOutcome).toBeUndefined();
+        expect(nextDeclined.data.requestAccessOutcome).toBe('DECLINED');
+      });
+
+      it('moves an outcome marker off the state that held it when adding a state', () => {
+        const approved = statusNode('approved', { requestAccessOutcome: 'APPROVED' });
+        const placeholder: Node = { id: '1', type: WorkflowNodeType.placeholder, position: { x: 0, y: 0 }, data: {} };
+        const { result } = renderHook(() => useWorkflowForm(placeholder, mockOnClose));
+        const values = { ...formValues, statusTemplate: { id: 'new-approved', name: 'New approved', color: '#a1b6d8' }, requestAccessOutcome: 'APPROVED' as const };
+
+        act(() => {
+          result.current.onSubmit(values);
+        });
+
+        expect(mockAddStatus).toHaveBeenCalledWith(values);
+        const updater = mockSetNodes.mock.calls[0][0] as (nds: Node[]) => Node[];
+        const added = statusNode('new-approved', { requestAccessOutcome: 'APPROVED' });
+        const [nextApproved, nextAdded] = updater([approved, added]);
+        expect(nextApproved.data.requestAccessOutcome).toBeUndefined();
+        expect(nextAdded.data.requestAccessOutcome).toBe('APPROVED');
+      });
+
+      it('leaves the other states alone when no outcome is set', () => {
+        const approved = statusNode('approved', { requestAccessOutcome: 'APPROVED' });
+        const open = statusNode('open');
+        const { result } = renderHook(() => useWorkflowForm(open, mockOnClose));
+
+        act(() => {
+          result.current.onSubmit(formValues);
+        });
+
+        const updater = mockSetNodes.mock.calls[0][0] as (nds: Node[]) => Node[];
+        expect(updater([approved, open])[0].data.requestAccessOutcome).toBe('APPROVED');
+      });
+    });
+
     it('should call deleteElement and close on delete', () => {
       const node: Node = { id: 'to-delete', position: { x: 0, y: 0 }, data: {} };
       const { result } = renderHook(() => useWorkflowForm(node, mockOnClose));

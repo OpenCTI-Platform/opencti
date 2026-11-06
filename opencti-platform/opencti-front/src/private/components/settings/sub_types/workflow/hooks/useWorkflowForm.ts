@@ -19,6 +19,16 @@ const getValidationSchema = (isStatus: boolean, t: (s: string) => string) => {
   });
 };
 
+// An outcome marks one state: setting it on a state takes it off the state that held it.
+const moveOutcomeMarker = (nodes: Node[], ownerId: string, outcome: WorkflowEditionFormValues['requestAccessOutcome']) => {
+  if (!outcome) return nodes;
+  return nodes.map((node) => (
+    node.type === WorkflowNodeType.status && node.id !== ownerId && node.data?.requestAccessOutcome === outcome
+      ? { ...node, data: { ...node.data, requestAccessOutcome: undefined } }
+      : node
+  ));
+};
+
 export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => void) => {
   const { t_i18n } = useFormatter();
   const { setNodes } = useReactFlow();
@@ -45,9 +55,12 @@ export const useWorkflowForm = (selectedElement: Node | Edge, onClose: () => voi
   const onSubmit = (values: WorkflowEditionFormValues) => {
     if (isNewStatus) {
       addStatus(values);
+      if (values.requestAccessOutcome) {
+        setNodes((nodes) => moveOutcomeMarker(nodes, values.statusTemplate.id, values.requestAccessOutcome));
+      }
     } else {
       setNodes((nodes) =>
-        nodes.map((node) =>
+        moveOutcomeMarker(nodes, selectedElement.id, values.requestAccessOutcome).map((node) =>
           node.id === selectedElement.id
             ? { ...node, data: { ...node.data, ...values } }
             : node,
