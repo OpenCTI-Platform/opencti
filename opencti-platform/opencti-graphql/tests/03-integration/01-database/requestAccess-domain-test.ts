@@ -2,7 +2,15 @@ import { beforeAll, afterAll, describe, expect, it, vi } from 'vitest';
 import { ADMIN_USER, getGroupIdByName, getOrganizationIdByName, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { entitySettingEditField, findByType as findEntitySettingsByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
-import { createStatus, createStatusTemplate, findStatusPaginated, findAllTemplatesByStatusScope, findById as findStatusById, findTemplateById } from '../../../src/domain/status';
+import {
+  createStatus,
+  createStatusTemplate,
+  findStatusPaginated,
+  findAllTemplatesByStatusScope,
+  findById as findStatusById,
+  findTemplateById,
+  statusTemplateDelete,
+} from '../../../src/domain/status';
 import {
   type EditInput,
   FilterMode,
@@ -10,6 +18,7 @@ import {
   type QueryStatusesArgs,
   type QueryStatusTemplatesByStatusScopeArgs,
   type RequestAccessConfigureInput,
+  RequestAccessType,
   StatusOrdering,
   StatusScope,
   type StatusTemplate,
@@ -18,18 +27,27 @@ import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus, BasicWork
 import { logApp } from '../../../src/config/conf';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
+import { addMalware } from '../../../src/domain/malware';
+import { deleteElementById, loadEntity, storeLoadByIdWithRefs } from '../../../src/database/middleware';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
+import { deleteWorkflowDefinition, publishWorkflowDefinition, setWorkflowDefinition } from '../../../src/modules/workflow/domain/workflow-domain';
+import { findOutcomeState, getRequestAccessWorkflow } from '../../../src/modules/workflow/domain/workflow-request-access';
+import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
+import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import {
   addRequestAccess,
   approveRequestAccess,
   computeAuthorizedMembersForRequestAccess,
   configureRequestAccess,
   declineRequestAccess,
+  findFirstWorkflowStatus,
+  findWorkflowStatusByTemplateId,
   getRfiEntitySettings,
 } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { executionContext, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
 import type { BasicStoreEntityEntitySetting, RequestAccessFlow } from '../../../src/modules/entitySetting/entitySetting-types';
 import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
-import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import { INPUT_CREATED_BY, OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { verifyRequestAccessEnabled } from '../../../src/modules/requestAccess/requestAccessUtils';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import { getFakeAuthUser, getGroupEntity } from '../../utils/domainQueryHelper';
@@ -460,5 +478,153 @@ describe('Request access domain  - configuration edition', async () => {
     expect(setting.request_access_workflow?.workflow_definition_id).toBe('def-ra');
     expect(setting.request_access_workflow?.approval_admin).toStrictEqual([greenGroup.id]);
     expect(setting.request_access_workflow?.approved_workflow_id).toBe(statusRequestAccess.id);
+  });
+});
+
+describe('Request access domain  - workflow-driven creation', async () => {
+  const suffix = Date.now();
+  const templateIds = { pending: '', approved: '', declined: '', lowestOrder: '' };
+  let rfiEntitySettings: BasicStoreEntityEntitySetting;
+  let initialConfig: RequestAccessFlow | undefined;
+  let malwareId: string;
+  let testOrganizationId: string;
+  const createdRfiIds: string[] = [];
+
+  const requestAccess = async () => {
+    const rfiId = await addRequestAccess(testContext, ADMIN_USER, {
+      request_access_reason: 'Access needed for the workflow tests',
+      request_access_entities: [malwareId],
+      request_access_members: [testOrganizationId],
+      request_access_type: RequestAccessType.OrganizationSharing,
+    });
+    createdRfiIds.push(rfiId);
+    return rfiId;
+  };
+  const loadRfi = (rfiId: string) => storeLoadByIdWithRefs(testContext, ADMIN_USER, rfiId) as Promise<Record<string, any>>;
+  const findInstance = (rfiId: string) => loadEntity<BasicStoreEntity & { scope?: string; currentState?: string }>(testContext, ADMIN_USER, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
+    filters: { mode: FilterMode.And, filters: [{ key: ['entity_id'], values: [rfiId] }], filterGroups: [] },
+  });
+  const withoutFeatureFlags = async <T>(run: () => Promise<T>): Promise<T> => {
+    const enabledFlags = ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
+    try {
+      return await run();
+    } finally {
+      ENABLED_FEATURE_FLAGS.push(...enabledFlags);
+    }
+  };
+  const definition = () => JSON.stringify({
+    initialState: templateIds.pending,
+    states: [
+      { statusId: templateIds.pending },
+      { statusId: templateIds.approved, requestAccessOutcome: 'APPROVED', onEnter: [{ type: 'shareRequestedEntities', params: { organizations: ['AUTHOR'] } }] },
+      { statusId: templateIds.declined, requestAccessOutcome: 'DECLINED' },
+    ],
+    transitions: [
+      { from: templateIds.pending, to: templateIds.approved, event: 'Accept' },
+      { from: templateIds.pending, to: templateIds.declined, event: 'Reject' },
+    ],
+  });
+
+  beforeAll(async () => {
+    vi.spyOn(entrepriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    vi.spyOn(entrepriseEdition, 'isEnterpriseEditionFromSettings').mockReturnValue(true);
+    await setOrganization(PLATFORM_ORGANIZATION);
+    testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
+    const greenGroupId = await getGroupIdByName(GREEN_GROUP.name);
+
+    rfiEntitySettings = await getRfiEntitySettings(testContext, ADMIN_USER);
+    initialConfig = rfiEntitySettings.request_access_workflow;
+    await entitySettingEditField(testContext, ADMIN_USER, rfiEntitySettings.id, [
+      { key: 'request_access_workflow', value: [{ ...initialConfig, approval_admin: [greenGroupId] }] },
+    ]);
+
+    for (const key of Object.keys(templateIds) as Array<keyof typeof templateIds>) {
+      const template = await createStatusTemplate(testContext, ADMIN_USER, { name: `RA workflow ${key} ${suffix}`, color: '#b83f13' });
+      templateIds[key] = template.id;
+    }
+    const malware = await addMalware(testContext, ADMIN_USER, { name: `Request access workflow malware ${suffix}` });
+    malwareId = malware.id;
+  });
+
+  afterAll(async () => {
+    for (const rfiId of createdRfiIds) {
+      await deleteElementById(testContext, ADMIN_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI).catch(() => undefined);
+    }
+    await deleteElementById(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE).catch(() => undefined);
+    await deleteWorkflowDefinition(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, StatusScope.RequestAccess);
+    await entitySettingEditField(testContext, ADMIN_USER, rfiEntitySettings.id, [{ key: 'request_access_workflow', value: [initialConfig] }]);
+    for (const templateId of Object.values(templateIds).filter(Boolean)) {
+      await statusTemplateDelete(testContext, ADMIN_USER, templateId).catch(() => undefined);
+    }
+    resetCacheForEntity(ENTITY_TYPE_STATUS);
+    await unSetOrganization();
+  });
+
+  it('legacy request is unchanged', async () => {
+    expect(await getRequestAccessWorkflow(testContext, ADMIN_USER)).toBeNull();
+
+    const rfiId = await requestAccess();
+
+    const lowestOrderStatus = await findFirstWorkflowStatus(testContext, ADMIN_USER);
+    const rfi = await loadRfi(rfiId);
+    expect(rfi.x_opencti_workflow_id).toBe(lowestOrderStatus.id);
+    expect(rfi[INPUT_CREATED_BY]?.internal_id).not.toBe(testOrganizationId);
+    expect(await findInstance(rfiId)).toBeFalsy();
+  });
+
+  describe('with a published request-access definition', () => {
+    beforeAll(async () => {
+      // Outside the definition and before its states in order: what the legacy flow would pick.
+      await createStatus(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, { template_id: templateIds.lowestOrder, order: -1000, scope: StatusScope.RequestAccess });
+      await setWorkflowDefinition(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, definition(), StatusScope.RequestAccess);
+      await publishWorkflowDefinition(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, StatusScope.RequestAccess);
+      resetCacheForEntity(ENTITY_TYPE_STATUS);
+    });
+
+    it('exposes the published definition and its outcome states', async () => {
+      const requestAccessWorkflow = await getRequestAccessWorkflow(testContext, ADMIN_USER);
+
+      expect(requestAccessWorkflow?.definitionData.initialState).toBe(templateIds.pending);
+      expect(requestAccessWorkflow?.entitySetting.id).toBe(rfiEntitySettings.id);
+      expect(findOutcomeState(requestAccessWorkflow!.definitionData, 'APPROVED')).toBe(templateIds.approved);
+      expect(findOutcomeState(requestAccessWorkflow!.definitionData, 'DECLINED')).toBe(templateIds.declined);
+    });
+
+    it('is not used while ENTITIES_WORKFLOW is off', async () => {
+      expect(await withoutFeatureFlags(() => getRequestAccessWorkflow(testContext, ADMIN_USER))).toBeNull();
+    });
+
+    it('workflow-driven request starts at the request-access initial state', async () => {
+      const rfiId = await requestAccess();
+
+      const initialStatus = await findWorkflowStatusByTemplateId(testContext, ADMIN_USER, templateIds.pending);
+      const lowestOrderStatus = await findFirstWorkflowStatus(testContext, ADMIN_USER);
+      const rfi = await loadRfi(rfiId);
+      expect(lowestOrderStatus.template_id).toBe(templateIds.lowestOrder);
+      expect(rfi.x_opencti_workflow_id).toBe(initialStatus.id);
+      expect(initialStatus.template_id).toBe(templateIds.pending);
+      const instance = await findInstance(rfiId);
+      expect(instance?.scope).toBe(StatusScope.RequestAccess);
+      expect(instance?.currentState).toBe(templateIds.pending);
+    });
+
+    it('workflow-driven request sets the requesting organization as author', async () => {
+      const rfiId = await requestAccess();
+
+      const rfi = await loadRfi(rfiId);
+      expect(rfi[INPUT_CREATED_BY]?.internal_id).toBe(testOrganizationId);
+    });
+
+    it('runs the legacy flow while ENTITIES_WORKFLOW is off', async () => {
+      const rfiId = await withoutFeatureFlags(requestAccess);
+
+      const lowestOrderStatus = await findFirstWorkflowStatus(testContext, ADMIN_USER);
+      const rfi = await loadRfi(rfiId);
+      expect(lowestOrderStatus.template_id).toBe(templateIds.lowestOrder);
+      expect(rfi.x_opencti_workflow_id).toBe(lowestOrderStatus.id);
+      expect(rfi[INPUT_CREATED_BY]?.internal_id).not.toBe(testOrganizationId);
+      expect(await findInstance(rfiId)).toBeFalsy();
+    });
   });
 });

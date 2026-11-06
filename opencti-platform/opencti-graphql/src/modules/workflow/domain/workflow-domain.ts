@@ -235,7 +235,7 @@ interface WorkflowInstanceStoreEntity extends BasicStoreEntity {
   scope?: string;
 }
 
-const getWorkflowConfig = async (
+export const getWorkflowConfig = async (
   context: AuthContext,
   user: AuthUser,
   targetType: string,
@@ -267,7 +267,7 @@ export const assertScopeAllowed = (entityType: string, scope: StatusScope): void
 /**
  * Get workflow definition data based on allowDraft parameter.
  */
-const getDefinitionData = async (
+export const getDefinitionData = async (
   context: AuthContext,
   user: AuthUser,
   entitySetting: BasicStoreEntityEntitySetting | undefined,
