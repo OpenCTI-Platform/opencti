@@ -4,7 +4,7 @@ import { useAppData } from '../../../utils/hooks/useAppData';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
 import { buildMetricsColumns, defaultColumnsMap } from '../dataTableUtils';
-import { DataTableColumn, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
+import { DataTableColumn, DataTableColumns, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableProvider } from './DataTableContext';
 import {
@@ -18,9 +18,13 @@ import {
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
+import { computeVisibleWidthRatio, isSameListColumnConfig, legacyListColumnConfig, ListColumnConfig, toListColumnConfig } from '../dataTableColumnsConfig';
+import useListColumnsPreference from '../useListColumnsPreference';
 
 type DataTableComponentProps = Pick<DataTableProps,
   | 'dataColumns'
+  | 'availableColumns'
+  | 'columnsScopeLabel'
   | 'settingsMessagesBannerHeight'
   | 'filtersComponent'
   | 'hideHeaders'
@@ -56,6 +60,8 @@ type DataTableComponentProps = Pick<DataTableProps,
 
 const DataTableComponent = ({
   dataColumns,
+  availableColumns,
+  columnsScopeLabel,
   resolvePath,
   storageKey,
   initialValues,
@@ -123,24 +129,43 @@ const DataTableComponent = ({
 
   const metricsColumns = getMetricsColumns();
 
-  const buildColumns = (withLocalStorage = true) => {
-    const allDataColumns = { ...dataColumns, ...metricsColumns };
+  const defaultColumnIds = Object.keys(dataColumns);
+  // Every column that can be displayed, completed with its registered definition (label, rendering...).
+  const columnsCatalog = useMemo(() => Object.fromEntries(
+    Object.entries({ ...availableColumns, ...dataColumns })
+      .map(([id, column]) => [id, { ...defaultColumnsMap.get(id), ...column }]),
+  ), [availableColumns, dataColumns]);
 
-    const dataColumnsKeys = Object.keys(allDataColumns);
-    const localStorageColumnsKeys = Object.keys(localStorageColumns)
-      .filter((key) => key !== 'select' && key !== 'navigate' && key !== 'icon');
+  // Default lists keep their columns in the user profile, other ones (e.g. widgets) only in the browser.
+  const { savedConfig, saveConfig, isEnabled: isProfileEnabled } = useListColumnsPreference(storageKey, variant === DataTableVariant.default);
+  // Configuration currently displayed: it is the reference when the columns are rebuilt,
+  // as the profile and the browser storage are only updated afterwards.
+  const currentConfig = useRef<ListColumnConfig[] | undefined>(undefined);
+  // Columns of the last display, to only save the changes.
+  const displayedConfig = useRef<ListColumnConfig[] | undefined>(undefined);
 
-    // Check if keys order/length is the same
-    const isOrderSame = dataColumnsKeys.length === localStorageColumnsKeys.length
-      && dataColumnsKeys.every((key, index) => key === localStorageColumnsKeys[index]);
+  const getDefaultPercentWidth = (key: string) => {
+    const column = columnsCatalog[key] ?? {};
+    return column.percentWidth ?? defaultColumnsMap.get(key)?.percentWidth ?? metricsColumns[key]?.percentWidth ?? 10;
+  };
 
-    // Only use localStorage if order matches and we are allowed to
-    const useLocalStorage = isOrderSame && withLocalStorage;
-
+  const buildColumns = (withStoredConfig = true): DataTableColumns => {
     const extendedColumnsMap = new Map(defaultColumnsMap);
     Object.entries(metricsColumns).forEach(([key, value]) => {
       extendedColumnsMap.set(key, value);
     });
+
+    const storedConfig = withStoredConfig
+      ? currentConfig.current ?? savedConfig ?? legacyListColumnConfig(localStorageColumns, defaultColumnIds)
+      : undefined;
+    // An attribute that no longer exists (e.g. a deleted custom field) is ignored,
+    // and a default column the configuration does not know yet is displayed at the end.
+    const configuredColumns: (ListColumnConfig | { id: string })[] = storedConfig
+      ? [
+          ...storedConfig.filter(({ id }) => !!columnsCatalog[id]),
+          ...defaultColumnIds.filter((id) => !storedConfig.some((c) => c.id === id)).map((id) => ({ id })),
+        ]
+      : defaultColumnIds.map((id) => ({ id }));
 
     return [
       // Checkbox if necessary
@@ -148,21 +173,20 @@ const DataTableComponent = ({
       // Icon if necessary
       ...(icon ? [{ id: 'icon', visible: true } as DataTableColumn] : []),
       // Our real columns
-      ...Object.entries(dataColumns).map(([key, column], index) => {
-        const currentColumn = localStorageColumns?.[key];
-        const percentWidth = column.percentWidth ?? extendedColumnsMap.get(key)?.percentWidth;
-
-        return R.mergeDeepRight(extendedColumnsMap.get(key) as DataTableColumn, {
-          ...column,
-          // Override column config with what we have in local storage
-          order: useLocalStorage && currentColumn?.index !== undefined ? currentColumn?.index : index,
-          visible: useLocalStorage && currentColumn?.visible !== undefined ? currentColumn?.visible : true,
-          percentWidth: useLocalStorage && currentColumn?.percentWidth !== undefined ? currentColumn?.percentWidth : percentWidth,
-        });
+      ...configuredColumns.map((config, index) => {
+        const { id: key } = config;
+        const stored = 'visible' in config ? config : undefined;
+        return R.mergeDeepRight((extendedColumnsMap.get(key) ?? {}) as DataTableColumn, {
+          ...columnsCatalog[key],
+          id: key,
+          order: index,
+          visible: stored?.visible ?? true,
+          percentWidth: stored?.percentWidth ?? getDefaultPercentWidth(key),
+        }) as DataTableColumn;
       }),
       // inject "navigate" action (chevron) if navigable and no specific actions defined
       ...((disableNavigation || actions) ? [] : [{ id: 'navigate', visible: true } as DataTableColumn]),
-    ].sort((a, b) => a.order - b.order);
+    ];
   };
 
   const [columns, setColumns] = useState(() => buildColumns());
@@ -170,9 +194,17 @@ const DataTableComponent = ({
   useEffect(() => {
     const updatedColumns = buildColumns();
     setColumns(updatedColumns);
-  }, [dataColumns]);
+  }, [dataColumns, availableColumns]);
+
+  const defaultConfig = useMemo(() => toListColumnConfig(buildColumns(false)), [dataColumns, availableColumns]);
+  const isColumnsCustomized = !isSameListColumnConfig(toListColumnConfig(columns), defaultConfig);
 
   useEffect(() => {
+    const config = toListColumnConfig(columns);
+    // Columns displayed before this change: on the first display, the saved ones (or the default ones).
+    const previousConfig = displayedConfig.current ?? savedConfig ?? defaultConfig;
+    displayedConfig.current = config;
+    currentConfig.current = config;
     setLocalStorageColumns((curr) => {
       return columns.reduce((acc, c) => {
         acc[c.id] = {
@@ -184,7 +216,29 @@ const DataTableComponent = ({
         return acc;
       }, {} as LocalStorageColumns);
     });
+    // Only a change of the columns is saved: the list being displayed again (e.g. in another tab after
+    // the profile changed) must not overwrite the profile with its own columns.
+    if (isProfileEnabled && !isSameListColumnConfig(config, previousConfig)) {
+      // The default view is not saved: the list then follows the future default columns.
+      saveConfig(isSameListColumnConfig(config, defaultConfig) ? undefined : config);
+    }
   }, [columns]);
+
+  const applyColumnsSelection = (selection: { id: string; visible: boolean }[]) => {
+    currentConfig.current = selection
+      .filter(({ id }) => !!columnsCatalog[id])
+      .map(({ id, visible }) => ({
+        id,
+        visible,
+        percentWidth: columns.find((c) => c.id === id)?.percentWidth ?? getDefaultPercentWidth(id),
+      }));
+    setColumns(buildColumns());
+  };
+
+  const resetColumns = () => {
+    currentConfig.current = undefined;
+    setColumns(buildColumns(false));
+  };
 
   const startsWithAction = useMemo(() => columns.at(0)?.id === 'select', [columns]);
   const startsWithIcon = useMemo(() => {
@@ -211,8 +265,9 @@ const DataTableComponent = ({
     return page ? (page - 1) * currentPageSize : 0;
   }, [page, currentPageSize]);
 
-  const tableWidthState = useState(0);
-  const [tableWidth, setTableWidth] = tableWidthState;
+  const [tableWidth, setTableWidth] = useState(0);
+  // Visible columns fill the table width, even when some columns are hidden.
+  const visibleWidthRatio = useMemo(() => computeVisibleWidthRatio(columns), [columns]);
   const [visibleWidth, setVisibleWidth] = useState(0);
   const tableRef = useRef<HTMLDivElement | null>(null);
 
@@ -257,7 +312,13 @@ const DataTableComponent = ({
         availableFilterKeys,
         initialValues,
         setColumns,
-        resetColumns: () => setColumns(buildColumns(false)),
+        resetColumns,
+        columnsCatalog,
+        defaultColumnIds,
+        lockedColumnId: defaultColumnIds[0],
+        isColumnsCustomized,
+        applyColumnsSelection,
+        columnsScopeLabel,
         resolvePath,
         redirectionModeEnabled,
         useLineData,
@@ -285,7 +346,7 @@ const DataTableComponent = ({
         disableLineSelection,
         page,
         setPage,
-        tableWidthState,
+        tableWidthState: [Math.round(tableWidth * visibleWidthRatio), setTableWidth],
         visibleWidth,
         startsWithAction,
         startsWithIcon,

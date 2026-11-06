@@ -17564,6 +17564,9 @@ type MeUser implements BasicObject & InternalObject {
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
   unsubscribed_news_feed_types: [String!]
+
+  """Columns chosen in each entity list, as a JSON object keyed by list."""
+  list_columns: String
   can_manage_sensitive_config: Boolean
   draftContext: DraftWorkspace
 }

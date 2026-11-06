@@ -17269,6 +17269,8 @@ export type MeUser = BasicObject & InternalObject & {
   individual_id?: Maybe<Scalars['String']['output']>;
   language?: Maybe<Scalars['String']['output']>;
   lastname?: Maybe<Scalars['String']['output']>;
+  /** Columns chosen in each entity list, as a JSON object keyed by list. */
+  list_columns?: Maybe<Scalars['String']['output']>;
   max_shareable_marking?: Maybe<Array<MarkingDefinition>>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   monochrome_labels?: Maybe<Scalars['Boolean']['output']>;
@@ -22288,6 +22290,7 @@ export type NotificationEdge = {
 
 export type NotificationEvent = {
   __typename?: 'NotificationEvent';
+  entity_internal_id?: Maybe<Scalars['String']['output']>;
   entity_type?: Maybe<Scalars['String']['output']>;
   instance_id?: Maybe<Scalars['String']['output']>;
   message: Scalars['String']['output'];
@@ -49554,6 +49557,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   individual_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  list_columns?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   max_shareable_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   monochrome_labels?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -50620,6 +50624,7 @@ export type NotificationEdgeResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type NotificationEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationEvent'] = ResolversParentTypes['NotificationEvent']> = ResolversObject<{
+  entity_internal_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   instance_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

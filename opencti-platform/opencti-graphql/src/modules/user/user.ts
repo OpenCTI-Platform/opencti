@@ -72,6 +72,8 @@ const USER_DEFINITION: ModuleDefinition<StoreEntityUser, StixUser> = {
     { name: 'submenu_auto_collapse', label: 'Auto collapse submenus', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'monochrome_labels', label: 'Monochrome labels and entity types', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'unsubscribed_news_feed_types', label: 'Unsubscribed news feed types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    // Columns chosen by the user in each entity list, as a JSON object keyed by list (GitHub #6734).
+    { name: 'list_columns', label: 'List columns', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     {
       name: 'user_confidence_level',
       label: 'User Confidence Level',

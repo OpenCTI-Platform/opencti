@@ -16,6 +16,10 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useEntityListColumns from '../../../components/dataGrid/useEntityListColumns';
+
+// Report attributes the list can be sorted on (ReportsOrdering).
+const REPORTS_SORTABLE_COLUMNS = ['name', 'created', 'modified', 'published', 'created_at', 'updated_at', 'createdBy', 'creator', 'objectMarking', 'report_types', 'x_opencti_workflow_id'];
 
 const reportLineFragment = graphql`
   fragment ReportsLine_node on Report {
@@ -63,6 +67,31 @@ const reportLineFragment = graphql`
     }
     workflowEnabled
     created_at
+    # Attributes that can be added as columns (GitHub #6734). Fetched for every report in this POC:
+    # the target is to only fetch the displayed ones.
+    created
+    updated_at
+    confidence
+    objectAssignee {
+      id
+      name
+      entity_type
+    }
+    objectParticipant {
+      id
+      name
+      entity_type
+    }
+    customFieldValues {
+      field_id
+      field_name
+      int_value
+      string_value
+      boolean_value
+      date_value
+      select_value
+      select_values
+    }
   }
 `;
 
@@ -181,7 +210,7 @@ const Reports: FunctionComponent = () => {
   } as UsePreloadedPaginationFragment<ReportsLinesPaginationQuery>;
 
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const dataColumns: DataTableProps['dataColumns'] = {
+  const defaultDataColumns: DataTableProps['dataColumns'] = {
     name: {
       percentWidth: 25,
       isSortable: true,
@@ -203,12 +232,15 @@ const Reports: FunctionComponent = () => {
       percentWidth: 8,
     },
   };
+  const { dataColumns, availableColumns } = useEntityListColumns('Report', defaultDataColumns, REPORTS_SORTABLE_COLUMNS);
   return (
     <span data-testid="report-page">
       <Breadcrumbs elements={[{ label: t_i18n('Analyses') }, { label: t_i18n('Reports'), current: true }]} />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
+          availableColumns={availableColumns}
+          columnsScopeLabel={t_i18n('Reports')}
           resolvePath={(data: ReportsLines_data$data) => data.reports?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
