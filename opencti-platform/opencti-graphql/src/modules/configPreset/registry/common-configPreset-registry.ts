@@ -110,6 +110,8 @@ export const checkStandardId = (
   return { ...label, exists: false, conflict: false, status: 'failed', reason };
 };
 
+export const toIsEnabled = (value: unknown) => (typeof value === 'boolean' ? value : null);
+
 // What an importer returns once a module has written an item: a failure is an error that makes the item failed,
 // and a status other than the computed one is reported
 export const toAppliedStatus = (result: ConfigImportResult, computed: ConfigPresetComputedItem) => {

@@ -1,10 +1,10 @@
 import { getRules, RULES_DECLARATION } from '../../../domain/rules';
 import type { RuleRuntime } from '../../../types/rules';
 import { exportConfigPresetRule } from '../../rule/rule-export';
-import { importConfigPresetRule } from '../../rule/rule-import';
+import { importConfigPresetRule, isRuleEngineEnabled } from '../../rule/rule-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
-import type { ConfigPresetComputedItem, ConfigPresetImporter } from '../import/configPreset-import-types';
-import { automationRulesGroup, staticFamily, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
+import type { ConfigPresetComputedItem, ConfigPresetImporter, ConfigPresetImportPlan } from '../import/configPreset-import-types';
+import { automationRulesGroup, staticFamily, toAppliedStatus, toComputedItem, toIsEnabled } from './common-configPreset-registry';
 
 export const RULE_ENGINE_FAMILY_ID = 'ruleEngine';
 
@@ -16,17 +16,25 @@ const toRuleItem = (rule: RuleRuntime): ConfigPresetItemDefinition => ({
   exporter: async () => exportConfigPresetRule(rule),
 });
 
-const toIsEnabled = (value: unknown) => (typeof value === 'boolean' ? value : null);
+const engineStates = new WeakMap<ConfigPresetImportPlan, Promise<boolean>>();
+const isEngineEnabledFor = (plan: ConfigPresetImportPlan) => {
+  if (!engineStates.has(plan)) {
+    engineStates.set(plan, isRuleEngineEnabled());
+  }
+  return engineStates.get(plan) as Promise<boolean>;
+};
 
 const ruleEngineImporter: ConfigPresetImporter = {
-  compute: async (context, user, item, _plan, mode): Promise<ConfigPresetComputedItem> => {
+  compute: async (context, user, item, plan, mode): Promise<ConfigPresetComputedItem> => {
     const rule = RULES_DECLARATION.find(({ id }) => id === item.id);
     const label = rule ? { label: rule.name, translatable: true } : { label: item.id, translatable: false };
-    const result = await importConfigPresetRule(context, user, item.id, item.configuration, { mode, dryRun: true });
+    const options = { mode, dryRun: true, isRuleEngineEnabled: await isEngineEnabledFor(plan) };
+    const result = await importConfigPresetRule(context, user, item.id, item.configuration, options);
     return { ...toComputedItem(label, result), isEnabled: toIsEnabled(result.configuration?.active) };
   },
-  apply: async (context, user, item, computed, mode) => {
-    return toAppliedStatus(await importConfigPresetRule(context, user, item.id, item.configuration, { mode }), computed);
+  apply: async (context, user, item, computed, mode, plan) => {
+    const options = { mode, isRuleEngineEnabled: await isEngineEnabledFor(plan) };
+    return toAppliedStatus(await importConfigPresetRule(context, user, item.id, item.configuration, options), computed);
   },
 };
 

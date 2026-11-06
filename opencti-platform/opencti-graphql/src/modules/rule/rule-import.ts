@@ -5,25 +5,32 @@ import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } f
 import { CONFIG_IMPORT_UNCHANGED_REASON, configImportValidationReason } from '../configImport/configImport-utils';
 import { type RuleImportConfiguration, ruleImportSchema } from './rule-import-schema';
 
-export type RuleImportCode = 'invalid' | 'unknown_rule' | 'not_overwrite' | 'unchanged';
+export type RuleImportCode = 'invalid' | 'unknown_rule' | 'not_overwrite' | 'unchanged' | 'engine_disabled';
 
 export type RuleImportResult = ConfigImportResult<RuleImportConfiguration, RuleImportCode>;
 
+export interface RuleImportOptions extends ConfigImportOptions {
+  isRuleEngineEnabled?: boolean;
+}
+
 export const RULE_ACTIVATION_SCAN_REASON = 'Activating the rule starts a scan of the knowledge base';
-export const RULE_DEACTIVATION_SCAN_REASON = 'Deactivating the rule starts a scan of the knowledge base';
+export const RULE_DEACTIVATION_SCAN_REASON = 'Deactivating the rule starts a scan that deletes what it inferred';
+export const RULE_ENGINE_DISABLED_REASON = 'The rule engine is disabled';
+
+export const isRuleEngineEnabled = () => isModuleActivated('RULE_ENGINE');
 
 export const importConfigPresetRule = async (
   context: AuthContext,
   user: AuthUser,
   ruleId: string,
   configuration: unknown,
-  { mode, dryRun = false }: ConfigImportOptions,
+  { mode, dryRun = false, isRuleEngineEnabled: engineEnabled }: RuleImportOptions,
 ): Promise<RuleImportResult> => {
-  const rule = await getRule(context, user, ruleId);
   const parsed = ruleImportSchema.safeParse(configuration);
   if (!parsed.success) {
-    return { status: 'failed', code: 'invalid', reason: configImportValidationReason(parsed.error), exists: !!rule };
+    return { status: 'failed', code: 'invalid', reason: configImportValidationReason(parsed.error), exists: false };
   }
+  const rule = await getRule(context, user, ruleId);
   if (!rule) {
     return { status: 'failed', code: 'unknown_rule', reason: 'Unknown rule', exists: false, configuration: parsed.data };
   }
@@ -34,14 +41,17 @@ export const importConfigPresetRule = async (
   if ((rule.activated === true) === active) {
     return { status: 'skipped', code: 'unchanged', reason: CONFIG_IMPORT_UNCHANGED_REASON, exists: true, configuration: parsed.data };
   }
+  // As in the rules screen: a rule switched while the engine is off would never be applied to the existing knowledge
+  if (!(engineEnabled ?? await isRuleEngineEnabled())) {
+    return { status: 'skipped', code: 'engine_disabled', reason: RULE_ENGINE_DISABLED_REASON, exists: true, configuration: parsed.data };
+  }
   if (!dryRun) {
     await setRuleActivation(context, user, ruleId, active);
   }
-  const scans = await isModuleActivated('RULE_ENGINE');
   return {
     status: 'overwritten',
     exists: true,
     configuration: parsed.data,
-    ...(scans ? { reason: active ? RULE_ACTIVATION_SCAN_REASON : RULE_DEACTIVATION_SCAN_REASON } : {}),
+    reason: active ? RULE_ACTIVATION_SCAN_REASON : RULE_DEACTIVATION_SCAN_REASON,
   };
 };

@@ -56,7 +56,8 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
     case 'Vocabulary entries already exist': return t_i18n('Vocabulary entries already exist');
     case 'Unknown rule': return t_i18n('Unknown rule');
     case 'Activating the rule starts a scan of the knowledge base': return t_i18n('Activating the rule starts a scan of the knowledge base');
-    case 'Deactivating the rule starts a scan of the knowledge base': return t_i18n('Deactivating the rule starts a scan of the knowledge base');
+    case 'Deactivating the rule starts a scan that deletes what it inferred': return t_i18n('Deactivating the rule starts a scan that deletes what it inferred');
+    case 'The rule engine is disabled': return t_i18n('The rule engine is disabled');
     case 'The standard id of the theme does not match its id': return t_i18n('The standard id of the theme does not match its id');
     case 'The standard id of the theme is required to overwrite it': return t_i18n('The standard id of the theme is required to overwrite it');
     case 'Built-in theme': return t_i18n('Built-in theme');
