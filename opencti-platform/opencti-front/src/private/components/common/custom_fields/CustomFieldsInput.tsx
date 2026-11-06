@@ -118,7 +118,9 @@ const TextInputCustomField: FunctionComponent<{
       <Input
         label={label}
         value={typeof localValue === 'string' ? localValue : ''}
-        isTypeNumber={definition.field_type === 'integer'}
+        isTypeNumber={definition.field_type === 'integer' || definition.field_type === 'decimal'}
+        // A decimal accepts any precision, as the EPSS score of the vulnerabilities
+        step={definition.field_type === 'decimal' ? 'any' : undefined}
         min={definition.field_type === 'integer' ? definition.min_value ?? undefined : undefined}
         max={definition.field_type === 'integer' ? definition.max_value ?? undefined : undefined}
         error={error}

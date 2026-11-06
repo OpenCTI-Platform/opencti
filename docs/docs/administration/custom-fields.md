@@ -22,6 +22,7 @@ A custom field is defined by:
     - **Text**: a single line of text.
     - **Markdown**: a text formatted in Markdown.
     - **Integer**: an integer, optionally bounded by a minimum and a maximum value.
+    - **Decimal**: a decimal number.
     - **Boolean**: true or false.
     - **Date**: a date and time.
     - **Selection list**: one value among a list of options.

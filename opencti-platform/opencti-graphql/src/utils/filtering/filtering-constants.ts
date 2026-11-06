@@ -116,6 +116,7 @@ export const PIR_IDS_SUBFILTER = 'pir_ids';
 // for Custom Fields (nested filter on custom_field_values)
 export const CUSTOM_FIELD_NAME_SUBFILTER = 'field_name';
 export const CUSTOM_FIELD_INT_VALUE_SUBFILTER = 'int_value';
+export const CUSTOM_FIELD_FLOAT_VALUE_SUBFILTER = 'float_value';
 export const CUSTOM_FIELD_STRING_VALUE_SUBFILTER = 'string_value';
 export const CUSTOM_FIELD_BOOLEAN_VALUE_SUBFILTER = 'boolean_value';
 export const CUSTOM_FIELD_DATE_VALUE_SUBFILTER = 'date_value';

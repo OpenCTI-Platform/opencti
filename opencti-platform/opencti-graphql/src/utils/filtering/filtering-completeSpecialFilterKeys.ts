@@ -7,6 +7,7 @@ import {
   COMPUTED_RELIABILITY_FILTER,
   CUSTOM_FIELD_BOOLEAN_VALUE_SUBFILTER,
   CUSTOM_FIELD_DATE_VALUE_SUBFILTER,
+  CUSTOM_FIELD_FLOAT_VALUE_SUBFILTER,
   CUSTOM_FIELD_INT_VALUE_SUBFILTER,
   CUSTOM_FIELD_SELECT_VALUE_SUBFILTER,
   CUSTOM_FIELD_SELECT_VALUES_SUBFILTER,
@@ -666,6 +667,9 @@ export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, us
     case 'int_value':
       subfilterKey = CUSTOM_FIELD_INT_VALUE_SUBFILTER;
       break;
+    case 'float_value':
+      subfilterKey = CUSTOM_FIELD_FLOAT_VALUE_SUBFILTER;
+      break;
     case 'string_value':
       subfilterKey = CUSTOM_FIELD_STRING_VALUE_SUBFILTER;
       break;
@@ -685,8 +689,9 @@ export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, us
       subfilterKey = CUSTOM_FIELD_STRING_VALUE_SUBFILTER;
   }
 
-  // Parse numeric values for integer type
-  const parsedValues = definition.field_type === 'integer'
+  // Parse numeric values for the integer and decimal types
+  const isNumeric = definition.field_type === 'integer' || definition.field_type === 'decimal';
+  const parsedValues = isNumeric
     ? values.map((v: any) => {
         const num = Number(v);
         return Number.isFinite(num) ? num : v;
@@ -709,9 +714,9 @@ export const adaptFilterToCustomFieldFilterKey = async (context: AuthContext, us
     ...(positiveOperator ? { negateNested: true } : {}),
   });
 
-  // An integer is matched exactly with a range (gte + lte) on a single value: each value gets its own filter,
+  // A number is matched exactly with a range (gte + lte) on a single value: each value gets its own filter,
   // the operands of a range clause being alternatives (two values would match the whole interval between them).
-  if (definition.field_type === 'integer' && op === FilterOperator.Eq) {
+  if (isNumeric && op === FilterOperator.Eq) {
     const buildIntegerEqualityFilter = (integerValues: any[]) => buildNestedFilter([
       { key: subfilterKey, values: integerValues, operator: FilterOperator.Gte },
       { key: subfilterKey, values: integerValues, operator: FilterOperator.Lte },
