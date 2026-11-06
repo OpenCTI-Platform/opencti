@@ -13,7 +13,8 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 25;
+// 2 created by ingestionDeduplication-test (an import, then the same import after the deletion)
+testCreatedCounter['attack-pattern'] = 27;
 testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
@@ -32,6 +33,7 @@ testCreatedCounter.feedback = 2;
 testCreatedCounter.file = 11;
 testCreatedCounter.grouping = 2;
 testCreatedCounter.iccid = 4;
+// 2 created and deleted by ingestionDeduplication-domain-test (authors of imported malware)
 // Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown)
 testCreatedCounter.identity = 61;
 testCreatedCounter.imei = 3;
@@ -78,7 +80,8 @@ testCreatedCounter['threat-actor'] = 33;
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
-testCreatedCounter.vulnerability = 11;
+// 1 created and deleted by ingestionDeduplication-test (a type outside the deduplication allowlist)
+testCreatedCounter.vulnerability = 12;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
 testCreatedCounter['security-coverage'] = 27;
@@ -89,12 +92,14 @@ testUpdatedCounter['marking-definition'] = 3;
 testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
+// 1 by ingestionDeduplication-domain-test (an edit in the platform)
 testUpdatedCounter.malware = 22;
 testUpdatedCounter.file = 27;
 testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
-testUpdatedCounter['attack-pattern'] = 3;
+// 3 by ingestionDeduplication-test (a change at the source, an edit in the platform, the source content applied again)
+testUpdatedCounter['attack-pattern'] = 6;
 // 5 by workflow-closing-reason-test merge (1) and external status write (4) cases
 testUpdatedCounter['case-incident'] = 28;
 testUpdatedCounter.feedback = 1;
@@ -143,7 +148,8 @@ testMergedCounter['intrusion-set'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 20;
+// 2 by ingestionDeduplication-test
+testDeletedCounter['attack-pattern'] = 22;
 testDeletedCounter.campaign = 2;
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;
@@ -160,6 +166,7 @@ testDeletedCounter['external-reference'] = 1;
 testDeletedCounter.feedback = 2;
 testDeletedCounter.file = 7;
 testDeletedCounter.grouping = 2;
+// 2 by ingestionDeduplication-domain-test
 // Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown)
 testDeletedCounter.identity = 44;
 testDeletedCounter.incident = 6;
@@ -198,7 +205,8 @@ testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
 testDeletedCounter['threat-actor'] = 20;
 testDeletedCounter.tool = 5;
-testDeletedCounter.vulnerability = 5;
+// 1 by ingestionDeduplication-test
+testDeletedCounter.vulnerability = 6;
 testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;

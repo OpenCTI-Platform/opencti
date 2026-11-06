@@ -15,6 +15,7 @@ vi.mock('./edition/UserEditionPassword', () => ({ default: () => null }));
 vi.mock('./edition/UserEditionGroups', () => ({ default: () => null }));
 vi.mock('./edition/UserEditionOrganizationsAdmin', () => ({ default: () => null }));
 vi.mock('./edition/UserEditionConfidence', () => ({ default: () => null }));
+vi.mock('./edition/UserEditionDeduplication', () => ({ default: () => null }));
 
 const userContext = createMockUserContext({
   me: { name: 'admin', capabilities: [{ name: 'BYPASS' }], userSubscriptions: { edges: [] } },

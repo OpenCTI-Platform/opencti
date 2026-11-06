@@ -9307,6 +9307,12 @@ type Query {
   decayRules(first: Int, after: ID, orderBy: DecayRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayRuleConnection
   decayExclusionRule(id: String!): DecayExclusionRule
   decayExclusionRules(first: Int, after: ID, orderBy: DecayExclusionRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayExclusionRuleConnection
+  ingestionDeduplicationRules(userId: ID): [IngestionDeduplicationRule!]!
+  ingestionDeduplicationAllowedTypes: [String!]!
+  ingestionDeduplicationDefaultTtl: Int!
+  ingestionDeduplicationDefaultExcludedFields: [String!]!
+  ingestionDeduplicationFields(entityType: String!): [String!]!
+  ingestionDeduplicationUserUsages(userId: ID!, excludeConnectorId: ID): [IngestionDeduplicationUsage!]!
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
   securityOrganizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
@@ -10225,6 +10231,9 @@ type Mutation {
   decayExclusionRuleAdd(input: DecayExclusionRuleAddInput!): DecayExclusionRule
   decayExclusionRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayExclusionRule
   decayExclusionRuleDelete(id: ID!): ID
+  ingestionDeduplicationRuleAdd(input: IngestionDeduplicationRuleAddInput!): IngestionDeduplicationRule
+  ingestionDeduplicationRuleFieldPatch(id: ID!, input: [EditInput!]!): IngestionDeduplicationRule
+  ingestionDeduplicationRuleDelete(id: ID!): ID
   organizationAdd(input: OrganizationAddInput!): Organization
   organizationDelete(id: ID!): ID
   organizationFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Organization
@@ -14965,6 +14974,35 @@ input DecayExclusionRuleAddInput {
   description: String
   decay_exclusion_filters: String!
   active: Boolean!
+}
+
+type IngestionDeduplicationRule implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  representative: Representative!
+  parent_types: [String!]!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  user_id: String!
+  user: Creator
+  target_type: String!
+  excluded_fields: [String!]!
+  ttl: Int
+}
+
+type IngestionDeduplicationUsage {
+  id: ID!
+  name: String!
+  entity_type: String!
+}
+
+input IngestionDeduplicationRuleAddInput {
+  user_id: ID!
+  target_type: String!
+  excluded_fields: [String!]
+  ttl: Int
 }
 
 type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {

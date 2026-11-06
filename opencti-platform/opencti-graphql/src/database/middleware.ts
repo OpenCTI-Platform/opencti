@@ -240,7 +240,7 @@ import {
 import { fillDefaultCustomFieldValues, fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
-import { telemetry } from '../config/tracing';
+import { meterManager, telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
@@ -275,6 +275,7 @@ import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDelet
 import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
+import { findUnchangedEntity, prepareIngestionDeduplication, recordIngestion } from './ingestionDeduplication';
 import { isCreateOnlyFormImport } from '../modules/form/form-submission-context';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
@@ -1489,9 +1490,9 @@ export const inputResolveRefs = async (
   input: Record<string, any>,
   type: string,
   entitySetting: BasicStoreEntityEntitySetting,
-  opts: { embeddedFromWithRefs?: boolean } = {},
+  opts: { embeddedFromWithRefs?: boolean; onUnresolvedRefs?: (ids: string[]) => void } = {},
 ): Promise<Record<string, any>> => {
-  const { embeddedFromWithRefs = true } = opts;
+  const { embeddedFromWithRefs = true, onUnresolvedRefs } = opts;
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map<string, { id: string; destKey?: string; multiple?: boolean; vocab?: { field: any; data: string } }[]>();
     const expectedIds: string[] = [];
@@ -1661,6 +1662,9 @@ export const inputResolveRefs = async (
     const expectedUnresolvedIdsNotDefault = optionalRefsUnresolvedIds.filter((id) => !defaultValues.includes(id));
     if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber && retryNumber <= 2) {
       throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault, doc_code: 'ELEMENT_NOT_FOUND', ...extendedErrors({ input }) });
+    }
+    if (onUnresolvedRefs && expectedUnresolvedIdsNotDefault.length > 0) {
+      onUnresolvedRefs(expectedUnresolvedIdsNotDefault);
     }
     const complete = { ...cleanedInput, entity_type: type };
     const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
@@ -4308,6 +4312,7 @@ type CreateEntityRawOpts = PatchAttributeOpts & CreateEventOpts & {
   fromRuleDeletion?: boolean;
   bypassValidation?: boolean;
   bypassMandatoryAttributes?: boolean;
+  onUnresolvedRefs?: (ids: string[]) => void;
 };
 const cleanEntityForIdsCollision = (
   input: Record<string, any>,
@@ -4377,7 +4382,7 @@ const internalCreateEntityRaw = async (
   const entitySetting = await getEntitySettingFromCache(context, type) as BasicStoreEntityEntitySetting;
   const { fromRule } = opts;
   // We need to check existing dependencies
-  let resolvedInput = await inputResolveRefs(context, user, input, type, entitySetting);
+  let resolvedInput = await inputResolveRefs(context, user, input, type, entitySetting, { onUnresolvedRefs: opts.onUnresolvedRefs });
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
   const participantIds = getInputIds(type, resolvedInput, fromRule);
@@ -4417,7 +4422,7 @@ const internalCreateEntityRaw = async (
     // region - Pre-Check
     if (existingEntities.length === 0) { // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
-      resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting);
+      resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting, { onUnresolvedRefs: opts.onUnresolvedRefs });
       resolvedInput = await fillDefaultCustomFieldValues(context, user, resolvedInput, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, type, entitySetting, opts);
@@ -4700,8 +4705,32 @@ export const createEntity = async (
   opts: { complete?: boolean; noEnrichOnUpdate?: boolean } & CreateEntityRawOpts = {},
 ) => {
   const isCompleteResult = opts.complete === true;
+  const ingestionDeduplication = await prepareIngestionDeduplication(context, user, input, type, opts);
+  if (ingestionDeduplication) {
+    const existing = await findUnchangedEntity(ingestionDeduplication, () => storeLoadById<BasicStoreEntity>(context, user, input.stix_id, type));
+    if (existing) {
+      meterManager.ingestionDeduplication({ entityType: type, userId: ingestionDeduplication.userId, result: 'skipped' });
+      const unchanged = { element: existing, event: null, isCreation: false };
+      return isCompleteResult ? unchanged : unchanged.element;
+    }
+  }
+  // A reference missing at import time can appear later: the same payload must then be imported again
+  let isPartialImport = false;
+  const onUnresolvedRefs = () => {
+    isPartialImport = true;
+  };
+  const createOpts = ingestionDeduplication ? { ...opts, onUnresolvedRefs } : opts;
   // volumes of objects relationships must be controlled
-  const data = await createEntityRaw(context, user, input, type, opts);
+  const data = await createEntityRaw(context, user, input, type, createOpts);
+  if (ingestionDeduplication) {
+    meterManager.ingestionDeduplication({ entityType: type, userId: ingestionDeduplication.userId, result: 'imported' });
+    // Only under the entity's real standard id: a renamed or merged entity would never be found under the recorded key
+    // References are indexed after the element and date it again: the next import then runs once more, never skipped wrongly
+    // A form that can only create leaves an existing entity as it is: its payload was not applied
+    if (data.element.standard_id === ingestionDeduplication.standardId && !isPartialImport && !isCreateOnlyFormImport(context, user)) {
+      await recordIngestion(ingestionDeduplication, data.element);
+    }
+  }
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await triggerCreateEntityAutoEnrichment(context, user, data.element);
