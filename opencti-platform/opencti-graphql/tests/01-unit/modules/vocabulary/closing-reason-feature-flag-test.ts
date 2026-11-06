@@ -18,8 +18,8 @@ const { ENABLED_FEATURE_FLAGS } = await import('../../../../src/config/conf');
 const enabledFeatureFlags = ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
 await import('../../../../src/modules/index');
 const { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } = await import('../../../../src/modules/case/case-incident/case-incident-types');
-const { getVocabulariesCategories, getVocabularyCategory } = await import('../../../../src/modules/vocabulary/vocabulary-utils');
-const { schemaAttributesDefinition } = await import('../../../../src/schema/schema-attributes');
+const { getVocabulariesCategories, getVocabularyCategory, isEntityFieldAnOpenVocabulary } = await import('../../../../src/modules/vocabulary/vocabulary-utils');
+const { depsKeysRegister, schemaAttributesDefinition } = await import('../../../../src/schema/schema-attributes');
 const { deleteVocabulary, getVocabularyUsages } = await import('../../../../src/modules/vocabulary/vocabulary-domain');
 const { storeLoadById } = await import('../../../../src/database/middleware-loader');
 const { elRawUpdateByQuery } = await import('../../../../src/database/engine');
@@ -31,6 +31,13 @@ describe('closing reason with the workflow engine disabled', () => {
 
   it('should not register the x_opencti_closing_reason attribute', () => {
     expect(schemaAttributesDefinition.getAttribute(ENTITY_TYPE_CONTAINER_CASE_INCIDENT, 'x_opencti_closing_reason')).toBeUndefined();
+  });
+
+  // A connector input carrying the field must be handled as if the attribute did not exist
+  it('should not resolve x_opencti_closing_reason as an open vocabulary input', () => {
+    expect(isEntityFieldAnOpenVocabulary('x_opencti_closing_reason', ENTITY_TYPE_CONTAINER_CASE_INCIDENT)).toBe(false);
+    const dependencyKey = depsKeysRegister.get().find(({ src }) => src === 'x_opencti_closing_reason');
+    expect(dependencyKey?.types).toEqual([]);
   });
 
   it('should hide the closing_reason_ov vocabulary category', () => {

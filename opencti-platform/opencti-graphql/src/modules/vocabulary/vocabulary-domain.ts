@@ -3,12 +3,12 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, VocabularyCategory } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
+import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, isVocabularyCategoryEnabled, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
-import { getVocabulariesCategories, getVocabularyCategory, isVocabularyCategoryEnabled, openVocabularies, updateElasticVocabularyValue } from './vocabulary-utils';
+import { getVocabulariesCategories, getVocabularyCategory, openVocabularies, updateElasticVocabularyValue } from './vocabulary-utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { normalizeName } from '../../schema/identifier';

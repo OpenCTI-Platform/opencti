@@ -1,7 +1,6 @@
 import type { VocabularyCategory, VocabularyDefinition } from '../../generated/graphql';
-import { vocabularyDefinitions } from './vocabulary-types';
+import { isVocabularyCategoryEnabled, vocabularyDefinitions } from './vocabulary-types';
 import { UnsupportedError } from '../../config/errors';
-import { isFeatureEnabled } from '../../config/conf';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { STIX_PATTERN_TYPE } from '../../utils/syntax';
@@ -1229,11 +1228,6 @@ const toVocabularyDefinition = (key: string, value: typeof vocabularyDefinitions
   return { key: key as VocabularyCategory, ...value, closed: value.closed ?? false };
 };
 
-// A category behind a disabled feature flag is hidden, and its field is not registered on any entity type
-export const isVocabularyCategoryEnabled = (definition: { featureFlag?: string }) => {
-  return !definition.featureFlag || isFeatureEnabled(definition.featureFlag);
-};
-
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {
   return Object.entries(vocabularyDefinitions)
     .filter(([_, value]) => value.entity_types?.length > 0 && isVocabularyCategoryEnabled(value))
@@ -1247,14 +1241,17 @@ export const getVocabularyCategory = (key: string): VocabularyDefinition | undef
   return value ? toVocabularyDefinition(key, value) : undefined;
 };
 
+// Input resolution skips a disabled category: its field does not exist on the entity
+const getEnabledVocabularyDefinitions = () => Object.entries(vocabularyDefinitions).filter(([, definition]) => isVocabularyCategoryEnabled(definition));
+
 export const isEntityFieldAnOpenVocabulary = (fieldName: string, entityType: string) => {
-  return Object.entries(vocabularyDefinitions)
+  return getEnabledVocabularyDefinitions()
     .filter(([, { entity_types }]) => entity_types.includes(entityType))
     .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName)).length > 0;
 };
 
 export const getVocabularyCategoryForField = (fieldName: string, entityType: string) => {
-  const definitions = Object.entries(vocabularyDefinitions)
+  const definitions = getEnabledVocabularyDefinitions()
     .filter(([, { entity_types }]) => entity_types.includes(entityType))
     .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName))
     .map(([cat, def]) => ({ cat, def }));

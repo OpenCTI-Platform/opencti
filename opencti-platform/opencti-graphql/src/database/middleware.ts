@@ -1091,10 +1091,10 @@ export const inputResolveRefs = async (
     const dependencyKeys = depsKeys(type);
     for (let index = 0; index < dependencyKeys.length; index += 1) {
       const { src, dst, types } = dependencyKeys[index];
-      const depTypes = types ?? [];
       const destKey = dst || src;
       const id = input[src];
-      const isValidType = depTypes.length > 0 ? depTypes.includes(type) : true;
+      // A key without types applies to every type; one with an empty list to none
+      const isValidType = types ? types.includes(type) : true;
       const isAlreadyResolved = Array.isArray(id) ? id[0]?._id : id?._id;
       if (isValidType && !R.isNil(id) && !R.isEmpty(id) && !isAlreadyResolved) {
         const isListing = Array.isArray(id);
