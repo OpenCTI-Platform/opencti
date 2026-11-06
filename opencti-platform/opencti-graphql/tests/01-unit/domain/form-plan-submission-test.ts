@@ -16,6 +16,7 @@ vi.mock('../../../src/modules/form/form-bundle-builder', () => ({
   buildMainStixEntities: vi.fn().mockResolvedValue({
     mainStixEntities: [{ id: 'report--main' }],
     mainEntityStixId: 'report--main',
+    existingMainStixIds: [],
   }),
   buildAdditionalEntities: vi.fn().mockResolvedValue(new Map()),
   buildRelationships: vi.fn().mockResolvedValue(undefined),
@@ -54,7 +55,7 @@ describe('planSubmission', () => {
     expect(buildMainStixEntities).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, 'Report', false, []);
     expect(buildAdditionalEntities).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, plan.bundle, false, []);
     expect(buildRelationships).toHaveBeenCalledWith(mockContext, mockUser, schema, { name: 'Report A' }, [{ id: 'report--main' }], new Map(), plan.bundle);
-    expect(wrapInContainerOrPush).toHaveBeenCalledWith('Report', [{ id: 'report--main' }], plan.bundle, false);
+    expect(wrapInContainerOrPush).toHaveBeenCalledWith('Report', [{ id: 'report--main' }], plan.bundle, false, new Map(), []);
   });
 
   it('produces a draftPlan when isDraft is true', async () => {

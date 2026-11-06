@@ -547,10 +547,10 @@ export const planSubmission = async (
   };
 
   const { mainEntityType } = schema;
-  const { mainStixEntities, mainEntityStixId } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass, uploads);
+  const { mainStixEntities, mainEntityStixId, existingMainStixIds } = await buildMainStixEntities(context, user, schema, values, mainEntityType, isBypass, uploads);
   const additionalEntitiesMap = await buildAdditionalEntities(context, user, schema, values, bundle, isBypass, uploads);
   await buildRelationships(context, user, schema, values, mainStixEntities, additionalEntitiesMap, bundle);
-  wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer);
+  wrapInContainerOrPush(mainEntityType, mainStixEntities, bundle, schema.includeInContainer, additionalEntitiesMap, existingMainStixIds);
 
   let draftPlan: DraftPlan | null = null;
   if (finalIsDraft) {
@@ -631,24 +631,27 @@ export const commitSubmission = async (
         // Patch creator_id to the actual submitter since the draft was created with SYSTEM_USER
         await patchAttribute(context, SYSTEM_USER, draft.id, ENTITY_TYPE_DRAFT_WORKSPACE, { creator_id: [user.id] });
       }
-      // A submission that creates no draft is imported where it was made: in the current draft of the applicant, or in main
-      const draftId = createdDraftId ?? (getDraftContext(context, user) || null);
-      // The work is bound to the applicant, the form and the draft: the import is only allowed to write for this submission
-      const formSubmission = { applicant_id: user.id, form_id: formId, draft_id: draftId };
-      const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now(), formSubmission });
-      workId = work.id;
-      await pushBundleToWorker(context, SYSTEM_USER, connectorId, {
-        type: 'bundle',
-        applicant_id: user.id,
-        content,
-        work_id: work.id,
-        // An empty id (not null) makes the worker send an empty draft header: a missing header would make the API fall back
-        // to the draft the applicant is in at import time, which may no longer be the one of the submission
-        draft_id: draftId ?? '',
-        // Without Create / Update knowledge, an existing object is not force merged (and not upserted, see isCreateOnlyFormImport)
-        update: canUpdateKnowledgeIn(user, draftId !== null),
-        no_split: true,
-      });
+      // Nothing to import (only existing entities were picked): an empty bundle would leave its work in progress forever
+      if (bundle.objects.length > 0) {
+        // A submission that creates no draft is imported where it was made: in the current draft of the applicant, or in main
+        const draftId = createdDraftId ?? (getDraftContext(context, user) || null);
+        // The work is bound to the applicant, the form and the draft: the import is only allowed to write for this submission
+        const formSubmission = { applicant_id: user.id, form_id: formId, draft_id: draftId };
+        const work: any = await createWork(context, SYSTEM_USER, connector, workName, connector.internal_id, { receivedTime: now(), formSubmission });
+        workId = work.id;
+        await pushBundleToWorker(context, SYSTEM_USER, connectorId, {
+          type: 'bundle',
+          applicant_id: user.id,
+          content,
+          work_id: work.id,
+          // An empty id (not null) makes the worker send an empty draft header: a missing header would make the API fall back
+          // to the draft the applicant is in at import time, which may no longer be the one of the submission
+          draft_id: draftId ?? '',
+          // Without Create / Update knowledge, an existing object is not force merged (and not upserted, see isCreateOnlyFormImport)
+          update: canUpdateKnowledgeIn(user, draftId !== null),
+          no_split: true,
+        });
+      }
     } catch (error) {
       await rollbackFailedSubmission(context, createdDraftId, workId);
       throw error;
