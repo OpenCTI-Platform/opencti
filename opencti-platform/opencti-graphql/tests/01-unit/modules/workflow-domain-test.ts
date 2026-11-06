@@ -40,6 +40,8 @@ import {
   setWorkflowStatus,
   getWorkflowBypassStatuses,
   syncWorkflowInstanceFromExternalWrite,
+  resolveScopedDefinitionId,
+  assertScopeAllowed,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { projectWorkflowState, resolveMappedStatusId } from '../../../src/modules/workflow/domain/workflow-projection';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
@@ -5593,5 +5595,208 @@ describe('migrateWorkflowFromStatuses', () => {
       expect.arrayContaining([expect.objectContaining({ key: 'published_version' })]),
     );
     expect(result).toBeDefined();
+  });
+});
+
+describe('scope-aware workflow definitions', () => {
+  const published = { id: 'ra-v1', timestamp: '', createdBy: '', content: '{"initialState":"new","states":[],"transitions":[]}', validation_errors: [] };
+  const globalOnlySetting = { id: 'entity-setting-id', target_type: 'Case-Rfi', workflow_id: 'global-def' };
+  const bothSetting = {
+    ...globalOnlySetting,
+    request_access_workflow: { approval_admin: ['group-1'], approved_workflow_id: 'approved-status', declined_workflow_id: 'declined-status', workflow_definition_id: 'ra-def' },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(lockResources).mockResolvedValue({ unlock: vi.fn() });
+    vi.spyOn(ee, 'checkEnterpriseEdition').mockResolvedValue(undefined);
+  });
+
+  describe('resolveScopedDefinitionId', () => {
+    it('returns the Global id for Global and the request access id for RequestAccess', () => {
+      expect(resolveScopedDefinitionId(bothSetting as any, StatusScope.Global)).toBe('global-def');
+      expect(resolveScopedDefinitionId(bothSetting as any, StatusScope.RequestAccess)).toBe('ra-def');
+    });
+
+    it('returns request access id and never falls back to Global', () => {
+      expect(resolveScopedDefinitionId(globalOnlySetting as any, StatusScope.RequestAccess)).toBeUndefined();
+      expect(resolveScopedDefinitionId({ ...globalOnlySetting, request_access_workflow: { approval_admin: [] } } as any, StatusScope.RequestAccess)).toBeUndefined();
+      expect(resolveScopedDefinitionId(undefined, StatusScope.RequestAccess)).toBeUndefined();
+    });
+
+    it('does not fall back to the request access id for Global', () => {
+      const requestAccessOnly = { id: 'entity-setting-id', request_access_workflow: { approval_admin: [], workflow_definition_id: 'ra-def' } };
+      expect(resolveScopedDefinitionId(requestAccessOnly as any, StatusScope.Global)).toBeUndefined();
+    });
+  });
+
+  describe('assertScopeAllowed', () => {
+    it('rejects RequestAccess on any type other than Case-Rfi', () => {
+      expect(() => assertScopeAllowed('Report', StatusScope.RequestAccess)).toThrow();
+      expect(() => assertScopeAllowed('Case-Rfi', StatusScope.RequestAccess)).not.toThrow();
+    });
+
+    it('accepts Global on any type', () => {
+      expect(() => assertScopeAllowed('Report', StatusScope.Global)).not.toThrow();
+      expect(() => assertScopeAllowed('Case-Rfi', StatusScope.Global)).not.toThrow();
+    });
+  });
+
+  describe('getWorkflowDefinition', () => {
+    it('returns null for RequestAccess when only the Global definition exists', async () => {
+      (findByType as any).mockResolvedValue(globalOnlySetting);
+
+      const result = await getWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', false, StatusScope.RequestAccess);
+
+      expect(result).toBeNull();
+      expect(storeLoadById).not.toHaveBeenCalled();
+    });
+
+    it('loads the request access definition for RequestAccess', async () => {
+      (findByType as any).mockResolvedValue(bothSetting);
+      (storeLoadById as any).mockResolvedValue({ id: 'ra-def', name: 'Request access', published_version: published, all_versions: [published] });
+
+      const result = await getWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', false, StatusScope.RequestAccess);
+
+      expect(storeLoadById).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'ra-def', 'WorkflowDefinition');
+      expect(result).toMatchObject({ id: 'ra-def', name: 'Request access', initialState: 'new' });
+    });
+
+    it('rejects RequestAccess on a type other than Case-Rfi', async () => {
+      (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'global-def' });
+
+      await expect(getWorkflowDefinition(mockContext, mockUser, 'Report', false, StatusScope.RequestAccess)).rejects.toThrow();
+    });
+  });
+
+  describe('setWorkflowDefinition', () => {
+    const definition = JSON.stringify({ name: 'RA', initialState: 'new', states: [], transitions: [] });
+
+    it('stores the new definition id under request_access_workflow and keeps the other keys', async () => {
+      (findByType as any).mockResolvedValue({
+        ...globalOnlySetting,
+        request_access_workflow: { approval_admin: ['group-1'], approved_workflow_id: 'approved-status', declined_workflow_id: 'declined-status' },
+      });
+      (createEntity as any).mockResolvedValue({ id: 'ra-def', name: 'RA', all_versions: [published], draft_version: published });
+      (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id', target_type: 'Case-Rfi', workflow_id: 'global-def' } });
+
+      const result = await setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', definition, StatusScope.RequestAccess);
+
+      expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Case-Rfi', undefined);
+      expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-setting-id', 'EntitySetting', [
+        {
+          key: 'request_access_workflow',
+          value: [{ approval_admin: ['group-1'], approved_workflow_id: 'approved-status', declined_workflow_id: 'declined-status', workflow_definition_id: 'ra-def' }],
+        },
+      ]);
+      expect(updateAttribute).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-setting-id', 'EntitySetting', [expect.objectContaining({ key: 'workflow_id' })]);
+      expect(result).toMatchObject({ id: 'entity-setting-id', workflow_id: 'ra-def', published: false });
+    });
+
+    it('creates a new request access definition even when a Global one exists', async () => {
+      (findByType as any).mockResolvedValue(globalOnlySetting);
+      (createEntity as any).mockResolvedValue({ id: 'ra-def', name: 'RA', all_versions: [published], draft_version: published });
+      (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id' } });
+
+      await setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', definition, StatusScope.RequestAccess);
+
+      expect(createEntity).toHaveBeenCalledTimes(1);
+      expect(storeLoadById).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'global-def', 'WorkflowDefinition');
+    });
+
+    it('updates the existing request access definition in place and leaves entity setting untouched', async () => {
+      (findByType as any).mockResolvedValue(bothSetting);
+      (storeLoadById as any).mockResolvedValue({ id: 'ra-def', name: 'RA', all_versions: [published], draft_version: published, published_version: published });
+
+      await setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', definition, StatusScope.RequestAccess);
+
+      expect(validateWorkflowDefinitionData).toHaveBeenCalledWith(mockContext, mockUser, definition, 'Case-Rfi', 'ra-def');
+      expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'ra-def', 'WorkflowDefinition', expect.any(Array));
+      expect(updateAttribute).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-setting-id', 'EntitySetting', expect.anything());
+      expect(createEntity).not.toHaveBeenCalled();
+    });
+
+    it('rejects RequestAccess on a type other than Case-Rfi', async () => {
+      (findByType as any).mockResolvedValue({ id: 'entity-setting-id', target_type: 'Report' });
+
+      await expect(setWorkflowDefinition(mockContext, mockUser, 'Report', definition, StatusScope.RequestAccess)).rejects.toThrow();
+      expect(createEntity).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteWorkflowDefinition', () => {
+    it('removes only workflow_definition_id for RequestAccess', async () => {
+      (findByType as any).mockResolvedValue(bothSetting);
+      (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id' } });
+
+      await deleteWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess);
+
+      expect(updateAttribute).toHaveBeenCalledTimes(1);
+      const [, , , , input] = (updateAttribute as any).mock.calls[0];
+      expect(input).toEqual([{
+        key: 'request_access_workflow',
+        value: [{ approval_admin: ['group-1'], approved_workflow_id: 'approved-status', declined_workflow_id: 'declined-status' }],
+      }]);
+      expect(input[0].value[0]).not.toHaveProperty('workflow_definition_id');
+    });
+
+    it('leaves Global untouched when RequestAccess is deleted and nothing is set', async () => {
+      (findByType as any).mockResolvedValue(globalOnlySetting);
+
+      const result = await deleteWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess);
+
+      expect(updateAttribute).not.toHaveBeenCalled();
+      expect(result).toBe(globalOnlySetting);
+    });
+
+    it('clears only workflow_id for Global and keeps the request access definition', async () => {
+      (findByType as any).mockResolvedValue(bothSetting);
+      (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id' } });
+
+      await deleteWorkflowDefinition(mockContext, mockUser, 'Case-Rfi');
+
+      expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-setting-id', 'EntitySetting', [{ key: 'workflow_id', value: [null] }]);
+    });
+  });
+
+  describe('publishWorkflowDefinition', () => {
+    it('refuses to publish when only the Global definition exists', async () => {
+      (findByType as any).mockResolvedValue(globalOnlySetting);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess)).rejects.toThrow('No workflow definition to publish');
+      expect(storeLoadById).not.toHaveBeenCalled();
+    });
+
+    it('publishes the request access definition, not the Global one', async () => {
+      const draft = { ...published, id: 'ra-draft' };
+      (findByType as any).mockResolvedValue(bothSetting);
+      (storeLoadById as any).mockResolvedValue({ id: 'ra-def', name: 'RA', draft_version: draft, all_versions: [draft] });
+      (validateWorkflowDefinitionData as any).mockResolvedValue([]);
+      (fullEntitiesList as any).mockResolvedValue([]);
+
+      const result = await publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess);
+
+      expect(storeLoadById).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'ra-def', 'WorkflowDefinition');
+      expect(updateAttribute).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'ra-def', 'WorkflowDefinition', expect.arrayContaining([expect.objectContaining({ key: 'published_version' })]));
+      expect(result).toMatchObject({ id: 'entity-setting-id', workflow_id: 'ra-def', published: true });
+    });
+  });
+
+  describe('restorePublishedWorkflowDefinition', () => {
+    it('fails when only the Global definition exists', async () => {
+      (findByType as any).mockResolvedValue(globalOnlySetting);
+
+      await expect(restorePublishedWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess)).rejects.toThrow('No workflow definition found');
+    });
+
+    it('clears the draft of the request access definition', async () => {
+      (findByType as any).mockResolvedValue(bothSetting);
+      (storeLoadById as any).mockResolvedValue({ id: 'ra-def', published_version: published, draft_version: { ...published, id: 'ra-draft' }, all_versions: [published] });
+
+      const result = await restorePublishedWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess);
+
+      expect(updateAttribute).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'ra-def', 'WorkflowDefinition', [{ key: 'draft_version', value: [] }]);
+      expect(result).toMatchObject({ workflow_id: 'ra-def', published: true });
+    });
   });
 });

@@ -21185,22 +21185,26 @@ export type MutationWorkInvestigationStatusEditArgs = {
 
 export type MutationWorkflowDefinitionDeleteArgs = {
   entityType: Scalars['String']['input'];
+  scope?: InputMaybe<StatusScope>;
 };
 
 
 export type MutationWorkflowDefinitionPublishArgs = {
   entityType: Scalars['String']['input'];
+  scope?: InputMaybe<StatusScope>;
 };
 
 
 export type MutationWorkflowDefinitionRestorePublishedArgs = {
   entityType: Scalars['String']['input'];
+  scope?: InputMaybe<StatusScope>;
 };
 
 
 export type MutationWorkflowDefinitionSetArgs = {
   definition: Scalars['String']['input'];
   entityType: Scalars['String']['input'];
+  scope?: InputMaybe<StatusScope>;
 };
 
 
@@ -29284,6 +29288,7 @@ export type QueryWorkflowBypassStatusesArgs = {
 export type QueryWorkflowDefinitionArgs = {
   allowDraft?: InputMaybe<Scalars['Boolean']['input']>;
   entityType: Scalars['String']['input'];
+  scope?: InputMaybe<StatusScope>;
 };
 
 

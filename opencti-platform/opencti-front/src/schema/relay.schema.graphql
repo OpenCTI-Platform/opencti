@@ -9760,10 +9760,10 @@ type Mutation {
   workDelete(connectorId: String!): Boolean
   workEdit(id: ID!): WorkEditMutations
   workInvestigationStatusEdit(status: WorkInvestigationStatus!, workId: ID!): Work
-  workflowDefinitionDelete(entityType: String!): EntitySetting
-  workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
-  workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult
-  workflowDefinitionSet(definition: String!, entityType: String!): WorkflowDefinitionMutationResult
+  workflowDefinitionDelete(entityType: String!, scope: StatusScope): EntitySetting
+  workflowDefinitionPublish(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
+  workflowDefinitionRestorePublished(entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
+  workflowDefinitionSet(definition: String!, entityType: String!, scope: StatusScope): WorkflowDefinitionMutationResult
   workflowMigrate(entityType: String!, overwrite: Boolean = false, publish: Boolean = false): WorkflowDefinitionMutationResult
   workspaceAdd(input: WorkspaceAddInput!): Workspace
   workspaceConfigurationImport(file: Upload!): String!
@@ -12390,7 +12390,7 @@ type Query {
   vulnerability(id: String): Vulnerability
   work(id: ID!): Work
   workflowBypassStatuses(entityId: String!): [WorkflowBypassStatus!]!
-  workflowDefinition(allowDraft: Boolean, entityType: String!): WorkflowSchema
+  workflowDefinition(allowDraft: Boolean, entityType: String!, scope: StatusScope): WorkflowSchema
   workflowDefinitionPublished(entityType: String!): Boolean
   workflowInstance(entityId: String!): WorkflowInstance
   workflowMassTransitions(entityIds: [String!], entityType: String!, excludedIds: [String!], filters: String, search: String): [WorkflowTransition!]!
