@@ -51,6 +51,8 @@ export interface WorkflowPendingTransition {
   asyncActions: AsyncActionSlot[];
   syncActions: WorkflowActionConfig[];
   onEnterActions?: WorkflowActionConfig[]; // onEnter actions of the target state, serialized so phase 2 can replay them.
+  /** Request-access definitions only: the decision recorded once the target outcome state is entered. */
+  requestAccessOutcome?: 'APPROVED' | 'DECLINED';
   draftEntityIds?: string[];
 }
 

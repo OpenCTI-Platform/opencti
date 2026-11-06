@@ -39,7 +39,7 @@ import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-l
 import { addFilter } from '../../../utils/filtering/filtering-utils';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../../draftWorkspace/draftWorkspace-types';
-import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
+import { type BasicStoreEntityCaseRfi, ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import { validateSetting } from '../../entitySetting/entitySetting-validators';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
@@ -67,6 +67,7 @@ import { findInstancesInStates, isStatusReferencedByEntity } from './workflow-st
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
 import { appendWorkflowHistoryEntry, closingReasonNotWrittenError, isClosingReasonLost, runWorkflowBypassActions } from './workflow-async-completion';
 import { type ConvertStatusToDefinitionResult, convertStatusToDefinition, getPublishBlockingDiagnostics, pickMigrationScope } from '../migration/status-to-definition-converter';
+import { applyRequestAccessOutcome, assertCanEnterRequestAccessOutcome, findStateOutcome } from './workflow-request-access';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -2074,6 +2075,11 @@ export const triggerWorkflowEvent = async (
     if (missingInput) {
       return { success: false, reason: missingInput, entity };
     }
+    // Entering an outcome state decides the access request, which takes the request approver rights of the actual caller.
+    const requestAccessOutcome = resolved.scope === StatusScope.RequestAccess ? findStateOutcome(definitionData, transition?.to) : undefined;
+    if (requestAccessOutcome) {
+      await assertCanEnterRequestAccessOutcome(context, user, entity as BasicStoreEntityCaseRfi);
+    }
 
     // 6. Create instance and trigger the event
     const instance = WorkflowFactory.getInstance(definitionData, definition, currentStateId || '', workflowContext);
@@ -2127,6 +2133,7 @@ export const triggerWorkflowEvent = async (
         asyncActions: rawSlots,
         syncActions: serializedTransitions,
         ...(serializedOnEnterActions.length > 0 ? { onEnterActions: serializedOnEnterActions } : {}),
+        ...(requestAccessOutcome ? { requestAccessOutcome } : {}),
       };
 
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
@@ -2181,6 +2188,9 @@ export const triggerWorkflowEvent = async (
       await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
         { key: 'pendingError', value: [closingReasonNotWrittenError(resolvedClosingReason.closingReason ?? null)] },
       ]);
+    }
+    if (requestAccessOutcome) {
+      await applyRequestAccessOutcome(executionContext, executionUser, entity as BasicStoreEntityCaseRfi, requestAccessOutcome);
     }
 
     await lock.unlock();
