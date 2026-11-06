@@ -87,9 +87,8 @@ export const importConnector = async (
     const name = connectorName(candidate);
     return !!reservedNames?.has(name) || connectors.some((connector) => connector.name === name);
   };
+  const existing = connectors.find(({ name }) => name === (bundleId ?? connectorName(bundleConnector.name)));
   const sameName = connectors.find(({ name }) => name === connectorName(bundleConnector.name));
-  const isSameConnector = sameName?.catalog_id === bundleConnector.catalog_id && sameName?.manager_contract_image === bundleConnector.manager_contract_image;
-  const existing = connectors.find(({ name }) => name === (bundleId ?? connectorName(bundleConnector.name))) ?? (isSameConnector ? sameName : undefined);
   if (existing && mode === ConfigImportMode.Add) {
     return refused('exists', 'Connector already exists', true, bundleConnector);
   }

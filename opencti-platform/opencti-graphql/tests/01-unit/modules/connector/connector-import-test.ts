@@ -218,20 +218,19 @@ describe('importConnector overwrite and copy', () => {
     expect(managedConnectorAdd).not.toHaveBeenCalled();
   });
 
-  it('never overwrites another connector that only shares the display name', async () => {
-    withConnectors([{ ...mitreConnector, name: 'mitre-att-ck', manager_contract_image: 'opencti/connector-other' }]);
-    const configuration = connectorConfiguration({ name: 'MITRE ATT&CK' });
+  it('never overwrites another connector that only shares the display name, even of the same type', async () => {
+    withConnectors([{ ...mitreConnector, name: 'mitre-att-ck', title: 'MITRE ATT&CK' }]);
+    const configuration = connectorConfiguration({ name: 'MITRE ATT&CK', manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }] });
     const result = await importConnector(context, user, configuration, { ...overwrite, bundleId: 'mitre', credentials: { MITRE_API_KEY: 'key' } });
     expect(result).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true });
     expectNothingWritten();
   });
 
-  it('overwrites the connector of the same catalog and image created under the display name', async () => {
+  it('adds it as a copy under a free name when the display name is taken', async () => {
     withConnectors([{ ...mitreConnector, name: 'mitre-att-ck', title: 'MITRE ATT&CK' }]);
-    const configuration = connectorConfiguration({ name: 'MITRE ATT&CK', manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }] });
-    const result = await importConnector(context, user, configuration, { ...overwrite, bundleId: 'mitre' });
-    expect(result).toMatchObject({ status: 'overwritten' });
-    expect(managedConnectorEdit).toHaveBeenCalledWith(context, user, expect.objectContaining({ name: 'mitre-att-ck' }));
+    const configuration = connectorConfiguration({ name: 'MITRE ATT&CK' });
+    const result = await importConnector(context, user, configuration, { mode: ConfigImportMode.Copy, bundleId: 'mitre', credentials: { MITRE_API_KEY: 'key' } });
+    expect(result).toMatchObject({ status: 'created', reason: 'Added as "MITRE ATT&CK (1)"' });
   });
 
   it('asks for a stored secret again when the connector is added as a copy', async () => {
