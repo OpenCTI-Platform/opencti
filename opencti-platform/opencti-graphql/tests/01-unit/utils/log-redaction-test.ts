@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parse, stripIgnoredCharacters } from 'graphql';
-import { analyzeRequestSensitivity, redactRequestQuery, redactRequestVariables, redactSensitiveData } from '../../../src/utils/log-redaction';
+import { analyzeRequestSensitivity, MAX_REDACTION_DEPTH, redactRequestQuery, redactRequestVariables, redactSensitiveData } from '../../../src/utils/log-redaction';
 import { REDACTED_INFORMATION } from '../../../src/database/utils';
 
 const R = REDACTED_INFORMATION;
@@ -42,6 +42,26 @@ describe('log-redaction - redactSensitiveData', () => {
     const data = { secret: 'v' };
     expect(redactSensitiveData(data)).not.toBe(data);
     expect(data.secret).toBe('v');
+  });
+
+  it('should replace data nested deeper than the limit, without overflowing the stack', () => {
+    const build = (depth: number) => {
+      let data: unknown = 'v';
+      for (let i = 0; i < depth; i += 1) data = i % 2 ? [data] : { a: data };
+      return data;
+    };
+    const depthOf = (data: unknown) => {
+      let depth = 0;
+      let current = data;
+      while (current !== null && typeof current === 'object') {
+        current = Array.isArray(current) ? current[0] : (current as { a: unknown }).a;
+        depth += 1;
+      }
+      return { depth, leaf: current };
+    };
+    expect(depthOf(redactSensitiveData(build(MAX_REDACTION_DEPTH + 1)))).toEqual({ depth: MAX_REDACTION_DEPTH + 1, leaf: 'v' });
+    expect(depthOf(redactSensitiveData(build(MAX_REDACTION_DEPTH + 2)))).toEqual({ depth: MAX_REDACTION_DEPTH + 1, leaf: R });
+    expect(() => redactSensitiveData(build(100_000))).not.toThrow();
   });
 
   it('should use the given keys', () => {
@@ -109,6 +129,12 @@ describe('log-redaction - analyzeRequestSensitivity', () => {
     expect(analyzeRequestSensitivity(parse('mutation M { m(input: { secret: "v" }) { id } }')).hideQuery).toBe(true);
     expect(analyzeRequestSensitivity(parse('mutation M { m(input: { key: ["secret"], value: ["v"] }) { id } }')).hideQuery).toBe(true);
     expect(analyzeRequestSensitivity(parse('mutation M { m(input: { secret: null }) { id } }')).hideQuery).toBe(false);
+  });
+
+  it('should hide the query text when a sensitive variable has a default value', () => {
+    expect(analyzeRequestSensitivity(parse('mutation M($a: String = "v") { m(input: { secret: $a }) { id } }')).hideQuery).toBe(true);
+    expect(analyzeRequestSensitivity(parse('mutation M($a: String = null) { m(input: { secret: $a }) { id } }')).hideQuery).toBe(false);
+    expect(analyzeRequestSensitivity(parse('query Q($first: Int = 10) { reports(first: $first) { edges { node { id } } } }')).hideQuery).toBe(false);
   });
 });
 

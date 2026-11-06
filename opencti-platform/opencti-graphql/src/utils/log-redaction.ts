@@ -55,30 +55,36 @@ const isSensitiveEditInput = (value: Record<string, unknown>, sensitiveKeys: Rea
 // - the value of a sensitive key: { password: 'xxx' }
 // - the value of an edit input whose key is sensitive: { key: 'password', value: 'xxx' }
 // The data given is never modified.
+// Data nested deeper than MAX_REDACTION_DEPTH is replaced by the redaction marker: it cannot be checked
+// without risking a stack overflow (a JSON variable can be nested at will by the caller).
+export const MAX_REDACTION_DEPTH = 100;
 export const redactSensitiveData = <T>(data: T, sensitiveKeys: ReadonlySet<string> = SENSITIVE_KEYS): T => {
   const seen = new WeakMap<object, unknown>();
-  const redact = (value: unknown): unknown => {
-    if (Array.isArray(value)) {
-      if (seen.has(value)) return seen.get(value);
-      const copy: unknown[] = [];
-      seen.set(value, copy);
-      value.forEach((element) => copy.push(redact(element)));
-      return copy;
-    }
-    if (!isPlainObject(value)) {
+  const redact = (value: unknown, depth: number): unknown => {
+    const isArray = Array.isArray(value);
+    if (!isArray && !isPlainObject(value)) {
       return value;
     }
     if (seen.has(value)) return seen.get(value);
+    if (depth > MAX_REDACTION_DEPTH) {
+      return REDACTED_INFORMATION;
+    }
+    if (isArray) {
+      const copy: unknown[] = [];
+      seen.set(value, copy);
+      value.forEach((element) => copy.push(redact(element, depth + 1)));
+      return copy;
+    }
     const copy: Record<string, unknown> = {};
     seen.set(value, copy);
     const isEditInput = isSensitiveEditInput(value, sensitiveKeys);
     Object.entries(value).forEach(([key, element]) => {
       const isSensitive = sensitiveKeys.has(key) || (isEditInput && key === 'value');
-      copy[key] = isSensitive && isNotEmptyField(element) ? REDACTED_INFORMATION : redact(element);
+      copy[key] = isSensitive && isNotEmptyField(element) ? REDACTED_INFORMATION : redact(element, depth + 1);
     });
     return copy;
   };
-  return redact(data) as T;
+  return redact(data, 0) as T;
 };
 
 const collectVariables = (node: ASTNode, into: Set<string>) => {
@@ -140,6 +146,7 @@ export const analyzeRequestSensitivity = (document: DocumentNode | undefined | n
   const sensitiveKeys = isAuthentication ? new Set([...SENSITIVE_KEYS, ...AUTHENTICATION_SENSITIVE_KEYS]) : SENSITIVE_KEYS;
   let hideQuery = rootFields.some((name) => CREDENTIAL_MUTATIONS.includes(name));
   const sensitiveVariables = new Set<string>();
+  const variablesWithDefaultLiteral = new Set<string>();
   const markSensitiveValue = (value: ValueNode) => {
     collectVariables(value, sensitiveVariables);
     if (hasLiteral(value)) {
@@ -166,7 +173,16 @@ export const analyzeRequestSensitivity = (document: DocumentNode | undefined | n
       const isSensitive = keyValues.some((k) => k.kind !== Kind.STRING || sensitiveKeys.has(k.value));
       if (isSensitive) markSensitiveValue(valueField.value);
     },
+    // query($anyName: String = "xxx"): the default value is written in the query text
+    VariableDefinition: (definition) => {
+      if (definition.defaultValue && hasLiteral(definition.defaultValue)) {
+        variablesWithDefaultLiteral.add(definition.variable.name.value);
+      }
+    },
   });
+  if ([...sensitiveVariables].some((name) => variablesWithDefaultLiteral.has(name))) {
+    hideQuery = true;
+  }
   return { hideQuery, sensitiveKeys, sensitiveVariables };
 };
 
