@@ -39,6 +39,9 @@ export const NEW_EVENT_NAME = 'NEW_EVENT';
 
 export const NEW_STATUS_NAME = 'NEW_STATUS';
 
+// Request access exists for Case-Rfi only; the backend rejects the REQUEST_ACCESS scope for any other type.
+export const REQUEST_ACCESS_ENTITY_TYPE = 'Case-Rfi';
+
 export enum WorkflowNodeType {
   status = 'status',
   transition = 'transition',

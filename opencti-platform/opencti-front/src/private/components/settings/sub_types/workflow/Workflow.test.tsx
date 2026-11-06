@@ -7,6 +7,9 @@ import useWorkflowLayout from './hooks/useWorkflowLayout';
 import { useWorkflowInitialElements } from './hooks/useWorkflowInitialElements';
 import { WorkflowNodeType } from './utils';
 import ThemeDark from '../../../../../components/ThemeDark';
+import { TooltipProvider } from '@filigran/design-system';
+import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
+import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import type { PreloadedQuery } from 'react-relay';
 import { SubTypeWorkflowQuery } from '../__generated__/SubTypeWorkflowQuery.graphql';
 import { SubTypeWorkflowDependenciesQuery } from '../__generated__/SubTypeWorkflowDependenciesQuery.graphql';
@@ -25,7 +28,9 @@ const testTheme = createTheme(ThemeDark() as ThemeOptions);
 const renderWithTheme = (component: React.ReactElement) => {
   return render(
     <ThemeProvider theme={testTheme}>
-      {component}
+      <TooltipProvider>
+        {component}
+      </TooltipProvider>
     </ThemeProvider>,
   );
 };
@@ -235,6 +240,18 @@ vi.mock('./EdgeTypes', () => ({
   default: {},
 }));
 
+vi.mock('../SubTypeOutletContext', () => ({
+  useSubTypeOutletContext: vi.fn(),
+}));
+
+vi.mock('../../../../../utils/hooks/useEnterpriseEdition', () => ({
+  default: vi.fn(),
+}));
+
+vi.mock('./RequestAccessValidatorGroup', () => ({
+  default: () => <div data-testid="validator-group-field" />,
+}));
+
 // Mock MESSAGING$ to capture toast calls — must use vi.hoisted because vi.mock is hoisted
 const { mockNotifyError, mockNotifySuccess } = vi.hoisted(() => ({
   mockNotifyError: vi.fn(),
@@ -255,6 +272,10 @@ describe('Workflow Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useApiMutationCallIndex = 0;
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+    vi.mocked(useSubTypeOutletContext).mockReturnValue({
+      subType: { settings: { availableSettings: ['workflow_configuration', 'request_access_workflow'] } },
+    } as never);
     mockGetNode.mockReturnValue({ id: 'test-node' });
     mockSetNodes = vi.fn();
     mockSetEdges = vi.fn();
@@ -592,7 +613,7 @@ describe('Workflow Component', () => {
       await user.click(screen.getByTestId('publish-button'));
 
       expect(mockPublishWorkflowDefinition).toHaveBeenCalledWith(
-        expect.objectContaining({ variables: { entityType: 'DraftWorkspace' } }),
+        expect.objectContaining({ variables: { entityType: 'DraftWorkspace', scope: 'GLOBAL' } }),
       );
     });
 
@@ -711,7 +732,7 @@ describe('Workflow Component', () => {
 
       expect(mockRestoreWorkflowDefinition).toHaveBeenCalledWith(
         expect.objectContaining({
-          variables: { entityType: 'DraftWorkspace' },
+          variables: { entityType: 'DraftWorkspace', scope: 'GLOBAL' },
         }),
       );
     });
@@ -744,6 +765,83 @@ describe('Workflow Component', () => {
       await waitFor(() => {
         expect(screen.getByTestId('publish-button')).toHaveTextContent('Published');
       });
+    });
+  });
+
+  describe('Request access scope', () => {
+    const renderRfi = (props: Partial<React.ComponentProps<typeof Workflow>> = {}) => renderWithTheme(
+      <Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="Case-Rfi" {...props} />,
+    );
+
+    it('shows the Global / Request access switch for Case-Rfi only', () => {
+      const { unmount } = renderRfi();
+      expect(screen.getByRole('radio', { name: 'Global' })).toHaveAttribute('aria-checked', 'true');
+      expect(screen.getByRole('radio', { name: 'Request access workflow' })).toHaveAttribute('aria-checked', 'false');
+      unmount();
+
+      // Another entity type, even with the setting available.
+      const other = renderRfi({ entityType: 'Case-Rfd' });
+      expect(screen.queryByRole('radio', { name: 'Request access workflow' })).not.toBeInTheDocument();
+      other.unmount();
+
+      // Case-Rfi without Enterprise Edition.
+      vi.mocked(useEnterpriseEdition).mockReturnValue(false);
+      const community = renderRfi();
+      expect(screen.queryByRole('radio', { name: 'Request access workflow' })).not.toBeInTheDocument();
+      community.unmount();
+
+      // Case-Rfi without the request access setting.
+      vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+      vi.mocked(useSubTypeOutletContext).mockReturnValue({
+        subType: { settings: { availableSettings: ['workflow_configuration'] } },
+      } as never);
+      renderRfi();
+      expect(screen.queryByRole('radio', { name: 'Request access workflow' })).not.toBeInTheDocument();
+    });
+
+    it('asks to change the scope when the other segment is picked', async () => {
+      const user = userEvent.setup();
+      const onScopeChange = vi.fn();
+      renderRfi({ onScopeChange });
+
+      await user.click(screen.getByRole('radio', { name: 'Request access workflow' }));
+
+      expect(onScopeChange).toHaveBeenCalledWith('REQUEST_ACCESS');
+    });
+
+    it('publish sends scope REQUEST_ACCESS when selected', async () => {
+      const user = userEvent.setup();
+      renderRfi({ scope: 'REQUEST_ACCESS' });
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      expect(mockPublishWorkflowDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({ variables: { entityType: 'Case-Rfi', scope: 'REQUEST_ACCESS' } }),
+      );
+    });
+
+    it('sends scope REQUEST_ACCESS on save and restore too', async () => {
+      const user = userEvent.setup();
+      renderRfi({ scope: 'REQUEST_ACCESS' });
+
+      await user.click(screen.getByTestId('reset-button'));
+      await user.click(screen.getByTestId('restore-button'));
+
+      expect(mockSaveWorkflowDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({ variables: expect.objectContaining({ entityType: 'Case-Rfi', scope: 'REQUEST_ACCESS' }) }),
+      );
+      expect(mockRestoreWorkflowDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({ variables: { entityType: 'Case-Rfi', scope: 'REQUEST_ACCESS' } }),
+      );
+    });
+
+    it('shows the validator group field in Request access scope', () => {
+      const { unmount } = renderRfi({ scope: 'REQUEST_ACCESS' });
+      expect(screen.getByTestId('validator-group-field')).toBeInTheDocument();
+      unmount();
+
+      renderRfi({ scope: 'GLOBAL' });
+      expect(screen.queryByTestId('validator-group-field')).not.toBeInTheDocument();
     });
   });
 });
