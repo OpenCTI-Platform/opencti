@@ -12,8 +12,8 @@ import {
   USER_DISINFORMATION_ANALYST,
   USER_EDITOR,
 } from '../../utils/testQuery';
-import { findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
-import { unSetOrganization, setOrganization, queryAsAdmin, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { addCaseRfi, findById as findRFIById } from '../../../src/modules/case/case-rfi/case-rfi-domain';
+import { unSetOrganization, setOrganization, queryAsAdmin, queryAsAdminWithSuccess, queryAsUser, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
 import {
   ActionStatus,
@@ -29,7 +29,7 @@ import { logApp } from '../../../src/config/conf';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../../../src/types/store';
-import { deleteElementById, internalDeleteElementById, loadEntity, storeLoadByIdWithRefs } from '../../../src/database/middleware';
+import { deleteElementById, internalDeleteElementById, loadEntity, storeLoadByIdWithRefs, updateAttribute } from '../../../src/database/middleware';
 import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
 import { INPUT_GRANTED_REFS, OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
@@ -253,6 +253,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   let caseRfiIdForApproval: string;
   let caseRfiIdForReject: string;
   let caseRfiIdForCounts: string;
+  let caseRfiIdForBypass: string;
   let malwareId: string;
   let testOrgId: string;
   let approvedStatusId: string;
@@ -678,10 +679,27 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   });
 
   it('bypass still refused on a legacy request-access RFI', async () => {
-    await expect(setWorkflowStatus(testContext, ADMIN_USER, caseRfiIdForCounts, approvedStatusId, false))
+    const requestAccessData = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST, {
+      query: CREATE_REQUEST_ACCESS_QUERY,
+      variables: {
+        input: {
+          request_access_reason: 'Access needed for the legacy bypass refusal',
+          request_access_entities: [malwareId],
+          request_access_members: [testOrgId],
+          request_access_type: 'organization_sharing',
+        },
+      },
+    });
+    caseRfiIdForBypass = requestAccessData?.data?.requestAccessAdd;
+    const { x_opencti_workflow_id: initialStatusId } = await findRFIById(testContext, ADMIN_USER, caseRfiIdForBypass);
+
+    await expect(setWorkflowStatus(testContext, ADMIN_USER, caseRfiIdForBypass, approvedStatusId, false))
       .rejects.toThrow('RequestAccess workflow bypass is not supported');
-    await expect(setWorkflowStatus(testContext, ADMIN_USER, caseRfiIdForCounts, approvedStatusId, true))
+    await expect(setWorkflowStatus(testContext, ADMIN_USER, caseRfiIdForBypass, approvedStatusId, true))
       .rejects.toThrow('RequestAccess workflow bypass is not supported');
+    const rfi = await findRFIById(testContext, ADMIN_USER, caseRfiIdForBypass);
+    expect(rfi.x_opencti_workflow_id).toBe(initialStatusId);
+    expect(JSON.parse(rfi.x_opencti_request_access).status).toBe(ActionStatus.NEW);
   });
 
   it('should remove platform organization and test data', async () => {
@@ -689,6 +707,7 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
     await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForApproval, ENTITY_TYPE_CONTAINER_CASE_RFI);
     await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForReject, ENTITY_TYPE_CONTAINER_CASE_RFI);
     await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForCounts, ENTITY_TYPE_CONTAINER_CASE_RFI);
+    await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForBypass, ENTITY_TYPE_CONTAINER_CASE_RFI);
 
     // revert platform orga
     await unSetOrganization();
@@ -747,6 +766,15 @@ describe('Request access decided through workflow transitions', async () => {
   };
   const statusIdOf = async (templateId: string) => (await findWorkflowStatusByTemplateId(testContext, ADMIN_USER, templateId)).id;
   const accept = (rfiId: string, user: AuthUser = ADMIN_USER) => triggerWorkflowEvent(testContext, user, rfiId, 'Accept');
+  // An RFI whose instance is not created yet, sitting at the status of a later state (e.g. migrated in flight)
+  const withoutInstanceAt = async (rfiId: string, templateId: string) => {
+    const instance = await findInstance(rfiId);
+    await deleteElementById(testContext, ADMIN_USER, instance!.id, ENTITY_TYPE_WORKFLOW_INSTANCE);
+    await updateAttribute(testContext, ADMIN_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI, [
+      { key: 'x_opencti_workflow_id', value: [await statusIdOf(templateId)] },
+    ], { workflowInternalWrite: true });
+    expect(await findInstance(rfiId)).toBeFalsy();
+  };
 
   beforeAll(async () => {
     editionSpies.push(
@@ -978,5 +1006,72 @@ describe('Request access decided through workflow transitions', async () => {
     expect(malware[INPUT_GRANTED_REFS].map((organization: BasicStoreEntity) => organization.internal_id)).toContain(testOrganizationId);
     expect(approvedCount).toHaveBeenCalledTimes(1);
     expect(declinedCount).not.toHaveBeenCalled();
+  });
+
+  it('caseRfiApprove and caseRfiDecline decide from the status of an RFI without instance yet', async () => {
+    const escalatedRfiId = await requestAccess();
+    await withoutInstanceAt(escalatedRfiId, templateIds.escalated);
+
+    const approvalResult = await queryAsAdmin({ query: APPROVE_RFI_QUERY, variables: { id: escalatedRfiId } });
+
+    expect(approvalResult.errors?.[0].message).toBe('No transition to APPROVED is allowed from the current state');
+    expect((await loadDecision(escalatedRfiId))).toMatchObject({ statusId: await statusIdOf(templateIds.escalated), action: { status: ActionStatus.NEW } });
+
+    const reviewedRfiId = await requestAccess();
+    await withoutInstanceAt(reviewedRfiId, templateIds.review);
+
+    const declineResult = await queryAsAdmin({ query: DECLINE_RFI_QUERY, variables: { id: reviewedRfiId } });
+
+    expect(declineResult.errors?.[0].message).toBe('This transition requires a comment');
+    expect((await loadDecision(reviewedRfiId)).action.status).toBe(ActionStatus.NEW);
+    expect(declinedCount).not.toHaveBeenCalled();
+
+    await queryAsAdminWithSuccess({ query: APPROVE_RFI_QUERY, variables: { id: reviewedRfiId } });
+
+    const instance = await findInstance(reviewedRfiId) as BasicStoreEntity & { currentState?: string; history?: string };
+    expect(instance?.currentState).toBe(templateIds.approved);
+    expect(JSON.parse(instance?.history ?? '[]').map((entry: { state: string }) => entry.state)).toEqual([templateIds.review, templateIds.approved]);
+    expect((await loadDecision(reviewedRfiId)).action.status).toBe(ActionStatus.APPROVED);
+    expect(share).toHaveBeenCalledTimes(1);
+    expect(approvedCount).toHaveBeenCalledTimes(1);
+  });
+
+  it('caseRfiDecline is refused to a user without KNOWLEDGE_ORGANIZATION_RESTRICT', async () => {
+    const rfiId = await requestAccess();
+
+    const declineResult = await queryAsUser(USER_EDITOR, { query: DECLINE_RFI_QUERY, variables: { id: rfiId } });
+
+    expect(declineResult.errors?.[0].message).toContain('You need to be able to edit the RFI and share knowledge');
+    expect((await loadDecision(rfiId))).toMatchObject({ statusId: await statusIdOf(templateIds.pending), action: { status: ActionStatus.NEW } });
+    expect((await findInstance(rfiId))?.currentState).toBe(templateIds.pending);
+    expect(notifyResult).not.toHaveBeenCalled();
+    expect(declinedCount).not.toHaveBeenCalled();
+  });
+
+  it('bypass with actions into Declined records the decline without sharing', async () => {
+    const rfiId = await requestAccess();
+    const declinedStatusId = await statusIdOf(templateIds.declined);
+
+    expect(await setWorkflowStatus(testContext, ADMIN_USER, rfiId, declinedStatusId, true)).toMatchObject({ success: true, newState: templateIds.declined });
+
+    expect((await loadDecision(rfiId))).toMatchObject({ statusId: declinedStatusId, action: { status: ActionStatus.DECLINED } });
+    expect(share).not.toHaveBeenCalled();
+    expect(notifyResult).toHaveBeenCalledTimes(1);
+    expect(notifyResult).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.anything(), ADMIN_USER.id, expect.any(String), ActionStatus.DECLINED);
+    expect(declinedCount).toHaveBeenCalledTimes(1);
+    expect(approvedCount).not.toHaveBeenCalled();
+  });
+
+  it('a plain RFI on a request access status stays on the legacy flow', async () => {
+    const plainRfi = await addCaseRfi(testContext, ADMIN_USER, { name: `Plain RFI on a request access status ${suffix}`, x_opencti_workflow_id: await statusIdOf(templateIds.pending) });
+    createdRfiIds.push(plainRfi.id);
+
+    const approvalResult = await queryAsAdmin({ query: APPROVE_RFI_QUERY, variables: { id: plainRfi.id } });
+
+    expect(approvalResult.errors?.[0].message).toBe('This RFI is not compatible');
+    await expect(setWorkflowStatus(testContext, ADMIN_USER, plainRfi.id, await statusIdOf(templateIds.approved), true))
+      .rejects.toThrow('RequestAccess workflow bypass is not supported');
+    expect(share).not.toHaveBeenCalled();
+    expect(approvedCount).not.toHaveBeenCalled();
   });
 });

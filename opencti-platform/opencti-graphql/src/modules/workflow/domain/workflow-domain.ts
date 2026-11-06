@@ -426,15 +426,36 @@ const resolveEntityDefinition = async (
   return { instanceEntity, suppliedStatus, ...await resolveInstanceDefinition(context, user, entitySetting, instanceEntity, suppliedStatus) };
 };
 
-/** Scope of the published workflow an entity runs on, or null when it runs on none. */
-export const resolveEntityWorkflowScope = async (
+const hasRequestAccess = (entity: BasicStoreEntity): boolean => {
+  const { x_opencti_request_access: rawRequestAccess } = entity as { x_opencti_request_access?: unknown };
+  if (typeof rawRequestAccess !== 'string') return false;
+  try {
+    const requestAccess = JSON.parse(rawRequestAccess);
+    return !!requestAccess && typeof requestAccess === 'object';
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Where the request of an RFI stands on the published request-access workflow, or null when it runs on the
+ * legacy flow. The state is the instance's, or for an RFI without instance yet the one its instance will be
+ * created at. Read as the system: a caller who cannot read the definition must not be moved to the legacy flow.
+ */
+export const resolveRequestAccessWorkflowState = async (
   context: AuthContext,
-  user: AuthUser,
-  entity: { id?: string; internal_id?: string; entity_type: string; x_opencti_workflow_id?: string },
-): Promise<StatusScope | null> => {
-  const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
-  const { scope, definitionData } = await resolveEntityDefinition(context, user, entity, entitySetting);
-  return definitionData ? scope : null;
+  rfi: BasicStoreEntity,
+): Promise<{ definitionData: WorkflowDefinitionResponse; instanceEntity: WorkflowInstanceStoreEntity | null; currentState: string } | null> => {
+  if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) || rfi.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI || !hasRequestAccess(rfi)) {
+    return null;
+  }
+  const entitySetting = await getWorkflowConfig(context, SYSTEM_USER, rfi.entity_type);
+  const { scope, definitionData, instanceEntity, suppliedStatus } = await resolveEntityDefinition(context, SYSTEM_USER, rfi, entitySetting);
+  if (scope !== StatusScope.RequestAccess || !definitionData) {
+    return null;
+  }
+  const currentState = instanceEntity?.currentState ?? resolveSuppliedStatus(definitionData, suppliedStatus) ?? definitionData.initialState;
+  return { definitionData, instanceEntity, currentState };
 };
 
 const initializeWorkflowInstance = async (
@@ -1742,6 +1763,8 @@ export const getAllowedTransitions = async (
     definitionData?: WorkflowDefinitionResponse | null;
     instanceEntity?: WorkflowInstanceStoreEntity | null;
     statuses?: BasicWorkflowStatus[];
+    // State of an entity whose instance is not created yet, when its status maps to another state than the initial one
+    currentState?: string;
   },
 ): Promise<Array<{
   event: string;
@@ -1780,7 +1803,7 @@ export const getAllowedTransitions = async (
   if (await getTransitionRefusal(context, user, entityId, entity)) {
     return [];
   }
-  const currentStateId = instanceEntity?.currentState ?? definitionData.initialState;
+  const currentStateId = instanceEntity?.currentState ?? options?.currentState ?? definitionData.initialState;
 
   const definition = WorkflowFactory.createDefinition(definitionData);
   const effectiveStateId = currentStateId || definition.getInitialState();
@@ -1958,6 +1981,7 @@ const findClosingReasonVocabularyName = async (context: AuthContext, value: stri
  * @param comment Optional comment entered by the user when performing the transition
  * @param runtimeParams Optional runtime parameters (e.g. organizationIds for share actions). Persisted for retry.
  * @param closingReason Optional closing reason, accepted only when the transition enables it
+ * @param options.fromState Refuses the event unless the entity is still in this state once locked
  * @returns {Promise<TriggerResult>} The result of the trigger
  */
 export const triggerWorkflowEvent = async (
@@ -1968,6 +1992,7 @@ export const triggerWorkflowEvent = async (
   comment?: string,
   runtimeParams: Record<string, unknown> = {},
   closingReason?: string,
+  options: { fromState?: string } = {},
 ): Promise<TriggerResult> => {
   // 1. Fetch the entity
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
@@ -2022,6 +2047,10 @@ export const triggerWorkflowEvent = async (
     }
 
     const currentStateId = instanceEntity.currentState;
+    // An event chosen for a given state must not run under the same name from another one
+    if (options.fromState && currentStateId !== options.fromState) {
+      return { success: false, reason: 'The workflow state changed before the transition ran, retry from the current state', entity };
+    }
     const definition = WorkflowFactory.createDefinition(definitionData);
     const targetTransition = definitionData.transitions?.find((t: any) => {
       const fromStates = Array.isArray(t.from) ? t.from : [t.from];
@@ -2241,7 +2270,9 @@ const loadWorkflowBypass = async (context: AuthContext, user: AuthUser, entityId
   const { scope, definitionData } = await resolveInstanceDefinition(executionContext, executionUser, entitySetting, instanceEntity, suppliedStatus);
   // Only a request on the published request-access workflow can be bypassed: legacy requests keep their own flow
   const isRequestAccess = ('x_opencti_request_access' in entity && !!entity.x_opencti_request_access) || scope === StatusScope.RequestAccess;
-  if (isRequestAccess && (scope !== StatusScope.RequestAccess || !definitionData)) throw FunctionalError('RequestAccess workflow bypass is not supported');
+  if (isRequestAccess && (scope !== StatusScope.RequestAccess || !await resolveRequestAccessWorkflowState(executionContext, entity))) {
+    throw FunctionalError('RequestAccess workflow bypass is not supported');
+  }
   const currentState = instanceEntity?.currentState ?? (definitionData?.states?.some((state) => state.statusId === suppliedStatus?.template_id)
     ? suppliedStatus?.template_id : definitionData?.initialState);
   return { entity, definitionData, instanceEntity, suppliedStatus, currentState, scope, executionContext, executionUser };

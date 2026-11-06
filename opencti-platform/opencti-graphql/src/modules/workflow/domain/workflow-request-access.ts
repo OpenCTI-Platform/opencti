@@ -13,7 +13,14 @@ import { type BasicStoreEntityCaseRfi, ENTITY_TYPE_CONTAINER_CASE_RFI } from '..
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
 import { ActionStatus, isUserCanActionRequestAccess, notifyRequestAccessResult, type RequestAccessAction } from '../../requestAccess/requestAccess-domain';
 import type { TriggerResult } from '../types/workflow-types';
-import { getAllowedTransitions, getDefinitionData, getWorkflowConfig, resolveEntityWorkflowScope, triggerWorkflowEvent, type WorkflowDefinitionResponse } from './workflow-domain';
+import {
+  getAllowedTransitions,
+  getDefinitionData,
+  getWorkflowConfig,
+  resolveRequestAccessWorkflowState,
+  triggerWorkflowEvent,
+  type WorkflowDefinitionResponse,
+} from './workflow-domain';
 
 export type RequestAccessOutcome = 'APPROVED' | 'DECLINED';
 
@@ -39,11 +46,8 @@ export const getRequestAccessWorkflow = async (
 
 /** Whether the request of an RFI is decided on the published request-access workflow rather than the legacy flow. */
 export const isWorkflowDrivenRequestAccess = async (context: AuthContext, rfiId: string): Promise<boolean> => {
-  if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
-    return false;
-  }
   const rfi = await storeLoadById<BasicStoreEntityCaseRfi>(context, SYSTEM_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
-  return !!rfi && await resolveEntityWorkflowScope(context, SYSTEM_USER, rfi) === StatusScope.RequestAccess;
+  return !!rfi && !!await resolveRequestAccessWorkflowState(context, rfi);
 };
 
 /** Id of the state marked as the Approved / Declined outcome of the definition. */
@@ -148,9 +152,14 @@ export const fireRequestAccessOutcomeTransition = async (
   rfiId: string,
   outcome: RequestAccessOutcome,
 ): Promise<TriggerResult> => {
-  const requestAccessWorkflow = await getRequestAccessWorkflow(context, user);
-  const outcomeState = requestAccessWorkflow ? findOutcomeState(requestAccessWorkflow.definitionData, outcome) : undefined;
-  const allowedTransitions = outcomeState ? await getAllowedTransitions(context, user, rfiId) : [];
+  const rfi = await storeLoadById<BasicStoreEntityCaseRfi>(context, SYSTEM_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  const workflowState = rfi ? await resolveRequestAccessWorkflowState(context, rfi) : null;
+  if (!workflowState) {
+    throw FunctionalError('This request access is not decided on a request access workflow', { id: rfiId });
+  }
+  const { definitionData, instanceEntity, currentState } = workflowState;
+  const outcomeState = findOutcomeState(definitionData, outcome);
+  const allowedTransitions = outcomeState ? await getAllowedTransitions(context, user, rfiId, { definitionData, instanceEntity, currentState }) : [];
   const transition = allowedTransitions.find((allowedTransition) => allowedTransition.toState === outcomeState);
   if (!transition) {
     throw FunctionalError(`No transition to ${outcome} is allowed from the current state`, { id: rfiId });
@@ -158,7 +167,7 @@ export const fireRequestAccessOutcomeTransition = async (
   if (transition.comment === 'required') {
     throw FunctionalError('This transition requires a comment', { id: rfiId });
   }
-  return triggerWorkflowEvent(context, user, rfiId, transition.event);
+  return triggerWorkflowEvent(context, user, rfiId, transition.event, undefined, {}, undefined, { fromState: currentState });
 };
 
 /**
