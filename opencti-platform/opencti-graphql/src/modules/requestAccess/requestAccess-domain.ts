@@ -56,6 +56,7 @@ import {
   REQUEST_SHARE_ACCESS_INFO_TYPE,
 } from '../../manager/notificationManager';
 import { addRequestAccessCreationCount } from '../../manager/telemetryManager';
+import { getRequestAccessWorkflow } from '../workflow/domain/workflow-request-access';
 
 // having an id is required for Relay
 const REQUEST_ACCESS_CONFIGURATION_ID = '7059b2f9-86d4-419b-9fde-adf825090820';
@@ -131,6 +132,14 @@ export const findWorkflowStatusByTemplateId = async (context: AuthContext, user:
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   const allStatusesByScope = platformStatuses.filter((status) => status.scope === StatusScope.RequestAccess && status.template_id === templateId);
   return allStatusesByScope[0];
+};
+
+const findInitialWorkflowStatus = async (context: AuthContext, user: AuthUser, initialStateId: string) => {
+  const initialStatus = await findWorkflowStatusByTemplateId(context, user, initialStateId);
+  if (!initialStatus) {
+    throw FunctionalError('The initial state of the request access workflow has no status', { initialStateId });
+  }
+  return initialStatus;
 };
 
 export const findFirstWorkflowStatus = async (context: AuthContext, user: AuthUser) => {
@@ -414,7 +423,10 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     workflowMapping: allActionStatuses,
     applicant_id: user.id,
   };
-  const firstStatus: BasicWorkflowStatus = await findFirstWorkflowStatus(context, user);
+  const requestAccessWorkflow = await getRequestAccessWorkflow(context, user);
+  const firstStatus: BasicWorkflowStatus = requestAccessWorkflow
+    ? await findInitialWorkflowStatus(context, user, requestAccessWorkflow.definitionData.initialState)
+    : await findFirstWorkflowStatus(context, user);
   const rfiInput: CaseRfiAddInput = {
     name: `Request Access for entity ${mainRepresentative} by ${user.name} via organization ${organizationData.name}`,
     objectParticipant: [user.id],
@@ -426,6 +438,7 @@ export const addRequestAccess = async (context: AuthContext, user: AuthUser, inp
     objectMarking: elementData[RELATION_OBJECT_MARKING] ?? [],
     x_opencti_workflow_id: firstStatus.id,
     revoked: false,
+    ...(requestAccessWorkflow ? { createdBy: organizationData.id } : {}),
   };
   const requestForInformation = await addCaseRfi(context, SYSTEM_USER, rfiInput);
   await addRequestAccessCreationCount();
