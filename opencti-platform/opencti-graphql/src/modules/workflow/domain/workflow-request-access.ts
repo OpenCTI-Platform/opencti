@@ -2,7 +2,7 @@ import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../
 import { UnsupportedError } from '../../../config/errors';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { updateAttribute } from '../../../database/middleware';
-import { internalLoadById } from '../../../database/middleware-loader';
+import { internalLoadById, storeLoadById } from '../../../database/middleware-loader';
 import { StatusScope } from '../../../generated/graphql';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { addRequestAccessApprovedCount, addRequestAccessDeclinedCount } from '../../../manager/telemetryManager';
@@ -65,9 +65,9 @@ export const assertCanEnterRequestAccessOutcome = async (
 };
 
 /**
- * Records the decision once the RFI has entered its outcome state: request status, audit, applicant
- * notification and decision counter. The state and the share are already persisted, so a failure
- * here is logged and never fails the transition.
+ * Records the decision once the RFI has entered its outcome state: request status and decision counter,
+ * then audit and applicant notification. The state and the share are already persisted, so a failure
+ * here is logged and never fails the transition; each step after the status write runs on its own.
  */
 export const applyRequestAccessOutcome = async (
   context: AuthContext,
@@ -75,14 +75,38 @@ export const applyRequestAccessOutcome = async (
   rfi: BasicStoreEntityCaseRfi,
   outcome: RequestAccessOutcome,
 ): Promise<void> => {
+  const rfiId = rfi.internal_id ?? rfi.id;
+  let requestAccessAction: RequestAccessAction;
   try {
-    const action: RequestAccessAction = JSON.parse(rfi.x_opencti_request_access);
-    const requestAccessAction: RequestAccessAction = { ...action, status: outcome, executionDate: new Date() };
-    await updateAttribute(context, user, rfi.internal_id ?? rfi.id, ENTITY_TYPE_CONTAINER_CASE_RFI, [
+    // Read the request fresh: the RFI handed in can predate the transition lock, and the patch rewrites the whole JSON.
+    const currentRfi = await storeLoadById<BasicStoreEntityCaseRfi>(context, SYSTEM_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
+    if (!currentRfi) {
+      throw UnsupportedError('Request access RFI not found', { id: rfiId });
+    }
+    const action: RequestAccessAction = JSON.parse(currentRfi.x_opencti_request_access);
+    requestAccessAction = { ...action, status: outcome, executionDate: new Date() };
+    await updateAttribute(context, user, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI, [
       { key: 'x_opencti_request_access', value: [JSON.stringify(requestAccessAction)] },
     ], { workflowInternalWrite: true });
-    const requestedEntity = await internalLoadById<BasicStoreEntity>(context, SYSTEM_USER, (action.entities ?? [])[0]);
-    const mainRepresentative = extractEntityRepresentativeName(requestedEntity);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE][Request access] Failed to record the request decision', { cause: error, id: rfiId, outcome });
+    return;
+  }
+  if (outcome === 'APPROVED') {
+    addRequestAccessApprovedCount();
+  } else {
+    addRequestAccessDeclinedCount();
+  }
+  const requestedEntityId = (requestAccessAction.entities ?? [])[0];
+  let requestedEntity: BasicStoreEntity | undefined;
+  let mainRepresentative = requestedEntityId;
+  try {
+    requestedEntity = await internalLoadById<BasicStoreEntity>(context, SYSTEM_USER, requestedEntityId);
+    mainRepresentative = extractEntityRepresentativeName(requestedEntity);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE][Request access] Failed to load the requested entity', { cause: error, id: rfiId, requestedEntityId });
+  }
+  try {
     await publishUserAction({
       user,
       event_type: 'mutation',
@@ -91,13 +115,15 @@ export const applyRequestAccessOutcome = async (
       message: `${outcome === 'APPROVED' ? 'approved' : 'declined'} demand of request access for entity ${mainRepresentative}`,
       context_data: { id: user.id, entity_type: ENTITY_TYPE_CONTAINER_CASE_RFI, input: requestAccessAction },
     });
-    await notifyRequestAccessResult(context, user, requestedEntity, action.applicant_id, mainRepresentative, ActionStatus[outcome]);
-    if (outcome === 'APPROVED') {
-      addRequestAccessApprovedCount();
-    } else {
-      addRequestAccessDeclinedCount();
-    }
   } catch (error) {
-    logApp.error('[OPENCTI-MODULE][Request access] Failed to record the request decision', { cause: error, id: rfi.id, outcome });
+    logApp.error('[OPENCTI-MODULE][Request access] Failed to audit the request decision', { cause: error, id: rfiId, outcome });
+  }
+  try {
+    if (!requestedEntity) {
+      throw UnsupportedError('Requested entity not found', { requestedEntityId });
+    }
+    await notifyRequestAccessResult(context, user, requestedEntity, requestAccessAction.applicant_id, mainRepresentative, ActionStatus[outcome]);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE][Request access] Failed to notify the applicant of the request decision', { cause: error, id: rfiId, outcome });
   }
 };

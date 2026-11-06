@@ -9,7 +9,7 @@ import { createStatus, findByType as findStatusesByType } from '../../../src/dom
 import { elAggregationCount } from '../../../src/database/engine';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { getEntitiesListFromCache } from '../../../src/database/cache';
-import { getDraftContext } from '../../../src/utils/draftContext';
+import { bypassDraftContext, getDraftContext } from '../../../src/utils/draftContext';
 import { StatusScope } from '../../../src/generated/graphql';
 import { lockResources } from '../../../src/lock/master-lock';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
@@ -6311,12 +6311,14 @@ describe('triggerWorkflowEvent — request access outcomes', () => {
   });
   const raInstance = { id: 'instance-rfi', internal_id: 'instance-rfi', entity_id: 'rfi-id', currentState: 'new', scope: StatusScope.RequestAccess, history: '[]' };
   let storedInstance: Record<string, unknown>;
+  let storedRfi: Record<string, unknown>;
   let trigger: ReturnType<typeof vi.fn>;
 
   const setup = (content: string, newState: string) => {
     storedInstance = raInstance;
-    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
-      if (id === 'rfi-id') return Promise.resolve(rfi);
+    storedRfi = rfi;
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string, type: string) => {
+      if (id === 'rfi-id') return Promise.resolve(type === 'Case-Rfi' ? storedRfi : rfi);
       if (id === 'instance-rfi') return Promise.resolve(storedInstance);
       if (id === 'ra-def') return Promise.resolve({ id: 'ra-def', name: 'RA', published_version: { id: 'v1', content, validation_errors: [] } });
       return Promise.resolve(null);
@@ -6364,6 +6366,21 @@ describe('triggerWorkflowEvent — request access outcomes', () => {
     expect(isUserCanActionRequestAccess).toHaveBeenCalledWith(mockContext, mockUser, rfi);
     expect(trigger).not.toHaveBeenCalled();
     expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('checks the request access permission with the caller own context and user, drafts included', async () => {
+    setup(definitionContent(), 'approved');
+    vi.mocked(bypassDraftContext).mockImplementation((context: any) => ({ ...context, draft_context: undefined }));
+    const draftContext = { ...mockContext, draft_context: 'draft-id' };
+    const draftUser = { ...mockUser, draft_context: 'draft-id' };
+
+    try {
+      await triggerWorkflowEvent(draftContext, draftUser, 'rfi-id', 'Accept');
+
+      expect(isUserCanActionRequestAccess).toHaveBeenCalledWith(draftContext, draftUser, rfi);
+    } finally {
+      vi.mocked(bypassDraftContext).mockImplementation((context: any) => context);
+    }
   });
 
   it('checks the request access permission before entering Declined too', async () => {
@@ -6450,6 +6467,46 @@ describe('triggerWorkflowEvent — request access outcomes', () => {
 
     expect(result).toMatchObject({ success: true, newState: 'approved' });
     expect(logApp.error).toHaveBeenCalled();
+    expect(requestAccessWrites()).toHaveLength(1);
+    expect(telemetryManager.addRequestAccessApprovedCount).toHaveBeenCalledTimes(1);
+    expect(publishUserAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('a failing notification still records, counts and audits the decision', async () => {
+    setup(definitionContent(), 'approved');
+    vi.mocked(notifyRequestAccessResult).mockRejectedValueOnce(new Error('notification unavailable'));
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Accept');
+
+    expect(result).toMatchObject({ success: true, newState: 'approved' });
+    expect(requestAccessWrites()).toHaveLength(1);
+    expect(telemetryManager.addRequestAccessApprovedCount).toHaveBeenCalledTimes(1);
+    expect(publishUserAction).toHaveBeenCalledTimes(1);
+    expect(logApp.error).toHaveBeenCalled();
+  });
+
+  it('a failing status write records nothing else', async () => {
+    setup(definitionContent(), 'approved');
+    (updateAttribute as any).mockImplementation((_ctx: any, _user: any, _id: string, _type: string, inputs: any[]) => (
+      inputs.some((input) => input.key === 'x_opencti_request_access') ? Promise.reject(new Error('write refused')) : Promise.resolve({ element: {} })
+    ));
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Accept');
+
+    expect(result).toMatchObject({ success: true, newState: 'approved' });
+    expect(telemetryManager.addRequestAccessApprovedCount).not.toHaveBeenCalled();
+    expect(publishUserAction).not.toHaveBeenCalled();
+    expect(notifyRequestAccessResult).not.toHaveBeenCalled();
+  });
+
+  it('rewrites the request read fresh from the store, not the RFI loaded before the lock', async () => {
+    setup(definitionContent(), 'approved');
+    const freshRequestAccess = { ...requestAccess, reason: 'edited meanwhile' };
+    storedRfi = { ...rfi, x_opencti_request_access: JSON.stringify(freshRequestAccess) };
+
+    await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Accept');
+
+    expect(writtenRequestAccess(requestAccessWrites()[0])).toEqual({ ...freshRequestAccess, status: 'APPROVED', executionDate: expect.any(String) });
   });
 
   it('async transition into Approved runs bookkeeping only after completion', async () => {
@@ -6480,6 +6537,46 @@ describe('triggerWorkflowEvent — request access outcomes', () => {
       expect((updateAttribute as any).mock.calls.indexOf(writes[0])).toBeGreaterThan(instanceStateWriteOrder());
       expect(notifyRequestAccessResult).toHaveBeenCalledWith(expect.anything(), decider, requestedEntity, 'applicant-1', 'Test Entity', 'APPROVED');
       expect(telemetryManager.addRequestAccessApprovedCount).toHaveBeenCalledTimes(1);
+    } finally {
+      share.mockRestore();
+    }
+  });
+
+  it.each([
+    ['is not found', () => vi.mocked(resolveUserById).mockResolvedValue(undefined as any)],
+    ['cannot be loaded', () => vi.mocked(resolveUserById).mockRejectedValue(new Error('user store unavailable'))],
+  ])('async completion fails closed when the deciding user %s', async (_case, mockDecider) => {
+    setup(definitionContent(), 'approved');
+    mockDecider();
+    const share = vi.spyOn(ActionRegistry, 'shareRequestedEntities').mockResolvedValue(undefined);
+    storedInstance = {
+      ...raInstance,
+      pendingStatus: 'pending',
+      pendingTransition: JSON.stringify({
+        event: 'Accept',
+        toState: 'approved',
+        requestAccessOutcome: 'APPROVED',
+        triggeredBy: 'user-id',
+        triggeredAt: new Date().toISOString(),
+        runtimeParams: {},
+        asyncActions: [{ id: 'slot-1', workId: 'work-1', type: 'asyncBulkAction', status: 'pending' }],
+        syncActions: [{ type: 'validateDraft' }],
+        onEnterActions: [shareAction],
+      }),
+    };
+
+    try {
+      await reportWorkflowAsyncActionResult(mockContext, { id: 'worker' } as any, 'instance-rfi', 'slot-1', 'success');
+
+      expect(updateAttribute).toHaveBeenCalledTimes(1);
+      const inputs = (updateAttribute as any).mock.calls[0][4];
+      expect(inputs).toContainEqual({ key: 'pendingStatus', value: ['error'] });
+      expect(inputs).toContainEqual({ key: 'pendingError', value: [expect.stringContaining('user-id')] });
+      expect(share).not.toHaveBeenCalled();
+      expect(projectWorkflowState).not.toHaveBeenCalled();
+      expect(requestAccessWrites()).toHaveLength(0);
+      expect(telemetryManager.addRequestAccessApprovedCount).not.toHaveBeenCalled();
+      expect(notifyRequestAccessResult).not.toHaveBeenCalled();
     } finally {
       share.mockRestore();
     }
