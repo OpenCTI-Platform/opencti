@@ -17,6 +17,8 @@ const BASELINE_SENSITIVE_KEYS = [
   'oauth_access_token',
   'oauth_refresh_token',
   'new_value_cleartext',
+  'platform_token',
+  'xtm_hub_token',
 ];
 const CONFIGURED_SENSITIVE_KEYS: string[] = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
 export const SENSITIVE_KEYS: ReadonlySet<string> = new Set([...BASELINE_SENSITIVE_KEYS, ...CONFIGURED_SENSITIVE_KEYS]);
@@ -31,6 +33,8 @@ const CREDENTIAL_MUTATIONS = [...AUTHENTICATION_MUTATIONS, 'meEdit'];
 export interface RequestSensitivity {
   // The query text must not be logged
   hideQuery: boolean;
+  // No variable value can be logged: without a parsed document, nobody knows which argument a variable feeds
+  hideVariables: boolean;
   // Keys redacted at any depth of the variables
   sensitiveKeys: ReadonlySet<string>;
   // Variables feeding a sensitive argument or input field, whatever name the caller gave them
@@ -109,8 +113,9 @@ const hasLiteral = (node: ValueNode) => {
   return literal;
 };
 
-// Names of the root fields of the mutations of the document, through inline fragments and fragment spreads
-const listMutationRootFields = (document: DocumentNode): string[] => {
+// Names of the root fields of all the operations of the document, through inline fragments and fragment spreads.
+// All operation types are read: an invalid request such as { otpLogin(...) } can put a mutation field in a query.
+const listRootFields = (document: DocumentNode): string[] => {
   const fragments = new Map(document.definitions.filter((d) => d.kind === Kind.FRAGMENT_DEFINITION).map((d) => [d.name.value, d]));
   const names: string[] = [];
   const visitedFragments = new Set<string>();
@@ -128,7 +133,7 @@ const listMutationRootFields = (document: DocumentNode): string[] => {
     });
   };
   document.definitions.forEach((definition) => {
-    if (definition.kind === Kind.OPERATION_DEFINITION && definition.operation === 'mutation') {
+    if (definition.kind === Kind.OPERATION_DEFINITION) {
       walk(definition.selectionSet);
     }
   });
@@ -136,12 +141,12 @@ const listMutationRootFields = (document: DocumentNode): string[] => {
 };
 
 // Find what must be redacted to log a GraphQL request, from its parsed document.
-// Without a document (the request could not be parsed), the query text is never logged.
+// Without a document (the request could not be parsed), neither the query text nor the variable values are logged.
 export const analyzeRequestSensitivity = (document: DocumentNode | undefined | null): RequestSensitivity => {
   if (!document) {
-    return { hideQuery: true, sensitiveKeys: SENSITIVE_KEYS, sensitiveVariables: new Set() };
+    return { hideQuery: true, hideVariables: true, sensitiveKeys: SENSITIVE_KEYS, sensitiveVariables: new Set() };
   }
-  const rootFields = listMutationRootFields(document);
+  const rootFields = listRootFields(document);
   const isAuthentication = rootFields.some((name) => AUTHENTICATION_MUTATIONS.includes(name));
   const sensitiveKeys = isAuthentication ? new Set([...SENSITIVE_KEYS, ...AUTHENTICATION_SENSITIVE_KEYS]) : SENSITIVE_KEYS;
   let hideQuery = rootFields.some((name) => CREDENTIAL_MUTATIONS.includes(name));
@@ -183,11 +188,15 @@ export const analyzeRequestSensitivity = (document: DocumentNode | undefined | n
   if ([...sensitiveVariables].some((name) => variablesWithDefaultLiteral.has(name))) {
     hideQuery = true;
   }
-  return { hideQuery, sensitiveKeys, sensitiveVariables };
+  return { hideQuery, hideVariables: false, sensitiveKeys, sensitiveVariables };
 };
 
 // Request variables ready to be logged or stored in an activity event
 export const redactRequestVariables = <T extends Record<string, unknown>>(variables: T | undefined | null, sensitivity: RequestSensitivity): T => {
+  if (sensitivity.hideVariables) {
+    // The variable names are kept to help debugging, never their values
+    return Object.fromEntries(Object.keys(variables ?? {}).map((name) => [name, REDACTED_INFORMATION])) as T;
+  }
   const redacted = redactSensitiveData(variables ?? {}, sensitivity.sensitiveKeys) as Record<string, unknown>;
   sensitivity.sensitiveVariables.forEach((name) => {
     if (isNotEmptyField(redacted[name])) {

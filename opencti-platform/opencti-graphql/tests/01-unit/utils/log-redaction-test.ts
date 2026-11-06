@@ -64,16 +64,24 @@ describe('log-redaction - redactSensitiveData', () => {
     expect(() => redactSensitiveData(build(100_000))).not.toThrow();
   });
 
+  it('should redact the platform registration tokens', () => {
+    expect(redactSensitiveData({ platform_token: 'v' })).toEqual({ platform_token: R });
+    expect(redactSensitiveData({ key: 'xtm_hub_token', value: ['v'] })).toEqual({ key: 'xtm_hub_token', value: R });
+  });
+
   it('should use the given keys', () => {
     expect(redactSensitiveData({ code: 'v', secret: 'v' }, new Set(['code']))).toEqual({ code: R, secret: 'v' });
   });
 });
 
 describe('log-redaction - analyzeRequestSensitivity', () => {
-  it('should hide the query text when the request has no document', () => {
+  it('should hide the query text and every variable value when the request has no document', () => {
     const sensitivity = analyzeRequestSensitivity(undefined);
     expect(sensitivity.hideQuery).toBe(true);
+    expect(sensitivity.hideVariables).toBe(true);
     expect(redactRequestQuery('{ about { version } }', sensitivity)).toBe(R);
+    expect(redactRequestVariables({ a: 'v', input: { name: 'n' } }, sensitivity)).toEqual({ a: R, input: R });
+    expect(redactRequestVariables(undefined, sensitivity)).toEqual({});
   });
 
   it('should keep a regular request visible', () => {
@@ -91,6 +99,13 @@ describe('log-redaction - analyzeRequestSensitivity', () => {
     const withFragments = 'mutation M { ...A ...A } fragment A on Mutation { ...B } fragment B on Mutation { otpLogin(input: $input) }';
     expect(analyzeRequestSensitivity(parse(withFragments)).hideQuery).toBe(true);
     expect(analyzeRequestSensitivity(parse('mutation M { ...Unknown }')).hideQuery).toBe(false);
+  });
+
+  it('should read the root fields of every operation type', () => {
+    const shorthand = analyzeRequestSensitivity(parse('{ otpLogin(input: { code: "v" }) }'));
+    expect(shorthand.hideQuery).toBe(true);
+    const query = analyzeRequestSensitivity(parse('query Q($input: AnyInput) { verifyMfa(input: $input) }'));
+    expect(redactRequestVariables({ input: { code: 'v' } }, query)).toEqual({ input: { code: R } });
   });
 
   it('should redact code only in authentication mutations', () => {
