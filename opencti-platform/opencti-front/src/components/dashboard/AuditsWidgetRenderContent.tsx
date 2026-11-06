@@ -22,6 +22,8 @@ import WidgetRenderContent, { type WidgetRenderGuards } from 'src/components/das
 interface AuditsWidgetRenderContentParams extends WidgetRenderGuards {
   queryRef: unknown;
   host?: WidgetHost;
+  // The widget runs no query on purpose, and its children say why, once access is granted
+  isQuerySkipped?: boolean;
   children: ReactNode;
 }
 

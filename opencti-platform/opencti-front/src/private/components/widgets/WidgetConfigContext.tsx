@@ -3,6 +3,10 @@ import type { Widget, WidgetHost, WidgetDataSelection, WidgetParameters, WidgetP
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 import { getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
 import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import { applyBreakdownCompatibility, type WidgetBreakdownState } from '../../../utils/widget/widgetBreakdown';
+import useHelper from '../../../utils/hooks/useHelper';
+import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
+import useResolvedWidgetBreakdown from './useResolvedWidgetBreakdown';
 
 export interface WidgetConfigType {
   fintelVariableName: string | null;
@@ -29,6 +33,10 @@ interface WidgetConfigContextProps {
     selection: WidgetDataSelection,
     index: number,
   ) => void;
+  // Breakdown of the edited widget, derived once for every step
+  breakdown: WidgetBreakdownState;
+  // The config to submit, its breakdown dropped if the widget can no longer be broken down by it
+  getSubmittedConfig: () => WidgetConfigType;
 }
 
 const WidgetConfigContext = createContext<WidgetConfigContextProps | undefined>(undefined);
@@ -84,6 +92,7 @@ export const WidgetConfigProvider = ({
   open,
   disabledSteps,
 }: WidgetConfigProviderProps) => {
+  const { isFeatureEnable } = useHelper();
   const [conf, setConfig] = useState(buildConfig(host, undefined, undefined));
   const [step, setStep] = useState(0);
 
@@ -152,6 +161,12 @@ export const WidgetConfigProvider = ({
     }));
   };
 
+  // Without the feature, the breakdown of a stored widget is neither shown nor dropped
+  const isBreakdownEnabled = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
+  const breakdown = useResolvedWidgetBreakdown(conf.widget, host, open && isBreakdownEnabled);
+  // The breakdown is kept while the widget is edited, and only dropped on submit
+  const getSubmittedConfig = () => (isBreakdownEnabled ? { ...conf, widget: applyBreakdownCompatibility(conf.widget, breakdown) } : conf);
+
   return (
     <WidgetConfigContext.Provider value={{
       host,
@@ -163,6 +178,8 @@ export const WidgetConfigProvider = ({
       setDataSelectionWithIndex,
       step,
       setStep,
+      breakdown,
+      getSubmittedConfig,
     }}
     >
       {children}
@@ -175,3 +192,9 @@ export const useWidgetConfigContext = () => {
   if (!context) throw Error('Hook used outside of WidgetConfigProvider');
   return context;
 };
+
+/**
+ * Breakdown of the edited widget: whether its controls show, the fields offered, whether the saved filter
+ * of its dataset is read, and the field the widget keeps on submit.
+ */
+export const useWidgetBreakdownState = () => useWidgetConfigContext().breakdown;
