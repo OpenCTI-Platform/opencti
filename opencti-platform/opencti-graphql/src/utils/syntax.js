@@ -37,6 +37,13 @@ const parsePattern = (pattern) => {
   return { parser, parsedPattern: parser.pattern() };
 };
 
+// A STIX StringLiteral token is single-quoted; prefixed literals (b'..', h'..', t'..') are not string literals.
+const isStringLiteral = (text) => text.length >= 2 && text.startsWith('\'') && text.endsWith('\'');
+
+// The STIX pattern grammar only allows two escape sequences in a StringLiteral: \' and \\.
+// Decode them so the extracted value is the real one, e.g. 'a=\'b\'' becomes a='b'.
+const decodeStringLiteral = (text) => text.slice(1, -1).replace(/\\(['\\])/g, '$1');
+
 export const extractObservablesFromIndicatorPattern = (pattern) => {
   const observables = [];
   class ObservableBuilder extends STIXPatternListener {
@@ -89,7 +96,8 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
 
     enterPrimitiveLiteral(ctx) {
       if (this.element) {
-        const val = ctx.getText().replaceAll('\'', '');
+        const text = ctx.getText();
+        const val = isStringLiteral(text) ? decodeStringLiteral(text) : text.replaceAll('\'', '');
         const data = { type: this.element.type, [this.element.component]: val };
         const unflat = unflatten(data);
         observables.push(unflat);

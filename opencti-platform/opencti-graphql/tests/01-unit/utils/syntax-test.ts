@@ -222,6 +222,23 @@ describe('cleanupIndicatorPattern - STIX pattern normalization', () => {
   });
 });
 
+describe('extractObservablesFromIndicatorPattern - string literal escapes', () => {
+  it('should decode escaped single quotes in the observable value (#14752)', () => {
+    const observables = extractObservablesFromIndicatorPattern("[url:value = 'https://example.com/params?&message=\\'hello\\'']");
+    expect(observables).toEqual([{ type: 'Url', value: "https://example.com/params?&message='hello'" }]);
+  });
+
+  it('should decode escaped backslashes in the observable value', () => {
+    const observables = extractObservablesFromIndicatorPattern("[file:name = 'C:\\\\Windows\\\\it\\'s.exe']");
+    expect(observables).toEqual([{ type: 'StixFile', name: "C:\\Windows\\it's.exe" }]);
+  });
+
+  it('should keep plain values unchanged', () => {
+    const observables = extractObservablesFromIndicatorPattern("[domain-name:value = 'example.com']");
+    expect(observables).toEqual([{ type: 'Domain-Name', value: 'example.com' }]);
+  });
+});
+
 describe('extractObservablesFromIndicatorPattern - prototype pollution', () => {
   afterEach(() => {
     delete (Object.prototype as Record<string, unknown>).polluted;
