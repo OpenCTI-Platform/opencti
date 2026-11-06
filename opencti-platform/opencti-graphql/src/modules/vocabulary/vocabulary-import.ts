@@ -3,7 +3,7 @@ import type { EditInput } from '../../generated/graphql';
 import { generateStandardId, normalizeName } from '../../schema/identifier';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportValidationReason } from '../configImport/configImport-utils';
+import { configImportRefusal, configImportValidationReason } from '../configImport/configImport-utils';
 import { addVocabulary, editVocabulary, isVocabularyNameAllowed } from './vocabulary-domain';
 import { type VocabularyCategoryImportConfiguration, vocabularyCategoryImportSchema, type VocabularyImportConfiguration, vocabularyImportSchema } from './vocabulary-import-schema';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
@@ -42,13 +42,7 @@ const findAliasOfAnotherEntry = async (
   return undefined;
 };
 
-const refused = (
-  status: 'failed' | 'skipped',
-  code: VocabularyImportCode,
-  reason: string,
-  exists: boolean,
-  configuration?: VocabularyImportConfiguration,
-): VocabularyImportResult => ({ status, code, reason, exists, configuration });
+const refused = configImportRefusal<VocabularyImportConfiguration, VocabularyImportCode>;
 
 // What differs between an entry and the configuration: a value that is null or absent is left untouched
 const toPatch = (existing: BasicStoreEntityVocabulary, { name, description, aliases, order, is_hidden: isHidden }: VocabularyImportConfiguration): EditInput[] => {
