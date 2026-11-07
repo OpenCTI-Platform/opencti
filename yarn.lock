@@ -18637,7 +18637,7 @@ __metadata:
     form-data: "npm:4.0.6"
     github-api: "npm:3.4.0"
     globals: "npm:17.14.0"
-    graphql: "npm:17.0.2"
+    graphql: "npm:17.1.0"
     graphql-constraint-directive: "npm:6.0.0"
     graphql-no-alias: "npm:3.0.3"
     graphql-rate-limit-directive: "npm:2.0.6"
