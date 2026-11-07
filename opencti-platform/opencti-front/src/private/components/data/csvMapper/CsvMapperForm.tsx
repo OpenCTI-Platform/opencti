@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { IconButton, Radio, RadioGroup } from '@filigran/design-system';
+import { Icon, IconButton, Radio, RadioGroup, Tooltip as FdsTooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
@@ -172,7 +172,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                 label={t_i18n('Name')}
                 fullWidth
               />
-              <CenteredSection>
+              <CenteredSection style={{ gap: '4px' }}>
                 <Field
                   component={SwitchField}
                   type="checkbox"
@@ -188,12 +188,13 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                     fontSize="small"
                     color="primary"
                     style={{ cursor: 'default' }}
+                    sx={{ position: 'relative', top: '-4px' }}
                   />
                 </Tooltip>
               </CenteredSection>
               <Section>
                 <Typography>{t_i18n('CSV separator')}</Typography>
-                <Centered>
+                <Centered style={{ marginTop: 8 }}>
                   <RadioGroup
                     aria-label="CSV separator"
                     name="separator"
@@ -207,25 +208,30 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   </RadioGroup>
                 </Centered>
               </Section>
-              <Section
-                style={{ display: 'flex', alignItems: 'end', gap: '8px' }}
-              >
+              <Section>
                 <Field
                   component={TextField}
                   name="skip_line_char"
                   label={t_i18n('Char to escape line')}
-                />
-                <Tooltip
-                  title={t_i18n(
-                    'Every line that begins with this character will be skipped during parsing (for example: #).',
+                  infoTooltip={(
+                    <FdsTooltip>
+                      <TooltipTrigger asChild>
+                        <IconButton
+                          icon={<Icon name="info" size={16} className="text-feedback-info-primary" />}
+                          aria-label={t_i18n('More information')}
+                          variant="default"
+                          priority="tertiary"
+                          size="sm"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {t_i18n(
+                          'Every line that begins with this character will be skipped during parsing (for example: #).',
+                        )}
+                      </TooltipContent>
+                    </FdsTooltip>
                   )}
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ cursor: 'default' }}
-                  />
-                </Tooltip>
+                />
               </Section>
 
               <CenteredSection>

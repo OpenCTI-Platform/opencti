@@ -13,11 +13,12 @@ const JsonMapperDefaultMarking = ({ name }: JsonMapperDefaultMarkingProps) => {
   const { t_i18n } = useFormatter();
 
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', marginTop: '10px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
       <Field
         component={SelectFieldFds}
         name={name}
-        containerstyle={{ width: '100%' }}
+        containerstyle={{ flex: 1 }}
+        fullWidth
         displayEmpty
       >
         <SelectItem value="user-choice">
