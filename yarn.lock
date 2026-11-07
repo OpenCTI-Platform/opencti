@@ -18692,7 +18692,7 @@ __metadata:
     slug: "npm:12.0.1"
     source-map: "npm:0.8.0"
     tough-cookie: "npm:6.0.2"
-    turndown: "npm:7.2.4"
+    turndown: "npm:7.2.5"
     typescript: "npm:6.0.3"
     typescript-eslint: "npm:8.72.1"
     undici: "npm:8.12.3"
@@ -22744,12 +22744,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turndown@npm:7.2.4":
-  version: 7.2.4
-  resolution: "turndown@npm:7.2.4"
+"turndown@npm:7.2.5":
+  version: 7.2.5
+  resolution: "turndown@npm:7.2.5"
   dependencies:
     "@mixmark-io/domino": "npm:^2.2.0"
-  checksum: 10c0/8e66e24bc9d9cdcf720f0ee2655a61d9b9e60ebe2763e97a7a8c3f689e9154717bbea7ed48cc5e355651f34182da698c6bc5fef3028e5600c1cadb7e117376d5
+  checksum: 10c0/4daceb07c10f9695eb1625b466a82395318e27f99ef4aa9424c9cbf0b7ade4102d00702dacf7a0eb6579a44bb745b063a89f3106b0954ad849bfb27a6e6ddfcb
   languageName: node
   linkType: hard
 
