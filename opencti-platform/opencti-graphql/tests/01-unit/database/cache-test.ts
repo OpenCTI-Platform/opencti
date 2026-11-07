@@ -141,6 +141,53 @@ describe('Cache invalidation while a load is in flight', () => {
     expect(loader.pendingCount()).toBe(0);
   });
 
+  it('should leave the entry cleared when a reset lands while an incremental refresh is in flight', async () => {
+    const handler = createControlledLoader();
+    const loader = createControlledLoader();
+    writeCacheForEntity(ENTITY_TYPE_TEST_RACE, {
+      values: [before],
+      fn: loader.fn,
+      // Computes the refreshed values from the values read before its await, like refreshUsers or refreshFilter
+      refresh: async (values: unknown[]) => [...values, ...(await handler.fn())],
+    });
+
+    const refresh = refreshCacheForEntity(after as never);
+    await handler.waitForLoad();
+    // The reset lands while the refresh still holds the values read before it
+    resetCacheForEntity(ENTITY_TYPE_TEST_RACE);
+    await handler.resolveNext([after]);
+    await refresh;
+
+    // The refresh did not write back over the reset: the next read loads again
+    const read = getEntitiesListFromCache(testContext, SYSTEM_USER, ENTITY_TYPE_TEST_RACE);
+    await loader.resolveNext([after]);
+    expect(await read).toEqual([after]);
+    expect(loader.pendingCount()).toBe(0);
+  });
+
+  it('should apply two concurrent incremental refreshes of the same entry', async () => {
+    const handler = createControlledLoader();
+    const first = { internal_id: 'race-first', entity_type: ENTITY_TYPE_TEST_RACE };
+    const second = { internal_id: 'race-second', entity_type: ENTITY_TYPE_TEST_RACE };
+    writeCacheForEntity(ENTITY_TYPE_TEST_RACE, {
+      values: [before],
+      fn: async () => [before],
+      refresh: async (values: unknown[], instance: { internal_id: string }) => {
+        const reloaded = await handler.fn();
+        return [...values.filter((v) => (v as { internal_id: string }).internal_id !== instance.internal_id), ...reloaded];
+      },
+    });
+
+    const firstRefresh = refreshCacheForEntity(first as never);
+    const secondRefresh = refreshCacheForEntity(second as never);
+    await handler.resolveNext([first]);
+    await handler.resolveNext([second]);
+    await Promise.all([firstRefresh, secondRefresh]);
+
+    expect(handler.pendingCount()).toBe(0);
+    expect(await getEntitiesListFromCache(testContext, SYSTEM_USER, ENTITY_TYPE_TEST_RACE)).toEqual([before, first, second]);
+  });
+
   it('should keep the values of a load that no change overtook', async () => {
     const loader = createControlledLoader();
     writeCacheForEntity(ENTITY_TYPE_TEST_RACE, { values: undefined, fn: loader.fn });
