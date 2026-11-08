@@ -6410,57 +6410,57 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:6.11.0":
-  version: 6.11.0
-  resolution: "@rjsf/core@npm:6.11.0"
+"@rjsf/core@npm:6.11.1":
+  version: 6.11.1
+  resolution: "@rjsf/core@npm:6.11.1"
   dependencies:
-    markdown-to-jsx: "npm:^9.8.2"
+    markdown-to-jsx: "npm:^9.10.3"
   peerDependencies:
-    "@rjsf/utils": ^6.11.0
+    "@rjsf/utils": ^6.11.1
     react: ">=18"
-  checksum: 10c0/a4bba78949c1a514c74a35e7db362a5f81256e9bc18ea5b076b0378173e4742b3981d3d60b7c1cde07aa041f01d5f811928a13cfde71b7c9f079ed1825cf9d84
+  checksum: 10c0/fefbcf452541f287c486f0a04ab4b7c9be3893342f3d69188033095670491c271f3ef96bc615c6a58cedac547b22c3036c315fbb16819d6324047df28c4c7af6
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:6.11.0":
-  version: 6.11.0
-  resolution: "@rjsf/mui@npm:6.11.0"
+"@rjsf/mui@npm:6.11.1":
+  version: 6.11.1
+  resolution: "@rjsf/mui@npm:6.11.1"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
     "@mui/icons-material": ^7.0.0 || ^9.0.0
     "@mui/material": ^7.0.0 || ^9.0.0
-    "@rjsf/core": ^6.11.0
-    "@rjsf/utils": ^6.11.0
+    "@rjsf/core": ^6.11.1
+    "@rjsf/utils": ^6.11.1
     react: ">=18"
-  checksum: 10c0/e9a5ad31106ca48a5d0cf23bc4e5a01cd854ca458d5f4673368fc3105f71ba19bb0843965d6df2865f331e6c3c86804db25f594a80fa36b0ad5de073d773e9e8
+  checksum: 10c0/084b76e4105c54eb306fd84e4cfb69f1eb8a3efd5667199c2f7c68691ca1901439035cc4c6b126072bee798ad6a7794bfd42bd70fd0928f2284f297e3a44f725
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:6.11.0":
-  version: 6.11.0
-  resolution: "@rjsf/utils@npm:6.11.0"
+"@rjsf/utils@npm:6.11.1":
+  version: 6.11.1
+  resolution: "@rjsf/utils@npm:6.11.1"
   dependencies:
-    "@x0k/json-schema-merge": "npm:^1.0.6"
-    fast-equals: "npm:^6.0.0"
-    fast-uri: "npm:^4.1.4"
+    "@x0k/json-schema-merge": "npm:^1.1.0"
+    fast-equals: "npm:^6.0.4"
+    fast-uri: "npm:^4.2.1"
     jsonpointer: "npm:^5.0.1"
     react-is: "npm:^18.3.1"
   peerDependencies:
     react: ">=18"
-  checksum: 10c0/4f663f0226f770658a9709bceb4b4f5fe016956b053e5cd6cf1198bded00b2010ed9919bdc0273d9bf0b4afc16bb3d8114104687200f4d81adcc8e209e664eea
+  checksum: 10c0/82762a4f20aaed0493141c85c636a235cc43fc81fed314c3d9d8b9173d2a1c9be7ab840abc8a119387910211b2e0942b0982ce67ad0505c10fc2702be2a1aa2e
   languageName: node
   linkType: hard
 
-"@rjsf/validator-ajv8@npm:6.11.0":
-  version: 6.11.0
-  resolution: "@rjsf/validator-ajv8@npm:6.11.0"
+"@rjsf/validator-ajv8@npm:6.11.1":
+  version: 6.11.1
+  resolution: "@rjsf/validator-ajv8@npm:6.11.1"
   dependencies:
     ajv: "npm:^8.20.0"
     ajv-formats: "npm:^2.1.1"
   peerDependencies:
-    "@rjsf/utils": ^6.11.0
-  checksum: 10c0/73818e97c63db9de92d82bb73e325fb0bc17b423704ff364ad94a8a993592b3d5cdcec5ec49fcb39134c5fb4a5904967d33a501ac09a25a1537523972884c225
+    "@rjsf/utils": ^6.11.1
+  checksum: 10c0/504f148858872524a3f193538fc9b4edeced55bfe3e10e2b2e1a0c387d6436856ef3569084cc38b50e188ed75d6d5b4982c9e0f7e40ff69105d9f2472d1541ee
   languageName: node
   linkType: hard
 
@@ -9004,7 +9004,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@x0k/json-schema-merge@npm:^1.0.6":
+"@x0k/json-schema-merge@npm:^1.1.0":
   version: 1.1.0
   resolution: "@x0k/json-schema-merge@npm:1.1.0"
   dependencies:
@@ -12910,10 +12910,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-equals@npm:^6.0.0":
-  version: 6.2.1
-  resolution: "fast-equals@npm:6.2.1"
-  checksum: 10c0/48b58dcc3d2cf0862ef20e5ea02db7efe4c8fea8d0bbdd32707994398c9d06f788d2950bafd050b0572088e4ecbc6747864e43d63f9e985109def680b7fe0fdf
+"fast-equals@npm:^6.0.4":
+  version: 6.2.2
+  resolution: "fast-equals@npm:6.2.2"
+  checksum: 10c0/bb4a06e682054cd270a946ea463c8cfe75d26e23e78232f575f017feaff896f138c69846639b4ceabb35abdc1fdfe0412c06af923e9853d9386741e9b0a777d5
   languageName: node
   linkType: hard
 
@@ -12981,7 +12981,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-uri@npm:^4.1.4":
+"fast-uri@npm:^4.2.1":
   version: 4.2.3
   resolution: "fast-uri@npm:4.2.3"
   checksum: 10c0/de121e1d98e5cf75ad31971ac799d6fd12edff6c4c62c7ad0aa64d87d669e9b0418eb5880588dba7e6a991a686c1ec0f8e91654ad2f6440a1f4ad48b8657c3df
@@ -16483,7 +16483,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-to-jsx@npm:9.10.5, markdown-to-jsx@npm:^9.8.2":
+"markdown-to-jsx@npm:9.10.5, markdown-to-jsx@npm:^9.10.3":
   version: 9.10.5
   resolution: "markdown-to-jsx@npm:9.10.5"
   peerDependencies:
@@ -18319,10 +18319,10 @@ __metadata:
     "@mui/material": "npm:9.5.0"
     "@mui/x-date-pickers": "npm:9.17.0"
     "@playwright/test": "npm:1.65.0"
-    "@rjsf/core": "npm:6.11.0"
-    "@rjsf/mui": "npm:6.11.0"
-    "@rjsf/utils": "npm:6.11.0"
-    "@rjsf/validator-ajv8": "npm:6.11.0"
+    "@rjsf/core": "npm:6.11.1"
+    "@rjsf/mui": "npm:6.11.1"
+    "@rjsf/utils": "npm:6.11.1"
+    "@rjsf/validator-ajv8": "npm:6.11.1"
     "@stylistic/eslint-plugin": "npm:5.10.0"
     "@testing-library/dom": "npm:10.4.2"
     "@testing-library/jest-dom": "npm:7.0.1"
