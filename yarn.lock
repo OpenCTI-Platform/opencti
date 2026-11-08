@@ -1010,10 +1010,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cfworker/json-schema@npm:4.1.4, @cfworker/json-schema@npm:^4.0.2":
+"@cfworker/json-schema@npm:4.1.4":
   version: 4.1.4
   resolution: "@cfworker/json-schema@npm:4.1.4"
   checksum: 10c0/8fa7698f6f8f1a218c1545fc33e0a181d977c60d3d48c41a43e802cdfa5276b1c1c4f9e9ba66219505035048e5090358db6ea200e2a8b7c1acdbf5bc2294c2bc
+  languageName: node
+  linkType: hard
+
+"@cfworker/json-schema@npm:^4.1.4":
+  version: 4.1.6
+  resolution: "@cfworker/json-schema@npm:4.1.6"
+  checksum: 10c0/24cb356b5dd4ca1d98951b5f6946072f20dca568c5661e29952d919d402597d39f02d7ee2e9e7d824e2804dcf0586d756e0ff2319167bfdfc0e5d47bc8e41256
   languageName: node
   linkType: hard
 
@@ -3598,18 +3605,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:1.3.4":
-  version: 1.3.4
-  resolution: "@langchain/core@npm:1.3.4"
+"@langchain/core@npm:1.3.5":
+  version: 1.3.5
+  resolution: "@langchain/core@npm:1.3.5"
   dependencies:
-    "@cfworker/json-schema": "npm:^4.0.2"
+    "@cfworker/json-schema": "npm:^4.1.4"
     "@standard-schema/spec": "npm:^1.1.0"
     js-tiktoken: "npm:^1.0.12"
     langsmith: "npm:>=0.11.0 <1.0.0"
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     zod: "npm:^3.25.76 || ^4"
-  checksum: 10c0/897dd857f02d53cc6449c6f8d1e2d6532b99501c646f12faec086d7f798d021c9335d5b07f1c0b19f8ee9f47a6f2a0fcb3dcb192e927b3e93a2ebe2c74c0909c
+  checksum: 10c0/0d0ae42cf6c9b2f511cd9f4cb18710902f82bb913c6fdd0f21a89e0cb1f103b1b745e716c6963a10f6dccdd36a10547dd7b2e702ffdd6a0855ee2a8b964431e9
   languageName: node
   linkType: hard
 
@@ -18461,7 +18468,7 @@ __metadata:
     "@graphql-tools/schema": "npm:11.0.8"
     "@graphql-tools/utils": "npm:13.2.1"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:1.3.4"
+    "@langchain/core": "npm:1.3.5"
     "@langchain/mistralai": "npm:1.2.0"
     "@langchain/openai": "npm:1.8.0"
     "@lezer/javascript": "npm:1.5.6"
