@@ -41,7 +41,7 @@
     "axios": "1.21.0",
     "chokidar": "6.0.0",
     "d3-color": "3.1.1",
-    "graphql": "patch:graphql@17.0.2#./patch/graphql-17.patch",
+    "graphql": "patch:graphql@17.1.0#./patch/graphql-17.patch",
     "ioredis": "5.11.1",
     "json5": "2.2.3",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
