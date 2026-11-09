@@ -19,6 +19,8 @@ export interface SequencerConfig {
   identityMapSize: number;
   identityMapTtlS: number;
   coalesceUpdateEvents: boolean;
+  // A batch's stream events pushed in one Redis pipeline instead of one XADD awaited per event
+  pipelineEvents: boolean;
   bundleIntake: boolean;
   parkSoftRefs: boolean;
   // s9.12.3 strip-and-reconcile, aggressive variant: unresolved OPTIONAL refs never reject
@@ -73,6 +75,7 @@ const readConfig = (): SequencerConfig => {
     identityMapSize: Number(conf.get('app:ingestion_sequencer:identity_map_size') ?? 200000),
     identityMapTtlS: Number(conf.get('app:ingestion_sequencer:identity_map_ttl_s') ?? 600),
     coalesceUpdateEvents: booleanConf('app:ingestion_sequencer:coalesce_update_events', true),
+    pipelineEvents: booleanConf('app:ingestion_sequencer:pipeline_events', false),
     // P3 (plan 0009 part 9): push whole bundles to the worker (bundle_inline marker), which
     // imports them in place by nb_deps levels; batch depth then comes from the payload.
     bundleIntake: booleanConf('app:ingestion_sequencer:bundle_intake', false),

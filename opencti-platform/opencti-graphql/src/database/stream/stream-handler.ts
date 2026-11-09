@@ -135,13 +135,16 @@ export const storeUpdateEvent = async (
 // POC ingestion sequencer (plan 0009 E4/E8): called by the batch loop AFTER the ES flush and
 // refresh. Built events push as captured; raw update records are grouped per (entity, user)
 // (E8) and built here, each merged event sitting at its LAST constituent's position.
+// pipeline_events: the batch's events in one round trip instead of one XADD awaited per event.
 export const flushSequencerEvents = async (records: EventRecord[]) => {
   if (records.length === 0) return;
   const plan = groupEventRecords(records);
+  const pipelined: BaseEvent[] = [];
+  const push = <T extends BaseEvent>(event: T) => (SEQUENCER_CONFIG.pipelineEvents ? pipelined.push(event) : streamClient.rawPushToStream(event));
   for (let i = 0; i < plan.length; i += 1) {
     const item = plan[i];
     if (item.kind === 'built') {
-      await streamClient.rawPushToStream(item.event);
+      await push(item.event);
     } else {
       // workflow status names as master resolves them for a direct update event
       const [previousStatus, currentStatus] = await Promise.all([
@@ -149,12 +152,14 @@ export const flushSequencerEvents = async (records: EventRecord[]) => {
         resolveWorkflowStatusName(item.context, item.user, item.instance),
       ]);
       const event = buildUpdateEvent(item.user, item.previous, item.instance, item.changes, item.opts, { previous: previousStatus, current: currentStatus });
-      await streamClient.rawPushToStream({ ...event, event_id: item.context?.eventId });
+      await push({ ...event, event_id: item.context?.eventId });
       if (item.merged > 0) {
         sequencerMetrics.eventCoalesced(item.merged);
       }
     }
   }
+  await streamClient.rawPushManyToStream(pipelined);
+  sequencerMetrics.streamEventsPushed(plan.length);
 };
 
 export const storeCreateRelationEvent = async (context: AuthContext, user: AuthUser, instance: StoreRelation, opts: CreateEventOpts = {}) => {

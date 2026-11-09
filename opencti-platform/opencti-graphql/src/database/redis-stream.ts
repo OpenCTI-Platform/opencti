@@ -62,8 +62,7 @@ export const isEventTooLarge = (eventStreamData: any) => {
   const totalStreamEventSize = eventStreamDataBlob.size;
   return { isTooLarge: streamMaxEventSize > 0 && totalStreamEventSize > streamMaxEventSize, eventSize: totalStreamEventSize };
 };
-export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
-  const redisClient = getClientBase();
+const streamArgsOf = async <T extends BaseEvent> (event: T) => {
   let eventStreamData = mapJSToStream(event);
   const { isTooLarge, eventSize } = redisStreamSelf.isEventTooLarge(eventStreamData);
   if (isTooLarge) {
@@ -81,10 +80,26 @@ export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
       eventType: event.type,
     });
   }
-  if (streamTrimming) {
-    await redisClient.xadd(LIVE_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...eventStreamData);
-  } else {
-    await redisClient.xadd(LIVE_STREAM_NAME, '*', ...eventStreamData);
+  return streamTrimming ? ['MAXLEN', '~', streamTrimming, '*', ...eventStreamData] : ['*', ...eventStreamData];
+};
+export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
+  const redisClient = getClientBase();
+  const args = await streamArgsOf(event);
+  await redisClient.xadd(LIVE_STREAM_NAME, ...args);
+};
+// POC ingestion sequencer: the events of a batch in one round trip, in order (one connection, one key)
+export const rawPushManyToStream = async <T extends BaseEvent> (events: T[]) => {
+  if (events.length === 0) return;
+  const redisClient = getClientBase();
+  const pipeline = redisClient.pipeline();
+  for (let i = 0; i < events.length; i += 1) {
+    const args = await streamArgsOf(events[i]);
+    pipeline.xadd(LIVE_STREAM_NAME, ...args);
+  }
+  const results = await pipeline.exec();
+  const failed = results?.find(([error]) => error);
+  if (failed) {
+    throw failed[0];
   }
 };
 // Count the stream events that have been offloaded to file storage (events too large for redis).
@@ -405,6 +420,7 @@ export const getStreamProductionRate = async (): Promise<number> => {
 export const rawRedisStreamClient: RawStreamClient = {
   initializeStreams: async () => {},
   rawPushToStream,
+  rawPushManyToStream,
   rawFetchStreamInfo,
   rawCreateStreamProcessor,
   rawFetchStreamEventsRangeFromEventId,

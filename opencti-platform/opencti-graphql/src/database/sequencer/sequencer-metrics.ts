@@ -1,6 +1,7 @@
 // POC ingestion sequencer (plan 0009, Stage A). Dedicated OTel instruments, exported on the
 // same MeterProvider (and thus the same Prometheus endpoint) as the platform metrics. Kept in
 // a separate module so the POC surface on shared files stays minimal.
+import { performance, type EventLoopUtilization } from 'node:perf_hooks';
 import { ValueType } from '@opentelemetry/api';
 import type { Counter, Gauge, Histogram } from '@opentelemetry/api';
 import { meterManager } from '../../config/tracing';
@@ -17,6 +18,8 @@ class SequencerMetrics {
   private batchSize: Histogram | null = null;
 
   private batchPhaseSeconds: Histogram | null = null;
+
+  private batchPhaseActiveSeconds: Histogram | null = null;
 
   private applyLevelsHist: Histogram | null = null;
 
@@ -35,6 +38,8 @@ class SequencerMetrics {
   private sidewritesGrouped: Counter | null = null;
 
   private eventsCoalesced: Counter | null = null;
+
+  private streamEvents: Counter | null = null;
 
   private pendingRefs: Counter | null = null;
 
@@ -86,6 +91,17 @@ class SequencerMetrics {
       description: 'Batch phase duration in seconds (resolve, order, apply, commit, events)',
       advice: { explicitBucketBoundaries: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 2, 5, 10] },
     });
+    // Main-thread active time (event loop utilization) during a phase: the loop's own CPU plus whatever else
+    // ran on the thread meanwhile. Active close to the wall time = thread-bound, far below = awaiting I/O.
+    this.batchPhaseActiveSeconds = meter.createHistogram('opencti_sequencer_batch_phase_active_seconds', {
+      valueType: ValueType.DOUBLE,
+      description: 'Main-thread active seconds during a batch phase (event loop utilization)',
+      advice: { explicitBucketBoundaries: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 2, 5, 10] },
+    });
+    meter.createObservableCounter('opencti_event_loop_active_seconds_total', {
+      valueType: ValueType.DOUBLE,
+      description: 'Main-thread active seconds since start (event loop utilization): rate = utilization',
+    }).addCallback((result) => result.observe(performance.eventLoopUtilization().active / 1000));
     this.applyLevelsHist = meter.createHistogram('opencti_sequencer_apply_levels', {
       valueType: ValueType.INT,
       description: 'Dependency levels applied per batch when apply_concurrency > 1 (1 = every group independent)',
@@ -138,6 +154,10 @@ class SequencerMetrics {
     this.eventsCoalesced = meter.createCounter('opencti_sequencer_events_coalesced_total', {
       valueType: ValueType.INT,
       description: 'Update events merged into a per-entity batch event (E8, coalesce_update_events)',
+    });
+    this.streamEvents = meter.createCounter('opencti_sequencer_stream_events_total', {
+      valueType: ValueType.INT,
+      description: 'Stream events pushed by the batch loop (the rest of the stream bypasses it)',
     });
     this.pendingIntents = meter.createCounter('opencti_sequencer_pending_intents_total', {
       valueType: ValueType.INT,
@@ -200,8 +220,14 @@ class SequencerMetrics {
     this.batchSize?.record(size);
   }
 
-  phase(phase: BatchPhase, seconds: number) {
+  // A phase start for phase(): the event loop utilization at that point
+  mark(): EventLoopUtilization {
+    return performance.eventLoopUtilization();
+  }
+
+  phase(phase: BatchPhase, seconds: number, mark?: EventLoopUtilization) {
     this.batchPhaseSeconds?.record(seconds, { phase });
+    if (mark) this.batchPhaseActiveSeconds?.record(performance.eventLoopUtilization(mark).active / 1000, { phase });
   }
 
   applyLevels(levels: number) {
@@ -251,6 +277,10 @@ class SequencerMetrics {
 
   pendingRefEvent(kind: 'stripped' | 'reconciled' | 'expired', count = 1) {
     this.pendingRefs?.add(count, { kind });
+  }
+
+  streamEventsPushed(count: number) {
+    this.streamEvents?.add(count);
   }
 
   eventCoalesced(count = 1) {

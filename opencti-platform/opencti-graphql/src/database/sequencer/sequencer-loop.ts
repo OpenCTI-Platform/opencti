@@ -310,6 +310,7 @@ const warmResolveAhead = async (batch: SequencerIntent[]) => {
 
 const preResolveBatch = async (batch: SequencerIntent[]) => {
   const t0 = Date.now();
+  const m0 = sequencerMetrics.mark();
   const context = executionContext('sequencer', SYSTEM_USER);
   // s10.3: the negative cache and the dedup prefetch are strictly per-batch state
   sequencerIdentityMap.clearAbsent();
@@ -436,7 +437,7 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
       });
     }
   }
-  sequencerMetrics.phase('resolve', (Date.now() - t0) / 1000);
+  sequencerMetrics.phase('resolve', (Date.now() - t0) / 1000, m0);
 };
 
 // D4: one lock set per batch, mirroring every direct-path acquisition: input ids, stored
@@ -497,6 +498,7 @@ const applyGroup = async (
 ): Promise<boolean> => {
   const { leader, absorbed } = group;
   const t0 = Date.now();
+  const m0 = recordPhase ? sequencerMetrics.mark() : undefined;
   let success = true;
   // s9.12.3 strip-and-reconcile: the per-apply sink travels with the apply's async context
   // (AsyncLocalStorage), so concurrent applies of one batch each collect their own strips.
@@ -568,7 +570,7 @@ const applyGroup = async (
     success = false;
     onFailure(group, err);
   }
-  if (recordPhase) sequencerMetrics.phase('apply', (Date.now() - t0) / 1000);
+  if (recordPhase) sequencerMetrics.phase('apply', (Date.now() - t0) / 1000, m0);
   return success;
 };
 
@@ -783,12 +785,13 @@ const runBatchLoop = async () => {
       });
     };
     const t0 = Date.now();
+    const m0 = sequencerMetrics.mark();
     const plan = buildBatchPlan(batch, (id) => sequencerIdentityMap.resolveInternalId(id), forceDirect, {
       parkSoftRefs: SEQUENCER_CONFIG.parkSoftRefs,
       memberWaitLimit: SEQUENCER_CONFIG.memberWaitLimit,
       queueHas: (id) => queue.hasCandidate(id) || lanes.hasResident(id), // s9.8.3 queue index + B10 lane residents
     });
-    sequencerMetrics.phase('order', (Date.now() - t0) / 1000);
+    sequencerMetrics.phase('order', (Date.now() - t0) / 1000, m0);
     if (plan.chainedSteps > 0) sequencerMetrics.chainSteps(plan.chainedSteps);
     // s9.12.1 relatedness instrumentation: in-batch dependsOn edges (dependents co-batched
     // with their producers) and distinct sources (bundle proxy at prefetch=1) per batch.
@@ -1009,6 +1012,7 @@ const runBatchLoop = async () => {
         // commit: only the ES round trips of independent intents overlap, bounded by
         // apply_concurrency. The apply phase is then recorded once per batch (wall time).
         const tApply = Date.now();
+        const mApply = sequencerMetrics.mark();
         const groupIntents = (i: number) => [plan.order[i].leader, ...plan.order[i].absorbed];
         const ownIdsOf = (i: number) => new Set<string>(groupIntents(i).flatMap((it) => intentOwnIds(it)));
         const refIdsOf = (i: number) => {
@@ -1029,7 +1033,7 @@ const runBatchLoop = async () => {
           if (indices.length > 0) await runBounded(indices, applyConcurrency, (i) => processGroup(i));
         }
         sequencerMetrics.applyLevels(byLevel.length);
-        sequencerMetrics.phase('apply', (Date.now() - tApply) / 1000);
+        sequencerMetrics.phase('apply', (Date.now() - tApply) / 1000, mApply);
       }
       setCurrentWriteBuffer(null); // flush must not re-buffer
       // resolve-ahead: while the commit bulk awaits ES, grab the queued intents of the
@@ -1057,6 +1061,7 @@ const runBatchLoop = async () => {
       }
       try {
         const tFlush = Date.now();
+        const mFlush = sequencerMetrics.mark();
         // retry-gap option 1: persist the retained creations BEFORE their promises settle
         // (the chunk ack must never outrun the recorded debt); a store failure falls back to
         // today's rejection, visibly
@@ -1065,10 +1070,11 @@ const runBatchLoop = async () => {
           const flushContext = executionContext('sequencer', SYSTEM_USER);
           await elFlushSequencerWrites(flushContext, SYSTEM_USER, buffer);
         }
-        sequencerMetrics.phase('commit', (Date.now() - tFlush) / 1000);
+        sequencerMetrics.phase('commit', (Date.now() - tFlush) / 1000, mFlush);
         const tEvents = Date.now();
+        const mEvents = sequencerMetrics.mark();
         await flushSequencerEvents(buffer.events);
-        sequencerMetrics.phase('events', (Date.now() - tEvents) / 1000);
+        sequencerMetrics.phase('events', (Date.now() - tEvents) / 1000, mEvents);
         // s9.12.3: persist this batch's strip records BEFORE resolving the intents (the
         // worker ack must never outrun the recorded debt), then match every committed
         // element against the pending population and re-assert the hits (fire-and-forget:

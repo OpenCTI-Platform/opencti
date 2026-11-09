@@ -2,7 +2,8 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { ActivityStreamEvent, BaseEvent, StreamNotifEvent } from '../../../src/types/event';
 
 // Shared mocks referenced by the (per-scenario) module factories below.
-const mockClient = { xadd: vi.fn(), xinfo: vi.fn(), xrange: vi.fn() };
+const mockPipeline = { xadd: vi.fn(), exec: vi.fn() };
+const mockClient = { xadd: vi.fn(), xinfo: vi.fn(), xrange: vi.fn(), pipeline: vi.fn(() => mockPipeline) };
 const mockRawUpload = vi.fn();
 const mockGetFileContent = vi.fn();
 const mockLogWarn = vi.fn();
@@ -163,6 +164,47 @@ describe('rawPushToStream', () => {
       await mod.rawPushToStream(event);
       expect(mockRawUpload).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('rawPushManyToStream', () => {
+  let mod: RedisStreamModule;
+
+  beforeAll(async () => {
+    mod = await loadModule(50, 1000);
+  }, 60000);
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('pushes the events in order in one pipeline, each XADD as rawPushToStream builds it', async () => {
+    mockPipeline.exec.mockResolvedValueOnce([[null, '1-0'], [null, '1-1']]);
+    const small = { type: 'create', scope: 'external' } as unknown as BaseEvent;
+    const large = { type: 'update', scope: 'external', data: { id: 'x'.repeat(300) } } as unknown as BaseEvent;
+    await mod.rawPushManyToStream([small, large]);
+
+    expect(mockClient.pipeline).toHaveBeenCalledTimes(1);
+    expect(mockPipeline.exec).toHaveBeenCalledTimes(1);
+    expect(mockClient.xadd).not.toHaveBeenCalled();
+    const calls = mockPipeline.xadd.mock.calls;
+    expect(calls).toHaveLength(2);
+    expect(calls[0]).toEqual(['stream.opencti', 'MAXLEN', '~', 1000, '*', ...toStreamFields(small as unknown as Record<string, unknown>)]);
+    // the oversized event is offloaded as with a single push
+    expect(mockRawUpload).toHaveBeenCalledTimes(1);
+    expect(calls[1]).toEqual(['stream.opencti', 'MAXLEN', '~', 1000, '*', 'event_file_id', mockRawUpload.mock.calls[0][0]]);
+  });
+
+  it('fails when one XADD of the pipeline fails', async () => {
+    const error = new Error('OOM command not allowed');
+    mockPipeline.exec.mockResolvedValueOnce([[null, '1-0'], [error, null]]);
+    const event = { type: 'create', scope: 'external' } as unknown as BaseEvent;
+    await expect(mod.rawPushManyToStream([event, event])).rejects.toBe(error);
+  });
+
+  it('sends nothing for no event', async () => {
+    await mod.rawPushManyToStream([]);
+    expect(mockClient.pipeline).not.toHaveBeenCalled();
   });
 });
 
