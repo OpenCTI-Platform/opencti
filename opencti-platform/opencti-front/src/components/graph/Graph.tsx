@@ -29,7 +29,7 @@ import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphL
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
 import useGraphFullscreen from './utils/useGraphFullscreen';
 import { isPathDrawable, relationshipCounts } from './utils/graphFocus';
-import { badgesOfNode, graphNodeActionsFor, useGraphBadgeRegistryVersion, useGraphNodeActionRegistryVersion } from './badges';
+import { badgesOfNode, graphNodeActionsFor, useGraphBadgeRegistryVersion, useGraphNodeActionRegistryVersion, useGraphSelectionActionRegistryVersion } from './badges';
 import { downloadCanvasAsPng, renderGraphImage } from './utils/graphExport';
 import { APP_BASE_PATH, MESSAGING$ } from '../../relay/environment';
 import useGraphStartInvestigation from './utils/useGraphStartInvestigation';
@@ -51,7 +51,7 @@ import {
   VisibilityOutlined,
 } from '@mui/icons-material';
 import { SelectInverse } from 'mdi-material-ui';
-import GraphContextMenu, { type GraphContextMenuSection, graphContextMenuSections } from './components/GraphContextMenu';
+import GraphContextMenu, { type GraphContextMenuSection, graphContextMenuSections, registeredSelectionMenuActions } from './components/GraphContextMenu';
 import type { GraphMenuAction } from './components/GraphToolbarMoreActions';
 import useGraphToolbarActions from './components/useGraphToolbarActions';
 import useGraphContextMenuGesture, { isAdditiveClick, isMacContextClick } from './utils/useGraphContextMenuGesture';
@@ -774,6 +774,7 @@ const Graph = ({
   // graph itself on the empty canvas, and to the selection while there is one. The hover card only previews.
   // An action registered, replaced or removed while the graph is open is in its next menu.
   useGraphNodeActionRegistryVersion();
+  useGraphSelectionActionRegistryVersion();
   const toolbarActions = useGraphToolbarActions({ onUnfixNodes: () => onPositionsChanged?.({}) });
   const toolbarAction = (id: string) => toolbarActions.find((action) => action.id === id);
   const present = (actions: (GraphMenuAction | false | null | undefined)[]) => actions.filter((action): action is GraphMenuAction => !!action);
@@ -908,6 +909,7 @@ const Graph = ({
       icon: <ManageSearchOutlined {...MENU_ICON} />,
       onSelect: () => investigateFrom(selectedEntityNodes[0]),
     },
+    ...registeredSelectionMenuActions({ nodes: selectedNodes, links: selectedLinks }, context, t_i18n),
   ]);
   const canvasMenuActions = (): GraphMenuAction[] => present([
     toolbarAction('select-all'),
