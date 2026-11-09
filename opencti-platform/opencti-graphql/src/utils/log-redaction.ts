@@ -62,23 +62,31 @@ const isSensitiveEditInput = (value: Record<string, unknown>, sensitiveKeys: Rea
 // - The copy is built with a loop over a stack, not a recursion: a JSON variable can be nested at will by the caller.
 // - Data nested deeper than MAX_REDACTION_DEPTH is replaced by the redaction marker: the copy is then always small
 //   enough in depth to be serialized (JSON.stringify, used to store and log events, overflows near 10 000 levels).
+// - A container met several times (shared reference, cycle) is copied once per depth: a copy is only reused at the
+//   depth it was made for, so the depth of the copy stays bounded whatever the order of the traversal, and a cycle
+//   is unrolled until the limit instead of being kept (a circular copy could not be serialized either).
 export const MAX_REDACTION_DEPTH = 100;
 type Container = unknown[] | Record<string, unknown>;
 export const redactSensitiveData = <T>(data: T, sensitiveKeys: ReadonlySet<string> = SENSITIVE_KEYS): T => {
-  const seen = new WeakMap<object, Container>();
+  const copies = new WeakMap<object, Map<number, Container>>();
   const pending: Array<{ source: Container; copy: Container; depth: number }> = [];
   // Values are returned as they are, containers get an empty copy filled later from the pending stack
   const prepare = (value: unknown, depth: number): unknown => {
     if (!Array.isArray(value) && !isPlainObject(value)) {
       return value;
     }
-    const known = seen.get(value);
-    if (known) return known;
     if (depth > MAX_REDACTION_DEPTH) {
       return REDACTED_INFORMATION;
     }
+    let copiesByDepth = copies.get(value);
+    if (!copiesByDepth) {
+      copiesByDepth = new Map();
+      copies.set(value, copiesByDepth);
+    }
+    const known = copiesByDepth.get(depth);
+    if (known) return known;
     const copy: Container = Array.isArray(value) ? [] : {};
-    seen.set(value, copy);
+    copiesByDepth.set(depth, copy);
     pending.push({ source: value, copy, depth });
     return copy;
   };
