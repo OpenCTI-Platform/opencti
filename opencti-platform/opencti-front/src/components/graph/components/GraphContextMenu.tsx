@@ -1,6 +1,7 @@
 import React, { Fragment, useRef } from 'react';
 import { Menu, MenuContent, MenuLabel, MenuSeparator, MenuTrigger } from '@filigran/design-system';
 import { type GraphMenuAction, GraphMenuActionItem } from './GraphToolbarMoreActions';
+import { type GraphSelection, graphSelectionActionsFor } from '../badges/graphSelectionActionRegistry';
 
 export interface GraphContextMenuSection {
   key: string;
@@ -25,6 +26,26 @@ export const graphContextMenuSections = ({ element, elementInSelection = false, 
   if (!selection) return [element];
   return elementInSelection ? [selection, element] : [element, selection];
 };
+
+/**
+ * The actions features registered for the selection on this graph surface (see
+ * graphSelectionActionRegistry), as items of the Selection section of the context menu.
+ */
+export const registeredSelectionMenuActions = (
+  selection: GraphSelection,
+  context: string | undefined,
+  t_i18n: (message: string) => string,
+): GraphMenuAction[] => graphSelectionActionsFor(selection, context).map((action) => {
+  const Icon = action.icon;
+  return {
+    id: `registered-${action.id}`,
+    label: action.label(t_i18n),
+    icon: <Icon fontSize="small" />,
+    disabledReason: action.disabledReason?.(selection, t_i18n),
+    options: action.options?.(selection, t_i18n),
+    onSelect: () => action.onSelect?.(selection),
+  };
+});
 
 export interface GraphContextMenuProps {
   /** Where the menu opens, in the coordinates of the graph container: nothing is open without it. */
