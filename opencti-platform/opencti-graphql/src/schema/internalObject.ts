@@ -7,6 +7,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_TYPE_EXCLUSION_LIST } from '../modules/exclusionList/exclusionList-types';
 import { ENTITY_TYPE_FINTEL_TEMPLATE } from '../modules/fintelTemplate/fintelTemplate-types';
 import { ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-types';
+import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../modules/ingestionDeduplication/ingestionDeduplicationRule-types';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
@@ -71,6 +72,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_CUSTOM_VIEW,
   ENTITY_TYPE_WORKFLOW_DEFINITION,
   ENTITY_TYPE_WORKFLOW_INSTANCE,
+  ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE,
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,

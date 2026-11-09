@@ -23,6 +23,7 @@ import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../dataSharing/streamCollection-types';
 import { ENTITY_TYPE_DECAY_RULE } from '../decayRule/decayRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../ingestionDeduplication/ingestionDeduplicationRule-types';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_TRIGGER } from '../notification/notification-types';
 import { ENTITY_TYPE_NOTIFIER } from '../notifier/notifier-types';
@@ -43,6 +44,7 @@ export const USER_MERGE_CACHED_ENTITY_TYPES = [
   ENTITY_TYPE_DECAY_EXCLUSION_RULE,
   ENTITY_TYPE_DECAY_RULE,
   ENTITY_TYPE_DRAFT_WORKSPACE,
+  ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE,
   ENTITY_TYPE_NOTIFIER,
   ENTITY_TYPE_PIR,
   ENTITY_TYPE_PLAYBOOK,
