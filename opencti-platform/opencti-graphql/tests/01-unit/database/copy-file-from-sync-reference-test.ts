@@ -341,6 +341,18 @@ describe('copyFileFromSyncReference', () => {
     expect(indexFileToDocument).not.toHaveBeenCalled();
   });
 
+  it('logs a missing staged object at warn, not error, as the cleanup sweep removes staged objects by design', async () => {
+    vi.mocked(downloadFileWithoutLogging).mockResolvedValue(null);
+    const warn = vi.spyOn(logApp, 'warn');
+    const error = vi.spyOn(logApp, 'error');
+
+    const result = await copyFileFromSyncReference(context, user, buildCopyProps({}));
+
+    expect(result).toBeNull();
+    expect(error).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledWith('[FILE STORAGE] Rejected sync file reference copy: staged file not found', { syncId: SYNC_ID });
+  });
+
   it('indexes the same file document as upload() for the same file, markings and entity', async () => {
     const version = '2024-01-01T00:00:00.000Z';
     const entity = { internal_id: 'entity-1' } as BasicStoreEntity;

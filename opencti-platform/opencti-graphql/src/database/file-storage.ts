@@ -9,6 +9,7 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityDocument } from '../modules/internal/document/document-types';
 import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, StoreFile } from '../types/store';
 import type { BasicStoreEntityConnector } from '../modules/connector/connector-types';
+import type { BasicStoreEntitySynchronizer } from '../types/connector';
 import conf, { logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
@@ -135,6 +136,9 @@ const STAGED_FILE_SUFFIX_PATTERN = /^[0-9a-f]{32}\/content$/;
 export const validateSyncInflightStorageKey = (storageKey: unknown, expectedSyncId: string): SyncInflightStorageKeyValidationResult => {
   if (typeof storageKey !== 'string' || storageKey.trim().length === 0 || storageKey.length > MAX_STORAGE_KEY_LENGTH) {
     return { valid: false, reason: `storage_key must be a non-empty string of at most ${MAX_STORAGE_KEY_LENGTH} characters` };
+  }
+  if (expectedSyncId.includes('/')) {
+    return { valid: false, reason: 'sync id must be a single path segment' };
   }
   const trimmed = storageKey.trim();
   if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed) || trimmed.startsWith('/') || trimmed.includes('\\') || trimmed.includes('\0')) {
@@ -471,13 +475,9 @@ const normalizeAndValidateFileMarkings = async (context: AuthContext, user: Auth
   return filteredMarkings;
 };
 
-interface StoredSync extends BasicStoreBase {
-  user_id?: string;
-}
-
 // The sync manager sends its bundles on behalf of this user, so only this user may consume the sync's staged files.
 const isSyncApplicant = async (context: AuthContext, user: AuthUser, syncId: string): Promise<boolean> => {
-  const sync: StoredSync | undefined = await internalLoadById<StoredSync>(context, SYSTEM_USER, syncId, { type: ENTITY_TYPE_SYNC });
+  const sync: BasicStoreEntitySynchronizer | undefined = await internalLoadById<BasicStoreEntitySynchronizer>(context, SYSTEM_USER, syncId, { type: ENTITY_TYPE_SYNC });
   if (!sync) {
     return false;
   }
@@ -530,12 +530,13 @@ const asSameContentSyncFile = (currentFile: BasicStoreEntityDocument | undefined
   return null;
 };
 
-// A repeated call without version finds the staged object consumed by the first one, so the existing target is the result
-const resolveConsumedStagedFile = (currentFile: BasicStoreEntityDocument | undefined, version?: string): SyncFileReferenceCopyResult => {
-  if (currentFile && !version) {
+// A staged object consumed by a previous call looks the same as one removed by the TTL sweep, so an existing target without version is reported as untouched in both cases.
+const resolveConsumedStagedFile = (currentFile: BasicStoreEntityDocument | undefined, copyProps: SyncFileReferenceCopyProps): SyncFileReferenceCopyResult | null => {
+  if (currentFile && !copyProps.version) {
     return { upload: asCompleteFile(currentFile), untouched: true };
   }
-  throw UnsupportedError('Staged sync file not found');
+  logApp.warn('[FILE STORAGE] Rejected sync file reference copy: staged file not found', { syncId: copyProps.syncId });
+  return null;
 };
 
 const buildSyncFileCopyTarget = (user: AuthUser, currentFile: BasicStoreEntityDocument | undefined, copyPath: SyncFileCopyPath): SyncFileCopyTarget => ({
@@ -607,7 +608,7 @@ const triggerSyncFileImport = async (context: AuthContext, user: AuthUser, reque
   }
 };
 
-const copyClaimedSyncFile = async (context: AuthContext, user: AuthUser, copyProps: SyncFileReferenceCopyProps): Promise<SyncFileReferenceCopyResult> => {
+const copyClaimedSyncFile = async (context: AuthContext, user: AuthUser, copyProps: SyncFileReferenceCopyProps): Promise<SyncFileReferenceCopyResult | null> => {
   const copyPath = resolveSyncCopyPath(context, user, copyProps);
   const currentFile = await documentFindById(context, user, copyPath.targetId);
   const untouchedFile = asUntouchedSyncFile(currentFile, copyProps.version);
@@ -617,7 +618,7 @@ const copyClaimedSyncFile = async (context: AuthContext, user: AuthUser, copyPro
   }
   const sha256 = await computeStagedFileSha256(copyProps.storageKey);
   if (!sha256) {
-    return resolveConsumedStagedFile(currentFile, copyProps.version);
+    return resolveConsumedStagedFile(currentFile, copyProps);
   }
   const sameContentFile = asSameContentSyncFile(currentFile, sha256);
   if (sameContentFile) {

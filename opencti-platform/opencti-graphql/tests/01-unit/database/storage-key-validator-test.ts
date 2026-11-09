@@ -42,6 +42,11 @@ describe('validateSyncInflightStorageKey', () => {
     expect(result.valid).toBe(false);
   });
 
+  it('rejects an expected sync id holding a slash, which would shift the staged file segments', () => {
+    const result = validateSyncInflightStorageKey(`sync/inflight/sync-id-1/nested/${STAGED_ID}/content`, 'sync-id-1/nested');
+    expect(result.valid).toBe(false);
+  });
+
   it('rejects the bare prefix with no remoteFileId/filename beneath it', () => {
     const result = validateSyncInflightStorageKey('sync/inflight/sync-id-1/only-one-segment', SYNC_ID);
     expect(result.valid).toBe(false);
