@@ -70,9 +70,9 @@ const DEFER_MISSING_REFS = booleanConf('chunk_intake_manager:defer_missing_refs'
 // chunks the workers publish
 const CHUNK_INTAKE_SOURCE = conf.get('chunk_intake_manager:source') ?? 'chunk_queue';
 // Unacked messages per push queue: a buffer of decoded messages for the release scheduler, not the
-// regulator (the set point below is); 100 x 4.2 objects on average per mix140k bundle keeps the
-// sequencer fed where 10 left it starved (2026-11-05 runs). Memory is bounded by the bytes.
-const PUSH_PREFETCH = Number(conf.get('chunk_intake_manager:push_prefetch') ?? 100);
+// regulator (the set point below is); 25 keeps mix140k's throughput of 100 with 20% less platform
+// memory, 10 halves it with half-full batches (2026-11-06 tuning runs). Memory is bounded by the bytes.
+const PUSH_PREFETCH = Number(conf.get('chunk_intake_manager:push_prefetch') ?? 25);
 const PUSH_MAX_IN_FLIGHT_BYTES = Number(conf.get('chunk_intake_manager:push_max_in_flight_bytes') ?? 268435456);
 // The ready depth the release scheduler holds, in sequencer batches (R* = factor x max_batch_size):
 // at least one batch keeps the batches full, more only adds write latency (KB note
