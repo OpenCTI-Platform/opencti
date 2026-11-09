@@ -1,12 +1,11 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Icon, IconButton, Radio, RadioGroup, Tooltip as FdsTooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Icon, IconButton, Radio, RadioGroup, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Field, FieldArray, Form, Formik } from 'formik';
 import Button from '@common/button/Button';
 import * as Yup from 'yup';
 import { Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { InformationOutline } from 'mdi-material-ui';
-import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 import { FormikHelpers } from 'formik/dist/types';
 import CsvMapperRepresentationForm, { RepresentationFormEntityOption } from '@components/data/csvMapper/representations/CsvMapperRepresentationForm';
@@ -179,17 +178,20 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   name="has_header"
                   label={t_i18n('My CSV file contains headers')}
                 />
-                <Tooltip
-                  title={t_i18n(
-                    'If this option is selected, we will skip the first line of your CSV file',
-                  )}
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ cursor: 'default' }}
-                    sx={{ position: 'relative', top: '-4px' }}
-                  />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <InformationOutline
+                      fontSize="small"
+                      color="primary"
+                      style={{ cursor: 'default' }}
+                      sx={{ position: 'relative', top: '-4px' }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t_i18n(
+                      'If this option is selected, we will skip the first line of your CSV file',
+                    )}
+                  </TooltipContent>
                 </Tooltip>
               </CenteredSection>
               <Section>
@@ -214,7 +216,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   name="skip_line_char"
                   label={t_i18n('Char to escape line')}
                   infoTooltip={(
-                    <FdsTooltip>
+                    <Tooltip>
                       <TooltipTrigger asChild>
                         <IconButton
                           icon={<Icon name="info" size={16} className="text-feedback-info-primary" />}
@@ -229,7 +231,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                           'Every line that begins with this character will be skipped during parsing (for example: #).',
                         )}
                       </TooltipContent>
-                    </FdsTooltip>
+                    </Tooltip>
                   )}
                 />
               </Section>
