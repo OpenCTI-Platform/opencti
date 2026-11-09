@@ -111,9 +111,8 @@ describe('Config preset bundle reader', () => {
       }
     });
 
-    it('enforces the limit on the bytes really read, whatever size the zip declares', async () => {
-      const zip = await buildZip({ 'metadata.json': metadataFile(), ...listsWithAttachments(tooMany, size) });
-      // The uncompressed size of each entry of the central directory (offset 24 of a header) is set to 1: the zip lies
+    // The uncompressed size of each attachment of the central directory (offset 24 of a header) is set to 1: the zip lies
+    const underdeclare = (zip: Buffer) => {
       const CENTRAL_DIRECTORY_HEADER = 0x02014b50;
       for (let offset = zip.indexOf(Buffer.from('PK\x01\x02', 'latin1')); offset >= 0; offset = zip.indexOf(Buffer.from('PK\x01\x02', 'latin1'), offset + 4)) {
         expect(zip.readUInt32LE(offset)).toBe(CENTRAL_DIRECTORY_HEADER);
@@ -122,7 +121,11 @@ describe('Config preset bundle reader', () => {
           zip.writeUInt32LE(1, offset + 24);
         }
       }
-      const bundle = await readConfigPresetBundle(zip);
+      return zip;
+    };
+
+    it('enforces the limit on the bytes really read, whatever size the zip declares', async () => {
+      const bundle = await readConfigPresetBundle(underdeclare(await buildZip({ 'metadata.json': metadataFile(), ...listsWithAttachments(tooMany, size) })));
       expect(bundle.items).toHaveLength(tooMany);
       const error = await (async () => {
         for (const item of bundle.items) {
@@ -131,6 +134,20 @@ describe('Config preset bundle reader', () => {
       })().catch((err) => err);
       expect(error.extensions?.data?.reason).toEqual('bundle_refused');
       expect(error.message).toContain('too large once extracted');
+    });
+
+    it('counts a file that is refused for its size as read up to the limit, so a bundle of such files is stopped', async () => {
+      // Each file is one byte over the limit of its read: refused, and it still cost `size` bytes of decompression
+      const bundle = await readConfigPresetBundle(underdeclare(await buildZip({ 'metadata.json': metadataFile(), ...listsWithAttachments(tooMany, size + 1) })));
+      const reads: Array<Buffer | null> = [];
+      const error = await (async () => {
+        for (const item of bundle.items) {
+          reads.push(await item.attachment!.read(size));
+        }
+      })().catch((err) => err);
+      expect(reads.length).toBeLessThan(tooMany - 1);
+      expect(reads.every((content) => content === null)).toBe(true);
+      expect(error.extensions?.data?.reason).toEqual('bundle_refused');
     });
 
     it('is absent when the zip has no entry at the path, and an item without attachment has none', async () => {

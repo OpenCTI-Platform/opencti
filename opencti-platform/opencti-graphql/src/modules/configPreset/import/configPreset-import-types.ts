@@ -65,6 +65,8 @@ export interface ConfigPresetImportPlan {
   themeNames?: Set<string>;
   // The names that the themes the earlier items of a dry run would rename no longer hold
   releasedThemeNames?: Set<string>;
+  // The names (normalized) of the exclusion lists the earlier items of an import hold, dry run or not
+  exclusionListNames?: Set<string>;
   // The standard ids of the roles the earlier items of a dry run would create
   roleIds?: Set<string>;
   // The standard ids of the groups the earlier items of a dry run would create

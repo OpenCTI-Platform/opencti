@@ -1,4 +1,5 @@
 import { Readable } from 'node:stream';
+import { normalizeName } from '../../schema/identifier';
 import type { EditInput } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
@@ -8,7 +9,12 @@ import { readExclusionListFile } from './exclusionList-file';
 import { type ExclusionListImportConfiguration, exclusionListImportSchema } from './exclusionList-import-schema';
 import { hasSameTypes } from './exclusionList-rules';
 
-export type ExclusionListImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged' | 'ambiguous' | 'file_missing' | 'file_too_large' | 'file_not_own';
+export type ExclusionListImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged' | 'ambiguous' | 'duplicate' | 'file_missing' | 'file_too_large' | 'file_not_own';
+
+export interface ExclusionListImportOptions extends ConfigImportOptions {
+  // The names (normalized) the items of the same import already hold: two lists of a bundle with the same name are one list on the platform
+  reservedNames?: Set<string>;
+}
 
 export type ExclusionListImportResult = ConfigImportResult<ExclusionListImportConfiguration, ExclusionListImportCode>;
 
@@ -43,13 +49,18 @@ export const importExclusionList = async (
   user: AuthUser,
   configuration: unknown,
   file: ExclusionListImportFile | undefined,
-  { mode, dryRun = false }: ConfigImportOptions,
+  { mode, dryRun = false, reservedNames }: ExclusionListImportOptions,
 ): Promise<ExclusionListImportResult> => {
   const parsed = exclusionListImportSchema.safeParse(configuration);
   if (!parsed.success) {
     return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
   }
   const { name, description, enabled, exclusion_list_entity_types: types } = parsed.data;
+  // Found by name, a second list of the bundle with the same name would overwrite the first one
+  if (reservedNames?.has(normalizeName(name))) {
+    return refused('failed', 'duplicate', 'Another exclusion list of the bundle has this name', false, parsed.data);
+  }
+  reservedNames?.add(normalizeName(name));
   const sameName = await findExclusionListsByName(context, user, name);
   if (sameName.length > 1) {
     return refused('failed', 'ambiguous', 'Several exclusion lists have this name', true, parsed.data);

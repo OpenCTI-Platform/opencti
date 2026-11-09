@@ -122,6 +122,14 @@ describe('importExclusionList', () => {
       expect(fieldPatchExclusionList).not.toHaveBeenCalled();
     });
 
+    it('refuses a second list of the same import that has the same name, whatever its case, so it never overwrites the first', async () => {
+      const reservedNames = new Set<string>();
+      expect(await importExclusionList(context, user, configuration, fileOf(VALUES), { mode, reservedNames })).toMatchObject({ status: 'created' });
+      expect(await importExclusionList(context, user, { ...configuration, name: ' PUBLIC dns resolvers ' }, fileOf(VALUES), { mode, reservedNames }))
+        .toMatchObject({ status: 'failed', code: 'duplicate' });
+      expect(addExclusionListFile).toHaveBeenCalledTimes(1);
+    });
+
     it('decides the same result on a dry run, and writes nothing', async () => {
       expect(await importExclusionList(context, user, configuration, fileOf(VALUES), { mode, dryRun: true })).toMatchObject({ status: 'created', exists: false });
       expect(addExclusionListFile).not.toHaveBeenCalled();

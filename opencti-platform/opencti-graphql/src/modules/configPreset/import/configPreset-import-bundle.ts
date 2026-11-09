@@ -99,22 +99,24 @@ const toBundleAttachment = (path: string, entry: { stream: () => AsyncIterable<B
     path,
     read: async (limit) => {
       const tooLarge = new Error('too large');
+      let content: Buffer | null;
       try {
-        const content = await readStreamWithLimit(entry.stream(), limit, () => tooLarge);
-        if (!counted) {
-          counted = true;
-          extracted.size += content.length;
-          if (extracted.size > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
-            throw bundleRefused('The configuration bundle is too large once extracted');
-          }
-        }
-        return content;
+        content = await readStreamWithLimit(entry.stream(), limit, () => tooLarge);
       } catch (err) {
-        if (err === tooLarge) {
-          return null;
+        if (err !== tooLarge) {
+          throw err;
         }
-        throw err;
+        content = null;
       }
+      if (!counted) {
+        counted = true;
+        // A refused file was read up to the limit: it counts for that much, or a bundle of such files is never stopped
+        extracted.size += content ? content.length : limit;
+        if (extracted.size > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+          throw bundleRefused('The configuration bundle is too large once extracted');
+        }
+      }
+      return content;
     },
   };
 };

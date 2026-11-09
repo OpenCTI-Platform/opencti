@@ -43,14 +43,14 @@ describe('Exclusion lists import (registry)', () => {
   it('computes the item with a dry run of the module, with the attachment of the item, named by its name', async () => {
     vi.mocked(importExclusionList).mockResolvedValue({ status: 'overwritten', exists: true });
     const result = await family.importer!.compute(context, user, item(configuration), plan, ConfigImportMode.Overwrite);
-    expect(importExclusionList).toHaveBeenCalledWith(context, user, configuration, attachment, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(importExclusionList).toHaveBeenCalledWith(context, user, configuration, attachment, { mode: ConfigImportMode.Overwrite, dryRun: true, reservedNames: expect.any(Set) });
     expect(result).toMatchObject({ label: 'Public DNS resolvers', translatable: false, status: 'overwritten', exists: true, conflict: true });
   });
 
   it('gives no attachment to the module for an item whose zip has none, which refuses it', async () => {
     vi.mocked(importExclusionList).mockResolvedValue({ status: 'failed', code: 'file_missing', reason: 'The file of the values of the exclusion list is missing from the bundle', exists: false });
     const result = await family.importer!.compute(context, user, { ...item(configuration), attachment: undefined }, plan, ConfigImportMode.Overwrite);
-    expect(importExclusionList).toHaveBeenCalledWith(context, user, configuration, undefined, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(importExclusionList).toHaveBeenCalledWith(context, user, configuration, undefined, { mode: ConfigImportMode.Overwrite, dryRun: true, reservedNames: expect.any(Set) });
     expect(result).toMatchObject({ status: 'failed', code: 'file_missing' });
   });
 

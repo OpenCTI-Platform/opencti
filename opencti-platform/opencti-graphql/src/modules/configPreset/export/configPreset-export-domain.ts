@@ -30,7 +30,7 @@ import {
   isConfigPresetFamilyAvailable,
 } from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
-import { CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE } from '../import/configPreset-import-bundle';
+import { CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE, CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE } from '../import/configPreset-import-bundle';
 import { buildConfigPresetFileName, CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE, sanitizeBundleName } from '../configPreset-utils';
 
 // The dialog shows a type inline when its first page is its only one
@@ -277,6 +277,11 @@ const writeConfigPresetZip = async (
     append(JSON.stringify(buildConfigPresetDependencies(families), null, 2), CONFIG_PRESET_DEPENDENCIES_FILE);
     // Awaited together: when the output fails, the archive is no longer drained and finalize never resolves
     await Promise.all([archive.finalize(), written]);
+    // Attached files can hardly be compressed: the zip itself must be small enough for the import to take it
+    const { size } = await fs.promises.stat(zipPath);
+    if (size > CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE) {
+      throw FunctionalError('The export is too large to be imported back, select fewer items', { limit: CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE, size });
+    }
     return {
       entity_types: families.map((family) => family.id),
       counts,

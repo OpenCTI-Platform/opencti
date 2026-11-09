@@ -515,6 +515,20 @@ describe('Config preset export', () => {
       expect(uploadToStorage).toHaveBeenCalledTimes(1);
     });
 
+    it('refuses an export whose zip is larger than the import accepts, and uploads nothing', async () => {
+      // The values of a list can hardly be compressed: the entries are within the extracted limit, the zip is not
+      const realStat = fs.promises.stat;
+      vi.spyOn(fs.promises, 'stat').mockImplementation(async (p, ...args) => {
+        const stats = await realStat(p, ...(args as []));
+        return String(p).includes(TMP_ZIP_MARKER) ? { ...stats, size: 50 * 1024 * 1024 + 1 } : stats;
+      });
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([Buffer.from('8.8.8.8\n')]) as never);
+      await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists', items: [dnsExclusionList.standard_id] }]))
+        .rejects.toThrow('The export is too large to be imported back');
+      expect(uploadToStorage).not.toHaveBeenCalled();
+      tmpZipPaths().forEach((zipPath) => expect(fs.existsSync(zipPath)).toBe(false));
+    });
+
     it('fails with the error of the storage when it cannot be read, it is not a missing file', async () => {
       vi.mocked(downloadFile).mockRejectedValue(new Error('s3 down'));
       await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists', items: [dnsExclusionList.standard_id] }])).rejects.toThrow('s3 down');

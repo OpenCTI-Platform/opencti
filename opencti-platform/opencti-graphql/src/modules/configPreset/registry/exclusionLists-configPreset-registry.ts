@@ -45,10 +45,11 @@ const toExclusionListItem = (list: BasicStoreEntityExclusionList): ConfigPresetI
 });
 
 const exclusionListsImporter: ConfigPresetImporter = {
-  compute: async (context, user, item, _plan, mode) => {
+  compute: async (context, user, item, plan, mode) => {
     const { name } = item.configuration;
     const label = { label: typeof name === 'string' ? name.trim() : item.id, translatable: false };
-    return toComputedItem(label, await importExclusionList(context, user, item.configuration, item.attachment, { mode, dryRun: true }));
+    plan.exclusionListNames ??= new Set();
+    return toComputedItem(label, await importExclusionList(context, user, item.configuration, item.attachment, { mode, dryRun: true, reservedNames: plan.exclusionListNames }));
   },
   apply: async (context, user, item, computed, mode) => {
     return toAppliedStatus(await importExclusionList(context, user, item.configuration, item.attachment, { mode }), computed);
