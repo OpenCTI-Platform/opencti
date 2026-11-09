@@ -109,6 +109,35 @@ describe('Stix2Splitter: split_bundle_with_expectations parity with pycti', () =
     expect(relationshipBundle.created_by_ref).toEqual('ced3e53e-9663-4c96-9c60-07d2e778d931');
   });
 
+  // Platform-side fixture: pycti's own splitter suite has no security-coverage-result case
+  it('should split a security-coverage-result and keep the references to it, not set it aside', () => {
+    const resultId = 'security-coverage-result--20000000-0000-4000-8000-000000000905';
+    const content = readFileSync(fixturePath('security-coverage-result-bundle.json'), 'utf-8');
+    const { numberExpectations, incompatibleItems, bundles } = new Stix2Splitter().splitBundleWithExpectations(content);
+
+    expect(incompatibleItems).toEqual([]);
+    expect(numberExpectations).toEqual(4);
+    const objects = (bundles as string[]).map((bundle) => JSON.parse(bundle).objects[0]);
+    expect(objects.map((object) => object.id)).toContain(resultId);
+    expect(objects.find((object) => object.type === 'relationship').source_ref).toEqual(resultId);
+    expect(objects.find((object) => object.type === 'report').object_refs).toContain(resultId);
+  });
+
+  it('should keep an external reference whose url or external_id is empty or zero, as pycti tests None and not truthiness', () => {
+    const externalReferences = [
+      { source_name: 'empty-url', url: '' },
+      { source_name: 'empty-url-duplicate', url: '' },
+      { source_name: 'zero-id', external_id: 0 },
+      { source_name: '', external_id: 'empty-source' },
+      { source_name: 'no-id-basis' },
+    ];
+    const content = JSON.stringify({ id: 'bundle--refs', type: 'bundle', objects: [{ id: 'malware--refs', type: 'malware', external_references: externalReferences }] });
+    const { bundles } = new Stix2Splitter().splitBundleWithExpectations(content);
+
+    const malware = JSON.parse((bundles as string[])[0]).objects[0];
+    expect(malware.external_references.map((reference: { source_name: string }) => reference.source_name)).toEqual(['empty-url', 'zero-id', '']);
+  });
+
   it('should produce identical, uncontaminated results when the same instance is reused across two different bundles', () => {
     const first = JSON.stringify({ id: 'bundle--first', type: 'bundle', objects: [{ id: 'malware--a', type: 'malware' }, { id: 'malware--b', type: 'malware' }] });
     const second = JSON.stringify({ id: 'bundle--second', type: 'bundle', objects: [{ id: 'malware--c', type: 'malware' }] });
