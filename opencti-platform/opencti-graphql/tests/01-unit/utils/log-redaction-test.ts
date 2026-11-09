@@ -27,15 +27,38 @@ describe('log-redaction - redactSensitiveData', () => {
     expect(redactSensitiveData(data)).toEqual({ secret: R });
   });
 
-  it('should support cycles', () => {
+  it('should support cycles, unrolled until the limit', () => {
     const data: Record<string, unknown> = { secret: 'v' };
     data.self = data;
     const list: unknown[] = [];
     list.push(list);
     const redacted = redactSensitiveData(data);
     expect(redacted.secret).toBe(R);
-    expect(redacted.self).toBe(redacted);
-    expect(redactSensitiveData(list)[0]).toBeInstanceOf(Array);
+    expect(redacted.self).toEqual(expect.objectContaining({ secret: R }));
+    expect(() => JSON.stringify(redacted)).not.toThrow();
+    let current: unknown = redacted;
+    for (let i = 0; i <= MAX_REDACTION_DEPTH; i += 1) current = (current as { self: unknown }).self;
+    expect(current).toBe(R);
+    expect(() => JSON.stringify(redactSensitiveData(list))).not.toThrow();
+  });
+
+  it('should keep the depth of the copy bounded with shared references', () => {
+    const shared = { secret: 'v' };
+    const redacted = redactSensitiveData({ a: shared, b: shared });
+    expect(redacted.a).toEqual({ secret: R });
+    expect(redacted.a).toBe(redacted.b);
+    // Siblings linked to each other, in both directions
+    const length = 20_000;
+    const forward = Array.from({ length }, () => ({ next: null as unknown }));
+    forward.forEach((item, index) => {
+      item.next = forward[index + 1] ?? null;
+    });
+    const backward = Array.from({ length }, () => ({ previous: null as unknown }));
+    backward.forEach((item, index) => {
+      item.previous = backward[index - 1] ?? null;
+    });
+    expect(() => JSON.stringify(redactSensitiveData(forward))).not.toThrow();
+    expect(() => JSON.stringify(redactSensitiveData(backward))).not.toThrow();
   });
 
   it('should return a copy, without modifying the data', () => {
