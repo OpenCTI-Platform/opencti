@@ -79,7 +79,7 @@ All three are off by default: a viewer then sees the dashboard with its default 
 
 The publication form shows a **Published values** section: the time range and, for each variable used by a widget, the value to freeze in the public dashboard. The section starts from the values you see on the dashboard; **Load a preset** fills it from a preset. The published values are frozen at publication: the public dashboard is a snapshot, later changes of the variables or presets do not affect it. Publish the same dashboard several times to get one public dashboard per vertical.
 
-If the author had opened *Allow viewers to edit time filters* when publishing, visitors of the public dashboard can change the time range for themselves; otherwise the time filters of the public page are disabled and show the published range. The switch is copied at publication: republish to change it.
+If the author had opened *Allow viewers to edit time filters* when publishing, visitors of the public dashboard can change the time range for themselves; otherwise the time filters of the public page are disabled and show the published range, which the server enforces: the public API ignores any other range. Public dashboards published before this feature keep their behaviour (fixed range). The switch is copied at publication: republish to change it.
 
 ## Export, import and duplication
 

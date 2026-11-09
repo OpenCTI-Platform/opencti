@@ -32,7 +32,7 @@ import { findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
-import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
+import { checkUserIsAdminOnDashboard, getWidgetArguments, resolvePublicDashboardTimeRange, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
 import { buildDashboardDateVariableIds, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
 import { applyPublicationTimeRange, buildPublicationVariableValues, toPublicationTimeZone } from './publicDashboard-publication';
@@ -354,25 +354,34 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 };
 
 // region Widgets Public API
-const ensurePublicContext = async (context: AuthContext, uriKey: string, widgetId: string) => {
-  const { user, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
+interface PublicWidgetArgs {
+  uriKey: string;
+  widgetId: string;
+  startDate?: string | null;
+  endDate?: string | null;
+}
+
+const ensurePublicContext = async (context: AuthContext, args: PublicWidgetArgs) => {
+  const { user, dataSelection, parameters, config } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
-  return { user, dataSelection, parameters };
+  // The range of the visitor only applies when the author allowed it; otherwise the published one is enforced.
+  const { startDate, endDate } = resolvePublicDashboardTimeRange(config, { startDate: args.startDate, endDate: args.endDate });
+  return { user, dataSelection, parameters, startDate, endDate };
 };
 
 // heatmap & vertical-bar & line & area
 export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
-  const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, dataSelection, parameters, startDate, endDate } = await ensurePublicContext(context, args);
 
   const timeSeriesParameters = dataSelection.map((selection) => {
     return { field: selection.date_attribute, filters: selection.filters };
   });
   const standardArgs = {
-    startDate: args.startDate,
-    endDate: args.endDate,
+    startDate,
+    endDate,
     interval: parameters?.interval ?? 'day',
     timeSeriesParameters,
   };
@@ -384,7 +393,7 @@ export const publicStixRelationshipsMultiTimeSeries = async (
   context: AuthContext,
   args: QueryPublicStixRelationshipsMultiTimeSeriesArgs,
 ) => {
-  const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, dataSelection, parameters, startDate, endDate } = await ensurePublicContext(context, args);
 
   const timeSeriesParameters = dataSelection.map((selection) => {
     return {
@@ -397,8 +406,8 @@ export const publicStixRelationshipsMultiTimeSeries = async (
 
   const standardArgs = {
     operation: 'count',
-    startDate: args.startDate,
-    endDate: args.endDate,
+    startDate,
+    endDate,
     interval: parameters?.interval ?? 'day',
     timeSeriesParameters,
   };
@@ -412,14 +421,14 @@ export const publicStixCoreObjectsNumber = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsNumberArgs,
 ): Promise<NumberResult> => {
-  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, dataSelection, startDate } = await ensurePublicContext(context, args);
 
   const selection = dataSelection[0];
   const { filters } = selection;
 
   const parameters = {
     dateAttribute: selection.date_attribute,
-    startDate: args.startDate,
+    startDate,
     endDate: daysAgo(1),
     filters,
     types: [
@@ -435,13 +444,13 @@ export const publicStixRelationshipsNumber = async (
   context: AuthContext,
   args: QueryPublicStixRelationshipsNumberArgs,
 ): Promise<NumberResult> => {
-  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, dataSelection, startDate } = await ensurePublicContext(context, args);
 
   const selection = dataSelection[0];
   const { filters } = selection;
 
   const parameters = {
-    startDate: args.startDate,
+    startDate,
     endDate: daysAgo(1),
     filters,
     dateAttribute: selection.date_attribute,
@@ -458,15 +467,15 @@ export const publicStixCoreObjectsDistribution = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsDistributionArgs,
 ) => {
-  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, dataSelection, startDate, endDate } = await ensurePublicContext(context, args);
 
   const mainSelection = dataSelection[0];
   const breakdownSelection = dataSelection[1];
   const { filters: mainFilters } = mainSelection;
 
   const parameters = {
-    startDate: args.startDate,
-    endDate: args.endDate,
+    startDate,
+    endDate,
     filters: mainFilters,
     toTypes: mainSelection.toTypes,
     field: mainSelection.attribute,
@@ -504,8 +513,8 @@ export const publicStixCoreObjectsDistribution = async (
       };
 
       const breakdownParameters = {
-        startDate: args.startDate,
-        endDate: args.endDate,
+        startDate,
+        endDate,
         filters: breakdownFilters,
         toTypes: breakdownSelection.toTypes,
         field: breakdownSelection.attribute,
@@ -530,7 +539,7 @@ export const publicStixRelationshipsDistribution = async (
   context: AuthContext,
   args: QueryPublicStixRelationshipsDistributionArgs,
 ) => {
-  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, dataSelection, startDate, endDate } = await ensurePublicContext(context, args);
 
   const mainSelection = dataSelection[0];
   const breakdownSelection = dataSelection[1];
@@ -539,8 +548,8 @@ export const publicStixRelationshipsDistribution = async (
   const parameters = {
     operation: 'count',
     field: mainSelection.attribute || 'entity_type', // TODO check for StixRelationshipsDonut
-    startDate: args.startDate,
-    endDate: args.endDate,
+    startDate,
+    endDate,
     filters: mainFilters,
     dynamicFrom: mainSelection.dynamicFrom,
     dynamicTo: mainSelection.dynamicTo,
@@ -577,8 +586,8 @@ export const publicStixRelationshipsDistribution = async (
       const breakdownParameters = {
         operation: 'count',
         field: breakdownSelection.attribute || 'entity_type',
-        startDate: args.startDate,
-        endDate: args.endDate,
+        startDate,
+        endDate,
         filters: breakdownFilters,
         dynamicFrom: breakdownSelection.dynamicFrom,
         dynamicTo: breakdownSelection.dynamicTo,
@@ -623,7 +632,7 @@ export const publicBookmarks = async (
   context: AuthContext,
   args: QueryPublicBookmarksArgs,
 ) => {
-  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, dataSelection } = await ensurePublicContext(context, args);
 
   const selection = dataSelection[0];
   const { filters } = selection;
@@ -641,14 +650,14 @@ export const publicStixCoreObjectsPaginated = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsArgs,
 ) => {
-  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, dataSelection, startDate, endDate } = await ensurePublicContext(context, args);
 
   const selection = dataSelection[0];
   const { filters } = selection;
 
   const parameters = {
-    startDate: args.startDate,
-    endDate: args.endDate,
+    startDate,
+    endDate,
     types: [ABSTRACT_STIX_CORE_OBJECT],
     filters,
     orderBy: selection.date_attribute,
@@ -664,14 +673,14 @@ export const publicStixRelationships = async (
   context: AuthContext,
   args: QueryPublicStixRelationshipsArgs,
 ) => {
-  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+  const { user, dataSelection, startDate, endDate } = await ensurePublicContext(context, args);
 
   const selection = dataSelection[0];
   const { filters } = selection;
 
   const parameters = {
-    startDate: args.startDate,
-    endDate: args.endDate,
+    startDate,
+    endDate,
     filters,
     dynamicFrom: selection.dynamicFrom,
     dynamicTo: selection.dynamicTo,
