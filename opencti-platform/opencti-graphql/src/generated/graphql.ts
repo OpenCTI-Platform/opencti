@@ -27066,12 +27066,11 @@ export type QueryIngestionDeduplicationFieldsArgs = {
 
 
 export type QueryIngestionDeduplicationRulesArgs = {
-  userId?: InputMaybe<Scalars['ID']['input']>;
+  userId: Scalars['ID']['input'];
 };
 
 
 export type QueryIngestionDeduplicationUserUsagesArgs = {
-  excludeConnectorId?: InputMaybe<Scalars['ID']['input']>;
   userId: Scalars['ID']['input'];
 };
 
@@ -52217,7 +52216,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionDeduplicationDefaultExcludedFields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   ingestionDeduplicationDefaultTtl?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   ingestionDeduplicationFields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryIngestionDeduplicationFieldsArgs, 'entityType'>>;
-  ingestionDeduplicationRules?: Resolver<Array<ResolversTypes['IngestionDeduplicationRule']>, ParentType, ContextType, Partial<QueryIngestionDeduplicationRulesArgs>>;
+  ingestionDeduplicationRules?: Resolver<Array<ResolversTypes['IngestionDeduplicationRule']>, ParentType, ContextType, RequireFields<QueryIngestionDeduplicationRulesArgs, 'userId'>>;
   ingestionDeduplicationUserUsages?: Resolver<Array<ResolversTypes['IngestionDeduplicationUsage']>, ParentType, ContextType, RequireFields<QueryIngestionDeduplicationUserUsagesArgs, 'userId'>>;
   ingestionHealthSettings?: Resolver<Maybe<ResolversTypes['IngestionHealthSettings']>, ParentType, ContextType>;
   ingestionJson?: Resolver<Maybe<ResolversTypes['IngestionJson']>, ParentType, ContextType, RequireFields<QueryIngestionJsonArgs, 'id'>>;

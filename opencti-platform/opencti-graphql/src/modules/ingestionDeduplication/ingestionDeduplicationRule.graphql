@@ -22,12 +22,12 @@ type IngestionDeduplicationUsage {
 }
 
 type Query {
-  ingestionDeduplicationRules(userId: ID): [IngestionDeduplicationRule!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
+  ingestionDeduplicationRules(userId: ID!): [IngestionDeduplicationRule!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
   ingestionDeduplicationAllowedTypes: [String!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
   ingestionDeduplicationDefaultTtl: Int! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "0")
   ingestionDeduplicationDefaultExcludedFields: [String!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
   ingestionDeduplicationFields(entityType: String!): [String!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
-  ingestionDeduplicationUserUsages(userId: ID!, excludeConnectorId: ID): [IngestionDeduplicationUsage!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
+  ingestionDeduplicationUserUsages(userId: ID!): [IngestionDeduplicationUsage!]! @auth(for: [INGESTION]) @ff(flags: ["INGESTION_DEDUPLICATION"], softFail: true, defaultValue: "[]")
 }
 
 input IngestionDeduplicationRuleAddInput {

@@ -76,15 +76,13 @@ export interface IngestionDeduplication {
   ttl: number;
 }
 
-export const isIngestionDeduplicationType = (type: string) => {
+const isIngestionDeduplicationType = (type: string) => {
   return isFeatureEnabled(INGESTION_DEDUPLICATION_FEATURE_FLAG) && INGESTION_DEDUPLICATION_ALLOWED_TYPES.includes(type);
 };
 
-export const findIngestionDeduplicationRules = async (context: AuthContext, userId?: string | null) => {
+export const findIngestionDeduplicationRules = async (context: AuthContext, userId: string) => {
   const rules = await getEntitiesListFromCache<BasicStoreEntityIngestionDeduplicationRule>(context, SYSTEM_USER, ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE);
-  return rules
-    .filter((rule) => !userId || rule.user_id === userId)
-    .sort((a, b) => a.target_type.localeCompare(b.target_type));
+  return rules.filter((rule) => rule.user_id === userId);
 };
 
 export const prepareIngestionDeduplication = async (
@@ -141,7 +139,7 @@ export const prepareIngestionDeduplication = async (
 const toUpdatedAt = (updatedAt: Date | string | undefined) => (updatedAt ? new Date(updatedAt).getTime() : Number.NaN);
 
 // Best effort: a Redis failure must never block an import
-export const findUnchangedEntity = async <T extends { updated_at?: Date | string }>(
+export const findUnchangedEntity = async <T extends { standard_id?: string; updated_at?: Date | string }>(
   deduplication: IngestionDeduplication,
   loadEntity: () => Promise<T | null | undefined>,
 ): Promise<T | undefined> => {
@@ -156,8 +154,12 @@ export const findUnchangedEntity = async <T extends { updated_at?: Date | string
     return undefined;
   }
   const entity = await loadEntity();
-  // Missing, no longer visible, or changed by anyone since this import: the content of the source must be applied again
-  return entity && toUpdatedAt(entity.updated_at) === lastImport.updatedAt ? entity : undefined;
+  // Another entity can answer for this id once it is merged: the record only speaks for the one it is keyed by
+  if (!entity || entity.standard_id !== deduplication.standardId) {
+    return undefined;
+  }
+  // Changed by anyone since this import: the content of the source must be applied again
+  return toUpdatedAt(entity.updated_at) === lastImport.updatedAt ? entity : undefined;
 };
 
 export const recordIngestion = async (deduplication: IngestionDeduplication, entity: { updated_at?: Date | string }) => {

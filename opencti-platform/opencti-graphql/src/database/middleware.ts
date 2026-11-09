@@ -4707,7 +4707,7 @@ export const createEntity = async (
   const isCompleteResult = opts.complete === true;
   const ingestionDeduplication = await prepareIngestionDeduplication(context, user, input, type, opts);
   if (ingestionDeduplication) {
-    const existing = await findUnchangedEntity(ingestionDeduplication, () => storeLoadById<BasicStoreEntity>(context, user, input.stix_id, type));
+    const existing = await findUnchangedEntity(ingestionDeduplication, () => storeLoadById<BasicStoreEntity>(context, user, ingestionDeduplication.standardId, type));
     if (existing) {
       meterManager.ingestionDeduplication({ entityType: type, userId: ingestionDeduplication.userId, result: 'skipped' });
       const unchanged = { element: existing, event: null, isCreation: false };

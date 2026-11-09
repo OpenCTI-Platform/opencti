@@ -7,14 +7,15 @@ import { KNOWLEDGE_KNFORMINTAKE, SYSTEM_USER } from '../../../../src/utils/acces
 import { addUser, userDelete } from '../../../../src/modules/user/user-domain';
 import { addIngestion, ingestionDelete } from '../../../../src/modules/ingestion/ingestion-rss-domain';
 import { addIngestion as addTaxiiPush, ingestionDelete as deleteTaxiiPush } from '../../../../src/modules/ingestion/ingestion-taxii-collection-domain';
-import { connectorIdFromIngestId } from '../../../../src/domain/connector';
+import { connectorDelete, registerConnector } from '../../../../src/modules/connector/connector-domain';
+import { ConnectorType } from '../../../../src/generated/graphql';
 import { generateStandardId } from '../../../../src/schema/identifier';
 import { ENTITY_TYPE_MALWARE, ENTITY_TYPE_TOOL } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_VULNERABILITY } from '../../../../src/modules/vulnerability/vulnerability-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
 import { createEntity, deleteElementById, updateAttribute } from '../../../../src/database/middleware';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
-import { redisDeleteIngestionRecord, redisGetIngestionRecord } from '../../../../src/database/redis';
+import { redisGetIngestionRecord } from '../../../../src/database/redis';
 import { findUnchangedEntity, type IngestionDeduplication, prepareIngestionDeduplication, recordIngestion } from '../../../../src/database/ingestionDeduplication';
 import {
   addIngestionDeduplicationRule,
@@ -22,7 +23,7 @@ import {
   fieldPatchIngestionDeduplicationRule,
   findById,
   findHashableFields,
-  findIngestionDeduplicationRules,
+  findUserIngestionDeduplicationRules,
   findUserIngestionUsages,
 } from '../../../../src/modules/ingestionDeduplication/ingestionDeduplicationRule-domain';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -45,9 +46,8 @@ describe('Ingestion deduplication domain', () => {
   const checkMalware = async (input: Record<string, unknown>, context: AuthContext = testContext) => {
     return await prepareIngestionDeduplication(context, connectorUser, input, ENTITY_TYPE_MALWARE) as IngestionDeduplication;
   };
-  const importedMalware = { updated_at: '2024-01-01T00:00:00.000Z' };
+  const importedMalware = { standard_id: generateStandardId(ENTITY_TYPE_MALWARE, malwareInput()), updated_at: '2024-01-01T00:00:00.000Z' };
   const isUnchanged = async (deduplication: IngestionDeduplication) => (await findUnchangedEntity(deduplication, async () => importedMalware)) !== undefined;
-  const forgetMalware = (deduplication: IngestionDeduplication) => redisDeleteIngestionRecord(deduplication.standardId, connectorUserId);
   const loadMalware = (id: string) => () => storeLoadById<BasicStoreEntity>(testContext, connectorUser, id, ENTITY_TYPE_MALWARE);
 
   beforeAll(async () => {
@@ -61,7 +61,7 @@ describe('Ingestion deduplication domain', () => {
   });
 
   afterAll(async () => {
-    const rules = await findIngestionDeduplicationRules(testContext, connectorUserId);
+    const rules = await findUserIngestionDeduplicationRules(testContext, connectorUserId);
     for (let i = 0; i < rules.length; i += 1) {
       await deleteIngestionDeduplicationRule(testContext, ADMIN_USER, rules[i].id);
     }
@@ -71,12 +71,12 @@ describe('Ingestion deduplication domain', () => {
   describe('Setting up rules', () => {
     it('should deduplicate a type for a user once an administrator adds a rule', async () => {
       // GIVEN a connector user without any rule
-      expect(await findIngestionDeduplicationRules(testContext, connectorUserId)).toHaveLength(0);
+      expect(await findUserIngestionDeduplicationRules(testContext, connectorUserId)).toHaveLength(0);
       // WHEN an administrator deduplicates its malware, ignoring the modified date
       const rule = await addIngestionDeduplicationRule(testContext, ADMIN_USER, { user_id: connectorUserId, target_type: ENTITY_TYPE_MALWARE, excluded_fields: ['modified'] });
       malwareRuleId = rule.id;
       // THEN the user has this rule
-      const rules = await findIngestionDeduplicationRules(testContext, connectorUserId);
+      const rules = await findUserIngestionDeduplicationRules(testContext, connectorUserId);
       expect(rules.map((r) => r.target_type)).toEqual([ENTITY_TYPE_MALWARE]);
       expect(rules[0].excluded_fields).toEqual(['modified']);
     });
@@ -175,15 +175,13 @@ describe('Ingestion deduplication domain', () => {
       await expect(patching).rejects.toThrow('Only the excluded fields and the expiration of a deduplication rule can be changed');
     });
 
-    it('should show the rules of a user sorted by type, and among all the rules', async () => {
+    it('should show the rules of a user sorted by type', async () => {
       // GIVEN the user also deduplicates its tools
       const toolRule = await addIngestionDeduplicationRule(testContext, ADMIN_USER, { user_id: connectorUserId, target_type: ENTITY_TYPE_TOOL });
-      // WHEN its rules, then all the rules, are listed
-      const userRules = await findIngestionDeduplicationRules(testContext, connectorUserId);
-      const allRules = await findIngestionDeduplicationRules(testContext);
-      // THEN both rules show, malware first, and the tool rule is among all the rules
+      // WHEN its rules are listed
+      const userRules = await findUserIngestionDeduplicationRules(testContext, connectorUserId);
+      // THEN both rules show, malware first
       expect(userRules.map((r) => r.target_type)).toEqual([ENTITY_TYPE_MALWARE, ENTITY_TYPE_TOOL]);
-      expect(allRules.map((r) => r.id)).toContain(toolRule.id);
       await deleteIngestionDeduplicationRule(testContext, ADMIN_USER, toolRule.id);
     });
 
@@ -199,16 +197,14 @@ describe('Ingestion deduplication domain', () => {
       expect(vulnerabilityFields).toEqual([]);
     });
 
-    it('should show the feeds running as the user, except the one being looked at', async () => {
+    it('should show the feeds running as the user', async () => {
       // GIVEN an RSS feed running as the connector user
       const feed = await addIngestion(testContext, ADMIN_USER, { name: 'ingestion dedup domain feed', uri: 'https://example.allowed.com/dedup-rss', user_id: connectorUserId });
       try {
-        // WHEN the ingestions of the user are listed, from anywhere then from the feed's own connector
+        // WHEN the ingestions of the user are listed
         const usages = await findUserIngestionUsages(testContext, ADMIN_USER, connectorUserId);
-        const usagesFromTheFeed = await findUserIngestionUsages(testContext, ADMIN_USER, connectorUserId, connectorIdFromIngestId(feed.id));
-        // THEN the feed shows, except when it is the one being looked at
+        // THEN the feed shows
         expect(usages.map((usage) => usage.id)).toContain(feed.id);
-        expect(usagesFromTheFeed.map((usage) => usage.id)).not.toContain(feed.id);
       } finally {
         await ingestionDelete(testContext, ADMIN_USER, feed.id);
       }
@@ -232,6 +228,24 @@ describe('Ingestion deduplication domain', () => {
       } finally {
         await ingestionDelete(testContext, ADMIN_USER, feed.id);
         await deleteTaxiiPush(testContext, ADMIN_USER, restricted.id);
+      }
+    });
+
+    it('should show the connectors of the user only to a reader who can access connectors', async () => {
+      // GIVEN a connector running as the connector user
+      const connectorId = uuidv4();
+      const connectorInput = { id: connectorId, name: 'ingestion dedup connector', type: ConnectorType.ExternalImport, scope: [ENTITY_TYPE_MALWARE], auto: false };
+      await registerConnector(testContext, ADMIN_USER, connectorInput, { active: true, connector_user_id: connectorUserId });
+      try {
+        // WHEN an administrator, then an editor without the Access connectors capability, list the ingestions of the user
+        const editor = await getAuthUser(await getUserIdByEmail(USER_EDITOR.email));
+        const fromAdministrator = await findUserIngestionUsages(testContext, ADMIN_USER, connectorUserId);
+        const fromEditor = await findUserIngestionUsages(testContext, editor, connectorUserId);
+        // THEN only the administrator sees the connector, as with the connectors query
+        expect(fromAdministrator.map((usage) => usage.id)).toContain(connectorId);
+        expect(fromEditor.map((usage) => usage.id)).not.toContain(connectorId);
+      } finally {
+        await connectorDelete(testContext, ADMIN_USER, connectorId);
       }
     });
   });
@@ -265,7 +279,17 @@ describe('Ingestion deduplication domain', () => {
       // THEN it is recognized as unchanged, under the standard id the entity gets
       expect(await isUnchanged(secondImport)).toBe(true);
       expect(secondImport.standardId).toEqual(generateStandardId(ENTITY_TYPE_MALWARE, malwareInput()));
-      await forgetMalware(firstImport);
+    });
+
+    it('should not skip for another entity than the one the fingerprint belongs to', async () => {
+      // GIVEN a malware imported once by the user
+      const firstImport = await checkMalware(malwareInput());
+      await recordIngestion(firstImport, importedMalware);
+      // WHEN the id of the import resolves to another entity, as after a merge
+      const otherEntity = { ...importedMalware, standard_id: 'malware--00000000-0000-5000-8000-000000000000' };
+      const found = await findUnchangedEntity(firstImport, async () => otherEntity);
+      // THEN it is imported, since the fingerprint says nothing about that entity
+      expect(found).toBeUndefined();
     });
 
     it('should import a malware the source has changed', async () => {
@@ -276,7 +300,6 @@ describe('Ingestion deduplication domain', () => {
       const secondImport = await checkMalware(malwareInput({ description: 'changed at the source' }));
       // THEN it is imported
       expect(await isUnchanged(secondImport)).toBe(false);
-      await forgetMalware(firstImport);
     });
 
     it('should compare a connector only with its own imports', async () => {
@@ -287,7 +310,6 @@ describe('Ingestion deduplication domain', () => {
       const importByAnother = { ...importByUser, userId: ADMIN_USER.id };
       // THEN it is not recognized
       expect(await isUnchanged(importByAnother)).toBe(false);
-      await forgetMalware(importByUser);
     });
 
     it('should not mistake a synchronized import for a regular one', async () => {
@@ -298,7 +320,6 @@ describe('Ingestion deduplication domain', () => {
       const synchronizedImport = await checkMalware(malwareInput(), { ...testContext, synchronizedUpsert: true } as AuthContext);
       // THEN it is imported
       expect(await isUnchanged(synchronizedImport)).toBe(false);
-      await forgetMalware(regularImport);
     });
 
     it('should import again once the confidence of the user changes', async () => {
@@ -314,7 +335,6 @@ describe('Ingestion deduplication domain', () => {
       // THEN the next import runs, since it may now change more, or less, of the malware
       expect(await isUnchanged(afterLowering)).toBe(false);
       expect(await isUnchanged(afterOverride)).toBe(false);
-      await forgetMalware(firstImport);
     });
 
     it('should import again once the user records itself as creator', async () => {
@@ -327,7 +347,6 @@ describe('Ingestion deduplication domain', () => {
       const nextImport = await prepareIngestionDeduplication(testContext, withCreators, malwareInput(), ENTITY_TYPE_MALWARE) as IngestionDeduplication;
       // THEN the next import runs, so the user is added to the creators of the malware
       expect(await isUnchanged(nextImport)).toBe(false);
-      await forgetMalware(firstImport);
     });
 
     it('should import again a malware whose author was missing at its import', async () => {
@@ -359,7 +378,6 @@ describe('Ingestion deduplication domain', () => {
         expect((await redisGetIngestionRecord(malware.standard_id, connectorUserId))?.hash).toEqual(firstImport.hash);
       } finally {
         await deleteElementById(testContext, ADMIN_USER, malware.id, ENTITY_TYPE_MALWARE);
-        await forgetMalware(firstImport);
       }
     });
 
@@ -373,7 +391,6 @@ describe('Ingestion deduplication domain', () => {
       // THEN the next import runs and is recorded for the new expiration
       expect(await isUnchanged(afterEdit)).toBe(false);
       expect(afterEdit.ttl).toEqual(7200);
-      await forgetMalware(beforeEdit);
     });
   });
 
@@ -391,7 +408,6 @@ describe('Ingestion deduplication domain', () => {
         expect(await findUnchangedEntity(deduplication, loadMalware(malware.id))).toBeUndefined();
       } finally {
         await deleteElementById(testContext, ADMIN_USER, malware.id, ENTITY_TYPE_MALWARE);
-        await forgetMalware(deduplication);
       }
     });
 
@@ -410,7 +426,6 @@ describe('Ingestion deduplication domain', () => {
         await deleteElementById(testContext, ADMIN_USER, malware.id, ENTITY_TYPE_MALWARE);
       } finally {
         await deleteElementById(testContext, ADMIN_USER, author.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-        await forgetMalware(deduplication);
       }
     });
 
@@ -429,7 +444,6 @@ describe('Ingestion deduplication domain', () => {
         expect(await findUnchangedEntity(deduplication, loadMalware(malware.id))).toBeUndefined();
       } finally {
         await deleteElementById(testContext, ADMIN_USER, malware.id, ENTITY_TYPE_MALWARE);
-        await forgetMalware(deduplication);
       }
     });
   });

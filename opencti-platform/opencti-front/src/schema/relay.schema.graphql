@@ -12026,8 +12026,8 @@ type Query {
   ingestionDeduplicationDefaultExcludedFields: [String!]!
   ingestionDeduplicationDefaultTtl: Int!
   ingestionDeduplicationFields(entityType: String!): [String!]!
-  ingestionDeduplicationRules(userId: ID): [IngestionDeduplicationRule!]!
-  ingestionDeduplicationUserUsages(excludeConnectorId: ID, userId: ID!): [IngestionDeduplicationUsage!]!
+  ingestionDeduplicationRules(userId: ID!): [IngestionDeduplicationRule!]!
+  ingestionDeduplicationUserUsages(userId: ID!): [IngestionDeduplicationUsage!]!
   ingestionHealthSettings: IngestionHealthSettings
   ingestionJson(id: String!): IngestionJson
   ingestionJsonLogs(id: String!): [IngestionEntry]

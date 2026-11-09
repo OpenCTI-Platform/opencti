@@ -122,7 +122,7 @@ The platform exposes a Prometheus counter, `opencti_ingestion_deduplication_tota
 |---|---|
 | `opencti_entity_type` | The entity type |
 | `enduser_id` | The id of the user the import runs as, the one the rule belongs to |
-| `opencti_deduplication_result` | `skipped` (the import was skipped) or `imported` (the object was imported and its fingerprint recorded) |
+| `opencti_deduplication_result` | `skipped` (the import was skipped) or `imported` (the import ran, whether or not its fingerprint was recorded) |
 
 The share of `skipped` for a type and a user tells how much work deduplication saves for the sources running as this user. The first run after a rule is created is always `imported`: the fingerprints are recorded during this run.
 

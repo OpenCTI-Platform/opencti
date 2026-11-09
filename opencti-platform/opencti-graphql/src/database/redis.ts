@@ -1328,7 +1328,4 @@ export const redisSetIngestionRecord = async (standardId: string, userId: string
   await getClientBase().set(ingestionDeduplicationKey(standardId, userId), JSON.stringify(record), 'EX', ttl);
 };
 
-export const redisDeleteIngestionRecord = async (standardId: string, userId: string) => {
-  await getClientBase().del(ingestionDeduplicationKey(standardId, userId));
-};
 // endregion - ingestion deduplication
