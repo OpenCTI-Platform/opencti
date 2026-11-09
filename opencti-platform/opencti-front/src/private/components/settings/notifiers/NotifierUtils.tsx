@@ -172,7 +172,7 @@ export const NotifierConnectorFields = ({ children }: { children: ReactNode }) =
   );
 };
 
-export const buildNotifierUiSchema =(connectorUiSchema: string | null | undefined): UiSchema => ({
+export const buildNotifierUiSchema = (connectorUiSchema: string | null | undefined): UiSchema => ({
   ...JSON.parse(connectorUiSchema ?? '{}'),
   ...uiSchema,
 });
