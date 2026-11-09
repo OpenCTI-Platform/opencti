@@ -446,7 +446,7 @@ describe('Config preset export', () => {
     expectNothingWritten();
   });
 
-  describe('the file of an item', () => {
+  describe('the attachment of an item', () => {
     const readEntries = async (zip: Buffer) => {
       const directory = await unzipper.Open.buffer(zip);
       const entries: Record<string, Buffer> = {};
@@ -468,7 +468,7 @@ describe('Config preset export', () => {
       expect(JSON.parse(entries[jsonPath(dnsExclusionList)].toString('utf8'))).toMatchObject({
         type: 'customization.exclusionLists',
         id: dnsExclusionList.standard_id,
-        file: txtPath(dnsExclusionList),
+        attachment: txtPath(dnsExclusionList),
       });
       expect(downloadFile).toHaveBeenCalledWith(dnsExclusionList.file_id);
       // The file is not an item: it is counted with its list

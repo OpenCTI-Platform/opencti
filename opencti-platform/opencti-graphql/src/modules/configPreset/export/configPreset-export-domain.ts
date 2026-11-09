@@ -24,7 +24,7 @@ import { addConfigPresetExportCount } from '../../../manager/telemetryManager';
 import {
   CONFIG_PRESET_FAMILIES,
   configPresetFamilyType,
-  configPresetItemAttachedFilePath,
+  configPresetItemAttachmentPath,
   configPresetItemFilePath,
   exportConfigPresetItem,
   isConfigPresetFamilyAvailable,
@@ -251,9 +251,9 @@ const writeConfigPresetZip = async (
         const item = family.items[j];
         const file = await exportConfigPresetItem(context, user, family, item);
         archive.append(JSON.stringify(file, null, 2), { name: configPresetItemFilePath(family, item) });
-        // The file of the item (the values of an exclusion list) as it is stored, next to its JSON
-        if (item.file) {
-          archive.append(await item.file.read(context, user), { name: configPresetItemAttachedFilePath(family, item.file) });
+        // The attachment of the item (the values of an exclusion list) as it is stored, next to its JSON
+        if (item.attachment) {
+          archive.append(await item.attachment.read(context, user), { name: configPresetItemAttachmentPath(family, item.attachment) });
         }
         counts[family.id] += 1;
       }

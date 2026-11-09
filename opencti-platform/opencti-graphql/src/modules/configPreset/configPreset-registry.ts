@@ -1,6 +1,6 @@
 import { PLATFORM_VERSION } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition, ConfigPresetItemFile, ConfigPresetItemFileDefinition } from './configPreset-types';
+import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition, ConfigPresetItemFile, ConfigPresetItemAttachment } from './configPreset-types';
 import { platformFamily } from './registry/platform-configPreset-registry';
 import { brandingFamily } from './registry/branding-configPreset-registry';
 import { messagesFamily } from './registry/messages-configPreset-registry';
@@ -56,9 +56,9 @@ export const configPresetItemFilePath = (family: ConfigPresetFamilyDefinition, i
   return `${family.directory}/${item.fileName ?? `${item.id}.json`}`;
 };
 
-// The path from the zip root of the file an item carries, next to its JSON
-export const configPresetItemAttachedFilePath = (family: ConfigPresetFamilyDefinition, file: ConfigPresetItemFileDefinition) => {
-  return `${family.directory}/${file.name}`;
+// The path from the zip root of the attachment an item carries, next to its JSON
+export const configPresetItemAttachmentPath = (family: ConfigPresetFamilyDefinition, attachment: ConfigPresetItemAttachment) => {
+  return `${family.directory}/${attachment.name}`;
 };
 
 // The type written in the item files and in dependencies.json: `<group id>.<category id>`
@@ -76,6 +76,6 @@ export const exportConfigPresetItem = async (
     // The id of the item: the static id, or the standard id of an entity, never an internal id
     id: item.id,
     configuration: await item.exporter(context, user),
-    ...(item.file ? { file: configPresetItemAttachedFilePath(family, item.file) } : {}),
+    ...(item.attachment ? { attachment: configPresetItemAttachmentPath(family, item.attachment) } : {}),
   };
 };

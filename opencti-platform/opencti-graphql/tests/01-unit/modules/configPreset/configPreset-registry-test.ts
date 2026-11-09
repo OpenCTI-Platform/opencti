@@ -421,7 +421,7 @@ describe('Config preset registry', () => {
         type: 'customization.exclusionLists',
         id: dnsExclusionList.standard_id,
         configuration: { name: 'Public DNS resolvers', description: 'Well-known resolvers', enabled: true, exclusion_list_entity_types: ['IPv4-Addr'] },
-        file: `customization/exclusion_lists/${dnsExclusionList.standard_id}.txt`,
+        attachment: `customization/exclusion_lists/${dnsExclusionList.standard_id}.txt`,
       });
       expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|dns-exclusion-list-id|exclusionLists\/|values_count|file_size/);
     });
@@ -435,15 +435,15 @@ describe('Config preset registry', () => {
       const bytes = Buffer.from('8.8.8.8\r\n1.1.1.1\n\u00e9\n');
       vi.mocked(downloadFile).mockResolvedValue(Readable.from([bytes.subarray(0, 5), bytes.subarray(5)]) as never);
       const item = await findItem('exclusionLists', dnsExclusionList.standard_id);
-      expect(item.file?.name).toBe(`${dnsExclusionList.standard_id}.txt`);
-      expect(await item.file!.read(context, user)).toEqual(bytes);
+      expect(item.attachment?.name).toBe(`${dnsExclusionList.standard_id}.txt`);
+      expect(await item.attachment!.read(context, user)).toEqual(bytes);
       expect(downloadFile).toHaveBeenCalledWith(dnsExclusionList.file_id);
     });
 
     it('refuses to export a list whose file is missing from the storage, instead of exporting it without its values', async () => {
       vi.mocked(downloadFile).mockResolvedValue(null);
       const item = await findItem('exclusionLists', dnsExclusionList.standard_id);
-      await expect(item.file!.read(context, user)).rejects.toThrow('The file of the values of an exclusion list is missing from the storage');
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The file of the values of an exclusion list is missing from the storage');
     });
 
     it('opens the first page with the exclusion lists by name, and counts them', async () => {

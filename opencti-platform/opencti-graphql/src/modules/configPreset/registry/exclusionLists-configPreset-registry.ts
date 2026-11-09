@@ -26,13 +26,13 @@ const exclusionListsArgs = (ids?: string[] | null, excludedIds?: string[] | null
 
 // The bundle id of an exclusion list is its standard id, which is random: the same list has another one on every platform.
 // It only tells the items of a bundle apart: a list is found on the platform that imports it by its name.
-// The values of the list are its file, written as it is stored next to the JSON of the list.
+// The values of the list are its file, written as it is stored next to the JSON of the list: the attachment of the item.
 const toExclusionListItem = (list: BasicStoreEntityExclusionList): ConfigPresetItemDefinition => ({
   id: list.standard_id,
   label: list.name,
   translatable: false,
   exporter: async () => exportExclusionList(list),
-  file: {
+  attachment: {
     name: `${list.standard_id}.txt`,
     read: async () => {
       const content = await readExclusionListFile(list);
@@ -48,10 +48,10 @@ const exclusionListsImporter: ConfigPresetImporter = {
   compute: async (context, user, item, _plan, mode) => {
     const { name } = item.configuration;
     const label = { label: typeof name === 'string' ? name.trim() : item.id, translatable: false };
-    return toComputedItem(label, await importExclusionList(context, user, item.configuration, item.file, { mode, dryRun: true }));
+    return toComputedItem(label, await importExclusionList(context, user, item.configuration, item.attachment, { mode, dryRun: true }));
   },
   apply: async (context, user, item, computed, mode) => {
-    return toAppliedStatus(await importExclusionList(context, user, item.configuration, item.file, { mode }), computed);
+    return toAppliedStatus(await importExclusionList(context, user, item.configuration, item.attachment, { mode }), computed);
   },
 };
 

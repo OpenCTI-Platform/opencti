@@ -10,7 +10,7 @@ import { CONFIG_PRESET_FAMILIES, configPresetFamilyType } from '../configPreset-
 import {
   CONFIG_PRESET_REASON_BUNDLE_REFUSED,
   type ConfigPresetBundle,
-  type ConfigPresetBundleFile,
+  type ConfigPresetBundleAttachment,
   type ConfigPresetBundleItem,
   type ConfigPresetBundleMetadata,
   configPresetPlanKey,
@@ -59,7 +59,7 @@ const metadataSchema = z.object({
   bundle_name: z.string().nullish().transform((name) => name ?? null),
 });
 const dependenciesSchema = z.record(z.string(), z.record(z.string(), z.record(z.string(), z.string())));
-const itemFileSchema = z.object({ type: z.string(), id: z.string(), configuration: z.record(z.string(), z.unknown()), file: z.string().optional() });
+const itemFileSchema = z.object({ type: z.string(), id: z.string(), configuration: z.record(z.string(), z.unknown()), attachment: z.string().optional() });
 
 // A bundle from a more recent platform is refused; a -dev or -rc suffix is ignored and an unreadable version is refused.
 // Not isCompatibleVersionWithMinimal: it has no coerce and throws on a non-semver string.
@@ -90,8 +90,8 @@ const findItemFamily = (type: string) => {
   return family && configPresetFamilyType(family) === type ? family : undefined;
 };
 
-// The files are read when an importer asks for them: what they add to the extracted size counts against the same limit as the JSON files
-const toBundleFile = (path: string, entry: { stream: () => AsyncIterable<Buffer | string> }, extracted: { size: number }): ConfigPresetBundleFile => ({
+// The attachments are read when an importer asks for them: what they add to the extracted size counts against the same limit as the JSON files
+const toBundleAttachment = (path: string, entry: { stream: () => AsyncIterable<Buffer | string> }, extracted: { size: number }): ConfigPresetBundleAttachment => ({
   path,
   read: async (limit) => {
     const tooLarge = new Error('too large');
@@ -123,9 +123,9 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
   let dependencies: ConfigPresetBundle['dependencies'] = {};
   const items: ConfigPresetBundleItem[] = [];
   const ignored: string[] = [];
-  // The entries that are not JSON, by path: the file an item points to is read when its importer asks for it
+  // The entries that are not JSON, by path: the attachment an item points to is read when its importer asks for it
   const otherEntries = new Map<string, { stream: () => AsyncIterable<Buffer | string> }>();
-  const attachedPaths = new Map<string, string>();
+  const attachmentPaths = new Map<string, string>();
   const extracted = { size: 0 };
   for (let i = 0; i < directory.files.length; i += 1) {
     const entry = directory.files[i];
@@ -166,8 +166,8 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
               throw bundleRefused('The configuration bundle holds the same item twice', { type: parsed.data.type, id: parsed.data.id });
             }
             items.push({ type: family.id, id: parsed.data.id, path: entry.path, configuration: parsed.data.configuration });
-            if (parsed.data.file) {
-              attachedPaths.set(entry.path, parsed.data.file);
+            if (parsed.data.attachment) {
+              attachmentPaths.set(entry.path, parsed.data.attachment);
             }
           }
         }
@@ -178,15 +178,15 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
     throw bundleRefused(`The configuration bundle has no valid ${CONFIG_PRESET_METADATA_FILE}`);
   }
   checkBundleVersion(metadata.openCTI_version);
-  // The file of an item is the entry of the zip at the path its JSON gives, never a path of the disk. A path that is no entry gives no
-  // file, and an entry serves one item only.
+  // The attachment of an item is the entry of the zip at the path its JSON gives, never a path of the disk. A path that is no entry gives no
+  // attachment, and an entry serves one item only.
   const claimed = new Set<string>();
   for (let i = 0; i < items.length; i += 1) {
-    const filePath = attachedPaths.get(items[i].path);
-    const entry = filePath ? otherEntries.get(filePath) : undefined;
-    if (filePath && entry && !claimed.has(filePath)) {
-      claimed.add(filePath);
-      items[i].file = toBundleFile(filePath, entry, extracted);
+    const attachmentPath = attachmentPaths.get(items[i].path);
+    const entry = attachmentPath ? otherEntries.get(attachmentPath) : undefined;
+    if (attachmentPath && entry && !claimed.has(attachmentPath)) {
+      claimed.add(attachmentPath);
+      items[i].attachment = toBundleAttachment(attachmentPath, entry, extracted);
     }
   }
   otherEntries.forEach((_entry, path) => {

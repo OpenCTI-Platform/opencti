@@ -27,15 +27,15 @@ export interface ConfigPresetBundleItem {
   // Path in the zip
   path: string;
   configuration: ConfigPresetConfiguration;
-  // The file of the item in the zip (the values of an exclusion list): absent when the item has none, or when the zip lacks it
-  file?: ConfigPresetBundleFile;
+  // The attachment of the item in the zip (the values of an exclusion list): absent when the item has none, or when the zip lacks it
+  attachment?: ConfigPresetBundleAttachment;
 }
 
-export interface ConfigPresetBundleFile {
+export interface ConfigPresetBundleAttachment {
   // Path in the zip
   path: string;
-  // Reads the file when it is needed, never while the bundle is read. The limit is enforced on the bytes really read:
-  // null when the file is bigger, nothing is kept of it.
+  // Reads the attachment when it is needed, never while the bundle is read. The limit is enforced on the bytes really read:
+  // null when the attachment is bigger, nothing is kept of it.
   read: (limit: number) => Promise<Buffer | null>;
 }
 

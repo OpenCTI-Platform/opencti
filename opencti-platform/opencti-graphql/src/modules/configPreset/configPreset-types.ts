@@ -13,8 +13,8 @@ export interface ConfigPresetItemFile {
   // Id of the item, the same on every platform
   id: string;
   configuration: ConfigPresetConfiguration;
-  // Path from the zip root of the file written next to this one (the values of an exclusion list), when the item has one
-  file?: string;
+  // Path from the zip root of the attachment written next to this file (the values of an exclusion list), when the item has one
+  attachment?: string;
 }
 
 // An item of a type, by API ids
@@ -39,15 +39,15 @@ export interface ConfigPresetItemDefinition {
   dependsOn?: ConfigPresetItemReference[];
   // Returns the allowlisted configuration of the item, never secrets
   exporter: (context: AuthContext, user: AuthUser) => Promise<ConfigPresetConfiguration>;
-  // A file written as is next to the JSON of the item, in the folder of the family: too big for the configuration (an entry of
-  // the bundle holds 5 MB at most) or not JSON
-  file?: ConfigPresetItemFileDefinition;
+  // A file written as is next to the JSON of the item, in the folder of the family: it is not JSON, or too big for the configuration
+  // (a JSON entry of the bundle holds 5 MB at most: an attachment has its own limit)
+  attachment?: ConfigPresetItemAttachment;
 }
 
-export interface ConfigPresetItemFileDefinition {
+export interface ConfigPresetItemAttachment {
   // File name in the folder of the family
   name: string;
-  // The bytes of the file, read when the item is written in the zip
+  // The bytes of the attachment, read when the item is written in the zip
   read: (context: AuthContext, user: AuthUser) => Promise<Buffer>;
 }
 

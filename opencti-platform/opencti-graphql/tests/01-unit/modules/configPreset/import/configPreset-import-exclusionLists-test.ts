@@ -18,13 +18,13 @@ const plan: ConfigPresetImportPlan = { created: new Set() };
 // The id of an exclusion list is random: the one of the platform it was exported from
 const bundleId = '3f1d0c4e-7a52-4b8e-9f3a-1c2d3e4f5a6b';
 const configuration = { name: 'Public DNS resolvers', exclusion_list_entity_types: ['IPv4-Addr'] };
-const file = { path: `customization/exclusion_lists/${bundleId}.txt`, read: vi.fn() };
+const attachment = { path: `customization/exclusion_lists/${bundleId}.txt`, read: vi.fn() };
 const item = (config: Record<string, unknown>, id = bundleId): ConfigPresetBundleItem => ({
   type: 'exclusionLists',
   id,
   path: `customization/exclusion_lists/${id}.json`,
   configuration: config,
-  file,
+  attachment,
 });
 const computed = {} as ConfigPresetComputedItem;
 
@@ -40,16 +40,16 @@ describe('Exclusion lists import (registry)', () => {
     expect(family.directory).toBe('customization/exclusion_lists');
   });
 
-  it('computes the item with a dry run of the module, with the file of the item, named by its name', async () => {
+  it('computes the item with a dry run of the module, with the attachment of the item, named by its name', async () => {
     vi.mocked(importExclusionList).mockResolvedValue({ status: 'overwritten', exists: true });
     const result = await family.importer!.compute(context, user, item(configuration), plan, ConfigImportMode.Overwrite);
-    expect(importExclusionList).toHaveBeenCalledWith(context, user, configuration, file, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(importExclusionList).toHaveBeenCalledWith(context, user, configuration, attachment, { mode: ConfigImportMode.Overwrite, dryRun: true });
     expect(result).toMatchObject({ label: 'Public DNS resolvers', translatable: false, status: 'overwritten', exists: true, conflict: true });
   });
 
-  it('gives no file to the module for an item whose zip has none, which refuses it', async () => {
+  it('gives no attachment to the module for an item whose zip has none, which refuses it', async () => {
     vi.mocked(importExclusionList).mockResolvedValue({ status: 'failed', code: 'file_missing', reason: 'The file of the values of the exclusion list is missing from the bundle', exists: false });
-    const result = await family.importer!.compute(context, user, { ...item(configuration), file: undefined }, plan, ConfigImportMode.Overwrite);
+    const result = await family.importer!.compute(context, user, { ...item(configuration), attachment: undefined }, plan, ConfigImportMode.Overwrite);
     expect(importExclusionList).toHaveBeenCalledWith(context, user, configuration, undefined, { mode: ConfigImportMode.Overwrite, dryRun: true });
     expect(result).toMatchObject({ status: 'failed', code: 'file_missing' });
   });
@@ -73,10 +73,10 @@ describe('Exclusion lists import (registry)', () => {
     expect(await family.importer!.compute(context, user, item({ exclusion_list_entity_types: [] }), plan, ConfigImportMode.Overwrite)).toMatchObject({ status: 'failed', label: bundleId, reason: 'name: Invalid input' });
   });
 
-  it('applies through the module with the file, reports a status that differs from the computed one, and throws on a failure', async () => {
+  it('applies through the module with the attachment, reports a status that differs from the computed one, and throws on a failure', async () => {
     vi.mocked(importExclusionList).mockResolvedValueOnce({ status: 'created', exists: false });
     expect(await family.importer!.apply(context, user, item(configuration), { ...computed, status: 'created' }, ConfigImportMode.Overwrite, plan)).toBeUndefined();
-    expect(importExclusionList).toHaveBeenCalledWith(context, user, configuration, file, { mode: ConfigImportMode.Overwrite });
+    expect(importExclusionList).toHaveBeenCalledWith(context, user, configuration, attachment, { mode: ConfigImportMode.Overwrite });
     vi.mocked(importExclusionList).mockResolvedValueOnce({ status: 'skipped', code: 'unchanged', exists: true });
     expect(await family.importer!.apply(context, user, item(configuration), { ...computed, status: 'created' }, ConfigImportMode.Overwrite, plan)).toBe('skipped');
     vi.mocked(importExclusionList).mockResolvedValueOnce({ status: 'failed', code: 'file_too_large', reason: 'The file of the values of the exclusion list is too large', exists: true });

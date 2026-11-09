@@ -133,9 +133,9 @@ describe('Exclusion list import and export (configuration preset)', () => {
       type: 'customization.exclusionLists',
       id: item.id,
       configuration: { name: NAME, description: 'Changed', enabled: false, exclusion_list_entity_types: ['Domain-Name', 'Hostname'] },
-      file: `customization/exclusion_lists/${item.id}.txt`,
+      attachment: `customization/exclusion_lists/${item.id}.txt`,
     });
-    const values = await item.file!.read(testContext, ADMIN_USER);
+    const values = await item.attachment!.read(testContext, ADMIN_USER);
     expect(values).toEqual(Buffer.from('config-preset-d.invalid\n'));
     // Another platform: the list does not exist there
     await deleteExclusionList(testContext, ADMIN_USER, (await loadList(NAME)).id);
