@@ -96,3 +96,21 @@ export const removeVariableFromPresets = (presets: readonly StoreDashboardPreset
     return { ...preset, values };
   });
 };
+
+/**
+ * The presets of a dashboard once one of its variables is updated: a value the variable no longer accepts (outside a
+ * narrowed selection) is removed from the preset, which is otherwise kept, so that the preset can still be renamed or
+ * updated through the typed API. The type of a variable never changes.
+ */
+export const pruneInvalidPresetValues = (presets: readonly StoreDashboardPreset[], variable: StoreDashboardVariable): StoreDashboardPreset[] => {
+  return presets.map((preset) => {
+    const value = preset.values[variable.id];
+    if (value === undefined) return preset;
+    const accepted = !containsDashboardVariableToken(value)
+      && isValidDashboardVariableValue(variable.type, value)
+      && (variable.restriction.mode !== 'selection' || variable.restriction.values.includes(value));
+    if (accepted) return preset;
+    const { [variable.id]: _removed, ...values } = preset.values;
+    return { ...preset, values };
+  });
+};

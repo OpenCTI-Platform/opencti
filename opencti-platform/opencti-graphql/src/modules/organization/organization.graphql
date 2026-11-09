@@ -137,7 +137,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   subOrganizations: OrganizationConnection
   parentOrganizations: OrganizationConnection
   default_dashboard: Workspace
-  default_dashboard_preset: String
+  default_dashboard_preset: String @ff(flags: ["DASHBOARD_VARIABLES"], softFail: true)
   default_hidden_types: [String!]
   restrict_access: Boolean
   # Technical

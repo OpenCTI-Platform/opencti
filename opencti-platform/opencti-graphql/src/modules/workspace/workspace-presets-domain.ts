@@ -7,7 +7,7 @@ import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE, type StoreEntity
 import type { StoreDashboardManifest, StoreDashboardPreset } from './workspace-variables-types';
 import { buildDashboardPreset } from './workspace-presets-validation';
 import { loadDashboardForVariableEdition, withWorkspaceManifestLock } from './workspace-variables-domain';
-import { storeLoadById } from '../../database/middleware-loader';
+import { internalLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { SYSTEM_USER } from '../../utils/access';
 import type { BasicStoreEntityUser } from '../user/user-types';
@@ -61,9 +61,14 @@ export const workspacePresetDelete = async (context: AuthContext, user: AuthUser
   });
 };
 
-// One read of the user per request, whatever the number of dashboards resolved (a workspaces connection).
+// One read of the user per HTTP request, whatever the number of dashboards resolved (a workspaces connection). A
+// context without request (a subscription keeps one context for every payload) is not memoized: it would pin the
+// user as they were when the subscription started.
 const storedUsersByContext = new WeakMap<AuthContext, Map<string, Promise<BasicStoreEntityUser | undefined>>>();
-const loadStoredUserOnce = (context: AuthContext, userId: string) => {
+const loadStoredUser = (context: AuthContext, userId: string) => {
+  // An internal lookup: no read action is published for it.
+  const load = () => internalLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, userId, { type: ENTITY_TYPE_USER });
+  if (!context.req) return load();
   let byUser = storedUsersByContext.get(context);
   if (!byUser) {
     byUser = new Map();
@@ -71,7 +76,7 @@ const loadStoredUserOnce = (context: AuthContext, userId: string) => {
   }
   let stored = byUser.get(userId);
   if (!stored) {
-    stored = storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, userId, ENTITY_TYPE_USER);
+    stored = load();
     byUser.set(userId, stored);
   }
   return stored;
@@ -84,7 +89,7 @@ const loadStoredUserOnce = (context: AuthContext, userId: string) => {
  */
 export const resolveCurrentUserDefaultPresetId = async (context: AuthContext, user: AuthUser, workspace: Pick<BasicStoreEntityWorkspace, 'id' | 'type' | 'manifest'>) => {
   if (workspace.type !== 'dashboard') return null;
-  const stored = await loadStoredUserOnce(context, user.id);
+  const stored = await loadStoredUser(context, user.id);
   const holder = stored
     ? { ...user, default_dashboard: stored.default_dashboard, default_dashboard_preset: stored.default_dashboard_preset }
     : user;
