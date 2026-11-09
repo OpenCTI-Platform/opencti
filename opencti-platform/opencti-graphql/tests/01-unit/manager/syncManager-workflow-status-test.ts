@@ -53,6 +53,8 @@ vi.mock('../../../src/graphql/syncConsumerMetrics', () => ({
 }));
 vi.mock('../../../src/database/markdown-embedded-images', () => ({
   ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET: new Set(),
+  encodeEmbeddedStoragePathForMarkdownUrl: vi.fn(),
+  extractEmbeddedStoragePathFromUrl: vi.fn(),
   extractMarkdownImageReferences: vi.fn(() => []),
   MARKDOWN_FIELD_KEYS: [],
   resolveEmbeddedStoragePathWithContext: vi.fn(),

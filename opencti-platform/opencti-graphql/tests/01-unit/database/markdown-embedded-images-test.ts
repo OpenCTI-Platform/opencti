@@ -6,6 +6,7 @@ import {
   extractMarkdownImageReferences,
   findRemovedEmbeddedStoragePathsFromMarkdownFields,
   parseDataUriImage,
+  resolveEmbeddedStoragePathWithContext,
   rewriteMarkdownImageUrls,
 } from '../../../src/database/markdown-embedded-images';
 
@@ -67,6 +68,62 @@ describe('markdown-embedded-images utility', () => {
     const encoded = encodeEmbeddedStoragePathForMarkdownUrl('embedded/Report/r-1/coucou ééé.png');
 
     expect(encoded).toBe('embedded/Report/r-1/coucou%20%C3%A9%C3%A9%C3%A9.png');
+  });
+
+  // The stored file name is the truth: the markdown url is encodeURIComponent(name) per segment, decoded exactly once (#19008).
+  describe.each([
+    ['literal percent sequence', 'literal%22quotes%22.png', 'literal%2522quotes%2522.png'],
+    ['percent sequence of a space', 'twin a%20b.png', 'twin%20a%2520b.png'],
+    ['space', 'sp ace.png', 'sp%20ace.png'],
+    ['lone percent', '100% sure.png', '100%25%20sure.png'],
+    ['unicode', 'ünïcödé 图片 🙂.png', '%C3%BCn%C3%AFc%C3%B6d%C3%A9%20%E5%9B%BE%E7%89%87%20%F0%9F%99%82.png'],
+    ['hash, ampersand, plus and parentheses', 'hash #1 & plus+ (v2).png', 'hash%20%231%20%26%20plus%2B%20(v2).png'],
+    ['semicolon, comma, equal and at', 'semi;colon,comma=eq@at.png', 'semi%3Bcolon%2Ccomma%3Deq%40at.png'],
+  ])('embedded file name with %s', (_label, fileName, encodedFileName) => {
+    it('should encode the stored file name without decoding it first', () => {
+      expect(encodeEmbeddedStoragePathForMarkdownUrl(`embedded/Report/r-1/${fileName}`)).toBe(`embedded/Report/r-1/${encodedFileName}`);
+    });
+
+    it('should extract the stored file name from the markdown url', () => {
+      const [reference] = extractMarkdownImageReferences(`![img](embedded/Report/r-1/${encodedFileName})`);
+
+      expect(reference.embeddedStoragePath).toBe(`embedded/Report/r-1/${fileName}`);
+    });
+
+    it('should round trip name -> markdown url -> storage path -> entity context', () => {
+      const markdownUrl = encodeEmbeddedStoragePathForMarkdownUrl(fileName);
+      const [reference] = extractMarkdownImageReferences(`![img](embedded/${markdownUrl})`);
+
+      expect(resolveEmbeddedStoragePathWithContext(reference.embeddedStoragePath as string, { entityType: 'Report', entityId: 'r-1' }))
+        .toBe(`embedded/Report/r-1/${fileName}`);
+    });
+  });
+
+  it('should keep an encoded path separator inside a file name segment', () => {
+    const [reference] = extractMarkdownImageReferences('![img](embedded/Report/r-1/a%2Fb.png)');
+
+    expect(reference.embeddedStoragePath).toBe('embedded/Report/r-1/a%2Fb.png');
+  });
+
+  it('should decode the rest of a segment holding an encoded path separator', () => {
+    const [reference] = extractMarkdownImageReferences('![img](embedded/Report/r-1/a%20b%2fc%22.png)');
+
+    expect(reference.embeddedStoragePath).toBe('embedded/Report/r-1/a b%2fc".png');
+  });
+
+  it('should not decode a storage path already resolved from a markdown url', () => {
+    expect(resolveEmbeddedStoragePathWithContext('embedded/literal%22quotes%22.png', { entityType: 'Report', entityId: 'r-1' }))
+      .toBe('embedded/Report/r-1/literal%22quotes%22.png');
+    expect(resolveEmbeddedStoragePathWithContext('embedded/hash #1.png', { entityType: 'Report', entityId: 'r-1' }))
+      .toBe('embedded/Report/r-1/hash #1.png');
+  });
+
+  it('should tell apart two files whose names only differ by a percent sequence when detecting removed paths', () => {
+    const previousPayload = { description: '![a](embedded/twin%20a%20b.png)\n![b](embedded/twin%20a%2520b.png)' };
+    const nextPayload = { description: '![a](embedded/twin%20a%20b.png)' };
+
+    expect(findRemovedEmbeddedStoragePathsFromMarkdownFields(previousPayload, nextPayload, { entityType: 'Report', entityId: 'r-1' }))
+      .toEqual(['embedded/Report/r-1/twin a%20b.png']);
   });
 
   it('should rewrite only embedded storage image links', () => {
