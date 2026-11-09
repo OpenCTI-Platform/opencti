@@ -5,7 +5,7 @@ import type { AuthContext, AuthUser } from '../../../../src/types/user';
 const mocks = vi.hoisted(() => ({ internalLoadById: vi.fn() }));
 vi.mock('../../../../src/database/middleware-loader', () => ({ internalLoadById: mocks.internalLoadById }));
 
-import { resolveCurrentUserDefaultPresetId } from '../../../../src/modules/workspace/workspace-presets-domain';
+import { buildPresetAuditInput, resolveCurrentUserDefaultPresetId } from '../../../../src/modules/workspace/workspace-presets-domain';
 
 const PRESET_ID = '55555555-5555-4555-8555-555555555555';
 const manifest = toB64({ presets: [{ id: PRESET_ID, name: 'Energy', values: {}, config: {} }] });
@@ -49,5 +49,13 @@ describe('resolveCurrentUserDefaultPresetId', () => {
     expect(await resolveCurrentUserDefaultPresetId(context(), cached, dashboard('dashboard-1'))).toEqual(PRESET_ID);
     expect(await resolveCurrentUserDefaultPresetId(context(), cached, { id: 'dashboard-1', type: 'investigation', manifest } as never)).toBeNull();
     expect(mocks.internalLoadById).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('buildPresetAuditInput', () => {
+  it('should name the operation and the preset, never the manifest', () => {
+    const preset = { id: PRESET_ID, name: 'Energy', values: {}, config: {}, manifest: 'never' };
+    expect(buildPresetAuditInput('delete', preset)).toEqual([{ key: 'presets', value: [{ operation: 'delete', id: PRESET_ID, name: 'Energy' }] }]);
+    expect(JSON.stringify(buildPresetAuditInput('upsert', preset))).not.toContain('never');
   });
 });
