@@ -85,6 +85,7 @@ describe('applyPublicationTimeRange', () => {
   it.each([
     { relative_date: 'weeks-2' },
     { relative_date: 'days-' },
+    { relative_date: 'days-99999' },
     { start_date: '2026/01/01' },
     { end_date: '2026-02-30' },
   ])('should refuse an unknown relative date or a malformed date (%o)', (range) => {
@@ -97,7 +98,11 @@ describe('toPublicationTimeZone', () => {
     expect(toPublicationTimeZone('Europe/Paris')).toEqual('Europe/Paris');
   });
 
-  it.each(['Mars/Olympus', '', null, undefined])('should fall back to UTC for %o', (timeZone) => {
+  it.each(['', null, undefined])('should fall back to UTC without time zone (%o)', (timeZone) => {
     expect(toPublicationTimeZone(timeZone)).toBeUndefined();
+  });
+
+  it('should refuse an unsupported time zone rather than silently counting in UTC', () => {
+    expect(() => toPublicationTimeZone('Mars/Olympus')).toThrow('Invalid public dashboard time zone');
   });
 });
