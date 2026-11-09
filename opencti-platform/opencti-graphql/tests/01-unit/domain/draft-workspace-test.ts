@@ -9,8 +9,6 @@ import * as telemetryManager from '../../../src/manager/telemetryManager';
 import * as redis from '../../../src/database/redis';
 import * as cacheModule from '../../../src/database/cache';
 import * as workflowDomain from '../../../src/modules/workflow/domain/workflow-domain';
-import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
-import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { OrderingMode } from '../../../src/generated/graphql';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
@@ -105,108 +103,30 @@ describe('addDraftWorkspace', () => {
   });
 });
 
-describe('resolveWorkflowInstanceStatusFilter (via draftWorkspacesNumber)', () => {
+describe('workflow status filter (via draftWorkspacesNumber)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(engine, 'elCount').mockResolvedValue(0);
-    vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
-    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue({ initialState: 'status-template-initial' });
   });
 
-  it('should not call fullEntitiesList when no workflowInstanceCurrentState filter is present', async () => {
-    const args = {
-      filters: {
-        mode: 'and',
-        filters: [{ key: 'name', values: ['my-draft'], operator: 'eq', mode: 'or' }],
-        filterGroups: [],
-      },
-    };
-    await draftWorkspacesNumber(mockContext, mockUser, args);
-    expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
-  });
-
-  it('should replace workflowInstanceCurrentState filter with matching entity ids', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([
-      { entity_id: 'draft-uuid-1' },
-      { entity_id: 'draft-uuid-2' },
-    ] as any);
-    const args = {
-      filters: {
-        mode: 'and',
-        filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: ['status-template-abc'], operator: 'eq', mode: 'or' }],
-        filterGroups: [],
-      },
-    };
-    await draftWorkspacesNumber(mockContext, mockUser, args);
-    expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      [ENTITY_TYPE_WORKFLOW_INSTANCE],
-      expect.objectContaining({
-        filters: expect.objectContaining({
-          filters: expect.arrayContaining([
-            expect.objectContaining({ key: ['currentState'], values: ['status-template-abc'] }),
-          ]),
-        }),
-      }),
-    );
-    expect(engine.elCount).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.objectContaining({
-        filters: expect.objectContaining({
-          filters: expect.arrayContaining([
-            expect.objectContaining({ key: ['id'], values: ['draft-uuid-1', 'draft-uuid-2'] }),
-          ]),
-        }),
-      }),
-    );
-  });
-
-  it('should replace workflowInstanceCurrentState filter nested in a filter group', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([{ entity_id: 'draft-uuid-1' }] as any);
+  // DraftWorkspace carries x_opencti_workflow_id like any entity with a workflow, so the engine resolves workflow_id
+  it('passes a workflow_id filter nested in a filter group to the engine as is, without loading WorkflowInstances', async () => {
     const args = {
       filters: {
         mode: 'and',
         filters: [{ key: 'entity_type', values: ['DraftWorkspace'], operator: 'eq', mode: 'or' }],
         filterGroups: [{
-          mode: 'and',
-          filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: ['status-template-abc'], operator: 'eq', mode: 'or' }],
+          mode: 'or',
+          filters: [{ key: 'workflow_id', values: ['status-template-abc'], operator: 'eq', mode: 'or' }],
           filterGroups: [],
         }],
       },
     };
-    await draftWorkspacesNumber(mockContext, mockUser, args);
-    const countArgs = vi.mocked(engine.elCount).mock.calls[0][3] as any;
-    expect(countArgs.filters.filters).toEqual([{ key: 'entity_type', values: ['DraftWorkspace'], operator: 'eq', mode: 'or' }]);
-    expect(countArgs.filters.filterGroups[0].filters).toEqual([
-      { key: ['id'], values: ['draft-uuid-1'], operator: 'eq', mode: 'or' },
-    ]);
-  });
 
-  it('should use <no-match> fallback when no WorkflowInstance entities match the filter', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([] as any);
-    const args = {
-      filters: {
-        mode: 'and',
-        filters: [{ key: WORKFLOW_INSTANCE_STATUS_FILTER, values: ['status-template-xyz'], operator: 'eq', mode: 'or' }],
-        filterGroups: [],
-      },
-    };
     await draftWorkspacesNumber(mockContext, mockUser, args);
-    expect(engine.elCount).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      expect.objectContaining({
-        filters: expect.objectContaining({
-          filters: expect.arrayContaining([
-            expect.objectContaining({ key: ['id'], values: ['<no-match>'] }),
-          ]),
-        }),
-      }),
-    );
+
+    expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
+    expect(vi.mocked(engine.elCount).mock.calls[0][3]).toEqual(expect.objectContaining({ filters: args.filters }));
   });
 });
 

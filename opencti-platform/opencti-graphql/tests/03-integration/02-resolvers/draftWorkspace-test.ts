@@ -21,7 +21,7 @@ import { DRAFT_VALIDATION_CONNECTOR_ID } from '../../../src/modules/draftWorkspa
 import { fileToReadStream } from '../../../src/database/file-storage';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from '../../../src/modules/draftWorkspace/draftStatuses';
-import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { WORKFLOW_FILTER, WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { isRuntimeSortEnable } from '../../../src/database/engine';
 
 const CREATE_DRAFT_WORKSPACE_QUERY = gql`
@@ -1165,7 +1165,23 @@ describe('Drafts workspace resolver testing', () => {
       expect(result.data?.draftWorkspacesNumber.total).toBeGreaterThanOrEqual(1);
     });
 
-    it('should return empty count when filtering by workflowInstanceCurrentState with no matching instances', async () => {
+    it('should return empty count when filtering by a workflow status no draft is in, at any nesting level', async () => {
+      const statusFilter = { key: WORKFLOW_FILTER, values: ['non-existent-status-template-id'], operator: 'eq', mode: 'or' };
+      const topLevel = await queryAsAdmin({
+        query: DRAFT_WORKSPACES_NUMBER_QUERY,
+        variables: { filters: { mode: 'and', filters: [statusFilter], filterGroups: [] } },
+      });
+      expect(topLevel.errors).toBeUndefined();
+      expect(topLevel.data?.draftWorkspacesNumber.count).toEqual(0);
+      const nested = await queryAsAdmin({
+        query: DRAFT_WORKSPACES_NUMBER_QUERY,
+        variables: { filters: { mode: 'and', filters: [], filterGroups: [{ mode: 'or', filters: [statusFilter], filterGroups: [] }] } },
+      });
+      expect(nested.errors).toBeUndefined();
+      expect(nested.data?.draftWorkspacesNumber.count).toEqual(0);
+    });
+
+    it('should still accept the deprecated workflowInstanceCurrentState filter key', async () => {
       const result = await queryAsAdmin({
         query: DRAFT_WORKSPACES_NUMBER_QUERY,
         variables: {

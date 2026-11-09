@@ -64,7 +64,6 @@ import {
 import { editAuthorizedMembers, sanitizeAuthorizedMembers } from '../../utils/authorizedMembers';
 import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { resolveWorkflowStatusFilter } from '../../utils/filtering/workflow-status-filter';
 import { getWorkflowDefaultState } from '../workflow/domain/workflow-domain';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types';
 import { now } from '../../utils/format';
@@ -132,9 +131,8 @@ const resolveSortByWorkflowInstance = async (context: AuthContext, user: AuthUse
   const { stateOf, statusNameMap } = await loadDraftWorkflowStates(executionCtx);
 
   // 3. Load all DraftWorkspaces with filters applied (no sort, no pagination limit)
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
   const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
-    ...resolvedArgs,
+    ...args,
     first: 5000,
     orderBy: 'created_at',
   });
@@ -189,9 +187,8 @@ const resolveSortByRefUsers = async (
   }
 
   // 2. Load all DraftWorkspaces with filters applied
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
   const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
-    ...resolvedArgs,
+    ...args,
     first: 5000,
     orderBy: 'created_at',
   });
@@ -249,15 +246,13 @@ export const findDraftWorkspacePaginated = async (context: AuthContext, user: Au
   if (orderBy === 'objectParticipant') {
     return resolveSortByRefUsers(context, user, args, RELATION_OBJECT_PARTICIPANT);
   }
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
-  return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
+  return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
 };
 
 export const draftWorkspacesNumber = async (context: AuthContext, user: AuthUser, args: any) => {
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
   const [count, total] = await Promise.all([
-    elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...resolvedArgs, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
-    elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...resolvedArgs, endDate: undefined, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
+    elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...args, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
+    elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...args, endDate: undefined, types: [ENTITY_TYPE_DRAFT_WORKSPACE] }),
   ]);
 
   return {
@@ -267,8 +262,7 @@ export const draftWorkspacesNumber = async (context: AuthContext, user: AuthUser
 };
 
 export const draftWorkspacesTimeSeries = async (context: AuthContext, user: AuthUser, args: any) => {
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
-  return timeSeriesEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
+  return timeSeriesEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
 };
 
 // Helper: application-level distribution by workflow instance current status name.
@@ -283,10 +277,9 @@ const resolveWorkflowInstanceDistribution = async (context: AuthContext, user: A
   const { stateOf, statusNameMap } = await loadDraftWorkflowStates(executionCtx);
 
   // 3. Load all DraftWorkspaces matching the filters (only pass list-relevant args)
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
   const allDrafts: BasicStoreEntityDraftWorkspace[] = await fullEntitiesList(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
-    filters: resolvedArgs.filters,
-    search: resolvedArgs.search,
+    filters: args.filters,
+    search: args.search,
     first: 5000,
   });
 
@@ -310,8 +303,7 @@ export const draftWorkspacesDistribution = async (context: AuthContext, user: Au
   if (args.field === 'workflowInstance') {
     return resolveWorkflowInstanceDistribution(context, user, args);
   }
-  const resolvedArgs = await resolveWorkflowStatusFilter(context, args, ENTITY_TYPE_DRAFT_WORKSPACE);
-  return distributionEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
+  return distributionEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
 };
 
 export const findDraftWorkspaceRestrictedPaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
