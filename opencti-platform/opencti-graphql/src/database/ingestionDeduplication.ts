@@ -3,7 +3,8 @@ import jsonCanonicalize from 'canonicalize';
 import { INGESTION_DEDUPLICATION_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
 import { getEntitiesListFromCache } from './cache';
 import { redisGetIngestionRecord, redisSetIngestionRecord } from './redis';
-import { SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../utils/access';
+import { isEnterpriseEdition } from '../enterprise-edition/ee';
 import { getDraftContext } from '../utils/draftContext';
 import { generateStandardId } from '../schema/identifier';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -129,7 +130,11 @@ export const prepareIngestionDeduplication = async (
   // The user's confidence decides what an upsert may overwrite: same input, different result once it moves
   const confidence = user.effective_confidence_level?.overrides?.find((override) => override.entity_type === type)?.max_confidence
     ?? user.effective_confidence_level?.max_confidence ?? null;
-  const hash = createHash('sha256').update(jsonCanonicalize({ rule: ruleVersion, synchronized, confidence, input: content }) ?? '').digest('hex');
+  // Organization sharing and creator tracking are applied or ignored by the upsert depending on the user
+  const sharing = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && await isEnterpriseEdition(context);
+  const noCreators = user.no_creators === true;
+  const fingerprint = { rule: ruleVersion, synchronized, confidence, sharing, noCreators, input: content };
+  const hash = createHash('sha256').update(jsonCanonicalize(fingerprint) ?? '').digest('hex');
   return { standardId, userId: user.id, hash, ttl: rule.ttl ?? INGESTION_DEDUPLICATION_TTL };
 };
 

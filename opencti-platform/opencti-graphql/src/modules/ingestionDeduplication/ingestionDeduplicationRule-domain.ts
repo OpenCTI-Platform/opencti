@@ -1,5 +1,5 @@
 import { type GraphQLSchema, isInputObjectType } from 'graphql';
-import { BUS_TOPICS, INGESTION_DEDUPLICATION_FEATURE_FLAG, isFeatureEnabled } from '../../config/conf';
+import { BUS_TOPICS, INGESTION_DEDUPLICATION_FEATURE_FLAG } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
@@ -143,10 +143,8 @@ export const deleteIngestionDeduplicationRule = async (context: AuthContext, use
   return id;
 };
 
+// Whatever the flag: rules left behind a deleted account would come back once it is enabled again
 export const deleteAllIngestionDeduplicationRulesForUser = async (context: AuthContext, user: AuthUser, userId: string) => {
-  if (!isFeatureEnabled(INGESTION_DEDUPLICATION_FEATURE_FLAG)) {
-    return;
-  }
   const rules = await findIngestionDeduplicationRules(context, userId);
   for (let i = 0; i < rules.length; i += 1) {
     await deleteElementById(context, user, rules[i].id, ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE);

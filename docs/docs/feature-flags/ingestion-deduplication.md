@@ -37,7 +37,7 @@ When an object arrives and a rule applies:
 
 Fingerprints are kept in Redis, one per object and per user, and expire after a delay you choose on the rule.
 
-The fingerprint also covers the rule itself and the confidence level of the user for this entity type. Editing the rule, or changing the user's confidence level, makes the next import of every object run as usual.
+The fingerprint also covers the rule itself and the user settings that change what an import applies: its confidence level for this entity type, whether it can share with organizations (with Enterprise Edition), and whether it is recorded as creator. Editing the rule, or changing one of these settings, makes the next import of every object run as usual.
 
 ### When an object changes elsewhere
 
@@ -112,7 +112,7 @@ When two users are merged, the rules of the merged user are moved to the remaini
 
 ### Deleting users
 
-When a user is deleted, its rules are deleted with it.
+When a user is deleted, its rules are deleted with it, even while the feature flag is off.
 
 ## Monitoring
 

@@ -119,6 +119,25 @@ describe('Ingestion deduplication domain', () => {
       expect(await findById(testContext, ADMIN_USER, rule.id)).toBeFalsy();
     });
 
+    it('should delete the rules of a deleted user while the feature is disabled', async () => {
+      // GIVEN a user with a rule, and the feature disabled afterwards
+      const deletedUser = await addUser(testContext, ADMIN_USER, {
+        name: 'ingestion dedup deleted user flag off',
+        password: 'ingestionDedup',
+        user_email: 'ingestion-dedup-deleted-flag-off@opencti.invalid',
+      });
+      const rule = await addIngestionDeduplicationRule(testContext, ADMIN_USER, { user_id: deletedUser.id, target_type: ENTITY_TYPE_MALWARE });
+      const enabledFlags = ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
+      try {
+        // WHEN an administrator deletes the user
+        await userDelete(testContext, ADMIN_USER, deletedUser.id);
+      } finally {
+        ENABLED_FEATURE_FLAGS.push(...enabledFlags);
+      }
+      // THEN its rule is gone too, so it cannot come back once the feature is enabled again
+      expect(await findById(testContext, ADMIN_USER, rule.id)).toBeFalsy();
+    });
+
     it('should only accept an expiration in whole seconds', async () => {
       // GIVEN an administrator setting an expiration
       // WHEN it is zero on a new rule, a fraction on an existing one, or negative after a valid one in the same edit
@@ -295,6 +314,19 @@ describe('Ingestion deduplication domain', () => {
       // THEN the next import runs, since it may now change more, or less, of the malware
       expect(await isUnchanged(afterLowering)).toBe(false);
       expect(await isUnchanged(afterOverride)).toBe(false);
+      await forgetMalware(firstImport);
+    });
+
+    it('should import again once the user records itself as creator', async () => {
+      // GIVEN a malware imported once by the user, which is not recorded as creator
+      const withoutCreators = { ...connectorUser, no_creators: true } as AuthUser;
+      const firstImport = await prepareIngestionDeduplication(testContext, withoutCreators, malwareInput(), ENTITY_TYPE_MALWARE) as IngestionDeduplication;
+      await recordIngestion(firstImport, importedMalware);
+      // WHEN the user is recorded as creator again
+      const withCreators = { ...connectorUser, no_creators: false } as AuthUser;
+      const nextImport = await prepareIngestionDeduplication(testContext, withCreators, malwareInput(), ENTITY_TYPE_MALWARE) as IngestionDeduplication;
+      // THEN the next import runs, so the user is added to the creators of the malware
+      expect(await isUnchanged(nextImport)).toBe(false);
       await forgetMalware(firstImport);
     });
 
