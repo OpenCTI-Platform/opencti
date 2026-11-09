@@ -41,10 +41,10 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
 import {
+  assertPlaybookDefinitionValid,
+  assertPlaybookNodeConfigurationValid,
   checkPlaybookFiltersAndBuildConfigWithCorrectFilters,
   deleteLinksAndAllChildren,
-  isPlaybookJSONValid,
-  isPlaybookNodeJSONValid,
   updateImportedPlaybookDefinitionScope,
 } from './playbook-utils';
 import { type SharingConfiguration } from './components/sharing-component';
@@ -205,6 +205,7 @@ const validateNodeRunAs = async (context: AuthContext, user: AuthUser, configura
 
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
   await checkEnterpriseEdition(context);
+  assertPlaybookNodeConfigurationValid(input);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
   await validateNodeRunAs(context, user, configuration);
   const playbook = await findById(context, user, id);
@@ -218,18 +219,14 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
     throw UnsupportedError('Playbook multiple entrypoint is not supported', { input });
   }
   const nodeId = uuidv4();
-  const node = {
+  definition.nodes.push({
     id: nodeId,
     name: input.name,
     position: input.position,
     component_id: input.component_id,
     configuration,
     description: input.description || undefined,
-  };
-  if (!isPlaybookNodeJSONValid(node)) {
-    throw FunctionalError('Invalid JSON in node configuration');
-  }
-  definition.nodes.push(node);
+  });
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   if (relatedComponent.is_entry_point) {
     patch.playbook_start = nodeId;
@@ -265,6 +262,7 @@ export const playbookReplaceNode = async (
   input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
+  assertPlaybookNodeConfigurationValid(input);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
   await validateNodeRunAs(context, user, configuration);
 
@@ -301,7 +299,7 @@ export const playbookReplaceNode = async (
         name: input.name,
         position: input.position,
         component_id: input.component_id,
-        configuration, // TODO Check valid json
+        configuration,
         description: input.description || undefined,
       };
     }
@@ -322,6 +320,7 @@ export const playbookInsertNode = async (
   input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
+  assertPlaybookNodeConfigurationValid(input);
   await validateNodeRunAs(context, user, input.configuration);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
@@ -335,18 +334,14 @@ export const playbookInsertNode = async (
   }
   // Add the new node
   const nodeId = uuidv4();
-  const node = {
+  definition.nodes.push({
     id: nodeId,
     name: input.name,
     position: input.position,
     component_id: input.component_id,
     configuration: input.configuration ?? '{}',
     description: input.description || undefined,
-  };
-  if (!isPlaybookNodeJSONValid(node)) {
-    throw FunctionalError('Invalid JSON in node configuration');
-  }
-  definition.nodes.push(node);
+  });
   // Replace node with new position
   definition.nodes = definition.nodes.map((n) => {
     if (n.id === childNodeId) {
@@ -544,6 +539,8 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     throw FunctionalError('Invalid import type, must be playbook', { type: parsedData.type });
   }
   const config = parsedData.configuration;
+  // Check before the scope migration and run_as sanitization, which parse the definition too.
+  assertPlaybookDefinitionValid(config.playbook_definition);
   const updatedPlaybookDefinition = updateImportedPlaybookDefinitionScope(config.playbook_definition, parsedData.openCTI_version);
   // Imported definitions carry user ids from another platform; reset any
   // disallowed AI-agent run_as to the importing user so the import cannot set
@@ -558,9 +555,6 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     playbook_mode: config.playbook_mode,
     playbook_definition: config.playbook_definition,
   };
-  if (!isPlaybookJSONValid(importData)) {
-    throw FunctionalError('Invalid JSON in playbook definition');
-  }
   const importPlaybook = await createPlaybook(context, user, importData);
   const importPlaybookId = importPlaybook.id;
   await publishUserAction({

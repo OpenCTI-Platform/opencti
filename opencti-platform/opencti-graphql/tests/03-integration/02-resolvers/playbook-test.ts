@@ -4,7 +4,7 @@ import gql from 'graphql-tag';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { PlaybookAddLinkInput, PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
-import { BAD_USER_INPUT_ERROR, UNSUPPORTED_ERROR } from '../../../src/config/errors';
+import { BAD_USER_INPUT_ERROR, FUNCTIONAL_ERROR, UNSUPPORTED_ERROR } from '../../../src/config/errors';
 import { getUserIdByEmail, USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 const LIST_PLAYBOOKS = gql`
@@ -415,6 +415,23 @@ describe('Playbook resolver standard behavior', () => {
       );
     });
 
+    it('should not add node with invalid JSON configuration', async () => {
+      const addNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: '{"a":',
+        name: 'invalid-json-node',
+        position: { x: 1, y: 1 },
+      };
+      await queryAsAdminWithError(
+        {
+          query: ADD_NODE_PLAYBOOK,
+          variables: { id: playbookId, input: addNodeInput },
+        },
+        'Invalid JSON in configuration of playbook node "invalid-json-node"',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
     it('should persist description when adding a node', async () => {
       await clearPlaybook(playbookId);
       const addNodeInput: PlaybookAddNodeInput = {
@@ -519,6 +536,23 @@ describe('Playbook resolver standard behavior', () => {
       );
     });
 
+    it('should not replace a node with invalid JSON configuration', async () => {
+      const replaceNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
+        configuration: '{"a":',
+        name: 'invalid-json-node',
+        position: { x: 1, y: 1 },
+      };
+      await queryAsAdminWithError(
+        {
+          query: REPLACE_NODE_PLAYBOOK,
+          variables: { id: playbookId, nodeId: entryNodeId, input: replaceNodeInput },
+        },
+        'Invalid JSON in configuration of playbook node "invalid-json-node"',
+        FUNCTIONAL_ERROR,
+      );
+    });
+
     it('should not replace a node if no Manage Playbooks capability', async () => {
       const replaceNodeInput: PlaybookAddNodeInput = {
         component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
@@ -582,6 +616,32 @@ describe('Playbook resolver standard behavior', () => {
       const playbookDef = await readPlaybookDefinition(playbookId);
       const insertedNode = playbookDef.nodes.find((n: { id: string }) => n.id === insertedNodeId);
       expect(insertedNode?.description).toEqual('Inserted description');
+    });
+
+    it('should not insert a node with truncated filters', async () => {
+      const insertNodeInput: PlaybookAddNodeInput = {
+        component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+        configuration: JSON.stringify({ filters: '{"mode":' }),
+        name: 'truncated-filters-node',
+        position: { x: 3, y: 3 },
+      };
+      await queryAsAdminWithError(
+        {
+          query: INSERT_NODE_PLAYBOOK,
+          variables: {
+            id: playbookId,
+            parentNodeId: entryNodeId,
+            parentPortId: 'out',
+            childNodeId: matchingNodeId,
+            input: insertNodeInput,
+          },
+        },
+        'Invalid JSON in configuration of playbook node "truncated-filters-node"',
+        FUNCTIONAL_ERROR,
+      );
+
+      const playbookDef = await readPlaybookDefinition(playbookId);
+      expect(playbookDef.nodes.find((n: { name: string }) => n.name === 'truncated-filters-node')).toBeUndefined();
     });
 
     it('should not set description on inserted node when omitted', async () => {
