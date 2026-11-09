@@ -8,7 +8,6 @@ import * as accessModule from '../../../src/utils/authorizedMembers';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
 import * as redis from '../../../src/database/redis';
 import * as cacheModule from '../../../src/database/cache';
-import * as workflowDomain from '../../../src/modules/workflow/domain/workflow-domain';
 import { OrderingMode } from '../../../src/generated/graphql';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 
@@ -130,277 +129,101 @@ describe('workflow status filter (via draftWorkspacesNumber)', () => {
   });
 });
 
-describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () => {
-  const mockDraftA = { id: 'draft-a', name: 'Alpha Draft' };
-  const mockDraftB = { id: 'draft-b', name: 'Beta Draft' };
-  const mockDraftC = { id: 'draft-c', name: 'Gamma Draft (no workflow)' };
-
-  const mockWorkflowInstances = [
-    { entity_id: 'draft-a', currentState: 'status-template-new' },
-    { entity_id: 'draft-b', currentState: 'status-template-review' },
-  ];
-
-  const mockStatusTemplates = [
-    { id: 'status-template-new', name: 'New' },
-    { id: 'status-template-review', name: 'Review' },
-  ];
-
+describe('sort by workflow status (via findDraftWorkspacePaginated)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
-    // A published workflow without a single initial state: drafts without an instance have no status.
-    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue({ initialState: null });
+    vi.spyOn(middlewareLoader, 'pageEntitiesConnection').mockResolvedValue({ edges: [], pageInfo: { globalCount: 0 } } as any);
   });
 
-  it('should fall through to pageEntitiesConnection when orderBy is not workflowInstance', async () => {
-    vi.spyOn(middlewareLoader, 'pageEntitiesConnection').mockResolvedValue({ edges: [], pageInfo: { globalCount: 0 } } as any);
-    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValue([] as any);
+  it('sorts natively on the projected status, without loading WorkflowInstances or every draft', async () => {
+    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: OrderingMode.Desc, filters: emptyFilterGroup };
 
-    const args: any = { orderBy: 'name', orderMode: 'asc', filters: emptyFilterGroup };
     await findDraftWorkspacePaginated(mockContext, mockUser, args);
 
-    expect(middlewareLoader.pageEntitiesConnection).toHaveBeenCalled();
+    expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
+    expect(middlewareLoader.pageEntitiesConnection).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      ['DraftWorkspace'],
+      { ...args, orderBy: 'x_opencti_workflow_id' },
+    );
   });
 
-  it('should sort drafts ascending by workflow status name, nulls last', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce(mockWorkflowInstances as any) // WorkflowInstances
-      .mockResolvedValueOnce([mockDraftB, mockDraftA, mockDraftC] as any); // DraftWorkspaces (unsorted)
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
+  it('keeps any other sort as requested', async () => {
+    const args: any = { orderBy: 'name', orderMode: OrderingMode.Asc, filters: emptyFilterGroup };
 
-    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
-    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
+    await findDraftWorkspacePaginated(mockContext, mockUser, args);
 
-    const ids = result.edges.map((e: any) => e.node.id);
-    expect(ids).toEqual(['draft-a', 'draft-b', 'draft-c']); // New < Review, then no-workflow last
-  });
-
-  it('should sort drafts descending by workflow status name, nulls last', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce(mockWorkflowInstances as any)
-      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
-
-    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'desc', filters: emptyFilterGroup };
-    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
-
-    const ids = result.edges.map((e: any) => e.node.id);
-    expect(ids).toEqual(['draft-b', 'draft-a', 'draft-c']); // Review > New, then no-workflow last
-  });
-
-  it('should set hasNextPage=true when more results exist beyond the page', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce(mockWorkflowInstances as any)
-      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
-
-    const args: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
-    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
-
-    expect(result.edges).toHaveLength(2);
-    expect(result.pageInfo.hasNextPage).toBe(true);
-    expect(result.pageInfo.globalCount).toBe(3);
-  });
-
-  it('should paginate correctly using the after cursor', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce(mockWorkflowInstances as any)
-      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
-
-    // First page
-    const firstArgs: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
-    const firstPage = await findDraftWorkspacePaginated(mockContext, mockUser, firstArgs);
-    const afterCursor = firstPage.pageInfo.endCursor;
-
-    // Reset mocks for second call
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce(mockWorkflowInstances as any)
-      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
-
-    const secondArgs: any = { first: 2, orderBy: 'workflowInstance', orderMode: 'asc', after: afterCursor, filters: emptyFilterGroup };
-    const secondPage = await findDraftWorkspacePaginated(mockContext, mockUser, secondArgs);
-
-    expect(secondPage.edges).toHaveLength(1);
-    expect(secondPage.edges[0].node.id).toBe('draft-c');
-    expect(secondPage.pageInfo.hasNextPage).toBe(false);
-  });
-
-  it('should sort drafts without a WorkflowInstance as being in the initial state', async () => {
-    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue({ initialState: 'status-template-new' });
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce([{ entity_id: 'draft-b', currentState: 'status-template-review' }] as any)
-      .mockResolvedValueOnce([mockDraftB, mockDraftA, mockDraftC] as any);
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
-
-    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
-    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
-
-    expect(engine.elFindByIds).toHaveBeenCalledWith(mockContext, mockUser, ['status-template-review', 'status-template-new'], expect.anything());
-    expect(result.edges.map((e: any) => e.node.id)).toEqual(['draft-a', 'draft-c', 'draft-b']); // New, New, Review
-  });
-
-  it('should sort every draft as having no status when DraftWorkspace has no published workflow', async () => {
-    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue(null);
-    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValueOnce([mockDraftB, mockDraftA, mockDraftC] as any);
-
-    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
-    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
-
-    expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledTimes(1); // DraftWorkspaces only
-    expect(result.edges.map((e: any) => e.node.id)).toEqual(['draft-b', 'draft-a', 'draft-c']);
-  });
-
-  it('should return empty result when there are no drafts', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce([] as any) // no WorkflowInstances
-      .mockResolvedValueOnce([] as any); // no DraftWorkspaces
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue([] as any);
-
-    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
-    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
-
-    expect(result.edges).toHaveLength(0);
-    expect(result.pageInfo.hasNextPage).toBe(false);
-    expect(result.pageInfo.globalCount).toBe(0);
+    expect(middlewareLoader.pageEntitiesConnection).toHaveBeenCalledWith(mockContext, mockUser, ['DraftWorkspace'], args);
   });
 });
 
-describe('resolveWorkflowInstanceDistribution (via draftWorkspacesDistribution)', () => {
-  const mockDraftA = { id: 'draft-a', name: 'Alpha Draft' };
-  const mockDraftB = { id: 'draft-b', name: 'Beta Draft' };
-  const mockDraftC = { id: 'draft-c', name: 'Gamma Draft (no workflow)' };
-
-  const mockWorkflowInstances = [
-    { entity_id: 'draft-a', currentState: 'status-template-new' },
-    { entity_id: 'draft-b', currentState: 'status-template-review' },
-  ];
-
-  const mockStatusTemplates = [
-    { id: 'status-template-new', name: 'New' },
-    { id: 'status-template-review', name: 'Review' },
-  ];
-
-  const baseArgs: any = {
-    field: 'workflowInstance',
-    operation: 'count',
-    filters: emptyFilterGroup,
-  };
-
+describe('distribution by workflow status (via draftWorkspacesDistribution)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
-    // A published workflow without a single initial state: drafts without an instance have no status.
-    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue({ initialState: null });
+    vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockResolvedValue([
+      { id: 'status-new', name: 'New' },
+      { id: 'status-review', name: 'Review' },
+      { id: 'status-review-local', name: 'Review' },
+    ] as any);
   });
 
-  it('should fall through to distributionEntities when field is not workflowInstance', async () => {
-    vi.spyOn(middleware, 'distributionEntities').mockResolvedValue([]);
+  it('aggregates the projected status and labels each bucket with its status name', async () => {
+    vi.spyOn(engine, 'elAggregationCount').mockResolvedValue([
+      { label: 'status-new', value: 1, count: 1 },
+      { label: 'status-review', value: 3, count: 3 },
+    ]);
+    const args = { field: 'workflowInstance', operation: 'count', filters: emptyFilterGroup, search: 'alpha' };
 
-    const args: any = { ...baseArgs, field: 'draft_status' };
-    await draftWorkspacesDistribution(mockContext, mockUser, args);
+    const result = await draftWorkspacesDistribution(mockContext, mockUser, args);
 
-    expect(middleware.distributionEntities).toHaveBeenCalled();
     expect(middlewareLoader.fullEntitiesList).not.toHaveBeenCalled();
-  });
-
-  it('should group drafts by workflow status name descending by default', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce(mockWorkflowInstances as any) // WorkflowInstances
-      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any); // DraftWorkspaces
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
-
-    const result = await draftWorkspacesDistribution(mockContext, mockUser, { ...baseArgs, limit: 10, order: 'desc' });
-
-    expect(result).toHaveLength(3);
-    // desc by count: Review=1, New=1, then Unknown=1 — stable sort, New before Review alphabetically but desc by count they're equal
-    const labels = result.map((r: any) => r.label);
-    expect(labels).toContain('New');
-    expect(labels).toContain('Review');
-    expect(labels).toContain('Unknown');
-    expect(result.every((r: any) => r.value === 1)).toBe(true);
-    expect(result.every((r: any) => r.entity === null)).toBe(true);
-  });
-
-  it('should group multiple drafts under the same status', async () => {
-    const allDraftsWithSameStatus = [
-      { id: 'draft-a' },
-      { id: 'draft-b' },
-      { id: 'draft-c' },
-    ];
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce([
-        { entity_id: 'draft-a', currentState: 'status-template-new' },
-        { entity_id: 'draft-b', currentState: 'status-template-new' },
-      ] as any)
-      .mockResolvedValueOnce(allDraftsWithSameStatus as any);
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue([{ id: 'status-template-new', name: 'New' }] as any);
-
-    const result = await draftWorkspacesDistribution(mockContext, mockUser, { ...baseArgs, limit: 10 });
-
-    const newEntry = result.find((r: any) => r.label === 'New');
-    const unknownEntry = result.find((r: any) => r.label === 'Unknown');
-    expect(newEntry?.value).toBe(2);
-    expect(unknownEntry?.value).toBe(1);
-  });
-
-  it('should count drafts without a WorkflowInstance under the initial state', async () => {
-    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue({ initialState: 'status-template-new' });
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce([{ entity_id: 'draft-b', currentState: 'status-template-review' }] as any)
-      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
-
-    const result = await draftWorkspacesDistribution(mockContext, mockUser, { ...baseArgs, limit: 10 });
-
+    expect(engine.elAggregationCount).toHaveBeenCalledWith(mockContext, mockUser, expect.anything(), expect.objectContaining({
+      field: 'x_opencti_workflow_id',
+      types: ['DraftWorkspace'],
+      filters: emptyFilterGroup,
+      search: 'alpha',
+    }));
     expect(result).toEqual([
-      { label: 'New', value: 2, entity: null },
-      { label: 'Review', value: 1, entity: null },
+      { label: 'Review', value: 3, entity: null },
+      { label: 'New', value: 1, entity: null },
     ]);
   });
 
-  it('should label every draft as Unknown when DraftWorkspace has no published workflow', async () => {
-    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue(null);
-    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
+  it('merges statuses sharing a name and counts drafts without a known status as Unknown', async () => {
+    vi.spyOn(engine, 'elAggregationCount').mockResolvedValue([
+      { label: 'status-review', value: 2, count: 2 },
+      { label: 'status-review-local', value: 1, count: 1 },
+      { label: 'unknown', value: 4, count: 4 },
+    ]);
 
-    const result = await draftWorkspacesDistribution(mockContext, mockUser, { ...baseArgs, limit: 10 });
+    const result = await draftWorkspacesDistribution(mockContext, mockUser, { field: 'workflowInstance', order: 'asc' });
 
-    expect(result).toEqual([{ label: 'Unknown', value: 3, entity: null }]);
+    expect(result).toEqual([
+      { label: 'Review', value: 3, entity: null },
+      { label: 'Unknown', value: 4, entity: null },
+    ]);
   });
 
-  it('should label all drafts as Unknown when no WorkflowInstances exist', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce([] as any) // no WorkflowInstances
-      .mockResolvedValueOnce([mockDraftA, mockDraftB] as any);
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue([] as any);
+  it('applies the limit after sorting', async () => {
+    vi.spyOn(engine, 'elAggregationCount').mockResolvedValue([
+      { label: 'status-new', value: 1, count: 1 },
+      { label: 'status-review', value: 3, count: 3 },
+    ]);
 
-    const result = await draftWorkspacesDistribution(mockContext, mockUser, { ...baseArgs, limit: 10 });
+    const result = await draftWorkspacesDistribution(mockContext, mockUser, { field: 'workflowInstance', limit: 1 });
 
-    expect(result).toHaveLength(1);
-    expect(result[0].label).toBe('Unknown');
-    expect(result[0].value).toBe(2);
+    expect(result).toEqual([{ label: 'Review', value: 3, entity: null }]);
   });
 
-  it('should return empty array when there are no drafts', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce([] as any)
-      .mockResolvedValueOnce([] as any);
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue([] as any);
+  it('falls through to distributionEntities when field is not workflowInstance', async () => {
+    const args = { field: 'draft_status', operation: 'count' };
 
-    const result = await draftWorkspacesDistribution(mockContext, mockUser, { ...baseArgs, limit: 10 });
+    await draftWorkspacesDistribution(mockContext, mockUser, args);
 
-    expect(result).toHaveLength(0);
-  });
-
-  it('should respect the limit parameter', async () => {
-    vi.spyOn(middlewareLoader, 'fullEntitiesList')
-      .mockResolvedValueOnce(mockWorkflowInstances as any)
-      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
-    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
-
-    const result = await draftWorkspacesDistribution(mockContext, mockUser, { ...baseArgs, limit: 2 });
-
-    expect(result).toHaveLength(2);
+    expect(middleware.distributionEntities).toHaveBeenCalledWith(mockContext, mockUser, ['DraftWorkspace'], args);
+    expect(engine.elAggregationCount).not.toHaveBeenCalled();
   });
 });
 
