@@ -33,9 +33,9 @@ testCreatedCounter.feedback = 2;
 testCreatedCounter.file = 11;
 testCreatedCounter.grouping = 2;
 testCreatedCounter.iccid = 4;
-// 2 created and deleted by ingestionDeduplication-domain-test (authors of imported malware)
-// Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown)
-testCreatedCounter.identity = 61;
+// Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown),
+// and 2 by ingestionDeduplication-domain-test (authors of imported malware)
+testCreatedCounter.identity = 63;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
@@ -56,8 +56,8 @@ testCreatedCounter.language = 1;
 testCreatedCounter.location = 23; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testCreatedCounter['mac-addr'] = 1;
 // Includes 2 created and deleted by form-submission-test (a verified form import, an existing one left as it is),
-// and 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown)
-testCreatedCounter.malware = 70;
+// 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown), and 5 by ingestionDeduplication-domain-test
+testCreatedCounter.malware = 75;
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 29;
 testCreatedCounter.narrative = 1;
@@ -93,7 +93,7 @@ testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 // 1 by ingestionDeduplication-domain-test (an edit in the platform)
-testUpdatedCounter.malware = 22;
+testUpdatedCounter.malware = 23;
 testUpdatedCounter.file = 27;
 testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
@@ -166,9 +166,9 @@ testDeletedCounter['external-reference'] = 1;
 testDeletedCounter.feedback = 2;
 testDeletedCounter.file = 7;
 testDeletedCounter.grouping = 2;
-// 2 by ingestionDeduplication-domain-test
-// Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown)
-testDeletedCounter.identity = 44;
+// Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown),
+// and 2 by ingestionDeduplication-domain-test
+testDeletedCounter.identity = 46;
 testDeletedCounter.incident = 6;
 testDeletedCounter.indicator = 30;
 testDeletedCounter.infrastructure = 1;
@@ -186,8 +186,9 @@ testDeletedCounter.label = 11;
 testDeletedCounter.language = 1;
 testDeletedCounter.location = 18; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testDeletedCounter['mac-addr'] = 1;
-// Includes 2 created and deleted by form-submission-test, and 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown)
-testDeletedCounter.malware = 43;
+// Includes 2 created and deleted by form-submission-test, and 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown),
+// and 5 by ingestionDeduplication-domain-test
+testDeletedCounter.malware = 48;
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 18;
 testDeletedCounter.narrative = 1;
