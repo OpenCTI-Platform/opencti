@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { toB64 } from '../../../utils/String';
-import { countMissingWidgetVariables } from './widgetImportVariables';
+import { countMissingWidgetVariables, countMissingWidgetVariablesInFile } from './widgetImportVariables';
 
 const A = '11111111-1111-4111-8111-111111111111';
 const B = '22222222-2222-4222-8222-222222222222';
@@ -35,5 +35,17 @@ describe('countMissingWidgetVariables', () => {
   it('should return 0 for a widget without token or an unreadable file', () => {
     expect(countMissingWidgetVariables(widgetFile({ filters: group(['Malware']) }), new Set())).toEqual(0);
     expect(countMissingWidgetVariables('not a widget export', new Set())).toEqual(0);
+  });
+});
+
+describe('countMissingWidgetVariablesInFile', () => {
+  it('should count the variables missing from the dashboard in the file', async () => {
+    const file = { text: () => Promise.resolve(widgetFile({ filters: group([`$var:${A}`]) })) };
+    expect(await countMissingWidgetVariablesInFile(file, new Set())).toEqual(1);
+  });
+
+  it('should count nothing when the file cannot be read', async () => {
+    const file = { text: () => Promise.reject(new Error('The file was removed')) };
+    expect(await countMissingWidgetVariablesInFile(file, new Set())).toEqual(0);
   });
 });

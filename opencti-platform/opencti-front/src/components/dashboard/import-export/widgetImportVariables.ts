@@ -15,3 +15,15 @@ export const countMissingWidgetVariables = (fileContent: string, variableIds: Re
     return 0;
   }
 };
+
+/**
+ * countMissingWidgetVariables on the file being imported. A file that cannot be read (removed or unreadable after its
+ * selection) counts nothing: the import goes on, and the server reports the file.
+ */
+export const countMissingWidgetVariablesInFile = async (file: Pick<Blob, 'text'>, variableIds: ReadonlySet<string>): Promise<number> => {
+  try {
+    return countMissingWidgetVariables(await file.text(), variableIds);
+  } catch {
+    return 0;
+  }
+};
