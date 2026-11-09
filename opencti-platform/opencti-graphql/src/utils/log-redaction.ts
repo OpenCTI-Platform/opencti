@@ -59,36 +59,41 @@ const isSensitiveEditInput = (value: Record<string, unknown>, sensitiveKeys: Rea
 // - the value of a sensitive key: { password: 'xxx' }
 // - the value of an edit input whose key is sensitive: { key: 'password', value: 'xxx' }
 // The data given is never modified.
-// The copy is built with a loop over a stack, not a recursion: a JSON variable can be nested at will by the caller,
-// and it must neither overflow the call stack nor be cut (the non-sensitive data stays complete, whatever its depth).
+// - The copy is built with a loop over a stack, not a recursion: a JSON variable can be nested at will by the caller.
+// - Data nested deeper than MAX_REDACTION_DEPTH is replaced by the redaction marker: the copy is then always small
+//   enough in depth to be serialized (JSON.stringify, used to store and log events, overflows near 10 000 levels).
+export const MAX_REDACTION_DEPTH = 100;
 type Container = unknown[] | Record<string, unknown>;
 export const redactSensitiveData = <T>(data: T, sensitiveKeys: ReadonlySet<string> = SENSITIVE_KEYS): T => {
   const seen = new WeakMap<object, Container>();
-  const pending: Array<{ source: Container; copy: Container }> = [];
+  const pending: Array<{ source: Container; copy: Container; depth: number }> = [];
   // Values are returned as they are, containers get an empty copy filled later from the pending stack
-  const prepare = (value: unknown): unknown => {
+  const prepare = (value: unknown, depth: number): unknown => {
     if (!Array.isArray(value) && !isPlainObject(value)) {
       return value;
     }
     const known = seen.get(value);
     if (known) return known;
+    if (depth > MAX_REDACTION_DEPTH) {
+      return REDACTED_INFORMATION;
+    }
     const copy: Container = Array.isArray(value) ? [] : {};
     seen.set(value, copy);
-    pending.push({ source: value, copy });
+    pending.push({ source: value, copy, depth });
     return copy;
   };
-  const result = prepare(data);
+  const result = prepare(data, 0);
   while (pending.length > 0) {
-    const { source, copy } = pending.pop() as { source: Container; copy: Container };
+    const { source, copy, depth } = pending.pop() as { source: Container; copy: Container; depth: number };
     if (Array.isArray(source)) {
       source.forEach((element, index) => {
-        (copy as unknown[])[index] = prepare(element);
+        (copy as unknown[])[index] = prepare(element, depth + 1);
       });
     } else {
       const isEditInput = isSensitiveEditInput(source, sensitiveKeys);
       Object.entries(source).forEach(([key, element]) => {
         const isSensitive = sensitiveKeys.has(key) || (isEditInput && key === 'value');
-        (copy as Record<string, unknown>)[key] = isSensitive && isNotEmptyField(element) ? REDACTED_INFORMATION : prepare(element);
+        (copy as Record<string, unknown>)[key] = isSensitive && isNotEmptyField(element) ? REDACTED_INFORMATION : prepare(element, depth + 1);
       });
     }
   }

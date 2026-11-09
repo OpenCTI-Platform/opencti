@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parse, stripIgnoredCharacters } from 'graphql';
-import { analyzeRequestSensitivity, redactRequestQuery, redactRequestVariables, redactSensitiveData } from '../../../src/utils/log-redaction';
+import { analyzeRequestSensitivity, MAX_REDACTION_DEPTH, redactRequestQuery, redactRequestVariables, redactSensitiveData } from '../../../src/utils/log-redaction';
 import { REDACTED_INFORMATION } from '../../../src/database/utils';
 
 const R = REDACTED_INFORMATION;
@@ -44,13 +44,21 @@ describe('log-redaction - redactSensitiveData', () => {
     expect(data.secret).toBe('v');
   });
 
-  it('should keep deeply nested data complete, without overflowing the stack', () => {
-    const depth = 100_000;
-    let data: unknown = { secret: 'v', name: 'n' };
-    for (let i = 0; i < depth; i += 1) data = i % 2 ? [data] : { a: data };
-    let current: unknown = redactSensitiveData(data);
-    for (let i = 0; i < depth; i += 1) current = Array.isArray(current) ? current[0] : (current as { a: unknown }).a;
-    expect(current).toEqual({ secret: R, name: 'n' });
+  it('should replace data nested deeper than the limit, so that the copy can always be serialized', () => {
+    const build = (depth: number) => {
+      let data: unknown = { secret: 'v', name: 'n' };
+      for (let i = 0; i < depth; i += 1) data = i % 2 ? [data] : { a: data };
+      return data;
+    };
+    const leafOf = (data: unknown, depth: number) => {
+      let current = data;
+      for (let i = 0; i < depth; i += 1) current = Array.isArray(current) ? current[0] : (current as { a: unknown }).a;
+      return current;
+    };
+    expect(leafOf(redactSensitiveData(build(MAX_REDACTION_DEPTH)), MAX_REDACTION_DEPTH)).toEqual({ secret: R, name: 'n' });
+    expect(leafOf(redactSensitiveData(build(MAX_REDACTION_DEPTH + 1)), MAX_REDACTION_DEPTH + 1)).toBe(R);
+    const veryDeep = redactSensitiveData(build(100_000));
+    expect(() => JSON.stringify(veryDeep)).not.toThrow();
   });
 
   it('should redact the platform registration tokens', () => {
