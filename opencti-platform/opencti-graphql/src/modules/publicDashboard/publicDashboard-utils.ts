@@ -11,6 +11,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { findById as findWorkspace } from '../workspace/workspace-domain';
+import { now, utcDate } from '../../utils/format';
 
 /**
  * Sanitizes a raw uri_key input to a valid [a-z0-9-] slug.
@@ -75,7 +76,41 @@ interface WidgetArguments {
   user: AuthUser;
   dataSelection: PublicDashboardCachedWidget['dataSelection'];
   parameters: PublicDashboardCachedWidget['parameters'];
+  config: PublicDashboardCached['private_manifest']['config'] | undefined;
 }
+
+// A relative range as the front computes it (computeRelativeDate): `days-7`, `months-1`, `years-1`... back from now.
+const RELATIVE_DATE_REGEXP = /^(days|months|years)-(\d+)$/;
+const computeRelativeStartDate = (relativeDate: string): string | undefined => {
+  const match = RELATIVE_DATE_REGEXP.exec(relativeDate);
+  if (!match) return undefined;
+  const unit = match[1] as 'days' | 'months' | 'years';
+  return utcDate().subtract(Number(match[2]), unit).toISOString();
+};
+
+export interface PublicDashboardTimeRange {
+  startDate?: string | null;
+  endDate?: string | null;
+}
+
+/**
+ * The time range the public widget queries run with. When the author allowed the viewers to edit the time filters
+ * (the dashboard switch, copied at publication), the range sent by the visitor is honoured. Otherwise the range frozen
+ * at publication is enforced here: the time filters of the public page are disabled, and a direct call to the public
+ * API cannot widen them either. A relative range is computed as the front does, up to now.
+ */
+export const resolvePublicDashboardTimeRange = (
+  config: PublicDashboardCached['private_manifest']['config'] | undefined,
+  requested: PublicDashboardTimeRange,
+): PublicDashboardTimeRange => {
+  if (config?.allowViewersToEditTimeFilters === true) {
+    return { startDate: requested.startDate, endDate: requested.endDate };
+  }
+  if (config?.relativeDate) {
+    return { startDate: computeRelativeStartDate(config.relativeDate), endDate: now() };
+  }
+  return { startDate: config?.startDate ?? undefined, endDate: config?.endDate ?? undefined };
+};
 
 export const getWidgetArguments = async (
   context: AuthContext,
@@ -122,13 +157,14 @@ export const getWidgetArguments = async (
   };
 
   // Get widget query configuration
-  const { widgets } = private_manifest;
+  const { widgets, config } = private_manifest;
   const { dataSelection, parameters } = widgets[widgetId];
 
   return {
     user,
     parameters,
     dataSelection,
+    config,
   };
 };
 
