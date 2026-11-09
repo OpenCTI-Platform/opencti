@@ -18605,7 +18605,7 @@ __metadata:
     set-interval-async: "npm:3.0.6"
     slug: "npm:12.0.1"
     source-map: "npm:0.8.0"
-    tough-cookie: "npm:6.0.2"
+    tough-cookie: "npm:6.1.0"
     turndown: "npm:7.2.5"
     typescript: "npm:6.0.3"
     typescript-eslint: "npm:8.72.1"
@@ -22529,12 +22529,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tough-cookie@npm:6.0.2, tough-cookie@npm:^6.0.2":
-  version: 6.0.2
-  resolution: "tough-cookie@npm:6.0.2"
+"tough-cookie@npm:6.1.0, tough-cookie@npm:^6.0.2":
+  version: 6.1.0
+  resolution: "tough-cookie@npm:6.1.0"
   dependencies:
     tldts: "npm:^7.0.5"
-  checksum: 10c0/5ff521a476a3c540821352125a5d481c8d2fe16035de7e0efda4df120f290c95500a0e9b51ea0aa56343955be482e014c30f5ba73e04b93ba138e4e855cb9e89
+  checksum: 10c0/704607363dcf905301048f3412afe17e05c5e8e1c377e6b22ebc96d3d5a7f1727992677ff1c05fa2d411d580ccf9ddbd2ed62c1cab44ef06fdd4026fedc8b896
   languageName: node
   linkType: hard
 
