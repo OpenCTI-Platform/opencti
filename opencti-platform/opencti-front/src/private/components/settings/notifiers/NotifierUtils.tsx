@@ -1,11 +1,12 @@
 import React, { ReactNode } from 'react';
 import { FieldTemplateProps, helpId, UiSchema, WidgetProps } from '@rjsf/utils';
+import { Text } from '@filigran/design-system';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import FormHelperText from '@mui/material/FormHelperText';
-import Typography from '@mui/material/Typography';
-import type { Theme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
+import type { Theme } from '../../../../components/Theme';
 
 export const NOTIFIER_TITLE_VARIABLES_DOC = 'https://docs.opencti.io/latest/administration/tips-to-create-a-custom-notifier/#title-variables';
 
@@ -24,8 +25,9 @@ export const uiSchema: UiSchema = {
   },
 };
 
-// The theme gives every <code> a colored chip with !important: the helper shows a plain monospace inline instead
-const InlineCode = ({ children }: { children: ReactNode }) => (
+// The theme gives every <code> a colored chip with !important: the helper shows a plain monospace inline instead.
+// It takes the helper color, except an example, which stands out in the text color
+const InlineCode = ({ children, isExample = false }: { children: ReactNode; isExample?: boolean }) => (
   <Box
     component="code"
     sx={{
@@ -33,7 +35,7 @@ const InlineCode = ({ children }: { children: ReactNode }) => (
       fontSize: 'inherit',
       padding: '0 !important',
       background: 'none !important',
-      color: (theme: Theme) => `${theme.palette.text.primary} !important`,
+      color: (theme: Theme) => `${isExample ? theme.palette.text.primary : 'inherit'} !important`,
     }}
   >
     {children}
@@ -43,30 +45,30 @@ const InlineCode = ({ children }: { children: ReactNode }) => (
 // How to insert notification data, shown once above the title
 export const VariableHelperIntro = () => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   return (
-    <Typography
-      variant="body2"
-      component="div"
-      sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: 1, marginBottom: 2 }}
-    >
-      <span>{t_i18n('Insert notification data with variables in the title or the template.')}</span>
-      <Box
-        component="a"
+    <Text as="div" variant="content-compact" className="mb-4 text-input-label">
+      {t_i18n('Insert notification data with variables in the title or the template.')}{' '}
+      <Text
+        as="a"
+        variant="content-compact-link"
         href={NOTIFIER_TITLE_VARIABLES_DOC}
         target="_blank"
         rel="noopener noreferrer"
-        sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontWeight: 600 }}
+        className="inline-flex items-center gap-1"
+        style={{ color: theme.palette.primary.main }}
       >
         {t_i18n('See the available variables')}
         <OpenInNewOutlined sx={{ fontSize: 14 }} />
-      </Box>
-    </Typography>
+      </Text>
+    </Text>
   );
 };
 
-// Shown below the field, with the help id the input already lists in its aria-describedby
+// Shown below the field, in the helper color of the design system fields (Name, Description...),
+// with the help id the input already lists in its aria-describedby
 const VariableHelperText = ({ fieldId, children }: { fieldId: string; children: ReactNode }) => (
-  <FormHelperText component="div" id={helpId(fieldId)} sx={{ marginTop: 0.625 }}>
+  <FormHelperText component="div" id={helpId(fieldId)} sx={{ marginTop: 1, color: 'var(--text-input-helper)' }}>
     {children}
   </FormHelperText>
 );
@@ -78,7 +80,7 @@ const TitleVariableHelperText = ({ fieldId }: { fieldId: string }) => {
       {t_i18n('Use {variable}, e.g. {example}. A missing value is left empty.', {
         values: {
           variable: <InlineCode>$variable</InlineCode>,
-          example: <InlineCode>$notification_content[0].title</InlineCode>,
+          example: <InlineCode isExample>$notification_content[0].title</InlineCode>,
         },
       })}
     </VariableHelperText>
@@ -90,7 +92,7 @@ const TemplateVariableHelperText = ({ fieldId }: { fieldId: string }) => {
   return (
     <VariableHelperText fieldId={fieldId}>
       {t_i18n('Use EJS, e.g. {example}', {
-        values: { example: <InlineCode>{'<%= notification_content[0].title %>'}</InlineCode> },
+        values: { example: <InlineCode isExample>{'<%= notification_content[0].title %>'}</InlineCode> },
       })}
     </VariableHelperText>
   );
