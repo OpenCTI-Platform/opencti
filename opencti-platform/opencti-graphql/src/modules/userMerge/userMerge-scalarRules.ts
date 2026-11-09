@@ -4,7 +4,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard
 import { ENTITY_TYPE_NEWS_FEED_ITEM } from '../xtm/hub/news-feed/news-feed-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../workflow/types/workflow-types';
 import { ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
-import type { UserMergeScalarCondition, UserMergeScalarTarget } from './userMerge-scalarTargets';
+import type { UserMergeScalarCondition } from './userMerge-scalarTargets';
 
 /**
  * Why a discovered attribute is not rewritten by this handler.
@@ -28,7 +28,7 @@ export interface UserMergeScalarSplit {
 
 export type UserMergeScalarDisposition
   = | ({ kind: 'excluded' } & UserMergeScalarExclusion)
-    | { kind: 'covered'; registerRow: string }
+    | { kind: 'covered'; registerRow: string; id?: string }
     | { kind: 'split'; variants: UserMergeScalarSplit[] };
 
 /**
@@ -39,6 +39,25 @@ export type UserMergeScalarDisposition
  */
 export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDisposition> = {
   '*.creator_id': { kind: 'covered', registerRow: 'basic-object.creator-id' },
+  // Discovered by walking into the object mappings, see userMerge-scalarDiscovery.
+  '*.i_attributes.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'Last modifier of each attribute, rewritten by the history chunk' },
+  [`${ENTITY_TYPE_INTERNAL_FILE}.metaData.creator_id`]: { kind: 'covered', registerRow: 'internal-file.metadata-creator-id' },
+  // One version mapping reached under three roots: one register row, three targets.
+  [`${ENTITY_TYPE_WORKFLOW_DEFINITION}.published_version.createdBy`]: {
+    kind: 'covered',
+    registerRow: 'workflow-definition.versions-created-by',
+    id: 'workflow-definition-published-version-created-by',
+  },
+  [`${ENTITY_TYPE_WORKFLOW_DEFINITION}.draft_version.createdBy`]: {
+    kind: 'covered',
+    registerRow: 'workflow-definition.versions-created-by',
+    id: 'workflow-definition-draft-version-created-by',
+  },
+  [`${ENTITY_TYPE_WORKFLOW_DEFINITION}.all_versions.createdBy`]: {
+    kind: 'covered',
+    registerRow: 'workflow-definition.versions-created-by',
+    id: 'workflow-definition-all-versions-created-by',
+  },
   '*.applicant_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History, Activity and PirHistory are rewritten by the history chunk' },
   '*.xtm_hub_registration_user_id': { kind: 'covered', registerRow: 'settings.xtm-hub-registration-user-id' },
   '*.platform_ip_whitelist_exclusion_ids': { kind: 'excluded', reason: 'another-handler', detail: 'Settings handler, which writes through the domain layer so the platform cache follows' },
@@ -87,52 +106,3 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
     ],
   },
 };
-
-/**
- * Targets the schema cannot yield, each with the reason it is missing.
- *
- * These are gaps in the attribute declarations, not deliberate register choices. Fixing a
- * declaration changes how filters and history diffs behave platform-wide, so the fix belongs
- * outside this feature; the guard test flags the entry once the schema starts yielding it.
- */
-export interface UserMergeScalarComplement extends UserMergeScalarTarget {
-  missingBecause: string;
-}
-
-export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
-  {
-    id: 'internal-file-metadata-creator-id',
-    registerRow: 'internal-file.metadata-creator-id',
-    entityTypes: [ENTITY_TYPE_INTERNAL_FILE],
-    path: 'metaData.creator_id',
-    shape: 'single',
-    missingBecause: "held under metaData, declared with format 'standard' and no attribute definitions",
-  },
-  {
-    id: 'workflow-definition-published-version-created-by',
-    registerRow: 'workflow-definition.versions-created-by',
-    entityTypes: [ENTITY_TYPE_WORKFLOW_DEFINITION],
-    path: 'published_version.createdBy',
-    shape: 'single',
-    nestedRoot: 'published_version',
-    missingBecause: 'nested mapping child declared without entityTypes',
-  },
-  {
-    id: 'workflow-definition-draft-version-created-by',
-    registerRow: 'workflow-definition.versions-created-by',
-    entityTypes: [ENTITY_TYPE_WORKFLOW_DEFINITION],
-    path: 'draft_version.createdBy',
-    shape: 'single',
-    nestedRoot: 'draft_version',
-    missingBecause: 'nested mapping child declared without entityTypes',
-  },
-  {
-    id: 'workflow-definition-all-versions-created-by',
-    registerRow: 'workflow-definition.versions-created-by',
-    entityTypes: [ENTITY_TYPE_WORKFLOW_DEFINITION],
-    path: 'all_versions.createdBy',
-    shape: 'object-array',
-    nestedRoot: 'all_versions',
-    missingBecause: 'nested mapping child declared without entityTypes',
-  },
-];

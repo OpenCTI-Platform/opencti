@@ -8,6 +8,7 @@ import * as accessModule from '../../../src/utils/authorizedMembers';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
 import * as redis from '../../../src/database/redis';
 import * as cacheModule from '../../../src/database/cache';
+import * as workflowDomain from '../../../src/modules/workflow/domain/workflow-domain';
 import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../../src/utils/filtering/filtering-constants';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { OrderingMode } from '../../../src/generated/graphql';
@@ -109,6 +110,7 @@ describe('resolveWorkflowInstanceStatusFilter (via draftWorkspacesNumber)', () =
     vi.resetAllMocks();
     vi.spyOn(engine, 'elCount').mockResolvedValue(0);
     vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
+    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue({ initialState: 'status-template-initial' });
   });
 
   it('should not call fullEntitiesList when no workflowInstanceCurrentState filter is present', async () => {
@@ -205,6 +207,8 @@ describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () =
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
+    // A published workflow without a single initial state: drafts without an instance have no status.
+    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue({ initialState: null });
   });
 
   it('should fall through to pageEntitiesConnection when orderBy is not workflowInstance', async () => {
@@ -281,6 +285,31 @@ describe('resolveSortByWorkflowInstance (via findDraftWorkspacePaginated)', () =
     expect(secondPage.pageInfo.hasNextPage).toBe(false);
   });
 
+  it('should sort drafts without a WorkflowInstance as being in the initial state', async () => {
+    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue({ initialState: 'status-template-new' });
+    vi.spyOn(middlewareLoader, 'fullEntitiesList')
+      .mockResolvedValueOnce([{ entity_id: 'draft-b', currentState: 'status-template-review' }] as any)
+      .mockResolvedValueOnce([mockDraftB, mockDraftA, mockDraftC] as any);
+    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
+
+    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
+    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
+
+    expect(engine.elFindByIds).toHaveBeenCalledWith(mockContext, mockUser, ['status-template-review', 'status-template-new'], expect.anything());
+    expect(result.edges.map((e: any) => e.node.id)).toEqual(['draft-a', 'draft-c', 'draft-b']); // New, New, Review
+  });
+
+  it('should sort every draft as having no status when DraftWorkspace has no published workflow', async () => {
+    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue(null);
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValueOnce([mockDraftB, mockDraftA, mockDraftC] as any);
+
+    const args: any = { first: 10, orderBy: 'workflowInstance', orderMode: 'asc', filters: emptyFilterGroup };
+    const result = await findDraftWorkspacePaginated(mockContext, mockUser, args);
+
+    expect(middlewareLoader.fullEntitiesList).toHaveBeenCalledTimes(1); // DraftWorkspaces only
+    expect(result.edges.map((e: any) => e.node.id)).toEqual(['draft-b', 'draft-a', 'draft-c']);
+  });
+
   it('should return empty result when there are no drafts', async () => {
     vi.spyOn(middlewareLoader, 'fullEntitiesList')
       .mockResolvedValueOnce([] as any) // no WorkflowInstances
@@ -320,6 +349,8 @@ describe('resolveWorkflowInstanceDistribution (via draftWorkspacesDistribution)'
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(draftContextUtils, 'bypassDraftContext').mockReturnValue(mockContext);
+    // A published workflow without a single initial state: drafts without an instance have no status.
+    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue({ initialState: null });
   });
 
   it('should fall through to distributionEntities when field is not workflowInstance', async () => {
@@ -370,6 +401,30 @@ describe('resolveWorkflowInstanceDistribution (via draftWorkspacesDistribution)'
     const unknownEntry = result.find((r: any) => r.label === 'Unknown');
     expect(newEntry?.value).toBe(2);
     expect(unknownEntry?.value).toBe(1);
+  });
+
+  it('should count drafts without a WorkflowInstance under the initial state', async () => {
+    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue({ initialState: 'status-template-new' });
+    vi.spyOn(middlewareLoader, 'fullEntitiesList')
+      .mockResolvedValueOnce([{ entity_id: 'draft-b', currentState: 'status-template-review' }] as any)
+      .mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
+    vi.spyOn(engine, 'elFindByIds').mockResolvedValue(mockStatusTemplates as any);
+
+    const result = await draftWorkspacesDistribution(mockContext, mockUser, { ...baseArgs, limit: 10 });
+
+    expect(result).toEqual([
+      { label: 'New', value: 2, entity: null },
+      { label: 'Review', value: 1, entity: null },
+    ]);
+  });
+
+  it('should label every draft as Unknown when DraftWorkspace has no published workflow', async () => {
+    vi.spyOn(workflowDomain, 'getWorkflowDefaultState').mockResolvedValue(null);
+    vi.spyOn(middlewareLoader, 'fullEntitiesList').mockResolvedValueOnce([mockDraftA, mockDraftB, mockDraftC] as any);
+
+    const result = await draftWorkspacesDistribution(mockContext, mockUser, { ...baseArgs, limit: 10 });
+
+    expect(result).toEqual([{ label: 'Unknown', value: 3, entity: null }]);
   });
 
   it('should label all drafts as Unknown when no WorkflowInstances exist', async () => {

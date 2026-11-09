@@ -100,6 +100,7 @@ import {
   VALID_UNTIL,
   VALUE_FIELD,
   X_DETECTION,
+  X_CLOSING_REASON,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
 import { notify, redisAddDeletions } from './redis';
@@ -163,7 +164,7 @@ import {
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -193,6 +194,7 @@ import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2
 import { convertStoreToStix } from './stix-common-converter';
 import {
   buildAggregationRelationFilter,
+  buildConnectionRoleFilter,
   buildEntityFilters,
   buildThingsFilters,
   type EntityFilters,
@@ -210,7 +212,7 @@ import { checkRelationConsistency, isRelationConsistent } from '../utils/modelCo
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
-import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
+import { getVocabularyCategory, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { fillDefaultCustomFieldValues, fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -247,6 +249,7 @@ import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDelet
 import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
+import { isCreateOnlyFormImport } from '../modules/form/form-submission-context';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -293,7 +296,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import type * as S from '../types/stix-2-1-common';
 import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
-import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
+import type { CreatedRef, CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 import {
   foldCustomFieldValuesInputs,
@@ -811,32 +814,20 @@ export const buildRestrictedEntity = (resolvedEntity: BasicStoreEntity): BasicSt
 };
 
 // region Graphics
-const convertAggregateDistributions = async (
+const resolveAggregateDistributions = async <T extends { label: string; value: number }>(
   context: AuthContext,
   user: AuthUser,
-  limit: number,
-  orderingFunction: any,
-  distribution: { label: string; value: number }[],
-): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
-  const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
+  data: T[],
+): Promise<(T & { entity: BasicStoreEntity | null })[]> => {
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true }) as Record<string, BasicStoreEntity>;
   // filter out unresolved data (like the SYSTEM user for instance); keep the synthetic 'unknown' bucket
   const filteredData = data.filter((n) => n.label === 'unknown' || isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
-  // entities not granted shall be sent as "restricted" with limited information
-  const grantedIds: string[] = [];
-  for (let i = 0; i < filteredData.length; i += 1) {
-    // The 'unknown' bucket has no real entity — skip resolution and access check
-    if (filteredData[i].label === 'unknown') {
-      grantedIds.push('unknown');
-      continue;
-    }
-    const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
-    const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
-    if (canAccess) {
-      grantedIds.push(filteredData[i].label.toLowerCase());
-    }
-  }
+  // entities not granted shall be sent as "restricted" with limited information, all checked at once.
+  // The 'unknown' bucket has no real entity — skip its access check
+  const resolvedElements = filteredData.filter((n) => n.label !== 'unknown').map((n) => allResolveLabels[n.label.toLowerCase()]);
+  const grantedElements = await userFilterStoreElements(context, user, resolvedElements);
+  const grantedIds = new Set(grantedElements.map((element) => element.internal_id));
   return filteredData
     .map((n) => {
       // The 'unknown' bucket has no backing entity
@@ -844,7 +835,7 @@ const convertAggregateDistributions = async (
         return { ...n, entity: null };
       }
       const element = allResolveLabels[n.label.toLowerCase()];
-      if (grantedIds.includes(n.label.toLowerCase())) {
+      if (grantedIds.has(element.internal_id)) {
         return {
           ...n,
           entity: element,
@@ -855,6 +846,16 @@ const convertAggregateDistributions = async (
         entity: buildRestrictedEntity(element),
       };
     });
+};
+const convertAggregateDistributions = async (
+  context: AuthContext,
+  user: AuthUser,
+  limit: number,
+  orderingFunction: any,
+  distribution: { label: string; value: number }[],
+): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
+  const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
+  return resolveAggregateDistributions(context, user, data);
 };
 export const timeSeriesHistory = async (context: AuthContext, user: AuthUser, args: any) => {
   const { startDate, endDate, interval } = args;
@@ -1047,7 +1048,7 @@ const depsKeys = (type: string): { src: string; dst?: string; types?: string[] }
   ],
 ]);
 
-const idVocabulary = (nameOrId: string, category: string) => {
+export const idVocabulary = (nameOrId: string, category: string) => {
   return isAnId(nameOrId) ? nameOrId : generateStandardId(ENTITY_TYPE_VOCABULARY, { name: nameOrId, category });
 };
 
@@ -1089,10 +1090,10 @@ export const inputResolveRefs = async (
     const dependencyKeys = depsKeys(type);
     for (let index = 0; index < dependencyKeys.length; index += 1) {
       const { src, dst, types } = dependencyKeys[index];
-      const depTypes = types ?? [];
       const destKey = dst || src;
       const id = input[src];
-      const isValidType = depTypes.length > 0 ? depTypes.includes(type) : true;
+      // A key without types applies to every type; one with an empty list to none
+      const isValidType = types ? types.includes(type) : true;
       const isAlreadyResolved = Array.isArray(id) ? id[0]?._id : id?._id;
       if (isValidType && !R.isNil(id) && !R.isEmpty(id) && !isAlreadyResolved) {
         const isListing = Array.isArray(id);
@@ -1712,7 +1713,7 @@ const mergeEntitiesRaw = async (
     if (categories.size > 1) {
       throw FunctionalError('Cannot merge vocabularies of different category', { categories });
     }
-    const completeCategory = getVocabulariesCategories().find(({ key }) => key === targetVocabularyEntity.category);
+    const completeCategory = getVocabularyCategory(targetVocabularyEntity.category);
     if (completeCategory) {
       await updateElasticVocabularyValue(sourceVocabularyEntities.map((s) => s.name), targetVocabularyEntity.name, completeCategory);
     }
@@ -1907,7 +1908,8 @@ const mergeEntitiesRaw = async (
   const updateAttributes: EditInput[] = [];
   // 1. Update all possible attributes
   const attributes = schemaAttributesDefinition.getAttributeNames(targetType);
-  const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX));
+  // The closing reason follows the target's own workflow state: never take it from a source
+  const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX) && s !== X_CLOSING_REASON);
   for (let fieldIndex = 0; fieldIndex < targetFields.length; fieldIndex += 1) {
     const targetFieldKey = targetFields[fieldIndex];
     const mergedEntityCurrentFieldValue = (targetEntity as Record<string, any>)[targetFieldKey];
@@ -2563,6 +2565,9 @@ type UpdateAttributeMetaResolvedOpts = EventOpts & {
   bypassValidation?: boolean;
   // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
   skipUserIndividualSync?: boolean;
+  // Set by the workflow projection: its own write is not synced back as an external write,
+  // and it is the only non-bypass writer of the closing reason
+  workflowInternalWrite?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2622,6 +2627,10 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
   if (!validateUserAccessOperation(user, initial, accessOperation, draft)) {
     throw ForbiddenAccess();
+  }
+  // The closing reason is owned by the workflow: only a transition or a bypass user can change it
+  if (!opts.workflowInternalWrite && !isBypassUser(user) && updates.some((e) => e.key === X_CLOSING_REASON)) {
+    throw FunctionalError('Closing reason can only be changed through a workflow transition', { id: initial.internal_id });
   }
 
   await rewriteEmbeddedDataUriImagesInUpdateInputs(context, user, updates, {
@@ -2988,6 +2997,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
           commit: commit as unknown as any,
           related_restrictions: relatedRestrictions,
           pir_ids,
+          createdRefs: relationsToCreate,
         },
       );
       // region Security coverage hook
@@ -3062,10 +3072,7 @@ const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: Aut
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts & {
-  // Set by the workflow projection so its own write is not synced back as an external write
-  workflowInternalWrite?: boolean;
-};
+type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts;
 export const updateAttribute = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
@@ -3085,24 +3092,20 @@ export const updateAttribute = async <T extends StoreObject>(
   let finalInputs = inputs;
   const customFieldValuesInputs = inputs.filter((inputData) => inputData.key === customFieldValues.name);
   if (customFieldValuesInputs.length > 0) {
-    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      const normalizedInputs: EditInput[] = [];
-      for (let i = 0; i < customFieldValuesInputs.length; i += 1) {
-        const customFieldValuesInput = customFieldValuesInputs[i];
-        const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
-        normalizedInputs.push({ ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) });
-      }
-      // Several inputs, or the removal of some multi_select options, are applied on the current values into a single replace
-      const isFolded = normalizedInputs.length > 1 || isCustomFieldOptionsRemove(normalizedInputs[0]);
-      const currentValues = (initial as Record<string, any>).custom_field_values ?? [];
-      const customFieldValuesInput = isFolded
-        ? { key: customFieldValues.name, operation: EditOperation.Replace, value: foldCustomFieldValuesInputs(currentValues, normalizedInputs) }
-        : normalizedInputs[0];
-      await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
-      finalInputs = [...inputs.filter((inputData) => inputData.key !== customFieldValues.name), customFieldValuesInput];
-    } else {
-      throw FunctionalError('Custom fields feature is not enabled', { id, type });
+    const normalizedInputs: EditInput[] = [];
+    for (let i = 0; i < customFieldValuesInputs.length; i += 1) {
+      const customFieldValuesInput = customFieldValuesInputs[i];
+      const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
+      normalizedInputs.push({ ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) });
     }
+    // Several inputs, or the removal of some multi_select options, are applied on the current values into a single replace
+    const isFolded = normalizedInputs.length > 1 || isCustomFieldOptionsRemove(normalizedInputs[0]);
+    const currentValues = (initial as Record<string, any>).custom_field_values ?? [];
+    const customFieldValuesInput = isFolded
+      ? { key: customFieldValues.name, operation: EditOperation.Replace, value: foldCustomFieldValuesInputs(currentValues, normalizedInputs) }
+      : normalizedInputs[0];
+    await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
+    finalInputs = [...inputs.filter((inputData) => inputData.key !== customFieldValues.name), customFieldValuesInput];
   }
   // Continue update
   const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, finalInputs, opts);
@@ -3308,10 +3311,8 @@ const validateEntityAndRelationCreation = async (
     });
     // Custom field values are validated on the final values (default values included).
     // Mandatory ones follow the same rules as mandatory standard attributes: bypassable.
-    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
-      await validateCustomFieldValues(context, user, input.custom_field_values ?? [], type, { checkMandatory: !isAllowedToBypassMandatory });
-    }
+    const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
+    await validateCustomFieldValues(context, user, input.custom_field_values ?? [], type, { checkMandatory: !isAllowedToBypassMandatory });
   }
 };
 
@@ -3475,7 +3476,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [from.internal_id] },
-              { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+              buildConnectionRoleFilter(relationshipType, 'from'),
             ],
             values: [],
           },
@@ -3483,7 +3484,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [to.internal_id] },
-              { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+              buildConnectionRoleFilter(relationshipType, 'to'),
             ],
             values: [],
           },
@@ -3589,13 +3590,11 @@ export const createRelationRaw = async (
   // endregion
 
   // region custom field values handling
-  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-    const rawInputCustomFieldValues = input.customFieldValues ?? [];
-    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
-    // Only keep empty custom fields values if it came from input
-    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
-      (input as any).custom_field_values = customFieldValuesFromInput;
-    }
+  const rawInputCustomFieldValues = input.customFieldValues ?? [];
+  const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
+  // Only keep empty custom fields values if it came from input
+  if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+    (input as any).custom_field_values = customFieldValuesFromInput;
   }
   delete input.customFieldValues;
   // endregion
@@ -3713,6 +3712,10 @@ export const createRelationRaw = async (
       if (fromRule) {
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, fromRule, locks: participantIds });
       }
+      // A form submission without Create / Update knowledge only creates: the existing relationship is used as it is
+      if (isCreateOnlyFormImport(context, user)) {
+        return { element: existingRelationship, event: null, isCreation: false };
+      }
       // If not upsert the element
       return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
     }
@@ -3764,7 +3767,7 @@ export const createRelationRaw = async (
         message: opts.commitMessage ?? '',
         external_references: references.map((ref) => convertExternalReferenceToStix(ref as StoreEntity)),
       } : undefined;
-      const storeUpdateEventsOpts = { ...opts, commit: commit as unknown as any };
+      const storeUpdateEventsOpts = { ...opts, commit: commit as unknown as any, createdRefs: [dataRel.element] };
       event = await storeUpdateEvent(context, user, previous, instance, changes, storeUpdateEventsOpts);
       dataRel.element.from = instance; // dynamically update the from to have an up to date relation
     } else if (!isStixRefRelationship(relationshipType)) {
@@ -3925,6 +3928,7 @@ const internalCreateEntityRaw = async (
 ) => {
   // region confidence control
   const input = { ...rawInput };
+  const isInputConfidenceMissing = isEmptyField(rawInput.confidence);
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input as ObjectWithConfidence, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // authorized_members renaming
@@ -3935,13 +3939,11 @@ const internalCreateEntityRaw = async (
   // endregion
 
   // region custom field values handling
-  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-    const rawInputCustomFieldValues = input.customFieldValues ?? [];
-    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
-    // Only keep empty custom fields values if it came from input
-    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
-      (input as any).custom_field_values = customFieldValuesFromInput;
-    }
+  const rawInputCustomFieldValues = input.customFieldValues ?? [];
+  const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
+  // Only keep empty custom fields values if it came from input
+  if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+    (input as any).custom_field_values = customFieldValuesFromInput;
   }
   delete input.customFieldValues;
   // endregion
@@ -4013,6 +4015,11 @@ const internalCreateEntityRaw = async (
     // If existing entities have been found and type is a STIX Core Object
     let dataMessage;
     if (existingEntities.length > 0) {
+      // An input without confidence must not replace the existing confidence with the user's max confidence
+      // The user's max confidence still controls the upsert of the other attributes
+      if (isInputConfidenceMissing) {
+        delete resolvedInput.confidence;
+      }
       // We need to filter what we found with the user rights
       const filteredEntities = await userFilterStoreElements(context, user, existingEntities) as BasicStoreEntity[];
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
@@ -4039,6 +4046,11 @@ const internalCreateEntityRaw = async (
         }
         // If upsert come from a rule, do a specific upsert.
         return await upsertEntityRule(context, user, filteredEntities[0], input, { ...opts, fromRule, locks: participantIds });
+      }
+      // A form submission without Create / Update knowledge only creates: the existing entity is used as it is, never upserted nor merged
+      if (isCreateOnlyFormImport(context, user)) {
+        const existing = R.find((e) => e.standard_id === standardId, filteredEntities) ?? filteredEntities[0];
+        return { element: existing, event: null, isCreation: false };
       }
       if (filteredEntities.length === 1) {
         const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true, elementAlreadyResolved: true };
@@ -4233,7 +4245,7 @@ const internalCreateEntityRaw = async (
       createdElement[databaseName] = Array.isArray(createdElement[name]) ? createdElement[name].map(({ id }) => id) : createdElement[name];
     });
 
-    const event = await storeCreateEntityEvent(context, user, createdElement as StoreObject, dataMessage, opts);
+    const event = await storeCreateEntityEvent(context, user, createdElement as StoreObject, dataMessage, { ...opts, createdRefs: dataEntity.relations as CreatedRef[] });
     // Return created element after waiting for it.
     return { element: createdElement, event, isCreation: true };
   } catch (err: any) {

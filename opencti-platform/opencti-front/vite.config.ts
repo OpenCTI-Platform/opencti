@@ -1,14 +1,8 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import relay from 'vite-plugin-relay';
-import monacoEditorPluginImport from 'vite-plugin-monaco-editor';
 import { spawn } from 'node:child_process';
 import * as path from 'node:path';
-
-// ESM/CJS interop: Vite's loader nests the callable under `.default`, knip's hands it over
-// directly. Without the fallback knip cannot load this config at all.
-const monacoEditorPlugin = (monacoEditorPluginImport as unknown as { default: typeof monacoEditorPluginImport }).default
-  ?? monacoEditorPluginImport;
 
 const runRelayCompiler = () => new Promise<void>((resolve, reject) => {
   const relayProcess = spawn('yarn', ['relay'], {
@@ -64,6 +58,14 @@ export default defineConfig(({ mode, command }) => {
     base: command === 'serve' && basePath ? `${basePath}/` : './',
     build: {
       sourcemap: true,
+    },
+
+    optimizeDeps: {
+      // GraphiQL's worker setup modules use `?worker` imports, which Vite must process itself
+      exclude: [
+        'graphiql/setup-workers/vite',
+        '@graphiql/react/setup-workers/vite',
+      ],
     },
 
     legacy: {
@@ -149,16 +151,6 @@ export default defineConfig(({ mode, command }) => {
       } : undefined),
       react(),
       relay,
-      monacoEditorPlugin({
-        publicPath: 'assets/monaco-editor',
-        languageWorkers: ['editorWorkerService', 'json'],
-        customWorkers: [
-          {
-            label: 'graphql',
-            entry: 'monaco-graphql/esm/graphql.worker.js',
-          },
-        ],
-      }),
     ],
 
     server: {

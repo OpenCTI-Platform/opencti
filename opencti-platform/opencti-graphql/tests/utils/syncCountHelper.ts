@@ -15,7 +15,8 @@ export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
 testCreatedCounter['attack-pattern'] = 25;
 testCreatedCounter.campaign = 6;
-testCreatedCounter['case-incident'] = 18;
+// 3 created by workflow-closing-reason-test merge and external status write cases
+testCreatedCounter['case-incident'] = 22;
 testCreatedCounter['case-rfi'] = 9;
 testCreatedCounter['case-rft'] = 1;
 testCreatedCounter.channel = 1;
@@ -35,32 +36,35 @@ testCreatedCounter.identity = 58;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
-testCreatedCounter.indicator = 57;
+testCreatedCounter.indicator = 58;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testCreatedCounter['intrusion-set'] = 8;
+testCreatedCounter['intrusion-set'] = 54;
 testCreatedCounter['ipv4-addr'] = 1;
-testCreatedCounter['kill-chain-phase'] = 3;
-testCreatedCounter.label = 15;
+testCreatedCounter['kill-chain-phase'] = 4;
+// Counts for:
+// - 3 created and deleted by investigation-enrichment-test
+// - 3 created and deleted by label-import-test
+testCreatedCounter.label = 21;
 testCreatedCounter.language = 1;
 testCreatedCounter.location = 22;
 testCreatedCounter['mac-addr'] = 1;
-testCreatedCounter.malware = 65;
+testCreatedCounter.malware = 67; // two created and deleted by form-submission-test (a verified form import, an existing one left as it is)
 testCreatedCounter['malware-analysis'] = 3;
-testCreatedCounter['marking-definition'] = 24;
+testCreatedCounter['marking-definition'] = 29;
 testCreatedCounter.narrative = 1;
 testCreatedCounter['network-traffic'] = 1;
-testCreatedCounter.note = 6;
+testCreatedCounter.note = 7;
 // 1 in the dataset + 2 created by observedData-domain-test
 testCreatedCounter['observed-data'] = 3;
 testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 147;
-testCreatedCounter.report = 59;
-testCreatedCounter.sighting = 5;
+testCreatedCounter.relationship = 148;
+testCreatedCounter.report = 60;
+testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
 testCreatedCounter['threat-actor'] = 33;
@@ -74,26 +78,29 @@ testCreatedCounter['security-coverage'] = 27;
 testCreatedCounter['security-coverage-result'] = 22;
 
 export const testUpdatedCounter: Record<string, number> = {};
-testUpdatedCounter['marking-definition'] = 2;
+testUpdatedCounter['marking-definition'] = 3;
 testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 testUpdatedCounter.malware = 22;
 testUpdatedCounter.file = 27;
-testUpdatedCounter['intrusion-set'] = 5;
+testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
-testUpdatedCounter['case-incident'] = 18;
+// 5 by workflow-closing-reason-test merge (1) and external status write (4) cases
+testUpdatedCounter['case-incident'] = 28;
 testUpdatedCounter.feedback = 1;
-testUpdatedCounter.report = 29;
+testUpdatedCounter.report = 30;
 testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
-testUpdatedCounter.indicator = 30;
-testUpdatedCounter.label = 1;
+testUpdatedCounter.indicator = 33;
+// Counts for:
+// - 1 updated by label-import-test
+testUpdatedCounter.label = 2;
 testUpdatedCounter['malware-analysis'] = 3;
 testUpdatedCounter.note = 3;
 // Observed data is imported twice by the loader test: the second import is an upsert that increments number_seen (1)
@@ -107,7 +114,7 @@ testUpdatedCounter['ssh-key'] = 1;
 testUpdatedCounter['case-rfi'] = 5;
 testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
-testUpdatedCounter.sighting = 5;
+testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
 testUpdatedCounter['threat-actor'] = 18;
 testUpdatedCounter.vocabulary = 3;
 testUpdatedCounter.vulnerability = 5;
@@ -124,13 +131,15 @@ testMergedCounter.report = 3;
 testMergedCounter.file = 3;
 testMergedCounter.artifact = 1;
 testMergedCounter['attack-pattern'] = 1;
-testMergedCounter['case-incident'] = 1;
+testMergedCounter['case-incident'] = 2; // 1 by workflow-closing-reason-test merge case
+testMergedCounter['intrusion-set'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
 testDeletedCounter['attack-pattern'] = 20;
 testDeletedCounter.campaign = 2;
-testDeletedCounter['case-incident'] = 16;
+// 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
+testDeletedCounter['case-incident'] = 19;
 testDeletedCounter['case-rfi'] = 9;
 testDeletedCounter['case-rft'] = 1;
 testDeletedCounter.channel = 1;
@@ -146,29 +155,33 @@ testDeletedCounter.file = 7;
 testDeletedCounter.grouping = 2;
 testDeletedCounter.identity = 41;
 testDeletedCounter.incident = 6;
-testDeletedCounter.indicator = 29;
+testDeletedCounter.indicator = 30;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
-testDeletedCounter['intrusion-set'] = 7;
+testDeletedCounter['intrusion-set'] = 52;
 testDeletedCounter['ipv4-addr'] = 1;
-testDeletedCounter.label = 2;
+testDeletedCounter['kill-chain-phase'] = 1; // created and deleted by form-submission-test
+// Counts for:
+// - 3 created and deleted by investigation-enrichment-test
+// - 3 deleted by label-import-test
+testDeletedCounter.label = 8;
 testDeletedCounter.language = 1;
 testDeletedCounter.location = 17;
 testDeletedCounter['mac-addr'] = 1;
-testDeletedCounter.malware = 38;
+testDeletedCounter.malware = 40; // two created and deleted by form-submission-test
 testDeletedCounter['malware-analysis'] = 2;
-testDeletedCounter['marking-definition'] = 13;
+testDeletedCounter['marking-definition'] = 18;
 testDeletedCounter.narrative = 1;
 testDeletedCounter['network-traffic'] = 1;
-testDeletedCounter.note = 5;
+testDeletedCounter.note = 6;
 testDeletedCounter['observed-data'] = 2; // created and deleted by observedData-domain-test
 testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
 testDeletedCounter.relationship = 5;
-testDeletedCounter.report = 50;
-testDeletedCounter.sighting = 2;
+testDeletedCounter.report = 51;
+testDeletedCounter.sighting = 5; // 3 created and deleted by relations-deduplication-test
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
 testDeletedCounter['threat-actor'] = 20;

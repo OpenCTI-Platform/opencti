@@ -324,8 +324,8 @@ describe('processNotificationData', () => {
     const content = await processNotificationData({} as any, notificationMap as any, user, data as any, usersMap as any);
 
     expect(Object.entries(content)).toEqual([[name, [
-      { operation: 'action', message: 'message 1', instance_id: 'ingestion-id', entity_type: 'IngestionRss' },
-      { operation: 'action', message: 'message 2', instance_id: 'ingestion-id', entity_type: 'IngestionRss' },
+      { operation: 'action', message: 'message 1', instance_id: 'ingestion-id', entity_internal_id: 'ingestion-id', entity_type: 'IngestionRss' },
+      { operation: 'action', message: 'message 2', instance_id: 'ingestion-id', entity_internal_id: 'ingestion-id', entity_type: 'IngestionRss' },
     ]]]);
   });
 });

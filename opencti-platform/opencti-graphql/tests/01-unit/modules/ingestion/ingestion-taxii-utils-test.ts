@@ -93,7 +93,7 @@ describe('ingestion-taxii-utils', () => {
   describe('buildTaxiiHttpClientOptions', () => {
     it('should request TAXII 2.1 json with the feed timeout and no authentication', async () => {
       const options = await buildTaxiiHttpClientOptions(buildIngestion());
-      expect(options).toMatchObject({ responseType: 'json', timeout: FEED_REQUEST_TIMEOUT, rejectUnauthorized: false, certificates: undefined });
+      expect(options).toMatchObject({ responseType: 'json', timeout: FEED_REQUEST_TIMEOUT, rejectUnauthorized: undefined, certificates: undefined });
       expect(options.headers).toMatchObject({ Accept: 'application/taxii+json;version=2.1' });
       expect(options.headers).not.toHaveProperty('Authorization');
     });

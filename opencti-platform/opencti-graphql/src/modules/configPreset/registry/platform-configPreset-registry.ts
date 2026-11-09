@@ -4,8 +4,7 @@ import { getPlatformConfigPresetConfiguration } from '../../settings/settings-ex
 import { importPlatformConfiguration } from '../../settings/settings-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import { type ConfigPresetComputedItem, type ConfigPresetImporter, configPresetPlanKey } from '../import/configPreset-import-types';
-import { platformSettingsGroup, staticFamily, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
-import { BRANDING_FAMILY_ID } from './branding-configPreset-registry';
+import { BRANDING_FAMILY_ID, platformSettingsGroup, staticFamily, toAppliedStatus, toComputedItem } from './common-configPreset-registry';
 
 export const PLATFORM_FAMILY_ID = 'platform';
 const PLATFORM_ITEM_ID = 'platform';

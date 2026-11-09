@@ -159,8 +159,9 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
   # Task
   name: String!
   description: String

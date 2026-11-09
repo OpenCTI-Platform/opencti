@@ -31,6 +31,7 @@ import type { BasicConnection, BasicStoreIdentifier, BasicStoreCommon, BasicStor
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from './filtering/filtering-constants';
 import { pushAll } from './arrayUtil';
+import { utcDate } from './format';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -46,6 +47,7 @@ export const SETTINGS_SET_ACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETPARAMETERS = 'SETTINGS_SETPARAMETERS';
 export const SETTINGS_SETMANAGEXTMHUB = 'SETTINGS_SETMANAGEXTMHUB';
 export const SETTINGS_SUPPORT = 'SETTINGS_SUPPORT';
+export const TAXIIAPI = 'TAXIIAPI';
 export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const INGESTION_SETINGESTIONS = 'INGESTION_SETINGESTIONS';
 export const CSVMAPPERS = 'CSVMAPPERS';
@@ -56,6 +58,7 @@ export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNOWLEDGE_KNUPDATE_KNORGARESTRIC
 export const KNOWLEDGE_KNUPDATE_KNDELETE = 'KNOWLEDGE_KNUPDATE_KNDELETE';
 export const KNOWLEDGE_KNUPDATE_KNMERGE = 'KNOWLEDGE_KNUPDATE_KNMERGE';
 export const KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS = 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS';
+export const KNOWLEDGE_KNFORMINTAKE = 'KNOWLEDGE_KNFORMINTAKE';
 export const KNOWLEDGE_KNUPLOAD = 'KNOWLEDGE_KNUPLOAD';
 export const KNOWLEDGE_KNASKIMPORT = 'KNOWLEDGE_KNASKIMPORT';
 export const KNOWLEDGE_KNENRICHMENT = 'KNOWLEDGE_KNENRICHMENT';
@@ -66,7 +69,9 @@ export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETAUTH = 'SETTINGS_SETAUTH';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
 export const SETTINGS_SETCUSTOMIZATION = 'SETTINGS_SETCUSTOMIZATION';
+export const SETTINGS_SETCUSTOMFIELDS = 'SETTINGS_SETCUSTOMFIELDS';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
+export const SETTINGS_SETKILLCHAINPHASES = 'SETTINGS_SETKILLCHAINPHASES';
 export const PIRAPI = 'PIRAPI';
 export const AUTOMATION = 'AUTOMATION';
 export const AUTOMATION_AUTMANAGE = 'AUTOMATION_AUTMANAGE';
@@ -1114,6 +1119,18 @@ export const validateMarking = async (context: AuthContext, user: AuthUser, mark
   }
 };
 
+type UserAccount = Pick<AuthUser, 'account_status' | 'account_lock_after_date'>;
+
+// Whether the expiration date of the account has passed: the expiration manager only sets the Expired status later
+export const isUserAccountExpired = (user: UserAccount): boolean => {
+  return !!user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date));
+};
+
+// Whether the platform lets the user authenticate: an account neither expired nor with a status other than active
+export const isUserAccountActive = (user: UserAccount): boolean => {
+  return !isUserAccountExpired(user) && user.account_status === ACCOUNT_STATUS_ACTIVE;
+};
+
 export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStoreSettings) => {
   if (isBypassUser(user)) {
     return true;
@@ -1362,6 +1379,7 @@ export const CAPABILITIES_IN_DRAFT_NAMES = [
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
+  KNOWLEDGE_KNFORMINTAKE,
   KNOWLEDGE_KNUPLOAD,
   KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNENRICHMENT,

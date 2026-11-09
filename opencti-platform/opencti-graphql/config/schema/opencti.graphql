@@ -39,6 +39,10 @@ enum State {
   complete
   timeout
 }
+enum WorkInvestigationStatus {
+  TO_REVIEW
+  DONE
+}
 enum Capabilities {
   BYPASS
   APIACCESS_USETOKEN
@@ -50,6 +54,7 @@ enum Capabilities {
   KNOWLEDGE_KNUPDATE_KNMERGE
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS
+  KNOWLEDGE_KNFORMINTAKE
   KNOWLEDGE_KNUPLOAD
   KNOWLEDGE_KNASKIMPORT
   KNOWLEDGE_KNGETEXPORT
@@ -83,6 +88,7 @@ enum Capabilities {
   SETTINGS_SETSTATUSTEMPLATES
   SETTINGS_SETKILLCHAINPHASES
   SETTINGS_SETCUSTOMIZATION
+  SETTINGS_SETCUSTOMFIELDS
   SETTINGS_SECURITYACTIVITY
   SETTINGS_FILEINDEXING
   SETTINGS_SUPPORT
@@ -806,6 +812,7 @@ type Work {
   timestamp: DateTime!
   status: State!
   event_source_id: String
+  eventSource: StixObjectOrStixRelationship @auth(for: [KNOWLEDGE])
   received_time: DateTime
   processed_time: DateTime
   completed_time: DateTime
@@ -814,6 +821,8 @@ type Work {
   errors: [WorkMessage]
   tracking: WorkTracking
   draft_context: String
+  touchedElements(first: Int = 100): [StixObjectOrStixRelationship] @auth(for: [KNOWLEDGE])
+  investigation_status: WorkInvestigationStatus
 }
 type WorkEdge {
   cursor: String!
@@ -1031,10 +1040,16 @@ enum BackgroundTasksOrdering {
   last_execution_date
   _score
 }
+type BackgroundTaskContextOptions {
+  includeNeighbours: Boolean
+  applyTransitionActions: Boolean
+  eventName: String
+}
 type BackgroundTaskContext {
   field: String
   type: BackgroundTaskContextType
   values: [String]!
+  options: BackgroundTaskContextOptions
 }
 type BackgroundTaskAction {
   type: BackgroundTaskActionType
@@ -1129,6 +1144,13 @@ type BackgroundTaskConnection {
 
 input BackgroundTaskContextOptionsInput {
   includeNeighbours: Boolean
+  applyTransitionActions: Boolean
+  eventName: String
+  comment: String
+  closingReason: String
+  shareOrganizationIds: [String!]
+  unshareOrganizationIds: [String!]
+  investigationId: String
 }
 
 input BackgroundTaskContextInput {
@@ -2563,8 +2585,9 @@ interface StixDomainObject {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input StixDomainObjectAddInput {
   stix_id: StixId
@@ -2786,8 +2809,9 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input AttackPatternAddInput {
   stix_id: StixId
@@ -3016,8 +3040,9 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 input CampaignAddInput {
@@ -3214,6 +3239,7 @@ interface Container {
   workflowEnabled: Boolean
   status: Status
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
 }
 
 ################ Notes
@@ -3406,8 +3432,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input NoteAddInput {
   stix_id: StixId
@@ -3657,8 +3684,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input ObservedDataAddInput {
   stix_id: StixId
@@ -3881,8 +3909,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input OpinionAddInput {
   stix_id: StixId
@@ -4128,9 +4157,10 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 input ReportAddInput {
@@ -4338,8 +4368,9 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input CourseOfActionAddInput {
   stix_id: StixId
@@ -4541,6 +4572,7 @@ interface Identity {
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   customFieldValues: [CustomFieldValue!]
+  x_opencti_closing_reason: String
 }
 input IdentityAddInput {
   stix_id: StixId
@@ -4744,9 +4776,10 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   isUser: Boolean @auth(for: [KNOWLEDGE, EXPLORE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input IndividualAddInput {
   stix_id: StixId
@@ -4955,8 +4988,9 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input SectorAddInput {
   stix_id: StixId
@@ -5159,8 +5193,9 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input SystemAddInput {
   stix_id: StixId
@@ -5369,8 +5404,9 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input InfrastructureAddInput {
   stix_id: StixId
@@ -5580,8 +5616,9 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 input IntrusionSetAddInput {
@@ -5787,6 +5824,7 @@ interface Location {
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
   customFieldValues: [CustomFieldValue!]
+  x_opencti_closing_reason: String
 }
 input LocationAddInput {
   stix_id: StixId
@@ -5991,8 +6029,9 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input PositionAddInput {
   stix_id: StixId
@@ -6198,8 +6237,9 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input CityAddInput {
   stix_id: StixId
@@ -6399,8 +6439,9 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input CountryAddInput {
   stix_id: StixId
@@ -6602,8 +6643,9 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input RegionAddInput {
   stix_id: StixId
@@ -6820,8 +6862,9 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input MalwareAddInput {
   stix_id: StixId
@@ -7045,8 +7088,9 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 
 type ThreatActorEdge {
@@ -7215,8 +7259,9 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 
 input ThreatActorGroupAddInput {
@@ -7426,8 +7471,9 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input ToolAddInput {
   stix_id: StixId
@@ -7640,8 +7686,9 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
+  x_opencti_closing_reason: String
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
   securityCoverage: SecurityCoverage
 }
 input IncidentAddInput {
@@ -13753,7 +13800,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 
 input SecurityCoverageExpectation {
@@ -13878,7 +13925,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
   workflowInstance: WorkflowInstance
-  customFieldValues: [CustomFieldValue!] @ff(flags: ["CUSTOM_FIELDS"], softFail: true, defaultValue: "[]")
+  customFieldValues: [CustomFieldValue!]
 }
 input StixSightingRelationshipAddInput {
   # StixRelationship
@@ -13951,7 +13998,9 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
+  fromId: String!
   from: StixObjectOrStixRelationshipOrCreator
+  toId: String!
   to: StixObjectOrStixRelationshipOrCreator
   x_opencti_inferences: [Inference]
   spec_version: String!
@@ -14030,7 +14079,7 @@ type SynchronizerAddInputFromImport {
 
 type Query {
   stix(id: String!): String @auth(for: [KNOWLEDGE])
-  enrichmentConnectors(type: String!): [Connector] @auth(for: [MODULES])
+  enrichmentConnectors(type: String!): [Connector] @auth(for: [MODULES, KNOWLEDGE_KNENRICHMENT])
 
   ###### INTERNAL
 
@@ -15329,8 +15378,8 @@ type ExternalReferenceEditMutations {
   contextClean: ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
-  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
-  askEnrichments(connectorIds: [ID!]!): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichment(connectorId: ID!, investigationId: ID): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   importPush(file: Upload!, fileMarkings: [String], version: DateTime, noTriggerImport: Boolean, embedded: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
 }
 type KillChainPhaseEditMutations {
@@ -15386,8 +15435,8 @@ type StixCoreObjectEditMutations {
   clearAccessRestriction: StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS])
   restrictionOrganizationAdd(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: [ID!]!, directContainerSharing: Boolean): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
-  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
-  askEnrichments(connectorIds: [ID!]!): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichment(connectorId: ID!, investigationId: ID): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  askEnrichments(connectorIds: [ID!]!, investigationId: ID): [Work!] @auth(for: [KNOWLEDGE_KNENRICHMENT])
   askAnalysis(contentSource: String!, contentType: AnalysisContentType!, connectorId: ID): Work @auth(for: [KNOWLEDGE_KNUPDATE])
   analysisPush(file: Upload!, contentSource: String!, contentType: AnalysisContentType!, analysisType: String!): File @auth(for: [CONNECTORAPI])
   analysisClear(contentSource: String!, contentType: AnalysisContentType!): Boolean @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -15748,7 +15797,7 @@ type Mutation {
   labelEdit(id: ID!): LabelEditMutations @auth(for: [SETTINGS_SETLABELS])
   externalReferenceAdd(input: ExternalReferenceAddInput!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   externalReferenceEdit(id: ID!): ExternalReferenceEditMutations @auth
-  killChainPhaseAdd(input: KillChainPhaseAddInput!): KillChainPhase @auth(for: [SETTINGS_SETKILLCHAINPHASES])
+  killChainPhaseAdd(input: KillChainPhaseAddInput!): KillChainPhase @auth(for: [SETTINGS_SETKILLCHAINPHASES, KNOWLEDGE_KNUPDATE])
   killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS_SETKILLCHAINPHASES])
 
   ######## STIX CORE OBJECT ENTITIES
