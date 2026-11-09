@@ -2,7 +2,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, getUserIdByEmail, USER_EDITOR } from '../../utils/testQuery';
 import {
-  awaitUntilCondition,
   createUploadFromBuffer,
   queryAsAdmin,
   queryAsAdminWithError,
@@ -211,11 +210,8 @@ describe('Dashboard presets API', () => {
     const presetId = presets.presets[0].id;
     await queryAsAdminWithSuccess({ query: ME_EDIT, variables: { input: [{ key: 'default_dashboard', value: [dashboardId] }, { key: 'default_dashboard_preset', value: [presetId] }] } });
     try {
-      // The resolver reads the authenticated user from the cache of the API process, refreshed asynchronously by
-      // the cache manager from the platform events: the edited user shows up a moment after meEdit.
-      await awaitUntilCondition(async () => (await readWorkspace(dashboardId)).currentUserDefaultPresetId === presetId, 10000, {
-        message: 'the default preset of the user is resolved once the user cache is refreshed',
-      });
+      // Read from the store, not from the authenticated user of the cache: the choice applies as soon as it is saved
+      expect((await readWorkspace(dashboardId)).currentUserDefaultPresetId).toEqual(presetId);
       // Another dashboard is not concerned, and a deleted preset is not resolved
       const other = await createDashboard('Presets other dashboard');
       expect((await readWorkspace(other)).currentUserDefaultPresetId).toBeNull();

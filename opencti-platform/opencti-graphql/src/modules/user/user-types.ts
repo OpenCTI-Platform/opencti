@@ -51,6 +51,7 @@ export interface BasicStoreEntityUser extends BasicStoreEntity {
   otp_activated: boolean;
   password_valid_until: Date | null;
   default_dashboard: string;
+  default_dashboard_preset?: string | null;
   draft_context: string;
   default_time_field: string;
   account_status: string;
