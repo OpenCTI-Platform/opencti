@@ -101,12 +101,16 @@ const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exc
   return { upload, byteLength, linesNumber };
 };
 
-const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput, file: FileUploadData, enabled: boolean) => {
-  // One rule for every way to create a list: the creation form, the API and the import of a configuration preset
-  const name = exclusionListNameSchema.safeParse(input.name);
+// One rule for every way to create or rename a list: the creation form, the edit form, the API and the import of a configuration preset
+const checkExclusionListName = (value: string) => {
+  const name = exclusionListNameSchema.safeParse(value);
   if (!name.success) {
-    throw FunctionalError(name.error.issues[0].message, { name: input.name });
+    throw FunctionalError(name.error.issues[0].message, { name: value });
   }
+};
+
+const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput, file: FileUploadData, enabled: boolean) => {
+  checkExclusionListName(input.name);
   const exclusionListInternalId = generateInternalId();
   const { upload, byteLength, linesNumber } = await uploadExclusionListFile(context, user, exclusionListInternalId, file);
   const exclusionListToCreate = {
@@ -135,6 +139,10 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
   const exclusionList = await findById(context, user, id);
   if (!exclusionList) {
     throw FunctionalError(`Exclusion list ${id} cannot be found`);
+  }
+  const newName = input?.find((i) => i.key === 'name')?.value?.[0];
+  if (newName !== undefined) {
+    checkExclusionListName(String(newName ?? ''));
   }
 
   let fileSize = exclusionList.exclusion_list_file_size;

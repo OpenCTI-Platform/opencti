@@ -119,6 +119,21 @@ describe('Exclusion list domain', () => {
     });
   });
 
+  describe('the rename of a list', () => {
+    it.each([[''], ['D'], [' D ']])('refuses the name %j, like the creation does, before anything is stored', async (name) => {
+      await expect(fieldPatchExclusionList(context, user, { id: dnsExclusionList.id, input: [{ key: 'name', value: [name] }], file: upload() as never }))
+        .rejects.toThrow('Exclusion list name must have at least 2 characters');
+      expect(uploadToStorage).not.toHaveBeenCalled();
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
+
+    it('accepts a name of two characters, and a patch without name', async () => {
+      await fieldPatchExclusionList(context, user, { id: dnsExclusionList.id, input: [{ key: 'name', value: ['DN'] }] });
+      await fieldPatchExclusionList(context, user, { id: dnsExclusionList.id, input: [{ key: 'description', value: ['x'] }] });
+      expect(updateAttribute).toHaveBeenCalledTimes(2);
+    });
+  });
+
   describe('the lookup of a list by its name', () => {
     it('filters on the name on the index, and compares the name again without its case', async () => {
       vi.mocked(fullEntitiesList).mockResolvedValue([dnsExclusionList, { ...dnsExclusionList, name: 'public dns resolvers 2' }] as never);

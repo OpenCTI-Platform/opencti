@@ -53,6 +53,8 @@ describe('Exclusion list import schema', () => {
   it('accepts a name and types with or without a description and a state, and trims the name', () => {
     expect(exclusionListImportSchema.parse({ name: ' DNS ', exclusion_list_entity_types: ['IPv4-Addr', 'IPv6-Addr'] })).toEqual({ name: 'DNS', exclusion_list_entity_types: ['IPv4-Addr', 'IPv6-Addr'] });
     expect(exclusionListImportSchema.parse(configuration)).toEqual(configuration);
+    // The platform stores a description trimmed: it is parsed the same way
+    expect(exclusionListImportSchema.parse({ ...configuration, description: ' DNS ' }).description).toBe('DNS');
     expect(exclusionListImportSchema.parse({ ...configuration, description: null })).toMatchObject({ description: null });
     expect(exclusionListImportSchema.parse({ name: 'DN', exclusion_list_entity_types: ['Domain-Name', 'Hostname', 'Url', 'Email-Addr', 'StixFile', 'Artifact'] }).name).toBe('DN');
   });

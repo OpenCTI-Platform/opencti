@@ -13,7 +13,8 @@ export const exclusionListImportSchema = z.strictObject({
   // The standard id of an exclusion list is random: a list is found by its name, which has the length the creation of a list requires
   name: exclusionListNameSchema,
   // Absent or null: the description of an existing list is left untouched
-  description: z.string().nullable().optional(),
+  // Trimmed as the platform stores it, or an untrimmed description would differ from the stored one on every import
+  description: z.string().trim().nullable().optional(),
   // Absent: a new list is enabled, and an existing one keeps its state
   enabled: z.boolean().optional(),
   // The form refuses a list that mixes IP types with other types: a list is checked either as addresses or as values
