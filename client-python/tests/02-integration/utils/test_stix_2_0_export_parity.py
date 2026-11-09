@@ -12,17 +12,18 @@ from pycti.utils.opencti_stix2 import STIX_VERSION_2_0
 
 # Differences validated in the decision log of issue #8832.
 # 2026-11-05: spec_version is "2.0" (the legacy "2.1" was a bug).
-ACCEPTED_DIFFERENCES = {"spec_version"}
+# 2026-11-09: samples is only leaked by the legacy export (raw GraphQL key,
+#   not STIX, ignored on import). The sample is exported as `sample_refs` by
+#   both converters, and the legacy output is left unchanged.
+ACCEPTED_DIFFERENCES = {"spec_version", "samples"}
 
 # Known differences still to validate in the decision log. They are ignored
 # so that the comparison of every other key stays enforced meanwhile.
 # TODO(stix-2-0-migration): move each one to ACCEPTED_DIFFERENCES once
 # validated, or fix the converter and remove it.
-# - samples: raw GraphQL key leaked by the legacy export (bug), the sample
-#   is already exported as `sample_refs` by both converters.
 # - x_opencti_modified_at: only exported by the backend; the legacy Malware
 #   reader does not select it, although `import_from_stix2` reads it back.
-PENDING_DIFFERENCES = {"samples", "x_opencti_modified_at"}
+PENDING_DIFFERENCES = {"x_opencti_modified_at"}
 
 IGNORED_KEYS = ACCEPTED_DIFFERENCES | PENDING_DIFFERENCES
 
