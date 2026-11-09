@@ -869,5 +869,4 @@ describe('CustomView and dashboard variables', () => {
     }, 'A widget using dashboard variables cannot be imported into a custom view', 'FUNCTIONAL_ERROR');
     expect(await readStoredManifest(customViewId)).toEqual(before);
   });
-
 });
