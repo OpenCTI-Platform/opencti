@@ -11,7 +11,7 @@ import { bundleRefused, CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE, readConfigPresetBundl
 import { buildConfigPresetImportTypes, computeConfigPresetItems, getConfigPresetFamiliesAvailability } from './configPreset-import-domain';
 import { countConfigPresetImportResults, importConfigPresetItem } from './configPreset-import-engine';
 import { withConfigPresetImportLock } from './configPreset-import-lock';
-import { findConfigPresetImportRunning } from './configPreset-import-running';
+import { endConfigPresetImportRunning, findConfigPresetImportRunning, startConfigPresetImportRunning, updateConfigPresetImportRunning } from './configPreset-import-running';
 import type { ConfigPresetImportCounts, ConfigPresetImportItemResult } from './configPreset-import-session';
 import { checkConfigPresetImportAccess, reloadConfigPresetImportUser } from './configPreset-import-utils';
 import {
@@ -158,31 +158,42 @@ export const configPresetPartialImport = async (
       throw FunctionalError('Select at least one configuration item to import');
     }
     const modes = configPresetPartialImportModes(family, items, itemModes);
+    // The running record of the wizard, written under the lock like the real import of the wizard does: a wizard import started meanwhile
+    // is refused with the name of who imports, a stale applying wizard session reads as interrupted, and the end of the import
+    // writes last_finished_at, so that the wizard drops a simulation the import made stale. A failure here stops before any write.
+    const startedAt = new Date().toISOString();
+    await startConfigPresetImportRunning(importContext, user, startedAt, items.length);
     // The same plan as the real import of the wizard: the items that depend on another one of the type get the one written
     const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map() };
     const results: ConfigPresetImportItemResult[] = [];
     // Why the import stopped writing, when it did: the remaining items fail with it, the processed ones keep their result
     let stopReason: string | null = null;
-    for (let i = 0; i < items.length; i += 1) {
-      const item = items[i];
-      // A lost lock aborts its signal and throws nothing: checked before each item, the item in progress finishes
-      if (!stopReason && lock.signal.aborted) {
-        stopReason = 'Import stopped: lock lost';
-      }
-      // Re-read before each item: a deleted account or a revoked BYPASS stops the writes
-      let runUser: AuthUser | undefined;
-      if (!stopReason) {
-        try {
-          runUser = await reloadConfigPresetImportUser(importContext, user);
-        } catch (err) {
-          stopReason = err instanceof Error ? err.message : String(err);
+    try {
+      for (let i = 0; i < items.length; i += 1) {
+        const item = items[i];
+        // A lost lock aborts its signal and throws nothing: checked before each item, the item in progress finishes
+        if (!stopReason && lock.signal.aborted) {
+          stopReason = 'Import stopped: lock lost';
         }
+        // Re-read before each item: a deleted account or a revoked BYPASS stops the writes
+        let runUser: AuthUser | undefined;
+        if (!stopReason) {
+          try {
+            runUser = await reloadConfigPresetImportUser(importContext, user);
+          } catch (err) {
+            stopReason = err instanceof Error ? err.message : String(err);
+          }
+        }
+        if (stopReason || !runUser) {
+          results.push(toStoppedResult(item, stopReason ?? 'Import stopped'));
+        } else {
+          results.push(await importConfigPresetItem(importContext, runUser, item, plan, modes.get(configPresetPlanKey(item.type, item.id))!));
+        }
+        await updateConfigPresetImportRunning(user, startedAt, results.length);
       }
-      if (stopReason || !runUser) {
-        results.push(toStoppedResult(item, stopReason ?? 'Import stopped'));
-      } else {
-        results.push(await importConfigPresetItem(importContext, runUser, item, plan, modes.get(configPresetPlanKey(item.type, item.id))!));
-      }
+    } finally {
+      // Over once an item has a result, written or failed with the reason the import stopped; the record never outlives the import
+      await endConfigPresetImportRunning(user, startedAt, results.length > 0);
     }
     if (stopReason) {
       logApp.warn('[CONFIG PRESET] Partial import stopped before the end', { user_id: user.id, type: family.id, reason: stopReason });

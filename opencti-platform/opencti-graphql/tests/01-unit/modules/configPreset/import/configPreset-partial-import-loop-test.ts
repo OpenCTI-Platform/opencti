@@ -16,6 +16,12 @@ vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-util
   reloadConfigPresetImportUser: vi.fn(),
 }));
 vi.mock('../../../../../src/listener/UserActionListener', () => ({ publishUserAction: vi.fn() }));
+vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-running', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/modules/configPreset/import/configPreset-import-running')>()),
+  startConfigPresetImportRunning: vi.fn(),
+  updateConfigPresetImportRunning: vi.fn(),
+  endConfigPresetImportRunning: vi.fn(),
+}));
 vi.mock('../../../../../src/modules/theme/theme-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/modules/theme/theme-domain')>()),
   findById: vi.fn(),
@@ -29,6 +35,11 @@ import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/
 import * as engine from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
 import { importConfigPresetItem } from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
 import { withConfigPresetImportLock } from '../../../../../src/modules/configPreset/import/configPreset-import-lock';
+import {
+  endConfigPresetImportRunning,
+  startConfigPresetImportRunning,
+  updateConfigPresetImportRunning,
+} from '../../../../../src/modules/configPreset/import/configPreset-import-running';
 import type { ConfigPresetImportItemResult } from '../../../../../src/modules/configPreset/import/configPreset-import-session';
 import { CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import { reloadConfigPresetImportUser } from '../../../../../src/modules/configPreset/import/configPreset-import-utils';
@@ -126,6 +137,55 @@ describe('Config preset partial import: the loop', () => {
     vi.mocked(publishUserAction).mockRejectedValue(new Error('listener down'));
     const output = await importThemes([CUSTOM_THEME_ID]);
     expect(output.results).toEqual([result(CUSTOM_THEME_ID, 'CREATED')]);
+  });
+});
+
+describe('Config preset partial import: the running record', () => {
+  it('writes the running record before the first item, updates it after each one and deletes it at the end', async () => {
+    const calls: string[] = [];
+    vi.mocked(startConfigPresetImportRunning).mockImplementation(async (_context, _user, _startedAt, total) => {
+      calls.push(`start:${total}`);
+    });
+    vi.mocked(importConfigPresetItem).mockImplementation(async (_context, _user, item) => {
+      calls.push(`item:${item.id}`);
+      return result(item.id, 'CREATED');
+    });
+    vi.mocked(updateConfigPresetImportRunning).mockImplementation(async (_user, _startedAt, processed) => {
+      calls.push(`update:${processed}`);
+    });
+    vi.mocked(endConfigPresetImportRunning).mockImplementation(async (_user, _startedAt, hasFinished) => {
+      calls.push(`end:${hasFinished}`);
+    });
+    await importThemes();
+    expect(calls).toEqual(['start:2', `item:${CUSTOM_THEME_ID}`, 'update:1', `item:${OTHER_THEME_ID}`, 'update:2', 'end:true']);
+    // The same run all along: the record of another run is never touched
+    const startedAt = vi.mocked(startConfigPresetImportRunning).mock.calls[0][2];
+    expect(vi.mocked(startConfigPresetImportRunning).mock.calls[0][1]).toBe(user);
+    expect(vi.mocked(endConfigPresetImportRunning)).toHaveBeenCalledWith(user, startedAt, true);
+    expect(vi.mocked(updateConfigPresetImportRunning).mock.calls.every(([, at]) => at === startedAt)).toBe(true);
+  });
+
+  it('deletes the running record of a stopped import too', async () => {
+    vi.mocked(importConfigPresetItem).mockImplementationOnce(async () => {
+      lockController.abort();
+      return result(CUSTOM_THEME_ID, 'CREATED');
+    });
+    await importThemes();
+    expect(endConfigPresetImportRunning).toHaveBeenCalledWith(user, expect.any(String), true);
+  });
+
+  it('imports nothing when the running record cannot be written', async () => {
+    vi.mocked(startConfigPresetImportRunning).mockRejectedValue(new Error('redis down'));
+    await expect(importThemes()).rejects.toThrow('redis down');
+    expect(importConfigPresetItem).not.toHaveBeenCalled();
+    expect(publishUserAction).not.toHaveBeenCalled();
+  });
+
+  it('writes no running record for an empty selection, nor for a preview', async () => {
+    await expect(importThemes([])).rejects.toThrow('Select at least one configuration item to import');
+    await configPresetPartialImportPreview(context, user, upload(), 'branding');
+    expect(startConfigPresetImportRunning).not.toHaveBeenCalled();
+    expect(endConfigPresetImportRunning).not.toHaveBeenCalled();
   });
 });
 
