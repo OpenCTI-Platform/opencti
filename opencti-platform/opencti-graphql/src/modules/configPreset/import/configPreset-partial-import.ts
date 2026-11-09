@@ -112,7 +112,8 @@ const toStoppedResult = (item: ConfigPresetBundleItem, reason: string): ConfigPr
   translatable: false,
 });
 
-// Reads only: the items of the type in the bundle, with what already exists. Nothing is written, no lock, no audit.
+// Reads only: the items of the type in the bundle, with what already exists. Nothing is written, no audit, and no lock: like the dry run
+// of the wizard, it works while an import runs. It is bounded by the limits of the zip.
 export const configPresetPartialImportPreview = async (
   context: AuthContext,
   user: AuthUser,
@@ -135,6 +136,9 @@ export const configPresetPartialImportPreview = async (
 };
 
 // Imports the selected items of the type, one by one: a failed item never stops the next one. Audited, no report file (nothing is stored).
+// Only the cheap checks run before the lock. The lock is taken before the zip is read, as the real import of the wizard does: a second
+// import is refused at once, before its upload is buffered and parsed. The limits of the zip remain a second control.
+// The upload may still be arriving when the lock is taken: the lock then covers the end of the upload too, it extends itself meanwhile.
 export const configPresetPartialImport = async (
   context: AuthContext,
   user: AuthUser,
@@ -145,15 +149,15 @@ export const configPresetPartialImport = async (
 ): Promise<ConfigPresetPartialImportOutput> => {
   checkConfigPresetImportAccess(context, user);
   const family = findImportableFamily(type);
-  const { bundle, fileName } = await readUploadedBundle(file);
-  const items = resolveConfigPresetPartialItems(bundle, family, ids);
-  if (items.length === 0) {
-    throw FunctionalError('Select at least one configuration item to import');
-  }
-  const modes = configPresetPartialImportModes(family, items, itemModes);
   // The import goes on if the browser disconnects: its context is detached from the request
   const importContext: AuthContext = { ...context, requestAbortSignal: undefined };
   return withConfigPresetImportLock(importContext, async (lock) => {
+    const { bundle, fileName } = await readUploadedBundle(file);
+    const items = resolveConfigPresetPartialItems(bundle, family, ids);
+    if (items.length === 0) {
+      throw FunctionalError('Select at least one configuration item to import');
+    }
+    const modes = configPresetPartialImportModes(family, items, itemModes);
     // The same plan as the real import of the wizard: the items that depend on another one of the type get the one written
     const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map() };
     const results: ConfigPresetImportItemResult[] = [];
