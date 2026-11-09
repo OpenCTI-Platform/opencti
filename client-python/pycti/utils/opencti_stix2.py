@@ -3017,45 +3017,29 @@ class OpenCTIStix2:
                         "parent_types": ["Stix-Domain-Object"],
                     }
                 )
-            # Get extra refs
-            for key in entity.keys():
+            # Get extra refs. Only string values are STIX ids: custom fields
+            # can also end with `_ref` or `_refs` and hold other values.
+            for key, value in entity.items():
                 if key.endswith("_ref"):
-                    stix_type = entity[key].split("--")[0]
-                    if stix_type in STIX_CYBER_OBSERVABLE_MAPPING:
-                        objects_to_get.append(
-                            {
-                                "id": entity[key],
-                                "entity_type": "Stix-Cyber-Observable",
-                                "parent_types": ["Stix-Cyber-Observable"],
-                            }
-                        )
+                    ref_values = [value]
+                elif key.endswith("_refs") and isinstance(value, list):
+                    ref_values = value
+                else:
+                    continue
+                for ref_value in ref_values:
+                    if not isinstance(ref_value, str):
+                        continue
+                    if ref_value.split("--")[0] in STIX_CYBER_OBSERVABLE_MAPPING:
+                        ref_entity_type = "Stix-Cyber-Observable"
                     else:
-                        objects_to_get.append(
-                            {
-                                "id": entity[key],
-                                "entity_type": "Stix-Domain-Object",
-                                "parent_types": ["Stix-Domain-Object"],
-                            }
-                        )
-                elif key.endswith("_refs"):
-                    for value in entity[key]:
-                        stix_type = value.split("--")[0]
-                        if stix_type in STIX_CYBER_OBSERVABLE_MAPPING:
-                            objects_to_get.append(
-                                {
-                                    "id": value,
-                                    "entity_type": "Stix-Cyber-Observable",
-                                    "parent_types": ["Stix-Cyber-Observable"],
-                                }
-                            )
-                        else:
-                            objects_to_get.append(
-                                {
-                                    "id": value,
-                                    "entity_type": "Stix-Domain-Object",
-                                    "parent_types": ["Stix-Domain-Object"],
-                                }
-                            )
+                        ref_entity_type = "Stix-Domain-Object"
+                    objects_to_get.append(
+                        {
+                            "id": ref_value,
+                            "entity_type": ref_entity_type,
+                            "parent_types": [ref_entity_type],
+                        }
+                    )
             # Get extra relations (from AND to)
             stix_core_relationships = self.opencti.stix_core_relationship.list(
                 fromOrToId=entity["x_opencti_id"], getAll=True, filters=access_filter

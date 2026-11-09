@@ -607,6 +607,36 @@ def test_get_stix_bundle_propagates_stix_version(stix_helper):
     assert malware["spec_version"] == "2.0"
 
 
+@pytest.mark.parametrize("stix_version", [None, STIX_VERSION_2_0])
+def test_prepare_export_full_mode_skips_non_string_refs(stix_helper, stix_version):
+    """List-valued custom fields ending with `_ref(s)` are not resolved."""
+    sample_id = "file--22222222-2222-2222-2222-222222222222"
+    stix_helper.opencti.stix_core_object.to_stix.return_value = (
+        _backend_malware_payload()
+    )
+    stix_helper.opencti.stix_core_relationship.list.return_value = []
+    stix_helper.opencti.stix_sighting_relationship.list.return_value = []
+    prepared = stix_helper.generate_export(
+        _raw_graphql_entity(), stix_version=stix_version
+    )
+    prepared.pop("operating_system_refs", None)
+    prepared["sample_refs"] = [sample_id]
+    prepared["x_opencti_cf_source_ref"] = ["source-a", "source-b"]
+    prepared["x_opencti_cf_links_refs"] = [{"url": "https://example.com"}]
+    reader = MagicMock(return_value=None)
+
+    with patch.object(stix_helper, "get_reader", return_value=reader), patch.object(
+        stix_helper, "prepare_id_filters_export", side_effect=lambda id, _: id
+    ):
+        result = stix_helper.prepare_export(
+            prepared, mode="full", stix_version=stix_version
+        )
+
+    assert [call.kwargs["filters"] for call in reader.call_args_list] == [sample_id]
+    malware = next(obj for obj in result if obj.get("type") == "malware")
+    assert malware["x_opencti_cf_source_ref"] == ["source-a", "source-b"]
+
+
 # --- StixCoreObject.to_stix -------------------------------------------------
 
 
