@@ -3,6 +3,7 @@ import { toB64 } from '../../../../../utils/String';
 import { dashboardVariablesStorageKey } from '../../../../../components/dashboard/dashboardVariablesStorage';
 import type { DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
 import {
+  applyPresetToPublishedValues,
   applyPublishedTimeRangeChange,
   buildPublicationInput,
   buildPublishedValuesState,
@@ -125,5 +126,37 @@ describe('buildPublicationInput', () => {
   it('should send nothing new when the feature flag is disabled', () => {
     const input = buildPublicationInput(formValues, false);
     expect(input).toEqual({ name: 'Public', enabled: true, uri_key: 'public', dashboard_id: 'dashboard-1', allowed_markings_ids: ['marking-id'] });
+  });
+});
+
+describe('applyPresetToPublishedValues', () => {
+  const SECTOR = '11111111-1111-4111-8111-111111111111';
+  const REGION = '22222222-2222-4222-8222-222222222222';
+  const LEVEL = '33333333-3333-4333-8333-333333333333';
+  const variables: DashboardVariable[] = [
+    { id: SECTOR, name: 'Sector', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Energy' },
+    { id: REGION, name: 'Region', type: 'text', restriction: { mode: 'selection', values: ['eu', 'us'] }, defaultValue: 'eu' },
+    { id: LEVEL, name: 'Level', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Low' },
+  ];
+  const preset = {
+    id: 'p1',
+    name: 'Finance',
+    values: [{ variableId: SECTOR, value: 'Finance' }, { variableId: REGION, value: 'apac' }],
+    config: { startDate: null, endDate: null, relativeDate: 'months-1' },
+  };
+
+  it('takes the values of the preset, the default for the variables it does not hold or whose value is refused, and its range', () => {
+    expect(applyPresetToPublishedValues(preset, variables)).toEqual({
+      variable_values: { [SECTOR]: 'Finance', [REGION]: 'eu', [LEVEL]: 'Low' },
+      time_range: { startDate: null, endDate: null, relativeDate: 'months-1' },
+    });
+  });
+
+  it('keeps a value the variable accepts and an absolute range', () => {
+    const absolute = { ...preset, values: [{ variableId: REGION, value: 'us' }], config: { startDate: '2026-01-01T00:00:00.000Z', endDate: null, relativeDate: null } };
+    expect(applyPresetToPublishedValues(absolute, variables)).toEqual({
+      variable_values: { [SECTOR]: 'Energy', [REGION]: 'us', [LEVEL]: 'Low' },
+      time_range: { startDate: '2026-01-01T00:00:00.000Z', endDate: null, relativeDate: null },
+    });
   });
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { Formik } from 'formik';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import { toB64 } from '../../../../../utils/String';
@@ -24,6 +24,11 @@ const dashboard = (id: string, defaultValue: string): PublishableDashboard => ({
       { id: UNUSED, name: 'Unused variable', type: 'text', restriction: { mode: 'none' }, defaultValue: 'u' },
     ],
   })),
+});
+
+const withPresets = (base: PublishableDashboard): PublishableDashboard => ({
+  ...base,
+  presets: [{ id: 'p1', name: 'Finance view', values: [{ variableId: SECTOR, value: 'Finance' }], config: { startDate: null, endDate: null, relativeDate: 'months-1' } }],
 });
 
 const renderSection = (selected: PublishableDashboard | undefined) => {
@@ -67,5 +72,17 @@ describe('PublicDashboardPublishedValues', () => {
     select(dashboard('dashboard-2', 'Health'));
     expect(await screen.findByDisplayValue('Health')).toBeDefined();
     expect(screen.queryByDisplayValue('Typed')).toBeNull();
+  });
+
+  it('offers to load a preset only when the dashboard holds one, and fills the values and the range from it', async () => {
+    renderSection(dashboard('dashboard-1', 'Energy'));
+    expect(await screen.findByDisplayValue('Energy')).toBeDefined();
+    expect(screen.queryByTestId('public-dashboard-load-preset')).toBeNull();
+    const { user } = renderSection(withPresets(dashboard('dashboard-2', 'Energy')));
+    const loader = await screen.findByTestId('public-dashboard-load-preset');
+    await user.click(within(loader).getByRole('combobox'));
+    await user.click(await screen.findByRole('option', { name: 'Finance view' }));
+    expect(await screen.findByDisplayValue('Finance')).toBeDefined();
+    expect(screen.getByText('Last month')).toBeDefined();
   });
 });

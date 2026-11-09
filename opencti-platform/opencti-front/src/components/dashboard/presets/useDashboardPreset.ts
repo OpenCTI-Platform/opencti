@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import useAuth from '../../../utils/hooks/useAuth';
 import type { DashboardPreset } from '../dashboard-types';
 import { dashboardPresetStorageKey, parsePresetParam, readStoredPresetId, writePresetParam, writeStoredPresetId } from './dashboardPresetStorage';
+import { dashboardVariablesStorageKey, writeStoredVariableValues } from '../dashboardVariablesStorage';
+import { dashboardTimeRangeStorageKey, writeStoredTimeRange } from '../dashboardTimeRangeStorage';
 
 interface UseDashboardPresetOptions {
   // The home dashboard and a user without the selector only ever see the default preset: nothing local is read or written.
@@ -23,7 +25,18 @@ export const useDashboardPreset = (
 ) => {
   const { me } = useAuth();
   const key = dashboardPresetStorageKey(me.id, workspaceId);
-  const load = () => (ignoreLocalValues || !enabled ? null : parsePresetParam(window.location.search) ?? readStoredPresetId(key));
+  const load = () => {
+    if (ignoreLocalValues || !enabled) return null;
+    const fromUrl = parsePresetParam(window.location.search);
+    const stored = readStoredPresetId(key);
+    // A shared address opens the view of its preset: the values and range this user had kept on another preset are
+    // dropped, the ones of the address (variables=, timeRange=) still apply as the hooks read them after this one.
+    if (fromUrl && fromUrl !== stored) {
+      writeStoredVariableValues(dashboardVariablesStorageKey(me.id, workspaceId), {});
+      writeStoredTimeRange(dashboardTimeRangeStorageKey(me.id, workspaceId), null);
+    }
+    return fromUrl ?? stored;
+  };
   const [state, setState] = useState(() => ({ key, ignoreLocalValues, enabled, stored: load() }));
   let { stored } = state;
   if (state.key !== key || state.ignoreLocalValues !== ignoreLocalValues || state.enabled !== enabled) {

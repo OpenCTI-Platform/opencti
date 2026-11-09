@@ -90,13 +90,6 @@ export const useDashboardVariables = (
     commit(value === '' ? others : { ...others, [variableId]: value });
   }, [commit, stored, ignoreLocalValues, enabled]);
 
-  // Replaces every local value at once (a preset): a value equal to the default is not kept locally.
-  const setValues = useCallback((next: ReadonlyMap<string, string>) => {
-    if (ignoreLocalValues || !enabled) return;
-    const entries = [...next].filter(([id, value]) => value !== '' && value !== defaults.get(id));
-    commit(Object.fromEntries(entries));
-  }, [commit, defaults, ignoreLocalValues, enabled]);
-
   const reset = useCallback(() => {
     if (ignoreLocalValues || !enabled) return;
     commit({});
@@ -115,5 +108,5 @@ export const useDashboardVariables = (
     commitCurrent(Object.fromEntries(Object.entries(current).filter(([id, value]) => submitted.get(id) !== value)));
   }, [ignoreLocalValues, enabled]);
 
-  return { values, defaults, manifestDefaults, setValue, setValues, reset, resetValues };
+  return { values, defaults, manifestDefaults, setValue, reset, resetValues };
 };

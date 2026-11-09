@@ -896,6 +896,15 @@ describe('CustomDashboard presets', () => {
     expect(screen.queryByTestId('dashboard-preset-update')).not.toBeInTheDocument();
   });
 
+  it('shows no selector and applies no preset, not even the default one or the one of the URL, when the flag is off', () => {
+    window.history.replaceState(null, '', '/?preset=p1');
+    testRender(<CustomDashboard data={withPresets({ currentUserDefaultPresetId: 'p1' }) as never} />, { userContext: userContext([]) });
+    expect(selector()).not.toBeInTheDocument();
+    // No variable value at all is provided without the flag, and the range is the one of the manifest
+    expect(captured.values?.size ?? 0).toBe(0);
+    expect(captured.contentConfig?.relativeDate).toBe('days-7');
+  });
+
   it('applies the default preset on the home dashboard without selector nor local read', () => {
     storeFinanceEverywhere();
     window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'ws-1'), JSON.stringify({ [SECTOR_ID]: 'Retail' }));
