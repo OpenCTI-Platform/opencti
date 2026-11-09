@@ -75,6 +75,30 @@ const REPORT_STATUS_QUERY = gql`
   }
 `;
 
+const DRAFT_WORKSPACE_ADD_MUTATION = gql`
+  mutation WorkflowEntityWriteDraftAdd($input: DraftWorkspaceAddInput!) {
+    draftWorkspaceAdd(input: $input) {
+      id
+    }
+  }
+`;
+
+const DRAFT_WORKSPACE_DELETE_MUTATION = gql`
+  mutation WorkflowEntityWriteDraftDelete($id: ID!) {
+    draftWorkspaceDelete(id: $id)
+  }
+`;
+
+const REPORT_CONFIDENCE_PATCH_MUTATION = gql`
+  mutation WorkflowEntityWriteReportConfidencePatch($id: ID!, $input: [EditInput]!) {
+    reportEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
+    }
+  }
+`;
+
 const ENTITY_SETTING_QUERY = gql`
   query WorkflowEntityWriteEntitySetting($targetType: String!) {
     entitySettingByType(targetType: $targetType) {
@@ -107,6 +131,13 @@ const addReport = async (confidence: number) => {
   return result.data.reportAdd.id as string;
 };
 
+const addDraft = async (draftIds: string[]) => {
+  const result = await queryAsAdminWithSuccess({ query: DRAFT_WORKSPACE_ADD_MUTATION, variables: { input: { name: `Workflow entity write draft ${Date.now()}` } } });
+  const draftId = result.data.draftWorkspaceAdd.id as string;
+  draftIds.push(draftId);
+  return draftId;
+};
+
 const readReport = async (id: string) => {
   const result = await queryAsAdminWithSuccess({ query: REPORT_STATUS_QUERY, variables: { id } });
   return { state: result.data.report.workflowInstance.currentState, status: result.data.report.status?.id };
@@ -114,6 +145,7 @@ const readReport = async (id: string) => {
 
 describe('Workflow transition and the entity status write', () => {
   const reportIds: string[] = [];
+  const draftIds: string[] = [];
   let entitySettingId: string;
 
   beforeAll(async () => {
@@ -127,6 +159,9 @@ describe('Workflow transition and the entity status write', () => {
   afterAll(async () => {
     await queryAsAdmin({ query: ENTITY_SETTING_PATCH_MUTATION, variables: { ids: [entitySettingId], input: [{ key: 'enforce_reference', value: ['false'] }] } });
     await queryAsAdmin({ query: WORKFLOW_DEFINITION_DELETE_MUTATION, variables: { entityType: ENTITY_TYPE } });
+    for (let index = 0; index < draftIds.length; index += 1) {
+      await queryAsAdmin({ query: DRAFT_WORKSPACE_DELETE_MUTATION, variables: { id: draftIds[index] } });
+    }
     for (let index = 0; index < reportIds.length; index += 1) {
       await queryAsAdmin({ query: REPORT_DELETE_MUTATION, variables: { id: reportIds[index] } });
     }
@@ -161,5 +196,40 @@ describe('Workflow transition and the entity status write', () => {
     const validatedStatusId = await resolveMappedStatusId(testContext, ADMIN_USER, ENTITY_TYPE, StatusScope.Global, 'validated');
     expect(validatedStatusId).not.toBe(before.status);
     expect(report.x_opencti_workflow_id).toBe(validatedStatusId);
+  });
+
+  it('refuses a transition on an entity created inside a draft, which has no live version to write the status on', async () => {
+    const draftId = await addDraft(draftIds);
+    const created = await queryAsAdmin({
+      query: REPORT_ADD_MUTATION,
+      variables: { input: { name: `Workflow entity write in draft ${Date.now()}`, published: new Date().toISOString() } },
+    }, draftId);
+    expect(created.errors).toBeUndefined();
+    const draftReportId = created.data?.reportAdd.id as string;
+    const draftContext = { ...testContext, draft_context: draftId };
+
+    expect(await getAllowedTransitions(draftContext, ADMIN_USER, draftReportId)).toEqual([]);
+    const result = await triggerWorkflowEvent(draftContext, ADMIN_USER, draftReportId, 'validate_event');
+
+    expect(result).toMatchObject({ success: false, reason: 'This entity has no live version to write the workflow status on' });
+  });
+
+  it('checks the confidence level against the live entity, not its draft copy, when triggered from a draft', async () => {
+    // Live entity at 90, draft copy at 50: the status is written on the live one
+    const reportId = await addReport(90);
+    reportIds.push(reportId);
+    const draftId = await addDraft(draftIds);
+    const patched = await queryAsAdmin({ query: REPORT_CONFIDENCE_PATCH_MUTATION, variables: { id: reportId, input: [{ key: 'confidence', value: ['50'] }] } }, draftId);
+    expect(patched.errors).toBeUndefined();
+    const draftContext = { ...testContext, draft_context: draftId };
+    const lowConfidenceUser = buildStandardUser([], [], [{ name: 'KNOWLEDGE_KNUPDATE' }], 50);
+
+    // Control: a user above the live confidence level can take the transition from the draft
+    const adminTransitions = await getAllowedTransitions(draftContext, ADMIN_USER, reportId);
+    expect(adminTransitions.map((transition) => transition.event)).toEqual(['validate_event']);
+
+    expect(await getAllowedTransitions(draftContext, lowConfidenceUser, reportId)).toEqual([]);
+    const result = await triggerWorkflowEvent(draftContext, lowConfidenceUser, reportId, 'validate_event');
+    expect(result).toMatchObject({ success: false, reason: 'Your confidence level is too low to update this entity' });
   });
 });

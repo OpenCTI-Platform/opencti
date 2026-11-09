@@ -37,7 +37,7 @@ import { bypassDraftContext, getDraftContext } from '../../../utils/draftContext
 import { now } from '../../../utils/format';
 import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
 import { addFilter } from '../../../utils/filtering/filtering-utils';
-import { DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
+import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_UPDATE_LINKED } from '../../draftWorkspace/draftOperations';
 import { findByType as findEntitySettingByType } from '../../entitySetting/entitySetting-domain';
 import { validateSetting } from '../../entitySetting/entitySetting-validators';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
@@ -1311,7 +1311,9 @@ const getTransitionRefusal = async (context: AuthContext, user: AuthUser, entity
     // From a draft, the user also needs edit access to the live entity, which must exist
     const liveEntity = await storeLoadById(bypassDraftContext(context), bypassDraftUser(user), entityId, 'Basic-Object');
     if (!liveEntity) {
-      return 'noLiveEntity';
+      // The draft copy tells which case it is: an entity created in the draft has no live version,
+      // any other one exists live but is hidden from the user
+      return entity.draft_change?.draft_operation === DRAFT_OPERATION_CREATE ? 'noLiveEntity' : 'forbidden';
     }
     if (!validateUserAccessOperation(user, liveEntity, AccessOperation.EDIT)) {
       return 'forbidden';

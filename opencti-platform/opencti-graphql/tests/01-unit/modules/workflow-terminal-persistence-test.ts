@@ -135,14 +135,16 @@ describe('Terminal workflow persistence', () => {
       const versions: Record<string, any> = { draft: { ...entity, version: 'draft' }, live: { ...entity, version: 'live' } };
       vi.mocked(getDraftContext).mockReturnValue('draft-id');
       vi.mocked(storeLoadById).mockImplementation(async (_ctx, loadUser: any, id) => {
-        if (id === entity.id) return 'draft_context' in loadUser ? versions.live : versions.draft;
+        if (id === entity.id) return loadUser.draft_context ? versions.draft : versions.live;
         if (id === 'workflow-id') return { id, published_version: { content: JSON.stringify(definition) } };
         return null;
       });
       vi.mocked(validateUserAccessOperation).mockImplementation((_user, element: any) => element.version !== forbidden);
 
-      expect(await getAllowedTransitions(context, user, entity.id)).toEqual([]);
-      await expect(triggerWorkflowEvent(context, user, entity.id, 'Validate')).rejects.toThrow('You are not allowed to do this');
+      // The user of a draft request carries the draft context: the live entity is loaded without it
+      const draftUser = { ...user, draft_context: 'draft-id' };
+      expect(await getAllowedTransitions(context, draftUser, entity.id)).toEqual([]);
+      await expect(triggerWorkflowEvent(context, draftUser, entity.id, 'Validate')).rejects.toThrow('You are not allowed to do this');
       expect(updateAttribute).not.toHaveBeenCalled();
     });
   });

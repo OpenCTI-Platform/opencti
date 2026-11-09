@@ -2596,10 +2596,11 @@ describe('Workflow Domain', () => {
       content: JSON.stringify({ id: 'workflow-1', name: 'Incident Workflow', initialState: 'open', states: [{ statusId: 'open' }], transitions: [] }),
       validation_errors: [],
     };
-    // From a draft, the live entity is loaded with a user whose draft context was removed
+    // The user of a draft request carries the draft context: the live entity is loaded without it
+    const draftUser = { ...mockUser, draft_context: 'draft-id' };
     const mockEntityVersions = (versions: { draft: any; live: any }) => {
       (storeLoadById as any).mockImplementation((_ctx: any, user: any, _id: any, type: any) => {
-        if (type === 'Basic-Object') return Promise.resolve('draft_context' in user ? versions.live : versions.draft);
+        if (type === 'Basic-Object') return Promise.resolve(user.draft_context ? versions.draft : versions.live);
         if (type === 'WorkflowDefinition') return Promise.resolve({ id: 'workflow-id', published_version: workflowVersion });
         return Promise.resolve(null);
       });
@@ -2639,7 +2640,7 @@ describe('Workflow Domain', () => {
       vi.mocked(getDraftContext).mockReturnValue('draft-id');
       vi.mocked(controlUserConfidenceAgainstElement).mockImplementation((_user, element: any) => element.confidence <= 50);
 
-      const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'test');
+      const result = await triggerWorkflowEvent(mockContext, draftUser, 'entity-1', 'test');
 
       expect(result).toEqual({ success: false, reason: 'Your confidence level is too low to update this entity' });
       expect(lockResources).not.toHaveBeenCalled();
@@ -2647,15 +2648,24 @@ describe('Workflow Domain', () => {
 
     it('should refuse a transition from a draft when the entity has no live version', async () => {
       // Created inside the draft, or hidden from the user outside it: the status write would fail
-      mockEntityVersions({ draft: { id: 'entity-1', entity_type: 'Incident' }, live: null });
+      mockEntityVersions({ draft: { id: 'entity-1', entity_type: 'Incident', draft_change: { draft_operation: 'create' } }, live: null });
       vi.mocked(getDraftContext).mockReturnValue('draft-id');
 
-      expect(await getAllowedTransitions(mockContext, mockUser, 'entity-1')).toEqual([]);
-      const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'test');
+      expect(await getAllowedTransitions(mockContext, draftUser, 'entity-1')).toEqual([]);
+      const result = await triggerWorkflowEvent(mockContext, draftUser, 'entity-1', 'test');
 
       expect(result).toEqual({ success: false, reason: 'This entity has no live version to write the workflow status on' });
       expect(lockResources).not.toHaveBeenCalled();
       expect(updateAttribute).not.toHaveBeenCalled();
+    });
+
+    it('should report a forbidden access when the live entity of a draft copy is hidden from the user', async () => {
+      mockEntityVersions({ draft: { id: 'entity-1', entity_type: 'Incident', draft_change: { draft_operation: 'update' } }, live: null });
+      vi.mocked(getDraftContext).mockReturnValue('draft-id');
+
+      expect(await getAllowedTransitions(mockContext, draftUser, 'entity-1')).toEqual([]);
+      await expect(triggerWorkflowEvent(mockContext, draftUser, 'entity-1', 'test')).rejects.toThrow('You are not allowed to do this');
+      expect(lockResources).not.toHaveBeenCalled();
     });
   });
 
@@ -2825,7 +2835,7 @@ describe('Transition comments – Domain', () => {
     it('should check the confidence level against the live entity from a draft', async () => {
       // Draft version at 90, live entity at 50: the status is written on the live one
       (storeLoadById as any).mockImplementation((_ctx: any, user: any, id: string) => {
-        if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', confidence: 'draft_context' in user ? 50 : 90 });
+        if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', confidence: user.draft_context ? 90 : 50 });
         if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', published_version: { id: 'v1', content: definitionWithComments, timestamp: '', createdBy: '', validation_errors: [] } });
         return Promise.resolve(null);
       });
@@ -2833,7 +2843,7 @@ describe('Transition comments – Domain', () => {
       vi.mocked(getDraftContext).mockReturnValue('draft-id');
       vi.mocked(controlUserConfidenceAgainstElement).mockImplementation((_user, element: any) => element.confidence <= 50);
 
-      const transitions = await getAllowedTransitions(mockContext, mockUser, 'entity-id');
+      const transitions = await getAllowedTransitions(mockContext, { ...mockUser, draft_context: 'draft-id' }, 'entity-id');
 
       expect(transitions.map((transition) => transition.event)).toEqual(['review']);
     });
