@@ -5,6 +5,7 @@ import DashboardWidgetPopover from './DashboardWidgetPopover';
 import DashboardViz from './DashboardViz';
 import type { DashboardLike } from './dashboard-types';
 import type { WidgetHost } from '../../utils/widget/widget';
+import { DASHBOARD_GRID_CONFIG } from './dashboard-utils';
 
 type DashboardContentProps = {
   helpers: ReturnType<typeof useDashboard>;
@@ -52,7 +53,7 @@ const DashboardContent = ({
         className="layout"
         width={width}
         layout={Object.values(widgetsLayouts)}
-        gridConfig={{ margin: [20, 20], rowHeight: 62, cols: 12, containerPadding: [0, 0] }}
+        gridConfig={{ ...DASHBOARD_GRID_CONFIG, containerPadding: [0, 0] }}
         dragConfig={{ enabled: isEditable, cancel: '.noDrag' }}
         resizeConfig={{ enabled: isEditable }}
         onLayoutChange={isEditable ? handleLayoutChange : () => true}

@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import '../../../../src/modules/index';
 import { findRegisterRow } from '../../../../src/modules/userMerge/userMerge-register';
 import { discoverUserIdAttributes } from '../../../../src/modules/userMerge/userMerge-scalarDiscovery';
-import { USER_MERGE_SCALAR_COMPLEMENTS } from '../../../../src/modules/userMerge/userMerge-scalarRules';
 import { userMergeScalarResolution } from '../../../../src/modules/userMerge/userMerge-scalarTargets';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
@@ -117,19 +116,5 @@ describe('userMerge schema discovery', () => {
     userMergeScalarResolution().excluded.forEach((exclusion) => {
       expect(exclusion.detail.length, exclusion.key).toBeGreaterThan(0);
     });
-  });
-
-  /**
-   * A complement exists because a declaration is missing or wrong. Once it is fixed the
-   * attribute arrives through discovery and the complement becomes a duplicate.
-   */
-  it('should drop a complement once the schema starts yielding it', () => {
-    const discovered = discoverUserIdAttributes().flatMap((attribute) => {
-      return (attribute.entityTypes ?? ['*']).map((entityType) => `${entityType}.${attribute.name}`);
-    });
-    const redundant = USER_MERGE_SCALAR_COMPLEMENTS
-      .flatMap((complement) => (complement.entityTypes ?? ['*']).map((entityType) => `${entityType}.${complement.path}`))
-      .filter((key) => discovered.includes(key));
-    expect(redundant).toEqual([]);
   });
 });

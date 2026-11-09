@@ -65,6 +65,22 @@ export const findById = (
   );
 };
 
+/**
+ * Load a workspace as the user, only when it is an investigation.
+ * A missing or unreadable workspace, or one of another type, is reported as not found.
+ */
+export const findInvestigationById = async (
+  context: AuthContext,
+  user: AuthUser,
+  investigationId: string,
+) => {
+  const investigation = await storeLoadById<BasicStoreEntityWorkspace>(context, user, investigationId, ENTITY_TYPE_WORKSPACE);
+  if (!investigation || investigation.type !== 'investigation') {
+    throw FunctionalError('Investigation not found', { investigationId });
+  }
+  return investigation;
+};
+
 export const findAllWorkspaces = (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
   return fullEntitiesList(context, user, [ENTITY_TYPE_WORKSPACE], args);
 };

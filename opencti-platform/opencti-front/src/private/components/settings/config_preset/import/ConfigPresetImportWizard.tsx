@@ -40,6 +40,7 @@ const configPresetImportWizardQuery = graphql`
         key
         status
         reason
+        code
         label
         translatable
         type_label
@@ -72,6 +73,7 @@ const configPresetImportWizardApplyMutation = graphql`
         key
         status
         reason
+        code
       }
       report_id
       settings {

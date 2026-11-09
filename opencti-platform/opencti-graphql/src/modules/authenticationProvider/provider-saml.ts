@@ -7,17 +7,18 @@ import { createMapper } from './mappings-utils';
 import { flatExtraConf, retrieveSecrets } from './authenticationProvider-domain';
 import { getBaseUrl } from '../../config/conf';
 import { handleProviderLogin } from './providers';
+import { normalizeSamlPemValue } from './saml-pem-utils';
 
 export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfiguration, secretsProvider: SecretProvider): Promise<PassportSamlConfig> => ({
   name: meta.name,
   entryPoint: conf.entry_point,
   issuer: conf.issuer,
-  idpCert: conf.idp_certificate,
-  privateKey: await secretsProvider.optional('private_key'),
+  idpCert: normalizeSamlPemValue(conf.idp_certificate),
+  privateKey: normalizeSamlPemValue(await secretsProvider.optional('private_key')),
   callbackUrl: conf.callback_url ?? `${getBaseUrl()}/auth/${meta.identifier}/callback`,
   wantAssertionsSigned: conf.want_assertions_signed,
   wantAuthnResponseSigned: conf.want_authn_response_signed,
-  publicCert: conf.signing_cert,
+  publicCert: normalizeSamlPemValue(conf.signing_cert),
   authnRequestBinding: conf.sso_binding_type,
   forceAuthn: conf.force_reauthentication,
   identifierFormat: conf.identifier_format,
@@ -27,7 +28,7 @@ export const buildSAMLOptions = async (meta: ProviderMeta, conf: SamlStoreConfig
   disableRequestedAuthnContext: conf.disable_requested_authn_context,
   disableRequestAcsUrl: conf.disable_request_acs_url,
   skipRequestCompression: conf.skip_request_compression,
-  decryptionPvk: await secretsProvider.optional('decryption_pvk'),
+  decryptionPvk: normalizeSamlPemValue(await secretsProvider.optional('decryption_pvk')),
   ...flatExtraConf(conf.extra_conf),
 });
 

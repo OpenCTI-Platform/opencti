@@ -538,11 +538,15 @@ export const getPlatformHttpProxyAgent = (uri, fetchDispatcher = false) => {
 export const ENABLED_API = booleanConf('app:enabled', true);
 export const ENABLED_UI = booleanConf('app:enabled_ui', true);
 
+// Global GraphQL hardening, fallback for the GraphQL protections that do not define their own option.
+// Disabled by default for now, it will be enabled by default in an upcoming version.
+export const GRAPHQL_SECURE_BY_DEFAULT = booleanConf('app:graphql:secure_by_default', false);
+
 // Playground
 export const ENABLED_DEMO_MODE = booleanConf('demo_mode', false);
 export const PLAYGROUND_INTROSPECTION_DISABLED = DEV_MODE ? false : (!ENABLED_UI || booleanConf('app:graphql:playground:force_disabled_introspection', true));
-export const PLAYGROUND_ENABLED = ENABLED_UI && booleanConf('app:graphql:playground:enabled', true);
-export const GRAPHQL_ARMOR_DISABLED = booleanConf('app:graphql:armor_protection:disabled', true);
+export const PLAYGROUND_ENABLED = ENABLED_UI && booleanConf('app:graphql:playground:enabled', !GRAPHQL_SECURE_BY_DEFAULT);
+export const GRAPHQL_ARMOR_DISABLED = booleanConf('app:graphql:armor_protection:disabled', !GRAPHQL_SECURE_BY_DEFAULT);
 
 // Default activated managers
 export const ENABLED_TRACING = booleanConf('app:telemetry:tracing:enabled', false);
@@ -600,11 +604,8 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
-// Custom fields feature flag (use isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG) to check activation)
-export const CUSTOM_FIELDS_FEATURE_FLAG = 'CUSTOM_FIELDS';
-
-// User merge feature flag (use isFeatureEnabled(MERGE_USERS_FEATURE_FLAG) to check activation)
-export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
+// Local authentication lockout policy feature flag (use isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) to check activation)
+export const LOCAL_AUTH_LOCKOUT_FEATURE_FLAG = 'LOCAL_AUTH_LOCKOUT';
 
 // Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
 // check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
@@ -622,6 +623,10 @@ export const INGESTION_HEALTH_FEATURE_FLAG = 'INGESTION_HEALTH';
 // Configuration presets: export of platform configuration bundles (use isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG)
 // to check activation)
 export const CONFIG_PRESET_FEATURE_FLAG = 'CONFIG_PRESET';
+
+// Time series breakdown of the dashboard widgets, one series per value of a field
+// (use isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG) to check activation)
+export const TIME_SERIES_BREAKDOWN_FEATURE_FLAG = 'TIME_SERIES_BREAKDOWN';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;

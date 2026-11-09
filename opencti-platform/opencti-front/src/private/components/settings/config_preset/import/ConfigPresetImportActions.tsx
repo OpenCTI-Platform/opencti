@@ -6,8 +6,6 @@ import type { Theme } from '../../../../../components/Theme';
 
 interface ConfigPresetImportActionsProps {
   hasSelection: boolean;
-  // The expected results are being computed: Apply waits for them, so that what is applied is what is shown
-  isSimulating: boolean;
   isOtherImportRunning: boolean;
   // Apply was clicked and the import is not sent yet (the pending save goes first): a second click must not send a second import
   isStarting: boolean;
@@ -17,7 +15,6 @@ interface ConfigPresetImportActionsProps {
 
 const ConfigPresetImportActions: FunctionComponent<ConfigPresetImportActionsProps> = ({
   hasSelection,
-  isSimulating,
   isOtherImportRunning,
   isStarting,
   onStartOver,
@@ -28,7 +25,7 @@ const ConfigPresetImportActions: FunctionComponent<ConfigPresetImportActionsProp
   return (
     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: theme.spacing(1) }}>
       <Button variant="secondary" onClick={onStartOver}>{t_i18n('Start over')}</Button>
-      <Button onClick={onApply} disabled={!hasSelection || isSimulating || isOtherImportRunning || isStarting}>{t_i18n('Apply')}</Button>
+      <Button onClick={onApply} disabled={!hasSelection || isOtherImportRunning || isStarting}>{t_i18n('Apply')}</Button>
     </div>
   );
 };

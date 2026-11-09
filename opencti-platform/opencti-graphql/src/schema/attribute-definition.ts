@@ -6,7 +6,7 @@ import type { BasicStoreIdentifier } from '../types/store';
 import type { AuthorizedMembers } from '../utils/authorizedMembers';
 import { DefaultFormating, type Formating, humanizeDate } from '../utils/humanize';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
-import { CUSTOM_FIELDS_FEATURE_FLAG, TEST_MODE } from '../config/conf';
+import { INGESTION_HEALTH_FEATURE_FLAG, TEST_MODE } from '../config/conf';
 import type { OpenCTIFile } from '../modules/internal/document/document-types';
 
 export const shortMapping = {
@@ -274,7 +274,7 @@ export const files: ObjectAttribute<OpenCTIFile> = {
   },
 };
 
-export const changes: NestedObjectAttribute = {
+export const history_changes: NestedObjectAttribute = {
   name: 'history_changes',
   label: 'Detail changes',
   type: 'object',
@@ -316,6 +316,28 @@ export const changes: NestedObjectAttribute = {
         { name: 'translated', label: 'Translated', type: 'string', format: 'text', editDefault: false, mandatoryType: 'external', multiple: false, upsert: false, isFilterable: false },
       ],
     },
+  ],
+};
+
+// Context of an ingestion health event: the messages of the failing checks, the status reported by the previous event (absent for the first one),
+// and since when the current status lasts. Not in context_data.message: the history replaces it with the whole activity message
+export const ingestion_health_changes: NestedObjectAttribute = {
+  name: 'ingestion_health_changes',
+  label: 'Ingestion health changes',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false,
+  featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
+  mappings: [
+    { name: 'message', label: 'Check messages', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'critical_messages', label: 'Critical check messages', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    { name: 'advisory_messages', label: 'Advisory check messages', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    { name: 'previous_status', label: 'Previous status', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'status_since', label: 'Status since', type: 'date', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
   ],
 };
 
@@ -712,7 +734,6 @@ export const customFieldValues: NestedObjectAttribute = {
   multiple: true,
   upsert: true,
   isFilterable: false,
-  featureFlag: CUSTOM_FIELDS_FEATURE_FLAG,
   mappings: [
     { name: 'field_id', label: 'Field ID', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'field_name', label: 'Field name', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },

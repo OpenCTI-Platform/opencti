@@ -93,6 +93,8 @@ import {
   INTERNAL_USERS_WITHOUT_REDACTED,
   isBypassUser,
   isOnlyOrgaAdmin,
+  isUserAccountActive,
+  isUserAccountExpired,
   isUserHasCapability,
   type ParticipantWithOrgIds,
   REDACTED_USER,
@@ -188,7 +190,6 @@ import { memoize } from '../../utils/memoize';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
-export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 const PROTECTED_USER_ATTRIBUTES = [apiTokens.name, 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
@@ -484,6 +485,19 @@ export const batchRolesForUsers = async (context: AuthContext, user: AuthUser, u
   });
 };
 
+export const batchRolesForGroups = async (context: AuthContext, user: AuthUser, groupIds: string[], opts: EntityOptions<BasicStoreEntity> = {}) => {
+  if (groupIds.length === 0) {
+    return [];
+  }
+  const groupsRoles = await fullRelationsList(context, user, RELATION_HAS_ROLE, { fromId: groupIds, toTypes: [ENTITY_TYPE_ROLE] });
+  const roleIds = uniq(groupsRoles.map(({ toId }) => toId));
+  const roles = roleIds.length > 0 ? await fullEntitiesList(context, user, [ENTITY_TYPE_ROLE], { ...opts, ids: roleIds }) : [];
+  return groupIds.map((groupId) => {
+    const idRoles = groupsRoles.filter(({ fromId }) => fromId === groupId).map(({ toId }) => toId);
+    return roles.filter((role) => idRoles.includes(role.internal_id));
+  });
+};
+
 export const computeAvailableMarkings = <T extends BasicStoreEntityMarkingDefinition>(userMarkings: BasicStoreEntityMarkingDefinition[], allMarkings: T[]) => {
   const computedMarkings = [];
   for (let index = 0; index < userMarkings.length; index += 1) {
@@ -569,8 +583,12 @@ export const findRoleById = (context: AuthContext, user: AuthUser, roleId: strin
   return storeLoadById<BasicStoreEntity>(context, user, roleId, ENTITY_TYPE_ROLE);
 };
 
-export const findRoles = (context: AuthContext, user: AuthUser, args: QueryRolesArgs) => {
+export const findRoles = (context: AuthContext, user: AuthUser, args: QueryRolesArgs | EntityOptions<BasicStoreEntity>) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_ROLE], args);
+};
+
+export const findAllRoles = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntity> = {}) => {
+  return fullEntitiesList(context, user, [ENTITY_TYPE_ROLE], args);
 };
 
 export const findCapabilities = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntity>, relationship_type: string = RELATION_HAS_CAPABILITY) => {
@@ -769,9 +787,10 @@ const shuffleInPlace = <T>(elements: T[]) => {
   return elements;
 };
 
+const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
+
 // Generate a random password that satisfies the given password policy
-export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
-  const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
+const passwordPolicyRequirements = (policy: PasswordInlinePolicy) => {
   const minUppercase = positive(policy.password_policy_min_uppercase);
   const minLowercase = positive(policy.password_policy_min_lowercase);
   const minNumbers = positive(policy.password_policy_min_numbers);
@@ -784,7 +803,22 @@ export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
   const minBodyLength = Math.max(requiredCharsCount, wordsCount);
   const minLength = Math.max(positive(policy.password_policy_min_length), minBodyLength + separatorsCount);
   const maxLength = positive(policy.password_policy_max_length);
-  // Check policy feasibility before allocating anything
+  return { minUppercase, minLowercase, minNumbers, separatorsCount, extraSymbolsCount, requiredCharsCount, minLength, maxLength };
+};
+
+// Whether checkPasswordInlinePolicy accepts a password of at most the maximum length: a word separator is also a symbol,
+// and the words it splits may be empty
+export const isPasswordPolicySatisfiable = (policy: PasswordInlinePolicy) => {
+  const maxLength = positive(policy.password_policy_max_length);
+  const symbolsCount = Math.max(positive(policy.password_policy_min_symbols), positive(policy.password_policy_min_words) - 1);
+  const charsCount = positive(policy.password_policy_min_uppercase) + positive(policy.password_policy_min_lowercase)
+    + positive(policy.password_policy_min_numbers) + symbolsCount;
+  return maxLength === 0 || maxLength >= Math.max(positive(policy.password_policy_min_length), charsCount);
+};
+
+export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
+  const { minUppercase, minLowercase, minNumbers, separatorsCount, extraSymbolsCount, requiredCharsCount, minLength, maxLength } = passwordPolicyRequirements(policy);
+  // Check policy feasibility before allocating anything: the generated words are never empty
   if (maxLength > 0 && maxLength < minLength) {
     throw FunctionalError('Unable to generate a password: password policy cannot be satisfied', { minLength, maxLength });
   }
@@ -963,6 +997,15 @@ export const adjustAllUsersPasswordValidUntil = async (_context: AuthContext, ol
     });
   }
   await publishCacheResetEvent(ENTITY_TYPE_USER);
+};
+
+// A change of the password validity of the platform, for every local user: a disabled policy clears the expiration dates, another duration moves them
+export const propagatePasswordValidityChange = async (context: AuthContext, oldDays: number, newDays: number) => {
+  if (newDays <= 0) {
+    await clearAllUsersPasswordValidUntil(context);
+  } else if (newDays !== oldDays) {
+    await adjustAllUsersPasswordValidUntil(context, oldDays, newDays);
+  }
 };
 
 type MailTargetUser = Omit<AuthUser, 'organizations' | 'account_lock_after_date'> & {
@@ -2419,13 +2462,9 @@ const validateUser = (user: AuthUser, settings: BasicStoreSettings, { skipForceP
   if (!isBypassUser(user) && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
     throw AuthenticationFailure('You can\'t login without an organization');
   }
-  // Check account expiration date
-  if (user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date))) {
-    throw AuthenticationFailure(ACCOUNT_STATUSES.Expired);
-  }
-  // Validate user's account status
-  if (user.account_status !== ACCOUNT_STATUS_ACTIVE) {
-    throw AuthenticationFailure(ACCOUNT_STATUSES[user.account_status]);
+  // Validate user's account: an expiration date in the past is refused as expired, whatever its status
+  if (!isUserAccountActive(user)) {
+    throw AuthenticationFailure(isUserAccountExpired(user) ? ACCOUNT_STATUSES.Expired : ACCOUNT_STATUSES[user.account_status]);
   }
   // Require users with expired password validity to update their password before using the platform.
   // Skipped at session creation so the user can authenticate and be redirected to the change-password screen.

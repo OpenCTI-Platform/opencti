@@ -27,7 +27,8 @@ const useDashboardViz = <TQuery extends OperationType>({
   query: GraphQLTaggedNode;
   config?: DashboardConfig;
   parameters?: WidgetParameters;
-  buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
+  // No variables, and then no query, when the resolved selection must not be queried
+  buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'] | null;
 }) => {
   const [queryRef, load, disposeQuery] = useQueryLoader<TQuery>(query);
   const [isPending, startTransition] = useTransition();
@@ -58,6 +59,11 @@ const useDashboardViz = <TQuery extends OperationType>({
   // on every render when the parent passes a new array reference with the same content.
   const dataSelectionSignature = useMemo(() => JSON.stringify(dataSelection), [dataSelection]);
 
+  // Selection the resolved one comes from: until the current one is resolved (its saved filters are read from the
+  // API), the resolved selection is the previous one, and is not queried
+  const [resolvedFrom, setResolvedFrom] = useState<string | null>(null);
+  const isResolving = resolvedFrom !== dataSelectionSignature;
+
   /**
    * Resolve raw data selection into a query-ready form.
    *
@@ -82,6 +88,7 @@ const useDashboardViz = <TQuery extends OperationType>({
     }).then((result) => {
       if (!cancelled) {
         setResolvedDataSelection(result.resolvedDataSelection);
+        setResolvedFrom(dataSelectionSignature);
         setIsMissingHostEntity(result.isMissingHostEntity);
         setIsPreviewMode(result.isPreviewMode);
         setIsMissingSavedFilters(result.isMissingSavedFilters);
@@ -98,12 +105,14 @@ const useDashboardViz = <TQuery extends OperationType>({
   // Because those changes make the result change
   useEffect(handleResolveDataSelection, [handleResolveDataSelection]);
 
+  // No variables while the selection is resolved: the previous resolution would query the previous filters
+  const canBuildQueryVariables = !!buildQueryVariables && !!config && !isResolving && resolvedDataSelection.length > 0;
   const queryVariables = useMemo(
-    () => (buildQueryVariables && config && resolvedDataSelection.length > 0
-      ? buildQueryVariables(resolvedDataSelection, config, parameters)
-      : null),
-    [buildQueryVariables, resolvedDataSelection, config, parameters],
+    () => (canBuildQueryVariables ? buildQueryVariables(resolvedDataSelection, config, parameters) : null),
+    [canBuildQueryVariables, buildQueryVariables, resolvedDataSelection, config, parameters],
   );
+  // The resolved selection must not be queried, said buildQueryVariables
+  const skipped = !isBlocked && canBuildQueryVariables && !queryVariables;
 
   const queryVariablesSignature = useMemo(
     () => (queryVariables ? JSON.stringify(queryVariables) : null),
@@ -143,6 +152,16 @@ const useDashboardViz = <TQuery extends OperationType>({
     disposeQuery();
   }, [disposeQuery, isBlocked]);
 
+  // Without variables, while the selection is resolved or once it must not be queried, the query loaded
+  // before is not shown, and the next variables are loaded even when they are the ones loaded before
+  useEffect(() => {
+    if (queryVariables || lastLoadedVariablesSignatureRef.current === null) {
+      return;
+    }
+    lastLoadedVariablesSignatureRef.current = null;
+    disposeQuery();
+  }, [disposeQuery, queryVariables]);
+
   useEffect(() => {
     reloadData(false);
   }, [reloadData]);
@@ -168,6 +187,9 @@ const useDashboardViz = <TQuery extends OperationType>({
     }
 
     const refreshedVariables = buildQueryVariables(selection, config, parameters);
+    if (!refreshedVariables) {
+      return;
+    }
     const refreshedSignature = JSON.stringify(refreshedVariables);
     loadAndTrackSignature(refreshedVariables, refreshedSignature);
   }, [buildQueryVariables, config, resolvedDataSelection, parameters, reloadData, loadAndTrackSignature]);
@@ -202,6 +224,10 @@ const useDashboardViz = <TQuery extends OperationType>({
     isPreviewMode,
     resolvedDataSelection,
     renderGuards,
+    // The resolved selection is not the one of the current selection yet
+    isResolving,
+    // The resolved selection is not queried, buildQueryVariables having built no variables for it
+    skipped,
   };
 };
 

@@ -1,9 +1,31 @@
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
-import testRender from '../../../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import ConfigPresetExportDrawer from './ConfigPresetExportDrawer';
+
+// The Enterprise Edition of the platform, which can change while the drawer is open (a license activated from it)
+const enterpriseEdition = vi.hoisted(() => {
+  const listeners = new Set<() => void>();
+  return {
+    enabled: false,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    activate: () => {
+      enterpriseEdition.enabled = true;
+      listeners.forEach((listener) => listener());
+    },
+  };
+});
+vi.mock('../../../../../utils/hooks/useEnterpriseEdition', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../utils/hooks/useEnterpriseEdition')>()),
+  default: () => useSyncExternalStore(enterpriseEdition.subscribe, () => enterpriseEdition.enabled),
+}));
 
 const platformSettings = { key: 'platformSettings', label: 'Platform settings' };
 const item = (key: string, label: string, overrides: Record<string, unknown> = {}) => ({
@@ -19,6 +41,7 @@ const type = (key: string, label: string, items: ReturnType<typeof item>[], over
   label,
   description: `${label} description`,
   group: platformSettings,
+  lockedByEnterpriseEdition: false,
   items,
   itemsPageInfo: { hasNextPage: false, globalCount: items.length },
   ...overrides,
@@ -59,8 +82,12 @@ const builtInDefaultCatalog = () => [
 // More themes than the first page
 const pagedBrandingCatalog = () => tableCatalog({ itemsPageInfo: { hasNextPage: true, globalCount: 30 } });
 
+// The export is for BYPASS users
+const userContext = createMockUserContext({
+  me: { name: 'admin', capabilities: [{ name: 'BYPASS' }], userSubscriptions: { edges: [] } },
+});
 const renderOpenDrawer = async (onClose = vi.fn(), types: unknown[] = catalog) => {
-  const rendered = testRender(<ConfigPresetExportDrawer open onClose={onClose} />);
+  const rendered = testRender(<ConfigPresetExportDrawer open onClose={onClose} />, { userContext });
   await act(async () => {
     rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
       Query: () => ({ configPresetExportableTypes: types }),
@@ -74,6 +101,7 @@ describe('ConfigPresetExportDrawer', () => {
   const originalLocation = window.location;
 
   beforeEach(() => {
+    enterpriseEdition.enabled = false;
     Object.defineProperty(window, 'location', { configurable: true, value: { ...originalLocation, href: '' } });
   });
 
@@ -148,15 +176,29 @@ describe('ConfigPresetExportDrawer', () => {
     expect(screen.getByRole('checkbox', { name: 'Platform settings (1/2)' })).toHaveAttribute('data-state', 'indeterminate');
   });
 
-  it('does not show a type without item, nor a group left without type', async () => {
-    const emptyTypes = [
-      ...catalog,
-      { key: 'observedData', label: 'Observed datas', group: { key: 'entities', label: 'Entities' }, items: [] },
-    ];
-    await renderOpenDrawer(vi.fn(), emptyTypes);
-    expect(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' })).toBeInTheDocument();
-    expect(screen.queryByRole('checkbox', { name: /Entities/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('checkbox', { name: /Observed data/ })).not.toBeInTheDocument();
+  it('shows a type without item disabled and unchecked, with its description, and a group left without item disabled', async () => {
+    const entities = { key: 'entities', label: 'Entities' };
+    await renderOpenDrawer(vi.fn(), [...catalog, type('observedData', 'Observed datas', [], { group: entities })]);
+    expect(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' })).toBeEnabled();
+    expect(screen.getByRole('checkbox', { name: 'Entities (0/0)' })).toBeDisabled();
+    const empty = screen.getByRole('checkbox', { name: 'Observed data (0/0)' });
+    expect(empty).toBeDisabled();
+    expect(empty).toHaveAttribute('data-state', 'unchecked');
+    expect(screen.getByText('Observed datas description')).toBeInTheDocument();
+    // Nothing to expand below it
+    expect(screen.queryByRole('button', { name: /Expand Observed data/ })).not.toBeInTheDocument();
+  });
+
+  it('exports the other types, whether or not a type has no item, and does not send the empty one', async () => {
+    const { user, relayEnv } = await renderOpenDrawer(vi.fn(), [...catalog, type('observedData', 'Observed datas', [], { group: { key: 'entities', label: 'Entities' } })]);
+    await user.click(screen.getByRole('button', { name: 'Export Platform Bundle' }));
+    const { selections } = relayEnv.mock.getMostRecentOperation().request.variables;
+    expect(selections.map(({ type: key }: { type: string }) => key)).toEqual(['platform', 'messages', 'hiddenEntityTypes']);
+  });
+
+  it('disables the export when every type is without item', async () => {
+    await renderOpenDrawer(vi.fn(), [type('observedData', 'Observed datas', [])]);
+    expect(screen.getByRole('button', { name: 'Export Platform Bundle' })).toBeDisabled();
   });
 
   it('disables the export when nothing is selected', async () => {
@@ -206,6 +248,98 @@ describe('ConfigPresetExportDrawer', () => {
     });
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(window.location.href).toBe('/storage/get/export%2Fconfig_preset%2Fopencti-config.zip');
+  });
+
+  describe('a type that needs the Enterprise Edition', () => {
+    // On a platform without it the type has no item; with it, one
+    const lockedType = () => type('whitemark', 'Remove Filigran logos', [], { lockedByEnterpriseEdition: true });
+    const unlockedType = () => type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos')], { lockedByEnterpriseEdition: false });
+    const GATE = 'Activate the Enterprise Edition to export this item';
+    const exportedTypes = async ({ user, relayEnv }: Awaited<ReturnType<typeof renderOpenDrawer>>) => {
+      await user.click(screen.getByRole('button', { name: 'Export Platform Bundle' }));
+      return (relayEnv.mock.getMostRecentOperation().request.variables.selections as { type: string }[]).map(({ type: key }) => key);
+    };
+
+    it('is shown locked on a platform without it, with its chip, and is not exported', async () => {
+      const rendered = await renderOpenDrawer(vi.fn(), [...catalog, lockedType()]);
+      const gate = screen.getByRole('button', { name: GATE });
+      expect(within(gate).getByRole('checkbox', { hidden: true })).toHaveAttribute('data-state', 'unchecked');
+      expect(within(gate).getByText('EE')).toBeInTheDocument();
+      expect(within(gate).getByText('Remove Filigran logos description')).toBeInTheDocument();
+      // It has nothing to count: the groups are as without it
+      expect(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' })).toHaveAttribute('data-state', 'checked');
+      expect(await exportedTypes(rendered)).toEqual(['platform', 'messages', 'hiddenEntityTypes']);
+    });
+
+    it('is not selected by the group, which can still be cleared and checked', async () => {
+      const rendered = await renderOpenDrawer(vi.fn(), [...catalog, lockedType()]);
+      await rendered.user.click(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' }));
+      expect(screen.getByRole('checkbox', { name: 'Platform settings (0/2)' })).toHaveAttribute('data-state', 'unchecked');
+      await rendered.user.click(screen.getByRole('checkbox', { name: 'Platform settings (0/2)' }));
+      expect(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' })).toHaveAttribute('data-state', 'checked');
+      expect(within(screen.getByRole('button', { name: GATE })).getByRole('checkbox', { hidden: true })).toHaveAttribute('data-state', 'unchecked');
+    });
+
+    it('is shown with its label alone when it has no description', async () => {
+      await renderOpenDrawer(vi.fn(), [...catalog, type('whitemark', 'Remove Filigran logos', [], { lockedByEnterpriseEdition: true, description: '' })]);
+      expect(within(screen.getByRole('button', { name: GATE })).getByText('Remove Filigran logos')).toBeInTheDocument();
+    });
+
+    it.each([
+      [true, 'Enabled'],
+      [false, 'Disabled'],
+    ])('shows under its label whether it is on or off once the platform has the Enterprise Edition (%s)', async (isEnabled, label) => {
+      await renderOpenDrawer(vi.fn(), [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos', { isEnabled })], { description: '' })]);
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
+
+    it('shows nothing under its label when it is not set', async () => {
+      await renderOpenDrawer(vi.fn(), [...catalog, type('whitemark', 'Remove Filigran logos', [item('whitemark', 'Remove Filigran logos', { isEnabled: null })], { description: '' })]);
+      expect(screen.queryByText('Enabled')).not.toBeInTheDocument();
+      expect(screen.queryByText('Disabled')).not.toBeInTheDocument();
+    });
+
+    it('opens the license dialog instead of being selected', async () => {
+      const { user } = await renderOpenDrawer(vi.fn(), [...catalog, lockedType()]);
+      await user.click(screen.getByRole('button', { name: GATE }));
+      expect(await screen.findByText('OpenCTI Enterprise Edition (EE) license agreement')).toBeInTheDocument();
+    });
+
+    it('is loaded with its items once a license is activated, and exported, without losing the selection made until then', async () => {
+      const rendered = await renderOpenDrawer(vi.fn(), [...catalog, lockedType()]);
+      await rendered.user.click(screen.getByRole('checkbox', { name: 'Messages' }));
+      await act(async () => {
+        enterpriseEdition.activate();
+      });
+      // The catalog is read again, with what the license adds
+      await act(async () => {
+        rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+          Query: () => ({ configPresetExportableTypes: [...catalog, unlockedType()] }),
+        }));
+      });
+      expect(await screen.findByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'checked');
+      expect(screen.queryByRole('button', { name: GATE })).not.toBeInTheDocument();
+      expect(screen.getByRole('checkbox', { name: 'Messages' })).toHaveAttribute('data-state', 'unchecked');
+      expect(await exportedTypes(rendered)).toEqual(['platform', 'hiddenEntityTypes', 'whitemark']);
+    });
+
+    it('comes checked once a license is activated, even when its group was cleared before, as in the import', async () => {
+      const rendered = await renderOpenDrawer(vi.fn(), [...catalog, lockedType()]);
+      await rendered.user.click(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' }));
+      await act(async () => {
+        enterpriseEdition.activate();
+      });
+      await act(async () => {
+        rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+          Query: () => ({ configPresetExportableTypes: [...catalog, unlockedType()] }),
+        }));
+      });
+      // Only the type that was locked is checked again: what the user cleared stays cleared, and what is in another group is untouched
+      expect(await screen.findByRole('checkbox', { name: 'Remove Filigran logos' })).toHaveAttribute('data-state', 'checked');
+      expect(screen.getByRole('checkbox', { name: 'Platform configuration' })).toHaveAttribute('data-state', 'unchecked');
+      expect(screen.getByRole('checkbox', { name: 'Messages' })).toHaveAttribute('data-state', 'unchecked');
+      expect(await exportedTypes(rendered)).toEqual(['hiddenEntityTypes', 'whitemark']);
+    });
   });
 
   it('shows the description of each category under its name', async () => {
@@ -315,6 +449,16 @@ describe('ConfigPresetExportDrawer', () => {
       await user.click(screen.getByRole('button', { name: 'Manage' }));
       await user.click(screen.getByRole('button', { name: 'Back to bundle' }));
       expect(screen.getByRole('button', { name: 'Export Platform Bundle' })).toBeInTheDocument();
+    });
+
+    it('asks the server for the items each time the sub-view opens, not the store: the items change while the page stays open', async () => {
+      const { user, relayEnv } = await openThemes();
+      expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+      await user.click(screen.getByRole('button', { name: 'Back' }));
+      await user.click(screen.getByRole('button', { name: 'Manage' }));
+      // The items of the first opening are in the store: they are not the answer, the server is asked again
+      expect(relayEnv.mock.getAllOperations()).toHaveLength(1);
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ type: 'branding', count: 25 });
     });
 
     it('queries the excluded or selected items, and searches from the first page', async () => {

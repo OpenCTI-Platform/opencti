@@ -1,6 +1,11 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import testRender from '../../utils/tests/test-render';
+
+const flags = vi.hoisted(() => ({ enabled: ['TIME_SERIES_BREAKDOWN'] }));
+vi.mock('../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: (flag: string) => flags.enabled.includes(flag) }),
+}));
 
 vi.mock('@components/common/drafts/DraftsNumber', () => ({
   default: () => <div data-testid="drafts-number" />,
@@ -46,6 +51,9 @@ vi.mock('../../private/components/common/stix_core_objects/StixCoreObjectsMultiL
 }));
 vi.mock('../../private/components/common/stix_core_objects/StixCoreObjectsMultiAreaChart', () => ({
   default: () => <div data-testid="stix-area-chart" />,
+}));
+vi.mock('../../private/components/common/stix_core_objects/StixCoreObjectsTimeSeriesBreakdown', () => ({
+  default: () => <div data-testid="stix-time-series-breakdown" />,
 }));
 vi.mock('@components/common/stix_core_objects/StixCoreObjectsTimeline', () => ({
   default: () => <div data-testid="stix-timeline" />,
@@ -135,5 +143,62 @@ describe('DashboardEntitiesViz', () => {
       <DashboardEntitiesViz widget={widget} config={config} />,
     );
     expect(getByTestId('drafts-donut')).toBeTruthy();
+  });
+
+  describe('breakdown', () => {
+    const workspace = { kind: 'workspace' } as const;
+    const withBreakdown = (widget: Widget): Widget => ({ ...widget, parameters: { breakdownBy: 'entity_type' } });
+
+    it('renders every entities time series widget of a workspace as a breakdown', () => {
+      ['vertical-bar', 'line', 'area', 'heatmap'].forEach((type) => {
+        const { getByTestId, unmount } = testRender(
+          <DashboardEntitiesViz widget={withBreakdown(makeWidget(type, ['Report']))} config={config} host={workspace} />,
+        );
+        expect(getByTestId('stix-time-series-breakdown')).toBeTruthy();
+        unmount();
+      });
+    });
+
+    it('keeps the regular widget without breakdown', () => {
+      const { getByTestId } = testRender(
+        <DashboardEntitiesViz widget={makeWidget('line', ['Report'])} config={config} host={workspace} />,
+      );
+      expect(getByTestId('stix-line-chart')).toBeTruthy();
+    });
+
+    it('ignores a leftover breakdown on a widget that cannot be broken down', () => {
+      const { getByTestId } = testRender(
+        <DashboardEntitiesViz widget={withBreakdown(makeWidget('number', ['Report']))} config={config} host={workspace} />,
+      );
+      expect(getByTestId('stix-number')).toBeTruthy();
+    });
+
+    it('keeps draft widgets as they are', () => {
+      const { getByTestId } = testRender(
+        <DashboardEntitiesViz widget={withBreakdown(makeWidget('line', ['DraftWorkspace']))} config={config} host={workspace} />,
+      );
+      expect(getByTestId('drafts-multi-line-chart')).toBeTruthy();
+    });
+
+    describe('without the TIME_SERIES_BREAKDOWN feature flag', () => {
+      beforeEach(() => {
+        flags.enabled = [];
+      });
+      afterEach(() => {
+        flags.enabled = ['TIME_SERIES_BREAKDOWN'];
+      });
+
+      it('renders the regular widget, whatever breakdown it carries', () => {
+        const charts: Record<string, string> = { 'vertical-bar': 'stix-vertical-bars', line: 'stix-line-chart', area: 'stix-area-chart', heatmap: 'stix-heatmap' };
+        Object.entries(charts).forEach(([type, testId]) => {
+          const { getByTestId, queryByTestId, unmount } = testRender(
+            <DashboardEntitiesViz widget={withBreakdown(makeWidget(type, ['Report']))} config={config} host={workspace} />,
+          );
+          expect(getByTestId(testId)).toBeTruthy();
+          expect(queryByTestId('stix-time-series-breakdown')).toBeNull();
+          unmount();
+        });
+      });
+    });
   });
 });

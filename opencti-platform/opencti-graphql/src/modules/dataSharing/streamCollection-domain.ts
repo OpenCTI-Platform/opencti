@@ -4,13 +4,12 @@ import { pageEntitiesConnection, storeLoadById } from '../../database/middleware
 import { delEditContext, notify, setEditContext } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
-import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SETTINGS_SET_ACCESSES, SYSTEM_USER, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
+import { isUserHasCapability, MEMBER_ACCESS_RIGHT_VIEW, SETTINGS_SET_ACCESSES, SYSTEM_USER, TAXIIAPI, TAXIIAPI_SETCOLLECTIONS } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { validateFilterGroupForStreamOriginMatch } from '../../utils/filtering/filtering-stream-origin/stream-origin-filtering';
 import { authorizedMembers } from '../../schema/attribute-definition';
-import { TAXIIAPI } from '../user/user-domain';
 import { validatePublicUserId } from './dataSharing-utils';
 import { getConsumersForCollection, getLocalConsumerMetrics } from '../../graphql/streamConsumerRegistry';
 import { fetchStreamInfo } from '../../database/stream/stream-handler';

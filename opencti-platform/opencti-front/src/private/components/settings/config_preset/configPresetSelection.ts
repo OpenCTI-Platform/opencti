@@ -20,6 +20,8 @@ interface ExportableItem {
 interface CountedType {
   readonly key: string;
   readonly itemsPageInfo: { readonly globalCount: number };
+  // A locked type has nothing to select: it is never part of what is sent
+  readonly lockedByEnterpriseEdition?: boolean;
 }
 
 interface ExportableType extends CountedType {
@@ -147,7 +149,7 @@ export const buildConfigPresetItemsFilter = (
   return filter === 'selected' ? { ids: selectedIds } : { excludedIds: selectedIds };
 };
 
-// Mutation input, in the order of the types, without empty types; the backend adds the forced items itself
+// Mutation input, in the order of the types, without empty or locked types; the backend adds the forced items itself
 // importModes: what the import does with the items that exist, by item (import only)
 // forced: a type with nothing selected is still sent when a forced item of it has a mode, so that the item is imported with it
 export const buildConfigPresetSelections = (
@@ -157,6 +159,9 @@ export const buildConfigPresetSelections = (
   forced: ConfigPresetForcedItems = {},
 ) => {
   return types.flatMap((type): ConfigPresetSelectionInput[] => {
+    if (type.lockedByEnterpriseEdition) {
+      return [];
+    }
     const { mode, ids } = typeSelection(selection, type.key);
     const itemModes = toItemModes(importModes, type.key);
     const withMode = (input: ConfigPresetSelectionInput): ConfigPresetSelectionInput => (itemModes.length > 0 ? { ...input, item_modes: itemModes } : input);

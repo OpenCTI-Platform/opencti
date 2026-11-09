@@ -1,5 +1,5 @@
 import type { VocabularyCategory, VocabularyDefinition } from '../../generated/graphql';
-import { vocabularyDefinitions } from './vocabulary-types';
+import { isVocabularyCategoryEnabled, vocabularyDefinitions } from './vocabulary-types';
 import { UnsupportedError } from '../../config/errors';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
@@ -805,6 +805,13 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'linux' },
     { key: 'windows' },
   ],
+  closing_reason_ov: [
+    { key: 'true-positive', description: 'Confirmed and handled', order: 1 },
+    { key: 'false-positive', description: 'Not a real threat', order: 2 },
+    { key: 'duplicate', description: 'Duplicate of another entity', order: 3 },
+    { key: 'indeterminate', description: 'Could not be confirmed or dismissed', order: 4 },
+    { key: 'other', description: 'Other reason', order: 5 },
+  ],
   collection_layers_ov: [
     { key: 'container' },
     { key: 'cloud-control-plane' },
@@ -1217,21 +1224,34 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
   ],
 };
 
+const toVocabularyDefinition = (key: string, value: typeof vocabularyDefinitions[VocabularyCategory]): VocabularyDefinition => {
+  return { key: key as VocabularyCategory, ...value, closed: value.closed ?? false };
+};
+
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {
   return Object.entries(vocabularyDefinitions)
-    .filter(([_, value]) => value.entity_types?.length > 0)
-    .map(([key, value]) => ({ key: key as VocabularyCategory, ...value, closed: value.closed ?? false }))
+    .filter(([_, value]) => value.entity_types?.length > 0 && isVocabularyCategoryEnabled(value))
+    .map(([key, value]) => toVocabularyDefinition(key, value))
     .sort();
 };
 
+// Also returns a category hidden from the list by its feature flag: its values may still be stored on entities
+export const getVocabularyCategory = (key: string): VocabularyDefinition | undefined => {
+  const value = vocabularyDefinitions[key as VocabularyCategory];
+  return value ? toVocabularyDefinition(key, value) : undefined;
+};
+
+// Input resolution skips a disabled category: its field does not exist on the entity
+const getEnabledVocabularyDefinitions = () => Object.entries(vocabularyDefinitions).filter(([, definition]) => isVocabularyCategoryEnabled(definition));
+
 export const isEntityFieldAnOpenVocabulary = (fieldName: string, entityType: string) => {
-  return Object.entries(vocabularyDefinitions)
+  return getEnabledVocabularyDefinitions()
     .filter(([, { entity_types }]) => entity_types.includes(entityType))
     .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName)).length > 0;
 };
 
 export const getVocabularyCategoryForField = (fieldName: string, entityType: string) => {
-  const definitions = Object.entries(vocabularyDefinitions)
+  const definitions = getEnabledVocabularyDefinitions()
     .filter(([, { entity_types }]) => entity_types.includes(entityType))
     .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName))
     .map(([cat, def]) => ({ cat, def }));

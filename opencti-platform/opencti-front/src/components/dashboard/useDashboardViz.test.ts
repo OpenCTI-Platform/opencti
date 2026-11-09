@@ -9,6 +9,8 @@ import { WidgetDataSelection, WidgetHost } from 'src/utils/widget/widget';
 const loadMocks: Array<ReturnType<typeof vi.fn>> = [];
 const disposeMocks: Array<ReturnType<typeof vi.fn>> = [];
 let refreshTokenMockValue: number | null = null;
+// Resolutions of the selections holding a `deferred` key, run by the test, as a saved filter read from the API
+const deferredResolutions: Array<() => void> = [];
 
 vi.mock('react-relay', async (importOriginal) => {
   const React = await import('react');
@@ -31,10 +33,12 @@ vi.mock('react-relay', async (importOriginal) => {
   };
 });
 
+// The same schema at every render, as the one of the user context: a new one resolves the selection again
+const filterKeysSchema = new Map();
 vi.mock('../../utils/hooks/useAuth', () => ({
   default: () => ({
     schema: {
-      filterKeysSchema: new Map(),
+      filterKeysSchema,
     },
   }),
 }));
@@ -57,6 +61,9 @@ vi.mock('./dashboardVizUtils', () => ({
       isMissingSavedFilters: false,
       hasUnresolvedVariables: JSON.stringify(dataSelection).includes('$var:'),
     };
+    if (JSON.stringify(dataSelection).includes('deferred')) {
+      return { then: (cb: (r: typeof result) => void) => deferredResolutions.push(() => cb(result)) };
+    }
     return { then: (cb: (r: typeof result) => void) => cb(result) };
   }),
 }));
@@ -76,6 +83,7 @@ describe('useDashboardViz', () => {
     vi.setSystemTime(new Date('2026-06-02T10:00:12.345Z'));
     loadMocks.length = 0;
     disposeMocks.length = 0;
+    deferredResolutions.length = 0;
     refreshTokenMockValue = null;
   });
 
@@ -319,6 +327,100 @@ describe('useDashboardViz', () => {
     expect(result.current.renderGuards.hasUnresolvedVariables).toBe(true);
     expect(loadMocks.at(-1)).not.toHaveBeenCalled();
     expect(disposeMocks.at(-1)).toHaveBeenCalled();
+  });
+
+  it('does not query the selection it builds no variables for, and loads the next variables again', () => {
+    // No variables for a field the dataset does not support
+    const buildQueryVariables = vi.fn((_: unknown, __: unknown, parameters?: { breakdownBy?: string | null }) => (
+      parameters?.breakdownBy === 'unsupported' ? null : { field: parameters?.breakdownBy }
+    ));
+    const hook = renderHook(({ parameters }: { parameters: { breakdownBy: string } }) => useDashboardViz({
+      dataSelection: EMPTY_DATA_SELECTION,
+      perspective: 'entities',
+      query: {} as never,
+      config: {},
+      parameters,
+      buildQueryVariables,
+    }), { initialProps: { parameters: { breakdownBy: 'unsupported' } } });
+    const [loadSpy] = loadMocks;
+    const [disposeSpy] = disposeMocks;
+    expect(hook.result.current.skipped).toBe(true);
+    expect(loadSpy).not.toHaveBeenCalled();
+
+    hook.rerender({ parameters: { breakdownBy: 'objectLabel' } });
+    expect(hook.result.current.skipped).toBe(false);
+    expect(loadSpy).toHaveBeenCalledTimes(1);
+    expect(loadSpy.mock.lastCall?.[0]).toEqual({ field: 'objectLabel' });
+
+    // The query loaded before is not shown any more...
+    hook.rerender({ parameters: { breakdownBy: 'unsupported' } });
+    expect(hook.result.current.skipped).toBe(true);
+    expect(disposeSpy).toHaveBeenCalledTimes(1);
+    // ...and is loaded again with the same variables
+    hook.rerender({ parameters: { breakdownBy: 'objectLabel' } });
+    expect(loadSpy).toHaveBeenCalledTimes(2);
+    expect(loadSpy.mock.lastCall?.[0]).toEqual({ field: 'objectLabel' });
+    hook.unmount();
+  });
+
+  it('queries nothing while the selection is resolved, nor the previous filters with the new parameters', () => {
+    const buildQueryVariables = vi.fn((resolvedDataSelection: WidgetDataSelection[], _: unknown, parameters?: { breakdownBy?: string | null }) => ({
+      filters: resolvedDataSelection[0]?.filters ?? null,
+      field: parameters?.breakdownBy,
+    }));
+    const initialProps = { dataSelection: [{ filters: 'reports' }] as unknown as WidgetDataSelection[], parameters: { breakdownBy: 'objectLabel' } };
+    const hook = renderHook(({ dataSelection, parameters }: typeof initialProps) => useDashboardViz({
+      dataSelection,
+      perspective: 'entities',
+      query: {} as never,
+      config: {},
+      parameters,
+      buildQueryVariables,
+    }), { initialProps });
+    const [loadSpy] = loadMocks;
+    const [disposeSpy] = disposeMocks;
+    expect(hook.result.current.isResolving).toBe(false);
+    expect(loadSpy.mock.lastCall?.[0]).toEqual({ filters: 'reports', field: 'objectLabel' });
+
+    // Edited to read a saved filter, still read from the API, with another field
+    hook.rerender({ dataSelection: [{ filters: 'deferred' }] as unknown as WidgetDataSelection[], parameters: { breakdownBy: 'objectAssignee' } });
+    expect(hook.result.current.isResolving).toBe(true);
+    expect(hook.result.current.skipped).toBe(false);
+    expect(loadSpy).toHaveBeenCalledTimes(1);
+    expect(buildQueryVariables).not.toHaveBeenCalledWith([{ filters: 'reports' }], {}, { breakdownBy: 'objectAssignee' });
+    expect(disposeSpy).toHaveBeenCalledTimes(1);
+
+    act(() => deferredResolutions.shift()?.());
+    expect(hook.result.current.isResolving).toBe(false);
+    expect(loadSpy).toHaveBeenCalledTimes(2);
+    expect(loadSpy.mock.lastCall?.[0]).toEqual({ filters: 'deferred', field: 'objectAssignee' });
+    hook.unmount();
+  });
+
+  it('keeps the selection resolved on a refresh, which resolves the same selection again', () => {
+    const buildQueryVariables = vi.fn(() => ({ marker: 'refresh-resolution' }));
+    const hook = renderHook(() => useDashboardViz({
+      dataSelection: [{ filters: 'deferred' }] as unknown as WidgetDataSelection[],
+      perspective: 'entities',
+      query: {} as never,
+      config: {},
+      parameters: {},
+      buildQueryVariables,
+    }));
+    expect(hook.result.current.isResolving).toBe(true);
+    act(() => deferredResolutions.shift()?.());
+    expect(hook.result.current.isResolving).toBe(false);
+    const [loadSpy] = loadMocks;
+    const [disposeSpy] = disposeMocks;
+    expect(loadSpy).toHaveBeenCalledTimes(1);
+
+    refreshTokenMockValue = 1;
+    hook.rerender();
+    expect(hook.result.current.isResolving).toBe(false);
+    act(() => deferredResolutions.shift()?.());
+    expect(loadSpy).toHaveBeenCalledTimes(2);
+    expect(disposeSpy).not.toHaveBeenCalled();
+    hook.unmount();
   });
 
   it('passes the context variable values to the resolution', () => {

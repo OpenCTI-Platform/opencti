@@ -20,10 +20,12 @@ import {
   type QueryPublicStixCoreObjectsDistributionArgs,
   type QueryPublicStixCoreObjectsMultiTimeSeriesArgs,
   type QueryPublicStixCoreObjectsNumberArgs,
+  type QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs,
   type QueryPublicStixRelationshipsArgs,
   type QueryPublicStixRelationshipsDistributionArgs,
   type QueryPublicStixRelationshipsMultiTimeSeriesArgs,
   type QueryPublicStixRelationshipsNumberArgs,
+  type QueryPublicStixRelationshipsTimeSeriesBreakdownArgs,
 } from '../../generated/graphql';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { getUserAccessRight, isUserInPlatformOrganization, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
@@ -33,6 +35,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, resolvePublicDashboardTimeRange, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
+import { buildPublicBreakdownArgs, withPublicBreakdownRefusals } from './publicDashboard-breakdown';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
 import { buildDashboardDateVariableIds, buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
 import { applyPublicationTimeRange, buildPublicationVariableValues, toPublicationTimeZone } from './publicDashboard-publication';
@@ -42,9 +45,16 @@ import {
   stixCoreObjectsDistributionByEntity,
   stixCoreObjectsMultiTimeSeries,
   stixCoreObjectsNumber,
+  stixCoreObjectsTimeSeriesBreakdown,
 } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
-import { findStixRelationPaginated, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
+import {
+  findStixRelationPaginated,
+  stixRelationshipsDistribution,
+  stixRelationshipsMultiTimeSeries,
+  stixRelationshipsNumber,
+  stixRelationshipsTimeSeriesBreakdown,
+} from '../../domain/stixRelationship';
 import { bookmarks, checkUserCanShareMarkings } from '../user/user-domain';
 import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
@@ -187,6 +197,8 @@ const createPublicManifest = (manifest: any) => {
         const publicDataSelection = widget.dataSelection.map((selection: any) => {
           return {
             ...(selection.label && { label: selection.label }),
+            // The kind of elements of the dataset: the front only routes a widget to its breakdown when they are the ones of the widget
+            ...(selection.perspective && { perspective: selection.perspective }),
             ...(selection.attribute && { attribute: selection.attribute }),
             ...(selection.date_attribute && { date_attribute: selection.date_attribute }),
             ...(isNotEmptyField(selection.number) && { number: selection.number }),
@@ -366,14 +378,14 @@ interface PublicWidgetArgs {
 }
 
 const ensurePublicContext = async (context: AuthContext, args: PublicWidgetArgs) => {
-  const { user, dataSelection, parameters, config } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  const { user, type, perspective, dataSelection, parameters, config } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
   // The range of the visitor only applies when the author allowed it; otherwise the published one is enforced.
   const { startDate, endDate } = resolvePublicDashboardTimeRange(config, { startDate: args.startDate, endDate: args.endDate });
-  return { user, dataSelection, parameters, startDate, endDate };
+  return { user, type, perspective, dataSelection, parameters, startDate, endDate };
 };
 
 // heatmap & vertical-bar & line & area
@@ -391,6 +403,28 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   };
   // Use standard API
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
+};
+
+// vertical-bar & line & area & heatmap with a breakdown: one series per value of a field
+export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs) => {
+  const { user, startDate, endDate, ...widget } = await ensurePublicContext(context, args);
+
+  // The dates follow the published range unless the author allowed the visitors to change them
+  const breakdownArgs = buildPublicBreakdownArgs({ ...args, startDate, endDate }, widget, 'entities');
+  // Use standard API, with the interval the dates are counted in
+  const breakdown = await withPublicBreakdownRefusals(() => stixCoreObjectsTimeSeriesBreakdown(context, user, breakdownArgs));
+  return breakdown && { ...breakdown, interval: breakdownArgs.interval };
+};
+
+// vertical-bar & line & area & heatmap of relationships with a breakdown
+export const publicStixRelationshipsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixRelationshipsTimeSeriesBreakdownArgs) => {
+  const { user, startDate, endDate, ...widget } = await ensurePublicContext(context, args);
+
+  // The dates follow the published range unless the author allowed the visitors to change them
+  const breakdownArgs = buildPublicBreakdownArgs({ ...args, startDate, endDate }, widget, 'relationships');
+  // Use standard API, with the interval the dates are counted in
+  const breakdown = await withPublicBreakdownRefusals(() => stixRelationshipsTimeSeriesBreakdown(context, user, breakdownArgs));
+  return breakdown && { ...breakdown, interval: breakdownArgs.interval };
 };
 
 export const publicStixRelationshipsMultiTimeSeries = async (

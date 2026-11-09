@@ -68,7 +68,7 @@ describe('importHiddenEntityTypes', () => {
 
   it('skips a configuration that is the state of the platform, whatever the order and the repetitions of the list', async () => {
     expect(await importHiddenEntityTypes(context, user, configuration('Report', 'Channel', 'Report'), overwrite))
-      .toMatchObject({ status: 'skipped', code: 'nothing_to_import', reason: 'Nothing to import' });
+      .toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date' });
     expect(entitySettingsEditField).not.toHaveBeenCalled();
   });
 

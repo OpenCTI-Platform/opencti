@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
+import { getRegisteredTypeFromIndexedName, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import type { AttributeDefinition, ComplexAttributeWithMappings, MappingDefinition } from '../../../src/schema/attribute-definition';
 
@@ -130,5 +130,34 @@ describe.each([
     expect(missing).toThrow(MAPPINGS_ERROR);
     const type = register('test_deep_type', [nested('test_sub', [short('test_value')])], [nested('test_sub', [integer('test_value')])]);
     expect(type).toThrow(TYPE_ERROR);
+  });
+});
+
+describe('Schema attributes registered type of an indexed type name', () => {
+  it('should give the registered type of its lowercase name, with its letter case', () => {
+    vi.spyOn(schemaAttributesDefinition, 'getRegisteredTypes').mockReturnValue(['IMEI', 'SecurityPlatform', 'Intrusion-Set', 'IPv4-Addr', 'uses']);
+    expect(['imei', 'securityplatform', 'intrusion-set', 'ipv4-addr', 'uses'].map(getRegisteredTypeFromIndexedName))
+      .toEqual(['IMEI', 'SecurityPlatform', 'Intrusion-Set', 'IPv4-Addr', 'uses']);
+    // Only lowercase names are indexed, and a name of no registered type has none
+    expect(getRegisteredTypeFromIndexedName('IMEI')).toBeUndefined();
+    expect(getRegisteredTypeFromIndexedName('not-registered')).toBeUndefined();
+    vi.restoreAllMocks();
+  });
+
+  it('should keep the first registered type of a lowercase name', () => {
+    vi.spyOn(schemaAttributesDefinition, 'getRegisteredTypes').mockReturnValue(['Test-Type', 'test-type']);
+    expect(getRegisteredTypeFromIndexedName('test-type')).toEqual('Test-Type');
+    vi.restoreAllMocks();
+  });
+
+  it('should know the types registered after its first use', () => {
+    // The registered types grow in place
+    const registeredTypes = ['Test-First'];
+    vi.spyOn(schemaAttributesDefinition, 'getRegisteredTypes').mockReturnValue(registeredTypes);
+    expect(getRegisteredTypeFromIndexedName('test-first')).toEqual('Test-First');
+    expect(getRegisteredTypeFromIndexedName('test-second')).toBeUndefined();
+    registeredTypes.push('Test-Second');
+    expect(getRegisteredTypeFromIndexedName('test-second')).toEqual('Test-Second');
+    vi.restoreAllMocks();
   });
 });
