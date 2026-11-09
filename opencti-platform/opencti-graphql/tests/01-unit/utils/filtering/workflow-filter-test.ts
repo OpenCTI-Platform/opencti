@@ -28,13 +28,40 @@ describe('adaptFilterToWorkflowFilterKey', () => {
   });
 
   // Draft filters saved before DraftWorkspace carried x_opencti_workflow_id use the old key
-  it('resolves the deprecated workflowInstanceCurrentState key exactly like workflow_id', async () => {
-    for (const operator of [FilterOperator.Eq, FilterOperator.NotEq, FilterOperator.Nil, FilterOperator.NotNil]) {
-      const values = operator === FilterOperator.Eq || operator === FilterOperator.NotEq ? ['template-done'] : [];
-      const legacy = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, statusFilter(WORKFLOW_INSTANCE_STATUS_FILTER, operator, values));
-      const current = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, statusFilter(WORKFLOW_FILTER, operator, values));
-      expect(legacy.newFilterGroup).toEqual(current.newFilterGroup);
-      expect(legacy.newFilter?.key).toEqual(current.newFilter?.key);
-    }
+  describe('the deprecated workflowInstanceCurrentState key', () => {
+    const legacyFilter = (operator: FilterOperator, values: string[], mode = FilterMode.Or): Filter => ({ key: [WORKFLOW_INSTANCE_STATUS_FILTER], values, operator, mode });
+
+    it('resolves eq, nil and not_nil exactly like workflow_id', async () => {
+      for (const operator of [FilterOperator.Eq, FilterOperator.Nil, FilterOperator.NotNil]) {
+        const values = operator === FilterOperator.Eq ? ['template-done'] : [];
+        const legacy = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, statusFilter(WORKFLOW_INSTANCE_STATUS_FILTER, operator, values));
+        const current = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, statusFilter(WORKFLOW_FILTER, operator, values));
+        expect(legacy.newFilterGroup).toEqual(current.newFilterGroup);
+        expect(legacy.newFilter?.key).toEqual(current.newFilter?.key);
+      }
+    });
+
+    it('excludes every listed state with not_eq, whatever the filter mode', async () => {
+      const { newFilterGroup } = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, legacyFilter(FilterOperator.NotEq, ['template-review', 'template-done'], FilterMode.Or));
+
+      expect(newFilterGroup?.mode).toEqual(FilterMode.And);
+      expect(newFilterGroup?.filters.map((f) => f.operator)).toEqual([FilterOperator.NotEq, FilterOperator.NotEq]);
+    });
+
+    it('matches any listed state with eq, whatever the filter mode', async () => {
+      const { newFilterGroup } = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, legacyFilter(FilterOperator.Eq, ['template-review', 'template-done'], FilterMode.And));
+
+      expect(newFilterGroup?.mode).toEqual(FilterMode.Or);
+    });
+
+    it('accepts only_eq_to and not_only_eq_to as eq and not_eq: a draft is in a single state', async () => {
+      const onlyEq = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, legacyFilter(FilterOperator.OnlyEqTo, ['template-done']));
+      const eq = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, legacyFilter(FilterOperator.Eq, ['template-done']));
+      const notOnlyEq = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, legacyFilter(FilterOperator.NotOnlyEqTo, ['template-done']));
+      const notEq = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, legacyFilter(FilterOperator.NotEq, ['template-done']));
+
+      expect(onlyEq.newFilterGroup).toEqual(eq.newFilterGroup);
+      expect(notOnlyEq.newFilterGroup).toEqual(notEq.newFilterGroup);
+    });
   });
 });
