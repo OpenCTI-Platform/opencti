@@ -5,6 +5,7 @@ import testRender, { createMockUserContext } from '../../../../utils/tests/test-
 import { fromB64, toB64 } from '../../../../utils/String';
 import { dashboardVariablesStorageKey } from '../../../../components/dashboard/dashboardVariablesStorage';
 import { dashboardTimeRangeStorageKey } from '../../../../components/dashboard/dashboardTimeRangeStorage';
+import { MESSAGING$ } from '../../../../relay/environment';
 import CustomDashboard from './CustomDashboard';
 
 const captured = vi.hoisted(() => ({
@@ -17,6 +18,7 @@ const captured = vi.hoisted(() => ({
   timeFilters: undefined as { config: Record<string, unknown>; handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void } | undefined,
   contentConfig: undefined as Record<string, unknown> | undefined,
   contentMarkerNames: undefined as ReadonlyMap<string, readonly string[]> | undefined,
+  handleImportWidget: undefined as ((file: File) => void) | undefined,
 }));
 
 vi.mock('../../../../components/dashboard/DashboardVariableValuesContext', async (importOriginal) => ({
@@ -57,8 +59,9 @@ vi.mock('../../../../utils/hooks/useVocabularyCategory', () => ({ default: vi.fn
 // The Create widget entry point lives in the header: it must see the variable definitions too.
 vi.mock('../workspaceHeader/WorkspaceHeader', async () => {
   const { useOptionalDashboardVariableDefinitions } = await import('../../../../components/dashboard/DashboardVariablesContext');
-  const Header = ({ editionExtra }: { editionExtra?: ReactNode }) => {
+  const Header = ({ editionExtra, handleImportWidget }: { editionExtra?: ReactNode; handleImportWidget?: (file: File) => void }) => {
     const definitions = useOptionalDashboardVariableDefinitions();
+    captured.handleImportWidget = handleImportWidget;
     return (
       <>
         <div>workspace-header</div>
@@ -696,5 +699,60 @@ describe('CustomDashboard widget usage marker', () => {
   it('gives no marker when the flag is off', () => {
     testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });
     expect(captured.contentMarkerNames).toBeUndefined();
+  });
+});
+
+describe('CustomDashboard widget import', () => {
+  const MISSING_ID = '22222222-2222-4222-8222-222222222222';
+  const tokenFilters = (ids: string[]) => ({ mode: 'and', filters: [{ key: ['entity_type'], values: ids.map((id) => `$var:${id}`), operator: 'eq', mode: 'or' }], filterGroups: [] });
+  const widgetFile = (ids: string[]) => new File([JSON.stringify({
+    openCTI_version: '7.0.0',
+    type: 'widget',
+    configuration: toB64(JSON.stringify({ type: 'number', perspective: 'entities', dataSelection: [{ filters: tokenFilters(ids) }] })),
+  })], 'widget.json', { type: 'application/json' });
+  const widgetImportCall = () => captured.commit.mock.calls.find(([config]) => config?.variables?.input?.importType === 'widget')?.[0];
+
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.history.replaceState(null, '', '/');
+    captured.granted = true;
+    captured.commit.mockReset();
+    captured.handleImportWidget = undefined;
+  });
+
+  it('warns about the variables of the imported widget missing from the dashboard, once imported', async () => {
+    const notifyWarning = vi.spyOn(MESSAGING$, 'notifyWarning');
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    act(() => captured.handleImportWidget?.(widgetFile([SECTOR_ID, MISSING_ID])));
+    await waitFor(() => expect(widgetImportCall()).toBeDefined());
+    expect(notifyWarning).not.toHaveBeenCalled();
+    act(() => widgetImportCall().onCompleted());
+    expect(notifyWarning).toHaveBeenCalledTimes(1);
+    notifyWarning.mockRestore();
+  });
+
+  it('warns about nothing when the dashboard holds every variable of the widget, or without the feature flag', async () => {
+    const notifyWarning = vi.spyOn(MESSAGING$, 'notifyWarning');
+    const { unmount } = testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    act(() => captured.handleImportWidget?.(widgetFile([SECTOR_ID])));
+    await waitFor(() => expect(widgetImportCall()).toBeDefined());
+    act(() => widgetImportCall().onCompleted());
+    unmount();
+    captured.commit.mockReset();
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext([]) });
+    act(() => captured.handleImportWidget?.(widgetFile([MISSING_ID])));
+    await waitFor(() => expect(widgetImportCall()).toBeDefined());
+    act(() => widgetImportCall().onCompleted());
+    expect(notifyWarning).not.toHaveBeenCalled();
+    notifyWarning.mockRestore();
+  });
+
+  it('still imports the widget when the file cannot be read', async () => {
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext(['DASHBOARD_VARIABLES']) });
+    const unreadable = widgetFile([MISSING_ID]);
+    vi.spyOn(unreadable, 'text').mockRejectedValue(new Error('The file was removed'));
+    act(() => captured.handleImportWidget?.(unreadable));
+    await waitFor(() => expect(widgetImportCall()).toBeDefined());
+    expect(widgetImportCall().variables.input.file).toBe(unreadable);
   });
 });

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useNavigate, useParams } from 'react-router';
 import ReactGridLayout, { useContainerWidth } from 'react-grid-layout';
@@ -12,6 +12,13 @@ import PublicTopBar from './PublicTopBar';
 import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
 import { useFormatter } from '../../components/i18n';
 import type { DashboardManifest } from '../../components/dashboard/dashboard-types';
+import {
+  applyPublishedTimeRangeChange,
+  isSamePublishedTimeRange,
+  pickPublishedTimeRange,
+  type PublishedDateField,
+  type PublishedTimeRange,
+} from '@components/workspaces/dashboards/public_dashboards/public-dashboard-utils';
 import useDashboardRefresh from '../../components/dashboard/useDashboardRefresh';
 import DashboardRefreshControl from '../../components/dashboard/DashboardRefreshControl';
 import { DashboardRefreshProvider } from '../../components/dashboard/DashboardRefreshContext';
@@ -62,16 +69,32 @@ const PublicDashboardComponent = ({
     }
   }, [publicDashboardByUriKey, navigate]);
 
+  // The published range is the default; a visitor may pick another one when the author allowed viewers to edit the
+  // time filters. Local to the page: nothing is written anywhere.
+  const canEditTimeFilters = config?.allowViewersToEditTimeFilters === true;
+  const publishedRange = useMemo(() => pickPublishedTimeRange(config), [config?.startDate, config?.endDate, config?.relativeDate]);
+  const [localRange, setLocalRange] = useState<PublishedTimeRange | null>(null);
+  const effectiveRange = canEditTimeFilters && localRange ? localRange : publishedRange;
+  const effectiveConfig = useMemo(
+    () => (config ? { ...config, ...effectiveRange } : config),
+    [config, effectiveRange.startDate, effectiveRange.endDate, effectiveRange.relativeDate],
+  );
+  const changeRange = (type: PublishedDateField, value: string | null) => {
+    if (!canEditTimeFilters) return;
+    const next = applyPublishedTimeRangeChange(effectiveRange, type, value);
+    setLocalRange(isSamePublishedTimeRange(next, publishedRange) ? null : next);
+  };
+
   const {
     entityWidget,
     relationshipWidget,
     rawWidget,
     auditWidget,
-  } = usePublicDashboardWidgets(uriKey, config);
+  } = usePublicDashboardWidgets(uriKey, effectiveConfig);
 
-  const onChangeRelativeDate = () => {};
-  const onChangeStartDate = () => {};
-  const onChangeEndDate = () => {};
+  const onChangeRelativeDate = (value: string) => changeRange('relativeDate', value);
+  const onChangeStartDate = (value: string | null) => changeRange('startDate', value);
+  const onChangeEndDate = (value: string | null) => changeRange('endDate', value);
 
   if (!publicDashboardByUriKey || !config) {
     return null;
@@ -86,7 +109,9 @@ const PublicDashboardComponent = ({
       <DashboardRefreshProvider refreshToken={refreshToken}>
         <PublicDashboardHeader
           title={publicDashboardByUriKey?.name ?? ''}
-          manifestConfig={config}
+          manifestConfig={effectiveConfig ?? config}
+          editable={canEditTimeFilters}
+          onReset={canEditTimeFilters && localRange ? () => setLocalRange(null) : undefined}
           onChangeRelativeDate={onChangeRelativeDate}
           onChangeStartDate={onChangeStartDate}
           onChangeEndDate={onChangeEndDate}

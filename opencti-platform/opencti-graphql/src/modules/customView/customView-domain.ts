@@ -34,7 +34,8 @@ import { updateAttribute } from '../../database/middleware';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addCustomViewCreatedCount, addCustomViewEnabledCount } from '../../manager/telemetryManager';
 import { lockResources } from '../../lock/master-lock';
-import { stripServerOwnedManifestKeys } from '../workspace/workspace-variables-utils';
+import { hasDashboardVariableWidget, sanitizeCustomViewManifest } from '../workspace/workspace-variables-utils';
+import { isFeatureEnabled } from '../../config/conf';
 
 /**
  * Exclusion list: entity types not capable of
@@ -192,7 +193,7 @@ export const addCustomView = async (
   }
   const customViewToCreate = {
     description: input.description,
-    manifest: stripServerOwnedManifestKeys(input.manifest),
+    manifest: sanitizeCustomViewManifest(input.manifest),
     name: input.name,
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
@@ -270,7 +271,7 @@ export const editCustomView = async (
       customViewId,
       ENTITY_TYPE_CUSTOM_VIEW,
       [
-        ...input.map((entry) => (entry.key === 'manifest' ? { ...entry, value: entry.value.map(stripServerOwnedManifestKeys) } : entry)),
+        ...input.map((entry) => (entry.key === 'manifest' ? { ...entry, value: entry.value.map(sanitizeCustomViewManifest) } : entry)),
         ...(nameInput ? [{
           key: 'slug',
           value: [slugify(nameInput.value[0])],
@@ -314,13 +315,22 @@ export const customViewImportWidgetConfiguration = async (
     user,
     input.file,
     input.manifest,
+    {
+      // Dashboard variables do not exist in a custom view: a widget using them would never show data.
+      // Checked on the widget of the file, before anything is resolved; the whole manifest is checked when stored.
+      validateWidget: (widget) => {
+        if (isFeatureEnabled('DASHBOARD_VARIABLES') && hasDashboardVariableWidget({ imported: widget })) {
+          throw FunctionalError('A widget using dashboard variables cannot be imported into a custom view');
+        }
+      },
+    },
   );
   return editInternalObject<StoreEntityCustomView>(
     context,
     user,
     customViewId,
     ENTITY_TYPE_CUSTOM_VIEW,
-    [{ key: 'manifest', value: [stripServerOwnedManifestKeys(updatedManifest)] }],
+    [{ key: 'manifest', value: [sanitizeCustomViewManifest(updatedManifest)] }],
     {
       auditLogEnabled: true,
       auditLogContextSanitizer: (input) => input.map((entry) => ({
@@ -357,7 +367,7 @@ export async function duplicateCustomView(
   }
   const customViewToCreate = {
     description: input.description,
-    manifest: stripServerOwnedManifestKeys(input.manifest),
+    manifest: sanitizeCustomViewManifest(input.manifest),
     name: input.name,
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
@@ -451,11 +461,11 @@ export const importCustomViewConfiguration = async (
         entityType: resolvedTargetEntityType,
       });
   }
-  // Manifest ids must be rewritten for filters
-  const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');
+  // Checked before the ids are rewritten for filters: a refused manifest costs no lookup.
+  const generatedManifest = await convertDashboardManifestIds(context, user, sanitizeCustomViewManifest(manifest), 'stix');
   const customViewToCreate = {
     name: parsedData.configuration.name,
-    manifest: stripServerOwnedManifestKeys(generatedManifest),
+    manifest: generatedManifest,
     target_entity_type: resolvedTargetEntityType,
     slug: slugify(parsedData.configuration.name),
     default: false,

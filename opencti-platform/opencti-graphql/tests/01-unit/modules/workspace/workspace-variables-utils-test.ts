@@ -1,8 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
+import { ENABLED_FEATURE_FLAGS } from '../../../../src/config/conf';
 import {
   buildVariableAuditInput,
+  hasDashboardVariableWidget,
   preserveServerOwnedManifestKeys,
+  sanitizeCustomViewManifest,
   stripServerOwnedManifestKeys,
   toGraphqlDashboardVariables,
   validateManifestVariables,
@@ -123,5 +126,44 @@ describe('stripServerOwnedManifestKeys', () => {
     expect(stripServerOwnedManifestKeys('')).toEqual('');
     expect(stripServerOwnedManifestKeys(undefined)).toBeUndefined();
     expect(stripServerOwnedManifestKeys('%%%not-base64-json')).toEqual('%%%not-base64-json');
+  });
+});
+
+describe('hasDashboardVariableWidget', () => {
+  const tokenFilters = { mode: 'and', filters: [{ key: ['entity_type'], values: [`$var:${VAR_ID}`] }], filterGroups: [] };
+  it('should find a token in the filters, dynamicFrom and dynamicTo of a widget', () => {
+    expect(hasDashboardVariableWidget({ a: { dataSelection: [{ filters: tokenFilters }] } })).toBe(true);
+    expect(hasDashboardVariableWidget({ a: { dataSelection: [{ filters: FILTERS }, { dynamicTo: tokenFilters }] } })).toBe(true);
+    expect(hasDashboardVariableWidget({ a: { dataSelection: [{ filters: FILTERS, dynamicFrom: FILTERS }] } })).toBe(false);
+  });
+  it('should ignore a token outside the filters, and malformed widgets', () => {
+    expect(hasDashboardVariableWidget({ a: { parameters: { content: `$var:${VAR_ID}` }, dataSelection: [{ label: `$var:${VAR_ID}` }] } })).toBe(false);
+    expect(hasDashboardVariableWidget({ a: null, b: { dataSelection: 'x' }, c: { dataSelection: [null, 1] } })).toBe(false);
+    expect(hasDashboardVariableWidget(undefined)).toBe(false);
+    expect(hasDashboardVariableWidget([{ dataSelection: [{ filters: tokenFilters }] }])).toBe(false);
+  });
+});
+
+describe('sanitizeCustomViewManifest', () => {
+  const previousFlags = [...ENABLED_FEATURE_FLAGS];
+  const setFlags = (flags: string[]) => ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...flags);
+  afterEach(() => setFlags(previousFlags));
+  const tokenWidget = { dataSelection: [{ filters: { mode: 'and', filters: [{ key: ['entity_type'], values: [`$var:${VAR_ID}`] }], filterGroups: [] } }] };
+
+  it('should refuse a widget using a dashboard variable with the feature', () => {
+    setFlags(['DASHBOARD_VARIABLES']);
+    expect(() => sanitizeCustomViewManifest(toB64({ widgets: { a: tokenWidget } }))).toThrow('A widget using dashboard variables cannot be used in a custom view');
+  });
+  it('should strip the server-owned keys of an accepted manifest', () => {
+    setFlags(['DASHBOARD_VARIABLES']);
+    const result = sanitizeCustomViewManifest(toB64({ widgets: { a: { dataSelection: [{ filters: FILTERS }] } }, variables: [{ id: VAR_ID }], presets: [] }));
+    expect(fromB64(result as string)).toEqual({ widgets: { a: { dataSelection: [{ filters: FILTERS }] } } });
+    expect(sanitizeCustomViewManifest(undefined)).toBeUndefined();
+    expect(sanitizeCustomViewManifest('%%%not-base64-json')).toEqual('%%%not-base64-json');
+  });
+  it('should accept a widget using a dashboard variable without the feature, as before', () => {
+    setFlags([]);
+    const encoded = toB64({ widgets: { a: tokenWidget } });
+    expect(sanitizeCustomViewManifest(encoded)).toEqual(encoded);
   });
 });
