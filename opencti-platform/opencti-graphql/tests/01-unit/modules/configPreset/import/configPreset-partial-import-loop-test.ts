@@ -174,6 +174,19 @@ describe('Config preset partial import: the running record', () => {
     expect(endConfigPresetImportRunning).toHaveBeenCalledWith(user, expect.any(String), true);
   });
 
+  it('writes no running record, and nothing at all, when the lock was lost while the zip was read', async () => {
+    // The lock is lost while the upload is read: another import may hold it and own the running record by now
+    vi.mocked(withConfigPresetImportLock).mockImplementation(async (_context, fn) => {
+      lockController.abort();
+      return fn({ signal: lockController.signal } as never);
+    });
+    await expect(importThemes()).rejects.toThrow('Import stopped: lock lost');
+    expect(startConfigPresetImportRunning).not.toHaveBeenCalled();
+    expect(endConfigPresetImportRunning).not.toHaveBeenCalled();
+    expect(importConfigPresetItem).not.toHaveBeenCalled();
+    expect(publishUserAction).not.toHaveBeenCalled();
+  });
+
   it('imports nothing when the running record cannot be written', async () => {
     vi.mocked(startConfigPresetImportRunning).mockRejectedValue(new Error('redis down'));
     await expect(importThemes()).rejects.toThrow('redis down');

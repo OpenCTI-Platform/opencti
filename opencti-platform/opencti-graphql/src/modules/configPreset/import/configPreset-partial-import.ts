@@ -161,6 +161,11 @@ export const configPresetPartialImport = async (
     // The running record of the wizard, written under the lock like the real import of the wizard does: a wizard import started meanwhile
     // is refused with the name of who imports, a stale applying wizard session reads as interrupted, and the end of the import
     // writes last_finished_at, so that the wizard drops a simulation the import made stale. A failure here stops before any write.
+    // The record is written without condition: a callback that lost its lock while it read the zip (the upload may still be arriving)
+    // would overwrite, then delete, the record of the import that took over. Checked again just before, nothing is written then.
+    if (lock.signal.aborted) {
+      throw FunctionalError('Import stopped: lock lost');
+    }
     const startedAt = new Date().toISOString();
     await startConfigPresetImportRunning(importContext, user, startedAt, items.length);
     // The same plan as the real import of the wizard: the items that depend on another one of the type get the one written
