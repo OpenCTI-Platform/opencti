@@ -51,7 +51,7 @@ A preset is a named snapshot of the values of all the variables and of the time 
 - When your current values differ from the selected preset, **Update preset** (editors only) saves them into it.
 - Editors can rename and delete a preset from the selector.
 
-The selected preset is personal, like the values: it is kept in your browser and in the address bar.
+The selected preset is personal, like the values: it is kept in your browser and in the address bar, so sharing the address opens the same view. A value changed on top of a preset is kept apart from it: **Reset** drops it and goes back to your default preset, or to the defaults of the dashboard.
 
 ### Default preset
 
