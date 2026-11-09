@@ -89,7 +89,7 @@ describe('ThemeImporter', () => {
       ConfigPresetPartialImportPreview: () => ({
         bundle_name: null,
         default_mode: 'COPY',
-        type: { key: 'branding', modes: ['OVERWRITE', 'COPY'], items: [{ key: 'theme--a', label: 'Night', translatable: false, exists: false, conflict: false }] },
+        type: { key: 'branding', label: 'Branding', description: '', lockedByEnterpriseEdition: false, modes: ['OVERWRITE', 'COPY'], items: [{ key: 'theme--a', label: 'Night', translatable: false, exists: false, conflict: false }] },
       }),
     });
     await rendered.user.click(screen.getByTestId('config-preset-partial-import-submit'));

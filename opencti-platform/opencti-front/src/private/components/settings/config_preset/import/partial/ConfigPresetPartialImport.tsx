@@ -11,6 +11,7 @@ import { type ConfigImportMode, isConfigImportMode } from '../../configImportMod
 import ConfigPresetBundleFileSelect from '../ConfigPresetBundleFileSelect';
 import ConfigPresetImportModeSelect from '../ConfigPresetImportModeSelect';
 import ConfigPresetResultLine from '../ConfigPresetResultLine';
+import { ConfigPresetLockedTypeRow } from '../../ConfigPresetSelectionAccordion';
 import { partialImportItemModes, partialImportSelectedKeys, toggleSelectedKey } from './configPresetPartialImportSelection';
 import { ConfigPresetPartialImportPreviewMutation, ConfigPresetPartialImportPreviewMutation$data } from './__generated__/ConfigPresetPartialImportPreviewMutation.graphql';
 import { ConfigPresetPartialImportMutation, ConfigPresetPartialImportMutation$data } from './__generated__/ConfigPresetPartialImportMutation.graphql';
@@ -22,6 +23,9 @@ const configPresetPartialImportPreviewMutation = graphql`
       default_mode
       type {
         key
+        label
+        description
+        lockedByEnterpriseEdition
         modes
         items {
           key
@@ -171,7 +175,11 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
             {t_i18n('Bundle: {name}', { values: { name: preview.bundle_name } })}
           </Text>
         )}
-        {preview && items.length === 0 && (
+        {/* A type of the Enterprise Edition on a platform without it comes with no item: the lock, before the empty bundle */}
+        {preview?.type?.lockedByEnterpriseEdition && (
+          <ConfigPresetLockedTypeRow type={preview.type} title="Activate the Enterprise Edition to import this item" />
+        )}
+        {preview && !preview.type?.lockedByEnterpriseEdition && items.length === 0 && (
           <Text variant="content-base">{t_i18n('This configuration bundle holds no {items}.', { values: { items: itemsLabel } })}</Text>
         )}
         {items.length > 0 && (

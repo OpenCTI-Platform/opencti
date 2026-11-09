@@ -5,6 +5,12 @@ import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender from '../../../../../../utils/tests/test-render';
 import ConfigPresetPartialImport from './ConfigPresetPartialImport';
 
+// The lock of a type comes from the backend (lockedByEnterpriseEdition): the license dialog its row opens is not under test here
+vi.mock('../../../../../../utils/hooks/useEnterpriseEdition', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../../utils/hooks/useEnterpriseEdition')>()),
+  default: () => true,
+}));
+
 type Rendered = ReturnType<typeof testRender>;
 
 const operation = ({ relayEnv }: Rendered, name: string) => relayEnv.mock.getAllOperations().find((candidate) => candidate.request.node.operation.name === name)!;
@@ -19,7 +25,7 @@ const resolve = async (rendered: Rendered, name: string, resolvers: Record<strin
 const previewOf = (items: unknown[]) => ({
   bundle_name: 'Prod bundle',
   default_mode: 'COPY',
-  type: { key: 'branding', modes: ['OVERWRITE', 'COPY'], items },
+  type: { key: 'branding', label: 'Branding', description: 'Themes, colors, logos', lockedByEnterpriseEdition: false, modes: ['OVERWRITE', 'COPY'], items },
 });
 const themes = [
   { key: 'theme--a', label: 'Night', translatable: false, exists: false, conflict: false },
@@ -49,6 +55,17 @@ describe('ConfigPresetPartialImport', () => {
   it('says so when the bundle holds no item of the type, and cannot import', async () => {
     await renderWithPreview({ ...previewOf([]), type: null });
     expect(screen.getByText('This configuration bundle holds no themes.')).toBeInTheDocument();
+    expect(screen.getByTestId('config-preset-partial-import-submit')).toBeDisabled();
+  });
+
+  it('shows a type locked by the Enterprise Edition as locked, not as an empty bundle, and cannot import', async () => {
+    await renderWithPreview({
+      bundle_name: null,
+      default_mode: 'OVERWRITE',
+      type: { key: 'whitemark', label: 'Remove Filigran logos', description: '', lockedByEnterpriseEdition: true, modes: ['OVERWRITE'], items: [] },
+    });
+    expect(screen.getByRole('checkbox', { name: 'Remove Filigran logos', hidden: true })).toHaveAttribute('data-state', 'unchecked');
+    expect(screen.queryByText(/This configuration bundle holds no/)).not.toBeInTheDocument();
     expect(screen.getByTestId('config-preset-partial-import-submit')).toBeDisabled();
   });
 
