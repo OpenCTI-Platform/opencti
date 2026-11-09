@@ -257,7 +257,7 @@ export const hasDashboardVariableWidget = (widgets: unknown) => {
 /**
  * The manifest of a custom view, on every way in (creation, edition, duplication, configuration and widget import):
  * dashboard variables do not exist there, so a widget using one would never show data and is refused, and the
- * server-owned keys are removed (see stripServerOwnedManifestKeys). Nothing is refused without the feature.
+ * server-owned keys are removed (see stripServerOwnedManifestKeys).
  */
 export const sanitizeCustomViewManifest = (encoded: string | null | undefined) => {
   if (encoded && hasDashboardVariableWidget(parseManifestObject(encoded)?.widgets)) {

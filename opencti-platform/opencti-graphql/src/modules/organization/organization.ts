@@ -52,7 +52,7 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
     iAliasedIds,
     xOpenctiReliability,
     { name: 'default_dashboard', label: 'Default dashboard', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'default_dashboard_preset', label: 'Default dashboard preset', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: 'DASHBOARD_VARIABLES' },
+    { name: 'default_dashboard_preset', label: 'Default dashboard preset', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'x_opencti_organization_type', label: 'Organization type', type: 'string', format: 'vocabulary', vocabularyCategory: 'organization_type_ov', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
     { name: 'default_hidden_types', label: 'Default hidden types', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
