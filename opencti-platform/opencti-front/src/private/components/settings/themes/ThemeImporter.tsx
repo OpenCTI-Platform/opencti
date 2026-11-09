@@ -3,7 +3,7 @@ import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
 import { DialogActions, Tooltip } from '@mui/material';
 import IconButton from '@common/button/IconButton';
 import Button from '@common/button/Button';
-import { type FileRejection, FileSelect } from '@filigran/design-system';
+import { FileSelect } from '@filigran/design-system';
 import { FileUploadOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -11,6 +11,7 @@ import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import { insertNode } from '../../../../utils/store';
 import ConfigPresetPartialImportDialog, { type ConfigPresetFileImportStepProps } from '../config_preset/import/partial/ConfigPresetPartialImportDialog';
 import useConfigPresetPartialImportAccess from '../config_preset/import/partial/useConfigPresetPartialImportAccess';
+import { useFileRejectionMessage } from '../config_preset/import/ConfigPresetBundleFileSelect';
 import { ThemeImporterImportMutation } from './__generated__/ThemeImporterImportMutation.graphql';
 import { ThemeManagerQuery$variables } from './__generated__/ThemeManagerQuery.graphql';
 
@@ -37,9 +38,7 @@ const ThemeFileImportStep: FunctionComponent<ThemeFileImportStepProps> = ({ impo
   }, [importing]);
   // Unmounted (back, or the dialog closed): no longer busy
   useEffect(() => () => onBusyChange(false), []);
-  const rejectionMessage = (rejections: FileRejection[]) => (
-    rejections[0].reason === 'accept' ? t_i18n('This file is not in the specified format') : t_i18n('This file is too large')
-  );
+  const rejectionMessage = useFileRejectionMessage();
   return (
     <>
       <FileSelect

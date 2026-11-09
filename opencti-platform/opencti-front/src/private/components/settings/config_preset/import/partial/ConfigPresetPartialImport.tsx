@@ -2,12 +2,13 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { DialogActions } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Checkbox, type FileRejection, FileSelect, Text } from '@filigran/design-system';
+import { Checkbox, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../../../components/i18n';
 import type { Theme } from '../../../../../../components/Theme';
 import useApiMutation from '../../../../../../utils/hooks/useApiMutation';
 import { type ConfigImportMode, isConfigImportMode } from '../../configImportMode';
+import ConfigPresetBundleFileSelect from '../ConfigPresetBundleFileSelect';
 import ConfigPresetImportModeSelect from '../ConfigPresetImportModeSelect';
 import ConfigPresetResultLine from '../ConfigPresetResultLine';
 import { partialImportItemModes, partialImportSelectedKeys, toggleSelectedKey } from './configPresetPartialImportSelection';
@@ -58,9 +59,6 @@ const configPresetPartialImportMutation = graphql`
 type Preview = ConfigPresetPartialImportPreviewMutation$data['configPresetPartialImportPreview'];
 type Output = ConfigPresetPartialImportMutation$data['configPresetPartialImport'];
 
-// The same limit as the backend, which refuses a larger zip
-const MAX_ZIP_SIZE = 50 * 1024 * 1024;
-
 interface ConfigPresetPartialImportProps {
   // The key of the configuration preset type to take from the bundle (branding for the themes...)
   type: string;
@@ -99,9 +97,6 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
   const items = preview?.type?.items ?? [];
   const defaultMode = isConfigImportMode(preview?.default_mode ?? '') ? preview?.default_mode as ConfigImportMode : null;
   const itemLabel = (item: { label: string; translatable: boolean }) => (item.translatable ? t_i18n(item.label) : item.label);
-  const rejectionMessage = (rejections: FileRejection[]) => (
-    rejections[0].reason === 'accept' ? t_i18n('This file is not in the specified format') : t_i18n('This file is too large')
-  );
 
   const handleFile = (value: File) => {
     setFile(value);
@@ -157,20 +152,15 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
     <>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: theme.spacing(2) }}>
         <Text variant="content-base">{t_i18n('Select the configuration bundle (zip) exported from another platform.')}</Text>
-        <FileSelect
+        <ConfigPresetBundleFileSelect
           value={file}
-          triggerLabel={t_i18n('Upload a configuration bundle')}
-          placeholder={t_i18n('No file selected.')}
-          accept=".zip,application/zip"
-          maxSize={MAX_ZIP_SIZE}
-          rejectionMessage={rejectionMessage}
           loading={previewing}
           disabled={previewing || importing}
           data-testid="config-preset-partial-import-file"
-          onValueChange={(value) => {
-            if (value instanceof File) {
+          onFileChange={(value) => {
+            if (value) {
               handleFile(value);
-            } else if (value === null) {
+            } else {
               setFile(null);
               setPreview(null);
             }
