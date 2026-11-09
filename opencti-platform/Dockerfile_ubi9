@@ -32,6 +32,8 @@ COPY opencti-platform/opencti-front/package.json ./opencti-platform/opencti-fron
 COPY opencti-platform/opencti-graphql/package.json ./opencti-platform/opencti-graphql/
 
 ENV YARN_ENABLE_IMMUTABLE_INSTALLS="true"
+# Print native build output (re2) in the build log instead of a lost /tmp/xfs-*/build.log
+ENV YARN_ENABLE_INLINE_BUILDS="true"
 
 
 ##############################
