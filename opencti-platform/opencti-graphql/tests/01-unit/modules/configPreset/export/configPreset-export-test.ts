@@ -493,6 +493,28 @@ describe('Config preset export', () => {
       tmpZipPaths().forEach((zipPath) => expect(fs.existsSync(zipPath)).toBe(false));
     });
 
+    it('refuses an export the import could not read back, because its entries add up to more than the extracted limit, and uploads nothing', async () => {
+      // Six lists of 9 MB, each one within the size of a list, are 54 MB for the 50 MB the import accepts
+      const lists = Array.from({ length: 6 }, (_, i) => ({
+        ...dnsExclusionList,
+        id: `big-list-${i}`,
+        internal_id: `big-list-${i}`,
+        standard_id: `3f1d0c4e-7a52-4b8e-9f3a-1c2d3e4f5a0${i}`,
+        name: `Big list ${i}`,
+        file_id: `exclusionLists/big-list-${i}.txt`,
+      }));
+      vi.mocked(fullEntitiesList).mockResolvedValue(lists as never);
+      vi.mocked(downloadFile).mockImplementation(async () => Readable.from([Buffer.alloc(9_000_000, 'a')]) as never);
+      await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists' }])).rejects.toThrow('The export is too large to be imported back');
+      expect(uploadToStorage).not.toHaveBeenCalled();
+      expect(publishUserAction).not.toHaveBeenCalled();
+      tmpZipPaths().forEach((zipPath) => expect(fs.existsSync(zipPath)).toBe(false));
+      // Within the limit, the same lists are exported
+      vi.mocked(fullEntitiesList).mockResolvedValue(lists.slice(0, 5) as never);
+      await configPresetExport(context, bypassUser, [{ type: 'exclusionLists' }]);
+      expect(uploadToStorage).toHaveBeenCalledTimes(1);
+    });
+
     it('fails with the error of the storage when it cannot be read, it is not a missing file', async () => {
       vi.mocked(downloadFile).mockRejectedValue(new Error('s3 down'));
       await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists', items: [dnsExclusionList.standard_id] }])).rejects.toThrow('s3 down');

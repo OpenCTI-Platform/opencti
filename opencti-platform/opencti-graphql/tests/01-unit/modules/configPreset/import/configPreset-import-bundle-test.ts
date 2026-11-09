@@ -83,17 +83,47 @@ describe('Config preset bundle reader', () => {
       expect(await bundle.items[0].attachment!.read(CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE + 1)).toHaveLength(CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE + 1);
     });
 
-    it('counts against the extracted size limit of the bundle, with the JSON files', async () => {
-      const size = CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE;
-      const count = Math.floor(CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE / size) + 1;
+    // `count` lists of `size` bytes each, every one with its attachment
+    const listsWithAttachments = (count: number, size: number) => {
       const files: Record<string, string | Buffer> = {};
       for (let i = 0; i < count; i += 1) {
         const id = `aaaaaaaa-bbbb-4ccc-8ddd-${String(i).padStart(12, '0')}`;
         const txt = `customization/exclusion_lists/${id}.txt`;
         Object.assign(files, withAttachment(txt, id, `customization/exclusion_lists/${id}.json`), { [txt]: Buffer.alloc(size, 'a') });
       }
-      const bundle = await read(files);
-      expect(bundle.items).toHaveLength(count);
+      return files;
+    };
+    const size = CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE;
+    const tooMany = Math.floor(CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE / size) + 1;
+
+    it('counts against the extracted size limit of the bundle, with the JSON files: a bundle that cannot be read to the end is refused at once', async () => {
+      const error = await refusedWith(buildZip({ 'metadata.json': metadataFile(), ...listsWithAttachments(tooMany, size) }));
+      expect(error.message).toContain('too large once extracted');
+    });
+
+    it('counts an attachment once, however many times it is read: an item reads it to be computed and again to be applied', async () => {
+      // 30 MB of attachments are within the limit of 50 MB, 60 MB would not be
+      const bundle = await read(listsWithAttachments(6, size));
+      for (let pass = 0; pass < 3; pass += 1) {
+        for (const item of bundle.items) {
+          expect(await item.attachment!.read(size)).toHaveLength(size);
+        }
+      }
+    });
+
+    it('enforces the limit on the bytes really read, whatever size the zip declares', async () => {
+      const zip = await buildZip({ 'metadata.json': metadataFile(), ...listsWithAttachments(tooMany, size) });
+      // The uncompressed size of each entry of the central directory (offset 24 of a header) is set to 1: the zip lies
+      const CENTRAL_DIRECTORY_HEADER = 0x02014b50;
+      for (let offset = zip.indexOf(Buffer.from('PK\x01\x02', 'latin1')); offset >= 0; offset = zip.indexOf(Buffer.from('PK\x01\x02', 'latin1'), offset + 4)) {
+        expect(zip.readUInt32LE(offset)).toBe(CENTRAL_DIRECTORY_HEADER);
+        const name = zip.subarray(offset + 46, offset + 46 + zip.readUInt16LE(offset + 28)).toString();
+        if (name.endsWith('.txt')) {
+          zip.writeUInt32LE(1, offset + 24);
+        }
+      }
+      const bundle = await readConfigPresetBundle(zip);
+      expect(bundle.items).toHaveLength(tooMany);
       const error = await (async () => {
         for (const item of bundle.items) {
           await item.attachment!.read(size);

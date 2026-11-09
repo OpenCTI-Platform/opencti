@@ -30,6 +30,7 @@ import {
   isConfigPresetFamilyAvailable,
 } from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
+import { CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE } from '../import/configPreset-import-bundle';
 import { buildConfigPresetFileName, CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE, sanitizeBundleName } from '../configPreset-utils';
 
 // The dialog shows a type inline when its first page is its only one
@@ -239,6 +240,15 @@ const writeConfigPresetZip = async (
     streamError = err;
   });
   archive.pipe(output);
+  // The platform must be able to read its own export: the import refuses a bundle whose entries add up to more than its limit once extracted
+  let extractedSize = 0;
+  const append = (content: string | Buffer, name: string) => {
+    extractedSize += Buffer.byteLength(content);
+    if (extractedSize > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+      throw FunctionalError('The export is too large to be imported back, select fewer items', { limit: CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE, size: extractedSize });
+    }
+    archive.append(content, { name });
+  };
   try {
     const counts: Record<string, number> = {};
     for (let i = 0; i < families.length; i += 1) {
@@ -250,10 +260,10 @@ const writeConfigPresetZip = async (
         }
         const item = family.items[j];
         const file = await exportConfigPresetItem(context, user, family, item);
-        archive.append(JSON.stringify(file, null, 2), { name: configPresetItemFilePath(family, item) });
+        append(JSON.stringify(file, null, 2), configPresetItemFilePath(family, item));
         // The attachment of the item (the values of an exclusion list) as it is stored, next to its JSON
         if (item.attachment) {
-          archive.append(await item.attachment.read(context, user), { name: configPresetItemAttachmentPath(family, item.attachment) });
+          append(await item.attachment.read(context, user), configPresetItemAttachmentPath(family, item.attachment));
         }
         counts[family.id] += 1;
       }
@@ -263,8 +273,8 @@ const writeConfigPresetZip = async (
       generated_at: metadataBase.generated_at,
       bundle_name: metadataBase.bundle_name,
     };
-    archive.append(JSON.stringify(metadata, null, 2), { name: CONFIG_PRESET_METADATA_FILE });
-    archive.append(JSON.stringify(buildConfigPresetDependencies(families), null, 2), { name: CONFIG_PRESET_DEPENDENCIES_FILE });
+    append(JSON.stringify(metadata, null, 2), CONFIG_PRESET_METADATA_FILE);
+    append(JSON.stringify(buildConfigPresetDependencies(families), null, 2), CONFIG_PRESET_DEPENDENCIES_FILE);
     // Awaited together: when the output fails, the archive is no longer drained and finalize never resolves
     await Promise.all([archive.finalize(), written]);
     return {

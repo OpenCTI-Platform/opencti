@@ -90,26 +90,34 @@ const findItemFamily = (type: string) => {
   return family && configPresetFamilyType(family) === type ? family : undefined;
 };
 
-// The attachments are read when an importer asks for them: what they add to the extracted size counts against the same limit as the JSON files
-const toBundleAttachment = (path: string, entry: { stream: () => AsyncIterable<Buffer | string> }, extracted: { size: number }): ConfigPresetBundleAttachment => ({
-  path,
-  read: async (limit) => {
-    const tooLarge = new Error('too large');
-    try {
-      const content = await readStreamWithLimit(entry.stream(), limit, () => tooLarge);
-      extracted.size += content.length;
-      if (extracted.size > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
-        throw bundleRefused('The configuration bundle is too large once extracted');
+// The attachments are read when an importer asks for them: what they add to the extracted size counts against the same limit as the JSON
+// files. An attachment is counted the first time it is read only: an item reads it to be computed and again to be applied, and nothing
+// is kept of it between the two, so the memory stays bounded by one attachment.
+const toBundleAttachment = (path: string, entry: { stream: () => AsyncIterable<Buffer | string> }, extracted: { size: number }): ConfigPresetBundleAttachment => {
+  let counted = false;
+  return {
+    path,
+    read: async (limit) => {
+      const tooLarge = new Error('too large');
+      try {
+        const content = await readStreamWithLimit(entry.stream(), limit, () => tooLarge);
+        if (!counted) {
+          counted = true;
+          extracted.size += content.length;
+          if (extracted.size > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+            throw bundleRefused('The configuration bundle is too large once extracted');
+          }
+        }
+        return content;
+      } catch (err) {
+        if (err === tooLarge) {
+          return null;
+        }
+        throw err;
       }
-      return content;
-    } catch (err) {
-      if (err === tooLarge) {
-        return null;
-      }
-      throw err;
-    }
-  },
-});
+    },
+  };
+};
 
 // Reads a zip in memory, nothing is written to disk and entry names are never used as paths
 export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetBundle> => {
@@ -124,7 +132,7 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
   const items: ConfigPresetBundleItem[] = [];
   const ignored: string[] = [];
   // The entries that are not JSON, by path: the attachment an item points to is read when its importer asks for it
-  const otherEntries = new Map<string, { stream: () => AsyncIterable<Buffer | string> }>();
+  const otherEntries = new Map<string, { stream: () => AsyncIterable<Buffer | string>; uncompressedSize: number }>();
   const attachmentPaths = new Map<string, string>();
   const extracted = { size: 0 };
   for (let i = 0; i < directory.files.length; i += 1) {
@@ -181,11 +189,18 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
   // The attachment of an item is the entry of the zip at the path its JSON gives, never a path of the disk. A path that is no entry gives no
   // attachment, and an entry serves one item only.
   const claimed = new Set<string>();
+  let declaredSize = 0;
   for (let i = 0; i < items.length; i += 1) {
     const attachmentPath = attachmentPaths.get(items[i].path);
     const entry = attachmentPath ? otherEntries.get(attachmentPath) : undefined;
     if (attachmentPath && entry && !claimed.has(attachmentPath)) {
       claimed.add(attachmentPath);
+      // The size the zip declares cannot be trusted, the bytes really read are the limit: it only refuses at once a bundle that cannot be
+      // read to the end, instead of failing in the middle of an import, after some of its items were written
+      declaredSize += entry.uncompressedSize;
+      if (extracted.size + declaredSize > CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE) {
+        throw bundleRefused('The configuration bundle is too large once extracted');
+      }
       items[i].attachment = toBundleAttachment(attachmentPath, entry, extracted);
     }
   }
