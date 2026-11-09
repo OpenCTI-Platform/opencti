@@ -29,7 +29,7 @@ const setData = ({ statuses = [], drafts = [], instances = [] }: Data) => {
   }) as any);
 };
 const runMigration = () => new Promise<void>((resolve, reject) => {
-  void up((error) => (error ? reject(error) : resolve()));
+  up(() => resolve()).catch(reject);
 });
 // draft id -> status id, as sent to the update by query
 const projected = () => vi.mocked(elUpdateByQueryForMigration).mock.calls[0][2].script.params.statusIdByDraftId;
