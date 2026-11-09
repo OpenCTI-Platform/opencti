@@ -608,6 +608,9 @@ export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEAT
 // When disabled, local passwords can be reused as before and no password history is recorded.
 export const PASSWORD_HISTORY_FEATURE_FLAG = 'PASSWORD_HISTORY';
 
+// Local authentication lockout policy feature flag (use isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) to check activation)
+export const LOCAL_AUTH_LOCKOUT_FEATURE_FLAG = 'LOCAL_AUTH_LOCKOUT';
+
 // Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
 // check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
 // entity types with a published WorkflowDefinition behave as before this change.
