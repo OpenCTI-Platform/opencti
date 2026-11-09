@@ -3,6 +3,10 @@ import { fromB64, toB64 } from '../../utils/String';
 import { normalizeFilterGroupForBackend, normalizeFilterGroupForFrontend } from '../../utils/filters/filtersUtils';
 import type { DashboardManifest, DashboardVariable, DashboardWidget } from './dashboard-types';
 
+// Grid of the dashboards, public ones included: the layouts of their widgets are made on it, their rows and columns
+// are the same wherever they are drawn
+export const DASHBOARD_GRID_CONFIG = { margin: [20, 20], rowHeight: 62, cols: 12 } as const;
+
 const isWellFormedVariable = (variable: unknown): variable is DashboardVariable => {
   const candidate = variable as { id?: unknown; restriction?: { mode?: unknown } } | null;
   return typeof candidate === 'object' && candidate !== null
