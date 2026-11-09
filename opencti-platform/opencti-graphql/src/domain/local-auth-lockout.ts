@@ -31,7 +31,7 @@ export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
   // Failed attempts older than the window are forgotten. 0 disables the window: failed attempts are only reset by a successful login
   local_auth_lockout_window: 15, // minutes
   // Duration of the lock applied by the temporary final action
-  local_auth_lockout_duration: 900, // seconds, 15 min
+  local_auth_lockout_duration: 15, // minutes
 };
 export type LocalAuthLockoutKey = keyof typeof LOCAL_AUTH_LOCKOUT_DEFAULTS;
 export const LOCAL_AUTH_LOCKOUT_KEYS = Object.keys(LOCAL_AUTH_LOCKOUT_DEFAULTS) as LocalAuthLockoutKey[];
@@ -91,7 +91,7 @@ const getLockoutTimings = async (userId?: string): Promise<LocalAuthLockoutTimin
     windowMs: (settings.local_auth_lockout_window ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window) * MINUTE_MS,
     // The permanent final action sets the account to Locked. Its lock in Redis only reports it, for the same duration,
     // so that an unknown email is reported the same way as an existing account
-    finalLockMs: (settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration) * SECOND_MS,
+    finalLockMs: (settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration) * MINUTE_MS,
     finalAction: settings.local_auth_lockout_final_action ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_final_action,
   };
 };

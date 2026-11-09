@@ -37,14 +37,15 @@ import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 // Policy used by most tests: 3 attempts within a 60 min window, then the final action for 10 min.
 // The failures before it are only counted, without any lock
-const LOCK_SECONDS = 600;
+const LOCK_MINUTES = 10;
+const LOCK_SECONDS = LOCK_MINUTES * 60;
 const LOCKOUT_POLICY = {
   local_auth_lockout_enabled: true,
   local_auth_lockout_max_attempts: 3,
   local_auth_lockout_admin_max_attempts: 3,
   local_auth_lockout_final_action: 'temporary',
   local_auth_lockout_window: 60,
-  local_auth_lockout_duration: LOCK_SECONDS,
+  local_auth_lockout_duration: LOCK_MINUTES,
 };
 // A null value removes the stored value, so the default is returned again
 const RESET_LOCKOUT_POLICY = {
@@ -274,7 +275,7 @@ describe('Local authentication lockout', () => {
     });
 
     it('should lock for the lockout duration whatever the window', async () => {
-      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_window: 5, local_auth_lockout_duration: 7200 });
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_window: 5, local_auth_lockout_duration: 120 });
       await failLogin(LOCKOUT_USER.email, 2);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD), 7200);
     });
