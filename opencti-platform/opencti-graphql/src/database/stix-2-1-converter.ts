@@ -201,6 +201,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     participant_ids: (instance[INPUT_PARTICIPANT] ?? []).map((m) => m.internal_id),
     authorized_members: instance.restricted_members ?? undefined,
     workflow_id: instance.x_opencti_workflow_id,
+    closing_reason: instance.x_opencti_closing_reason,
     labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id).filter((id) => isNotEmptyField(id)),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
     created_by_ref_type: instance[INPUT_CREATED_BY]?.entity_type,
@@ -243,7 +244,7 @@ export const buildKillChainPhases = (instance: StoreEntity | StoreRelation): Arr
     return cleanObject(data);
   });
 };
-const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalExternalReference> => {
+export const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalExternalReference> => {
   return (instance[INPUT_EXTERNAL_REFS] ?? []).map((e) => {
     const data: SMO.StixInternalExternalReference = {
       source_name: e.source_name,

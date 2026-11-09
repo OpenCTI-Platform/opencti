@@ -31,11 +31,12 @@ import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/er
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
+import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
-import { buildAvailableProviders } from './setting-auth';
+import { buildAvailableProviders, LOCAL_AUTH_LOCKOUT_DEFAULTS } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
 import { checkDateDisplayInput } from '../utils/dateDisplay';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
@@ -319,10 +320,17 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   if (!hasBypassCapability && unauthorizedKeys.length > 0) {
     throw ForbiddenAccess('You are not allowed to edit some settings fields.', { unauthorizedKeys });
   }
+  // The lockout policy is only edited through updateLocalAuth, which validates it, so even BYPASS cannot patch it here
+  const lockoutKeys = input.map((i) => i.key).filter((key) => key in LOCAL_AUTH_LOCKOUT_DEFAULTS);
+  if (lockoutKeys.length > 0) {
+    throw FunctionalError('Local authentication lockout settings can only be edited through updateLocalAuth', { lockoutKeys });
+  }
 
   const data = hasSetXTMHubCapability ? completeXTMHubDataForRegistration(user, input) : input;
 
+  // The settings are read from the database: they know a license that the cache of this node does not yet
   const settings = await getSettings(context);
+  let isLicenseActivated = false;
   const enterpriseLicense = data.find((inputData) => inputData.key === 'enterprise_license');
   if (enterpriseLicense && enterpriseLicense.value?.length > 0) {
     const license = enterpriseLicense.value[0];
@@ -331,7 +339,16 @@ export const settingsEditField = async (context, user, settingsId, input) => {
       if (!info.license_validated) {
         throw UnsupportedError('Invalid license');
       }
+      isLicenseActivated = true;
     }
+  }
+  // Removing the Filigran logos is an Enterprise Edition feature: turning it on needs the license (or one given by the same edit),
+  // turning it off never does
+  // Every edit of the key counts: with a repeated key the last one is the one that is written
+  const whitemarks = data.filter((inputData) => inputData.key === 'platform_whitemark');
+  if (whitemarks.some((whitemark) => whitemark.value?.some((value) => value === true || value === 'true'))
+    && !isLicenseActivated && !isEnterpriseEditionFromSettings(settings)) {
+    throw UnsupportedError('Enterprise edition is not enabled');
   }
   const cguStatus = data.find((inputData) => inputData.key === 'filigran_chatbot_ai_cgu_status');
   if (cguStatus && cguStatus.value) {

@@ -1,6 +1,6 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
-import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
@@ -46,6 +46,7 @@ import { safeRender } from '../utils/safeEjs.client';
 import { NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
 import { InterruptibleTimer } from './interruptible-timer';
 import { addNotificationSentCount } from './telemetryManager';
+import { resolveNotificationEntityInternalId } from './notification-instance-id';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -73,6 +74,7 @@ export async function processNotificationData(
         operation: type,
         message,
         instance_id: instance.id,
+        entity_internal_id: resolveNotificationEntityInternalId(instance),
         entity_type: instance.entity_type,
       };
 
@@ -291,8 +293,9 @@ export const internalProcessNotification = async (
   triggerList: BasicStoreEntityTrigger[],
   usersMap: Map<string, AuthUser>,
 ): Promise<void> => {
-  if (notificationUser.user_service_account) {
-    throw UnsupportedError('Cannot send notification to service account user');
+  // A service account has no mailbox and no UI: it is reached through a webhook notifier only.
+  if (notificationUser.user_service_account && notifier.notifier_connector_id !== NOTIFIER_CONNECTOR_WEBHOOK) {
+    return;
   }
   const notificationName = triggerList.map((trigger) => trigger?.name).join(';');
   const notificationType = triggerList.length > 1 ? 'buffer' : triggerList[0].trigger_type;

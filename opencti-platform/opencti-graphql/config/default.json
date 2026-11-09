@@ -51,8 +51,8 @@
       "max_time": 1000
     },
     "graphql": {
+      "secure_by_default": false,
       "armor_protection": {
-        "disabled": true,
         "max_depth": 20,
         "max_directives": 20,
         "max_tokens": 100000,
@@ -65,7 +65,6 @@
         "query_subtypes": 4
       },
       "playground": {
-        "enabled": true,
         "force_disabled_introspection": true
       }
     },
@@ -407,6 +406,18 @@
     "resource_limits": {
       "max_old_generation_size_mb": 50,
       "max_young_generation_size_mb": 10,
+      "code_range_size_mb": 10,
+      "stack_size_mb": 4
+    }
+  },
+  "json_path": {
+    "timeout": 60000,
+    "idle_pool_size": 2,
+    "max_pool_size": 4,
+    "idle_timeout": 60000,
+    "max_queries_per_worker": 10000,
+    "resource_limits": {
+      "max_young_generation_size_mb": 32,
       "code_range_size_mb": 10,
       "stack_size_mb": 4
     }

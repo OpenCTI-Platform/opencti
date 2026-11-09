@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import type { AuthContext } from '../types/user';
 import crypto from 'node:crypto';
-import { booleanConf, logApp } from '../config/conf';
+import { basePath, booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import { URL } from 'node:url';
 import {
@@ -65,6 +65,38 @@ export const extractRefererPathFromReq = (req: Request) => {
     logApp.warn('Invalid referer for redirect extraction', { referer: req.headers.referer });
   }
 };
+
+export const sanitizeReferer = (refererToSanitize: string | undefined, req?: Request): string => {
+  // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
+  // Ternary Operator (?): Defaults if basePath is undefined, null, "" (empty string), 0, etc (falsy values).
+  // basePath is trimmed in '../config/conf.js' to prevent a user from setting it to something like '       '
+  // NOTE: Do NOT use Nullish Coalescing (??): Would only default if basePath is undefined or null.
+  // It might be set to an empty string and would fail to set properly in base2return var in next line
+  const base2return = basePath ? basePath : '/';
+  // In some odd configurations refererToSanitize will be the string('undefined') versus value(undefined)
+  if (!refererToSanitize || refererToSanitize === 'undefined') return base2return;
+  try {
+    // Normalize the base (lowercase host, default port removed) so it compares with the resolved URL
+    const base = new URL(getBaseUrl(req)).toString().replace(/\/$/, '');
+    const resolvedUrl = new URL(refererToSanitize, base).toString();
+    // Accept the base itself, or the base followed by a path, a query or a hash
+    if (resolvedUrl === base || ['/', '?', '#'].some((separator) => resolvedUrl.startsWith(`${base}${separator}`))) {
+      // same domain URL accept the redirection
+      if (refererToSanitize.startsWith('/') && !refererToSanitize.startsWith('//')) {
+        // in case of relative URL, keep relative.
+        return refererToSanitize;
+      }
+      return resolvedUrl;
+    }
+  } catch {
+    // base url cannot be resolved, never redirect outside the platform
+  }
+  logApp.info('Redirect target rejected, not on the platform url', { url: refererToSanitize });
+  return base2return;
+};
+
+// Same-origin redirect target taken from the request referer, falling back to the platform base path.
+export const extractSafeRedirectFromReq = (req: Request) => sanitizeReferer(extractRefererPathFromReq(req), req);
 
 // Whether this request is driven by a signed-in person in a browser, as opposed
 // to an API token.

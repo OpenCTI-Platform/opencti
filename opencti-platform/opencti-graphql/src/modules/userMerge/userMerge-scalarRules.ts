@@ -4,7 +4,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard
 import { ENTITY_TYPE_NEWS_FEED_ITEM } from '../xtm/hub/news-feed/news-feed-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../workflow/types/workflow-types';
 import { ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
-import type { UserMergeScalarCondition, UserMergeScalarTarget } from './userMerge-scalarTargets';
+import type { UserMergeScalarCondition } from './userMerge-scalarTargets';
 
 /**
  * Why a discovered attribute is not rewritten by this handler.
@@ -106,16 +106,3 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
     ],
   },
 };
-
-/**
- * Targets the schema cannot yield, each with the reason it is missing.
- *
- * These are gaps in the attribute declarations, not deliberate register choices. Fixing a
- * declaration changes how filters and history diffs behave platform-wide, so the fix belongs
- * outside this feature; the guard test flags the entry once the schema starts yielding it.
- */
-export interface UserMergeScalarComplement extends UserMergeScalarTarget {
-  missingBecause: string;
-}
-
-export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [];

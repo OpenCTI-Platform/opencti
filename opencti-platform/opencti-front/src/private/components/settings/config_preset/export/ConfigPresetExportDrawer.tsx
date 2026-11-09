@@ -1,5 +1,5 @@
-import React, { FunctionComponent, Suspense, useState } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import React, { FunctionComponent, Suspense, useCallback, useEffect, useState } from 'react';
+import { graphql, PreloadedQuery, useQueryLoader, usePreloadedQuery } from 'react-relay';
 import { Input, Text } from '@filigran/design-system';
 import { DownloadOutlined } from '@mui/icons-material';
 import Divider from '@mui/material/Divider';
@@ -11,12 +11,12 @@ import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import type { Theme } from '../../../../../components/Theme';
 import { APP_BASE_PATH } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
-import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import { ConfigPresetExportDrawerQuery } from './__generated__/ConfigPresetExportDrawerQuery.graphql';
 import { ConfigPresetExportDrawerMutation } from './__generated__/ConfigPresetExportDrawerMutation.graphql';
-import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems } from '../configPresetSelection';
+import { buildConfigPresetSelections, ConfigPresetSelection, getConfigPresetForcedItems, selectAllConfigPresetItems, toggleConfigPresetTypes } from '../configPresetSelection';
 import ConfigPresetExportItems from './ConfigPresetExportItems';
 import ConfigPresetSelectionAccordion from '../ConfigPresetSelectionAccordion';
+import useConfigPresetLockedTypes from '../useConfigPresetLockedTypes';
 
 const BUNDLE_NAME_MAX_LENGTH = 80;
 
@@ -26,6 +26,7 @@ export const configPresetExportDrawerQuery = graphql`
       key
       label
       description
+      lockedByEnterpriseEdition
       group {
         key
         label
@@ -35,6 +36,7 @@ export const configPresetExportDrawerQuery = graphql`
         label
         translatable
         isDefault
+        isEnabled
         dependsOn {
           type
           key
@@ -61,12 +63,16 @@ type ExportableTypes = ConfigPresetExportDrawerQuery['response']['configPresetEx
 interface ConfigPresetExportContentProps {
   types: ExportableTypes;
   onClose: () => void;
+  onReload: () => void;
 }
 
-const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProps> = ({ types, onClose }) => {
+const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProps> = ({ types, onClose, onReload }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  // The selection starts with every item checked. The catalog is first the cached one, then the network one, and a license activated while
+  // the drawer is open adds the types that need it: they come checked, the rest of the selection is kept
   const [selection, setSelection] = useState<ConfigPresetSelection>(() => selectAllConfigPresetItems(types));
+  useConfigPresetLockedTypes(types, onReload, (usable) => setSelection((current) => toggleConfigPresetTypes(current, usable, true)));
   const [bundleName, setBundleName] = useState('');
   // The type whose items are managed in the sub-view, when it has more items than its first page
   const [managedTypeKey, setManagedTypeKey] = useState<string | null>(null);
@@ -109,6 +115,7 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
           forced={forced}
           onSelectionChange={setSelection}
           onManageType={setManagedTypeKey}
+          lockedTitle="Activate the Enterprise Edition to export this item"
         />
         <Input
           label={t_i18n('Bundle name')}
@@ -133,27 +140,28 @@ const ConfigPresetExportContent: FunctionComponent<ConfigPresetExportContentProp
 interface ConfigPresetExportFormProps {
   queryRef: PreloadedQuery<ConfigPresetExportDrawerQuery>;
   onClose: () => void;
+  onReload: () => void;
 }
 
-const ConfigPresetExportForm: FunctionComponent<ConfigPresetExportFormProps> = ({ queryRef, onClose }) => {
+const ConfigPresetExportForm: FunctionComponent<ConfigPresetExportFormProps> = ({ queryRef, onClose, onReload }) => {
   const { configPresetExportableTypes } = usePreloadedQuery(configPresetExportDrawerQuery, queryRef);
-  // A type without item has nothing to check: it is not shown, and neither is a group left without type
-  const types = configPresetExportableTypes.filter((type) => type.items.length > 0);
-  // The selection starts with every item checked: the content is remounted when the catalog changes,
-  // as the cached catalog is first rendered and then replaced by the network one
-  const catalogKey = types.flatMap((type) => type.items.map((item) => `${type.key}/${item.key}`)).join(',');
-  return <ConfigPresetExportContent key={catalogKey} types={types} onClose={onClose} />;
+  // A type without item is shown, disabled: it tells the user what can be exported once the platform has some. It is not sent in the export.
+  return <ConfigPresetExportContent types={configPresetExportableTypes} onClose={onClose} onReload={onReload} />;
 };
 
 // The drawer content is only mounted while it is open, so the catalog is loaded on demand
 const ConfigPresetExportLoader: FunctionComponent<{ onClose: () => void }> = ({ onClose }) => {
-  const queryRef = useQueryLoading<ConfigPresetExportDrawerQuery>(configPresetExportDrawerQuery, {});
+  const [queryRef, loadQuery] = useQueryLoader<ConfigPresetExportDrawerQuery>(configPresetExportDrawerQuery);
+  const reload = useCallback(() => loadQuery({}, { fetchPolicy: 'store-and-network' }), [loadQuery]);
+  useEffect(() => {
+    reload();
+  }, [reload]);
   if (!queryRef) {
     return <Loader variant={LoaderVariant.inElement} />;
   }
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <ConfigPresetExportForm queryRef={queryRef} onClose={onClose} />
+      <ConfigPresetExportForm queryRef={queryRef} onClose={onClose} onReload={reload} />
     </Suspense>
   );
 };

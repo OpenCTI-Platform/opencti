@@ -3,7 +3,8 @@ import { ENTITY_TYPE_CAPABILITY } from '../schema/internalObject';
 import { generateStandardId } from '../schema/identifier';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
-import { createCapabilities, TAXII_CAPABILITIES } from '../database/data-initialization';
+import { createCapabilities } from '../database/data-initialization';
+import { TAXII_CAPABILITIES } from '../schema/capabilities';
 
 export const up = async (next) => {
   const context = executionContext('migration');

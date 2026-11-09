@@ -2,7 +2,7 @@
 # The service keeps its name, so ELASTICSEARCH__URL, the ports and the log steps stay the same.
 services:
   elasticsearch:
-    image: opensearchproject/opensearch:3.9.0@sha256:adfa61f85025d06b4aeb562e7e74fde7e31c437039c93c3862c17e9acebd6c7c
+    image: opensearchproject/opensearch:3.9.0@sha256:3b55f6b6249cfdb92b52ee59adc8a266203ba9ef9f5d82544fad6f1af2f3609e
     # File indexing needs the attachment processor, a plugin on OpenSearch (built in on Elasticsearch)
     command: ["sh", "-c", "bin/opensearch-plugin install --batch ingest-attachment && exec ./opensearch-docker-entrypoint.sh opensearch"]
     # Replaced, not merged: OpenSearch refuses to start with the xpack settings of Elasticsearch

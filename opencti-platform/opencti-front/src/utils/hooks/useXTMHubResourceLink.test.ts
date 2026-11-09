@@ -43,6 +43,12 @@ describe('useXTMHubResourceLink', () => {
     expect(renderLink('//evil.example/steal')).toBeUndefined();
   });
 
+  it('returns undefined for a slash-backslash path that URL parsing turns into another host', () => {
+    expect(renderLink('/\\evil.example/steal')).toBeUndefined();
+    expect(renderLink('/\\\\evil.example')).toBeUndefined();
+    expect(renderLink('/\t/evil.example')).toBeUndefined();
+  });
+
   it('returns undefined for a javascript scheme', () => {
     expect(renderLink('javascript:alert(1)')).toBeUndefined();
   });

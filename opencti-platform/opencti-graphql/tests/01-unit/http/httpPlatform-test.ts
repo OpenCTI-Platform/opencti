@@ -1,9 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import nconf from 'nconf';
-import createApp, { decodeStoragePath, sanitizeReferer, shouldIncludeHealthDetails } from '../../../src/http/httpPlatform';
 import * as platformHealthMetrics from '../../../src/telemetry/platformHealthMetrics';
+import * as conf from '../../../src/config/conf';
+import createApp, {
+  decodeStoragePath,
+  handleStorageGet,
+  handleStorageView,
+  handleStorageViewEmbedded,
+  handleStorageHtml,
+  handleStorageEncrypted,
+  shouldIncludeHealthDetails,
+} from '../../../src/http/httpPlatform';
+import { sanitizeReferer } from '../../../src/http/httpUtils';
 import { getBaseUrl, logApp } from '../../../src/config/conf';
+import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
+import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 
+vi.mock('../../../src/http/httpAuthenticatedContext', () => ({
+  createAuthenticatedContext: vi.fn(),
+}));
+vi.mock('../../../src/http/httpServer-draft', () => ({
+  checkDraftInContext: vi.fn(),
+}));
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual: object = await importOriginal();
   return {
@@ -114,6 +132,188 @@ describe('httpPlatform: sanitizeReferer function', () => {
       expect(result).toBe(`${baseUrl}/22.0.0.1/path/one`);
       expect(logApp.info).not.toHaveBeenCalled();
     });
+  });
+
+  describe('When base url is not configured', () => {
+    const req = { protocol: 'https', hostname: 'cti.example.com', headers: { host: 'cti.example.com' } } as any;
+
+    beforeEach(() => {
+      vi.spyOn(conf, 'getBaseUrl').mockImplementation((request?: any) => (request ? 'https://cti.example.com' : ''));
+    });
+
+    it('should infer the platform origin from the request', () => {
+      expect(sanitizeReferer('/some/path', req)).toBe('/some/path');
+    });
+
+    it('should reject a double slash referer', () => {
+      expect(sanitizeReferer('//evil.example/phish', req)).toBe('/');
+    });
+
+    it('should return / instead of throwing without request', () => {
+      expect(sanitizeReferer('/some/path')).toBe('/');
+    });
+  });
+
+  describe('When base url is set without scheme', () => {
+    it('should return / instead of throwing', () => {
+      vi.spyOn(conf, 'getBaseUrl').mockReturnValue('cti.example.com');
+      expect(sanitizeReferer('/some/path')).toBe('/');
+    });
+  });
+
+  describe('When base url has an uppercase host and a default port', () => {
+    it('should accept a referer on the same origin', () => {
+      vi.spyOn(conf, 'getBaseUrl').mockReturnValue('https://CTI.example.com:443');
+      expect(sanitizeReferer('https://cti.example.com/some/path')).toBe('https://cti.example.com/some/path');
+    });
+  });
+
+  describe('When base url has a base path', () => {
+    beforeEach(() => {
+      vi.spyOn(conf, 'getBaseUrl').mockReturnValue('https://cti.example.com/opencti');
+    });
+
+    it('should keep the query string of a referer on the base path root', () => {
+      expect(sanitizeReferer('/opencti?tab=1')).toBe('/opencti?tab=1');
+    });
+
+    it('should keep the hash of a referer on the base path root', () => {
+      expect(sanitizeReferer('/opencti#section')).toBe('/opencti#section');
+    });
+
+    it('should reject a referer outside the base path that shares its prefix', () => {
+      expect(sanitizeReferer('https://cti.example.com/opencti-evil')).toBe('/');
+    });
+  });
+});
+
+describe('httpPlatform: /logout redirect', () => {
+  const setupLogoutHandler = async () => {
+    const routes = new Map<string, (req: any, res: any) => Promise<void>>();
+    const app: any = {
+      set: vi.fn(),
+      use: vi.fn(),
+      get: vi.fn((path: unknown, handler: any) => {
+        if (typeof path === 'string' && typeof handler === 'function') {
+          routes.set(path, handler);
+        }
+      }),
+      post: vi.fn(),
+      delete: vi.fn(),
+      put: vi.fn(),
+      patch: vi.fn(),
+      all: vi.fn(),
+    };
+    await createApp(app, {} as any);
+    const logoutRoute = Array.from(routes.entries()).find(([path]) => path.endsWith('/logout'));
+    return logoutRoute?.[1];
+  };
+
+  it('should keep logout redirect on the platform origin when referer path starts with a double slash', async () => {
+    const logoutHandler = await setupLogoutHandler();
+    const res: any = { redirect: vi.fn(), cookie: vi.fn() };
+
+    await logoutHandler?.({ headers: { referer: 'https://attacker.com//evil.example/phish' }, session: {} }, res);
+
+    expect(res.redirect).toHaveBeenCalledTimes(1);
+    const target = res.redirect.mock.calls[0][0];
+    expect(new URL(target, baseUrl).origin).toBe(new URL(baseUrl).origin);
+  });
+});
+
+// ─── storage route draft-context authorization regression ───────────────────
+// These routes read `context.draft_context` (set from the `opencti-draft-id`
+// header) via `loadFile`, but historically only the GraphQL context enforced
+// draft membership via `checkDraftInContext`. Each handler must call it and
+// must abort before ever reaching `loadFile`/`downloadFile` when it rejects,
+// so a caller cannot use a forged header to read a draft-scoped file they
+// don't have access to.
+
+const makeStorageReq = (params: Record<string, unknown> = {}) => ({ params, headers: {} } as any);
+const makeStorageRes = () => ({
+  sendStatus: vi.fn(),
+  status: vi.fn().mockReturnThis(),
+  send: vi.fn(),
+  attachment: vi.fn(),
+  set: vi.fn(),
+  cookie: vi.fn(),
+}) as any;
+
+describe('storage routes: draft authorization', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const DENIED_CONTEXT = {
+    user: { id: 'user-b' },
+    draft_context: 'restricted-draft',
+  };
+  const DRAFT_ERROR = new Error('Draft restricted-draft cannot be found');
+
+  it('handleStorageGet refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.txt'] });
+    const res = makeStorageRes();
+
+    await handleStorageGet(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.attachment).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageView refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.txt'] });
+    const res = makeStorageRes();
+
+    await handleStorageView(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageViewEmbedded refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ 0: 'x', 1: 'entity-id', 2: 'y', 3: 'file.txt' });
+    const res = makeStorageRes();
+
+    await handleStorageViewEmbedded(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageHtml refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.md'] });
+    const res = makeStorageRes();
+
+    await handleStorageHtml(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageEncrypted refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.txt'] });
+    const res = makeStorageRes();
+
+    await handleStorageEncrypted(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
   });
 });
 
@@ -286,5 +486,83 @@ describe('httpPlatform: /health details behavior', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalledWith({ status: 'success' });
     expect(usageMetricsSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('storage routes: draft authorization', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const DENIED_CONTEXT = {
+    user: { id: 'user-b' },
+    draft_context: 'restricted-draft',
+  };
+  const DRAFT_ERROR = new Error('Draft restricted-draft cannot be found');
+
+  it('handleStorageGet refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.txt'] });
+    const res = makeStorageRes();
+
+    await handleStorageGet(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.attachment).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageView refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.txt'] });
+    const res = makeStorageRes();
+
+    await handleStorageView(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageViewEmbedded refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ 0: 'x', 1: 'entity-id', 2: 'y', 3: 'file.txt' });
+    const res = makeStorageRes();
+
+    await handleStorageViewEmbedded(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageHtml refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.md'] });
+    const res = makeStorageRes();
+
+    await handleStorageHtml(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+
+  it('handleStorageEncrypted refuses to serve the file when the caller cannot access the requested draft', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(DENIED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockRejectedValue(DRAFT_ERROR);
+
+    const req = makeStorageReq({ file: ['some', 'file.txt'] });
+    const res = makeStorageRes();
+
+    await handleStorageEncrypted(req, res);
+
+    expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
   });
 });

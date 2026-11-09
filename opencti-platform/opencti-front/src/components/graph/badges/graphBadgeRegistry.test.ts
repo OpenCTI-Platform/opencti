@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
 import { badgesOfNode, drawnBadges, graphBadgeProviders, MAX_DRAWN_BADGES, registerGraphBadgeProvider } from './graphBadgeRegistry';
 import { confidenceBadgeProvider, inferredBadgeProvider, markingBadgeProvider } from './builtinGraphBadges';
 import { graphNodeActionsFor, registerGraphNodeAction } from './graphNodeActionRegistry';
-import { graphNode } from '../../../utils/tests/graphTestData';
+import { graphSelectionActionsFor, registerGraphSelectionAction, useGraphSelectionActionRegistryVersion } from './graphSelectionActionRegistry';
+import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
 import { NO_MARKING_ID } from '../utils/useGraphParser';
 import { LOW_CONFIDENCE_THRESHOLD } from '../utils/graphPainting';
 
@@ -129,5 +131,51 @@ describe('graph node action registry', () => {
     }));
     expect(graphNodeActionsFor(graphNode(), 'investigation').map((a) => a.id)).toEqual(['hunt']);
     expect(graphNodeActionsFor(graphNode(), undefined)).toEqual([]);
+  });
+});
+
+describe('graph selection action registry', () => {
+  const icon = () => null;
+  const malware = graphNode();
+  const tool = graphNode({ id: 'node-2', entity_type: 'Tool' });
+  const selection = { nodes: [malware, tool], links: [graphLink(malware, tool)] };
+
+  it('lists the actions available for a selection on a surface, in order, skipping failing checks', () => {
+    cleanups.push(registerGraphSelectionAction({ id: 'late', order: 200, icon, label: () => 'Late', isAvailable: () => true }));
+    cleanups.push(registerGraphSelectionAction({
+      id: 'enrich', icon, label: () => 'Enrich', isAvailable: (s, context) => s.links.length === 1 && context === 'investigation',
+    }));
+    cleanups.push(registerGraphSelectionAction({
+      id: 'broken',
+      icon,
+      label: () => 'Broken',
+      isAvailable: () => {
+        throw new Error('soft check failed');
+      },
+    }));
+    expect(graphSelectionActionsFor(selection, 'investigation').map((a) => a.id)).toEqual(['enrich', 'late']);
+    expect(graphSelectionActionsFor(selection, undefined).map((a) => a.id)).toEqual(['late']);
+  });
+
+  it('replaces an action registered again under the same id, and removes it', () => {
+    cleanups.push(registerGraphSelectionAction({ id: 'enrich', icon, label: () => 'v1', isAvailable: () => true }));
+    const remove = registerGraphSelectionAction({ id: 'enrich', icon, label: () => 'v2', isAvailable: () => true });
+    expect(graphSelectionActionsFor(selection, undefined).map((a) => a.label(helpers.t_i18n))).toEqual(['v2']);
+    remove();
+    expect(graphSelectionActionsFor(selection, undefined)).toEqual([]);
+  });
+
+  it('re-renders the graph when an action is registered or removed, so that an open menu follows', () => {
+    const { result, unmount } = renderHook(() => useGraphSelectionActionRegistryVersion());
+    const initial = result.current;
+    let remove: () => void = () => {};
+    act(() => {
+      remove = registerGraphSelectionAction({ id: 'enrich', icon, label: () => 'Enrich', isAvailable: () => true });
+    });
+    const registered = result.current;
+    expect(registered).toBeGreaterThan(initial);
+    act(() => remove());
+    expect(result.current).toBeGreaterThan(registered);
+    unmount();
   });
 });
