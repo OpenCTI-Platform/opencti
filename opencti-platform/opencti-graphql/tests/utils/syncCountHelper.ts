@@ -15,7 +15,8 @@ export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
 testCreatedCounter['attack-pattern'] = 25;
 testCreatedCounter.campaign = 6;
-testCreatedCounter['case-incident'] = 18;
+// 3 created by workflow-closing-reason-test merge and external status write cases
+testCreatedCounter['case-incident'] = 22;
 testCreatedCounter['case-rfi'] = 9;
 testCreatedCounter['case-rft'] = 1;
 testCreatedCounter.channel = 1;
@@ -44,7 +45,11 @@ testCreatedCounter.infrastructure = 1;
 testCreatedCounter['intrusion-set'] = 55;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 4;
-testCreatedCounter.label = 21; // includes 3 created and deleted by stixCoreObject-test (time series breakdown)
+// Counts for:
+// - 3 created and deleted by investigation-enrichment-test
+// - 3 created and deleted by label-import-test
+// - 3 created and deleted by stixCoreObject-test (time series breakdown)
+testCreatedCounter.label = 24;
 testCreatedCounter.language = 1;
 testCreatedCounter.location = 23; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testCreatedCounter['mac-addr'] = 1;
@@ -90,7 +95,8 @@ testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
 testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
-testUpdatedCounter['case-incident'] = 18;
+// 5 by workflow-closing-reason-test merge (1) and external status write (4) cases
+testUpdatedCounter['case-incident'] = 28;
 testUpdatedCounter.feedback = 1;
 testUpdatedCounter.report = 32; // includes 2 by audit-test (audits breakdown)
 testUpdatedCounter['course-of-action'] = 3;
@@ -99,7 +105,9 @@ testUpdatedCounter['external-reference'] = 1;
 testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
 testUpdatedCounter.indicator = 33;
-testUpdatedCounter.label = 1;
+// Counts for:
+// - 1 updated by label-import-test
+testUpdatedCounter.label = 2;
 testUpdatedCounter['malware-analysis'] = 3;
 testUpdatedCounter.note = 3;
 // Observed data is imported twice by the loader test: the second import is an upsert that increments number_seen (1)
@@ -130,14 +138,15 @@ testMergedCounter.report = 3;
 testMergedCounter.file = 3;
 testMergedCounter.artifact = 1;
 testMergedCounter['attack-pattern'] = 1;
-testMergedCounter['case-incident'] = 1;
+testMergedCounter['case-incident'] = 2; // 1 by workflow-closing-reason-test merge case
 testMergedCounter['intrusion-set'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
 testDeletedCounter['attack-pattern'] = 20;
 testDeletedCounter.campaign = 2;
-testDeletedCounter['case-incident'] = 16;
+// 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
+testDeletedCounter['case-incident'] = 19;
 testDeletedCounter['case-rfi'] = 9;
 testDeletedCounter['case-rft'] = 1;
 testDeletedCounter.channel = 1;
@@ -162,7 +171,11 @@ testDeletedCounter.infrastructure = 1;
 testDeletedCounter['intrusion-set'] = 53;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter['kill-chain-phase'] = 1; // created and deleted by form-submission-test
-testDeletedCounter.label = 8; // includes 3 created and deleted by stixCoreObject-test (time series breakdown)
+// Counts for:
+// - 3 created and deleted by investigation-enrichment-test
+// - 3 deleted by label-import-test
+// - 3 created and deleted by stixCoreObject-test (time series breakdown)
+testDeletedCounter.label = 11;
 testDeletedCounter.language = 1;
 testDeletedCounter.location = 18; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testDeletedCounter['mac-addr'] = 1;

@@ -31,6 +31,7 @@ import type { BasicConnection, BasicStoreIdentifier, BasicStoreCommon, BasicStor
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 import { ID_SUBFILTER, INSTANCE_REGARDING_OF, RELATION_INFERRED_SUBFILTER, RELATION_TYPE_SUBFILTER } from './filtering/filtering-constants';
 import { pushAll } from './arrayUtil';
+import { utcDate } from './format';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -1116,6 +1117,18 @@ export const validateMarking = async (context: AuthContext, user: AuthUser, mark
   if (!userMarkingIds.includes(markingId)) {
     throw FunctionalError('User trying to create the data has missing markings', { id: markingId, user_markings: userMarkingIds });
   }
+};
+
+type UserAccount = Pick<AuthUser, 'account_status' | 'account_lock_after_date'>;
+
+// Whether the expiration date of the account has passed: the expiration manager only sets the Expired status later
+export const isUserAccountExpired = (user: UserAccount): boolean => {
+  return !!user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date));
+};
+
+// Whether the platform lets the user authenticate: an account neither expired nor with a status other than active
+export const isUserAccountActive = (user: UserAccount): boolean => {
+  return !isUserAccountExpired(user) && user.account_status === ACCOUNT_STATUS_ACTIVE;
 };
 
 export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStoreSettings) => {

@@ -373,6 +373,7 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -1008,6 +1009,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   x_mitre_id?: Maybe<Scalars['String']['output']>;
   x_mitre_permissions_required?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   x_mitre_platforms?: Maybe<Array<Scalars['String']['output']>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -1858,6 +1860,7 @@ export type BackgroundTaskContextOptions = {
 
 export type BackgroundTaskContextOptionsInput = {
   applyTransitionActions?: InputMaybe<Scalars['Boolean']['input']>;
+  closingReason?: InputMaybe<Scalars['String']['input']>;
   comment?: InputMaybe<Scalars['String']['input']>;
   eventName?: InputMaybe<Scalars['String']['input']>;
   includeNeighbours?: InputMaybe<Scalars['Boolean']['input']>;
@@ -2227,6 +2230,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -2638,6 +2642,7 @@ export type Case = {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -2911,6 +2916,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -3240,6 +3246,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -3570,6 +3577,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -4007,6 +4015,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -4313,6 +4322,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -5049,6 +5059,7 @@ export type Container = {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -5366,6 +5377,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -5671,6 +5683,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   workflowInstance?: Maybe<WorkflowInstance>;
   x_mitre_id?: Maybe<Scalars['String']['output']>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_log_sources?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -7019,6 +7032,7 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -7341,6 +7355,7 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_mitre_platforms?: Maybe<Array<Scalars['String']['output']>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -9343,6 +9358,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -9988,6 +10004,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -10726,6 +10743,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -12603,6 +12621,7 @@ export type Identity = {
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_reliability?: Maybe<Scalars['String']['output']>;
@@ -12933,6 +12952,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -13312,6 +13332,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_mitre_platforms?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_detection?: Maybe<Scalars['Boolean']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -13653,6 +13674,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_firstname?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -13990,6 +14012,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -14385,6 +14408,7 @@ export type IngestionHealthCheckSetting = {
   __typename?: 'IngestionHealthCheckSetting';
   enabled: Scalars['Boolean']['output'];
   health_check_code: Scalars['String']['output'];
+  health_check_description?: Maybe<Scalars['String']['output']>;
   health_check_kind: IngestionHealthCheckKind;
   health_check_label: Scalars['String']['output'];
 };
@@ -14851,6 +14875,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -15482,6 +15507,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -15857,6 +15883,7 @@ export type Location = {
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -16438,6 +16465,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -16735,6 +16763,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   version?: Maybe<Scalars['String']['output']>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -20816,6 +20845,7 @@ export type MutationTriggerKnowledgeLiveAddArgs = {
 
 
 export type MutationTriggerWorkflowEventArgs = {
+  closingReason?: InputMaybe<Scalars['String']['input']>;
   comment?: InputMaybe<Scalars['String']['input']>;
   entityId: Scalars['String']['input'];
   eventName: Scalars['String']['input'];
@@ -21361,6 +21391,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -21938,6 +21969,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -22454,6 +22486,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -22852,6 +22885,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -23240,6 +23274,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -24649,6 +24684,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -29254,6 +29290,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -29606,6 +29643,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -30599,6 +30637,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -30935,6 +30974,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -31305,6 +31345,7 @@ export type SecurityCoverageResult = BasicObject & StixCoreObject & StixDomainOb
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -31614,6 +31655,7 @@ export type SecurityPlatform = BasicObject & Identity & StixCoreObject & StixDom
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -33455,6 +33497,7 @@ export type StixDomainObject = {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -35130,6 +35173,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_firstname?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -35455,6 +35499,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -36167,6 +36212,7 @@ export type ThreatActor = {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -36417,6 +36463,7 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -36754,6 +36801,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   weight?: Maybe<Array<Measure>>;
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -37154,6 +37202,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
@@ -38833,6 +38882,7 @@ export enum VocabularyCategory {
   CasePriorityOv = 'case_priority_ov',
   CaseSeverityOv = 'case_severity_ov',
   ChannelTypesOv = 'channel_types_ov',
+  ClosingReasonOv = 'closing_reason_ov',
   CollectionLayersOv = 'collection_layers_ov',
   CoverageOv = 'coverage_ov',
   EventTypeOv = 'event_type_ov',
@@ -38988,6 +39038,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   x_opencti_cisa_kev?: Maybe<Scalars['Boolean']['output']>;
+  x_opencti_closing_reason?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_attack_complexity?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_attack_vector?: Maybe<Scalars['String']['output']>;
   x_opencti_cvss_availability_impact?: Maybe<Scalars['String']['output']>;
@@ -40064,6 +40115,7 @@ export type WorkflowSerializedState = {
 export type WorkflowSerializedTransition = {
   __typename?: 'WorkflowSerializedTransition';
   asyncActions?: Maybe<Array<WorkflowActionConfig>>;
+  closingReason?: Maybe<Scalars['String']['output']>;
   comment?: Maybe<Scalars['String']['output']>;
   conditions?: Maybe<Scalars['JSON']['output']>;
   event: Scalars['String']['output'];
@@ -40075,6 +40127,7 @@ export type WorkflowSerializedTransition = {
 export type WorkflowTransition = {
   __typename?: 'WorkflowTransition';
   actions?: Maybe<Array<Scalars['String']['output']>>;
+  closingReason?: Maybe<Scalars['String']['output']>;
   comment?: Maybe<Scalars['String']['output']>;
   event: Scalars['String']['output'];
   requiresShareOrganizationInput?: Maybe<Scalars['Boolean']['output']>;
@@ -43819,6 +43872,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44055,6 +44109,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_mitre_permissions_required?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44490,6 +44545,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44608,6 +44664,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44693,6 +44750,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44778,6 +44836,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44864,6 +44923,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45002,6 +45062,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45086,6 +45147,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45466,6 +45528,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -45572,6 +45635,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -45658,6 +45722,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_log_sources?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -46112,6 +46177,7 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46225,6 +46291,7 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -46967,6 +47034,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47194,6 +47262,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47503,6 +47572,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -47970,6 +48040,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_reliability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48066,6 +48137,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -48190,6 +48262,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_detection?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -48290,6 +48363,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -48392,6 +48466,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -48493,6 +48568,7 @@ export type IngestionHealthCheckResolvers<ContextType = any, ParentType extends 
 export type IngestionHealthCheckSettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHealthCheckSetting'] = ResolversParentTypes['IngestionHealthCheckSetting']> = ResolversObject<{
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   health_check_code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  health_check_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   health_check_kind?: Resolver<ResolversTypes['IngestionHealthCheckKind'], ParentType, ContextType>;
   health_check_label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
@@ -48809,6 +48885,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -49084,6 +49161,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -49207,6 +49285,7 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -49375,6 +49454,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -49456,6 +49536,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50488,6 +50569,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50671,6 +50753,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50868,6 +50951,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -50983,6 +51067,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -51088,6 +51173,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -51604,6 +51690,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52365,6 +52452,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52465,6 +52553,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52849,6 +52938,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -52956,6 +53046,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -53041,6 +53132,7 @@ export type SecurityCoverageResultResolvers<ContextType = any, ParentType extend
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -53121,6 +53213,7 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -53685,6 +53778,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -54323,6 +54417,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -54415,6 +54510,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54662,6 +54758,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54748,6 +54845,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54856,6 +54954,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   weight?: Resolver<Maybe<Array<ResolversTypes['Measure']>>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -54961,6 +55060,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -55553,6 +55653,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_cisa_kev?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  x_opencti_closing_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_attack_complexity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_attack_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_cvss_availability_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -55949,6 +56050,7 @@ export type WorkflowSerializedStateResolvers<ContextType = any, ParentType exten
 
 export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowSerializedTransition'] = ResolversParentTypes['WorkflowSerializedTransition']> = ResolversObject<{
   asyncActions?: Resolver<Maybe<Array<ResolversTypes['WorkflowActionConfig']>>, ParentType, ContextType>;
+  closingReason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   conditions?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -55959,6 +56061,7 @@ export type WorkflowSerializedTransitionResolvers<ContextType = any, ParentType 
 
 export type WorkflowTransitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkflowTransition'] = ResolversParentTypes['WorkflowTransition']> = ResolversObject<{
   actions?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  closingReason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   requiresShareOrganizationInput?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
