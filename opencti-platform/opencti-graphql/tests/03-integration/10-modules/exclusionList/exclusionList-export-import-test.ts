@@ -10,7 +10,7 @@ import { deleteFile } from '../../../../src/database/file-storage';
 import { downloadFile } from '../../../../src/database/raw-file-storage';
 import { fullEntitiesList } from '../../../../src/database/middleware-loader';
 import { allFilesForPaths } from '../../../../src/modules/internal/document/document-domain';
-import { deleteExclusionList } from '../../../../src/modules/exclusionList/exclusionList-domain';
+import { deleteExclusionList, exclusionListStorageKey } from '../../../../src/modules/exclusionList/exclusionList-domain';
 import { readExclusionListFile } from '../../../../src/modules/exclusionList/exclusionList-file';
 import { importExclusionList } from '../../../../src/modules/exclusionList/exclusionList-import';
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST } from '../../../../src/modules/exclusionList/exclusionList-types';
@@ -77,6 +77,8 @@ describe('Exclusion lists: export and import of the real zip', () => {
     await importExclusionList(testContext, ADMIN_USER, configuration, { read: async () => VALUES }, { mode: ConfigImportMode.Overwrite });
     await importExclusionList(testContext, ADMIN_USER, { name: OTHER_NAME, enabled: false, exclusion_list_entity_types: ['Url'] }, { read: async () => Buffer.alloc(0) }, { mode: ConfigImportMode.Overwrite });
     const lists = [await loadList(NAME), await loadList(OTHER_NAME)];
+    // The key the export reads a list from is the one its file is stored under: both are defined by the domain, nothing else ties them
+    lists.forEach((list) => expect(list.file_id).toBe(exclusionListStorageKey(list.internal_id)));
     const exported = await queryAsAdminWithSuccess({
       query: EXPORT_MUTATION,
       variables: { selections: [{ type: 'exclusionLists', items: lists.map((list) => list.standard_id) }] },
@@ -112,6 +114,8 @@ describe('Exclusion lists: export and import of the real zip', () => {
   });
 
   it('refuses the item of a list whose values file is not in the zip, and writes nothing', async () => {
+    // Its own list: this test does not rely on the one the previous test leaves
+    await importExclusionList(testContext, ADMIN_USER, { name: NAME, exclusion_list_entity_types: ['Domain-Name'] }, { read: async () => VALUES }, { mode: ConfigImportMode.Overwrite });
     const exportedList = await loadList(NAME);
     const exported = await queryAsAdminWithSuccess({
       query: EXPORT_MUTATION,

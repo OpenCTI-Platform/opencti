@@ -54,12 +54,17 @@ describe('Exclusion list import schema', () => {
     expect(exclusionListImportSchema.parse({ name: ' DNS ', exclusion_list_entity_types: ['IPv4-Addr', 'IPv6-Addr'] })).toEqual({ name: 'DNS', exclusion_list_entity_types: ['IPv4-Addr', 'IPv6-Addr'] });
     expect(exclusionListImportSchema.parse(configuration)).toEqual(configuration);
     expect(exclusionListImportSchema.parse({ ...configuration, description: null })).toMatchObject({ description: null });
-    expect(exclusionListImportSchema.parse({ name: 'D', exclusion_list_entity_types: ['Domain-Name', 'Hostname', 'Url', 'Email-Addr', 'StixFile', 'Artifact'] }).name).toBe('D');
+    expect(exclusionListImportSchema.parse({ name: 'DN', exclusion_list_entity_types: ['Domain-Name', 'Hostname', 'Url', 'Email-Addr', 'StixFile', 'Artifact'] }).name).toBe('DN');
   });
 
   it.each([
     [{}],
     [{ name: '   ', exclusion_list_entity_types: ['Url'] }],
+    // The creation form requires two characters, the surrounding spaces do not count
+    [{ name: 'D', exclusion_list_entity_types: ['Url'] }],
+    [{ name: ' D ', exclusion_list_entity_types: ['Url'] }],
+    // A type given twice is not the types of a list that has it once: the list would be written again on every import
+    [{ name: 'DNS', exclusion_list_entity_types: ['Url', 'Url'] }],
     [{ name: 'DNS' }],
     [{ name: 'DNS', exclusion_list_entity_types: [] }],
     [{ name: 'DNS', exclusion_list_entity_types: ['Malware'] }],
@@ -87,7 +92,7 @@ describe('importExclusionList', () => {
     const file = fileOf(VALUES);
     const result = await importExclusionList(context, user, { name: '', exclusion_list_entity_types: ['IPv4-Addr', 'Url'] }, file, overwrite);
     expect(result).toMatchObject({ status: 'failed', code: 'invalid', exists: false });
-    expect(result.reason).toContain('name: Exclusion list name is required');
+    expect(result.reason).toContain('name: Exclusion list name must have at least 2 characters');
     expect(result.reason).toContain('exclusion_list_entity_types: IP types cannot be mixed with other types');
     expect(fullEntitiesList).not.toHaveBeenCalled();
     expect(file.read).not.toHaveBeenCalled();
@@ -159,6 +164,25 @@ describe('importExclusionList', () => {
     it('is found by its name, whatever its case and surrounding spaces', async () => {
       expect(await importExclusionList(context, user, { ...configuration, name: '  PUBLIC dns RESOLVERS ' }, fileOf(VALUES), overwrite)).toMatchObject({ status: 'skipped', exists: true });
       expect(addExclusionListFile).not.toHaveBeenCalled();
+    });
+
+    it('is looked up by its name on the index, not by reading every list', async () => {
+      withLists(stored, retiredExclusionList);
+      expect(await importExclusionList(context, user, { ...configuration, name: '  PUBLIC dns RESOLVERS ' }, fileOf(VALUES), overwrite)).toMatchObject({ status: 'skipped', exists: true });
+      expect(fullEntitiesList).toHaveBeenCalledTimes(1);
+      expect(fullEntitiesList).toHaveBeenCalledWith(context, user, ['ExclusionList'], {
+        filters: { mode: 'and', filters: [{ key: ['name'], values: ['PUBLIC dns RESOLVERS'] }], filterGroups: [] },
+      });
+    });
+
+    it('is refused, without writing, when its file is not its own: the values are read and written under its own key only', async () => {
+      withLists({ ...stored, file_id: 'exclusionLists/another-list.txt' } as BasicStoreEntityExclusionList);
+      const file = fileOf(VALUES);
+      for (const dryRun of [true, false]) {
+        expect(await importExclusionList(context, user, configuration, file, { ...overwrite, dryRun })).toMatchObject({ status: 'failed', code: 'file_not_own', exists: true });
+      }
+      expect(file.read).not.toHaveBeenCalled();
+      expect(fieldPatchExclusionList).not.toHaveBeenCalled();
     });
 
     it('is refused in add mode, without writing', async () => {

@@ -1,16 +1,14 @@
 import { Readable } from 'node:stream';
 import type { EditInput } from '../../generated/graphql';
-import { fullEntitiesList } from '../../database/middleware-loader';
-import { normalizeName } from '../../schema/identifier';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { configImportValidationReason } from '../configImport/configImport-utils';
-import { addExclusionListFile, fieldPatchExclusionList, MAX_FILE_SIZE } from './exclusionList-domain';
+import { addExclusionListFile, exclusionListStorageKey, fieldPatchExclusionList, findExclusionListsByName, MAX_FILE_SIZE } from './exclusionList-domain';
 import { readExclusionListFile } from './exclusionList-file';
 import { type ExclusionListImportConfiguration, exclusionListImportSchema } from './exclusionList-import-schema';
-import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST } from './exclusionList-types';
+import { hasSameTypes } from './exclusionList-rules';
 
-export type ExclusionListImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged' | 'ambiguous' | 'file_missing' | 'file_too_large';
+export type ExclusionListImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged' | 'ambiguous' | 'file_missing' | 'file_too_large' | 'file_not_own';
 
 export type ExclusionListImportResult = ConfigImportResult<ExclusionListImportConfiguration, ExclusionListImportCode>;
 
@@ -30,10 +28,6 @@ const refused = (
 // The values in the form the domain takes an upload: the platform checks the type from the name of the file
 const toUpload = (content: Buffer) => {
   return { createReadStream: () => Readable.from(content), filename: 'exclusion-list.txt', mimeType: 'text/plain' };
-};
-
-const hasSameTypes = (existing: string[], types: string[]) => {
-  return existing.length === types.length && [...existing].sort().join() === [...types].sort().join();
 };
 
 // The one place where an exclusion list is imported: validates, finds the list by its name and writes it with its values file.
@@ -56,8 +50,7 @@ export const importExclusionList = async (
     return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
   }
   const { name, description, enabled, exclusion_list_entity_types: types } = parsed.data;
-  const lists = await fullEntitiesList<BasicStoreEntityExclusionList>(context, user, [ENTITY_TYPE_EXCLUSION_LIST]);
-  const sameName = lists.filter((list) => normalizeName(list.name) === normalizeName(name));
+  const sameName = await findExclusionListsByName(context, user, name);
   if (sameName.length > 1) {
     return refused('failed', 'ambiguous', 'Several exclusion lists have this name', true, parsed.data);
   }
@@ -67,6 +60,10 @@ export const importExclusionList = async (
   }
   if (existing && mode === ConfigImportMode.Add) {
     return refused('failed', 'exists', 'Exclusion list already exists', true, parsed.data);
+  }
+  // The values of a list are read and written under its own key: a list that points at another file is not touched, whatever the bundle holds
+  if (existing && existing.file_id !== exclusionListStorageKey(existing.internal_id)) {
+    return refused('failed', 'file_not_own', 'The file of the exclusion list is not its own', true, parsed.data);
   }
   if (!file) {
     return refused('failed', 'file_missing', 'The file of the values of the exclusion list is missing from the bundle', !!existing, parsed.data);
