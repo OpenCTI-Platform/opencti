@@ -367,7 +367,6 @@ describe('useDashboardVariables', () => {
       expect(result.current.values).toBe(before);
       expect(result.current.values.get(sector.id)).toBe('Finance');
     });
-
   });
 
   describe('deleted variables', () => {
