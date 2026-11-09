@@ -37,7 +37,7 @@ testCreatedCounter.identity = 61;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
-testCreatedCounter.indicator = 58;
+testCreatedCounter.indicator = 61;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -163,7 +163,7 @@ testDeletedCounter.grouping = 2;
 // Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown)
 testDeletedCounter.identity = 44;
 testDeletedCounter.incident = 6;
-testDeletedCounter.indicator = 30;
+testDeletedCounter.indicator = 33;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
