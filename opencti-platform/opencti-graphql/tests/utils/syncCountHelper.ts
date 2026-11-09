@@ -32,7 +32,8 @@ testCreatedCounter.feedback = 2;
 testCreatedCounter.file = 11;
 testCreatedCounter.grouping = 2;
 testCreatedCounter.iccid = 4;
-testCreatedCounter.identity = 60; // includes 1 created and deleted by stixCoreObject-test and 1 by stixRelationship-test (time series breakdown)
+// Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown)
+testCreatedCounter.identity = 61;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
@@ -50,11 +51,11 @@ testCreatedCounter['kill-chain-phase'] = 4;
 // - 3 created and deleted by stixCoreObject-test (time series breakdown)
 testCreatedCounter.label = 24;
 testCreatedCounter.language = 1;
-testCreatedCounter.location = 22;
+testCreatedCounter.location = 23; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testCreatedCounter['mac-addr'] = 1;
 // Includes 2 created and deleted by form-submission-test (a verified form import, an existing one left as it is),
-// and 2 by stixRelationship-test (time series breakdown)
-testCreatedCounter.malware = 69;
+// and 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown)
+testCreatedCounter.malware = 70;
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 29;
 testCreatedCounter.narrative = 1;
@@ -66,8 +67,10 @@ testCreatedCounter.opinion = 5;
 testCreatedCounter.persona = 1;
 testCreatedCounter['phone-number'] = 2;
 testCreatedCounter['ssh-key'] = 1;
-testCreatedCounter.relationship = 153; // includes 5 created and deleted by stixRelationship-test (time series breakdown)
-testCreatedCounter.report = 69; // includes 8 created and deleted by stixCoreObject-test (time series breakdown), and 1 by audit-test (audits breakdown)
+// Includes 5 created and deleted by stixRelationship-test, and 1 created by publicDashboard-test, deleted with its target (time series breakdown)
+testCreatedCounter.relationship = 154;
+// Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
+testCreatedCounter.report = 74;
 testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
@@ -157,7 +160,8 @@ testDeletedCounter['external-reference'] = 1;
 testDeletedCounter.feedback = 2;
 testDeletedCounter.file = 7;
 testDeletedCounter.grouping = 2;
-testDeletedCounter.identity = 43; // includes 1 created and deleted by stixCoreObject-test and 1 by stixRelationship-test (time series breakdown)
+// Includes 1 created and deleted by stixCoreObject-test, 1 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown)
+testDeletedCounter.identity = 44;
 testDeletedCounter.incident = 6;
 testDeletedCounter.indicator = 30;
 testDeletedCounter.infrastructure = 1;
@@ -173,10 +177,10 @@ testDeletedCounter['kill-chain-phase'] = 1; // created and deleted by form-submi
 // - 3 created and deleted by stixCoreObject-test (time series breakdown)
 testDeletedCounter.label = 11;
 testDeletedCounter.language = 1;
-testDeletedCounter.location = 17;
+testDeletedCounter.location = 18; // includes 1 created and deleted by publicDashboard-test (time series breakdown)
 testDeletedCounter['mac-addr'] = 1;
-// Includes 2 created and deleted by form-submission-test, and 2 by stixRelationship-test (time series breakdown)
-testDeletedCounter.malware = 42;
+// Includes 2 created and deleted by form-submission-test, and 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown)
+testDeletedCounter.malware = 43;
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 18;
 testDeletedCounter.narrative = 1;
@@ -187,7 +191,8 @@ testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
 testDeletedCounter.relationship = 10; // includes 5 created and deleted by stixRelationship-test (time series breakdown)
-testDeletedCounter.report = 60; // includes 8 created and deleted by stixCoreObject-test (time series breakdown), and 1 by audit-test (audits breakdown)
+// Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
+testDeletedCounter.report = 65;
 testDeletedCounter.sighting = 5; // 3 created and deleted by relations-deduplication-test
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
