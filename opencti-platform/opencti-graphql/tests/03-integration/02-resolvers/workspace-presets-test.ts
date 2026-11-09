@@ -11,6 +11,8 @@ import {
 } from '../../utils/testQueryHelper';
 import { fromB64, toB64 } from '../../../src/utils/base64';
 import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 
 const CREATE = gql`
@@ -209,6 +211,9 @@ describe('Dashboard presets API', () => {
     const presets = await readWorkspace(dashboardId);
     const presetId = presets.presets[0].id;
     await queryAsAdminWithSuccess({ query: ME_EDIT, variables: { input: [{ key: 'default_dashboard', value: [dashboardId] }, { key: 'default_dashboard_preset', value: [presetId] }] } });
+    // The resolver reads the authenticated user from the platform cache, refreshed asynchronously by the cache
+    // manager: it is invalidated here so that the next query sees the edited user.
+    resetCacheForEntity(ENTITY_TYPE_USER);
     try {
       expect((await readWorkspace(dashboardId)).currentUserDefaultPresetId).toEqual(presetId);
       // Another dashboard is not concerned, and a deleted preset is not resolved
@@ -218,6 +223,7 @@ describe('Dashboard presets API', () => {
       expect((await readWorkspace(dashboardId)).currentUserDefaultPresetId).toBeNull();
     } finally {
       await queryAsAdminWithSuccess({ query: ME_EDIT, variables: { input: [{ key: 'default_dashboard', value: [null] }, { key: 'default_dashboard_preset', value: [null] }] } });
+      resetCacheForEntity(ENTITY_TYPE_USER);
     }
   });
 
