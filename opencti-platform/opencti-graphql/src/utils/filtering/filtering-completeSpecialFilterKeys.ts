@@ -275,12 +275,15 @@ const WORKFLOW_STATUS_FILTER_KEYS = [WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID, WOR
 
 // The deprecated key keeps the semantics of the resolver it replaces: a draft is in a single state, so
 // only_eq_to/not_only_eq_to are eq/not_eq, and the values match "any of them" (eq) or "none of them" (not_eq)
-// whatever the filter's mode.
+// whatever the filter's mode. Without values, a comparison matches no state (eq) or every state (not_eq),
+// where an empty filter group would put no constraint at all.
 const normalizeLegacyWorkflowStatusFilter = (filter: Filter): Filter => {
   let operator = filter.operator ?? FilterOperator.Eq;
   if (operator === FilterOperator.OnlyEqTo) operator = FilterOperator.Eq;
   if (operator === FilterOperator.NotOnlyEqTo) operator = FilterOperator.NotEq;
-  return { ...filter, operator, mode: operator === FilterOperator.NotEq ? FilterMode.And : FilterMode.Or };
+  const isComparison = operator === FilterOperator.Eq || operator === FilterOperator.NotEq;
+  const values = isComparison && filter.values.length === 0 ? ['<no-status-matching-filter>'] : filter.values;
+  return { ...filter, values, operator, mode: operator === FilterOperator.NotEq ? FilterMode.And : FilterMode.Or };
 };
 
 export const adaptFilterToWorkflowFilterKey = async (context: AuthContext, user: AuthUser, inputFilter: Filter) => {

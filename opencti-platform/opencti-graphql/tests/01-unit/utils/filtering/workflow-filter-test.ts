@@ -63,5 +63,20 @@ describe('adaptFilterToWorkflowFilterKey', () => {
       expect(onlyEq.newFilterGroup).toEqual(eq.newFilterGroup);
       expect(notOnlyEq.newFilterGroup).toEqual(notEq.newFilterGroup);
     });
+
+    it('matches no draft with a positive comparison without values, and every draft with a negative one', async () => {
+      for (const operator of [FilterOperator.Eq, FilterOperator.OnlyEqTo]) {
+        const { newFilterGroup } = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, legacyFilter(operator, []));
+        expect(newFilterGroup?.filters).toEqual([
+          { key: ['x_opencti_workflow_id'], values: ['<no-status-matching-filter>'], mode: FilterMode.Or, operator: FilterOperator.Eq },
+        ]);
+      }
+      for (const operator of [FilterOperator.NotEq, FilterOperator.NotOnlyEqTo]) {
+        const { newFilterGroup } = await adaptFilterToWorkflowFilterKey(CONTEXT, USER, legacyFilter(operator, []));
+        expect(newFilterGroup?.filters).toEqual([
+          { key: ['x_opencti_workflow_id'], values: ['<no-status-matching-filter>'], mode: FilterMode.And, operator: FilterOperator.NotEq },
+        ]);
+      }
+    });
   });
 });
