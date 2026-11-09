@@ -42,10 +42,6 @@ export const dashboardsQuery = graphql`
           name
           currentUserAccessRight
           manifest
-          variables {
-            id
-            usedInWidgetIds
-          }
         }
       }
     }

@@ -4,7 +4,7 @@ import { APP_BASE_PATH } from '../../../../../relay/environment';
 import type { FieldOption } from '../../../../../utils/field';
 import type { DashboardConfig, DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
 import { deserializeDashboardManifestForFrontend } from '../../../../../components/dashboard/dashboard-utils';
-import { buildDefaultVariableValues, isValidVariableValue } from '../../../../../components/dashboard/dashboardVariablesResolution';
+import { buildDefaultVariableValues, isValidVariableValue, widgetVariableIds } from '../../../../../components/dashboard/dashboardVariablesResolution';
 import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
 
 /**
@@ -41,11 +41,10 @@ export interface PublicDashboardCreationFormData {
   time_range: PublishedTimeRange;
 }
 
-// A dashboard as the creation form loads it: the manifest holds the definitions, `variables` their usage.
+// A dashboard as the creation form loads it: the manifest holds the widgets and the variables.
 export interface PublishableDashboard {
   id: string;
   manifest?: string | null;
-  variables?: readonly { id: string; usedInWidgetIds: readonly string[] }[] | null;
 }
 
 export const EMPTY_PUBLISHED_TIME_RANGE: PublishedTimeRange = { startDate: null, endDate: null, relativeDate: null };
@@ -62,13 +61,13 @@ export const isSamePublishedTimeRange = (a: PublishedTimeRange, b: PublishedTime
 
 /**
  * The variables offered when publishing: only those used by a widget, the others having no effect on the published
- * dashboard. In the manifest order.
+ * dashboard. In the manifest order. The usage is read from the widgets of the manifest the form already holds.
  */
 export const buildPublishedVariables = (
   variables: readonly DashboardVariable[],
-  usage: PublishableDashboard['variables'],
+  widgets: Record<string, unknown> | undefined,
 ): DashboardVariable[] => {
-  const used = new Set((usage ?? []).filter(({ usedInWidgetIds }) => usedInWidgetIds.length > 0).map(({ id }) => id));
+  const used = new Set(Object.values(widgets ?? {}).flatMap(widgetVariableIds));
   return variables.filter((variable) => used.has(variable.id));
 };
 
@@ -106,7 +105,7 @@ export const buildPublishedValuesState = (
 ): Pick<PublicDashboardCreationFormData, 'variable_values' | 'time_range'> => {
   if (!dashboard) return { variable_values: {}, time_range: EMPTY_PUBLISHED_TIME_RANGE };
   const manifest = deserializeDashboardManifestForFrontend(dashboard.manifest);
-  const variables = buildPublishedVariables(manifest.variables ?? [], dashboard.variables);
+  const variables = buildPublishedVariables(manifest.variables ?? [], manifest.widgets);
   const stored = {
     ...readStoredVariableValues(dashboardVariablesStorageKey(userId, dashboard.id)),
     ...(isDashboardPage(pathname, dashboard.id) ? parseVariablesParam(search) : {}),

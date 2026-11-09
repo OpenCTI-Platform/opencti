@@ -20,12 +20,12 @@ const VARIABLES: DashboardVariable[] = [
   { id: UNUSED, name: 'Unused', type: 'text', restriction: { mode: 'none' }, defaultValue: 'u' },
   { id: SELECTION, name: 'Selection', type: 'text', restriction: { mode: 'selection', values: ['a', 'b'] }, defaultValue: 'a' },
 ];
-const USAGE = [
-  { id: USED, usedInWidgetIds: ['widget-1'] },
-  { id: UNUSED, usedInWidgetIds: [] },
-  { id: SELECTION, usedInWidgetIds: ['widget-2'] },
-];
-const dashboard = (id: string, config = {}) => ({ id, manifest: toB64(JSON.stringify({ widgets: {}, config, variables: VARIABLES })), variables: USAGE });
+const tokenWidget = (variableId: string) => ({
+  dataSelection: [{ filters: { mode: 'and', filters: [{ key: ['entity_type'], values: [`$var:${variableId}`], operator: 'eq', mode: 'or' }], filterGroups: [] } }],
+});
+// UNUSED is used by no widget
+const WIDGETS = { 'widget-1': tokenWidget(USED), 'widget-2': tokenWidget(SELECTION), 'widget-3': { dataSelection: [{ label: 'no variable' }] } };
+const dashboard = (id: string, config = {}) => ({ id, manifest: toB64(JSON.stringify({ widgets: WIDGETS, config, variables: VARIABLES })) });
 const formValues = {
   name: 'Public',
   enabled: true,
@@ -37,8 +37,9 @@ const formValues = {
 };
 
 describe('buildPublishedVariables', () => {
-  it('should only keep the variables used by a widget, in the manifest order', () => {
-    expect(buildPublishedVariables(VARIABLES, USAGE).map((variable) => variable.id)).toEqual([USED, SELECTION]);
+  it('should only keep the variables used by a widget of the manifest, in the manifest order', () => {
+    expect(buildPublishedVariables(VARIABLES, WIDGETS).map((variable) => variable.id)).toEqual([USED, SELECTION]);
+    expect(buildPublishedVariables(VARIABLES, undefined)).toEqual([]);
   });
 });
 

@@ -13,14 +13,17 @@ const UNUSED = '22222222-2222-4222-8222-222222222222';
 const dashboard = (id: string, defaultValue: string): PublishableDashboard => ({
   id,
   manifest: toB64(JSON.stringify({
-    widgets: {},
+    widgets: {
+      'widget-1': {
+        dataSelection: [{ filters: { mode: 'and', filters: [{ key: ['entity_type'], values: [`$var:${SECTOR}`], operator: 'eq', mode: 'or' }], filterGroups: [] } }],
+      },
+    },
     config: {},
     variables: [
       { id: SECTOR, name: 'Sector name', type: 'text', restriction: { mode: 'none' }, defaultValue },
       { id: UNUSED, name: 'Unused variable', type: 'text', restriction: { mode: 'none' }, defaultValue: 'u' },
     ],
   })),
-  variables: [{ id: SECTOR, usedInWidgetIds: ['widget-1'] }, { id: UNUSED, usedInWidgetIds: [] }],
 });
 
 const renderSection = (selected: PublishableDashboard | undefined) => {

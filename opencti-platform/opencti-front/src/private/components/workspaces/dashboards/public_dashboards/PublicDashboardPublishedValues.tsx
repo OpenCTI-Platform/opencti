@@ -36,10 +36,10 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
     // Only another dashboard resets the values: a refetch of the same one keeps what the author changed.
   }, [dashboardId]);
 
-  const variables = useMemo(
-    () => buildPublishedVariables(deserializeDashboardManifestForFrontend(dashboard?.manifest).variables ?? [], dashboard?.variables),
-    [dashboard?.manifest, dashboard?.variables],
-  );
+  const variables = useMemo(() => {
+    const manifest = deserializeDashboardManifestForFrontend(dashboard?.manifest);
+    return buildPublishedVariables(manifest.variables ?? [], manifest.widgets);
+  }, [dashboard?.manifest]);
 
   if (!dashboard) return null;
 
