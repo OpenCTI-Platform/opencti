@@ -59,36 +59,40 @@ const isSensitiveEditInput = (value: Record<string, unknown>, sensitiveKeys: Rea
 // - the value of a sensitive key: { password: 'xxx' }
 // - the value of an edit input whose key is sensitive: { key: 'password', value: 'xxx' }
 // The data given is never modified.
-// Data nested deeper than MAX_REDACTION_DEPTH is replaced by the redaction marker: it cannot be checked
-// without risking a stack overflow (a JSON variable can be nested at will by the caller).
-export const MAX_REDACTION_DEPTH = 100;
+// The copy is built with a loop over a stack, not a recursion: a JSON variable can be nested at will by the caller,
+// and it must neither overflow the call stack nor be cut (the non-sensitive data stays complete, whatever its depth).
+type Container = unknown[] | Record<string, unknown>;
 export const redactSensitiveData = <T>(data: T, sensitiveKeys: ReadonlySet<string> = SENSITIVE_KEYS): T => {
-  const seen = new WeakMap<object, unknown>();
-  const redact = (value: unknown, depth: number): unknown => {
-    const isArray = Array.isArray(value);
-    if (!isArray && !isPlainObject(value)) {
+  const seen = new WeakMap<object, Container>();
+  const pending: Array<{ source: Container; copy: Container }> = [];
+  // Values are returned as they are, containers get an empty copy filled later from the pending stack
+  const prepare = (value: unknown): unknown => {
+    if (!Array.isArray(value) && !isPlainObject(value)) {
       return value;
     }
-    if (seen.has(value)) return seen.get(value);
-    if (depth > MAX_REDACTION_DEPTH) {
-      return REDACTED_INFORMATION;
-    }
-    if (isArray) {
-      const copy: unknown[] = [];
-      seen.set(value, copy);
-      value.forEach((element) => copy.push(redact(element, depth + 1)));
-      return copy;
-    }
-    const copy: Record<string, unknown> = {};
+    const known = seen.get(value);
+    if (known) return known;
+    const copy: Container = Array.isArray(value) ? [] : {};
     seen.set(value, copy);
-    const isEditInput = isSensitiveEditInput(value, sensitiveKeys);
-    Object.entries(value).forEach(([key, element]) => {
-      const isSensitive = sensitiveKeys.has(key) || (isEditInput && key === 'value');
-      copy[key] = isSensitive && isNotEmptyField(element) ? REDACTED_INFORMATION : redact(element, depth + 1);
-    });
+    pending.push({ source: value, copy });
     return copy;
   };
-  return redact(data, 0) as T;
+  const result = prepare(data);
+  while (pending.length > 0) {
+    const { source, copy } = pending.pop() as { source: Container; copy: Container };
+    if (Array.isArray(source)) {
+      source.forEach((element, index) => {
+        (copy as unknown[])[index] = prepare(element);
+      });
+    } else {
+      const isEditInput = isSensitiveEditInput(source, sensitiveKeys);
+      Object.entries(source).forEach(([key, element]) => {
+        const isSensitive = sensitiveKeys.has(key) || (isEditInput && key === 'value');
+        (copy as Record<string, unknown>)[key] = isSensitive && isNotEmptyField(element) ? REDACTED_INFORMATION : prepare(element);
+      });
+    }
+  }
+  return result as T;
 };
 
 const collectVariables = (node: ASTNode, into: Set<string>) => {
@@ -115,28 +119,28 @@ const hasLiteral = (node: ValueNode) => {
 
 // Names of the root fields of all the operations of the document, through inline fragments and fragment spreads.
 // All operation types are read: an invalid request such as { otpLogin(...) } can put a mutation field in a query.
+// A loop over a stack, not a recursion: the caller can chain as many fragments as wanted.
 const listRootFields = (document: DocumentNode): string[] => {
   const fragments = new Map(document.definitions.filter((d) => d.kind === Kind.FRAGMENT_DEFINITION).map((d) => [d.name.value, d]));
   const names: string[] = [];
   const visitedFragments = new Set<string>();
-  const walk = (selectionSet: SelectionSetNode) => {
+  const pending: SelectionSetNode[] = document.definitions
+    .filter((definition) => definition.kind === Kind.OPERATION_DEFINITION)
+    .map((definition) => definition.selectionSet);
+  while (pending.length > 0) {
+    const selectionSet = pending.pop() as SelectionSetNode;
     selectionSet.selections.forEach((selection) => {
       if (selection.kind === Kind.FIELD) {
         names.push(selection.name.value);
       } else if (selection.kind === Kind.INLINE_FRAGMENT) {
-        walk(selection.selectionSet);
+        pending.push(selection.selectionSet);
       } else if (!visitedFragments.has(selection.name.value)) {
         visitedFragments.add(selection.name.value);
         const fragment = fragments.get(selection.name.value);
-        if (fragment) walk(fragment.selectionSet);
+        if (fragment) pending.push(fragment.selectionSet);
       }
     });
-  };
-  document.definitions.forEach((definition) => {
-    if (definition.kind === Kind.OPERATION_DEFINITION) {
-      walk(definition.selectionSet);
-    }
-  });
+  }
   return names;
 };
 
