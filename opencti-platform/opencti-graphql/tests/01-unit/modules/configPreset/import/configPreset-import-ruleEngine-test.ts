@@ -59,22 +59,30 @@ describe('Rule engine import (registry)', () => {
   it('applies through the module, reports a status that differs from the computed one, and throws on a failure', async () => {
     vi.mocked(importConfigPresetRule).mockResolvedValueOnce({ status: 'overwritten', exists: true });
     expect(await family.importer!.apply(context, user, item({ active: true }), { ...computed, status: 'overwritten' }, ConfigImportMode.Overwrite, plan)).toBeUndefined();
-    expect(importConfigPresetRule).toHaveBeenCalledWith(context, user, rule.id, { active: true }, { mode: ConfigImportMode.Overwrite, isRuleEngineEnabled: true });
+    expect(importConfigPresetRule).toHaveBeenCalledWith(context, user, rule.id, { active: true }, { mode: ConfigImportMode.Overwrite });
     vi.mocked(importConfigPresetRule).mockResolvedValueOnce({ status: 'skipped', code: 'unchanged', exists: true });
     expect(await family.importer!.apply(context, user, item({ active: true }), { ...computed, status: 'overwritten' }, ConfigImportMode.Overwrite, plan)).toBe('skipped');
     vi.mocked(importConfigPresetRule).mockResolvedValueOnce({ status: 'failed', code: 'unknown_rule', reason: 'Unknown rule', exists: false });
     await expect(family.importer!.apply(context, user, item({ active: true }, 'unknown_rule'), computed, ConfigImportMode.Overwrite, plan)).rejects.toThrow('Unknown rule');
   });
-  it('reads the state of the rule engine once for all the rules of an import, and again for another import', async () => {
+
+  it('reads the state of the rule engine once for the preview of all the rules of an import, and again for another import', async () => {
     vi.mocked(importConfigPresetRule).mockResolvedValue({ status: 'skipped', code: 'engine_disabled', exists: true, configuration: { active: true } });
     vi.mocked(isRuleEngineEnabled).mockResolvedValue(false);
     const [first, second] = RULES_DECLARATION;
     await family.importer!.compute(context, user, item({ active: true }, first.id), plan, ConfigImportMode.Overwrite);
     await family.importer!.compute(context, user, item({ active: true }, second.id), plan, ConfigImportMode.Overwrite);
-    await family.importer!.apply(context, user, item({ active: true }, first.id), { ...computed, status: 'skipped' }, ConfigImportMode.Overwrite, plan);
     expect(isRuleEngineEnabled).toHaveBeenCalledTimes(1);
-    expect(importConfigPresetRule).toHaveBeenLastCalledWith(context, user, first.id, { active: true }, { mode: ConfigImportMode.Overwrite, isRuleEngineEnabled: false });
+    expect(importConfigPresetRule)
+      .toHaveBeenLastCalledWith(context, user, second.id, { active: true }, { mode: ConfigImportMode.Overwrite, dryRun: true, isRuleEngineEnabled: false });
     await family.importer!.compute(context, user, item({ active: true }), { created: new Set() }, ConfigImportMode.Overwrite);
     expect(isRuleEngineEnabled).toHaveBeenCalledTimes(2);
+  });
+
+  it('lets the module read the state of the rule engine again for each write: it may have been disabled since the preview', async () => {
+    vi.mocked(importConfigPresetRule).mockResolvedValue({ status: 'overwritten', exists: true, configuration: { active: true } });
+    await family.importer!.compute(context, user, item({ active: true }), plan, ConfigImportMode.Overwrite);
+    await family.importer!.apply(context, user, item({ active: true }), { ...computed, status: 'overwritten' }, ConfigImportMode.Overwrite, plan);
+    expect(importConfigPresetRule).toHaveBeenLastCalledWith(context, user, rule.id, { active: true }, { mode: ConfigImportMode.Overwrite });
   });
 });

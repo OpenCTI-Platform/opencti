@@ -32,9 +32,9 @@ const ruleEngineImporter: ConfigPresetImporter = {
     const result = await importConfigPresetRule(context, user, item.id, item.configuration, options);
     return { ...toComputedItem(label, result), isEnabled: toIsEnabled(result.configuration?.active) };
   },
-  apply: async (context, user, item, computed, mode, plan) => {
-    const options = { mode, isRuleEngineEnabled: await isEngineEnabledFor(plan) };
-    return toAppliedStatus(await importConfigPresetRule(context, user, item.id, item.configuration, options), computed);
+  // The write reads the state of the engine again: it may have been disabled since the preview
+  apply: async (context, user, item, computed, mode) => {
+    return toAppliedStatus(await importConfigPresetRule(context, user, item.id, item.configuration, { mode }), computed);
   },
 };
 
