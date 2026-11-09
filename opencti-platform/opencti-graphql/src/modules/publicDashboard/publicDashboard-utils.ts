@@ -32,9 +32,14 @@ export const getServedPublicManifest = (publicDashboard: Pick<BasicStoreEntityPu
     return publicManifest;
   }
   const manifest = fromB64(publicManifest);
+  // The time filters switch belongs to the dashboard variables feature: without it, the public filters stay read only
+  const servedConfig = !isFeatureEnabled('DASHBOARD_VARIABLES') && manifest.config?.allowViewersToEditTimeFilters !== undefined
+    ? R.omit(['allowViewersToEditTimeFilters'], manifest.config)
+    : manifest.config;
+  const serveWidgetsUnchanged = () => (servedConfig === manifest.config ? publicManifest : toB64({ ...manifest, config: servedConfig }));
   const widgets = Object.entries<any>(manifest.widgets ?? {});
   if (!widgets.some(([, widget]) => widget?.parameters?.breakdownBy)) {
-    return publicManifest;
+    return serveWidgetsUnchanged();
   }
   const storedWidgets = isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG)
     ? fromB64<{ widgets?: Record<string, PublicDashboardCachedWidget> }>(publicDashboard.private_manifest).widgets ?? {}
@@ -44,12 +49,12 @@ export const getServedPublicManifest = (publicDashboard: Pick<BasicStoreEntityPu
     return !!widget?.parameters?.breakdownBy && !(storedWidget && canWidgetBreakDown(storedWidget));
   };
   if (!widgets.some(([widgetId, widget]) => isServedWithoutBreakdown(widgetId, widget))) {
-    return publicManifest;
+    return serveWidgetsUnchanged();
   }
   const servedWidgets = widgets.map(([widgetId, widget]) => {
     return [widgetId, isServedWithoutBreakdown(widgetId, widget) ? { ...widget, parameters: R.omit(WIDGET_BREAKDOWN_PARAMETERS, widget.parameters) } : widget];
   });
-  return toB64({ ...manifest, widgets: Object.fromEntries(servedWidgets) });
+  return toB64({ ...manifest, config: servedConfig, widgets: Object.fromEntries(servedWidgets) });
 };
 
 /**
