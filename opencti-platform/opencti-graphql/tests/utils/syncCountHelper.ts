@@ -16,7 +16,7 @@ testCreatedCounter.artifact = 4;
 testCreatedCounter['attack-pattern'] = 25;
 testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
-testCreatedCounter['case-incident'] = 22;
+testCreatedCounter['case-incident'] = 23;
 testCreatedCounter['case-rfi'] = 9;
 testCreatedCounter['case-rft'] = 1;
 testCreatedCounter.channel = 1;
@@ -139,7 +139,7 @@ testDeletedCounter.artifact = 3;
 testDeletedCounter['attack-pattern'] = 20;
 testDeletedCounter.campaign = 2;
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
-testDeletedCounter['case-incident'] = 19;
+testDeletedCounter['case-incident'] = 20;
 testDeletedCounter['case-rfi'] = 9;
 testDeletedCounter['case-rft'] = 1;
 testDeletedCounter.channel = 1;
