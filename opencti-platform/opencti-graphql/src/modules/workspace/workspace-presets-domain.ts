@@ -7,6 +7,11 @@ import { ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace } from './workspace-ty
 import type { StoreDashboardManifest, StoreDashboardPreset } from './workspace-variables-types';
 import { buildDashboardPreset } from './workspace-presets-validation';
 import { loadDashboardForVariableEdition, withWorkspaceManifestLock } from './workspace-variables-domain';
+import { storeLoadById } from '../../database/middleware-loader';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { SYSTEM_USER } from '../../utils/access';
+import type { BasicStoreEntityUser } from '../user/user-types';
+import { findCurrentUserDefaultPresetId } from './workspace-variables-utils';
 
 export const buildPresetAuditInput = (operation: 'upsert' | 'delete', preset: Pick<StoreDashboardPreset, 'id' | 'name'>): EditInput[] => {
   // Never the manifest: it can be huge and carries every widget definition.
@@ -54,4 +59,18 @@ export const workspacePresetDelete = async (context: AuthContext, user: AuthUser
     const nextPresets = presets.filter((p) => p.id !== presetId);
     return saveDashboardPresets(context, user, workspaceId, manifest, nextPresets, buildPresetAuditInput('delete', preset));
   });
+};
+
+/**
+ * The preset this dashboard opens on for the current user. The own choice of the user is read from the store
+ * rather than from the authenticated user: that one comes from the platform cache, refreshed asynchronously across
+ * the cluster, and the choice has to apply as soon as it is saved. The organizations and groups keep the cache.
+ */
+export const resolveCurrentUserDefaultPresetId = async (context: AuthContext, user: AuthUser, workspace: StoreEntityWorkspace) => {
+  if (workspace.type !== 'dashboard') return null;
+  const stored = await storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER);
+  const holder = stored
+    ? { ...user, default_dashboard: stored.default_dashboard, default_dashboard_preset: stored.default_dashboard_preset }
+    : user;
+  return findCurrentUserDefaultPresetId(holder, workspace);
 };
