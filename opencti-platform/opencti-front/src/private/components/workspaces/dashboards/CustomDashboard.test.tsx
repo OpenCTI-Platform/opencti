@@ -816,6 +816,46 @@ describe('CustomDashboard presets', () => {
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
   });
 
+  it('drops the values and the range of the active preset when it is deleted', async () => {
+    captured.commit.mockImplementation((args) => args.onCompleted?.({}));
+    const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    await user.click(screen.getByTestId('dashboard-preset-delete'));
+    await user.click(await screen.findByTestId('dashboard-preset-delete-confirm'));
+    expect(captured.commit).toHaveBeenCalledWith(expect.objectContaining({ variables: { id: 'ws-1', presetId: 'p1' } }));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
+    expect(captured.contentConfig?.relativeDate).toBe('days-7');
+    expect(new URLSearchParams(window.location.search).get('preset')).toBeNull();
+  });
+
+  it('falls back to the manifest default, not to the default preset of the user, for a variable the picked preset does not hold', async () => {
+    const LEVEL_ID = '33333333-3333-4333-8333-333333333333';
+    const manifest = toB64(JSON.stringify({
+      widgets: manifestWidgets,
+      config: { relativeDate: 'days-7' },
+      variables: [
+        { id: SECTOR_ID, name: 'Sector', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Energy' },
+        { id: LEVEL_ID, name: 'Level', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Low' },
+      ],
+    }));
+    const healthcare = { id: 'p2', name: 'Healthcare', values: [{ variableId: SECTOR_ID, value: 'Healthcare' }, { variableId: LEVEL_ID, value: 'High' }], config: { startDate: null, endDate: null, relativeDate: 'days-7' } };
+    const data = buildWorkspace({
+      manifest,
+      variables: [{ id: SECTOR_ID, usedInWidgetIds: ['widget-1'] }, { id: LEVEL_ID, usedInWidgetIds: ['widget-1'] }],
+      presets: [finance, healthcare],
+      currentUserDefaultPresetId: 'p2',
+    });
+    const { user } = testRender(<CustomDashboard data={data as never} />, { userContext: flagOn() });
+    expect(captured.values?.get(LEVEL_ID)).toBe('High');
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    expect(captured.values?.get(LEVEL_ID)).toBe('Low');
+    expect(screen.queryByTestId('dashboard-preset-update')).not.toBeInTheDocument();
+  });
+
   it('applies the default preset on the home dashboard without selector nor local read', () => {
     storeFinanceEverywhere();
     window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'ws-1'), JSON.stringify({ [SECTOR_ID]: 'Retail' }));

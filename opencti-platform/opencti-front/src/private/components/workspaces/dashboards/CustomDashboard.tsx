@@ -249,15 +249,17 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     defaultOverride: defaultPreset?.config ?? null,
   });
   const { activePreset } = presetControls;
+  // A preset restores its own values and, for the variables it does not hold, the manifest defaults: not the
+  // default preset of the user, so that a preset means the same thing to everyone.
   const isActivePresetModified = activePreset !== null
-    && isPresetModified(activePreset, variables, variableControls.defaults, variableControls.values, timeRange.range);
+    && isPresetModified(activePreset, variables, variableControls.manifestDefaults, variableControls.values, timeRange.range);
   const { upsert: upsertPreset, remove: removePreset, isSubmitting: isPresetSubmitting } = useDashboardPresetMutations(workspace.id);
   // Switching restores the values and the range of the preset at once; no preset goes back to the defaults.
   const onSelectPreset = (presetId: string | null) => {
     presetControls.select(presetId);
     const preset = presetId ? presets.find((candidate) => candidate.id === presetId) : undefined;
     if (preset) {
-      variableControls.setValues(presetEffectiveValues(preset, variables, variableControls.defaults));
+      variableControls.setValues(presetEffectiveValues(preset, variables, variableControls.manifestDefaults));
       timeRange.setRange(preset.config);
     } else {
       variableControls.reset();
@@ -284,9 +286,10 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       config: preset.config,
     });
   };
+  // Deleting the active preset also drops its values and range: the dashboard goes back to the defaults.
   const onDeletePreset = async (preset: DashboardPreset) => {
     await removePreset(preset.id);
-    if (activePreset?.id === preset.id) presetControls.select(null);
+    if (activePreset?.id === preset.id) onSelectPreset(null);
   };
   // Mirrors the bar, which renders nothing without variables nor a way to create one.
   const isBarVisible = showVariablesBar && (variables.length > 0 || canManageVariables || showPresetSelector);

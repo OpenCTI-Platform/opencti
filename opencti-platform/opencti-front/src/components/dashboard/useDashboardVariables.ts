@@ -33,14 +33,19 @@ export const useDashboardVariables = (
     setState({ key, ignoreLocalValues, enabled, stored });
   }
 
-  const manifestDefaults = buildDefaultVariableValues(enabled ? variables : []);
+  // The defaults of the manifest alone: what a preset falls back to for the variables it does not hold, whatever
+  // preset the user opens the dashboard on.
+  const manifestOnly = buildDefaultVariableValues(enabled ? variables : []);
+  const manifestSignature = JSON.stringify([...manifestOnly]);
+  const manifestDefaults = useMemo(() => new Map<string, string>(JSON.parse(manifestSignature)), [manifestSignature]);
+  const overridden = new Map(manifestOnly);
   if (enabled && defaultOverrides) {
     variables.forEach((variable) => {
       const value = defaultOverrides.get(variable.id);
-      if (value !== undefined && value !== '' && isValidVariableValue(variable, value)) manifestDefaults.set(variable.id, value);
+      if (value !== undefined && value !== '' && isValidVariableValue(variable, value)) overridden.set(variable.id, value);
     });
   }
-  const defaultsSignature = JSON.stringify([...manifestDefaults]);
+  const defaultsSignature = JSON.stringify([...overridden]);
   const defaults = useMemo(() => new Map<string, string>(JSON.parse(defaultsSignature)), [defaultsSignature]);
 
   // `variables` is deliberately summarized by its signature (id + selection pool).
@@ -110,5 +115,5 @@ export const useDashboardVariables = (
     commitCurrent(Object.fromEntries(Object.entries(current).filter(([id, value]) => submitted.get(id) !== value)));
   }, [ignoreLocalValues, enabled]);
 
-  return { values, defaults, setValue, setValues, reset, resetValues };
+  return { values, defaults, manifestDefaults, setValue, setValues, reset, resetValues };
 };
