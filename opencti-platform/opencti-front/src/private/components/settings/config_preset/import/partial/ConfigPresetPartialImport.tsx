@@ -12,6 +12,7 @@ import ConfigPresetBundleFileSelect from '../ConfigPresetBundleFileSelect';
 import ConfigPresetImportModeSelect from '../ConfigPresetImportModeSelect';
 import ConfigPresetResultLine from '../ConfigPresetResultLine';
 import { ConfigPresetLockedTypeRow } from '../../ConfigPresetSelectionAccordion';
+import useConfigPresetLockedTypes from '../../useConfigPresetLockedTypes';
 import { partialImportItemModes, partialImportSelectedKeys, toggleSelectedKey } from './configPresetPartialImportSelection';
 import { ConfigPresetPartialImportPreviewMutation, ConfigPresetPartialImportPreviewMutation$data } from './__generated__/ConfigPresetPartialImportPreviewMutation.graphql';
 import { ConfigPresetPartialImportMutation, ConfigPresetPartialImportMutation$data } from './__generated__/ConfigPresetPartialImportMutation.graphql';
@@ -102,10 +103,8 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
   const defaultMode = isConfigImportMode(preview?.default_mode ?? '') ? preview?.default_mode as ConfigImportMode : null;
   const itemLabel = (item: { label: string; translatable: boolean }) => (item.translatable ? t_i18n(item.label) : item.label);
 
-  const handleFile = (value: File) => {
-    setFile(value);
-    setPreview(null);
-    setModes({});
+  // The preview of the file, every item selected
+  const loadPreview = (value: File) => {
     commitPreview({
       variables: { file: value, type },
       onCompleted: (data) => {
@@ -116,6 +115,21 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
       onError: () => setFile(null),
     });
   };
+
+  const handleFile = (value: File) => {
+    setFile(value);
+    setPreview(null);
+    setModes({});
+    loadPreview(value);
+  };
+
+  // When the license changes (the locked row opens its dialog), the same file is read again, as the wizard reads its types again:
+  // a type the Enterprise Edition locked comes with its items, all selected by the new preview, so there is nothing more to select
+  useConfigPresetLockedTypes(preview?.type ? [preview.type] : null, () => {
+    if (file) {
+      loadPreview(file);
+    }
+  }, () => undefined);
 
   const handleImport = () => {
     if (!file) return;
