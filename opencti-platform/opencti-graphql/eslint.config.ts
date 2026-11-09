@@ -133,6 +133,9 @@ export default defineConfig([
       'no-restricted-syntax': ['error', {
         selector: "CallExpression[callee.object.name=/^(res|response)$/][callee.property.name=/^(set|header)$/][arguments.length=1][arguments.0.type='ObjectExpression']",
         message: 'Use res.set(field, value) instead: the object form iterates with for...in and would also set headers from polluted prototype properties.',
+      }, {
+        selector: "BinaryExpression[operator='instanceof'][right.name=/^(ElkClient|Elk8Client|Elk9Client|OpenClient)$/]",
+        message: 'Use isElkEngine() instead: the Elasticsearch 8 and 9 clients are distinct classes, an instanceof check misses one of them.',
       }],
     },
   },

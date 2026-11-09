@@ -2,7 +2,7 @@
 // These mutations update the Settings entity AND trigger live re-registration
 // of the corresponding authentication provider.
 
-import { patchAttribute } from '../database/middleware';
+import { loadEntity, patchAttribute } from '../database/middleware';
 import { publishUserAction } from '../listener/UserActionListener';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
@@ -20,11 +20,12 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { notify } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
-import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../generated/graphql';
+import { BUS_TOPICS, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
+import { FunctionalError } from '../config/errors';
+import { type CertAuthConfigInput, type HeadersAuthConfigInput, type LocalAuthConfigInput, LocalAuthLockoutFinalAction } from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
-import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil } from '../modules/user/user-domain';
+import { propagatePasswordValidityChange } from '../modules/user/user-domain';
 
 export const buildAvailableProviders = async (platformSettings: BasicStoreSettings) => {
   const availableProviders = [...PROVIDERS];
@@ -55,6 +56,84 @@ export const buildAvailableProviders = async (platformSettings: BasicStoreSettin
   return availableProviders;
 };
 
+// Values returned for the local authentication lockout policy when the settings hold none.
+// Thresholds and window follow NIST SP 800-53 AC-7: 3 attempts for administrative accounts, 10 for the other users, within 15 minutes
+export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
+  // Existing platforms keep the lockout disabled, new platforms start with it enabled (data initialization)
+  local_auth_lockout_enabled: false,
+  local_auth_lockout_max_attempts: 10,
+  local_auth_lockout_admin_max_attempts: 3,
+  // Applied once max attempts are reached: a lock for the lockout duration, or the account set to Locked until an admin unlocks it
+  local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Temporary,
+  // Failed attempts older than the window are forgotten. 0 disables the window: failed attempts are only reset by a successful login
+  local_auth_lockout_window: 15, // minutes
+  // Duration of the lock applied by the temporary final action
+  local_auth_lockout_duration: 15, // minutes
+};
+
+// Upper bounds of the lockout policy, mirrored by the local strategy form
+export const LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT = 100;
+export const LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT = 1440; // minutes, the window is capped to 24h by the specification
+// minutes, the temporary lock is capped to 24h like the window, as it lasted a full window in the specification
+export const LOCAL_AUTH_LOCKOUT_DURATION_LIMIT = 1440;
+
+const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuthConfigInput) => {
+  if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
+    return {};
+  }
+  const patch = {
+    ...(input.local_auth_lockout_enabled !== undefined && { local_auth_lockout_enabled: input.local_auth_lockout_enabled }),
+    ...(input.local_auth_lockout_max_attempts !== undefined && { local_auth_lockout_max_attempts: input.local_auth_lockout_max_attempts }),
+    ...(input.local_auth_lockout_admin_max_attempts !== undefined && { local_auth_lockout_admin_max_attempts: input.local_auth_lockout_admin_max_attempts }),
+    // The GraphQL enum already restricts the final action to its allowed values
+    ...(input.local_auth_lockout_final_action !== undefined && { local_auth_lockout_final_action: input.local_auth_lockout_final_action }),
+    ...(input.local_auth_lockout_window !== undefined && { local_auth_lockout_window: input.local_auth_lockout_window }),
+    ...(input.local_auth_lockout_duration !== undefined && { local_auth_lockout_duration: input.local_auth_lockout_duration }),
+  };
+  // Leaving the values untouched or disabling the lockout never checks them, so stored values cannot block other local auth updates
+  const changesValues = Object.keys(patch).some((key) => key !== 'local_auth_lockout_enabled');
+  if (!changesValues && patch.local_auth_lockout_enabled !== true) {
+    return patch;
+  }
+  // Validate the values the settings will hold once patched (a null input falls back to the default)
+  // Stored values are read from the database, as the settings cache can lag behind a previous update
+  const storedSettings = await loadEntity<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  const effectiveValue = (key: 'local_auth_lockout_max_attempts' | 'local_auth_lockout_admin_max_attempts' | 'local_auth_lockout_window' | 'local_auth_lockout_duration'): number => {
+    const value = key in patch ? input[key] : storedSettings?.[key];
+    return value ?? LOCAL_AUTH_LOCKOUT_DEFAULTS[key];
+  };
+  const maxAttempts = effectiveValue('local_auth_lockout_max_attempts');
+  const adminMaxAttempts = effectiveValue('local_auth_lockout_admin_max_attempts');
+  const lockoutWindow = effectiveValue('local_auth_lockout_window');
+  const duration = effectiveValue('local_auth_lockout_duration');
+  if (maxAttempts < 1) {
+    throw FunctionalError('Lockout max attempts must be greater than or equal to 1', { local_auth_lockout_max_attempts: maxAttempts });
+  }
+  if (maxAttempts > LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT) {
+    throw FunctionalError(`Lockout max attempts must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`, { local_auth_lockout_max_attempts: maxAttempts });
+  }
+  if (adminMaxAttempts < 1) {
+    throw FunctionalError('Lockout admin max attempts must be greater than or equal to 1', { local_auth_lockout_admin_max_attempts: adminMaxAttempts });
+  }
+  if (adminMaxAttempts > LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT) {
+    throw FunctionalError(`Lockout admin max attempts must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`, { local_auth_lockout_admin_max_attempts: adminMaxAttempts });
+  }
+  // A window of 0 disables it
+  if (lockoutWindow < 0) {
+    throw FunctionalError('Lockout window must be greater than or equal to 0', { local_auth_lockout_window: lockoutWindow });
+  }
+  if (lockoutWindow > LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT) {
+    throw FunctionalError(`Lockout window must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT}`, { local_auth_lockout_window: lockoutWindow });
+  }
+  if (duration <= 0) {
+    throw FunctionalError('Lockout duration must be greater than 0', { local_auth_lockout_duration: duration });
+  }
+  if (duration > LOCAL_AUTH_LOCKOUT_DURATION_LIMIT) {
+    throw FunctionalError(`Lockout duration must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_DURATION_LIMIT}`, { local_auth_lockout_duration: duration });
+  }
+  return patch;
+};
+
 export const updateLocalAuth = async (context: AuthContext, user: AuthUser, settingsId: string, input: LocalAuthConfigInput) => {
   // Read previous validity days before patching
   const currentSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -70,19 +149,13 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
     ...(input.password_policy_min_lowercase !== undefined && { password_policy_min_lowercase: input.password_policy_min_lowercase }),
     ...(input.password_policy_min_uppercase !== undefined && { password_policy_min_uppercase: input.password_policy_min_uppercase }),
     ...(input.password_policy_validity_days !== undefined && { password_policy_validity_days: input.password_policy_validity_days }),
+    ...(await buildLocalAuthLockoutPatch(context, input)),
   };
   const { element } = await patchAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, patch);
 
   // Propagate password_valid_until changes to all internal users
   if (input.password_policy_validity_days !== undefined) {
-    const newValidityDays = Number(input.password_policy_validity_days);
-    if (newValidityDays <= 0) {
-      // Policy disabled: clear all users' expiration dates
-      await clearAllUsersPasswordValidUntil(context);
-    } else if (newValidityDays !== oldValidityDays) {
-      // Policy duration changed: adjust all existing expiration dates
-      await adjustAllUsersPasswordValidUntil(context, oldValidityDays, newValidityDays);
-    }
+    await propagatePasswordValidityChange(context, oldValidityDays, Number(input.password_policy_validity_days));
   }
 
   await publishUserAction({

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeDraftPolicy, formatFormDataForSubmission } from './FormViewUtils';
+import { computeDraftPolicy, formatFormDataForSubmission, getSubmitErrorMessage } from './FormViewUtils';
 import { FormSchemaDefinition } from '../Form.d';
 
 type SubmissionValues = Parameters<typeof formatFormDataForSubmission>[0];
@@ -224,7 +224,7 @@ describe('formatFormDataForSubmission – mainEntityLookup', () => {
     const formatted = formatFormDataForSubmission(values as SubmissionValues, lookupSchema);
 
     expect(formatted).not.toHaveProperty('mainEntityLookup');
-    expect(formatted.mainEntityLookupPending).toEqual([pendingInputData]);
+    expect(formatted.mainEntityLookupPending).toEqual([{ ...pendingInputData, id: '__pending__:some-uuid' }]);
   });
 
   it('should split multiple existing entities from pending entities', () => {
@@ -241,7 +241,7 @@ describe('formatFormDataForSubmission – mainEntityLookup', () => {
     const formatted = formatFormDataForSubmission(values as SubmissionValues, lookupMultiSchema);
 
     expect(formatted.mainEntityLookup).toEqual(['existing-id-1', 'existing-id-2']);
-    expect(formatted.mainEntityLookupPending).toEqual([pendingInputData]);
+    expect(formatted.mainEntityLookupPending).toEqual([{ ...pendingInputData, id: '__pending__:uuid-1' }]);
   });
 
   it('should not produce mainEntityLookupPending when all entities are existing (multiple)', () => {
@@ -273,7 +273,10 @@ describe('formatFormDataForSubmission – mainEntityLookup', () => {
     const formatted = formatFormDataForSubmission(values as SubmissionValues, lookupMultiSchema);
 
     expect(formatted).not.toHaveProperty('mainEntityLookup');
-    expect(formatted.mainEntityLookupPending).toEqual([pendingInputData1, pendingInputData2]);
+    expect(formatted.mainEntityLookupPending).toEqual([
+      { ...pendingInputData1, id: '__pending__:uuid-1' },
+      { ...pendingInputData2, id: '__pending__:uuid-2' },
+    ]);
   });
 });
 
@@ -336,7 +339,7 @@ describe('formatFormDataForSubmission – additional_${id}_lookup', () => {
     const formatted = formatFormDataForSubmission(values as SubmissionValues, additionalLookupSchema);
 
     expect(formatted).not.toHaveProperty('additional_threat_lookup');
-    expect(formatted['additional_threat_lookup_pending']).toEqual([pendingInputData]);
+    expect(formatted['additional_threat_lookup_pending']).toEqual([{ ...pendingInputData, id: '__pending__:uuid-m' }]);
   });
 
   it('should split existing and pending entities for multiple lookup', () => {
@@ -352,7 +355,7 @@ describe('formatFormDataForSubmission – additional_${id}_lookup', () => {
     const formatted = formatFormDataForSubmission(values as SubmissionValues, additionalLookupMultiSchema);
 
     expect(formatted['additional_threat_lookup']).toEqual(['malware-id-1']);
-    expect(formatted['additional_threat_lookup_pending']).toEqual([pendingInputData]);
+    expect(formatted['additional_threat_lookup_pending']).toEqual([{ ...pendingInputData, id: '__pending__:uuid-m' }]);
   });
 });
 
@@ -433,5 +436,19 @@ describe('computeDraftPolicy', () => {
     expect(computeDraftPolicy({
       authorizedMembers: { enabled: true, isEditable: false, isRequired: true, defaults: [] },
     }, true).authorizedMembers.required).toBe(true);
+  });
+});
+
+describe('getSubmitErrorMessage', () => {
+  it('returns the GraphQL messages, not the Relay wrapper around them', () => {
+    const error = Object.assign(
+      new Error('Relay request for `FormViewMutation` failed by the following reasons:\n1. You are not allowed to create labels.'),
+      { res: { errors: [{ message: 'You are not allowed to create labels.' }, { message: 'Bad value', data: { reason: 'The value is invalid' } }] } },
+    );
+    expect(getSubmitErrorMessage(error)).toBe('You are not allowed to create labels. The value is invalid');
+  });
+
+  it('keeps the message of an error that carries no GraphQL error', () => {
+    expect(getSubmitErrorMessage(new Error('Network down'))).toBe('Network down');
   });
 });

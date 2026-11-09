@@ -88,6 +88,7 @@ export interface GraphEntity {
   createdBy?: unknown | null | undefined;
   published?: string | null | undefined;
   objectMarking?: readonly DefaultMarking[] | null | undefined;
+  currentUserAccessRight?: string | null;
 }
 
 /** Deterministic layouts other than the tree modes: by entity tier, or rings around one node. */
@@ -136,4 +137,6 @@ export interface GraphState {
   // opened by other source than click in toolbar.
   isAddRelationOpen: boolean; // (cf <RelationSelection />)
   isExpandOpen: boolean; // (cf Graph.tsx)
+  // Runs when the open expand is submitted, dropped when it closes (cf GraphToolbarExpandTools).
+  onExpandSubmit?: () => void;
 }

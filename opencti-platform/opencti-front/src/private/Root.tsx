@@ -119,6 +119,8 @@ const rootSettingsFragment = graphql`
     platform_ai_type
     platform_ai_has_token
     platform_trash_enabled
+    platform_bootstrap_status
+    platform_bootstrap_wizard_enabled
     filigran_chatbot_ai_cgu_status
     is_authentication_by_env
     platform_protected_sensitive_config {
@@ -214,6 +216,7 @@ const meUserFragment = graphql`
     unit_system
     date_format
     time_format
+    bootstrap_wizard_skipped
     submenu_show_icons
     submenu_auto_collapse
     monochrome_labels

@@ -15,16 +15,15 @@ import passport from 'passport';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
 import rateLimit from 'express-rate-limit';
 import createApp from './httpPlatform';
-import createApolloServer from '../graphql/graphql';
+import createApolloServer, { createSubscriptionServerOptions } from '../graphql/graphql';
 import { getSessionMiddleware } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { ForbiddenAccess, WorkNotALiveError } from '../config/errors';
+import { ForbiddenAccess } from '../config/errors';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { getSettings } from '../domain/settings';
-import { isWorkAlive } from '../domain/work';
 import { computeLoaders } from './httpAuthenticatedContext';
+import { createGraphqlContext } from './httpGraphqlContext';
 import {
   applyKeepAliveTimeout,
   buildGraphqlUploadOptions,
@@ -36,7 +35,6 @@ import {
   logMalformedRequest,
   normalizeUploadError,
 } from './httpUtils';
-import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
 const MIN_20 = 20 * 60 * 1000;
@@ -95,7 +93,7 @@ const createHttpServer = async () => {
   app.use(rateLimit(buildRateLimiterOptions()));
   app.use(await getSessionMiddleware());
   app.use(passport.initialize({}));
-  const { schema, apolloServer } = createApolloServer();
+  const { schema, apolloServer, protection } = createApolloServer();
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
     try {
@@ -128,10 +126,7 @@ const createHttpServer = async () => {
   wsServer.on('error', (e) => {
     throw e;
   });
-  const serverCleanup = useServer({
-    schema,
-    context: extractWsSessionContext,
-  }, wsServer);
+  const serverCleanup = useServer(createSubscriptionServerOptions({ schema, protection, context: extractWsSessionContext }), wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
   apolloServer.addPlugin({
@@ -192,18 +187,7 @@ const createHttpServer = async () => {
     expressMiddleware(apolloServer, {
       app,
       path: `${basePath}/graphql`,
-      context: async ({ req, res }) => {
-        const executeContext = await createAuthenticatedContext(req, res, 'api');
-        // When context is related to a work, we need to check work status
-        if (executeContext.workId) {
-          const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);
-          if (!workStillAlive) {
-            throw WorkNotALiveError();
-          }
-        }
-        await checkDraftInContext(executeContext);
-        return executeContext;
-      },
+      context: ({ req, res }) => createGraphqlContext(req, res),
     }),
   );
   const { sseMiddleware } = await createApp(app, schema);

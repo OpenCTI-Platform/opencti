@@ -38,6 +38,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         pythonPath: DEV_MODE ? 'python' : 'python3',
         scriptPath,
         args,
+        shell: false,
       };
       const shell = new PythonShell(scriptName, options);
       // Messaging is used to get data out of the python process

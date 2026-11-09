@@ -9,3 +9,4 @@ registerBuiltinGraphBadges();
 
 export * from './graphBadgeRegistry';
 export * from './graphNodeActionRegistry';
+export * from './graphSelectionActionRegistry';

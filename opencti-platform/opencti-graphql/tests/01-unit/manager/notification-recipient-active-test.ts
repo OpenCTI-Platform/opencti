@@ -18,7 +18,7 @@ vi.mock('../../../src/database/cache', () => ({
   getEntityFromCache: (...args: any[]) => getEntityFromCache(...args),
 }));
 
-import { canReceiveNotifications, getNotifications, isNotificationRecipientActive } from '../../../src/manager/notificationManager';
+import { canReceiveNotifications, getNotifications } from '../../../src/manager/notificationManager';
 
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 
@@ -46,32 +46,22 @@ describe('canReceiveNotifications', () => {
     expect(canReceiveNotifications(buildUser({ user_service_account: true }))).toBe(false);
   });
 
-  it('rejects an inactive account', () => {
-    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_LOCKED }))).toBe(false);
-  });
-});
-
-describe('isNotificationRecipientActive', () => {
-  it('accepts an active, non-expired account', () => {
-    expect(isNotificationRecipientActive(buildUser({ account_status: ACCOUNT_STATUS_ACTIVE }))).toBe(true);
-  });
-
   it('rejects an account with a non-active status (expired)', () => {
-    expect(isNotificationRecipientActive(buildUser({ account_status: ACCOUNT_STATUS_EXPIRED }))).toBe(false);
+    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_EXPIRED }))).toBe(false);
   });
 
   it('rejects an account with a non-active status (locked/disabled)', () => {
-    expect(isNotificationRecipientActive(buildUser({ account_status: ACCOUNT_STATUS_LOCKED }))).toBe(false);
+    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_LOCKED }))).toBe(false);
   });
 
   it('rejects an active account whose expiration date is in the past', () => {
     const past = utcDate().subtract(1, 'day').toISOString();
-    expect(isNotificationRecipientActive(buildUser({ account_status: ACCOUNT_STATUS_ACTIVE, account_lock_after_date: past as any }))).toBe(false);
+    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_ACTIVE, account_lock_after_date: past as any }))).toBe(false);
   });
 
   it('accepts an active account whose expiration date is in the future', () => {
     const future = utcDate().add(1, 'day').toISOString();
-    expect(isNotificationRecipientActive(buildUser({ account_status: ACCOUNT_STATUS_ACTIVE, account_lock_after_date: future as any }))).toBe(true);
+    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_ACTIVE, account_lock_after_date: future as any }))).toBe(true);
   });
 });
 
@@ -176,6 +166,34 @@ describe('getNotifications — excludes inactive/expired accounts', () => {
     const ids = collectUserIds(triggers);
     expect(ids.has('active')).toBe(true);
     expect(ids.has('service')).toBe(false);
+  });
+
+  it('keeps an active service account a defined trigger names directly, and only in that trigger', async () => {
+    const humanUser = buildUser({ id: 'human', internal_id: 'human' });
+    const serviceAccount = buildUser({ id: 'service', internal_id: 'service', user_service_account: true });
+    const lockedServiceAccount = buildUser({ id: 'locked-service', internal_id: 'locked-service', user_service_account: true, account_status: ACCOUNT_STATUS_LOCKED });
+    const definedTrigger = {
+      internal_id: 'trigger-machine',
+      trigger_type: 'live',
+      trigger_scope: 'knowledge',
+      restricted_members: [{ id: 'service' }, { id: 'locked-service' }],
+    };
+
+    getEntitiesListFromCache.mockImplementation((_ctx: any, _user: any, type: string) => {
+      if (type === ENTITY_TYPE_USER) {
+        return Promise.resolve([humanUser, serviceAccount, lockedServiceAccount]);
+      }
+      return Promise.resolve([definedTrigger]);
+    });
+
+    const triggers = await getNotifications(context);
+    const definedResolved = triggers.find((t: any) => t.trigger.internal_id === 'trigger-machine');
+    const definedUserIds = new Set((definedResolved?.users ?? []).map((u: AuthUser) => u.id));
+    expect(definedUserIds.has('service')).toBe(true);
+    expect(definedUserIds.has('locked-service')).toBe(false);
+    const nativeIds = collectUserIds(triggers.filter((t: any) => t.trigger.internal_id !== 'trigger-machine'));
+    expect(nativeIds.has('human')).toBe(true);
+    expect(nativeIds.has('service')).toBe(false);
   });
 
   afterAll(() => {

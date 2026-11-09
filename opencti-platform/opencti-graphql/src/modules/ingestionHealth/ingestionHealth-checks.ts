@@ -1,18 +1,33 @@
 import * as R from 'ramda';
 import { type IngestionHealth, type IngestionHealthCheck, IngestionHealthCheckKind, IngestionHealthCheckSeverity, IngestionHealthStatus } from '../../generated/graphql';
-import type { IngestionHealthFields, StoredHealthCheck, StoredIngestionHealth } from './ingestionHealth-types';
+import {
+  HealthTransition,
+  type HealthCheckFailure,
+  type HealthCheckIngestor,
+  type HealthCheckMetadata,
+  type IngestionHealthFields,
+  type StoredHealthCheck,
+  type StoredIngestionHealth,
+  type SourceIngestionHealthContext,
+  type GlobalIngestionHealthContext,
+} from './ingestionHealth-types';
 import {
   HEALTH_CHECK_HEARTBEAT_MISSING,
   HEALTH_CHECK_REGISTRY,
   type HealthCheckCode,
-  type GlobalIngestionHealthContext,
   type HealthCheckDefinition,
-  type HealthCheckMetadata,
-  type HealthCheckIngestor,
+  type RegisteredRuntimeCheck,
   type RuntimeData,
-  type SourceIngestionHealthContext,
-  isHeartbeatAlive,
 } from './ingestionHealth-registry';
+import { isHeartbeatAlive } from './ingestionHealth-registry-utils';
+
+// The context of the evaluation of one ingestion: the context given to the checks, plus the values read by the runtime checks.
+// Declared here, not in ingestionHealth-types: RuntimeData is inferred from the registry, which depends on ingestionHealth-types.
+// The checks never read it from the context: a runtime check is given its own value only, by getFailures
+export interface IngestionHealthEvaluationContext extends SourceIngestionHealthContext {
+  // Values read by the runtime checks enabled for this ingestion, by check code: whether they are still fresh is judged here, not when read
+  runtimeData?: RuntimeData;
+}
 
 // A stored code can be unknown to this platform version (written by another one): undefined then
 const findHealthCheckDefinition = (code: string): HealthCheckDefinition | undefined => {
@@ -21,41 +36,47 @@ const findHealthCheckDefinition = (code: string): HealthCheckDefinition | undefi
 
 // region evaluation (pure, no I/O)
 /**
- * Runs one check against one ingestor, giving its getFailure what the kind of the check judges:
+ * Runs one check against one ingestor, giving its getFailures what the kind of the check judges:
  * the ingestor itself for a configuration check, the value read for this check for a runtime check.
  *
  * @param code the code of the check, under which its runtime value is found in context.runtimeData
  * @param definition the check, whose isEnabled is already true for the ingestor
  * @param ingestor the connector, feed or sync evaluated
  * @param context the evaluation context, holding the runtime values of the ingestor
- * @returns null when the check passes; the metadata of the failure when it fails, {} when there is nothing to tell
+ * @returns each failure of the check, with its severity; none when the check passes
  */
-const getHealthCheckFailure = (
+const getHealthCheckFailures = (
   code: HealthCheckCode,
   definition: HealthCheckDefinition,
   ingestor: HealthCheckIngestor,
-  context: SourceIngestionHealthContext,
-): HealthCheckMetadata | null => {
-  if (definition.kind === IngestionHealthCheckKind.Runtime) {
-    // The value type depends on each check, which a loop over all the checks cannot express: it is checked where the check is declared
-    const runtimeData: Record<string, unknown> = context.runtimeData ?? {};
-    return definition.getFailure(runtimeData[code], context);
-  }
-  return definition.getFailure(ingestor, context);
+  context: IngestionHealthEvaluationContext,
+): HealthCheckFailure[] => {
+  // The value type depends on each check, which a loop over all the checks cannot express: it is checked where the check is declared
+  const runtimeData: Record<string, unknown> = context.runtimeData ?? {};
+  return definition.kind === IngestionHealthCheckKind.Runtime
+    ? definition.getFailures(runtimeData[code], context)
+    : definition.getFailures(ingestor, context);
 };
 
-// Whether a runtime check is enabled for the ingestor: its runtime data must be read before it is evaluated
+// The runtime checks of the registry not disabled on the platform: the only ones whose runtime data is read
+export const getEnabledRuntimeChecks = (context: GlobalIngestionHealthContext): [HealthCheckCode, RegisteredRuntimeCheck][] => {
+  return Object.entries(HEALTH_CHECK_REGISTRY)
+    .filter((entry): entry is [HealthCheckCode, RegisteredRuntimeCheck] => entry[1].kind === IngestionHealthCheckKind.Runtime)
+    .filter(([code]) => !context.disabledHealthChecks?.includes(code));
+};
+
+// Whether a runtime check is enabled for the ingestor: its runtime data must be read before it is evaluated.
+// A check disabled on the platform is not read: an ingestor depending on it only needs no runtime data
 export const isRuntimeCheckEnabled = (ingestor: HealthCheckIngestor, context: GlobalIngestionHealthContext): boolean => {
-  return Object.values(HEALTH_CHECK_REGISTRY).some((definition) => definition.kind === IngestionHealthCheckKind.Runtime
-    && definition.isEnabled(ingestor, context));
+  return getEnabledRuntimeChecks(context).some(([, definition]) => definition.isEnabled(ingestor, context));
 };
 
 // Keeps only the runtime values of the checks enabled for the ingestor: a value read for a disabled check proves nothing.
 // A connector not pinging continuously still leaves a heartbeat after each run: kept, it would be healthy after every run.
 export const buildIngestionHealthContext = (
   ingestor: HealthCheckIngestor,
-  context: SourceIngestionHealthContext,
-): SourceIngestionHealthContext => {
+  context: IngestionHealthEvaluationContext,
+): IngestionHealthEvaluationContext => {
   const runtimeData: RuntimeData = context.runtimeData ?? {};
   const enabledRuntimeData: RuntimeData = R.pickBy((_, code) => HEALTH_CHECK_REGISTRY[code as HealthCheckCode].isEnabled(ingestor, context), runtimeData);
   return { ...context, runtimeData: enabledRuntimeData };
@@ -63,29 +84,43 @@ export const buildIngestionHealthContext = (
 
 export const computeIngestionHealthChecks = (
   ingestor: HealthCheckIngestor,
-  context: SourceIngestionHealthContext,
+  context: IngestionHealthEvaluationContext,
 ): StoredHealthCheck[] => {
-  return (Object.entries(HEALTH_CHECK_REGISTRY) as [HealthCheckCode, HealthCheckDefinition][]).flatMap(([code, definition]) => {
-    const metadata = definition.isEnabled(ingestor, context) ? getHealthCheckFailure(code, definition, ingestor, context) : null;
-    return metadata ? [{ health_check_code: code, health_check_metadata: metadata }] : [];
+  const failures = (Object.entries(HEALTH_CHECK_REGISTRY) as [HealthCheckCode, HealthCheckDefinition][]).flatMap(([code, definition]) => {
+    // Disabled on the platform: never evaluated, a failure stored before is dropped at this period
+    if (context.disabledHealthChecks?.includes(code)) {
+      return [];
+    }
+    const checkFailures = definition.isEnabled(ingestor, context) ? getHealthCheckFailures(code, definition, ingestor, context) : [];
+    return checkFailures.map((failure) => ({ code, definition, failure }));
   });
+  // Decided once every check is evaluated. A disabled check never fails: it supersedes nothing
+  const failedCodes = new Set(failures.map(({ code }) => code));
+  return failures
+    .filter(({ definition }) => !definition.supersededBy || !failedCodes.has(definition.supersededBy))
+    .map(({ code, failure }) => ({
+      health_check_code: code,
+      health_check_severity: failure.severity,
+      health_check_metadata: failure.metadata ?? {},
+    }));
 };
 
 // Priority: critical > degraded > healthy. A stopped ingestion is never evaluated (see the ingestion health manager).
-// Unknown is not a status: it is the absence of ingestion_health, before the first evaluation.
-export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {} }: SourceIngestionHealthContext): IngestionHealthStatus | null => {
+// Unknown when no status can be computed: no proof of life nor failure.
+export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, runtimeData = {} }: IngestionHealthEvaluationContext): IngestionHealthStatus => {
   // A code unknown to this platform version has no definition: it cannot change the status
-  const healthChecks = checks
-    .map((check) => findHealthCheckDefinition(check.health_check_code))
-    .filter((definition): definition is HealthCheckDefinition => !!definition);
+  const healthChecks = checks.flatMap((check) => {
+    const definition = findHealthCheckDefinition(check.health_check_code);
+    return definition ? [{ kind: definition.kind, severity: check.health_check_severity }] : [];
+  });
   // blocking AND runtime -> critical
-  if (healthChecks.some((definition) => definition.kind === IngestionHealthCheckKind.Runtime
-    && definition.severity === IngestionHealthCheckSeverity.Blocking)) {
+  if (healthChecks.some(({ kind, severity }) => kind === IngestionHealthCheckKind.Runtime
+    && severity === IngestionHealthCheckSeverity.Blocking)) {
     return IngestionHealthStatus.Critical;
   }
   // advisory runtime OR advisory/blocking configuration -> degraded
-  if (healthChecks.some((definition) => definition.severity === IngestionHealthCheckSeverity.Advisory
-    || definition.kind === IngestionHealthCheckKind.Configuration)) {
+  if (healthChecks.some(({ kind, severity }) => severity === IngestionHealthCheckSeverity.Advisory
+    || kind === IngestionHealthCheckKind.Configuration)) {
     return IngestionHealthStatus.Degraded;
   }
   // healthy needs a proof of life from the runtime data AND no check at all, otherwise the status stays unknown.
@@ -93,28 +128,32 @@ export const computeHealthStatus = (checks: StoredHealthCheck[], { evaluatedAt, 
   if (checks.length === 0 && isHeartbeatAlive(runtimeData[HEALTH_CHECK_HEARTBEAT_MISSING], evaluatedAt)) {
     return IngestionHealthStatus.Healthy;
   }
-  return null;
+  return IngestionHealthStatus.Unknown;
 };
 
 const normalizeHealthChecks = (checks: StoredHealthCheck[]): StoredHealthCheck[] => {
-  const normalized = checks.map((check) => ({ health_check_code: check.health_check_code, health_check_metadata: check.health_check_metadata ?? {} }));
-  return normalized.sort((a, b) => a.health_check_code.localeCompare(b.health_check_code));
+  const normalized: StoredHealthCheck[] = checks.map((check) => ({
+    health_check_code: check.health_check_code,
+    health_check_severity: check.health_check_severity,
+    health_check_metadata: check.health_check_metadata ?? {},
+  }));
+  // A check may fail several times (one failure per connector error): the metadata, then the severity, order the failures of a same code, whatever the order they are read in
+  return normalized.sort((a, b) => a.health_check_code.localeCompare(b.health_check_code)
+    || JSON.stringify(a.health_check_metadata).localeCompare(JSON.stringify(b.health_check_metadata))
+    || (a.health_check_severity ?? '').localeCompare(b.health_check_severity ?? ''));
 };
 
 // Returns the fields to write, or null when neither the status nor the checks changed.
 // The write replaces the whole ingestion_health object, so it carries the unchanged since.
-// When no status can be computed anymore, a stored ingestion_health is removed: absence reads as unknown.
+// Unknown is stored like any status, from the first evaluation: since moves, and its recovery is notified after the delay like any status.
 export const computeIngestionHealthPatch = (
   current: IngestionHealthFields,
   checks: StoredHealthCheck[],
-  context: SourceIngestionHealthContext,
+  context: IngestionHealthEvaluationContext,
 ): IngestionHealthFields | null => {
   const { evaluatedAt } = context;
   const currentHealth = current.ingestion_health;
   const status = computeHealthStatus(checks, context);
-  if (!status) {
-    return currentHealth ? { ingestion_health: null } : null;
-  }
   const nextChecks = normalizeHealthChecks(checks);
   const isStatusChanged = currentHealth?.status !== status;
   const isChecksChanged = !R.equals(normalizeHealthChecks(currentHealth?.health_checks ?? []), nextChecks);
@@ -126,54 +165,118 @@ export const computeIngestionHealthPatch = (
       status,
       status_since: currentHealth && !isStatusChanged ? currentHealth.status_since : evaluatedAt,
       health_checks: nextChecks,
+      // Kept across status changes: the last event tells whether the current status was already notified, and whether a recovery is due
+      ...(currentHealth?.last_event_date ? { last_event_date: currentHealth.last_event_date } : {}),
+      ...(currentHealth?.last_event_status ? { last_event_status: currentHealth.last_event_status } : {}),
     },
   };
 };
 
 // region transition
-// Scope of the activity event published when the status changes
-export const HealthTransition = {
-  Critical: 'critical',
-  Degraded: 'degraded',
-  Recovered: 'recovered',
-} as const;
-export type HealthTransition = typeof HealthTransition[keyof typeof HealthTransition];
 
-// previous is undefined on the first evaluation: a failing ingestion is reported, a healthy one has nothing to recover from.
-// next is undefined when the health object is removed because no status can be computed anymore (no more failing check):
-// it is a recovery only for an ingestion that was failing.
-// A stopped ingestion is not evaluated: its health is removed and nothing is reported.
-// A restart is reported only when it fails: a stopped ingestion has no health, it has nothing to recover from.
+// Default of the notification delay, editable in the ingestion health settings of the platform
+export const DEFAULT_HEALTH_NOTIFICATION_DELAY_MS = 5 * 60 * 1000;
+
+const isFailureStatus = (status: IngestionHealthStatus | undefined) => status === IngestionHealthStatus.Critical
+  || status === IngestionHealthStatus.Degraded;
+
+/**
+ * Computes the health activity event to publish for an ingestion, evaluated at every period of the ingestion health manager.
+ *
+ * The event is deferred to avoid notifying a flapping status: it is due once the status has not changed
+ * for the notification delay, and differs from the status reported by the last event published (last_event_status).
+ * Going back to the reported status inside the delay reports nothing: the last event already tells it.
+ *
+ * Healthy and unknown end a failure: their recovery is reported only when the last event published reports a failure,
+ * even when the failure just before (shorter than the delay) was never reported itself.
+ * So nothing is reported between unknown and healthy, nor twice for the same recovery.
+ *
+ * A stopped ingestion is not evaluated: its health is removed and nothing is reported.
+ *
+ * @param health health after the write of this period, absent when never evaluated or stopped
+ * @param evaluatedAt date of the evaluation period
+ * @param notificationDelay ms a status must stay unchanged before it is notified
+ * @returns the transition to publish, or null when nothing is due
+ */
 export const computeHealthTransition = (
-  previous: IngestionHealthStatus | undefined,
-  next: IngestionHealthStatus | undefined,
+  health: StoredIngestionHealth | null | undefined,
+  evaluatedAt: string,
+  notificationDelay = DEFAULT_HEALTH_NOTIFICATION_DELAY_MS,
 ): HealthTransition | null => {
-  if (previous === next) {
+  // The last event published already reports the current status: one event per status change
+  if (!health || health.last_event_status === health.status) {
     return null;
   }
-  if (next === IngestionHealthStatus.Critical) {
+  // The status changed less than the delay ago: it may still flap, wait for the next periods
+  if (new Date(evaluatedAt).getTime() - new Date(health.status_since).getTime() < notificationDelay) {
+    return null;
+  }
+  // Stable failing status not reported by the last event: report it
+  if (health.status === IngestionHealthStatus.Critical) {
     return HealthTransition.Critical;
   }
-  if (next === IngestionHealthStatus.Degraded) {
+  if (health.status === IngestionHealthStatus.Degraded) {
     return HealthTransition.Degraded;
   }
-  const wasFailing = previous === IngestionHealthStatus.Critical || previous === IngestionHealthStatus.Degraded;
-  if (wasFailing && (next === IngestionHealthStatus.Healthy || !next)) {
-    return HealthTransition.Recovered;
-  }
-  return null;
+  // Stable healthy or unknown status: a recovery only when the last event reports a failure.
+  // No event yet (new, restarted) or the last one already a recovery, there is nothing to recover from
+  return isFailureStatus(health.last_event_status) ? HealthTransition.Recovered : null;
+};
+
+// The health to write once the event is published: it becomes the last event, whatever its transition
+export const markHealthNotified = (health: StoredIngestionHealth, evaluatedAt: string): StoredIngestionHealth => (
+  { ...health, last_event_date: evaluatedAt, last_event_status: health.status }
+);
+
+// Fills the {key} placeholders of a check message from its metadata, untranslated. A placeholder without value is kept
+export const formatHealthCheckMessage = (message: string, metadata: HealthCheckMetadata) => {
+  return message.replace(/\{(\w+)\}/g, (placeholder, key: string) => (metadata[key] !== undefined ? String(metadata[key]) : placeholder));
+};
+
+const toHealthCheckMessage = (check: IngestionHealthCheck) => {
+  return formatHealthCheckMessage(check.health_check_message ?? check.health_check_code, check.health_check_metadata ?? {});
+};
+
+/**
+ * Leaves out of the checks the metadata written by the source, as their definition tells.
+ * For the activity events and the notifications built from them: they reach other readers than the health of the ingestor.
+ * @param checks the checks as stored in the health of the ingestor
+ * @returns the same checks, their metadata without the text written by the source
+ */
+const checksWithoutSourceText = (checks: StoredHealthCheck[]): StoredHealthCheck[] => checks.map((check) => {
+  const omitSourceText = findHealthCheckDefinition(check.health_check_code)?.messageWithoutSourceText;
+  return omitSourceText && check.health_check_metadata ? { ...check, health_check_metadata: omitSourceText(check.health_check_metadata) } : check;
+});
+
+// The messages of the checks for an activity event, filled with their metadata without the text written by the source, and untranslated.
+// Empty when there is no check
+export const describeHealthChecks = (entityType: string, checks: StoredHealthCheck[]) => {
+  return toGraphqlHealthChecks(checksWithoutSourceText(checks), entityType)
+    .map(toHealthCheckMessage)
+    .join(', ');
+};
+
+// The same messages, one by check: the critical ones (blocking runtime checks, see computeHealthStatus) apart from the others
+export const groupHealthCheckMessages = (entityType: string, checks: StoredHealthCheck[]) => {
+  const messages: { critical: string[]; advisory: string[] } = { critical: [], advisory: [] };
+  toGraphqlHealthChecks(checksWithoutSourceText(checks), entityType).forEach((check) => {
+    const isCritical = check.health_check_kind === IngestionHealthCheckKind.Runtime
+      && check.health_check_severity === IngestionHealthCheckSeverity.Blocking;
+    (isCritical ? messages.critical : messages.advisory).push(toHealthCheckMessage(check));
+  });
+  return messages;
 };
 
 // The activity log prefixes the message with the manager user name
 export const buildHealthTransitionMessage = (element: { name: string; entity_type: string }, transition: HealthTransition, checks: StoredHealthCheck[]) => {
-  const checkMessages = toGraphqlHealthChecks(checks).map((check) => check.health_check_message);
-  const details = checkMessages.length > 0 ? `: ${checkMessages.join(', ')}` : '';
-  return `reports \`${element.name}\` (${element.entity_type}) as ${transition}${details}`;
+  const details = describeHealthChecks(element.entity_type, checks);
+  return `reports \`${element.name}\` (${element.entity_type}) as ${transition}${details ? `: ${details}` : ''}`;
 };
 // endregion
 
 // region api
-export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): IngestionHealthCheck[] => {
+// The entity type of the ingestor carrying the checks adapts their messages to the kind of ingestion
+export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined, entityType: string): IngestionHealthCheck[] => {
   return (checks ?? []).flatMap((check) => {
     const definition = findHealthCheckDefinition(check.health_check_code);
     if (!definition) {
@@ -182,23 +285,24 @@ export const toGraphqlHealthChecks = (checks: StoredHealthCheck[] | undefined): 
     }
     return [{
       health_check_code: check.health_check_code,
-      health_check_message: definition.message(check.health_check_metadata ?? {}),
+      health_check_message: definition.message?.(definition.label, check.health_check_metadata ?? {}, entityType) ?? definition.label,
+      health_check_metadata: check.health_check_metadata ?? {},
       health_check_kind: definition.kind,
-      health_check_severity: definition.severity,
+      health_check_severity: check.health_check_severity,
     }];
   });
 };
 
 // Read from Elasticsearch only, never from Redis: the lists of ingestions are polled.
 // Null until the manager first evaluates the ingestion, which reads as unknown.
-export const toGraphqlIngestionHealth = (health: StoredIngestionHealth | null | undefined): IngestionHealth | null => {
+export const toGraphqlIngestionHealth = (health: StoredIngestionHealth | null | undefined, entityType: string): IngestionHealth | null => {
   if (!health) {
     return null;
   }
   return {
     status: health.status,
     status_since: health.status_since,
-    healthChecks: toGraphqlHealthChecks(health.health_checks),
+    healthChecks: toGraphqlHealthChecks(health.health_checks, entityType),
   };
 };
 // endregion

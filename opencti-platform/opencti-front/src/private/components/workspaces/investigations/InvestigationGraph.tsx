@@ -659,6 +659,10 @@ const InvestigationGraphLoader = ({
 
   const { graph_data } = useFragment(investigationGraphDataFragment, dataPositions);
 
+  // The graph keeps its own objects once loaded: an expand saves its ids without updating the connection,
+  // so the objects are set again only when a page adds ids. Watching the whole workspace would reset the
+  // graph, and drop the expanded objects, whenever a query writes a field of an object already loaded.
+  const loadedIdsKey = (workspace?.objects?.edges ?? []).map((edge) => edge?.node?.id).join(',');
   const [objects, setObjects] = useState<ObjectToParse[]>([]);
   useEffect(() => {
     const workspaceObjects = workspace ? getObjectsToParse(workspace) : [];
@@ -666,7 +670,7 @@ const InvestigationGraphLoader = ({
       setObjects(await fetchMetaObjectsCount(workspaceObjects));
     }
     fetchCounts();
-  }, [workspace]);
+  }, [loadedIdsKey]);
 
   const positions = useMemo(() => deserializeObjectB64(graph_data), [graph_data]);
 

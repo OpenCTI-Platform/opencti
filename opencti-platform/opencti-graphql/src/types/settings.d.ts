@@ -1,5 +1,5 @@
 import type { BasicStoreEntity } from './store';
-import type { XtmHubRegistrationStatus, CguStatus, SmtpAuthType } from '../generated/graphql';
+import type { XtmHubRegistrationStatus, CguStatus, SmtpAuthType, LocalAuthLockoutFinalAction } from '../generated/graphql';
 import type { GroupsMapping, OrganizationsMapping, UserInfoMapping } from '../modules/authenticationProvider/authenticationProvider-types';
 
 export interface BasicStoreSettingsMessage {
@@ -81,6 +81,7 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   platform_ai_enabled: boolean;
   platform_notifier_auto_trigger_assignee?: boolean;
   filigran_chatbot_ai_cgu_status: CguStatus;
+  platform_bootstrap_status?: 'pending' | 'completed';
   view_all_users: boolean;
   platform_ip_whitelist?: string[];
   platform_ip_whitelist_enabled?: boolean;
@@ -98,5 +99,11 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   password_policy_min_lowercase?: number;
   password_policy_min_uppercase?: number;
   password_policy_validity_days?: number;
+  local_auth_lockout_enabled?: boolean;
+  local_auth_lockout_max_attempts?: number;
+  local_auth_lockout_admin_max_attempts?: number;
+  local_auth_lockout_final_action?: LocalAuthLockoutFinalAction;
+  local_auth_lockout_window?: number;
+  local_auth_lockout_duration?: number;
   smtp_configuration?: SmtpConfiguration;
 }

@@ -2601,14 +2601,18 @@ value its single line and ellipsis, the image keeps its size,
 the caret still reads as one pill with the AI toggle (idle, hover, focus),
 and the and/or still matches the filter chips' operator badge.
 
-## 68. A disabled `Button` or `IconButton` cannot trigger its own tooltip, so the reason it is disabled needs a focusable wrapper
+## 68. A disabled `Button`, `IconButton`, `Select` or `Checkbox` cannot trigger its own tooltip, so the reason it is disabled needs a focusable wrapper
 
-**Needed.** Two places explain a disabled control in its tooltip: the
+**Needed.** Several places explain a disabled control in its tooltip: the
 integration catalog says why Deploy is disabled (an incompatible platform
-version), and the graph toolbar names each tool, disabled ones included.
+version), the graph toolbar names each tool, disabled ones included, and the
+widget editor says why a time series breakdown locks a control: the buttons
+adding a dataset to a broken down widget, the Distinct checkbox of a broken
+down audits widget, and the breakdown controls of a widget with several
+datasets or counting distinct values.
 The tooltip must reach mouse users on hover and keyboard users on focus,
 which is the WAI-ARIA APG pattern for this case ("Focusability of disabled
-controls"): a button marked `aria-disabled` that stays focusable and
+controls"): a control marked `aria-disabled` that stays focusable and
 hoverable, and simply does nothing when activated.
 
 **Today.** Measured from the installed build (`@filigran/design-system` 1.2.0,
@@ -2619,12 +2623,16 @@ fires. With `asChild`, it renders `aria-disabled` and stays focusable, but
 its `data-[disabled]:pointer-events-none` class still removes hover, so the
 tooltip only opens from the keyboard. `IconButton` passes `disabled`
 through to the native attribute, with `disabled:pointer-events-none`, and
-has no `aria-disabled` mode at all. No mode works as a tooltip trigger on
+has no `aria-disabled` mode at all. Re-measured at 1.3.0 for the two
+controls the widget editor adds (`components/select/Select.mjs`,
+`components/checkbox/Checkbox.mjs`): the `SelectTrigger` and the `Checkbox`
+root are native buttons passed `disabled`, with `disabled:pointer-events-none`,
+and neither has an `aria-disabled` mode. No mode works as a tooltip trigger on
 its own.
 
-**Workaround.** FDS-WORKAROUND #68 at two sites, where the disabled
-button sits in a `<span tabIndex={0}>` that takes the hover and the focus
-for the tooltip:
+**Workaround.** FDS-WORKAROUND #68 at five sites, where the disabled
+control sits in a focusable `<span>` or `<div>` (`tabIndex={0}`) that takes
+the hover and the focus for the tooltip:
 - `DisabledReasonTooltip`, around the library `Button` of the Deploy
   actions in `AvailableIntegrationLine`, `IngestionCatalogConnectorHeader`
   and `IngestionCatalogCardDeployButton`.
@@ -2632,23 +2640,36 @@ for the tooltip:
   the library `IconButton` and `Tooltip`, which hit this same gap, so the
   span stays: it carries `role="button"`, `aria-disabled` and the disabled
   reason.
+- `WidgetCreationDataSelection`, around the add-dataset buttons of a broken
+  down widget: the library `IconButton` (entities) and `Button` (audits) in a
+  span each, and the two relationships `Button`s in one div. They render
+  through `@common/button`.
+- `WidgetCreationParameters`, around the disabled Distinct `Checkbox` of a
+  broken down audits widget.
+- `WidgetBreakdownSelection`, around the breakdown controls (the field
+  `Select`) of a widget with several datasets or counting distinct values.
 
-In `DisabledReasonTooltip` the span is a focusable element with no role,
+Except in `GraphToolbarItem`, the wrapper is a focusable element with no role,
 which `jsx-a11y/no-noninteractive-tabindex` flags and is disabled there. At
-both sites the Tab stop lands on that span, not on the button.
+every site the Tab stop lands on that wrapper, not on the control.
 
-**Ask.** A disabled mode of `Button` and `IconButton` that renders
-`aria-disabled` instead of `disabled`, keeps focus and pointer events, and
-blocks activation in JavaScript, for example a `focusableWhenDisabled`
-prop. That would make the button itself the tooltip trigger.
+**Ask.** A disabled mode of `Button`, `IconButton`, `SelectTrigger` and
+`Checkbox` that renders `aria-disabled` instead of `disabled`, keeps focus
+and pointer events, and blocks activation in JavaScript, for example a
+`focusableWhenDisabled` prop. That would make the control itself the tooltip
+trigger.
 
 **Removal test.** At a pin with that mode: pass the disabled state through
-it on the three Deploy buttons and on `GraphToolbarItem`, delete both
-`<span>`s with their markers and eslint-disable, and check that the tooltip shows on hover and
-on keyboard focus, that the screen reader announces the button as
-disabled, and that a click or Enter does nothing. In the graph toolbar,
-also check that each tool keeps its size and alignment, which the span's
-`inline-flex` holds today.
+it on the three Deploy buttons, on `GraphToolbarItem`, on the add-dataset
+buttons and the Distinct checkbox of a broken down widget and on the
+breakdown field select of a widget with two datasets; delete the wrappers
+with their markers and eslint-disable, and check that the tooltip shows on
+hover and on keyboard focus, that the screen reader announces the control as
+disabled, and that a click, Enter or Space does nothing (the select does not
+open, the checkbox does not toggle). In the graph toolbar, also check that
+each tool keeps its size and alignment, which the span's `inline-flex` holds
+today; in the widget editor, that the add buttons keep their full width,
+which the span's `flex: 1` holds today.
 
 ---
 
@@ -2751,3 +2772,121 @@ already taken (`benign`, `benign (2)`).
 **Removal test.** Drop the numbering; select three labels, two of the same name,
 switch the restriction mode away and back: exactly three chips, no `Loading` chip
 left once the labels resolve.
+
+---
+
+## 73. There is no `Stepper`, so the bootstrap wizard draws its steps with the MUI one
+
+**Needed.** The bootstrap wizard (`ConfigPresetWizardStepper.tsx`) shows where the
+administrator is in the import: welcome, upload, selection, progress, result. It
+needs the steps in order, the current one marked, and the finished ones ticked.
+
+**Today.** The library has no stepper or progress-steps component (`ProgressBar`
+is a single bar, `Tabs` are free navigation, not an ordered flow).
+
+**What the product did.** It uses the MUI `Stepper`, as the priority rule allows
+when the library does not ship the component. Nothing is forked or worked
+around inside the library; this entry is the record the rule asks for.
+
+**Ask.** A `Stepper` with `activeStep`, completed and disabled steps, a label per
+step and both orientations.
+
+**Removal test.** The wizard imports `Stepper` from the library, and
+`ConfigPresetWizardStepper.tsx` no longer imports from `@mui/material`.
+
+---
+
+## 74. There is no collapsible row, so the selection and the results draw their sections by hand
+
+**Needed.** The export drawer, the import preview and the import results list
+their items in groups, then types, each with a checkbox or a title, a chevron that
+shows or hides what is below it, and a count. A screen reader must hear which
+section a chevron opens.
+
+**Today.** The library has no `Accordion` or `Collapsible`. A section is a
+`Checkbox` (or a `Text`) next to an `IconButton`, with the content shown or not.
+
+**What the product did.** `ConfigPresetExpandableRow` (in
+`ConfigPresetSelectionAccordion.tsx`) and `ConfigPresetResultGroups.tsx` draw the
+rows by hand, with `aria-expanded`, `aria-controls` and a label that names the
+section. The rule is the same as for entry 73: MUI is the fallback, and the gap is
+recorded.
+
+**Ask.** A collapsible section with a header slot (a checkbox, a title and
+actions), the open state controlled or not, and the `aria-expanded` /
+`aria-controls` wiring built in.
+
+**Removal test.** Both files render the library component, and a screen reader
+reads each chevron with the name of its section without the product setting it.
+
+---
+
+## 75. `Alert` paragraphs keep the browser margins, so a compact banner needs a scoped reset
+
+**Needed.** Ingestion health banners (connector and feed detail pages, deployed
+integrations page): one-to-three line alerts stacked above the page content,
+which must stay as short as the library's Alert frame intends.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.1.0):
+`Alert` renders its `title` and `description` as `<p>` elements
+(`title-xs` / `content-compact` classes) and the library ships no preflight, so
+both `<p>` keep the user-agent block margins. Neither the component nor its
+`className` reaches those inner paragraphs, and there is no prop to reset them.
+
+**Workaround.** `IngestionHealthBanner.tsx` wraps the `Alert` in a `Box` whose
+`sx` sets `'& p': { margin: 0 }`, under one `FDS-WORKAROUND #71` marker.
+Several detail lines are passed as `display: block` spans inside the
+`description` (a `<p>`, so no block children).
+
+Every other `Alert` of the product hits the same margin — first seen on the
+investigation enrichment review (`InvestigationEnrichmentExpandEmpty.tsx`), where
+a title and a description stood a full line apart. FDS-WORKAROUND #75:
+`design-system-host.css` zeroes the margin of `p.title-xs.text-alert` (only the
+Alert's title carries `text-alert` in the installed build) and of the
+`p.content-compact` that follows it, for every `Alert` at once. It makes the
+banner's `Box` wrapper redundant for the margin.
+
+**Ask.** Zero the margins of the Alert's own paragraphs library-side (an
+`m-0` on the two `<p>`), and accept a node list for `description` rendered as
+block lines.
+
+**Removal test.** At a pin where the paragraphs carry no margin: delete the
+`Box` wrapper, the host rule and their markers, and check that a banner with a
+title and one description line is no taller than the Alert frame (padding plus
+the two lines).
+
+---
+
+## 76. `Switch` labels its control in 12px, smaller than the MUI switches of the same step, and has no info slot
+
+**Needed.** The parameters step of the widget editor (`WidgetCreationParameters.tsx`)
+lists its options as MUI `Switch`es in `FormControlLabel`s ("Stacked", "Display
+legend", ...). The time series breakdown settings (`WidgetBreakdownSelection.tsx`)
+add one more, "Include Other", with the library `Switch`, and explain it as the
+dialog explains its other fields: an info icon next to the label.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.3.0,
+`components/switch/Switch.mjs`): the `label` is a `content-compact-medium` span,
+`--text-content-compact-medium: var(--text-2)`, 12px. The MUI labels of the same
+step are `body1`, `0.9rem` in this product's theme (`ThemeDark.ts`,
+`ThemeLight.ts`), 14.4px. Nothing sizes the label: `wrapperClassName` styles the
+outer `<label>`, not its text. And unlike `Input` (`infoTooltip`) or `SelectLabel`
+(`hasInfoIcon`, a decorative glyph), `Switch` has no slot for an info control:
+anything passed in `label` sits inside the `<label>`, and a click on it toggles
+the switch.
+
+**What the product did.** Nothing is worked around. "Include Other" keeps the
+library size, and the other switches stay MUI (entry 59 holds their migration):
+the two sizes side by side are the gap this entry records. The info `IconButton`
+and its `Tooltip` sit next to the `Switch`, outside its `<label>`, as the info
+icon of the dataset label does in `WidgetCreationDataSelection.tsx`.
+
+**Ask.** A decision on the size of a switch label: either a text size the
+product can match to its other form labels, or 12px everywhere, which entry 59's
+migration would then bring to the other switches. And an `infoTooltip` slot, as
+on `Input`, rendered outside the `<label>`.
+
+**Removal test.** Once every switch of the step is a library one (entry 59), all
+their labels read at one size. With an `infoTooltip` slot, the info icon of
+"Include Other" moves into it, still opens its tooltip on hover and focus, and
+a click on it does not toggle the switch.

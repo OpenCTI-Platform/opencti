@@ -32,11 +32,11 @@ describe('askSendOtp', () => {
   it('Should find redis key', async () => {
     const key = await redisGetForgotPasswordOtp(transactionId);
     expect(key).toBeTruthy();
-    expect(key.hashedOtp).toBeTypeOf('string');
-    expect(key.email).toBe('anais@opencti.io');
-    expect(key.mfa_activated).toBeFalsy();
-    expect(key.mfa_validated).toBeFalsy();
-    expect(key.ttl).toBeLessThanOrEqual(OTP_TTL);
+    expect(key?.hashedOtp).toBeTypeOf('string');
+    expect(key?.email).toBe('anais@opencti.io');
+    expect(key?.mfa_activated).toBeFalsy();
+    expect(key?.mfa_validated).toBeFalsy();
+    expect(key?.ttl).toBeLessThanOrEqual(OTP_TTL);
   });
   it('Should return an uuid with an wrong email', async () => {
     const result = await askSendOtp(testContext, { email: 'noResul@opencti.io' });

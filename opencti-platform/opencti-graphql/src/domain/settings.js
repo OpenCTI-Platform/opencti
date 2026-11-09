@@ -31,11 +31,12 @@ import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/er
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { decodeLicensePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
+import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
-import { buildAvailableProviders } from './setting-auth';
+import { buildAvailableProviders, LOCAL_AUTH_LOCKOUT_DEFAULTS } from './setting-auth';
 import { CguStatus } from '../generated/graphql';
 import { checkDateDisplayInput } from '../utils/dateDisplay';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
@@ -155,6 +156,7 @@ export const getSettings = async (context) => {
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_theme: platformTheme,
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
+    platform_bootstrap_wizard_enabled: nconf.get('app:bootstrap_wizard:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
@@ -301,7 +303,14 @@ const buildAuthorizedSettingsKeys = (user) => {
   return allowed;
 };
 
+// The bootstrap status is written by setPlatformBootstrapStatus only, whatever the capabilities of the caller
+const PLATFORM_BOOTSTRAP_STATUS_KEY = 'platform_bootstrap_status';
+const PLATFORM_BOOTSTRAP_STATUSES = ['pending', 'completed'];
+
 export const settingsEditField = async (context, user, settingsId, input) => {
+  if (input.some((i) => i.key === PLATFORM_BOOTSTRAP_STATUS_KEY)) {
+    throw ForbiddenAccess('The platform bootstrap status cannot be edited');
+  }
   const hasBypassCapability = isUserHasCapability(user, BYPASS);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB) || hasBypassCapability;
   const allowedKeys = buildAuthorizedSettingsKeys(user);
@@ -311,10 +320,17 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   if (!hasBypassCapability && unauthorizedKeys.length > 0) {
     throw ForbiddenAccess('You are not allowed to edit some settings fields.', { unauthorizedKeys });
   }
+  // The lockout policy is only edited through updateLocalAuth, which validates it, so even BYPASS cannot patch it here
+  const lockoutKeys = input.map((i) => i.key).filter((key) => key in LOCAL_AUTH_LOCKOUT_DEFAULTS);
+  if (lockoutKeys.length > 0) {
+    throw FunctionalError('Local authentication lockout settings can only be edited through updateLocalAuth', { lockoutKeys });
+  }
 
   const data = hasSetXTMHubCapability ? completeXTMHubDataForRegistration(user, input) : input;
 
+  // The settings are read from the database: they know a license that the cache of this node does not yet
   const settings = await getSettings(context);
+  let isLicenseActivated = false;
   const enterpriseLicense = data.find((inputData) => inputData.key === 'enterprise_license');
   if (enterpriseLicense && enterpriseLicense.value?.length > 0) {
     const license = enterpriseLicense.value[0];
@@ -323,7 +339,16 @@ export const settingsEditField = async (context, user, settingsId, input) => {
       if (!info.license_validated) {
         throw UnsupportedError('Invalid license');
       }
+      isLicenseActivated = true;
     }
+  }
+  // Removing the Filigran logos is an Enterprise Edition feature: turning it on needs the license (or one given by the same edit),
+  // turning it off never does
+  // Every edit of the key counts: with a repeated key the last one is the one that is written
+  const whitemarks = data.filter((inputData) => inputData.key === 'platform_whitemark');
+  if (whitemarks.some((whitemark) => whitemark.value?.some((value) => value === true || value === 'true'))
+    && !isLicenseActivated && !isEnterpriseEditionFromSettings(settings)) {
+    throw UnsupportedError('Enterprise edition is not enabled');
   }
   const cguStatus = data.find((inputData) => inputData.key === 'filigran_chatbot_ai_cgu_status');
   if (cguStatus && cguStatus.value) {
@@ -538,46 +563,28 @@ export const getCriticalAlerts = async (context, user) => {
   return [];
 };
 
-// region config preset
-// Allowlists of the Settings fields a configuration preset carries. Anything not listed here
-// (credentials, license, providers) never leaves the platform through a preset.
-export const CONFIG_PRESET_PLATFORM_FIELDS = ['platform_title', 'platform_favicon', 'platform_language'];
-// One configuration preset item per message
-// The first field of a message is the message itself: the message is set when it is filled, the others only qualify it
-export const CONFIG_PRESET_MESSAGES_FIELDS = {
-  banner: ['platform_banner_text', 'platform_banner_level'],
-  login: ['platform_login_message'],
-  consent: ['platform_consent_message', 'platform_consent_confirm_text'],
-  noAccess: ['platform_no_access_message'],
-};
-
-const pickConfigPresetFields = (settings, fields) => Object.fromEntries(fields.map((field) => [field, settings[field] ?? null]));
-
 // The default theme of the platform, undefined when none is set or it no longer exists
 export const getPlatformDefaultTheme = async (context, user) => {
   const settings = await getSettingsFromDatabase(context);
   return settings.platform_theme ? findThemeById(context, user, settings.platform_theme) : undefined;
 };
 
-// The default theme by standard id, built-in or custom (the name is only a hint for messages); null when none is set.
-// The theme can be given (the one the export depends on) so that the reference matches it even if the default changed since.
-/** @param {object | null} [defaultTheme] */
-export const getPlatformConfigPresetConfiguration = async (context, user, defaultTheme = undefined) => {
-  const [settings, theme] = await Promise.all([getSettingsFromDatabase(context), defaultTheme === undefined ? getPlatformDefaultTheme(context, user) : defaultTheme]);
-  return {
-    ...pickConfigPresetFields(settings, CONFIG_PRESET_PLATFORM_FIELDS),
-    default_theme: theme ? { standard_id: theme.standard_id, name: theme.name } : null,
-  };
+// The only writer of platform_bootstrap_status
+export const setPlatformBootstrapStatus = async (context, user, status) => {
+  if (!PLATFORM_BOOTSTRAP_STATUSES.includes(status)) {
+    throw UnsupportedError(`Invalid platform bootstrap status, expected one of ${PLATFORM_BOOTSTRAP_STATUSES.join(', ')}`);
+  }
+  const settings = await getSettings(context);
+  const data = [{ key: PLATFORM_BOOTSTRAP_STATUS_KEY, value: [status] }];
+  await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, data);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `updates \`${PLATFORM_BOOTSTRAP_STATUS_KEY}\` for \`platform settings\``,
+    context_data: { id: settings.id, entity_type: ENTITY_TYPE_SETTINGS, input: data },
+  });
+  const updatedSettings = await getSettings(context);
+  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };
-
-// The configuration of each message, by message id
-export const getMessagesConfigPresetConfigurations = async (context) => {
-  const settings = await getSettingsFromDatabase(context);
-  return Object.fromEntries(Object.entries(CONFIG_PRESET_MESSAGES_FIELDS).map(([id, fields]) => [id, pickConfigPresetFields(settings, fields)]));
-};
-
-export const getWhitemarkConfigPresetConfiguration = async (context) => {
-  const settings = await getSettingsFromDatabase(context);
-  return { platform_whitemark: settings.platform_whitemark ?? false };
-};
-// endregion

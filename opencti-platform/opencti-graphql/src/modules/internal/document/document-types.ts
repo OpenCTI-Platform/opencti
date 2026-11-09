@@ -11,6 +11,10 @@ export const EXPORT_STORAGE_PATH = 'export';
 export const FROM_TEMPLATE_STORAGE_PATH = 'fromTemplate';
 export const CONFIG_PRESET_STORAGE_PATH = 'config_preset';
 export const SYNC_INFLIGHT_STORAGE_PATH = 'sync/inflight';
+// Under config_preset/: exports are deleted after one hour, pending imports and import reports are kept
+export const CONFIG_PRESET_EXPORT_PATH = `${CONFIG_PRESET_STORAGE_PATH}/export`;
+export const CONFIG_PRESET_IMPORT_PATH = `${CONFIG_PRESET_STORAGE_PATH}/import`;
+export const CONFIG_PRESET_HISTORY_PATH = `${CONFIG_PRESET_STORAGE_PATH}/history`;
 
 export type EntityFileReference = {
   id: string;

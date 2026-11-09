@@ -40,6 +40,7 @@ const renderIntegrations = ({
   forms = [],
   logosBySlug = new Map<string, string>(),
   isConnectorUpdateEnabled = true,
+  isIngestionHealthEnabled = true,
 }: {
   connectors?: unknown[];
   states?: unknown[];
@@ -48,6 +49,7 @@ const renderIntegrations = ({
   forms?: unknown[];
   logosBySlug?: Map<string, string>;
   isConnectorUpdateEnabled?: boolean;
+  isIngestionHealthEnabled?: boolean;
 } = {}) => {
   const props = {
     connectorsListData: { connectors },
@@ -56,6 +58,7 @@ const renderIntegrations = ({
     formsData: { forms: { pageInfo: { globalCount: forms.length }, edges: forms.map((node) => ({ node })) } },
     logosBySlug,
     isConnectorUpdateEnabled,
+    isIngestionHealthEnabled,
   } as unknown as HookProps;
   return renderHook(() => useDeployedIntegrations(props));
 };
@@ -71,6 +74,7 @@ describe('useDeployedIntegrations', () => {
       formsData: null,
       logosBySlug: new Map(),
       isConnectorUpdateEnabled: true,
+      isIngestionHealthEnabled: true,
     }));
     expect(withNullData.current).toEqual([]);
   });
@@ -125,12 +129,51 @@ describe('useDeployedIntegrations', () => {
       expect(result.current.map((item) => item.id)).toEqual(['connector-1']);
     });
 
-    it('reports an inactive status when the connector state is inactive', () => {
+    it('reports an active status for a connector that cannot be stopped, whatever its heartbeat', () => {
       const { result } = renderIntegrations({
         connectors: [makeConnector()],
         states: [makeState({ active: false })],
       });
+      expect(result.current[0].status).toBe('active');
+    });
+
+    it('reports an active status for a managed connector that is not stopped on purpose', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector()],
+        states: [makeState({ active: false, manager_current_status: 'starting', manager_requested_status: 'starting' })],
+      });
+      expect(result.current[0].status).toBe('active');
+    });
+
+    it('reports an inactive status for a managed connector stopped on purpose', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector()],
+        states: [makeState({ manager_current_status: 'stopped', manager_requested_status: 'stopped' })],
+      });
       expect(result.current[0].status).toBe('inactive');
+    });
+
+    describe('without the ingestion health', () => {
+      const statusOf = (state: Record<string, unknown>) => {
+        const { result } = renderIntegrations({ connectors: [makeConnector()], states: [makeState(state)], isIngestionHealthEnabled: false });
+        return result.current[0].status;
+      };
+
+      it('reports an inactive status for a connector without heartbeat', () => {
+        expect(statusOf({ active: false })).toBe('inactive');
+        expect(statusOf({ active: true })).toBe('active');
+      });
+
+      it('reports an inactive status for a managed connector that is not started', () => {
+        expect(statusOf({ active: true, manager_current_status: 'started', manager_requested_status: 'started' })).toBe('active');
+        expect(statusOf({ active: true, manager_current_status: 'stopped', manager_requested_status: 'stopped' })).toBe('inactive');
+        expect(statusOf({ active: true, manager_current_status: 'exited', manager_requested_status: 'exited' })).toBe('inactive');
+      });
+
+      it('reports a processing status for a managed connector starting or stopping', () => {
+        expect(statusOf({ manager_current_status: 'stopped', manager_requested_status: 'starting' })).toBe('processing');
+        expect(statusOf({ manager_current_status: 'started', manager_requested_status: 'stopping' })).toBe('processing');
+      });
     });
 
     it('keeps backend-computed update metadata on the deployed connector item', () => {
@@ -158,7 +201,6 @@ describe('useDeployedIntegrations', () => {
         states: [makeState({ manager_current_status: 'stopped', manager_requested_status: 'starting' })],
       });
       expect(result.current[0].status).toBe('processing');
-      expect(result.current[0].statusLabel).toBe('starting');
     });
 
     it('sums push and listen queue messages per connector', () => {

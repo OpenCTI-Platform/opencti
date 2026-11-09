@@ -93,6 +93,8 @@ import {
   INTERNAL_USERS_WITHOUT_REDACTED,
   isBypassUser,
   isOnlyOrgaAdmin,
+  isUserAccountActive,
+  isUserAccountExpired,
   isUserHasCapability,
   type ParticipantWithOrgIds,
   REDACTED_USER,
@@ -149,7 +151,7 @@ import type {
   StoreEntity,
   StoreMarkingDefinition,
 } from '../../types/store';
-import { apiTokens, ENTITY_TYPE_USER, type BasicStoreEntityUser, type StoreEntityUser, type UserBookmark } from './user-types';
+import { apiTokens, AVAILABLE_LANGUAGES, ENTITY_TYPE_USER, type BasicStoreEntityUser, type StoreEntityUser, type UserBookmark } from './user-types';
 import type { BasicStoreEntityEmailTemplate } from '../emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityDraftWorkspace } from '../draftWorkspace/draftWorkspace-types';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -188,7 +190,6 @@ import { memoize } from '../../utils/memoize';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
-export const TAXIIAPI = 'TAXIIAPI';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 const PROTECTED_USER_ATTRIBUTES = [apiTokens.name, 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
@@ -207,13 +208,13 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'date_format',
   'time_format',
   'submenu_show_icons',
+  'bootstrap_wizard_skipped',
   'submenu_auto_collapse',
   'monochrome_labels',
   'unsubscribed_news_feed_types',
   'password',
   'draft_context',
 ];
-const AVAILABLE_LANGUAGES = ['auto', 'es-es', 'fr-fr', 'ja-jp', 'zh-cn', 'en-us', 'de-de', 'ko-kr', 'ru-ru', 'it-it'];
 
 const computeImpactedUsers = async (context: AuthContext, user: AuthUser, roleId: string) => {
   // Get all groups that have this role
@@ -265,6 +266,37 @@ const extractTokenFromBearer = (authorization: string | undefined) => {
   const isBearer = authorization && authorization.startsWith(BEARER);
   return isBearer ? authorization.substring(BEARER.length) : null;
 };
+
+export const TOKEN_MASK = '****';
+const TOKEN_MASK_VISIBLE_CHARS = 4;
+// Below this length, showing the last characters would reveal too much of the token
+const TOKEN_MASK_MIN_LENGTH = 12;
+
+/**
+ * The single mask of an API token, used everywhere a token is shown or written:
+ * the stored masked_token (GraphQL API and UI), the admin base token, the legacy
+ * token migration and the logs. Only the last 4 characters are kept, never a prefix.
+ */
+export const maskToken = (token: string | null | undefined): string => {
+  if (!token || token.length < TOKEN_MASK_MIN_LENGTH) {
+    return TOKEN_MASK;
+  }
+  return `${TOKEN_MASK}${token.slice(-TOKEN_MASK_VISIBLE_CHARS)}`;
+};
+
+/**
+ * Log metadata of a failed token authentication: the token is masked with maskToken.
+ */
+export const buildTokenAuthFailureLogMeta = (
+  cause: unknown,
+  bearerToken: string,
+  req: { headers: Record<string, string | string[] | undefined> },
+) => ({
+  cause,
+  masked_token: maskToken(bearerToken),
+  user_agent: req.headers['user-agent'] || 'unknown',
+  origin: req.headers.origin || req.headers.referer || 'unknown',
+});
 
 const extractInfoFromBasicAuth = (authorization: string | undefined) => {
   const isBasic = authorization && authorization.startsWith(BASIC);
@@ -453,6 +485,19 @@ export const batchRolesForUsers = async (context: AuthContext, user: AuthUser, u
   });
 };
 
+export const batchRolesForGroups = async (context: AuthContext, user: AuthUser, groupIds: string[], opts: EntityOptions<BasicStoreEntity> = {}) => {
+  if (groupIds.length === 0) {
+    return [];
+  }
+  const groupsRoles = await fullRelationsList(context, user, RELATION_HAS_ROLE, { fromId: groupIds, toTypes: [ENTITY_TYPE_ROLE] });
+  const roleIds = uniq(groupsRoles.map(({ toId }) => toId));
+  const roles = roleIds.length > 0 ? await fullEntitiesList(context, user, [ENTITY_TYPE_ROLE], { ...opts, ids: roleIds }) : [];
+  return groupIds.map((groupId) => {
+    const idRoles = groupsRoles.filter(({ fromId }) => fromId === groupId).map(({ toId }) => toId);
+    return roles.filter((role) => idRoles.includes(role.internal_id));
+  });
+};
+
 export const computeAvailableMarkings = <T extends BasicStoreEntityMarkingDefinition>(userMarkings: BasicStoreEntityMarkingDefinition[], allMarkings: T[]) => {
   const computedMarkings = [];
   for (let index = 0; index < userMarkings.length; index += 1) {
@@ -538,8 +583,12 @@ export const findRoleById = (context: AuthContext, user: AuthUser, roleId: strin
   return storeLoadById<BasicStoreEntity>(context, user, roleId, ENTITY_TYPE_ROLE);
 };
 
-export const findRoles = (context: AuthContext, user: AuthUser, args: QueryRolesArgs) => {
+export const findRoles = (context: AuthContext, user: AuthUser, args: QueryRolesArgs | EntityOptions<BasicStoreEntity>) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_ROLE], args);
+};
+
+export const findAllRoles = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntity> = {}) => {
+  return fullEntitiesList(context, user, [ENTITY_TYPE_ROLE], args);
 };
 
 export const findCapabilities = async (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntity>, relationship_type: string = RELATION_HAS_CAPABILITY) => {
@@ -738,9 +787,10 @@ const shuffleInPlace = <T>(elements: T[]) => {
   return elements;
 };
 
+const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
+
 // Generate a random password that satisfies the given password policy
-export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
-  const positive = (value: number | null | undefined) => Math.max(value ?? 0, 0);
+const passwordPolicyRequirements = (policy: PasswordInlinePolicy) => {
   const minUppercase = positive(policy.password_policy_min_uppercase);
   const minLowercase = positive(policy.password_policy_min_lowercase);
   const minNumbers = positive(policy.password_policy_min_numbers);
@@ -753,7 +803,22 @@ export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
   const minBodyLength = Math.max(requiredCharsCount, wordsCount);
   const minLength = Math.max(positive(policy.password_policy_min_length), minBodyLength + separatorsCount);
   const maxLength = positive(policy.password_policy_max_length);
-  // Check policy feasibility before allocating anything
+  return { minUppercase, minLowercase, minNumbers, separatorsCount, extraSymbolsCount, requiredCharsCount, minLength, maxLength };
+};
+
+// Whether checkPasswordInlinePolicy accepts a password of at most the maximum length: a word separator is also a symbol,
+// and the words it splits may be empty
+export const isPasswordPolicySatisfiable = (policy: PasswordInlinePolicy) => {
+  const maxLength = positive(policy.password_policy_max_length);
+  const symbolsCount = Math.max(positive(policy.password_policy_min_symbols), positive(policy.password_policy_min_words) - 1);
+  const charsCount = positive(policy.password_policy_min_uppercase) + positive(policy.password_policy_min_lowercase)
+    + positive(policy.password_policy_min_numbers) + symbolsCount;
+  return maxLength === 0 || maxLength >= Math.max(positive(policy.password_policy_min_length), charsCount);
+};
+
+export const generatePasswordFromPolicy = (policy: PasswordInlinePolicy) => {
+  const { minUppercase, minLowercase, minNumbers, separatorsCount, extraSymbolsCount, requiredCharsCount, minLength, maxLength } = passwordPolicyRequirements(policy);
+  // Check policy feasibility before allocating anything: the generated words are never empty
   if (maxLength > 0 && maxLength < minLength) {
     throw FunctionalError('Unable to generate a password: password policy cannot be satisfied', { minLength, maxLength });
   }
@@ -932,6 +997,15 @@ export const adjustAllUsersPasswordValidUntil = async (_context: AuthContext, ol
     });
   }
   await publishCacheResetEvent(ENTITY_TYPE_USER);
+};
+
+// A change of the password validity of the platform, for every local user: a disabled policy clears the expiration dates, another duration moves them
+export const propagatePasswordValidityChange = async (context: AuthContext, oldDays: number, newDays: number) => {
+  if (newDays <= 0) {
+    await clearAllUsersPasswordValidUntil(context);
+  } else if (newDays !== oldDays) {
+    await adjustAllUsersPasswordValidUntil(context, oldDays, newDays);
+  }
 };
 
 type MailTargetUser = Omit<AuthUser, 'organizations' | 'account_lock_after_date'> & {
@@ -1237,8 +1311,12 @@ export const validateAndNormalizeEmailInput = async (context: AuthContext, userI
 export const userEditField = async (context: AuthContext, user: AuthUser, userId: string, rawInputs: any[], opts: Parameters<typeof updateAttribute>[5] = {}) => {
   let inputs = [];
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
-  let skipThisInput = false;
   let hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
+  // Switching between user and service account sets or removes the password itself, so a password sent
+  // alongside is dropped, whatever the order of the inputs. Same conditions as the two switch branches below
+  // (user_service_account is not set on users created before service accounts existed)
+  const requestedServiceAccount = rawInputs.find((x) => x.key === 'user_service_account')?.value[0];
+  const switchesAccountType = userToUpdate.user_service_account ? requestedServiceAccount === false : requestedServiceAccount === true;
   checkDateDisplayInput(rawInputs, 'date_format', 'time_format');
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
@@ -1261,11 +1339,9 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     // Check user email is valid and not already used in case of email change
     await validateAndNormalizeEmailInput(context, userId, input);
     if (input.key === 'password') {
-      const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
-      if (userServiceAccountInput && userToUpdate.user_service_account !== userServiceAccountInput.value[0]) {
-        skipThisInput = true;
+      if (switchesAccountType) {
+        continue;
       }
-
       if (!userToUpdate.user_service_account) {
         const userPassword = R.head(input.value)!.toString();
         await checkPasswordFromPolicy(context, userPassword);
@@ -1330,10 +1406,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
       hasPasswordUpdate = true;
       await addServiceAccountIntoUserCount();
     }
-
-    if (!skipThisInput) {
-      inputs.push(input);
-    }
+    inputs.push(input);
   }
   // Reset the password validity window whenever the password changes.
   if (hasPasswordUpdate) {
@@ -1431,6 +1504,10 @@ export const addBookmark = async (context: AuthContext, user: AuthUser, id: stri
   return storeLoadById<BasicStoreEntity>(context, user, id, type);
 };
 
+const getOwnPasswordHash = (user: Partial<Pick<BasicStoreEntityUser, 'password'>>) => {
+  return Object.hasOwn(user, 'password') && typeof user.password === 'string' && user.password.length > 0 ? user.password : undefined;
+};
+
 export const meEditField = async (context: AuthContext, user: AuthUser & Partial<Pick<BasicStoreEntityUser, 'external' | 'password'>>, userId: string, inputs: any[], password: string | null = null) => {
   inputs.forEach((input) => {
     const { key } = input;
@@ -1446,6 +1523,10 @@ export const meEditField = async (context: AuthContext, user: AuthUser & Partial
     if (!ME_USER_MODIFIABLE_ATTRIBUTES.includes(key)) {
       throw ForbiddenAccess();
     }
+    // The bootstrap wizard is for administrators only
+    if (key === 'bootstrap_wizard_skipped' && !isUserHasCapability(user, BYPASS)) {
+      throw ForbiddenAccess();
+    }
     // Check password confirmation in case of password change
     if (key === 'password') {
       // Skip current password check if the password is expired (force change scenario)
@@ -1454,8 +1535,8 @@ export const meEditField = async (context: AuthContext, user: AuthUser & Partial
         if (typeof password !== 'string' || password.length === 0) {
           throw FunctionalError('The current password you have provided is not valid');
         }
-        const dbPassword = user.password;
-        const match = bcrypt.compareSync(password, dbPassword!);
+        const dbPassword = getOwnPasswordHash(user);
+        const match = dbPassword !== undefined && bcrypt.compareSync(password, dbPassword);
         if (!match) {
           throw FunctionalError('The current password you have provided is not valid');
         }
@@ -1854,7 +1935,8 @@ export const getUserByEmail = async (email: string) => {
 export const login = async (email: string, password: string) => {
   const user = await getUserByEmail(email);
   if (!user) throw AuthenticationFailure();
-  const dbPassword = user.password;
+  const dbPassword = getOwnPasswordHash(user);
+  if (!dbPassword) throw AuthenticationFailure();
   const match = bcrypt.compareSync(password, dbPassword);
   if (!match) throw AuthenticationFailure();
   return user;
@@ -2380,13 +2462,9 @@ const validateUser = (user: AuthUser, settings: BasicStoreSettings, { skipForceP
   if (!isBypassUser(user) && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
     throw AuthenticationFailure('You can\'t login without an organization');
   }
-  // Check account expiration date
-  if (user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date))) {
-    throw AuthenticationFailure(ACCOUNT_STATUSES.Expired);
-  }
-  // Validate user's account status
-  if (user.account_status !== ACCOUNT_STATUS_ACTIVE) {
-    throw AuthenticationFailure(ACCOUNT_STATUSES[user.account_status]);
+  // Validate user's account: an expiration date in the past is refused as expired, whatever its status
+  if (!isUserAccountActive(user)) {
+    throw AuthenticationFailure(isUserAccountExpired(user) ? ACCOUNT_STATUSES.Expired : ACCOUNT_STATUSES[user.account_status]);
   }
   // Require users with expired password validity to update their password before using the platform.
   // Skipped at session creation so the user can authenticate and be redirected to the change-password screen.
@@ -2458,15 +2536,7 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
     try {
       return await authenticateUserByToken(context, req, bearerToken);
     } catch (err) {
-      const tokenPrefix = bearerToken.substring(0, 20);
-      const userAgent = req.headers['user-agent'] || 'unknown';
-      const origin = req.headers.origin || req.headers.referer || 'unknown';
-      logApp.warn('Error resolving user by token', {
-        cause: err,
-        token_prefix: `${tokenPrefix}...`,
-        user_agent: userAgent,
-        origin,
-      });
+      logApp.warn('Error resolving user by token', buildTokenAuthFailureLogMeta(err, bearerToken, req));
       return undefined;
     }
   }
@@ -2535,7 +2605,7 @@ const initAdmin = async (context: AuthContext, email: string, password: string, 
     name: 'Base token',
     hash: await generateTokenHmac(tokenValue),
     created_at: now,
-    masked_token: `****${tokenValue.slice(-4)}`,
+    masked_token: maskToken(tokenValue),
   };
   tokensWithoutBaseOne.push(newToken);
   const updates = [{ key: apiTokens.name, value: tokensWithoutBaseOne, operation: UPDATE_OPERATION_REPLACE as EditOperation }];
@@ -2802,7 +2872,7 @@ export const generateSecureToken = async (): Promise<GeneratedToken> => {
   const random = crypto.randomBytes(48).toString('base64url');
   const token = `flgrn_octi_tkn_${random}`;
   const hash = await generateTokenHmac(token);
-  const masked_token = `****${token.slice(-4)}`;
+  const masked_token = maskToken(token);
   return { token, hash, masked_token };
 };
 
