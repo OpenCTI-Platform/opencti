@@ -453,6 +453,8 @@ describe('CustomDashboard widget import', () => {
     expect(notifyWarning).not.toHaveBeenCalled();
     act(() => widgetImportCall().onCompleted());
     expect(notifyWarning).toHaveBeenCalledTimes(1);
+    // One variable of the two is missing: the message carries that count
+    expect(notifyWarning.mock.calls[0][0]).toContain('uses 1 variable');
     notifyWarning.mockRestore();
   });
 

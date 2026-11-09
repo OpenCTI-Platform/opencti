@@ -3,7 +3,8 @@ import type { PublicDashboardTimeRangeInput, PublicDashboardVariableValueInput }
 import { buildDashboardVariableDefaultValues, isStrictIsoDate, isValidDashboardVariableValue, isValidTimeZone } from '../dashboard/dashboard-variables-resolution';
 
 // A relative date as the front computes it (computeRelativeDate): the select offers a few, an imported dashboard may hold others.
-const RELATIVE_DATE_REGEXP = /^(days|months|years)-\d+$/;
+// The count is bounded: beyond, the date computation would make no sense.
+const RELATIVE_DATE_REGEXP = /^(days|months|years)-\d{1,4}$/;
 
 /**
  * Values frozen in a public dashboard, keyed by variable id: the default of each variable, replaced by the value the
@@ -60,8 +61,10 @@ export const applyPublicationTimeRange = (
 
 /**
  * Time zone of the author, used to shift the date variables exactly as they were shown to them.
- * Unsupported or missing: undefined, the resolution then counts in UTC.
+ * Missing: undefined, the resolution then counts in UTC. Unsupported: refused, rather than silently counting in UTC.
  */
 export const toPublicationTimeZone = (timeZone: string | null | undefined) => {
-  return timeZone && isValidTimeZone(timeZone) ? timeZone : undefined;
+  if (!timeZone) return undefined;
+  if (!isValidTimeZone(timeZone)) throw FunctionalError('Invalid public dashboard time zone', { timeZone });
+  return timeZone;
 };
