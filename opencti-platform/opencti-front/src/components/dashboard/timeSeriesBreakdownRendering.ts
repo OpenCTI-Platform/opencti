@@ -64,7 +64,8 @@ export const getRenderedPointsBudget = (type: string, width: number, seriesCount
  */
 export const isSameBreakdown = (a?: WidgetTimeSeriesBreakdownData | null, b?: WidgetTimeSeriesBreakdownData | null) => {
   if (a === b) return true;
-  if (!a || !b || a.truncated !== b.truncated || a.dates.length !== b.dates.length || a.series.length !== b.series.length) {
+  if (!a || !b || a.truncated !== b.truncated || (a.interval ?? null) !== (b.interval ?? null)
+    || a.dates.length !== b.dates.length || a.series.length !== b.series.length) {
     return false;
   }
   if (a.dates.some((date, index) => date !== b.dates[index])) return false;

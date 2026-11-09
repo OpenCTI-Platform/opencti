@@ -491,6 +491,12 @@ type TimeSeriesBreakdown {
   The series of the values kept by the limit, ranked, then Other when it is requested
   """
   series: [TimeSeriesBreakdownSeries!]!
+
+  """
+  Interval of the dates, given by the public breakdowns: they count a long period in coarser intervals than the one of the
+  widget, as the dashboards would draw it. Not given by the other breakdowns, whose dates are at the requested interval.
+  """
+  interval: String
 }
 
 input AuditsTimeSeriesParameters {
@@ -9316,7 +9322,9 @@ type Query {
   publicStixCoreObjectsNumber(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): Number
   publicStixRelationshipsNumber(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): Number
   publicStixCoreObjectsMultiTimeSeries(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [MultiTimeSeries]
+  publicStixCoreObjectsTimeSeriesBreakdown(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): TimeSeriesBreakdown
   publicStixRelationshipsMultiTimeSeries(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [MultiTimeSeries]
+  publicStixRelationshipsTimeSeriesBreakdown(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): TimeSeriesBreakdown
   publicStixCoreObjectsDistribution(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [PublicDistribution]
   publicStixRelationshipsDistribution(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): [PublicDistribution]
   publicBookmarks(uriKey: String!, widgetId: String!): StixDomainObjectConnection
