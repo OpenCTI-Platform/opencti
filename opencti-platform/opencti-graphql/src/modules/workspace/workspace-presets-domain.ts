@@ -3,7 +3,7 @@ import { editInternalObject } from '../../domain/internalObject';
 import type { DashboardPresetInput, EditInput } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { fromB64, toB64 } from '../../utils/base64';
-import { ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace } from './workspace-types';
+import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace } from './workspace-types';
 import type { StoreDashboardManifest, StoreDashboardPreset } from './workspace-variables-types';
 import { buildDashboardPreset } from './workspace-presets-validation';
 import { loadDashboardForVariableEdition, withWorkspaceManifestLock } from './workspace-variables-domain';
@@ -82,7 +82,7 @@ const loadStoredUserOnce = (context: AuthContext, userId: string) => {
  * rather than from the authenticated user: that one comes from the platform cache, refreshed asynchronously across
  * the cluster, and the choice has to apply as soon as it is saved. The organizations and groups keep the cache.
  */
-export const resolveCurrentUserDefaultPresetId = async (context: AuthContext, user: AuthUser, workspace: StoreEntityWorkspace) => {
+export const resolveCurrentUserDefaultPresetId = async (context: AuthContext, user: AuthUser, workspace: Pick<BasicStoreEntityWorkspace, 'id' | 'type' | 'manifest'>) => {
   if (workspace.type !== 'dashboard') return null;
   const stored = await loadStoredUserOnce(context, user.id);
   const holder = stored
