@@ -32067,6 +32067,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   view_all_users?: Maybe<Scalars['Boolean']['output']>;
   xtm_hub_available_news_feed_types?: Maybe<Array<Scalars['String']['output']>>;
   xtm_hub_backend_is_reachable?: Maybe<Scalars['Boolean']['output']>;
+  xtm_hub_commercial_model?: Maybe<XtmHubCommercialModel>;
   xtm_hub_last_connectivity_check?: Maybe<Scalars['DateTime']['output']>;
   xtm_hub_registration_date?: Maybe<Scalars['DateTime']['output']>;
   xtm_hub_registration_status?: Maybe<XtmHubRegistrationStatus>;
@@ -40615,6 +40616,11 @@ export type X509CertificateAddInput = {
   version?: InputMaybe<Scalars['String']['input']>;
 };
 
+export enum XtmHubCommercialModel {
+  Other = 'other',
+  Saas = 'saas'
+}
+
 export enum XtmHubRegistrationStatus {
   LostConnectivity = 'lost_connectivity',
   Registered = 'registered',
@@ -42745,6 +42751,7 @@ export type ResolversTypes = ResolversObject<{
   WorkspacesOrdering: WorkspacesOrdering;
   X509Certificate: ResolverTypeWrapper<Omit<X509Certificate, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   X509CertificateAddInput: X509CertificateAddInput;
+  XTMHubCommercialModel: XtmHubCommercialModel;
   XTMHubRegistrationStatus: XtmHubRegistrationStatus;
 }>;
 
@@ -53463,6 +53470,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   view_all_users?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   xtm_hub_available_news_feed_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   xtm_hub_backend_is_reachable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  xtm_hub_commercial_model?: Resolver<Maybe<ResolversTypes['XTMHubCommercialModel']>, ParentType, ContextType>;
   xtm_hub_last_connectivity_check?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   xtm_hub_registration_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   xtm_hub_registration_status?: Resolver<Maybe<ResolversTypes['XTMHubRegistrationStatus']>, ParentType, ContextType>;

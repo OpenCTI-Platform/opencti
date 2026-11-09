@@ -13822,6 +13822,7 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   view_all_users: Boolean
   xtm_hub_available_news_feed_types: [String!]
   xtm_hub_backend_is_reachable: Boolean
+  xtm_hub_commercial_model: XTMHubCommercialModel
   xtm_hub_last_connectivity_check: DateTime
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
@@ -18273,6 +18274,11 @@ input X509CertificateAddInput {
   validity_not_after: DateTime
   validity_not_before: DateTime
   version: String
+}
+
+enum XTMHubCommercialModel {
+  other
+  saas
 }
 
 enum XTMHubRegistrationStatus {

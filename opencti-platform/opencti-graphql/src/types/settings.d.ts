@@ -1,5 +1,5 @@
 import type { BasicStoreEntity } from './store';
-import type { XtmHubRegistrationStatus, CguStatus, SmtpAuthType, LocalAuthLockoutFinalAction } from '../generated/graphql';
+import type { XtmHubRegistrationStatus, XtmHubCommercialModel, CguStatus, SmtpAuthType, LocalAuthLockoutFinalAction } from '../generated/graphql';
 import type { GroupsMapping, OrganizationsMapping, UserInfoMapping } from '../modules/authenticationProvider/authenticationProvider-types';
 
 export interface BasicStoreSettingsMessage {
@@ -78,6 +78,7 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   xtm_hub_should_send_connectivity_email?: boolean;
   xtm_hub_backend_is_reachable?: boolean;
   xtm_hub_available_news_feed_types?: string[];
+  xtm_hub_commercial_model?: XtmHubCommercialModel;
   platform_ai_enabled: boolean;
   platform_notifier_auto_trigger_assignee?: boolean;
   filigran_chatbot_ai_cgu_status: CguStatus;
