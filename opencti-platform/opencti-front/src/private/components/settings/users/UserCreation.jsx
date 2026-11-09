@@ -161,7 +161,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
             onSubmit={onSubmit}
             onReset={onClose}
           >
-            {({ submitForm, handleReset, isSubmitting, values }) => (
+            {({ submitForm, handleReset, isSubmitting, values, setFieldValue }) => (
               <Form>
                 <Stack sx={{ gap: 2.5 }}>
                   {hasSetAccess && (
@@ -171,6 +171,14 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                         type="checkbox"
                         name="user_service_account"
                         label={t_i18n('This user is a service account')}
+                        onChange={(_, value) => {
+                          // Service accounts have no password: drop anything typed before the toggle,
+                          // so hidden fields can neither be submitted nor fail validation.
+                          if (value === 'true') {
+                            setFieldValue('password', '');
+                            setFieldValue('confirmation', '');
+                          }
+                        }}
                       />
                       <Tooltip title={t_i18n('Service accounts do not have any password and a randomized email address will be generated, if not provided on creation. Service account do not receive notifications. Service account pertains automatically to the main platform organization.')}>
                         <InformationOutline
@@ -217,26 +225,28 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                     multiline={true}
                     rows={4}
                   />
-                  <Stack sx={{ gap: 2.5 }}>
-                    <PasswordPolicies value={values.password} />
-                    <Field
-                      component={TextField}
-                      variant="outlined"
-                      name="password"
-                      label={t_i18n('Password')}
-                      type="password"
-                      fullWidth={true}
-                      data-testid="user-creation-password-input"
-                    />
-                    <Field
-                      component={TextField}
-                      variant="outlined"
-                      name="confirmation"
-                      label={t_i18n('Confirmation')}
-                      type="password"
-                      fullWidth={true}
-                    />
-                  </Stack>
+                  {!values.user_service_account && (
+                    <Stack sx={{ gap: 2.5 }}>
+                      <PasswordPolicies value={values.password} />
+                      <Field
+                        component={TextField}
+                        variant="outlined"
+                        name="password"
+                        label={t_i18n('Password')}
+                        type="password"
+                        fullWidth={true}
+                        data-testid="user-creation-password-input"
+                      />
+                      <Field
+                        component={TextField}
+                        variant="outlined"
+                        name="confirmation"
+                        label={t_i18n('Confirmation')}
+                        type="password"
+                        fullWidth={true}
+                      />
+                    </Stack>
+                  )}
                   <ObjectOrganizationField
                     outlined={false}
                     name="objectOrganization"

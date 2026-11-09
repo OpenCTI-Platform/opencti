@@ -250,6 +250,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                       transition.comment,
                       transition.requiresShareOrganizationInput,
                       transition.requiresUnshareOrganizationInput,
+                      transition.closingReason,
                     )}
                     style={{ display: 'flex', justifyContent: 'space-between', gap: 16, height: 'auto', minHeight: 36, whiteSpace: 'normal' }}
                     endIcon={actionCount > 0 ? (
@@ -276,6 +277,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                   transition.comment,
                   transition.requiresShareOrganizationInput,
                   transition.requiresUnshareOrganizationInput,
+                  transition.closingReason,
                 )}
                 disabled={approving || clearing || !!wizard}
               >
@@ -295,7 +297,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           {({ values, isSubmitting, isValid }) => {
             const disabled = isSubmitting || approving || clearing;
             const missingComment = wizard.commentMode === CommentMode.required && !canBypassMandatoryFields && !values.comment.trim();
-            // Radix gives every DialogDescription the same id, so the validation prompt uses it only when no comment prompt precedes it.
+            // Radix gives every DialogDescription the same id, so the closing reason and validation prompts use it only when no comment prompt precedes them.
             const showComment = hasTransitionComment(wizard.commentMode);
             const targetStatus = workflowInstance.allowedTransitions.find((transition) => transition.event === wizard.event)?.toStatus;
             return (

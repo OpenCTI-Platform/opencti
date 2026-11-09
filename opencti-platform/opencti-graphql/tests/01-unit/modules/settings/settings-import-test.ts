@@ -6,10 +6,24 @@ vi.mock('../../../../src/domain/settings', () => ({
   settingsEditField: vi.fn(),
 }));
 vi.mock('../../../../src/modules/theme/theme-domain', () => ({ findById: vi.fn() }));
+vi.mock('../../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
+vi.mock('../../../../src/enterprise-edition/ee', () => ({ isEnterpriseEdition: vi.fn() }));
+vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/user/user-domain')>()),
+  propagatePasswordValidityChange: vi.fn(),
+}));
+vi.mock('../../../../src/modules/user/sensitive-config-import', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/user/sensitive-config-import')>()),
+  isConfigImportSensitiveChangeAllowed: vi.fn(),
+}));
 
 import { getSettings, getSettingsFromDatabase, settingsEditField } from '../../../../src/domain/settings';
 import { findById } from '../../../../src/modules/theme/theme-domain';
-import { importMessage, importPlatformConfiguration, importWhitemark } from '../../../../src/modules/settings/settings-import';
+import { storeLoadById } from '../../../../src/database/middleware-loader';
+import { isEnterpriseEdition } from '../../../../src/enterprise-edition/ee';
+import { propagatePasswordValidityChange } from '../../../../src/modules/user/user-domain';
+import { importMessage, importPlatformConfiguration, importPolicies, importWhitemark } from '../../../../src/modules/settings/settings-import';
+import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/user/sensitive-config-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { CUSTOM_THEME_ID } from '../../../utils/configPresetBundle';
@@ -172,6 +186,165 @@ describe('importPlatformConfiguration', () => {
 
   it('refuses an invalid configuration, without writing', async () => {
     expect(await importPlatformConfiguration(context, user, { platform_favicon: '/favicon.ico' }, overwrite)).toMatchObject({ status: 'failed', code: 'invalid', reason: expect.stringContaining('platform_favicon') });
+    expect(settingsEditField).not.toHaveBeenCalled();
+  });
+});
+
+describe('importPolicies', () => {
+  const organization = { standard_id: 'identity--11111111-2222-4333-8444-555555555555', name: 'Filigran' };
+  const policies = (overrides: Record<string, unknown> = {}) => ({
+    view_all_users: false,
+    password_policy_min_length: 12,
+    password_policy_max_length: 0,
+    password_policy_min_symbols: 1,
+    password_policy_min_numbers: 1,
+    password_policy_min_words: 0,
+    password_policy_min_lowercase: 1,
+    password_policy_min_uppercase: 1,
+    password_policy_validity_days: 90,
+    platform_organization: organization,
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 90 } as never);
+    vi.mocked(isEnterpriseEdition).mockResolvedValue(true);
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(true);
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'organization-id', ...organization } as never);
+  });
+
+  it('writes the policies and the main organization of this platform, by internal id, with one call', async () => {
+    const result = await importPolicies(context, user, policies(), overwrite);
+    expect(result).toMatchObject({ status: 'overwritten', exists: true });
+    expect(storeLoadById).toHaveBeenCalledWith(context, user, organization.standard_id, 'Organization');
+    expect(settingsEditField).toHaveBeenCalledTimes(1);
+    expect(settingsEditField).toHaveBeenCalledWith(context, user, 'settings-id', expect.arrayContaining([
+      { key: 'view_all_users', value: [false] },
+      { key: 'password_policy_min_length', value: [12] },
+      { key: 'password_policy_validity_days', value: [90] },
+      { key: 'platform_organization', value: ['organization-id'] },
+    ]));
+  });
+
+  it('moves the expiration date of the users when the validity of the passwords changes, the policy being disabled included', async () => {
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 30 } as never);
+    await importPolicies(context, user, policies(), overwrite);
+    expect(propagatePasswordValidityChange).toHaveBeenCalledWith(context, 30, 90);
+    await importPolicies(context, user, policies({ password_policy_validity_days: 0 }), overwrite);
+    expect(propagatePasswordValidityChange).toHaveBeenCalledWith(context, 30, 0);
+  });
+
+  it('leaves the expiration dates of the users untouched when the validity does not change or is not set', async () => {
+    await importPolicies(context, user, policies(), overwrite);
+    await importPolicies(context, user, policies({ password_policy_validity_days: null }), overwrite);
+    // A default policy imported on a platform that has the default one too
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id' } as never);
+    await importPolicies(context, user, policies({ password_policy_validity_days: 0 }), overwrite);
+    expect(propagatePasswordValidityChange).not.toHaveBeenCalled();
+  });
+
+  it('says in the preview that it sets the main organization and changes the expiration date of the passwords', async () => {
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 30 } as never);
+    const result = await importPolicies(context, user, policies(), dryRun);
+    expect(result.reason).toEqual("Sets the main organization: Filigran\nThe expiration date of the users' passwords changes");
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 90, platform_organization: 'organization-id' } as never);
+    expect((await importPolicies(context, user, policies(), dryRun)).reason).toBeUndefined();
+  });
+
+  it('names the main organization it sets as this platform does, never as the bundle says', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue({ id: 'organization-id', ...organization, name: 'Filigran SAS' } as never);
+    const result = await importPolicies(context, user, policies({ platform_organization: { ...organization, name: 'Another organization' } }), dryRun);
+    expect(result.reason).toEqual('Sets the main organization: Filigran SAS');
+  });
+
+  it('refuses a password policy that no password can satisfy, alone or with the values of the platform, without writing', async () => {
+    const contradictory = await importPolicies(context, user, policies({ password_policy_min_length: 20, password_policy_max_length: 5 }), overwrite);
+    expect(contradictory).toMatchObject({ status: 'failed', code: 'invalid', reason: 'The password policy cannot be satisfied: its maximum length is below what its other rules require' });
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_max_length: 8 } as never);
+    const withPlatform = await importPolicies(context, user, policies({ password_policy_max_length: null }), overwrite);
+    expect(withPlatform).toMatchObject({ status: 'failed', code: 'invalid' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+  });
+
+  it('leaves out and reports a main organization that is not on this platform, and never creates it', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(undefined as never);
+    const result = await importPolicies(context, user, policies(), overwrite);
+    expect(result).toMatchObject({ status: 'overwritten', reason: 'Main organization not found: Filigran' });
+    expect(vi.mocked(settingsEditField).mock.calls[0][3]).not.toContainEqual(expect.objectContaining({ key: 'platform_organization' }));
+  });
+
+  it('leaves out and reports the main organization on a platform that is not Enterprise Edition', async () => {
+    vi.mocked(isEnterpriseEdition).mockResolvedValue(false);
+    const result = await importPolicies(context, user, policies(), overwrite);
+    expect(result).toMatchObject({ status: 'overwritten', reason: 'The main organization requires the Enterprise Edition' });
+    expect(storeLoadById).not.toHaveBeenCalled();
+    expect(vi.mocked(settingsEditField).mock.calls[0][3]).not.toContainEqual(expect.objectContaining({ key: 'platform_organization' }));
+  });
+
+  it('leaves out and reports the main organization to a user who cannot manage the sensitive configuration, and writes the rest', async () => {
+    vi.mocked(isConfigImportSensitiveChangeAllowed).mockResolvedValue(false);
+    const result = await importPolicies(context, user, policies(), overwrite);
+    expect(result).toMatchObject({ status: 'overwritten', reason: 'Requires the right to manage the sensitive configuration' });
+    expect(isConfigImportSensitiveChangeAllowed).toHaveBeenCalledWith(context, user, 'platform_organization');
+    expect(storeLoadById).not.toHaveBeenCalled();
+    const input = vi.mocked(settingsEditField).mock.calls[0][3];
+    expect(input).not.toContainEqual(expect.objectContaining({ key: 'platform_organization' }));
+    expect(input).toContainEqual({ key: 'password_policy_min_length', value: [12] });
+  });
+
+  it('skips policies the platform has as they are, without writing nor moving the expiration dates', async () => {
+    const { platform_organization: _, ...fields } = policies();
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', ...fields, platform_organization: 'organization-id' } as never);
+    expect(await importPolicies(context, user, policies(), overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+    expect(propagatePasswordValidityChange).not.toHaveBeenCalled();
+  });
+
+  it('skips the default policy on a platform that never stored its fields, without writing', async () => {
+    const defaults = policies({ password_policy_min_length: 0, password_policy_min_symbols: 0, password_policy_min_numbers: 0, password_policy_min_lowercase: 0,
+      password_policy_min_uppercase: 0, password_policy_validity_days: 0, platform_organization: null });
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id' } as never);
+    expect(await importPolicies(context, user, defaults, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+    expect(propagatePasswordValidityChange).not.toHaveBeenCalled();
+  });
+
+  it('skips policies the platform has as they are when only the main organization is left out, and says why it is', async () => {
+    const { platform_organization: _, ...fields } = policies();
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', ...fields } as never);
+    vi.mocked(isEnterpriseEdition).mockResolvedValue(false);
+    const result = await importPolicies(context, user, policies(), overwrite);
+    expect(result).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date\nThe main organization requires the Enterprise Edition' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+  });
+
+  it('says in the preview that the passwords no longer expire, and that users can view the users of other organizations', async () => {
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 30, platform_organization: 'organization-id' } as never);
+    const result = await importPolicies(context, user, policies({ password_policy_validity_days: 0, view_all_users: true }), dryRun);
+    expect(result.reason).toEqual("The users' passwords no longer expire\nUsers can view the users of other organizations");
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_validity_days: 0, view_all_users: true, platform_organization: 'organization-id' } as never);
+    expect((await importPolicies(context, user, policies({ password_policy_validity_days: 0, view_all_users: true }), dryRun)).reason).toBeUndefined();
+  });
+
+  it('does not write on a dry run', async () => {
+    expect(await importPolicies(context, user, policies(), dryRun)).toMatchObject({ status: 'overwritten' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+    expect(propagatePasswordValidityChange).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['an unknown key', { otp_mandatory: true }],
+    ['a negative length', { password_policy_min_length: -1 }],
+    ['a length that is not an integer', { password_policy_min_length: 1.5 }],
+  ])('refuses %s, without writing', async (_, overrides) => {
+    expect(await importPolicies(context, user, policies(overrides), overwrite)).toMatchObject({ status: 'failed', code: 'invalid' });
+    expect(settingsEditField).not.toHaveBeenCalled();
+  });
+
+  it('skips policies with only null values, and any mode but overwrite', async () => {
+    const empty = Object.fromEntries(Object.keys(policies()).map((key) => [key, null]));
+    expect(await importPolicies(context, user, empty, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
+    expect(await importPolicies(context, user, policies(), { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'skipped', code: 'not_overwrite' });
     expect(settingsEditField).not.toHaveBeenCalled();
   });
 });

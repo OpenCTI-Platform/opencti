@@ -87,6 +87,7 @@ import {
   ID_STANDARD,
   IDS_STIX,
   isAbstract,
+  REF_RELATION_ID_FIELDS,
   REL_INDEX_PREFIX,
 } from '../schema/general';
 import { isModifiedObject, isUpdatedAtObject } from '../schema/fieldDataAdapter';
@@ -844,6 +845,11 @@ const buildUserMemberAccessFilter = (user: AuthUser, opts: { includeAuthorities?
   if (includeAuthorities && capabilities.includes(BYPASS)) {
     return [];
   }
+  // Service accounts bypass authorized members restrictions: when documents without authorized members
+  // are accepted too, the filter below would match every document, so it is not sent at all.
+  if (isServiceAccountUser(user) && !excludeEmptyAuthorizedMembers) {
+    return [];
+  }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
   const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: {} } } } } };
@@ -990,30 +996,12 @@ export const buildDataRestrictions = async (
           mustNotHaveOneOf.push(markingId);
         }
       }
-      // If use have marking, he can access to data with no marking && data with according marking
-      const mustNotMarkingTerms = [{
-        terms: {
-          [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: mustNotHaveOneOf,
-        },
-      }];
-      const markingBool = {
-        bool: {
-          should: [
-            {
-              bool: {
-                must_not: [{ exists: { field: buildRefRelationSearchKey(RELATION_OBJECT_MARKING) } }],
-              },
-            },
-            {
-              bool: {
-                must_not: mustNotMarkingTerms,
-              },
-            },
-          ],
-          minimum_should_match: 1,
-        },
-      };
-      must.push(markingBool);
+      // If the user has markings, they can access data with no marking and data with the markings they have.
+      // Data with no marking never matches the terms below, so excluding the forbidden markings is enough,
+      // and nothing is excluded when the user can access every marking.
+      if (mustNotHaveOneOf.length > 0) {
+        must_not.push({ terms: { [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: mustNotHaveOneOf } });
+      }
     }
     // endregion
     // region Handle organization restrictions
@@ -1597,25 +1585,26 @@ export const computeQueryIndices = (
 // Default fetch used by loadThroughDenormalized
 // This rel_ must be low volume
 // DO NOT ADD Anything here if you are not sure about that you doing
-const REL_DEFAULT_SUFFIX = '*.keyword';
+// Exact field names, never wildcard patterns: every shard of every search resolves
+// each docvalue_fields pattern against its whole mapping when it parses the request.
 const REL_DEFAULT_FETCH = [
   // SECURITY
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_GRANTED_TO}${REL_DEFAULT_SUFFIX}`,
+  RELATION_OBJECT_MARKING,
+  RELATION_GRANTED_TO,
   // DEFAULT (LOW VOLUME)
-  `${REL_INDEX_PREFIX}${RELATION_COVERED}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_RESULT_OF}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_PARTICIPANT}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_OBJECT_ASSIGNEE}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_BORN_IN}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_ETHNICITY}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_SAMPLE}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_PARTICIPATE_TO}${REL_DEFAULT_SUFFIX}`,
-  `${REL_INDEX_PREFIX}${RELATION_IN_PIR}${REL_DEFAULT_SUFFIX}`,
-];
+  RELATION_COVERED,
+  RELATION_RESULT_OF,
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_PARTICIPANT,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_BORN_IN,
+  RELATION_ETHNICITY,
+  RELATION_SAMPLE,
+  RELATION_PARTICIPATE_TO,
+  RELATION_IN_PIR,
+].flatMap((relationType) => REF_RELATION_ID_FIELDS.map((field) => buildRefRelationSearchKey(relationType, field)));
 const REL_COUNT_SCRIPT_FIELD = {
   script: {
     lang: 'painless',

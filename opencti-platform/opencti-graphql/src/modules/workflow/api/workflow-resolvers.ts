@@ -19,7 +19,7 @@ import {
   setWorkflowStatus,
   getWorkflowBypassStatuses,
 } from '../domain/workflow-domain';
-import { COMMENT_MAX_LENGTH } from '../types/workflow-types';
+import { CLOSING_REASON_MAX_LENGTH, COMMENT_MAX_LENGTH } from '../types/workflow-types';
 
 const NON_STATE_CHANGING_EVENTS = new Set(['event_external_ignored', 'event_external_kept']);
 
@@ -65,12 +65,17 @@ const workflowResolvers = {
       eventName,
       comment,
       runtimeParams,
-    }: { entityId: string; eventName: string; comment?: string | null; runtimeParams?: Record<string, unknown> }, context: AuthContext) => {
+      closingReason,
+    }: { entityId: string; eventName: string; comment?: string | null; runtimeParams?: Record<string, unknown>; closingReason?: string | null }, context: AuthContext) => {
       const normalizedComment = comment?.trim() ?? undefined;
       if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
         throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
       }
-      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {});
+      const normalizedClosingReason = closingReason?.trim() ?? undefined;
+      if (normalizedClosingReason !== undefined && normalizedClosingReason.length > CLOSING_REASON_MAX_LENGTH) {
+        throw new GraphQLError(`Closing reason exceeds maximum allowed length of ${CLOSING_REASON_MAX_LENGTH} characters.`);
+      }
+      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {}, normalizedClosingReason);
     },
     clearWorkflowPendingState: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return clearWorkflowPendingState(context, context.user!, entityId);
@@ -131,6 +136,7 @@ const workflowResolvers = {
   WorkflowTransition: {
     toStatus: (transition: any) => transition.toStatus ?? null,
     comment: (transition: any) => transition.comment ?? null,
+    closingReason: (transition: any) => transition.closingReason ?? null,
     actions: (transition: any) => transition.actions ?? [],
     requiresShareOrganizationInput: (transition: any) => transition.requiresShareOrganizationInput ?? false,
     requiresUnshareOrganizationInput: (transition: any) => transition.requiresUnshareOrganizationInput ?? false,

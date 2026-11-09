@@ -100,6 +100,7 @@ import {
   VALID_UNTIL,
   VALUE_FIELD,
   X_DETECTION,
+  X_CLOSING_REASON,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
 import { notify, redisAddDeletions } from './redis';
@@ -193,6 +194,7 @@ import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2
 import { convertStoreToStix } from './stix-common-converter';
 import {
   buildAggregationRelationFilter,
+  buildConnectionRoleFilter,
   buildEntityFilters,
   buildThingsFilters,
   type EntityFilters,
@@ -210,7 +212,7 @@ import { checkRelationConsistency, isRelationConsistent } from '../utils/modelCo
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
-import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
+import { getVocabularyCategory, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { fillDefaultCustomFieldValues, fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -812,32 +814,20 @@ export const buildRestrictedEntity = (resolvedEntity: BasicStoreEntity): BasicSt
 };
 
 // region Graphics
-const convertAggregateDistributions = async (
+const resolveAggregateDistributions = async <T extends { label: string; value: number }>(
   context: AuthContext,
   user: AuthUser,
-  limit: number,
-  orderingFunction: any,
-  distribution: { label: string; value: number }[],
-): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
-  const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
+  data: T[],
+): Promise<(T & { entity: BasicStoreEntity | null })[]> => {
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true }) as Record<string, BasicStoreEntity>;
   // filter out unresolved data (like the SYSTEM user for instance); keep the synthetic 'unknown' bucket
   const filteredData = data.filter((n) => n.label === 'unknown' || isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
-  // entities not granted shall be sent as "restricted" with limited information
-  const grantedIds: string[] = [];
-  for (let i = 0; i < filteredData.length; i += 1) {
-    // The 'unknown' bucket has no real entity — skip resolution and access check
-    if (filteredData[i].label === 'unknown') {
-      grantedIds.push('unknown');
-      continue;
-    }
-    const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
-    const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
-    if (canAccess) {
-      grantedIds.push(filteredData[i].label.toLowerCase());
-    }
-  }
+  // entities not granted shall be sent as "restricted" with limited information, all checked at once.
+  // The 'unknown' bucket has no real entity — skip its access check
+  const resolvedElements = filteredData.filter((n) => n.label !== 'unknown').map((n) => allResolveLabels[n.label.toLowerCase()]);
+  const grantedElements = await userFilterStoreElements(context, user, resolvedElements);
+  const grantedIds = new Set(grantedElements.map((element) => element.internal_id));
   return filteredData
     .map((n) => {
       // The 'unknown' bucket has no backing entity
@@ -845,7 +835,7 @@ const convertAggregateDistributions = async (
         return { ...n, entity: null };
       }
       const element = allResolveLabels[n.label.toLowerCase()];
-      if (grantedIds.includes(n.label.toLowerCase())) {
+      if (grantedIds.has(element.internal_id)) {
         return {
           ...n,
           entity: element,
@@ -856,6 +846,16 @@ const convertAggregateDistributions = async (
         entity: buildRestrictedEntity(element),
       };
     });
+};
+const convertAggregateDistributions = async (
+  context: AuthContext,
+  user: AuthUser,
+  limit: number,
+  orderingFunction: any,
+  distribution: { label: string; value: number }[],
+): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
+  const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
+  return resolveAggregateDistributions(context, user, data);
 };
 export const timeSeriesHistory = async (context: AuthContext, user: AuthUser, args: any) => {
   const { startDate, endDate, interval } = args;
@@ -1048,7 +1048,7 @@ const depsKeys = (type: string): { src: string; dst?: string; types?: string[] }
   ],
 ]);
 
-const idVocabulary = (nameOrId: string, category: string) => {
+export const idVocabulary = (nameOrId: string, category: string) => {
   return isAnId(nameOrId) ? nameOrId : generateStandardId(ENTITY_TYPE_VOCABULARY, { name: nameOrId, category });
 };
 
@@ -1090,10 +1090,10 @@ export const inputResolveRefs = async (
     const dependencyKeys = depsKeys(type);
     for (let index = 0; index < dependencyKeys.length; index += 1) {
       const { src, dst, types } = dependencyKeys[index];
-      const depTypes = types ?? [];
       const destKey = dst || src;
       const id = input[src];
-      const isValidType = depTypes.length > 0 ? depTypes.includes(type) : true;
+      // A key without types applies to every type; one with an empty list to none
+      const isValidType = types ? types.includes(type) : true;
       const isAlreadyResolved = Array.isArray(id) ? id[0]?._id : id?._id;
       if (isValidType && !R.isNil(id) && !R.isEmpty(id) && !isAlreadyResolved) {
         const isListing = Array.isArray(id);
@@ -1713,7 +1713,7 @@ const mergeEntitiesRaw = async (
     if (categories.size > 1) {
       throw FunctionalError('Cannot merge vocabularies of different category', { categories });
     }
-    const completeCategory = getVocabulariesCategories().find(({ key }) => key === targetVocabularyEntity.category);
+    const completeCategory = getVocabularyCategory(targetVocabularyEntity.category);
     if (completeCategory) {
       await updateElasticVocabularyValue(sourceVocabularyEntities.map((s) => s.name), targetVocabularyEntity.name, completeCategory);
     }
@@ -1908,7 +1908,8 @@ const mergeEntitiesRaw = async (
   const updateAttributes: EditInput[] = [];
   // 1. Update all possible attributes
   const attributes = schemaAttributesDefinition.getAttributeNames(targetType);
-  const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX));
+  // The closing reason follows the target's own workflow state: never take it from a source
+  const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX) && s !== X_CLOSING_REASON);
   for (let fieldIndex = 0; fieldIndex < targetFields.length; fieldIndex += 1) {
     const targetFieldKey = targetFields[fieldIndex];
     const mergedEntityCurrentFieldValue = (targetEntity as Record<string, any>)[targetFieldKey];
@@ -2564,6 +2565,9 @@ type UpdateAttributeMetaResolvedOpts = EventOpts & {
   bypassValidation?: boolean;
   // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
   skipUserIndividualSync?: boolean;
+  // Set by the workflow projection: its own write is not synced back as an external write,
+  // and it is the only non-bypass writer of the closing reason
+  workflowInternalWrite?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2623,6 +2627,10 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
   if (!validateUserAccessOperation(user, initial, accessOperation, draft)) {
     throw ForbiddenAccess();
+  }
+  // The closing reason is owned by the workflow: only a transition or a bypass user can change it
+  if (!opts.workflowInternalWrite && !isBypassUser(user) && updates.some((e) => e.key === X_CLOSING_REASON)) {
+    throw FunctionalError('Closing reason can only be changed through a workflow transition', { id: initial.internal_id });
   }
 
   await rewriteEmbeddedDataUriImagesInUpdateInputs(context, user, updates, {
@@ -3064,10 +3072,7 @@ const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: Aut
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts & {
-  // Set by the workflow projection so its own write is not synced back as an external write
-  workflowInternalWrite?: boolean;
-};
+type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts;
 export const updateAttribute = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
@@ -3471,7 +3476,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [from.internal_id] },
-              { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+              buildConnectionRoleFilter(relationshipType, 'from'),
             ],
             values: [],
           },
@@ -3479,7 +3484,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [to.internal_id] },
-              { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+              buildConnectionRoleFilter(relationshipType, 'to'),
             ],
             values: [],
           },
