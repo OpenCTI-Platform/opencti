@@ -4,7 +4,7 @@ import { exportConfigPresetRule } from '../../rule/rule-export';
 import { importConfigPresetRule, isRuleEngineEnabled } from '../../rule/rule-import';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
 import type { ConfigPresetComputedItem, ConfigPresetImporter, ConfigPresetImportPlan } from '../import/configPreset-import-types';
-import { automationRulesGroup, staticFamily, toAppliedStatus, toComputedItem, toIsEnabled } from './common-configPreset-registry';
+import { automationRulesGroup, staticFamily, toAppliedItem, toComputedItem, toIsEnabled } from './common-configPreset-registry';
 
 export const RULE_ENGINE_FAMILY_ID = 'ruleEngine';
 
@@ -34,7 +34,7 @@ const ruleEngineImporter: ConfigPresetImporter = {
   },
   // The write reads the state of the engine again: it may have been disabled since the preview
   apply: async (context, user, item, computed, mode) => {
-    return toAppliedStatus(await importConfigPresetRule(context, user, item.id, item.configuration, { mode }), computed);
+    return toAppliedItem(await importConfigPresetRule(context, user, item.id, item.configuration, { mode }), computed);
   },
 };
 

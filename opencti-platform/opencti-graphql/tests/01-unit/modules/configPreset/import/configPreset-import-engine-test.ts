@@ -18,6 +18,11 @@ vi.mock('../../../../../src/modules/user/role-import', async (importOriginal) =>
   ...(await importOriginal<typeof import('../../../../../src/modules/user/role-import')>()),
   importRole: vi.fn(),
 }));
+vi.mock('../../../../../src/modules/rule/rule-import', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/modules/rule/rule-import')>()),
+  importConfigPresetRule: vi.fn(),
+  isRuleEngineEnabled: vi.fn(async () => true),
+}));
 vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/modules/configPreset/import/configPreset-import-domain')>()),
   loadConfigPresetImportZip: vi.fn(),
@@ -47,6 +52,8 @@ vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-sess
 
 import { resolveUserByIdFromCache } from '../../../../../src/modules/user/user-domain';
 import { importRole, roleStandardId } from '../../../../../src/modules/user/role-import';
+import { importConfigPresetRule, RULE_ACTIVATION_SCAN_REASON, RULE_ENGINE_DISABLED_REASON } from '../../../../../src/modules/rule/rule-import';
+import { RULES_DECLARATION } from '../../../../../src/domain/rules';
 import { groupStandardId } from '../../../../../src/modules/user/group-import';
 import { bundleRefused, readConfigPresetBundle } from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
 import { readConfigPresetImportSession } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
@@ -141,5 +148,18 @@ describe('Config preset real import of a bundle that cannot be read to the end',
       ['FAILED', 'The configuration bundle is too large once extracted'],
     ]);
     expect(vi.mocked(importRole).mock.calls.some(([, , configuration]) => (configuration as { name: string }).name === 'Responder')).toBe(false);
+  });
+});
+
+describe('Config preset real import of an item whose status changes between compute and apply', () => {
+  it('reports the reason the module gives with the new status, not the one of the preview', async () => {
+    const [rule] = RULES_DECLARATION;
+    withBundle([{ type: 'ruleEngine', id: rule.id, path: `automation_rules/rule_engine/${rule.id}.json`, configuration: { active: true } }]);
+    // The rule engine is disabled between the preview and the write
+    vi.mocked(importConfigPresetRule).mockImplementation(async (_context, _user, _ruleId, _configuration, { dryRun }) => (dryRun
+      ? { status: 'overwritten', exists: true, configuration: { active: true }, reason: RULE_ACTIVATION_SCAN_REASON }
+      : { status: 'skipped', code: 'engine_disabled', exists: true, configuration: { active: true }, reason: RULE_ENGINE_DISABLED_REASON }));
+    const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'ruleEngine' }], false);
+    expect(results.map(({ type, status, reason }) => [type, status, reason])).toEqual([['ruleEngine', 'SKIPPED', RULE_ENGINE_DISABLED_REASON]]);
   });
 });

@@ -56,12 +56,14 @@ describe('Rule engine import (registry)', () => {
     expect(await family.importer!.compute(context, user, item({}), plan, ConfigImportMode.Overwrite)).toMatchObject({ status: 'failed', isEnabled: null });
   });
 
-  it('applies through the module, reports a status that differs from the computed one, and throws on a failure', async () => {
+  it('applies through the module, reports a status that differs from the computed one with the reason of the module, and throws on a failure', async () => {
     vi.mocked(importConfigPresetRule).mockResolvedValueOnce({ status: 'overwritten', exists: true });
     expect(await family.importer!.apply(context, user, item({ active: true }), { ...computed, status: 'overwritten' }, ConfigImportMode.Overwrite, plan)).toBeUndefined();
     expect(importConfigPresetRule).toHaveBeenCalledWith(context, user, rule.id, { active: true }, { mode: ConfigImportMode.Overwrite });
-    vi.mocked(importConfigPresetRule).mockResolvedValueOnce({ status: 'skipped', code: 'unchanged', exists: true });
-    expect(await family.importer!.apply(context, user, item({ active: true }), { ...computed, status: 'overwritten' }, ConfigImportMode.Overwrite, plan)).toBe('skipped');
+    vi.mocked(importConfigPresetRule).mockResolvedValueOnce({ status: 'skipped', code: 'engine_disabled', reason: 'The rule engine is disabled', exists: true });
+    const scanWarning = { ...computed, status: 'overwritten' as const, reason: 'Activating the rule starts a scan of the knowledge base' };
+    expect(await family.importer!.apply(context, user, item({ active: true }), scanWarning, ConfigImportMode.Overwrite, plan))
+      .toEqual({ status: 'skipped', reason: 'The rule engine is disabled' });
     vi.mocked(importConfigPresetRule).mockResolvedValueOnce({ status: 'failed', code: 'unknown_rule', reason: 'Unknown rule', exists: false });
     await expect(family.importer!.apply(context, user, item({ active: true }, 'unknown_rule'), computed, ConfigImportMode.Overwrite, plan)).rejects.toThrow('Unknown rule');
   });
