@@ -4,6 +4,7 @@ import { isDraftWorkspaceFilterGroup } from '../filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { FilterDefinition } from '../hooks/useAuth';
 import { isCustomFieldAttribute } from '../customFields';
+import { dayStartDate, daysAgo, monthsAgo, parse } from '../Time';
 import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
 import { parseVariableToken } from '../../components/dashboard/dashboardVariablesResolution';
 
@@ -39,6 +40,8 @@ export const AUDITS_BREAKDOWN_FIELDS: { key: string; label: string }[] = [
   { key: 'entity_type', label: 'Entity_type' },
   { key: 'context_data.entity_type', label: 'Type of related entity' },
 ];
+// Fields of the logs whose values are entity types (History or Activity, the type of the related entity)
+const AUDITS_TYPE_FIELDS = ['entity_type', 'context_data.entity_type'];
 
 export type BreakdownField = { key: string; label: string };
 interface BreakdownPerspective {
@@ -73,6 +76,15 @@ const getBreakdownPerspective = (perspective?: WidgetPerspective | null) => {
 // Perspectives with a breakdown API: the schema-based ones above, and the audits with their own fields
 const isBreakdownPerspective = (perspective?: WidgetPerspective | null) => {
   return perspective === 'audits' || !!getBreakdownPerspective(perspective);
+};
+
+/**
+ * Fields the series are labelled with a type: an entity type, or a relationship type.
+ */
+export const isBreakdownTypeField = (field?: string | null) => {
+  return (!!field && AUDITS_TYPE_FIELDS.includes(field)) || Object.values(BREAKDOWN_PERSPECTIVES).some((perspective) => (
+    perspective.typeField.key === field || perspective.fields.some(({ key }) => key === field)
+  ));
 };
 
 /**
@@ -222,7 +234,20 @@ export const getWidgetBreakdownOther = (parameters?: WidgetParameters | null) =>
   return parameters?.breakdownOther ?? false;
 };
 
+/**
+ * Start date used when the dashboard sets none: a daily breakdown over the default 12 months
+ * would draw too many bars, so it only looks back 30 days. It looks back from the `endDate` of the
+ * dashboard when it sets one, from today otherwise: an end date in the past keeps a period to draw.
+ */
+export const getBreakdownDefaultStartDate = (interval: string, endDate?: string | null) => {
+  if (!endDate) {
+    return interval === 'day' ? daysAgo(30) : monthsAgo(12);
+  }
+  return interval === 'day' ? daysAgo(30, endDate) : parse(dayStartDate(endDate)).subtract(12, 'months').format();
+};
+
 type BreakdownWidget = Pick<Widget, 'type' | 'perspective' | 'dataSelection'>;
+type ConfiguredWidget = { parameters?: WidgetParameters | null };
 
 // Audits lines and areas can count the distinct values of an attribute instead of the events
 const AUDITS_DISTINCT_COUNT_TYPES = ['line', 'area'];
@@ -254,6 +279,21 @@ export const canWidgetBreakDown = (widget: BreakdownWidget, host?: WidgetHost) =
 };
 
 /**
+ * Whether the widget is configured with a breakdown, whatever renders it: its field is set and the widget
+ * can be broken down.
+ */
+export const hasWidgetBreakdown = (widget: BreakdownWidget & ConfiguredWidget) => {
+  return isBreakdownField(widget.parameters?.breakdownBy) && canWidgetBreakDown(widget);
+};
+
+/**
+ * Whether the widget must be rendered as a breakdown: configured with one, in a `host` that breaks its widgets down.
+ */
+export const isWidgetBreakdownActive = (widget: BreakdownWidget & ConfiguredWidget, host?: WidgetHost) => {
+  return !!host && isBreakdownField(widget.parameters?.breakdownBy) && canWidgetBreakDown(widget, host);
+};
+
+/**
  * How the editor shows the breakdown: 'hidden' when the widget could not be broken down even reduced to its
  * first dataset counting every event, 'editable' when it can be, disabled otherwise, for the reason given:
  * a breakdown uses a single dataset ('several-datasets'), and counts every event ('distinct-values').
@@ -275,8 +315,6 @@ export const getBreakdownEditorState = (widget: BreakdownWidget, host: WidgetHos
 
 // Cleared together with the field: the settings only make sense for a broken down widget
 const NO_BREAKDOWN = { breakdownBy: null, breakdownLimit: null, breakdownOrder: null, breakdownOther: null };
-
-type ConfiguredWidget = { parameters?: WidgetParameters | null };
 
 /**
  * The widget without breakdown: its field, and its settings with it.

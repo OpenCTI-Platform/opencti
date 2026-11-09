@@ -14,8 +14,12 @@ import AuditsTreeMap from '@components/common/audits/AuditsTreeMap';
 import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
+import AuditsTimeSeriesBreakdown from '@components/common/audits/AuditsTimeSeriesBreakdown';
 import WidgetNotImplemented from './WidgetNotImplemented';
 import { computeStartEndDates } from 'src/components/dashboard/dashboardVizUtils';
+import { isWidgetBreakdownActive } from '../../utils/widget/widgetBreakdown';
+import useHelper from '../../utils/hooks/useHelper';
+import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from './timeSeriesBreakdownFeatureFlag';
 
 interface DashboardAuditsVizProps {
   widget: Widget;
@@ -32,7 +36,20 @@ const DashboardAuditsViz = ({
   host,
   refreshRate,
 }: DashboardAuditsVizProps) => {
+  const { isFeatureEnable } = useHelper();
   const { startDate, endDate } = computeStartEndDates(config);
+
+  if (isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG) && isWidgetBreakdownActive(widget, host)) {
+    return (
+      <AuditsTimeSeriesBreakdown
+        widget={widget}
+        popover={popover}
+        host={host}
+        refreshRate={refreshRate}
+        config={config}
+      />
+    );
+  }
 
   switch (widget.type) {
     case 'number':
