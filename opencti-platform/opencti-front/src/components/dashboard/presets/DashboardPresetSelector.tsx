@@ -42,6 +42,8 @@ const DashboardPresetSelector = ({
 }: DashboardPresetSelectorProps) => {
   const { t_i18n } = useFormatter();
   const label = t_i18n('Preset');
+  // The library shows its clear control only with a value and when enabled (Select.tsx, canClear).
+  const hasClearControl = presets.length > 0 && !!activePreset && !disabled;
   return (
     <Stack
       direction="row"
@@ -53,26 +55,30 @@ const DashboardPresetSelector = ({
       }}
     >
       {presets.length > 0 && (
-        <Select
-          value={activePreset?.id ?? ''}
-          // The clear control of the trigger empties the selection: back to no preset.
-          onValueChange={(value) => onSelect(value === '' ? null : value)}
-          clearable
-          clearLabel={t_i18n('No preset')}
-          disabled={disabled}
-          name="dashboard-preset"
-        >
-          <SelectTrigger aria-label={label} data-testid="dashboard-preset-trigger">
-            <SelectValue placeholder={label} />
-          </SelectTrigger>
-          <SelectContent aria-label={label}>
-            {presets.map((preset) => (
-              <SelectItem key={preset.id} value={preset.id}>
-                {preset.id === defaultPreset?.id ? t_i18n('{name} (default)', { values: { name: preset.name } }) : preset.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        // FDS-WORKAROUND #76: with its clear control, the library Select wrapper is 32px narrower than its trigger, so
+        // the chevron overflows onto the next sibling of a flex row - see fds-migration/LIBRARY-FEEDBACK.md #76
+        <span data-testid="dashboard-preset-select" style={{ display: 'inline-flex', paddingRight: hasClearControl ? 32 : 0 }}>
+          <Select
+            value={activePreset?.id ?? ''}
+            // The clear control of the trigger empties the selection: back to no preset.
+            onValueChange={(value) => onSelect(value === '' ? null : value)}
+            clearable
+            clearLabel={t_i18n('No preset')}
+            disabled={disabled}
+            name="dashboard-preset"
+          >
+            <SelectTrigger aria-label={label} data-testid="dashboard-preset-trigger">
+              <SelectValue placeholder={label} />
+            </SelectTrigger>
+            <SelectContent aria-label={label}>
+              {presets.map((preset) => (
+                <SelectItem key={preset.id} value={preset.id}>
+                  {preset.id === defaultPreset?.id ? t_i18n('{name} (default)', { values: { name: preset.name } }) : preset.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </span>
       )}
       {canManage && activePreset && isModified && onUpdate && (
         <Tooltip>

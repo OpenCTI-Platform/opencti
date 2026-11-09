@@ -688,7 +688,7 @@ describe('CustomDashboard presets', () => {
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
     expect(captured.contentConfig?.relativeDate).toBe('months-1');
     expect(new URLSearchParams(window.location.search).get('preset')).toBe('p1');
-    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: 'Reset', exact: true }));
+    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: /^Reset$/ }));
     expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
     expect(captured.contentConfig?.relativeDate).toBe('days-7');
     expect(new URLSearchParams(window.location.search).get('preset')).toBeNull();
@@ -721,7 +721,7 @@ describe('CustomDashboard presets', () => {
     expect(screen.getByTestId('dashboard-preset-trigger')).toHaveTextContent('Finance (default)');
     act(() => captured.onSetValue?.(SECTOR_ID, 'Retail'));
     expect(captured.values?.get(SECTOR_ID)).toBe('Retail');
-    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: 'Reset', exact: true }));
+    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: /^Reset$/ }));
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
   });
 
