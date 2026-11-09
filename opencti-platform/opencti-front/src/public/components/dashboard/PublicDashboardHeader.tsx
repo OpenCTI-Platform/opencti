@@ -61,7 +61,7 @@ const PublicDashboardHeader = ({
           disabled={!editable}
         />
         <DatePicker
-          disabled={!editable}
+          disabled={!editable || !!relativeDate}
           value={buildDate(startDate)}
           label={t_i18n('Start date')}
           sx={{ width: 220 }}
@@ -81,7 +81,7 @@ const PublicDashboardHeader = ({
           }}
         />
         <DatePicker
-          disabled={!editable}
+          disabled={!editable || !!relativeDate}
           value={buildDate(endDate)}
           label={t_i18n('End date')}
           disableFuture

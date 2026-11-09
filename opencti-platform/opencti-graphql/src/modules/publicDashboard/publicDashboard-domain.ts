@@ -384,7 +384,10 @@ const ensurePublicContext = async (context: AuthContext, args: PublicWidgetArgs)
   context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
   // The range of the visitor only applies when the author allowed it; otherwise the published one is enforced.
-  const { startDate, endDate } = resolvePublicDashboardTimeRange(config, { startDate: args.startDate, endDate: args.endDate });
+  // Without the dashboard variables feature the requested range passes through, as before.
+  const { startDate, endDate } = isFeatureEnabled('DASHBOARD_VARIABLES')
+    ? resolvePublicDashboardTimeRange(config, { startDate: args.startDate, endDate: args.endDate })
+    : { startDate: args.startDate, endDate: args.endDate };
   return { user, type, perspective, dataSelection, parameters, startDate, endDate };
 };
 

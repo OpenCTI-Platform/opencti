@@ -74,6 +74,10 @@ const PublicDashboardComponent = ({
   const canEditTimeFilters = config?.allowViewersToEditTimeFilters === true;
   const publishedRange = useMemo(() => pickPublishedTimeRange(config), [config?.startDate, config?.endDate, config?.relativeDate]);
   const [localRange, setLocalRange] = useState<PublishedTimeRange | null>(null);
+  // A range picked on one public dashboard never follows the visitor to another one.
+  useEffect(() => {
+    setLocalRange(null);
+  }, [uriKey]);
   const effectiveRange = canEditTimeFilters && localRange ? localRange : publishedRange;
   const effectiveConfig = useMemo(
     () => (config ? { ...config, ...effectiveRange } : config),
