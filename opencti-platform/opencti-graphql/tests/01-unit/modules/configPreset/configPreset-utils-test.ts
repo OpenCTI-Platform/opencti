@@ -145,6 +145,17 @@ describe('Config preset import modes', () => {
     expect(() => checkConfigPresetItemModes(findConfigPresetFamily('messages'), null)).not.toThrow();
   });
 
+  it('refuses two modes for the same item, whatever their order, and accepts the same key in two types', () => {
+    const branding = findConfigPresetFamily('branding');
+    expect(() => checkConfigPresetItemModes(branding, [{ key: 'theme-1', mode: ConfigImportMode.Copy }, { key: 'theme-1', mode: ConfigImportMode.Overwrite }]))
+      .toThrow('Duplicate configuration preset item mode');
+    expect(() => checkConfigPresetItemModes(branding, [{ key: 'theme-1', mode: ConfigImportMode.Copy }, { key: 'theme-1', mode: ConfigImportMode.Copy }]))
+      .toThrow('Duplicate configuration preset item mode');
+    // One check per type of the selection: the same key in another type is another item
+    expect(() => checkConfigPresetItemModes(branding, [{ key: 'theme-1', mode: ConfigImportMode.Copy }])).not.toThrow();
+    expect(() => checkConfigPresetItemModes(findConfigPresetFamily('messages'), [{ key: 'theme-1', mode: ConfigImportMode.Overwrite }])).not.toThrow();
+  });
+
   it('refuses an unknown type', () => {
     expect(() => findConfigPresetFamily('unknown')).toThrow('Unknown configuration preset type');
   });

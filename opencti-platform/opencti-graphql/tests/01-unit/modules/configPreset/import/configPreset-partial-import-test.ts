@@ -70,6 +70,13 @@ describe('Config preset partial import', () => {
     expect(() => resolveConfigPresetPartialImportModes(family('branding'), [{ key: THEME_A, mode: ConfigImportMode.Add }]))
       .toThrow('Unsupported import mode for this configuration preset type');
   });
+
+  it('refuses two modes for the same item instead of keeping one of them (a COPY then an OVERWRITE would overwrite)', () => {
+    expect(() => resolveConfigPresetPartialImportModes(family('branding'), [
+      { key: THEME_A, mode: ConfigImportMode.Copy },
+      { key: THEME_A, mode: ConfigImportMode.Overwrite },
+    ])).toThrow('Duplicate configuration preset item mode');
+  });
 });
 
 describe('Config preset partial import: lock', () => {

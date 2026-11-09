@@ -27,13 +27,19 @@ export const getConfigPresetFamilyModes = (family: ConfigPresetFamilyDefinition)
   return family.importModes ?? [CONFIG_PRESET_DEFAULT_IMPORT_MODE];
 };
 
-// The modes of a selection are ones the family offers
+// The modes of a selection are ones the family offers, one per item: two modes for the same item are refused, the map of the modes would
+// keep the last one only (a COPY then an OVERWRITE would overwrite). The front never sends two, the API is not trusted.
 export const checkConfigPresetItemModes = (family: ConfigPresetFamilyDefinition, itemModes: { key: string; mode: ConfigImportMode }[] | null | undefined) => {
   const supported = getConfigPresetFamilyModes(family);
+  const seen = new Set<string>();
   (itemModes ?? []).forEach(({ key, mode }) => {
     if (!supported.includes(mode)) {
       throw FunctionalError('Unsupported import mode for this configuration preset type', { type: family.id, item: key, mode });
     }
+    if (seen.has(key)) {
+      throw FunctionalError('Duplicate configuration preset item mode', { type: family.id, item: key });
+    }
+    seen.add(key);
   });
 };
 
