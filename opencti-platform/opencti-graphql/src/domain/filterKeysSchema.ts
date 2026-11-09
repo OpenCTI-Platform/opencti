@@ -37,7 +37,6 @@ import {
   TYPE_FILTER,
   WORKFLOW_FILTER,
   WORKFLOW_GROUP_FILTER,
-  WORKFLOW_INSTANCE_STATUS_FILTER,
   WORKFLOW_ORGANIZATION_FILTER,
   WORKFLOW_USER_FILTER,
 } from '../utils/filtering/filtering-constants';
@@ -497,11 +496,11 @@ const completeFilterDefinitionMapWithSpecialKeys = async (
     });
   }
   if (type === ENTITY_TYPE_DRAFT_WORKSPACE) {
-    filterDefinitionsMap.set(WORKFLOW_INSTANCE_STATUS_FILTER, {
-      filterKey: WORKFLOW_INSTANCE_STATUS_FILTER,
+    filterDefinitionsMap.set(WORKFLOW_FILTER, {
+      filterKey: WORKFLOW_FILTER,
       type: 'id',
       label: 'Workflow status',
-      multiple: true,
+      multiple: false,
       subEntityTypes,
       elementsForFilterValuesSearch: [ENTITY_TYPE_STATUS_TEMPLATE],
     });

@@ -55,6 +55,7 @@ export const SEVERITY_FILTER = 'severity';
 export const PRIORITY_FILTER = 'priority';
 export const X_OPENCTI_WORKFLOW_ID = 'x_opencti_workflow_id';
 export const WORKFLOW_FILTER = 'workflow_id';
+// Deprecated alias of workflow_id, kept so draft filters saved before DraftWorkspace carried x_opencti_workflow_id still run
 export const WORKFLOW_INSTANCE_STATUS_FILTER = 'workflowInstanceCurrentState';
 export const CONFIDENCE_FILTER = 'confidence';
 export const REVOKED_FILTER = 'revoked';
@@ -151,6 +152,7 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
   RELATION_DYNAMIC_TO_FILTER,
   WORKFLOW_FILTER, // values should match the parent workflow pattern id
   X_OPENCTI_WORKFLOW_ID, // values should match the parent workflow pattern id
+  WORKFLOW_INSTANCE_STATUS_FILTER, // deprecated alias of workflow_id
   SOURCE_RELIABILITY_FILTER, // reliability of the author
   COMPUTED_RELIABILITY_FILTER, // reliability, or reliability of the author if no reliability
   INSTANCE_RELATION_FILTER, // nested relation for the from or to of a relationship
