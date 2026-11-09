@@ -1,0 +1,10 @@
+{
+  "openCTI_version": "6.8.0",
+  "type": "playbook",
+  "configuration": {
+    "name": "test missing node configuration",
+    "description": "",
+    "playbook_start": "ce1413d0-d93b-45ae-9cda-24fea1ab67b7",
+    "playbook_definition": "{\"nodes\":[{\"id\":\"ce1413d0-d93b-45ae-9cda-24fea1ab67b7\",\"name\":\"Listen knowledge events\",\"position\":{\"x\":0,\"y\":0},\"component_id\":\"PLAYBOOK_INTERNAL_DATA_STREAM\",\"configuration\":\"{\\\"create\\\":true,\\\"update\\\":true,\\\"delete\\\":false}\"},{\"id\":\"78411f5e-e053-4e03-92c5-748845ec2de9\",\"name\":\"Node without configuration\",\"position\":{\"x\":0,\"y\":150},\"component_id\":\"PLAYBOOK_CONTAINER_WRAPPER_COMPONENT\"}],\"links\":[{\"id\":\"5b0c2c1e-7a41-4c2e-9f3a-1d6e8b2a0001\",\"from\":{\"id\":\"ce1413d0-d93b-45ae-9cda-24fea1ab67b7\",\"port\":\"out\"},\"to\":{\"id\":\"78411f5e-e053-4e03-92c5-748845ec2de9\"}}]}"
+  }
+}
