@@ -61,6 +61,22 @@ export const workspacePresetDelete = async (context: AuthContext, user: AuthUser
   });
 };
 
+// One read of the user per request, whatever the number of dashboards resolved (a workspaces connection).
+const storedUsersByContext = new WeakMap<AuthContext, Map<string, Promise<BasicStoreEntityUser | undefined>>>();
+const loadStoredUserOnce = (context: AuthContext, userId: string) => {
+  let byUser = storedUsersByContext.get(context);
+  if (!byUser) {
+    byUser = new Map();
+    storedUsersByContext.set(context, byUser);
+  }
+  let stored = byUser.get(userId);
+  if (!stored) {
+    stored = storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, userId, ENTITY_TYPE_USER);
+    byUser.set(userId, stored);
+  }
+  return stored;
+};
+
 /**
  * The preset this dashboard opens on for the current user. The own choice of the user is read from the store
  * rather than from the authenticated user: that one comes from the platform cache, refreshed asynchronously across
@@ -68,7 +84,7 @@ export const workspacePresetDelete = async (context: AuthContext, user: AuthUser
  */
 export const resolveCurrentUserDefaultPresetId = async (context: AuthContext, user: AuthUser, workspace: StoreEntityWorkspace) => {
   if (workspace.type !== 'dashboard') return null;
-  const stored = await storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER);
+  const stored = await loadStoredUserOnce(context, user.id);
   const holder = stored
     ? { ...user, default_dashboard: stored.default_dashboard, default_dashboard_preset: stored.default_dashboard_preset }
     : user;
