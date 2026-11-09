@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ActivityNotificationEvent, DigestContentEvent, KnowledgeNotificationEvent } from '../../../src/manager/notificationManager';
+import type { DigestContentEvent, ActivityNotificationEvent, KnowledgeNotificationEvent } from '../../../src/manager/notificationManager';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 import type { BasicStoreEntityTrigger } from '../../../src/modules/notification/notification-types';
 
@@ -228,6 +228,70 @@ describe('handleDigestNotifications', () => {
     await handleDigestNotifications({} as AuthContext);
     const digestEvent = vi.mocked(storeNotificationEvent).mock.calls[0][1] as unknown as { data: Array<{ message: string }> };
     expect(digestEvent.data).toEqual([expect.objectContaining({ message: 'matched message' })]);
+    expect(vi.mocked(extractStixRepresentativeForUser)).not.toHaveBeenCalled();
+  });
+
+  it('still sends the other digests due at the same time when one of them fails', async () => {
+    const otherDigestTrigger = { ...digestTrigger, internal_id: 'digest-2', id: 'digest-2', trigger_ids: ['trigger-B'] } as unknown as BasicStoreEntityTrigger;
+    const resolveFromCache = (_ctx: AuthContext, _user: AuthUser, type: string) => {
+      return Promise.resolve(type === ENTITY_TYPE_TRIGGER ? [digestTrigger, otherDigestTrigger] : [digestUser]);
+    };
+    vi.mocked(getEntitiesListFromCache).mockImplementation(resolveFromCache as unknown as typeof getEntitiesListFromCache);
+    driveBatches([[liveEvent('trigger-A', DIGEST_USER_ID), liveEvent('trigger-B', DIGEST_USER_ID)]]);
+    // The first digest fails when it is stored
+    vi.mocked(storeNotificationEvent).mockRejectedValueOnce(new Error('Redis unavailable'));
+    await expect(handleDigestNotifications({} as AuthContext)).resolves.toBeUndefined();
+    const storedDigestIds = vi.mocked(storeNotificationEvent).mock.calls.map((call) => (call[1] as unknown as { notification_id: string }).notification_id);
+    expect(storedDigestIds).toEqual(['digest-1', 'digest-2']);
+  });
+
+  it('takes the message of an activity event from its target: its data is the activity context, not a STIX object', async () => {
+    // As stored by the activity manager: the message is computed when the event matches the live trigger
+    const activityEvent: ActivityNotificationEvent = {
+      version: '1',
+      type: 'live',
+      notification_id: 'trigger-A',
+      targets: [{
+        user: { user_id: DIGEST_USER_ID, user_email: '', notifiers: [], user_service_account: false },
+        type: 'critical',
+        message: '`Ingestion health manager` reports `Abuse feed` (IngestionCsv) as critical',
+      }],
+      data: { id: 'feed-1', representative: { main: 'Abuse feed', secondary: '' } },
+      origin: {},
+    };
+    driveBatches([[activityEvent as unknown as KnowledgeNotificationEvent, liveEvent('trigger-A', DIGEST_USER_ID)]]);
+    await handleDigestNotifications({} as AuthContext);
+    expect(vi.mocked(storeNotificationEvent)).toHaveBeenCalledTimes(1);
+    const digestEvent = vi.mocked(storeNotificationEvent).mock.calls[0][1] as unknown as { data: Array<{ type: string; message: string }> };
+    expect(digestEvent.data[0]).toMatchObject({ type: 'critical', message: '`Ingestion health manager` reports `Abuse feed` (IngestionCsv) as critical' });
+    // The knowledge event next to it still gets its message computed for the user
+    expect(digestEvent.data[1].message).toBe('[report] repr');
+    expect(vi.mocked(extractStixRepresentativeForUser)).toHaveBeenCalledTimes(1);
+  });
+
+  it('takes the message of a login activity from its target: its data is the bare authentication context, without id', async () => {
+    // As stored by the activity manager for a login: the context data of the action, the message prefixed with the user name
+    const loginEvent: ActivityNotificationEvent = {
+      version: '1',
+      type: 'live',
+      notification_id: 'trigger-A',
+      targets: [{
+        user: { user_id: DIGEST_USER_ID, user_email: '', notifiers: [], user_service_account: false },
+        type: 'login',
+        message: '`admin` login from provider `local` ',
+      }],
+      data: { provider: 'local', username: 'admin@opencti.io' } as unknown as ActivityNotificationEvent['data'],
+      origin: {},
+    };
+    driveBatches([[loginEvent as unknown as KnowledgeNotificationEvent]]);
+    await handleDigestNotifications({} as AuthContext);
+    expect(vi.mocked(storeNotificationEvent)).toHaveBeenCalledTimes(1);
+    const digestEvent = vi.mocked(storeNotificationEvent).mock.calls[0][1] as unknown as { data: Array<{ type: string; message: string; instance: unknown }> };
+    expect(digestEvent.data).toEqual([expect.objectContaining({
+      type: 'login',
+      message: '`admin` login from provider `local` ',
+      instance: { provider: 'local', username: 'admin@opencti.io' },
+    })]);
     expect(vi.mocked(extractStixRepresentativeForUser)).not.toHaveBeenCalled();
   });
 

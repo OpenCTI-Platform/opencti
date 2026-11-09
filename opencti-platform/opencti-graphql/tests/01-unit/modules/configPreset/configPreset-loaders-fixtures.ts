@@ -5,6 +5,7 @@ import { ALL_THEMES } from './configPreset-themes-fixtures';
 import { ALL_ROLES } from './configPreset-roles-fixtures';
 import { ALL_GROUPS, GROUP_ALLOWED_MARKINGS, GROUP_ROLE_RELATIONS } from './configPreset-groups-fixtures';
 import { ALL_MARKINGS } from './configPreset-markings-fixtures';
+import { ALL_LABELS } from './configPreset-labels-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -12,13 +13,14 @@ interface ListingArgs {
 }
 
 // The entities of the fixtures, by entity type
-const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?: string }[]> = {
+const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?: string; value?: string }[]> = {
   Theme: ALL_THEMES,
   Role: ALL_ROLES,
   Group: ALL_GROUPS,
   'Marking-Definition': ALL_MARKINGS,
+  Label: ALL_LABELS,
 };
-const labelOf = (entity: { name?: string; definition?: string }) => entity.name ?? entity.definition ?? '';
+const labelOf = (entity: { name?: string; definition?: string; value?: string }) => entity.name ?? entity.definition ?? entity.value ?? '';
 
 // The eq / not_eq filters and the search the families send, applied like the engine does, sorted by name
 const listLikeTheEngine = (type: string | undefined, args: ListingArgs = {}) => {
