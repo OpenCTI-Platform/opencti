@@ -158,7 +158,9 @@ it('should only search the allowed connections', () => {
 
   const withoutConnections = elGenerateFullTextSearchShould('"exact" partial', { allowedConnectionIds: [] });
   expect(connectionsSearches(withoutConnections).length).toBe(0);
-  expect(withoutConnections.length).toBe(3);
+  // Attributes of the entity, for the exact and the partial terms, then its custom field values
+  expect(withoutConnections.map((clause) => Object.keys(clause)[0])).toEqual(['multi_match', 'query_string', 'multi_match', 'nested']);
+  expect(withoutConnections[3].nested.path).toBe('custom_field_values');
 });
 
 it('should resolve connections restrictions unless only objects are searched', () => {
@@ -195,4 +197,35 @@ it('should not throw when a percent-encoded sequence straddles the search length
   // Place a percent-encoded byte so it gets cut mid-sequence by the length bound.
   const searchWithSplitEncoding = `${'a'.repeat(MAX_SEARCH_LENGTH - 1)}%E0%A4%A`;
   expect(() => elGenerateFullTextSearchShould(searchWithSplitEncoding)).not.toThrow();
+});
+
+it('should search the text and select values of the custom fields in a single nested query', () => {
+  const customFieldSearches = (search, args) => elGenerateFullTextSearchShould(search, args)
+    .filter((clause) => clause?.nested?.path === 'custom_field_values')
+    .map((clause) => clause.nested);
+  const fields = ['custom_field_values.string_value', 'custom_field_values.select_value', 'custom_field_values.select_values'];
+
+  const wordSearches = customFieldSearches('closing note');
+  expect(wordSearches.length).toBe(1);
+  expect(wordSearches[0].ignore_unmapped).toBeUndefined();
+  expect(wordSearches[0].query.bool.minimum_should_match).toBe(1);
+  expect(wordSearches[0].query.bool.should).toEqual([
+    { query_string: { query: 'closing* note*', analyze_wildcard: true, fields } },
+    { multi_match: { type: 'phrase', query: 'closing* note*', lenient: true, fields } },
+  ]);
+
+  const exactSearches = customFieldSearches('"closing note"');
+  expect(exactSearches.length).toBe(1);
+  expect(exactSearches[0].query.bool.should).toEqual([
+    { multi_match: { type: 'phrase', query: 'closing note', lenient: true, fields } },
+  ]);
+
+  const mixedSearches = customFieldSearches('"closing note" bravo');
+  expect(mixedSearches.length).toBe(1);
+  expect(mixedSearches[0].query.bool.should.length).toBe(3);
+});
+
+it('should not search the custom field values in historyFiltering mode', () => {
+  const shouldSearch = elGenerateFullTextSearchShould('"closing note" bravo', { historyFiltering: true });
+  expect(shouldSearch.some((clause) => clause?.nested?.path === 'custom_field_values')).toBe(false);
 });
