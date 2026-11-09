@@ -76,7 +76,7 @@ describe('Vocabulary import and export (configuration preset)', () => {
 
   it('never duplicates an entry, whatever the case of its name', async () => {
     expect(await importCategory([{ name: CUSTOM.name.toUpperCase(), order: 5 }])).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true });
-    expect(await importCategory([{ name: CUSTOM.name, order: 7 }], { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists' });
+    expect(await importCategory([{ name: CUSTOM.name, order: 7 }], { mode: ConfigImportMode.Add })).toMatchObject({ status: 'skipped', code: 'exists', exists: true });
     expect(await importCategory([{ name: CUSTOM.name }], { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: true });
     expect(await load(customId)).toMatchObject({ order: 5 });
   });
