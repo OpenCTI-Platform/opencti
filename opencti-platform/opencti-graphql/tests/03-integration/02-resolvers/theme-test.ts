@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAnonymous } from '../../utils/testQueryHelper';
 import { createUploadFromBuffer, createUploadFromTestDataFile, queryAsAdminWithSuccess, queryUnauthenticatedIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { BUILT_IN_THEME_STANDARD_IDS } from '../../../src/modules/theme/theme-constants';
 
@@ -211,6 +211,22 @@ describe('Themes resolver testing', () => {
       query: LIST_THEMES_QUERY,
       variables: { first: 10 },
     });
+  });
+
+  it('should not export a theme when not authenticated: the file holds its standard id', async () => {
+    await queryUnauthenticatedIsExpectedForbidden({
+      query: EXPORT_THEME_QUERY,
+      variables: { id: darkThemeId },
+    });
+  });
+
+  it('should still read a theme when not authenticated, without its export (login page)', async () => {
+    const { data, errors } = await queryAsAnonymous({
+      query: gql`query ThemePublicRead($id: ID!) { theme(id: $id) { name } }`,
+      variables: { id: darkThemeId },
+    });
+    expect(errors).toBeUndefined();
+    expect(data?.theme.name).toBe('Filigran Dark');
   });
 
   it('should read a specific theme', async () => {
