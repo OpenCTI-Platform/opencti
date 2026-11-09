@@ -140,7 +140,39 @@ export const variableHelperWidgets = {
   [TITLE_VARIABLE_INPUT]: TitleVariableInput,
 };
 
-export const buildNotifierUiSchema = (connectorUiSchema: string | null | undefined): UiSchema => ({
+// The root grid of the connector form, not the grids it nests (arrays of objects)
+const ROOT_GRID = '& .MuiGrid-container:not(.MuiGrid-container .MuiGrid-container)';
+
+// Wraps the fields of the selected notification connector: a vertical bar on their left sets them apart from the common fields.
+// The bar starts at the first field: the root grid and its first item lose their top space, the wrapper margin replaces it
+export const NotifierConnectorFields = ({ children }: { children: ReactNode }) => {
+  const theme = useTheme<Theme>();
+  return (
+    <Box
+      sx={{
+        marginTop: theme.spacing(2.5),
+        paddingLeft: theme.spacing(2),
+        borderLeft: `${theme.spacing(0.25)} solid ${theme.palette.border.primary}`,
+        '& .MuiGrid-root': {
+          flexDirection: 'column',
+          paddingTop: theme.spacing(2),
+        },
+        '& .MuiGrid-container': {
+          paddingTop: theme.spacing(1.25),
+        },
+        [ROOT_GRID]: {
+          marginTop: 0,
+          paddingTop: 0,
+          '& > .MuiGrid-root:first-of-type': { paddingTop: 0 },
+        },
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
+
+export const buildNotifierUiSchema =(connectorUiSchema: string | null | undefined): UiSchema => ({
   ...JSON.parse(connectorUiSchema ?? '{}'),
   ...uiSchema,
 });
