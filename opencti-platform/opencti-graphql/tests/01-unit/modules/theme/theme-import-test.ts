@@ -296,10 +296,43 @@ describe('themeImport (theme file)', () => {
     expectNothingWritten();
   });
 
-  it('refuses a file of a theme that exists', async () => {
+  it('keeps the standard id of the file when it is free', async () => {
+    vi.mocked(extractContentFrom).mockResolvedValue(themeConfiguration());
+    expect(await themeImport(context, user, file)).toBe(createdTheme);
+    expect(findById).toHaveBeenCalledWith(context, user, CUSTOM_THEME_ID);
+    expect(vi.mocked(addTheme).mock.calls[0][2]).toMatchObject({ standard_id: CUSTOM_THEME_ID, built_in: false });
+  });
+
+  it('creates a new theme, with its own standard id, from a file whose standard id is the one of a theme of the platform (a renamed export)', async () => {
+    vi.mocked(extractContentFrom).mockResolvedValue(themeConfiguration({ name: 'Renamed theme' }));
+    vi.mocked(findById).mockImplementation(async (_context, _user, id) => (id === CUSTOM_THEME_ID ? { id: 'existing-id', built_in: false } : undefined) as never);
+    expect(await themeImport(context, user, file)).toBe(createdTheme);
+    const input = vi.mocked(addTheme).mock.calls[0][2];
+    expect(input).toMatchObject({ name: 'Renamed theme', built_in: false });
+    expect(input).not.toHaveProperty('standard_id');
+    expect(fieldPatchTheme).not.toHaveBeenCalled();
+  });
+
+  it('creates a custom theme from the file of a built-in theme, without its standard id', async () => {
+    vi.mocked(extractContentFrom).mockResolvedValue(themeConfiguration({ standard_id: BUILT_IN_THEME_STANDARD_IDS['Filigran Dark'], name: 'My dark theme' }));
+    expect(await themeImport(context, user, file)).toBe(createdTheme);
+    const input = vi.mocked(addTheme).mock.calls[0][2];
+    expect(input).toMatchObject({ name: 'My dark theme', built_in: false });
+    expect(input).not.toHaveProperty('standard_id');
+  });
+
+  it('still refuses the name of another theme, whatever the standard id of the file', async () => {
     vi.mocked(extractContentFrom).mockResolvedValue(themeConfiguration());
     vi.mocked(findById).mockResolvedValue({ id: 'existing-id', built_in: false } as never);
-    await expect(themeImport(context, user, file)).rejects.toThrow('Theme already exists');
+    vi.mocked(checkExistingTheme).mockResolvedValue(true);
+    await expect(themeImport(context, user, file)).rejects.toThrow('Theme name already exists');
+    expectNothingWritten();
+  });
+
+  it('refuses a standard id that is not one of a theme, without looking it up', async () => {
+    vi.mocked(extractContentFrom).mockResolvedValue(themeConfiguration({ standard_id: 'not-a-standard-id' }));
+    await expect(themeImport(context, user, file)).rejects.toThrow('Invalid theme file');
+    expect(findById).not.toHaveBeenCalled();
     expectNothingWritten();
   });
 });
