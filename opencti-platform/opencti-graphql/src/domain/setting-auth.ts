@@ -157,9 +157,9 @@ const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuth
 export const updateLocalAuth = async (context: AuthContext, user: AuthUser, settingsId: string, input: LocalAuthConfigInput) => {
   // Read previous validity days before patching
   const currentSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const storedSettings = await loadEntity<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const oldValidityDays = Number(currentSettings.password_policy_validity_days ?? 0);
-  const oldHistoryCount = readPasswordHistoryCount(currentSettings);
-  const newHistoryCount = resolvePasswordHistoryCount(input);
+  const oldHistoryCount = readPasswordHistoryCount(storedSettings);
 
   const patch = {
     local_auth: { enabled: input.enabled },
