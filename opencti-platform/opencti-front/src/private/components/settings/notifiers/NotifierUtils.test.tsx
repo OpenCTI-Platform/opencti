@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { buildNotifierUiSchema, notifierFormTemplates } from './NotifierUtils';
+import { buildNotifierUiSchema, variableHelperTemplates, variableHelperWidgets } from './NotifierUtils';
 
-// The title entry of the Platform mailer connector ui schema, as the backend declares it
+// The Platform mailer connector ui schema, as the backend declares it
 const PLATFORM_MAILER_UI_SCHEMA = JSON.stringify({
-  title: { 'ui:FieldTemplate': 'NotifierVariablesHelpFieldTemplate' },
-  template: { 'ui:widget': 'textarea' },
+  title: { 'ui:FieldTemplate': 'TitleVariableHelper', 'ui:widget': 'TitleVariableInput' },
+  template: { 'ui:FieldTemplate': 'TemplateVariableHelper', 'ui:widget': 'textarea' },
 });
 
 describe('buildNotifierUiSchema', () => {
   it('keeps the connector ui schema and adds the shared options', () => {
     const schema = buildNotifierUiSchema(PLATFORM_MAILER_UI_SCHEMA);
-    expect(schema.template).toEqual({ 'ui:widget': 'textarea' });
-    expect(schema.title).toEqual({ 'ui:FieldTemplate': 'NotifierVariablesHelpFieldTemplate' });
+    expect(schema.title).toEqual({ 'ui:FieldTemplate': 'TitleVariableHelper', 'ui:widget': 'TitleVariableInput' });
+    expect(schema.template).toEqual({ 'ui:FieldTemplate': 'TemplateVariableHelper', 'ui:widget': 'textarea' });
     expect(schema['ui:options']).toMatchObject({ orderable: false });
   });
 
@@ -22,9 +22,11 @@ describe('buildNotifierUiSchema', () => {
   });
 });
 
-describe('notifierFormTemplates', () => {
-  it('registers the template the Platform mailer names on its title', () => {
-    const templateName = JSON.parse(PLATFORM_MAILER_UI_SCHEMA).title['ui:FieldTemplate'];
-    expect(notifierFormTemplates).toHaveProperty(templateName);
+describe('variable helpers', () => {
+  it('registers the field templates and the widget the Platform mailer names on its fields', () => {
+    const { title, template } = JSON.parse(PLATFORM_MAILER_UI_SCHEMA);
+    expect(variableHelperTemplates).toHaveProperty(title['ui:FieldTemplate']);
+    expect(variableHelperTemplates).toHaveProperty(template['ui:FieldTemplate']);
+    expect(variableHelperWidgets).toHaveProperty(title['ui:widget']);
   });
 });

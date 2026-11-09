@@ -112,10 +112,11 @@ export const BUILTIN_NOTIFIERS_CONNECTORS: Record<string, NotifierConnector> = {
     built_in: true,
     connector_schema: JSON.stringify(NOTIFIER_CONNECTOR_EMAIL_CONFIG),
     connector_schema_ui: JSON.stringify({
-      // Shows, above the title, how to insert notification data
-      // A template name the front registers on the notifier forms (see notifierFormTemplates)
-      title: { 'ui:FieldTemplate': 'NotifierVariablesHelpFieldTemplate' },
+      // Variable helpers the front registers on the notifier forms (see variableHelperTemplates and variableHelperWidgets):
+      // they show how to insert notification data around the title and the template, and a title placeholder
+      title: { 'ui:FieldTemplate': 'TitleVariableHelper', 'ui:widget': 'TitleVariableInput' },
       template: {
+        'ui:FieldTemplate': 'TemplateVariableHelper',
         'ui:widget': 'textarea',
         'ui:options': {
           rows: 20,
