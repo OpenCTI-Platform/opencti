@@ -167,6 +167,7 @@ describe('Dashboard presets API', () => {
     await queryAsAdminWithError({ query: UPSERT, variables: { id: dashboardId, input: { name: 'finance' } } }, 'A dashboard preset with this name already exists', 'FUNCTIONAL_ERROR');
     await queryAsAdminWithError({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Unknown', values: [{ variableId: '99999999-9999-4999-8999-999999999999', value: 'x' }] } } }, 'Unknown dashboard variable', 'FUNCTIONAL_ERROR');
     await queryAsAdminWithError({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Bad value', values: [{ variableId: confidenceId, value: 'high' }] } } }, 'Invalid dashboard preset value', 'FUNCTIONAL_ERROR');
+    await queryAsAdminWithError({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Token', values: [{ variableId: sectorId, value: `$var:${confidenceId}` }] } } }, 'Invalid dashboard preset value', 'FUNCTIONAL_ERROR');
     await queryAsAdminWithError({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Bad range', config: { relativeDate: 'soon' } } } }, 'Invalid dashboard preset time range', 'FUNCTIONAL_ERROR');
     await queryAsAdminWithError({ query: DELETE_PRESET, variables: { id: dashboardId, presetId: '99999999-9999-4999-8999-999999999999' } }, 'Dashboard preset not found', 'FUNCTIONAL_ERROR');
   });
@@ -205,6 +206,21 @@ describe('Dashboard presets API', () => {
     expect(data?.workspacePresetUpsert.presets).toHaveLength(1);
   });
 
+  it('should refuse a value outside the selection of a variable, and drop it from the presets when the selection is narrowed', async () => {
+    const id = await createDashboard('Presets narrowed selection');
+    const variables = await upsertVariable(id, { name: 'Region', type: 'text', restriction: { mode: 'selection', values: ['eu', 'us'] }, defaultValue: 'eu' });
+    const regionId = variableIdByName(variables, 'Region');
+    await queryAsAdminWithError({ query: UPSERT, variables: { id, input: { name: 'Apac', values: [{ variableId: regionId, value: 'apac' }] } } }, 'The preset value must belong to the selection of the variable', 'FUNCTIONAL_ERROR');
+    const presets = await upsertPreset(id, { name: 'US', values: [{ variableId: regionId, value: 'us' }] });
+    await upsertVariable(id, { id: regionId, name: 'Region', type: 'text', restriction: { mode: 'selection', values: ['eu'] }, defaultValue: 'eu' });
+    const narrowed = (await readWorkspace(id)).presets;
+    expect(narrowed).toHaveLength(1);
+    expect(narrowed[0].values).toEqual([]);
+    // The preset can still be renamed with the values it holds.
+    const renamed = await upsertPreset(id, { id: presets[0].id, name: 'US renamed', values: [] });
+    expect(renamed.map((preset: { name: string }) => preset.name)).toEqual(['US renamed']);
+  });
+
   it('should resolve the default preset of the current user from their own choice', async () => {
     const presets = await readWorkspace(dashboardId);
     const presetId = presets.presets[0].id;
@@ -228,7 +244,11 @@ describe('Dashboard presets API', () => {
     try {
       const result = await queryAsAdmin({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Flag off' } } });
       expect(result.errors?.[0].message).toEqual('Feature is disabled');
-      expect((await readWorkspace(dashboardId)).presets).toEqual([]);
+      const deletion = await queryAsAdmin({ query: DELETE_PRESET, variables: { id: dashboardId, presetId: 'any' } });
+      expect(deletion.errors?.[0].message).toEqual('Feature is disabled');
+      const workspace = await readWorkspace(dashboardId);
+      expect(workspace.presets).toEqual([]);
+      expect(workspace.currentUserDefaultPresetId).toBeNull();
     } finally {
       ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previous);
     }
