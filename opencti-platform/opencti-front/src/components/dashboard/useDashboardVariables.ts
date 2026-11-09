@@ -8,8 +8,8 @@ import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableVa
 
 interface UseDashboardVariablesOptions {
   ignoreLocalValues?: boolean;
-  // Values that replace the manifest defaults (the preset a group or the user opens this dashboard on): what the
-  // user starts from, and what Reset goes back to.
+  // Values that replace the manifest defaults (the active preset: the one picked, or the one the user opens this
+  // dashboard on): what the user starts from, and what Reset goes back to.
   defaultOverrides?: ReadonlyMap<string, string>;
 }
 

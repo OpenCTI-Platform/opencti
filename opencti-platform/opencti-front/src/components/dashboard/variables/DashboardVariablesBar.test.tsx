@@ -185,6 +185,11 @@ describe('DashboardVariablesBar', () => {
     });
   });
 
+  it('shows Reset when a preset other than the default one is active, even without any changed value', () => {
+    renderBar({ variables: [sector], isPresetSelected: true });
+    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
+  });
+
   it('shows Reset and Set as default values when only the time range is modified', () => {
     renderBar({ variables: [sector], canManage: true, isTimeRangeModified: true });
     expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();

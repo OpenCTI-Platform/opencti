@@ -816,6 +816,35 @@ describe('CustomDashboard presets', () => {
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
   });
 
+  it('opens on the preset of the URL alone, values and range included, as a shared address', () => {
+    window.history.replaceState(null, '', '/?preset=p1');
+    testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    expect(screen.getByTestId('dashboard-preset-trigger')).toHaveTextContent('Finance');
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    expect(captured.contentConfig?.relativeDate).toBe('months-1');
+  });
+
+  it('keeps the per user changes apart from the preset, and offers Update preset only once a value differs', async () => {
+    const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    expect(screen.queryByTestId('dashboard-preset-update')).not.toBeInTheDocument();
+    act(() => captured.onSetValue?.(SECTOR_ID, 'Retail'));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Retail');
+    expect(screen.getByTestId('dashboard-preset-update')).toBeInTheDocument();
+    expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${SECTOR_ID}:Retail`);
+  });
+
+  it('ignores the URL values and range for a viewer who may only switch presets', () => {
+    captured.granted = false;
+    window.history.replaceState(null, '', `/?preset=p1&variables=${SECTOR_ID}:Retail&timeRange=days-30`);
+    storeFinanceEverywhere();
+    const viewer = withPresets({ currentUserAccessRight: 'view' }, { allowViewersToSwitchPresets: true });
+    testRender(<CustomDashboard data={viewer as never} />, { userContext: flagOn() });
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    expect(captured.contentConfig?.relativeDate).toBe('months-1');
+  });
+
   it('drops the values and the range of the active preset when it is deleted', async () => {
     captured.commit.mockImplementation((args) => args.onCompleted?.({}));
     const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
