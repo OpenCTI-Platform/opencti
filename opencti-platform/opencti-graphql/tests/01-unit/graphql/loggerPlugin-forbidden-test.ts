@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { parse } from 'graphql';
 
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/config/conf')>();
@@ -21,10 +22,14 @@ vi.mock('../../../src/listener/UserActionListener', () => ({
 import loggerPlugin from '../../../src/graphql/loggerPlugin';
 import { ForbiddenAccess } from '../../../src/config/errors';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
+import { REDACTED_INFORMATION } from '../../../src/database/utils';
 
 // The access to a disabled feature is refused before any authentication check: the call can come without a user
-const buildRequestContext = (user: unknown) => ({
-  request: { variables: { id: 'id' }, query: 'query FlaggedQuery { flagged }' },
+// Apollo sets the parsed document once the request is parsed: without it, every variable value is redacted
+const FLAGGED_QUERY = 'query FlaggedQuery { flagged }';
+const buildRequestContext = (user: unknown, parsed = true) => ({
+  request: { variables: { id: 'id' }, query: FLAGGED_QUERY },
+  document: parsed ? parse(FLAGGED_QUERY) : undefined,
   operationName: 'FlaggedQuery',
   operation: { operation: 'query' },
   contextValue: { user },
@@ -49,6 +54,16 @@ describe('loggerPlugin - forbidden access', () => {
       status: 'error',
       context_data: { operation: 'FlaggedQuery', input: { id: 'id' } },
     });
+  });
+
+  it('should redact every variable value of a request without a parsed document', async () => {
+    const user = { id: 'test-user' };
+    const listener = loggerPlugin.requestDidStart();
+    await listener.willSendResponse(buildRequestContext(user, false));
+    expect(publishUserAction).toHaveBeenCalledTimes(1);
+    expect(publishUserAction).toHaveBeenCalledWith(expect.objectContaining({
+      context_data: { operation: 'FlaggedQuery', input: { id: REDACTED_INFORMATION } },
+    }));
   });
 
   it('should publish nothing for a call without a user', async () => {
