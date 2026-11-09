@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeNotificationLink } from './notificationUtils';
+import { computeNotificationLink, operationSeverity } from './notificationUtils';
 
 describe('computeNotificationLink', () => {
   it.each([
@@ -15,5 +15,19 @@ describe('computeNotificationLink', () => {
     [null, '/dashboard/id/id-1'],
   ])('should link a %s notification to its page', (entityType, expected) => {
     expect(computeNotificationLink('id-1', entityType)).toBe(expected);
+  });
+});
+
+describe('operationSeverity', () => {
+  it.each([
+    ['critical', 'critical'],
+    ['degraded', 'high'],
+    ['recovered', 'low'],
+    ['create', 'low'],
+    ['update', 'info'],
+    ['delete', 'critical'],
+    ['multiple', 'medium'],
+  ])('should give the %s operation the %s tone, in the notifications list and in the details of a digest', (operation, expected) => {
+    expect(operationSeverity(operation)).toBe(expected);
   });
 });

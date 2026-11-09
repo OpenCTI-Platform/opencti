@@ -145,10 +145,8 @@ interface ConfigPresetExportFormProps {
 
 const ConfigPresetExportForm: FunctionComponent<ConfigPresetExportFormProps> = ({ queryRef, onClose, onReload }) => {
   const { configPresetExportableTypes } = usePreloadedQuery(configPresetExportDrawerQuery, queryRef);
-  // A type without item has nothing to check: it is not shown, and neither is a group left without type. A type the platform cannot use
-  // (it needs the Enterprise Edition the platform does not have) is shown, locked.
-  const types = configPresetExportableTypes.filter((type) => type.items.length > 0 || type.lockedByEnterpriseEdition);
-  return <ConfigPresetExportContent types={types} onClose={onClose} onReload={onReload} />;
+  // A type without item is shown, disabled: it tells the user what can be exported once the platform has some. It is not sent in the export.
+  return <ConfigPresetExportContent types={configPresetExportableTypes} onClose={onClose} onReload={onReload} />;
 };
 
 // The drawer content is only mounted while it is open, so the catalog is loaded on demand

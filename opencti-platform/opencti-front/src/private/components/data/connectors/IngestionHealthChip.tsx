@@ -49,7 +49,10 @@ const IngestionHealthChip: React.FC<IngestionHealthChipProps> = ({ ingestionHeal
       <TooltipContent>
         <div>{`${t_i18n('Since')} ${nsdt(ingestionHealth.status_since)}`}</div>
         {checks.length > 0
-          ? checks.map((check) => <div key={check.health_check_code}>{getHealthCheckMessage(check)}</div>)
+          ? checks.map((check, index) => {
+              const message = getHealthCheckMessage(check);
+              return <div key={`${check.health_check_code}-${index}`}>{message}</div>;
+            })
           : <div>{t_i18n('No health issue detected')}</div>}
       </TooltipContent>
     </Tooltip>
