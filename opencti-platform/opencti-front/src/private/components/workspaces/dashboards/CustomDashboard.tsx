@@ -18,6 +18,7 @@ import { DashboardVariableValuesProvider } from '../../../../components/dashboar
 import { DashboardVariablesProvider } from '../../../../components/dashboard/DashboardVariablesContext';
 import { useDashboardVariables } from '../../../../components/dashboard/useDashboardVariables';
 import { useDashboardTimeRange } from '../../../../components/dashboard/useDashboardTimeRange';
+import { isSameTimeRange, pickTimeRange } from '../../../../components/dashboard/dashboardTimeRange';
 import DashboardValuesActions from '../../../../components/dashboard/DashboardValuesActions';
 import DashboardViewerPermissions, { type ViewerPermissions } from '../../../../components/dashboard/DashboardViewerPermissions';
 import DashboardVariablesBar from '../../../../components/dashboard/variables/DashboardVariablesBar';
@@ -336,7 +337,9 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     try {
       const submittedValues = variableControls.values;
       const submittedRange = timeRange.range;
-      const isRangeModified = timeRange.isModified;
+      // Compared with the manifest, not with the base of the hook: the range of the active preset, which the
+      // manifest does not hold, has to be written too.
+      const isRangeModified = !isSameTimeRange(submittedRange, pickTimeRange(config));
       // The variables first: their validation is the step most likely to refuse, and their definitions are then the
       // ones just read. A refused variable stops here, before the range is saved for every viewer.
       await setAsDefaults(variables, submittedValues);

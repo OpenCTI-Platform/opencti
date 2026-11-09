@@ -803,6 +803,17 @@ describe('CustomDashboard presets', () => {
     expect(captured.contentConfig?.relativeDate).toBe('months-1');
   });
 
+  it('writes the range of the active preset in the manifest on Set as default values', async () => {
+    captured.commit.mockImplementation((args) => args.onCompleted?.({}));
+    const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: 'Set as default values' }));
+    const manifestCall = captured.commit.mock.calls.map((call) => call[0].variables.input).flat().find((input) => input.key === 'manifest');
+    expect(manifestCall).toBeDefined();
+    expect(JSON.parse(fromB64(manifestCall.value[0])).config).toMatchObject({ relativeDate: 'months-1' });
+  });
+
   it('drops the values and the range of the active preset when it is deleted', async () => {
     captured.commit.mockImplementation((args) => args.onCompleted?.({}));
     const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
