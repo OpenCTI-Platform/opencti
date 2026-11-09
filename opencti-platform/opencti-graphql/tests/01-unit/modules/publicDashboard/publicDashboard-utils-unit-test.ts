@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import moment from 'moment';
 import { getServedPublicManifest, resolvePublicDashboardTimeRange, sanitizePublicDashboardUriKey } from '../../../../src/modules/publicDashboard/publicDashboard-utils';
 import { ENABLED_FEATURE_FLAGS, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../../src/config/conf';
 import { fromB64, toB64 } from '../../../../src/utils/base64';
@@ -21,11 +22,8 @@ describe('resolvePublicDashboardTimeRange', () => {
   const requested = { startDate: '2020-01-01T00:00:00.000Z', endDate: '2020-12-31T00:00:00.000Z' };
   const HOUR = 3600 * 1000;
   const iso = (time: number) => new Date(time).toISOString();
-  const monthsBefore = (time: number, months: number) => {
-    const date = new Date(time);
-    date.setUTCMonth(date.getUTCMonth() - months);
-    return date.getTime();
-  };
+  // Clamped to the last day of the destination month, as the resolver computes it
+  const monthsBefore = (time: number, months: number) => moment.utc(time).subtract(months, 'months').valueOf();
 
   it('should honour the range of the visitor when the author allowed viewers to edit the time filters', () => {
     const config = { allowViewersToEditTimeFilters: true, startDate: '2026-01-01T00:00:00.000Z', endDate: null, relativeDate: null };
