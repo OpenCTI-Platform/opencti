@@ -47,7 +47,7 @@ const RETAIN = UserMergeDisposition.Retain;
 const OUT_OF_SCOPE = UserMergeDisposition.OutOfScope;
 
 export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
-  // --- transfer (41) ---------------------------------------------------------------------
+  // --- transfer (42) ---------------------------------------------------------------------
   row('activity.user-id', TRANSFER, 'Activity', 'user_id'),
   row('activity-history-pir-history.applicant-id', TRANSFER, 'Activity / History / PirHistory', 'applicant_id'),
   row('background-task-terminal.initiator-id', TRANSFER, 'BackgroundTask (done/failed/cancelled)', 'initiator_id'),
@@ -64,6 +64,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('history.context-data-payload', TRANSFER, 'History', 'context_data.history_changes / subject ids'),
   row('history.user-id', TRANSFER, 'History', 'user_id'),
   row('ingestion.user-id', TRANSFER, 'IngestionCsv / IngestionJson / IngestionRss / IngestionTaxii / IngestionTaxiiCollection', 'user_id'),
+  row('ingestion-deduplication-rule.user-id', TRANSFER, 'IngestionDeduplicationRule', 'user_id'),
   row('internal-file.metadata-creator-id', TRANSFER, 'InternalFile', 'metaData.creator_id'),
   row('news-feed-item.user-id', TRANSFER, 'NewsFeedItem', 'user_id'),
   row('notification-terminal.user-id', TRANSFER, 'Notification (read or terminal)', 'user_id'),

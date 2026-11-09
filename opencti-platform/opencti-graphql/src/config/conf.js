@@ -26,6 +26,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import pjson from '../../package.json';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../modules/ingestionDeduplication/ingestionDeduplicationRule-types';
 import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER, NOTIFICATION_NUMBER } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -628,6 +629,14 @@ export const INGESTION_HEALTH_FEATURE_FLAG = 'INGESTION_HEALTH';
 // to check activation)
 export const CONFIG_PRESET_FEATURE_FLAG = 'CONFIG_PRESET';
 
+// Skip the import of entities unchanged since the last import by the same user
+// (use isFeatureEnabled(INGESTION_DEDUPLICATION_FEATURE_FLAG) to check activation)
+export const INGESTION_DEDUPLICATION_FEATURE_FLAG = 'INGESTION_DEDUPLICATION';
+
+// Time series breakdown of the dashboard widgets, one series per value of a field
+// (use isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG) to check activation)
+export const TIME_SERIES_BREAKDOWN_FEATURE_FLAG = 'TIME_SERIES_BREAKDOWN';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;
@@ -769,6 +778,11 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_DELETE_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE_EDIT_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE_DELETE_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE_ADDED_TOPIC`,
   },
   [ENTITY_TYPE_EXCLUSION_LIST]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_EDIT_TOPIC`,

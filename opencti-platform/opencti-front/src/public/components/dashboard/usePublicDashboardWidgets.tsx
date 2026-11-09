@@ -6,6 +6,8 @@ import PublicStixCoreObjectsNumber from './stix_core_objects/PublicStixCoreObjec
 import PublicStixCoreObjectsList from './stix_core_objects/PublicStixCoreObjectsList';
 import PublicStixCoreObjectsDistributionList from './stix_core_objects/PublicStixCoreObjectsDistributionList';
 import PublicStixCoreObjectsMultiVerticalBars from './stix_core_objects/PublicStixCoreObjectsMultiVerticalBars';
+import PublicStixCoreObjectsTimeSeriesBreakdown from './stix_core_objects/PublicStixCoreObjectsTimeSeriesBreakdown';
+import PublicStixRelationshipsTimeSeriesBreakdown from './stix_relationships/PublicStixRelationshipsTimeSeriesBreakdown';
 import PublicStixCoreObjectsMultiLineChart from './stix_core_objects/PublicStixCoreObjectsMultiLineChart';
 import PublicStixCoreObjectsMultiAreaChart from './stix_core_objects/PublicStixCoreObjectsMultiAreaChart';
 import PublicStixCoreObjectsTimeline from './stix_core_objects/PublicStixCoreObjectsTimeline';
@@ -35,6 +37,7 @@ import type { Widget } from '../../../utils/widget/widget';
 import PublicStixCoreObjectsWordCloud from './stix_core_objects/PublicStixCoreObjectsWordCloud';
 import PublicStixRelationshipsWordCloud from './stix_relationships/PublicStixRelationshipsWordCloud';
 import Card from '../../../components/common/card/Card';
+import { hasWidgetBreakdown } from '../../../utils/widget/widgetBreakdown';
 
 const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => {
   const { t_i18n } = useFormatter();
@@ -53,6 +56,18 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
   );
 
   const entityWidget = (widget: Widget) => {
+    // Rendering the widget without its breakdown would silently show a single total series
+    if (hasWidgetBreakdown(widget)) {
+      return (
+        <PublicStixCoreObjectsTimeSeriesBreakdown
+          startDate={startDate}
+          endDate={endDate}
+          uriKey={uriKey}
+          widget={widget}
+        />
+      );
+    }
+
     switch (widget.type) {
       case 'bookmark':
         return (
@@ -198,6 +213,18 @@ const usePublicDashboardWidgets = (uriKey: string, config?: DashboardConfig) => 
   };
 
   const relationshipWidget = (widget: Widget) => {
+    // Rendering the widget without its breakdown would silently show a single total series
+    if (hasWidgetBreakdown(widget)) {
+      return (
+        <PublicStixRelationshipsTimeSeriesBreakdown
+          startDate={startDate}
+          endDate={endDate}
+          uriKey={uriKey}
+          widget={widget}
+        />
+      );
+    }
+
     switch (widget.type) {
       case 'number':
         return (

@@ -9,6 +9,7 @@ import ErrorNotFound from '../../components/ErrorNotFound';
 import { useFormatter } from '../../components/i18n';
 import { commitMutation } from '../../relay/environment';
 import withRouter from '../../utils/compat_router/withRouter';
+import { getGraphQLResponseErrors } from '../../relay/graphQLResponseErrors';
 
 // --- Region UI errors components
 // -------------------------------
@@ -96,9 +97,7 @@ class ErrorBoundaryComponent extends React.Component {
 
   render() {
     if (this.state.error) {
-      const baseErrors = this.state.error.res?.errors ?? [];
-      const retroErrors = this.state.error.data?.res?.errors ?? [];
-      const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);
+      const types = map((e) => e.extensions?.code, getGraphQLResponseErrors(this.state.error));
       // Specific error catching
       if (includes('COMPLEX_SEARCH_ERROR', types)) {
         return <DedicatedWarning title="Complex search" description="Your search have too much terms to be executed. Please limit the number of words or the complexity" />;

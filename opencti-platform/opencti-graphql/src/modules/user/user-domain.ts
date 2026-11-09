@@ -169,6 +169,7 @@ import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../emailTemplate/emailTemplate-types';
 import { doYield } from '../../utils/eventloop-utils';
 import { disablePublicSharingForDeletedUser } from '../dataSharing/dataSharing-utils';
+import { deleteAllIngestionDeduplicationRulesForUser } from '../ingestionDeduplication/ingestionDeduplicationRule-domain';
 import { sanitizeUser } from '../../utils/templateContextSanitizer';
 import { safeRender } from '../../utils/safeEjs.client';
 import { totp } from '../../utils/totp';
@@ -1733,6 +1734,7 @@ export const userDelete = async (context: AuthContext, user: AuthUser, userId: s
   await deleteAllNotificationByUser(userId);
   await deleteAllWorkspaceForUser(context, user, userId);
   await disablePublicSharingForDeletedUser(context, userId);
+  await deleteAllIngestionDeduplicationRulesForUser(context, user, userId);
 
   const deleted = await deleteElementById<StoreEntityUser>(context, user, userId, ENTITY_TYPE_USER);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;

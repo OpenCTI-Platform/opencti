@@ -1,4 +1,14 @@
-import { auditsDistribution, auditsMultiTimeSeries, auditsNumber, auditsTimeSeries, findAudits, findHistory, findById, findAuditById } from '../domain/log';
+import {
+  auditsDistribution,
+  auditsMultiTimeSeries,
+  auditsNumber,
+  auditsTimeSeries,
+  auditsTimeSeriesBreakdown,
+  findAudits,
+  findHistory,
+  findById,
+  findAuditById,
+} from '../domain/log';
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { logFrontend } from '../config/conf';
@@ -13,6 +23,7 @@ const logResolvers = {
     auditsNumber: (_, args, context) => auditsNumber(context, context.user, args),
     auditsTimeSeries: (_, args, context) => auditsTimeSeries(context, context.user, args),
     auditsMultiTimeSeries: (_, args, context) => auditsMultiTimeSeries(context, context.user, args),
+    auditsTimeSeriesBreakdown: (_, args, context) => auditsTimeSeriesBreakdown(context, context.user, args),
     auditsDistribution: (_, args, context) => auditsDistribution(context, context.user, args),
   },
   Log: {
