@@ -171,8 +171,8 @@ describe('distribution by workflow status (via draftWorkspacesDistribution)', ()
 
   it('aggregates the projected status and labels each bucket with its status name', async () => {
     vi.spyOn(engine, 'elAggregationCount').mockResolvedValue([
-      { label: 'status-new', value: 1, count: 1 },
-      { label: 'status-review', value: 3, count: 3 },
+      { key: 'status-new', label: 'status-new', value: 1, count: 1 },
+      { key: 'status-review', label: 'status-review', value: 3, count: 3 },
     ]);
     const args = { field: 'workflowInstance', operation: 'count', filters: emptyFilterGroup, search: 'alpha' };
 
@@ -193,9 +193,9 @@ describe('distribution by workflow status (via draftWorkspacesDistribution)', ()
 
   it('merges statuses sharing a name and counts drafts without a known status as Unknown', async () => {
     vi.spyOn(engine, 'elAggregationCount').mockResolvedValue([
-      { label: 'status-review', value: 2, count: 2 },
-      { label: 'status-review-local', value: 1, count: 1 },
-      { label: 'unknown', value: 4, count: 4 },
+      { key: 'status-review', label: 'status-review', value: 2, count: 2 },
+      { key: 'status-review-local', label: 'status-review-local', value: 1, count: 1 },
+      { key: 'unknown', label: 'unknown', value: 4, count: 4 },
     ]);
 
     const result = await draftWorkspacesDistribution(mockContext, mockUser, { field: 'workflowInstance', order: 'asc' });
@@ -208,8 +208,8 @@ describe('distribution by workflow status (via draftWorkspacesDistribution)', ()
 
   it('applies the limit after sorting', async () => {
     vi.spyOn(engine, 'elAggregationCount').mockResolvedValue([
-      { label: 'status-new', value: 1, count: 1 },
-      { label: 'status-review', value: 3, count: 3 },
+      { key: 'status-new', label: 'status-new', value: 1, count: 1 },
+      { key: 'status-review', label: 'status-review', value: 3, count: 3 },
     ]);
 
     const result = await draftWorkspacesDistribution(mockContext, mockUser, { field: 'workflowInstance', limit: 1 });
