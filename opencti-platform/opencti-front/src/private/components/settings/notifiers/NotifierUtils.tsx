@@ -27,27 +27,30 @@ export const uiSchema: UiSchema = {
 
 // The theme gives every <code> a colored chip with !important: the helper shows a plain monospace inline instead.
 // It takes the helper color, except an example, which stands out in the text color
-const InlineCode = ({ children, isExample = false }: { children: ReactNode; isExample?: boolean }) => (
-  <Box
-    component="code"
-    sx={{
-      fontFamily: 'Consolas, monaco, monospace',
-      fontSize: 'inherit',
-      padding: '0 !important',
-      background: 'none !important',
-      color: (theme: Theme) => `${isExample ? theme.palette.text.primary : 'inherit'} !important`,
-    }}
-  >
-    {children}
-  </Box>
-);
+const InlineCode = ({ children, isExample = false }: { children: ReactNode; isExample?: boolean }) => {
+  const theme = useTheme<Theme>();
+  return (
+    <Box
+      component="code"
+      sx={{
+        fontFamily: 'Consolas, monaco, monospace',
+        fontSize: 'inherit',
+        padding: '0 !important',
+        background: 'none !important',
+        color: `${isExample ? theme.palette.text.primary : 'inherit'} !important`,
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
 
 // How to insert notification data, shown once above the title
 export const VariableHelperIntro = () => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   return (
-    <Text as="div" variant="content-compact" className="mb-4 text-input-label">
+    <Text as="div" variant="content-compact" className="text-input-label" style={{ marginBottom: theme.spacing(2) }}>
       {t_i18n('Insert notification data with variables in the title or the template.')}{' '}
       <Text
         as="a"
@@ -55,8 +58,8 @@ export const VariableHelperIntro = () => {
         href={NOTIFIER_TITLE_VARIABLES_DOC}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1"
-        style={{ color: theme.palette.primary.main }}
+        className="inline-flex items-center"
+        style={{ gap: theme.spacing(0.5), color: theme.palette.primary.main }}
       >
         {t_i18n('See the available variables')}
         <OpenInNewOutlined sx={{ fontSize: 14 }} />
@@ -67,11 +70,14 @@ export const VariableHelperIntro = () => {
 
 // Shown below the field, in the helper color of the design system fields (Name, Description...),
 // with the help id the input already lists in its aria-describedby
-const VariableHelperText = ({ fieldId, children }: { fieldId: string; children: ReactNode }) => (
-  <FormHelperText component="div" id={helpId(fieldId)} sx={{ marginTop: 1, color: 'var(--text-input-helper)' }}>
-    {children}
-  </FormHelperText>
-);
+const VariableHelperText = ({ fieldId, children }: { fieldId: string; children: ReactNode }) => {
+  const theme = useTheme<Theme>();
+  return (
+    <FormHelperText component="div" id={helpId(fieldId)} sx={{ marginTop: theme.spacing(1), color: 'var(--text-input-helper)' }}>
+      {children}
+    </FormHelperText>
+  );
+};
 
 const TitleVariableHelperText = ({ fieldId }: { fieldId: string }) => {
   const { t_i18n } = useFormatter();
