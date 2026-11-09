@@ -65,6 +65,7 @@ export interface BasicStoreEntityUser extends BasicStoreEntity {
   submenu_auto_collapse: boolean;
   monochrome_labels: boolean;
   unsubscribed_news_feed_types: Array<string>;
+  list_columns?: string;
   user_confidence_level: ConfidenceLevel | null;
   user_service_account: boolean;
 }

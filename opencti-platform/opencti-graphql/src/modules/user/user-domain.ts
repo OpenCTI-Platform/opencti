@@ -212,6 +212,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'submenu_auto_collapse',
   'monochrome_labels',
   'unsubscribed_news_feed_types',
+  'list_columns',
   'password',
   'draft_context',
 ];

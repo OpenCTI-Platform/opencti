@@ -53,23 +53,24 @@ const DataTableInternalFilters = ({
   const {
     columns,
     availableFilterKeys,
+    formatter: { t_i18n },
     useDataTablePaginationLocalStorage: {
       viewStorage: { searchTerm },
       helpers,
       paginationOptions,
     },
   } = useDataTableContext();
-  const extendedExportContext = React.useMemo(
-    () => (exportContext
-      ? {
-          ...exportContext,
-          visible_columns: columns
-            .filter(({ id, visible }) => !['select', 'navigate', 'icon'].includes(id) && visible)
-            .map((c) => c.id),
-        }
-      : undefined),
-    [exportContext, columns],
-  );
+  const extendedExportContext = React.useMemo(() => {
+    if (!exportContext) return undefined;
+    // The displayed columns, in the displayed order, including the added attributes.
+    const visibleColumns = columns.filter(({ id, visible }) => !['select', 'navigate', 'icon'].includes(id) && visible);
+    return {
+      ...exportContext,
+      visible_columns: visibleColumns.map((c) => c.id),
+      // Only used to describe the "Current view" export in the dialog: never sent with the export.
+      visible_columns_labels: visibleColumns.map((c) => t_i18n(c.label ?? c.id)),
+    };
+  }, [exportContext, columns]);
   const computedEntityTypes = entityTypes ?? (exportContext?.entity_type ? [exportContext.entity_type] : []);
 
   return (
@@ -205,6 +206,8 @@ const DataTableInternalToolbar = ({
 
 type OCTIDataTableProps = Pick<DataTableProps,
   | 'dataColumns'
+  | 'availableColumns'
+  | 'columnsScopeLabel'
   | 'resolvePath'
   | 'storageKey'
   | 'initialValues'
