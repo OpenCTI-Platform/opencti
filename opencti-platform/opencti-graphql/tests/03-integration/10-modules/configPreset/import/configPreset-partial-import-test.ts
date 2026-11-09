@@ -5,6 +5,7 @@ import { createUploadFromBuffer, queryAsAdmin, queryAsUserIsExpectedForbidden } 
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../../../utils/testQuery';
 import { getClientBase } from '../../../../../src/database/redis';
 import { getSettings } from '../../../../../src/domain/settings';
+import type { BasicStoreSettings } from '../../../../../src/types/settings';
 import { addTheme, deleteTheme, findAllThemes, findById as findThemeById } from '../../../../../src/modules/theme/theme-domain';
 import * as userDomain from '../../../../../src/modules/user/user-domain';
 import * as userActionListener from '../../../../../src/listener/UserActionListener';
@@ -39,15 +40,17 @@ const preview = async (files: Record<string, string>, type = 'branding') => {
 const partialImport = async (files: Record<string, string>, items: string[], itemModes?: unknown[], type = 'branding') => {
   return queryAsAdmin({ query: IMPORT_MUTATION, variables: { file: await zipUpload(files), type, items, item_modes: itemModes } });
 };
+// getSettings is untyped (JS): read through the type of the stored settings
+const readPlatformTitle = async () => ((await getSettings(testContext)) as unknown as BasicStoreSettings).platform_title;
 const customThemes = async () => (await findAllThemes(testContext, ADMIN_USER)).filter((theme) => !theme.built_in);
 
 describe('Config preset partial import', () => {
   let existingThemeIds: Set<string>;
-  let platformTitle: string;
+  let platformTitle: string | undefined;
 
   beforeEach(async () => {
     existingThemeIds = new Set((await customThemes()).map(({ id }) => id));
-    platformTitle = (await getSettings(testContext)).platform_title;
+    platformTitle = await readPlatformTitle();
   });
 
   afterEach(async () => {
@@ -86,7 +89,7 @@ describe('Config preset partial import', () => {
     expect((await findThemeById(testContext, ADMIN_USER, OTHER_THEME_ID))?.name).toEqual('Second partial theme');
     expect(await findThemeById(testContext, ADMIN_USER, CUSTOM_THEME_ID)).toBeUndefined();
     // The platform item of the bundle is not imported
-    expect((await getSettings(testContext)).platform_title).toEqual(platformTitle);
+    expect(await readPlatformTitle()).toEqual(platformTitle);
     expect(await getClientBase().get(`config_preset_import_session_${ADMIN_USER.id}`)).toBeNull();
   });
 
