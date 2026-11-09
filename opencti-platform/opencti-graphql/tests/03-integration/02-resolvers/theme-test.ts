@@ -213,20 +213,20 @@ describe('Themes resolver testing', () => {
     });
   });
 
-  it('should not export a theme when not authenticated: the file holds its standard id', async () => {
+  // The theme is reachable without being logged in through the public settings (the login page): its export is not, the file holds its
+  // standard id. theme(id:) is not that path: it loads the theme with the user of the request.
+  it('should not export the platform theme when not authenticated: the file holds its standard id', async () => {
     await queryUnauthenticatedIsExpectedForbidden({
-      query: EXPORT_THEME_QUERY,
-      variables: { id: darkThemeId },
+      query: gql`query ThemePublicExport { publicSettings { platform_theme { name toConfigurationExport } } }`,
     });
   });
 
-  it('should still read a theme when not authenticated, without its export (login page)', async () => {
+  it('should still read the platform theme when not authenticated, without its export (login page)', async () => {
     const { data, errors } = await queryAsAnonymous({
-      query: gql`query ThemePublicRead($id: ID!) { theme(id: $id) { name } }`,
-      variables: { id: darkThemeId },
+      query: gql`query ThemePublicRead { publicSettings { platform_theme { name } } }`,
     });
     expect(errors).toBeUndefined();
-    expect(data?.theme.name).toBe('Filigran Dark');
+    expect(data?.publicSettings.platform_theme.name).toEqual(expect.any(String));
   });
 
   it('should read a specific theme', async () => {
