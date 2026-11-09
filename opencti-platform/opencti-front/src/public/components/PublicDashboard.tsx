@@ -16,6 +16,7 @@ import {
   applyPublishedTimeRangeChange,
   isSamePublishedTimeRange,
   pickPublishedTimeRange,
+  type PublishedDateField,
   type PublishedTimeRange,
 } from '@components/workspaces/dashboards/public_dashboards/public-dashboard-utils';
 import useDashboardRefresh from '../../components/dashboard/useDashboardRefresh';
@@ -77,7 +78,7 @@ const PublicDashboardComponent = ({
     () => (config ? { ...config, ...effectiveRange } : config),
     [config, effectiveRange.startDate, effectiveRange.endDate, effectiveRange.relativeDate],
   );
-  const changeRange = (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => {
+  const changeRange = (type: PublishedDateField, value: string | null) => {
     if (!canEditTimeFilters) return;
     const next = applyPublishedTimeRangeChange(effectiveRange, type, value);
     setLocalRange(isSamePublishedTimeRange(next, publishedRange) ? null : next);

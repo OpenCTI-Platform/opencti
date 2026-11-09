@@ -24,11 +24,10 @@ export const copyPublicDashboardLinkUrl = (t: (text: string) => string, uriKey: 
   );
 };
 
-export interface PublishedTimeRange {
-  startDate: string | null;
-  endDate: string | null;
-  relativeDate: string | null;
-}
+export type PublishedDateField = 'startDate' | 'endDate' | 'relativeDate';
+
+// The time range of a dashboard config, every field present (null when empty).
+export type PublishedTimeRange = Required<Pick<DashboardConfig, PublishedDateField>>;
 
 export interface PublicDashboardCreationFormData {
   name: string;
@@ -121,7 +120,7 @@ export const buildPublishedValuesState = (
  */
 export const applyPublishedTimeRangeChange = (
   range: PublishedTimeRange,
-  type: keyof Pick<DashboardConfig, 'startDate' | 'endDate' | 'relativeDate'>,
+  type: PublishedDateField,
   value: string | null,
 ): PublishedTimeRange => {
   const next = { ...range, [type]: value === 'none' ? null : value };
