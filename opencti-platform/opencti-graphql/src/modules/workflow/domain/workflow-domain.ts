@@ -271,9 +271,26 @@ export const resolveScopedDefinitionId = (
   scope: StatusScope,
 ): string | undefined => {
   if (scope === StatusScope.RequestAccess) {
-    return entitySetting?.request_access_workflow?.workflow_definition_id ?? undefined;
+    const definitionId = entitySetting?.request_access_workflow?.workflow_definition_id ?? undefined;
+    // Both scopes pointing at one definition is a leftover of the two sharing the default name (see
+    // resolveDefinitionEntityName): it is the Global one, so the request access scope has none yet.
+    return definitionId && definitionId === entitySetting?.workflow_id ? undefined : definitionId;
   }
   return entitySetting?.workflow_id ?? undefined;
+};
+
+/**
+ * Name of the WorkflowDefinition entity. Its id is derived from the name, so two definitions of one
+ * entity type must never share one, or the second is an upsert of the first. Each scope gets its own
+ * default, and a name that is the other scope's default is replaced by this scope's.
+ */
+export const resolveDefinitionEntityName = (entityType: string, scope: StatusScope, name?: string | null): string => {
+  const globalDefaultName = `Workflow for ${entityType}`;
+  const requestAccessDefaultName = `Request access workflow for ${entityType}`;
+  if (scope === StatusScope.RequestAccess) {
+    return !name || name === globalDefaultName ? requestAccessDefaultName : name;
+  }
+  return !name || name === requestAccessDefaultName ? globalDefaultName : name;
 };
 
 export const assertScopeAllowed = (entityType: string, scope: StatusScope): void => {
@@ -920,7 +937,7 @@ export const setWorkflowDefinition = async (
     await checkEnterpriseEdition(context);
   }
 
-  const workflowName = definitionObj.name || `Workflow for ${entityType}`;
+  const workflowName = resolveDefinitionEntityName(entityType, scope, definitionObj.name);
 
   // Create version data structure
   const versionData = {

@@ -42,6 +42,7 @@ import {
   getWorkflowBypassStatuses,
   syncWorkflowInstanceFromExternalWrite,
   resolveScopedDefinitionId,
+  resolveDefinitionEntityName,
   assertScopeAllowed,
   isStatusOrphaned,
 } from '../../../src/modules/workflow/domain/workflow-domain';
@@ -3524,7 +3525,9 @@ describe('getWorkflowInstance', () => {
 
   it.each(['standard', StatusScope.RequestAccess])('hydrates current and destination statuses in scope %s', async (scope) => {
     makeBaseSetup();
-    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id', request_access_workflow: { workflow_definition_id: 'workflow-def-id' } });
+    (findByType as any).mockResolvedValue(scope === 'standard'
+      ? { id: 'setting-id', workflow_id: 'workflow-def-id' }
+      : { id: 'setting-id', request_access_workflow: { workflow_definition_id: 'workflow-def-id' } });
     (loadEntity as any).mockResolvedValue({ id: 'inst-id', currentState: 'draft', history: '[]', scope });
     const currentStatus = { id: 'mapped-draft', template_id: 'draft', order: 0, type: 'Incident', scope: scope === 'standard' ? StatusScope.Global : scope };
     const toStatus = { ...currentStatus, id: 'mapped-closed', template_id: 'closed', order: 1 };
@@ -6093,6 +6096,33 @@ describe('scope-aware workflow definitions', () => {
     it('does not fall back to the request access id for Global', () => {
       const requestAccessOnly = { id: 'entity-setting-id', request_access_workflow: { approval_admin: [], workflow_definition_id: 'ra-def' } };
       expect(resolveScopedDefinitionId(requestAccessOnly as any, StatusScope.Global)).toBeUndefined();
+    });
+  });
+
+  describe('definition entity name', () => {
+    it('gives each scope its own default, since the entity id is derived from the name', () => {
+      expect(resolveDefinitionEntityName('Case-Rfi', StatusScope.Global)).toBe('Workflow for Case-Rfi');
+      expect(resolveDefinitionEntityName('Case-Rfi', StatusScope.RequestAccess)).toBe('Request access workflow for Case-Rfi');
+    });
+
+    it('never lets a scope take the default name of the other one', () => {
+      expect(resolveDefinitionEntityName('Case-Rfi', StatusScope.RequestAccess, 'Workflow for Case-Rfi')).toBe('Request access workflow for Case-Rfi');
+      expect(resolveDefinitionEntityName('Case-Rfi', StatusScope.Global, 'Request access workflow for Case-Rfi')).toBe('Workflow for Case-Rfi');
+      expect(resolveDefinitionEntityName('Case-Rfi', StatusScope.Global, 'My workflow')).toBe('My workflow');
+    });
+
+    it('creates the request access definition under a name distinct from the Global one', async () => {
+      (findByType as any).mockResolvedValue(globalOnlySetting);
+      (createEntity as any).mockResolvedValue({ id: 'ra-def', all_versions: [published], draft_version: published });
+      (updateAttribute as any).mockResolvedValue({ element: globalOnlySetting });
+      await setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', JSON.stringify({ name: 'Workflow for Case-Rfi', initialState: 'new', states: [], transitions: [] }), StatusScope.RequestAccess);
+      expect((createEntity as any).mock.calls[0][2].name).toBe('Request access workflow for Case-Rfi');
+    });
+
+    it('treats a request access id equal to the Global one as no request access definition', () => {
+      const shared = { ...globalOnlySetting, request_access_workflow: { approval_admin: [], workflow_definition_id: 'global-def' } };
+      expect(resolveScopedDefinitionId(shared as any, StatusScope.RequestAccess)).toBeUndefined();
+      expect(resolveScopedDefinitionId(shared as any, StatusScope.Global)).toBe('global-def');
     });
   });
 
