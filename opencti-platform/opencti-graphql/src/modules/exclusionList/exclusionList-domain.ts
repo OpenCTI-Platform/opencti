@@ -140,10 +140,8 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
   if (!exclusionList) {
     throw FunctionalError(`Exclusion list ${id} cannot be found`);
   }
-  const newName = input?.find((i) => i.key === 'name')?.value?.[0];
-  if (newName !== undefined) {
-    checkExclusionListName(String(newName ?? ''));
-  }
+  // Every name of the input is checked: the update applies them in order, so the last one is the one stored
+  (input ?? []).filter((i) => i.key === 'name').forEach((i) => checkExclusionListName(String(i.value?.[0] ?? '')));
 
   let fileSize = exclusionList.exclusion_list_file_size;
   let exclusionListCount = exclusionList.exclusion_list_values_count;

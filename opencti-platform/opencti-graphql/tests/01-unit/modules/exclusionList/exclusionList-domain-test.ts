@@ -127,6 +127,12 @@ describe('Exclusion list domain', () => {
       expect(updateAttribute).not.toHaveBeenCalled();
     });
 
+    it('refuses a short name sent after a valid one, as the last one is the one stored', async () => {
+      const input = [{ key: 'name', value: ['Valid'] }, { key: 'name', value: ['X'] }];
+      await expect(fieldPatchExclusionList(context, user, { id: dnsExclusionList.id, input })).rejects.toThrow('Exclusion list name must have at least 2 characters');
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
+
     it('accepts a name of two characters, and a patch without name', async () => {
       await fieldPatchExclusionList(context, user, { id: dnsExclusionList.id, input: [{ key: 'name', value: ['DN'] }] });
       await fieldPatchExclusionList(context, user, { id: dnsExclusionList.id, input: [{ key: 'description', value: ['x'] }] });
