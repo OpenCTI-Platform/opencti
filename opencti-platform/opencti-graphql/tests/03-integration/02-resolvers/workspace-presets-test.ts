@@ -225,7 +225,6 @@ describe('Dashboard presets API', () => {
       resetCacheForEntity(ENTITY_TYPE_USER);
     }
   });
-
 });
 
 describe('Dashboard presets export, import and duplication', () => {
