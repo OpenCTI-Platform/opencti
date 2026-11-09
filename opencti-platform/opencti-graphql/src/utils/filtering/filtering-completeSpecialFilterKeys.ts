@@ -273,7 +273,19 @@ const adaptFilterToEntityTypeFilterKey = (filter: any) => {
 
 const WORKFLOW_STATUS_FILTER_KEYS = [WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID, WORKFLOW_INSTANCE_STATUS_FILTER];
 
-export const adaptFilterToWorkflowFilterKey = async (context: AuthContext, user: AuthUser, filter: Filter) => {
+// The deprecated key keeps the semantics of the resolver it replaces: a draft is in a single state, so
+// only_eq_to/not_only_eq_to are eq/not_eq, and the values match "any of them" (eq) or "none of them" (not_eq)
+// whatever the filter's mode.
+const normalizeLegacyWorkflowStatusFilter = (filter: Filter): Filter => {
+  let operator = filter.operator ?? FilterOperator.Eq;
+  if (operator === FilterOperator.OnlyEqTo) operator = FilterOperator.Eq;
+  if (operator === FilterOperator.NotOnlyEqTo) operator = FilterOperator.NotEq;
+  return { ...filter, operator, mode: operator === FilterOperator.NotEq ? FilterMode.And : FilterMode.Or };
+};
+
+export const adaptFilterToWorkflowFilterKey = async (context: AuthContext, user: AuthUser, inputFilter: Filter) => {
+  const inputKeys = Array.isArray(inputFilter.key) ? inputFilter.key : [inputFilter.key];
+  const filter = inputKeys.length === 1 && inputKeys[0] === WORKFLOW_INSTANCE_STATUS_FILTER ? normalizeLegacyWorkflowStatusFilter(inputFilter) : inputFilter;
   // workflow_id filter values can be both status ids and status templates ids
   const { key, mode = FilterMode.Or, operator = FilterOperator.Eq, values } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
