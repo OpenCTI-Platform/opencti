@@ -2890,3 +2890,42 @@ on `Input`, rendered outside the `<label>`.
 their labels read at one size. With an `infoTooltip` slot, the info icon of
 "Include Other" moves into it, still opens its tooltip on hover and focus, and
 a click on it does not toggle the switch.
+
+---
+
+## 77. A clearable `Select` with a value is narrower than its own trigger, so a flex row overlaps it
+
+**Where it bit.** The dashboard preset selector (`DashboardPresetSelector.tsx`)
+is a clearable `Select` followed, in a flex row, by the *Save as preset* button
+and the rename and delete icon buttons. As soon as a preset is selected the
+button's icon is drawn under the trigger's chevron: the row has lost 24px, the
+32px the library takes minus the row's 8px gap. Measured at library `1.3.0`.
+
+**What the library does.** `SelectTrigger` (RULE-12, `Select.rfc.md` §6.1)
+renders the clear control as a flex *sibling* of the trigger, pulled back over
+it with `-ml-14` (56px) for a `sm` `IconButton` of `w-6` (24px). The wrapper
+`span.flex` therefore measures trigger width + 24 − 56 = trigger − 32px, and the
+trigger's last 32px (the `size-6` chevron box and its `pr-2`) overflow the
+wrapper. In a block layout nothing follows, so nothing shows; as a direct item
+of a flex row, the next sibling starts 32px inside the trigger. The wrapper is
+rendered unconditionally, but the shortfall only exists while `canClear` is
+true (a value, not disabled), so the row jumps by 32px when a value is set or
+cleared.
+
+**What the product did.** The `Select` sits in an `inline-flex` span that pads
+its right by 32px exactly when the library shows the clear control (a value,
+not disabled), mirroring `canClear`. Marker `FDS-WORKAROUND #77` on the span;
+`DashboardPresetSelector.test.tsx` locks the padding in the three states.
+
+**Asked.** Keep the clear control inside the trigger's box so the wrapper hugs
+the trigger: either give the wrapper the trigger's width (`w-fit` on the wrapper
+with the trigger `w-full`, the clear absolutely positioned in that wrapper), or
+make the negative margin equal to the control's own width plus the reserved
+`pl-6`, so the wrapper ends at the trigger's right edge. The RFC's flex-row
+trap note describes a wrapper that is too wide; this is the same wrapper being
+too narrow.
+
+**Removal condition.** The wrapper rendered by `SelectTrigger` with `clearable`
+and a value measures the same width as its trigger button (compare
+`getBoundingClientRect().width` of the trigger and of its parent). When it
+does, drop the span and the test case.

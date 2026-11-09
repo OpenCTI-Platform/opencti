@@ -44,7 +44,18 @@ describe('DashboardPresetSelector', () => {
     const onDelete = vi.fn();
     const onSaveAs = vi.fn();
     const { user, rerender } = testRender(
-      <DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={null} isModified={false} canManage onSelect={noop} onSaveAs={onSaveAs} onUpdate={onUpdate} onRename={onRename} onDelete={onDelete} />,
+      <DashboardPresetSelector
+        presets={presets}
+        activePreset={presets[0]}
+        defaultPreset={null}
+        isModified={false}
+        canManage
+        onSelect={noop}
+        onSaveAs={onSaveAs}
+        onUpdate={onUpdate}
+        onRename={onRename}
+        onDelete={onDelete}
+      />,
     );
     expect(screen.queryByTestId('dashboard-preset-update')).not.toBeInTheDocument();
     await user.click(screen.getByTestId('dashboard-preset-save-as'));
@@ -54,10 +65,34 @@ describe('DashboardPresetSelector', () => {
     await user.click(screen.getByTestId('dashboard-preset-delete'));
     expect(onDelete).toHaveBeenCalledWith(presets[0]);
     rerender(
-      <DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={null} isModified canManage onSelect={noop} onSaveAs={onSaveAs} onUpdate={onUpdate} onRename={onRename} onDelete={onDelete} />,
+      <DashboardPresetSelector
+        presets={presets}
+        activePreset={presets[0]}
+        defaultPreset={null}
+        isModified
+        canManage
+        onSelect={noop}
+        onSaveAs={onSaveAs}
+        onUpdate={onUpdate}
+        onRename={onRename}
+        onDelete={onDelete}
+      />,
     );
     await user.click(screen.getByTestId('dashboard-preset-update'));
     expect(onUpdate).toHaveBeenCalledOnce();
+  });
+
+  it('reserves the room the library clear control takes from the row (FDS-WORKAROUND #77)', () => {
+    const { rerender } = testRender(
+      <DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={null} isModified={false} canManage onSelect={noop} onSaveAs={noop} />,
+    );
+    // With a value the trigger shows a clear control: its wrapper is 32px narrower than the trigger.
+    expect(screen.getByTestId('dashboard-preset-select')).toHaveStyle({ paddingRight: '32px' });
+    // Without a value (no clear control) or disabled (the library hides it), nothing to compensate.
+    rerender(<DashboardPresetSelector presets={presets} activePreset={null} defaultPreset={null} isModified={false} canManage onSelect={noop} onSaveAs={noop} />);
+    expect(screen.getByTestId('dashboard-preset-select')).toHaveStyle({ paddingRight: '0px' });
+    rerender(<DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={null} isModified={false} canManage disabled onSelect={noop} onSaveAs={noop} />);
+    expect(screen.getByTestId('dashboard-preset-select')).toHaveStyle({ paddingRight: '0px' });
   });
 
   it('shows only the save action when the dashboard has no preset yet', () => {
