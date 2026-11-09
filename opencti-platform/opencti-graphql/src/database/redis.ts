@@ -922,7 +922,8 @@ export type LocalAuthLockoutTimings = { maxAttempts: number; windowMs: number; f
 // - Below the max attempts, a failure is only counted: no lock.
 // - At the max attempts, the final action locks the email for finalLockMs. The lock holds the final action,
 //   so that a permanent lock is reported the same way for an existing account and an unknown email.
-//   The failures expire with the lock, so that the count starts over once the lock is lifted.
+//   With a window, the failures expire with the lock, so that the count starts over once the lock is lifted.
+//   Without a window, they are kept: once the lock is lifted, each new failure locks again.
 // Returns [allowed, remainingMs, lockType, isFinal]:
 // - [0, remaining, type, 0]: the email is locked, the attempt is neither checked nor counted
 // - [1, 0, type, 0]: the attempt is counted, below the max attempts, its password can be checked
@@ -938,7 +939,9 @@ if failures == 1 and tonumber(ARGV[1]) > 0 then
 end
 if failures >= tonumber(ARGV[2]) then
   redis.call('SET', KEYS[2], ARGV[4], 'PX', ARGV[3])
-  redis.call('PEXPIRE', KEYS[1], ARGV[3])
+  if tonumber(ARGV[1]) > 0 then
+    redis.call('PEXPIRE', KEYS[1], ARGV[3])
+  end
   return {1, tonumber(ARGV[3]), ARGV[4], 1}
 end
 return {1, 0, ARGV[4], 0}

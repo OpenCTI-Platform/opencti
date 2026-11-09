@@ -81,8 +81,10 @@ const resetLockout = (email: string) => {
   return getClientBase().del(keys.failures, keys.lock);
 };
 // Redis TTLs cannot be faked, so expirations are simulated by deleting the keys.
-// The failures expire with the final lock, so that the count starts over once the lock is lifted
+// With a window, the failures expire with the final lock, so that the count starts over once the lock is lifted
 const expireLock = resetLockout;
+// Without a window, the failures are kept when the lock is lifted
+const liftLock = (email: string) => getClientBase().del(keysOf(email).lock);
 const expireWindow = (email: string) => getClientBase().del(keysOf(email).failures);
 const lockRemainingMs = (email: string) => getClientBase().pttl(keysOf(email).lock);
 const failuresOf = async (email: string) => Number(await getClientBase().get(keysOf(email).failures) ?? 0);
@@ -344,6 +346,23 @@ describe('Local authentication lockout', () => {
       expect(await getClientBase().pttl(keysOf(LOCKOUT_USER.email).failures)).toEqual(-1);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
     });
+
+    it('should lock again on the next failure once the lock is over, with a window of 0', async () => {
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_window: 0 });
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      // The final lock does not give the failures a TTL
+      expect(await getClientBase().pttl(keysOf(LOCKOUT_USER.email).failures)).toEqual(-1);
+      await liftLock(LOCKOUT_USER.email);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+    });
+
+    it('should still forget the failures of an unknown email after a day, with a window of 0', async () => {
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_window: 0 });
+      await failLogin(UNKNOWN_EMAIL, 1);
+      const remainingMs = await getClientBase().pttl(keysOf(UNKNOWN_EMAIL).failures);
+      expect(remainingMs).toBeGreaterThan(0);
+      expect(remainingMs).toBeLessThanOrEqual(24 * 3600 * 1000);
+    });
   });
 
   describe('Final action: permanent', () => {
@@ -451,13 +470,49 @@ describe('Local authentication lockout', () => {
       await expect(login(API_USER.email, WRONG_PASSWORD, '127.0.0.1')).rejects.toThrow(IP_NOT_ALLOWED);
     });
 
-    it('should count the attempt when the password is right but the local auth is disabled', async () => {
-      await failLogin(LOCKOUT_USER.email, 1);
+    it('should reset the lockout on a login accepted while the lockout is disabled', async () => {
+      await failLogin(LOCKOUT_USER.email, 2);
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_enabled: false });
+      await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
+      // Enabling the lockout again does not bring back the previous failures
+      await setLockoutPolicy(LOCKOUT_POLICY);
+      expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
+    });
+
+    it('should forget the failures of the previous email when it changes', async () => {
+      const renamedEmail = 'lockout-renamed@opencti.io';
+      await failLogin(LOCKOUT_USER.email, 2);
+      try {
+        await userEditField(testContext, ADMIN_USER, lockoutUserId, [{ key: 'user_email', value: [renamedEmail] }]);
+        expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
+      } finally {
+        await userEditField(testContext, ADMIN_USER, lockoutUserId, [{ key: 'user_email', value: [LOCKOUT_USER.email] }]);
+      }
+    });
+  });
+
+  // With the local auth disabled, the login form cannot log in with a password: its attempts must not lock
+  // an account that logs in with another provider. Basic auth still checks the password, so it is still counted
+  describe('Local auth disabled', () => {
+    beforeEach(async () => {
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_final_action: 'permanent' });
       const settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
       await updateLocalAuth(testContext, ADMIN_USER, settings.id, { enabled: false });
       resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    });
+
+    it('should neither count nor lock the login form attempts', async () => {
+      for (let i = 0; i < 5; i += 1) {
+        await expectBadCredentials(sessionLoginAs(LOCKOUT_USER.email, WRONG_PASSWORD));
+      }
       await expectBadCredentials(sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password));
-      expect(await failuresOf(LOCKOUT_USER.email)).toEqual(2);
+      expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
+      expect(await accountStatusOf(LOCKOUT_USER.email)).toEqual('Active');
+    });
+
+    it('should still count the Basic auth failures', async () => {
+      await expectBadCredentials(authenticateUserByBasicAuth(testContext, buildRequest(), { username: API_USER.email, password: WRONG_PASSWORD }));
+      expect(await failuresOf(API_USER.email)).toEqual(1);
     });
   });
 
@@ -501,7 +556,7 @@ describe('Local authentication lockout', () => {
       const mfaAdmin = { id: adminAccount?.id, user_email: ADMIN_ACCOUNT.email, otp_activated: true, otp_secret: secret } as AuthUser;
       const code = await totp.generate({ secret });
       const wrongCode = `${code.slice(0, 5)}${(Number(code[5]) + 1) % 10}`;
-      const otpLogin = () => otpUserLogin({ session: { user: {}, save: () => {} } }, mfaAdmin, { code: wrongCode });
+      const otpLogin = () => otpUserLogin({ session: { user: {}, save: () => {}, session_provider: 'local' } }, mfaAdmin, { code: wrongCode });
       await expectBadCredentials(otpLogin());
       await expectLocked(otpLogin());
     });
@@ -541,6 +596,13 @@ describe('Local authentication lockout', () => {
       await expectLocked(basicAuth(LOCKOUT_USER.password));
     });
 
+    it('should not count a right password without the Basic auth capability', async () => {
+      await failLogin(LOCKOUT_USER.email, 1);
+      await expect(authenticateUserByBasicAuth(testContext, buildRequest(), { username: LOCKOUT_USER.email, password: LOCKOUT_USER.password }))
+        .rejects.toThrow('You are not allowed to use API basic auth');
+      expect(await failuresOf(LOCKOUT_USER.email)).toEqual(1);
+    });
+
     it('should reset the failure counter on a successful Basic auth', async () => {
       await failLogin(API_USER.email, 2);
       const user = await authenticateUserByBasicAuth(testContext, buildRequest(), { username: API_USER.email, password: API_USER.password });
@@ -570,7 +632,8 @@ describe('Local authentication lockout', () => {
   // Failed MFA codes count like failed passwords, so that the second factor cannot be brute-forced
   describe('MFA', () => {
     const mfaUser = () => ({ id: mfaUserId, user_email: MFA_USER.email, otp_activated: true, otp_secret: mfaSecret }) as AuthUser;
-    const otpLogin = (code: string) => otpUserLogin({ session: { user: {}, save: () => {} } }, mfaUser(), { code });
+    // The session of a local password login, waiting for its MFA code
+    const otpLogin = (code: string, provider = 'local') => otpUserLogin({ session: { user: {}, save: () => {}, session_provider: provider } }, mfaUser(), { code });
     const validCode = () => totp.generate({ secret: mfaSecret });
     // Any other 6 digits code than the valid one
     const wrongCode = async () => {
@@ -589,6 +652,15 @@ describe('Local authentication lockout', () => {
       await expectBadCredentials(otpLogin(await wrongCode()));
       await expectLocked(otpLogin(await wrongCode()));
       await expectLocked(otpLogin(await validCode()));
+    });
+
+    it('should never block a valid MFA code after another provider, but count the failed ones', async () => {
+      await reachMaxAttempts(MFA_USER.email);
+      // LDAP and SSO logins are never blocked by the local lock, their MFA code neither
+      expect(await otpLogin(await validCode(), 'oidc')).toBe(true);
+      expect(await failuresOf(MFA_USER.email)).toEqual(0);
+      await expectBadCredentials(otpLogin(await wrongCode(), 'oidc'));
+      expect(await failuresOf(MFA_USER.email)).toEqual(1);
     });
 
     it('should reset the counter after a valid MFA code', async () => {

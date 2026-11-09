@@ -11,9 +11,11 @@ export const registerLocalStrategy = async () => {
   logAuthInfo('Configuring local', EnvStrategyType.STRATEGY_LOCAL);
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore as per document new LocalStrategy is the right way, not sure what to do.
-  // The request gives the source IP, checked against the IP whitelist before the lockout counts the attempt
-  const localStrategy = new LocalStrategy({ passReqToCallback: true }, (req: { ip?: string }, username: string, password: string, done: any) => {
-    return login(username, password, req.ip).then((info) => {
+  // The request gives the source IP, checked against the IP whitelist before the lockout counts the attempt,
+  // and whether the local auth is enabled: otherwise the attempt is not counted
+  type LocalLoginRequest = { ip?: string; isLocalAuthEnabled?: boolean };
+  const localStrategy = new LocalStrategy({ passReqToCallback: true }, (req: LocalLoginRequest, username: string, password: string, done: any) => {
+    return login(username, password, req.ip, { countsAttempt: req.isLocalAuthEnabled ?? true }).then((info) => {
       logAuthInfo('User found in database', EnvStrategyType.STRATEGY_LOCAL, { username });
       addUserLoginCount();
       return done(null, info);

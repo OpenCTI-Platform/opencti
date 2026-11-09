@@ -38,6 +38,9 @@ export const LOCAL_AUTH_LOCKOUT_KEYS = Object.keys(LOCAL_AUTH_LOCKOUT_DEFAULTS) 
 
 const SECOND_MS = 1000;
 const MINUTE_MS = 60 * SECOND_MS;
+// Without a window, the failures of a real account are kept until a successful login or an administrator.
+// The failures of an unknown email are still forgotten after a day, so that random emails cannot fill Redis
+const UNKNOWN_EMAIL_FAILURES_RETENTION_MS = 24 * 60 * MINUTE_MS;
 
 // The lock type and the remaining time are sent in the error data, so that the login form can show them.
 // A permanent lock has no remaining time: an administrator must unlock the account
@@ -86,9 +89,10 @@ const getLockoutTimings = async (userId?: string): Promise<LocalAuthLockoutTimin
   const maxAttempts = isAdministrative
     ? settings.local_auth_lockout_admin_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_admin_max_attempts
     : settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts;
+  const windowMs = (settings.local_auth_lockout_window ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window) * MINUTE_MS;
   return {
     maxAttempts,
-    windowMs: (settings.local_auth_lockout_window ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window) * MINUTE_MS,
+    windowMs: windowMs === 0 && !userId ? UNKNOWN_EMAIL_FAILURES_RETENTION_MS : windowMs,
     // The permanent final action sets the account to Locked. Its lock in Redis only reports it, for the same duration,
     // so that an unknown email is reported the same way as an existing account
     finalLockMs: (settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration) * MINUTE_MS,
@@ -126,10 +130,13 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
   };
 };
 
-// Called once a login is fully accepted (local, Basic auth, another provider or a valid MFA code): resets the lockout of the email
+// Called once a login is fully accepted (local, Basic auth, another provider or a valid MFA code): resets the lockout of the email.
+// Also when the lockout is disabled in the settings, so that enabling it again never brings back an old lock
 export const clearLocalAuthLockout = async (email: string) => {
-  const lockout = await loadLocalAuthLockout(email);
-  await lockout?.clear();
+  if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
+    return;
+  }
+  await redisClearLocalAuthLockout(hashSHA256(normalizeEmail(email)));
 };
 
 // Called when a right password still waits for its MFA code, so that only a valid MFA code resets the counter

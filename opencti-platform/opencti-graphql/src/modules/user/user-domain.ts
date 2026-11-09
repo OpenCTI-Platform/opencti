@@ -1482,6 +1482,10 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   if (inputs.some((i) => i.key === 'account_status' && R.head(i.value) === ACCOUNT_STATUS_ACTIVE)) {
     await clearLocalAuthLockout(element.user_email);
   }
+  // The lockout is keyed on the email: the failures of a previous email must not be inherited by its next owner
+  if (userToUpdate.user_email && normalizeEmail(userToUpdate.user_email) !== normalizeEmail(element.user_email)) {
+    await clearLocalAuthLockout(userToUpdate.user_email);
+  }
   // The password history is internal bookkeeping of a password change: it never reaches the audit log
   const auditedInputs = inputs.filter((i) => i.key !== 'password_history');
   const input = updatedInputsToData(element, auditedInputs);
@@ -2056,10 +2060,12 @@ export const lockAccountAfterFailedAttempts = async (user: Pick<BasicStoreEntity
   await userEditField(context, SYSTEM_USER, user.id, [{ key: 'account_status', value: [ACCOUNT_STATUS_LOCKED] }]);
 };
 
-export const login = async (email: string, password: string, sourceIp?: string) => {
+// countsAttempt is false for the login form when the local auth is disabled: the password cannot log in,
+// so its attempts must neither be counted nor lock an account that logs in with another provider
+export const login = async (email: string, password: string, sourceIp?: string, { countsAttempt = true }: { countsAttempt?: boolean } = {}) => {
   const user = await getUserByEmail(email);
   // Undefined when the local authentication lockout is disabled, and for the built-in admin
-  const lockout = await loadLocalAuthLockout(email, user?.id);
+  const lockout = countsAttempt ? await loadLocalAuthLockout(email, user?.id) : undefined;
   // An IP that the whitelist blocks is rejected before the attempt is counted, so that it cannot lock any account.
   // As the attempt is not counted, the password is not checked either.
   if (lockout) {
@@ -2107,7 +2113,7 @@ export const resolveUserIndividual = async (context: AuthContext, user: AuthUser
   return user.individual_id;
 };
 
-type OtpSessionRequest = { session: { user: { otp_validated?: boolean }; save: () => void } };
+type OtpSessionRequest = { session: { user: { otp_validated?: boolean }; save: () => void; session_provider?: string } };
 export const otpUserActivation = async (context: AuthContext & { req: OtpSessionRequest }, user: AuthUser, { secret, code }: UserOtpActivationInput) => {
   // User activation can only be done if otp is not already activated
   if (user.otp_activated) {
@@ -2176,6 +2182,8 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   const isLocalAuthEnabled = isLocalAuthForcedEnabledFromEnv() || !!settings.local_auth?.enabled;
   let localError: unknown;
   if (!loggedUser) {
+    // The source IP is checked against the IP whitelist before the lockout counts the attempt.
+    // With the local auth disabled, only the built-in admin can log in here: the attempts are not counted
     const { user, provider } = await new Promise<PassportAuthenticationResult>((resolve) => {
       passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
         localError = err;
@@ -2183,7 +2191,7 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
           logApp.warn('Token authenticate error', { cause: err, info, provider: LOCAL_STRATEGY_IDENTIFIER });
         }
         resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
-      })({ body, ip: context.req?.ip }); // The source IP is checked against the IP whitelist before the lockout counts the attempt
+      })({ body, ip: context.req?.ip, isLocalAuthEnabled });
     });
     if (user && (isLocalAuthEnabled || user.id === OPENCTI_ADMIN_UUID)) {
       await checkIpWhitelistOnLogin(context.req?.ip, user.id);
@@ -2234,11 +2242,15 @@ export const otpUserLogin = async (req: OtpSessionRequest, user: AuthUser, { cod
   if (!user.otp_activated) {
     throw AuthenticationFailure();
   }
-  // A failed MFA code counts like a failed password, so that the second factor cannot be brute-forced
+  // A failed MFA code counts like a failed password, so that the second factor cannot be brute-forced.
+  // After a local password, the code is counted before it is checked and rejected during a lock.
+  // After another provider (LDAP, SSO), the local lock never blocks the login: only a failed code is counted
   const lockout = await loadLocalAuthLockout(user.user_email, user.id);
-  const attempt = await lockout?.recordAttempt();
+  const isLocalSession = req.session.session_provider === LOCAL_STRATEGY_IDENTIFIER;
+  const localAttempt = isLocalSession ? await lockout?.recordAttempt() : undefined;
   const { valid } = await totp.verify({ secret: user.otp_secret!, token: code });
   if (!valid) {
+    const attempt = localAttempt ?? await lockout?.recordAttempt();
     if (attempt?.locksAccount) {
       const lockedUser = await getUserByEmail(user.user_email);
       if (lockedUser) {
@@ -2463,6 +2475,8 @@ export const authenticateUserByBasicAuth = async (context: AuthContext, req: Ori
   const user = platformUsers.get(loggedUser.id);
   if (user) {
     if (!isUserHasCapability(user, 'APIACCESS_USEBASICAUTH')) {
+      // The password was right: its attempt is not a failure, but the login is not accepted either, so the counter is kept
+      await releaseLocalAuthAttempt(basicAuth.username);
       throw ForbiddenAccess('You are not allowed to use API basic auth');
     }
     await clearLocalAuthLockout(basicAuth.username);
