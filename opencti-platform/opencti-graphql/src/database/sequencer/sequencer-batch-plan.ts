@@ -150,8 +150,11 @@ const isFoldable = (intent: SequencerIntent): boolean => intent.kind === 'entity
 interface ChainStep {
   leader: SequencerIntent;
   absorbed: SequencerIntent[];
-  norm: string;
+  // computed on demand, only once a second intent lands on the same key (most keys have one)
+  norm?: string;
 }
+
+const normOf = (intent: SequencerIntent): string => `${intent.kind}:${intent.type}:${stableStringify(intent.input)}`;
 
 interface Chain {
   steps: ChainStep[];
@@ -243,6 +246,106 @@ const stripDeadFromIntent = (intent: SequencerIntent, deadIds: Set<string>): voi
   deadIds.forEach((id) => intent.memberRefIds?.delete(id));
 };
 
+// Step 4 of buildBatchPlan. Same output as the former O(n^2 log n) loop (each pass re-filtered
+// every remaining node and re-sorted the ready pool): priority (phase, arrivedAt, index), a
+// non-applicable dep never blocks, a cycle emits the lowest-priority remaining node, and
+// dependsOn lists the order positions of the applicable deps already emitted (a cycle-broken
+// edge may point forward and is then omitted). Exported for its oracle test.
+export const orderApplicable = (groups: { leader: SequencerIntent; absorbed: SequencerIntent[] }[], edges: Set<number>[], applicable: boolean[]): CoalesceGroup[] => {
+  const n = groups.length;
+  const phase = new Int8Array(n);
+  const arrived = new Float64Array(n);
+  const indegree = new Int32Array(n);
+  const dependents: number[][] = new Array(n);
+  const nodes: number[] = [];
+  for (let i = 0; i < n; i += 1) {
+    if (applicable[i]) {
+      phase[i] = classifyPhase(groups[i].leader);
+      arrived[i] = groups[i].leader.arrivedAt;
+      nodes.push(i);
+      edges[i].forEach((dep) => {
+        if (!applicable[dep]) return;
+        indegree[i] += 1;
+        (dependents[dep] ??= []).push(i);
+      });
+    }
+  }
+  const less = (a: number, b: number): boolean => {
+    if (phase[a] !== phase[b]) return phase[a] < phase[b];
+    const d = arrived[a] - arrived[b];
+    if (d < 0) return true;
+    if (d > 0) return false;
+    return a < b;
+  };
+  const heap: number[] = [];
+  const push = (v: number) => {
+    let k = heap.length;
+    heap.push(v);
+    while (k > 0) {
+      const p = (k - 1) >> 1;
+      if (!less(v, heap[p])) break;
+      heap[k] = heap[p];
+      k = p;
+    }
+    heap[k] = v;
+  };
+  const pop = (): number => {
+    const top = heap[0];
+    const last = heap.pop() as number;
+    if (heap.length > 0) {
+      let k = 0;
+      for (;;) {
+        const l = 2 * k + 1;
+        if (l >= heap.length) break;
+        const r = l + 1;
+        const c = r < heap.length && less(heap[r], heap[l]) ? r : l;
+        if (!less(heap[c], last)) break;
+        heap[k] = heap[c];
+        k = c;
+      }
+      heap[k] = last;
+    }
+    return top;
+  };
+  nodes.forEach((i) => {
+    if (indegree[i] === 0) push(i);
+  });
+  // cycle-break pool, sorted by priority only once a cycle is met; the cursor skips done nodes
+  let byPriority: number[] | null = null;
+  let cursor = 0;
+  const done = new Uint8Array(n);
+  const position = new Int32Array(n).fill(-1); // group index -> position in order
+  const order: CoalesceGroup[] = [];
+  while (order.length < nodes.length) {
+    let next: number;
+    if (heap.length > 0) {
+      next = pop();
+    } else {
+      byPriority ??= nodes.slice().sort((a, b) => (less(a, b) ? -1 : 1));
+      while (done[byPriority[cursor]]) cursor += 1;
+      next = byPriority[cursor];
+    }
+    done[next] = 1;
+    const nextDependents = dependents[next];
+    if (nextDependents) {
+      for (let j = 0; j < nextDependents.length; j += 1) {
+        const d = nextDependents[j];
+        indegree[d] -= 1;
+        // a node emitted by a cycle break is never pushed again
+        if (indegree[d] === 0 && !done[d]) push(d);
+      }
+    }
+    // s9.9: expose the applicable producers as order positions
+    const dependsOn: number[] = [];
+    edges[next].forEach((dep) => {
+      if (applicable[dep] && position[dep] >= 0) dependsOn.push(position[dep]);
+    });
+    position[next] = order.length;
+    order.push({ leader: groups[next].leader, absorbed: groups[next].absorbed, dependsOn });
+  }
+  return order;
+};
+
 export const buildBatchPlan = (
   batch: SequencerIntent[],
   resolveId: (id: string) => string | null,
@@ -257,18 +360,22 @@ export const buildBatchPlan = (
   let chainedSteps = 0;
   batch.forEach((intent) => {
     const key = canonicalKey(intent, resolveId);
-    const norm = `${intent.kind}:${intent.type}:${stableStringify(intent.input)}`;
     const chain = chainsByKey.get(key);
     if (!chain) {
       const resolvedTarget = intent.kind === 'entity' && intent.candidateIds.some((id) => resolveId(id) !== null);
       chainsByKey.set(key, {
-        steps: [{ leader: intent, absorbed: [], norm }],
+        steps: [{ leader: intent, absorbed: [] }],
         foldEligible: resolvedTarget && isFoldable(intent) && !forceDirect.has(intent.id),
         resolvedTarget,
       });
       return;
     }
-    const sameStep = chain.steps.find((step) => step.norm === norm);
+    // lazy norms: still inside this loop, before any dead strip mutates an input
+    const norm = normOf(intent);
+    const sameStep = chain.steps.find((step) => {
+      step.norm ??= normOf(step.leader);
+      return step.norm === norm;
+    });
     if (sameStep) {
       sameStep.absorbed.push(intent);
     } else if (chain.foldEligible && isFoldable(intent) && !forceDirect.has(intent.id)) {
@@ -449,36 +556,8 @@ export const buildBatchPlan = (
     }
   });
   // 4. topological order among applicable groups, (phase, arrival) priority, cycles broken
-  // by taking the lowest-priority remaining node
-  const priority = (index: number) => {
-    const { leader } = groups[index];
-    return [classifyPhase(leader), leader.arrivedAt, index] as const;
-  };
-  const remaining = new Set<number>(groups.map((_, i) => i).filter((i) => applicable[i]));
-  const done = new Set<number>();
-  const order: CoalesceGroup[] = [];
-  const orderPosition = new Map<number, number>(); // group index -> position in order
-  while (remaining.size > 0) {
-    const ready = Array.from(remaining)
-      .filter((i) => Array.from(edges[i]).every((dep) => done.has(dep) || !applicable[dep]));
-    const pool = ready.length > 0 ? ready : Array.from(remaining); // cycle: break by priority
-    pool.sort((a, b) => {
-      const pa = priority(a);
-      const pb = priority(b);
-      if (pa[0] !== pb[0]) return pa[0] - pb[0];
-      if (pa[1] !== pb[1]) return pa[1] - pb[1];
-      return pa[2] - pb[2];
-    });
-    const next = pool[0];
-    remaining.delete(next);
-    done.add(next);
-    // s9.9: expose the applicable producers as order positions (emitted earlier by
-    // construction; a cycle-broken edge may point forward and is then omitted)
-    const dependsOn = Array.from(edges[next])
-      .filter((dep) => applicable[dep] && orderPosition.has(dep))
-      .map((dep) => orderPosition.get(dep) as number);
-    orderPosition.set(next, order.length);
-    order.push({ leader: groups[next].leader, absorbed: groups[next].absorbed, dependsOn });
-  }
+  // by taking the lowest-priority remaining node. Kahn over a binary min-heap; phase and
+  // arrival read once per group, here (the step-3 dead strip can change the phase)
+  const order = orderApplicable(groups, edges, applicable);
   return { order, deferred, parked, finalMissing, strippedDead, chainedSteps };
 };

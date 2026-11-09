@@ -109,7 +109,7 @@ import { registerSequencerLoaders, sequencerDedupPrefetchKey, submitIntent, take
 import { getCurrentBatchLock } from './sequencer/sequencer-batch-lock';
 import { sequencerMetrics } from './sequencer/sequencer-metrics';
 import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
-import { getCurrentStripSink, registerReconcileAssert } from './sequencer/sequencer-pending-refs';
+import { registerReconcileAssert, stripSinkOf } from './sequencer/sequencer-pending-refs';
 import { pendingIntentContext, pendingRecordInput, registerPendingIntentResubmit } from './sequencer/sequencer-pending-intents';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { createInputCompletionOf } from './create-input-completion';
@@ -1327,13 +1327,11 @@ export const inputResolveRefs = async (
     // note opencti-strip-and-reconcile-design). Under the sequencer, an unresolved
     // OPTIONAL ref never rejects the write: the historic reject-twice-then-silent-drop
     // above lost the edge forever (verdict 30: 479 holes/run measured). Each droppable
-    // REF edge is pushed into the loop's per-apply strip sink (a context-carried slot
-    // dies with the scoped context copy the apply closure builds: the loop never sees
-    // it); the loop persists the records with the batch and re-asserts the edges when
-    // their targets land. Non-ref unresolved values (vocabs) keep the stock behavior
-    // below.
-    const stripSink = SEQUENCER_CONFIG.stripReconcile && (context as any).sequencer?.scope === 'applying'
-      ? getCurrentStripSink() : null;
+    // REF edge is pushed into the loop's per-apply strip sink (the loop's array, carried
+    // by reference on the applying context); the loop persists the records with the batch
+    // and re-asserts the edges when their targets land. Non-ref unresolved values (vocabs)
+    // keep the stock behavior below.
+    const stripSink = SEQUENCER_CONFIG.stripReconcile ? stripSinkOf(context) : null;
     if (stripSink && expectedUnresolvedIdsNotDefault.length > 0) {
       expectedUnresolvedIdsNotDefault.forEach((refId) => {
         const configs = fetchingIdsMap.get(refId) ?? [];
@@ -4013,7 +4011,7 @@ export const createRelation = async (
       candidateIds,
       referencedIds: sequencerReferencedIds(relationshipType, input),
       memberRefIds,
-      apply: () => createRelationDirect(sequencerScopedContext(context, 'applying'), user, input, opts),
+      apply: (stripSink) => createRelationDirect(sequencerScopedContext(context, 'applying', stripSink), user, input, opts),
     });
   }
   return createRelationDirect(context, user, input, opts);
@@ -4549,7 +4547,7 @@ export const createEntity = async (
       candidateIds,
       referencedIds: sequencerReferencedIds(type, input),
       memberRefIds,
-      apply: () => createEntityDirect(sequencerScopedContext(context, 'applying'), user, input, type, opts),
+      apply: (stripSink) => createEntityDirect(sequencerScopedContext(context, 'applying', stripSink), user, input, type, opts),
     });
   }
   return createEntityDirect(context, user, input, type, opts);

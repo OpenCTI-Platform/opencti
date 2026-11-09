@@ -273,6 +273,28 @@ export const pythonLen = (value: unknown) => {
 // Values of the base64 alphabet (binascii table_a2b_base64), the other characters are skipped
 const BASE64_VALUES = new Map([...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'].map((character, index) => [character, index]));
 
+// Whether `value` is canonical base64, given its native decoding (Buffer.from(value, 'base64')):
+// the same answer as native.toString('base64') === value without re-encoding MB strings. The native
+// decoder skips the characters outside the alphabet, so a full-length output proves every data
+// character valid; it also reads the url-safe '-' and '_' and the low byte of a character past
+// 0xff, which a round trip refuses; and a canonical last data character leaves no unused bit set.
+const isCanonicalBase64 = (value: string, native: Buffer) => {
+  const { length } = value;
+  if (length % 4 !== 0) return false;
+  if (length === 0) return native.length === 0;
+  // no scan on a one-byte string (V8 knows the class cannot match it)
+  // eslint-disable-next-line no-control-regex
+  if (/[^\x00-\xff]/.test(value)) return false;
+  const pads = value.charCodeAt(length - 1) === 61 ? (value.charCodeAt(length - 2) === 61 ? 2 : 1) : 0;
+  if (native.length !== (length / 4) * 3 - pads) return false;
+  if (value.indexOf('-') !== -1 || value.indexOf('_') !== -1) return false;
+  const last = BASE64_VALUES.get(value[length - 1 - pads]);
+  if (last === undefined) return false;
+  if (pads === 2) return (last & 0x0f) === 0;
+  if (pads === 1) return (last & 0x03) === 0;
+  return true;
+};
+
 // pycti base64.b64decode(value): Python's non-strict binascii.a2b_base64 (CPython 3.12): characters
 // outside the alphabet are discarded, a padding ends the data once it completes a quad, and a
 // truncated quad fails with binascii.Error (a ValueError)
@@ -283,7 +305,7 @@ export const b64decode = (value: unknown) => {
   // Canonical base64 (the files of real messages, up to tens of MB): the native decoder gives
   // Python's bytes. Only a canonical string survives the round trip, any other one is decoded below
   const native = Buffer.from(value, 'base64');
-  if (native.toString('base64') === value) {
+  if (isCanonicalBase64(value, native)) {
     return native;
   }
   // eslint-disable-next-line no-control-regex

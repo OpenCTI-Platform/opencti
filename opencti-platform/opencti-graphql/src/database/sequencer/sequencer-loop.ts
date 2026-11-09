@@ -23,7 +23,7 @@ import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { elCreateIndexWithMapping, elFindByIds, elFlushSequencerWrites, elIndexExists, elRawBulk, elRawSearch } from '../engine';
-import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps, withStripSink } from './sequencer-pending-refs';
+import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps } from './sequencer-pending-refs';
 import type { StrippedRef, StrippedRefInput } from './sequencer-pending-refs';
 import { computeApplyLevels, groupIndicesByLevel, runBounded } from './sequencer-apply-levels';
 import { deferIntents, fireResubmit, initPendingIntents, matchLandedIntents, pendingIntentsAccepting, registerPendingIntentsEsOps } from './sequencer-pending-intents';
@@ -500,13 +500,13 @@ const applyGroup = async (
   const t0 = Date.now();
   const m0 = recordPhase ? sequencerMetrics.mark() : undefined;
   let success = true;
-  // s9.12.3 strip-and-reconcile: the per-apply sink travels with the apply's async context
-  // (AsyncLocalStorage), so concurrent applies of one batch each collect their own strips.
-  // Strips from nested re-entrant creates land in the same sink and get attributed to the
-  // leader element (documented POC approximation).
+  // s9.12.3 strip-and-reconcile: the per-apply sink travels by reference on the apply's scoped
+  // context, so concurrent applies of one batch each collect their own strips. Strips from
+  // nested re-entrant creates land in the same sink and get attributed to the leader element
+  // (documented POC approximation).
   const stripSink: StrippedRef[] = [];
   try {
-    const result = await withStripSink(stripSink, () => leader.apply());
+    const result = await leader.apply(stripSink);
     const element = result?.element ?? result;
     if (element?.internal_id) {
       // read-your-writes for later intents of THIS batch (E2); evicted at commit (D4a).
@@ -1190,7 +1190,7 @@ interface SubmitArgs {
   candidateIds: string[];
   referencedIds?: string[];
   memberRefIds?: Set<string>;
-  apply: () => Promise<any>;
+  apply: (stripSink?: StrippedRef[]) => Promise<any>;
 }
 
 // Called by the boundary (middleware.ts) AFTER isSequencerEligible returned true. The apply

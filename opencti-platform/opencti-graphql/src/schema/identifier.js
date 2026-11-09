@@ -1,4 +1,5 @@
-import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
+import { createHash } from 'node:crypto';
+import { parse as uuidParse, v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import jsonCanonicalize from 'canonicalize';
@@ -89,6 +90,11 @@ const STATIC_STANDARD_IDS = [
   { id: MARKING_TLP_RED_ID, data: { definition_type: 'TLP', definition: 'TLP:RED' } },
 ];
 const getStaticIdFromData = (data) => {
+  // Every static entry is { definition_type: 'TLP', definition: <string> }: R.equals can only match
+  // data carrying both, skip the scan for all the others
+  if (data === null || data === undefined || data.definition_type !== 'TLP' || typeof data.definition !== 'string') {
+    return undefined;
+  }
   const findStatic = R.find((s) => R.equals(s.data, data), STATIC_STANDARD_IDS);
   return findStatic?.id;
 };
@@ -324,18 +330,69 @@ export const isSupportedStixType = (stixType) => {
   }
   return supportedStixTypes.has(stixType);
 };
+// Contribution resolved for each type, reset when a contribution is registered (misses are not kept)
+const contributionByType = new Map();
 export const registerModelIdentifier = (identifier) => {
   identifierContributions.push(identifier);
   supportedStixTypes = null;
+  contributionByType.clear();
 };
 
-const resolveContribution = (type) => {
+// Read only view of the registered contributions (identifier tests)
+export const getIdentifierContributions = () => [...identifierContributions];
+export const resolveContribution = (type) => {
+  const cached = contributionByType.get(type);
+  if (cached) {
+    return cached;
+  }
   const finder = (c) => Object.keys(c.definition).includes(type);
   const ident = identifierContributions.find(finder);
   if (!ident) {
     throw UnsupportedError(`Type ${type} has not available resolution`);
   }
+  contributionByType.set(type, ident);
   return ident;
+};
+// uuid v5 of the uuid library without its per call namespace parsing and byte copies: same sha1 of
+// namespace bytes + utf8 value, same version and variant bits. Strings with a lone surrogate keep the
+// library (encodeURIComponent throws an URIError on them).
+const namespaceBytesCache = new Map();
+const HEX_BYTES = Array.from({ length: 256 }, (_, i) => (i + 0x100).toString(16).slice(1));
+const fastUuidv5 = (value, namespace) => {
+  if (typeof value !== 'string' || typeof namespace !== 'string' || !value.isWellFormed()) {
+    return uuidv5(value, namespace);
+  }
+  let namespaceBytes = namespaceBytesCache.get(namespace);
+  if (namespaceBytes === undefined) {
+    namespaceBytes = Buffer.from(uuidParse(namespace));
+    namespaceBytesCache.set(namespace, namespaceBytes);
+  }
+  const b = createHash('sha1').update(namespaceBytes).update(value, 'utf8').digest();
+  b[6] = (b[6] & 0x0f) | 0x50;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  return `${HEX_BYTES[b[0]]}${HEX_BYTES[b[1]]}${HEX_BYTES[b[2]]}${HEX_BYTES[b[3]]}-${HEX_BYTES[b[4]]}${HEX_BYTES[b[5]]}`
+    + `-${HEX_BYTES[b[6]]}${HEX_BYTES[b[7]]}-${HEX_BYTES[b[8]]}${HEX_BYTES[b[9]]}`
+    + `-${HEX_BYTES[b[10]]}${HEX_BYTES[b[11]]}${HEX_BYTES[b[12]]}${HEX_BYTES[b[13]]}${HEX_BYTES[b[14]]}${HEX_BYTES[b[15]]}`;
+};
+// The same canonical data is identified many times (markings, labels, authors, kill chain phases...):
+// bounded memo of the pure namespace + canonical -> uuid function, for short canonical strings only
+const UUID_MEMO_MAX_VALUE_LENGTH = 512;
+const UUID_MEMO_MAX_ENTRIES = 20000;
+const uuidMemo = new Map();
+const memoizedUuidv5 = (value, namespace) => {
+  if (typeof value !== 'string' || value.length > UUID_MEMO_MAX_VALUE_LENGTH) {
+    return fastUuidv5(value, namespace);
+  }
+  const key = namespace + value;
+  let uuid = uuidMemo.get(key);
+  if (uuid === undefined) {
+    uuid = fastUuidv5(value, namespace);
+    if (uuidMemo.size >= UUID_MEMO_MAX_ENTRIES) {
+      uuidMemo.clear();
+    }
+    uuidMemo.set(key, uuid);
+  }
+  return uuid;
 };
 export const idGen = (type, data, namespace) => {
   // If empty data, generate an error message
@@ -352,7 +409,7 @@ export const idGen = (type, data, namespace) => {
   }
   // If everything standard, generate the id from the data
   const dataCanonicalize = jsonCanonicalize(data);
-  return uuidv5(dataCanonicalize, namespace);
+  return memoizedUuidv5(dataCanonicalize, namespace);
 };
 export const idGenFromData = (type, data) => {
   const dataCanonicalize = jsonCanonicalize(data);
@@ -390,23 +447,46 @@ export const isFieldContributingToStandardId = (instance, keys) => {
   const keysIncluded = fieldsContributingToStandardId(instance, keys);
   return keysIncluded.length > 0;
 };
+// Native loops with the ramda semantics: R.pick keeps the srcs `in` data, R.includes of a key in a
+// string src is a substring test (first matching way entry wins), R.filter keeps Object.keys order
 const filteredIdContributions = (contrib, way, data) => {
-  const propertiesToKeep = R.flatten(R.map((t) => t.src, way));
-  const dataRelated = R.pick(propertiesToKeep, data);
-  if (R.isEmpty(dataRelated)) {
+  const propertiesToKeep = [];
+  for (let index = 0; index < way.length; index += 1) {
+    const { src } = way[index];
+    if (typeof src === 'string') {
+      propertiesToKeep.push(src);
+    } else {
+      pushAll(propertiesToKeep, R.flatten([src]));
+    }
+  }
+  const dataRelated = {};
+  for (let index = 0; index < propertiesToKeep.length; index += 1) {
+    const property = propertiesToKeep[index];
+    if (property in data) {
+      dataRelated[property] = data[property];
+    }
+  }
+  const keys = Object.keys(dataRelated);
+  if (keys.length === 0) {
     return {};
   }
   const objectData = {};
-  const entries = Object.entries(dataRelated);
-  for (let index = 0; index < entries.length; index += 1) {
-    const entry = entries[index];
-    const [key, value] = entry;
-    const prop = R.find((e) => R.includes(key, e.src), way);
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    const value = dataRelated[key];
+    let prop;
+    for (let wayIndex = 0; wayIndex < way.length; wayIndex += 1) {
+      const wayEntrySrc = way[wayIndex].src;
+      if (typeof wayEntrySrc === 'string' ? wayEntrySrc.indexOf(key) >= 0 : R.includes(key, wayEntrySrc)) {
+        prop = way[wayIndex];
+        break;
+      }
+    }
     const { src, dest, dependencies = [] } = prop;
-    const dataDependencies = Object.values(R.pickAll(dependencies, data));
-    const isEmptyValueInDependencies = dataDependencies.filter((n) => isEmptyField(n)).length !== 0;
-    if (isEmptyValueInDependencies) {
-      return {};
+    for (let depIndex = 0; depIndex < dependencies.length; depIndex += 1) {
+      if (isEmptyField(data[dependencies[depIndex]])) {
+        return {};
+      }
     }
     const destKey = dest || src;
     const resolver = contrib.resolvers[src];
@@ -418,7 +498,15 @@ const filteredIdContributions = (contrib, way, data) => {
       objectData[destKey] = R.is(String, value) ? value.trim() : value;
     }
   }
-  return R.filter((keyValue) => !R.isEmpty(keyValue) && !R.isNil(keyValue), objectData);
+  const filtered = {};
+  const objectKeys = Object.keys(objectData);
+  for (let index = 0; index < objectKeys.length; index += 1) {
+    const objectKey = objectKeys[index];
+    if (isNotEmptyField(objectData[objectKey])) {
+      filtered[objectKey] = objectData[objectKey];
+    }
+  }
+  return filtered;
 };
 
 const generateDataUUID = (type, input) => {
@@ -437,12 +525,12 @@ const generateDataUUID = (type, input) => {
   }
   // In same case ID have multiple possibility for his generation.
   const dataWay = {};
-  const haveDiffWays = Array.isArray(R.head(properties));
+  const haveDiffWays = Array.isArray(properties[0]);
   if (haveDiffWays) {
     for (let index = 0; index < properties.length; index += 1) {
       const way = properties[index];
       const uuid = filteredIdContributions(contrib, way, data);
-      if (!R.isEmpty(uuid)) {
+      if (isNotEmptyField(uuid)) {
         dataWay.way = way;
         dataWay.data = uuid;
         break; // Stop as soon as a correct id is found

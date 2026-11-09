@@ -73,6 +73,27 @@ interface Operation {
   dependents: { operation: Operation; settled: boolean }[];
 }
 
+// A FIFO read from a head index: Array.shift copies the whole array once it is deep (V8, past
+// ~16k elements) and a busy source can hold that many ready operations
+interface ReadyQueue {
+  items: (Operation | undefined)[];
+  head: number;
+}
+
+const readyLength = (queue: ReadyQueue) => queue.items.length - queue.head;
+
+const readyShift = (queue: ReadyQueue): Operation => {
+  const operation = queue.items[queue.head] as Operation;
+  queue.items[queue.head] = undefined;
+  queue.head += 1;
+  // drop the consumed prefix once it is most of the array
+  if (queue.head > 1024 && queue.head * 2 > queue.items.length) {
+    queue.items = queue.items.slice(queue.head);
+    queue.head = 0;
+  }
+  return operation;
+};
+
 interface Admitted {
   seq: number;
   source: string;
@@ -90,7 +111,7 @@ export const createReleaseScheduler = (deps: SchedulerDeps) => {
   // Released, not yet queued nor settled: counted in the ready depth
   let inPreLoop = 0;
   // Ready operations per source, in readiness order; sources served round-robin, `quantum` each
-  const ready = new Map<string, Operation[]>();
+  const ready = new Map<string, ReadyQueue>();
   const ring: string[] = [];
   let ringIndex = 0;
   const quantum = Math.max(1, deps.quantum ?? 1);
@@ -108,9 +129,9 @@ export const createReleaseScheduler = (deps: SchedulerDeps) => {
     waiting -= 1;
     const queue = ready.get(operation.message.source);
     if (queue) {
-      queue.push(operation);
+      queue.items.push(operation);
     } else {
-      ready.set(operation.message.source, [operation]);
+      ready.set(operation.message.source, { items: [operation], head: 0 });
       ring.push(operation.message.source);
     }
   };
@@ -120,10 +141,10 @@ export const createReleaseScheduler = (deps: SchedulerDeps) => {
     if (ring.length === 0) return undefined;
     ringIndex %= ring.length;
     const source = ring[ringIndex];
-    const queue = ready.get(source) as Operation[];
-    const operation = queue.shift() as Operation;
+    const queue = ready.get(source) as ReadyQueue;
+    const operation = readyShift(queue);
     served += 1;
-    if (queue.length === 0) {
+    if (readyLength(queue) === 0) {
       // the next source takes its place in the ring and starts its turn
       ready.delete(source);
       ring.splice(ringIndex, 1);
@@ -253,7 +274,7 @@ export const createReleaseScheduler = (deps: SchedulerDeps) => {
     notify: () => pump(),
     stats: () => ({
       waiting,
-      ready: [...ready.values()].reduce((total, queue) => total + queue.length, 0),
+      ready: [...ready.values()].reduce((total, queue) => total + readyLength(queue), 0),
       pre_loop: inPreLoop,
       ready_depth: readyDepth(),
       set_point: deps.setPoint(),

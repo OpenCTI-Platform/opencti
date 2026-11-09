@@ -52,6 +52,9 @@ export class SequencerIdentityMap {
 
   private idIndex = new Map<string, string>();
 
+  // the most recent entry of byInternalId: a lookup of it skips the LRU re-insert (same order)
+  private mru: string | null = null;
+
   // s10.3 rung 1: per-BATCH negative cache. Ids probed against ES at pre-resolve and not
   // found are KNOWN ABSENT for the batch lifetime: the batch lock is the single writer for
   // those keys, so the apply-time existence checks can be answered from memory instead of
@@ -89,6 +92,7 @@ export class SequencerIdentityMap {
     if (!entry) return;
     entry.keys.forEach((k) => this.idIndex.delete(k));
     this.byInternalId.delete(internalId);
+    if (this.mru === internalId) this.mru = null;
   }
 
   private lookup(id: string): MapEntry | undefined {
@@ -109,9 +113,12 @@ export class SequencerIdentityMap {
       sequencerMetrics.mapEvent('evict');
       return undefined;
     }
-    // LRU touch
-    this.byInternalId.delete(internalId);
-    this.byInternalId.set(internalId, entry);
+    // LRU touch, a no-op for the most recent entry
+    if (this.mru !== internalId) {
+      this.byInternalId.delete(internalId);
+      this.byInternalId.set(internalId, entry);
+      this.mru = internalId;
+    }
     return entry;
   }
 
@@ -152,6 +159,7 @@ export class SequencerIdentityMap {
       keys,
     };
     this.byInternalId.set(internalId, entry);
+    this.mru = internalId;
     keys.forEach((k) => {
       this.idIndex.set(k, internalId);
       // an ingested element is no longer absent under any of its keys
@@ -288,6 +296,7 @@ export class SequencerIdentityMap {
     const count = this.byInternalId.size;
     this.byInternalId.clear();
     this.idIndex.clear();
+    this.mru = null;
     this.clearAbsent();
     if (count > 0) sequencerMetrics.mapEvent('invalidate', count);
     // the written index is batch-local: it survives a whole-map clear, the loop drops it at commit

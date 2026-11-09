@@ -3,7 +3,7 @@
 // a separate module so the POC surface on shared files stays minimal.
 import { performance, type EventLoopUtilization } from 'node:perf_hooks';
 import { ValueType } from '@opentelemetry/api';
-import type { Counter, Gauge, Histogram } from '@opentelemetry/api';
+import type { Attributes, Counter, Gauge, Histogram } from '@opentelemetry/api';
 import { meterManager } from '../../config/tracing';
 
 export type IntentOutcome = 'applied' | 'coalesced' | 'parked' | 'expired' | 'failed' | 'bypassed' | 'deferred' | 'retained';
@@ -11,7 +11,9 @@ export type BatchPhase = 'resolve' | 'order' | 'apply' | 'commit' | 'events' | '
 export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent' | 'written_hit' | 'written_shielded';
 
 class SequencerMetrics {
-  private intents: Counter | null = null;
+  // Hot-path counters (one add per intent, per identity map lookup): plain totals, exported at
+  // collection time by observable counters under the former names, labels and descriptions
+  private intentTotals = new Map<string, { attributes: Attributes; value: number }>();
 
   private batches: Counter | null = null;
 
@@ -23,7 +25,7 @@ class SequencerMetrics {
 
   private applyLevelsHist: Histogram | null = null;
 
-  private identityMap: Counter | null = null;
+  private identityMapTotals = new Map<MapEvent, number>();
 
   private parkSeconds: Histogram | null = null;
 
@@ -73,10 +75,10 @@ class SequencerMetrics {
 
   register() {
     const meter = meterManager.meterProvider.getMeter('opencti-sequencer');
-    this.intents = meter.createCounter('opencti_sequencer_intents_total', {
+    meter.createObservableCounter('opencti_sequencer_intents_total', {
       valueType: ValueType.INT,
       description: 'Intents by outcome (applied, coalesced, parked, expired, failed, bypassed)',
-    });
+    }).addCallback((result) => this.intentTotals.forEach(({ attributes, value }) => result.observe(value, attributes)));
     this.batches = meter.createCounter('opencti_sequencer_batches_total', {
       valueType: ValueType.INT,
       description: 'Committed batches',
@@ -107,10 +109,10 @@ class SequencerMetrics {
       description: 'Dependency levels applied per batch when apply_concurrency > 1 (1 = every group independent)',
       advice: { explicitBucketBoundaries: [1, 2, 3, 4, 6, 8, 12, 16, 24] },
     });
-    this.identityMap = meter.createCounter('opencti_sequencer_identity_map', {
+    meter.createObservableCounter('opencti_sequencer_identity_map', {
       valueType: ValueType.INT,
       description: 'Identity map events (hit, miss, evict, invalidate; absent = served known-absent from the s10.3 batch negative cache, one avoided ES search each)',
-    });
+    }).addCallback((result) => this.identityMapTotals.forEach((value, event) => result.observe(value, { event })));
     this.parkSeconds = meter.createHistogram('opencti_sequencer_park_seconds', {
       valueType: ValueType.DOUBLE,
       description: 'Time an intent spent parked before resolution or expiry',
@@ -212,7 +214,13 @@ class SequencerMetrics {
   }
 
   intent(outcome: IntentOutcome, kind?: 'entity' | 'relation') {
-    this.intents?.add(1, kind ? { outcome, kind } : { outcome });
+    const key = kind ? `${outcome}:${kind}` : outcome;
+    const total = this.intentTotals.get(key);
+    if (total) {
+      total.value += 1;
+    } else {
+      this.intentTotals.set(key, { attributes: kind ? { outcome, kind } : { outcome }, value: 1 });
+    }
   }
 
   batchCommitted(size: number) {
@@ -235,7 +243,8 @@ class SequencerMetrics {
   }
 
   mapEvent(event: MapEvent, count = 1) {
-    this.identityMap?.add(count, { event });
+    if (count < 0) return; // a counter drops a negative add
+    this.identityMapTotals.set(event, (this.identityMapTotals.get(event) ?? 0) + count);
   }
 
   parked(seconds: number) {

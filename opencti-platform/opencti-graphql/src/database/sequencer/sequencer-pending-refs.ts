@@ -66,9 +66,8 @@ export const registerPendingRefsEsOps = (ops: EsOps) => {
   esOps = ops;
 };
 
-// Per-apply sink for stripped refs: an AsyncLocalStorage store since the concurrent apply of
-// 2026-09-21 (see sequencer-strip-sink.ts); middleware keeps importing getCurrentStripSink here.
-export { getCurrentStripSink, withStripSink } from './sequencer-strip-sink';
+// Per-apply sink for stripped refs: carried on the applying context (see sequencer-strip-sink.ts)
+export { stripSinkOf } from './sequencer-strip-sink';
 export type { StrippedRef } from './sequencer-strip-sink';
 
 const byTarget = new Map<string, Map<string, PendingRefRecord>>();

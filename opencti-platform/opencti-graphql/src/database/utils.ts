@@ -161,7 +161,50 @@ export const READ_RELATIONSHIPS_INDICES = [
   READ_INDEX_INFERRED_RELATIONSHIPS,
 ];
 
-export const isNotEmptyField = <T>(field: T | undefined | null): field is T => !R.isEmpty(field) && !R.isNil(field);
+// Exact equivalent of R.isEmpty, called for nearly every field of every written element.
+// R.isEmpty(x) is equals(x, empty(x)) and resolves the constructor name for objects and arrays: the
+// usual values (nil, primitives, plain arrays and objects) take a native path. Any value ramda could
+// dispatch on (empty / equals / fantasy-land methods, own constructor or toStringTag, other
+// prototypes such as Date, Map, Set, typed arrays, arguments or class instances) keeps R.isEmpty.
+// Built-in prototypes and constructors are assumed to carry no empty / equals method.
+const hasOwnProp = Object.prototype.hasOwnProperty;
+const isEnumerableProp = Object.prototype.propertyIsEnumerable;
+const objectToString = Object.prototype.toString;
+const hasRamdaDispatch = (x: any) => typeof x['fantasy-land/empty'] === 'function' || typeof x.empty === 'function'
+  || typeof x['fantasy-land/equals'] === 'function' || typeof x.equals === 'function' || hasOwnProp.call(x, 'constructor');
+const isEmptyValue = (x: any): boolean => {
+  if (x === null || x === undefined) return false;
+  switch (typeof x) {
+    case 'string':
+      return x.length === 0;
+    case 'number':
+    case 'boolean':
+    case 'bigint':
+    case 'symbol':
+      return false;
+    case 'object': {
+      const proto = Object.getPrototypeOf(x);
+      if (proto === Array.prototype) {
+        if (hasRamdaDispatch(x) || x[Symbol.toStringTag] !== undefined) return R.isEmpty(x);
+        // Empty for ramda means no own enumerable key: holes do not count, extra properties do
+        if (x.length > 0 && isEnumerableProp.call(x, 0)) return false;
+        return Object.keys(x).length === 0;
+      }
+      if (proto === Object.prototype || proto === null) {
+        // toString also rejects arguments objects and own or inherited toStringTag
+        if (hasRamdaDispatch(x) || objectToString.call(x) !== '[object Object]') return R.isEmpty(x);
+        for (const key in x) {
+          if (hasOwnProp.call(x, key)) return false;
+        }
+        return true;
+      }
+      return R.isEmpty(x);
+    }
+    default:
+      return R.isEmpty(x);
+  }
+};
+export const isNotEmptyField = <T>(field: T | undefined | null): field is T => field !== null && field !== undefined && !isEmptyValue(field);
 export const isEmptyField = <T>(field: T | undefined | null): field is undefined | null => !isNotEmptyField(field);
 
 export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: string | string[] | undefined | null): string => {

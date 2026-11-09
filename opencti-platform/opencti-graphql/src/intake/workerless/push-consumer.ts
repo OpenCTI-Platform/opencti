@@ -105,8 +105,9 @@ export const consumePushQueues = async (
           }
           return;
         }
-        // Parsed once, on delivery: its type decides the order (an event queue is consumed in order)
-        const data = parsePushMessage(message.content.toString());
+        // Parsed once, on delivery: its type decides the order (an event queue is consumed in order);
+        // from the raw bytes, its base64 content sliced out (not decoded here)
+        const data = parsePushMessage(message.content);
         order.schedule(queue, isEventMessage(data ?? {}), () => handle(queue, channel, () => open, message, data))
           .catch((cause) => logApp.error(`${LOG_PREFIX} push message scheduling failed`, { queue, cause }));
       }, { noAck: false });

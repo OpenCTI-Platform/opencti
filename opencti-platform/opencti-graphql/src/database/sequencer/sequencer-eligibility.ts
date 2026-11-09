@@ -9,6 +9,7 @@ import { isStixObject } from '../../schema/stixCoreObject';
 import { isStixRelationship } from '../../schema/stixRelationship';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { sequencerIdentityMap } from './sequencer-identity-map';
+import type { StrippedRef } from './sequencer-strip-sink';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isFileValue } from '../../intake/file-values';
 
@@ -83,9 +84,11 @@ export const stripMemberRefMarks = (value: any, collected: Set<string>): any => 
 // An 'applying' scope also carries the identity map (Stage C4): the read chokepoints
 // (elFindByIds, storeLoadByIdsWithRefs) serve from it through context.sequencer.resolutions.
 // The map itself refuses to serve outside batch mode, so pass-through semantics are untouched.
-export const sequencerScopedContext = (context: AuthContext, scope: 'applying' | 'bypass'): AuthContext => {
+// It also carries the apply's strip sink, the loop's array by reference (sequencer-strip-sink.ts),
+// kept when an already applying context is scoped again.
+export const sequencerScopedContext = (context: AuthContext, scope: 'applying' | 'bypass', stripSink?: StrippedRef[]): AuthContext => {
   if (scope === 'applying') {
-    return { ...context, sequencer: { scope, resolutions: sequencerIdentityMap } };
+    return { ...context, sequencer: { scope, resolutions: sequencerIdentityMap, stripSink: stripSink ?? context.sequencer?.stripSink } };
   }
   return { ...context, sequencer: { scope } };
 };

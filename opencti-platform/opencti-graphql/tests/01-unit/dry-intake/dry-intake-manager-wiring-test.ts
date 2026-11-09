@@ -20,6 +20,7 @@ const meter = vi.hoisted(() => {
     createHistogram: () => ({ record: vi.fn() }),
     // the sequencer metrics (POC) register a gauge when the engine is loaded
     createGauge: () => ({ record: vi.fn() }),
+    createObservableCounter: () => ({ addCallback: vi.fn() }),
     createObservableGauge: (name: string) => ({ addCallback: (callback: (result: { observe: (value: number) => void }) => void) => gauges.set(name, callback) }),
   };
   return { counters, gauges, getMeter: () => create };

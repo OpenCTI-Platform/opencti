@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { computeApplyLevels, groupIndicesByLevel, runBounded } from '../../../src/database/sequencer/sequencer-apply-levels';
-import { getCurrentStripSink, withStripSink } from '../../../src/database/sequencer/sequencer-strip-sink';
 
 describe('sequencer apply levels', () => {
   it('gives level 0 to groups without in-batch producers and one more than the deepest producer otherwise', () => {
@@ -68,26 +67,5 @@ describe('sequencer apply levels', () => {
       seen.push(i);
     });
     expect(seen).toEqual([3, 1, 2]);
-  });
-});
-
-describe('strip sink per apply', () => {
-  it('lets concurrent applies each see their own sink across awaits', async () => {
-    const a: { targetRef: string; relType: string }[] = [];
-    const b: { targetRef: string; relType: string }[] = [];
-    const apply = (sink: { targetRef: string; relType: string }[], tag: string) => withStripSink(sink, async () => {
-      await new Promise((r) => {
-        setTimeout(r, 5);
-      });
-      getCurrentStripSink()?.push({ targetRef: tag, relType: 'r' });
-      await new Promise((r) => {
-        setTimeout(r, 1);
-      });
-      getCurrentStripSink()?.push({ targetRef: `${tag}2`, relType: 'r' });
-    });
-    await Promise.all([apply(a, 'a'), apply(b, 'b')]);
-    expect(a.map((s) => s.targetRef)).toEqual(['a', 'a2']);
-    expect(b.map((s) => s.targetRef)).toEqual(['b', 'b2']);
-    expect(getCurrentStripSink()).toBeNull();
   });
 });

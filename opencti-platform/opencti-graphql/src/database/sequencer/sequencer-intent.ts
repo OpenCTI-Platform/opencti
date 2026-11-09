@@ -6,6 +6,7 @@
 // ref/internal relationships identity is (from, to, type, window), never an id.
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
+import type { StrippedRef } from './sequencer-strip-sink';
 
 export type IntentKind = 'entity' | 'relation';
 
@@ -41,7 +42,8 @@ export interface SequencerIntent {
   // successful apply into the pending-refs store (s9.12.3): a "dead" member is usually
   // just LATE, and the reconcile restores the edge when it lands.
   deadStrippedRefs?: { inputKey: string; refId: string }[];
-  apply: () => Promise<any>;
+  // stripSink: the loop's per-apply sink, set on the applying context (sequencer-strip-sink.ts)
+  apply: (stripSink?: StrippedRef[]) => Promise<any>;
   resolve: (value: any) => void;
   reject: (err: any) => void;
   promise: Promise<any>;
@@ -57,7 +59,7 @@ interface BuildIntentArgs {
   candidateIds: string[];
   referencedIds?: string[];
   memberRefIds?: Set<string>;
-  apply: () => Promise<any>;
+  apply: (stripSink?: StrippedRef[]) => Promise<any>;
 }
 
 const intentSize = (input: Record<string, any>) => {

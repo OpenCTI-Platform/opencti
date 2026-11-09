@@ -80,10 +80,82 @@ export interface PushOutcome {
   objects: number;
 }
 
-// The push message, parsed: the intake reads its type before handling it (an event queue is consumed in order)
-export const parsePushMessage = (body: string): Record<string, any> | null => {
+const CONTENT_KEY = Buffer.from('"content"');
+
+const isJsonSpace = (byte: number | undefined) => byte === 0x20 || byte === 0x0a || byte === 0x0d || byte === 0x09;
+
+// Every byte in 0x20-0x7f (an ASCII string JSON reads raw), four at a time: a byte past 0x7f sets
+// its high bit, a byte below 0x20 sets it in (w - 0x20202020) & ~w (exact while all are ASCII)
+const isPlainAscii = (bytes: Buffer, start: number, end: number): boolean => {
+  const plain = (byte: number) => byte >= 0x20 && byte <= 0x7f;
+  let i = start;
+  while (i < end && ((bytes.byteOffset + i) & 3) !== 0) {
+    if (!plain(bytes[i])) return false;
+    i += 1;
+  }
+  const count = Math.floor((end - i) / 4);
+  if (count > 0) {
+    const words = new Uint32Array(bytes.buffer, bytes.byteOffset + i, count);
+    let acc = 0;
+    for (let k = 0; k < count; k += 1) {
+      const w = words[k];
+      acc |= w | ((w - 0x20202020) & ~w);
+    }
+    if ((acc & 0x80808080) !== 0) return false;
+  }
+  for (let j = i + count * 4; j < end; j += 1) {
+    if (!plain(bytes[j])) return false;
+  }
+  return true;
+};
+
+// The envelope without decoding its content: the base64 of the bundle (MBs) is the value of the
+// one top-level "content" key, so it is sliced from the raw bytes and only the rest goes through
+// utf8 and JSON.parse. Null whenever the plain shape is not certain (a second or nested "content",
+// an escape in the value or a \u escape in the rest, which could spell the key, a control or
+// non-ASCII byte in the value, a rest that does not parse): the caller then parses the whole body.
+const parseAroundContent = (body: Buffer): Record<string, any> | null => {
+  const key = body.indexOf(CONTENT_KEY);
+  if (key <= 0 || body.indexOf(CONTENT_KEY, key + CONTENT_KEY.length) !== -1) return null;
+  let before = key - 1;
+  while (before >= 0 && isJsonSpace(body[before])) before -= 1;
+  // a key follows '{' or ','; inside a string the quote would follow a backslash
+  if (before < 0 || (body[before] !== 0x7b && body[before] !== 0x2c)) return null;
+  let at = key + CONTENT_KEY.length;
+  while (isJsonSpace(body[at])) at += 1;
+  if (body[at] !== 0x3a) return null;
+  at += 1;
+  while (isJsonSpace(body[at])) at += 1;
+  if (body[at] !== 0x22) return null;
+  const start = at + 1;
+  const end = body.indexOf(0x22, start);
+  if (end === -1 || body.subarray(start, end).indexOf(0x5c) !== -1 || !isPlainAscii(body, start, end)) return null;
+  const rest = `${body.toString('utf8', 0, start)}${body.toString('utf8', end)}`;
+  if (rest.includes('\\u')) return null;
+  let data: any;
   try {
-    const data = JSON.parse(body);
+    data = JSON.parse(rest);
+  } catch {
+    return null;
+  }
+  if (data === null || typeof data !== 'object' || data.content !== '') return null;
+  // the value the full parse gives: an ASCII string without escapes is its own bytes
+  data.content = body.toString('latin1', start, end);
+  return data;
+};
+
+// The push message, parsed: the intake reads its type before handling it (an event queue is consumed in order)
+export const parsePushMessage = (body: Buffer | string): Record<string, any> | null => {
+  if (typeof body !== 'string') {
+    try {
+      const data = parseAroundContent(body);
+      if (data) return data;
+    } catch {
+      // any doubt: the full parse below
+    }
+  }
+  try {
+    const data = JSON.parse(typeof body === 'string' ? body : body.toString());
     return data !== null && typeof data === 'object' ? data : null;
   } catch {
     return null;

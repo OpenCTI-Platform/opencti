@@ -28,6 +28,51 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { pushAll } from '../utils/arrayUtil';
 
+// Input fields never stored in the entity
+const ENTITY_INPUT_FIELDS_NOT_STORED = ['update', 'upsertOperations', 'file', 'fileMarkings', 'files', 'filesMarkings', 'noTriggerImport', 'embedded'];
+const buildEntityDefaultAttributes = (input, type, inferred, internalId, standardId, user) => {
+  const indexName = inferIndexFromConceptType(type, inferred);
+  const creatorIds = [user.internal_id];
+  const inputNames = schemaRelationsRefDefinition.getInputNames(input.entity_type);
+  // One copy then the ordered assignments and deletions of the former R.assoc / R.dissoc / R.omit
+  // chain: same keys in the same order (for...in like ramda, inherited enumerable properties included)
+  const data = {};
+  for (const key in input) {
+    if (key === '__proto__') {
+      // Each ramda copy assigns it, changing the prototype of the next copy: keep the ramda chain
+      return R.pipe(
+        R.assoc('_index', indexName),
+        R.assoc(ID_INTERNAL, internalId),
+        R.assoc(ID_STANDARD, standardId),
+        R.assoc('entity_type', type),
+        R.assoc('creator_id', creatorIds),
+        R.dissoc('update'),
+        R.dissoc('upsertOperations'),
+        R.dissoc('file'),
+        R.dissoc('fileMarkings'),
+        R.dissoc('files'),
+        R.dissoc('filesMarkings'),
+        R.dissoc('noTriggerImport'),
+        R.dissoc('embedded'),
+        R.omit(inputNames),
+      )(input);
+    }
+    data[key] = input[key];
+  }
+  data._index = indexName;
+  data[ID_INTERNAL] = internalId;
+  data[ID_STANDARD] = standardId;
+  data.entity_type = type;
+  data.creator_id = creatorIds;
+  for (let index = 0; index < ENTITY_INPUT_FIELDS_NOT_STORED.length; index += 1) {
+    delete data[ENTITY_INPUT_FIELDS_NOT_STORED[index]];
+  }
+  for (let index = 0; index < inputNames.length; index += 1) {
+    delete data[inputNames[index]];
+  }
+  return data;
+};
+
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
   const { fromRule, restore } = opts;
   const internalId = input.internal_id || generateInternalId();
@@ -36,22 +81,9 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   const today = now();
   const inferred = isNotEmptyField(fromRule);
   // Default attributes
-  let data = R.pipe(
-    R.assoc('_index', inferIndexFromConceptType(type, inferred)),
-    R.assoc(ID_INTERNAL, internalId),
-    R.assoc(ID_STANDARD, standardId),
-    R.assoc('entity_type', type),
-    R.assoc('creator_id', [user.internal_id]),
-    R.dissoc('update'),
-    R.dissoc('upsertOperations'),
-    R.dissoc('file'),
-    R.dissoc('fileMarkings'),
-    R.dissoc('files'),
-    R.dissoc('filesMarkings'),
-    R.dissoc('noTriggerImport'),
-    R.dissoc('embedded'),
-    R.omit(schemaRelationsRefDefinition.getInputNames(input.entity_type)),
-  )(input);
+  // data is a fresh object owned by this function: completed in place, the key order is the one the
+  // former ramda copy at each step produced (an assignment keeps an existing key in place)
+  const data = buildEntityDefaultAttributes(input, type, inferred, internalId, standardId, user);
   if (inferred) {
     // Simply add the rule
     // start/stop confidence was computed by the rule directly
@@ -59,10 +91,8 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   }
   // Some internal objects have dates
   if (isDatedInternalObject(type)) {
-    data = R.pipe(
-      R.assoc('created_at', restore ? input.created : today),
-      R.assoc('updated_at', today),
-    )(data);
+    data.created_at = restore ? input.created : today;
+    data.updated_at = today;
   }
   // Stix-Object
   if (isStixObject(type)) {
@@ -71,38 +101,32 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     if (haveStixId && input.stix_id !== standardId) {
       stixIds.push(input.stix_id.toLowerCase());
     }
-    data = R.pipe(
-      R.assoc(IDS_STIX, stixIds),
-      R.dissoc('stix_id'),
-      R.assoc('created_at', today),
-      R.assoc('updated_at', today),
-      R.assoc('refreshed_at', today),
-    )(data);
+    data[IDS_STIX] = stixIds;
+    delete data.stix_id;
+    data.created_at = today;
+    data.updated_at = today;
+    data.refreshed_at = today;
   }
   // Stix-Meta-Object
   if (isStixMetaObject(type)) {
-    data = R.pipe(
-      R.assoc('created', R.isNil(input.created) ? today : input.created),
-      R.assoc('modified', R.isNil(input.modified) ? today : input.modified),
-    )(data);
+    data.created = R.isNil(input.created) ? today : input.created;
+    data.modified = R.isNil(input.modified) ? today : input.modified;
   }
   // STIX-Core-Object
   // -- STIX-Domain-Object
   if (isStixDomainObject(type)) {
-    data = R.pipe(
-      R.assoc('revoked', R.isNil(input.revoked) ? false : input.revoked),
-      R.assoc('confidence', R.isNil(input.confidence) ? 0 : input.confidence),
-      R.assoc('lang', R.isNil(input.lang) ? 'en' : input.lang),
-      R.assoc('created', R.isNil(input.created) ? today : input.created),
-      R.assoc('modified', R.isNil(input.modified) ? today : input.modified),
-    )(data);
+    data.revoked = R.isNil(input.revoked) ? false : input.revoked;
+    data.confidence = R.isNil(input.confidence) ? 0 : input.confidence;
+    data.lang = R.isNil(input.lang) ? 'en' : input.lang;
+    data.created = R.isNil(input.created) ? today : input.created;
+    data.modified = R.isNil(input.modified) ? today : input.modified;
     // Get statuses
     const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
     const statusesForType = platformStatuses.filter((p) => p.type === type);
     if (statusesForType.length > 0) {
       // Check, if status is not set or not valid
       if (R.isNil(input[X_WORKFLOW_ID]) || statusesForType.filter((n) => n.id === input[X_WORKFLOW_ID]).length === 0) {
-        data = R.assoc(X_WORKFLOW_ID, R.head(statusesForType).id, data);
+        data[X_WORKFLOW_ID] = R.head(statusesForType).id;
       }
     }
   }
@@ -153,11 +177,14 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   }
 
   // Transaction succeed, complete the result to send it back
-  const entity = R.pipe(
-    R.assoc('id', internalId),
-    R.assoc('base_type', BASE_TYPE_ENTITY),
-    R.assoc('parent_types', getParentTypes(type)),
-  )(data);
+  // A copy: the meta relationships keep data (without these fields) as their from
+  const entity = {};
+  for (const key in data) {
+    entity[key] = data[key];
+  }
+  entity.id = internalId;
+  entity.base_type = BASE_TYPE_ENTITY;
+  entity.parent_types = getParentTypes(type);
 
   // Simply return the data
   return {

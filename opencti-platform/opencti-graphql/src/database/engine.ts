@@ -4836,7 +4836,26 @@ export const prepareElementForIndexing = async (element: Record<string, any>) =>
   }
   return thing;
 };
-const prepareRelation = (thing: Record<string, any>) => {
+const prepareRelationWithRamda = (thing: Record<string, any>, connections: Record<string, any>[]) => {
+  return R.pipe(
+    R.assoc('connections', connections),
+    R.dissoc(INTERNAL_TO_FIELD),
+    R.dissoc(INTERNAL_FROM_FIELD),
+    // Dissoc from
+    R.dissoc('from'),
+    R.dissoc('fromId'),
+    R.dissoc('fromRole'),
+    R.dissoc('fromType'),
+    // Dissoc to
+    R.dissoc('to'),
+    R.dissoc('toId'),
+    R.dissoc('toRole'),
+    R.dissoc('toType'),
+  )(thing);
+};
+// Relation fields replaced by the connections in the indexed document
+const RELATION_FIELDS_NOT_INDEXED = new Set([INTERNAL_TO_FIELD, INTERNAL_FROM_FIELD, 'from', 'fromId', 'fromRole', 'fromType', 'to', 'toId', 'toRole', 'toType']);
+export const prepareRelation = (thing: Record<string, any>) => {
   if (thing.fromRole === undefined || thing.toRole === undefined) {
     throw DatabaseError('Cant index relation connections without from or to', {
       id: thing.internal_id,
@@ -4876,21 +4895,20 @@ const prepareRelation = (thing: Record<string, any>) => {
     types: [to.entity_type, ...getParentTypes(to.entity_type)],
     role: thing.toRole,
   });
-  return R.pipe(
-    R.assoc('connections', connections),
-    R.dissoc(INTERNAL_TO_FIELD),
-    R.dissoc(INTERNAL_FROM_FIELD),
-    // Dissoc from
-    R.dissoc('from'),
-    R.dissoc('fromId'),
-    R.dissoc('fromRole'),
-    R.dissoc('fromType'),
-    // Dissoc to
-    R.dissoc('to'),
-    R.dissoc('toId'),
-    R.dissoc('toRole'),
-    R.dissoc('toType'),
-  )(thing);
+  // One copy instead of the former R.assoc + 10 R.dissoc copies, same result: for...in like ramda
+  // (inherited enumerable properties included), connections keeps its position if present, else appended
+  const relation: Record<string, any> = {};
+  for (const key in thing) {
+    if (key === '__proto__') {
+      // Each ramda copy assigns it, changing the prototype of the next copy: keep the ramda chain
+      return prepareRelationWithRamda(thing, connections);
+    }
+    if (!RELATION_FIELDS_NOT_INDEXED.has(key)) {
+      relation[key] = thing[key];
+    }
+  }
+  relation.connections = connections;
+  return relation;
 };
 const prepareEntity = (thing: Record<string, any>) => {
   return R.pipe(R.dissoc(INTERNAL_TO_FIELD), R.dissoc(INTERNAL_FROM_FIELD))(thing);
@@ -5019,6 +5037,16 @@ export const buildDenormalizedRefsScriptParams = (targetsElements: DenormalizedR
     new_pir_information: newPirInformation,
   };
 };
+// Bulk index body of a document: the document without its _index, in one for...in copy as R.dissoc did
+export const bulkIndexDocument = (doc: Record<string, any>) => {
+  const body: Record<string, any> = {};
+  for (const key in doc) {
+    if (key !== '_index') {
+      body[key] = doc[key];
+    }
+  }
+  return body;
+};
 // POC ingestion sequencer (plan 0009 E1): while a batch intent is applying, the whole call is
 // buffered and re-emitted at flush through ONE elIndexElements call for the batch, whose
 // per-impacted-id grouping below then merges denormalization side-writes across intents.
@@ -5049,7 +5077,7 @@ export const elIndexElements = async (
         const doc = elementDoc;
         return [
           { index: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-          R.pipe(R.dissoc('_index'))(doc),
+          bulkIndexDocument(doc),
         ];
       });
       if (body.length > 0) {
