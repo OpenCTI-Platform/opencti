@@ -156,6 +156,27 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             config,
             default="",
         )
+        # worker queue affinity
+        self.included_queues = get_config_variable(
+            "WORKER_INCLUDED_QUEUES",
+            ["worker", "included_queues"],
+            config,
+            default=[],
+        )
+        if self.included_queues:
+            self.included_queues = [
+                q.strip() for q in self.included_queues.split(",") if q.strip()
+            ]
+        self.excluded_queues = get_config_variable(
+            "WORKER_EXCLUDED_QUEUES",
+            ["worker", "excluded_queues"],
+            config,
+            default=[],
+        )
+        if self.excluded_queues:
+            self.excluded_queues = [
+                q.strip() for q in self.excluded_queues.split(",") if q.strip()
+            ]
         # Telemetry
         self.telemetry_enabled = get_config_variable(
             "WORKER_TELEMETRY_ENABLED",
@@ -209,6 +230,11 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             provider="worker/" + __version__,
         )
         self.worker_logger = self.api.logger_class("worker")
+        if self.included_queues:
+            self.worker_logger.info("Included queues", {"included_queues": self.included_queues})
+        if self.excluded_queues:
+            self.worker_logger.info("Excluded queues", {"excluded_queues": self.excluded_queues})
+
         log_tls_verification_disabled(self.worker_logger, config)
 
     def build_pika_parameters(
@@ -279,6 +305,11 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 
                 # Check if all queues are consumed
                 for connector in connectors:
+                    if (connector["id"] in self.excluded_queues):
+                        continue
+                    if self.included_queues and connector["id"] not in self.included_queues:
+                        continue
+
                     connector_config = connector["config"]
                     # Push to ingest message
                     push_queue = connector_config["push"]
