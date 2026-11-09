@@ -412,6 +412,15 @@ describe('Drafts workspace resolver testing', () => {
     expect(result.data?.draftWorkspaces.edges).toBeDefined();
   });
 
+  it('should list drafts ordered by workflow status without error', async () => {
+    const result = await queryAsAdmin({
+      query: LIST_DRAFT_WORKSPACES_QUERY,
+      variables: { first: 5, orderBy: 'workflowInstance', orderMode: 'desc' },
+    });
+    expect(result.errors).toBeUndefined();
+    expect(result.data?.draftWorkspaces.edges).toBeDefined();
+  });
+
   it('should list drafts ordered by objectParticipant without error', async () => {
     const result = await queryAsAdmin({
       query: LIST_DRAFT_WORKSPACES_QUERY,
@@ -1224,6 +1233,18 @@ describe('Drafts workspace resolver testing', () => {
       expect(result.errors).toBeUndefined();
       expect(Array.isArray(result.data?.draftWorkspacesDistribution)).toBe(true);
       expect(result.data?.draftWorkspacesDistribution.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return a distribution by workflow status', async () => {
+      const result = await queryAsAdmin({
+        query: DRAFT_WORKSPACES_DISTRIBUTION_QUERY,
+        variables: { field: 'workflowInstance', operation: 'count' },
+      });
+      expect(result.errors).toBeUndefined();
+      const distribution = result.data?.draftWorkspacesDistribution;
+      expect(Array.isArray(distribution)).toBe(true);
+      // Every draft counts once, under its status name or Unknown
+      expect(distribution.reduce((sum: number, entry: { value: number }) => sum + entry.value, 0)).toBeGreaterThanOrEqual(1);
     });
 
     it('should return an empty distribution when field is workflowInstanceCurrentState and no instances exist', async () => {
