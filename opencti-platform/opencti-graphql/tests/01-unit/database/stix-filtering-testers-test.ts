@@ -1136,4 +1136,31 @@ describe('Stix filter testers', () => {
       });
     });
   });
+
+  describe('by Closing reason (key=x_opencti_closing_reason)', () => {
+    const stixClosed = { extensions: { [STIX_EXT_OCTI]: { closing_reason: 'false-positive' } } };
+    const stixOpen = { extensions: { [STIX_EXT_OCTI]: {} } };
+
+    it('should test positive for a stix object with a matching closing reason', () => {
+      const filter: Filter = {
+        key: ['x_opencti_closing_reason'],
+        mode: 'or',
+        operator: 'eq',
+        values: ['false-positive', 'duplicate'],
+      } as Filter;
+      expect(testers.testClosingReason(stixClosed, filter)).toEqual(true);
+      expect(testers.testClosingReason(stixOpen, filter)).toEqual(false);
+    });
+
+    it('should test positive for a stix object without closing reason on nil', () => {
+      const filter: Filter = {
+        key: ['x_opencti_closing_reason'],
+        mode: 'or',
+        operator: 'nil',
+        values: [],
+      } as Filter;
+      expect(testers.testClosingReason(stixOpen, filter)).toEqual(true);
+      expect(testers.testClosingReason(stixClosed, filter)).toEqual(false);
+    });
+  });
 });

@@ -5,7 +5,7 @@ import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { IngestionHealthSettings as GraphqlIngestionHealthSettings, IngestionHealthSettingsInput } from '../../generated/graphql';
 import type { AuthContext } from '../../types/user';
 import { DEFAULT_HEALTH_NOTIFICATION_DELAY_MS } from './ingestionHealth-checks';
-import { HEALTH_CHECK_REGISTRY, type HealthCheckCode, isHealthCheckCode } from './ingestionHealth-registry';
+import { HEALTH_CHECK_REGISTRY, type HealthCheckCode, type HealthCheckDefinition, isHealthCheckCode } from './ingestionHealth-registry';
 import type { IngestionHealthSettings } from './ingestionHealth-types';
 
 export const MAX_HEALTH_NOTIFICATION_DELAY_MS = 24 * 60 * 60 * 1000;
@@ -22,12 +22,17 @@ export const toGraphqlIngestionHealthSettings = (settings: IngestionHealthSettin
   const resolved = resolveIngestionHealthSettings(settings);
   return {
     ...resolved,
-    health_checks: (Object.keys(HEALTH_CHECK_REGISTRY) as HealthCheckCode[]).map((code) => ({
-      health_check_code: code,
-      health_check_label: HEALTH_CHECK_REGISTRY[code].label,
-      health_check_kind: HEALTH_CHECK_REGISTRY[code].kind,
-      enabled: !resolved.disabled_health_checks.includes(code),
-    })),
+    health_checks: (Object.keys(HEALTH_CHECK_REGISTRY) as HealthCheckCode[]).map((code) => {
+      // Widened: the registry keeps the narrow type of each check, an optional field is absent from most of them
+      const definition: HealthCheckDefinition = HEALTH_CHECK_REGISTRY[code];
+      return {
+        health_check_code: code,
+        health_check_label: definition.label,
+        health_check_description: definition.description_label,
+        health_check_kind: definition.kind,
+        enabled: !resolved.disabled_health_checks.includes(code),
+      };
+    }),
   };
 };
 

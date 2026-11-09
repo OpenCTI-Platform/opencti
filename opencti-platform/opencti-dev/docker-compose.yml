@@ -14,7 +14,7 @@ services:
       - 5540:5540
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
-    image: elasticsearch:8.19.23@sha256:3f4d63c59ca5a05b535179dfcced47a514119e351fa81653f69902beacae90c9
+    image: elasticsearch:8.19.23@sha256:ef5cafd961d7e273f13fed8def82e63c5ae0491106b5eecb5a69aa12d64f089b
     volumes:
       - esdata:/usr/share/elasticsearch/data
       - essnapshots:/usr/share/elasticsearch/snapshots
@@ -36,7 +36,7 @@ services:
       - 9300:9300
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
-    image: kibana:8.19.23@sha256:f82f2ee9f2979dbfe315a81f08c9dcb5ff83856d990b90a1b07f6014325bfd3f
+    image: kibana:8.19.23@sha256:5974054d04b8cbfde28ba26977e6cc0ae0a59d44d7c0e20fb93724b4de7e8741
     environment:
       - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
     restart: unless-stopped
@@ -124,7 +124,7 @@ services:
   ## podman compose --profile telemetry up -d (launch everything + telemetry)
   opencti-dev-telemetry-pyroscope:
     container_name: opencti-dev-telemetry-pyroscope
-    image: grafana/pyroscope:2.4.1@sha256:8ade8d37ac58c20aca0054360fbcdef956a8242f48ad68e0ec67757f21d48e28
+    image: grafana/pyroscope:2.4.3@sha256:bf667534cd403320573063894e3faba20a5a5d1bfb92eddaecfabeb2446c502b
     restart: unless-stopped
     ports:
       - "4040:4040"
@@ -142,7 +142,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-otlp:
     container_name: opencti-dev-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.163.2@sha256:7f22d2a6748110ffb6a59bc0df448bccbf501cdb667d610ede4c61d3863d5849
+    image: otel/opentelemetry-collector-contrib:0.164.0@sha256:340c9ca6a36617084c6661bdc4f0fe92b7cda5a805d61673ec8db375fddc522b
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
@@ -155,7 +155,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-prometheus:
     container_name: opencti-dev-telemetry-prometheus
-    image: prom/prometheus:v3.15.1@sha256:fa3302279710be2f21a8301ec17a8b4f2301fd829bd113839b3b6b02b6f191a2
+    image: prom/prometheus:v3.16.0@sha256:e04987641b57704f408e31f6373ba4138ecf27cb4a165d24aabb6c38fddd0f06
     restart: unless-stopped
     volumes:
       - "./prometheus.yml:/etc/prometheus/prometheus.yml"
@@ -164,7 +164,7 @@ services:
     profiles:
       - "telemetry"
   opencti-dev-telemetry-grafana:
-    image: grafana/grafana:13.2.4@sha256:dbbc38ea21103cefb50396340cd88afec779c7e070b0a7bf5a75b4ce46651d3f
+    image: grafana/grafana:13.3.0@sha256:488984b716c0862639f91a698adbe2862677a5a07bad42da5f03f3030883b205
     container_name: opencti-dev-telemetry-grafana
     ports:
       - "3100:3000"
@@ -179,7 +179,7 @@ services:
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
     profiles: [keycloak]
-    image: keycloak/keycloak:26.8.0@sha256:27b3230fbabb8c9ff3c66c864cf09dcd8a41aca82e5100679d109ef0eeb05741
+    image: keycloak/keycloak:26.8.2@sha256:3879c623248408de29a5303178b5816c77e8dfef3890c361f8c0bbeaa979ba3b
     volumes:
       - keycloakdata:/opt/keycloak/data
       - ./keycloak-configuration:/opt/keycloak/data/import
@@ -194,7 +194,7 @@ services:
       - "9999:8080"
 
   opencti-dev-mokapi:
-    image: mokapi/mokapi:0.53.0@sha256:52a16a7de1161049fcc7b3918c265c3ad1f791a4b975874714201e307dced779
+    image: mokapi/mokapi:0.56.0@sha256:ba86538dd92746be711b4bac6fadc7bd3645d4e80a8a4b8e915cad92e5f7756a
     profiles: [mokapi]
     container_name: opencti-dev-mokapi
     command: mokapi --providers.file.directory=/share

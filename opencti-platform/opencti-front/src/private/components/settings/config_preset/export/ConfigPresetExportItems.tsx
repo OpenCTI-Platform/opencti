@@ -51,7 +51,8 @@ type ItemsVariables = Omit<ConfigPresetExportItemsQuery['variables'], 'count'>;
 
 const ConfigPresetExportItemsList: FunctionComponent<ConfigPresetSelectionProps & { variables: ItemsVariables }> = ({ variables, ...rowProps }) => {
   const { t_i18n } = useFormatter();
-  const queryData = useLazyLoadQuery<ConfigPresetExportItemsQuery>(configPresetExportItemsQuery, { ...variables, count: PAGE_SIZE });
+  // The items change while the page stays open (labels are added, renamed, deleted): the store may hold an older list and its count
+  const queryData = useLazyLoadQuery<ConfigPresetExportItemsQuery>(configPresetExportItemsQuery, { ...variables, count: PAGE_SIZE }, { fetchPolicy: 'network-only' });
   const { data, hasNext, isLoadingNext, loadNext } = usePaginationFragment<ConfigPresetExportItemsQuery, ConfigPresetExportItems_data$key>(
     configPresetExportItemsFragment,
     queryData,

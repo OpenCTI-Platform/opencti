@@ -176,15 +176,29 @@ describe('ConfigPresetExportDrawer', () => {
     expect(screen.getByRole('checkbox', { name: 'Platform settings (1/2)' })).toHaveAttribute('data-state', 'indeterminate');
   });
 
-  it('does not show a type without item, nor a group left without type', async () => {
-    const emptyTypes = [
-      ...catalog,
-      { key: 'observedData', label: 'Observed datas', group: { key: 'entities', label: 'Entities' }, lockedByEnterpriseEdition: false, items: [] },
-    ];
-    await renderOpenDrawer(vi.fn(), emptyTypes);
-    expect(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' })).toBeInTheDocument();
-    expect(screen.queryByRole('checkbox', { name: /Entities/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('checkbox', { name: /Observed data/ })).not.toBeInTheDocument();
+  it('shows a type without item disabled and unchecked, with its description, and a group left without item disabled', async () => {
+    const entities = { key: 'entities', label: 'Entities' };
+    await renderOpenDrawer(vi.fn(), [...catalog, type('observedData', 'Observed datas', [], { group: entities })]);
+    expect(screen.getByRole('checkbox', { name: 'Platform settings (2/2)' })).toBeEnabled();
+    expect(screen.getByRole('checkbox', { name: 'Entities (0/0)' })).toBeDisabled();
+    const empty = screen.getByRole('checkbox', { name: 'Observed data (0/0)' });
+    expect(empty).toBeDisabled();
+    expect(empty).toHaveAttribute('data-state', 'unchecked');
+    expect(screen.getByText('Observed datas description')).toBeInTheDocument();
+    // Nothing to expand below it
+    expect(screen.queryByRole('button', { name: /Expand Observed data/ })).not.toBeInTheDocument();
+  });
+
+  it('exports the other types, whether or not a type has no item, and does not send the empty one', async () => {
+    const { user, relayEnv } = await renderOpenDrawer(vi.fn(), [...catalog, type('observedData', 'Observed datas', [], { group: { key: 'entities', label: 'Entities' } })]);
+    await user.click(screen.getByRole('button', { name: 'Export Platform Bundle' }));
+    const { selections } = relayEnv.mock.getMostRecentOperation().request.variables;
+    expect(selections.map(({ type: key }: { type: string }) => key)).toEqual(['platform', 'messages', 'hiddenEntityTypes']);
+  });
+
+  it('disables the export when every type is without item', async () => {
+    await renderOpenDrawer(vi.fn(), [type('observedData', 'Observed datas', [])]);
+    expect(screen.getByRole('button', { name: 'Export Platform Bundle' })).toBeDisabled();
   });
 
   it('disables the export when nothing is selected', async () => {
@@ -435,6 +449,16 @@ describe('ConfigPresetExportDrawer', () => {
       await user.click(screen.getByRole('button', { name: 'Manage' }));
       await user.click(screen.getByRole('button', { name: 'Back to bundle' }));
       expect(screen.getByRole('button', { name: 'Export Platform Bundle' })).toBeInTheDocument();
+    });
+
+    it('asks the server for the items each time the sub-view opens, not the store: the items change while the page stays open', async () => {
+      const { user, relayEnv } = await openThemes();
+      expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+      await user.click(screen.getByRole('button', { name: 'Back' }));
+      await user.click(screen.getByRole('button', { name: 'Manage' }));
+      // The items of the first opening are in the store: they are not the answer, the server is asked again
+      expect(relayEnv.mock.getAllOperations()).toHaveLength(1);
+      expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ type: 'branding', count: 25 });
     });
 
     it('queries the excluded or selected items, and searches from the first page', async () => {

@@ -6,7 +6,7 @@ import { ForbiddenAccess, FunctionalError } from '../../../config/errors';
 import { getEntitiesListFromCache } from '../../../database/cache';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
-import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
+import { createEntity, createRelation, deleteElementById, idVocabulary, loadEntity, updateAttribute } from '../../../database/middleware';
 import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../database/middleware-loader';
 import { READ_DATA_INDICES, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY } from '../../../database/utils';
 import { elAggregationCount, ES_MAX_CONCURRENCY } from '../../../database/engine';
@@ -14,11 +14,14 @@ import { createListTask } from '../../../domain/backgroundTask-common';
 import { resolveUserById } from '../../user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../domain/status';
 import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
-import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode } from '../../../generated/graphql';
+import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode, VocabularyCategory } from '../../../generated/graphql';
+import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from '../../vocabulary/vocabulary-types';
 import { lockResources } from '../../../lock/master-lock';
 import { addWorkflowPublishCount } from '../../../manager/telemetryManager';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
+import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
+import { X_CLOSING_REASON } from '../../../schema/identifier';
 import type { BasicStoreCommon, BasicStoreEntity, BasicWorkflowStatus } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import {
@@ -56,10 +59,10 @@ import {
   type WorkflowValidationError,
 } from '../types/workflow-types';
 import { extractCanonicalStateIds, findInstancesBlockingStateRemoval, validateWorkflowDefinitionData } from '../workflow-validation';
-import { computeStateOrder } from './workflow-ordering';
+import { computeStateOrder, findStatesWithOutgoingTransitions } from './workflow-ordering';
 import { isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
-import { appendWorkflowHistoryEntry, runWorkflowBypassActions } from './workflow-async-completion';
+import { appendWorkflowHistoryEntry, closingReasonNotWrittenError, isClosingReasonLost, runWorkflowBypassActions } from './workflow-async-completion';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -1282,6 +1285,7 @@ const toAllowedTransition = (
   toState: transition.to ?? null,
   toStatus: statuses.find((status) => status.scope === scope && status.template_id === transition.to) ?? null,
   comment: transition.comment,
+  closingReason: transition.closingReason,
   actions: transition.actionTypes || [],
   requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
   requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
@@ -1306,6 +1310,7 @@ export const getAllowedTransitions = async (
   toState: string | null;
   toStatus: BasicWorkflowStatus | null;
   comment?: string;
+  closingReason?: string;
   actions: string[];
   requiresShareOrganizationInput: boolean;
   requiresUnshareOrganizationInput: boolean;
@@ -1364,11 +1369,19 @@ export const getAllowedTransitions = async (
 
 type AllowedTransition = Awaited<ReturnType<typeof getAllowedTransitions>>[number];
 
+// The mass update collects these inputs once for every entity, so they must be the same for all of them
+const hasSameInputRequirements = (transition: AllowedTransition, other: AllowedTransition) => {
+  return (transition.comment ?? 'disabled') === (other.comment ?? 'disabled')
+    && (transition.closingReason ?? 'disabled') === (other.closingReason ?? 'disabled')
+    && transition.requiresShareOrganizationInput === other.requiresShareOrganizationInput
+    && transition.requiresUnshareOrganizationInput === other.requiresUnshareOrganizationInput;
+};
+
 const keepCommonTransitions = (transitionLists: AllowedTransition[][]): AllowedTransition[] => {
   if (transitionLists.length === 0) return [];
   const [first, ...others] = transitionLists;
   return first.filter((transition) => others.every((list) => list.some((other) => {
-    return other.event === transition.event && other.toState === transition.toState;
+    return other.event === transition.event && other.toState === transition.toState && hasSameInputRequirements(transition, other);
   })));
 };
 
@@ -1394,8 +1407,9 @@ export const getWorkflowDefaultState = async (
  * Transitions that every targeted entity can take, for a mass transition. A selection is checked
  * entity by entity, conditions included. A filter (select all) is checked from the statuses found
  * under it: entities without status are in the initial state, and conditions are only checked when
- * the transition runs. A transition that needs a comment or organizations gets them from the mass
- * update, the same for every entity.
+ * the transition runs. A transition that needs a comment, a closing reason or organizations gets
+ * them from the mass update, the same for every entity: it is only offered when every state asks for
+ * the same inputs.
  */
 export const getMassWorkflowTransitions = async (
   context: AuthContext,
@@ -1434,6 +1448,59 @@ export const getMassWorkflowTransitions = async (
   }));
 };
 
+// The entity is read before the lock: a reason written meanwhile only shows once the entity is read again
+const isClosingReasonLostOnStoredEntity = async (context: AuthContext, user: AuthUser, closingReason: string | null | undefined, entity: BasicStoreEntity) => {
+  if (closingReason !== null) return isClosingReasonLost(closingReason, entity);
+  try {
+    return isClosingReasonLost(null, await storeLoadById<BasicStoreEntity>(context, user, entity.internal_id, 'Basic-Object'));
+  } catch {
+    return true;
+  }
+};
+
+const isClosingReasonMode = (mode: string | undefined) => mode === 'allowed' || mode === 'required';
+
+// A closing reason is only asked on the way into a final state (no transition leaves it), and kept while the entity
+// stays in one: any move to a state it can leave clears it.
+// It does not look at the stored reason: the entity may be read before the lock, and clearing an empty one changes nothing.
+// Nor at the transitions asking for one: a workflow that stopped asking must still clear a reason given before.
+// Entity types without the attribute (outside domain objects) never carry one.
+const clearsClosingReason = (
+  entityType: string,
+  transitions: Pick<WorkflowSerializedTransition, 'from'>[] | undefined,
+  fromState: string,
+  toState: string,
+) => {
+  return fromState !== toState
+    && !!schemaAttributesDefinition.getAttribute(entityType, X_CLOSING_REASON)
+    && findStatesWithOutgoingTransitions(transitions ?? []).has(toState);
+};
+
+const resolveTransitionClosingReason = (
+  user: AuthUser,
+  mode: string | undefined,
+  closingReason: string | undefined,
+  clears: boolean,
+): { closingReason: string | null | undefined } | { error: string } => {
+  const value = closingReason?.trim() || null;
+  if (!isClosingReasonMode(mode)) {
+    if (value) return { error: 'Closing reason is not enabled for this transition' };
+    return { closingReason: clears ? null : undefined };
+  }
+  if (mode === 'required' && !value && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
+    return { error: 'A closing reason is required for this transition' };
+  }
+  return { closingReason: value };
+};
+
+// Vocabulary ids ignore case: the stored value takes the vocabulary spelling so usages, renames and filters match it
+// An id of a vocabulary from another category is not a closing reason
+const findClosingReasonVocabularyName = async (context: AuthContext, value: string): Promise<string | undefined> => {
+  const vocabularyId = idVocabulary(value, VocabularyCategory.ClosingReasonOv);
+  const vocabulary = await storeLoadById<BasicStoreEntityVocabulary>(context, SYSTEM_USER, vocabularyId, ENTITY_TYPE_VOCABULARY);
+  return vocabulary?.category === VocabularyCategory.ClosingReasonOv ? vocabulary.name : undefined;
+};
+
 /**
  * Trigger a workflow event on an entity.
  * This is the main entry point for the backend logic.
@@ -1444,6 +1511,7 @@ export const getMassWorkflowTransitions = async (
  * @param eventName The name of the event to trigger
  * @param comment Optional comment entered by the user when performing the transition
  * @param runtimeParams Optional runtime parameters (e.g. organizationIds for share actions). Persisted for retry.
+ * @param closingReason Optional closing reason, accepted only when the transition enables it
  * @returns {Promise<TriggerResult>} The result of the trigger
  */
 export const triggerWorkflowEvent = async (
@@ -1453,6 +1521,7 @@ export const triggerWorkflowEvent = async (
   eventName: string,
   comment?: string,
   runtimeParams: Record<string, unknown> = {},
+  closingReason?: string,
 ): Promise<TriggerResult> => {
   // 1. Fetch the entity
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
@@ -1500,6 +1569,26 @@ export const triggerWorkflowEvent = async (
 
     const currentStateId = instanceEntity.currentState;
     const definition = WorkflowFactory.createDefinition(definitionData);
+    const targetTransition = definitionData.transitions?.find((t: any) => {
+      const fromStates = Array.isArray(t.from) ? t.from : [t.from];
+      return fromStates.includes(currentStateId) && t.event === eventName;
+    });
+    const clears = !!targetTransition?.to && clearsClosingReason(entity.entity_type, definitionData.transitions, currentStateId, targetTransition.to);
+    // The reason is written to the live entity: draft-only capabilities cannot skip a required one.
+    // Without a transition for this event, the engine rejects the event itself: the reason is not checked.
+    const resolvedClosingReason: ReturnType<typeof resolveTransitionClosingReason> = targetTransition
+      ? resolveTransitionClosingReason(executionUser, targetTransition.closingReason, closingReason, clears)
+      : { closingReason: undefined };
+    if ('error' in resolvedClosingReason) {
+      return { success: false, reason: resolvedClosingReason.error };
+    }
+    if (resolvedClosingReason.closingReason) {
+      const vocabularyName = await findClosingReasonVocabularyName(bypassDraftContext(context), resolvedClosingReason.closingReason);
+      if (!vocabularyName) {
+        return { success: false, reason: 'Closing reason must be a value of the closing reason vocabulary' };
+      }
+      resolvedClosingReason.closingReason = vocabularyName;
+    }
 
     // 4. Inject createListTask and instance metadata into context for asyncBulkAction.
     // When the workflow entity is a DraftWorkspace, pre-query only the STIX entities that
@@ -1570,21 +1659,16 @@ export const triggerWorkflowEvent = async (
         status: 'pending' as const,
       }));
 
-      // Get the serialized transition to persist its syncActions for phase-2 execution.
-      const targetTransitionForSync = definitionData.transitions?.find((t: any) => {
-        const fromStates = Array.isArray(t.from) ? t.from : [t.from];
-        return fromStates.includes(currentStateId) && t.event === eventName;
-      });
       // fallback on actions if syncActions not explicitly defined on transition (legacy support)
-      const serializedTransitions: WorkflowActionConfig[] = targetTransitionForSync?.syncActions ?? [];
+      const serializedTransitions: WorkflowActionConfig[] = targetTransition?.syncActions ?? [];
 
       // Collect the onEnter actions of the target state so phase 2 can replay them.
-      const toStateId = targetTransitionForSync?.to ?? instance.getCurrentState();
+      const toStateId = targetTransition?.to ?? instance.getCurrentState();
       // A null `to` only completes the workflow when paired with `validateDraft` (see
       // workflow-validation.ts) - otherwise it's a stale orphaned reference (e.g. a status
       // deleted after this definition was published, before that validation gate existed).
-      const completesWorkflow = targetTransitionForSync != null
-        && targetTransitionForSync.to == null
+      const completesWorkflow = targetTransition != null
+        && targetTransition.to == null
         && serializedTransitions.some((action) => action.type === 'validateDraft');
       const targetStateDef = completesWorkflow ? undefined : definitionData.states?.find((s: any) => s.statusId === toStateId);
       const serializedOnEnterActions: WorkflowActionConfig[] = targetStateDef?.onEnter ?? [];
@@ -1597,6 +1681,7 @@ export const triggerWorkflowEvent = async (
         triggeredAt: new Date().toISOString(),
         runtimeParams,
         ...(comment ? { comment } : {}),
+        ...(resolvedClosingReason.closingReason !== undefined ? { closingReason: resolvedClosingReason.closingReason } : {}),
         asyncActions: rawSlots,
         syncActions: serializedTransitions,
         ...(serializedOnEnterActions.length > 0 ? { onEnterActions: serializedOnEnterActions } : {}),
@@ -1635,6 +1720,7 @@ export const triggerWorkflowEvent = async (
       event: eventName,
       ...(result.workflowCompleted ? { completed: true } : {}),
       ...(comment ? { comment } : {}),
+      ...(resolvedClosingReason.closingReason ? { closing_reason: resolvedClosingReason.closingReason } : {}),
     });
 
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
@@ -1647,7 +1733,13 @@ export const triggerWorkflowEvent = async (
 
     // Keep the legacy `x_opencti_workflow_id` in sync with the new state.
     // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
-    await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, newState, resolveProjectionScope(instanceEntity.scope));
+    const scope = resolveProjectionScope(instanceEntity.scope);
+    const projected = await projectWorkflowState(executionContext, executionUser, entity as BasicStoreEntity, newState, scope, resolvedClosingReason.closingReason);
+    if (!projected && await isClosingReasonLostOnStoredEntity(executionContext, executionUser, resolvedClosingReason.closingReason, entity as BasicStoreEntity)) {
+      await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingError', value: [closingReasonNotWrittenError(resolvedClosingReason.closingReason ?? null)] },
+      ]);
+    }
 
     await lock.unlock();
     lock = undefined;
@@ -1798,6 +1890,7 @@ const executeWorkflowBypass = async (
     triggeredAt: new Date().toISOString(),
     runtimeParams,
     ...(normalizedComment ? { comment: normalizedComment } : {}),
+    ...(clearsClosingReason(entity.entity_type, definitionData.transitions, instanceEntity.currentState, targetStatus.template_id) ? { closingReason: null } : {}),
     asyncActions: [],
     syncActions: applyTransitionActions ? [
       ...(definitionData.states?.find((state) => state.statusId === instanceEntity.currentState)?.onExit ?? []),
@@ -1854,7 +1947,12 @@ const executeWorkflowBypass = async (
       { key: 'pendingError', value: [null] },
       { key: 'pendingTransition', value: [null] },
     ]);
-    await projectWorkflowState(executionContext, executionUser, entity, targetStatus.template_id, scope);
+    const projected = await projectWorkflowState(executionContext, executionUser, entity, targetStatus.template_id, scope, pendingTransition.closingReason);
+    if (!projected && isClosingReasonLost(pendingTransition.closingReason, entity)) {
+      await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason ?? null)] },
+      ]);
+    }
     return { success: true, newState: targetStatus.template_id, executionStatus: 'completed', entity };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
@@ -2001,7 +2099,7 @@ const applyExternalStatusWrite = async (
     return;
   }
   // Actions never run on this path, so only BYPASS, or an allowed transition with nothing to run
-  // or ask (no action, no required comment, no onExit/onEnter), may move the state.
+  // or ask (no action, no required comment or closing reason, no onExit/onEnter), may move the state.
   if (!isBypassUser(user)) {
     const transition = (await getAllowedTransitions(context, user, entity.internal_id, {
       entity, entitySetting, definitionData, instanceEntity, statuses: [],
@@ -2013,8 +2111,8 @@ const applyExternalStatusWrite = async (
     const states = definitionData.states ?? [];
     const hasStateActions = (states.find((state) => state.statusId === instanceEntity.currentState)?.onExit ?? []).length > 0
       || (states.find((state) => state.statusId === stateId)?.onEnter ?? []).length > 0;
-    if (transition.actions.length > 0 || transition.comment === 'required' || hasStateActions) {
-      await recordKeptExternalWrite(context, user, instanceEntity, newStatusId, 'transition_has_actions', `x_opencti_workflow_id was set to Status "${newStatusId}", but the transition to "${stateId}" has actions or requires a comment: trigger it from the workflow instead`);
+    if (transition.actions.length > 0 || transition.comment === 'required' || transition.closingReason === 'required' || hasStateActions) {
+      await recordKeptExternalWrite(context, user, instanceEntity, newStatusId, 'transition_has_actions', `x_opencti_workflow_id was set to Status "${newStatusId}", but the transition to "${stateId}" has actions or requires a comment or a closing reason: trigger it from the workflow instead`);
       return;
     }
   }
@@ -2033,6 +2131,12 @@ const applyExternalStatusWrite = async (
     ...(failedTransition ? [{ key: 'pendingStatus', value: [null] }, { key: 'pendingTransition', value: [null] }] : []),
     { key: 'pendingError', value: [null] },
   ]);
+  if (clearsClosingReason(entity.entity_type, definitionData.transitions, instanceEntity.currentState, stateId)) {
+    const projected = await projectWorkflowState(context, WORKFLOW_MANAGER_USER, entity, stateId, resolveProjectionScope(instanceEntity.scope), null);
+    if (!projected && isClosingReasonLost(null, entity)) {
+      await updateInstance([{ key: 'pendingError', value: [closingReasonNotWrittenError(null)] }]);
+    }
+  }
 };
 
 // Best effort, without the lock: keeps read-repair from silently reverting a write the sync could not apply.

@@ -169,7 +169,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
           <ConfigPresetExpandableRow
             label={`${t_i18n(group.label)} (${countConfigPresetCheckedItems(group.types, selection, forced)}/${group.types.reduce((count, type) => count + type.itemsPageInfo.globalCount, 0)})`}
             checked={getConfigPresetCheckboxState(group.types, selection, forced)}
-            disabled={disabled || group.types.every(isLocked)}
+            disabled={disabled || group.types.every((type) => isLocked(type) || isEmpty(type))}
             onCheckedChange={(checked) => onSelectionChange(toggleConfigPresetTypes(selection, group.types, checked))}
             expanded={!collapsedGroupKeys.includes(group.key)}
             onToggleExpanded={() => setCollapsedGroupKeys((current) => toggleKey(current, group.key))}
@@ -178,6 +178,10 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
               // Nothing of the type is listed, checked or counted until the platform has the license
               if (isLocked(type)) {
                 return <ConfigPresetLockedTypeRow key={type.key} type={type} title={lockedTitle} />;
+              }
+              // A type without item has nothing to check or to expand: one disabled row, with its description
+              if (isEmpty(type)) {
+                return <Checkbox key={type.key} label={typeLabel(type)} description={describeType(t_i18n, type)} checked={false} disabled />;
               }
               // A type whose only item has the key of the type is one row, not a type with an item of the same name below it
               if (isSingletonConfigPresetType(type)) {
@@ -216,7 +220,7 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
                   label={typeLabel(type)}
                   description={describeType(t_i18n, type)}
                   checked={typeState(type)}
-                  disabled={disabled || isEmpty(type)}
+                  disabled={disabled}
                   actions={renderTypeActions?.(type)}
                   onCheckedChange={(checked) => toggleType(type, checked)}
                   expanded={isExpanded(type)}
