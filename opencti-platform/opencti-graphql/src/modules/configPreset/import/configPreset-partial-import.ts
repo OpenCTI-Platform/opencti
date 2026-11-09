@@ -2,25 +2,27 @@ import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import type { FileUploadData } from '../../../database/file-storage';
 import type { ConfigPresetImportType, ConfigPresetItemModeInput } from '../../../generated/graphql';
-import { publishUserAction } from '../../../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode } from '../../configImport/configImport-types';
-import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
 import { bundleRefused, CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE, readConfigPresetBundle, readStreamWithLimit, resolveBundleDependencies } from './configPreset-import-bundle';
 import { buildConfigPresetImportTypes, computeConfigPresetItems, getConfigPresetFamiliesAvailability } from './configPreset-import-domain';
-import { countConfigPresetImportResults, importConfigPresetItem } from './configPreset-import-engine';
+import { countConfigPresetImportResults, importConfigPresetItem, toConfigPresetImportResult } from './configPreset-import-engine';
 import { withConfigPresetImportLock } from './configPreset-import-lock';
 import { endConfigPresetImportRunning, findConfigPresetImportRunning, startConfigPresetImportRunning, updateConfigPresetImportRunning } from './configPreset-import-running';
 import type { ConfigPresetImportCounts, ConfigPresetImportItemResult } from './configPreset-import-session';
-import { checkConfigPresetImportAccess, reloadConfigPresetImportUser } from './configPreset-import-utils';
 import {
-  CONFIG_PRESET_DEFAULT_IMPORT_MODE,
-  type ConfigPresetBundle,
-  type ConfigPresetBundleItem,
-  type ConfigPresetImportPlan,
-  configPresetPlanKey,
-} from './configPreset-import-types';
+  checkConfigPresetImportAccess,
+  checkConfigPresetItemModes,
+  configPresetImportMode,
+  configPresetImportModes,
+  findConfigPresetFamily,
+  getConfigPresetFamilyModes,
+  pickConfigPresetTypeItems,
+  publishConfigPresetImportAction,
+  reloadConfigPresetImportUser,
+} from './configPreset-import-utils';
+import { CONFIG_PRESET_DEFAULT_IMPORT_MODE, type ConfigPresetBundle, type ConfigPresetBundleItem, type ConfigPresetImportPlan } from './configPreset-import-types';
 
 // The partial import: the items of one type (the themes...) taken from a full configuration bundle, from the screen of that type.
 // Any family with an importer can be imported this way, nothing is specific to a type here: wiring another screen is front-end only.
@@ -44,20 +46,18 @@ export interface ConfigPresetPartialImportOutput {
   counts: ConfigPresetImportCounts;
 }
 
-// The family of the type, only one that can be imported
+// The family of the type, only one that can be imported: an unknown type is refused as by the wizard
 const findImportableFamily = (type: string): ConfigPresetFamilyDefinition => {
-  const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === type);
-  if (!family?.importer) {
+  const family = findConfigPresetFamily(type);
+  if (!family.importer) {
     throw FunctionalError('This configuration type cannot be imported', { type });
   }
   return family;
 };
 
-const familyModes = (family: ConfigPresetFamilyDefinition) => family.importModes ?? [CONFIG_PRESET_DEFAULT_IMPORT_MODE];
-
-// A copy when the type offers it, else the default of the type
-export const configPresetPartialImportDefaultMode = (family: ConfigPresetFamilyDefinition): ConfigImportMode => {
-  return familyModes(family).includes(ConfigImportMode.Copy) ? ConfigImportMode.Copy : CONFIG_PRESET_DEFAULT_IMPORT_MODE;
+// The mode of an item that has none: a copy when the type offers it, else the default of the type
+export const getConfigPresetPartialImportDefaultMode = (family: ConfigPresetFamilyDefinition): ConfigImportMode => {
+  return getConfigPresetFamilyModes(family).includes(ConfigImportMode.Copy) ? ConfigImportMode.Copy : CONFIG_PRESET_DEFAULT_IMPORT_MODE;
 };
 
 // Read in memory, never stored: the same limits as the upload of the wizard
@@ -70,47 +70,17 @@ const readUploadedBundle = async (file: Promise<FileUploadData>): Promise<{ bund
 };
 
 // The items of the family to import: the given ones (every one of the bundle when ids is null), then the items of the same family they
-// depend on, dependencies first. The ids sent by the frontend are not trusted: an unknown one fails the import.
-export const resolveConfigPresetPartialItems = (bundle: ConfigPresetBundle, family: ConfigPresetFamilyDefinition, ids: string[] | null): ConfigPresetBundleItem[] => {
-  const available = bundle.items.filter((item) => item.type === family.id);
-  const selected = ids === null ? available : ids.map((id) => {
-    const item = available.find((candidate) => candidate.id === id);
-    if (!item) {
-      throw FunctionalError('Unknown configuration preset item', { type: family.id, item: id });
-    }
-    return item;
-  });
-  return resolveBundleDependencies(bundle, selected).filter((item) => item.type === family.id);
+// depend on, dependencies first. The items are picked as by the wizard: an unknown id fails the import.
+export const resolveConfigPresetPartialImportItems = (bundle: ConfigPresetBundle, family: ConfigPresetFamilyDefinition, ids: string[] | null): ConfigPresetBundleItem[] => {
+  return resolveBundleDependencies(bundle, pickConfigPresetTypeItems(bundle, family.id, ids)).filter((item) => item.type === family.id);
 };
 
-// The mode of each item, by `<type>/<bundle id>`: the given one, checked against the type, else the default of the partial import
-export const configPresetPartialImportModes = (
-  family: ConfigPresetFamilyDefinition,
-  items: ConfigPresetBundleItem[],
-  itemModes: ConfigPresetItemModeInput[],
-): Map<string, ConfigImportMode> => {
-  const supported = familyModes(family);
-  itemModes.forEach(({ key, mode }) => {
-    if (!supported.includes(mode)) {
-      throw FunctionalError('Unsupported import mode for this configuration preset type', { type: family.id, item: key, mode });
-    }
-  });
-  const defaultMode = configPresetPartialImportDefaultMode(family);
-  return new Map(items.map((item) => {
-    const mode = itemModes.find(({ key }) => key === item.id)?.mode ?? defaultMode;
-    return [configPresetPlanKey(item.type, item.id), mode];
-  }));
+// The modes given by the user, checked against the type as by the wizard. An item that has none takes the default of the partial import,
+// given to configPresetImportMode when it is read
+export const resolveConfigPresetPartialImportModes = (family: ConfigPresetFamilyDefinition, itemModes: ConfigPresetItemModeInput[]): Map<string, ConfigImportMode> => {
+  checkConfigPresetItemModes(family, itemModes);
+  return configPresetImportModes([{ type: family.id, item_modes: itemModes }]);
 };
-
-// An item that was not processed: the import stopped writing before it
-const toStoppedResult = (item: ConfigPresetBundleItem, reason: string): ConfigPresetImportItemResult => ({
-  type: item.type,
-  key: item.id,
-  status: 'FAILED',
-  reason,
-  label: item.id,
-  translatable: false,
-});
 
 // Reads only: the items of the type in the bundle, with what already exists. Nothing is written, no audit, and no lock: like the dry run
 // of the wizard, it works while an import runs. It is bounded by the limits of the zip.
@@ -123,15 +93,15 @@ export const configPresetPartialImportPreview = async (
   checkConfigPresetImportAccess(context, user);
   const family = findImportableFamily(type);
   const { bundle } = await readUploadedBundle(file);
-  const items = resolveConfigPresetPartialItems(bundle, family, null);
+  const items = resolveConfigPresetPartialImportItems(bundle, family, null);
   const availability = await getConfigPresetFamiliesAvailability(context, items);
-  const results = await computeConfigPresetItems(context, user, items, { modes: configPresetPartialImportModes(family, items, []), availability });
+  const results = await computeConfigPresetItems(context, user, items, { availability, defaultMode: getConfigPresetPartialImportDefaultMode(family) });
   return {
     bundle_name: bundle.metadata.bundle_name,
     openCTI_version: bundle.metadata.openCTI_version,
     generated_at: bundle.metadata.generated_at,
     type: buildConfigPresetImportTypes(bundle, results, availability).find(({ key }) => key === family.id) ?? null,
-    default_mode: configPresetPartialImportDefaultMode(family),
+    default_mode: getConfigPresetPartialImportDefaultMode(family),
   };
 };
 
@@ -153,11 +123,12 @@ export const configPresetPartialImport = async (
   const importContext: AuthContext = { ...context, requestAbortSignal: undefined };
   return withConfigPresetImportLock(importContext, async (lock) => {
     const { bundle, fileName } = await readUploadedBundle(file);
-    const items = resolveConfigPresetPartialItems(bundle, family, ids);
+    const items = resolveConfigPresetPartialImportItems(bundle, family, ids);
     if (items.length === 0) {
       throw FunctionalError('Select at least one configuration item to import');
     }
-    const modes = configPresetPartialImportModes(family, items, itemModes);
+    const modes = resolveConfigPresetPartialImportModes(family, itemModes);
+    const defaultMode = getConfigPresetPartialImportDefaultMode(family);
     // The running record of the wizard, written under the lock like the real import of the wizard does: a wizard import started meanwhile
     // is refused with the name of who imports, a stale applying wizard session reads as interrupted, and the end of the import
     // writes last_finished_at, so that the wizard drops a simulation the import made stale. A failure here stops before any write.
@@ -190,9 +161,10 @@ export const configPresetPartialImport = async (
           }
         }
         if (stopReason || !runUser) {
-          results.push(toStoppedResult(item, stopReason ?? 'Import stopped'));
+          // Not processed: the import stopped writing before it
+          results.push(toConfigPresetImportResult(item, 'failed', stopReason ?? 'Import stopped'));
         } else {
-          results.push(await importConfigPresetItem(importContext, runUser, item, plan, modes.get(configPresetPlanKey(item.type, item.id))!));
+          results.push(await importConfigPresetItem(importContext, runUser, item, plan, configPresetImportMode(modes, item.type, item.id, defaultMode)));
         }
         await updateConfigPresetImportRunning(user, startedAt, results.length);
       }
@@ -203,20 +175,9 @@ export const configPresetPartialImport = async (
     if (stopReason) {
       logApp.warn('[CONFIG PRESET] Partial import stopped before the end', { user_id: user.id, type: family.id, reason: stopReason });
     }
-    // Audited whatever the end, for the items already written
+    // Audited whatever the end, for the items already written; no report file, nothing is stored
     const counts = countConfigPresetImportResults(results);
-    // The listeners run in a Promise.all: a failing one never fails the import
-    try {
-      await publishUserAction({
-        user,
-        event_type: 'command',
-        event_access: 'administration',
-        event_scope: 'import',
-        context_data: { file_id: null, path: '', file_name: fileName, input: { type: family.id, counts } },
-      });
-    } catch (err) {
-      logApp.warn('[CONFIG PRESET] The activity event of the partial import could not be published', { cause: err });
-    }
+    await publishConfigPresetImportAction(user, { file_id: null, path: '', file_name: fileName, input: { type: family.id, counts } });
     logApp.info('[CONFIG PRESET] Partial import finished', { user_id: user.id, type: family.id, counts });
     return { results, counts };
   }, async (ctx) => (await findConfigPresetImportRunning(ctx, user)).running?.name);

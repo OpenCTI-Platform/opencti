@@ -10,7 +10,7 @@ import { allFilesForPaths } from '../../internal/document/document-domain';
 import { CONFIG_PRESET_HISTORY_PATH, CONFIG_PRESET_IMPORT_PATH } from '../../internal/document/document-types';
 import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
 import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, isConfigPresetFamilyAvailable } from '../configPreset-registry';
-import { checkConfigPresetImportAccess, configPresetImportMode, getConfigPresetPlatformId } from './configPreset-import-utils';
+import { checkConfigPresetImportAccess, configPresetImportMode, getConfigPresetFamilyModes, getConfigPresetPlatformId } from './configPreset-import-utils';
 import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying } from './configPreset-import-session-domain';
 import {
   CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE,
@@ -21,7 +21,6 @@ import {
   resolveBundleDependencies,
 } from './configPreset-import-bundle';
 import {
-  CONFIG_PRESET_DEFAULT_IMPORT_MODE,
   CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED,
   CONFIG_PRESET_REASON_FILE_MISSING,
   type ConfigPresetBundle,
@@ -147,13 +146,13 @@ export const computeConfigPresetItem = async (
 };
 
 // compute of every item, required dependencies first: reads only, the plan records what would be created
-// modes: the mode of each item, OVERWRITE for the items that have none (the preview, the dependencies)
+// modes: the mode of each item, defaultMode for the items that have none (OVERWRITE when absent: the preview, the dependencies)
 // availability: the families the platform can use, when the caller has read it already
 export const computeConfigPresetItems = async (
   context: AuthContext,
   user: AuthUser,
   items: ConfigPresetBundleItem[],
-  { modes = new Map(), availability }: { modes?: Map<string, ConfigImportMode>; availability?: Map<string, boolean> } = {},
+  { modes = new Map(), availability, defaultMode }: { modes?: Map<string, ConfigImportMode>; availability?: Map<string, boolean>; defaultMode?: ConfigImportMode } = {},
 ): Promise<{ item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[]> => {
   const familiesAvailability = availability ?? await getConfigPresetFamiliesAvailability(context, items);
   const plan: ConfigPresetImportPlan = {
@@ -169,7 +168,7 @@ export const computeConfigPresetItems = async (
   const results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[] = [];
   for (let i = 0; i < items.length; i += 1) {
     const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === items[i].type)!;
-    const mode = configPresetImportMode(modes, items[i].type, items[i].id);
+    const mode = configPresetImportMode(modes, items[i].type, items[i].id, defaultMode);
     results.push({ item: items[i], computed: await computeConfigPresetItem(context, user, family, items[i], plan, mode, familiesAvailability.get(family.id)) });
   }
   return results;
@@ -191,7 +190,7 @@ export const buildConfigPresetImportTypes = (
     description: family.description,
     group: { key: family.group.id, label: family.group.label },
     lockedByEnterpriseEdition: !availability.get(family.id),
-    modes: family.importModes ?? [CONFIG_PRESET_DEFAULT_IMPORT_MODE],
+    modes: getConfigPresetFamilyModes(family),
     // The items of a family the platform cannot import are not shown: the dialog shows the type as locked
     items: !availability.get(family.id) ? [] : results.filter(({ item }) => item.type === family.id).map(({ item, computed }) => {
       const dependencyPaths = Object.values(bundle.dependencies[configPresetFamilyType(family)]?.[item.id] ?? {});

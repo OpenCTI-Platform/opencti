@@ -7,7 +7,15 @@ import {
   sanitizeBundleName,
 } from '../../../../src/modules/configPreset/configPreset-utils';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
-import { configPresetImportMode, configPresetImportModes } from '../../../../src/modules/configPreset/import/configPreset-import-utils';
+import {
+  checkConfigPresetItemModes,
+  configPresetImportMode,
+  configPresetImportModes,
+  findConfigPresetFamily,
+  getConfigPresetFamilyModes,
+  pickConfigPresetTypeItems,
+} from '../../../../src/modules/configPreset/import/configPreset-import-utils';
+import type { ConfigPresetBundle } from '../../../../src/modules/configPreset/import/configPreset-import-types';
 
 describe('Config preset naming', () => {
   it('sanitizes the bundle name', () => {
@@ -120,5 +128,52 @@ describe('Config preset import modes', () => {
   it('does not take the mode of an item for the item of another type with the same key', () => {
     const modes = configPresetImportModes([{ type: 'branding', item_modes: [{ key: 'same', mode: ConfigImportMode.Copy }] }]);
     expect(configPresetImportMode(modes, 'messages', 'same')).toBe(ConfigImportMode.Overwrite);
+  });
+
+  it('takes the given default mode for an item without one (a partial import copies)', () => {
+    const modes = configPresetImportModes([{ type: 'branding', item_modes: [{ key: 'theme-1', mode: ConfigImportMode.Overwrite }] }]);
+    expect(configPresetImportMode(modes, 'branding', 'theme-1', ConfigImportMode.Copy)).toBe(ConfigImportMode.Overwrite);
+    expect(configPresetImportMode(modes, 'branding', 'theme-2', ConfigImportMode.Copy)).toBe(ConfigImportMode.Copy);
+  });
+
+  it('offers the modes of the family, OVERWRITE only when it has none, and refuses another one', () => {
+    expect(getConfigPresetFamilyModes(findConfigPresetFamily('branding'))).toEqual([ConfigImportMode.Overwrite, ConfigImportMode.Copy]);
+    expect(getConfigPresetFamilyModes(findConfigPresetFamily('messages'))).toEqual([ConfigImportMode.Overwrite]);
+    expect(() => checkConfigPresetItemModes(findConfigPresetFamily('branding'), [{ key: 'theme-1', mode: ConfigImportMode.Copy }])).not.toThrow();
+    expect(() => checkConfigPresetItemModes(findConfigPresetFamily('messages'), [{ key: 'banner', mode: ConfigImportMode.Copy }]))
+      .toThrow('Unsupported import mode for this configuration preset type');
+    expect(() => checkConfigPresetItemModes(findConfigPresetFamily('messages'), null)).not.toThrow();
+  });
+
+  it('refuses an unknown type', () => {
+    expect(() => findConfigPresetFamily('unknown')).toThrow('Unknown configuration preset type');
+  });
+});
+
+describe('Config preset items of a type', () => {
+  const bundle = {
+    metadata: { openCTI_version: '7.0.0', generated_at: '', bundle_name: null },
+    items: [
+      { type: 'branding', id: 'a', path: 'a.json', configuration: {} },
+      { type: 'branding', id: 'b', path: 'b.json', configuration: {} },
+      { type: 'messages', id: 'banner', path: 'banner.json', configuration: {} },
+    ],
+    dependencies: {},
+    ignored: [],
+  } as ConfigPresetBundle;
+  const ids = (items: { id: string }[]) => items.map(({ id }) => id);
+
+  it('takes the given items of the type, in the given order', () => {
+    expect(ids(pickConfigPresetTypeItems(bundle, 'branding', ['b', 'a']))).toEqual(['b', 'a']);
+    expect(pickConfigPresetTypeItems(bundle, 'branding', [])).toEqual([]);
+  });
+
+  it('takes every item of the type but the excluded ones when no item is given, and ignores an unknown excluded one', () => {
+    expect(ids(pickConfigPresetTypeItems(bundle, 'branding', null))).toEqual(['a', 'b']);
+    expect(ids(pickConfigPresetTypeItems(bundle, 'branding', undefined, ['a', 'stale']))).toEqual(['b']);
+  });
+
+  it('refuses an item that is not one of the type in the bundle', () => {
+    expect(() => pickConfigPresetTypeItems(bundle, 'branding', ['banner'])).toThrow('Unknown configuration preset item');
   });
 });

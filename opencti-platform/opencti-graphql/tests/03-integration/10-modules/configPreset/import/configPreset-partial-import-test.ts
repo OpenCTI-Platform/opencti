@@ -137,7 +137,7 @@ describe('Config preset partial import', () => {
     expect((await partialImport(validBundleFiles(), [OTHER_THEME_ID])).errors?.[0].message).toEqual('Unknown configuration preset item');
     const addMode = await partialImport(validBundleFiles(), [CUSTOM_THEME_ID], [{ key: CUSTOM_THEME_ID, mode: 'ADD' }]);
     expect(addMode.errors?.[0].message).toEqual('Unsupported import mode for this configuration preset type');
-    expect((await preview(validBundleFiles(), 'unknown')).errors?.[0].message).toEqual('This configuration type cannot be imported');
+    expect((await preview(validBundleFiles(), 'unknown')).errors?.[0].message).toEqual('Unknown configuration preset type');
     const notAZip = await queryAsAdmin({ query: PREVIEW_MUTATION, variables: { file: createUploadFromBuffer(Buffer.from('not a zip'), 'x.zip'), type: 'branding' } });
     expect(notAZip.errors?.[0].extensions?.data).toMatchObject({ reason: 'bundle_refused' });
   });

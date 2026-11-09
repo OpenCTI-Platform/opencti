@@ -100,7 +100,7 @@ describe('Config preset partial import: the loop', () => {
     const output = await importThemes();
     expect(output.results).toEqual([
       result(CUSTOM_THEME_ID, 'CREATED'),
-      { type: 'branding', key: OTHER_THEME_ID, status: 'FAILED', reason: 'Import stopped: lock lost', label: OTHER_THEME_ID, translatable: false },
+      { type: 'branding', key: OTHER_THEME_ID, status: 'FAILED', reason: 'Import stopped: lock lost', code: null, label: OTHER_THEME_ID, translatable: false },
     ]);
     expect(importConfigPresetItem).toHaveBeenCalledTimes(1);
     expect(output.counts).toEqual({ created: 1, overwritten: 0, skipped: 0, failed: 1 });

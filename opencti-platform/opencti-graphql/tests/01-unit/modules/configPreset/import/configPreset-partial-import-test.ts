@@ -10,11 +10,12 @@ import type { ConfigPresetBundle } from '../../../../../src/modules/configPreset
 import { withConfigPresetImportLock } from '../../../../../src/modules/configPreset/import/configPreset-import-lock';
 import {
   configPresetPartialImport,
-  configPresetPartialImportDefaultMode,
-  configPresetPartialImportModes,
   configPresetPartialImportPreview,
-  resolveConfigPresetPartialItems,
+  getConfigPresetPartialImportDefaultMode,
+  resolveConfigPresetPartialImportItems,
+  resolveConfigPresetPartialImportModes,
 } from '../../../../../src/modules/configPreset/import/configPreset-partial-import';
+import { configPresetImportMode } from '../../../../../src/modules/configPreset/import/configPreset-import-utils';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 import { BYPASS } from '../../../../../src/utils/access';
 
@@ -42,30 +43,31 @@ const bundle: ConfigPresetBundle = {
 
 describe('Config preset partial import', () => {
   it('adds as a copy by default when the type offers it, else takes the default of the type', () => {
-    expect(configPresetPartialImportDefaultMode(family('branding'))).toBe(ConfigImportMode.Copy);
-    expect(configPresetPartialImportDefaultMode(family('platform'))).toBe(ConfigImportMode.Overwrite);
+    expect(getConfigPresetPartialImportDefaultMode(family('branding'))).toBe(ConfigImportMode.Copy);
+    expect(getConfigPresetPartialImportDefaultMode(family('platform'))).toBe(ConfigImportMode.Overwrite);
   });
 
   it('takes every item of the type, and never the items of another type', () => {
-    expect(resolveConfigPresetPartialItems(bundle, family('branding'), null).map(({ id }) => id)).toEqual([THEME_A, THEME_B, THEME_C]);
+    expect(resolveConfigPresetPartialImportItems(bundle, family('branding'), null).map(({ id }) => id)).toEqual([THEME_A, THEME_B, THEME_C]);
     // The theme the platform item depends on is not imported with it
-    expect(resolveConfigPresetPartialItems(bundle, family('platform'), null).map(({ id }) => id)).toEqual(['platform']);
+    expect(resolveConfigPresetPartialImportItems(bundle, family('platform'), null).map(({ id }) => id)).toEqual(['platform']);
   });
 
   it('takes the selected items and the items of the same type they depend on, dependencies first', () => {
-    expect(resolveConfigPresetPartialItems(bundle, family('branding'), [THEME_C]).map(({ id }) => id)).toEqual([THEME_B, THEME_C]);
-    expect(resolveConfigPresetPartialItems(bundle, family('branding'), [])).toEqual([]);
+    expect(resolveConfigPresetPartialImportItems(bundle, family('branding'), [THEME_C]).map(({ id }) => id)).toEqual([THEME_B, THEME_C]);
+    expect(resolveConfigPresetPartialImportItems(bundle, family('branding'), [])).toEqual([]);
   });
 
   it('refuses an item that is not in the bundle for the type', () => {
-    expect(() => resolveConfigPresetPartialItems(bundle, family('branding'), ['platform'])).toThrow('Unknown configuration preset item');
+    expect(() => resolveConfigPresetPartialImportItems(bundle, family('branding'), ['platform'])).toThrow('Unknown configuration preset item');
   });
 
-  it('gives each item its mode, the default one when none is given, and refuses a mode the type does not offer', () => {
-    const items = resolveConfigPresetPartialItems(bundle, family('branding'), [THEME_A, THEME_B]);
-    const modes = configPresetPartialImportModes(family('branding'), items, [{ key: THEME_B, mode: ConfigImportMode.Overwrite }]);
-    expect(Object.fromEntries(modes)).toEqual({ [`branding/${THEME_A}`]: ConfigImportMode.Copy, [`branding/${THEME_B}`]: ConfigImportMode.Overwrite });
-    expect(() => configPresetPartialImportModes(family('branding'), items, [{ key: THEME_A, mode: ConfigImportMode.Add }]))
+  it('gives each item its mode, the default one of the partial import when none is given, and refuses a mode the type does not offer', () => {
+    const modes = resolveConfigPresetPartialImportModes(family('branding'), [{ key: THEME_B, mode: ConfigImportMode.Overwrite }]);
+    const defaultMode = getConfigPresetPartialImportDefaultMode(family('branding'));
+    expect(configPresetImportMode(modes, 'branding', THEME_A, defaultMode)).toBe(ConfigImportMode.Copy);
+    expect(configPresetImportMode(modes, 'branding', THEME_B, defaultMode)).toBe(ConfigImportMode.Overwrite);
+    expect(() => resolveConfigPresetPartialImportModes(family('branding'), [{ key: THEME_A, mode: ConfigImportMode.Add }]))
       .toThrow('Unsupported import mode for this configuration preset type');
   });
 });
@@ -108,7 +110,7 @@ describe('Config preset partial import: lock', () => {
     const { file } = trackedUpload([]);
     const editor = { id: 'user-id', capabilities: [{ name: 'KNOWLEDGE' }] } as unknown as AuthUser;
     await expect(configPresetPartialImport(context, editor, file, 'branding', ['theme--a'], [])).rejects.toThrow();
-    await expect(configPresetPartialImport(context, bypassUser, file, 'unknown', ['theme--a'], [])).rejects.toThrow('This configuration type cannot be imported');
+    await expect(configPresetPartialImport(context, bypassUser, file, 'unknown', ['theme--a'], [])).rejects.toThrow('Unknown configuration preset type');
     expect(withConfigPresetImportLock).not.toHaveBeenCalled();
   });
 
