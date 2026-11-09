@@ -462,7 +462,7 @@ const Workflow = ({
             proOptions={proOptions}
           >
             {isRequestAccessScopeAvailable && (
-              <Panel position="top-left" style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <Panel position="top-left" style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
                 <WorkflowScopeSwitch scope={scope} onScopeChange={(nextScope) => onScopeChange?.(nextScope)} />
                 {scope === 'REQUEST_ACCESS' && <RequestAccessValidatorGroup />}
               </Panel>

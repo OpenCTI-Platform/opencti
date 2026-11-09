@@ -19,6 +19,7 @@ import { addNotification } from '../../../src/modules/notification/notification-
 import {
   __resetReadRepairRateLimitForTest,
   assertExternalStatusWriteAllowed,
+  assertExternalStatusCreateAllowed,
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
   getAllowedTransitions,
@@ -6119,6 +6120,18 @@ describe('scope-aware workflow definitions', () => {
       expect((createEntity as any).mock.calls[0][2].name).toBe('Request access workflow for Case-Rfi');
     });
 
+    it('refuses a name that is already the other scope\'s definition name', async () => {
+      (findByType as any).mockResolvedValue(bothSetting);
+      (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => (
+        Promise.resolve(id === 'global-def' ? { id, name: 'Shared name' } : { id, name: 'Other', all_versions: [], draft_version: null })
+      ));
+      const definition = JSON.stringify({ name: 'Shared name', initialState: 'new', states: [], transitions: [] });
+      await expect(setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', definition, StatusScope.RequestAccess))
+        .rejects.toThrow('The Global and Request access workflows must have different names');
+      expect(createEntity).not.toHaveBeenCalled();
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
+
     it('treats a request access id equal to the Global one as no request access definition', () => {
       const shared = { ...globalOnlySetting, request_access_workflow: { approval_admin: [], workflow_definition_id: 'global-def' } };
       expect(resolveScopedDefinitionId(shared as any, StatusScope.RequestAccess)).toBeUndefined();
@@ -6194,15 +6207,20 @@ describe('scope-aware workflow definitions', () => {
       (createEntity as any).mockResolvedValue({ id: 'ra-def', name: 'RA', all_versions: [published], draft_version: published });
       (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id' } });
 
+      (storeLoadById as any).mockResolvedValue({ id: 'global-def', name: 'Global' });
+
       await setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', definition, StatusScope.RequestAccess);
 
       expect(createEntity).toHaveBeenCalledTimes(1);
-      expect(storeLoadById).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'global-def', 'WorkflowDefinition');
     });
 
     it('updates the existing request access definition in place and leaves entity setting untouched', async () => {
       (findByType as any).mockResolvedValue(bothSetting);
-      (storeLoadById as any).mockResolvedValue({ id: 'ra-def', name: 'RA', all_versions: [published], draft_version: published, published_version: published });
+      (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => Promise.resolve(
+        id === 'global-def'
+          ? { id, name: 'Global' }
+          : { id: 'ra-def', name: 'RA', all_versions: [published], draft_version: published, published_version: published },
+      ));
 
       await setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', definition, StatusScope.RequestAccess);
 
@@ -7037,6 +7055,42 @@ describe('triggerWorkflowEvent — request access outcomes', () => {
     expect(publishUserAction).toHaveBeenCalledTimes(1);
   });
 
+  it('retries a failing decision write and records it once it succeeds', async () => {
+    setup(definitionContent(), 'approved');
+    let failures = 2;
+    (updateAttribute as any).mockImplementation((_ctx: any, _user: any, _id: string, _type: string, inputs: any[]) => {
+      if (inputs.some((input) => input.key === 'x_opencti_request_access') && failures > 0) {
+        failures -= 1;
+        return Promise.reject(new Error('write failed'));
+      }
+      return Promise.resolve({ element: {} });
+    });
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Accept');
+
+    expect(result).toMatchObject({ success: true, newState: 'approved' });
+    expect(requestAccessWrites()).toHaveLength(3);
+    expect(telemetryManager.addRequestAccessApprovedCount).toHaveBeenCalledTimes(1);
+    expect(notifyRequestAccessResult).toHaveBeenCalledTimes(1);
+  });
+
+  it('flags the instance when the decision cannot be recorded, and notifies nobody', async () => {
+    setup(definitionContent(), 'approved');
+    (updateAttribute as any).mockImplementation((_ctx: any, _user: any, _id: string, _type: string, inputs: any[]) => (
+      inputs.some((input) => input.key === 'x_opencti_request_access') ? Promise.reject(new Error('write failed')) : Promise.resolve({ element: {} })
+    ));
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Accept');
+
+    expect(result).toMatchObject({ success: true, newState: 'approved' });
+    expect(requestAccessWrites()).toHaveLength(3);
+    const flag = (updateAttribute as any).mock.calls.find((call: any[]) => call[2] === 'instance-rfi' && call[4].some((input: any) => input.key === 'pendingError' && input.value[0]));
+    expect(flag).toBeDefined();
+    expect(flag[4].find((input: any) => input.key === 'pendingError').value[0]).toContain('could not be recorded');
+    expect(telemetryManager.addRequestAccessApprovedCount).not.toHaveBeenCalled();
+    expect(notifyRequestAccessResult).not.toHaveBeenCalled();
+  });
+
   it('a failing notification still records, counts and audits the decision', async () => {
     setup(definitionContent(), 'approved');
     vi.mocked(notifyRequestAccessResult).mockRejectedValueOnce(new Error('notification unavailable'));
@@ -7324,6 +7378,26 @@ describe('assertExternalStatusWriteAllowed', () => {
     const { x_opencti_request_access: _request, ...plainRfi } = rfiAt('review');
     (findByType as any).mockResolvedValue({ id: 'setting-id', request_access_workflow: { workflow_definition_id: 'ra-def' } });
     await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, plainRfi, 'ra-approved')).resolves.toBeUndefined();
+  });
+
+  describe('at creation', () => {
+    it('rejects a creation that supplies the Approved or Declined status', async () => {
+      await expect(assertExternalStatusCreateAllowed(mockContext, 'Case-Rfi', 'ra-approved')).rejects.toThrow(rejection);
+      await expect(assertExternalStatusCreateAllowed(mockContext, 'Case-Rfi', 'ra-declined')).rejects.toThrow(rejection);
+    });
+
+    it('lets a creation supply a state that decides nothing, a Global status or no status', async () => {
+      await expect(assertExternalStatusCreateAllowed(mockContext, 'Case-Rfi', 'ra-new')).resolves.toBeUndefined();
+      await expect(assertExternalStatusCreateAllowed(mockContext, 'Case-Rfi', 'ra-review')).resolves.toBeUndefined();
+      await expect(assertExternalStatusCreateAllowed(mockContext, 'Case-Rfi', 'global-approved')).resolves.toBeUndefined();
+      await expect(assertExternalStatusCreateAllowed(mockContext, 'Case-Rfi', null)).resolves.toBeUndefined();
+    });
+
+    it('lets any creation through when the request access scope has no published workflow, or for another type', async () => {
+      (findByType as any).mockResolvedValue({ id: 'setting-id' });
+      await expect(assertExternalStatusCreateAllowed(mockContext, 'Case-Rfi', 'ra-approved')).resolves.toBeUndefined();
+      await expect(assertExternalStatusCreateAllowed(mockContext, 'Report', 'ra-approved')).resolves.toBeUndefined();
+    });
   });
 
   it('returns without any lookup for an entity that is not an RFI', async () => {

@@ -821,18 +821,18 @@ describe('Workflow Component', () => {
     it('shows the Global / Request access switch for Case-Rfi only', () => {
       const { unmount } = renderRfi();
       expect(screen.getByRole('radio', { name: 'Global' })).toHaveAttribute('aria-checked', 'true');
-      expect(screen.getByRole('radio', { name: 'Request access workflow' })).toHaveAttribute('aria-checked', 'false');
+      expect(screen.getByRole('radio', { name: 'Request access' })).toHaveAttribute('aria-checked', 'false');
       unmount();
 
       // Another entity type, even with the setting available.
       const other = renderRfi({ entityType: 'Case-Rfd' });
-      expect(screen.queryByRole('radio', { name: 'Request access workflow' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('radio', { name: 'Request access' })).not.toBeInTheDocument();
       other.unmount();
 
       // Case-Rfi without Enterprise Edition.
       vi.mocked(useEnterpriseEdition).mockReturnValue(false);
       const community = renderRfi();
-      expect(screen.queryByRole('radio', { name: 'Request access workflow' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('radio', { name: 'Request access' })).not.toBeInTheDocument();
       community.unmount();
 
       // Case-Rfi without the request access setting.
@@ -841,7 +841,7 @@ describe('Workflow Component', () => {
         subType: { settings: { availableSettings: ['workflow_configuration'] } },
       } as never);
       renderRfi();
-      expect(screen.queryByRole('radio', { name: 'Request access workflow' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('radio', { name: 'Request access' })).not.toBeInTheDocument();
     });
 
     it('asks to change the scope when the other segment is picked', async () => {
@@ -849,7 +849,7 @@ describe('Workflow Component', () => {
       const onScopeChange = vi.fn();
       renderRfi({ onScopeChange });
 
-      await user.click(screen.getByRole('radio', { name: 'Request access workflow' }));
+      await user.click(screen.getByRole('radio', { name: 'Request access' }));
 
       expect(onScopeChange).toHaveBeenCalledWith('REQUEST_ACCESS');
     });

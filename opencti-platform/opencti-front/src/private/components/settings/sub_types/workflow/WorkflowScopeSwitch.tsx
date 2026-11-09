@@ -15,7 +15,7 @@ const WorkflowScopeSwitch = ({ scope, onScopeChange }: WorkflowScopeSwitchProps)
 
   const scopes: { value: WorkflowScope; label: string }[] = [
     { value: 'GLOBAL', label: t_i18n('Global') },
-    { value: 'REQUEST_ACCESS', label: t_i18n('Request access workflow') },
+    { value: 'REQUEST_ACCESS', label: t_i18n('Request access') },
   ];
 
   return (

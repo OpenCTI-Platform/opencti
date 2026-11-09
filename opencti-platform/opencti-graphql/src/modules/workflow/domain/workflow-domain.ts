@@ -938,6 +938,20 @@ export const setWorkflowDefinition = async (
   }
 
   const workflowName = resolveDefinitionEntityName(entityType, scope, definitionObj.name);
+  // The entity id derives from the name: reusing the other scope's name would upsert its definition,
+  // overwriting its draft and history.
+  const otherScopeDefinitionId = resolveScopedDefinitionId(entitySetting, scope === StatusScope.Global ? StatusScope.RequestAccess : StatusScope.Global);
+  if (otherScopeDefinitionId && otherScopeDefinitionId !== existingDefinitionId) {
+    const otherScopeDefinition = await storeLoadById(
+      executionContext,
+      executionUser,
+      otherScopeDefinitionId,
+      ENTITY_TYPE_WORKFLOW_DEFINITION,
+    ) as WorkflowDefinitionEntity | undefined;
+    if (otherScopeDefinition?.name === workflowName) {
+      throw FunctionalError('The Global and Request access workflows must have different names', { entityType, scope, name: workflowName });
+    }
+  }
 
   // Create version data structure
   const versionData = {
@@ -2325,7 +2339,7 @@ export const triggerWorkflowEvent = async (
       ]);
     }
     if (requestAccessOutcome) {
-      await applyRequestAccessOutcome(executionContext, executionUser, entity as BasicStoreEntityCaseRfi, requestAccessOutcome);
+      await recordRequestAccessDecision(executionContext, executionUser, entity as BasicStoreEntityCaseRfi, requestAccessOutcome, instanceId);
     }
 
     await lock.unlock();
@@ -2555,7 +2569,7 @@ const executeWorkflowBypass = async (
       ]);
     }
     if (requestAccessOutcome) {
-      await applyRequestAccessOutcome(executionContext, executionUser, entity as BasicStoreEntityCaseRfi, requestAccessOutcome);
+      await recordRequestAccessDecision(executionContext, executionUser, entity as BasicStoreEntityCaseRfi, requestAccessOutcome, instanceId);
     } else if (requestAccessStatus) {
       await mirrorRequestAccessStatus(executionContext, executionUser, entity.internal_id || entity.id, requestAccessStatus);
     }
@@ -2594,6 +2608,25 @@ export const setWorkflowStatus = async (
     await notifyWorkflowTransitionComment(bypassDraftContext(context), result.entity, 'event_bypass', comment.trim(), user.id);
   }
   return result.success ? { ...result, instance: await getWorkflowInstance(context, user, entityId) } : result;
+};
+
+// The RFI is in its outcome state but its request still reads NEW: flag the instance so the gap is visible
+// for an admin.
+const recordRequestAccessDecision = async (
+  context: AuthContext,
+  user: AuthUser,
+  rfi: BasicStoreEntityCaseRfi,
+  outcome: RequestAccessOutcome,
+  instanceId: string,
+): Promise<void> => {
+  if (await applyRequestAccessOutcome(context, user, rfi, outcome)) return;
+  try {
+    await updateAttribute(context, WORKFLOW_MANAGER_USER, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+      { key: 'pendingError', value: [`The ${outcome === 'APPROVED' ? 'approval' : 'decline'} could not be recorded on the request: its status still reads NEW and the applicant was not notified`] },
+    ]);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE][Request access] Failed to flag the unrecorded request decision', { cause: error, instanceId });
+  }
 };
 
 /**
@@ -2821,6 +2854,26 @@ export const assertExternalStatusWriteAllowed = async (
   if (newState === currentState) return;
   if (findStateOutcome(definitionData, currentState) || findStateOutcome(definitionData, newState)) {
     throw FunctionalError('Approved and Declined can only be reached or left through the workflow', { id: entity.internal_id });
+  }
+};
+
+/**
+ * Refuses the creation of a Case-Rfi that supplies the Approved / Declined status of the request access
+ * workflow: the request would exist already decided, with no transition, share or notification. A creation
+ * starts a request at the initial state; only a transition or a bypass decides it. Runs before the entity is saved.
+ */
+export const assertExternalStatusCreateAllowed = async (
+  context: AuthContext,
+  entityType: string,
+  statusId: string | null | undefined,
+): Promise<void> => {
+  if (entityType !== ENTITY_TYPE_CONTAINER_CASE_RFI || !statusId) return;
+  const status = await findStatusInCache(context, statusId);
+  if (status?.type !== ENTITY_TYPE_CONTAINER_CASE_RFI || status.scope !== StatusScope.RequestAccess) return;
+  const entitySetting = await getWorkflowConfig(context, SYSTEM_USER, entityType);
+  const definitionData = await getDefinitionData(context, SYSTEM_USER, entitySetting, false, StatusScope.RequestAccess);
+  if (definitionData && findStateOutcome(definitionData, status.template_id)) {
+    throw FunctionalError('Approved and Declined can only be reached or left through the workflow', { statusId });
   }
 };
 

@@ -27,6 +27,7 @@ import { extractEntityRepresentativeName } from './entity-representative';
 import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
 import {
+  assertExternalStatusCreateAllowed,
   assertExternalStatusWriteAllowed,
   cleanupEntityWorkflow,
   initializeEntityWorkflow,
@@ -4781,6 +4782,9 @@ export const createEntity = async (
   opts: { complete?: boolean; noEnrichOnUpdate?: boolean } & CreateEntityRawOpts = {},
 ) => {
   const isCompleteResult = opts.complete === true;
+  if (input[X_WORKFLOW_ID] && !opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    await assertExternalStatusCreateAllowed(context, type, input[X_WORKFLOW_ID]);
+  }
   const ingestionDeduplication = await prepareIngestionDeduplication(context, user, input, type, opts);
   if (ingestionDeduplication) {
     const existing = await findUnchangedEntity(ingestionDeduplication, () => storeLoadById<BasicStoreEntity>(context, user, input.stix_id, type));

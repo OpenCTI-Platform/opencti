@@ -24,6 +24,8 @@ import {
 
 export type RequestAccessOutcome = 'APPROVED' | 'DECLINED';
 
+const DECISION_WRITE_ATTEMPTS = 3;
+
 /**
  * The request-access workflow of Case-Rfi, or null when requests run on the legacy flow: it takes
  * ENTITIES_WORKFLOW on and a request-access definition published. Read as the system: requesters
@@ -81,30 +83,37 @@ export const assertCanEnterRequestAccessOutcome = async (
 /**
  * Records the decision once the RFI has entered its outcome state: request status and decision counter,
  * then audit and applicant notification. The state and the share are already persisted, so a failure
- * here is logged and never fails the transition; each step after the status write runs on its own.
+ * never fails the transition; each step after the status write runs on its own. The status write is retried,
+ * and returns false when it still fails: the caller flags the workflow instance, as the RFI is decided while
+ * its request still reads NEW.
  */
 export const applyRequestAccessOutcome = async (
   context: AuthContext,
   user: AuthUser,
   rfi: BasicStoreEntityCaseRfi,
   outcome: RequestAccessOutcome,
-): Promise<void> => {
+): Promise<boolean> => {
   const rfiId = rfi.internal_id ?? rfi.id;
-  let requestAccessAction: RequestAccessAction;
-  try {
-    // Read the request fresh: the RFI handed in can predate the transition lock, and the patch rewrites the whole JSON.
-    const currentRfi = await storeLoadById<BasicStoreEntityCaseRfi>(context, SYSTEM_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
-    if (!currentRfi) {
-      throw UnsupportedError('Request access RFI not found', { id: rfiId });
+  let requestAccessAction: RequestAccessAction | undefined;
+  for (let attempt = 1; attempt <= DECISION_WRITE_ATTEMPTS && !requestAccessAction; attempt += 1) {
+    try {
+      // Read the request fresh: the RFI handed in can predate the transition lock, and the patch rewrites the whole JSON.
+      const currentRfi = await storeLoadById<BasicStoreEntityCaseRfi>(context, SYSTEM_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
+      if (!currentRfi) {
+        throw UnsupportedError('Request access RFI not found', { id: rfiId });
+      }
+      const action: RequestAccessAction = JSON.parse(currentRfi.x_opencti_request_access);
+      const decided = { ...action, status: outcome, executionDate: new Date() };
+      await updateAttribute(context, user, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI, [
+        { key: 'x_opencti_request_access', value: [JSON.stringify(decided)] },
+      ], { workflowInternalWrite: true });
+      requestAccessAction = decided;
+    } catch (error) {
+      logApp.error('[OPENCTI-MODULE][Request access] Failed to record the request decision', { cause: error, id: rfiId, outcome, attempt });
     }
-    const action: RequestAccessAction = JSON.parse(currentRfi.x_opencti_request_access);
-    requestAccessAction = { ...action, status: outcome, executionDate: new Date() };
-    await updateAttribute(context, user, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI, [
-      { key: 'x_opencti_request_access', value: [JSON.stringify(requestAccessAction)] },
-    ], { workflowInternalWrite: true });
-  } catch (error) {
-    logApp.error('[OPENCTI-MODULE][Request access] Failed to record the request decision', { cause: error, id: rfiId, outcome });
-    return;
+  }
+  if (!requestAccessAction) {
+    return false;
   }
   if (outcome === 'APPROVED') {
     addRequestAccessApprovedCount();
@@ -140,6 +149,7 @@ export const applyRequestAccessOutcome = async (
   } catch (error) {
     logApp.error('[OPENCTI-MODULE][Request access] Failed to notify the applicant of the request decision', { cause: error, id: rfiId, outcome });
   }
+  return true;
 };
 
 /**
