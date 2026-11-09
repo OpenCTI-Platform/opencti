@@ -6,12 +6,12 @@ import { Text } from '@filigran/design-system';
 import { useFormatter } from '../../../../../../components/i18n';
 import type { Theme } from '../../../../../../components/Theme';
 
-export type ConfigPresetImportSource = 'file' | 'bundle';
+export type ConfigPresetPartialImportSource = 'file' | 'bundle';
 
-interface ConfigPresetImportSourceChoiceProps {
+interface ConfigPresetPartialImportSourceChoiceProps {
   // null until the user chooses
-  value: ConfigPresetImportSource | null;
-  onChange: (source: ConfigPresetImportSource) => void;
+  value: ConfigPresetPartialImportSource | null;
+  onChange: (source: ConfigPresetPartialImportSource) => void;
   // The import the screen already had, already translated (a theme file...)
   fileLabel: string;
   fileDescription: string;
@@ -47,7 +47,7 @@ const SourceCard: FunctionComponent<SourceCardProps> = ({ icon, label, descripti
 
 // The choice of a screen that imports its items: the import it already had, or the items of its type taken from a configuration bundle.
 // Two cards side by side, the chosen one highlighted. Generic: any screen that offers the partial import shows it.
-const ConfigPresetImportSourceChoice: FunctionComponent<ConfigPresetImportSourceChoiceProps> = ({
+const ConfigPresetPartialImportSourceChoice: FunctionComponent<ConfigPresetPartialImportSourceChoiceProps> = ({
   value,
   onChange,
   fileLabel,
@@ -85,4 +85,4 @@ const ConfigPresetImportSourceChoice: FunctionComponent<ConfigPresetImportSource
   );
 };
 
-export default ConfigPresetImportSourceChoice;
+export default ConfigPresetPartialImportSourceChoice;

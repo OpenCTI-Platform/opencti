@@ -8,7 +8,7 @@ import { useFormatter } from '../../../../../../components/i18n';
 import type { Theme } from '../../../../../../components/Theme';
 import ConfigPresetWizardStepper from '../../ConfigPresetWizardStepper';
 import ConfigPresetResultLine from '../ConfigPresetResultLine';
-import ConfigPresetImportSourceChoice, { type ConfigPresetImportSource } from './ConfigPresetImportSourceChoice';
+import ConfigPresetPartialImportSourceChoice, { type ConfigPresetPartialImportSource } from './ConfigPresetPartialImportSourceChoice';
 import ConfigPresetPartialImport from './ConfigPresetPartialImport';
 
 const STEPS = ['Method', 'Select file', 'Done'];
@@ -58,7 +58,7 @@ const ConfigPresetPartialImportDialog: FunctionComponent<ConfigPresetPartialImpo
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [step, setStep] = useState<Step>('method');
-  const [source, setSource] = useState<ConfigPresetImportSource | null>(null);
+  const [source, setSource] = useState<ConfigPresetPartialImportSource | null>(null);
   // An import runs: the dialog is not dismissed, so that its result is not lost
   const [busy, setBusy] = useState(false);
   const [fileResult, setFileResult] = useState<string | null>(null);
@@ -81,7 +81,7 @@ const ConfigPresetPartialImportDialog: FunctionComponent<ConfigPresetPartialImpo
     if (step === 'method') {
       return (
         <>
-          <ConfigPresetImportSourceChoice
+          <ConfigPresetPartialImportSourceChoice
             value={source}
             onChange={setSource}
             fileLabel={fileLabel}
