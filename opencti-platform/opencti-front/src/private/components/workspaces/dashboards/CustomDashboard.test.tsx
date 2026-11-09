@@ -609,6 +609,16 @@ describe('CustomDashboard time range', () => {
       await user.click(screen.getByRole('button', { name: 'Reset' }));
       expect(captured.contentConfig?.relativeDate).toBe('days-7');
     });
+
+    it('sees neither the time filters nor the refresh control when the flag is off, whatever the switch holds', () => {
+      testRender(
+        <CustomDashboard data={readerWorkspace({ allowViewersToEditTimeFilters: true }) as never} />,
+        { userContext: userContext([]), route: '/dashboard?timeRange=years-1' },
+      );
+      expect(screen.queryByTestId('time-filters')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('refresh-control')).not.toBeInTheDocument();
+      expect(captured.contentConfig?.relativeDate).toBe('days-7');
+    });
   });
 
   it('keeps the current behaviour when the flag is off', () => {
