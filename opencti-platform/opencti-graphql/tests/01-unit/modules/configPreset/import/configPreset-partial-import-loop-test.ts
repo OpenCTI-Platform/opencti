@@ -141,6 +141,17 @@ describe('Config preset partial import: the preview', () => {
   });
 });
 
+describe('Config preset partial import: the preview of a theme whose name only is taken', () => {
+  it('shows it in conflict, so that the dialog marks it and offers the choice of the mode', async () => {
+    // No theme has its standard id, another one has its name: COPY, the default of a partial import, would add it as "Import test theme (1)"
+    vi.mocked(checkExistingTheme).mockImplementation(async (_context, _user, name) => name === 'Import test theme');
+    const preview = await configPresetPartialImportPreview(context, user, upload(), 'branding');
+    expect(preview.default_mode).toBe('COPY');
+    expect(preview.type?.items.find(({ key }) => key === CUSTOM_THEME_ID)).toMatchObject({ exists: false, conflict: true });
+    expect(preview.type?.items.find(({ key }) => key === OTHER_THEME_ID)).toMatchObject({ exists: false, conflict: false });
+  });
+});
+
 describe('Config preset partial import: Enterprise Edition', () => {
   const whitemark = () => CONFIG_PRESET_FAMILIES.find((family) => family.id === 'whitemark')!;
 

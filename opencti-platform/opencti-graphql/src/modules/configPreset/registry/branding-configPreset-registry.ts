@@ -42,8 +42,10 @@ const brandingImporter: ConfigPresetImporter = {
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(BRANDING_FAMILY_ID, item.id));
     }
-    // A theme conflicts when it exists, or when another one has its name: either way a copy is a way out
-    const conflict = result.exists || result.code === 'name_conflict';
+    // A theme conflicts when it exists, or when another one has its name: either way a copy is a way out. A copy that takes another name
+    // (COPY, the default of a partial import) conflicts too: its name is taken, the dialog shows it and offers the choice of the mode
+    const renamedCopy = result.copyName !== undefined && result.copyName !== result.configuration?.name;
+    const conflict = result.exists || result.code === 'name_conflict' || renamedCopy;
     return { ...base, exists: result.exists, conflict, status: result.status, reason: result.reason };
   },
   apply: async (context, user, item, computed, mode) => {

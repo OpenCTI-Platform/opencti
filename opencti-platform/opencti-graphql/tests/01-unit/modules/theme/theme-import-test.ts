@@ -182,7 +182,7 @@ describe('importTheme in copy mode', () => {
 
   it('creates a new theme as it is, with its standard id', async () => {
     const result = await importTheme(context, user, themeConfiguration(), { mode: ConfigImportMode.Copy });
-    expect(result).toMatchObject({ status: 'created', exists: false, theme: createdTheme });
+    expect(result).toMatchObject({ status: 'created', exists: false, copyName: 'Import test theme', theme: createdTheme });
     expect(result.reason).toBeUndefined();
     expect(vi.mocked(addTheme).mock.calls[0][2]).toMatchObject({ name: 'Import test theme', standard_id: CUSTOM_THEME_ID, built_in: false });
   });
@@ -201,7 +201,7 @@ describe('importTheme in copy mode', () => {
   it('keeps its standard id when only its name is taken', async () => {
     taken('Import test theme');
     const result = await importTheme(context, user, themeConfiguration(), { mode: ConfigImportMode.Copy });
-    expect(result).toMatchObject({ status: 'created', exists: false, reason: 'Added as "Import test theme (1)"' });
+    expect(result).toMatchObject({ status: 'created', exists: false, copyName: 'Import test theme (1)', reason: 'Added as "Import test theme (1)"' });
     expect(vi.mocked(addTheme).mock.calls[0][2]).toMatchObject({ name: 'Import test theme (1)', standard_id: CUSTOM_THEME_ID });
   });
 

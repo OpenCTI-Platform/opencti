@@ -23,6 +23,8 @@ export type ThemeImportCode = 'invalid' | 'standard_id_required' | 'exists' | 'n
 export type ThemeImportResult = ConfigImportResult<ThemeImportConfiguration, ThemeImportCode> & {
   // The theme written, absent on a dry run
   theme?: Awaited<ReturnType<typeof addTheme>>;
+  // The name of a copy: the one of the configuration, or the free one it takes when that name is taken
+  copyName?: string;
 };
 
 const refused = (status: 'failed' | 'skipped', code: ThemeImportCode, reason: string, exists: boolean, configuration?: ThemeImportConfiguration): ThemeImportResult => {
@@ -80,7 +82,7 @@ export const importTheme = async (
     if (!name) {
       return refused('failed', 'name_conflict', 'Theme name already exists', !!existing, parsed.data);
     }
-    const copy: ThemeImportResult = { status: 'created', exists: !!existing, configuration: parsed.data, reason: name === theme.name ? undefined : `Added as "${configImportReasonValue(name)}"` };
+    const copy: ThemeImportResult = { status: 'created', exists: !!existing, configuration: parsed.data, copyName: name, reason: name === theme.name ? undefined : `Added as "${configImportReasonValue(name)}"` };
     if (dryRun) {
       reservedNames?.add(name);
       return copy;
