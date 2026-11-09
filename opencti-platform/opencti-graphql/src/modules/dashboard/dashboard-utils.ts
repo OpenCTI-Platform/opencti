@@ -109,10 +109,13 @@ export const importDashboardWidgetConfiguration = async (
   user: AuthUser,
   file: Promise<FileHandle>,
   manifest: string | null | undefined,
+  options: { validateWidget?: (widget: WidgetConfiguration) => void } = {},
 ) => {
   const parsedData = await extractContentFrom<WidgetConfigImportData>(file);
   checkDashboardConfigurationImport('widget', parsedData);
   const widgetDefinition = fromB64(parsedData.configuration);
+  // Before the ids are resolved: a refused widget costs no lookup.
+  options.validateWidget?.(widgetDefinition);
   await convertWidgetsIds(context, user, [widgetDefinition], 'stix');
   const importedWidgetId = uuidv4();
   const dashboardManifestObjects = fromB64(manifest ?? undefined);
