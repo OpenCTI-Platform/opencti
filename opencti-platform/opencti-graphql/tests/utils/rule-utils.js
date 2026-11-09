@@ -2,7 +2,7 @@ import { expect } from 'vitest';
 import gql from 'graphql-tag';
 import { topEntitiesOrRelationsList } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
-import { isNotEmptyField, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS } from '../../src/database/utils';
+import { isEmptyField, isNotEmptyField, RABBIT_QUEUE_PREFIX, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS } from '../../src/database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
 import { internalFindByIds, internalLoadById, topEntitiesList } from '../../src/database/middleware-loader';
 import { testContext } from './testQuery';
@@ -11,6 +11,8 @@ import { fetchStreamInfo } from '../../src/database/stream/stream-handler';
 import { logApp } from '../../src/config/conf';
 import { TASK_TYPE_RULE } from '../../src/domain/backgroundTask-common';
 import { getManagerInfo } from '../../src/manager/ruleManager';
+import { rabbitmqManagementClient, rabbitmqVhostPath } from '../../src/database/rabbitmq';
+import { getInternalBackgroundTaskQueues } from '../../src/modules/connector/connector-rabbitmq';
 
 export const inferenceLookup = async (inferences, fromStandardId, toStandardId, type) => {
   for (let index = 0; index < inferences.length; index += 1) {
@@ -42,8 +44,29 @@ const RULE_MUTATION = gql`
 
 const RULE_ACTIVATION_BUDGET = 10000;
 const RULE_STABILISATION_BUDGET = 15000;
+// The test worker refreshes its connector list every 60 s: one missed refresh (API not up yet) leaves the
+// background task queues without a consumer for up to a minute. 90 s covers one refresh cycle and its fetch.
+const TASK_WORKER_READY_BUDGET = 90000;
+
+const countQueueConsumers = async (queueName) => {
+  const httpClient = await rabbitmqManagementClient();
+  const vhostPath = isEmptyField(rabbitmqVhostPath) ? '/%2F' : rabbitmqVhostPath;
+  const queue = await httpClient.get(`/api/queues${vhostPath}/${queueName}`).then((response) => response.data).catch(() => null);
+  return queue?.consumers ?? 0;
+};
+
+// A rule activation is a background task processed by a worker: wait until every background task queue is consumed,
+// so the activation budget below measures the rule, not the worker's connector refresh cycle (#19692).
+const awaitTaskWorkerReady = async () => {
+  const queueNames = getInternalBackgroundTaskQueues().map((queue) => `${RABBIT_QUEUE_PREFIX}push_${queue.id}`);
+  await awaitUntilCondition(async () => {
+    const consumers = await Promise.all(queueNames.map((queueName) => countQueueConsumers(queueName)));
+    return consumers.every((count) => count > 0);
+  }, TASK_WORKER_READY_BUDGET, { intervalMs: 1000, message: `No worker consumes the background task queues ${queueNames.join(', ')}` });
+};
 
 export const changeRule = async (ruleId, active) => {
+  await awaitTaskWorkerReady();
   const start = new Date().getTime();
   // Change the status
   await queryAsAdmin({ query: RULE_MUTATION, variables: { id: ruleId, enable: active } });
