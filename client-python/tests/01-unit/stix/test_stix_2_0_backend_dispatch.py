@@ -271,6 +271,28 @@ def test_prepare_export_stix_2_0_removes_nested_refs_excluded_by_access_filter(
     assert all(call.kwargs.get("getAll") for call in list_calls)
 
 
+def test_prepare_export_stix_2_0_access_filter_ignores_non_string_refs(stix_helper):
+    """Custom fields ending with `_ref(s)` but holding other values are kept."""
+    backend_payload = _backend_malware_payload()
+    sample_id = backend_payload["sample_refs"][0]
+    backend_payload["x_opencti_cf_source_ref"] = ["source-a", "source-b"]
+    backend_payload["x_opencti_cf_links_refs"] = [{"url": "https://example.com"}]
+    stix_helper.opencti.stix_core_object.to_stix.return_value = backend_payload
+    _mock_nested_refs(stix_helper, all_ids=[sample_id], allowed_ids=[])
+    prepared = stix_helper.generate_export(
+        _raw_graphql_entity(), stix_version=STIX_VERSION_2_0
+    )
+
+    result = stix_helper.prepare_export(
+        prepared, access_filter=ACCESS_FILTER, stix_version=STIX_VERSION_2_0
+    )
+
+    malware = next(obj for obj in result if obj.get("type") == "malware")
+    assert "sample_refs" not in malware
+    assert malware["x_opencti_cf_source_ref"] == ["source-a", "source-b"]
+    assert malware["x_opencti_cf_links_refs"] == [{"url": "https://example.com"}]
+
+
 def test_prepare_export_stix_2_0_keeps_nested_refs_allowed_by_access_filter(
     stix_helper,
 ):

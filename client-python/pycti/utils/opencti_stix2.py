@@ -2089,12 +2089,19 @@ class OpenCTIStix2:
         excluded_ids = all_ids - allowed_ids
         if not excluded_ids:
             return
+        # Only string values are refs: custom fields can also end with `_ref`
+        # and hold a list, which is not hashable.
         for key in list(entity):
             value = entity[key]
-            if key.endswith("_ref") and value in excluded_ids:
-                del entity[key]
+            if key.endswith("_ref") and isinstance(value, str):
+                if value in excluded_ids:
+                    del entity[key]
             elif key.endswith("_refs") and isinstance(value, list):
-                kept = [ref for ref in value if ref not in excluded_ids]
+                kept = [
+                    ref
+                    for ref in value
+                    if not (isinstance(ref, str) and ref in excluded_ids)
+                ]
                 if kept:
                     entity[key] = kept
                 else:

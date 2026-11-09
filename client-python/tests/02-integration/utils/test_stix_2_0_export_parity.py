@@ -20,7 +20,9 @@ ACCEPTED_DIFFERENCES = {"spec_version"}
 # validated, or fix the converter and remove it.
 # - samples: raw GraphQL key leaked by the legacy export (bug), the sample
 #   is already exported as `sample_refs` by both converters.
-PENDING_DIFFERENCES = {"samples"}
+# - x_opencti_modified_at: only exported by the backend; the legacy Malware
+#   reader does not select it, although `import_from_stix2` reads it back.
+PENDING_DIFFERENCES = {"samples", "x_opencti_modified_at"}
 
 IGNORED_KEYS = ACCEPTED_DIFFERENCES | PENDING_DIFFERENCES
 
@@ -70,6 +72,7 @@ def rich_malware(api_client):
         capabilities=["evades-av"],
         confidence=80,
         x_opencti_score=70,
+        x_opencti_modified_at="2024-06-15T00:00:00.000Z",
         createdBy=author["id"],
         objectMarking=[marking["id"]],
         objectLabel=[label["id"]],
