@@ -17,7 +17,7 @@ import { ABSTRACT_STIX_REF_RELATIONSHIP, BASE_TYPE_ENTITY, buildRefRelationKey }
 import { isStixRefRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
 import { BYPASS, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../utils/access';
-import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from './stixCoreObject';
+import { stixCoreObjectImportDelete, stixCoreObjectImportPush, stixCoreObjectImportPushRef } from './stixCoreObject';
 import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, externalReferenceId) => {
@@ -52,6 +52,11 @@ export const externalReferenceImportPush = async (context, user, externalReferen
   const entitiesReferences = await findReferencesForExternalId(context, user, externalReferenceId, { types: ['Stix-Domain-Object'], first: 50 });
   const finalArgs = { ...args, importContextEntities: entitiesReferences };
   return stixCoreObjectImportPush(context, user, externalReferenceId, file, finalArgs);
+};
+
+export const externalReferenceImportPushRef = async (context, user, externalReferenceId, fileRef) => {
+  const entitiesReferences = await findReferencesForExternalId(context, user, externalReferenceId, { types: ['Stix-Domain-Object'], first: 50 });
+  return stixCoreObjectImportPushRef(context, user, externalReferenceId, fileRef, entitiesReferences);
 };
 
 export const addExternalReference = async (context, user, externalReference) => {

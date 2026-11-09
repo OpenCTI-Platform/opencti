@@ -9,7 +9,11 @@ import * as masterLock from '../../../src/lock/master-lock';
 import * as entitySettingUtils from '../../../src/modules/entitySetting/entitySetting-utils';
 import * as userActionListener from '../../../src/listener/UserActionListener';
 import * as work from '../../../src/domain/work';
-import { batchInternalRels, stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../../../src/domain/stixCoreObject';
+import * as streamHandler from '../../../src/database/stream/stream-handler';
+import { batchInternalRels, stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectImportPushRef, stixCoreObjectsExportPush } from '../../../src/domain/stixCoreObject';
+import type { BasicStoreEntity } from '../../../src/types/store';
+import type { FileRefInput } from '../../../src/generated/graphql';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
 
 describe('stix core object domain import push', () => {
   beforeEach(() => {
@@ -65,6 +69,97 @@ describe('stix core object domain import push', () => {
     const uploadOptions = uploadSpy.mock.calls[0]?.[4] as { meta?: { fintel_template_id?: string } } | undefined;
     expect(uploadSpy.mock.calls[0][2]).toEqual('import/Report/report--1');
     expect(uploadOptions?.meta?.fintel_template_id).toBeUndefined();
+  });
+});
+
+describe('stix core object domain import push ref', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const REPORT = { _index: 'index-test', _id: 'doc-test', internal_id: 'report--1', entity_type: 'Report', x_opencti_files: [] } as unknown as BasicStoreEntity;
+  const FILE_REF: FileRefInput = {
+    sync_id: 'sync--1',
+    storage_key: 'sync/inflight/sync--1/0123456789abcdef0123456789abcdef/content',
+    name: 'report.pdf',
+    mime_type: 'application/pdf',
+    version: new Date('2024-01-01T00:00:00.000Z'),
+    file_markings: ['marking--1'],
+    no_trigger_import: true,
+  };
+
+  const setupImportPushRef = () => {
+    vi.spyOn(middleware, 'storeLoadByIdWithRefs').mockResolvedValue(REPORT as never);
+    vi.spyOn(access, 'validateUserAccessOperation').mockReturnValue(true);
+    vi.spyOn(draftContext, 'getDraftContext').mockReturnValue(undefined);
+    vi.spyOn(identifier, 'getInstanceIds').mockReturnValue(['report--1']);
+    vi.spyOn(entitySettingUtils, 'getEntitySettingFromCache').mockResolvedValue({ platform_entity_files_ref: true } as never);
+    const unlock = vi.fn();
+    const lockSpy = vi.spyOn(masterLock, 'lockResources').mockResolvedValue({ unlock } as never);
+    const uploadSpy = vi.spyOn(fileStorage, 'uploadToStorage');
+    const copySpy = vi.spyOn(fileStorage, 'copyFileFromSyncReference').mockResolvedValue({ upload: { id: 'file--1' }, untouched: true } as never);
+    const updateEventSpy = vi.spyOn(streamHandler, 'storeUpdateEvent');
+    return { unlock, lockSpy, uploadSpy, copySpy, updateEventSpy };
+  };
+
+  it('copies the staged file with the options importPush would upload it with', async () => {
+    const { uploadSpy, copySpy } = setupImportPushRef();
+
+    const result = await stixCoreObjectImportPushRef({}, { id: 'user--1' } as never, 'report--1', FILE_REF, undefined);
+
+    expect(result.id).toEqual('file--1');
+    expect(uploadSpy).not.toHaveBeenCalled();
+    expect(copySpy).toHaveBeenCalledWith({}, { id: 'user--1' }, {
+      syncId: 'sync--1',
+      filePath: 'import/Report/report--1',
+      storageKey: FILE_REF.storage_key,
+      name: 'report.pdf',
+      mimeType: 'application/pdf',
+      version: '2024-01-01T00:00:00.000Z',
+      fileMarkings: ['marking--1'],
+      entityId: 'report--1',
+      externalReferenceId: identifier.generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: '/storage/get/import/Report/report--1/report.pdf' }),
+      noTriggerImport: true,
+      importContextEntities: [REPORT],
+    });
+  });
+
+  it('keeps the import context entities given by the caller', async () => {
+    const { copySpy } = setupImportPushRef();
+    const container = { internal_id: 'container--1', entity_type: 'Report' } as unknown as BasicStoreEntity;
+
+    await stixCoreObjectImportPushRef({}, { id: 'user--1' } as never, 'report--1', FILE_REF, [container]);
+
+    expect(copySpy.mock.calls[0][2].importContextEntities).toEqual([container]);
+  });
+
+  it('copies while the entity is locked', async () => {
+    const { unlock, lockSpy, copySpy } = setupImportPushRef();
+
+    await stixCoreObjectImportPushRef({}, { id: 'user--1' } as never, 'report--1', FILE_REF, undefined);
+
+    expect(lockSpy.mock.invocationCallOrder[0]).toBeLessThan(copySpy.mock.invocationCallOrder[0]);
+    expect(copySpy.mock.invocationCallOrder[0]).toBeLessThan(unlock.mock.invocationCallOrder[0]);
+  });
+
+  it('publishes no stream event when the copy leaves the file untouched', async () => {
+    const { updateEventSpy } = setupImportPushRef();
+
+    await stixCoreObjectImportPushRef({}, { id: 'user--1' } as never, 'report--1', FILE_REF, undefined);
+
+    expect(updateEventSpy).not.toHaveBeenCalled();
+  });
+
+  it('fails with only the sync id in the error data when the copy is refused, and still unlocks', async () => {
+    const { unlock, copySpy, updateEventSpy } = setupImportPushRef();
+    copySpy.mockResolvedValue(null);
+
+    const importPushRef = stixCoreObjectImportPushRef({}, { id: 'user--1' } as never, 'report--1', FILE_REF, undefined);
+
+    await expect(importPushRef).rejects.toThrow('Cannot copy referenced sync file');
+    await expect(importPushRef).rejects.toHaveProperty('extensions.data', { http_status: 400, genre: 'BUSINESS', syncId: 'sync--1' });
+    expect(updateEventSpy).not.toHaveBeenCalled();
+    expect(unlock).toHaveBeenCalledTimes(1);
   });
 });
 
