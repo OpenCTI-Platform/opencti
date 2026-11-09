@@ -18,7 +18,7 @@ vi.mock('../../../src/database/cache', () => ({
   getEntityFromCache: (...args: any[]) => getEntityFromCache(...args),
 }));
 
-import { canReceiveNotifications, getNotifications, isNotificationRecipientActive } from '../../../src/manager/notificationManager';
+import { canReceiveNotifications, getNotifications } from '../../../src/manager/notificationManager';
 
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 
@@ -46,32 +46,22 @@ describe('canReceiveNotifications', () => {
     expect(canReceiveNotifications(buildUser({ user_service_account: true }))).toBe(false);
   });
 
-  it('rejects an inactive account', () => {
-    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_LOCKED }))).toBe(false);
-  });
-});
-
-describe('isNotificationRecipientActive', () => {
-  it('accepts an active, non-expired account', () => {
-    expect(isNotificationRecipientActive(buildUser({ account_status: ACCOUNT_STATUS_ACTIVE }))).toBe(true);
-  });
-
   it('rejects an account with a non-active status (expired)', () => {
-    expect(isNotificationRecipientActive(buildUser({ account_status: ACCOUNT_STATUS_EXPIRED }))).toBe(false);
+    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_EXPIRED }))).toBe(false);
   });
 
   it('rejects an account with a non-active status (locked/disabled)', () => {
-    expect(isNotificationRecipientActive(buildUser({ account_status: ACCOUNT_STATUS_LOCKED }))).toBe(false);
+    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_LOCKED }))).toBe(false);
   });
 
   it('rejects an active account whose expiration date is in the past', () => {
     const past = utcDate().subtract(1, 'day').toISOString();
-    expect(isNotificationRecipientActive(buildUser({ account_status: ACCOUNT_STATUS_ACTIVE, account_lock_after_date: past as any }))).toBe(false);
+    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_ACTIVE, account_lock_after_date: past as any }))).toBe(false);
   });
 
   it('accepts an active account whose expiration date is in the future', () => {
     const future = utcDate().add(1, 'day').toISOString();
-    expect(isNotificationRecipientActive(buildUser({ account_status: ACCOUNT_STATUS_ACTIVE, account_lock_after_date: future as any }))).toBe(true);
+    expect(canReceiveNotifications(buildUser({ account_status: ACCOUNT_STATUS_ACTIVE, account_lock_after_date: future as any }))).toBe(true);
   });
 });
 

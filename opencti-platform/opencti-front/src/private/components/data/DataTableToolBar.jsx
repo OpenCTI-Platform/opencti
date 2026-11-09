@@ -273,6 +273,7 @@ const toolBarWorkflowQuery = graphql`
         }
       }
       comment
+      closingReason
       requiresShareOrganizationInput
       requiresUnshareOrganizationInput
     }

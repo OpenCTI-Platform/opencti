@@ -70,8 +70,20 @@ export const findWorkPaginated = (context, user, args = {}) => {
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 
+/**
+ * The works of a connector, most recent first.
+ * @param context
+ * @param user
+ * @param connectorId internal id of the connector
+ * @param {object} [args]
+ * @param {number} [args.first] how many works to read, ES_MINIMUM_FIXED_PAGINATION by default
+ * @param {object|null} [args.filters] filter group added to the connector filter
+ * @param {boolean} [args.baseData] read only the base fields and baseFields, not the whole work (a work may carry up to 100 errors)
+ * @param {string[]} [args.baseFields] the fields read with baseData, a nested one by its path (errors.message)
+ * @returns {Promise<Array<object>>} the works, not in connection format
+ */
 export const worksForConnector = async (context, user, connectorId, args = {}) => {
-  const { first = ES_MINIMUM_FIXED_PAGINATION, filters = null } = args;
+  const { first = ES_MINIMUM_FIXED_PAGINATION, filters = null, baseData = false, baseFields = [] } = args;
   const finalFilters = addFilter(filters, 'connector_id', connectorId);
   return elPaginate(context, user, READ_INDEX_HISTORY, {
     types: [ENTITY_TYPE_WORK],
@@ -80,6 +92,8 @@ export const worksForConnector = async (context, user, connectorId, args = {}) =
     orderMode: 'desc',
     first,
     filters: finalFilters,
+    baseData,
+    baseFields,
   });
 };
 

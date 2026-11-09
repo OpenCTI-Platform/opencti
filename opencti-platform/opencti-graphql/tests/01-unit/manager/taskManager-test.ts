@@ -656,8 +656,8 @@ describe('workflowTransitionOperationCallback', () => {
     await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
 
     expect(triggerWorkflowEvent).toHaveBeenCalledTimes(2);
-    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'entity-1', 'approve', undefined, {});
-    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'entity-2', 'approve', undefined, {});
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'entity-1', 'approve', undefined, {}, undefined);
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'entity-2', 'approve', undefined, {}, undefined);
     expect(updateTask).toHaveBeenCalledWith(testContext, 'task-id', { task_processed_number: 2 });
   });
 
@@ -669,8 +669,19 @@ describe('workflowTransitionOperationCallback', () => {
     await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
 
     const runtimeParams = { shareOrganizationIds: ['org-share'], unshareOrganizationIds: ['org-unshare'] };
-    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'entity-1', 'approve', 'Checked', runtimeParams);
-    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'entity-2', 'approve', 'Checked', runtimeParams);
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'entity-1', 'approve', 'Checked', runtimeParams, undefined);
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'entity-2', 'approve', 'Checked', runtimeParams, undefined);
+  });
+
+  it('should give every element the closing reason of the task', async () => {
+    vi.mocked(triggerWorkflowEvent).mockResolvedValue({ success: true });
+    const options = { eventName: 'close', closingReason: ' false-positive ' };
+    const callback = workflowTransitionOperationCallback(testContext, ADMIN_USER, task, [{ ...operations[0], context: { ...operations[0].context, options } }]);
+
+    await callback([{ internal_id: 'entity-1' }, { internal_id: 'entity-2' }]);
+
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(1, testContext, ADMIN_USER, 'entity-1', 'close', undefined, {}, 'false-positive');
+    expect(triggerWorkflowEvent).toHaveBeenNthCalledWith(2, testContext, ADMIN_USER, 'entity-2', 'close', undefined, {}, 'false-positive');
   });
 
   it('should continue with the next elements when an element is not in an eligible state', async () => {
@@ -753,7 +764,7 @@ describe('taskHandlerGenerator: workflow status actions', () => {
   it('should route a transition to the workflow engine instead of the workers', async () => {
     await taskHandlerGenerator(testContext)(buildTask([transitionAction]));
 
-    expect(triggerWorkflowEvent).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-1', 'approve', undefined, {});
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-1', 'approve', undefined, {}, undefined);
     expect(pushBundleToWorker).not.toHaveBeenCalled();
   });
 
@@ -761,7 +772,7 @@ describe('taskHandlerGenerator: workflow status actions', () => {
     const options = { eventName: 'approve', comment: 'Checked', shareOrganizationIds: ['org-share'] };
     await taskHandlerGenerator(testContext)(buildTask([{ ...transitionAction, context: { ...transitionAction.context, options } }]));
 
-    expect(triggerWorkflowEvent).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-1', 'approve', 'Checked', { shareOrganizationIds: ['org-share'] });
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-1', 'approve', 'Checked', { shareOrganizationIds: ['org-share'] }, undefined);
   });
 
   it('should send the other actions of the task to the workers', async () => {
