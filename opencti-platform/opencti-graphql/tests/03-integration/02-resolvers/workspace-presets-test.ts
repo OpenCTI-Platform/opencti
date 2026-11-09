@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { getUserIdByEmail, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, USER_EDITOR } from '../../utils/testQuery';
 import {
   createUploadFromBuffer,
   queryAsAdmin,
@@ -198,8 +198,8 @@ describe('Dashboard presets API', () => {
     const editorId = await getUserIdByEmail(USER_EDITOR.email);
     const viewId = await createDashboard('Presets view only');
     const editId = await createDashboard('Presets editable');
-    await queryAsAdminWithSuccess({ query: EDIT_AUTHORIZED_MEMBERS, variables: { id: viewId, input: [{ id: 'ALL', access_right: 'view' }, { id: editorId, access_right: 'view' }] } });
-    await queryAsAdminWithSuccess({ query: EDIT_AUTHORIZED_MEMBERS, variables: { id: editId, input: [{ id: 'ALL', access_right: 'view' }, { id: editorId, access_right: 'edit' }] } });
+    await queryAsAdminWithSuccess({ query: EDIT_AUTHORIZED_MEMBERS, variables: { id: viewId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }, { id: editorId, access_right: 'view' }] } });
+    await queryAsAdminWithSuccess({ query: EDIT_AUTHORIZED_MEMBERS, variables: { id: editId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }, { id: editorId, access_right: 'edit' }] } });
     await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: UPSERT, variables: { id: viewId, input: { name: 'Forbidden' } } });
     const { data } = await queryAsUserWithSuccess(USER_EDITOR, { query: UPSERT, variables: { id: editId, input: { name: 'Allowed' } } });
     expect(data?.workspacePresetUpsert.presets).toHaveLength(1);
