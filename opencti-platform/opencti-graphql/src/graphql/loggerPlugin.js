@@ -1,11 +1,10 @@
 import { filter, head, isEmpty, isNil } from 'ramda';
-import { stripIgnoredCharacters } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
-import conf, { appLogExtendedErrors, booleanConf, logApp } from '../config/conf';
-import { isNotEmptyField } from '../database/utils';
+import { appLogExtendedErrors, booleanConf, logApp } from '../config/conf';
 import { getMemoryStatistics } from '../domain/settings';
 import { AUTH_ERRORS, CLIENT_INPUT_ERRORS, FORBIDDEN_ACCESS, FUNCTIONAL_ERRORS, isMutedError, ValidationError } from '../config/errors';
 import { publishUserAction } from '../listener/UserActionListener';
+import { analyzeRequestSensitivity, redactRequestQuery, redactRequestVariables } from '../utils/log-redaction';
 
 const innerCompute = (inners) => {
   return filter((i) => !isNil(i) && !isEmpty(i), inners).length;
@@ -13,7 +12,6 @@ const innerCompute = (inners) => {
 
 const API_CALL_MESSAGE = 'GRAPHQL_API'; // If you touch this, you need to change the performance agent
 const perfLog = booleanConf('app:performance_logger', false);
-const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
 
 const resolveKeyPromises = async (object) => {
   const resolvedObject = {};
@@ -61,14 +59,14 @@ export default {
             if (!isNil(input.objectRefs)) innerRelationCount += innerCompute(input.objectRefs);
             if (!isNil(input.observableRefs)) innerRelationCount += innerCompute(input.observableRefs);
             if (!isNil(input.relationRefs)) innerRelationCount += innerCompute(input.relationRefs);
-            // Anonymization of sensitive data
-            LOGS_SENSITIVE_FIELDS.forEach((field) => {
-              if (isNotEmptyField(input[field])) {
-                input[field] = '** Redacted **';
-              }
-            });
           }
         }
+        // Anonymization of sensitive data, for the logs and the activity
+        let sensitivity;
+        const getSensitivity = () => {
+          sensitivity ??= analyzeRequestSensitivity(context.document);
+          return sensitivity;
+        };
         const operationType = `${isWrite ? 'WRITE' : 'READ'}`;
         const callMetaData = {
           user_id: contextUser?.id,
@@ -82,8 +80,8 @@ export default {
         // Handle extended error option
         if (appLogExtendedErrors) {
           const [variables] = await tryResolveKeyPromises(contextVariables);
-          callMetaData.variables = variables;
-          callMetaData.operation_query = stripIgnoredCharacters(context.request?.query ?? 'undefined');
+          callMetaData.variables = redactRequestVariables(variables, getSensitivity());
+          callMetaData.operation_query = redactRequestQuery(context.request?.query, getSensitivity());
         }
         if (isCallError) {
           let callError = head(context.errors);
@@ -110,7 +108,7 @@ export default {
                 status: 'error',
                 context_data: {
                   operation: context.operationName,
-                  input: context.request.variables,
+                  input: redactRequestVariables(context.request.variables, getSensitivity()),
                 },
               });
             }
