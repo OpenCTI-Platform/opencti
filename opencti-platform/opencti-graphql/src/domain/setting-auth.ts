@@ -160,6 +160,7 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
   const storedSettings = await loadEntity<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const oldValidityDays = Number(currentSettings.password_policy_validity_days ?? 0);
   const oldHistoryCount = readPasswordHistoryCount(storedSettings);
+  const newHistoryCount = resolvePasswordHistoryCount(input);
 
   const patch = {
     local_auth: { enabled: input.enabled },
