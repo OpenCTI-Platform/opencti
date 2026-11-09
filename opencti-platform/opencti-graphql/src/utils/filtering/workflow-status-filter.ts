@@ -10,12 +10,21 @@ import { WORKFLOW_INSTANCE_STATUS_FILTER } from './filtering-constants';
 // Page size only: fullEntitiesList keeps paginating until every match is loaded.
 const WORKFLOW_INSTANCE_PAGE_SIZE = 5000;
 
-// Each status filter can cost a full WorkflowInstance scan, so one filter tree may only hold a few.
-export const MAX_WORKFLOW_STATUS_FILTERS = 10;
+// Each distinct lookup is a full WorkflowInstance scan, so one filter tree may only run a few.
+export const MAX_WORKFLOW_INSTANCE_LOOKUPS = 10;
 
-const isWorkflowStatusFilter = (f: any) => f.key?.includes(WORKFLOW_INSTANCE_STATUS_FILTER);
-const countWorkflowStatusFilters = (group: any): number => (group.filters ?? []).filter(isWorkflowStatusFilter).length
-  + (group.filterGroups ?? []).reduce((count: number, g: any) => count + countWorkflowStatusFilters(g), 0);
+// The key must be exactly the status key: in a multi-key filter, rewriting it into an id filter
+// would silently drop the condition on the other keys.
+const isWorkflowStatusFilter = (f: any) => {
+  const keys: string[] = Array.isArray(f.key) ? f.key : [f.key];
+  if (!keys.includes(WORKFLOW_INSTANCE_STATUS_FILTER)) return false;
+  if (keys.length > 1) {
+    throw UnsupportedError('Workflow status filter cannot be combined with other keys', { keys });
+  }
+  return true;
+};
+const hasWorkflowStatusFilter = (group: any): boolean => (group.filters ?? []).some(isWorkflowStatusFilter)
+  || (group.filterGroups ?? []).some(hasWorkflowStatusFilter);
 
 const POSITIVE_OPERATORS: string[] = [FilterOperator.Eq, FilterOperator.OnlyEqTo, FilterOperator.NotNil];
 const NEGATIVE_OPERATORS: string[] = [FilterOperator.NotEq, FilterOperator.NotOnlyEqTo, FilterOperator.Nil];
@@ -37,6 +46,9 @@ const findInstanceEntityIds = (executionCtx: AuthContext, cache: InstanceLookupC
   const cacheKey = JSON.stringify(stateFilters.map((f) => ({ ...f, values: [...f.values].sort() })));
   let entityIds = cache.get(cacheKey);
   if (!entityIds) {
+    if (cache.size >= MAX_WORKFLOW_INSTANCE_LOOKUPS) {
+      throw BadUserInputError('Too many workflow status lookups', { max: MAX_WORKFLOW_INSTANCE_LOOKUPS });
+    }
     entityIds = fullEntitiesList(executionCtx, executionCtx.user!, [ENTITY_TYPE_WORKFLOW_INSTANCE], {
       first: WORKFLOW_INSTANCE_PAGE_SIZE,
       filters: { mode: FilterMode.And, filters: stateFilters, filterGroups: [] },
@@ -58,6 +70,9 @@ const resolveFilter = async (executionCtx: AuthContext, cache: InstanceLookupCac
   }
   if (!defaultState) return idFilter([], !isNegative);
   const isPresence = operator === FilterOperator.Nil || operator === FilterOperator.NotNil;
+  // Without values, eq matches no state and not_eq every state; a currentState filter without values
+  // would put no constraint on the scan instead.
+  if (!isPresence && filter.values.length === 0) return idFilter([], !isNegative);
   const { initialState } = defaultState;
   const initialStateMatches = !!initialState && (isPresence || filter.values.includes(initialState));
   // Filter values are StatusTemplate ids, as stored in WorkflowInstance.currentState.
@@ -82,22 +97,21 @@ const resolveFilter = async (executionCtx: AuthContext, cache: InstanceLookupCac
 };
 
 // Each filter is replaced where it stands, so the caller's modes and nesting keep their meaning.
-const resolveGroup = async (executionCtx: AuthContext, cache: InstanceLookupCache, group: any, defaultState: WorkflowDefaultState): Promise<any> => ({
-  ...group,
-  filters: await Promise.all((group.filters ?? []).map((f: any) => (isWorkflowStatusFilter(f) ? resolveFilter(executionCtx, cache, f, defaultState) : f))),
-  filterGroups: await Promise.all((group.filterGroups ?? []).map((g: any) => resolveGroup(executionCtx, cache, g, defaultState))),
-});
+// Filters and nested groups resolve together, so the lookups of every level run in one parallel batch.
+const resolveGroup = async (executionCtx: AuthContext, cache: InstanceLookupCache, group: any, defaultState: WorkflowDefaultState): Promise<any> => {
+  const [filters, filterGroups] = await Promise.all([
+    Promise.all((group.filters ?? []).map((f: any) => (isWorkflowStatusFilter(f) ? resolveFilter(executionCtx, cache, f, defaultState) : f))),
+    Promise.all((group.filterGroups ?? []).map((g: any) => resolveGroup(executionCtx, cache, g, defaultState))),
+  ]);
+  return { ...group, filters, filterGroups };
+};
 
 // WorkflowInstance.currentState lives outside the tracked entity, so a workflow status filter
 // cannot be applied natively: it is rewritten into an id filter on the matching entities.
 // The caller's query must already be scoped to entityType.
 export const resolveWorkflowStatusFilter = async (context: AuthContext, args: any, entityType: string): Promise<any> => {
   const { filters } = args;
-  const statusFilterCount = filters ? countWorkflowStatusFilters(filters) : 0;
-  if (statusFilterCount === 0) return args;
-  if (statusFilterCount > MAX_WORKFLOW_STATUS_FILTERS) {
-    throw BadUserInputError('Too many workflow status filters', { count: statusFilterCount, max: MAX_WORKFLOW_STATUS_FILTERS });
-  }
+  if (!filters || !hasWorkflowStatusFilter(filters)) return args;
   const executionCtx = bypassDraftContext(context);
   const defaultState = await getWorkflowDefaultState(executionCtx, executionCtx.user!, entityType);
   return { ...args, filters: await resolveGroup(executionCtx, new Map(), filters, defaultState) };
