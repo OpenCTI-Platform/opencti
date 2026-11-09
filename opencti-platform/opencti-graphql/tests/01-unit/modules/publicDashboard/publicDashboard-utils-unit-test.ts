@@ -66,6 +66,8 @@ describe('resolvePublicDashboardTimeRange', () => {
     const unknown = resolvePublicDashboardTimeRange({ relativeDate: 'last-week' }, {});
     expect(unknown.startDate).toBeUndefined();
     expect(new Date(unknown.endDate as string).getTime()).toBeGreaterThanOrEqual(before);
+    // So does a count beyond what the publication accepts
+    expect(resolvePublicDashboardTimeRange({ relativeDate: 'days-99999' }, {}).startDate).toBeUndefined();
   });
 
   it('should keep the start the public page computes for a relative range, in the time zone of the visitor', () => {

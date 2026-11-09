@@ -121,7 +121,8 @@ interface WidgetArguments {
 }
 
 // A relative range as the front computes it (computeRelativeDate): `days-7`, `months-1`, `years-1`... back from now.
-const RELATIVE_DATE_REGEXP = /^(days|months|years)-(\d+)$/;
+// The count is bounded as at publication: a larger one is treated as unknown.
+const RELATIVE_DATE_REGEXP = /^(days|months|years)-(\d{1,4})$/;
 type RelativeDateUnit = 'days' | 'months' | 'years';
 // The public page computes a relative start in the time zone of the visitor: days back from now, months and years
 // back from the start of the visitor's day, so up to one day earlier than here. One more hour covers a daylight

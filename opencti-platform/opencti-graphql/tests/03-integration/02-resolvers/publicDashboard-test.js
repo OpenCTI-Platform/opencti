@@ -2003,6 +2003,13 @@ describe('Public dashboards and dashboard variables', () => {
     expect(privateManifest.config).toEqual(expected);
   });
 
+  it('should refuse an unsupported time zone rather than counting the dates in UTC', async () => {
+    const dashboardId = await createDashboardWithVariableWidget('Dashboard variables time zone', 'eq', true);
+    const refused = await publish(dashboardId, 'public-dashboard-variables-time-zone', { time_zone: 'Mars/Olympus' });
+    if (refused.data?.publicDashboardAdd) extraPublicDashboardIds.push(refused.data.publicDashboardAdd.id);
+    expect(refused.errors?.[0].message).toEqual('Invalid public dashboard time zone');
+  });
+
   it.each(['eq', 'not_eq'])('should refuse to publish a widget using a variable without value (%s)', async (operator) => {
     const dashboardId = await createDashboardWithVariableWidget(`Dashboard variables orphan ${operator}`, operator, false);
     const published = await publish(dashboardId, `public-dashboard-variables-orphan-${operator}`);

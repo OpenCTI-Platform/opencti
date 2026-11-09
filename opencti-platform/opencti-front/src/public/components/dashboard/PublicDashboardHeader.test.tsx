@@ -30,6 +30,13 @@ describe('PublicDashboardHeader', () => {
     expect(startDateInput()).toBeEnabled();
   });
 
+  it('should keep the date pickers disabled while a relative range is selected, as on the dashboard', () => {
+    renderHeader({ editable: true, manifestConfig: { startDate: null, endDate: null, relativeDate: 'days-7' } });
+    expect(startDateInput()).toBeDisabled();
+    expect(screen.getAllByLabelText('End date').find((element) => element.tagName === 'INPUT')).toBeDisabled();
+    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
   it('should offer to go back to the published range once the visitor changed it', async () => {
     const onReset = vi.fn();
     const { user } = renderHeader({ editable: true, onReset });

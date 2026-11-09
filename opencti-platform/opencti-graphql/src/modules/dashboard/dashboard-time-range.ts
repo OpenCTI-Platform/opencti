@@ -3,7 +3,8 @@ import { isStrictIsoDate } from './dashboard-variables-resolution';
 import type { StoreDashboardTimeRange } from '../workspace/workspace-variables-types';
 
 // A relative date as the front computes it (computeRelativeDate): the select offers a few, an imported dashboard may hold others.
-const RELATIVE_DATE_REGEXP = /^(days|months|years)-\d+$/;
+// The count is bounded: beyond, the date computation would make no sense.
+const RELATIVE_DATE_REGEXP = /^(days|months|years)-\d{1,4}$/;
 
 export interface DashboardTimeRangeInputLike {
   startDate?: string | null;
