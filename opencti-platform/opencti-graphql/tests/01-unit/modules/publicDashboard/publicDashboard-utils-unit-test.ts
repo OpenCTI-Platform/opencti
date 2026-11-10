@@ -62,12 +62,13 @@ describe('resolvePublicDashboardTimeRange', () => {
     expect(end).toBeGreaterThanOrEqual(before);
     expect(end - start).toBeGreaterThanOrEqual(7 * 24 * HOUR - 1000);
     expect(end - start).toBeLessThan(7 * 24 * HOUR + 60 * 1000);
-    // An unknown relative date has no start, as in the front, and ends now
-    const unknown = resolvePublicDashboardTimeRange({ relativeDate: 'last-week' }, {});
-    expect(unknown.startDate).toBeUndefined();
-    expect(new Date(unknown.endDate as string).getTime()).toBeGreaterThanOrEqual(before);
-    // So does a count beyond what the publication accepts
-    expect(resolvePublicDashboardTimeRange({ relativeDate: 'days-99999' }, {}).startDate).toBeUndefined();
+    // An unknown relative date, or a count beyond what the publication accepts, serves nothing: an empty window
+    // ending now, whatever the visitor asks for
+    [{ relativeDate: 'last-week' }, { relativeDate: 'days-99999' }].forEach((config) => {
+      const unknown = resolvePublicDashboardTimeRange(config, { startDate: '2000-01-01T00:00:00.000Z', endDate: undefined });
+      expect(unknown.startDate).toEqual(unknown.endDate);
+      expect(new Date(unknown.endDate as string).getTime()).toBeGreaterThanOrEqual(before);
+    });
   });
 
   it('should keep the start the public page computes for a relative range, in the time zone of the visitor', () => {

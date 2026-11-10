@@ -84,12 +84,6 @@ function useDashboard({
     // Once idle, the store is the reference again: it holds the last write, and any change made elsewhere.
     if (!writes.current.busy) writes.current.lastSent = null;
   }, [manifest, serializedManifest]);
-  // Another dashboard: its writes start from its own manifest, and a write of the previous one still in flight is
-  // not followed by the ones waiting here.
-  const entityId = entity?.id;
-  useEffect(() => {
-    writes.current = { busy: false, waiting: [], lastSent: null };
-  }, [entityId]);
 
   useEffect(() => {
     const layouts = widgetsArray.reduce((res, widget) => {
@@ -145,6 +139,15 @@ function useDashboard({
     () => saveManifest({ update: (base) => base, noRefresh: true }),
     LAYOUT_SAVE_DEBOUNCE_MS,
   );
+
+  // Another dashboard: its writes start from its own manifest; a write of the previous one still in flight is not
+  // followed by the ones waiting here, and a layout save of it still pending is dropped.
+  const entityId = entity?.id;
+  useEffect(() => {
+    debouncedSaveLayout.cancel();
+    writes.current = { busy: false, waiting: [], lastSent: null };
+    // The cancel of the debounced save is stable: only the dashboard matters here.
+  }, [entityId]);
 
   // Any other write carries the current layouts.
   const cancelPendingLayoutSave = () => {
