@@ -1,4 +1,4 @@
-import type { MenuEntry } from '../common/menus/NavToolbarMenu';
+import type { MenuEntry } from '../common/menus/menuEntry';
 
 // Convention: any `*.entries.ts(x)` file exporting `menuEntries` is collected here, nothing to register.
 // Eagerly imported: those files are pure data (no component import), so the cost is negligible.

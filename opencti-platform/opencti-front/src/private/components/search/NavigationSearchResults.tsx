@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { Box, List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
-import { ChevronRightOutlined, DescriptionOutlined } from '@mui/icons-material';
+import { Box, List, ListItemButton, Typography } from '@mui/material';
+import { ChevronRightOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
 import useNavSearch, { PLATFORM_SEARCH_PAGE_MAX_RESULTS } from '../nav/useNavSearch';
+import NavSearchResultContent from './NavSearchResultContent';
 
 // "Application pages" card of the search results: deep links to platform pages matching the keyword.
 const INITIAL_COUNT = 2;
@@ -34,13 +35,7 @@ const NavigationSearchResults = ({ keyword }: { keyword?: string | null }) => {
       <List disablePadding>
         {(showAll ? results : results.slice(0, INITIAL_COUNT)).map(({ path, label, parents }) => (
           <ListItemButton key={path} component={Link} to={path} sx={{ borderRadius: 1 }}>
-            <ListItemIcon sx={{ minWidth: 48 }}>
-              <DescriptionOutlined fontSize="small" />
-            </ListItemIcon>
-            <ListItemText
-              primary={label}
-              secondary={parents.join(' > ') || undefined}
-            />
+            <NavSearchResultContent label={label} parents={parents} iconWidth={48} />
             <ChevronRightOutlined fontSize="small" color="disabled" />
           </ListItemButton>
         ))}

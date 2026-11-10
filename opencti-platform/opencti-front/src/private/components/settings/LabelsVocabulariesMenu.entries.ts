@@ -1,4 +1,4 @@
-import type { MenuEntry } from '../common/menus/NavToolbarMenu';
+import type { MenuEntry } from '../common/menus/menuEntry';
 import {
   SETTINGS_SETCASETEMPLATES,
   SETTINGS_SETCUSTOMFIELDS,

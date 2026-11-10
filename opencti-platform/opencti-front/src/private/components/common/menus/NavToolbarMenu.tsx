@@ -1,9 +1,9 @@
-import React, { FunctionComponent, ReactElement, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import Drawer from '@mui/material/Drawer';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { List, ListItemButton, Stack } from '@mui/material';
@@ -12,9 +12,9 @@ import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import { Theme } from '../../../../components/Theme';
-import { useTheme } from '@mui/material/styles';
 import useTopBanner from '../../../../utils/hooks/useTopBanner';
 import useVisibleEntries from './useVisibleEntries';
+import type { MenuEntry } from './menuEntry';
 
 const StyledDrawer = styled(Drawer)(() => ({
   '& .MuiDrawer-paper': {
@@ -32,26 +32,6 @@ const StyledDrawer = styled(Drawer)(() => ({
 const ToolbarSpacer = styled('div')(({ theme }) => ({
   ...theme.mixins.toolbar,
 }));
-
-export interface MenuEntry {
-  path: string;
-  label: string;
-  icon?: ReactElement;
-  /** Visible for everyone, with an EE chip (the page itself shows the EE lock). */
-  isEE?: boolean;
-  /** Entry hidden unless the platform has a valid Enterprise Edition licence. */
-  requiresEE?: boolean;
-  /** Extra words matching this entry in the main search (aliases, CTI jargon...). */
-  keywords?: string[];
-  /** Page reached outside the left bar (top bar icons...): indexed in the main search without a left bar subsection, with this breadcrumb. */
-  standaloneParents?: string[];
-  /** Entry hidden if the user has none of these capabilities: ANY one is enough (never "all of"). */
-  requiredCapabilities?: string[];
-  /** Also granted if the user has one of these capabilities in a draft (see `useGranted` options). */
-  capabilitiesInDraft?: string[];
-  /** Entry hidden if this feature flag is off. */
-  featureFlag?: string;
-}
 
 const TruncatedText: FunctionComponent<{ children: React.ReactNode }> = ({ children }) => {
   const textRef = useRef<HTMLDivElement>(null);

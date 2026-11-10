@@ -1,8 +1,9 @@
 import React, { MutableRefObject, useEffect } from 'react';
 import { Box, List, ListItemButton, ListItemIcon, ListItemText, Popper } from '@mui/material';
-import { DescriptionOutlined, SearchOutlined } from '@mui/icons-material';
+import { SearchOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import useNavSearch, { NavSearchResult } from '../nav/useNavSearch';
+import NavSearchResultContent from './NavSearchResultContent';
 
 export const NAV_SEARCH_LISTBOX_ID = 'nav-search-suggestions';
 export const navSearchOptionId = (index: number) => `${NAV_SEARCH_LISTBOX_ID}-option-${index}`;
@@ -77,10 +78,7 @@ const NavSearchSuggestions = ({ keyword, anchorEl, activeIndex, itemsRef, onSele
               selected={index + 1 === activeIndex}
               onClick={() => onSelectPage(path)}
             >
-              <ListItemIcon sx={{ minWidth: 40 }}>
-                <DescriptionOutlined fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary={label} secondary={parents.join(' > ') || undefined} />
+              <NavSearchResultContent label={label} parents={parents} iconWidth={40} />
             </ListItemButton>
           ))}
         </List>
