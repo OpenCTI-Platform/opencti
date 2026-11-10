@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { waitFor } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import type { FilterDefinition } from '../../../utils/hooks/useAuth';
 import type { WidgetDataSelection } from '../../../utils/widget/widget';
@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   host: { kind: 'workspace' } as Record<string, unknown>,
   flags: ['TIME_SERIES_BREAKDOWN'],
   fetchSavedFilterContent: vi.fn(),
+  fetchTimeSeriesBreakdownFields: vi.fn(),
 }));
 
 const definition = (filterKey: string, type: string, label: string, subEntityTypes: string[]): FilterDefinition => ({
@@ -33,6 +34,7 @@ vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
 }));
 vi.mock('../../../components/dashboard/dashboardVizUtils', () => ({
   fetchSavedFilterContent: mocks.fetchSavedFilterContent,
+  fetchTimeSeriesBreakdownFields: mocks.fetchTimeSeriesBreakdownFields,
 }));
 
 vi.mock('../../../utils/hooks/useHelper', () => ({
@@ -59,6 +61,27 @@ vi.mock('@components/widgets/WidgetFilters', () => ({
 
 import WidgetCreationDataSelection from './WidgetCreationDataSelection';
 
+// The fields the API offers (timeSeriesBreakdownFields) for the perspectives and types of these tests
+const API_FIELDS: Record<string, string[]> = {
+  'entities:Report': ['report_types'],
+  'entities:Malware': ['malware_types'],
+  'relationships:': ['objectMarking', 'fromTypes', 'toTypes', 'relationship_type'],
+  'relationships:targets': ['objectMarking', 'fromTypes', 'toTypes'],
+  'relationships:uses': ['usage_types', 'fromTypes', 'toTypes'],
+  'audits:': ['event_type', 'event_scope', 'user_id', 'group_ids', 'organization_ids', 'entity_type', 'context_data.entity_type'],
+};
+const readApiFields = async (perspective: string, types: string[]) => API_FIELDS[`${perspective}:${types.join(',')}`] ?? [];
+const readFieldsFromApi = () => {
+  mocks.fetchTimeSeriesBreakdownFields.mockReset();
+  mocks.fetchTimeSeriesBreakdownFields.mockImplementation(readApiFields);
+};
+// Rendered once the fields of the dataset are read
+const renderDataSelection = async () => {
+  const rendered = testRender(<WidgetCreationDataSelection />);
+  await act(async () => {});
+  return rendered;
+};
+
 const relationships = {
   label: '',
   perspective: 'relationships',
@@ -81,55 +104,73 @@ describe('WidgetCreationDataSelection of a relationships widget', () => {
   beforeEach(() => {
     mocks.host = { kind: 'workspace' };
     mocks.flags = ['TIME_SERIES_BREAKDOWN'];
+    readFieldsFromApi();
   });
 
-  it('says a single dataset can be broken down, and lets more datasets be added without breakdown', () => {
+  it('says a single dataset can be broken down, and lets more datasets be added without breakdown', async () => {
     setWidget({});
-    const { getByText, getByRole } = testRender(<WidgetCreationDataSelection />);
+    const { getByText, getByRole } = await renderDataSelection();
+    expect(mocks.fetchTimeSeriesBreakdownFields).toHaveBeenCalledWith('relationships', []);
     expect(getByText(INFO)).toBeTruthy();
     expect(isDisabled(getByRole('button', { name: 'Relationships' }))).toBe(false);
     expect(isDisabled(getByRole('button', { name: 'Entities' }))).toBe(false);
   });
 
-  it('offers the breakdown in a custom view too', () => {
+  it('offers the breakdown in a custom view too', async () => {
     mocks.host = { kind: 'custom-view', customViewTargetEntityType: 'Report' };
     setWidget({});
-    expect(testRender(<WidgetCreationDataSelection />).getByText(INFO)).toBeTruthy();
+    expect((await renderDataSelection()).getByText(INFO)).toBeTruthy();
   });
 
-  it('cannot add another dataset to a broken down widget, already broken down', () => {
+  it('cannot add another dataset to a broken down widget, already broken down', async () => {
     setWidget({ parameters: { breakdownBy: 'toTypes' } });
-    const { getByRole, queryByText } = testRender(<WidgetCreationDataSelection />);
+    const { getByRole, queryByText } = await renderDataSelection();
     expect(isDisabled(getByRole('button', { name: 'Relationships' }))).toBe(true);
     expect(isDisabled(getByRole('button', { name: 'Entities' }))).toBe(true);
     expect(queryByText(INFO)).toBeNull();
   });
 
-  it('lets datasets be added next to a field the relationship types no longer offer, dropped on submit', () => {
+  it('lets datasets be added next to a field the relationship types no longer offer, dropped on submit', async () => {
     setWidget({ dataSelection: [ofType('relationships', 'relationship_type', 'uses')], parameters: { breakdownBy: 'usage_types' } });
-    const locked = testRender(<WidgetCreationDataSelection />);
+    const locked = await renderDataSelection();
     expect(isDisabled(locked.getByRole('button', { name: 'Relationships' }))).toBe(true);
     locked.unmount();
     setWidget({ dataSelection: [ofType('relationships', 'relationship_type', 'targets')], parameters: { breakdownBy: 'usage_types' } });
-    const { getByRole } = testRender(<WidgetCreationDataSelection />);
+    const { getByRole } = await renderDataSelection();
     expect(isDisabled(getByRole('button', { name: 'Relationships' }))).toBe(false);
     expect(isDisabled(getByRole('button', { name: 'Entities' }))).toBe(false);
   });
 
-  it('says nothing about the breakdown when it is not available', () => {
-    setWidget({ type: 'donut' });
-    expect(testRender(<WidgetCreationDataSelection />).queryByText(INFO)).toBeNull();
-    setWidget({ dataSelection: [relationships, relationships] });
-    expect(testRender(<WidgetCreationDataSelection />).queryByText(INFO)).toBeNull();
-    mocks.host = { kind: 'fintelTemplate', fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+  it('says nothing about the breakdown until the fields of the dataset are read, nor without any', async () => {
+    let readFields: (keys: string[] | null) => void = () => {};
+    mocks.fetchTimeSeriesBreakdownFields.mockReturnValue(new Promise((resolve) => {
+      readFields = resolve;
+    }));
     setWidget({});
-    expect(testRender(<WidgetCreationDataSelection />).queryByText(INFO)).toBeNull();
+    const { queryByText, unmount } = await renderDataSelection();
+    expect(queryByText(INFO)).toBeNull();
+    await act(async () => readFields(['objectMarking']));
+    expect(queryByText(INFO)).toBeTruthy();
+    unmount();
+
+    mocks.fetchTimeSeriesBreakdownFields.mockResolvedValue([]);
+    expect((await renderDataSelection()).queryByText(INFO)).toBeNull();
   });
 
-  it('says nothing about the breakdown and lets datasets be added, whatever breakdown is stored, without the TIME_SERIES_BREAKDOWN feature flag', () => {
+  it('says nothing about the breakdown when it is not available', async () => {
+    setWidget({ type: 'donut' });
+    expect((await renderDataSelection()).queryByText(INFO)).toBeNull();
+    setWidget({ dataSelection: [relationships, relationships] });
+    expect((await renderDataSelection()).queryByText(INFO)).toBeNull();
+    mocks.host = { kind: 'fintelTemplate', fintelWidgets: [], fintelEntityType: 'Report', fintelEditorValue: '' };
+    setWidget({});
+    expect((await renderDataSelection()).queryByText(INFO)).toBeNull();
+  });
+
+  it('says nothing about the breakdown and lets datasets be added, whatever breakdown is stored, without the TIME_SERIES_BREAKDOWN feature flag', async () => {
     mocks.flags = [];
     setWidget({ parameters: { breakdownBy: 'toTypes' } });
-    const { queryByText, getByRole } = testRender(<WidgetCreationDataSelection />);
+    const { queryByText, getByRole } = await renderDataSelection();
     expect(queryByText(INFO)).toBeNull();
     expect(isDisabled(getByRole('button', { name: 'Relationships' }))).toBe(false);
     expect(isDisabled(getByRole('button', { name: 'Entities' }))).toBe(false);
@@ -141,32 +182,33 @@ describe('WidgetCreationDataSelection of a broken down widget', () => {
     vi.clearAllMocks();
     mocks.host = { kind: 'workspace' };
     mocks.flags = ['TIME_SERIES_BREAKDOWN'];
+    readFieldsFromApi();
   });
 
-  const isAddDisabled = () => {
-    const { getByRole, unmount } = testRender(<WidgetCreationDataSelection />);
+  const isAddDisabled = async () => {
+    const { getByRole, unmount } = await renderDataSelection();
     const disabled = isDisabled(getByRole('button', { name: 'Add' }));
     unmount();
     return disabled;
   };
 
-  it('cannot add an entities dataset next to a field of the entity type', () => {
+  it('cannot add an entities dataset next to a field of the entity type', async () => {
     setWidget({ perspective: 'entities', dataSelection: [ofType('entities', 'entity_type', 'Report')], parameters: { breakdownBy: 'report_types' } });
-    expect(isAddDisabled()).toBe(true);
+    expect(await isAddDisabled()).toBe(true);
   });
 
-  it('lets an entities dataset be added once the type filter no longer offers the field', () => {
+  it('lets an entities dataset be added once the type filter no longer offers the field', async () => {
     // Report types chosen, then the type filter changed to Malware in the filters step
     setWidget({ perspective: 'entities', dataSelection: [ofType('entities', 'entity_type', 'Malware')], parameters: { breakdownBy: 'report_types' } });
-    expect(isAddDisabled()).toBe(false);
+    expect(await isAddDisabled()).toBe(false);
   });
 
-  it('cannot add an audits dataset next to a field of the logs, only next to one they do not have', () => {
+  it('cannot add an audits dataset next to a field of the logs, only next to one they do not have', async () => {
     const logs = { label: '', perspective: 'audits', filters: { mode: 'and', filters: [], filterGroups: [] } };
     setWidget({ perspective: 'audits', dataSelection: [logs], parameters: { breakdownBy: 'event_type' } });
-    expect(isAddDisabled()).toBe(true);
+    expect(await isAddDisabled()).toBe(true);
     setWidget({ perspective: 'audits', dataSelection: [logs], parameters: { breakdownBy: 'report_types' } });
-    expect(isAddDisabled()).toBe(false);
+    expect(await isAddDisabled()).toBe(false);
   });
 
   it('keeps the datasets locked until the saved filter is read, as the parameters step keeps the field', async () => {
@@ -176,11 +218,28 @@ describe('WidgetCreationDataSelection of a broken down widget', () => {
     }));
     const savedFilter = { label: '', perspective: 'entities', filters_id: 'saved-filter', filters: undefined };
     setWidget({ perspective: 'entities', dataSelection: [savedFilter], parameters: { breakdownBy: 'report_types' } });
-    const { getByRole } = testRender(<WidgetCreationDataSelection />);
+    const { getByRole } = await renderDataSelection();
 
     expect(isDisabled(getByRole('button', { name: 'Add' }))).toBe(true);
     readSavedFilter(ofType('entities', 'entity_type', 'Malware').filters);
     await waitFor(() => expect(isDisabled(getByRole('button', { name: 'Add' }))).toBe(false));
+  });
+
+  it('keeps the datasets locked while the fields of the dataset are read, and when they cannot be', async () => {
+    let readFields: (keys: string[] | null) => void = () => {};
+    mocks.fetchTimeSeriesBreakdownFields.mockReturnValue(new Promise((resolve) => {
+      readFields = resolve;
+    }));
+    setWidget({ perspective: 'entities', dataSelection: [ofType('entities', 'entity_type', 'Malware')], parameters: { breakdownBy: 'report_types' } });
+    const { getByRole, unmount } = await renderDataSelection();
+
+    expect(isDisabled(getByRole('button', { name: 'Add' }))).toBe(true);
+    await act(async () => readFields(['malware_types']));
+    expect(isDisabled(getByRole('button', { name: 'Add' }))).toBe(false);
+    unmount();
+
+    mocks.fetchTimeSeriesBreakdownFields.mockResolvedValue(null);
+    expect(await isAddDisabled()).toBe(true);
   });
 });
 
@@ -189,6 +248,7 @@ describe('WidgetCreationDataSelection of a dataset read from a saved filter', ()
     vi.clearAllMocks();
     mocks.host = { kind: 'workspace' };
     mocks.flags = ['TIME_SERIES_BREAKDOWN'];
+    readFieldsFromApi();
   });
 
   const savedFilter = { label: '', perspective: 'entities', filters_id: 'saved-filter', filters: undefined };
@@ -199,7 +259,7 @@ describe('WidgetCreationDataSelection of a dataset read from a saved filter', ()
       readSavedFilter = resolve;
     }));
     setWidget({ perspective: 'entities', dataSelection: [savedFilter] });
-    const { queryByText, findByText } = testRender(<WidgetCreationDataSelection />);
+    const { queryByText, findByText } = await renderDataSelection();
 
     expect(queryByText(INFO)).toBeNull();
     readSavedFilter(ofType('entities', 'entity_type', 'Report').filters);
@@ -209,9 +269,10 @@ describe('WidgetCreationDataSelection of a dataset read from a saved filter', ()
   it('says nothing about the breakdown of draft workspaces, and lets datasets be added', async () => {
     mocks.fetchSavedFilterContent.mockResolvedValue(ofType('entities', 'entity_type', 'DraftWorkspace').filters);
     setWidget({ perspective: 'entities', dataSelection: [savedFilter], parameters: { breakdownBy: 'creator_id' } });
-    const { queryByText, getByRole } = testRender(<WidgetCreationDataSelection />);
+    const { queryByText, getByRole } = await renderDataSelection();
 
     await waitFor(() => expect(isDisabled(getByRole('button', { name: 'Add' }))).toBe(false));
     expect(queryByText(INFO)).toBeNull();
+    expect(mocks.fetchTimeSeriesBreakdownFields).not.toHaveBeenCalled();
   });
 });

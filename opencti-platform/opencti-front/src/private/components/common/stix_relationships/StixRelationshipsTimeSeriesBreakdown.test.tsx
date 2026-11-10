@@ -2,9 +2,8 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Mock } from 'vitest';
 import { waitFor } from '@testing-library/react';
-import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
+import testRender from '../../../../utils/tests/test-render';
 import type { Widget, WidgetDataSelection } from '../../../../utils/widget/widget';
-import type { FilterDefinition } from '../../../../utils/hooks/useAuth';
 import { daysAgo } from '../../../../utils/Time';
 
 const mocks = vi.hoisted(() => ({
@@ -28,10 +27,10 @@ vi.mock('react-relay', async (importOriginal) => ({
 vi.mock('../../../../components/dashboard/useDashboardViz', async () => ({
   default: (await import('../../../../utils/tests/dashboardVizMock')).mockDashboardViz(mocks),
 }));
-// The guards pass: a loader waits for the query, unless none is run on purpose
+// The guards pass: a loader waits for the query
 vi.mock('../../../../components/dashboard/WidgetRenderContent', () => ({
-  default: ({ children, queryRef, isQuerySkipped }: { children: React.ReactNode; queryRef?: unknown; isQuerySkipped?: boolean }) => (
-    queryRef || isQuerySkipped ? <>{children}</> : <div data-testid="loader" />
+  default: ({ children, queryRef }: { children: React.ReactNode; queryRef?: unknown }) => (
+    queryRef ? <>{children}</> : <div data-testid="loader" />
   ),
 }));
 vi.mock('../../../../components/dashboard/WidgetContainer', () => ({
@@ -82,15 +81,6 @@ const makeWidget = (type: string, parameters: Widget['parameters'], dataSelectio
   parameters,
 });
 
-const definition = (filterKey: string, subEntityTypes: string[]): FilterDefinition => ({
-  filterKey, type: 'id', label: filterKey, multiple: true, subEntityTypes, elementsForFilterValuesSearch: [],
-});
-const filterKeysSchema = new Map<string, Map<string, FilterDefinition>>([
-  ['stix-relationship', new Map([['objectMarking', definition('objectMarking', ['stix-relationship', 'targets'])]])],
-  ['targets', new Map([['objectMarking', definition('objectMarking', ['targets'])]])],
-]);
-const userContext = createMockUserContext({ schema: { filterKeysSchema } });
-
 type SerieFixture = { label: string; isOther?: boolean; entity: Record<string, unknown> | null; values: number[] };
 const respond = (series: SerieFixture[], truncated = false) => {
   const days = Math.max(0, ...series.map((serie) => serie.values.length));
@@ -100,7 +90,6 @@ const respond = (series: SerieFixture[], truncated = false) => {
 
 const render = (widget: Widget) => testRender(
   <StixRelationshipsTimeSeriesBreakdown widget={widget} config={config} host={host} popover={editorMenu} />,
-  { userContext },
 );
 
 // The first draw of a chart can wait for the charts drawn just before it
@@ -196,11 +185,15 @@ describe('StixRelationshipsTimeSeriesBreakdown', () => {
     expect(getByTestId('widget-warning').textContent).toContain('Only the 5 highest values are displayed.');
   });
 
-  it('does not query a field the relationships do not support, and says so', () => {
+  it('queries a field the relationships do not support, and says so when the API refuses it', () => {
+    // React logs the errors its boundaries catch
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    mocks.error = { res: { errors: [{ message: 'Refused', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'unsupported_field' } } }] } };
     const { getByText } = render(makeWidget('line', { breakdownBy: 'objectAssignee' }));
     const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
-    expect(buildQueryVariables(dataSelection, config, parameters)).toBeNull();
-    expect(getByText('This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.')).toBeTruthy();
+    expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ field: 'objectAssignee' });
+    expect(getByText('The breakdown field of this widget does not apply to its data. Edit the widget to choose another field.')).toBeTruthy();
+    vi.mocked(console.error).mockRestore();
   });
 
   it('accepts the relationship type for a single relationship type, a type variable may resolve to one', () => {

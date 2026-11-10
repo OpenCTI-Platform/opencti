@@ -25830,6 +25830,12 @@ export type Query = {
   threatActors?: Maybe<ThreatActorConnection>;
   threatActorsGroup?: Maybe<ThreatActorGroupConnection>;
   threatActorsIndividuals?: Maybe<ThreatActorIndividualConnection>;
+  /**
+   * Fields a time series of the perspective can be broken down by, for the types its dataset is restricted to: the
+   * fields the breakdown queries accept, the type itself only when it makes several series (several types, or an
+   * abstract one). Without types, the ones the breakdown queries default to.
+   */
+  timeSeriesBreakdownFields: Array<Scalars['String']['output']>;
   tool?: Maybe<Tool>;
   tools?: Maybe<ToolConnection>;
   triggerActivity?: Maybe<Trigger>;
@@ -29037,6 +29043,12 @@ export type QueryThreatActorsIndividualsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryTimeSeriesBreakdownFieldsArgs = {
+  perspective: TimeSeriesBreakdownPerspective;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 
@@ -37209,6 +37221,12 @@ export type TimeSeriesBreakdown = {
   truncated: Scalars['Boolean']['output'];
 };
 
+export enum TimeSeriesBreakdownPerspective {
+  Audits = 'audits',
+  Entities = 'entities',
+  Relationships = 'relationships'
+}
+
 /**
  * The documents carrying one value of the field, over time. A document carrying several of the values of the
  * series (labels, markings...) counts in the series of each of them: the totals of the series can add up to
@@ -42652,6 +42670,7 @@ export type ResolversTypes = ResolversObject<{
   TimeFormat: TimeFormat;
   TimeSeries: ResolverTypeWrapper<TimeSeries>;
   TimeSeriesBreakdown: ResolverTypeWrapper<Omit<TimeSeriesBreakdown, 'series'> & { series: Array<ResolversTypes['TimeSeriesBreakdownSeries']> }>;
+  TimeSeriesBreakdownPerspective: TimeSeriesBreakdownPerspective;
   TimeSeriesBreakdownSeries: ResolverTypeWrapper<Omit<TimeSeriesBreakdownSeries, 'entity'> & { entity?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']> }>;
   TokenDuration: TokenDuration;
   TokenGenerated: ResolverTypeWrapper<TokenGenerated>;
@@ -52456,6 +52475,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   threatActors?: Resolver<Maybe<ResolversTypes['ThreatActorConnection']>, ParentType, ContextType, Partial<QueryThreatActorsArgs>>;
   threatActorsGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroupConnection']>, ParentType, ContextType, Partial<QueryThreatActorsGroupArgs>>;
   threatActorsIndividuals?: Resolver<Maybe<ResolversTypes['ThreatActorIndividualConnection']>, ParentType, ContextType, Partial<QueryThreatActorsIndividualsArgs>>;
+  timeSeriesBreakdownFields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryTimeSeriesBreakdownFieldsArgs, 'perspective'>>;
   tool?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, Partial<QueryToolArgs>>;
   tools?: Resolver<Maybe<ResolversTypes['ToolConnection']>, ParentType, ContextType, Partial<QueryToolsArgs>>;
   triggerActivity?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<QueryTriggerActivityArgs, 'id'>>;

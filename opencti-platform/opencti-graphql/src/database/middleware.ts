@@ -138,6 +138,7 @@ import {
   INPUT_PARTICIPANT,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
+  isAbstract,
   REL_INDEX_PREFIX,
   RULE_PREFIX,
 } from '../schema/general';
@@ -153,7 +154,8 @@ import {
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
+import { schemaTypesDefinition } from '../schema/schema-types';
 import {
   dateForEndAttributes,
   dateForLimitsAttributes,
@@ -1023,6 +1025,36 @@ const HISTORY_BREAKDOWN_FIELDS = new Map<string, BreakdownField>([
   ['context_data.entity_type', { aggregationField: 'context_data.entity_type', resolveEntities: false, resolveLabel: resolveEntityTypeLabel }],
 ]);
 export const HISTORY_BREAKDOWN_ALLOWED_FIELDS = Array.from(HISTORY_BREAKDOWN_FIELDS.keys());
+// Fields of the schema a breakdown accepts for every one of the types: the allowed relation refs and the attributes
+// of the types, kept by the very rule that accepts or refuses them (resolveSchemaBreakdownField)
+const getSchemaBreakdownFields = (types: string[]): string[] => {
+  const candidates = R.uniq([...BREAKDOWN_ALLOWED_REFS, ...types.flatMap((type) => schemaAttributesDefinition.getAttributeNames(type))]);
+  return candidates.filter((field) => resolveSchemaBreakdownField(types, field) !== null);
+};
+// The type itself is accepted whatever the types, but only makes several series for several types, or for an
+// abstract one, which holds several concrete types
+const isBreakdownTypeFieldOffered = (types: string[]) => types.length !== 1 || isAbstract(types[0]) || schemaTypesDefinition.hasChildren(types[0]);
+type BreakdownFieldsPerspective = 'entities' | 'relationships' | 'audits';
+/**
+ * Fields a widget can be broken down by, for its perspective and the types its dataset is restricted to: the
+ * same types the breakdown queries default to without any (Stix-Core-Object, stix-relationship). Read by the
+ * widget editor, so that it offers exactly the fields the breakdown queries accept.
+ */
+export const timeSeriesBreakdownFields = (perspective: BreakdownFieldsPerspective, types?: string[] | null): string[] => {
+  if (perspective === 'audits') {
+    return HISTORY_BREAKDOWN_ALLOWED_FIELDS;
+  }
+  if (perspective === 'relationships') {
+    const requestedTypes = (types ?? []).filter((type) => isStixRelationship(type));
+    const relationshipTypes = requestedTypes.length > 0 ? requestedTypes : [ABSTRACT_STIX_RELATIONSHIP];
+    const fields = [...getSchemaBreakdownFields(relationshipTypes), RELATION_FROM_TYPES_FILTER, RELATION_TO_TYPES_FILTER];
+    return isBreakdownTypeFieldOffered(relationshipTypes) ? [...fields, RELATION_TYPE_FILTER] : fields;
+  }
+  const requestedTypes = (types ?? []).filter((type) => isStixCoreObject(type));
+  const entityTypes = requestedTypes.length > 0 ? requestedTypes : [ABSTRACT_STIX_CORE_OBJECT];
+  const fields = getSchemaBreakdownFields(entityTypes);
+  return isBreakdownTypeFieldOffered(entityTypes) ? [...fields, 'entity_type'] : fields;
+};
 const HISTORY_TYPES = [ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY];
 export const resolveHistoryBreakdownField = (field: string): BreakdownField => {
   const breakdownField = HISTORY_BREAKDOWN_FIELDS.get(field);

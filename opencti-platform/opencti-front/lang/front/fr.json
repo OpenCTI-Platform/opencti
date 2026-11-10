@@ -5396,8 +5396,6 @@
   "this blogpost": "ce billet de blog",
   "This breakdown cannot be computed with the settings of this widget.": "Cette ventilation ne peut pas être calculée avec les paramètres de ce widget.",
   "This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.": "Cette ventilation ne peut pas être calculée avec les paramètres de ce widget. Modifiez le widget pour les changer.",
-  "This breakdown field is not available for the dataset of this widget.": "Ce champ de ventilation n'est pas disponible pour le jeu de données de ce widget.",
-  "This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.": "Ce champ de ventilation n'est pas disponible pour le jeu de données de ce widget. Modifiez le widget pour choisir un autre champ.",
   "This breakdown has too many points for the selected period.": "Cette ventilation a trop de points pour la période sélectionnée.",
   "This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.": "Cette ventilation a trop de points pour la période sélectionnée. Raccourcissez la période, choisissez un intervalle plus large ou réduisez le nombre de séries.",
   "This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.": "Ce changement peut avoir un impact sur les utilisateurs et les connecteurs qui NE POURRONT PLUS ACCÉDER AUX CONNAISSANCES s'ils n'appartiennent pas à l'organisation principale de la plateforme.",

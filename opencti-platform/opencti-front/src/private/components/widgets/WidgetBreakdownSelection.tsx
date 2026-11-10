@@ -26,7 +26,7 @@ import { useWidgetBreakdownState, useWidgetConfigContext } from './WidgetConfigC
 const WidgetBreakdownSelection = () => {
   const { t_i18n } = useFormatter();
   const { config, setConfigWidget } = useWidgetConfigContext();
-  const { editorState, fieldOptions, resolution, field, unlistedField } = useWidgetBreakdownState();
+  const { editorState, fieldOptions, resolution, savedFilterResolution, field, unlistedField } = useWidgetBreakdownState();
   const { parameters, perspective } = config.widget;
 
   // Nothing to choose: a single type without any field to break it down by
@@ -57,7 +57,7 @@ const WidgetBreakdownSelection = () => {
             {t_i18n(label)}
           </SelectItem>
         ))}
-        {/* The field of the widget, not offered: the type of a single type, or a field kept while the dataset is unknown */}
+        {/* The field of the widget, not offered: the type of a single type, or a field kept while the fields of the dataset are unknown */}
         {unlistedField && (
           <SelectItem value={unlistedField.key} disabled={resolution !== 'resolved'}>
             {t_i18n(unlistedField.label)}
@@ -140,7 +140,7 @@ const WidgetBreakdownSelection = () => {
         {field && <div style={{ flex: 1 }}>{limitSelect}</div>}
       </div>
       {/* Only a chosen field is checked against the saved filter */}
-      {resolution === 'failed' && field && (
+      {savedFilterResolution === 'failed' && field && (
         <Alert severity="warning" title={t_i18n('The saved filter could not be read: the breakdown field cannot be checked.')} />
       )}
       {field && (

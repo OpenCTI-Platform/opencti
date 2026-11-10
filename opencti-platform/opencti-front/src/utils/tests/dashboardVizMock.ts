@@ -26,8 +26,7 @@ const loads = new Set<() => void>();
  * Mock of useDashboardViz reading its resolved dataset from `state`. As the hook, the query built first is loaded
  * at once, and then kept, whatever the next renders build, until loadDashboardViz: a load runs in a transition,
  * the previous query stays until it commits. The query reference is the same object until then.
- * Without variables, while the dataset is resolved or once buildQueryVariables builds none, there is no query,
- * and the next variables built are loaded at once.
+ * Without variables, while the dataset is resolved, there is no query, and the next variables built are loaded at once.
  */
 export const mockDashboardViz = (state: DashboardVizMockState) => (args: DashboardVizArgs) => {
   state.dashboardViz(args);
@@ -55,7 +54,6 @@ export const mockDashboardViz = (state: DashboardVizMockState) => (args: Dashboa
     queryRef: variables ? queryRef : null,
     resolvedDataSelection,
     isResolving,
-    skipped: !isResolving && !!args.buildQueryVariables && !variables,
   };
 };
 

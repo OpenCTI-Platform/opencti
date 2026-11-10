@@ -103,7 +103,7 @@ const WidgetCreationDataSelection = () => {
   // never clickable (e.g. the Number widget). See issue #16360.
   const canAddDataSelection = getCurrentDataSelectionLimit(type) > 1;
   // A breakdown generates its series from a single dataset. Only a field the widget keeps locks it: one the
-  // filters no longer offer is dropped on submit, once the saved filter is read
+  // filters no longer offer is dropped on submit, once the saved filter and the fields of the dataset are read
   const isBreakdownActive = !!breakdown.field;
   // Said before a breakdown is chosen, once the fields of the dataset are known
   const isBreakdownOffered = breakdown.editorState === 'editable'

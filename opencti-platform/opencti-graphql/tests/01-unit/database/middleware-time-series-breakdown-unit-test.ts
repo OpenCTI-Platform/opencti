@@ -49,6 +49,7 @@ import {
   resolveRelationshipBreakdownField,
   timeSeriesBreakdownEntities,
   timeSeriesBreakdownHistory,
+  timeSeriesBreakdownFields,
   timeSeriesBreakdownRelations,
 } from '../../../src/database/middleware';
 import { stixRelationshipsMultiTimeSeries, stixRelationshipsTimeSeriesBreakdown } from '../../../src/domain/stixRelationship';
@@ -1454,5 +1455,74 @@ describe('stixRelationshipsTimeSeriesBreakdown', () => {
     await expect(stixRelationshipsTimeSeriesBreakdown(mockContext, accessModule.SYSTEM_USER, {
       field: 'relationship_type', startDate, endDate, interval: 'day', relationship_type: ['Malware'],
     })).rejects.toThrow('relationship_type is not a stix-relationship');
+  });
+});
+
+describe('timeSeriesBreakdownFields', () => {
+  // On the registered schema, not the stubs of the other tests
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+  const accepted = (resolve: () => unknown) => {
+    try {
+      resolve();
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  it('should offer the fields of a single entity type, without the type itself', () => {
+    expect(timeSeriesBreakdownFields('entities', ['Report'])).toEqual([
+      'createdBy', 'objectLabel', 'objectMarking', 'objectAssignee', 'objectParticipant', 'creator_id', 'x_opencti_closing_reason', 'report_types',
+    ]);
+    expect(timeSeriesBreakdownFields('entities', ['Incident'])).toEqual(expect.arrayContaining(['incident_type', 'severity']));
+  });
+
+  it('should offer the fields every type carries, and the type itself, for several types, an abstract type or none', () => {
+    const shared = timeSeriesBreakdownFields('entities', ['Report', 'Malware']);
+    expect(shared).toContain('entity_type');
+    expect(shared).not.toContain('report_types');
+    expect(shared).not.toContain('objectAssignee');
+    expect(timeSeriesBreakdownFields('entities', ['Threat-Actor'])).toContain('entity_type');
+    expect(timeSeriesBreakdownFields('entities', ['Stix-Domain-Object'])).toContain('entity_type');
+    // Without types, or with types that are not entities, the default ones of the breakdown query
+    expect(timeSeriesBreakdownFields('entities', [])).toEqual(timeSeriesBreakdownFields('entities', ['Stix-Core-Object']));
+    expect(timeSeriesBreakdownFields('entities', null)).toEqual(timeSeriesBreakdownFields('entities', ['Stix-Core-Object']));
+    expect(timeSeriesBreakdownFields('entities', ['not-a-type'])).toEqual(timeSeriesBreakdownFields('entities', ['Stix-Core-Object']));
+  });
+
+  it('should never offer free texts, dates, numbers, computed filter keys or relation refs outside the allowlist', () => {
+    const fields = [['Report'], ['Malware'], ['Incident'], ['Report', 'Malware'], []]
+      .flatMap((types) => timeSeriesBreakdownFields('entities', types));
+    ['name', 'description', 'created', 'created_at', 'confidence', 'x_opencti_score', 'computed_reliability', 'objects', 'externalReferences', 'killChainPhases']
+      .forEach((field) => expect(fields).not.toContain(field));
+  });
+
+  it('should only offer the entity fields the entities breakdown accepts', () => {
+    for (const types of [['Report'], ['Malware'], ['Incident'], ['Report', 'Malware'], ['Threat-Actor'], ['Stix-Core-Object']]) {
+      for (const field of timeSeriesBreakdownFields('entities', types)) {
+        expect(accepted(() => resolveBreakdownField(types, field)), `${field} for ${types}`).toBe(true);
+      }
+    }
+  });
+
+  it('should offer the relationships fields, the relationship type only for several types or none', () => {
+    const uses = timeSeriesBreakdownFields('relationships', ['uses']);
+    expect(uses).toEqual(expect.arrayContaining(['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'fromTypes', 'toTypes']));
+    expect(uses).not.toContain('relationship_type');
+    expect(timeSeriesBreakdownFields('relationships', ['targets', 'uses'])).toContain('relationship_type');
+    expect(timeSeriesBreakdownFields('relationships', [])).toContain('relationship_type');
+    expect(timeSeriesBreakdownFields('relationships', ['Report'])).toEqual(timeSeriesBreakdownFields('relationships', []));
+    for (const types of [['uses'], ['targets', 'uses'], ['stix-relationship']]) {
+      for (const field of timeSeriesBreakdownFields('relationships', types)) {
+        expect(accepted(() => resolveRelationshipBreakdownField(types, field)), `${field} for ${types}`).toBe(true);
+      }
+    }
+  });
+
+  it('should offer the fields of the logs, in their order, whatever the types', () => {
+    expect(timeSeriesBreakdownFields('audits', ['Activity'])).toEqual(HISTORY_BREAKDOWN_ALLOWED_FIELDS);
+    HISTORY_BREAKDOWN_ALLOWED_FIELDS.forEach((field) => expect(accepted(() => resolveHistoryBreakdownField(field))).toBe(true));
   });
 });

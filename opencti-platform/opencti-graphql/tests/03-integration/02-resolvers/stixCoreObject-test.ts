@@ -444,6 +444,26 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
   });
 });
 
+describe('timeSeriesBreakdownFields', () => {
+  const FIELDS_QUERY = gql`
+    query TimeSeriesBreakdownFields($perspective: TimeSeriesBreakdownPerspective!, $types: [String!]) {
+      timeSeriesBreakdownFields(perspective: $perspective, types: $types)
+    }
+  `;
+  const fieldsOf = async (perspective: string, types?: string[]) => {
+    const result = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: FIELDS_QUERY, variables: { perspective, types } });
+    return result.data?.timeSeriesBreakdownFields as string[];
+  };
+
+  it('should give any user the fields the editor offers, read from the schema', async () => {
+    expect(await fieldsOf('entities', ['Report'])).toEqual(expect.arrayContaining(['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'report_types']));
+    expect(await fieldsOf('entities', ['Report'])).not.toContain('entity_type');
+    expect(await fieldsOf('entities')).toContain('entity_type');
+    expect(await fieldsOf('relationships', ['uses'])).toEqual(expect.arrayContaining(['fromTypes', 'toTypes']));
+    expect(await fieldsOf('audits')).toEqual(['event_type', 'event_scope', 'user_id', 'group_ids', 'organization_ids', 'entity_type', 'context_data.entity_type']);
+  });
+});
+
 describe('StixCoreObjects export resolvers', () => {
   const EXPORT_CONNECTOR_ID = '4f7b3c1e-2a9d-4e8b-9c6f-1d2e3f4a5b6c';
   const EXPORT_CONNECTOR_NAME = 'TestExportConnector';

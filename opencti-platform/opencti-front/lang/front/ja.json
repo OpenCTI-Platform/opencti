@@ -5396,8 +5396,6 @@
   "this blogpost": "このブログ記事",
   "This breakdown cannot be computed with the settings of this widget.": "この内訳はこのウィジェットの設定では計算できません。",
   "This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.": "この内訳はこのウィジェットの設定では計算できません。ウィジェットを編集して設定を変更してください。",
-  "This breakdown field is not available for the dataset of this widget.": "この内訳フィールドは、このウィジェットのデータセットでは使用できません。",
-  "This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.": "この内訳フィールドは、このウィジェットのデータセットでは使用できません。ウィジェットを編集して別のフィールドを選択してください。",
   "This breakdown has too many points for the selected period.": "この内訳は選択した期間に対してポイントが多すぎます。",
   "This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.": "この内訳は選択した期間に対してポイントが多すぎます。期間を短くするか、より長い間隔を選択するか、系列の数を減らしてください。",
   "This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.": "この変更により、メインプラットフォームの組織に所属していないユーザーやコネクターは、ナレッジにアクセスできなくなる可能性があります。",
