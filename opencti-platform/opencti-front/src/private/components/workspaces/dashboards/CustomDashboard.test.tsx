@@ -5,6 +5,7 @@ import testRender, { createMockUserContext } from '../../../../utils/tests/test-
 import { fromB64, toB64 } from '../../../../utils/String';
 import { dashboardVariablesStorageKey } from '../../../../components/dashboard/dashboardVariablesStorage';
 import { dashboardTimeRangeStorageKey } from '../../../../components/dashboard/dashboardTimeRangeStorage';
+import { MESSAGING$ } from '../../../../relay/environment';
 import CustomDashboard from './CustomDashboard';
 
 const captured = vi.hoisted(() => ({
@@ -17,6 +18,7 @@ const captured = vi.hoisted(() => ({
   timeFilters: undefined as { config: Record<string, unknown>; handleDateChange: (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => void } | undefined,
   contentConfig: undefined as Record<string, unknown> | undefined,
   contentMarkerNames: undefined as ReadonlyMap<string, readonly string[]> | undefined,
+  handleImportWidget: undefined as ((file: File) => void) | undefined,
 }));
 
 vi.mock('../../../../components/dashboard/DashboardVariableValuesContext', async (importOriginal) => ({
@@ -57,8 +59,9 @@ vi.mock('../../../../utils/hooks/useVocabularyCategory', () => ({ default: vi.fn
 // The Create widget entry point lives in the header: it must see the variable definitions too.
 vi.mock('../workspaceHeader/WorkspaceHeader', async () => {
   const { useOptionalDashboardVariableDefinitions } = await import('../../../../components/dashboard/DashboardVariablesContext');
-  const Header = ({ editionExtra }: { editionExtra?: ReactNode }) => {
+  const Header = ({ editionExtra, handleImportWidget }: { editionExtra?: ReactNode; handleImportWidget?: (file: File) => void }) => {
     const definitions = useOptionalDashboardVariableDefinitions();
+    captured.handleImportWidget = handleImportWidget;
     return (
       <>
         <div>workspace-header</div>
@@ -211,7 +214,6 @@ describe('CustomDashboard variable values', () => {
     testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext() });
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
   });
-
 });
 
 describe('CustomDashboard variables bar', () => {
@@ -405,7 +407,7 @@ describe('CustomDashboard variable definitions for the widget filters', () => {
     captured.contentDefinitions = undefined;
   });
 
-  it('provides the definitions to the whole dashboard, header (widget creation) included', () => {
+  it('provides the definitions to the whole dashboard, header (widget creation) included, when the flag is on', () => {
     testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext() });
     expect(headerDefinitions()).toBe('Sector');
     expect(captured.contentDefinitions?.map((v) => v.name)).toEqual(['Sector']);
@@ -596,7 +598,6 @@ describe('CustomDashboard time range', () => {
       expect(captured.contentConfig?.relativeDate).toBe('days-7');
     });
   });
-
 });
 
 describe('CustomDashboard viewer permissions', () => {
@@ -665,11 +666,61 @@ describe('CustomDashboard widget usage marker', () => {
     testRender(<CustomDashboard data={workspace as never} noToolbar />, { userContext: userContext() });
     expect(captured.contentMarkerNames).toBeUndefined();
   });
+});
 
+describe('CustomDashboard widget import', () => {
+  const MISSING_ID = '22222222-2222-4222-8222-222222222222';
+  const tokenFilters = (ids: string[]) => ({ mode: 'and', filters: [{ key: ['entity_type'], values: ids.map((id) => `$var:${id}`), operator: 'eq', mode: 'or' }], filterGroups: [] });
+  const widgetFile = (ids: string[]) => new File([JSON.stringify({
+    openCTI_version: '7.0.0',
+    type: 'widget',
+    configuration: toB64(JSON.stringify({ type: 'number', perspective: 'entities', dataSelection: [{ filters: tokenFilters(ids) }] })),
+  })], 'widget.json', { type: 'application/json' });
+  const widgetImportCall = () => captured.commit.mock.calls.find(([config]) => config?.variables?.input?.importType === 'widget')?.[0];
+
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.history.replaceState(null, '', '/');
+    captured.granted = true;
+    captured.commit.mockReset();
+    captured.handleImportWidget = undefined;
+  });
+
+  it('warns about the variables of the imported widget missing from the dashboard, once imported', async () => {
+    const notifyWarning = vi.spyOn(MESSAGING$, 'notifyWarning');
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext() });
+    act(() => captured.handleImportWidget?.(widgetFile([SECTOR_ID, MISSING_ID])));
+    await waitFor(() => expect(widgetImportCall()).toBeDefined());
+    expect(notifyWarning).not.toHaveBeenCalled();
+    act(() => widgetImportCall().onCompleted());
+    expect(notifyWarning).toHaveBeenCalledTimes(1);
+    // One variable of the two is missing: the message carries that count
+    expect(notifyWarning.mock.calls[0][0]).toContain('uses 1 variable');
+    notifyWarning.mockRestore();
+  });
+
+  it('warns about nothing when the dashboard holds every variable of the widget', async () => {
+    const notifyWarning = vi.spyOn(MESSAGING$, 'notifyWarning');
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext() });
+    act(() => captured.handleImportWidget?.(widgetFile([SECTOR_ID])));
+    await waitFor(() => expect(widgetImportCall()).toBeDefined());
+    act(() => widgetImportCall().onCompleted());
+    expect(notifyWarning).not.toHaveBeenCalled();
+    notifyWarning.mockRestore();
+  });
+
+  it('still imports the widget when the file cannot be read', async () => {
+    testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext() });
+    const unreadable = widgetFile([MISSING_ID]);
+    vi.spyOn(unreadable, 'text').mockRejectedValue(new Error('The file was removed'));
+    act(() => captured.handleImportWidget?.(unreadable));
+    await waitFor(() => expect(widgetImportCall()).toBeDefined());
+    expect(widgetImportCall().variables.input.file).toBe(unreadable);
+  });
 });
 
 describe('CustomDashboard presets', () => {
-  const flagOn = userContext;
+  const flagOn = () => userContext();
   const finance = { id: 'p1', name: 'Finance', values: [{ variableId: SECTOR_ID, value: 'Finance' }], config: { startDate: null, endDate: null, relativeDate: 'months-1' } };
   const withPresets = (overrides: Record<string, unknown> = {}, config: Record<string, unknown> = {}) => buildWorkspace({ presets: [finance], ...overrides }, { relativeDate: 'days-7', ...config });
   const selector = () => screen.queryByTestId('dashboard-preset-selector');
@@ -723,6 +774,86 @@ describe('CustomDashboard presets', () => {
     expect(captured.values?.get(SECTOR_ID)).toBe('Retail');
     await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: /^Reset$/ }));
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+  });
+
+  it('opens on the preset of the URL alone, values and range included, as a shared address', () => {
+    window.history.replaceState(null, '', '/?preset=p1');
+    testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    expect(screen.getByTestId('dashboard-preset-trigger')).toHaveTextContent('Finance');
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    expect(captured.contentConfig?.relativeDate).toBe('months-1');
+  });
+
+  it('keeps the per user changes apart from the preset, and offers Update preset only once a value differs', async () => {
+    const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    expect(screen.queryByTestId('dashboard-preset-update')).not.toBeInTheDocument();
+    act(() => captured.onSetValue?.(SECTOR_ID, 'Retail'));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Retail');
+    expect(screen.getByTestId('dashboard-preset-update')).toBeInTheDocument();
+    expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${SECTOR_ID}:Retail`);
+  });
+
+  it('ignores the URL values and range for a viewer who may only switch presets', () => {
+    captured.granted = false;
+    window.history.replaceState(null, '', `/?preset=p1&variables=${SECTOR_ID}:Retail&timeRange=days-30`);
+    storeFinanceEverywhere();
+    const viewer = withPresets({ currentUserAccessRight: 'view' }, { allowViewersToSwitchPresets: true });
+    testRender(<CustomDashboard data={viewer as never} />, { userContext: flagOn() });
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    expect(captured.contentConfig?.relativeDate).toBe('months-1');
+  });
+
+  it('writes the range of the active preset in the manifest on Set as default values', async () => {
+    captured.commit.mockImplementation((args) => args.onCompleted?.({}));
+    const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: 'Set as default values' }));
+    const manifestCall = captured.commit.mock.calls.map((call) => call[0].variables.input).flat().find((input) => input.key === 'manifest');
+    expect(manifestCall).toBeDefined();
+    expect(JSON.parse(fromB64(manifestCall.value[0])).config).toMatchObject({ relativeDate: 'months-1' });
+  });
+
+  it('drops the values and the range of the active preset when it is deleted', async () => {
+    captured.commit.mockImplementation((args) => args.onCompleted?.({}));
+    const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    await user.click(screen.getByTestId('dashboard-preset-delete'));
+    await user.click(await screen.findByTestId('dashboard-preset-delete-confirm'));
+    expect(captured.commit).toHaveBeenCalledWith(expect.objectContaining({ variables: { id: 'ws-1', presetId: 'p1' } }));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
+    expect(captured.contentConfig?.relativeDate).toBe('days-7');
+    expect(new URLSearchParams(window.location.search).get('preset')).toBeNull();
+  });
+
+  it('falls back to the manifest default, not to the default preset of the user, for a variable the picked preset does not hold', async () => {
+    const LEVEL_ID = '33333333-3333-4333-8333-333333333333';
+    const manifest = toB64(JSON.stringify({
+      widgets: manifestWidgets,
+      config: { relativeDate: 'days-7' },
+      variables: [
+        { id: SECTOR_ID, name: 'Sector', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Energy' },
+        { id: LEVEL_ID, name: 'Level', type: 'text', restriction: { mode: 'none' }, defaultValue: 'Low' },
+      ],
+    }));
+    const healthcare = { id: 'p2', name: 'Healthcare', values: [{ variableId: SECTOR_ID, value: 'Healthcare' }, { variableId: LEVEL_ID, value: 'High' }], config: { startDate: null, endDate: null, relativeDate: 'days-7' } };
+    const data = buildWorkspace({
+      manifest,
+      variables: [{ id: SECTOR_ID, usedInWidgetIds: ['widget-1'] }, { id: LEVEL_ID, usedInWidgetIds: ['widget-1'] }],
+      presets: [finance, healthcare],
+      currentUserDefaultPresetId: 'p2',
+    });
+    const { user } = testRender(<CustomDashboard data={data as never} />, { userContext: flagOn() });
+    expect(captured.values?.get(LEVEL_ID)).toBe('High');
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
+    expect(captured.values?.get(LEVEL_ID)).toBe('Low');
+    expect(screen.queryByTestId('dashboard-preset-update')).not.toBeInTheDocument();
   });
 
   it('applies the default preset on the home dashboard without selector nor local read', () => {

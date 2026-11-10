@@ -4,7 +4,7 @@ import { APP_BASE_PATH } from '../../../../../relay/environment';
 import type { FieldOption } from '../../../../../utils/field';
 import type { DashboardConfig, DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
 import { deserializeDashboardManifestForFrontend } from '../../../../../components/dashboard/dashboard-utils';
-import { buildDefaultVariableValues, isValidVariableValue } from '../../../../../components/dashboard/dashboardVariablesResolution';
+import { buildDefaultVariableValues, isValidVariableValue, widgetVariableIds } from '../../../../../components/dashboard/dashboardVariablesResolution';
 import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
 import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
 import { presetFromGraphql, type GraphqlDashboardPreset } from '../../../../../components/dashboard/presets/dashboardPresets';
@@ -26,11 +26,10 @@ export const copyPublicDashboardLinkUrl = (t: (text: string) => string, uriKey: 
   );
 };
 
-export interface PublishedTimeRange {
-  startDate: string | null;
-  endDate: string | null;
-  relativeDate: string | null;
-}
+export type PublishedDateField = 'startDate' | 'endDate' | 'relativeDate';
+
+// The time range of a dashboard config, every field present (null when empty).
+export type PublishedTimeRange = Required<Pick<DashboardConfig, PublishedDateField>>;
 
 export interface PublicDashboardCreationFormData {
   name: string;
@@ -54,15 +53,25 @@ export interface PublishableDashboard {
 
 export const EMPTY_PUBLISHED_TIME_RANGE: PublishedTimeRange = { startDate: null, endDate: null, relativeDate: null };
 
+export const pickPublishedTimeRange = (config: DashboardConfig | undefined): PublishedTimeRange => ({
+  startDate: config?.startDate ?? null,
+  endDate: config?.endDate ?? null,
+  relativeDate: config?.relativeDate ?? null,
+});
+
+export const isSamePublishedTimeRange = (a: PublishedTimeRange, b: PublishedTimeRange) => (
+  a.startDate === b.startDate && a.endDate === b.endDate && a.relativeDate === b.relativeDate
+);
+
 /**
  * The variables offered when publishing: only those used by a widget, the others having no effect on the published
- * dashboard. In the manifest order.
+ * dashboard. In the manifest order. The usage is read from the widgets of the manifest the form already holds.
  */
 export const buildPublishedVariables = (
   variables: readonly DashboardVariable[],
-  usage: PublishableDashboard['variables'],
+  widgets: Record<string, unknown> | undefined,
 ): DashboardVariable[] => {
-  const used = new Set((usage ?? []).filter(({ usedInWidgetIds }) => usedInWidgetIds.length > 0).map(({ id }) => id));
+  const used = new Set(Object.values(widgets ?? {}).flatMap(widgetVariableIds));
   return variables.filter((variable) => used.has(variable.id));
 };
 
@@ -79,9 +88,19 @@ export const buildPublishedVariableValues = (variables: DashboardVariable[], sto
 };
 
 /**
+ * Whether `pathname` is the page of the dashboard `dashboardId`.
+ */
+const isDashboardPage = (pathname: string, dashboardId: string) => {
+  const segments = pathname.split('/');
+  return segments.some((segment, index) => segment === dashboardId && segments[index - 1] === 'dashboards');
+};
+
+/**
  * Values the form starts from for the selected dashboard, and starts again from when another one is selected: what
- * the author sees on the dashboard, with the same precedence as the page (URL, then this browser, then the manifest).
+ * the author sees on the dashboard, with the same precedence as the page (URL, then this browser, then the default).
  * The URL only speaks for the dashboard it shows: it is read for the dashboard of the page, never for another one.
+ * The time range follows the same precedence: the one of the address on the page, else the one kept in this browser,
+ * else the one of the dashboard.
  */
 export const buildPublishedValuesState = (
   dashboard: PublishableDashboard | undefined,
@@ -91,17 +110,16 @@ export const buildPublishedValuesState = (
 ): Pick<PublicDashboardCreationFormData, 'variable_values' | 'time_range'> => {
   if (!dashboard) return { variable_values: {}, time_range: EMPTY_PUBLISHED_TIME_RANGE };
   const manifest = deserializeDashboardManifestForFrontend(dashboard.manifest);
-  const variables = buildPublishedVariables(manifest.variables ?? [], dashboard.variables);
-  const isDashboardPage = pathname.includes(`/dashboards/${dashboard.id}`);
+  const variables = buildPublishedVariables(manifest.variables ?? [], manifest.widgets);
+  const onPage = isDashboardPage(pathname, dashboard.id);
   const stored = {
     ...readStoredVariableValues(dashboardVariablesStorageKey(userId, dashboard.id)),
-    ...(isDashboardPage ? parseVariablesParam(search) : {}),
+    ...(onPage ? parseVariablesParam(search) : {}),
   };
-  const localRange = (isDashboardPage ? parseTimeRangeParam(search) : null) ?? readStoredTimeRange(dashboardTimeRangeStorageKey(userId, dashboard.id));
-  const { startDate, endDate, relativeDate } = manifest.config;
+  const localRange = (onPage ? parseTimeRangeParam(search) : null) ?? readStoredTimeRange(dashboardTimeRangeStorageKey(userId, dashboard.id));
   return {
     variable_values: buildPublishedVariableValues(variables, stored),
-    time_range: localRange ?? { startDate: startDate ?? null, endDate: endDate ?? null, relativeDate: relativeDate ?? null },
+    time_range: pickPublishedTimeRange(localRange ?? manifest.config),
   };
 };
 
@@ -128,7 +146,7 @@ export const applyPresetToPublishedValues = (
  */
 export const applyPublishedTimeRangeChange = (
   range: PublishedTimeRange,
-  type: keyof Pick<DashboardConfig, 'startDate' | 'endDate' | 'relativeDate'>,
+  type: PublishedDateField,
   value: string | null,
 ): PublishedTimeRange => {
   const next = { ...range, [type]: value === 'none' ? null : value };

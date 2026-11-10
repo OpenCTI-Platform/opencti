@@ -6,8 +6,8 @@ import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableVa
 
 interface UseDashboardVariablesOptions {
   ignoreLocalValues?: boolean;
-  // Values that replace the manifest defaults (the preset a group or the user opens this dashboard on): what the
-  // user starts from, and what Reset goes back to.
+  // Values that replace the manifest defaults (the active preset: the one picked, or the one the user opens this
+  // dashboard on): what the user starts from, and what Reset goes back to.
   defaultOverrides?: ReadonlyMap<string, string>;
 }
 
@@ -29,14 +29,19 @@ export const useDashboardVariables = (
     setState({ key, ignoreLocalValues, stored });
   }
 
-  const manifestDefaults = buildDefaultVariableValues(variables);
+  // The defaults of the manifest alone: what a preset falls back to for the variables it does not hold, whatever
+  // preset the user opens the dashboard on.
+  const manifestOnly = buildDefaultVariableValues(variables);
+  const manifestSignature = JSON.stringify([...manifestOnly]);
+  const manifestDefaults = useMemo(() => new Map<string, string>(JSON.parse(manifestSignature)), [manifestSignature]);
+  const overridden = new Map(manifestOnly);
   if (defaultOverrides) {
     variables.forEach((variable) => {
       const value = defaultOverrides.get(variable.id);
-      if (value !== undefined && value !== '' && isValidVariableValue(variable, value)) manifestDefaults.set(variable.id, value);
+      if (value !== undefined && value !== '' && isValidVariableValue(variable, value)) overridden.set(variable.id, value);
     });
   }
-  const defaultsSignature = JSON.stringify([...manifestDefaults]);
+  const defaultsSignature = JSON.stringify([...overridden]);
   const defaults = useMemo(() => new Map<string, string>(JSON.parse(defaultsSignature)), [defaultsSignature]);
 
   // `variables` is deliberately summarized by its signature (id + selection pool).
@@ -81,13 +86,6 @@ export const useDashboardVariables = (
     commit(value === '' ? others : { ...others, [variableId]: value });
   }, [commit, stored, ignoreLocalValues]);
 
-  // Replaces every local value at once (a preset): a value equal to the default is not kept locally.
-  const setValues = useCallback((next: ReadonlyMap<string, string>) => {
-    if (ignoreLocalValues) return;
-    const entries = [...next].filter(([id, value]) => value !== '' && value !== defaults.get(id));
-    commit(Object.fromEntries(entries));
-  }, [commit, defaults, ignoreLocalValues]);
-
   const reset = useCallback(() => {
     if (ignoreLocalValues) return;
     commit({});
@@ -106,5 +104,5 @@ export const useDashboardVariables = (
     commitCurrent(Object.fromEntries(Object.entries(current).filter(([id, value]) => submitted.get(id) !== value)));
   }, [ignoreLocalValues]);
 
-  return { values, defaults, setValue, setValues, reset, resetValues };
+  return { values, defaults, manifestDefaults, setValue, reset, resetValues };
 };

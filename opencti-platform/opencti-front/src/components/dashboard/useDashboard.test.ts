@@ -852,4 +852,75 @@ describe('useDashboard', () => {
       await expect(result.current.handleConfigChange({ allowViewersToChangeVariables: true })).rejects.toThrow('boom');
     });
   });
+
+  describe('the base of a write', () => {
+    const widget = {
+      id: '474752bc-4a56-4b05-8230-633b0ca97cb2',
+      type: 'text',
+      perspective: 'entities',
+      dataSelection: [],
+      layout: { i: '474752bc-4a56-4b05-8230-633b0ca97cb2', x: 0, y: 0, w: 4, h: 4, moved: false, static: false },
+    } as DashboardWidget;
+    const otherWidget = { ...widget, id: 'added-by-someone-else', layout: { ...widget.layout, i: 'added-by-someone-else', y: 4 } } as DashboardWidget;
+    const entity = {
+      id: '802cbd27-7af4-4eb8-a5d2-3eee65f7049f',
+      manifest: fakeSerialize({ config: { relativeDate: 'days-7' }, widgets: { [widget.id]: widget } }),
+    };
+    // A save that completes when the test says so.
+    const pendingSaveSpy = (completions: (() => void)[]) => vi.fn((_id: string, _manifest: string, _noRefresh: boolean, onCompleted: () => void) => {
+      completions.push(onCompleted);
+    });
+
+    it('takes a change received from the store during a layout save into account in the next write', async () => {
+      vi.useFakeTimers();
+      const completions: (() => void)[] = [];
+      const saveSpy = pendingSaveSpy(completions);
+      const { result, rerender } = renderHook((props: DashboardLike) => useDashboard({ entity: props, onSave: saveSpy }), { initialProps: entity });
+      act(() => result.current.handleLayoutChange([{ ...widget.layout, x: 4 }]));
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      expect(saveSpy.mock.calls[0][2]).toBe(true);
+      // Another editor adds a widget while the layout save is in flight: the subscription updates the store.
+      const fromStore = fakeSerialize({ config: { relativeDate: 'days-7' }, widgets: { [widget.id]: widget, [otherWidget.id]: otherWidget } });
+      rerender({ ...entity, manifest: fromStore });
+      // The layout save completes without refreshing the store.
+      act(() => completions[0]());
+      act(() => result.current.handleDateChange('relativeDate', 'months-1'));
+      expect(saveSpy).toHaveBeenCalledTimes(2);
+      const saved = saveSpy.mock.calls[1][1] as unknown as DashboardManifest;
+      expect(saved.config.relativeDate).toBe('months-1');
+      expect(Object.keys(saved.widgets)).toStrictEqual([widget.id, otherWidget.id]);
+    });
+
+    it('starts from the manifest of another dashboard at once, without waiting for a write of the previous one', () => {
+      const completions: (() => void)[] = [];
+      const saveSpy = pendingSaveSpy(completions);
+      const { result, rerender } = renderHook((props: DashboardLike) => useDashboard({ entity: props, onSave: saveSpy }), { initialProps: entity });
+      act(() => result.current.handleDateChange('relativeDate', 'months-1'));
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      const other = { id: 'other-dashboard', manifest: fakeSerialize({ config: { relativeDate: 'years-1' }, widgets: {} }) };
+      rerender(other);
+      act(() => result.current.handleDateChange('relativeDate', 'days-1'));
+      expect(saveSpy).toHaveBeenCalledTimes(2);
+      expect(saveSpy.mock.calls[1][0]).toBe(other.id);
+      expect((saveSpy.mock.calls[1][1] as unknown as DashboardManifest).config.relativeDate).toBe('days-1');
+      // The write of the previous dashboard completes: nothing more is sent.
+      act(() => completions[0]());
+      expect(saveSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('drops a layout save of the previous dashboard still pending when another one is shown', () => {
+      vi.useFakeTimers();
+      const saveSpy = completingSaveSpy();
+      const { result, rerender } = renderHook((props: DashboardLike) => useDashboard({ entity: props, onSave: saveSpy }), { initialProps: entity });
+      act(() => result.current.handleLayoutChange([{ ...widget.layout, x: 4 }]));
+      rerender({ id: 'other-dashboard', manifest: fakeSerialize({ config: {}, widgets: {} }) });
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(saveSpy).not.toHaveBeenCalled();
+    });
+  });
 });

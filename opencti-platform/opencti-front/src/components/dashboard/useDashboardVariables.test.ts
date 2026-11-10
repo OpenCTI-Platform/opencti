@@ -159,6 +159,31 @@ describe('useDashboardVariables', () => {
     expect(window.location.search).toBe('');
   });
 
+  describe('default overrides (the preset the user opens the dashboard on)', () => {
+    const overrides = new Map([[sector.id, 'Finance']]);
+
+    it('starts from, and resets to, the overridden defaults', () => {
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [sector, country], { defaultOverrides: overrides }));
+      expect(result.current.values.get(sector.id)).toBe('Finance');
+      expect(result.current.defaults.get(sector.id)).toBe('Finance');
+      act(() => result.current.setValue(sector.id, 'Retail'));
+      act(() => result.current.reset());
+      expect(result.current.values.get(sector.id)).toBe('Finance');
+    });
+
+    it('keeps the manifest defaults apart, untouched by the overrides', () => {
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [sector, country], { defaultOverrides: overrides }));
+      expect(result.current.manifestDefaults.get(sector.id)).toBe('Energy');
+      expect(result.current.manifestDefaults.get(country.id)).toBe('FR');
+      expect(result.current.defaults.get(country.id)).toBe('FR');
+    });
+
+    it('ignores an override the variable does not accept', () => {
+      const { result } = renderHook(() => useDashboardVariables('ws-1', [country], { defaultOverrides: new Map([[country.id, 'US']]) }));
+      expect(result.current.defaults.get(country.id)).toBe('FR');
+    });
+  });
+
   describe('resetValues', () => {
     const other = { ...country, defaultValue: 'FR' };
     const STORAGE_KEY = 'dashboard-variables-user-1-ws-1';
@@ -342,7 +367,6 @@ describe('useDashboardVariables', () => {
       expect(result.current.values).toBe(before);
       expect(result.current.values.get(sector.id)).toBe('Finance');
     });
-
   });
 
   describe('deleted variables', () => {

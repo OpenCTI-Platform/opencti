@@ -818,10 +818,41 @@ describe('CustomView and dashboard variables', () => {
 
     const imported = await queryAsAdminWithSuccess({
       query: IMPORT_CUSTOM_VIEW_QUERY,
-      variables: { targetEntityType: ENTITY_TYPE_INTRUSION_SET, file: createUploadFile('./tests/data/dashboard-variables/', 'dashboard-import-valid-variables.json') },
+      variables: { targetEntityType: ENTITY_TYPE_INTRUSION_SET, file: createUploadFile('./tests/data/dashboard-variables/', 'dashboard-import-unused-variables.json') },
     });
     createdIds.push(imported.data.customViewConfigurationImport.id);
     expect(await readStoredManifest(imported.data.customViewConfigurationImport.id)).not.toHaveProperty('variables');
+  });
+
+  it('should refuse a widget using dashboard variables on every way into a custom view', async () => {
+    const TOKEN_ERROR = 'A widget using dashboard variables cannot be used in a custom view';
+    const tokenWidget = { dataSelection: [{ filters: { mode: 'and', filters: [{ key: ['entity_type'], values: [`$var:${VARIABLES[0].id}`] }], filterGroups: [] } }] };
+    const parsed = fromB64(DASHBOARD_MANIFEST);
+    const tokenManifest = toB64({ ...parsed, widgets: { ...parsed.widgets, token: tokenWidget } });
+    await queryAsAdminWithError({
+      query: CREATE_CUSTOM_VIEW_QUERY,
+      variables: { input: { name: 'Custom view with a token', manifest: tokenManifest, targetEntityType: ENTITY_TYPE_INTRUSION_SET } },
+    }, TOKEN_ERROR, 'FUNCTIONAL_ERROR');
+    await queryAsAdminWithError({
+      query: DUPLICATE_CUSTOM_VIEW_QUERY,
+      variables: { input: { name: 'Duplicated custom view with a token', manifest: tokenManifest, targetEntityType: ENTITY_TYPE_INTRUSION_SET } },
+    }, TOKEN_ERROR, 'FUNCTIONAL_ERROR');
+    await queryAsAdminWithError({
+      query: IMPORT_CUSTOM_VIEW_QUERY,
+      variables: { targetEntityType: ENTITY_TYPE_INTRUSION_SET, file: createUploadFile('./tests/data/dashboard-variables/', 'dashboard-import-valid-variables.json') },
+    }, TOKEN_ERROR, 'FUNCTIONAL_ERROR');
+    const created = await queryAsAdminWithSuccess({
+      query: CREATE_CUSTOM_VIEW_QUERY,
+      variables: { input: { name: 'Custom view edited with a token', manifest: DASHBOARD_MANIFEST, targetEntityType: ENTITY_TYPE_INTRUSION_SET } },
+    });
+    const customViewId = created.data.customViewAdd.id;
+    createdIds.push(customViewId);
+    const before = await readStoredManifest(customViewId);
+    await queryAsAdminWithError({
+      query: EDIT_CUSTOM_VIEW_QUERY,
+      variables: { id: customViewId, input: [{ key: 'manifest', value: [tokenManifest] }] },
+    }, TOKEN_ERROR, 'FUNCTIONAL_ERROR');
+    expect(await readStoredManifest(customViewId)).toEqual(before);
   });
 
   it('should refuse to import a widget using dashboard variables', async () => {
@@ -838,5 +869,4 @@ describe('CustomView and dashboard variables', () => {
     }, 'A widget using dashboard variables cannot be imported into a custom view', 'FUNCTIONAL_ERROR');
     expect(await readStoredManifest(customViewId)).toEqual(before);
   });
-
 });

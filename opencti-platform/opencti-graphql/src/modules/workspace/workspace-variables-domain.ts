@@ -9,7 +9,7 @@ import { fromB64, toB64 } from '../../utils/base64';
 import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace } from './workspace-types';
 import type { StoreDashboardManifest, StoreDashboardPreset, StoreDashboardVariable } from './workspace-variables-types';
 import { buildDashboardVariable } from './workspace-variables-validation';
-import { removeVariableFromPresets } from './workspace-presets-validation';
+import { pruneInvalidPresetValues, removeVariableFromPresets } from './workspace-presets-validation';
 import { buildVariableAuditInput } from './workspace-variables-utils';
 
 const MANIFEST_LOCK_PREFIX = 'workspace-manifest';
@@ -65,7 +65,9 @@ export const workspaceVariableUpsert = async (context: AuthContext, user: AuthUs
     const variable = buildDashboardVariable(input, variables);
     const isUpdate = variables.some((v) => v.id === variable.id);
     const nextVariables = isUpdate ? variables.map((v) => (v.id === variable.id ? variable : v)) : [...variables, variable];
-    return saveDashboardVariables(context, user, workspaceId, manifest, nextVariables, buildVariableAuditInput('upsert', variable));
+    // A narrowed selection drops the preset values it no longer accepts, so every preset stays writable through the API.
+    const nextPresets = isUpdate && manifest.presets ? pruneInvalidPresetValues(manifest.presets, variable) : undefined;
+    return saveDashboardVariables(context, user, workspaceId, manifest, nextVariables, buildVariableAuditInput('upsert', variable), nextPresets);
   });
 };
 

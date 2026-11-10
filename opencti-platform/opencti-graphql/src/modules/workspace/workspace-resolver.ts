@@ -27,8 +27,8 @@ import { toStixReportBundle } from './investigation-domain';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { loadCreator } from '../../database/members';
 import { workspaceVariableDelete, workspaceVariableUpsert } from './workspace-variables-domain';
-import { findCurrentUserDefaultPresetId, toGraphqlDashboardPresets, toGraphqlDashboardVariables } from './workspace-variables-utils';
-import { workspacePresetDelete, workspacePresetUpsert } from './workspace-presets-domain';
+import { toGraphqlDashboardPresets, toGraphqlDashboardVariables } from './workspace-variables-utils';
+import { resolveCurrentUserDefaultPresetId, workspacePresetDelete, workspacePresetUpsert } from './workspace-presets-domain';
 import { editWorkInvestigationStatus, findInvestigationEnrichmentWorks } from './investigation-enrichment';
 
 const workspaceResolvers: Resolvers = {
@@ -50,7 +50,7 @@ const workspaceResolvers: Resolvers = {
     isShared: (workspace, _, context) => isDashboardShared(context, workspace),
     variables: (workspace) => toGraphqlDashboardVariables(workspace),
     presets: (workspace) => toGraphqlDashboardPresets(workspace),
-    currentUserDefaultPresetId: (workspace, _, context) => findCurrentUserDefaultPresetId(context.user, workspace),
+    currentUserDefaultPresetId: (workspace, _, context) => resolveCurrentUserDefaultPresetId(context, context.user, workspace),
     enrichmentWorks: (workspace, args, context) => findInvestigationEnrichmentWorks(context, context.user, workspace, args) as unknown as ResolversTypes['WorkConnection'],
   },
   Mutation: {

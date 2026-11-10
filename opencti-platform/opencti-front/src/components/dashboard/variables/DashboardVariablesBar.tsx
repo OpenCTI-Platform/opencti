@@ -20,6 +20,8 @@ export interface DashboardVariablesBarProps {
   canManage: boolean;
   // The actions also cover the time range of the dashboard: they show when it alone differs from its default.
   isTimeRangeModified?: boolean;
+  // A preset other than the default one is active: Reset goes back to the default one.
+  isPresetSelected?: boolean;
   onSetValue: (variableId: string, value: string) => void;
   onReset: () => void;
   // Must not reject: the caller reports its own failures.
@@ -50,6 +52,7 @@ const DashboardVariablesBar = ({
   usedInWidgetIdsByVariable,
   canManage,
   isTimeRangeModified = false,
+  isPresetSelected = false,
   onSetValue,
   onReset,
   onSetAsDefaults,
@@ -67,7 +70,7 @@ const DashboardVariablesBar = ({
 
   if (variables.length === 0 && !onCreate && !leading) return null;
 
-  const isModified = isTimeRangeModified || isModifiedFromDefaults(variables, values, defaults);
+  const isModified = isTimeRangeModified || isPresetSelected || isModifiedFromDefaults(variables, values, defaults);
   const handleSetAsDefaults = async () => {
     setIsSubmitting(true);
     try {

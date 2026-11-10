@@ -1,7 +1,8 @@
+import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
 import { getUserAccessRight, MEMBER_ACCESS_RIGHT_ADMIN, PUBLIC_DASHBOARD_REFERER, SYSTEM_USER } from '../../utils/access';
-import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDashboardCachedWidget } from './publicDashboard-types';
+import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached, type PublicDashboardCachedWidget } from './publicDashboard-types';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { AuthContext, AuthUser, UserCapability } from '../../types/user';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
@@ -12,6 +13,44 @@ import { elLoadById } from '../../database/engine';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { findById as findWorkspace } from '../workspace/workspace-domain';
 import { utcDate } from '../../utils/format';
+import { isFeatureEnabled, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../config/conf';
+import { fromB64, toB64 } from '../../utils/base64';
+import { canWidgetBreakDown } from './publicDashboard-breakdown';
+
+// Parameters of a widget setting its breakdown: the type of the widgets of the public dashboards is derived from them
+export const WIDGET_BREAKDOWN_PARAMETERS = ['breakdownBy', 'breakdownLimit', 'breakdownOrder', 'breakdownOther'] as const;
+
+/**
+ * Public manifest as served to the visitors. A widget keeps its breakdown when it can be broken down (canWidgetBreakDown),
+ * read on its stored widget of the private manifest, which keeps the filters the public one strips, and with the time
+ * series breakdown feature. Otherwise it is served without, and renders its regular chart as in the private dashboards:
+ * the stored manifest keeps it.
+ */
+export const getServedPublicManifest = (publicDashboard: Pick<BasicStoreEntityPublicDashboard, 'public_manifest' | 'private_manifest'>) => {
+  const { public_manifest: publicManifest } = publicDashboard;
+  if (!publicManifest) {
+    return publicManifest;
+  }
+  const manifest = fromB64(publicManifest);
+  const widgets = Object.entries<any>(manifest.widgets ?? {});
+  if (!widgets.some(([, widget]) => widget?.parameters?.breakdownBy)) {
+    return publicManifest;
+  }
+  const storedWidgets = isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG)
+    ? fromB64<{ widgets?: Record<string, PublicDashboardCachedWidget> }>(publicDashboard.private_manifest).widgets ?? {}
+    : {};
+  const isServedWithoutBreakdown = (widgetId: string, widget: any) => {
+    const storedWidget = storedWidgets[widgetId];
+    return !!widget?.parameters?.breakdownBy && !(storedWidget && canWidgetBreakDown(storedWidget));
+  };
+  if (!widgets.some(([widgetId, widget]) => isServedWithoutBreakdown(widgetId, widget))) {
+    return publicManifest;
+  }
+  const servedWidgets = widgets.map(([widgetId, widget]) => {
+    return [widgetId, isServedWithoutBreakdown(widgetId, widget) ? { ...widget, parameters: R.omit(WIDGET_BREAKDOWN_PARAMETERS, widget.parameters) } : widget];
+  });
+  return toB64({ ...manifest, widgets: Object.fromEntries(servedWidgets) });
+};
 
 /**
  * Sanitizes a raw uri_key input to a valid [a-z0-9-] slug.
@@ -74,13 +113,16 @@ export const findWidgetsMaxMarkings = async (
 
 interface WidgetArguments {
   user: AuthUser;
+  type: PublicDashboardCachedWidget['type'];
+  perspective: PublicDashboardCachedWidget['perspective'];
   dataSelection: PublicDashboardCachedWidget['dataSelection'];
   parameters: PublicDashboardCachedWidget['parameters'];
   config: PublicDashboardCached['private_manifest']['config'] | undefined;
 }
 
 // A relative range as the front computes it (computeRelativeDate): `days-7`, `months-1`, `years-1`... back from now.
-const RELATIVE_DATE_REGEXP = /^(days|months|years)-(\d+)$/;
+// The count is bounded as at publication: a larger one is treated as unknown.
+const RELATIVE_DATE_REGEXP = /^(days|months|years)-(\d{1,4})$/;
 type RelativeDateUnit = 'days' | 'months' | 'years';
 // The public page computes a relative start in the time zone of the visitor: days back from now, months and years
 // back from the start of the visitor's day, so up to one day earlier than here. One more hour covers a daylight
@@ -111,8 +153,8 @@ const publishedTimeRangeOf = (config: PublicDashboardCached['private_manifest'][
   if (config?.relativeDate) {
     const end = utcDate();
     const match = RELATIVE_DATE_REGEXP.exec(config.relativeDate);
-    // Unknown relative date: the front computes no start either.
-    if (!match) return { startDate: undefined, endDate: end.toISOString(), lowest: -Infinity, highest: end.valueOf() };
+    // Unknown relative date (a manifest written outside the time filters): nothing is served rather than everything.
+    if (!match) return { startDate: end.toISOString(), endDate: end.toISOString(), lowest: end.valueOf(), highest: end.valueOf() };
     const unit = match[1] as RelativeDateUnit;
     const start = end.clone().subtract(Number(match[2]), unit);
     return { startDate: start.toISOString(), endDate: end.toISOString(), lowest: start.valueOf() - RELATIVE_START_MARGIN_MS[unit], highest: end.valueOf() };
@@ -195,10 +237,12 @@ export const getWidgetArguments = async (
 
   // Get widget query configuration
   const { widgets, config } = private_manifest;
-  const { dataSelection, parameters } = widgets[widgetId];
+  const { type, perspective, dataSelection, parameters } = widgets[widgetId];
 
   return {
     user,
+    type,
+    perspective,
     parameters,
     dataSelection,
     config,

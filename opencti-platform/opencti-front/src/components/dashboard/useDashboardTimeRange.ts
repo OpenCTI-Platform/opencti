@@ -55,12 +55,6 @@ export const useDashboardTimeRange = (
     commit(isSameTimeRange(next, defaultRange) ? null : next);
   }, [commit, range, defaultRange, ignoreLocalValues]);
 
-  // Replaces the whole range at once (a preset): back to the default, nothing is kept.
-  const setRange = useCallback((next: DashboardTimeRange) => {
-    if (ignoreLocalValues) return;
-    commit(isSameTimeRange(next, defaultRange) ? null : next);
-  }, [commit, defaultRange, ignoreLocalValues]);
-
   const reset = useCallback(() => {
     if (ignoreLocalValues) return;
     commit(null);
@@ -78,5 +72,5 @@ export const useDashboardTimeRange = (
     if (current && isSameTimeRange(current, submitted)) commitCurrent(null);
   }, [ignoreLocalValues]);
 
-  return { range, defaultRange, isModified, setDate, setRange, reset, resetRange };
+  return { range, defaultRange, isModified, setDate, reset, resetRange };
 };

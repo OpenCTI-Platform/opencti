@@ -12,10 +12,17 @@ import PublicTopBar from './PublicTopBar';
 import PublicDashboardHeader from './dashboard/PublicDashboardHeader';
 import { useFormatter } from '../../components/i18n';
 import type { DashboardManifest } from '../../components/dashboard/dashboard-types';
-import { applyDateChange, isSameTimeRange, pickTimeRange, type DashboardTimeRange } from '../../components/dashboard/dashboardTimeRange';
+import {
+  applyPublishedTimeRangeChange,
+  isSamePublishedTimeRange,
+  pickPublishedTimeRange,
+  type PublishedDateField,
+  type PublishedTimeRange,
+} from '@components/workspaces/dashboards/public_dashboards/public-dashboard-utils';
 import useDashboardRefresh from '../../components/dashboard/useDashboardRefresh';
 import DashboardRefreshControl from '../../components/dashboard/DashboardRefreshControl';
 import { DashboardRefreshProvider } from '../../components/dashboard/DashboardRefreshContext';
+import { DASHBOARD_GRID_CONFIG } from '../../components/dashboard/dashboard-utils';
 
 const publicDashboardQuery = graphql`
   query PublicDashboardQuery($uri_key: String!) {
@@ -65,17 +72,21 @@ const PublicDashboardComponent = ({
   // The published range is the default; a visitor may pick another one when the author allowed viewers to edit the
   // time filters. Local to the page: nothing is written anywhere.
   const canEditTimeFilters = config?.allowViewersToEditTimeFilters === true;
-  const publishedRange = useMemo(() => pickTimeRange(config), [config?.startDate, config?.endDate, config?.relativeDate]);
-  const [localRange, setLocalRange] = useState<DashboardTimeRange | null>(null);
+  const publishedRange = useMemo(() => pickPublishedTimeRange(config), [config?.startDate, config?.endDate, config?.relativeDate]);
+  const [localRange, setLocalRange] = useState<PublishedTimeRange | null>(null);
+  // A range picked on one public dashboard never follows the visitor to another one.
+  useEffect(() => {
+    setLocalRange(null);
+  }, [uriKey]);
   const effectiveRange = canEditTimeFilters && localRange ? localRange : publishedRange;
   const effectiveConfig = useMemo(
     () => (config ? { ...config, ...effectiveRange } : config),
     [config, effectiveRange.startDate, effectiveRange.endDate, effectiveRange.relativeDate],
   );
-  const changeRange = (type: 'startDate' | 'endDate' | 'relativeDate', value: string | null) => {
+  const changeRange = (type: PublishedDateField, value: string | null) => {
     if (!canEditTimeFilters) return;
-    const next = applyDateChange(effectiveRange, type, value);
-    setLocalRange(isSameTimeRange(next, publishedRange) ? null : next);
+    const next = applyPublishedTimeRangeChange(effectiveRange, type, value);
+    setLocalRange(isSamePublishedTimeRange(next, publishedRange) ? null : next);
   };
 
   const {
@@ -123,7 +134,9 @@ const PublicDashboardComponent = ({
             className="layout"
             width={width}
             layout={widgetsWithLayout.map((w) => w.layout!)}
-            gridConfig={{ margin: [20, 20], rowHeight: 50, cols: 12 }}
+            // The grid of the private dashboards (DashboardContent), where the layouts are made. The container
+            // padding, the margin by default, keeps the widgets aligned with the header.
+            gridConfig={DASHBOARD_GRID_CONFIG}
             dragConfig={{ enabled: false }}
             resizeConfig={{ enabled: false }}
           >

@@ -8,6 +8,7 @@ import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { validateDataBeforeIndexing } from '../../../src/schema/schema-attributes';
 import { validateUserAccessOperation } from '../../../src/utils/access';
+import '../../../src/modules/draftWorkspace/draftWorkspace';
 import '../../../src/modules/workflow/storage/workflow-instance-entity';
 
 vi.mock('../../../src/database/middleware', () => ({

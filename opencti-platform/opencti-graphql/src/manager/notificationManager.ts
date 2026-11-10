@@ -6,9 +6,17 @@ import { type SizedNotifEvent, type StreamProcessor } from '../database/stream/s
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
-import conf, { booleanConf, logApp, ACCOUNT_STATUS_ACTIVE } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
-import { executionContext, INTERNAL_USERS, isUserCanAccessStixElement, isUserCanAccessStreamUpdateEvent, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import {
+  executionContext,
+  INTERNAL_USERS,
+  isUserCanAccessStixElement,
+  isUserCanAccessStreamUpdateEvent,
+  isUserAccountActive,
+  isUserInPlatformOrganization,
+  SYSTEM_USER,
+} from '../utils/access';
 import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../types/event';
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
 import { utcDate } from '../utils/format';
@@ -135,20 +143,11 @@ export const isDigest = (n: ResolvedTrigger): n is ResolvedDigest => {
   return n.trigger.trigger_type === 'digest';
 };
 
-export const isNotificationRecipientActive = (user: AuthUser): boolean => {
-  // Account expiration date reached
-  if (user.account_lock_after_date && utcDate().isAfter(utcDate(user.account_lock_after_date))) {
-    return false;
-  }
-  // Account not active (disabled / inactive / expired status)
-  return user.account_status === ACCOUNT_STATUS_ACTIVE;
-};
-
 // Single recipient check for every notification path (triggers, playbook notifier and email components):
 // inactive/expired/disabled accounts must no longer receive any notification,
 // and service accounts cannot receive notifications at all (the publisher rejects them).
 export const canReceiveNotifications = (user: AuthUser): boolean => {
-  return !user.user_service_account && isNotificationRecipientActive(user);
+  return !user.user_service_account && isUserAccountActive(user);
 };
 
 const generateAssigneeTrigger = (user: AuthUser) => {
@@ -216,8 +215,12 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
 
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
-  const platformUsers = (await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER))
-    .filter(canReceiveNotifications);
+  // The triggers a user defined name the recipient directly: an active service account is kept, because a machine identity
+  // subscribes to events through a webhook notifier. The publisher delivers to a service account through a webhook notifier only (see publisherManager).
+  const activeUsers = (await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER))
+    .filter((user) => isUserAccountActive(user));
+  // Native triggers (assignee, platform, request access) target humans only.
+  const platformUsers = activeUsers.filter(canReceiveNotifications);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const isAssigneeAutoTriggerEnabled = settings.platform_notifier_auto_trigger_assignee ?? true;
   const notificationTriggers = [];
@@ -236,11 +239,12 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
   for (let index = 0; index < triggers.length; index += 1) {
     const trigger = triggers[index];
     const triggerAuthorizedMembersIds = trigger.restricted_members?.map((member) => member.id) ?? [];
+    // Groups and organizations reach humans only; a service account is a recipient when the trigger names it directly.
     const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
     const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
       .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
-    const usersFromIds = platformUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
+    const usersFromIds = activeUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
     const withoutInternalUsers = [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]
       .filter((u) => INTERNAL_USERS[u.id] === undefined);
     const users = R.uniqBy(R.prop('id'), withoutInternalUsers);

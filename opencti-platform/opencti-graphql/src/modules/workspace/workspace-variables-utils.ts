@@ -236,3 +236,32 @@ export const stripServerOwnedManifestKeys = (encoded: string | null | undefined)
   if (!manifest || !DASHBOARD_MANIFEST_SERVER_OWNED_KEYS.some((key) => key in manifest)) return encoded;
   return toB64(R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest));
 };
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+};
+
+/**
+ * Whether a widget uses a dashboard variable in its filters, as counted in the usage of the variables.
+ * The widgets may come from a client or a file: a malformed one counts as using none.
+ */
+export const hasDashboardVariableWidget = (widgets: unknown) => {
+  if (!isPlainObject(widgets)) return false;
+  const selections = Object.fromEntries(Object.entries(widgets).map(([widgetId, widget]) => {
+    const dataSelection = isPlainObject(widget) && Array.isArray(widget.dataSelection) ? widget.dataSelection.filter(isPlainObject) : [];
+    return [widgetId, { dataSelection }];
+  }));
+  return computeDashboardVariablesUsage(selections).size > 0;
+};
+
+/**
+ * The manifest of a custom view, on every way in (creation, edition, duplication, configuration and widget import):
+ * dashboard variables do not exist there, so a widget using one would never show data and is refused, and the
+ * server-owned keys are removed (see stripServerOwnedManifestKeys).
+ */
+export const sanitizeCustomViewManifest = (encoded: string | null | undefined) => {
+  if (encoded && hasDashboardVariableWidget(parseManifestObject(encoded)?.widgets)) {
+    throw FunctionalError('A widget using dashboard variables cannot be used in a custom view');
+  }
+  return stripServerOwnedManifestKeys(encoded);
+};

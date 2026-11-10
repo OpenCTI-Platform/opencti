@@ -55,8 +55,8 @@ const DashboardPresetSelector = ({
       }}
     >
       {presets.length > 0 && (
-        // FDS-WORKAROUND #76: with its clear control, the library Select wrapper is 32px narrower than its trigger, so
-        // the chevron overflows onto the next sibling of a flex row - see fds-migration/LIBRARY-FEEDBACK.md #76
+        // FDS-WORKAROUND #77: with its clear control, the library Select wrapper is 32px narrower than its trigger, so
+        // the chevron overflows onto the next sibling of a flex row - see fds-migration/LIBRARY-FEEDBACK.md #77
         <span data-testid="dashboard-preset-select" style={{ display: 'inline-flex', paddingRight: hasClearControl ? 32 : 0 }}>
           <Select
             value={activePreset?.id ?? ''}

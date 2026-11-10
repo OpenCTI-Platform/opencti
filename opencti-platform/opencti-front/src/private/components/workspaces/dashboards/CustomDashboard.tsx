@@ -11,13 +11,14 @@ import DashboardContent from '../../../../components/dashboard/DashboardContent'
 import useDashboard from '../../../../components/dashboard/useDashboard';
 import useDashboardRefresh from '../../../../components/dashboard/useDashboardRefresh';
 import { getDashboardExportHandler } from '../../../../components/dashboard/import-export/dashboard-export-utils';
-import { countMissingWidgetVariables } from '../../../../components/dashboard/import-export/widgetImportVariables';
+import { countMissingWidgetVariablesInFile } from '../../../../components/dashboard/import-export/widgetImportVariables';
 import DashboardRefreshControl from '../../../../components/dashboard/DashboardRefreshControl';
 import { DashboardRefreshProvider } from '../../../../components/dashboard/DashboardRefreshContext';
 import { DashboardVariableValuesProvider } from '../../../../components/dashboard/DashboardVariableValuesContext';
 import { DashboardVariablesProvider } from '../../../../components/dashboard/DashboardVariablesContext';
 import { useDashboardVariables } from '../../../../components/dashboard/useDashboardVariables';
 import { useDashboardTimeRange } from '../../../../components/dashboard/useDashboardTimeRange';
+import { isSameTimeRange, pickTimeRange } from '../../../../components/dashboard/dashboardTimeRange';
 import DashboardValuesActions from '../../../../components/dashboard/DashboardValuesActions';
 import DashboardViewerPermissions, { type ViewerPermissions } from '../../../../components/dashboard/DashboardViewerPermissions';
 import DashboardVariablesBar from '../../../../components/dashboard/variables/DashboardVariablesBar';
@@ -30,7 +31,7 @@ import DashboardPresetNameDialog from '../../../../components/dashboard/presets/
 import DashboardPresetDeleteDialog from '../../../../components/dashboard/presets/DashboardPresetDeleteDialog';
 import { useDashboardPreset } from '../../../../components/dashboard/presets/useDashboardPreset';
 import { useDashboardPresetMutations } from '../../../../components/dashboard/presets/useDashboardPresetMutations';
-import { isPresetModified, presetEffectiveValues, presetFromGraphql, presetInputFromValues } from '../../../../components/dashboard/presets/dashboardPresets';
+import { isPresetModified, presetFromGraphql, presetInputFromValues } from '../../../../components/dashboard/presets/dashboardPresets';
 import Security from 'src/utils/Security';
 import { CustomDashboard_workspace$key } from './__generated__/CustomDashboard_workspace.graphql';
 import { CustomDashboardWidgetExportQuery$data } from './__generated__/CustomDashboardWidgetExportQuery.graphql';
@@ -180,7 +181,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
 
   const onImportWidget = async (id: string, widgetConfig: File, manifestEncoded: string) => {
     // An export carries the tokens of the widget, not the variables: the user is told how many are missing here.
-    const missingVariables = countMissingWidgetVariables(await widgetConfig.text(), new Set(workspace.variables.map((variable) => variable.id)));
+    const missingVariables = await countMissingWidgetVariablesInFile(widgetConfig, new Set(workspace.variables.map((variable) => variable.id)));
     commitWidgetImportMutation({
       variables: {
         id,
@@ -222,40 +223,39 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     ignoreLocalValues: noToolbar || !showPresetSelector,
     defaultPresetId: workspace.currentUserDefaultPresetId,
   });
-  // The preset the dashboard opens on for this user (own choice, group or organization) replaces the manifest
-  // defaults: what Reset goes back to, and what the home dashboard shows.
-  const { defaultPreset } = presetControls;
-  const presetDefaultValues = useMemo(() => (defaultPreset ? new Map(Object.entries(defaultPreset.values)) : undefined), [defaultPreset]);
-  // The home dashboard (noToolbar) and a user without the bar nor the preset selector only ever see the defaults:
-  // no per user value is read or written. A viewer who may only switch presets gets the values of the preset,
-  // and No preset puts the defaults back.
+  // The active preset (the one of the URL or of this browser, else the one the dashboard opens on for this user:
+  // own choice, group or organization) is the base of the values and of the range: its values over the manifest
+  // defaults. A shared address holding the preset alone opens its view, and a user who may only switch presets
+  // never gets a value from the URL or this browser. The per user changes are kept apart from this base, and
+  // Reset goes back to the default preset.
+  const { activePreset, defaultPreset } = presetControls;
+  const presetBaseValues = useMemo(() => (activePreset ? new Map(Object.entries(activePreset.values)) : undefined), [activePreset]);
+  // The home dashboard (noToolbar) and a user without the bar only ever see the base: no per user value is read or written.
   const variableControls = useDashboardVariables(workspace.id, variables, {
-    ignoreLocalValues: noToolbar || !(showVariablesBar || showPresetSelector),
-    defaultOverrides: presetDefaultValues,
+    ignoreLocalValues: noToolbar || !showVariablesBar,
+    defaultOverrides: presetBaseValues,
   });
   // The time range is per user: an editor always gets the time filters, a reader only when viewers may edit
-  // them. As for the variables, a user without them only ever sees the default range.
+  // them. As for the variables, a user without them only ever sees the base range.
   const showTimeFilters = !noToolbar
     && (userCanEdit || config.allowViewersToEditTimeFilters === true);
   const timeRange = useDashboardTimeRange(workspace.id, config, {
-    ignoreLocalValues: noToolbar || !(showTimeFilters || showPresetSelector),
-    defaultOverride: defaultPreset?.config ?? null,
+    ignoreLocalValues: noToolbar || !showTimeFilters,
+    defaultOverride: activePreset?.config ?? null,
   });
-  const { activePreset } = presetControls;
+  // A preset restores its own values and, for the variables it does not hold, the manifest defaults: not the
+  // default preset of the user, so that a preset means the same thing to everyone.
   const isActivePresetModified = activePreset !== null
-    && isPresetModified(activePreset, variables, variableControls.defaults, variableControls.values, timeRange.range);
+    && isPresetModified(activePreset, variables, variableControls.manifestDefaults, variableControls.values, timeRange.range);
+  // A preset other than the default one is a departure from the defaults in itself: Reset is offered.
+  const isPresetSelected = activePreset !== null && activePreset.id !== (defaultPreset?.id ?? null);
   const { upsert: upsertPreset, remove: removePreset, isSubmitting: isPresetSubmitting } = useDashboardPresetMutations(workspace.id);
-  // Switching restores the values and the range of the preset at once; no preset goes back to the defaults.
+  // Switching makes the preset the base of the values and of the range at once, and drops the changes made on the
+  // previous one; no preset goes back to the default preset, or to the manifest.
   const onSelectPreset = (presetId: string | null) => {
     presetControls.select(presetId);
-    const preset = presetId ? presets.find((candidate) => candidate.id === presetId) : undefined;
-    if (preset) {
-      variableControls.setValues(presetEffectiveValues(preset, variables, variableControls.defaults));
-      timeRange.setRange(preset.config);
-    } else {
-      variableControls.reset();
-      timeRange.reset();
-    }
+    variableControls.reset();
+    timeRange.reset();
   };
   const onSavePresetAs = async (name: string) => {
     const presetId = await upsertPreset(presetInputFromValues(name, variables, variableControls.values, timeRange.range));
@@ -277,9 +277,10 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       config: preset.config,
     });
   };
+  // Deleting the active preset also drops its values and range: the dashboard goes back to the defaults.
   const onDeletePreset = async (preset: DashboardPreset) => {
     await removePreset(preset.id);
-    if (activePreset?.id === preset.id) presetControls.select(null);
+    if (activePreset?.id === preset.id) onSelectPreset(null);
   };
   // Mirrors the bar, which renders nothing without variables nor a way to create one.
   const isBarVisible = showVariablesBar && (variables.length > 0 || canManageVariables || showPresetSelector);
@@ -331,16 +332,14 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       });
     });
   };
-  const onReset = () => {
-    presetControls.select(null);
-    variableControls.reset();
-    timeRange.reset();
-  };
+  const onReset = () => onSelectPreset(null);
   const onSetAsDefaults = async () => {
     try {
       const submittedValues = variableControls.values;
       const submittedRange = timeRange.range;
-      const isRangeModified = timeRange.isModified;
+      // Compared with the manifest, not with the base of the hook: the range of the active preset, which the
+      // manifest does not hold, has to be written too.
+      const isRangeModified = !isSameTimeRange(submittedRange, pickTimeRange(config));
       // The variables first: their validation is the step most likely to refuse, and their definitions are then the
       // ones just read. A refused variable stops here, before the range is saved for every viewer.
       await setAsDefaults(variables, submittedValues);
@@ -451,7 +450,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                 />
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   {/* Without the bar the actions close this row: only a reader, who never sets the defaults. */}
-                  {!isBarVisible && timeRange.isModified && (
+                  {!isBarVisible && (timeRange.isModified || isPresetSelected) && (
                     <DashboardValuesActions canSetAsDefaults={false} onReset={onReset} />
                   )}
                   <Security
@@ -478,6 +477,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                 usedInWidgetIdsByVariable={usedInWidgetIdsByVariable}
                 canManage={canManageVariables}
                 isTimeRangeModified={timeRange.isModified}
+                isPresetSelected={isPresetSelected}
                 onSetValue={variableControls.setValue}
                 onReset={onReset}
                 onSetAsDefaults={onSetAsDefaults}

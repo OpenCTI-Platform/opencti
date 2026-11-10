@@ -79,7 +79,6 @@ const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: Basi
         });
         regardingOfValues.push(dynamicSubfilter);
       }
-
       f.values = regardingOfValues;
     } else {
       f.values = filterValuesRemap(f, resolvedMap, from);
@@ -87,6 +86,100 @@ const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: Basi
   });
   filter.filterGroups.forEach((group) => {
     replaceFiltersIds(group, resolvedMap, from);
+  });
+};
+
+type IdsMap = { [k: string]: BasicStoreObject };
+
+const SELECTION_FILTER_KEYS = ['filters', 'dynamicFrom', 'dynamicTo'] as const;
+
+const resolveIdsMap = async (context: AuthContext, user: AuthUser, ids: string[]): Promise<IdsMap> => {
+  if (ids.length === 0) return {};
+  const resolveOpts = { baseData: true, toMap: true, mapWithAllIds: true };
+  const resolvedMap = await internalFindByIds(context, user, R.uniq(ids), resolveOpts);
+  return resolvedMap as unknown as IdsMap;
+};
+
+const extractWidgetsIds = (widgetDefinitions: any[], from: 'internal' | 'stix') => {
+  const resolvingIds: string[] = [];
+  widgetDefinitions.forEach((widgetDefinition: any) => {
+    widgetDefinition.dataSelection.forEach((selection: any) => {
+      SELECTION_FILTER_KEYS.forEach((key) => {
+        if (isFilterGroupNotEmpty(selection[key])) {
+          pushAll(resolvingIds, extractFiltersIds(selection[key] as FilterGroup, from));
+        }
+      });
+    });
+  });
+  return resolvingIds;
+};
+
+const replaceWidgetsIds = (widgetDefinitions: any[], idsMap: IdsMap, from: 'internal' | 'stix') => {
+  widgetDefinitions.forEach((widgetDefinition: any) => {
+    widgetDefinition.dataSelection.forEach((selection: any) => {
+      SELECTION_FILTER_KEYS.forEach((key) => {
+        if (isFilterGroupNotEmpty(selection[key])) {
+          replaceFiltersIds(selection[key] as FilterGroup, idsMap, from);
+        }
+      });
+    });
+  });
+};
+
+// Only the variables whose type references entities hold ids: a text value shaped like an id stays as is.
+const idVariablesOf = (variables: StoreDashboardVariable[]) => variables.filter((variable) => DASHBOARD_VARIABLE_ID_TYPES.has(variable.type));
+
+const extractDashboardVariablesIds = (variables: StoreDashboardVariable[], from: 'internal' | 'stix') => {
+  const resolvingIds: string[] = [];
+  const isConvertible = (value: string) => (from === 'internal' ? isInternalId(value) : isStixId(value));
+  idVariablesOf(variables).forEach((variable) => {
+    const { defaultValue, restriction } = variable;
+    if (defaultValue && isConvertible(defaultValue)) resolvingIds.push(defaultValue);
+    if (restriction.mode === 'selection') pushAll(resolvingIds, restriction.values.filter(isConvertible));
+    if (restriction.mode === 'filters' && isFilterGroupNotEmpty(restriction.filters)) {
+      pushAll(resolvingIds, extractFiltersIds(restriction.filters, from));
+    }
+  });
+  return resolvingIds;
+};
+
+const replaceDashboardVariablesIds = (variables: StoreDashboardVariable[], idsMap: IdsMap, from: 'internal' | 'stix') => {
+  idVariablesOf(variables).forEach((variable) => {
+    const { restriction } = variable;
+    if (variable.defaultValue) {
+      [variable.defaultValue] = idsValuesRemap([variable.defaultValue], idsMap, from);
+    }
+    if (restriction.mode === 'selection') {
+      // Two ids may resolve to one entity (merged entity, STIX id alias): a selection never holds a value twice.
+      restriction.values = R.uniq(idsValuesRemap(restriction.values, idsMap, from));
+    }
+    if (restriction.mode === 'filters' && isFilterGroupNotEmpty(restriction.filters)) {
+      replaceFiltersIds(restriction.filters, idsMap, from);
+    }
+  });
+};
+
+// The preset values of the same variables follow: a value of a text variable shaped like an id is never touched.
+const extractDashboardPresetsIds = (variables: StoreDashboardVariable[], presets: StoreDashboardPreset[], from: 'internal' | 'stix') => {
+  const idVariableIds = new Set(idVariablesOf(variables).map((variable) => variable.id));
+  const isConvertible = (value: string) => (from === 'internal' ? isInternalId(value) : isStixId(value));
+  const resolvingIds: string[] = [];
+  presets.forEach((preset) => {
+    Object.entries(preset.values ?? {}).forEach(([variableId, value]) => {
+      if (idVariableIds.has(variableId) && isConvertible(value)) resolvingIds.push(value);
+    });
+  });
+  return resolvingIds;
+};
+
+const replaceDashboardPresetsIds = (variables: StoreDashboardVariable[], presets: StoreDashboardPreset[], idsMap: IdsMap, from: 'internal' | 'stix') => {
+  const idVariableIds = new Set(idVariablesOf(variables).map((variable) => variable.id));
+  presets.forEach((preset) => {
+    Object.entries(preset.values ?? {}).forEach(([variableId, value]) => {
+      if (idVariableIds.has(variableId)) {
+        [preset.values[variableId]] = idsValuesRemap([value], idsMap, from);
+      }
+    });
   });
 };
 
@@ -102,96 +195,32 @@ export const convertWidgetsIds = async (
   from: 'internal' | 'stix',
 ) => {
   // First iteration: resolve all the ids to translate
-  const resolvingIds: string[] = [];
-  widgetDefinitions.forEach((widgetDefinition: any) => {
-    widgetDefinition.dataSelection.forEach((selection: any) => {
-      if (isFilterGroupNotEmpty(selection.filters)) {
-        const filterIds = extractFiltersIds(selection.filters as FilterGroup, from);
-        pushAll(resolvingIds, filterIds);
-      }
-      if (isFilterGroupNotEmpty(selection.dynamicFrom)) {
-        const dynamicFromIds = extractFiltersIds(selection.dynamicFrom as FilterGroup, from);
-        pushAll(resolvingIds, dynamicFromIds);
-      }
-      if (isFilterGroupNotEmpty(selection.dynamicTo)) {
-        const dynamicToIds = extractFiltersIds(selection.dynamicTo as FilterGroup, from);
-        pushAll(resolvingIds, dynamicToIds);
-      }
-    });
-  });
+  const idsMap = await resolveIdsMap(context, user, extractWidgetsIds(widgetDefinitions, from));
   // Second iteration: replace the ids
-  const resolveOpts = { baseData: true, toMap: true, mapWithAllIds: true };
-  const resolvedMap = await internalFindByIds(context, user, resolvingIds, resolveOpts);
-  const idsMap = resolvedMap as unknown as { [k: string]: BasicStoreObject };
-  widgetDefinitions.forEach((widgetDefinition: any) => {
-    widgetDefinition.dataSelection.forEach((selection: any) => {
-      if (isFilterGroupNotEmpty(selection.filters)) {
-        replaceFiltersIds(selection.filters as FilterGroup, idsMap, from);
-      }
-      if (isFilterGroupNotEmpty(selection.dynamicFrom)) {
-        replaceFiltersIds(selection.dynamicFrom as FilterGroup, idsMap, from);
-      }
-      if (isFilterGroupNotEmpty(selection.dynamicTo)) {
-        replaceFiltersIds(selection.dynamicTo as FilterGroup, idsMap, from);
-      }
-    });
-  });
+  replaceWidgetsIds(widgetDefinitions, idsMap, from);
 };
 
 /**
- * Converts the entity ids held by dashboard variables between internal and STIX formats, like convertWidgetsIds.
- * Only the variables whose type references entities are touched: a text value shaped like an id stays as is.
- * The default and the selection go through the same map, so a default still belongs to its selection afterwards.
+ * Converts the entity ids of the widgets and of the dashboard variables of a dashboard between internal and STIX
+ * formats, like convertWidgetsIds, with a single lookup for both: a variable default is usually one of the widget
+ * filter values. The default and the selection of a variable go through the same map, so a default still belongs to
+ * its selection afterwards.
  */
-export const convertDashboardVariablesIds = async (
+export const convertDashboardIds = async (
   context: AuthContext,
   user: AuthUser,
+  widgetDefinitions: any[],
   variables: StoreDashboardVariable[],
   from: 'internal' | 'stix',
   presets: StoreDashboardPreset[] = [],
 ) => {
-  const idVariables = variables.filter((variable) => DASHBOARD_VARIABLE_ID_TYPES.has(variable.type));
-  const idVariableIds = new Set(idVariables.map((variable) => variable.id));
-  // First iteration: resolve all the ids to translate
-  const resolvingIds: string[] = [];
-  const isConvertible = (value: string) => (from === 'internal' ? isInternalId(value) : isStixId(value));
-  idVariables.forEach((variable) => {
-    const { defaultValue, restriction } = variable;
-    if (defaultValue && isConvertible(defaultValue)) resolvingIds.push(defaultValue);
-    if (restriction.mode === 'selection') pushAll(resolvingIds, restriction.values.filter(isConvertible));
-    if (restriction.mode === 'filters' && isFilterGroupNotEmpty(restriction.filters)) {
-      pushAll(resolvingIds, extractFiltersIds(restriction.filters, from));
-    }
-  });
-  // The preset values of the same variables follow: a text value shaped like an id is never touched.
-  presets.forEach((preset) => {
-    Object.entries(preset.values ?? {}).forEach(([variableId, value]) => {
-      if (idVariableIds.has(variableId) && isConvertible(value)) resolvingIds.push(value);
-    });
-  });
-  if (resolvingIds.length === 0) return;
-  // Second iteration: replace the ids
-  const resolveOpts = { baseData: true, toMap: true, mapWithAllIds: true };
-  const resolvedMap = await internalFindByIds(context, user, R.uniq(resolvingIds), resolveOpts);
-  const idsMap = resolvedMap as unknown as { [k: string]: BasicStoreObject };
-  idVariables.forEach((variable) => {
-    const { restriction } = variable;
-    if (variable.defaultValue) {
-      [variable.defaultValue] = idsValuesRemap([variable.defaultValue], idsMap, from);
-    }
-    if (restriction.mode === 'selection') {
-      // Two exported ids may resolve to one entity on the importing platform (merged entity): kept once, as the API stores it.
-      restriction.values = R.uniq(idsValuesRemap(restriction.values, idsMap, from));
-    }
-    if (restriction.mode === 'filters' && isFilterGroupNotEmpty(restriction.filters)) {
-      replaceFiltersIds(restriction.filters, idsMap, from);
-    }
-  });
-  presets.forEach((preset) => {
-    Object.entries(preset.values ?? {}).forEach(([variableId, value]) => {
-      if (idVariableIds.has(variableId)) {
-        [preset.values[variableId]] = idsValuesRemap([value], idsMap, from);
-      }
-    });
-  });
+  const resolvingIds = [
+    ...extractWidgetsIds(widgetDefinitions, from),
+    ...extractDashboardVariablesIds(variables, from),
+    ...extractDashboardPresetsIds(variables, presets, from),
+  ];
+  const idsMap = await resolveIdsMap(context, user, resolvingIds);
+  replaceWidgetsIds(widgetDefinitions, idsMap, from);
+  replaceDashboardVariablesIds(variables, idsMap, from);
+  replaceDashboardPresetsIds(variables, presets, idsMap, from);
 };

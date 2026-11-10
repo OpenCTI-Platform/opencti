@@ -112,15 +112,18 @@ function useDashboard({
       return;
     }
     onSave(entity?.id ?? '', newManifestEncoded, write.noRefresh, () => {
-      queue.lastSent = { manifest: newManifest, encoded: newManifestEncoded };
+      // A layout write does not refresh the store, so nothing would ever drop it as the base: the next write starts
+      // again from the store (which may have changed meanwhile) and re-applies the current layouts anyway.
+      if (!write.noRefresh) queue.lastSent = { manifest: newManifest, encoded: newManifestEncoded };
       setDeleting(false);
       write.onCompleted?.();
-      sendNextWrite();
+      // The queue may have been replaced (another dashboard): its own writes are not sent from here.
+      if (writes.current === queue) sendNextWrite();
     }, (error) => {
       // Not saved: the next write builds on what the server has, not on this one.
       setDeleting(false);
       write.onError?.(error);
-      sendNextWrite();
+      if (writes.current === queue) sendNextWrite();
     });
   };
 
@@ -136,6 +139,15 @@ function useDashboard({
     () => saveManifest({ update: (base) => base, noRefresh: true }),
     LAYOUT_SAVE_DEBOUNCE_MS,
   );
+
+  // Another dashboard: its writes start from its own manifest; a write of the previous one still in flight is not
+  // followed by the ones waiting here, and a layout save of it still pending is dropped.
+  const entityId = entity?.id;
+  useEffect(() => {
+    debouncedSaveLayout.cancel();
+    writes.current = { busy: false, waiting: [], lastSent: null };
+    // The cancel of the debounced save is stable: only the dashboard matters here.
+  }, [entityId]);
 
   // Any other write carries the current layouts.
   const cancelPendingLayoutSave = () => {

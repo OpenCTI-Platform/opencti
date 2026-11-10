@@ -81,7 +81,7 @@ describe('DashboardPresetSelector', () => {
     expect(onUpdate).toHaveBeenCalledOnce();
   });
 
-  it('reserves the room the library clear control takes from the row (FDS-WORKAROUND #76)', () => {
+  it('reserves the room the library clear control takes from the row (FDS-WORKAROUND #77)', () => {
     const { rerender } = testRender(
       <DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={null} isModified={false} canManage onSelect={noop} onSaveAs={noop} />,
     );

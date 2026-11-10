@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { getUserIdByEmail, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, USER_EDITOR } from '../../utils/testQuery';
 import {
   createUploadFromBuffer,
   queryAsAdmin,
@@ -166,6 +166,7 @@ describe('Dashboard presets API', () => {
     await queryAsAdminWithError({ query: UPSERT, variables: { id: dashboardId, input: { name: 'finance' } } }, 'A dashboard preset with this name already exists', 'FUNCTIONAL_ERROR');
     await queryAsAdminWithError({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Unknown', values: [{ variableId: '99999999-9999-4999-8999-999999999999', value: 'x' }] } } }, 'Unknown dashboard variable', 'FUNCTIONAL_ERROR');
     await queryAsAdminWithError({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Bad value', values: [{ variableId: confidenceId, value: 'high' }] } } }, 'Invalid dashboard preset value', 'FUNCTIONAL_ERROR');
+    await queryAsAdminWithError({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Token', values: [{ variableId: sectorId, value: `$var:${confidenceId}` }] } } }, 'Invalid dashboard preset value', 'FUNCTIONAL_ERROR');
     await queryAsAdminWithError({ query: UPSERT, variables: { id: dashboardId, input: { name: 'Bad range', config: { relativeDate: 'soon' } } } }, 'Invalid dashboard preset time range', 'FUNCTIONAL_ERROR');
     await queryAsAdminWithError({ query: DELETE_PRESET, variables: { id: dashboardId, presetId: '99999999-9999-4999-8999-999999999999' } }, 'Dashboard preset not found', 'FUNCTIONAL_ERROR');
   });
@@ -197,11 +198,26 @@ describe('Dashboard presets API', () => {
     const editorId = await getUserIdByEmail(USER_EDITOR.email);
     const viewId = await createDashboard('Presets view only');
     const editId = await createDashboard('Presets editable');
-    await queryAsAdminWithSuccess({ query: EDIT_AUTHORIZED_MEMBERS, variables: { id: viewId, input: [{ id: 'ALL', access_right: 'view' }, { id: editorId, access_right: 'view' }] } });
-    await queryAsAdminWithSuccess({ query: EDIT_AUTHORIZED_MEMBERS, variables: { id: editId, input: [{ id: 'ALL', access_right: 'view' }, { id: editorId, access_right: 'edit' }] } });
+    await queryAsAdminWithSuccess({ query: EDIT_AUTHORIZED_MEMBERS, variables: { id: viewId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }, { id: editorId, access_right: 'view' }] } });
+    await queryAsAdminWithSuccess({ query: EDIT_AUTHORIZED_MEMBERS, variables: { id: editId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }, { id: 'ALL', access_right: 'view' }, { id: editorId, access_right: 'edit' }] } });
     await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: UPSERT, variables: { id: viewId, input: { name: 'Forbidden' } } });
     const { data } = await queryAsUserWithSuccess(USER_EDITOR, { query: UPSERT, variables: { id: editId, input: { name: 'Allowed' } } });
     expect(data?.workspacePresetUpsert.presets).toHaveLength(1);
+  });
+
+  it('should refuse a value outside the selection of a variable, and drop it from the presets when the selection is narrowed', async () => {
+    const id = await createDashboard('Presets narrowed selection');
+    const variables = await upsertVariable(id, { name: 'Region', type: 'text', restriction: { mode: 'selection', values: ['eu', 'us'] }, defaultValue: 'eu' });
+    const regionId = variableIdByName(variables, 'Region');
+    await queryAsAdminWithError({ query: UPSERT, variables: { id, input: { name: 'Apac', values: [{ variableId: regionId, value: 'apac' }] } } }, 'The preset value must belong to the selection of the variable', 'FUNCTIONAL_ERROR');
+    const presets = await upsertPreset(id, { name: 'US', values: [{ variableId: regionId, value: 'us' }] });
+    await upsertVariable(id, { id: regionId, name: 'Region', type: 'text', restriction: { mode: 'selection', values: ['eu'] }, defaultValue: 'eu' });
+    const narrowed = (await readWorkspace(id)).presets;
+    expect(narrowed).toHaveLength(1);
+    expect(narrowed[0].values).toEqual([]);
+    // The preset can still be renamed with the values it holds.
+    const renamed = await upsertPreset(id, { id: presets[0].id, name: 'US renamed', values: [] });
+    expect(renamed.map((preset: { name: string }) => preset.name)).toEqual(['US renamed']);
   });
 
   it('should resolve the default preset of the current user from their own choice', async () => {
@@ -209,6 +225,7 @@ describe('Dashboard presets API', () => {
     const presetId = presets.presets[0].id;
     await queryAsAdminWithSuccess({ query: ME_EDIT, variables: { input: [{ key: 'default_dashboard', value: [dashboardId] }, { key: 'default_dashboard_preset', value: [presetId] }] } });
     try {
+      // Read from the store, not from the authenticated user of the cache: the choice applies as soon as it is saved
       expect((await readWorkspace(dashboardId)).currentUserDefaultPresetId).toEqual(presetId);
       // Another dashboard is not concerned, and a deleted preset is not resolved
       const other = await createDashboard('Presets other dashboard');
@@ -219,7 +236,6 @@ describe('Dashboard presets API', () => {
       await queryAsAdminWithSuccess({ query: ME_EDIT, variables: { input: [{ key: 'default_dashboard', value: [null] }, { key: 'default_dashboard_preset', value: [null] }] } });
     }
   });
-
 });
 
 describe('Dashboard presets export, import and duplication', () => {

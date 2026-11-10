@@ -6,11 +6,17 @@ import { brandingFamily } from './registry/branding-configPreset-registry';
 import { messagesFamily } from './registry/messages-configPreset-registry';
 import { hiddenEntityTypesFamily } from './registry/hiddenEntityTypes-configPreset-registry';
 import { whitemarkFamily } from './registry/whitemark-configPreset-registry';
+import { markingsFamily } from './registry/markings-configPreset-registry';
+import { rolesFamily } from './registry/roles-configPreset-registry';
+import { groupsFamily } from './registry/groups-configPreset-registry';
+import { policiesFamily } from './registry/policies-configPreset-registry';
+import { labelsFamily } from './registry/labels-configPreset-registry';
 import { isEnterpriseEditionUpToDate } from '../../enterprise-edition/ee';
 
-export { BRANDING_FAMILY_ID } from './registry/branding-configPreset-registry';
+export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
 
-// In registry order, the categories of the spec table: Platform settings (platform, branding, messages, whitemark), then Data model.
+// In registry order, the categories of the spec table: Platform settings (platform, branding, messages, whitemark), then Data model, then Security & Access,
+// then Taxonomy.
 // Each family is defined in its own file under registry/.
 export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   platformFamily,
@@ -18,6 +24,11 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   messagesFamily,
   whitemarkFamily,
   hiddenEntityTypesFamily,
+  markingsFamily,
+  rolesFamily,
+  groupsFamily,
+  policiesFamily,
+  labelsFamily,
 ];
 
 // How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.

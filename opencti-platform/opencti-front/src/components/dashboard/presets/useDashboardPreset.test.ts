@@ -2,6 +2,8 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DashboardPreset } from '../dashboard-types';
 import { dashboardPresetStorageKey } from './dashboardPresetStorage';
+import { dashboardVariablesStorageKey } from '../dashboardVariablesStorage';
+import { dashboardTimeRangeStorageKey } from '../dashboardTimeRangeStorage';
 
 const mocks = vi.hoisted(() => ({ userId: 'user-1' }));
 vi.mock('../../../utils/hooks/useAuth', () => ({ default: () => ({ me: { id: mocks.userId } }) }));
@@ -47,6 +49,41 @@ describe('useDashboardPreset', () => {
     expect(renderHook(() => useDashboardPreset('ws-1', presets)).result.current.activePreset?.id).toBe('finance');
     window.history.replaceState(null, '', '/?preset=gone');
     expect(renderHook(() => useDashboardPreset('ws-1', presets)).result.current.activePreset).toBeNull();
+  });
+
+  it('applies the preset of the address once the presets of the dashboard are loaded', () => {
+    window.history.replaceState(null, '', '/?preset=finance');
+    const { result, rerender } = renderHook((current: DashboardPreset[]) => useDashboardPreset('ws-1', current), { initialProps: [] as DashboardPreset[] });
+    expect(result.current.activePreset).toBeNull();
+    rerender(presets);
+    expect(result.current.activePreset?.id).toBe('finance');
+  });
+
+  it('falls back to the default preset when the stored preset was deleted', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'ws-1'), 'gone');
+    expect(renderHook(() => useDashboardPreset('ws-1', presets, { defaultPresetId: 'finance' })).result.current.activePreset?.id).toBe('finance');
+    expect(renderHook(() => useDashboardPreset('ws-1', presets)).result.current.activePreset).toBeNull();
+  });
+
+  it('drops the values and range kept on another preset when the address names a preset', () => {
+    const valuesKey = dashboardVariablesStorageKey('user-1', 'ws-1');
+    const rangeKey = dashboardTimeRangeStorageKey('user-1', 'ws-1');
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'ws-1'), 'energy');
+    window.localStorage.setItem(valuesKey, JSON.stringify({ v: 'x' }));
+    window.localStorage.setItem(rangeKey, JSON.stringify({ startDate: null, endDate: null, relativeDate: 'days-7' }));
+    // The same preset as the stored one: nothing is dropped
+    window.history.replaceState(null, '', '/?preset=energy');
+    renderHook(() => useDashboardPreset('ws-1', presets));
+    expect(window.localStorage.getItem(valuesKey)).not.toBeNull();
+    // A preset that does not exist (deleted, mistyped, not loaded yet): nothing is dropped either
+    window.history.replaceState(null, '', '/?preset=gone');
+    renderHook(() => useDashboardPreset('ws-1', presets));
+    expect(window.localStorage.getItem(valuesKey)).not.toBeNull();
+    // Another preset: the values and the range of this user go
+    window.history.replaceState(null, '', '/?preset=finance');
+    renderHook(() => useDashboardPreset('ws-1', presets));
+    expect(window.localStorage.getItem(valuesKey)).toBeNull();
+    expect(window.localStorage.getItem(rangeKey)).toBeNull();
   });
 
   it('isolates two dashboards and two users, and reads nothing local when asked to', () => {

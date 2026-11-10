@@ -3,12 +3,12 @@ import { createEntity, deleteElementById, updateAttribute } from '../../database
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, VocabularyCategory } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { countAllThings, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
+import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, isVocabularyCategoryEnabled, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
-import { getVocabulariesCategories, openVocabularies, updateElasticVocabularyValue } from './vocabulary-utils';
+import { getVocabulariesCategories, getVocabularyCategory, openVocabularies, updateElasticVocabularyValue } from './vocabulary-utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { normalizeName } from '../../schema/identifier';
@@ -50,9 +50,13 @@ export const findVocabularyPaginated = (context: AuthContext, user: AuthUser, op
 };
 
 export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, vocabulary: BasicStoreEntityVocabulary) => {
-  const categoryDefinition = getVocabulariesCategories().find(({ key }) => key === vocabulary.category);
+  const categoryDefinition = getVocabularyCategory(vocabulary.category);
   if (!categoryDefinition) {
     throw UnsupportedError(`Cant find category for vocabulary ${vocabulary.name}`);
+  }
+  // A hidden category's field is not registered, so no filter can count it
+  if (!isVocabularyCategoryEnabled(vocabularyDefinitions[categoryDefinition.key])) {
+    return 0;
   }
   return countAllThings(context, user, {
     filters: {
@@ -86,7 +90,7 @@ export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabu
 export const deleteVocabulary = async (context: AuthContext, user: AuthUser, vocabularyId: string, props?: Record<string, unknown>) => {
   const vocabulary = await findById(context, user, vocabularyId);
   const usages = await getVocabularyUsages(context, user, vocabulary);
-  const completeCategory = getVocabulariesCategories().find(({ key }) => key === vocabulary.category);
+  const completeCategory = getVocabularyCategory(vocabulary.category);
   const deletable = !vocabulary.builtIn && (!completeCategory || (!completeCategory.fields.some(({ required }) => required) || usages === 0));
   if (deletable) {
     if (completeCategory) {
@@ -145,7 +149,7 @@ export const editVocabulary = async (context: AuthContext, user: AuthUser, id: s
     const oldValue = await findById(context, user, id);
     if (name) {
       checkVocabularyNameAllowed(oldValue.category, name);
-      const completeCategory = getVocabulariesCategories().find(({ key }) => key === oldValue.category);
+      const completeCategory = getVocabularyCategory(oldValue.category);
       if (completeCategory) {
         await updateElasticVocabularyValue([oldValue.name], name, completeCategory);
       }

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import useAuth from '../../../utils/hooks/useAuth';
 import type { DashboardPreset } from '../dashboard-types';
 import { dashboardPresetStorageKey, parsePresetParam, readStoredPresetId, writePresetParam, writeStoredPresetId } from './dashboardPresetStorage';
+import { dashboardVariablesStorageKey, writeStoredVariableValues } from '../dashboardVariablesStorage';
+import { dashboardTimeRangeStorageKey, writeStoredTimeRange } from '../dashboardTimeRangeStorage';
 
 interface UseDashboardPresetOptions {
   // The home dashboard and a user without the selector only ever see the default preset: nothing local is read or written.
@@ -22,7 +24,20 @@ export const useDashboardPreset = (
 ) => {
   const { me } = useAuth();
   const key = dashboardPresetStorageKey(me.id, workspaceId);
-  const load = () => (ignoreLocalValues ? null : parsePresetParam(window.location.search) ?? readStoredPresetId(key));
+  const load = () => {
+    if (ignoreLocalValues) return null;
+    const fromUrl = parsePresetParam(window.location.search);
+    const stored = readStoredPresetId(key);
+    // A shared address opens the view of its preset: the values and range this user had kept on another preset are
+    // dropped, the ones of the address (variables=, timeRange=) still apply as the hooks read them after this one.
+    // Only for a preset the dashboard holds: a deleted or mistyped one, or one not loaded yet, drops nothing.
+    if (fromUrl && fromUrl !== stored && presets.some((preset) => preset.id === fromUrl)) {
+      writeStoredVariableValues(dashboardVariablesStorageKey(me.id, workspaceId), {});
+      writeStoredTimeRange(dashboardTimeRangeStorageKey(me.id, workspaceId), null);
+    }
+    // The preset of the address is kept even when unknown: it applies once the presets of the dashboard hold it.
+    return fromUrl ?? stored;
+  };
   const [state, setState] = useState(() => ({ key, ignoreLocalValues, stored: load() }));
   let { stored } = state;
   if (state.key !== key || state.ignoreLocalValues !== ignoreLocalValues) {
@@ -36,19 +51,16 @@ export const useDashboardPreset = (
   const activeId = stored && presets.some((preset) => preset.id === stored) ? stored : effectiveDefaultId;
   const activePreset = useMemo(
     () => (activeId ? presets.find((preset) => preset.id === activeId) ?? null : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [activeId, presetIds, presets],
   );
   const defaultPreset = useMemo(
     () => (effectiveDefaultId ? presets.find((preset) => preset.id === effectiveDefaultId) ?? null : null),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [effectiveDefaultId, presetIds, presets],
   );
 
   // The URL shows the preset in use, also when it was restored from this browser: a shared address opens the same view.
   useEffect(() => {
     if (!ignoreLocalValues) writePresetParam(stored && presets.some((preset) => preset.id === stored) ? stored : null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stored, ignoreLocalValues, presetIds]);
 
   const commit = useCallback((next: string | null) => {

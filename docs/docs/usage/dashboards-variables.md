@@ -15,6 +15,8 @@ On the page of a dashboard, the variables bar sits below the time filters. Click
 - **Name**: unique within the dashboard.
 - **Type**: entity (restricted to one or several entity types), label, marking, user, group, status, kill chain phase, vocabulary (of a given category), entity type, text, number, boolean or date.
 - **Restriction** (for the types that support it): *No restriction*, *Manual selection* (a closed list of values, up to 200) or, for entity variables, *By filter* (only the entities matching a filter can be picked).
+
+A dashboard holds up to 50 variables; names are limited to 200 characters.
 - **Default value**: mandatory. It is the value every user sees until they pick another one.
 
 The type of a variable cannot be changed once created; its name, restriction and default value can.
@@ -29,10 +31,10 @@ A widget that uses at least one variable shows a small marker in its header; its
 
 Click the chip of a variable in the bar to change its value. The widgets using it reload at once. The values you pick are **personal**: they are kept in your browser, for this dashboard, and reflected in the address bar so that a shared link opens the same view. Other users keep their own values, and the dashboard itself is not modified.
 
-- **Reset** brings every value, and the time range, back to the defaults of the dashboard.
+- **Reset** brings every value, and the time range, back to your default preset (see [Default preset](#default-preset)) or, without one, to the defaults of the dashboard.
 - **Set as default values** (editors only) saves your current values and time range as the new defaults for everyone.
 
-A variable no widget uses is shown muted. If a variable is deleted while widgets still use it, those widgets show *No data has been found* rather than ignoring the filter; recreating a variable with the same identifier repairs them.
+A variable no widget uses is shown muted. If a variable is deleted while widgets still use it, those widgets show *No data has been found* rather than ignoring the filter: edit their filters to pick another variable or a fixed value. The values the presets held for that variable are dropped.
 
 ### Time range
 
@@ -40,18 +42,18 @@ Changing the time range of a dashboard no longer modifies the dashboard: like th
 
 !!! warning "Behaviour change"
 
-    Before this feature, changing the time range of a dashboard was saved immediately and applied to every user. It is now a personal setting: the home dashboard, the dashboard export, the publication started from the public dashboards list and your other browsers keep the defaults of the dashboard (or your default preset). Use **Set as default values** to change the range of the dashboard for everyone.
+    Before this feature, changing the time range of a dashboard was saved immediately and applied to every user. It is now a personal setting: the home dashboard, the dashboard export and your other browsers keep the defaults of the dashboard (or your default preset); the publication form starts from the range you see. Use **Set as default values** to change the range of the dashboard for everyone.
 
 ## Presets
 
 A preset is a named snapshot of the values of all the variables and of the time range. The preset selector sits at the start of the variables bar.
 
-- **Save as preset** saves the current values and time range under a name.
+- **Save as preset** saves the current values and time range under a name. A dashboard holds up to 50 presets; names are limited to 200 characters.
 - Selecting a preset restores its values and its time range at once.
 - When your current values differ from the selected preset, **Update preset** (editors only) saves them into it.
 - Editors can rename and delete a preset from the selector.
 
-The selected preset is personal, like the values: it is kept in your browser and in the address bar.
+The selected preset is personal, like the values: it is kept in your browser and in the address bar, so sharing the address opens the same view. A value changed on top of a preset is kept apart from it: **Reset** drops it and goes back to your default preset, or to the defaults of the dashboard.
 
 ### Default preset
 
@@ -62,6 +64,8 @@ A dashboard can open on a preset for a given population. Wherever a default dash
 - in the settings of an organization.
 
 The members then see the home dashboard, and the page of the dashboard, with the values and time range of that preset as their defaults. **Reset** brings them back to this preset. If the preset is deleted, the defaults of the dashboard apply.
+
+When several of these settings point to the same dashboard, the first one found decides, with or without a preset: your own settings first, then your organizations, then your groups. A user who chose this dashboard with *No preset* is not caught up by the preset of their group.
 
 ## Viewer permissions
 
@@ -83,4 +87,4 @@ If the author had opened *Allow viewers to edit time filters* when publishing, v
 
 ## Export, import and duplication
 
-Variables and presets are part of the dashboard export. Their entity references are converted like the ones of the widget filters, so an import on another platform resolves them when the entities exist there. Importing a single widget that uses variables into another dashboard keeps its references: a warning tells how many variables are missing, and the widget shows no data until variables with the same identifiers exist. Custom views cannot hold variables: importing such a widget into a custom view is refused.
+Duplicating a dashboard copies its variables and presets with it. Variables and presets are part of the dashboard export. Their entity references are converted like the ones of the widget filters, so an import on another platform resolves them when the entities exist there. Importing a single widget that uses variables into another dashboard keeps its references: a warning tells how many variables are missing, and the widget shows no data until variables with the same identifiers exist. Custom views cannot hold variables: importing such a widget into a custom view is refused.

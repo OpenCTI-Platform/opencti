@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildDashboardPreset, removeVariableFromPresets } from '../../../../src/modules/workspace/workspace-presets-validation';
+import { buildDashboardPreset, pruneInvalidPresetValues, removeVariableFromPresets } from '../../../../src/modules/workspace/workspace-presets-validation';
 import { DASHBOARD_PRESETS_MAX_COUNT, type StoreDashboardPreset, type StoreDashboardVariable } from '../../../../src/modules/workspace/workspace-variables-types';
 
 const SECTOR_ID = '11111111-1111-4111-8111-111111111111';
@@ -100,5 +100,27 @@ describe('removeVariableFromPresets', () => {
     expect(result.map((preset) => preset.values)).toEqual([{ [CONFIDENCE_ID]: '80' }, { [CONFIDENCE_ID]: '90' }]);
     // The untouched preset is the same object.
     expect(result[1]).toBe(presets[1]);
+  });
+});
+
+describe('pruneInvalidPresetValues', () => {
+  const region: StoreDashboardVariable = { id: SINCE_ID, name: 'Region', type: 'text', restriction: { mode: 'selection', values: ['eu'] }, defaultValue: 'eu' };
+  const presets: StoreDashboardPreset[] = [
+    { id: 'a', name: 'A', values: { [SINCE_ID]: 'us', [CONFIDENCE_ID]: '80' }, config: { startDate: null, endDate: null, relativeDate: null } },
+    { id: 'b', name: 'B', values: { [SINCE_ID]: 'eu' }, config: { startDate: null, endDate: null, relativeDate: null } },
+    { id: 'c', name: 'C', values: { [CONFIDENCE_ID]: '90' }, config: { startDate: null, endDate: null, relativeDate: null } },
+  ];
+
+  it('should drop the values a narrowed selection no longer accepts and keep the others', () => {
+    const result = pruneInvalidPresetValues(presets, region);
+    expect(result.map((preset) => preset.values)).toEqual([{ [CONFIDENCE_ID]: '80' }, { [SINCE_ID]: 'eu' }, { [CONFIDENCE_ID]: '90' }]);
+    // The presets whose value is still accepted, or that hold none, are the same objects.
+    expect(result[1]).toBe(presets[1]);
+    expect(result[2]).toBe(presets[2]);
+  });
+
+  it('should keep every value when the selection is lifted', () => {
+    const result = pruneInvalidPresetValues(presets, { ...region, restriction: { mode: 'none' } });
+    expect(result).toEqual(presets);
   });
 });

@@ -604,6 +604,9 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
+// Local authentication lockout policy feature flag (use isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) to check activation)
+export const LOCAL_AUTH_LOCKOUT_FEATURE_FLAG = 'LOCAL_AUTH_LOCKOUT';
+
 // Extended workflow engine/UI feature flag (use isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) to
 // check activation). When disabled, only DraftWorkspace uses the workflow engine and UI; other
 // entity types with a published WorkflowDefinition behave as before this change.
@@ -620,6 +623,10 @@ export const INGESTION_HEALTH_FEATURE_FLAG = 'INGESTION_HEALTH';
 // Configuration presets: export of platform configuration bundles (use isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG)
 // to check activation)
 export const CONFIG_PRESET_FEATURE_FLAG = 'CONFIG_PRESET';
+
+// Time series breakdown of the dashboard widgets, one series per value of a field
+// (use isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG) to check activation)
+export const TIME_SERIES_BREAKDOWN_FEATURE_FLAG = 'TIME_SERIES_BREAKDOWN';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;

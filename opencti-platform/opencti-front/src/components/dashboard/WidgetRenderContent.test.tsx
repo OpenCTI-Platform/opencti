@@ -22,4 +22,21 @@ describe('WidgetRenderContent', () => {
     );
     expect(getByText('widget content')).toBeTruthy();
   });
+
+  it('renders the widget saying why it runs no query, once granted, instead of waiting for one', () => {
+    const skipped = testRender(
+      <WidgetRenderContent isMissingHostEntity={false} isMissingSavedFilters={false} hasUnresolvedVariables={false} queryRef={null} isQuerySkipped>
+        <div>not queried</div>
+      </WidgetRenderContent>,
+    );
+    expect(skipped.container.textContent).toEqual('not queried');
+    skipped.unmount();
+    const denied = testRender(
+      <WidgetRenderContent isMissingHostEntity={false} isMissingSavedFilters={false} hasUnresolvedVariables={false} queryRef={null} isQuerySkipped isGranted={false}>
+        <div>not queried</div>
+      </WidgetRenderContent>,
+    );
+    // Outside the enterprise edition, the access denied says the feature needs it
+    expect(denied.container.textContent).toEqual('This feature is only available in OpenCTI Enterprise Edition.');
+  });
 });

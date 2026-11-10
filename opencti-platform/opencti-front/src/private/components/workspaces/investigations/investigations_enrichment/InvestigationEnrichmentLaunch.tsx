@@ -1,61 +1,39 @@
 import { Alert, Card, CardFooter, CardHeader, CardTitle, Spinner } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
-import EnrichmentConnectorSelection from '../../../data/connectors/EnrichmentConnectorSelection';
+import EnrichmentConnectorSelection, { EnrichmentConnector } from '../../../data/connectors/EnrichmentConnectorSelection';
 import { CardContent } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Button from '../../../../../components/common/button/Button';
 import BackgroundTaskLaunch from '../../../common/background_task/BackgroundTaskLaunch';
 import { useGraphContext } from '../../../../../components/graph/GraphContext';
+import { toEnrichmentSelection, toEnrichmentTaskActions } from './investigation-enrichment.utils';
 
 interface InvestigationEnrichmentLaunchProps {
   investigationId: string;
   onCompleted: () => void;
-  worksCount: number;
+  isSending: boolean;
 }
 
 const InvestigationEnrichmentLaunch = ({
   investigationId,
   onCompleted,
-  worksCount,
+  isSending,
 }: InvestigationEnrichmentLaunchProps) => {
   const { t_i18n } = useFormatter();
 
-  const [selectedConnectors, setSelectedConnectors] = useState<string[]>([]);
+  const [selectedConnectors, setSelectedConnectors] = useState<EnrichmentConnector[]>([]);
   const [showValidation, setShowValidation] = useState(false);
   const [processing, setProcessing] = useState(false);
-  // The count of works when the enrichment was launched, until the works it creates show in the list.
-  const [launchedAtWorksCount, setLaunchedAtWorksCount] = useState<number>();
-  const isSending = launchedAtWorksCount !== undefined;
-
-  useEffect(() => {
-    setLaunchedAtWorksCount(undefined);
-  }, [worksCount]);
 
   const { graphState } = useGraphContext();
   const { selectedNodes, selectedLinks } = graphState;
 
-  const { selectionMap, selectionSize, enrichmentType } = useMemo(() => {
-    const selection = [...selectedNodes, ...selectedLinks];
-    const selectionSize = selection.length;
-    const selectionMap = Object.fromEntries(selection.map((el) => [
-      el.id,
-      // We override name because for investigation, name contains also the date
-      { ...el, name: el.label },
-    ]));
-    // Enrichment available only if elements are all of same type.
-    const selectedEntityTypes = new Set(selection.map((el) => el.entity_type));
-    const enrichmentType = selectedEntityTypes.size === 1 ? [...selectedEntityTypes][0] : undefined;
-    return { selectionMap, selectionSize, enrichmentType };
-  }, [selectedLinks, selectedNodes]);
+  const { selectionMap, selectionSize, enrichmentType } = useMemo(
+    () => toEnrichmentSelection([...selectedNodes, ...selectedLinks]),
+    [selectedLinks, selectedNodes],
+  );
 
-  // The investigation id tags every enrichment work created by the task with this investigation
-  const backgroundTaskAction = [{
-    type: 'ENRICHMENT' as const,
-    context: {
-      values: selectedConnectors,
-      options: { investigationId },
-    },
-  }];
+  const backgroundTaskAction = toEnrichmentTaskActions(selectedConnectors, investigationId);
 
   return (
     <>
@@ -100,10 +78,7 @@ const InvestigationEnrichmentLaunch = ({
         taskScope="KNOWLEDGE"
         actions={backgroundTaskAction}
         onClose={() => setShowValidation(false)}
-        onLaunch={() => {
-          setProcessing(true);
-          setLaunchedAtWorksCount(worksCount);
-        }}
+        onLaunch={() => setProcessing(true)}
         onCompleted={() => {
           setSelectedConnectors([]);
           setShowValidation(false);

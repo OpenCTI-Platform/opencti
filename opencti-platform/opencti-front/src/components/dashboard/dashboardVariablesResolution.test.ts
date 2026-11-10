@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { addDays } from 'date-fns';
 import cases from '../../../../opencti-graphql/tests/data/dashboard-variables/resolution-cases.json';
-import { buildDefaultVariableValues, isStrictIsoDate, isValidVariableValue, resolveVariablesInFilterGroup } from './dashboardVariablesResolution';
+import { buildDefaultVariableValues, isStrictIsoDate, isValidVariableValue, resolveVariablesInFilterGroup, widgetVariableIds } from './dashboardVariablesResolution';
 import type { DashboardVariable } from './dashboard-types';
 
 describe('Dashboard variables resolution - shared cases', () => {
@@ -178,5 +178,23 @@ describe('Dashboard variables resolution - unusable time zone', () => {
     } finally {
       warn.mockRestore();
     }
+  });
+});
+
+describe('widgetVariableIds', () => {
+  const A = '11111111-1111-4111-8111-111111111111';
+  const B = '22222222-2222-4222-8222-222222222222';
+  const group = (values: string[], filterGroups: unknown[] = []) => ({ mode: 'and', filters: [{ key: ['entity_type'], values, operator: 'eq', mode: 'or' }], filterGroups });
+
+  it('should list the variables of the filters, dynamicFrom and dynamicTo of every data selection, once', () => {
+    const widget = { dataSelection: [{ filters: group([`$var:${A}`], [group([`$var:${A}`])]) }, { dynamicFrom: group([]), dynamicTo: group([`$var:${B}`]) }] };
+    expect(widgetVariableIds(widget)).toEqual([A, B]);
+  });
+
+  it('should ignore a token outside the filters and a malformed widget', () => {
+    expect(widgetVariableIds({ dataSelection: [{ label: `$var:${A}`, filters: group(['Malware']) }], parameters: { content: `$var:${B}` } })).toEqual([]);
+    expect(widgetVariableIds({ dataSelection: [null, 'x'] })).toEqual([]);
+    expect(widgetVariableIds({ dataSelection: 'x' })).toEqual([]);
+    expect(widgetVariableIds(null)).toEqual([]);
   });
 });

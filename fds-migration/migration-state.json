@@ -952,6 +952,17 @@
       "guards": [
         "imported-from-library"
       ],
+      "reason": "dashboard widgets: the warning of a widget title (what a broken down or audits chart does not display). The trigger is a bare TooltipTrigger button named with the warning, around the same 15 px warning glyph, so that the keyboard and the screen readers reach it; its own TooltipProvider, as the public dashboards mount none.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/WidgetContainer.tsx"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
       "reason": "dashboard presets: explains the Update preset action (the current values differ from the preset).",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx"
