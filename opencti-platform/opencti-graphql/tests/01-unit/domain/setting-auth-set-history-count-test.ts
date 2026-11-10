@@ -55,14 +55,16 @@ describe('setPasswordHistoryCount (configuration import)', () => {
     expect(trimAllUsersPasswordHistory).toHaveBeenCalledWith(0);
   });
 
-  it('trims before saving the lower count, so that a failed trim leaves the count as it was and a retry trims again', async () => {
+  it('saves the lower count before trimming, so that the hashes a saved count needs are never deleted first', async () => {
     await setPasswordHistoryCount(context, user, 2);
-    expect(vi.mocked(trimAllUsersPasswordHistory).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(patchAttribute).mock.invocationCallOrder[0]);
-    vi.mocked(patchAttribute).mockClear();
-    vi.mocked(trimAllUsersPasswordHistory).mockRejectedValueOnce(new Error('Elasticsearch unavailable'));
+    expect(vi.mocked(patchAttribute).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(trimAllUsersPasswordHistory).mock.invocationCallOrder[0]);
+  });
+
+  it('trims nothing when saving the count fails, so that the policy still configured keeps every hash it needs', async () => {
+    vi.mocked(patchAttribute).mockRejectedValueOnce(new Error('Elasticsearch unavailable'));
     await expect(setPasswordHistoryCount(context, user, 2)).rejects.toThrow('Elasticsearch unavailable');
-    expect(patchAttribute).not.toHaveBeenCalled();
-    expect(publishUserAction).toHaveBeenCalledTimes(1);
+    expect(trimAllUsersPasswordHistory).not.toHaveBeenCalled();
+    expect(publishUserAction).not.toHaveBeenCalled();
   });
 
   it('fails without writing when the platform settings cannot be read', async () => {

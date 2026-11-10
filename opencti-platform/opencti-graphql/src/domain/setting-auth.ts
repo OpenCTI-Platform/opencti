@@ -215,14 +215,14 @@ export const setPasswordHistoryCount = async (context: AuthContext, user: AuthUs
     throw FunctionalError('Cannot find the platform settings');
   }
   const oldCount = readPasswordHistoryCount(storedSettings);
-  // A lower count drops the hashes no longer needed before it is saved: if the trim fails, the count stays as it was,
-  // so the import still sees a change and retrying it trims again (saved first, a retry would find it up to date).
-  // Until the count is saved, the reuse check reads the old window, which the trimmed histories only make shorter.
+  const patch = { password_policy_history_count: count };
+  const { element } = await patchAttribute(context, user, storedSettings.id, ENTITY_TYPE_SETTINGS, patch);
+  // Saved first, then trimmed, as updateLocalAuth does: the hashes a saved count needs are never deleted before it is
+  // saved. A failed trim only leaves hashes beyond the window, which the reuse check never reads (it takes the newest N),
+  // and which go at the user's next password change, or at the next start when the count is 0.
   if (count < oldCount) {
     await trimAllUsersPasswordHistory(count);
   }
-  const patch = { password_policy_history_count: count };
-  const { element } = await patchAttribute(context, user, storedSettings.id, ENTITY_TYPE_SETTINGS, patch);
   await publishUserAction({
     user,
     event_type: 'mutation',
