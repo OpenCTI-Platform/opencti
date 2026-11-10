@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { capabilitiesOf } from './menuEntries';
+import { allMenuEntries, capabilitiesOf } from './menuEntries';
+
+describe('allMenuEntries', () => {
+  it('declares each page once: the pages search keeps one node per path, so a twin would silently replace the other', () => {
+    const paths = allMenuEntries.map(({ path }) => path);
+    const duplicates = paths.filter((path, index) => paths.indexOf(path) !== index);
+    expect(duplicates).toEqual([]);
+  });
+});
 
 describe('capabilitiesOf', () => {
   it('is the union of the entries under a section (the old hand-written route guards)', () => {
