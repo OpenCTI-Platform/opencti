@@ -6,7 +6,7 @@ A typical use is a SOC process on Incident responses: L1 analysts triage, L2 ana
 
 !!! note "Availability"
 
-    Entities workflow is being rolled out progressively. While in preview it is enabled with the `ENTITIES_WORKFLOW` feature flag. When the flag is off, entity types other than Draft keep the existing status screens and behave exactly as before.
+    Entities workflow is being rolled out progressively. While in preview, the `ENTITIES_WORKFLOW` feature flag gates workflow status reads, mass transitions and bypasses for entity types other than Draft. When the flag is off, those entity types keep the existing status screens. It does not remove workflow definitions that are already published, so turning it off alone does not restore the legacy behavior.
 
 ## Key features of entities workflow
 
@@ -327,7 +327,7 @@ A closed Incident response with the reason *Duplicate*: the **Closing reason** i
 
 ### How the value is kept and cleared
 
-- The value is written together with the status change, so the two cannot diverge.
+- The value is written with the status change, as a separate step after the workflow state is saved. If that step fails, the entity can show the new status without its closing reason (see the note below).
 - It stays while the entity remains in a final status.
 - It is cleared as soon as the entity moves to a status that can be left again.
 - It is never taken from a source entity when entities are merged: it follows the workflow state of the target.
