@@ -2449,8 +2449,10 @@ const mergeEntitiesRaw = async (
       }
     } else if (isEmptyField(mergedEntityCurrentFieldValue) && isNotEmptyField(sourceFieldValue)) {
       // A merge never decides a request: an Approved / Declined status of a source is not copied, only a transition or a bypass reaches it.
-      const isCopiedOutcome = targetFieldKey === X_WORKFLOW_ID && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)
-        && await isRequestAccessOutcomeStatus(context, targetType, sourceFieldValue);
+      // Its decided request record stays behind with it, so the target never looks decided without its outcome transition.
+      const isOutcomeField = targetFieldKey === X_WORKFLOW_ID || targetFieldKey === 'x_opencti_request_access';
+      const isCopiedOutcome = isOutcomeField && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)
+        && await isRequestAccessOutcomeStatus(context, targetType, (takenFrom as Record<string, any>)[X_WORKFLOW_ID]);
       if (!isCopiedOutcome) {
         // Single value. Put the data in the merged field only if empty.
         updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });

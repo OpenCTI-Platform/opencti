@@ -1178,7 +1178,7 @@ describe('Request access decided through workflow transitions', async () => {
     });
   });
 
-  it('merging a decided RFI into a target without status does not copy the outcome status', async () => {
+  it('merging a decided RFI into a target without status copies neither the outcome status nor the decided request', async () => {
     const rfiId = await requestAccess();
     expect(await triggerWorkflowEvent(testContext, ADMIN_USER, rfiId, 'Reject')).toMatchObject({ success: true });
     const target = await addCaseRfi(testContext, ADMIN_USER, { name: `Merge target without status ${suffix}` });
@@ -1186,9 +1186,13 @@ describe('Request access decided through workflow transitions', async () => {
     await updateAttribute(testContext, ADMIN_USER, target.id, ENTITY_TYPE_CONTAINER_CASE_RFI, [{ key: 'x_opencti_workflow_id', value: [] }]);
 
     await mergeEntities(testContext, ADMIN_USER, target.id, [rfiId]);
+    // The merge deleted the source RFI: it must not be deleted again in afterAll.
+    createdRfiIds.splice(createdRfiIds.indexOf(rfiId), 1);
 
-    const merged = await storeLoadById<BasicStoreEntity & { x_opencti_workflow_id?: string }>(testContext, ADMIN_USER, target.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
+    type MergedRfi = BasicStoreEntity & { x_opencti_workflow_id?: string; x_opencti_request_access?: string };
+    const merged = await storeLoadById<MergedRfi>(testContext, ADMIN_USER, target.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
     expect(merged.x_opencti_workflow_id).not.toBe(await statusIdOf(templateIds.declined));
+    expect(merged.x_opencti_request_access).toBeFalsy();
   });
 
   it('a plain RFI on a request access status stays on the legacy flow', async () => {
