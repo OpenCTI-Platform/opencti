@@ -4,6 +4,7 @@ import { BatchLogRecordProcessor, ConsoleLogRecordExporter, LoggerProvider, Simp
 import type { LogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { DedupLogRecordProcessor, RECORDS_SUPPRESSED_EVENT_NAME } from './DedupLogRecordProcessor';
 import type { SuppressedRecords } from './DedupLogRecordProcessor';
+import { reloadOnceForChunkError, warnIfEnvironmentFailure } from './environmentFailures';
 import { GraphQLLogRecordExporter } from './GraphQLLogRecordExporter';
 import { SEVERITY_NUMBERS, logger } from './logger';
 
@@ -60,18 +61,34 @@ const buildShippingProcessor = (isDev: boolean) => {
   }));
 };
 
-const onUncaughtError = (event: ErrorEvent) => {
+export const onUncaughtError = (event: ErrorEvent) => {
+  const error = event.error ?? event.message;
+  if (warnIfEnvironmentFailure(error, { source: 'uncaught_error' })) {
+    return;
+  }
   logger.error('Uncaught error', {
     eventName: 'opencti.frontend.uncaught_error',
-    error: event.error ?? event.message,
+    error,
   });
 };
 
-const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+export const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+  if (warnIfEnvironmentFailure(event.reason, { source: 'unhandled_rejection' })) {
+    return;
+  }
   logger.error('Unhandled promise rejection', {
     eventName: 'opencti.frontend.unhandled_rejection',
     error: event.reason,
   });
+};
+
+// Vite dispatches this when a lazy chunk or its CSS fails to load, typically in a tab opened before
+// an upgrade that removed the hashed file. The event is deliberately not cancelled: preventDefault()
+// would resolve the import to undefined, and lazy() would crash with an unclassified error before
+// the reload completes. Left alone, the original error reaches the error boundary or the listeners
+// above, which log it at warn.
+const onPreloadError = (event: VitePreloadErrorEvent) => {
+  reloadOnceForChunkError(event.payload);
 };
 
 // The batch processor flushes itself when the page is hidden, but not the dedup layer
@@ -98,6 +115,7 @@ export const initLogger = (isDev: boolean = import.meta.env.DEV): LoggerProvider
   logs.setGlobalLoggerProvider(provider);
   window.addEventListener('error', onUncaughtError);
   window.addEventListener('unhandledrejection', onUnhandledRejection);
+  window.addEventListener('vite:preloadError', onPreloadError);
   document.addEventListener('visibilitychange', onPageHidden);
   return provider;
 };

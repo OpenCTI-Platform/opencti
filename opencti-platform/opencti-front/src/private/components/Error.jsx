@@ -9,6 +9,7 @@ import { useFormatter } from '../../components/i18n';
 import withRouter from '../../utils/compat_router/withRouter';
 import { getGraphQLResponseErrors } from '../../relay/graphQLResponseErrors';
 import { logger } from '../../utils/logging/logger';
+import { isChunkLoadError, reloadOnceForChunkError, warnIfEnvironmentFailure } from '../../utils/logging/environmentFailures';
 
 // --- Region UI errors components
 // -------------------------------
@@ -63,11 +64,20 @@ class ErrorBoundaryComponent extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     const isNetworkError = this.state.error?.data?.res ?? this.state.error?.res;
-    if (!isNetworkError) {
+    if (isNetworkError) {
+      return;
+    }
+    // A lazy route chunk that an upgrade removed: reload once to load the current build.
+    // Covers the dynamic imports the vite:preloadError listener does not see.
+    if (isChunkLoadError(error)) {
+      reloadOnceForChunkError(error);
+    }
+    const data = { component: { stack: errorInfo.componentStack } };
+    if (!warnIfEnvironmentFailure(error, data)) {
       logger.error('React component tree crashed', {
         eventName: 'opencti.frontend.component_crashed',
         error,
-        data: { component: { stack: errorInfo.componentStack } },
+        data,
       });
     }
   }
