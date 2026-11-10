@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { findById, getUserByEmail, lockAccountAfterFailedAttempts, userEditField, userWithOrigin } from '../user/user-domain';
-import { loadLocalAuthLockout } from '../../domain/local-auth-lockout';
+import { clearLocalAuthLockout, loadLocalAuthLockout } from '../../domain/local-auth-lockout';
 import { AuthenticationFailure, PASSWORD_CHANGE_THROTTLED, PASSWORD_REUSED, PasswordResetExpired, UnsupportedError } from '../../config/errors';
 import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
@@ -173,7 +173,8 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
     }
     throw attempt?.failure ?? AuthenticationFailure();
   } else {
-    await lockout?.clear();
+    // Also when the lockout is disabled, so that enabling it again never brings back an old lock
+    await clearLocalAuthLockout(email);
     await redisSetForgotPasswordOtp(input.transactionId, { hashedOtp, email, mfa_activated, mfa_validated: valid, userId }, ttl);
   }
   return valid;

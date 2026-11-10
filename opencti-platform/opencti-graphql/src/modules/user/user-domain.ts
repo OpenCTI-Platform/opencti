@@ -2259,7 +2259,8 @@ export const otpUserLogin = async (req: OtpSessionRequest, user: AuthUser, { cod
     }
     throw attempt?.failure ?? AuthenticationFailure();
   }
-  await lockout?.clear();
+  // Also when the lockout is disabled, so that enabling it again never brings back an old lock
+  await clearLocalAuthLockout(user.user_email);
   req.session.user.otp_validated = valid;
   req.session.save();
   return valid;

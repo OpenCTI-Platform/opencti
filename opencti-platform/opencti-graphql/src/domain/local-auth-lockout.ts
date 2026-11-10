@@ -122,20 +122,20 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
     // Counts the attempt as a failure before the password or the MFA code is checked, and throws the lock error during a lock.
     // Returns what to do if the check fails: the lock error to throw once the max attempts are reached
     // (below, the usual authentication failure), and whether the account must be set to Locked (permanent final action).
-    // If the check succeeds, release undoes this attempt only: its lock, but not the lock of a concurrent failure
+    // If the check succeeds, release undoes this attempt only: its failure in its own window, and its lock,
+    // but never the failures of a later window nor the lock of a concurrent failure
     recordAttempt: async () => {
       const attemptToken = uuid();
-      const { allowed, remainingMs, lockType, isFinal } = await redisRecordLocalAuthAttempt(emailHash, timings, attemptToken);
+      const { allowed, remainingMs, lockType, isFinal, windowId } = await redisRecordLocalAuthAttempt(emailHash, timings, attemptToken);
       if (!allowed) {
         throw LocalAuthLocked(lockType, remainingMs);
       }
       return {
         failure: isFinal ? LocalAuthLocked(lockType, remainingMs) : undefined,
         locksAccount: isFinal && lockType === 'permanent',
-        release: () => redisReleaseLocalAuthAttempt(emailHash, attemptToken),
+        release: () => redisReleaseLocalAuthAttempt(emailHash, { attemptToken, windowId }),
       };
     },
-    clear: () => redisClearLocalAuthLockout(emailHash),
   };
 };
 

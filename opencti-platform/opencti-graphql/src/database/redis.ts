@@ -906,9 +906,11 @@ export const redisConsumePasswordChangeAttempt = async (targetUserId: string, su
 // endregion - password change throttling
 
 // region - local authentication lockout
-// The keys of an email share a hash tag, so that the lockout scripts can run on a Redis cluster
+// The keys of an email share a hash tag, so that the lockout scripts can run on a Redis cluster.
+// The failures are a hash: their count, and the id of their window (the token of the attempt that started it),
+// so that releasing an attempt never decrements the failures of a later window
 export const localAuthLockoutKeys = (emailHash: string) => ({
-  failures: `local_auth_lockout:{${emailHash}}:failures`,
+  failures: `local_auth_lockout:{${emailHash}}:attempts`,
   lock: `local_auth_lockout:{${emailHash}}:lock`,
 });
 
@@ -925,20 +927,22 @@ export type LocalAuthLockoutTimings = { maxAttempts: number; windowMs: number; f
 //   and the token of the attempt that set it, so that releasing another attempt never lifts it.
 //   With a window, the failures expire with a temporary lock, so that the count starts over once the lock is lifted.
 //   Without a window, they are kept: once the lock is lifted, each new failure locks again.
-// Returns [allowed, remainingMs, lockType, isFinal]:
-// - [0, remaining, type, 0]: the email is locked (remaining is -1 without expiry), the attempt is neither checked nor counted
-// - [1, 0, type, 0]: the attempt is counted, below the max attempts, its password can be checked
-// - [1, finalLockMs, type, 1]: the attempt reaches the max attempts and locks the email, its password can still be checked
+// Returns [allowed, remainingMs, lockType, isFinal, windowId]:
+// - [0, remaining, type, 0, '']: the email is locked (remaining is -1 without expiry), the attempt is neither checked nor counted
+// - [1, 0, type, 0, window]: the attempt is counted in this window, below the max attempts, its password can be checked
+// - [1, finalLockMs, type, 1, window]: the attempt reaches the max attempts and locks the email, its password can still be checked
 const LOCAL_AUTH_LOCKOUT_ATTEMPT_SCRIPT = `
 local lockRemaining = redis.call('PTTL', KEYS[2])
 if lockRemaining > 0 or lockRemaining == -1 then
   local lock = redis.call('GET', KEYS[2])
-  return {0, lockRemaining, string.match(lock, '^[^:]+'), 0}
+  return {0, lockRemaining, string.match(lock, '^[^:]+'), 0, ''}
 end
-local failures = redis.call('INCR', KEYS[1])
+redis.call('HSETNX', KEYS[1], 'window', ARGV[5])
+local failures = redis.call('HINCRBY', KEYS[1], 'count', 1)
 if failures == 1 and tonumber(ARGV[1]) > 0 then
   redis.call('PEXPIRE', KEYS[1], ARGV[1])
 end
+local window = redis.call('HGET', KEYS[1], 'window')
 if failures >= tonumber(ARGV[2]) then
   local lock = ARGV[4] .. ':' .. ARGV[5]
   if tonumber(ARGV[3]) > 0 then
@@ -949,14 +953,14 @@ if failures >= tonumber(ARGV[2]) then
   else
     redis.call('SET', KEYS[2], lock)
   end
-  return {1, tonumber(ARGV[3]), ARGV[4], 1}
+  return {1, tonumber(ARGV[3]), ARGV[4], 1, window}
 end
-return {1, 0, ARGV[4], 0}
+return {1, 0, ARGV[4], 0, window}
 `;
 
 export const redisRecordLocalAuthAttempt = async (emailHash: string, timings: LocalAuthLockoutTimings, attemptToken: string) => {
   const keys = localAuthLockoutKeys(emailHash);
-  const [allowed, remainingMs, lockType, isFinal] = await getClientBase().eval(
+  const [allowed, remainingMs, lockType, isFinal, windowId] = await getClientBase().eval(
     LOCAL_AUTH_LOCKOUT_ATTEMPT_SCRIPT,
     2,
     keys.failures,
@@ -966,16 +970,18 @@ export const redisRecordLocalAuthAttempt = async (emailHash: string, timings: Lo
     timings.finalLockMs,
     timings.finalAction,
     attemptToken,
-  ) as [number, number, LocalAuthLockType, number];
-  return { allowed: Number(allowed) === 1, remainingMs: Number(remainingMs), lockType, isFinal: Number(isFinal) === 1 };
+  ) as [number, number, LocalAuthLockType, number, string];
+  return { allowed: Number(allowed) === 1, remainingMs: Number(remainingMs), lockType, isFinal: Number(isFinal) === 1, windowId };
 };
 
 // Undoes an attempt whose password was right: the attempt is not a failure, but the other failures are kept,
-// so that for a user with MFA only a valid MFA code resets them. The lock is lifted only when this attempt set it:
-// a concurrent failure that reached the max attempts keeps its lock
+// so that for a user with MFA only a valid MFA code resets them.
+// - The count is decremented only in the window of the attempt: once it expired or was cleared,
+//   the attempt is no longer counted, and the failures of the new window are kept.
+// - The lock is lifted only when this attempt set it: a concurrent failure that reached the max attempts keeps its lock
 const LOCAL_AUTH_LOCKOUT_RELEASE_SCRIPT = `
-if tonumber(redis.call('GET', KEYS[1]) or '0') > 0 then
-  redis.call('DECR', KEYS[1])
+if redis.call('HGET', KEYS[1], 'window') == ARGV[2] and tonumber(redis.call('HGET', KEYS[1], 'count') or '0') > 0 then
+  redis.call('HINCRBY', KEYS[1], 'count', -1)
 end
 local lock = redis.call('GET', KEYS[2])
 if lock and string.match(lock, ':(.*)$') == ARGV[1] then
@@ -984,9 +990,9 @@ end
 return 1
 `;
 
-export const redisReleaseLocalAuthAttempt = async (emailHash: string, attemptToken: string) => {
+export const redisReleaseLocalAuthAttempt = async (emailHash: string, attempt: { attemptToken: string; windowId: string }) => {
   const keys = localAuthLockoutKeys(emailHash);
-  await getClientBase().eval(LOCAL_AUTH_LOCKOUT_RELEASE_SCRIPT, 2, keys.failures, keys.lock, attemptToken);
+  await getClientBase().eval(LOCAL_AUTH_LOCKOUT_RELEASE_SCRIPT, 2, keys.failures, keys.lock, attempt.attemptToken, attempt.windowId);
 };
 
 export const redisClearLocalAuthLockout = async (emailHash: string) => {

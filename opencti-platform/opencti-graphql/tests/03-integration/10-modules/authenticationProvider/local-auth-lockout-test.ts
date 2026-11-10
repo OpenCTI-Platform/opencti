@@ -87,7 +87,7 @@ const expireLock = resetLockout;
 const liftLock = (email: string) => getClientBase().del(keysOf(email).lock);
 const expireWindow = (email: string) => getClientBase().del(keysOf(email).failures);
 const lockRemainingMs = (email: string) => getClientBase().pttl(keysOf(email).lock);
-const failuresOf = async (email: string) => Number(await getClientBase().get(keysOf(email).failures) ?? 0);
+const failuresOf = async (email: string) => Number(await getClientBase().hget(keysOf(email).failures, 'count') ?? 0);
 // Shortens a key TTL, so that a TTL reset to the full window can be told apart from the original one
 const SHORT_TTL_MS = 30000;
 const shortenTtl = (key: string) => getClientBase().pexpire(key, SHORT_TTL_MS);
@@ -262,15 +262,31 @@ describe('Local authentication lockout', () => {
       const emailHash = hashSHA256(normalizeEmail(UNKNOWN_EMAIL));
       const timings = { maxAttempts: 2, windowMs: 3600 * 1000, finalLockMs: LOCK_SECONDS * 1000, finalAction: 'temporary' as const };
       // A right password is counted, then a concurrent failure reaches the max attempts and locks
-      await redisRecordLocalAuthAttempt(emailHash, timings, 'right-password');
-      expect((await redisRecordLocalAuthAttempt(emailHash, timings, 'failure')).isFinal).toBe(true);
+      const { windowId } = await redisRecordLocalAuthAttempt(emailHash, timings, 'right-password');
+      const failure = await redisRecordLocalAuthAttempt(emailHash, timings, 'failure');
+      expect(failure.isFinal).toBe(true);
+      expect(failure.windowId).toEqual(windowId);
       // Releasing the right password undoes its own attempt only
-      await redisReleaseLocalAuthAttempt(emailHash, 'right-password');
+      await redisReleaseLocalAuthAttempt(emailHash, { attemptToken: 'right-password', windowId });
       expect(await getClientBase().exists(keysOf(UNKNOWN_EMAIL).lock)).toEqual(1);
       expect(await failuresOf(UNKNOWN_EMAIL)).toEqual(1);
       // The attempt that set the lock lifts it
-      await redisReleaseLocalAuthAttempt(emailHash, 'failure');
+      await redisReleaseLocalAuthAttempt(emailHash, { attemptToken: 'failure', windowId });
       expect(await getClientBase().exists(keysOf(UNKNOWN_EMAIL).lock)).toEqual(0);
+    });
+
+    it('should not erase a failure of a later window when a right password is released', async () => {
+      const emailHash = hashSHA256(normalizeEmail(UNKNOWN_EMAIL));
+      const timings = { maxAttempts: 3, windowMs: 3600 * 1000, finalLockMs: LOCK_SECONDS * 1000, finalAction: 'temporary' as const };
+      // A right password is counted, then its window expires (or is cleared) before it is released
+      const rightPassword = await redisRecordLocalAuthAttempt(emailHash, timings, 'right-password');
+      await expireWindow(UNKNOWN_EMAIL);
+      // A concurrent failure starts a new window
+      const failure = await redisRecordLocalAuthAttempt(emailHash, timings, 'failure');
+      expect(failure.windowId).not.toEqual(rightPassword.windowId);
+      // Releasing the right password must not erase the failure of the new window
+      await redisReleaseLocalAuthAttempt(emailHash, { attemptToken: 'right-password', windowId: rightPassword.windowId });
+      expect(await failuresOf(UNKNOWN_EMAIL)).toEqual(1);
     });
 
     it('should check no more passwords than the max attempts under concurrent attempts', async () => {
@@ -758,6 +774,26 @@ describe('Local authentication lockout', () => {
       await expectLocked(verifyMfa(testContext, { transactionId, code: await validCode() }));
       await expireLock(MFA_USER.email);
       expect(await verifyMfa(testContext, { transactionId, code: await validCode() })).toBe(true);
+    });
+
+    it('should reset the counter after a valid MFA code while the lockout is disabled', async () => {
+      await expectBadCredentials(otpLogin(await wrongCode()));
+      await expectBadCredentials(otpLogin(await wrongCode()));
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_enabled: false });
+      expect(await otpLogin(await validCode())).toBe(true);
+      // Enabling the lockout again does not bring back the previous failures
+      await setLockoutPolicy(LOCKOUT_POLICY);
+      expect(await failuresOf(MFA_USER.email)).toEqual(0);
+    });
+
+    it('should reset the counter after a valid MFA code in the forgotten password flow while the lockout is disabled', async () => {
+      const transactionId = uuid();
+      await redisSetForgotPasswordOtp(transactionId, { email: MFA_USER.email, hashedOtp: bcrypt.hashSync('12345678'), mfa_activated: true, mfa_validated: false, userId: mfaUserId });
+      await expectBadCredentials(verifyMfa(testContext, { transactionId, code: await wrongCode() }));
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_enabled: false });
+      expect(await verifyMfa(testContext, { transactionId, code: await validCode() })).toBe(true);
+      await setLockoutPolicy(LOCKOUT_POLICY);
+      expect(await failuresOf(MFA_USER.email)).toEqual(0);
     });
   });
 
