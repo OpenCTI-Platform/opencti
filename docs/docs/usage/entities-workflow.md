@@ -69,7 +69,7 @@ An entity type without a workflow: start with **Add Status**.
 3. Optionally, configure [actions on enter and on exit](#actions-on-statuses) (Enterprise Edition).
 4. Click **Add**. The status appears on the canvas.
 
-The first status you add is the **starting status**: new entities of this type start there. A status with no incoming transition is always the starting status. A workflow can also loop back to its starting status, for example *New* → *In review* → *New*.
+New entities of this type start in the **starting status**. The first status you add is the starting status by default, until the graph decides otherwise: if exactly one status has no incoming transition, that status is the starting status. For example, connecting a transition back into the first status can make a later status the starting one. A workflow can also loop back to its starting status, for example *New* → *In review* → *New*. Check the starting status before publishing.
 
 To add the next status, click the **+** placeholder under a status: OpenCTI adds the new status and the transition that leads to it. To insert a status between two existing ones, click the link between them.
 
