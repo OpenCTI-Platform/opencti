@@ -42,7 +42,7 @@ Changing the time range of a dashboard no longer modifies the dashboard: like th
 
 !!! warning "Behaviour change"
 
-    Before this feature, changing the time range of a dashboard was saved immediately and applied to every user. It is now a personal setting: the home dashboard, the dashboard export, the publication started from the public dashboards list and your other browsers keep the defaults of the dashboard (or your default preset). Use **Set as default values** to change the range of the dashboard for everyone.
+    Before this feature, changing the time range of a dashboard was saved immediately and applied to every user. It is now a personal setting: the home dashboard, the dashboard export and your other browsers keep the defaults of the dashboard (or your default preset); the publication form starts from the range you see. Use **Set as default values** to change the range of the dashboard for everyone.
 
 ## Presets
 
