@@ -4,14 +4,25 @@ vi.mock('../../../../src/domain/settings', () => ({
   getSettingsFromDatabase: vi.fn(),
   getPlatformDefaultTheme: vi.fn(),
 }));
+vi.mock('../../../../src/config/conf', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/config/conf')>()),
+  isFeatureEnabled: vi.fn(() => true),
+}));
 
 import { getPlatformDefaultTheme, getSettingsFromDatabase } from '../../../../src/domain/settings';
+import { isFeatureEnabled } from '../../../../src/config/conf';
 import {
+  exportPolicies,
   getMessagesConfigPresetConfigurations,
   getPlatformConfigPresetConfiguration,
   getWhitemarkConfigPresetConfiguration,
 } from '../../../../src/modules/settings/settings-export';
-import { messageConfigurationSchemas, platformConfigurationSchema, whitemarkConfigurationSchema } from '../../../../src/modules/settings/settings-import-schema';
+import {
+  messageConfigurationSchemas,
+  platformConfigurationSchema,
+  policiesConfigurationSchema,
+  whitemarkConfigurationSchema,
+} from '../../../../src/modules/settings/settings-import-schema';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { CUSTOM_THEME_ID } from '../../../utils/configPresetBundle';
 
@@ -34,6 +45,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(getSettingsFromDatabase).mockResolvedValue(storedSettings as never);
   vi.mocked(getPlatformDefaultTheme).mockResolvedValue(undefined as never);
+  vi.mocked(isFeatureEnabled).mockReturnValue(true);
 });
 
 describe('settings export', () => {
@@ -73,7 +85,25 @@ describe('settings export', () => {
     expect(await getWhitemarkConfigPresetConfiguration(context)).toEqual({ platform_whitemark: null });
   });
 
+  it('exports the password history count with the password policy, 0 when the platform never stored one', async () => {
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ password_policy_min_length: 12, password_policy_history_count: 5 } as never);
+    expect(await exportPolicies(context, user)).toMatchObject({ password_policy_min_length: 12, password_policy_history_count: 5 });
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({} as never);
+    expect((await exportPolicies(context, user)).password_policy_history_count).toEqual(0);
+  });
+
+  it('leaves the password history count out while the feature is not available, even if a count is stored', async () => {
+    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ password_policy_min_length: 12, password_policy_history_count: 5 } as never);
+    const policies = await exportPolicies(context, user);
+    expect(policies).not.toHaveProperty('password_policy_history_count');
+    expect(policies).toMatchObject({ password_policy_min_length: 12 });
+  });
+
   it('is accepted by the strict import validation, as it is', async () => {
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue({ ...storedSettings, password_policy_history_count: 24 } as never);
+    expect(policiesConfigurationSchema.safeParse(await exportPolicies(context, user)).success).toBe(true);
+    vi.mocked(getSettingsFromDatabase).mockResolvedValue(storedSettings as never);
     expect(whitemarkConfigurationSchema.safeParse(await getWhitemarkConfigPresetConfiguration(context)).success).toBe(true);
     expect(platformConfigurationSchema.safeParse(await getPlatformConfigPresetConfiguration(context, user)).success).toBe(true);
     const messages = await getMessagesConfigPresetConfigurations(context);

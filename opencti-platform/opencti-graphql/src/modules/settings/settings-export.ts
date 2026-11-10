@@ -1,7 +1,10 @@
 import { getPlatformDefaultTheme, getSettingsFromDatabase } from '../../domain/settings';
+import { isFeatureEnabled, PASSWORD_HISTORY_FEATURE_FLAG } from '../../config/conf';
 import { storeLoadById } from '../../database/middleware-loader';
+import { readPasswordHistoryCount } from '../user/user-password-history';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
+import type { BasicStoreSettings } from '../../types/settings';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 
 // Allowlists of the Settings fields a configuration carries. Anything not listed here
@@ -29,6 +32,9 @@ export const SETTINGS_POLICIES_FIELDS = [
   'password_policy_min_uppercase',
   'password_policy_validity_days',
 ];
+// Part of the password policy, but never written with the fields above: settingsEditField refuses it, the import applies
+// it with the rules of the local authentication settings (setPasswordHistoryCount)
+export const SETTINGS_POLICIES_HISTORY_COUNT_FIELD = 'password_policy_history_count';
 
 // The Settings entity always exists on a platform that runs
 const readSettings = async (context: AuthContext) => (await getSettingsFromDatabase(context)) as unknown as Record<string, unknown>;
@@ -73,6 +79,8 @@ export const exportPolicies = async (context: AuthContext, user: AuthUser) => {
   const organization = organizationId ? await storeLoadById<BasicStoreEntity>(context, user, organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION) : undefined;
   return {
     ...Object.fromEntries(SETTINGS_POLICIES_FIELDS.map((field) => [field, policyValue(settings, field)])),
+    // Left out while the password history is not available: such a platform has no count to give
+    ...(isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) && { [SETTINGS_POLICIES_HISTORY_COUNT_FIELD]: readPasswordHistoryCount(settings as Pick<BasicStoreSettings, 'password_policy_history_count'>) }),
     platform_organization: organization ? { standard_id: organization.standard_id, name: organization.name } : null,
   };
 };

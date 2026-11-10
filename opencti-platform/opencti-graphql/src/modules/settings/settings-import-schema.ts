@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { AVAILABLE_LANGUAGES } from '../user/user-types';
 import { THEME_STANDARD_ID_PATTERN } from '../theme/theme-import-schema';
+import { PASSWORD_HISTORY_MAX_COUNT } from '../user/user-password-history';
 
 // Strict schemas of the settings a configuration can set (the platform, the messages): unknown keys are rejected,
 // values are checked because settingsEditField validates none of them. The themes have their own rules, in the theme module.
@@ -43,5 +44,7 @@ export const policiesConfigurationSchema = z.strictObject({
   password_policy_min_lowercase: policyCount,
   password_policy_min_uppercase: policyCount,
   password_policy_validity_days: policyCount,
+  // Absent from a bundle of a platform without password history: the count of this platform is then left as it is
+  password_policy_history_count: z.number().int().min(0).max(PASSWORD_HISTORY_MAX_COUNT).nullish(),
   platform_organization: z.strictObject({ standard_id: z.string().min(1), name: z.string().max(MAX_SHORT_LENGTH) }).nullish(),
 });

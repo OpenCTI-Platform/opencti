@@ -16,6 +16,11 @@ vi.mock('../../../../src/modules/user/sensitive-config-import', async (importOri
   ...(await importOriginal<typeof import('../../../../src/modules/user/sensitive-config-import')>()),
   isConfigImportSensitiveChangeAllowed: vi.fn(),
 }));
+vi.mock('../../../../src/domain/setting-auth', () => ({ setPasswordHistoryCount: vi.fn() }));
+vi.mock('../../../../src/config/conf', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/config/conf')>()),
+  isFeatureEnabled: vi.fn(() => true),
+}));
 
 import { getSettings, getSettingsFromDatabase, settingsEditField } from '../../../../src/domain/settings';
 import { findById } from '../../../../src/modules/theme/theme-domain';
@@ -24,6 +29,8 @@ import { isEnterpriseEdition } from '../../../../src/enterprise-edition/ee';
 import { propagatePasswordValidityChange } from '../../../../src/modules/user/user-domain';
 import { importMessage, importPlatformConfiguration, importPolicies, importWhitemark } from '../../../../src/modules/settings/settings-import';
 import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/user/sensitive-config-import';
+import { setPasswordHistoryCount } from '../../../../src/domain/setting-auth';
+import { isFeatureEnabled } from '../../../../src/config/conf';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import { CUSTOM_THEME_ID } from '../../../utils/configPresetBundle';
@@ -38,6 +45,7 @@ beforeEach(() => {
   vi.mocked(getSettings).mockResolvedValue({ id: 'settings-id' } as never);
   vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id' } as never);
   vi.mocked(findById).mockResolvedValue(undefined as never);
+  vi.mocked(isFeatureEnabled).mockReturnValue(true);
 });
 
 describe('importMessage', () => {
@@ -342,9 +350,88 @@ describe('importPolicies', () => {
   });
 
   it('skips policies with only null values, and any mode but overwrite', async () => {
-    const empty = Object.fromEntries(Object.keys(policies()).map((key) => [key, null]));
+    const empty = Object.fromEntries(Object.keys(policies({ password_policy_history_count: 3 })).map((key) => [key, null]));
     expect(await importPolicies(context, user, empty, overwrite)).toMatchObject({ status: 'skipped', code: 'nothing_to_import' });
     expect(await importPolicies(context, user, policies(), { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'skipped', code: 'not_overwrite' });
     expect(settingsEditField).not.toHaveBeenCalled();
+    expect(setPasswordHistoryCount).not.toHaveBeenCalled();
+  });
+
+  describe('password history count', () => {
+    const { platform_organization: _, ...fields } = policies();
+    // The platform has the policy of the bundle, the main organization included: only the count can differ
+    const platformWith = (historyCount?: number) => {
+      vi.mocked(getSettingsFromDatabase).mockResolvedValue({
+        id: 'settings-id', ...fields, platform_organization: 'organization-id', ...(historyCount !== undefined && { password_policy_history_count: historyCount }),
+      } as never);
+    };
+
+    it('sets the count apart from the other fields, which settingsEditField would refuse it with', async () => {
+      vi.mocked(getSettingsFromDatabase).mockResolvedValue({ id: 'settings-id', password_policy_history_count: 2 } as never);
+      expect(await importPolicies(context, user, policies({ password_policy_history_count: 5 }), overwrite)).toMatchObject({ status: 'overwritten' });
+      expect(vi.mocked(settingsEditField).mock.calls[0][3]).not.toContainEqual(expect.objectContaining({ key: 'password_policy_history_count' }));
+      expect(setPasswordHistoryCount).toHaveBeenCalledWith(context, user, 5);
+    });
+
+    it('imports a count that is the only change, without rewriting the other fields', async () => {
+      platformWith(2);
+      expect(await importPolicies(context, user, { password_policy_history_count: 5 }, overwrite)).toMatchObject({ status: 'overwritten' });
+      expect(settingsEditField).not.toHaveBeenCalled();
+      expect(setPasswordHistoryCount).toHaveBeenCalledWith(context, user, 5);
+    });
+
+    it('skips a count the platform already has, 0 on a platform that never stored one included', async () => {
+      platformWith(5);
+      expect(await importPolicies(context, user, policies({ password_policy_history_count: 5 }), overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
+      platformWith();
+      expect(await importPolicies(context, user, policies({ password_policy_history_count: 0 }), overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
+      expect(settingsEditField).not.toHaveBeenCalled();
+      expect(setPasswordHistoryCount).not.toHaveBeenCalled();
+    });
+
+    it('says in the preview that the stored histories are trimmed or deleted when the count goes down, and nothing when it goes up', async () => {
+      platformWith(5);
+      expect((await importPolicies(context, user, policies({ password_policy_history_count: 2 }), dryRun)).reason).toEqual('Fewer recent passwords are kept: users can reuse the oldest ones');
+      expect((await importPolicies(context, user, policies({ password_policy_history_count: 0 }), dryRun)).reason).toEqual('Recent passwords are no longer kept: users can reuse them');
+      const higher = await importPolicies(context, user, policies({ password_policy_history_count: 8 }), dryRun);
+      expect(higher).toMatchObject({ status: 'overwritten' });
+      expect(higher.reason).toBeUndefined();
+      expect(setPasswordHistoryCount).not.toHaveBeenCalled();
+      expect(settingsEditField).not.toHaveBeenCalled();
+    });
+
+    it('treats an unusable stored count as 0, as the password history does', async () => {
+      platformWith(99);
+      expect(await importPolicies(context, user, policies({ password_policy_history_count: 0 }), overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
+      expect(setPasswordHistoryCount).not.toHaveBeenCalled();
+    });
+
+    it('without the feature, leaves out and reports a count other than 0, and still writes the rest of the policy', async () => {
+      vi.mocked(isFeatureEnabled).mockReturnValue(false);
+      const result = await importPolicies(context, user, policies({ password_policy_history_count: 5 }), overwrite);
+      expect(result).toMatchObject({ status: 'overwritten', reason: expect.stringContaining('The reuse of recent passwords cannot be blocked on this platform') });
+      expect(settingsEditField).toHaveBeenCalledTimes(1);
+      expect(setPasswordHistoryCount).not.toHaveBeenCalled();
+    });
+
+    it('without the feature, finds the policy up to date when only the count differs, and says why the count is left out', async () => {
+      vi.mocked(isFeatureEnabled).mockReturnValue(false);
+      platformWith();
+      const result = await importPolicies(context, user, policies({ password_policy_history_count: 5 }), overwrite);
+      expect(result).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date\nThe reuse of recent passwords cannot be blocked on this platform' });
+      expect((await importPolicies(context, user, policies({ password_policy_history_count: 0 }), overwrite)).reason).toEqual('Already up to date');
+      expect(setPasswordHistoryCount).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['above the maximum', 25],
+      ['negative', -1],
+      ['not an integer', 2.5],
+      ['not a number', '5'],
+    ])('refuses a count %s, without writing', async (_, value) => {
+      expect(await importPolicies(context, user, policies({ password_policy_history_count: value }), overwrite)).toMatchObject({ status: 'failed', code: 'invalid' });
+      expect(settingsEditField).not.toHaveBeenCalled();
+      expect(setPasswordHistoryCount).not.toHaveBeenCalled();
+    });
   });
 });

@@ -714,6 +714,8 @@ describe('Config preset registry', () => {
       password_policy_min_lowercase: 1,
       password_policy_min_uppercase: 1,
       password_policy_validity_days: 90,
+      // The unit tests run with every feature flag on, password history included
+      password_policy_history_count: 3,
     };
 
     it('exports the policies and the main organization by standard id, never the messages nor the authentication', async () => {

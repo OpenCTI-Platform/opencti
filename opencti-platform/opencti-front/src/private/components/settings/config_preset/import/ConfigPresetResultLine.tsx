@@ -66,6 +66,10 @@ const translateReason = (t_i18n: Translate, reason: string) => {
     case 'The expiration date of the users\' passwords changes': return t_i18n('The expiration date of the users\' passwords changes');
     case 'The users\' passwords no longer expire': return t_i18n('The users\' passwords no longer expire');
     case 'Users can view the users of other organizations': return t_i18n('Users can view the users of other organizations');
+    case 'Fewer recent passwords are kept: users can reuse the oldest ones': return t_i18n('Fewer recent passwords are kept: users can reuse the oldest ones');
+    case 'Recent passwords are no longer kept: users can reuse them': return t_i18n('Recent passwords are no longer kept: users can reuse them');
+    case 'The reuse of recent passwords cannot be blocked on this platform':
+      return t_i18n('The reuse of recent passwords cannot be blocked on this platform');
     case 'The standard id of the group does not match its name': return t_i18n('The standard id of the group does not match its name');
     case 'Group already exists': return t_i18n('Group already exists');
     case 'Group name already exists': return t_i18n('Group name already exists');

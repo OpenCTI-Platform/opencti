@@ -12,6 +12,9 @@ import { isEnterpriseEdition } from '../../../../../src/enterprise-edition/ee';
 import { exportPolicies } from '../../../../../src/modules/settings/settings-export';
 import { importPolicies } from '../../../../../src/modules/settings/settings-import';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
+import { updateLocalAuth } from '../../../../../src/domain/setting-auth';
+import { storeLoadById } from '../../../../../src/database/middleware-loader';
+import { ENTITY_TYPE_USER } from '../../../../../src/modules/user/user-types';
 
 const UPLOAD_MUTATION = gql`mutation ConfigPresetPoliciesUpload($file: Upload!) { configPresetImportUpload(file: $file) { id } }`;
 const IMPORT_MUTATION = gql`
@@ -53,6 +56,45 @@ const PASSWORD_POLICY = {
   password_policy_validity_days: 0,
 };
 const toInput = (values: Record<string, unknown>) => Object.entries(values).map(([key, value]) => ({ key, value: [value] }));
+const exportZip = async () => {
+  const result = await queryAsAdminWithSuccess({ query: EXPORT_MUTATION, variables: { selections: [{ type: 'policies' }] } });
+  const exportId = result.data?.configPresetExport.id as string;
+  const zip = await readStream(await downloadFile(exportId));
+  await deleteFile(testContext, ADMIN_USER, exportId, { forceDelete: true });
+  return zip;
+};
+const policiesZip = (configuration: Record<string, unknown>) => buildZip({
+  'metadata.json': metadataFile(),
+  'security_access/policies.json': itemFile('securityAccess.policies', 'policies', configuration),
+});
+
+// The password history count, as the local authentication settings set it (the tests run with every feature flag on)
+const setHistoryCount = async (count: number) => {
+  const settingsId = (await getSettings(testContext)).id as string;
+  return updateLocalAuth(testContext, ADMIN_USER, settingsId, { enabled: true, password_policy_history_count: count });
+};
+const USER_ADD_MUTATION = gql`mutation ConfigPresetPoliciesUserAdd($input: UserAddInput!) { userAdd(input: $input) { id } }`;
+const USER_EDIT_MUTATION = gql`
+  mutation ConfigPresetPoliciesUserEdit($id: ID!, $input: [EditInput]!) { userEdit(id: $id) { fieldPatch(input: $input) { id } } }
+`;
+const USER_DELETE_MUTATION = gql`mutation ConfigPresetPoliciesUserDelete($id: ID!) { userEdit(id: $id) { delete } }`;
+// Passwords that satisfy PASSWORD_POLICY, whatever policy a previous test left
+const historyPassword = (n: number) => `Preset-History-${n}${n}!`;
+const createUserWithHistory = async (suffix: string, changes: number) => {
+  const created = await queryAsAdminWithSuccess({
+    query: USER_ADD_MUTATION,
+    variables: { input: { name: `Config preset history ${suffix}`, user_email: `config_preset_history_${suffix}@mail.com`, password: historyPassword(1) } },
+  });
+  const id = created.data?.userAdd.id as string;
+  for (let n = 2; n <= changes + 1; n += 1) {
+    await queryAsAdminWithSuccess({ query: USER_EDIT_MUTATION, variables: { id, input: [{ key: 'password', value: [historyPassword(n)] }] } });
+  }
+  return id;
+};
+const readHistory = async (userId: string) => {
+  const user = await storeLoadById(testContext, ADMIN_USER, userId, ENTITY_TYPE_USER) as unknown as { password_history?: string[] };
+  return user.password_history ?? [];
+};
 
 describe('Config preset import: policies', () => {
   let before: Awaited<ReturnType<typeof readPolicies>>;
@@ -76,10 +118,7 @@ describe('Config preset import: policies', () => {
   it('imports back the zip of the real export: the password policy and the visibility of the users', async () => {
     await editSettings(toInput({ ...PASSWORD_POLICY, view_all_users: true }));
     const exported = await readPolicies();
-    const result = await queryAsAdminWithSuccess({ query: EXPORT_MUTATION, variables: { selections: [{ type: 'policies' }] } });
-    const exportId = result.data?.configPresetExport.id as string;
-    const zip = await readStream(await downloadFile(exportId));
-    await deleteFile(testContext, ADMIN_USER, exportId, { forceDelete: true });
+    const zip = await exportZip();
     // The platform has other policies before the import
     await editSettings(toInput({ password_policy_min_length: 4, view_all_users: false }));
 
@@ -115,5 +154,57 @@ describe('Config preset import: policies', () => {
     } finally {
       await unSetOrganization();
     }
+  });
+
+  describe('password history count', () => {
+    let userId: string | undefined;
+
+    afterEach(async () => {
+      // The count of the test platform comes back with the policies (outer afterEach); the user goes
+      if (userId) {
+        await queryAsAdminWithSuccess({ query: USER_DELETE_MUTATION, variables: { id: userId } });
+        userId = undefined;
+      }
+    });
+
+    it('carries the count of the real export, and trims the stored histories when it goes down, only once applied', async () => {
+      await setHistoryCount(2);
+      const zip = await exportZip();
+      expect((await readPolicies()).password_policy_history_count).toEqual(2);
+      // The platform keeps more passwords before the import: 4 changes under N = 5 keep N - 1 = 4 hashes
+      await setHistoryCount(5);
+      userId = await createUserWithHistory('trim', 4);
+      expect(await readHistory(userId)).toHaveLength(4);
+
+      const fileId = await uploadZip(zip);
+      const dry = await importData(fileId, true);
+      expect(dry).toEqual([{ type: 'policies', key: 'policies', status: 'OVERWRITTEN', reason: 'Fewer recent passwords are kept: users can reuse the oldest ones' }]);
+      // A dry run writes nothing
+      expect((await readPolicies()).password_policy_history_count).toEqual(5);
+      expect(await readHistory(userId)).toHaveLength(4);
+
+      expect(await importData(fileId)).toEqual(dry);
+      expect((await readPolicies()).password_policy_history_count).toEqual(2);
+      expect(await readHistory(userId)).toHaveLength(1);
+    });
+
+    it('deletes every stored history when the count of the bundle is 0, and finds it up to date afterwards', async () => {
+      await setHistoryCount(3);
+      userId = await createUserWithHistory('clear', 2);
+      expect(await readHistory(userId)).toHaveLength(2);
+      const results = await importData(await uploadZip(await policiesZip({ password_policy_history_count: 0 })));
+      expect(results).toEqual([{ type: 'policies', key: 'policies', status: 'OVERWRITTEN', reason: 'Recent passwords are no longer kept: users can reuse them' }]);
+      expect((await readPolicies()).password_policy_history_count).toEqual(0);
+      expect(await readHistory(userId)).toHaveLength(0);
+      expect(await importPolicies(testContext, ADMIN_USER, { password_policy_history_count: 0 }, { mode: ConfigImportMode.Overwrite, dryRun: true }))
+        .toMatchObject({ status: 'skipped', code: 'unchanged' });
+    });
+
+    it('refuses a count out of range and leaves the policies of the platform as they are', async () => {
+      await setHistoryCount(3);
+      const results = await importData(await uploadZip(await policiesZip({ ...PASSWORD_POLICY, password_policy_history_count: 25 })));
+      expect(results).toMatchObject([{ type: 'policies', key: 'policies', status: 'FAILED' }]);
+      expect(await readPolicies()).toMatchObject({ password_policy_history_count: 3, password_policy_min_length: before.password_policy_min_length });
+    });
   });
 });

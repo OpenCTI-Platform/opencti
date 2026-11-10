@@ -11,6 +11,9 @@ import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } 
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { findById as findThemeById } from '../theme/theme-domain';
 import { isPasswordPolicySatisfiable, propagatePasswordValidityChange } from '../user/user-domain';
+import { readPasswordHistoryCount } from '../user/user-password-history';
+import { setPasswordHistoryCount } from '../../domain/setting-auth';
+import { isFeatureEnabled, PASSWORD_HISTORY_FEATURE_FLAG } from '../../config/conf';
 import { SETTINGS_MESSAGES_FIELDS, SETTINGS_PLATFORM_FIELDS, SETTINGS_POLICIES_FIELDS, SETTINGS_WHITEMARK_FIELDS } from './settings-export';
 import { messageConfigurationSchemas, platformConfigurationSchema, policiesConfigurationSchema, whitemarkConfigurationSchema } from './settings-import-schema';
 
@@ -143,6 +146,21 @@ const UNSATISFIABLE_PASSWORD_POLICY_REASON = 'The password policy cannot be sati
 const PASSWORD_VALIDITY_REASON = 'The expiration date of the users\' passwords changes';
 const PASSWORD_VALIDITY_CLEARED_REASON = 'The users\' passwords no longer expire';
 const VIEW_ALL_USERS_REASON = 'Users can view the users of other organizations';
+const PASSWORD_HISTORY_UNAVAILABLE_REASON = 'The reuse of recent passwords cannot be blocked on this platform';
+const PASSWORD_HISTORY_TRIMMED_REASON = 'Fewer recent passwords are kept: users can reuse the oldest ones';
+const PASSWORD_HISTORY_CLEARED_REASON = 'Recent passwords are no longer kept: users can reuse them';
+
+// The password history count of the bundle as updateLocalAuth takes it (resolvePasswordHistoryCount): without the
+// feature, 0 changes nothing and any other count is left out with a reason, so that the rest of the policy still applies
+const resolveImportedHistoryCount = (value: number | null | undefined): { count?: number; leftOutReason?: string } => {
+  if (value === null || value === undefined) {
+    return {};
+  }
+  if (!isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG)) {
+    return value === 0 ? {} : { leftOutReason: PASSWORD_HISTORY_UNAVAILABLE_REASON };
+  }
+  return { count: value };
+};
 
 export const importPolicies = async (
   context: AuthContext,
@@ -157,8 +175,9 @@ export const importPolicies = async (
   if (mode !== ConfigImportMode.Overwrite) {
     return skipped('not_overwrite', 'Already exists', parsed.data);
   }
-  const { platform_organization: organizationReference } = parsed.data;
-  if (isNothingToImport(parsed.data, SETTINGS_POLICIES_FIELDS) && !organizationReference) {
+  const { platform_organization: organizationReference, password_policy_history_count: historyCountValue } = parsed.data;
+  const hasHistoryCount = historyCountValue !== null && historyCountValue !== undefined;
+  if (isNothingToImport(parsed.data, SETTINGS_POLICIES_FIELDS) && !organizationReference && !hasHistoryCount) {
     return skipped('nothing_to_import', 'Nothing to import', parsed.data);
   }
   const input: { key: string; value: unknown[] }[] = toInput(parsed.data, SETTINGS_POLICIES_FIELDS);
@@ -184,9 +203,15 @@ export const importPolicies = async (
     }
   }
   const setsOrganization = !!organization && organization.id !== current.platform_organization;
+  // The count of this platform as the password history applies it, read from the database (current), not the cache
+  const oldHistoryCount = readPasswordHistoryCount(current);
+  const { count: historyCount, leftOutReason: historyLeftOutReason } = resolveImportedHistoryCount(historyCountValue);
+  // The count this import sets, undefined when it leaves the one of the platform
+  const newHistoryCount = historyCount !== undefined && historyCount !== oldHistoryCount ? historyCount : undefined;
   const settings = current as unknown as Record<string, unknown>;
-  if (!setsOrganization && input.every(({ key, value }) => isSameValue(settings[key], value[0]))) {
-    return skipped('unchanged', joinConfigImportReasons([CONFIG_IMPORT_UNCHANGED_REASON, leftOutReason]) ?? CONFIG_IMPORT_UNCHANGED_REASON, parsed.data);
+  if (!setsOrganization && newHistoryCount === undefined && input.every(({ key, value }) => isSameValue(settings[key], value[0]))) {
+    const reasons = [CONFIG_IMPORT_UNCHANGED_REASON, leftOutReason, historyLeftOutReason];
+    return skipped('unchanged', joinConfigImportReasons(reasons) ?? CONFIG_IMPORT_UNCHANGED_REASON, parsed.data);
   }
   if (organization && setsOrganization) {
     input.push({ key: 'platform_organization', value: [organization.id] });
@@ -195,19 +220,31 @@ export const importPolicies = async (
   const validity = parsed.data.password_policy_validity_days;
   const validityChanges = validity !== null && validity !== undefined && validity !== oldValidity;
   if (!dryRun) {
-    await writeSettings(context, user, input);
+    // The count can be the only change: the other fields are then all null or already the ones of the platform
+    if (input.length > 0) {
+      await writeSettings(context, user, input);
+    }
     if (validityChanges) {
       await propagatePasswordValidityChange(context, oldValidity, validity);
+    }
+    if (newHistoryCount !== undefined) {
+      await setPasswordHistoryCount(context, user, newHistoryCount);
     }
   }
   let validityReason: string | undefined;
   if (validityChanges) {
     validityReason = validity <= 0 ? PASSWORD_VALIDITY_CLEARED_REASON : PASSWORD_VALIDITY_REASON;
   }
+  let historyReason: string | undefined;
+  if (newHistoryCount !== undefined && newHistoryCount < oldHistoryCount) {
+    historyReason = newHistoryCount === 0 ? PASSWORD_HISTORY_CLEARED_REASON : PASSWORD_HISTORY_TRIMMED_REASON;
+  }
   const reason = joinConfigImportReasons([
     organization && setsOrganization ? `${ORGANIZATION_SET_REASON}: ${configImportReasonValue(organization.name)}` : undefined,
     leftOutReason,
+    historyLeftOutReason,
     validityReason,
+    historyReason,
     parsed.data.view_all_users === true && !current.view_all_users ? VIEW_ALL_USERS_REASON : undefined,
   ]);
   return { status: 'overwritten', exists: true, configuration: parsed.data, reason };

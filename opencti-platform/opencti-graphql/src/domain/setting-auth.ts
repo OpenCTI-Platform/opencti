@@ -21,10 +21,10 @@ import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { notify } from '../database/redis';
 import { BUS_TOPICS, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, PASSWORD_HISTORY_FEATURE_FLAG } from '../config/conf';
-import { FunctionalError } from '../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { type CertAuthConfigInput, type HeadersAuthConfigInput, type LocalAuthConfigInput, LocalAuthLockoutFinalAction } from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
-import { SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { propagatePasswordValidityChange } from '../modules/user/user-domain';
 import { isValidPasswordHistoryCount, PASSWORD_HISTORY_MAX_COUNT, readPasswordHistoryCount, trimAllUsersPasswordHistory } from '../modules/user/user-password-history';
 
@@ -194,6 +194,39 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
     event_access: 'administration',
     message: 'updates `local authentication settings` for `platform settings`',
     context_data: { id: settingsId, entity_type: ENTITY_TYPE_SETTINGS, input: patch },
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
+};
+
+// The password history count alone, for the configuration import (#19758): settingsEditField refuses it, so that the
+// count is only ever written with the rules of updateLocalAuth. Same capability as updateLocalAuth, same validation
+// (resolvePasswordHistoryCount: a value it would not save is not saved), same trim of the hashes no longer needed.
+export const setPasswordHistoryCount = async (context: AuthContext, user: AuthUser, value: number) => {
+  if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw ForbiddenAccess();
+  }
+  const count = resolvePasswordHistoryCount({ password_policy_history_count: value });
+  if (count === undefined) {
+    return undefined;
+  }
+  // Read from the database, as the settings cache can lag behind a previous update
+  const storedSettings = await loadEntity<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  if (!storedSettings) {
+    throw FunctionalError('Cannot find the platform settings');
+  }
+  const oldCount = readPasswordHistoryCount(storedSettings);
+  const patch = { password_policy_history_count: count };
+  const { element } = await patchAttribute(context, user, storedSettings.id, ENTITY_TYPE_SETTINGS, patch);
+  if (count < oldCount) {
+    await trimAllUsersPasswordHistory(count);
+  }
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: 'updates `password_policy_history_count` for `platform settings`',
+    context_data: { id: storedSettings.id, entity_type: ENTITY_TYPE_SETTINGS, input: patch },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC, element, user);
 };

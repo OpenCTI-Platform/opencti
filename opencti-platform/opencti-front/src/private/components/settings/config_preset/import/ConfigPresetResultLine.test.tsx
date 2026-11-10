@@ -63,6 +63,9 @@ describe('ConfigPresetResultLine', () => {
     ["The expiration date of the users' passwords changes", "The expiration date of the users' passwords changes"],
     ["The users' passwords no longer expire", "The users' passwords no longer expire"],
     ['Users can view the users of other organizations', 'Users can view the users of other organizations'],
+    ['Fewer recent passwords are kept: users can reuse the oldest ones', 'Fewer recent passwords are kept: users can reuse the oldest ones'],
+    ['Recent passwords are no longer kept: users can reuse them', 'Recent passwords are no longer kept: users can reuse them'],
+    ['The reuse of recent passwords cannot be blocked on this platform', 'The reuse of recent passwords cannot be blocked on this platform'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();
