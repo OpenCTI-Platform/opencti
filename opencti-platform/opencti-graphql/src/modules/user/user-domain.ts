@@ -2726,7 +2726,7 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
 
 export const JWT_TOKEN_PREFIX = 'ey';
 type SessionEndRequest = { sessionID?: string; session?: { user?: unknown; regenerate?: (callback: (err?: unknown) => void) => void } };
-type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string; session_creation?: string } } };
+type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string; session_creation?: string }; destroy: (callback: (err?: unknown) => void) => void } };
 
 // The ended session must not stay on the request: the end of the request would save it again.
 // The request gets a new empty session instead, as the rest of the request may still use one: a login
@@ -2793,6 +2793,16 @@ export const endStreamSessionOverMaxLifetime = async (context: AuthContext, req:
   return true;
 };
 
+const destroyRequestSession = async (session: NonNullable<SessionAuthRequest['session']>) => {
+  await new Promise<void>((resolve) => {
+    session.destroy((err) => {
+      if (err) {
+        logApp.warn('[AUTH] Fail to destroy the session', { cause: err });
+      }
+      resolve();
+    });
+  });
+};
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
 export const authenticateUserFromRequest = async (context: AuthContext, req: SessionAuthRequest) => {
@@ -2821,14 +2831,21 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
   if (sessionUser) {
     const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
     const logged = platformUsers.get(sessionUser.id);
-    const authUser = userWithOrigin(req, { ...sessionUser, ...logged });
     // The maximum lifetime is counted from the login: the activity of the user never extends it
     if (isSessionOverMaxLifetime(sessionUser)) {
       // The user of the session may no longer be in the cache: the logout is recorded with its session identity
-      await endSessionOverMaxLifetime(req, authUser as AuthUser);
+      await endSessionOverMaxLifetime(req, userWithOrigin(req, { ...sessionUser, ...logged }) as AuthUser);
       return undefined;
     }
-    return authUser;
+    if (!logged) {
+      // The session outlives its user (deleted, merged, data reset...): the session content alone
+      // is not an identity, it has no name, capabilities, groups or markings.
+      logApp.warn('[AUTH] Session user missing from the users cache, session destroyed', { user_id: sessionUser.id });
+      await destroyRequestSession(req.session!);
+      return undefined;
+    }
+    const authUser = { ...sessionUser, ...logged };
+    return userWithOrigin(req, authUser);
   }
   // endregion
   // region Direct authentication
