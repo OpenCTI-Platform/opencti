@@ -137,6 +137,17 @@ SCO_PROPERTIES = """
                         mimetype
                         version
                     }
+                    objectMarking {
+                        id
+                        standard_id
+                        entity_type
+                        definition_type
+                        definition
+                        created
+                        modified
+                        x_opencti_order
+                        x_opencti_color
+                    }
                 }
             }
         }
@@ -408,6 +419,17 @@ SCO_PROPERTIES_WITH_FILES = """
                             metaData {
                                 mimetype
                                 version
+                            }
+                            objectMarking {
+                                id
+                                standard_id
+                                entity_type
+                                definition_type
+                                definition
+                                created
+                                modified
+                                x_opencti_order
+                                x_opencti_color
                             }
                         }
                     }
