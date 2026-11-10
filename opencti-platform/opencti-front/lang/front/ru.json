@@ -53,7 +53,7 @@
   "{count}h ago": "{count} ч. назад",
   "{count}m ago": "{count} мин. назад",
   "{counts} tokens": "{counts} токенов",
-  "{created} created, {overwritten} overwritten, {skipped} skipped, {failed} failed": "создано: {created}, перезаписано: {overwritten}, пропущено: {skipped}, с ошибкой: {failed}",
+  "{created} created, {overwritten} overwritten, {unchanged} up to date, {skipped} skipped, {failed} failed": "создано: {created}, перезаписано: {overwritten}, актуально: {unchanged}, пропущено: {skipped}, с ошибкой: {failed}",
   "{decided}/{total} decided": "Решено {decided}/{total}",
   "{enabled} of {total} enabled": "Включено: {enabled} из {total}",
   "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "Будут удалены {entitiesCount} сущностей и {relationshipsCount} связей, включая связи, относящиеся к выбранным сущностям.",

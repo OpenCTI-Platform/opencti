@@ -53,7 +53,7 @@
   "{count}h ago": "{count}시간 전",
   "{count}m ago": "{count}분 전",
   "{counts} tokens": "{counts} 토큰",
-  "{created} created, {overwritten} overwritten, {skipped} skipped, {failed} failed": "생성 {created}개, 덮어쓰기 {overwritten}개, 건너뜀 {skipped}개, 실패 {failed}개",
+  "{created} created, {overwritten} overwritten, {unchanged} up to date, {skipped} skipped, {failed} failed": "생성 {created}개, 덮어쓰기 {overwritten}개, 최신 상태 {unchanged}개, 건너뜀 {skipped}개, 실패 {failed}개",
   "{decided}/{total} decided": "{decided}/{total} 결정됨",
   "{enabled} of {total} enabled": "{total}개 중 {enabled}개 활성화됨",
   "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "선택한 엔티티에 연결된 관계를 포함하여 {entitiesCount}개의 엔티티와 {relationshipsCount}개의 관계가 제거됩니다.",

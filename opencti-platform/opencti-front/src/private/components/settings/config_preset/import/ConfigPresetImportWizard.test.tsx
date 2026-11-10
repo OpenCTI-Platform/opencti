@@ -632,7 +632,7 @@ describe('ConfigPresetImportWizard', () => {
       await resolve(rendered, 'ConfigPresetImportWizardQuery', { Query: () => ({ configPresetImportSession: finished }) });
       expect(await screen.findByText('Import finished')).toBeInTheDocument();
       expect(screen.getByText('Theme name already exists')).toBeInTheDocument();
-      expect(screen.getByText('0 created, 1 overwritten, 0 skipped, 1 failed')).toBeInTheDocument();
+      expect(screen.getByText('0 created, 1 overwritten, 0 up to date, 0 skipped, 1 failed')).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Download report' })).toHaveAttribute('href', expect.stringContaining(encodeURIComponent('config_preset/history/id/import-report.json')));
     });
 
@@ -793,6 +793,24 @@ describe('ConfigPresetImportWizard', () => {
       await renderWizard(session({ status: 'FINISHED', outcome: 'COMPLETED', counts: { created: 1, overwritten: 0, skipped: 0, failed: 0 }, results: [processed('messages', 'banner', 'CREATED')] }));
       expect(screen.getByText('Platform settings (1/1)')).toBeInTheDocument();
       expect(screen.queryByRole('link', { name: 'Download report' })).not.toBeInTheDocument();
+    });
+
+    it('counts the items the platform already had as they are apart from the skipped ones', async () => {
+      await renderWizard(session({
+        status: 'FINISHED',
+        outcome: 'COMPLETED',
+        counts: { created: 0, overwritten: 0, skipped: 2, failed: 0 },
+        results: [
+          { ...processed('messages', 'banner', 'SKIPPED', 'Already up to date'), code: 'unchanged' },
+          processed('branding', 'theme--1', 'SKIPPED', 'Theme name already exists'),
+        ],
+      }));
+      expect(screen.getByText('0 created, 0 overwritten, 1 up to date, 1 skipped, 0 failed')).toBeInTheDocument();
+    });
+
+    it('counts nothing as up to date when the results do not say so', async () => {
+      await renderWizard(session({ status: 'FINISHED', outcome: 'COMPLETED', counts: { created: 0, overwritten: 0, skipped: 3, failed: 0 }, results: [] }));
+      expect(screen.getByText('0 created, 0 overwritten, 0 up to date, 3 skipped, 0 failed')).toBeInTheDocument();
     });
 
     it('clears the session and closes the wizard on Close of the result', async () => {

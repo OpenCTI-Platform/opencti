@@ -51,6 +51,7 @@ import { administratorRole, analystRole } from './configPreset-roles-fixtures';
 import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
 import { customMarking, papRed } from './configPreset-markings-fixtures';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
+import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusionLists-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -90,6 +91,7 @@ const themeItem = (theme: { standard_id: string; name: string }, isDefault: bool
   isDefault,
 });
 const labelItem = (label: { standard_id: string; value: string }) => ({ key: label.standard_id, label: label.value, translatable: false, dependsOn: [], isDefault: false });
+const exclusionListItem = (list: { standard_id: string; name: string }) => ({ key: list.standard_id, label: list.name, translatable: false, dependsOn: [], isDefault: false });
 const onePage = (globalCount: number) => ({ hasNextPage: false, globalCount });
 
 describe('Config preset exportable types query', () => {
@@ -198,6 +200,15 @@ describe('Config preset exportable types query', () => {
         items: [labelItem(otherLabel), labelItem(customLabel)],
         itemsPageInfo: onePage(2),
       },
+      {
+        key: 'exclusionLists',
+        label: 'Exclusion lists',
+        description: 'Exclusion lists and their values',
+        group: { key: 'customization', label: 'Customization' },
+        // By name
+        items: [exclusionListItem(dnsExclusionList), exclusionListItem(retiredExclusionList)],
+        itemsPageInfo: onePage(2),
+      },
     ]);
   });
 
@@ -238,7 +249,7 @@ describe('Config preset exportable types query', () => {
     const types = result.data?.configPresetExportableTypes as { key: string; lockedByEnterpriseEdition: boolean; items: unknown[]; itemsPageInfo: unknown }[];
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
-      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false],
+      ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['exclusionLists', false],
     ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
@@ -281,6 +292,7 @@ describe('Config preset exportable types query', () => {
       ['groups', 'securityAccess'],
       ['policies', 'securityAccess'],
       ['labels', 'taxonomy'],
+      ['exclusionLists', 'customization'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);

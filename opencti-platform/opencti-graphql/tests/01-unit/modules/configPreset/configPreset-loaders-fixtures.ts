@@ -6,6 +6,7 @@ import { ALL_ROLES } from './configPreset-roles-fixtures';
 import { ALL_GROUPS, GROUP_ALLOWED_MARKINGS, GROUP_ROLE_RELATIONS } from './configPreset-groups-fixtures';
 import { ALL_MARKINGS } from './configPreset-markings-fixtures';
 import { ALL_LABELS } from './configPreset-labels-fixtures';
+import { ALL_EXCLUSION_LISTS } from './configPreset-exclusionLists-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -19,6 +20,7 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   Group: ALL_GROUPS,
   'Marking-Definition': ALL_MARKINGS,
   Label: ALL_LABELS,
+  ExclusionList: ALL_EXCLUSION_LISTS,
 };
 const labelOf = (entity: { name?: string; definition?: string; value?: string }) => entity.name ?? entity.definition ?? entity.value ?? '';
 
