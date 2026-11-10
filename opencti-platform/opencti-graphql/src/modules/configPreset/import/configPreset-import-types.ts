@@ -27,6 +27,16 @@ export interface ConfigPresetBundleItem {
   // Path in the zip
   path: string;
   configuration: ConfigPresetConfiguration;
+  // The attachment of the item in the zip (the values of an exclusion list): absent when the item has none, or when the zip lacks it
+  attachment?: ConfigPresetBundleAttachment;
+}
+
+export interface ConfigPresetBundleAttachment {
+  // Path in the zip
+  path: string;
+  // Reads the attachment when it is needed, never while the bundle is read. The limit is enforced on the bytes really read:
+  // null when the attachment is bigger, nothing is kept of it.
+  read: (limit: number) => Promise<Buffer | null>;
 }
 
 // What an importer decides for an item, without writing anything
@@ -55,6 +65,8 @@ export interface ConfigPresetImportPlan {
   themeNames?: Set<string>;
   // The names that the themes the earlier items of a dry run would rename no longer hold
   releasedThemeNames?: Set<string>;
+  // The names (normalized) of the exclusion lists the earlier items of an import hold, dry run or not
+  exclusionListNames?: Set<string>;
   // The standard ids of the roles the earlier items of a dry run would create
   roleIds?: Set<string>;
   // The standard ids of the groups the earlier items of a dry run would create

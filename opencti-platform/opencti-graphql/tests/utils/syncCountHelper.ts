@@ -39,7 +39,7 @@ testCreatedCounter.identity = 63;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
-testCreatedCounter.indicator = 58;
+testCreatedCounter.indicator = 61;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -170,7 +170,7 @@ testDeletedCounter.grouping = 2;
 // and 2 by ingestionDeduplication-domain-test
 testDeletedCounter.identity = 46;
 testDeletedCounter.incident = 6;
-testDeletedCounter.indicator = 30;
+testDeletedCounter.indicator = 33;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test

@@ -7,7 +7,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { APP_BASE_PATH } from '../../../../../relay/environment';
 import ConfigPresetResultGroups, { useResultLabel } from './ConfigPresetResultGroups';
-import ConfigPresetResultLine from './ConfigPresetResultLine';
+import ConfigPresetResultLine, { CODE_UNCHANGED } from './ConfigPresetResultLine';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
 interface ConfigPresetImportProgressProps {
@@ -39,16 +39,27 @@ interface ConfigPresetImportResultProps {
   onClose: () => void;
 }
 
+// The items the platform already had as they are are counted apart: the backend counts them as skipped, which reads as if they were ignored
+const toSummaryCounts = (session: ConfigPresetImportSession) => {
+  const { counts, results } = session;
+  if (!counts) {
+    return null;
+  }
+  const unchanged = Math.min(counts.skipped, results.filter((result) => result.status === 'SKIPPED' && result.code === CODE_UNCHANGED).length);
+  return { ...counts, skipped: counts.skipped - unchanged, unchanged };
+};
+
 // The result of the last import: the items grouped like the selection, and the report to download
 export const ConfigPresetImportResult: FunctionComponent<ConfigPresetImportResultProps> = ({ session, onClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+  const counts = toSummaryCounts(session);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }}>
       <Text variant="title-sm">{t_i18n('Import finished')}</Text>
-      {session.counts && (
+      {counts && (
         <Text variant="content-base">
-          {t_i18n('{created} created, {overwritten} overwritten, {skipped} skipped, {failed} failed', { values: session.counts })}
+          {t_i18n('{created} created, {overwritten} overwritten, {unchanged} up to date, {skipped} skipped, {failed} failed', { values: counts })}
         </Text>
       )}
       <ConfigPresetResultGroups results={session.results} />

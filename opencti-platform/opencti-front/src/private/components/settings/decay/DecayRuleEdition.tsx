@@ -24,7 +24,7 @@ import Filters from '@components/common/lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
-import { enabledFilters } from './utils/enabledFilters';
+import { useDecayFilterKeys } from './utils/enabledFilters';
 import { useTheme } from '@mui/material/styles';
 
 export const decayRuleEditionMutation = graphql`
@@ -58,6 +58,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [commitUpdate] = useApiMutation(decayRuleEditionMutation);
+  const decayFilterKeys = useDecayFilterKeys();
   const [filters, filterHelpers] = useFiltersState(deserializeFilterGroupForFrontend(initialValues.decay_filters) ?? undefined);
 
   useEffect(() => {
@@ -132,7 +133,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
           }}
           >
             <Filters
-              availableFilterKeys={enabledFilters}
+              availableFilterKeys={decayFilterKeys}
               helpers={filterHelpers}
               searchContext={{ entityTypes: ['Indicator'] }}
             />

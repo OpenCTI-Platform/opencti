@@ -77,6 +77,8 @@ const EXCLUSION_LIST_DEFINITION: ModuleDefinition<StoreEntityExclusionList, Stix
       type: 'string',
       format: 'short',
       mandatoryType: 'internal',
+      // The key of the file is set when the list is created: the export reads nothing else than the list's own file
+      update: false,
       editDefault: false,
       multiple: false,
       upsert: false,

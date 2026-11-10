@@ -40,6 +40,157 @@ describe('Config preset bundle reader', () => {
     expect(bundle.ignored.sort()).toEqual(['README.txt', 'other/not-an-item.json', 'other/unknown.json']);
   });
 
+  describe('the attachment of an item', () => {
+    const ID = '3f1d0c4e-7a52-4b8e-9f3a-1c2d3e4f5a6b';
+    const JSON_PATH = `customization/exclusion_lists/${ID}.json`;
+    const TXT_PATH = `customization/exclusion_lists/${ID}.txt`;
+    // The JSON of an item of the family, pointing to a file (or to none)
+    const withAttachment = (attachment: string | undefined, id = ID, path = JSON_PATH) => ({
+      [path]: JSON.stringify({
+        openCTI_version: '0.0.1',
+        type: 'customization.exclusionLists',
+        id,
+        configuration: { name: 'DNS', exclusion_list_entity_types: ['IPv4-Addr'] },
+        ...(attachment ? { attachment } : {}),
+      }),
+    });
+    const read = async (files: Record<string, string | Buffer>) => readConfigPresetBundle(await buildZip({ 'metadata.json': metadataFile(), ...files }));
+
+    it('is the entry of the zip its JSON points to, read when it is asked for, and is not reported as ignored', async () => {
+      const bundle = await read({ ...withAttachment(TXT_PATH), [TXT_PATH]: '8.8.8.8\n1.1.1.1\n' });
+      expect(bundle.items).toHaveLength(1);
+      expect(bundle.items[0].attachment?.path).toBe(TXT_PATH);
+      expect(await bundle.items[0].attachment!.read(1024)).toEqual(Buffer.from('8.8.8.8\n1.1.1.1\n'));
+      // Read again: the bundle keeps nothing of it
+      expect(await bundle.items[0].attachment!.read(1024)).toEqual(Buffer.from('8.8.8.8\n1.1.1.1\n'));
+      expect(bundle.ignored).toEqual([]);
+    });
+
+    it('is read byte for byte, whatever its content', async () => {
+      const bytes = Buffer.from([0x38, 0x0d, 0x0a, 0xc3, 0xa9, 0xff, 0x00, 0x0a]);
+      const bundle = await read({ ...withAttachment(TXT_PATH), [TXT_PATH]: bytes });
+      expect(await bundle.items[0].attachment!.read(1024)).toEqual(bytes);
+    });
+
+    it('gives null, and nothing else, when it holds more than the limit', async () => {
+      const bundle = await read({ ...withAttachment(TXT_PATH), [TXT_PATH]: Buffer.alloc(2048, 'a') });
+      expect(await bundle.items[0].attachment!.read(2047)).toBeNull();
+      expect(await bundle.items[0].attachment!.read(2048)).toHaveLength(2048);
+    });
+
+    it('is not bound by the limit of a JSON file of the bundle', async () => {
+      const bundle = await read({ ...withAttachment(TXT_PATH), [TXT_PATH]: Buffer.alloc(CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE + 1, 'a') });
+      expect(await bundle.items[0].attachment!.read(CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE + 1)).toHaveLength(CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE + 1);
+    });
+
+    // `count` lists of `size` bytes each, every one with its attachment
+    const listsWithAttachments = (count: number, size: number) => {
+      const files: Record<string, string | Buffer> = {};
+      for (let i = 0; i < count; i += 1) {
+        const id = `aaaaaaaa-bbbb-4ccc-8ddd-${String(i).padStart(12, '0')}`;
+        const txt = `customization/exclusion_lists/${id}.txt`;
+        Object.assign(files, withAttachment(txt, id, `customization/exclusion_lists/${id}.json`), { [txt]: Buffer.alloc(size, 'a') });
+      }
+      return files;
+    };
+    const size = CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE;
+    const tooMany = Math.floor(CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE / size) + 1;
+
+    it('counts against the extracted size limit of the bundle, with the JSON files: a bundle that cannot be read to the end is refused at once', async () => {
+      const error = await refusedWith(buildZip({ 'metadata.json': metadataFile(), ...listsWithAttachments(tooMany, size) }));
+      expect(error.message).toContain('too large once extracted');
+    });
+
+    it('counts an attachment once, however many times it is read: an item reads it to be computed and again to be applied', async () => {
+      // 30 MB of attachments are within the limit of 50 MB, 60 MB would not be
+      const bundle = await read(listsWithAttachments(6, size));
+      for (let pass = 0; pass < 3; pass += 1) {
+        for (const item of bundle.items) {
+          expect(await item.attachment!.read(size)).toHaveLength(size);
+        }
+      }
+    });
+
+    // The uncompressed size of each attachment of the central directory (offset 24 of a header) is set to 1: the zip lies
+    const underdeclare = (zip: Buffer) => {
+      const CENTRAL_DIRECTORY_HEADER = 0x02014b50;
+      for (let offset = zip.indexOf(Buffer.from('PK\x01\x02', 'latin1')); offset >= 0; offset = zip.indexOf(Buffer.from('PK\x01\x02', 'latin1'), offset + 4)) {
+        expect(zip.readUInt32LE(offset)).toBe(CENTRAL_DIRECTORY_HEADER);
+        const name = zip.subarray(offset + 46, offset + 46 + zip.readUInt16LE(offset + 28)).toString();
+        if (name.endsWith('.txt')) {
+          zip.writeUInt32LE(1, offset + 24);
+        }
+      }
+      return zip;
+    };
+
+    it('enforces the limit on the bytes really read, whatever size the zip declares', async () => {
+      const bundle = await readConfigPresetBundle(underdeclare(await buildZip({ 'metadata.json': metadataFile(), ...listsWithAttachments(tooMany, size) })));
+      expect(bundle.items).toHaveLength(tooMany);
+      const error = await (async () => {
+        for (const item of bundle.items) {
+          await item.attachment!.read(size);
+        }
+      })().catch((err) => err);
+      expect(error.extensions?.data?.reason).toEqual('bundle_refused');
+      expect(error.message).toContain('too large once extracted');
+    });
+
+    it('counts a file that is refused for its size as read up to the limit, so a bundle of such files is stopped', async () => {
+      // Each file is one byte over the limit of its read: refused, and it still cost `size` bytes of decompression
+      const bundle = await readConfigPresetBundle(underdeclare(await buildZip({ 'metadata.json': metadataFile(), ...listsWithAttachments(tooMany, size + 1) })));
+      const reads: Array<Buffer | null> = [];
+      const error = await (async () => {
+        for (const item of bundle.items) {
+          reads.push(await item.attachment!.read(size));
+        }
+      })().catch((err) => err);
+      expect(reads.length).toBeLessThan(tooMany - 1);
+      expect(reads.every((content) => content === null)).toBe(true);
+      expect(error.extensions?.data?.reason).toEqual('bundle_refused');
+    });
+
+    it('is absent when the zip has no entry at the path, and an item without attachment has none', async () => {
+      const missing = await read(withAttachment(TXT_PATH));
+      expect(missing.items[0].attachment).toBeUndefined();
+      const none = await read(withAttachment(undefined));
+      expect(none.items[0].attachment).toBeUndefined();
+    });
+
+    it('is looked up in the zip only: a path out of it or a path of the disk gives no attachment', async () => {
+      const outside = await read({ ...withAttachment('../../etc/passwd'), [TXT_PATH]: 'x' });
+      expect(outside.items[0].attachment).toBeUndefined();
+      expect(outside.ignored).toEqual([TXT_PATH]);
+    });
+
+    // The path is compared as it is written: nothing is normalized or resolved, and a JSON entry is never a file
+    it.each([`./${TXT_PATH}`, `/${TXT_PATH}`, 'metadata.json', JSON_PATH])('does not resolve the pointer %s', async (pointer) => {
+      const bundle = await read({ ...withAttachment(pointer), [TXT_PATH]: 'x' });
+      expect(bundle.items.find((item) => item.path === JSON_PATH)?.attachment).toBeUndefined();
+      expect(bundle.ignored).toContain(TXT_PATH);
+    });
+
+    it('gives an attachment two items point to to the first item of the zip, the other one has none', async () => {
+      const second = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+      const secondPath = `customization/exclusion_lists/${second}.json`;
+      const bundle = await read({ ...withAttachment(TXT_PATH), ...withAttachment(TXT_PATH, second, secondPath), [TXT_PATH]: 'x' });
+      expect(bundle.items.find((item) => item.path === JSON_PATH)?.attachment?.path).toBe(TXT_PATH);
+      expect(bundle.items.find((item) => item.path === secondPath)?.attachment).toBeUndefined();
+    });
+
+    it('serves one item only, and an entry no item points to is reported as ignored', async () => {
+      const second = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+      const bundle = await read({
+        ...withAttachment(TXT_PATH),
+        ...withAttachment(TXT_PATH, second, `customization/exclusion_lists/${second}.json`),
+        [TXT_PATH]: 'x',
+        'customization/exclusion_lists/orphan.txt': 'y',
+      });
+      expect(bundle.items.filter((item) => item.attachment)).toHaveLength(1);
+      expect(bundle.ignored).toEqual(['customization/exclusion_lists/orphan.txt']);
+    });
+  });
+
   it('reads the hidden entity types as an item of the bundle', async () => {
     const files = { ...validBundleFiles(), 'data_model/hidden_entity_types.json': itemFile('dataModel.hiddenEntityTypes', 'hiddenEntityTypes', { hidden_entity_types: ['Malware'] }) };
     const bundle = await readConfigPresetBundle(await buildZip(files));
