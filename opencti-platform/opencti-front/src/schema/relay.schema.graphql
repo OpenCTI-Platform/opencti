@@ -9764,6 +9764,7 @@ type Mutation {
   workflowDefinitionPublish(entityType: String!): WorkflowDefinitionMutationResult
   workflowDefinitionRestorePublished(entityType: String!): WorkflowDefinitionMutationResult
   workflowDefinitionSet(definition: String!, entityType: String!): WorkflowDefinitionMutationResult
+  workflowMigrate(entityType: String!, overwrite: Boolean = false, publish: Boolean = false): WorkflowDefinitionMutationResult
   workspaceAdd(input: WorkspaceAddInput!): Workspace
   workspaceConfigurationImport(file: Upload!): String!
   workspaceContextClean(id: ID!): Workspace
@@ -12393,6 +12394,7 @@ type Query {
   workflowDefinitionPublished(entityType: String!): Boolean
   workflowInstance(entityId: String!): WorkflowInstance
   workflowMassTransitions(entityIds: [String!], entityType: String!, excludedIds: [String!], filters: String, search: String): [WorkflowTransition!]!
+  workflowMigrationPreview(entityType: String!): WorkflowMigrationPreview
   workflowStatuses(entityType: String!): [Status!]!
   works(after: ID, filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
   workspace(id: String!): Workspace
@@ -18083,6 +18085,41 @@ type WorkflowLastHistoryEntry {
   state: String!
   timestamp: String!
   user_id: String!
+}
+
+type WorkflowMigrationDiagnostic {
+  legacyStatusId: String
+  message: String!
+  templateId: String
+  type: WorkflowMigrationDiagnosticType!
+}
+
+enum WorkflowMigrationDiagnosticType {
+  DUPLICATE_ORDER
+  DUPLICATE_TEMPLATE
+  EXISTING_WORKFLOW
+  MISSING_ORDER
+  MISSING_TEMPLATE
+  NAME_CONFLICT
+}
+
+type WorkflowMigrationPreview {
+  entityType: String!
+  results: [WorkflowMigrationScopeResult!]!
+}
+
+type WorkflowMigrationScopeResult {
+  diagnostics: [WorkflowMigrationDiagnostic!]!
+  hasPublishedVersion: Boolean!
+  initialState: String!
+  scope: StatusScope!
+  states: [WorkflowMigrationState!]!
+  transitions: [WorkflowSerializedTransition!]!
+}
+
+type WorkflowMigrationState {
+  order: Int!
+  statusId: String!
 }
 
 type WorkflowPendingAsyncAction {
