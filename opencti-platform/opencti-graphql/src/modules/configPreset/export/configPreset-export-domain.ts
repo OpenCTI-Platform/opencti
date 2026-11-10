@@ -30,7 +30,7 @@ import {
   isConfigPresetFamilyAvailable,
 } from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition } from '../configPreset-types';
-import { CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE, CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE } from '../import/configPreset-import-bundle';
+import { CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE, CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE, CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE } from '../import/configPreset-import-bundle';
 import { buildConfigPresetFileName, CONFIG_PRESET_DEPENDENCIES_FILE, CONFIG_PRESET_METADATA_FILE, sanitizeBundleName } from '../configPreset-utils';
 
 // The dialog shows a type inline when its first page is its only one
@@ -249,6 +249,15 @@ const writeConfigPresetZip = async (
     }
     archive.append(content, { name });
   };
+  // The import reads a JSON entry up to its own limit, whatever the size of the bundle: a bigger one is an export it could not read back.
+  // The files an item carries have their own limit, checked when they are read.
+  const appendJson = (content: string, name: string) => {
+    const size = Buffer.byteLength(content);
+    if (size > CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE) {
+      throw FunctionalError('The export is too large to be imported back, select fewer items', { limit: CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE, size, name });
+    }
+    append(content, name);
+  };
   try {
     const counts: Record<string, number> = {};
     for (let i = 0; i < families.length; i += 1) {
@@ -260,7 +269,7 @@ const writeConfigPresetZip = async (
         }
         const item = family.items[j];
         const file = await exportConfigPresetItem(context, user, family, item);
-        append(JSON.stringify(file, null, 2), configPresetItemFilePath(family, item));
+        appendJson(JSON.stringify(file, null, 2), configPresetItemFilePath(family, item));
         // The attachment of the item (the values of an exclusion list) as it is stored, next to its JSON
         if (item.attachment) {
           append(await item.attachment.read(context, user), configPresetItemAttachmentPath(family, item.attachment));
@@ -273,8 +282,8 @@ const writeConfigPresetZip = async (
       generated_at: metadataBase.generated_at,
       bundle_name: metadataBase.bundle_name,
     };
-    append(JSON.stringify(metadata, null, 2), CONFIG_PRESET_METADATA_FILE);
-    append(JSON.stringify(buildConfigPresetDependencies(families), null, 2), CONFIG_PRESET_DEPENDENCIES_FILE);
+    appendJson(JSON.stringify(metadata, null, 2), CONFIG_PRESET_METADATA_FILE);
+    appendJson(JSON.stringify(buildConfigPresetDependencies(families), null, 2), CONFIG_PRESET_DEPENDENCIES_FILE);
     // Awaited together: when the output fails, the archive is no longer drained and finalize never resolves
     await Promise.all([archive.finalize(), written]);
     // Attached files can hardly be compressed: the zip itself must be small enough for the import to take it

@@ -360,8 +360,9 @@ describe('Config preset export', () => {
   });
 
   it('does not hang when the output fails while the archive is written, and removes the temporary zip', async () => {
-    // Incompressible content larger than the stream buffers: once the output fails, the archive is no longer drained
-    const largeSettings = { ...storedSettings, platform_title: crypto.randomBytes(4 * 1024 * 1024).toString('base64') };
+    // Incompressible content larger than the stream buffers, and under the 5 MB the import reads in a JSON file (3 MB become 4 MB in base64):
+    // once the output fails, the archive is no longer drained
+    const largeSettings = { ...storedSettings, platform_title: crypto.randomBytes(3 * 1024 * 1024).toString('base64') };
     vi.mocked(topEntitiesList).mockResolvedValue([largeSettings] as never);
     createWriteStreamSpy.mockImplementation(((p: fs.PathLike, options?: Parameters<typeof fs.createWriteStream>[1]) => {
       if (!String(p).includes(TMP_ZIP_MARKER)) {
@@ -527,6 +528,21 @@ describe('Config preset export', () => {
         .rejects.toThrow('The export is too large to be imported back');
       expect(uploadToStorage).not.toHaveBeenCalled();
       tmpZipPaths().forEach((zipPath) => expect(fs.existsSync(zipPath)).toBe(false));
+    });
+
+    it('refuses an export with a JSON file larger than the import reads, however small the bundle is, and uploads nothing', async () => {
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([Buffer.from('8.8.8.8\n')]) as never);
+      // The import reads a JSON file up to 5 MB: this one is a few bytes more
+      vi.mocked(fullEntitiesList).mockResolvedValue([{ ...dnsExclusionList, description: 'a'.repeat(5 * 1024 * 1024) }] as never);
+      await expect(configPresetExport(context, bypassUser, [{ type: 'exclusionLists' }])).rejects.toThrow('The export is too large to be imported back');
+      expect(uploadToStorage).not.toHaveBeenCalled();
+      expect(publishUserAction).not.toHaveBeenCalled();
+      tmpZipPaths().forEach((zipPath) => expect(fs.existsSync(zipPath)).toBe(false));
+      // Under the limit, the same list is exported
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([Buffer.from('8.8.8.8\n')]) as never);
+      vi.mocked(fullEntitiesList).mockResolvedValue([{ ...dnsExclusionList, description: 'a'.repeat(1024 * 1024) }] as never);
+      await configPresetExport(context, bypassUser, [{ type: 'exclusionLists' }]);
+      expect(uploadToStorage).toHaveBeenCalledTimes(1);
     });
 
     it('fails with the error of the storage when it cannot be read, it is not a missing file', async () => {
