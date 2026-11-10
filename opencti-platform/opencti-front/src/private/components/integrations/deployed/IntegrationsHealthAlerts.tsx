@@ -7,7 +7,6 @@ import { type HealthIssue } from '@components/integrations/deployed/IngestionHea
 import useHealthCheckMessage from '@components/data/connectors/useHealthCheckMessage';
 import type { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 const MAX_NAMES = 3;
 
@@ -22,9 +21,6 @@ const IntegrationsHealthAlerts = ({ items, onShowIssue }: IntegrationsHealthAler
   const { t_i18n } = useFormatter();
   const { getHealthCheckMessage } = useHealthCheckMessage();
   const theme = useTheme();
-  const { isFeatureEnable } = useHelper();
-  if (!isFeatureEnable('INGESTION_HEALTH')) return null;
-
   const alerts = (['critical', 'degraded'] as const).flatMap((severity) => {
     const affected = items.filter((item) => item.healthIssue?.severity === severity);
     if (affected.length === 0) return [];

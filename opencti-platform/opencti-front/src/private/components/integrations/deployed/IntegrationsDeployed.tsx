@@ -61,7 +61,6 @@ const IntegrationsDeployedContent = ({
   const typeMetadata = useDeployedTypeMetadata();
   const { isFeatureEnable } = useHelper();
   const isConnectorUpdateEnabled = isFeatureEnable('DECOUPLING_VERSIONS');
-  const isIngestionHealthEnabled = isFeatureEnable('INGESTION_HEALTH');
   const { feedsData, formsData, refetchFeeds, refetchForms } = data;
 
   const items = useDeployedIntegrations({
@@ -71,7 +70,6 @@ const IntegrationsDeployedContent = ({
     formsData,
     logosBySlug,
     isConnectorUpdateEnabled,
-    isIngestionHealthEnabled,
   });
 
   const {
@@ -88,7 +86,6 @@ const IntegrationsDeployedContent = ({
     items,
     searchParams,
     isConnectorUpdateEnabled,
-    isIngestionHealthEnabled,
   });
 
   const [searchInput, setSearchInput] = useState(filters.search);
@@ -186,7 +183,6 @@ const IntegrationsDeployedContent = ({
           hasActiveFilters={hasActiveFilters}
           onClearAll={handleResetFilters}
           showUpdateAvailableFacet={isConnectorUpdateEnabled}
-          showHealthFacet={isIngestionHealthEnabled}
           facets={facets}
         />
 

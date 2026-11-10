@@ -1,11 +1,9 @@
-import { INGESTION_HEALTH_FEATURE_FLAG } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
-import { enforceEnableFeatureFlag } from '../../utils/access';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { IngestionHealthSettings as GraphqlIngestionHealthSettings, IngestionHealthSettingsInput } from '../../generated/graphql';
 import type { AuthContext } from '../../types/user';
 import { DEFAULT_HEALTH_NOTIFICATION_DELAY_MS } from './ingestionHealth-checks';
-import { HEALTH_CHECK_REGISTRY, type HealthCheckCode, type HealthCheckDefinition, isHealthCheckCode } from './ingestionHealth-registry';
+import { HEALTH_CHECK_REGISTRY, type HealthCheckCode, type HealthCheckDefinition, isHealthCheckAvailable, isHealthCheckCode } from './ingestionHealth-registry';
 import type { IngestionHealthSettings } from './ingestionHealth-types';
 
 export const MAX_HEALTH_NOTIFICATION_DELAY_MS = 24 * 60 * 60 * 1000;
@@ -17,12 +15,12 @@ export const resolveIngestionHealthSettings = (settings: IngestionHealthSettings
   disabled_health_checks: (settings?.disabled_health_checks ?? []).filter(isHealthCheckCode),
 });
 
-// Every check of the registry, so that the settings list the checks added later as enabled
+// Every check of the registry available on the platform, so that the settings list the checks added later as enabled
 export const toGraphqlIngestionHealthSettings = (settings: IngestionHealthSettings | null | undefined): GraphqlIngestionHealthSettings => {
   const resolved = resolveIngestionHealthSettings(settings);
   return {
     ...resolved,
-    health_checks: (Object.keys(HEALTH_CHECK_REGISTRY) as HealthCheckCode[]).map((code) => {
+    health_checks: (Object.keys(HEALTH_CHECK_REGISTRY) as HealthCheckCode[]).filter(isHealthCheckAvailable).map((code) => {
       // Widened: the registry keeps the narrow type of each check, an optional field is absent from most of them
       const definition: HealthCheckDefinition = HEALTH_CHECK_REGISTRY[code];
       return {
@@ -51,7 +49,6 @@ export const validateIngestionHealthSettingsInput = async (
   input: IngestionHealthSettingsInput,
   currentSettings: IngestionHealthSettings | null | undefined,
 ) => {
-  enforceEnableFeatureFlag(INGESTION_HEALTH_FEATURE_FLAG);
   const { notification_delay, disabled_health_checks } = input;
   if (notification_delay !== undefined) {
     if (!isValidNotificationDelay(notification_delay)) {

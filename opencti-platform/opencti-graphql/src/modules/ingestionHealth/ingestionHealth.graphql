@@ -58,10 +58,9 @@ input IngestionHealthSettingsInput {
 }
 
 extend type Query {
-  # Null when the feature is disabled: composed into the query of the Parameters page
-  ingestionHealthSettings: IngestionHealthSettings @auth(for: [SETTINGS_SETPARAMETERS]) @ff(flags: ["INGESTION_HEALTH"], softFail: true)
+  ingestionHealthSettings: IngestionHealthSettings @auth(for: [SETTINGS_SETPARAMETERS])
 }
 
 extend type Mutation {
-  ingestionHealthSettingsEdit(input: IngestionHealthSettingsInput!): IngestionHealthSettings @auth(for: [SETTINGS_SETPARAMETERS]) @ff(flags: ["INGESTION_HEALTH"])
+  ingestionHealthSettingsEdit(input: IngestionHealthSettingsInput!): IngestionHealthSettings @auth(for: [SETTINGS_SETPARAMETERS])
 }

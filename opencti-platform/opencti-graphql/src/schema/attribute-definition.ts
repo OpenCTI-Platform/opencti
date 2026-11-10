@@ -6,7 +6,7 @@ import type { BasicStoreIdentifier } from '../types/store';
 import type { AuthorizedMembers } from '../utils/authorizedMembers';
 import { DefaultFormating, type Formating, humanizeDate } from '../utils/humanize';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
-import { INGESTION_HEALTH_FEATURE_FLAG, TEST_MODE } from '../config/conf';
+import { TEST_MODE } from '../config/conf';
 import type { OpenCTIFile } from '../modules/internal/document/document-types';
 
 export const shortMapping = {
@@ -331,7 +331,6 @@ export const ingestion_health_changes: NestedObjectAttribute = {
   multiple: false,
   upsert: false,
   isFilterable: false,
-  featureFlag: INGESTION_HEALTH_FEATURE_FLAG,
   mappings: [
     { name: 'message', label: 'Check messages', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
     { name: 'critical_messages', label: 'Critical check messages', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
