@@ -17,13 +17,13 @@ interface ConfigPresetServiceAccountDialogProps {
   onSubmit: (value: FieldOption) => void;
 }
 
-// Without a default group for the ingestion users, the platform cannot create a service account: the connector writes with an existing user
+// Without a default group for the ingestion users, the platform cannot create a service account: the item writes with an existing user
 const ConfigPresetServiceAccountDialog: FunctionComponent<ConfigPresetServiceAccountDialogProps> = ({ open, itemLabel, value, onClose, onSubmit }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   return (
     <Dialog open={open} size="small" title={t_i18n('Service account of {name}', { values: { name: itemLabel } })} onClose={onClose}>
-      <Text variant="content-base">{t_i18n('No default group is defined for the service accounts: choose the user this connector writes with.')}</Text>
+      <Text variant="content-base">{t_i18n('No default group is defined for the service accounts: choose the user this item writes with.')}</Text>
       <Formik<{ user_id: FieldOption | null }>
         initialValues={{ user_id: value }}
         onSubmit={({ user_id: userId }) => {

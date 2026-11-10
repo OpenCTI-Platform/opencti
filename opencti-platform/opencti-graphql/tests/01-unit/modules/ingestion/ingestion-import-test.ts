@@ -13,9 +13,12 @@ vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', () => ({
   findAllJsonIngestion: vi.fn(),
   ingestionJsonEditField: vi.fn(),
   isSensitiveHeaderName: (name: string) => /authorization|token|key|secret|password|cookie|credential/i.test(name),
+  isSensitiveQueryAttribute: (attribute: { exposed?: string; to?: string }) => attribute.exposed === 'header' && /token|key/i.test(attribute.to ?? ''),
   sanitizeExportedHeaders: (headers: { name: string; value: string }[] | undefined) => headers,
+  sanitizeExportedQueryAttributes: (attributes: unknown[] | undefined) => attributes,
 }));
-vi.mock('../../../../src/modules/internal/jsonMapper/jsonMapper-domain', () => ({ createJsonMapperFromConfiguration: vi.fn(), findById: vi.fn() }));
+vi.mock('../../../../src/config/uriDenyList', () => ({ uriDenyList: () => ['*.denied.com'] }));
+vi.mock('../../../../src/modules/internal/jsonMapper/jsonMapper-domain', () => ({ createJsonMapperFromConfiguration: vi.fn(), deleteJsonMapper: vi.fn(), findById: vi.fn() }));
 vi.mock('../../../../src/modules/internal/mapper-utils', () => ({ convertRepresentationsIds: vi.fn() }));
 vi.mock('../../../../src/modules/ingestion/ingestion-execution-identity', () => ({ createIngestionAutomaticUser: vi.fn() }));
 vi.mock('../../../../src/modules/ingestion/ingestion-common', async (importOriginal) => ({
@@ -28,18 +31,19 @@ vi.mock('../../../../src/modules/connector/connector-import', () => ({
 }));
 vi.mock('../../../../src/modules/user/user-domain', () => ({ userAlreadyExists: vi.fn(), userDelete: vi.fn() }));
 vi.mock('../../../../src/domain/group', () => ({ findDefaultIngestionGroups: vi.fn() }));
-vi.mock('../../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn(), internalLoadById: vi.fn(), fullEntitiesList: vi.fn() }));
+vi.mock('../../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn(), internalLoadById: vi.fn(), internalFindByIds: vi.fn(), fullEntitiesList: vi.fn() }));
 vi.mock('../../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
 
 import { addIngestion, findAllRssIngestion, ingestionEditField } from '../../../../src/modules/ingestion/ingestion-rss-domain';
+import { addIngestionCsv, findAllCsvIngestion } from '../../../../src/modules/ingestion/ingestion-csv-domain';
 import { findAllTaxiiIngestion, ingestionTaxiiAdd, ingestionTaxiiEditField } from '../../../../src/modules/ingestion/ingestion-taxii-domain';
 import { addIngestionJson, findAllJsonIngestion } from '../../../../src/modules/ingestion/ingestion-json-domain';
-import { createJsonMapperFromConfiguration } from '../../../../src/modules/internal/jsonMapper/jsonMapper-domain';
+import { createJsonMapperFromConfiguration, deleteJsonMapper } from '../../../../src/modules/internal/jsonMapper/jsonMapper-domain';
 import { createIngestionAutomaticUser } from '../../../../src/modules/ingestion/ingestion-execution-identity';
 import { decryptIngestionCredential } from '../../../../src/modules/ingestion/ingestion-common';
 import { userAlreadyExists } from '../../../../src/modules/user/user-domain';
 import { findDefaultIngestionGroups } from '../../../../src/domain/group';
-import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, internalFindByIds, internalLoadById, storeLoadById } from '../../../../src/database/middleware-loader';
 import { getEntitiesMapFromCache } from '../../../../src/database/cache';
 import { AMBIGUOUS_FEED_REASON, feedAdapterOf, importConfigPresetFeed } from '../../../../src/modules/ingestion/ingestion-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
@@ -111,7 +115,30 @@ const jsonConfiguration = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+const MAPPER_AUTHOR_ID = 'identity--11111111-1111-4111-8111-111111111111';
+const MAPPER_MARKING_ID = 'marking-definition--22222222-2222-4222-8222-222222222222';
+const csvConfiguration = () => ({
+  name: 'Vendor CSV',
+  uri: 'https://csv.example.com/indicators.csv',
+  authentication_type: 'none',
+  markings: [],
+  csv_mapper: {
+    name: 'Vendor mapper',
+    has_header: true,
+    separator: ',',
+    representations: [{
+      id: 'indicator',
+      attributes: [
+        { key: 'createdBy', default_values: [MAPPER_AUTHOR_ID] },
+        { key: 'objectMarking', default_values: [MAPPER_MARKING_ID] },
+        { key: 'indicator_types', default_values: ['malicious-activity'] },
+      ],
+    }],
+  },
+});
+
 const rss = feedAdapterOf('rss');
+const csv = feedAdapterOf('csv');
 const taxii = feedAdapterOf('taxii');
 const json = feedAdapterOf('json');
 
@@ -129,6 +156,8 @@ beforeEach(() => {
   vi.mocked(findAllRssIngestion).mockResolvedValue([]);
   vi.mocked(findAllTaxiiIngestion).mockResolvedValue([]);
   vi.mocked(findAllJsonIngestion).mockResolvedValue([]);
+  vi.mocked(findAllCsvIngestion).mockResolvedValue([]);
+  vi.mocked(internalFindByIds).mockResolvedValue({} as never);
   vi.mocked(fullEntitiesList).mockResolvedValue([]);
   vi.mocked(addIngestion).mockResolvedValue({ id: 'created-id' } as never);
   vi.mocked(ingestionTaxiiAdd).mockResolvedValue({ id: 'created-id' } as never);
@@ -295,5 +324,91 @@ describe('importConfigPresetFeed credentials', () => {
       user_id: 'service-account-id',
       headers: [{ name: 'Accept', value: 'application/json' }, { name: 'X-Api-Key', value: 'api-key' }],
     }));
+  });
+});
+
+describe('importConfigPresetFeed mapper default values', () => {
+  it('reports the attributes whose default value is not on the platform, removed when the mapper is written', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValue({ [MAPPER_MARKING_ID]: { id: 'mapper-marking-id' } } as never);
+    vi.mocked(addIngestionCsv).mockResolvedValue({ id: 'created-id' } as never);
+    expect(await importConfigPresetFeed(context, user, csv, csvConfiguration(), { ...overwrite, dryRun: true }))
+      .toMatchObject({ status: 'created', reason: 'Mapper default values not found: createdBy' });
+    expect(internalFindByIds).toHaveBeenCalledWith(context, user, [MAPPER_AUTHOR_ID, MAPPER_MARKING_ID], expect.anything());
+  });
+
+  it('counts a marking the same import creates as found', async () => {
+    const plannedMarkings = new Map([[MAPPER_AUTHOR_ID, {}], [MAPPER_MARKING_ID, {}]]);
+    expect(await importConfigPresetFeed(context, user, csv, csvConfiguration(), { ...overwrite, dryRun: true, plannedMarkings }))
+      .toMatchObject({ status: 'created', reason: undefined });
+    expect(internalFindByIds).not.toHaveBeenCalled();
+  });
+});
+
+describe('importConfigPresetFeed review fixes', () => {
+  it('refuses a denied URI in the preview, and a configuration nested too deeply', async () => {
+    expect(await importConfigPresetFeed(context, user, rss, rssConfiguration({ uri: 'https://feeds.denied.com/rss' }), { ...overwrite, dryRun: true }))
+      .toMatchObject({ status: 'failed', code: 'invalid', reason: 'This URI is not allowed for ingestion.' });
+    let nested: Record<string, unknown> = {};
+    const deep = nested;
+    for (let i = 0; i < 100; i += 1) {
+      nested.child = {};
+      nested = nested.child as Record<string, unknown>;
+    }
+    expect(await importConfigPresetFeed(context, user, json, jsonConfiguration({ body: deep }), { ...overwrite, dryRun: true }))
+      .toMatchObject({ status: 'failed', code: 'invalid', reason: 'configuration: too deeply nested' });
+    expectNothingWritten();
+  });
+
+  it('tells the credentials of a copy when it refuses to overwrite', async () => {
+    vi.mocked(findAllTaxiiIngestion).mockResolvedValue([storedTaxii(), storedTaxii({ id: 'other-id' })] as never);
+    const result = await importConfigPresetFeed(context, user, taxii, taxiiConfiguration(), { ...overwrite, dryRun: true });
+    expect(result).toMatchObject({ status: 'failed', code: 'ambiguous' });
+    expect(result.credentials?.map(({ key, stored }) => [key, stored])).toEqual([['username', false], ['password', false]]);
+  });
+
+  it('accepts the HTTP verbs of the JSON feed forms, and an empty sub page verb', async () => {
+    const configuration = jsonConfiguration({ verb: 'GET', pagination_with_sub_page_query_verb: '', headers: [] });
+    expect(await importConfigPresetFeed(context, user, json, configuration, { ...overwrite, dryRun: true })).toMatchObject({ status: 'created' });
+  });
+
+  it('offers the blanked default of a query attribute sent in a sensitive header, and writes it', async () => {
+    vi.mocked(createJsonMapperFromConfiguration).mockResolvedValue({ id: 'mapper-id' } as never);
+    vi.mocked(createIngestionAutomaticUser).mockResolvedValue({ id: 'service-account-id' } as never);
+    vi.mocked(addIngestionJson).mockResolvedValue({ id: 'created-id' } as never);
+    const configuration = jsonConfiguration({ headers: [], query_attributes: [{ type: 'header', from: 'x-next', to: 'X-Next-Token', default: '', exposed: 'header' }] });
+    const result = await importConfigPresetFeed(context, user, json, configuration, { ...overwrite, dryRun: true });
+    expect(result).toMatchObject({ status: 'created' });
+    expect(result.credentials).toContainEqual(expect.objectContaining({ key: 'header:X-Next-Token', required: false, secret: true }));
+    await importConfigPresetFeed(context, user, json, configuration, { ...overwrite, credentials: { 'header:X-Next-Token': 'first-token' } });
+    expect(addIngestionJson).toHaveBeenCalledWith(context, user, expect.objectContaining({
+      query_attributes: [{ type: 'header', from: 'x-next', to: 'X-Next-Token', default: 'first-token', exposed: 'header' }],
+    }));
+  });
+
+  it('fails a feed whose mapper sets a marking missing on the platform, without creating the mapper', async () => {
+    const configuration = jsonConfiguration({
+      headers: [],
+      json_mapper: { name: 'Vendor mapper', variables: [], representations: [{ attributes: [{ key: 'objectMarking', default_values: [MAPPER_MARKING_ID] }] }] },
+    });
+    expect(await importConfigPresetFeed(context, user, json, configuration, overwrite))
+      .toMatchObject({ status: 'failed', code: 'markings_not_found', reason: `Markings not found: ${MAPPER_MARKING_ID}` });
+    expect(createJsonMapperFromConfiguration).not.toHaveBeenCalled();
+    expect(addIngestionJson).not.toHaveBeenCalled();
+  });
+
+  it('deletes the mapper it created when the JSON feed cannot be written', async () => {
+    vi.mocked(createJsonMapperFromConfiguration).mockResolvedValue({ id: 'mapper-id' } as never);
+    vi.mocked(createIngestionAutomaticUser).mockResolvedValue({ id: 'service-account-id' } as never);
+    vi.mocked(addIngestionJson).mockRejectedValue(new Error('Feed refused'));
+    await expect(importConfigPresetFeed(context, user, json, jsonConfiguration({ headers: [] }), overwrite)).rejects.toThrow('Feed refused');
+    expect(deleteJsonMapper).toHaveBeenCalledWith(context, user, 'mapper-id');
+  });
+
+  it('writes only the fields that change, so that an overwrite keeps the cursor of a TAXII feed', async () => {
+    const stored = storedTaxii({ description: 'Old', added_after_start: new Date('2026-01-01T00:00:00.000Z') });
+    vi.mocked(findAllTaxiiIngestion).mockResolvedValue([stored] as never);
+    const configuration = taxiiConfiguration({ description: 'New', added_after_start: '2026-01-01T00:00:00.000Z' });
+    expect(await importConfigPresetFeed(context, user, taxii, configuration, overwrite)).toMatchObject({ status: 'overwritten' });
+    expect(vi.mocked(ingestionTaxiiEditField).mock.calls[0][3]).toEqual([{ key: 'description', value: ['New'] }]);
   });
 });

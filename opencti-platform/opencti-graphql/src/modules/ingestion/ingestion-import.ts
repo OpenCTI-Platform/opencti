@@ -4,10 +4,11 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreEntityMarkingDefinition } from '../../types/store';
 import { type EditInput, FilterMode, IngestionAuthType, IngestionCsvMapperType } from '../../generated/graphql';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import { fullEntitiesList, internalLoadById, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIds, internalLoadById, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { SYSTEM_USER } from '../../utils/access';
+import { isStixId } from '../../schema/schemaUtils';
 import { findDefaultIngestionGroups } from '../../domain/group';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import {
@@ -22,14 +23,14 @@ import type { BasicStoreEntityUser } from '../user/user-types';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
 import type { CsvMapperRepresentation } from '../internal/csvMapper/csvMapper-types';
 import { ENTITY_TYPE_JSON_MAPPER, type BasicStoreEntityJsonMapper, type JsonMapperRepresentation } from '../internal/jsonMapper/jsonMapper-types';
-import { createJsonMapperFromConfiguration } from '../internal/jsonMapper/jsonMapper-domain';
+import { createJsonMapperFromConfiguration, deleteJsonMapper } from '../internal/jsonMapper/jsonMapper-domain';
 import { CONFIDENCE_NOT_CHANGED_REASON, NO_INGESTION_GROUP_REASON } from '../connector/connector-import';
 import type { ConfigPresetImportCredential } from '../configPreset/import/configPreset-import-types';
-import { decryptIngestionCredential, verifyIngestionAuthenticationContent } from './ingestion-common';
+import { decryptIngestionCredential, verifyIngestionAuthenticationContent, verifyIngestionUri } from './ingestion-common';
 import { createIngestionAutomaticUser } from './ingestion-execution-identity';
 import { addIngestion as addRssFeed, findAllRssIngestion, ingestionEditField as editRssFeed } from './ingestion-rss-domain';
 import { addIngestionCsv, findAllCsvIngestion, ingestionCsvEditField } from './ingestion-csv-domain';
-import { addIngestionJson, findAllJsonIngestion, ingestionJsonEditField, isSensitiveHeaderName } from './ingestion-json-domain';
+import { addIngestionJson, findAllJsonIngestion, ingestionJsonEditField, isSensitiveHeaderName, isSensitiveQueryAttribute } from './ingestion-json-domain';
 import { findAllTaxiiIngestion, ingestionTaxiiAdd, ingestionTaxiiEditField } from './ingestion-taxii-domain';
 import { exportCsvFeed, exportJsonFeed, exportRssFeed, exportTaxiiFeed } from './ingestion-export';
 import {
@@ -74,13 +75,23 @@ interface WriteContext {
   markingIds: string[];
   authenticationValue?: string;
   headerValues: Record<string, string>;
+  queryDefaults: Record<string, string>;
+  plannedMarkings?: Map<string, unknown>;
+}
+
+interface FeedWrite {
+  fields: FeedFields;
+  reasons: string[];
+  missingMarkings?: string[];
+  // Undoes what was written before the feed (the mapper it creates), when the feed itself cannot be written
+  rollback?: () => Promise<void>;
 }
 
 interface FeedAdapter<C extends FeedImportConfiguration, F extends StoredFeed> {
   schema: ZodType<C>;
   list: (context: AuthContext, user: AuthUser) => Promise<F[]>;
   exportFeed: (context: AuthContext, user: AuthUser, feed: F) => Promise<C>;
-  fields: (context: AuthContext, user: AuthUser, configuration: C, write: WriteContext, target?: F) => Promise<{ fields: FeedFields; reasons: string[] }>;
+  fields: (context: AuthContext, user: AuthUser, configuration: C, write: WriteContext, target?: F) => Promise<FeedWrite>;
   add: (context: AuthContext, user: AuthUser, input: FeedFields) => Promise<BasicStoreEntity>;
   edit: (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => Promise<unknown>;
   supportsAutomaticUser: boolean;
@@ -102,6 +113,22 @@ const AUTHENTICATION_PARTS: Record<string, { key: string; description: string; s
 };
 
 export const feedHeaderCredentialKey = (name: string) => `header:${name}`;
+
+const MAX_CONFIGURATION_DEPTH = 32;
+
+const isTooDeep = (value: unknown) => {
+  const stack: { node: unknown; depth: number }[] = [{ node: value, depth: 0 }];
+  while (stack.length > 0) {
+    const { node, depth } = stack.pop()!;
+    if (node && typeof node === 'object') {
+      if (depth > MAX_CONFIGURATION_DEPTH) {
+        return true;
+      }
+      Object.values(node).forEach((child) => stack.push({ node: child, depth: depth + 1 }));
+    }
+  }
+  return false;
+};
 
 const withoutNil = (value: unknown): unknown => {
   if (Array.isArray(value)) {
@@ -135,6 +162,33 @@ const resolveMarkings = async (context: AuthContext, user: AuthUser, references:
   }
   return { markingIds, missing };
 };
+
+type MapperRepresentations = { attributes: { key?: unknown; default_values?: unknown }[] }[];
+
+const MARKING_ID_PREFIX = 'marking-definition--';
+
+// A default value of the mapper that is not on the platform is removed when the mapper is written: a missing marking stops the feed,
+// the attributes that lose another value are reported
+const missingDefaultValues = async (context: AuthContext, user: AuthUser, representations: MapperRepresentations, plannedMarkings?: Map<string, unknown>) => {
+  const references = representations.flatMap(({ attributes }) => attributes.flatMap((attribute) => {
+    const values = Array.isArray(attribute.default_values) ? attribute.default_values : [];
+    return values
+      .filter((value): value is string => typeof value === 'string' && !!isStixId(value) && !plannedMarkings?.has(value))
+      .map((id) => ({ key: String(attribute.key), id }));
+  }));
+  if (references.length === 0) {
+    return { markings: [], attributes: [] };
+  }
+  const ids = [...new Set(references.map(({ id }) => id))];
+  const found = await internalFindByIds(context, user, ids, { baseData: true, toMap: true, mapWithAllIds: true }) as unknown as Record<string, unknown>;
+  const missing = references.filter(({ id }) => !found[id]);
+  return {
+    markings: [...new Set(missing.filter(({ id }) => id.startsWith(MARKING_ID_PREFIX)).map(({ id }) => id))],
+    attributes: [...new Set(missing.filter(({ id }) => !id.startsWith(MARKING_ID_PREFIX)).map(({ key }) => key))],
+  };
+};
+
+const missingDefaultValuesReasons = (keys: string[]) => (keys.length > 0 ? [`Mapper default values not found: ${configImportReasonValue(keys.join(', '))}`] : []);
 
 const toInputValue = (value: unknown) => (Array.isArray(value) ? value : [value ?? null]);
 
@@ -177,8 +231,9 @@ const csvAdapter: FeedAdapter<CsvFeedImportConfiguration, BasicStoreEntityIngest
   list: findAllCsvIngestion,
   exportFeed: exportCsvFeed,
   fields: async (context, user, configuration, write) => {
+    const missing = await missingDefaultValues(context, user, configuration.csv_mapper.representations, write.plannedMarkings);
     const representations = structuredClone(configuration.csv_mapper.representations) as unknown as CsvMapperRepresentation[];
-    if (!write.dryRun) {
+    if (!write.dryRun && missing.markings.length === 0) {
       await convertRepresentationsIds(context, user, representations, 'stix');
     }
     return {
@@ -188,7 +243,8 @@ const csvAdapter: FeedAdapter<CsvFeedImportConfiguration, BasicStoreEntityIngest
         csv_mapper_type: IngestionCsvMapperType.Inline,
         csv_mapper: JSON.stringify({ ...configuration.csv_mapper, representations }),
       },
-      reasons: [],
+      reasons: missingDefaultValuesReasons(missing.attributes),
+      missingMarkings: missing.markings,
     };
   },
   add: (context, user, input) => addIngestionCsv(context, user, input as never),
@@ -208,14 +264,21 @@ const jsonAdapter: FeedAdapter<JsonFeedImportConfiguration, BasicStoreEntityInge
   exportFeed: exportJsonFeed,
   fields: async (context, user, configuration, write) => {
     let jsonMapperId: string | undefined;
+    let rollback: (() => Promise<void>) | undefined;
     const existingMapper = await findJsonMapperByName(context, user, configuration.json_mapper.name);
+    const missing = existingMapper
+      ? { markings: [], attributes: [] }
+      : await missingDefaultValues(context, user, configuration.json_mapper.representations, write.plannedMarkings);
     if (existingMapper) {
       jsonMapperId = existingMapper.id;
-    } else if (!write.dryRun) {
+    } else if (!write.dryRun && missing.markings.length === 0) {
       const { json_mapper: { name, variables, representations } } = configuration;
       const mapperRepresentations = structuredClone(representations) as unknown as JsonMapperRepresentation[];
       const created = await createJsonMapperFromConfiguration(context, user, { name, variables, representations: mapperRepresentations });
       jsonMapperId = created.id;
+      rollback = async () => {
+        await deleteJsonMapper(context, user, created.id);
+      };
     }
     return {
       fields: {
@@ -224,13 +287,17 @@ const jsonAdapter: FeedAdapter<JsonFeedImportConfiguration, BasicStoreEntityInge
         verb: configuration.verb,
         body: configuration.body ?? null,
         headers: configuration.headers.map((header) => ({ ...header, value: write.headerValues[header.name] ?? header.value })),
-        query_attributes: configuration.query_attributes,
+        query_attributes: configuration.query_attributes.map((attribute) => (isSensitiveQueryAttribute(attribute) && attribute.to && attribute.to in write.queryDefaults
+          ? { ...attribute, default: write.queryDefaults[attribute.to] }
+          : attribute)),
         pagination_with_sub_page: configuration.pagination_with_sub_page ?? null,
         pagination_with_sub_page_attribute_path: configuration.pagination_with_sub_page_attribute_path ?? null,
         pagination_with_sub_page_query_verb: configuration.pagination_with_sub_page_query_verb ?? null,
         json_mapper_id: jsonMapperId,
       },
-      reasons: existingMapper ? [] : [`JSON mapper created: ${configImportReasonValue(configuration.json_mapper.name)}`],
+      reasons: existingMapper ? [] : [`JSON mapper created: ${configImportReasonValue(configuration.json_mapper.name)}`, ...missingDefaultValuesReasons(missing.attributes)],
+      missingMarkings: missing.markings,
+      rollback,
     };
   },
   add: (context, user, input) => addIngestionJson(context, user, input as never),
@@ -301,7 +368,29 @@ const feedCredentials = (configuration: FeedImportConfiguration, target?: Stored
       secret: true,
       type: 'string',
     }));
-  return [...authentication, ...headers];
+  // The default of a query attribute sent as a sensitive header is blanked too; it can be empty on purpose (a paging token), so it is optional
+  const targetAttributes = target && 'query_attributes' in target ? target.query_attributes ?? [] : [];
+  const queryHeaders = ('query_attributes' in configuration ? configuration.query_attributes : [])
+    .filter((attribute) => isSensitiveQueryAttribute(attribute) && !attribute.default)
+    .map(({ to }) => to as string)
+    .filter((to, index, all) => all.indexOf(to) === index && !headers.some(({ key }) => key === feedHeaderCredentialKey(to)))
+    .map((to) => ({
+      key: feedHeaderCredentialKey(to),
+      description: `Default value of the header ${to}`,
+      required: false,
+      stored: targetAttributes.some((attribute) => attribute.to === to && !!attribute.default),
+      secret: true,
+      type: 'string',
+    }));
+  return [...authentication, ...headers, ...queryHeaders];
+};
+
+const sameFieldValue = (key: string, current: unknown, next: unknown) => {
+  if (key === 'added_after_start') {
+    const time = (value: unknown) => (value ? new Date(value as string).getTime() : null);
+    return time(current) === time(next);
+  }
+  return R.equals(withoutNil(current ?? null), withoutNil(next ?? null));
 };
 
 const authenticationValueOf = async (
@@ -327,30 +416,40 @@ export const importConfigPresetFeed = async <C extends FeedImportConfiguration, 
   options: FeedImportOptions,
 ): Promise<FeedImportResult> => {
   const { mode, dryRun = false, reservedNames, credentials = {}, ingestionGroupPlanned = false, serviceAccountId, plannedMarkings } = options;
+  if (isTooDeep(configuration)) {
+    return refused('invalid', 'configuration: too deeply nested', false);
+  }
   const parsed = adapter.schema.safeParse(configuration);
   if (!parsed.success) {
     return refused('invalid', configImportValidationReason(parsed.error), false);
   }
   const bundleFeed = parsed.data;
+  // The credentials of a copy: a refusal still tells them, so that the preview can ask for them when another mode is chosen
+  const copyCredentials = feedCredentials(bundleFeed);
   const feeds = await adapter.list(context, user);
   const sameName = feeds.filter(({ name }) => name === bundleFeed.name);
   const exists = sameName.length > 0;
+  try {
+    verifyIngestionUri(bundleFeed.uri);
+  } catch (error) {
+    return refused('invalid', error instanceof Error ? error.message : String(error), exists, bundleFeed, copyCredentials);
+  }
   if (exists && mode === ConfigImportMode.Add) {
-    return refused('exists', 'Feed already exists', true, bundleFeed);
+    return refused('exists', 'Feed already exists', true, bundleFeed, copyCredentials);
   }
   const isCopy = mode === ConfigImportMode.Copy;
   if (!isCopy && (sameName.length > 1 || reservedNames?.has(bundleFeed.name))) {
-    return refused('ambiguous', AMBIGUOUS_FEED_REASON, exists, bundleFeed);
+    return refused('ambiguous', AMBIGUOUS_FEED_REASON, exists, bundleFeed, copyCredentials);
   }
   const target = isCopy ? undefined : sameName[0];
   const isNameTaken = async (candidate: string) => !!reservedNames?.has(candidate) || feeds.some(({ name }) => name === candidate);
   const name = isCopy ? await freeConfigImportName(bundleFeed.name, isNameTaken) : bundleFeed.name;
   if (!name) {
-    return refused('name_conflict', 'Feed name already exists', exists, bundleFeed);
+    return refused('name_conflict', 'Feed name already exists', exists, bundleFeed, copyCredentials);
   }
   const { markingIds, missing } = await resolveMarkings(context, user, 'markings' in bundleFeed ? bundleFeed.markings : [], plannedMarkings);
   if (missing.length > 0) {
-    return refused('markings_not_found', `Markings not found: ${configImportReasonValue(missing.join(', '))}`, exists, bundleFeed);
+    return refused('markings_not_found', `Markings not found: ${configImportReasonValue(missing.join(', '))}`, exists, bundleFeed, feedCredentials(bundleFeed, target));
   }
   const feedCredentialsList = feedCredentials(bundleFeed, target);
   const given = Object.fromEntries(Object.entries(credentials).filter(([key, value]) => value !== '' && feedCredentialsList.some((credential) => credential.key === key)));
@@ -385,22 +484,55 @@ export const importConfigPresetFeed = async <C extends FeedImportConfiguration, 
   const headerValues = Object.fromEntries(('headers' in bundleFeed ? bundleFeed.headers : [])
     .filter(({ name: headerName, value }) => value === '' && isSensitiveHeaderName(headerName))
     .map(({ name: headerName }) => [headerName, given[feedHeaderCredentialKey(headerName)] || targetHeaders.find((header) => header.name === headerName)?.value || '']));
-  const write: WriteContext = { dryRun, markingIds, authenticationValue, headerValues };
-  const { fields: specificFields, reasons } = await adapter.fields(context, user, bundleFeed, write, target);
+  const targetAttributes = target && 'query_attributes' in target ? target.query_attributes ?? [] : [];
+  const queryDefaults = Object.fromEntries(('query_attributes' in bundleFeed ? bundleFeed.query_attributes : [])
+    .filter((attribute) => isSensitiveQueryAttribute(attribute) && !attribute.default)
+    .map(({ to }) => [to as string, given[feedHeaderCredentialKey(to as string)] || targetAttributes.find((attribute) => attribute.to === to)?.default || '']));
+  const write: WriteContext = { dryRun, markingIds, authenticationValue, headerValues, queryDefaults, plannedMarkings };
+  const { fields: specificFields, reasons, missingMarkings = [], rollback } = await adapter.fields(context, user, bundleFeed, write, target);
+  if (missingMarkings.length > 0) {
+    return refused('markings_not_found', `Markings not found: ${configImportReasonValue(missingMarkings.join(', '))}`, exists, bundleFeed, feedCredentialsList);
+  }
   const reason = joinConfigImportReasons([name !== bundleFeed.name ? `Added as "${name}"` : undefined, confidenceReason, ...reasons]);
   const result: FeedImportResult = { status: target ? 'overwritten' : 'created', exists, name, configuration: bundleFeed, reason, credentials: feedCredentialsList };
   if (dryRun) {
     return result;
   }
   const fields = { ...commonFields(bundleFeed, name), ...specificFields };
+  try {
+    return await writeFeed(context, user, adapter, { fields, result, target, authenticationValue, serviceAccountId, confidence });
+  } catch (error) {
+    await rollback?.();
+    throw error;
+  }
+};
+
+const writeFeed = async <C extends FeedImportConfiguration, F extends StoredFeed>(
+  context: AuthContext,
+  user: AuthUser,
+  adapter: FeedAdapter<C, F>,
+  { fields, result, target, authenticationValue, serviceAccountId, confidence }: {
+    fields: FeedFields;
+    result: FeedImportResult;
+    target?: F;
+    authenticationValue?: string;
+    serviceAccountId?: string;
+    confidence?: number | null;
+  },
+): Promise<FeedImportResult> => {
+  const name = fields.name as string;
   if (target) {
     const { authentication_type: authenticationType, authentication_value: _value, ...others } = fields;
-    const typeChanged = 'authentication_type' in fields && (target as { authentication_type?: string }).authentication_type !== authenticationType;
-    const input: EditInput[] = Object.entries(others).map(([key, value]) => ({ key, value: toInputValue(value) }));
-    if (typeChanged) {
+    const current = target as unknown as Record<string, unknown>;
+    const input: EditInput[] = Object.entries(others)
+      .filter(([key, value]) => !sameFieldValue(key, current[key], value))
+      .map(([key, value]) => ({ key, value: toInputValue(value) }));
+    if ('authentication_type' in fields && current.authentication_type !== authenticationType) {
       input.push({ key: 'authentication_type', value: [authenticationType] });
     }
-    await adapter.edit(context, user, target.id, input);
+    if (input.length > 0) {
+      await adapter.edit(context, user, target.id, input);
+    }
     if (authenticationValue !== undefined) {
       await adapter.edit(context, user, target.id, [{ key: 'authentication_value', value: [authenticationValue] }]);
     }

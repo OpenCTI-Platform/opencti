@@ -273,6 +273,28 @@ export const sanitizeExportedHeaders = (headers: { name: string; value: string }
   return headers?.map((header) => (isSensitiveHeaderName(header.name) ? { ...header, value: '' } : header));
 };
 
+// A query attribute exposed as a header sends its default value in that header: a sensitive one is a credential too
+export const isSensitiveQueryAttribute = (attribute: { exposed?: string | null; to?: string | null }) => {
+  return attribute.exposed === 'header' && !!attribute.to && isSensitiveHeaderName(attribute.to);
+};
+export const sanitizeExportedQueryAttributes = <T extends { exposed?: string | null; to?: string | null; default?: string | null }>(attributes: T[] | undefined) => {
+  return attributes?.map((attribute) => (isSensitiveQueryAttribute(attribute) ? { ...attribute, default: '' } : attribute));
+};
+
+const auditSafeJsonFeedValue = (key: string, value: unknown) => {
+  if (key === 'headers' && Array.isArray(value)) {
+    return sanitizeExportedHeaders(value);
+  }
+  if (key === 'query_attributes' && Array.isArray(value)) {
+    return sanitizeExportedQueryAttributes(value);
+  }
+  return value;
+};
+const auditSafeJsonFeedInput = <T extends object>(input: T) => {
+  return Object.fromEntries(Object.entries(input).map(([key, value]) => [key, auditSafeJsonFeedValue(key, value)])) as T;
+};
+const auditSafeJsonFeedEditInputs = (inputs: EditInput[]) => inputs.map((input) => ({ ...input, value: auditSafeJsonFeedValue(input.key, input.value) as EditInput['value'] }));
+
 // Exports the feed configuration with the JSON mapper embedded (a JSON feed
 // references its mapper, so the export must be self-contained). Credentials,
 // user and markings are platform-specific and are set again at import time.
@@ -383,7 +405,7 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
       event_scope: 'create',
       event_access: 'administration',
       message: `creates json ingestion \`${input.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_JSON, input },
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_JSON, input: auditSafeJsonFeedInput(input) },
     });
   }
   return element;
@@ -474,7 +496,7 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for json ingestion \`${element.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input },
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input: auditSafeJsonFeedEditInputs(input) },
   });
 
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);

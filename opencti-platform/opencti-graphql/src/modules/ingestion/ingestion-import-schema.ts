@@ -20,6 +20,18 @@ const authenticationFields = {
   authentication_type: z.enum(IngestionAuthType),
 };
 
+const httpVerb = z.enum(['get', 'post', 'GET', 'POST']);
+
+const queryAttribute = z.strictObject({
+  type: z.string().nullable().optional(),
+  from: z.string().nullable().optional(),
+  to: z.string().nullable().optional(),
+  data_operation: z.string().nullable().optional(),
+  state_operation: z.string().nullable().optional(),
+  default: z.string().nullable().optional(),
+  exposed: z.string().nullable().optional(),
+});
+
 const mapperRepresentations = z.array(z.looseObject({ attributes: z.array(z.looseObject({})) }));
 
 export const rssFeedImportSchema = z.strictObject({
@@ -46,13 +58,13 @@ export const jsonFeedImportSchema = z.strictObject({
   ...feedFields,
   ...authenticationFields,
   markings: z.array(markingReference),
-  verb: z.enum(['get', 'post']),
+  verb: httpVerb,
   body: z.string().nullable().optional(),
   headers: z.array(z.strictObject({ name: z.string().min(1), value: z.string() })),
-  query_attributes: z.array(z.looseObject({})),
+  query_attributes: z.array(queryAttribute),
   pagination_with_sub_page: z.boolean().nullable().optional(),
   pagination_with_sub_page_attribute_path: z.string().nullable().optional(),
-  pagination_with_sub_page_query_verb: z.enum(['get', 'post']).nullable().optional(),
+  pagination_with_sub_page_query_verb: z.preprocess((value) => (value === '' ? null : value), httpVerb.nullable().optional()),
   json_mapper: z.strictObject({
     name: z.string().trim().min(1),
     variables: z.array(z.looseObject({})),

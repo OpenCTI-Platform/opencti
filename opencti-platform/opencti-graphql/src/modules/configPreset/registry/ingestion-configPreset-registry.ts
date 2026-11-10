@@ -21,7 +21,7 @@ const fileNameOf = (id: string) => id.replace(/[^\p{L}\p{N} ._()-]/gu, '_');
 
 // Feed names are not unique: the bundle id of a feed is its name, and the next feeds of the same name are `name (1)`, `name (2)`... by creation date
 const feedItems = async (context: AuthContext, user: AuthUser, kind: FeedKind): Promise<ConfigPresetItemDefinition[]> => {
-  const [{ feedAdapterOf }, { exportFeedMarkings }] = await Promise.all([loadFeedImport(), loadFeedExport()]);
+  const [{ feedAdapterOf }, { exportFeedMarkingIds }] = await Promise.all([loadFeedImport(), loadFeedExport()]);
   const adapter = feedAdapterOf(kind);
   const feeds = [...await adapter.list(context, user)]
     .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)) || String(a.internal_id).localeCompare(String(b.internal_id)));
@@ -35,15 +35,15 @@ const feedItems = async (context: AuthContext, user: AuthUser, kind: FeedKind): 
       ids.add(id);
       const fileName = (await freeConfigImportName(fileNameOf(id), async (candidate) => fileNames.has(candidate))) ?? id;
       fileNames.add(fileName);
-      const markings = await exportFeedMarkings(context, 'object_marking_refs' in feed ? feed.object_marking_refs : (feed as { markings?: string[] }).markings);
+      const markingIds = await exportFeedMarkingIds(context, user, feed);
       items.push({
         id,
         label: feed.name,
         translatable: false,
         fileName: `${fileName}.json`,
-        dependsOn: markings
-          .filter(({ standard_id }) => !BUILT_IN_MARKING_STANDARD_IDS.includes(standard_id))
-          .map(({ standard_id }) => ({ type: MARKINGS_FAMILY_ID, id: standard_id })),
+        dependsOn: markingIds
+          .filter((standardId) => !BUILT_IN_MARKING_STANDARD_IDS.includes(standardId))
+          .map((standardId) => ({ type: MARKINGS_FAMILY_ID, id: standardId })),
         exporter: async (ctx, usr) => adapter.exportFeed(ctx, usr, feed),
       });
     }

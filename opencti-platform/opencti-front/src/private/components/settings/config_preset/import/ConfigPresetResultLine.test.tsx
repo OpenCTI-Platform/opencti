@@ -86,6 +86,7 @@ describe('ConfigPresetResultLine', () => {
     ['Several feeds have this name: import it as a copy', 'Several feeds have this name: import it as a copy'],
     ['Author not found: Filigran', 'Author not found: Filigran'],
     ['JSON mapper created: Vendor mapper', 'JSON mapper created: Vendor mapper'],
+    ['Mapper default values not found: createdBy', 'Mapper default values not found: createdBy'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergeIngestionJsonState } from '../../../../src/modules/ingestion/ingestion-json-domain';
+import { mergeIngestionJsonState, sanitizeExportedQueryAttributes } from '../../../../src/modules/ingestion/ingestion-json-domain';
 import type { DataParam } from '../../../../src/modules/ingestion/ingestion-types';
 
 const attribute = (to: string, state_operation: DataParam['state_operation']) => ({
@@ -32,5 +32,16 @@ describe('ingestion-json-domain: mergeIngestionJsonState', () => {
 
   it('should return an empty state without query attributes', () => {
     expect(mergeIngestionJsonState(undefined, { offset: 1 }, { offset: 2 })).toEqual({});
+  });
+});
+
+describe('ingestion-json-domain: sanitizeExportedQueryAttributes', () => {
+  it('blanks the default of a query attribute sent in a sensitive header only', () => {
+    const attributes = [
+      { type: 'header', from: 'x-next', to: 'X-Api-Key', default: 'secret-key', exposed: 'header' },
+      { type: 'data', from: 'cursor', to: 'cursor', default: '0', exposed: 'query_param' },
+      { type: 'header', from: 'x-page', to: 'X-Page', default: '1', exposed: 'header' },
+    ];
+    expect(sanitizeExportedQueryAttributes(attributes)?.map(({ default: value }) => value)).toEqual(['', '0', '1']);
   });
 });

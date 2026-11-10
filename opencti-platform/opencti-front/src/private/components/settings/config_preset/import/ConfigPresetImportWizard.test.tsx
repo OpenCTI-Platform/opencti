@@ -1233,7 +1233,7 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.queryByRole('button', { name: 'Choose a service account' })).not.toBeInTheDocument();
       await resolveSimulation(rendered, [{ type: 'connectors', key: 'mitre', status: 'FAILED', reason: 'You have not defined a default group for ingestion users', code: 'no_ingestion_group' }]);
       await rendered.user.click(await screen.findByRole('button', { name: 'Choose a service account' }));
-      expect(screen.getByText('No default group is defined for the service accounts: choose the user this connector writes with.')).toBeInTheDocument();
+      expect(screen.getByText('No default group is defined for the service accounts: choose the user this item writes with.')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     });
 

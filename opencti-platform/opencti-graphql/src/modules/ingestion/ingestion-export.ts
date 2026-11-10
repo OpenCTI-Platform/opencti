@@ -11,7 +11,7 @@ import type { CsvMapperRepresentation } from '../internal/csvMapper/csvMapper-ty
 import type { JsonMapperRepresentation } from '../internal/jsonMapper/jsonMapper-types';
 import { findById as findJsonMapperById } from '../internal/jsonMapper/jsonMapper-domain';
 import { findCsvMapperForIngestionById } from './ingestion-csv-domain';
-import { sanitizeExportedHeaders } from './ingestion-json-domain';
+import { sanitizeExportedHeaders, sanitizeExportedQueryAttributes } from './ingestion-json-domain';
 import type { BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionJson, BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii } from './ingestion-types';
 import type {
   CsvFeedImportConfiguration,
@@ -101,16 +101,40 @@ export const exportJsonFeed = async (context: AuthContext, user: AuthUser, feed:
     verb: feed.verb,
     body: feed.body ?? null,
     headers: sanitizeExportedHeaders(feed.headers) ?? [],
-    query_attributes: (feed.query_attributes ?? []) as unknown as JsonFeedImportConfiguration['query_attributes'],
+    query_attributes: (sanitizeExportedQueryAttributes(feed.query_attributes) ?? []) as unknown as JsonFeedImportConfiguration['query_attributes'],
     pagination_with_sub_page: feed.pagination_with_sub_page ?? null,
     pagination_with_sub_page_attribute_path: feed.pagination_with_sub_page_attribute_path ?? null,
-    pagination_with_sub_page_query_verb: feed.pagination_with_sub_page_query_verb ?? null,
+    pagination_with_sub_page_query_verb: feed.pagination_with_sub_page_query_verb || null,
     json_mapper: {
       name: jsonMapper.name,
       variables: jsonMapper.variables ? JSON.parse(jsonMapper.variables) : [],
       representations: representations as unknown as JsonFeedImportConfiguration['json_mapper']['representations'],
     },
   };
+};
+
+type StoredRepresentations = { attributes?: { default_values?: unknown }[] }[];
+
+const feedMapperRepresentations = async (context: AuthContext, user: AuthUser, feed: StoredFeed): Promise<StoredRepresentations> => {
+  if ('json_mapper_id' in feed && feed.json_mapper_id) {
+    const jsonMapper = await findJsonMapperById(context, user, feed.json_mapper_id);
+    return jsonMapper?.representations ? JSON.parse(jsonMapper.representations) : [];
+  }
+  if ('csv_mapper_type' in feed || 'csv_mapper_id' in feed) {
+    return (await csvMapperOf(context, user, feed as BasicStoreEntityIngestionCsv)).representations;
+  }
+  return [];
+};
+
+export const exportFeedMarkingIds = async (context: AuthContext, user: AuthUser, feed: StoredFeed): Promise<string[]> => {
+  const markings = await getEntitiesMapFromCache<BasicStoreEntityMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const feedMarkings = 'object_marking_refs' in feed ? feed.object_marking_refs : (feed as { markings?: string[] }).markings;
+  const defaultValues = (await feedMapperRepresentations(context, user, feed))
+    .flatMap(({ attributes }) => (attributes ?? []).flatMap(({ default_values: values }) => (Array.isArray(values) ? values : [])));
+  const standardIds = [...(feedMarkings ?? []), ...defaultValues]
+    .map((id): string | undefined => (typeof id === 'string' ? markings.get(id)?.standard_id : undefined))
+    .filter((standardId): standardId is string => !!standardId);
+  return [...new Set(standardIds)];
 };
 
 export const exportTaxiiFeed = async (context: AuthContext, feed: BasicStoreEntityIngestionTaxii): Promise<TaxiiFeedImportConfiguration> => ({

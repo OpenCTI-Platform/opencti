@@ -120,6 +120,10 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
   if (missingAuthor) {
     return t_i18n('Author not found: {name}', { values: { name: missingAuthor } });
   }
+  const missingDefaultValues = reason.match(/^Mapper default values not found: (.+)$/)?.[1];
+  if (missingDefaultValues) {
+    return t_i18n('Mapper default values not found: {attributes}', { values: { attributes: missingDefaultValues } });
+  }
   const createdJsonMapper = reason.match(/^JSON mapper created: (.+)$/)?.[1];
   if (createdJsonMapper) {
     return t_i18n('JSON mapper created: {name}', { values: { name: createdJsonMapper } });
