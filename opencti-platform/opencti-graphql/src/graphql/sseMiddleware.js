@@ -41,7 +41,7 @@ import {
 import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
-import { UnsupportedError } from '../config/errors';
+import { isClientAbort, UnsupportedError } from '../config/errors';
 import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
 import { findFiltersFromKey, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
@@ -1056,12 +1056,21 @@ const createSseMiddleware = () => {
         // noinspection ES6MissingAwait
         await processor.start(processorStartId);
       } catch (err) {
+        // The client went away while the stream was processing: nobody is left to send the error to
+        if (isClientAbort(err)) {
+          logApp.info('[STREAM] Client disconnected during processing', { cause: err, id, type: 'live' });
+          return;
+        }
         logApp.error('[STREAM] Processing error', { cause: err, id, type: 'live' });
         if (channel.connected()) {
           await channel.sendEvent(undefined, 'error', { stream: id, message: err.message });
         }
       }
     } catch (e) {
+      if (isClientAbort(e)) {
+        logApp.info('[STREAM] Client disconnected during initialization', { cause: e, id, type: 'live' });
+        return;
+      }
       logApp.error('[STREAM] Initialization error', { cause: e, id, type: 'live' });
       sendErrorStatus(req, res, 500);
     }
