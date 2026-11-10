@@ -55,6 +55,23 @@ describe('setPasswordHistoryCount (configuration import)', () => {
     expect(trimAllUsersPasswordHistory).toHaveBeenCalledWith(0);
   });
 
+  it('trims before saving the lower count, so that a failed trim leaves the count as it was and a retry trims again', async () => {
+    await setPasswordHistoryCount(context, user, 2);
+    expect(vi.mocked(trimAllUsersPasswordHistory).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(patchAttribute).mock.invocationCallOrder[0]);
+    vi.mocked(patchAttribute).mockClear();
+    vi.mocked(trimAllUsersPasswordHistory).mockRejectedValueOnce(new Error('Elasticsearch unavailable'));
+    await expect(setPasswordHistoryCount(context, user, 2)).rejects.toThrow('Elasticsearch unavailable');
+    expect(patchAttribute).not.toHaveBeenCalled();
+    expect(publishUserAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails without writing when the platform settings cannot be read', async () => {
+    vi.mocked(loadEntity).mockResolvedValue(undefined as never);
+    await expect(setPasswordHistoryCount(context, user, 3)).rejects.toThrow('Cannot find the platform settings');
+    expect(patchAttribute).not.toHaveBeenCalled();
+    expect(trimAllUsersPasswordHistory).not.toHaveBeenCalled();
+  });
+
   it('needs the capability of updateLocalAuth, and writes nothing without it', async () => {
     vi.mocked(isUserHasCapability).mockReturnValue(false);
     await expect(setPasswordHistoryCount(context, user, 3)).rejects.toThrow();
