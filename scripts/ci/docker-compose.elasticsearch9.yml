@@ -2,4 +2,4 @@
 # The service keeps its name and its settings: only the image changes.
 services:
   elasticsearch:
-    image: elasticsearch:9.5.5@sha256:da9e6fed4949f114c526cf51f5130fed9e30fe9f03a2ea7bf64ccbdc129fca8c
+    image: elasticsearch:9.5.5@sha256:a418cab5c89773ab827d1d146e6c95a3658226216d8d934d404c33e7a09a147d
