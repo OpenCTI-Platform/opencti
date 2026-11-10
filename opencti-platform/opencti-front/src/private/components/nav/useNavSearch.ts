@@ -1,7 +1,7 @@
 import { useFormatter } from '../../../components/i18n';
 import useVisibleEntries from '../common/menus/useVisibleEntries';
-import type { MenuEntry } from '../common/menus/NavToolbarMenu';
 import useNavMenu from './useNavMenu';
+import { allMenuEntries } from './menuEntries';
 
 export interface NavSearchResult {
   path: string;
@@ -14,16 +14,10 @@ type Node = NavSearchResult & { keywords: string[] };
 
 export const PLATFORM_SEARCH_PAGE_MAX_RESULTS = 10;
 
-// Convention: any `*.entries.ts(x)` file exporting `menuEntries` takes part in the pages search, nothing to register.
-// Eagerly imported: those files are pure data (no component import), so the cost is negligible.
-const menuEntries: MenuEntry[] = Object.values(
-  import.meta.glob<{ menuEntries?: MenuEntry[] }>('/src/private/components/**/*.entries.{ts,tsx}', { eager: true }),
-).flatMap((module) => module.menuEntries ?? []);
-
 const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
   const { t_i18n } = useFormatter();
   const navGroups = useNavMenu();
-  const entries = useVisibleEntries(menuEntries);
+  const entries = useVisibleEntries(allMenuEntries);
 
   const tokens = (keyword ?? '').toLowerCase().split(/\s+/).filter(Boolean);
   if (tokens.length === 0) return [];

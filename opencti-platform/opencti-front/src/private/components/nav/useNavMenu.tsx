@@ -65,16 +65,12 @@ import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useGranted, {
-  AUTOMATION_AUTMANAGE,
-  BYPASS,
   CSVMAPPERS,
   EXPLORE,
   INGESTION,
   INGESTION_SETINGESTIONS,
   INVESTIGATION,
   KNOWLEDGE,
-  KNOWLEDGE_KNASKIMPORT,
-  KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   MODULES,
   PIRAPI,
@@ -98,7 +94,8 @@ import useGranted, {
   VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
-import useImportAccess from '../../../utils/hooks/useImportAccess';
+import useVisibleEntries from '../common/menus/useVisibleEntries';
+import { allMenuEntries } from './menuEntries';
 
 export interface NavSubItem {
   link: string;
@@ -133,36 +130,23 @@ export interface RawNavGroup {
 const useNavMenu = (): NavGroup[] => {
   const { t_i18n } = useFormatter();
   const { me: { draftContext } } = useAuth();
-  const { isFeatureEnable, isTrashEnable } = useHelper();
-  const { hasOnlyAccessToImportDraftTab } = useImportAccess();
+  const { isTrashEnable } = useHelper();
   const hiddenEntities = useHiddenEntities();
 
+  // Sub-item whose pages are declared in `*.entries.ts` files: shown when the user can open at least one of them.
+  // Those files own the capability, feature flag and EE rules of their pages, so the left bar does not restate them.
+  const visibleEntries = useVisibleEntries(allMenuEntries);
+  const pagesSection = (link: string, label: string, otherCondition = true): NavSubItem => ({
+    link,
+    label,
+    granted: otherCondition && visibleEntries.some(({ path }) => path.startsWith(`${link}/`)),
+  });
+
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
-  const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]) || hasOnlyAccessToImportDraftTab;
-  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE, CSVMAPPERS]);
-  const isGrantedToSharing = useGranted([TAXIIAPI]);
-  const isGrantedToManage = useGranted([BYPASS]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
-  const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
-  const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
-  const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
-  const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
-  const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
-  const isGrantedToCustomFields = useGranted([SETTINGS_SETCUSTOMFIELDS]);
-  const isGrantedToTaxonomies = isGrantedToLabels
-    || isGrantedToVocabularies
-    || isGrantedToKillChainPhases
-    || isGrantedToCaseTemplates
-    || isGrantedToStatusTemplates
-    || isGrantedToCustomFields;
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToExperience = useGranted([SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
   const isGrantedToDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
-  const isOrganizationAdmin = useGranted([VIRTUAL_ORGANIZATION_ADMIN]);
-  const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
-  const isGrantedToSecurity = useGranted([SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH]);
-  const isGrantedToAudit = useGranted([SETTINGS_SECURITYACTIVITY]);
-  const isDataHealthEnabled = isFeatureEnable('DATA_SANITY_MANAGER');
 
   const canSeeExplore = useGranted([EXPLORE]);
   const canSeeInvestigation = useGranted([INVESTIGATION]);
@@ -373,11 +357,11 @@ const useNavMenu = (): NavGroup[] => {
           subItems: [
             { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
             { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
-            { granted: isGrantedToImport && !inDraft, link: '/dashboard/data/import', label: t_i18n('Import') },
-            { granted: isGrantedToProcessing && !inDraft, link: '/dashboard/data/processing', label: t_i18n('Processing') },
-            { granted: isGrantedToSharing && !inDraft, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },
-            { granted: isGrantedToManage && !inDraft, link: '/dashboard/data/restriction', label: t_i18n('Restriction') },
-            { granted: isDataHealthEnabled && isGrantedToManage && !inDraft, link: '/dashboard/data/health', label: t_i18n('Health') },
+            pagesSection('/dashboard/data/import', t_i18n('Import'), !inDraft),
+            pagesSection('/dashboard/data/processing', t_i18n('Processing'), !inDraft),
+            pagesSection('/dashboard/data/sharing', t_i18n('Data sharing'), !inDraft),
+            pagesSection('/dashboard/data/restriction', t_i18n('Restriction'), !inDraft),
+            pagesSection('/dashboard/data/health', t_i18n('Health'), !inDraft),
             { granted: isTrashEnable() && isGrantedToDelete && !inDraft, link: '/dashboard/trash', label: t_i18n('Trash') },
           ],
         },
@@ -393,10 +377,10 @@ const useNavMenu = (): NavGroup[] => {
           link: '/dashboard/settings',
           subItems: [
             { granted: isGrantedToParameters, link: '/dashboard/settings', label: t_i18n('Parameters'), exact: true },
-            { granted: isGrantedToSecurity || isOrganizationAdmin, link: '/dashboard/settings/accesses', label: t_i18n('Security') },
-            { granted: isGrantedToCustomization, link: '/dashboard/settings/customization', label: t_i18n('Customization') },
-            { granted: isGrantedToTaxonomies, link: '/dashboard/settings/vocabularies', label: t_i18n('Taxonomies') },
-            { granted: isGrantedToAudit, link: '/dashboard/settings/activity', label: t_i18n('Activity') },
+            pagesSection('/dashboard/settings/accesses', t_i18n('Security')),
+            pagesSection('/dashboard/settings/customization', t_i18n('Customization')),
+            pagesSection('/dashboard/settings/vocabularies', t_i18n('Taxonomies')),
+            pagesSection('/dashboard/settings/activity', t_i18n('Activity')),
             { granted: isGrantedToFileIndexing, link: '/dashboard/settings/file_indexing', label: t_i18n('File indexing') },
             { granted: isGrantedToExperience, link: '/dashboard/settings/experience', label: t_i18n('Filigran Experience') },
           ],
