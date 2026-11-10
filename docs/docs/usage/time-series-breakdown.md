@@ -4,7 +4,7 @@ A time series widget can be broken down by the values of a field: instead of one
 
 A typical use is to follow the reports handled by each analyst, week by week, without knowing the analysts in advance.
 
-![Dashboard with broken down widgets](assets/time-series-breakdown-01-dashboard.jpg)
+![Dashboard with broken down widgets](assets/time-series-breakdown-dashboard.jpg)
 
 A dashboard with four broken down widgets: reports per week by label, per week by assignee, per month by author, and per week by report type.
 
@@ -24,8 +24,8 @@ With a breakdown:
 | Applies to | Supported |
 |---|---|
 | **Visualizations** | Vertical bars, Line, Area and Heatmap |
-| **Perspectives** | Entities, Knowledge graph (relationships), Activity & history (audits, Enterprise Edition) |
-| **Containers** | [Custom dashboards](dashboards.md), [custom views](custom-views.md) and [public dashboards](dashboards-share.md) |
+| **Perspectives** | Entities, Knowledge graph (relationships), Activity & history (audits, see [below](#platform-activity-by-user)) |
+| **Containers** | [Custom dashboards](dashboards.md), [custom views](#custom-views) and [public dashboards](#public-dashboards) |
 
 Breakdowns are not available in Fintel templates, nor on widgets that count drafts. On the Activity & history perspective, a Line or an Area that counts distinct values cannot be broken down: a breakdown counts every event.
 
@@ -34,15 +34,15 @@ Breakdowns are not available in Fintel templates, nor on widgets that count draf
 1. In a custom dashboard, click **Create Widget**, or edit an existing widget.
 2. **Visualization**: choose Vertical bars, Line, Area or Heatmap.
 3. **Perspective**: choose the perspective of the data to count.
-4. **Filters**: define a single dataset, for example *Entity type = Report*, then click **Validate filters**. A message reminds you that this dataset can be broken down at the next step.
+4. **Filters**: define a single dataset, for example *Entity type = Report*, then click **Validate filters**.
 5. **Parameters**: choose the field in **Break down by**, then set the other breakdown options (see below).
 6. Click **Create** (or **Update**).
 
-![Filters step](assets/time-series-breakdown-03-dataset-step.jpg)
+![Filters step](assets/time-series-breakdown-filters-step.jpg)
 
-At the **Filters** step, the message *You can break this dataset down into one series per field value in the Parameters step.* is shown as long as the widget has a single dataset.
+At the **Filters** step, the message *You can break this dataset down into one series per field value in the Parameters step.* is shown while the widget has a single dataset that can be broken down and no breakdown is chosen yet.
 
-![Parameters step](assets/time-series-breakdown-04-parameters-step.jpg)
+![Parameters step](assets/time-series-breakdown-parameters-step.jpg)
 
 The breakdown options are in the **Parameters** step, next to the interval:
 
@@ -50,34 +50,38 @@ The breakdown options are in the **Parameters** step, next to the interval:
 |---|---|
 | **Break down by** | The field whose values become the series. **None** keeps a regular widget. |
 | **Maximum number of series** | 5, 10, 20 or 50. Default: 10. |
-| **Order** | **Highest values** keeps the values that count the most over the whole period, **Lowest values** the ones that count the least. |
-| **Include Other** | Adds an **Other** series that counts the data with none of the displayed values, including the data without any value for the field. With a multi-valued field, a report labeled *A* and *B* is not counted in **Other** when *A* is displayed, even if *B* is not. |
+| **Order** | **Highest values** keeps the values that count the most over the whole period, **Lowest values** the ones that count the least. Default: **Highest values**. |
+| **Include Other** | Adds an **Other** series that counts the data with none of the displayed values, including the data without any value for the field. With a multi-valued field, a report labeled *A* and *B* is not counted in **Other** when *A* is displayed, even if *B* is not. Off by default. |
 
 !!! note "A breakdown uses a single dataset"
 
-    While a breakdown is set, you cannot add a second dataset to the widget: the button that adds one is disabled, with the tooltip *A breakdown uses a single dataset.* If the widget already has several datasets, **Break down by** is disabled with the same tooltip, and the other breakdown options are hidden. Remove the extra datasets to break the widget down.
+    While a breakdown is set, you cannot add a second dataset to the widget: the button that adds one is disabled, with the tooltip *A breakdown uses a single dataset.* If the widget already has several datasets, **Break down by** is disabled with the same tooltip. The other breakdown options are then hidden, or shown disabled when a field was already chosen. Remove the extra datasets to break the widget down.
 
-![Breakdown options disabled with two datasets](assets/time-series-breakdown-06-two-datasets.jpg)
+![Breakdown options disabled with two datasets](assets/time-series-breakdown-two-datasets.jpg)
 
 ### Fields you can break down by
 
-The fields offered depend on the perspective and on the types the dataset filters on. With a single entity type, you get the fields of that type (for example *Report types* for reports). With several types, you get the fields they share, plus *Entity type*.
+The fields offered depend on the perspective and on the types the dataset filters on. With a single concrete type, you get the fields of that type (for example **Report types** for reports). With several types, with an abstract type (such as *Stix-Domain-Object*) or with no type filter at all, you get the fields the types share, plus **Entity type**. The same goes for **Relationship type** on the Knowledge graph perspective: it is not offered when the dataset is limited to one relationship type.
 
-![Fields offered for reports](assets/time-series-breakdown-05-break-down-by-options.jpg)
+![Fields offered for reports](assets/time-series-breakdown-fields.jpg)
 
 | Perspective | Fields |
 |---|---|
-| **Entities** | Author, Creators, Label, Markings, Assignees, Participants, the vocabulary and list fields of the entity type (for reports: *Report types*), and *Entity type* when the dataset has several types |
-| **Knowledge graph** | Relationship type, Source type, Target type, and the fields the relationship types carry (Author, Creators, Label, Markings...) |
+| **Entities** | Author, Creators, Label, Markings, Assignees, Participants, the vocabulary and list fields of the entity type (for reports: **Report types**), and **Entity type** as described above |
+| **Knowledge graph** | Source type, Target type, the fields the relationship types carry (Author, Creators, Label, Markings...), and **Relationship type** as described above |
 | **Activity & history** | Event type, Event scope, User, Group, Organization, Type, Type of related entity |
 
-For example, a dataset on reports offers *Assignees*, *Author*, *Creators*, *Label*, *Markings*, *Participants* and *Report types*.
+For example, a dataset on reports offers **Assignees**, **Author**, **Creators**, **Label**, **Markings**, **Participants** and **Report types**.
 
-Some fields are never offered: the fields pointing to other knowledge entities (*Contains*, *External references*, *Kill chain phases*), free text fields and dates. The server refuses them too.
+Some fields are never offered, and the server refuses them too:
+
+- the fields pointing to other knowledge entities (*Contains*, *External references*, *Kill chain phases*);
+- free text fields, dates and numbers (score, confidence...);
+- [custom fields](../administration/custom-fields.md).
 
 ## How the series are computed
 
-OpenCTI computes the whole breakdown on the server, in a single query, whatever the number of series. It only counts the data you are allowed to see: your markings and organizations apply.
+OpenCTI computes the breakdown on the server, whatever the number of series: it first ranks the values of the field, then counts each displayed value over time. It only counts the data you are allowed to see: your markings and organizations apply.
 
 ```mermaid
 flowchart LR
@@ -102,33 +106,43 @@ Keep in mind the following behaviors when you read a broken down widget:
 
 ### Colors
 
-A value keeps its own color when it has one: a label keeps its color, a marking its color, and an entity type the color the platform gives it. The other values get a color derived from the value itself. No two series of a widget share a color: when two values would get the same color, one of them takes the next free color. So two widgets that show the same values give them the same colors, but a value can get another color in a widget that shows other values: check the legend before comparing widgets by color. **Other** is always grey.
+A label keeps its color, a marking its color, and an entity type the color the platform gives it, unless another value of the widget already has that color, or the color is too close to the grey of **Other**. The value then gets a color derived from the value itself, like the values that have no color of their own. No two series of a widget share a color. So two widgets that show the same values give them the same colors, but a value can get another color in a widget that shows other values: check the legend before comparing widgets by color. **Other** is always grey.
 
 ### Default period
 
-Without a start date on the dashboard, a daily breakdown covers the 30 days before the end date (today when there is no end date). A period set on the dashboard is always respected.
+Without a start date on the dashboard, a daily breakdown covers the 30 days before the end date (today when there is no end date), and the other intervals cover the 12 months before it. A period set on the dashboard is respected; on [public dashboards](#public-dashboards), a very long period can be shortened.
 
 ## Warnings and limits
 
-A broken down widget can hold many series and many points. OpenCTI warns you instead of drawing a misleading chart.
+A broken down widget can hold many series and many points. OpenCTI warns you instead of drawing a misleading chart: a warning icon next to the title, with its message in a tooltip.
 
-![Top values warning](assets/time-series-breakdown-07-top-n-warning.jpg)
+![Top values warning](assets/time-series-breakdown-top-values-warning.jpg)
 
-| Situation | What the widget shows |
+| Situation | Warning |
 |---|---|
-| More values than the maximum number of series | A warning icon next to the title: *Only the 5 highest values are displayed.* (or *lowest*) |
-| Too many bars, points or cells for the width of the widget | The chart counts by a coarser interval (days, then weeks, months...) and the warning icon says *Interval adjusted to Week to keep the chart responsive.* When weeks are summed into months, each week is counted in the month that contains its Monday. |
-| More than 5,000 distinct values with **Lowest values** | *There are too many values to find the lowest ones.* Choose the highest values or narrow the filters. |
-| More than about 50,000 points (series × intervals), for example 50 daily series over 3 years | *This breakdown has too many points for the selected period.* Shorten the period, choose a coarser interval or reduce the number of series. |
-| A field or a date attribute that does not apply to the data of the widget | *This breakdown field is not available for the dataset of this widget.* or *The date attribute of this widget does not apply to its data.* |
+| More values than the maximum number of series | *Only the 5 highest values are displayed.* (or *lowest*) |
+| Too many bars, points or cells for the width of the widget: the chart counts by a coarser interval (days, then weeks, months...) | *Interval adjusted to Week to keep the chart responsive. The first and last intervals may only be partly covered by the selected period.* |
+| A weekly widget counted by months, quarters or years | *Each week is counted in full in the interval that contains its Monday.* |
 
-![Interval adjusted](assets/time-series-breakdown-08-interval-adjusted.jpg)
+![Interval adjusted](assets/time-series-breakdown-interval-adjusted.jpg)
 
-When a breakdown cannot be computed, the widget shows the reason in place of the chart. Users who can edit the widget also get the advice on what to change.
+When a breakdown cannot be computed, the widget shows the reason in place of the chart. Users who can edit the widget also get the advice on what to change, shown here after the reason.
 
-![Breakdown refused](assets/time-series-breakdown-12-refusal.jpg)
+| Situation | Message |
+|---|---|
+| More than about 50,000 points (series × intervals), for example 50 daily series over 3 years | *This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.* |
+| More than 5,000 distinct values with **Lowest values** | *There are too many values to find the lowest ones. Choose the highest values or narrow the filters of this widget.* |
+| A field the dataset does not offer, checked in the browser | *This breakdown field is not available for the dataset of this widget.* |
+| A field the server refuses for the data of the widget | *The breakdown field of this widget does not apply to its data. Edit the widget to choose another field.* |
+| A date attribute that does not apply to the data | *The date attribute of this widget does not apply to its data. Edit the widget to choose another date attribute.* |
+| A number of series outside 1 to 50, for example in an imported widget | *The number of series of this widget must be between 1 and 50. Edit the widget to change it.* |
+| Any other setting the server refuses | *This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.* |
+
+![Breakdown refused](assets/time-series-breakdown-refusal.jpg)
 
 A widget breaking reports down by 50 labels, day by day since 2023: the breakdown has too many points, and the widget says how to fix it.
+
+In the widget editor, when the dataset uses a saved filter that cannot be read, the **Parameters** step warns *The saved filter could not be read: the breakdown field cannot be checked.*
 
 !!! tip "Keep breakdowns readable"
 
@@ -138,38 +152,42 @@ A widget breaking reports down by 50 labels, day by day since 2023: the breakdow
 
 ### Reports per analyst
 
-The original use case: count the reports of each analyst, week by week. Choose a Heatmap, the Entities perspective, a dataset on Reports, then **Break down by** *Assignees* with a **Week** interval.
+The original use case: count the reports of each analyst, week by week. Choose a Heatmap, the Entities perspective, a dataset on Reports, then **Break down by** **Assignees** with a **Week** interval.
 
-![Reports per analyst](assets/time-series-breakdown-02-use-case-heatmap.jpg)
+![Reports per analyst](assets/time-series-breakdown-reports-per-analyst.jpg)
 
 ### Relationships by type
 
-On the Knowledge graph perspective, break down relationships by *Relationship type* to see which kinds of knowledge grow over time.
+On the Knowledge graph perspective, break down relationships by **Relationship type** to see which kinds of knowledge grow over time.
 
-![Relationships by type](assets/time-series-breakdown-09-relationships.jpg)
+![Relationships by type](assets/time-series-breakdown-relationships.jpg)
 
 ### Platform activity by user
 
-On the Activity & history perspective, break down the events by *User* or by *Event type* to follow the activity on the platform. A Vertical bars widget counts every event; a Line or an Area that counts distinct values cannot be broken down.
+On the Activity & history perspective, break down the events by **User** or by **Event type** to follow the activity on the platform.
 
 !!! tip "Enterprise edition"
 
-    Widgets of the Activity & history perspective, broken down or not, are available in the **OpenCTI Enterprise Edition**. Please read the [dedicated page](../administration/enterprise.md) for full details.
+    Widgets of the Activity & history perspective, broken down or not, are available in the **OpenCTI Enterprise Edition**. Please read the [dedicated page](../administration/enterprise.md) for full details. The other perspectives can be broken down in every edition.
+
+## Custom views
+
+Widgets of a [custom view](custom-views.md) are broken down the same way: edit the view, then create or edit a widget and set **Break down by** at the **Parameters** step. The widget comes with the filter that scopes it to the entity the view is displayed on (see [the pre-configured widget filters](custom-views.md#key-difference-the-pre-configured-widget-filters)), so the series only count the data of that entity: for example, in a custom view of an intrusion set, the reports in regards of that intrusion set, broken down by label.
 
 ## Public dashboards
 
 A broken down widget keeps its breakdown in the [public dashboard](dashboards-share.md): the same field, maximum number of series, order and **Other** series, drawn the same way as in the custom dashboard. The series themselves can differ, because they are computed on the data the public dashboard can show: the top values, the counts, the interval and the warnings can change.
 
-![Public dashboard](assets/time-series-breakdown-11-public-dashboard.jpg)
+![Public dashboard](assets/time-series-breakdown-public-dashboard.jpg)
 
 - The breakdown settings are read from the widget stored in the dashboard, never from the visitor's request.
 - The data follows the restrictions of the public dashboard: the access of its creator, limited to the markings chosen at publication.
-- Visitors can pick any period: a long period is counted in coarser intervals, so that the widget draws at most 5,000 points, and the widget says so.
+- Visitors can pick any period: a long period is counted in coarser intervals, so that the widget draws at most 5,000 points, and the widget says so. When even yearly intervals do not fit, the start of the period is moved forward.
 - Widgets of the Activity & history perspective are not available in public dashboards, broken down or not.
 
 ## Export, import and visualization changes
 
-- A broken down widget is exported and imported with its breakdown. Imported into an older version of OpenCTI, it loses its breakdown without any error and shows a single total series.
+- A broken down widget is exported and imported with its breakdown. An older version of OpenCTI ignores the breakdown and shows a single total series.
 - Switching the widget to a visualization that cannot be broken down (a donut, a list...) removes the breakdown when you save the widget.
 
 ## Related pages

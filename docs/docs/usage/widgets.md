@@ -106,7 +106,7 @@ For the "Knowledge Graph" perspective, a critical parameter is the `Display the 
 
 This level of control ensures that your dashboard aligns precisely with your analytical objectives, offering a tailored perspective based on your data and relationship.
 
-For the "Vertical bars", "Line", "Area" and "Heatmap" visualizations with a single dataset, the `Break down by` parameter draws one series per value of a field (per label, per analyst, per author...). See [Time series breakdown](time-series-breakdown.md).
+For the "Vertical bars", "Line", "Area" and "Heatmap" visualizations with a single dataset, the **Break down by** parameter draws one series per value of a field (per label, per analyst, per author...). See [Time series breakdown](time-series-breakdown.md).
 
 ![Widget parameters](assets/widget-parameters.png)
 
