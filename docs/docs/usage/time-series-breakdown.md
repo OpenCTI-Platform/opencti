@@ -132,7 +132,6 @@ When a breakdown cannot be computed, the widget shows the reason in place of the
 |---|---|
 | More than about 50,000 points (series × intervals), for example 50 daily series over 3 years | *This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.* |
 | More than 5,000 distinct values with **Lowest values** | *There are too many values to find the lowest ones. Choose the highest values or narrow the filters of this widget.* |
-| A field the dataset does not offer, checked in the browser | *This breakdown field is not available for the dataset of this widget.* |
 | A field the server refuses for the data of the widget | *The breakdown field of this widget does not apply to its data. Edit the widget to choose another field.* |
 | A date attribute that does not apply to the data | *The date attribute of this widget does not apply to its data. Edit the widget to choose another date attribute.* |
 | A number of series outside 1 to 50, for example in an imported widget | *The number of series of this widget must be between 1 and 50. Edit the widget to change it.* |
