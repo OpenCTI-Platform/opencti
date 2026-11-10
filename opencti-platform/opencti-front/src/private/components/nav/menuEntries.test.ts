@@ -28,6 +28,11 @@ describe('capabilitiesOf', () => {
     ]);
   });
 
+  it('keeps Roles and Email templates closed to organization admins (they only manage users and organizations)', () => {
+    expect(capabilitiesOf('/dashboard/settings/accesses/roles')).toEqual(['SETTINGS_SETACCESSES']);
+    expect(capabilitiesOf('/dashboard/settings/accesses/email_templates')).toEqual(['SETTINGS_SETACCESSES']);
+  });
+
   it('matches a single page, and denies (empty list) an unknown path', () => {
     expect(capabilitiesOf('/dashboard/data/processing/tasks')).toEqual(['KNOWLEDGE_KNUPDATE']);
     expect(capabilitiesOf('/dashboard/nope')).toEqual([]);
