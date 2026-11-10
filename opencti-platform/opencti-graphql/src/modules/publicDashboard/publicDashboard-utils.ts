@@ -158,8 +158,8 @@ const publishedTimeRangeOf = (config: PublicDashboardCached['private_manifest'][
   if (config?.relativeDate) {
     const end = utcDate();
     const match = RELATIVE_DATE_REGEXP.exec(config.relativeDate);
-    // Unknown relative date: the front computes no start either.
-    if (!match) return { startDate: undefined, endDate: end.toISOString(), lowest: -Infinity, highest: end.valueOf() };
+    // Unknown relative date (a manifest written outside the time filters): nothing is served rather than everything.
+    if (!match) return { startDate: end.toISOString(), endDate: end.toISOString(), lowest: end.valueOf(), highest: end.valueOf() };
     const unit = match[1] as RelativeDateUnit;
     const start = end.clone().subtract(Number(match[2]), unit);
     return { startDate: start.toISOString(), endDate: end.toISOString(), lowest: start.valueOf() - RELATIVE_START_MARGIN_MS[unit], highest: end.valueOf() };
