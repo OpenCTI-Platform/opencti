@@ -27,6 +27,12 @@ def test_flatten_custom_field_values_sets_each_value_under_its_field_name():
                 "field_name": "x_opencti_cf_due",
                 "date_value": "2026-10-12T15:26:00.081Z",
             },
+            {
+                "field_id": "cf-5",
+                "field_name": "x_opencti_cf_rate",
+                "int_value": None,
+                "float_value": 0.85,
+            },
         ],
     }
     assert OpenCTIStix2.flatten_custom_field_values(entity) is entity
@@ -36,6 +42,7 @@ def test_flatten_custom_field_values_sets_each_value_under_its_field_name():
         "x_opencti_cf_flag": False,
         "x_opencti_cf_tags": ["a", "b"],
         "x_opencti_cf_due": "2026-10-12T15:26:00.081Z",
+        "x_opencti_cf_rate": 0.85,
     }
 
 

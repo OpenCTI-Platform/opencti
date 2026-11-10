@@ -74,7 +74,7 @@ export type BasicObjectDefinition<T extends BasicStoreAttribute = BasicStoreAttr
 };
 export type DateAttribute = { type: 'date' } & BasicDefinition;
 export type BooleanAttribute = { type: 'boolean' } & BasicDefinition;
-export type NumericAttribute = { type: 'numeric'; precision: 'integer' | 'long' | 'float'; scalable?: boolean } & BasicDefinition;
+export type NumericAttribute = { type: 'numeric'; precision: 'integer' | 'long' | 'float' | 'double'; scalable?: boolean } & BasicDefinition;
 export type IdAttribute = { type: 'string'; format: 'id'; entityTypes: string[]; attrRawIds?: GetRawIdsFn<string>; representative?: RepresentativeFn<string> } & BasicDefinition;
 export type TextAttribute = { type: 'string'; format: 'short' | 'text' } & BasicDefinition;
 export type EnumAttribute = { type: 'string'; format: 'enum'; values: string[] } & BasicDefinition;
@@ -720,7 +720,7 @@ export const humanizeCustomFieldValue = (item: any, format: Formating = DefaultF
   if (item.date_value) {
     return humanizeDate(item.date_value, format);
   }
-  const value = item.select_values ?? item.int_value ?? item.string_value ?? item.boolean_value ?? item.select_value;
+  const value = item.select_values ?? item.int_value ?? item.float_value ?? item.string_value ?? item.boolean_value ?? item.select_value;
   return Array.isArray(value) ? value.join(', ') : `${value}`;
 };
 
@@ -738,6 +738,7 @@ export const customFieldValues: NestedObjectAttribute = {
     { name: 'field_id', label: 'Field ID', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'field_name', label: 'Field name', type: 'string', format: 'short', mandatoryType: 'internal', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'int_value', label: 'Integer value', type: 'numeric', precision: 'integer', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'float_value', label: 'Decimal value', type: 'numeric', precision: 'double', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'string_value', label: 'String value', type: 'string', format: 'short', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'boolean_value', label: 'Boolean value', type: 'boolean', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
     { name: 'date_value', label: 'Date value', type: 'date', mandatoryType: 'no', upsert: false, editDefault: false, multiple: false, isFilterable: false },
