@@ -19,4 +19,9 @@ export interface MenuEntry {
   capabilitiesInDraft?: string[];
   /** Entry hidden if this feature flag is off. */
   featureFlag?: string;
+  /**
+   * Entry kept when the user is in a draft context. Off by default: a page is not available in draft unless it says so.
+   * Only effective if the page's left bar section is also shown in draft (see `useNavMenu`).
+   */
+  availableInDraft?: boolean;
 }

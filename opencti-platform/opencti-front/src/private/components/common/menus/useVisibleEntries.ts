@@ -10,8 +10,10 @@ const useVisibleEntries = (entries: MenuEntry[]): MenuEntry[] => {
   const { me } = useAuth();
   const { isFeatureEnable } = useHelper();
   const isEnterpriseEdition = useEnterpriseEdition();
-  return entries.filter(({ requiredCapabilities, capabilitiesInDraft, featureFlag, requiresEE }) => (
-    (!featureFlag || isFeatureEnable(featureFlag))
+  const inDraft = !!me.draftContext;
+  return entries.filter(({ requiredCapabilities, capabilitiesInDraft, featureFlag, requiresEE, availableInDraft }) => (
+    (!inDraft || availableInDraft)
+    && (!featureFlag || isFeatureEnable(featureFlag))
     && (!requiresEE || isEnterpriseEdition)
     && (!requiredCapabilities || isGrantedTo(me, requiredCapabilities, false, { capabilitiesInDraft }))
   ));

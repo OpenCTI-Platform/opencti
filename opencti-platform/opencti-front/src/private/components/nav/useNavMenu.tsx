@@ -134,12 +134,12 @@ const useNavMenu = (): NavGroup[] => {
   const hiddenEntities = useHiddenEntities();
 
   // Sub-item whose pages are declared in `*.entries.ts` files: shown when the user can open at least one of them.
-  // Those files own the capability, feature flag and EE rules of their pages, so the left bar does not restate them.
+  // Those files own the capability, feature flag, EE and draft rules of their pages, so the left bar does not restate them.
   const visibleEntries = useVisibleEntries(allMenuEntries);
-  const pagesSection = (link: string, label: string, otherCondition = true): NavSubItem => ({
+  const pagesSection = (link: string, label: string): NavSubItem => ({
     link,
     label,
-    granted: otherCondition && visibleEntries.some(({ path }) => path.startsWith(`${link}/`)),
+    granted: visibleEntries.some(({ path }) => path.startsWith(`${link}/`)),
   });
 
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
@@ -357,11 +357,11 @@ const useNavMenu = (): NavGroup[] => {
           subItems: [
             { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
             { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
-            pagesSection('/dashboard/data/import', t_i18n('Import'), !inDraft),
-            pagesSection('/dashboard/data/processing', t_i18n('Processing'), !inDraft),
-            pagesSection('/dashboard/data/sharing', t_i18n('Data sharing'), !inDraft),
-            pagesSection('/dashboard/data/restriction', t_i18n('Restriction'), !inDraft),
-            pagesSection('/dashboard/data/health', t_i18n('Health'), !inDraft),
+            pagesSection('/dashboard/data/import', t_i18n('Import')),
+            pagesSection('/dashboard/data/processing', t_i18n('Processing')),
+            pagesSection('/dashboard/data/sharing', t_i18n('Data sharing')),
+            pagesSection('/dashboard/data/restriction', t_i18n('Restriction')),
+            pagesSection('/dashboard/data/health', t_i18n('Health')),
             { granted: isTrashEnable() && isGrantedToDelete && !inDraft, link: '/dashboard/trash', label: t_i18n('Trash') },
           ],
         },
