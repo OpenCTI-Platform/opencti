@@ -1,9 +1,9 @@
 import { head, includes } from 'ramda';
-import { stripIgnoredCharacters } from 'graphql/utilities';
 import { meterManager } from '../config/tracing';
 import { AUTH_FAILURE, AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../config/errors';
 import { isEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
+import { analyzeRequestSensitivity, redactRequestQuery } from '../utils/log-redaction';
 
 const getRequestError = (context) => {
   const isSuccess = isEmptyField(context.errors) || context.errors.length === 0;
@@ -37,7 +37,8 @@ export default {
         };
 
         if (!sendContext.operationName) {
-          logApp.info('[TELEMETRY] GraphQL operation is unnamed', { query: stripIgnoredCharacters(sendContext.request?.query ?? 'undefined') });
+          const sensitivity = analyzeRequestSensitivity(sendContext.document);
+          logApp.info('[TELEMETRY] GraphQL operation is unnamed', { query: redactRequestQuery(sendContext.request?.query, sensitivity) });
         }
 
         if (requestError) {
