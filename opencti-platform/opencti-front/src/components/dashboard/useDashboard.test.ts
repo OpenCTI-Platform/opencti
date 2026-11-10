@@ -910,5 +910,17 @@ describe('useDashboard', () => {
       act(() => completions[0]());
       expect(saveSpy).toHaveBeenCalledTimes(2);
     });
+
+    it('drops a layout save of the previous dashboard still pending when another one is shown', () => {
+      vi.useFakeTimers();
+      const saveSpy = completingSaveSpy();
+      const { result, rerender } = renderHook((props: DashboardLike) => useDashboard({ entity: props, onSave: saveSpy }), { initialProps: entity });
+      act(() => result.current.handleLayoutChange([{ ...widget.layout, x: 4 }]));
+      rerender({ id: 'other-dashboard', manifest: fakeSerialize({ config: {}, widgets: {} }) });
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(saveSpy).not.toHaveBeenCalled();
+    });
   });
 });
