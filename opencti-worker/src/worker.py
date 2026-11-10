@@ -163,7 +163,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             config,
             default=[],
         )
-        if self.included_queues:
+        if isinstance(self.included_queues, str):
             self.included_queues = [
                 q.strip() for q in self.included_queues.split(",") if q.strip()
             ]
@@ -173,7 +173,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             config,
             default=[],
         )
-        if self.excluded_queues:
+        if isinstance(self.excluded_queues, str):
             self.excluded_queues = [
                 q.strip() for q in self.excluded_queues.split(",") if q.strip()
             ]
