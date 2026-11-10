@@ -251,6 +251,7 @@ nav:
       - Merging and de-duplication: administration/merging.md
       - CSV Mappers: administration/csv-mappers.md
       - JSON Mappers: administration/json-mappers.md
+      - Ingestion health: administration/ingestion-health.md
     - Platform settings:
       - Parameters: administration/parameters.md
       - Security:
