@@ -43,6 +43,8 @@ export interface MenuEntry {
   requiresEE?: boolean;
   /** Extra words matching this entry in the main search (aliases, CTI jargon...). */
   keywords?: string[];
+  /** Page reached outside the left bar (top bar icons...): indexed in the main search without a left bar subsection, with this breadcrumb. */
+  standaloneParents?: string[];
   /** Entry hidden if the user has none of these capabilities: ANY one is enough (never "all of"). */
   requiredCapabilities?: string[];
   /** Also granted if the user has one of these capabilities in a draft (see `useGranted` options). */

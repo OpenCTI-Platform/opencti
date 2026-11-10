@@ -44,6 +44,9 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
     .filter((n) => path.startsWith(`${n.path}/`))
     .sort((a, b) => b.path.length - a.path.length)[0];
   const entryNodes: Node[] = entries.flatMap((entry) => {
+    if (entry.standaloneParents) {
+      return [{ path: entry.path, label: t_i18n(entry.label), parents: entry.standaloneParents.map((p) => t_i18n(p)), keywords: entry.keywords ?? [] }];
+    }
     const section = sectionOf(entry.path);
     if (!section) return [];
     return [{
