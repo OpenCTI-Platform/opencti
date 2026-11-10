@@ -69,7 +69,7 @@ An entity type without a workflow: start with **Add Status**.
 3. Optionally, configure [actions on enter and on exit](#actions-on-statuses) (Enterprise Edition).
 4. Click **Add**. The status appears on the canvas.
 
-The first status, the one with no incoming transition, is the **starting status**. New entities of this type start there.
+The first status you add is the **starting status**: new entities of this type start there. A status with no incoming transition is always the starting status. A workflow can also loop back to its starting status, for example *New* → *In review* → *New*.
 
 To add the next status, click the **+** placeholder under a status: OpenCTI adds the new status and the transition that leads to it. To insert a status between two existing ones, click the link between them.
 
@@ -142,12 +142,12 @@ Open the **Publish** menu to find two more actions.
 
 #### Workflow validation rules
 
-- There is exactly one starting status (a status with no incoming transition).
+- There is a single starting status: if a status has no incoming transition, it must be the starting status, and no other status may lack an incoming transition. Looping back to the starting status is allowed.
 - Every status can be reached from the starting status.
 - Every transition has a name, a source and a target.
 - Transition names are unique among the transitions leaving the same status.
 - Conditions only use supported filters.
-- *Update authorized members* is only used on containers, organizations and drafts.
+- *Update authorized members* is only used on entity types that support authorized members: Organization, Report, Note, Grouping, Incident response, Request for takedown, Request for information, and Draft.
 - *Validate draft* is only used in the Draft workflow, which must contain at least one.
 - A [closing reason](#closing-reason) is only asked on domain objects, and only on a transition into a final status (a status no transition leaves).
 
@@ -185,7 +185,7 @@ Conditions decide which users can see and take a transition. A user who does not
 |---|---|
 | **Share with organizations** | Shares the entity with the selected organizations. Leave the list empty to let the analyst pick organizations when taking the transition. Runs as a background task. |
 | **Unshare from organizations** | Removes organization sharing. Same behavior as above. |
-| **Update authorized members** | *Replaces* the authorized members of the entity. Dynamic members are available: author, creators, assignees, participants. Containers only. |
+| **Update authorized members** | *Replaces* the authorized members of the entity. Dynamic members are available: author, creators, assignees, participants. Only on the types that support authorized members: Organization, Report, Note, Grouping, Incident response, Request for takedown, Request for information, and Draft. |
 | **Comment** | Asks for a comment of up to 1,000 characters, optional or required. The comment is stored in the workflow history and notifies the entity's assignees and participants. |
 | **Validate draft** | Draft workflow only. See [Draft workflow](draft-workflow.md). |
 
@@ -251,8 +251,9 @@ From a list, select entities (or **select all** on a filtered list), then open t
 
 - **Only common transitions are offered.** The list contains the transitions that every selected entity can take, checked entity by entity, conditions included. If there is none, the dialog shows *No transition available for all selected entities*.
 - **With a filter (select all)**, transitions are computed from the statuses found under the filter. Entities without a status count as being in the starting status. Conditions are only checked when the transition runs.
+- **With a selection of entities**, transitions are computed entity by entity, conditions included. An entity that has no workflow instance yet is treated as being in the starting status when the list is computed.
 - **Inputs are asked once.** A transition that needs a comment, a [closing reason](#closing-reason) or organizations gets them from the dialog, the same for every entity. It is only offered when all the selected statuses ask for the same inputs.
-- **Entities already in the target status** are left untouched and do not run the actions again.
+- **Entities already in the target status** are normally left untouched by the **Status** bypass field. A **Workflow transition** is different: it is triggered on every selected entity, so a self-loop transition (from a status back to itself) runs its actions again and adds a history entry. An entity moved by someone else before the task reaches it can also make the transition unavailable, and the task reports an error for that entity.
 - **One entity type at a time.** The workflow transition is only available when the selected entities are of a single type that has a published workflow.
 
 Users with the *Bypass all capabilities* capability can also use the field **Status** to move all the selected entities to any status. It goes through the workflow engine, and the switch **Apply transition actions** (on by default) runs the *on exit* and *on enter* status actions. The fields **Status** and **Workflow transition** cannot be combined in the same update.
