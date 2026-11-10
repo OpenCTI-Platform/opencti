@@ -2,7 +2,6 @@
 
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
-import nconf from 'nconf';
 import express from 'express';
 import { parse as parseContentType } from 'content-type';
 import { findById as findWorkById } from '../domain/work';
@@ -20,6 +19,7 @@ import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
 import { handleConfidenceToScoreTransformation } from '../modules/ingestion/ingestion-taxii-utils';
 import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
+import { getMaxPayloadBodySize, getMaxPayloadBodySizeInBytes } from './httpConfig';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { checkDraftInContext } from './httpServer-draft';
 import { pushBundleToConnectorQueue } from '../manager/ingestionManager/ingestionManagerPushToQueue';
@@ -106,7 +106,7 @@ const JsonTaxiiMiddleware = express.json({
       return false;
     }
   },
-  limit: nconf.get('app:max_payload_body_size') || '50mb',
+  limit: getMaxPayloadBodySize(),
 });
 
 const initTaxiiApi = (app) => {
@@ -134,7 +134,7 @@ const initTaxiiApi = (app) => {
       const rootContent = {
         title: 'OpenCTI TAXII Server',
         description: 'A global and natively segregate taxii root',
-        max_content_length: 100 * 1024 * 1024, // '100mb'
+        max_content_length: getMaxPayloadBodySizeInBytes(),
         versions: [TAXII_RESPONSE_CONTENT_TYPE],
       };
       sendJsonResponse(res, rootContent);
