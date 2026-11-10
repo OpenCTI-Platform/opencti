@@ -91,6 +91,9 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
     case 'You have not defined a default group for ingestion users': return t_i18n('You have not defined a default group for ingestion users');
     case 'Service account not found': return t_i18n('Service account not found');
     case 'The confidence level of the service account is not changed': return t_i18n('The confidence level of the service account is not changed');
+    case 'Feed already exists': return t_i18n('Feed already exists');
+    case 'Feed name already exists': return t_i18n('Feed name already exists');
+    case 'Several feeds have this name: import it as a copy': return t_i18n('Several feeds have this name: import it as a copy');
     default: break;
   }
   const mainOrganization = reason.match(/^Sets the main organization: (.+)$/)?.[1];
@@ -112,6 +115,14 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
   const missingCredentials = reason.match(/^Configuration to provide: (.+)$/)?.[1];
   if (missingCredentials) {
     return t_i18n('Configuration to provide: {keys}', { values: { keys: missingCredentials } });
+  }
+  const missingAuthor = reason.match(/^Author not found: (.+)$/)?.[1];
+  if (missingAuthor) {
+    return t_i18n('Author not found: {name}', { values: { name: missingAuthor } });
+  }
+  const createdJsonMapper = reason.match(/^JSON mapper created: (.+)$/)?.[1];
+  if (createdJsonMapper) {
+    return t_i18n('JSON mapper created: {name}', { values: { name: createdJsonMapper } });
   }
   const unavailableConnector = reason.match(/^Connector not available on this platform: (.+)$/)?.[1];
   if (unavailableConnector) {

@@ -268,8 +268,9 @@ export const deleteIngestionJson = async (context: AuthContext, user: AuthUser, 
 // like authentication_value, sensitive ones are blanked in the export and must
 // be set again at import time.
 const SENSITIVE_HEADER_NAME = /authorization|token|key|secret|password|cookie|credential/i;
+export const isSensitiveHeaderName = (name: string) => SENSITIVE_HEADER_NAME.test(name);
 export const sanitizeExportedHeaders = (headers: { name: string; value: string }[] | undefined) => {
-  return headers?.map((header) => (SENSITIVE_HEADER_NAME.test(header.name) ? { ...header, value: '' } : header));
+  return headers?.map((header) => (isSensitiveHeaderName(header.name) ? { ...header, value: '' } : header));
 };
 
 // Exports the feed configuration with the JSON mapper embedded (a JSON feed

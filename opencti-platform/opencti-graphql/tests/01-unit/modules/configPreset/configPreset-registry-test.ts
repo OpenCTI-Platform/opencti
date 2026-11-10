@@ -197,6 +197,11 @@ describe('Config preset registry', () => {
         itemIds: [fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id],
       },
       { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
+      // The feeds by name; the next feeds of the same name by creation date
+      { id: 'rssFeeds', label: 'RSS feeds', description: 'RSS feeds and their parameters, without their state', group: 'integrations', itemIds: ['Security news', 'Security news (1)'] },
+      { id: 'csvFeeds', label: 'CSV feeds', description: 'CSV feeds with their mapper, without their credentials', group: 'integrations', itemIds: [] },
+      { id: 'jsonFeeds', label: 'JSON feeds', description: 'JSON feeds with their mapper, without their credentials', group: 'integrations', itemIds: [] },
+      { id: 'taxiiFeeds', label: 'TAXII feeds', description: 'TAXII feeds and their parameters, without their credentials', group: 'integrations', itemIds: ['Partner/TAXII'] },
     ]);
   });
 
@@ -239,6 +244,9 @@ describe('Config preset registry', () => {
       ['Fraud investigation', false],
       ['Phishing triage', false],
       ['MITRE', false],
+      ['Security news', false],
+      ['Security news', false],
+      ['Partner/TAXII', false],
     ]);
   });
 
@@ -280,6 +288,9 @@ describe('Config preset registry', () => {
       `taxonomy/case_templates/${fraudCaseTemplate.standard_id}.json`,
       `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
       'integrations/connectors/mitre.json',
+      'integrations/rss_feeds/Security news.json',
+      'integrations/rss_feeds/Security news (1).json',
+      'integrations/taxii_feeds/Partner_TAXII.json',
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -365,6 +376,52 @@ describe('Config preset registry', () => {
       expect(await ids({})).toEqual(['mitre']);
       expect(await ids({ excludedIds: ['mitre'] })).toEqual([]);
       expect(await ids({ ids: ['external'] })).toEqual([]);
+    });
+  });
+
+  describe('feeds', () => {
+    const rssFeeds = findFamily('rssFeeds');
+    const taxiiFeeds = findFamily('taxiiFeeds');
+
+    it('exports an RSS feed by name, with its markings by standard id and the confidence of its user, without its user nor its state', async () => {
+      const item = await findItem('rssFeeds', 'Security news');
+      expect(item.dependsOn).toEqual([{ type: 'markings', id: customMarking.standard_id }]);
+      const file = await exportConfigPresetItem(context, user, rssFeeds, item);
+      expect(file).toMatchObject({ type: 'integrations.rssFeeds', id: 'Security news' });
+      expect(file.configuration).toEqual({
+        name: 'Security news',
+        description: 'Daily news',
+        scheduling_period: 'PT1H',
+        uri: 'https://news.example.com/rss',
+        ssl_verify: null,
+        confidence_level: 75,
+        report_types: ['threat-report'],
+        markings: [{ standard_id: customMarking.standard_id, definition_type: customMarking.definition_type, definition: customMarking.definition }],
+        author: null,
+      });
+      expect(JSON.stringify(file)).not.toMatch(/mitre-user-id|current_state_date|2026-03-01|ingestion_running|security-news-id/);
+    });
+
+    it('exports the next feed of the same name as a copy, by creation date', async () => {
+      const file = await exportConfigPresetItem(context, user, rssFeeds, await findItem('rssFeeds', 'Security news (1)'));
+      expect(file.configuration).toMatchObject({ name: 'Security news', uri: 'https://other-news.example.com/rss' });
+    });
+
+    it('exports a TAXII feed with its authentication type, never its credentials nor its cursor', async () => {
+      const item = await findItem('taxiiFeeds', 'Partner/TAXII');
+      expect(item.fileName).toEqual('Partner_TAXII.json');
+      const file = await exportConfigPresetItem(context, user, taxiiFeeds, item);
+      expect(file.configuration).toMatchObject({ name: 'Partner/TAXII', authentication_type: 'basic', version: 'v21', collection: 'collection-id' });
+      expect(JSON.stringify(file)).not.toMatch(/encrypted-credentials|authentication_value|cursor/);
+    });
+
+    it('lists the feeds by name, searched on their name', async () => {
+      const ids = async (args: Parameters<typeof rssFeeds.listItems>[2]) => (await rssFeeds.listItems(context, user, args)).edges.map(({ node }) => node.id);
+      expect(await ids({})).toEqual(['Security news', 'Security news (1)']);
+      expect(await ids({ first: 1 })).toEqual(['Security news']);
+      expect(await ids({ first: 1, after: 'Security news' })).toEqual(['Security news (1)']);
+      expect(await ids({ excludedIds: ['Security news'] })).toEqual(['Security news (1)']);
+      expect(await ids({ search: 'other' })).toEqual([]);
     });
   });
 

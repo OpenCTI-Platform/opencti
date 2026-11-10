@@ -277,6 +277,41 @@ describe('Config preset exportable types query', () => {
         items: [{ key: 'mitre', label: 'MITRE', translatable: false, dependsOn: [], isDefault: false }],
         itemsPageInfo: onePage(1),
       },
+      {
+        key: 'rssFeeds',
+        label: 'RSS feeds',
+        description: 'RSS feeds and their parameters, without their state',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [
+          { key: 'Security news', label: 'Security news', translatable: false, dependsOn: [{ type: 'markings', key: customMarking.standard_id }], isDefault: false },
+          { key: 'Security news (1)', label: 'Security news', translatable: false, dependsOn: [], isDefault: false },
+        ],
+        itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'csvFeeds',
+        label: 'CSV feeds',
+        description: 'CSV feeds with their mapper, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [],
+        itemsPageInfo: onePage(0),
+      },
+      {
+        key: 'jsonFeeds',
+        label: 'JSON feeds',
+        description: 'JSON feeds with their mapper, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [],
+        itemsPageInfo: onePage(0),
+      },
+      {
+        key: 'taxiiFeeds',
+        label: 'TAXII feeds',
+        description: 'TAXII feeds and their parameters, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [{ key: 'Partner/TAXII', label: 'Partner/TAXII', translatable: false, dependsOn: [], isDefault: false }],
+        itemsPageInfo: onePage(1),
+      },
     ]);
   });
 
@@ -319,6 +354,7 @@ describe('Config preset exportable types query', () => {
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
       ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true],
+      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false],
     ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
@@ -367,6 +403,10 @@ describe('Config preset exportable types query', () => {
       ['statusTemplates', 'taxonomy'],
       ['caseTemplates', 'taxonomy'],
       ['connectors', 'integrations'],
+      ['rssFeeds', 'integrations'],
+      ['csvFeeds', 'integrations'],
+      ['jsonFeeds', 'integrations'],
+      ['taxiiFeeds', 'integrations'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);

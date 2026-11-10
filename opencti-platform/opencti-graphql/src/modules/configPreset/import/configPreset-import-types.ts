@@ -98,6 +98,8 @@ export interface ConfigPresetImportPlan {
   targets?: Map<string, string | null>;
   connectorNames?: Set<string>;
   connectorsLoaded?: Promise<ConnectorImportLoaded>;
+  // The feed names the earlier items of an import take, by family
+  ingestionFeedNames?: Map<string, Set<string>>;
   ingestionGroupPlanned?: boolean;
   credentials?: ConfigPresetImportCredentials;
   serviceAccounts?: Map<string, string>;
