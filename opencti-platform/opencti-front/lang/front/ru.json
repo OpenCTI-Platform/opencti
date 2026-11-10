@@ -3641,6 +3641,7 @@
   "No platform announcement yet": "Объявлений платформы пока нет",
   "No playbook available": "Нет доступной игровой книги",
   "No potential duplicate entities has been found.": "Потенциальных дубликатов сущностей не обнаружено.",
+  "Its value will also be removed from {count} preset(s).": "Её значение также будет удалено из {count} пресет(ов).",
   "No preset": "Без пресета",
   "No preset (default values of the dashboard)": "Без пресета (значения дашборда по умолчанию)",
   "No processes running": "Нет запущенных процессов",

@@ -12,7 +12,6 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { findById as findWorkspace } from '../workspace/workspace-domain';
-import { utcDate } from '../../utils/format';
 import { isFeatureEnabled, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../config/conf';
 import { fromB64, toB64 } from '../../utils/base64';
 import { canWidgetBreakDown } from './publicDashboard-breakdown';
@@ -32,9 +31,14 @@ export const getServedPublicManifest = (publicDashboard: Pick<BasicStoreEntityPu
     return publicManifest;
   }
   const manifest = fromB64(publicManifest);
+  // The viewer switch of the dashboard is not a public setting: the public time filters stay read only
+  const servedConfig = manifest.config?.allowViewersToEditTimeFilters !== undefined
+    ? R.omit(['allowViewersToEditTimeFilters'], manifest.config)
+    : manifest.config;
+  const serveWidgetsUnchanged = () => (servedConfig === manifest.config ? publicManifest : toB64({ ...manifest, config: servedConfig }));
   const widgets = Object.entries<any>(manifest.widgets ?? {});
   if (!widgets.some(([, widget]) => widget?.parameters?.breakdownBy)) {
-    return publicManifest;
+    return serveWidgetsUnchanged();
   }
   const storedWidgets = isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG)
     ? fromB64<{ widgets?: Record<string, PublicDashboardCachedWidget> }>(publicDashboard.private_manifest).widgets ?? {}
@@ -44,12 +48,12 @@ export const getServedPublicManifest = (publicDashboard: Pick<BasicStoreEntityPu
     return !!widget?.parameters?.breakdownBy && !(storedWidget && canWidgetBreakDown(storedWidget));
   };
   if (!widgets.some(([widgetId, widget]) => isServedWithoutBreakdown(widgetId, widget))) {
-    return publicManifest;
+    return serveWidgetsUnchanged();
   }
   const servedWidgets = widgets.map(([widgetId, widget]) => {
     return [widgetId, isServedWithoutBreakdown(widgetId, widget) ? { ...widget, parameters: R.omit(WIDGET_BREAKDOWN_PARAMETERS, widget.parameters) } : widget];
   });
-  return toB64({ ...manifest, widgets: Object.fromEntries(servedWidgets) });
+  return toB64({ ...manifest, config: servedConfig, widgets: Object.fromEntries(servedWidgets) });
 };
 
 /**
@@ -117,79 +121,7 @@ interface WidgetArguments {
   perspective: PublicDashboardCachedWidget['perspective'];
   dataSelection: PublicDashboardCachedWidget['dataSelection'];
   parameters: PublicDashboardCachedWidget['parameters'];
-  config: PublicDashboardCached['private_manifest']['config'] | undefined;
 }
-
-// A relative range as the front computes it (computeRelativeDate): `days-7`, `months-1`, `years-1`... back from now.
-// The count is bounded as at publication: a larger one is treated as unknown.
-const RELATIVE_DATE_REGEXP = /^(days|months|years)-(\d{1,4})$/;
-type RelativeDateUnit = 'days' | 'months' | 'years';
-// The public page computes a relative start in the time zone of the visitor: days back from now, months and years
-// back from the start of the visitor's day, so up to one day earlier than here. One more hour covers a daylight
-// saving change in between.
-const HOUR_MS = 3600 * 1000;
-const RELATIVE_START_MARGIN_MS: Record<RelativeDateUnit, number> = { days: HOUR_MS, months: 25 * HOUR_MS, years: 25 * HOUR_MS };
-
-export interface PublicDashboardTimeRange {
-  startDate?: string | null;
-  endDate?: string | null;
-}
-
-// The range frozen at publication: the bounds the queries fall back on, and the instants a requested bound must stay within.
-interface PublishedTimeRange {
-  startDate: string | undefined;
-  endDate: string | undefined;
-  lowest: number;
-  highest: number;
-}
-
-const toTime = (value: unknown): number | null => {
-  if (value === null || value === undefined || value === '') return null;
-  const date = utcDate(value);
-  return date.isValid() ? date.valueOf() : null;
-};
-
-const publishedTimeRangeOf = (config: PublicDashboardCached['private_manifest']['config'] | undefined): PublishedTimeRange => {
-  if (config?.relativeDate) {
-    const end = utcDate();
-    const match = RELATIVE_DATE_REGEXP.exec(config.relativeDate);
-    // Unknown relative date (a manifest written outside the time filters): nothing is served rather than everything.
-    if (!match) return { startDate: end.toISOString(), endDate: end.toISOString(), lowest: end.valueOf(), highest: end.valueOf() };
-    const unit = match[1] as RelativeDateUnit;
-    const start = end.clone().subtract(Number(match[2]), unit);
-    return { startDate: start.toISOString(), endDate: end.toISOString(), lowest: start.valueOf() - RELATIVE_START_MARGIN_MS[unit], highest: end.valueOf() };
-  }
-  const startDate = config?.startDate ?? undefined;
-  const endDate = config?.endDate ?? undefined;
-  return { startDate, endDate, lowest: toTime(startDate) ?? -Infinity, highest: toTime(endDate) ?? Infinity };
-};
-
-/**
- * The time range the public widget queries run with. When the author allowed the viewers to edit the time filters
- * (the dashboard switch, copied at publication), the range sent by the visitor is honoured. Otherwise the range frozen
- * at publication is enforced here: the time filters of the public page are disabled, and a direct call to the public
- * API cannot widen them either. The range sent is kept when it lies within the published one, so the public page runs
- * exactly the queries it ran before; otherwise the published range is used, a relative one computed back from now.
- */
-export const resolvePublicDashboardTimeRange = (
-  config: PublicDashboardCached['private_manifest']['config'] | undefined,
-  requested: PublicDashboardTimeRange,
-): PublicDashboardTimeRange => {
-  if (config?.allowViewersToEditTimeFilters === true) {
-    return { startDate: requested.startDate, endDate: requested.endDate };
-  }
-  const published = publishedTimeRangeOf(config);
-  // An absent bound only lies within a published range open on that side.
-  const isWithin = (value: unknown, isOpenSide: boolean) => {
-    if (value === null || value === undefined) return isOpenSide;
-    const time = toTime(value);
-    return time !== null && time >= published.lowest && time <= published.highest;
-  };
-  if (isWithin(requested.startDate, published.lowest === -Infinity) && isWithin(requested.endDate, published.highest === Infinity)) {
-    return { startDate: requested.startDate, endDate: requested.endDate };
-  }
-  return { startDate: published.startDate, endDate: published.endDate };
-};
 
 export const getWidgetArguments = async (
   context: AuthContext,
@@ -236,7 +168,7 @@ export const getWidgetArguments = async (
   };
 
   // Get widget query configuration
-  const { widgets, config } = private_manifest;
+  const { widgets } = private_manifest;
   const { type, perspective, dataSelection, parameters } = widgets[widgetId];
 
   return {
@@ -245,7 +177,6 @@ export const getWidgetArguments = async (
     perspective,
     parameters,
     dataSelection,
-    config,
   };
 };
 

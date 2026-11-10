@@ -3641,6 +3641,7 @@
   "No platform announcement yet": "아직 플랫폼 공지가 없습니다",
   "No playbook available": "사용 가능한 플레이북이 없습니다",
   "No potential duplicate entities has been found.": "잠재적인 중복 엔터티가 발견되지 않았습니다.",
+  "Its value will also be removed from {count} preset(s).": "해당 값은 {count}개의 프리셋에서도 제거됩니다.",
   "No preset": "프리셋 없음",
   "No preset (default values of the dashboard)": "프리셋 없음(대시보드 기본값)",
   "No processes running": "실행 중인 프로세스 없음",

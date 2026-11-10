@@ -3641,6 +3641,7 @@
   "No platform announcement yet": "Noch keine Ankündigung der Plattform",
   "No playbook available": "Kein Spielbuch verfügbar",
   "No potential duplicate entities has been found.": "Es wurde keine potentielle doppelte Entität gefunden.",
+  "Its value will also be removed from {count} preset(s).": "Ihr Wert wird auch aus {count} Voreinstellung(en) entfernt.",
   "No preset": "Keine Voreinstellung",
   "No preset (default values of the dashboard)": "Keine Voreinstellung (Standardwerte des Dashboards)",
   "No processes running": "Keine laufenden Prozesse",

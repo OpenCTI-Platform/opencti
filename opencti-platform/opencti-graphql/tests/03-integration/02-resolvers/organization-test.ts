@@ -298,6 +298,17 @@ describe('Organization default_dashboard user cache refresh', () => {
     }
   `;
 
+  it('should reserve the default dashboard and its preset to the administrators of the accesses', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: ORGANIZATION_FIELD_PATCH_QUERY,
+      variables: { id: testOrganizationId, input: [{ key: 'default_dashboard', value: [dashboardId] }] },
+    });
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: ORGANIZATION_FIELD_PATCH_QUERY,
+      variables: { id: testOrganizationId, input: [{ key: 'default_dashboard_preset', value: [''] }] },
+    });
+  });
+
   const ME_DEFAULT_DASHBOARDS_QUERY = gql`
     query MeDefaultDashboards {
       me {

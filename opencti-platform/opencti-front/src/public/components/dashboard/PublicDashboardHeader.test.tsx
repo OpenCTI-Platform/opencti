@@ -4,43 +4,22 @@ import { screen } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import PublicDashboardHeader from './PublicDashboardHeader';
 
-const renderHeader = (props: Partial<React.ComponentProps<typeof PublicDashboardHeader>> = {}) => testRender(
-  <PublicDashboardHeader
-    title="Public view"
-    manifestConfig={{ startDate: '2026-01-01T00:00:00.000Z', endDate: null, relativeDate: null }}
-    onChangeRelativeDate={vi.fn()}
-    onChangeStartDate={vi.fn()}
-    onChangeEndDate={vi.fn()}
-    {...props}
-  />,
-);
-
 // The date picker labels both its hidden input and its field group: the input carries the disabled state
-const startDateInput = () => screen.getAllByLabelText('Start date').find((element) => element.tagName === 'INPUT');
+const dateInput = (label: string) => screen.getAllByLabelText(label).find((element) => element.tagName === 'INPUT');
 
 describe('PublicDashboardHeader', () => {
-  it('should show the published range with disabled time filters by default', () => {
-    renderHeader();
-    expect(startDateInput()).toBeDisabled();
-    expect(screen.queryByTestId('public-dashboard-reset-range')).toBeNull();
-  });
-
-  it('should enable the time filters when the author allowed viewers to edit them', () => {
-    renderHeader({ editable: true });
-    expect(startDateInput()).toBeEnabled();
-  });
-
-  it('should keep the date pickers disabled while a relative range is selected, as on the dashboard', () => {
-    renderHeader({ editable: true, manifestConfig: { startDate: null, endDate: null, relativeDate: 'days-7' } });
-    expect(startDateInput()).toBeDisabled();
-    expect(screen.getAllByLabelText('End date').find((element) => element.tagName === 'INPUT')).toBeDisabled();
-    expect(screen.getByRole('combobox')).not.toHaveAttribute('aria-disabled', 'true');
-  });
-
-  it('should offer to go back to the published range once the visitor changed it', async () => {
-    const onReset = vi.fn();
-    const { user } = renderHeader({ editable: true, onReset });
-    await user.click(screen.getByTestId('public-dashboard-reset-range'));
-    expect(onReset).toHaveBeenCalledTimes(1);
+  it('should show the published range with read only time filters', () => {
+    testRender(
+      <PublicDashboardHeader
+        title="Public view"
+        manifestConfig={{ startDate: '2026-01-01T00:00:00.000Z', endDate: null, relativeDate: null }}
+        onChangeRelativeDate={vi.fn()}
+        onChangeStartDate={vi.fn()}
+        onChangeEndDate={vi.fn()}
+      />,
+    );
+    expect(dateInput('Start date')).toBeDisabled();
+    expect(dateInput('End date')).toBeDisabled();
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-disabled', 'true');
   });
 });

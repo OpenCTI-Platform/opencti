@@ -16,11 +16,12 @@ interface DashboardViewerPermissionsProps {
 
 /**
  * What a viewer of the dashboard may change for themselves. None of these grants any right to write the dashboard.
+ * Open unless the editor closed them: a dashboard without the keys lets its viewers change everything for themselves.
  * Laid out as the other switches of the edition drawers; each one follows the given config, not the form state.
  */
 const DashboardViewerPermissions = ({ config, pending = [], onChange }: DashboardViewerPermissionsProps) => {
   const { t_i18n } = useFormatter();
-  const isOn = (name: ViewerPermission) => config[name] === true;
+  const isOn = (name: ViewerPermission) => config[name] !== false;
   const handleChange = (name: ViewerPermission, value: string) => onChange({ [name]: value === 'true' });
   return (
     <Formik

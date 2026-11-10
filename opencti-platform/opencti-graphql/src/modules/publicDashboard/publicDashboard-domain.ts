@@ -34,7 +34,7 @@ import { findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
-import { checkUserIsAdminOnDashboard, getWidgetArguments, resolvePublicDashboardTimeRange, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
+import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { buildPublicBreakdownArgs, withPublicBreakdownRefusals } from './publicDashboard-breakdown';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
 import { buildDashboardDateVariableIds, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
@@ -374,14 +374,12 @@ interface PublicWidgetArgs {
 }
 
 const ensurePublicContext = async (context: AuthContext, args: PublicWidgetArgs) => {
-  const { user, type, perspective, dataSelection, parameters, config } = await getWidgetArguments(context, args.uriKey, args.widgetId);
+  const { user, type, perspective, dataSelection, parameters } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
-  // The range of the visitor only applies when the author allowed it; otherwise the published one is enforced.
-  const { startDate, endDate } = resolvePublicDashboardTimeRange(config, { startDate: args.startDate, endDate: args.endDate });
-  return { user, type, perspective, dataSelection, parameters, startDate, endDate };
+  return { user, type, perspective, dataSelection, parameters, startDate: args.startDate, endDate: args.endDate };
 };
 
 // heatmap & vertical-bar & line & area

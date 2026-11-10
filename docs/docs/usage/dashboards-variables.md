@@ -61,7 +61,7 @@ A dashboard can open on a preset for a given population. Wherever a default dash
 
 - in your own settings (*Custom dashboard* of the home page);
 - in the settings of a group;
-- in the settings of an organization.
+- in the settings of an organization (reserved, with the default dashboard, to the users who may manage the accesses).
 
 The members then see the home dashboard, and the page of the dashboard, with the values and time range of that preset as their defaults. **Reset** brings them back to this preset. If the preset is deleted, the defaults of the dashboard apply.
 
@@ -77,13 +77,13 @@ In the edition drawer of a dashboard, three switches decide what a user who can 
 | Allow viewers to change variable values | Shows the variables bar; the values are personal |
 | Allow viewers to switch presets | Shows the preset selector |
 
-All three are off by default: a viewer then sees the dashboard with its default values.
+All three are on by default: a viewer may change the values, the time range and the preset for themselves unless the editor closes a switch. Behind a closed switch, the viewer sees the dashboard with its defaults for that part.
 
 ## Public dashboards
 
 The publication form shows a **Published values** section: the time range and, for each variable used by a widget, the value to freeze in the public dashboard. The section starts from the values you see on the dashboard; **Load a preset** fills it from a preset. The published values are frozen at publication: the public dashboard is a snapshot, later changes of the variables or presets do not affect it. Publish the same dashboard several times to get one public dashboard per vertical.
 
-If the author had opened *Allow viewers to edit time filters* when publishing, visitors of the public dashboard can change the time range for themselves; otherwise the time filters of the public page are disabled and show the published range, which the server enforces: the public API ignores any other range. Public dashboards published before this feature keep their behaviour (fixed range). The switch is copied at publication: republish to change it.
+The time filters of the public page show the published range and stay read only, as before: the viewer switches of a dashboard do not apply to its public dashboards.
 
 ## Export, import and duplication
 
