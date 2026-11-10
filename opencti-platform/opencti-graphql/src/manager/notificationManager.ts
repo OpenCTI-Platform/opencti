@@ -32,7 +32,7 @@ import {
 import { resolveFiltersMapForUser } from '../utils/filtering/filtering-resolution';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { OPENCTI_ADMIN_UUID, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
+import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { extractStixRepresentative, extractStixRepresentativeForUser } from '../database/stix-representative';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
@@ -231,9 +231,8 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
       notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
     }
     notificationTriggers.push({ users: [user], trigger: generatePlatformNotificationTrigger(user) });
-    if (user.id !== OPENCTI_ADMIN_UUID) { // Admin is a fallback in current alerting on RFI request access creation.
-      notificationTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
-    }
+    // Admin is always an authorized member of a request access RFI, so it is notified like any other validator.
+    notificationTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
   }
   // definedTriggers
   for (let index = 0; index < triggers.length; index += 1) {
