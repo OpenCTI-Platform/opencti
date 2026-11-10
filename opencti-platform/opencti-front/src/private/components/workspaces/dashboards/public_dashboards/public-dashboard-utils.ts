@@ -6,6 +6,7 @@ import type { DashboardConfig, DashboardVariable } from '../../../../../componen
 import { deserializeDashboardManifestForFrontend } from '../../../../../components/dashboard/dashboard-utils';
 import { buildDefaultVariableValues, isValidVariableValue, widgetVariableIds } from '../../../../../components/dashboard/dashboardVariablesResolution';
 import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
+import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
 import { presetFromGraphql, type GraphqlDashboardPreset } from '../../../../../components/dashboard/presets/dashboardPresets';
 
 /**
@@ -98,7 +99,8 @@ const isDashboardPage = (pathname: string, dashboardId: string) => {
  * Values the form starts from for the selected dashboard, and starts again from when another one is selected: what
  * the author sees on the dashboard, with the same precedence as the page (URL, then this browser, then the default).
  * The URL only speaks for the dashboard it shows: it is read for the dashboard of the page, never for another one.
- * The time range is the one of the dashboard: it is not kept per user yet.
+ * The time range follows the same precedence: the one of the address on the page, else the one kept in this browser,
+ * else the one of the dashboard.
  */
 export const buildPublishedValuesState = (
   dashboard: PublishableDashboard | undefined,
@@ -109,13 +111,15 @@ export const buildPublishedValuesState = (
   if (!dashboard) return { variable_values: {}, time_range: EMPTY_PUBLISHED_TIME_RANGE };
   const manifest = deserializeDashboardManifestForFrontend(dashboard.manifest);
   const variables = buildPublishedVariables(manifest.variables ?? [], manifest.widgets);
+  const onPage = isDashboardPage(pathname, dashboard.id);
   const stored = {
     ...readStoredVariableValues(dashboardVariablesStorageKey(userId, dashboard.id)),
-    ...(isDashboardPage(pathname, dashboard.id) ? parseVariablesParam(search) : {}),
+    ...(onPage ? parseVariablesParam(search) : {}),
   };
+  const localRange = (onPage ? parseTimeRangeParam(search) : null) ?? readStoredTimeRange(dashboardTimeRangeStorageKey(userId, dashboard.id));
   return {
     variable_values: buildPublishedVariableValues(variables, stored),
-    time_range: pickPublishedTimeRange(manifest.config),
+    time_range: pickPublishedTimeRange(localRange ?? manifest.config),
   };
 };
 

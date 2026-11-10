@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { toB64 } from '../../../../../utils/String';
 import { dashboardVariablesStorageKey } from '../../../../../components/dashboard/dashboardVariablesStorage';
+import { dashboardTimeRangeStorageKey } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
 import type { DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
 import {
   applyPresetToPublishedValues,
@@ -76,14 +77,15 @@ describe('buildPublishedValuesState', () => {
 
   it('should prefer the URL values on the page of the dashboard, as the page does', () => {
     window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'dashboard-1'), JSON.stringify({ [USED]: 'stored' }));
-    const search = `?variables=${USED}:url`;
+    window.localStorage.setItem(dashboardTimeRangeStorageKey('user-1', 'dashboard-1'), JSON.stringify({ relativeDate: 'days-7', startDate: null, endDate: null }));
+    const search = `?variables=${USED}:url&timeRange=years-1`;
     const onPage = buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1', search, '/dashboard/workspaces/dashboards/dashboard-1');
     expect(onPage.variable_values[USED]).toEqual('url');
-    // The range is the one of the dashboard
-    expect(onPage.time_range).toEqual({ relativeDate: 'months-1', startDate: null, endDate: null });
-    // From a list, the URL speaks for another dashboard: ignored
+    expect(onPage.time_range).toEqual({ relativeDate: 'years-1', startDate: null, endDate: null });
+    // From a list, the URL speaks for another dashboard: ignored, the values and range kept in this browser apply
     const fromList = buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1', search, '/dashboard/workspaces/dashboards_public');
     expect(fromList.variable_values[USED]).toEqual('stored');
+    expect(fromList.time_range).toEqual({ relativeDate: 'days-7', startDate: null, endDate: null });
     // The page of another dashboard whose id starts like this one
     const otherPage = buildPublishedValuesState(dashboard('dashboard-1'), 'user-1', search, '/dashboard/workspaces/dashboards/dashboard-10');
     expect(otherPage.variable_values[USED]).toEqual('stored');
