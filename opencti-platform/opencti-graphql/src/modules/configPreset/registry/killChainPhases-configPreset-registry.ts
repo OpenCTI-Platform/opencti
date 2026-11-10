@@ -1,5 +1,4 @@
 import { FilterMode, FilterOperator, KillChainPhasesOrdering, OrderingMode } from '../../../generated/graphql';
-import { ConfigImportMode } from '../../configImport/configImport-types';
 import { findAllKillChainPhases, findKillChainPhasePaginated } from '../../../domain/killChainPhase';
 import { exportKillChainPhase } from '../../killChainPhase/killChainPhase-export';
 import { getKillChainPhaseStandardId, importKillChainPhase } from '../../killChainPhase/killChainPhase-import';
@@ -54,10 +53,9 @@ const killChainPhasesImporter: ConfigPresetImporter = {
   },
 };
 
-// Kill chain phases: paged and searched through the kill chain phase domain. An import overwrites, or adds a copy under a free phase name.
+// Kill chain phases: paged and searched through the kill chain phase domain. A phase has no copy, an import overwrites.
 export const killChainPhasesFamily: ConfigPresetFamilyDefinition = {
   importer: killChainPhasesImporter,
-  importModes: [ConfigImportMode.Overwrite, ConfigImportMode.Copy],
   id: KILL_CHAIN_PHASES_FAMILY_ID,
   label: 'Kill chain phases',
   description: 'Kill chains, their phases and their order',

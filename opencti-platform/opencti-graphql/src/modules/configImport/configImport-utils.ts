@@ -29,11 +29,6 @@ export const freeConfigImportName = async (
   return undefined;
 };
 
-// The reason of a copy that is not written under the name of the configuration: undefined when it is
-export const configImportCopyReason = (name: string, copyName: string) => {
-  return copyName === name ? undefined : `Added as "${configImportReasonValue(copyName)}"`;
-};
-
 // An item can have several reasons (the name of its copy, what the import grants, what it leaves out), joined with this separator.
 // The front splits on it, translates each reason and shows them on one line, separated by ' · '
 export const CONFIG_IMPORT_REASON_SEPARATOR = '\n';

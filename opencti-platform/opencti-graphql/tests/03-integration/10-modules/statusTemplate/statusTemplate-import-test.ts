@@ -30,10 +30,7 @@ describe('Status template import and export (configuration preset)', () => {
     expect(stored).toMatchObject({ name: DEFAULT });
     expect(await importStatusTemplate(testContext, ADMIN_USER, { name: DEFAULT.toLowerCase(), color: stored!.color }, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true });
     expect(await importStatusTemplate(testContext, ADMIN_USER, { name: DEFAULT, color: stored!.color }, { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists' });
-    // A copy is another template under a free name: a dry run finds it against the platform, and writes nothing
-    expect(await importStatusTemplate(testContext, ADMIN_USER, { name: DEFAULT, color: stored!.color }, { mode: ConfigImportMode.Copy, dryRun: true }))
-      .toMatchObject({ status: 'created', exists: true, reason: `Added as "${DEFAULT} (1)"` });
-    expect(await load(getStatusTemplateStandardId(`${DEFAULT} (1)`))).toBeFalsy();
+    expect(await importStatusTemplate(testContext, ADMIN_USER, { name: DEFAULT, color: stored!.color }, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported' });
   });
 
   it('writes nothing on a dry run, and creates the template otherwise', async () => {

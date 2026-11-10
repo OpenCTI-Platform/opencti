@@ -1,5 +1,4 @@
 import { CaseTemplatesOrdering, FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
-import { ConfigImportMode } from '../../configImport/configImport-types';
 import { findAllCaseTemplates, findCaseTemplatePaginated } from '../../case/case-template/case-template-domain';
 import { exportCaseTemplate } from '../../case/case-template/case-template-export';
 import { importCaseTemplate } from '../../case/case-template/case-template-import';
@@ -43,10 +42,9 @@ const caseTemplatesImporter: ConfigPresetImporter = {
   },
 };
 
-// Case templates with their tasks, paged and searched through the case template domain. An import overwrites, or adds a copy under a free name.
+// Case templates with their tasks, paged and searched through the case template domain. A template has no copy, an import overwrites.
 export const caseTemplatesFamily: ConfigPresetFamilyDefinition = {
   importer: caseTemplatesImporter,
-  importModes: [ConfigImportMode.Overwrite, ConfigImportMode.Copy],
   id: CASE_TEMPLATES_FAMILY_ID,
   label: 'Case templates',
   description: 'Case templates and their tasks',

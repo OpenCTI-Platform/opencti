@@ -1,5 +1,4 @@
 import { FilterMode, FilterOperator, OrderingMode, StatusTemplateOrdering } from '../../../generated/graphql';
-import { ConfigImportMode } from '../../configImport/configImport-types';
 import { findAllStatusTemplates, findTemplatePaginated } from '../../../domain/status';
 import { exportStatusTemplate } from '../../statusTemplate/statusTemplate-export';
 import { getStatusTemplateStandardId, importStatusTemplate } from '../../statusTemplate/statusTemplate-import';
@@ -47,10 +46,9 @@ const statusTemplatesImporter: ConfigPresetImporter = {
 };
 
 // Status templates: all of them, the ones the platform creates included (an import finds them by their name and skips the ones that are
-// the same), paged and searched through the status domain. An import overwrites, or adds a copy under a free name.
+// the same), paged and searched through the status domain. A template has no copy, an import overwrites.
 export const statusTemplatesFamily: ConfigPresetFamilyDefinition = {
   importer: statusTemplatesImporter,
-  importModes: [ConfigImportMode.Overwrite, ConfigImportMode.Copy],
   id: STATUS_TEMPLATES_FAMILY_ID,
   label: 'Status templates',
   description: 'Status templates and their colors',

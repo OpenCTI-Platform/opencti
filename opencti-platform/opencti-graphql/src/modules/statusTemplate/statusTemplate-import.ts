@@ -4,11 +4,11 @@ import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportCopyReason, configImportRefusal, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
+import { configImportRefusal, configImportValidationReason } from '../configImport/configImport-utils';
 import { type StatusTemplateImportConfiguration, statusTemplateImportSchema } from './statusTemplate-import-schema';
 import type { BasicStoreEntityStatusTemplate } from './statusTemplate-types';
 
-export type StatusTemplateImportCode = 'invalid' | 'exists' | 'name_conflict' | 'unchanged';
+export type StatusTemplateImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged';
 
 export type StatusTemplateImportResult = ConfigImportResult<StatusTemplateImportConfiguration, StatusTemplateImportCode>;
 
@@ -20,8 +20,7 @@ const refused = configImportRefusal<StatusTemplateImportConfiguration, StatusTem
 // The one place where a status template is imported: validates, finds the template by its name and writes it.
 // A refusal is a result, not an error. A dry run decides the same result and writes nothing.
 // add: the template must not exist yet. overwrite: a template with the same name is given the color of the configuration, else it is
-// created. copy: a status template is its name, so the copy of one that exists is another template under the first free `name (n)`.
-// The workflows are not part of it: a template is never added to one.
+// created. A status template is its name: it has no copy. The workflows are not part of it: a template is never added to one.
 export const importStatusTemplate = async (
   context: AuthContext,
   user: AuthUser,
@@ -35,16 +34,7 @@ export const importStatusTemplate = async (
   const { name, color } = parsed.data;
   const existing = await storeLoadById<BasicStoreEntityStatusTemplate>(context, user, getStatusTemplateStandardId(name), ENTITY_TYPE_STATUS_TEMPLATE);
   if (mode === ConfigImportMode.Copy) {
-    const copyName = await freeConfigImportName(name, async (candidate) => {
-      return !!(await storeLoadById<BasicStoreEntityStatusTemplate>(context, user, getStatusTemplateStandardId(candidate), ENTITY_TYPE_STATUS_TEMPLATE));
-    });
-    if (!copyName) {
-      return refused('failed', 'name_conflict', 'Status template already exists', !!existing, parsed.data);
-    }
-    if (!dryRun) {
-      await createStatusTemplate(context, user, { name: copyName, color });
-    }
-    return { status: 'created', exists: !!existing, configuration: parsed.data, reason: configImportCopyReason(name, copyName) };
+    return refused('failed', 'copy_unsupported', 'A status template has no copy', !!existing, parsed.data);
   }
   if (!existing) {
     if (!dryRun) {

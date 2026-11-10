@@ -4,11 +4,11 @@ import { generateStandardId, normalizeName } from '../../schema/identifier';
 import { ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportCopyReason, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
+import { configImportValidationReason } from '../configImport/configImport-utils';
 import { type LabelImportConfiguration, labelImportSchema } from './label-import-schema';
 import type { BasicStoreEntityLabel } from './label-types';
 
-export type LabelImportCode = 'invalid' | 'exists' | 'name_conflict' | 'unchanged';
+export type LabelImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged';
 
 export type LabelImportResult = ConfigImportResult<LabelImportConfiguration, LabelImportCode>;
 
@@ -22,8 +22,7 @@ const refused = (status: 'failed' | 'skipped', code: LabelImportCode, reason: st
 // The one place where a label is imported: validates, finds the label by its value and writes it. A refusal is a result, not an error.
 // A dry run decides the same result and writes nothing.
 // add: the label must not exist yet. overwrite: a label with the same value is given the color of the configuration, else it is created;
-// a color that is null or absent leaves the label untouched. copy: a label is its value, so the copy of one that exists is another label,
-// under the first free `value (n)`.
+// a color that is null or absent leaves the label untouched. A label is its value: it has no copy.
 export const importLabel = async (
   context: AuthContext,
   user: AuthUser,
@@ -37,14 +36,7 @@ export const importLabel = async (
   const { value, color } = parsed.data;
   const existing = await storeLoadById<BasicStoreEntityLabel>(context, user, getLabelStandardId(value), ENTITY_TYPE_LABEL);
   if (mode === ConfigImportMode.Copy) {
-    const copyValue = await freeConfigImportName(value, async (candidate) => !!(await storeLoadById(context, user, getLabelStandardId(candidate), ENTITY_TYPE_LABEL)));
-    if (!copyValue) {
-      return refused('failed', 'name_conflict', 'Label already exists', !!existing, parsed.data);
-    }
-    if (!dryRun) {
-      await addLabel(context, user, { value: copyValue, color });
-    }
-    return { status: 'created', exists: !!existing, configuration: parsed.data, reason: configImportCopyReason(value, copyValue) };
+    return refused('failed', 'copy_unsupported', 'A label has no copy', !!existing, parsed.data);
   }
   // What an import does with a label that exists: add refuses it, overwrite gives it the color of the configuration
   const importExisting = async (label: BasicStoreEntityLabel): Promise<LabelImportResult> => {

@@ -133,36 +133,12 @@ describe('importKillChainPhase', () => {
     expect(killChainPhaseEditField).not.toHaveBeenCalled();
   });
 
-  describe('in copy mode', () => {
-    // The phases of the platform, found by the standard id of their names, as the import finds them
-    const withPhases = (...phaseNames: string[]) => {
-      vi.mocked(storeLoadById).mockImplementation((async (_ctx: unknown, _user: unknown, id: string) => {
-        return phaseNames.some((phaseName) => getKillChainPhaseStandardId({ ...names, phase_name: phaseName }) === id) ? stored : undefined;
-      }) as never);
-    };
-
-    it('creates a phase that does not exist under its own name, with no other reason', async () => {
-      expect(await importKillChainPhase(context, user, { ...names, x_opencti_order: 4 }, { mode: ConfigImportMode.Copy })).toEqual({ status: 'created', exists: false, configuration: { ...names, x_opencti_order: 4 } });
-      expect(addKillChainPhase).toHaveBeenCalledWith(context, user, { ...names, x_opencti_order: 4 });
-    });
-
-    it('adds a phase that exists as another phase of the same kill chain under the first free name, and leaves the first one untouched', async () => {
-      withPhases('execution', 'execution (1)');
-      expect(await importKillChainPhase(context, user, { ...names, x_opencti_order: 4 }, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'created', exists: true, reason: 'Added as "execution (2)"' });
-      expect(addKillChainPhase).toHaveBeenCalledWith(context, user, { kill_chain_name: 'mitre-attack', phase_name: 'execution (2)', x_opencti_order: 4 });
-      expect(killChainPhaseEditField).not.toHaveBeenCalled();
-    });
-
-    it('decides the same on a dry run, and writes nothing', async () => {
-      withPhases('execution');
-      expect(await importKillChainPhase(context, user, names, { mode: ConfigImportMode.Copy, dryRun: true })).toMatchObject({ status: 'created', exists: true, reason: 'Added as "execution (1)"' });
-      expect(addKillChainPhase).not.toHaveBeenCalled();
-    });
-
-    it('fails when the first copies are all taken', async () => {
-      withExisting(stored);
-      expect(await importKillChainPhase(context, user, names, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true });
-      expect(addKillChainPhase).not.toHaveBeenCalled();
-    });
+  it('has no copy: a phase is its names', async () => {
+    withExisting(stored);
+    expect(await importKillChainPhase(context, user, names, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: true });
+    withExisting(undefined);
+    expect(await importKillChainPhase(context, user, names, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: false });
+    expect(addKillChainPhase).not.toHaveBeenCalled();
+    expect(killChainPhaseEditField).not.toHaveBeenCalled();
   });
 });

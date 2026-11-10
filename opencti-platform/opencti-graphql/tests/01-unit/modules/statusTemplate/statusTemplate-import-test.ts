@@ -120,37 +120,13 @@ describe('importStatusTemplate', () => {
     expect(statusTemplateEditField).not.toHaveBeenCalled();
   });
 
-  describe('in copy mode', () => {
+  it('has no copy: a status template is its name', async () => {
     const configuration = { name: 'Escalated', color: '#e91e63' };
-    // The templates of the platform, found by the standard id of their name, as the import finds them
-    const withTemplates = (...names: string[]) => {
-      vi.mocked(storeLoadById).mockImplementation((async (_ctx: unknown, _user: unknown, id: string) => {
-        return names.some((name) => getStatusTemplateStandardId(name) === id) ? stored : undefined;
-      }) as never);
-    };
-
-    it('creates a template that does not exist under its own name, with no other reason', async () => {
-      expect(await importStatusTemplate(context, user, configuration, { mode: ConfigImportMode.Copy })).toEqual({ status: 'created', exists: false, configuration });
-      expect(createStatusTemplate).toHaveBeenCalledWith(context, user, configuration);
-    });
-
-    it('adds a template that exists as another template under the first free name, and leaves the first one untouched', async () => {
-      withTemplates('Escalated', 'escalated (1)');
-      expect(await importStatusTemplate(context, user, { name: 'Escalated', color: '#00ff00' }, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'created', exists: true, reason: 'Added as "Escalated (2)"' });
-      expect(createStatusTemplate).toHaveBeenCalledWith(context, user, { name: 'Escalated (2)', color: '#00ff00' });
-      expect(statusTemplateEditField).not.toHaveBeenCalled();
-    });
-
-    it('decides the same on a dry run, and writes nothing', async () => {
-      withTemplates('Escalated');
-      expect(await importStatusTemplate(context, user, configuration, { mode: ConfigImportMode.Copy, dryRun: true })).toMatchObject({ status: 'created', exists: true, reason: 'Added as "Escalated (1)"' });
-      expect(createStatusTemplate).not.toHaveBeenCalled();
-    });
-
-    it('fails when the first copies are all taken', async () => {
-      withExisting(stored);
-      expect(await importStatusTemplate(context, user, configuration, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true });
-      expect(createStatusTemplate).not.toHaveBeenCalled();
-    });
+    withExisting(stored);
+    expect(await importStatusTemplate(context, user, configuration, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: true });
+    withExisting(undefined);
+    expect(await importStatusTemplate(context, user, configuration, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: false });
+    expect(createStatusTemplate).not.toHaveBeenCalled();
+    expect(statusTemplateEditField).not.toHaveBeenCalled();
   });
 });

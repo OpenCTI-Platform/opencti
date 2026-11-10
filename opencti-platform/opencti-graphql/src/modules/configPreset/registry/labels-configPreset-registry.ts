@@ -1,5 +1,4 @@
 import { FilterMode, FilterOperator, LabelsOrdering, OrderingMode } from '../../../generated/graphql';
-import { ConfigImportMode } from '../../configImport/configImport-types';
 import { findAllLabels, findLabelPaginated } from '../../../domain/label';
 import { exportLabel } from '../../label/label-export';
 import { getLabelStandardId, importLabel } from '../../label/label-import';
@@ -46,10 +45,9 @@ const labelsImporter: ConfigPresetImporter = {
   },
 };
 
-// Labels: paged and searched through the label domain. An import overwrites, or adds a copy under a free value.
+// Labels: paged and searched through the label domain. A label has no copy, an import overwrites.
 export const labelsFamily: ConfigPresetFamilyDefinition = {
   importer: labelsImporter,
-  importModes: [ConfigImportMode.Overwrite, ConfigImportMode.Copy],
   id: LABELS_FAMILY_ID,
   label: 'Labels',
   description: 'Labels and their colors',

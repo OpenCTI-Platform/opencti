@@ -24,9 +24,9 @@ beforeEach(() => {
 });
 
 describe('Labels import (registry)', () => {
-  it('is importable and offers to overwrite or to copy: a label is copied under a free value', () => {
+  it('is importable and offers no choice of mode: a label has no copy', () => {
     expect(family.importer).toBeDefined();
-    expect(family.importModes).toEqual([ConfigImportMode.Overwrite, ConfigImportMode.Copy]);
+    expect(family.importModes).toBeUndefined();
   });
 
   it('computes the item with a dry run of the module, named by its value', async () => {

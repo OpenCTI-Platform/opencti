@@ -4,11 +4,11 @@ import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportCopyReason, configImportRefusal, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
+import { configImportRefusal, configImportValidationReason } from '../configImport/configImport-utils';
 import { type KillChainPhaseImportConfiguration, killChainPhaseImportSchema } from './killChainPhase-import-schema';
 import type { BasicStoreEntityKillChainPhase } from './killChainPhase-types';
 
-export type KillChainPhaseImportCode = 'invalid' | 'exists' | 'name_conflict' | 'unchanged';
+export type KillChainPhaseImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged';
 
 export type KillChainPhaseImportResult = ConfigImportResult<KillChainPhaseImportConfiguration, KillChainPhaseImportCode>;
 
@@ -23,8 +23,7 @@ const refused = configImportRefusal<KillChainPhaseImportConfiguration, KillChain
 // The one place where a kill chain phase is imported: validates, finds the phase by its kill chain name and phase name and writes it.
 // A refusal is a result, not an error. A dry run decides the same result and writes nothing.
 // add: the phase must not exist yet. overwrite: a phase of the same kill chain and name is given the order of the configuration, else it
-// is created; an order that is null or absent leaves the phase untouched. copy: a phase is its names, so the copy of one that exists is
-// another phase of the same kill chain, under the first free `phase name (n)`.
+// is created; an order that is null or absent leaves the phase untouched. A phase is its names: it has no copy.
 export const importKillChainPhase = async (
   context: AuthContext,
   user: AuthUser,
@@ -38,17 +37,7 @@ export const importKillChainPhase = async (
   const { kill_chain_name: killChainName, phase_name: phaseName, x_opencti_order: order } = parsed.data;
   const existing = await storeLoadById<BasicStoreEntityKillChainPhase>(context, user, getKillChainPhaseStandardId(parsed.data), ENTITY_TYPE_KILL_CHAIN_PHASE);
   if (mode === ConfigImportMode.Copy) {
-    const copyName = await freeConfigImportName(phaseName, async (candidate) => {
-      const standardId = getKillChainPhaseStandardId({ kill_chain_name: killChainName, phase_name: candidate });
-      return !!(await storeLoadById<BasicStoreEntityKillChainPhase>(context, user, standardId, ENTITY_TYPE_KILL_CHAIN_PHASE));
-    });
-    if (!copyName) {
-      return refused('failed', 'name_conflict', 'Kill chain phase already exists', !!existing, parsed.data);
-    }
-    if (!dryRun) {
-      await addKillChainPhase(context, user, { kill_chain_name: killChainName, phase_name: copyName, x_opencti_order: order ?? 0 });
-    }
-    return { status: 'created', exists: !!existing, configuration: parsed.data, reason: configImportCopyReason(phaseName, copyName) };
+    return refused('failed', 'copy_unsupported', 'A kill chain phase has no copy', !!existing, parsed.data);
   }
   if (!existing) {
     if (!dryRun) {
