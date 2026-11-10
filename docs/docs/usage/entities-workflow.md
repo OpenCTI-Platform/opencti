@@ -69,7 +69,7 @@ An entity type without a workflow: start with **Add Status**.
 3. Optionally, configure [actions on enter and on exit](#actions-on-statuses) (Enterprise Edition).
 4. Click **Add**. The status appears on the canvas.
 
-New entities of this type start in the **starting status**. The first status you add is the starting status by default, until the graph decides otherwise: if exactly one status has no incoming transition, that status is the starting status. For example, connecting a transition back into the first status can make a later status the starting one. A workflow can also loop back to its starting status, for example *New* → *In review* → *New*. Check the starting status before publishing.
+New entities of this type start in the **starting status**. The first status you add is the starting status by default. If exactly one status has no incoming transition, that status is the starting status instead; this can happen when you connect a separately added status to another one. If every status has an incoming transition (a cycle with no root), the saved starting status is kept. Check the starting status before publishing.
 
 To add the next status, click the **+** placeholder under a status: OpenCTI adds the new status and the transition that leads to it. To insert a status between two existing ones, click the link between them.
 
@@ -185,7 +185,7 @@ Conditions decide which users can see and take a transition. A user who does not
 |---|---|
 | **Share with organizations** | Shares the entity with the selected organizations. Leave the list empty to let the analyst pick organizations when taking the transition. Runs as a background task. |
 | **Unshare from organizations** | Removes organization sharing. Same behavior as above. |
-| **Update authorized members** | *Replaces* the authorized members of the entity. Dynamic members are available: author, creators, assignees, participants. Only on the types that support authorized members: Organization, Report, Note, Grouping, Incident response, Request for takedown, Request for information, and Draft. |
+| **Update authorized members** | *Replaces* the authorized members of the entity. Dynamic members are available: author, creators, assignees, participants. Only on the types that support authorized members: Organization, Report, Note, Grouping, Incident response, Request for takedown, Request for information, and Draft. Use it only on these types: the publishing check does not catch every misuse. |
 | **Comment** | Asks for a comment of up to 1,000 characters, optional or required. The comment is stored in the workflow history and notifies the entity's assignees and participants. |
 | **Validate draft** | Draft workflow only. See [Draft workflow](draft-workflow.md). |
 
