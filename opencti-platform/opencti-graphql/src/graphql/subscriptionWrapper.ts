@@ -3,12 +3,24 @@ import * as R from 'ramda';
 import { pubSubAsyncIterator } from '../database/redis';
 import { internalLoadById } from '../database/middleware-loader';
 import { ForbiddenAccess } from '../config/errors';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { getMessagesFilteredByRecipients } from '../domain/settings';
 import type { BasicStoreSettingsMessage } from '../types/settings';
+
+// Edit context helpers (setEditContext / delEditContext callers) are async.
+type EditContextFn = () => Promise<unknown> | void;
+
+const cleanEditContext = async (cleanFn: EditContextFn, id: string) => {
+  try {
+    await cleanFn();
+  } catch (err) {
+    // The edit context key expires on its own, a failed clean only delays its removal.
+    logApp.warn('[SUBSCRIPTION] Error cleaning edit context', { cause: err, id });
+  }
+};
 
 const withCancel = (asyncIterator: AsyncIterableIterator<any>, onCancel: () => void): AsyncIterable<any> => {
   const returnFn = asyncIterator.return;
@@ -58,14 +70,14 @@ export const subscribeToInstanceEvents = async (
   id: string,
   topics: string | string[],
   opts: {
-    preFn?: () => void;
-    cleanFn?: () => void;
+    preFn?: EditContextFn;
+    cleanFn?: EditContextFn;
     notifySelf?: boolean;
     type?: string | string[];
   } = {},
 ): Promise<AsyncIterable<any>> => {
   const { preFn, cleanFn, notifySelf = false, type } = opts;
-  if (preFn) preFn();
+  if (preFn) await preFn();
   const item = await internalLoadById(context, context.user, id, { baseData: true, type });
   if (!item) throw ForbiddenAccess('You are not allowed to listen this.');
   const filtering = await withFilter(
@@ -87,7 +99,7 @@ export const subscribeToInstanceEvents = async (
   )(parent, { id }, context);
   if (cleanFn) {
     return withCancel(filtering, () => {
-      cleanFn();
+      void cleanEditContext(cleanFn, id);
     });
   }
   return {
