@@ -1,8 +1,8 @@
-import { pipe, assoc } from 'ramda';
+import { pipe, assoc, isNil } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, createRelation, deleteElementById, updateAttribute } from '../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
 import { generateStandardId } from '../schema/identifier';
@@ -16,6 +16,16 @@ export const findById = (context, user, killChainPhaseId) => {
 
 export const findKillChainPhasePaginated = (context, user, args) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], args);
+};
+
+// A kill chain phase stored without kill chain name must not break the lists it is part of (the field is non-nullable).
+// Such phases are no longer accepted at creation, the warning helps to find and fix the ones already stored.
+export const getKillChainName = (killChainPhase) => {
+  if (isNil(killChainPhase.kill_chain_name)) {
+    logApp.warn('[KILL_CHAIN_PHASE] Kill chain phase stored without kill chain name', { id: killChainPhase.id });
+    return '';
+  }
+  return killChainPhase.kill_chain_name;
 };
 
 // An import upserts the kill chain phases of the objects it writes: attaching an existing phase is part of updating the

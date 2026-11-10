@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { addKillChainPhase } from '../../../src/domain/killChainPhase';
+import { addKillChainPhase, getKillChainName } from '../../../src/domain/killChainPhase';
+import { logApp } from '../../../src/config/conf';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { createEntity } from '../../../src/database/middleware';
 import { generateStandardId } from '../../../src/schema/identifier';
@@ -43,5 +44,25 @@ describe('addKillChainPhase', () => {
     // the draft scope only counts in a draft
     vi.mocked(storeLoadById).mockResolvedValue(undefined as any);
     await expect(addKillChainPhase({}, inDraft, phase)).rejects.toThrow('You are not allowed to create kill chain phases.');
+  });
+});
+
+describe('getKillChainName', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return the kill chain name of a phase', () => {
+    const warnSpy = vi.spyOn(logApp, 'warn');
+    expect(getKillChainName(existing)).toEqual('mitre-attack');
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it('should return an empty name and warn for a phase stored without kill chain name', () => {
+    const warnSpy = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+    expect(getKillChainName({ id: 'phase-2', phase_name: 'execution' })).toEqual('');
+    expect(getKillChainName({ id: 'phase-3', phase_name: 'execution', kill_chain_name: null })).toEqual('');
+    expect(warnSpy).toHaveBeenCalledTimes(2);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('without kill chain name'), { id: 'phase-2' });
   });
 });
