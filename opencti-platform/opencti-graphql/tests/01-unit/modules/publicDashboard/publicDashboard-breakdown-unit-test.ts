@@ -413,12 +413,12 @@ describe('withPublicBreakdownRefusals', () => {
   });
 
   it('should leave the other errors as they are', async () => {
-    const others = [UnsupportedError('This widget has no breakdown', { widgetId: 'widget-1' }), DatabaseError('Engine execution fail'), new Error('Unexpected')];
+    const others = [UnsupportedError('Unrelated error'), DatabaseError('Engine execution fail'), new Error('Unexpected')];
     for (const other of others) {
       expect(await refusedWith(other)).toBe(other);
     }
-    // Refused before any promise, like a widget without breakdown
-    const unsupported = UnsupportedError('This widget has no breakdown', { widgetId: 'widget-1' });
+    // Refused before any promise
+    const unsupported = UnsupportedError('Unrelated error');
     await expect(withPublicBreakdownRefusals(() => {
       throw unsupported;
     })).rejects.toBe(unsupported);

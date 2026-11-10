@@ -12,25 +12,25 @@ type EditedWidget = Pick<Widget, 'type' | 'perspective' | 'dataSelection'> & { p
 /**
  * Breakdown of the edited widget (getWidgetBreakdownState), derived by the editor provider for all its steps:
  * the saved filter of the dataset is read once per opening, whatever the widget becomes meanwhile.
- * Without `enabled` (the editor closed), no breakdown is shown, nor kept or dropped.
+ * While the editor is not `open`, no breakdown is shown, nor kept or dropped.
  */
-const useResolvedWidgetBreakdown = (widget: EditedWidget, host: WidgetHost, enabled: boolean): WidgetBreakdownState => {
+const useResolvedWidgetBreakdown = (widget: EditedWidget, host: WidgetHost, open: boolean): WidgetBreakdownState => {
   const { schema: { filterKeysSchema } } = useAuth();
   const { t_i18n } = useFormatter();
   const variables = useOptionalDashboardVariableDefinitions();
   const savedFilterId = widget.dataSelection[0]?.filters_id;
-  const isSavedFilterNeeded = enabled && !!savedFilterId && getBreakdownEditorState(widget, host) !== 'hidden';
+  const isSavedFilterNeeded = open && !!savedFilterId && getBreakdownEditorState(widget, host) !== 'hidden';
   const [savedFilter, setSavedFilter] = useState<{ id: string; filters: FilterGroup | null }>();
   // The saved filter being read: still read when the widget no longer needs it, to not read it again if it does
   const readingId = useRef<string>(undefined);
   const isSavedFilterRead = !!savedFilterId && savedFilter?.id === savedFilterId;
   // Read again each time the editor opens: the saved filter may have changed in between
   useEffect(() => {
-    if (!enabled) {
+    if (!open) {
       readingId.current = undefined;
       setSavedFilter(undefined);
     }
-  }, [enabled]);
+  }, [open]);
   useEffect(() => {
     if (!isSavedFilterNeeded || !savedFilterId || isSavedFilterRead || readingId.current === savedFilterId) {
       return;
@@ -45,7 +45,7 @@ const useResolvedWidgetBreakdown = (widget: EditedWidget, host: WidgetHost, enab
     });
   }, [isSavedFilterNeeded, savedFilterId, isSavedFilterRead]);
   return useMemo(() => {
-    if (!enabled) {
+    if (!open) {
       return NO_BREAKDOWN_STATE;
     }
     let resolution: BreakdownResolution = 'resolved';
@@ -65,7 +65,7 @@ const useResolvedWidgetBreakdown = (widget: EditedWidget, host: WidgetHost, enab
       variables,
       translate: t_i18n,
     });
-  }, [enabled, filterKeysSchema, widget, host, savedFilterId, isSavedFilterRead, savedFilter, variables, t_i18n]);
+  }, [open, filterKeysSchema, widget, host, savedFilterId, isSavedFilterRead, savedFilter, variables, t_i18n]);
 };
 
 export default useResolvedWidgetBreakdown;
