@@ -120,6 +120,8 @@ describe('Config preset import: groups', () => {
     const results = await importData(await uploadZip(zip), [{ type: 'groups' }]);
     expect(results).toEqual([
       { type: 'roles', key: roleStandardId(ROLE_NAME), status: 'CREATED', reason: null },
+      // The built-in marking comes with the group too, already the same on the platform
+      { type: 'markings', key: tlpGreen.standard_id, status: 'SKIPPED', reason: 'Already up to date' },
       { type: 'groups', key: groupStandardId(GROUP_NAME), status: 'CREATED', reason: null },
     ]);
     expect(await configurationOf(GROUP_NAME)).toEqual(exported);
