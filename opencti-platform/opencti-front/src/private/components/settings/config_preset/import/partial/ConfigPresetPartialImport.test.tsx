@@ -127,6 +127,22 @@ describe('ConfigPresetPartialImport', () => {
     expect(screen.getByTestId('config-preset-partial-import-submit')).toBeEnabled();
   });
 
+  it('counts an item the platform already had as it is as up to date, not as skipped, as the wizard does', async () => {
+    const rendered = await renderWithPreview(previewOf(themes));
+    await rendered.user.click(screen.getByTestId('config-preset-partial-import-submit'));
+    await resolve(rendered, 'ConfigPresetPartialImportMutation', {
+      ConfigPresetPartialImportOutput: () => ({
+        results: [
+          { type: 'branding', key: 'theme--a', status: 'CREATED', reason: null, code: null, label: 'Night', translatable: false },
+          { type: 'branding', key: 'theme--b', status: 'SKIPPED', reason: null, code: 'unchanged', label: 'Day', translatable: false },
+        ],
+        counts: { created: 1, overwritten: 0, skipped: 1, failed: 0 },
+      }),
+    });
+    expect(screen.getByText('1 created, 0 overwritten, 1 up to date, 0 skipped, 0 failed')).toBeInTheDocument();
+    expect(screen.queryByText('Skipped')).not.toBeInTheDocument();
+  });
+
   it('imports the selected items with the mode of those in conflict, then shows the results', async () => {
     const rendered = await renderWithPreview(previewOf(themes));
     await rendered.user.click(screen.getByRole('checkbox', { name: 'Night' }));
@@ -143,7 +159,7 @@ describe('ConfigPresetPartialImport', () => {
         counts: { created: 1, overwritten: 0, skipped: 0, failed: 0 },
       }),
     });
-    expect(screen.getByText('1 created, 0 overwritten, 0 skipped, 0 failed')).toBeInTheDocument();
+    expect(screen.getByText('1 created, 0 overwritten, 0 up to date, 0 skipped, 0 failed')).toBeInTheDocument();
     expect(screen.getByText('Added as "Day (1)"')).toBeInTheDocument();
     expect(rendered.onImported).toHaveBeenCalledTimes(1);
     await rendered.user.click(screen.getByRole('button', { name: 'Close' }));

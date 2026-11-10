@@ -11,6 +11,7 @@ import { type ConfigImportMode, isConfigImportMode } from '../../configImportMod
 import ConfigPresetBundleFileSelect from '../ConfigPresetBundleFileSelect';
 import ConfigPresetImportModeSelect from '../ConfigPresetImportModeSelect';
 import ConfigPresetResultLine from '../ConfigPresetResultLine';
+import { toConfigPresetSummaryCounts } from '../ConfigPresetImportResult';
 import { ConfigPresetLockedTypeRow } from '../../ConfigPresetSelectionAccordion';
 import useConfigPresetLockedTypes from '../../useConfigPresetLockedTypes';
 import { partialImportItemModes, partialImportSelectedKeys, toggleSelectedKey } from './configPresetPartialImportSelection';
@@ -48,6 +49,7 @@ const configPresetPartialImportMutation = graphql`
         key
         status
         reason
+        code
         label
         translatable
       }
@@ -153,10 +155,12 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
       <>
         <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }} data-testid="config-preset-partial-import-result">
           <Text variant="content-base">
-            {t_i18n('{created} created, {overwritten} overwritten, {skipped} skipped, {failed} failed', { values: output.counts })}
+            {t_i18n('{created} created, {overwritten} overwritten, {unchanged} up to date, {skipped} skipped, {failed} failed', {
+              values: toConfigPresetSummaryCounts(output.counts, output.results),
+            })}
           </Text>
           {output.results.map((result) => (
-            <ConfigPresetResultLine key={`${result.type}/${result.key}`} label={itemLabel(result)} status={result.status} reason={result.reason} />
+            <ConfigPresetResultLine key={`${result.type}/${result.key}`} label={itemLabel(result)} status={result.status} reason={result.reason} code={result.code} />
           ))}
         </div>
         <DialogActions>

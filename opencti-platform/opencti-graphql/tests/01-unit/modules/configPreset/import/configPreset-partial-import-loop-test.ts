@@ -31,6 +31,7 @@ vi.mock('../../../../../src/modules/theme/theme-domain', async (importOriginal) 
 }));
 
 import { publishUserAction } from '../../../../../src/listener/UserActionListener';
+import { bundleRefused } from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import * as engine from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
 import { importConfigPresetItem } from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
@@ -104,6 +105,29 @@ describe('Config preset partial import: the loop', () => {
     ]);
     expect(importConfigPresetItem).toHaveBeenCalledTimes(1);
     expect(output.counts).toEqual({ created: 1, overwritten: 0, skipped: 0, failed: 1 });
+  });
+
+  it('stops at a refused bundle after an item was written: the remaining items fail with the reason, the written one is audited', async () => {
+    vi.mocked(importConfigPresetItem)
+      .mockResolvedValueOnce(result(CUSTOM_THEME_ID, 'CREATED'))
+      .mockRejectedValueOnce(bundleRefused('The configuration bundle is too large once extracted'));
+    const output = await importThemes();
+    expect(output.results).toEqual([
+      result(CUSTOM_THEME_ID, 'CREATED'),
+      { type: 'branding', key: OTHER_THEME_ID, status: 'FAILED', reason: 'The configuration bundle is too large once extracted', code: null, label: OTHER_THEME_ID, translatable: false },
+    ]);
+    expect(output.counts).toEqual({ created: 1, overwritten: 0, skipped: 0, failed: 1 });
+    expect(publishUserAction).toHaveBeenCalledTimes(1);
+    expect(endConfigPresetImportRunning).toHaveBeenCalledWith(user, expect.any(String), true);
+  });
+
+  it('answers a bundle refused at the first item with the refusal, nothing written nor audited', async () => {
+    vi.mocked(importConfigPresetItem).mockRejectedValueOnce(bundleRefused('The configuration bundle is too large once extracted'));
+    await expect(importThemes()).rejects.toThrow('The configuration bundle is too large once extracted');
+    expect(importConfigPresetItem).toHaveBeenCalledTimes(1);
+    expect(publishUserAction).not.toHaveBeenCalled();
+    // The running record never outlives the import
+    expect(endConfigPresetImportRunning).toHaveBeenCalledWith(user, expect.any(String), false);
   });
 
   it('goes on after a failed item', async () => {

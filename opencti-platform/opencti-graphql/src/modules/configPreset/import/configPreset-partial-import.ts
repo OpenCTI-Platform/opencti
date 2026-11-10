@@ -164,7 +164,18 @@ export const configPresetPartialImport = async (
           // Not processed: the import stopped writing before it
           results.push(toConfigPresetImportResult(item, 'failed', stopReason ?? 'Import stopped'));
         } else {
-          results.push(await importConfigPresetItem(importContext, runUser, item, plan, configPresetImportMode(modes, item.type, item.id, defaultMode)));
+          try {
+            results.push(await importConfigPresetItem(importContext, runUser, item, plan, configPresetImportMode(modes, item.type, item.id, defaultMode)));
+          } catch (err) {
+            // Only a refused bundle is thrown (an attachment above the extracted size limit): the next items would be read the same way,
+            // the import stops as the wizard does. Before any item is written, the refusal is the answer; after, the items written keep
+            // their result and the remaining ones fail with the reason
+            if (results.length === 0) {
+              throw err;
+            }
+            stopReason = err instanceof Error ? err.message : String(err);
+            results.push(toConfigPresetImportResult(item, 'failed', stopReason));
+          }
         }
         await updateConfigPresetImportRunning(user, startedAt, results.length);
       }
