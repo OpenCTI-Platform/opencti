@@ -14,6 +14,7 @@ import useGranted, {
   TAXIIAPI,
 } from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
+import { capabilitiesOf } from '../nav/menuEntries';
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
@@ -195,7 +196,7 @@ const Root = () => {
           path="/processing/csv_mapper"
           element={(
             <Security
-              needs={[CSVMAPPERS]}
+              needs={capabilitiesOf('/dashboard/data/processing/csv_mapper')}
               placeholder={<Navigate to="/dashboard" />}
             >
               <CsvMappers />
@@ -206,7 +207,7 @@ const Root = () => {
           path="/processing/json_mapper"
           element={(
             <Security
-              needs={[CSVMAPPERS]}
+              needs={capabilitiesOf('/dashboard/data/processing/json_mapper')}
               placeholder={<Navigate to="/dashboard" />}
             >
               <JsonMappers />
@@ -217,7 +218,7 @@ const Root = () => {
           path="/processing/tasks"
           element={(
             <Security
-              needs={[KNOWLEDGE_KNUPDATE]}
+              needs={capabilitiesOf('/dashboard/data/processing/tasks')}
               placeholder={<Navigate to="/dashboard" />}
             >
               <Tasks />
