@@ -37,14 +37,16 @@ import { preserveServerOwnedManifestKeys, validateManifestVariables } from './wo
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
+// The manifest and the graph layout of an investigation (base64) can be huge:
+// they are kept out of the activity logs, whose input is indexed as a flattened object with a size limit per value.
+const AUDIT_SANITIZED_KEYS = ['manifest', 'graph_data'];
+
 export const sanitizeElementForPublishAction = (element: BasicStoreEntityWorkspace) => {
-  // Because manifest can be huge we remove this data from activity logs.
-  return { ...element, manifest: undefined };
+  return { ...element, manifest: undefined, graph_data: undefined };
 };
 
-export const sanitizeManifestAuditInput = (inputs: EditInput[]) => {
-  // Because manifest can be huge we remove this data from activity logs.
-  return inputs.map((entry) => (entry.key === 'manifest' ? { ...entry, value: ['[sanitized]'] } : entry));
+export const sanitizeWorkspaceAuditInput = (inputs: EditInput[]) => {
+  return inputs.map((entry) => (AUDIT_SANITIZED_KEYS.includes(entry.key) ? { ...entry, value: ['[sanitized]'] } : entry));
 };
 
 export const findById = (
@@ -272,7 +274,7 @@ export const workspaceEditField = async (
   inputs: EditInput[],
 ) => {
   await checkInvestigatedEntitiesInputs(context, user, inputs);
-  const opts = { auditLogContextSanitizer: sanitizeManifestAuditInput };
+  const opts = { auditLogContextSanitizer: sanitizeWorkspaceAuditInput };
   if (!inputs.some((input) => input.key === 'manifest')) {
     return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs, opts);
   }
