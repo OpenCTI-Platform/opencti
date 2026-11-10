@@ -9,12 +9,12 @@ export const vocabularyImportSchema = z.strictObject({
   name: z.string().trim().min(1, 'Vocabulary name is required'),
   // A category this platform does not know (a bundle of a newer platform) is refused
   category: z.enum(VocabularyCategory),
-  // Absent or null: a new entry is given its default, and an existing one is left untouched
+  // Absent or null: a new entry is given its default
   description: z.string().nullable().optional(),
-  // Replaced as a whole on an existing entry, an empty list included
+  // Only used to create an entry: an entry that exists is never written
   aliases: z.array(z.string()).nullable().optional(),
   order: z.number().int().nullable().optional(),
-  // A hidden entry is not offered as a choice of the fields of its category. Absent or null: a new entry is visible, and an existing one is left untouched
+  // A hidden entry is not offered as a choice of the fields of its category. Absent or null: a new entry is visible
   is_hidden: z.boolean().nullable().optional(),
 });
 

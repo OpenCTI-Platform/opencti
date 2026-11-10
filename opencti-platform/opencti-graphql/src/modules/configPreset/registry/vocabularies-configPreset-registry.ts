@@ -52,7 +52,7 @@ const filterItems = (items: ConfigPresetItemDefinition[], args: ConfigPresetList
 };
 
 // Vocabularies: all the categories, listed and paged in memory. A category is exported with all its entries, the ones of the platform included, and
-// imported by creating or overwriting them, never deleting one. An import skips the entries that are the same. It has no copy, an import overwrites.
+// imported by adding the entries the platform does not have: the ones it has are skipped, never changed or deleted. There is no mode to choose.
 export const vocabulariesFamily: ConfigPresetFamilyDefinition = {
   importer: vocabulariesImporter,
   id: VOCABULARIES_FAMILY_ID,

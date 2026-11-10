@@ -69,6 +69,7 @@ describe('ConfigPresetResultLine', () => {
     ['The standard id of the status template does not match its name', 'The standard id of the status template does not match its name'],
     ['The id of the vocabulary category does not match its category', 'The id of the vocabulary category does not match its category'],
     ['This vocabulary category is closed, new values cannot be added', 'This vocabulary category is closed, new values cannot be added'],
+    ['Vocabulary entries already exist', 'Vocabulary entries already exist'],
     ['The name is an alias of the vocabulary entry fimi-report', 'The name is an alias of the vocabulary entry fimi-report'],
     ['The alias taken belongs to another vocabulary entry', 'The alias taken belongs to another vocabulary entry'],
   ])('translates the reason %s', (reason, text) => {

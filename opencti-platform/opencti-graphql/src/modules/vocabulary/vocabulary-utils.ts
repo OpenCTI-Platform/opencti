@@ -13,12 +13,6 @@ export const cleanVocabularyAliases = (name: string, aliases: string[] | null = 
   return kept.filter((alias, index) => kept.findIndex((other) => normalizeName(other) === normalizeName(alias)) === index);
 };
 
-// The aliases of an entry are a set: their order is not a change
-export const isSameAliasSet = (a: string[] = [], b: string[] = []) => {
-  const sortedB = [...b].sort();
-  return a.length === b.length && [...a].sort().every((alias, index) => alias === sortedB[index]);
-};
-
 export const builtInOv = [
   'pattern_type_ov',
 ];

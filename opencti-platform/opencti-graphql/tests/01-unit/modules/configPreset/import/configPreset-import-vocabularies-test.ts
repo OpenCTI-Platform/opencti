@@ -61,7 +61,7 @@ describe('Vocabularies import (registry)', () => {
     vi.mocked(importVocabularyCategory).mockResolvedValueOnce({ status: 'created', exists: false });
     expect(await family.importer!.apply(context, user, item(configuration), { ...computed, status: 'created' }, ConfigImportMode.Overwrite, plan)).toBeUndefined();
     expect(importVocabularyCategory).toHaveBeenCalledWith(context, user, configuration, { mode: ConfigImportMode.Overwrite });
-    vi.mocked(importVocabularyCategory).mockResolvedValueOnce({ status: 'skipped', code: 'unchanged', exists: true });
+    vi.mocked(importVocabularyCategory).mockResolvedValueOnce({ status: 'skipped', code: 'exists', exists: true });
     expect(await family.importer!.apply(context, user, item(configuration), { ...computed, status: 'created' }, ConfigImportMode.Overwrite, plan)).toBe('skipped');
     vi.mocked(importVocabularyCategory).mockResolvedValueOnce({ status: 'failed', code: 'category_closed', reason: 'closed', exists: false });
     await expect(family.importer!.apply(context, user, item(configuration), { ...computed, status: 'created' }, ConfigImportMode.Overwrite, plan)).rejects.toThrow('closed');
