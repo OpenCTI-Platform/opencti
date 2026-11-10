@@ -4,7 +4,7 @@ import type { EditInput } from '../../generated/graphql';
 import { generateStandardId, normalizeName } from '../../schema/identifier';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportRefusal, configImportValidationReason } from '../configImport/configImport-utils';
+import { CONFIG_IMPORT_REASON_SEPARATOR, configImportReasonValue, configImportRefusal, configImportValidationReason } from '../configImport/configImport-utils';
 import { addVocabulary, editVocabulary, isVocabularyNameAllowed } from './vocabulary-domain';
 import { type VocabularyCategoryImportConfiguration, vocabularyCategoryImportSchema, type VocabularyImportConfiguration, vocabularyImportSchema } from './vocabulary-import-schema';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
@@ -164,7 +164,8 @@ export const importVocabularyCategory = async (
   const exists = decided.some(({ result }) => result.exists);
   const failed = decided.filter((item) => item.result.status === 'failed' && !isKept(item));
   if (failed.length > 0) {
-    const reason = failed.map(({ entry, result }) => `${entry.name}: ${result.reason}`).join(', ');
+    // One reason per entry, on its own line: the front translates each one, and an entry name can hold a comma
+    const reason = failed.map(({ entry, result }) => `${configImportReasonValue(entry.name)}: ${result.reason}`).join(CONFIG_IMPORT_REASON_SEPARATOR);
     return { status: 'failed', code: failed[0].result.code, reason, exists, configuration: parsed.data };
   }
   const changes = decided.filter((item) => item.result.status !== 'skipped' && item.result.status !== 'failed');
@@ -178,7 +179,7 @@ export const importVocabularyCategory = async (
     for (const { entry } of changes) {
       const written = await importVocabulary(context, user, entry, { mode });
       if (written.status === 'failed') {
-        return { status: 'failed', code: written.code, reason: `${entry.name}: ${written.reason}`, exists, configuration: parsed.data };
+        return { status: 'failed', code: written.code, reason: `${configImportReasonValue(entry.name)}: ${written.reason}`, exists, configuration: parsed.data };
       }
     }
   }

@@ -462,7 +462,7 @@ describe('importVocabularyCategory', () => {
     const closed = VocabularyCategory.OpinionOv;
     const result = await overwrite({ category: closed, entries: [{ name: 'strongly-disagree' }, { name: 'my-own-opinion' }, { name: 'another-opinion' }] });
     expect(result).toMatchObject({ status: 'failed', code: 'category_closed', exists: false });
-    expect(result.reason).toBe('my-own-opinion: This vocabulary category is closed, new values cannot be added, another-opinion: This vocabulary category is closed, new values cannot be added');
+    expect(result.reason).toBe('my-own-opinion: This vocabulary category is closed, new values cannot be added\nanother-opinion: This vocabulary category is closed, new values cannot be added');
     expect(addVocabulary).not.toHaveBeenCalled();
     expect(editVocabulary).not.toHaveBeenCalled();
   });
