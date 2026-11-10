@@ -1670,6 +1670,40 @@ class StixCoreObject:
             )
             return None
 
+    def to_stix(self, **kwargs):
+        """Get the STIX representation of a Stix-Core-Object from the backend.
+
+        :param id: the id of the Stix-Core-Object
+        :type id: str
+        :param version: the STIX version (``stix_2_0`` or ``stix_2_1``),
+            defaults to the backend default (``stix_2_1``)
+        :type version: str
+        :return: STIX object, or ``None`` if not found
+        :rtype: dict or None
+        """
+        id = kwargs.get("id", None)
+        version = kwargs.get("version", None)
+        if id is None:
+            self.opencti.app_logger.error(
+                "[opencti_stix_core_object] to_stix: missing parameter: id"
+            )
+            return None
+        self.opencti.app_logger.info(
+            "Fetching Stix-Core-Object STIX", {"id": id, "version": version}
+        )
+        query = """
+            query StixCoreObjectToStix($id: String!, $version: Version) {
+                stixCoreObject(id: $id) {
+                    toStix(version: $version)
+                }
+            }
+        """
+        result = self.opencti.query(query, {"id": id, "version": version})
+        stix_core_object = (result.get("data") or {}).get("stixCoreObject")
+        if stix_core_object is None or stix_core_object.get("toStix") is None:
+            return None
+        return json.loads(stix_core_object["toStix"])
+
     def list_files(self, **kwargs):
         """List files of a Stix-Core-Object.
 
