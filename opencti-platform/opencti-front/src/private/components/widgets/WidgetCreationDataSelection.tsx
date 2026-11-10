@@ -105,11 +105,15 @@ const WidgetCreationDataSelection = () => {
   // A breakdown generates its series from a single dataset. Only a field the widget keeps locks it: one the
   // filters no longer offer is dropped on submit, once the saved filter and the fields of the dataset are read
   const isBreakdownActive = !!breakdown.field;
-  // Said before a breakdown is chosen, once the fields of the dataset are known
+  // Said before a breakdown is chosen, once the fields of the dataset are known. Still said while the fields of the
+  // next dataset are read, when it was for the previous one: it does not blink at each change of the type filter.
+  const [wasBreakdownOffered, setWasBreakdownOffered] = useState(false);
   const isBreakdownOffered = breakdown.editorState === 'editable'
     && !breakdown.field
-    && breakdown.resolution === 'resolved'
-    && breakdown.fieldOptions.length > 0;
+    && (breakdown.resolution === 'loading' ? wasBreakdownOffered : breakdown.resolution === 'resolved' && breakdown.fieldOptions.length > 0);
+  if (isBreakdownOffered !== wasBreakdownOffered) {
+    setWasBreakdownOffered(isBreakdownOffered);
+  }
   const lockedByBreakdown = (button: React.ReactElement) => (isBreakdownActive ? (
     <Tooltip>
       <TooltipTrigger asChild>

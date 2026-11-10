@@ -218,8 +218,6 @@ const useDashboardViz = <TQuery extends OperationType>({
     isPreviewMode,
     resolvedDataSelection,
     renderGuards,
-    // The resolved selection is not the one of the current selection yet
-    isResolving,
   };
 };
 

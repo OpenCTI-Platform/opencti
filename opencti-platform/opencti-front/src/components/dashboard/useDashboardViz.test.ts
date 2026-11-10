@@ -345,18 +345,19 @@ describe('useDashboardViz', () => {
     }), { initialProps });
     const [loadSpy] = loadMocks;
     const [disposeSpy] = disposeMocks;
-    expect(hook.result.current.isResolving).toBe(false);
+    expect(loadSpy).toHaveBeenCalledTimes(1);
     expect(loadSpy.mock.lastCall?.[0]).toEqual({ filters: 'reports', field: 'objectLabel' });
 
-    // Edited to read a saved filter, still read from the API, with another field
+    // Edited to read a saved filter, still read from the API, with another field: no variables are built until it
+    // is read, and the query of the previous filters is not shown
+    const builtVariablesCount = buildQueryVariables.mock.calls.length;
     hook.rerender({ dataSelection: [{ filters: 'deferred' }] as unknown as WidgetDataSelection[], parameters: { breakdownBy: 'objectAssignee' } });
-    expect(hook.result.current.isResolving).toBe(true);
+    expect(buildQueryVariables).toHaveBeenCalledTimes(builtVariablesCount);
     expect(loadSpy).toHaveBeenCalledTimes(1);
     expect(buildQueryVariables).not.toHaveBeenCalledWith([{ filters: 'reports' }], {}, { breakdownBy: 'objectAssignee' });
     expect(disposeSpy).toHaveBeenCalledTimes(1);
 
     act(() => deferredResolutions.shift()?.());
-    expect(hook.result.current.isResolving).toBe(false);
     expect(loadSpy).toHaveBeenCalledTimes(2);
     expect(loadSpy.mock.lastCall?.[0]).toEqual({ filters: 'deferred', field: 'objectAssignee' });
     hook.unmount();
@@ -372,16 +373,18 @@ describe('useDashboardViz', () => {
       parameters: {},
       buildQueryVariables,
     }));
-    expect(hook.result.current.isResolving).toBe(true);
-    act(() => deferredResolutions.shift()?.());
-    expect(hook.result.current.isResolving).toBe(false);
     const [loadSpy] = loadMocks;
     const [disposeSpy] = disposeMocks;
+    // Nothing is queried until the selection is resolved
+    expect(buildQueryVariables).not.toHaveBeenCalled();
+    expect(loadSpy).not.toHaveBeenCalled();
+    act(() => deferredResolutions.shift()?.());
     expect(loadSpy).toHaveBeenCalledTimes(1);
 
+    // While the refresh resolves it again, the query loaded is still shown
     refreshTokenMockValue = 1;
     hook.rerender();
-    expect(hook.result.current.isResolving).toBe(false);
+    expect(disposeSpy).not.toHaveBeenCalled();
     act(() => deferredResolutions.shift()?.());
     expect(loadSpy).toHaveBeenCalledTimes(2);
     expect(disposeSpy).not.toHaveBeenCalled();

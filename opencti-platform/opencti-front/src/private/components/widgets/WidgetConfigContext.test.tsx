@@ -180,6 +180,23 @@ describe('WidgetConfigProvider', () => {
       expect(mocks.fetchTimeSeriesBreakdownFields).toHaveBeenCalledTimes(2);
     });
 
+    it('reads the fields of the same types once, whatever their order', async () => {
+      const ofTypes = (types: string[]) => ({ mode: 'and', filters: [{ key: 'entity_type', values: types, operator: 'eq', mode: 'or' }], filterGroups: [] });
+      await renderProvider();
+      await changeDataset(ofTypes(['Report', 'Malware']));
+      await changeDataset(ofTypes(['Malware', 'Report']));
+      expect(mocks.fetchTimeSeriesBreakdownFields.mock.calls).toEqual([['entities', ['Report']], ['entities', ['Malware', 'Report']]]);
+    });
+
+    it('does not read the fields again within an opening when they cannot be read', async () => {
+      mocks.fetchTimeSeriesBreakdownFields.mockResolvedValue(null);
+      await renderProvider();
+      await changeDataset(ofType('Malware'));
+      await changeDataset(ofType('Report'));
+      expect(captured.breakdown).toMatchObject({ resolution: 'failed', field: 'report_types' });
+      expect(mocks.fetchTimeSeriesBreakdownFields.mock.calls).toEqual([['entities', ['Report']], ['entities', ['Malware']]]);
+    });
+
     it('reads the fields again each time the editor opens, and ignores the ones read for a previous opening', async () => {
       const fields = readFieldsOnDemand();
       const { rerender } = await renderProvider();

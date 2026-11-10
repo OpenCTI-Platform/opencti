@@ -53,7 +53,6 @@ export const mockDashboardViz = (state: DashboardVizMockState) => (args: Dashboa
     isPreviewMode: false,
     queryRef: variables ? queryRef : null,
     resolvedDataSelection,
-    isResolving,
   };
 };
 

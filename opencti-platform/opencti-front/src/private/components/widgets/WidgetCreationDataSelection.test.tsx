@@ -157,6 +157,36 @@ describe('WidgetCreationDataSelection of a relationships widget', () => {
     expect((await renderDataSelection()).queryByText(INFO)).toBeNull();
   });
 
+  it('keeps saying the dataset can be broken down while the fields of its next types are read, only when it said so', async () => {
+    const pending: Record<string, (keys: string[] | null) => void> = {};
+    // The fields of the uses are read at once, the others when the test says so
+    const readOnDemand = (types: string[]) => new Promise((resolve) => {
+      pending[types.join(',')] = resolve;
+    });
+    mocks.fetchTimeSeriesBreakdownFields.mockImplementation((perspective: string, types: string[]) => (
+      types[0] === 'uses' ? readApiFields(perspective, types) : readOnDemand(types)
+    ));
+    setWidget({ dataSelection: [ofType('relationships', 'relationship_type', 'uses')] });
+    const { queryByText, rerender } = await renderDataSelection();
+    expect(queryByText(INFO)).toBeTruthy();
+
+    // The type filter changed: the fields of the new types are read
+    setWidget({ dataSelection: [ofType('relationships', 'relationship_type', 'targets')] });
+    rerender(<WidgetCreationDataSelection />);
+    expect(mocks.fetchTimeSeriesBreakdownFields).toHaveBeenLastCalledWith('relationships', ['targets']);
+    expect(queryByText(INFO)).toBeTruthy();
+    // ...without any to break them down by
+    await act(async () => pending.targets([]));
+    expect(queryByText(INFO)).toBeNull();
+
+    // Not said while the fields of the next ones are read, as it was not said for these
+    setWidget({ dataSelection: [ofType('relationships', 'relationship_type', 'related-to')] });
+    rerender(<WidgetCreationDataSelection />);
+    expect(queryByText(INFO)).toBeNull();
+    await act(async () => pending['related-to'](['objectMarking']));
+    expect(queryByText(INFO)).toBeTruthy();
+  });
+
   it('says nothing about the breakdown when it is not available', async () => {
     setWidget({ type: 'donut' });
     expect((await renderDataSelection()).queryByText(INFO)).toBeNull();
