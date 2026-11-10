@@ -9,6 +9,7 @@ import useGranted, {
   VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../../utils/hooks/useGranted';
 import Loader from '../../../../components/Loader';
+import { capabilitiesOf } from '../../nav/menuEntries';
 import AccessesMenu from '../AccessesMenu';
 import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
 
@@ -123,7 +124,7 @@ const RootAccesses = () => {
             path="/roles"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/roles')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <Roles />
@@ -134,7 +135,7 @@ const RootAccesses = () => {
             path="/roles/:roleId/*"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/roles')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootRole />
@@ -211,7 +212,7 @@ const RootAccesses = () => {
             path="/email_templates"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/email_templates')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <EmailTemplates />
@@ -222,7 +223,7 @@ const RootAccesses = () => {
             path="/email_templates/:emailTemplateId/*"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={capabilitiesOf('/dashboard/settings/accesses/email_templates')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <EmailTemplate />
