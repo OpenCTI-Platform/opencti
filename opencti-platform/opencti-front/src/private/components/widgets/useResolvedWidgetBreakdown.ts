@@ -31,6 +31,7 @@ const useReadOncePerOpening = <TRequest, TAnswer>({ isOpen, request, requestKey,
   // What to read, null when nothing is to be read
   request: TRequest | null;
   requestKey: string | null;
+  // Must resolve, never reject: a failed read answers a value saying so (null for the readers below), which is kept
   read: (request: TRequest) => Promise<TAnswer>;
 }): ReadonlyMap<string, TAnswer> => {
   const [answers, setAnswers] = useState<ReadonlyMap<string, TAnswer>>(NO_ANSWERS);
@@ -61,6 +62,7 @@ const useReadOncePerOpening = <TRequest, TAnswer>({ isOpen, request, requestKey,
   return answers;
 };
 
+// Types the answer: fetchSavedFilterContent returns the parsed filters untyped
 const readSavedFilter = (savedFilterId: string): Promise<FilterGroup | null> => fetchSavedFilterContent(savedFilterId);
 const readBreakdownFields = ({ perspective, types }: BreakdownFieldsRequest) => fetchTimeSeriesBreakdownFields(perspective, types);
 
