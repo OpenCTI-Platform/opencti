@@ -5410,6 +5410,25 @@ describe('migrateWorkflowFromStatuses', () => {
     expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'workflow-id', 'WorkflowDefinition');
   });
 
+  it('restores the overwritten draft when the publish of an overwrite fails', async () => {
+    const oldVersion = { id: 'old', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{"initialState":"x","states":[],"transitions":[]}', validation_errors: [] };
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({ id: 'workflow-id', name: 'Old', draft_version: oldVersion, all_versions: [oldVersion] });
+    // The migration lock is taken, then the publish fails on its status lock, after the draft was saved.
+    vi.mocked(lockResources)
+      .mockResolvedValueOnce({ unlock: vi.fn() } as any)
+      .mockRejectedValueOnce(new Error('status lock busy'));
+
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true, true)).rejects.toThrow('status lock busy');
+
+    expect(updateAttribute).toHaveBeenLastCalledWith(expect.anything(), expect.anything(), 'workflow-id', 'WorkflowDefinition', [
+      { key: 'draft_version', value: [oldVersion] },
+      { key: 'all_versions', value: [oldVersion] },
+      { key: 'name', value: ['Old'] },
+    ]);
+    expect(deleteElementById).not.toHaveBeenCalled();
+  });
+
   it('throws when there are no GLOBAL legacy statuses', async () => {
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
     (fullEntitiesList as any).mockResolvedValue([legacyStatuses[2]]);
