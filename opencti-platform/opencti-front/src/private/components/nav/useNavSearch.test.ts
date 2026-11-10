@@ -37,6 +37,13 @@ describe('Hook: useNavSearch', () => {
     expect(search('custom fields')).toContain(customFields);
   });
 
+  it('indexes top bar pages without any left bar subsection', () => {
+    subItems = [];
+    expect(search('triggers')).toContain('/dashboard/profile/notifications/triggers');
+    expect(search('notification')).toContain('/dashboard/profile/notifications');
+    expect(search('profile')).toContain('/dashboard/profile/me');
+  });
+
   it('drops Import entries when the Import subsection is hidden (draft)', () => {
     subItems = [];
     expect(search('drafts')).toEqual([]);

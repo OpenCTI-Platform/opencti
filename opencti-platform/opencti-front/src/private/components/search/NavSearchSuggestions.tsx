@@ -10,7 +10,7 @@ export const navSearchOptionId = (index: number) => `${NAV_SEARCH_LISTBOX_ID}-op
 interface NavSearchSuggestionsProps {
   keyword: string;
   anchorEl: HTMLElement | null;
-  /** Row highlighted by the keyboard, -1 for none. Pages come first, the "Search" row is last. */
+  /** Row highlighted by the keyboard, -1 for none. The "Search" row is first (0), pages follow. */
   activeIndex: number;
   /** Written with the displayed pages, so the parent's key handler can resolve the highlighted row. */
   itemsRef: MutableRefObject<NavSearchResult[]>;
@@ -56,13 +56,25 @@ const NavSearchSuggestions = ({ keyword, anchorEl, activeIndex, itemsRef, onSele
         }}
       >
         <List id={NAV_SEARCH_LISTBOX_ID} role="listbox" disablePadding>
+          <ListItemButton
+            id={navSearchOptionId(0)}
+            role="option"
+            aria-selected={activeIndex === 0}
+            selected={activeIndex === 0}
+            onClick={onSearch}
+          >
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <SearchOutlined fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary={`${t_i18n('Search')}: ${keyword}`} />
+          </ListItemButton>
           {pages.map(({ path, label, parents }, index) => (
             <ListItemButton
               key={path}
-              id={navSearchOptionId(index)}
+              id={navSearchOptionId(index + 1)}
               role="option"
-              aria-selected={index === activeIndex}
-              selected={index === activeIndex}
+              aria-selected={index + 1 === activeIndex}
+              selected={index + 1 === activeIndex}
               onClick={() => onSelectPage(path)}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>
@@ -71,18 +83,6 @@ const NavSearchSuggestions = ({ keyword, anchorEl, activeIndex, itemsRef, onSele
               <ListItemText primary={label} secondary={parents.join(' > ') || undefined} />
             </ListItemButton>
           ))}
-          <ListItemButton
-            id={navSearchOptionId(pages.length)}
-            role="option"
-            aria-selected={pages.length === activeIndex}
-            selected={pages.length === activeIndex}
-            onClick={onSearch}
-          >
-            <ListItemIcon sx={{ minWidth: 40 }}>
-              <SearchOutlined fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary={`${t_i18n('Search')}: ${keyword}`} />
-          </ListItemButton>
         </List>
       </Box>
     </Popper>
