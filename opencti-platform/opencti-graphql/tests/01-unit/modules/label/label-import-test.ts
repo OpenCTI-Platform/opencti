@@ -146,12 +146,36 @@ describe('importLabel', () => {
     expect(labelEditField).not.toHaveBeenCalled();
   });
 
-  it('has no copy: a label is its value', async () => {
-    withExisting(stored);
-    expect(await importLabel(context, user, { value: 'APT' }, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: true });
-    withExisting(undefined);
-    expect(await importLabel(context, user, { value: 'APT' }, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: false });
-    expect(addLabel).not.toHaveBeenCalled();
-    expect(labelEditField).not.toHaveBeenCalled();
+  describe('in copy mode', () => {
+    // The labels of the platform, found by the standard id of their value, as the import finds them
+    const withLabels = (...values: string[]) => {
+      vi.mocked(storeLoadById).mockImplementation((async (_ctx: unknown, _user: unknown, id: string) => {
+        return values.some((value) => getLabelStandardId(value) === id) ? stored : undefined;
+      }) as never);
+    };
+
+    it('creates a label that does not exist under its own value, with no other reason', async () => {
+      expect(await importLabel(context, user, { value: 'APT', color: '#00ff00' }, { mode: ConfigImportMode.Copy })).toEqual({ status: 'created', exists: false, configuration: { value: 'APT', color: '#00ff00' } });
+      expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'APT', color: '#00ff00' });
+    });
+
+    it('adds a label that exists as another label under the first free value, and leaves the first one untouched', async () => {
+      withLabels('APT', 'APT (1)');
+      expect(await importLabel(context, user, { value: 'APT', color: '#00ff00' }, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'created', exists: true, reason: 'Added as "APT (2)"' });
+      expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'APT (2)', color: '#00ff00' });
+      expect(labelEditField).not.toHaveBeenCalled();
+    });
+
+    it('decides the same on a dry run, and writes nothing', async () => {
+      withLabels('APT');
+      expect(await importLabel(context, user, { value: 'APT' }, { mode: ConfigImportMode.Copy, dryRun: true })).toMatchObject({ status: 'created', exists: true, reason: 'Added as "APT (1)"' });
+      expect(addLabel).not.toHaveBeenCalled();
+    });
+
+    it('fails when the first copies are all taken', async () => {
+      withExisting(stored);
+      expect(await importLabel(context, user, { value: 'APT' }, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true });
+      expect(addLabel).not.toHaveBeenCalled();
+    });
   });
 });

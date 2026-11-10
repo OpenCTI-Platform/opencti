@@ -25,9 +25,9 @@ beforeEach(() => {
 });
 
 describe('Kill chain phases import (registry)', () => {
-  it('is importable and offers no choice of mode: a phase has no copy', () => {
+  it('is importable and offers to overwrite or to copy: a phase is copied under a free name', () => {
     expect(family.importer).toBeDefined();
-    expect(family.importModes).toBeUndefined();
+    expect(family.importModes).toEqual([ConfigImportMode.Overwrite, ConfigImportMode.Copy]);
   });
 
   it('computes the item with a dry run of the module, named by its two names', async () => {

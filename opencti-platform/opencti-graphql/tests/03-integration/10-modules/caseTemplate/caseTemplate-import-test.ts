@@ -50,7 +50,9 @@ describe('Case template import and export (configuration preset)', () => {
     const configuration = { name: NAME.toUpperCase(), description: 'Triage of a phishing report', tasks: [{ name: BLOCK.toUpperCase(), description: 'Block the sender domain' }, { name: NOTIFY }] };
     expect(await importCaseTemplate(testContext, ADMIN_USER, configuration, { mode })).toMatchObject({ status: 'skipped', code: 'unchanged', exists: true });
     expect(await importCaseTemplate(testContext, ADMIN_USER, configuration, { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists' });
-    expect(await importCaseTemplate(testContext, ADMIN_USER, configuration, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported' });
+    // A copy is another template under a free name: a dry run finds it against the platform, and writes nothing
+    expect(await importCaseTemplate(testContext, ADMIN_USER, configuration, { mode: ConfigImportMode.Copy, dryRun: true }))
+      .toMatchObject({ status: 'created', exists: true, reason: `Added as "${NAME.toUpperCase()} (1)"` });
     expect(await templatesNamed(NAME)).toHaveLength(1);
     expect(await tasksOf(NAME)).toEqual([BLOCK, NOTIFY]);
   });

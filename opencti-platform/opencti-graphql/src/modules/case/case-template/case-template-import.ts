@@ -3,14 +3,14 @@ import type { EditInput } from '../../../generated/graphql';
 import { generateStandardId } from '../../../schema/identifier';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../../configImport/configImport-types';
-import { configImportRefusal, configImportValidationReason } from '../../configImport/configImport-utils';
+import { configImportCopyReason, configImportRefusal, configImportValidationReason, freeConfigImportName } from '../../configImport/configImport-utils';
 import { taskTemplateAdd, taskTemplateEdit } from '../../task/task-template/task-template-domain';
 import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
 import { caseTemplateAdd, caseTemplateAddRelation, caseTemplateDeleteRelation, caseTemplateEdit, findAllCaseTemplateTasks, findCaseTemplatesByName } from './case-template-domain';
 import { type CaseTemplateImportConfiguration, caseTemplateImportSchema } from './case-template-import-schema';
 import { TEMPLATE_TASK_RELATION } from './case-template-types';
 
-export type CaseTemplateImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged' | 'ambiguous';
+export type CaseTemplateImportCode = 'invalid' | 'exists' | 'name_conflict' | 'unchanged' | 'ambiguous';
 
 export type CaseTemplateImportResult = ConfigImportResult<CaseTemplateImportConfiguration, CaseTemplateImportCode>;
 
@@ -70,8 +70,10 @@ const writeTaskTemplates = async (context: AuthContext, user: AuthUser, steps: T
 // are refused, not guessed. Its tasks are task templates, found by their name and created when they do not exist.
 // add: the template must not exist yet. overwrite: the template gets the description of the configuration, its tasks become the tasks of
 // the configuration (the task templates that are no longer in it are not deleted, only unlinked), and the description of a task template
-// that exists is the one of the configuration; a value that is null or absent leaves it untouched. A case template is its name: it has
-// no copy. Several writes make one import: one that fails can leave the task templates it created, which a new import finds again.
+// that exists is the one of the configuration; a value that is null or absent leaves it untouched. copy: the template is created under the
+// first free `name (n)` with the tasks of the configuration (task templates are shared, found by their name as for any other mode), whatever
+// the templates that already have its name. Several writes make one import: one that fails can leave the task templates it created, which a
+// new import finds again.
 export const importCaseTemplate = async (
   context: AuthContext,
   user: AuthUser,
@@ -84,19 +86,23 @@ export const importCaseTemplate = async (
   }
   const { name, description, tasks } = parsed.data;
   const sameName = await findCaseTemplatesByName(context, user, name);
-  if (sameName.length > 1) {
+  const [existing] = sameName;
+  // A copy is never refused for the templates that have its name, however many
+  if (sameName.length > 1 && mode !== ConfigImportMode.Copy) {
     return refused('failed', 'ambiguous', 'Several case templates have this name', true, parsed.data);
   }
-  const [existing] = sameName;
-  if (mode === ConfigImportMode.Copy) {
-    return refused('failed', 'copy_unsupported', 'A case template has no copy', !!existing, parsed.data);
-  }
-  if (!existing) {
+  if (!existing || mode === ConfigImportMode.Copy) {
+    const copyName = mode === ConfigImportMode.Copy
+      ? await freeConfigImportName(name, async (candidate) => (await findCaseTemplatesByName(context, user, candidate)).length > 0)
+      : name;
+    if (!copyName) {
+      return refused('failed', 'name_conflict', 'Case template already exists', !!existing, parsed.data);
+    }
     if (!dryRun) {
       const { steps } = await planTasks(context, user, tasks ?? [], []);
-      await caseTemplateAdd(context, user, { name, description: description ?? undefined, tasks: await writeTaskTemplates(context, user, steps) });
+      await caseTemplateAdd(context, user, { name: copyName, description: description ?? undefined, tasks: await writeTaskTemplates(context, user, steps) });
     }
-    return { status: 'created', exists: false, configuration: parsed.data };
+    return { status: 'created', exists: !!existing, configuration: parsed.data, reason: configImportCopyReason(name, copyName) };
   }
   if (mode === ConfigImportMode.Add) {
     return refused('failed', 'exists', 'Case template already exists', true, parsed.data);

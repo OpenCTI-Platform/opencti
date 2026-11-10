@@ -227,11 +227,39 @@ describe('importCaseTemplate', () => {
     [caseTemplateAdd, caseTemplateEdit, caseTemplateAddRelation, taskTemplateAdd].forEach((write) => expect(write).not.toHaveBeenCalled());
   });
 
-  it('has no copy: a case template is its name', async () => {
-    withCaseTemplates([stored]);
-    expect(await importCaseTemplate(context, user, configuration, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: true });
-    withCaseTemplates([]);
-    expect(await importCaseTemplate(context, user, configuration, { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: false });
-    expect(caseTemplateAdd).not.toHaveBeenCalled();
+  describe('in copy mode', () => {
+    const copy = { mode: ConfigImportMode.Copy };
+
+    it('creates a template that does not exist under its own name, with no other reason', async () => {
+      expect(await importCaseTemplate(context, user, configuration, copy)).toEqual({ status: 'created', exists: false, configuration });
+      expect(caseTemplateAdd).toHaveBeenCalledWith(context, user, expect.objectContaining({ name: 'Phishing triage' }));
+    });
+
+    it('adds a template that exists as another template under the first free name, with its tasks, and leaves the first one untouched', async () => {
+      withCaseTemplates([stored, { ...stored, id: 'copy-id', name: 'Phishing triage (1)' }]);
+      withTaskTemplates(blockTask);
+      expect(await importCaseTemplate(context, user, configuration, copy)).toMatchObject({ status: 'created', exists: true, reason: 'Added as "Phishing triage (2)"' });
+      // The task templates are shared: the existing one is reused, the missing one is created
+      expect(caseTemplateAdd).toHaveBeenCalledWith(context, user, { name: 'Phishing triage (2)', description: 'Triage of a phishing report', tasks: ['block-task-id', 'new-Notify users'] });
+      expect([caseTemplateEdit, caseTemplateAddRelation, caseTemplateDeleteRelation].every((write) => vi.mocked(write).mock.calls.length === 0)).toBe(true);
+    });
+
+    it('is no more refused for a name that several templates have: it does not touch any of them', async () => {
+      withCaseTemplates([stored, { ...stored, id: 'other-id', standard_id: 'case-template--other' }]);
+      expect(await importCaseTemplate(context, user, configuration, copy)).toMatchObject({ status: 'created', exists: true, reason: 'Added as "Phishing triage (1)"' });
+    });
+
+    it('decides the same on a dry run, and writes nothing', async () => {
+      withCaseTemplates([stored]);
+      expect(await importCaseTemplate(context, user, configuration, { ...copy, dryRun: true })).toMatchObject({ status: 'created', exists: true, reason: 'Added as "Phishing triage (1)"' });
+      expect(caseTemplateAdd).not.toHaveBeenCalled();
+      expect(taskTemplateAdd).not.toHaveBeenCalled();
+    });
+
+    it('fails when the first copies are all taken', async () => {
+      vi.mocked(findCaseTemplatesByName).mockResolvedValue([stored] as never);
+      expect(await importCaseTemplate(context, user, configuration, copy)).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true });
+      expect(caseTemplateAdd).not.toHaveBeenCalled();
+    });
   });
 });
