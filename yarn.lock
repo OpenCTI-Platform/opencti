@@ -4681,16 +4681,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/api-logs@npm:0.223.0":
-  version: 0.223.0
-  resolution: "@opentelemetry/api-logs@npm:0.223.0"
-  dependencies:
-    "@opentelemetry/api": "npm:^1.3.0"
-  checksum: 10c0/3be606243df08c7356d584d48194464050f3c379d63a92cc059de4f45dd5e81bbd7810f0a95419bed71fe4b790d2e495663eaf563f2e67bde30b381182add32e
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/api@npm:1.10.0, @opentelemetry/api@npm:1.x, @opentelemetry/api@npm:^1.3.0":
+"@opentelemetry/api@npm:1.10.0, @opentelemetry/api@npm:1.x":
   version: 1.10.0
   resolution: "@opentelemetry/api@npm:1.10.0"
   checksum: 10c0/c666f89d882e2e3ea3780b4e419de3ba7e00a80bf334269c3c8507a5e2b4e453e2bc8368f6230f894d789b206c14dde313ea6f51fa7bc629f0eff8480b5d356b
@@ -18266,7 +18257,6 @@ __metadata:
     "@mui/material": "npm:9.5.0"
     "@mui/x-date-pickers": "npm:9.17.0"
     "@opentelemetry/api": "npm:1.10.0"
-    "@opentelemetry/api-logs": "npm:0.223.0"
     "@opentelemetry/core": "npm:3.1.0"
     "@opentelemetry/sdk-logs": "npm:3.1.0"
     "@playwright/test": "npm:1.65.0"
