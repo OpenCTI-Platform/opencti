@@ -44,6 +44,12 @@ describe('Hook: useNavSearch', () => {
     expect(search('profile')).toContain('/dashboard/profile/me');
   });
 
+  it('ignores case and accents, both in the keyword and in the (translated) labels', () => {
+    subItems = [parameters, { link: '/dashboard/settings/config', label: 'Paramètres avancés' }];
+    expect(search('PARAMETRES avances')).toContain('/dashboard/settings/config');
+    expect(search('paramètres')).toContain('/dashboard/settings/config');
+  });
+
   it('drops Import entries when the Import subsection is hidden (draft)', () => {
     subItems = [];
     expect(search('drafts')).toEqual([]);

@@ -204,8 +204,19 @@ const SearchInput = (props) => {
     setSuggestionsOpen(false);
     setActiveIndex(-1);
   };
-  const canSuggest = mode === MODE_SEARCH && Boolean(searchValue?.trim());
+  // One letter matches a dozen pages by substring: wait for two before listing them.
+  const canSuggest = mode === MODE_SEARCH && (searchValue?.trim().length ?? 0) >= 2;
   const showSuggestions = suggestionsOpen && canSuggest;
+  // Bulk and NLQ modes have no popup: the field must not announce itself as a (collapsed) combobox there.
+  const comboboxProps = mode === MODE_SEARCH
+    ? {
+        role: 'combobox',
+        'aria-autocomplete': 'list',
+        'aria-expanded': showSuggestions,
+        'aria-controls': showSuggestions ? NAV_SEARCH_LISTBOX_ID : undefined,
+        'aria-activedescendant': showSuggestions && activeIndex >= 0 ? navSearchOptionId(activeIndex) : undefined,
+      }
+    : {};
 
   const handleSearchRow = () => {
     closeSuggestions();
@@ -381,11 +392,7 @@ const SearchInput = (props) => {
             onChange={(event) => handleValueChange(event.target.value)}
             onKeyDown={handleKeyDown}
             onClear={() => handleValueChange('')}
-            role="combobox"
-            aria-autocomplete="list"
-            aria-expanded={showSuggestions}
-            aria-controls={showSuggestions ? NAV_SEARCH_LISTBOX_ID : undefined}
-            aria-activedescendant={showSuggestions && activeIndex >= 0 ? navSearchOptionId(activeIndex) : undefined}
+            {...comboboxProps}
             {...otherProps}
             autoComplete="off"
             label={t_i18n('Search')}
@@ -396,7 +403,7 @@ const SearchInput = (props) => {
               anchorEl={fieldContainerRef.current}
               activeIndex={activeIndex}
               itemsRef={suggestionsRef}
-              onSelectPage={handleSelectPage}
+              onPageClick={closeSuggestions}
               onSearch={handleSearchRow}
             />
           )}

@@ -12,14 +12,18 @@ export interface NavSearchResult {
 
 type Node = NavSearchResult & { keywords: string[] };
 
+/** Consumers display at most this many pages: the hook returns them all so they can tell when the list is cut. */
 export const PLATFORM_SEARCH_PAGE_MAX_RESULTS = 10;
+
+// Case and accent insensitive: labels are translated, "parametres" must find "Paramètres".
+const fold = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 
 const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
   const { t_i18n } = useFormatter();
   const navGroups = useNavMenu();
   const entries = useVisibleEntries(allMenuEntries);
 
-  const tokens = (keyword ?? '').toLowerCase().split(/\s+/).filter(Boolean);
+  const tokens = fold(keyword ?? '').split(/\s+/).filter(Boolean);
   if (tokens.length === 0) return [];
 
   // Left bar: already filtered by permissions and hidden entities.
@@ -55,8 +59,8 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
   [...navNodes, ...entryNodes].forEach((node) => byPath.set(node.path, node));
 
   const matchRank = (node: Node) => {
-    const label = node.label.toLowerCase();
-    const haystack = [label, ...node.parents, ...node.keywords].join(' ').toLowerCase();
+    const label = fold(node.label);
+    const haystack = fold([node.label, ...node.parents, ...node.keywords].join(' '));
     if (!tokens.every((token) => haystack.includes(token))) return -1;
     return tokens.every((token) => label.includes(token)) ? 0 : 1;
   };
@@ -64,7 +68,6 @@ const useNavSearch = (keyword?: string | null): NavSearchResult[] => {
     .map((node) => ({ node, rank: matchRank(node) }))
     .filter(({ rank }) => rank >= 0)
     .sort((a, b) => a.rank - b.rank)
-    .slice(0, PLATFORM_SEARCH_PAGE_MAX_RESULTS)
     .map(({ node: { path, label, parents } }) => ({ path, label, parents }));
 };
 
