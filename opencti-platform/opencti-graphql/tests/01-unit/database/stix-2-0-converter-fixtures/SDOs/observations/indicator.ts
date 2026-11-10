@@ -73,6 +73,9 @@ export const EXPECTED_INDICATOR = {
   x_opencti_score: 75,
   x_opencti_detection: true,
   x_opencti_main_observable_type: 'IPv4-Addr',
+  x_opencti_observable_values: [
+    { type: 'IPv4-Addr', value: '198.51.100.1' },
+  ],
   x_mitre_platforms: [
     'linux',
   ],

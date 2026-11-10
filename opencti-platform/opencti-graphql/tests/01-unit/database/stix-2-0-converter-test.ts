@@ -212,6 +212,14 @@ describe('Stix 2.0 opencti converter', () => {
     const result = convertIndicatorToStix_2_0(INDICATOR_INSTANCE);
     expect(result).toEqual(EXPECTED_INDICATOR);
   });
+  it('should convert Indicator observable hashes as the legacy export', async () => {
+    const sha256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+    const instance = { ...INDICATOR_INSTANCE, pattern: `[file:hashes.'SHA-256' = '${sha256}']` };
+    const result = convertIndicatorToStix_2_0(instance);
+    expect(result.x_opencti_observable_values).toEqual([
+      { type: 'StixFile', hashes: [{ algorithm: 'SHA-256', hash: sha256 }] },
+    ]);
+  });
   it('should convert Infrastructure', async () => {
     const result = convertInfrastructureToStix(INFRASTRUCTURE_INSTANCE);
     expect(result).toEqual(EXPECTED_INFRASTRUCTURE);

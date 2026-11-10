@@ -100,6 +100,7 @@ export interface Stix2Indicator extends StixDomainObject2 {
   x_opencti_score: number;
   x_opencti_detection: boolean;
   x_opencti_main_observable_type: string;
+  x_opencti_observable_values: Array<ObservableValues>;
   x_mitre_platforms: Array<string>;
 }
 // endregion

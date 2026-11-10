@@ -66,6 +66,7 @@ export const convertIndicatorToStix_2_0 = (instance: StoreEntity): Stix2Indicato
     x_opencti_score: indicator.x_opencti_score,
     x_opencti_detection: indicator.x_opencti_detection,
     x_opencti_main_observable_type: indicator.x_opencti_main_observable_type,
+    x_opencti_observable_values: getObservableValuesFromPattern(indicator.pattern),
     x_mitre_platforms: indicator.x_mitre_platforms,
   };
 };
