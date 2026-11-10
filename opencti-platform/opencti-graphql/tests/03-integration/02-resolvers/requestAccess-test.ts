@@ -1148,6 +1148,34 @@ describe('Request access decided through workflow transitions', async () => {
       expect((await loadDecision(rfiId))).toMatchObject({ statusId: await statusIdOf(templateIds.pending), action: { status: ActionStatus.NEW } });
       expect((await findInstance(rfiId))?.currentState).toBe(templateIds.pending);
     });
+
+    it('creating an RFI directly into the Approved status is rejected', async () => {
+      const name = `RFI created decided ${suffix}`;
+
+      await expect(createEntity(testContext, ADMIN_USER, {
+        name,
+        x_opencti_workflow_id: await statusIdOf(templateIds.approved),
+      }, ENTITY_TYPE_CONTAINER_CASE_RFI)).rejects.toThrow(outcomeRejection);
+
+      const created = await fullEntitiesList<{ id: string }>(testContext, ADMIN_USER, [ENTITY_TYPE_CONTAINER_CASE_RFI], { filters: { mode: 'and', filters: [{ key: ['name'], values: [name] }], filterGroups: [] } });
+      expect(created).toHaveLength(0);
+    });
+
+    it('re-upserting a decided RFI with its unchanged outcome status is allowed', async () => {
+      const rfiId = await requestAccess();
+      expect(await triggerWorkflowEvent(testContext, ADMIN_USER, rfiId, 'Reject')).toMatchObject({ success: true });
+      const rfi = await findRFIById(testContext, ADMIN_USER, rfiId);
+      const declinedStatusId = await statusIdOf(templateIds.declined);
+
+      await createEntity(testContext, ADMIN_USER, {
+        name: rfi.name,
+        created: rfi.created,
+        x_opencti_workflow_id: declinedStatusId,
+      }, ENTITY_TYPE_CONTAINER_CASE_RFI);
+
+      expect((await loadDecision(rfiId))).toMatchObject({ statusId: declinedStatusId, action: { status: ActionStatus.DECLINED } });
+      expect((await findInstance(rfiId))?.currentState).toBe(templateIds.declined);
+    });
   });
 
   it('a plain RFI on a request access status stays on the legacy flow', async () => {

@@ -6137,6 +6137,18 @@ describe('scope-aware workflow definitions', () => {
       expect(resolveScopedDefinitionId(shared as any, StatusScope.RequestAccess)).toBeUndefined();
       expect(resolveScopedDefinitionId(shared as any, StatusScope.Global)).toBe('global-def');
     });
+
+    it('repairs a request access link that equals the Global one on the next save, leaving the Global definition alone', async () => {
+      const shared = { ...globalOnlySetting, request_access_workflow: { approval_admin: [], workflow_definition_id: 'global-def' } };
+      (findByType as any).mockResolvedValue(shared);
+      (createEntity as any).mockResolvedValue({ id: 'ra-def', all_versions: [published], draft_version: published });
+      (updateAttribute as any).mockResolvedValue({ element: shared });
+      await setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', JSON.stringify({ name: 'Workflow for Case-Rfi', initialState: 'new', states: [], transitions: [] }), StatusScope.RequestAccess);
+      expect((createEntity as any).mock.calls[0][2].name).toBe('Request access workflow for Case-Rfi');
+      expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-setting-id', 'EntitySetting', [
+        { key: 'request_access_workflow', value: [{ approval_admin: [], workflow_definition_id: 'ra-def' }] },
+      ]);
+    });
   });
 
   describe('assertScopeAllowed', () => {

@@ -4637,6 +4637,11 @@ const internalCreateEntityRaw = async (
       const cleanInputPatch = cleanEntityForIdsCollision(resolvedInput, type, selectedTarget, filteredEntities);
       return upsertElement(context, user, selectedTarget, type, cleanInputPatch, { ...opts, locks: participantIds });
     }
+    // A creation must not supply an outcome status of the request access workflow. Checked here, past every
+    // upsert branch, so that restoring or re-importing an existing decided request is not refused.
+    if (resolvedInput[X_WORKFLOW_ID] && !opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+      await assertExternalStatusCreateAllowed(context, type, resolvedInput[X_WORKFLOW_ID]);
+    }
     // Create the object
     const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts) as { element: Record<string, any>; relations: Record<string, any>[] };
 
@@ -4782,9 +4787,6 @@ export const createEntity = async (
   opts: { complete?: boolean; noEnrichOnUpdate?: boolean } & CreateEntityRawOpts = {},
 ) => {
   const isCompleteResult = opts.complete === true;
-  if (input[X_WORKFLOW_ID] && !opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
-    await assertExternalStatusCreateAllowed(context, type, input[X_WORKFLOW_ID]);
-  }
   const ingestionDeduplication = await prepareIngestionDeduplication(context, user, input, type, opts);
   if (ingestionDeduplication) {
     const existing = await findUnchangedEntity(ingestionDeduplication, () => storeLoadById<BasicStoreEntity>(context, user, input.stix_id, type));
