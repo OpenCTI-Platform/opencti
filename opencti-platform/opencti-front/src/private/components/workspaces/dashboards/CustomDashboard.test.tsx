@@ -175,9 +175,9 @@ describe('CustomDashboard variable values', () => {
       storeFinanceEverywhere();
     });
 
-    it('ignores, and leaves untouched, the local values when viewers may not change variables', () => {
+    it('ignores, and leaves untouched, the local values when the editor closed the switches', () => {
       testRender(
-        <CustomDashboard data={readerWorkspace() as never} />,
+        <CustomDashboard data={readerWorkspace({ allowViewersToChangeVariables: false, allowViewersToEditTimeFilters: false }) as never} />,
         { userContext: userContext(['DASHBOARD_VARIABLES']), route: url },
       );
       expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
@@ -186,9 +186,9 @@ describe('CustomDashboard variable values', () => {
         .toBe(JSON.stringify({ [SECTOR_ID]: 'Finance' }));
     });
 
-    it('applies the local values when viewers may change variables', () => {
+    it('applies the local values by default: a dashboard without the switch lets its viewers change variables', () => {
       testRender(
-        <CustomDashboard data={readerWorkspace({ allowViewersToChangeVariables: true }) as never} />,
+        <CustomDashboard data={readerWorkspace() as never} />,
         { userContext: userContext(['DASHBOARD_VARIABLES']) },
       );
       expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
@@ -307,9 +307,9 @@ describe('CustomDashboard variables bar', () => {
     expect(bar()).not.toBeInTheDocument();
   });
 
-  it('is absent for a reader when viewers are not allowed to change variables', () => {
+  it('is absent for a reader when the editor closed the variables switch', () => {
     captured.granted = false;
-    testRender(<CustomDashboard data={buildWorkspace({ currentUserAccessRight: 'view' }) as never} />, { userContext: flagOn() });
+    testRender(<CustomDashboard data={buildWorkspace({ currentUserAccessRight: 'view' }, { allowViewersToChangeVariables: false }) as never} />, { userContext: flagOn() });
     expect(bar()).not.toBeInTheDocument();
   });
 
@@ -582,15 +582,15 @@ describe('CustomDashboard time range', () => {
       captured.granted = false;
     });
 
-    it('shows no time filter and ignores the URL range when viewers may not edit time filters', () => {
-      testRender(<CustomDashboard data={readerWorkspace() as never} />, { userContext: flagOn(), route: '/dashboard?timeRange=years-1' });
+    it('shows no time filter and ignores the URL range when the editor closed the time filters switch', () => {
+      testRender(<CustomDashboard data={readerWorkspace({ allowViewersToEditTimeFilters: false }) as never} />, { userContext: flagOn(), route: '/dashboard?timeRange=years-1' });
       expect(screen.queryByTestId('time-filters')).not.toBeInTheDocument();
       expect(captured.contentConfig?.relativeDate).toBe('days-7');
       expect(window.location.search).toBe('?timeRange=years-1');
     });
 
-    it('shows the time filters without the refresh control when viewers may edit time filters', () => {
-      testRender(<CustomDashboard data={readerWorkspace({ allowViewersToEditTimeFilters: true }) as never} />, { userContext: flagOn() });
+    it('shows the time filters without the refresh control by default: a dashboard without the switch lets its viewers edit them', () => {
+      testRender(<CustomDashboard data={readerWorkspace() as never} />, { userContext: flagOn() });
       expect(screen.getByTestId('time-filters')).toBeInTheDocument();
       expect(screen.queryByTestId('refresh-control')).not.toBeInTheDocument();
       changeRange('months-1');
@@ -600,7 +600,7 @@ describe('CustomDashboard time range', () => {
 
     it('puts Reset at the end of the time filters row when there is no variables bar, never Set as default values', async () => {
       const { user } = testRender(
-        <CustomDashboard data={readerWorkspace({ allowViewersToEditTimeFilters: true }) as never} />,
+        <CustomDashboard data={readerWorkspace({ allowViewersToChangeVariables: false }) as never} />,
         { userContext: flagOn() },
       );
       changeRange('months-1');
@@ -661,8 +661,9 @@ describe('CustomDashboard viewer permissions', () => {
       { userContext: userContext(['DASHBOARD_VARIABLES']) },
     );
     const toggle = () => screen.getByRole('switch', { name: 'Allow viewers to edit time filters' });
+    // Open by default: the click closes it
     await user.click(toggle());
-    expect(toggle()).toBeChecked();
+    expect(toggle()).not.toBeChecked();
     expect(toggle()).toBeDisabled();
     act(() => completeMutation());
     await waitFor(() => expect(toggle()).toBeEnabled());
@@ -677,7 +678,7 @@ describe('CustomDashboard viewer permissions', () => {
     expect(captured.commit).toHaveBeenCalledTimes(1);
     const [input] = captured.commit.mock.calls[0][0].variables.input;
     expect(input.key).toBe('manifest');
-    expect(JSON.parse(fromB64(input.value[0])).config).toStrictEqual({ relativeDate: 'days-7', allowViewersToChangeVariables: true });
+    expect(JSON.parse(fromB64(input.value[0])).config).toStrictEqual({ relativeDate: 'days-7', allowViewersToChangeVariables: false });
   });
 });
 
