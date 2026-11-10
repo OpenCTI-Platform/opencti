@@ -15,6 +15,7 @@ import {
 } from '../../../utils/testQuery';
 import * as conf from '../../../../src/config/conf';
 import * as cache from '../../../../src/database/cache';
+import * as userActionListener from '../../../../src/listener/UserActionListener';
 import { getClientBase, localAuthLockoutKeys, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt, redisSetForgotPasswordOtp } from '../../../../src/database/redis';
 import { patchAttribute } from '../../../../src/database/middleware';
 import { resetCacheForEntity } from '../../../../src/database/cache';
@@ -863,6 +864,118 @@ describe('Local authentication lockout', () => {
       }
       // The local lock exists, it is just not shown
       await expectLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD));
+    });
+  });
+
+  describe('Activity', () => {
+    // The lock events published by the lockout, recorded instead of being sent to the activity listener
+    let lockActions: userActionListener.UserLockAction[];
+    const mfaUser = () => ({ id: mfaUserId, user_email: MFA_USER.email, otp_activated: true, otp_secret: mfaSecret }) as AuthUser;
+    const wrongCode = async () => {
+      const code = await totp.generate({ secret: mfaSecret });
+      return `${code.slice(0, 5)}${(Number(code[5]) + 1) % 10}`;
+    };
+
+    beforeEach(() => {
+      lockActions = [];
+      vi.spyOn(userActionListener, 'publishUserAction').mockImplementation(async (action) => {
+        if (action.event_scope === 'lock') {
+          lockActions.push(action as userActionListener.UserLockAction);
+        }
+        return [];
+      });
+    });
+
+    it('should publish one event when the max attempts lock an account, attributed to the locked user', async () => {
+      await failLogin(LOCKOUT_USER.email, 2);
+      expect(lockActions).toHaveLength(0);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD, '10.0.0.7'));
+      expect(lockActions).toHaveLength(1);
+      expect(lockActions[0]).toMatchObject({
+        event_type: 'authentication',
+        event_scope: 'lock',
+        event_access: 'administration',
+        status: 'error',
+        user: { id: lockoutUserId, origin: { socket: 'query', ip: '10.0.0.7', user_id: lockoutUserId } },
+        context_data: { username: LOCKOUT_USER.email, lock_type: 'temporary', lock_duration: LOCK_MINUTES, max_attempts: 3, source: 'form' },
+      });
+    });
+
+    it('should publish nothing for the attempts rejected during the lock', async () => {
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+      await expectLocked(login(LOCKOUT_USER.email, LOCKOUT_USER.password));
+      expect(lockActions).toHaveLength(1);
+    });
+
+    it('should publish one event for each new lock', async () => {
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      await expireLock(LOCKOUT_USER.email);
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      expect(lockActions).toHaveLength(2);
+    });
+
+    it('should publish nothing for an unknown email', async () => {
+      await reachMaxAttempts(UNKNOWN_EMAIL);
+      expect(lockActions).toHaveLength(0);
+    });
+
+    it('should publish a permanent lock without any duration', async () => {
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_final_action: 'permanent' });
+      try {
+        await failLogin(LOCKOUT_USER.email, 2);
+        await expectPermanentlyLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+        expect(lockActions).toHaveLength(1);
+        expect(lockActions[0].context_data).toEqual({ username: LOCKOUT_USER.email, lock_type: 'permanent', max_attempts: 3, source: 'form' });
+      } finally {
+        await userEditField(testContext, ADMIN_USER, lockoutUserId, [{ key: 'account_status', value: ['Active'] }]);
+      }
+    });
+
+    it('should publish the lock of an external user, never set to Locked', async () => {
+      await reachMaxAttempts(EXTERNAL_USER.email);
+      expect(lockActions).toHaveLength(1);
+      expect(lockActions[0].context_data.username).toEqual(EXTERNAL_USER.email);
+    });
+
+    it('should publish the Basic auth as the source of the lock', async () => {
+      const basicAuth = () => authenticateUserByBasicAuth(testContext, buildRequest(), { username: LOCKOUT_USER.email, password: WRONG_PASSWORD });
+      for (let i = 0; i < 3; i += 1) {
+        await basicAuth().catch(() => undefined);
+      }
+      expect(lockActions).toHaveLength(1);
+      expect(lockActions[0]).toMatchObject({ user: { origin: { ip: '127.0.0.1' } }, context_data: { source: 'basic_auth' } });
+    });
+
+    it('should publish the MFA code as the source of the lock', async () => {
+      const otpLogin = async () => otpUserLogin({ ip: '10.0.0.8', session: { user: {}, save: () => {}, session_provider: 'local' } }, mfaUser(), { code: await wrongCode() });
+      await expectBadCredentials(otpLogin());
+      await expectBadCredentials(otpLogin());
+      await expectLocked(otpLogin());
+      expect(lockActions).toHaveLength(1);
+      expect(lockActions[0]).toMatchObject({
+        user: { id: mfaUserId, origin: { ip: '10.0.0.8' } },
+        context_data: { username: MFA_USER.email, source: 'mfa' },
+      });
+    });
+
+    it('should publish the forgotten password flow as the source of the lock', async () => {
+      const transactionId = uuid();
+      await redisSetForgotPasswordOtp(transactionId, { email: MFA_USER.email, hashedOtp: bcrypt.hashSync('12345678'), mfa_activated: true, mfa_validated: false, userId: mfaUserId });
+      await expectBadCredentials(verifyMfa(testContext, { transactionId, code: await wrongCode() }));
+      await expectBadCredentials(verifyMfa(testContext, { transactionId, code: await wrongCode() }));
+      await expectLocked(verifyMfa(testContext, { transactionId, code: await wrongCode() }));
+      expect(lockActions).toHaveLength(1);
+      expect(lockActions[0].context_data.source).toEqual('forgot_password');
+    });
+
+    it('should publish nothing when the attempt reaching the max attempts has the right password', async () => {
+      const otpLogin = async () => otpUserLogin({ session: { user: {}, save: () => {}, session_provider: 'local' } }, mfaUser(), { code: await wrongCode() });
+      await expectBadCredentials(otpLogin());
+      await expectBadCredentials(otpLogin());
+      // The third attempt reaches the max attempts, but its password is right: no lock
+      await sessionLoginAs(MFA_USER.email, MFA_USER.password);
+      expect(lockActions).toHaveLength(0);
     });
   });
 });

@@ -222,11 +222,27 @@ export interface UserForgotPasswordAction extends BasicUserAction {
   context_data: undefined;
   message: string;
 }
+
+// Where the failed attempt that locked the account came from
+export type UserLockSource = 'form' | 'basic_auth' | 'mfa' | 'forgot_password';
+// Automatic lock of an account by the local authentication lockout, once the max failed attempts are reached
+export interface UserLockAction extends BasicUserAction {
+  event_type: 'authentication';
+  event_scope: 'lock';
+  context_data: {
+    username: string;
+    lock_type: 'temporary' | 'permanent';
+    // In minutes, only for a temporary lock: a permanent lock lasts until an administrator unlocks the account
+    lock_duration?: number;
+    max_attempts: number;
+    source: UserLockSource;
+  };
+}
 // endregion
 
 export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserAnalyzeAction | UserImportAction
   | UserLogoutAction | UserExportAction | UserConfigPresetExportAction | UserSendAction | UserModificationAction | UserForbiddenAction | UserSearchAction
-  | DisseminateAction | UserForgotPasswordAction
+  | DisseminateAction | UserForgotPasswordAction | UserLockAction
   | IngestionHealthAction;
 
 export interface ActionListener {
