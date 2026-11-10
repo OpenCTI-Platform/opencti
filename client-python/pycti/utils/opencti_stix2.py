@@ -2688,17 +2688,17 @@ class OpenCTIStix2:
             if self._is_file_shareable(file, excluded_marking_ids)
         ]
         # Artifact, its payload is its first file
-        if (
-            entity["type"] == "artifact"
-            and len(import_files) > 0
-            and self._is_file_shareable(import_files[0], excluded_marking_ids)
-        ):
-            first_file_id = import_files[0]["id"]
-            file = self.opencti.fetch_opencti_file_by_id(
-                first_file_id, binary=True, serialize=True
-            )
-            if file:
-                entity["payload_bin"] = file
+        if entity["type"] == "artifact" and len(import_files) > 0:
+            if self._is_file_shareable(import_files[0], excluded_marking_ids):
+                first_file_id = import_files[0]["id"]
+                file = self.opencti.fetch_opencti_file_by_id(
+                    first_file_id, binary=True, serialize=True
+                )
+                if file:
+                    entity["payload_bin"] = file
+            else:
+                # A stored payload is a copy of this file content
+                entity.pop("payload_bin", None)
         # Files
         if len(shareable_files) > 0:
             entity["x_opencti_files"] = []

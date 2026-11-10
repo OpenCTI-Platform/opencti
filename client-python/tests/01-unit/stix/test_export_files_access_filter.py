@@ -291,6 +291,41 @@ def test_artifact_payload_is_not_filled_from_an_excluded_file(stix_helper):
     stix_helper.opencti.fetch_opencti_file_by_id.assert_not_called()
 
 
+def test_artifact_stored_payload_is_removed_when_its_file_is_excluded(stix_helper):
+    # The stored payload is a copy of the first file content
+    raw_entity = _raw_entity(
+        entity_type="Artifact",
+        standard_id=ARTIFACT_STANDARD_ID,
+        import_files=[_file("red-payload", [TLP_RED])],
+    )
+    raw_entity["payload_bin"] = "stored-content-of-red-payload"
+
+    bundle = _export(stix_helper, raw_entity, EXCLUDE_TLP_RED, mode="simple")
+
+    assert "payload_bin" not in _exported_entity(bundle, ARTIFACT_STANDARD_ID)
+
+
+@pytest.mark.parametrize(
+    "import_files,access_filter",
+    [([], EXCLUDE_TLP_RED), ([_file("red-payload", [TLP_RED])], None)],
+)
+def test_artifact_stored_payload_is_kept_without_excluded_file(
+    stix_helper, import_files, access_filter
+):
+    raw_entity = _raw_entity(
+        entity_type="Artifact",
+        standard_id=ARTIFACT_STANDARD_ID,
+        import_files=import_files,
+    )
+    raw_entity["payload_bin"] = "stored-payload"
+    stix_helper.opencti.fetch_opencti_file_by_id.side_effect = lambda *a, **k: None
+
+    bundle = _export(stix_helper, raw_entity, access_filter, mode="simple")
+
+    exported = _exported_entity(bundle, ARTIFACT_STANDARD_ID)
+    assert exported["payload_bin"] == "stored-payload"
+
+
 def test_artifact_payload_is_filled_from_an_allowed_file(stix_helper):
     raw_entity = _raw_entity(
         entity_type="Artifact",
