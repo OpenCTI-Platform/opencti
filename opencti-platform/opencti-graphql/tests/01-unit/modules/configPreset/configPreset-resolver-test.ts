@@ -49,7 +49,7 @@ import { builtInTheme, customTheme, otherCustomTheme } from './configPreset-them
 import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
 import { administratorRole, analystRole } from './configPreset-roles-fixtures';
 import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
-import { customMarking, papRed } from './configPreset-markings-fixtures';
+import { customMarking, papRed, tlpAmber } from './configPreset-markings-fixtures';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 
 const buildSchema = () => {
@@ -154,9 +154,9 @@ describe('Config preset exportable types query', () => {
         label: 'Markings',
         description: 'Marking definitions, their colors and orders',
         group: { key: 'securityAccess', label: 'Security & Access' },
-        // The markings by definition, without the built-in ones
-        items: [customMarking, papRed].map((marking) => ({ key: marking.standard_id, label: marking.definition, translatable: false, dependsOn: [], isDefault: false })),
-        itemsPageInfo: onePage(2),
+        // The markings by definition, built-in ones included
+        items: [customMarking, papRed, tlpAmber].map((marking) => ({ key: marking.standard_id, label: marking.definition, translatable: false, dependsOn: [], isDefault: false })),
+        itemsPageInfo: onePage(3),
       },
       {
         key: 'roles',
@@ -171,12 +171,12 @@ describe('Config preset exportable types query', () => {
         label: 'Groups',
         description: 'Groups with their roles, markings and confidence level',
         group: { key: 'securityAccess', label: 'Security & Access' },
-        // Each group depends on its roles
-        items: [[administratorsGroup, administratorRole], [analystsGroup, analystRole]].map(([group, role]) => ({
+        // Each group depends on its roles and markings
+        items: ([[administratorsGroup, administratorRole, [tlpAmber]], [analystsGroup, analystRole, []]] as const).map(([group, role, groupMarkings]) => ({
           key: group.standard_id,
           label: group.name,
           translatable: false,
-          dependsOn: [{ type: 'roles', key: role.standard_id }],
+          dependsOn: [{ type: 'roles', key: role.standard_id }, ...groupMarkings.map((marking) => ({ type: 'markings', key: marking.standard_id }))],
           isDefault: false,
         })),
         itemsPageInfo: onePage(2),

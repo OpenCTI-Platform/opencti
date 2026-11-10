@@ -7,7 +7,13 @@ import { getClientBase } from '../../../../../src/database/redis';
 import { setPlatformBootstrapStatus } from '../../../../../src/domain/settings';
 import { addGroup } from '../../../../../src/domain/grant';
 import { findById as findGroupById, groupAddRelation, groupAllowedMarkings, groupDelete } from '../../../../../src/domain/group';
-import { addAllowedMarkingDefinition, findAllMarkings, findById as findMarkingById, markingDefinitionDelete } from '../../../../../src/domain/markingDefinition';
+import {
+  addAllowedMarkingDefinition,
+  findAllMarkings,
+  findById as findMarkingById,
+  markingDefinitionDelete,
+  markingDefinitionEditField,
+} from '../../../../../src/domain/markingDefinition';
 import { allFilesForPaths } from '../../../../../src/modules/internal/document/document-domain';
 import { deleteFile } from '../../../../../src/database/file-storage';
 import { downloadFile } from '../../../../../src/database/raw-file-storage';
@@ -114,9 +120,19 @@ describe('Config preset import: markings', () => {
     expect(await configurationOf()).toEqual(markingConfiguration({ x_opencti_color: '#654321', x_opencti_order: 9 }));
   });
 
-  it('never writes a built-in marking', async () => {
-    const results = await importData(await uploadZip(await buildZip(markingsBundle({ definition_type: 'TLP', definition: 'TLP:RED' }))), [{ type: 'markings' }]);
-    expect(results).toEqual([{ type: 'markings', key: markingStandardId('TLP', 'TLP:RED'), status: 'SKIPPED', reason: 'Built-in marking' }]);
+  it('exports a built-in marking and imports it back over the local one', async () => {
+    const tlpRedId = markingStandardId('TLP', 'TLP:RED');
+    const original = await findMarkingById(testContext, ADMIN_USER, tlpRedId) as BasicStoreEntityMarking;
+    const zip = await exportZip([{ type: 'markings', items: [tlpRedId] }]);
+    try {
+      await markingDefinitionEditField(testContext, ADMIN_USER, original.id, [{ key: 'x_opencti_color', value: ['#000001'] }]);
+      const results = await importData(await uploadZip(zip), [{ type: 'markings' }]);
+      expect(results).toEqual([{ type: 'markings', key: tlpRedId, status: 'OVERWRITTEN', reason: null }]);
+      const imported = await findMarkingById(testContext, ADMIN_USER, tlpRedId) as BasicStoreEntityMarking;
+      expect(exportMarking(imported)).toEqual(exportMarking(original));
+    } finally {
+      await markingDefinitionEditField(testContext, ADMIN_USER, original.id, [{ key: 'x_opencti_color', value: [original.x_opencti_color] }]);
+    }
   });
 
   it('creates the marking a group depends on first, then the group with it', async () => {

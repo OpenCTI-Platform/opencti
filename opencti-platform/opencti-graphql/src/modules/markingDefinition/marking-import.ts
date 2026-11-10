@@ -11,7 +11,7 @@ import { CONFIG_IMPORT_SENSITIVE_REASON, isConfigImportSensitiveChangeAllowed } 
 import type { BasicStoreEntityMarking } from './marking-export';
 import { type MarkingImportConfiguration, markingImportSchema } from './marking-import-schema';
 
-export type MarkingImportCode = 'invalid' | 'built_in' | 'exists' | 'sensitive_config' | 'unchanged';
+export type MarkingImportCode = 'invalid' | 'exists' | 'sensitive_config' | 'unchanged';
 
 export type MarkingImportResult = ConfigImportResult<MarkingImportConfiguration, MarkingImportCode> & {
   marking?: BasicStoreEntityMarking;
@@ -21,21 +21,6 @@ export const markingStandardId = (definitionType: string, definition: string): s
   return generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, { definition_type: definitionType, definition });
 };
 
-// The markings every platform creates at its initialization: the same on every platform, never written by an import
-const BUILT_IN_MARKINGS = [
-  ['TLP', 'TLP:CLEAR'],
-  ['TLP', 'TLP:GREEN'],
-  ['TLP', 'TLP:AMBER'],
-  ['TLP', 'TLP:AMBER+STRICT'],
-  ['TLP', 'TLP:RED'],
-  ['PAP', 'PAP:CLEAR'],
-  ['PAP', 'PAP:GREEN'],
-  ['PAP', 'PAP:AMBER'],
-  ['PAP', 'PAP:RED'],
-];
-export const BUILT_IN_MARKING_STANDARD_IDS = BUILT_IN_MARKINGS.map(([definitionType, definition]) => markingStandardId(definitionType, definition));
-
-export const BUILT_IN_MARKING_REASON = 'Built-in marking';
 const ORDER_REASON = 'The order of the marking changes';
 const AUTO_NEW_MARKING_REASON = 'Groups that get new markings automatically get this one';
 
@@ -59,9 +44,6 @@ export const importMarking = async (
   }
   const { definition_type: definitionType, definition, x_opencti_color: color, x_opencti_order: order } = parsed.data;
   const standardId = markingStandardId(definitionType, definition);
-  if (BUILT_IN_MARKING_STANDARD_IDS.includes(standardId)) {
-    return refused('skipped', 'built_in', BUILT_IN_MARKING_REASON, true, parsed.data);
-  }
   const existing = await findById(context, user, standardId) as BasicStoreEntityMarking | undefined;
   if (existing && mode === ConfigImportMode.Add) {
     return refused('failed', 'exists', 'Marking already exists', true, parsed.data);
