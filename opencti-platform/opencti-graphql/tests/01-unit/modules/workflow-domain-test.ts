@@ -7119,7 +7119,7 @@ describe('triggerWorkflowEvent — request access outcomes', () => {
   it('refuses an event chosen for another state than the current one', async () => {
     setup(definitionContent(), 'approved');
 
-    const result = await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Accept', undefined, {}, { fromState: 'review' });
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Accept', undefined, {}, undefined, { fromState: 'review' });
 
     expect(result).toMatchObject({ success: false, reason: expect.stringContaining('The workflow state changed') });
     expect(trigger).not.toHaveBeenCalled();

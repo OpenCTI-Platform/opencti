@@ -11,7 +11,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { SYSTEM_USER } from '../../../utils/access';
 import { type BasicStoreEntityCaseRfi, ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
-import { ActionStatus, isUserCanActionRequestAccess, notifyRequestAccessResult, type RequestAccessAction } from '../../requestAccess/requestAccess-domain';
+import type { RequestAccessAction } from '../../requestAccess/requestAccess-domain';
 import type { TriggerResult } from '../types/workflow-types';
 import {
   getAllowedTransitions,
@@ -75,6 +75,8 @@ export const assertCanEnterRequestAccessOutcome = async (
   user: AuthUser,
   rfi: BasicStoreEntityCaseRfi,
 ): Promise<void> => {
+  // Loaded lazily: requestAccess-domain imports this module and, through the vocabulary domain, the middleware
+  const { isUserCanActionRequestAccess } = await import('../../requestAccess/requestAccess-domain');
   if (!await isUserCanActionRequestAccess(context, user, rfi)) {
     throw UnsupportedError('You need to be able to edit the RFI and share knowledge', { id: rfi.id });
   }
@@ -145,6 +147,7 @@ export const applyRequestAccessOutcome = async (
     if (!requestedEntity) {
       throw UnsupportedError('Requested entity not found', { requestedEntityId });
     }
+    const { ActionStatus, notifyRequestAccessResult } = await import('../../requestAccess/requestAccess-domain');
     await notifyRequestAccessResult(context, user, requestedEntity, requestAccessAction.applicant_id, mainRepresentative, ActionStatus[outcome]);
   } catch (error) {
     logApp.error('[OPENCTI-MODULE][Request access] Failed to notify the applicant of the request decision', { cause: error, id: rfiId, outcome });

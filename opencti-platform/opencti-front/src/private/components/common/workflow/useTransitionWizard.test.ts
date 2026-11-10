@@ -239,7 +239,7 @@ describe('useTransitionWizard – handleTransition', () => {
     const { result } = renderWizard();
 
     act(() => {
-      result.current.handleTransition('Accept', [], null, false, false, true);
+      result.current.handleTransition('Accept', [], null, false, false, null, true);
     });
 
     expect(result.current.wizard?.event).toBe('Accept');
