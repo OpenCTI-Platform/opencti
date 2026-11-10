@@ -160,6 +160,7 @@ export const computeConfigPresetItems = async (
     created: new Set(),
     themeNames: new Set(),
     releasedThemeNames: new Set(),
+    emailTemplateNames: new Set(),
     roleIds: new Set(),
     groupIds: new Set(),
     roleSensitiveRights: new Map(),

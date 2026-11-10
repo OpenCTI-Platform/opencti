@@ -13,10 +13,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
-import type { EditInput, EmailTemplateAddInput, QueryEmailTemplatesArgs } from '../../generated/graphql';
+import { FilterMode, type EditInput, type EmailTemplateAddInput, type QueryEmailTemplatesArgs } from '../../generated/graphql';
 import { type BasicStoreEntityEmailTemplate, ENTITY_TYPE_EMAIL_TEMPLATE, type StoreEntityEmailTemplate } from './emailTemplate-types';
 import { sendEmailToUser } from '../user/user-domain';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
@@ -35,6 +35,20 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
 export const findEmailTemplatePaginated = async (context: AuthContext, user: AuthUser, args: QueryEmailTemplatesArgs) => {
   await checkEnterpriseEdition(context);
   return pageEntitiesConnection<BasicStoreEntityEmailTemplate>(context, user, [ENTITY_TYPE_EMAIL_TEMPLATE], args);
+};
+
+export const findAllEmailTemplates = async (context: AuthContext, user: AuthUser, args: Record<string, unknown> = {}) => {
+  await checkEnterpriseEdition(context);
+  return fullEntitiesList<BasicStoreEntityEmailTemplate>(context, user, [ENTITY_TYPE_EMAIL_TEMPLATE], args);
+};
+
+// The name is not unique on the platform: every template that has exactly this name.
+// The engine matches a name without its case, but two names that differ by their case are two templates.
+export const findEmailTemplatesByName = async (context: AuthContext, user: AuthUser, name: string) => {
+  const templates = await findAllEmailTemplates(context, user, {
+    filters: { mode: FilterMode.And, filters: [{ key: ['name'], values: [name] }], filterGroups: [] },
+  });
+  return templates.filter((template) => template.name === name);
 };
 
 export const sendTestEmail = async (context: AuthContext, user: AuthUser, id: string) => {

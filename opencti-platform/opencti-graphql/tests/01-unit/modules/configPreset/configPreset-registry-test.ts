@@ -16,6 +16,11 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
+// A family of the Enterprise Edition reads its entities through a domain that checks the license: the platform has it here
+vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/enterprise-edition/ee')>()),
+  checkEnterpriseEdition: vi.fn(),
+}));
 // The markings of a group are read from the cache
 vi.mock('../../../../src/database/cache', async (importOriginal) => {
   const original = await importOriginal<typeof import('../../../../src/database/cache')>();
@@ -47,6 +52,7 @@ import { BUILT_IN_MARKING_STANDARD_IDS } from '../../../../src/modules/markingDe
 import { roleCapabilities } from '../../../../src/modules/user/user-domain';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusionLists-fixtures';
+import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -144,6 +150,14 @@ describe('Config preset registry', () => {
         itemIds: [administratorsGroup.standard_id, analystsGroup.standard_id],
       },
       { id: 'policies', label: 'Policies', description: 'Password policy, users visibility and main organization', group: 'securityAccess', itemIds: ['policies'] },
+      // The email templates by name
+      {
+        id: 'emailTemplates',
+        label: 'Email templates',
+        description: 'Email templates and their content',
+        group: 'securityAccess',
+        itemIds: [otherEmailTemplate.standard_id, customEmailTemplate.standard_id],
+      },
       // The labels by value
       { id: 'labels', label: 'Labels', description: 'Labels and their colors', group: 'taxonomy', itemIds: [otherLabel.standard_id, customLabel.standard_id] },
       // The exclusion lists by name, in their own group
@@ -158,7 +172,7 @@ describe('Config preset registry', () => {
   });
 
   it('marks as requiring the Enterprise Edition the families of an Enterprise Edition setting only', () => {
-    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark']);
+    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'emailTemplates']);
   });
 
   it('translates the static labels only, never a theme name, a label value or an exclusion list name', async () => {
@@ -180,6 +194,8 @@ describe('Config preset registry', () => {
       ['Administrators', false],
       ['Analysts', false],
       ['Policies', true],
+      ['Built-In Template For Onboarding', false],
+      ['Welcome analyst', false],
       ['APT', false],
       ['tlp:amber', false],
       ['Public DNS resolvers', false],
@@ -209,6 +225,8 @@ describe('Config preset registry', () => {
       `security_access/groups/${administratorsGroup.standard_id}.json`,
       `security_access/groups/${analystsGroup.standard_id}.json`,
       'security_access/policies.json',
+      `security_access/email_templates/${otherEmailTemplate.standard_id}.json`,
+      `security_access/email_templates/${customEmailTemplate.standard_id}.json`,
       `taxonomy/labels/${otherLabel.standard_id}.json`,
       `taxonomy/labels/${customLabel.standard_id}.json`,
       `customization/exclusion_lists/${dnsExclusionList.standard_id}.json`,
@@ -350,6 +368,74 @@ describe('Config preset registry', () => {
     const file = await exportConfigPresetItem(context, user, findFamily('hiddenEntityTypes'), await findItem('hiddenEntityTypes', 'hiddenEntityTypes'));
     expect(file).toMatchObject({ type: 'dataModel.hiddenEntityTypes', id: 'hiddenEntityTypes' });
     expect(file.configuration).toEqual({ hidden_entity_types: ['Channel', 'Malware'] });
+  });
+
+  describe('email templates', () => {
+    const emailTemplates = findFamily('emailTemplates');
+    const pageIds = async (args: Parameters<typeof emailTemplates.listItems>[2]) => (await emailTemplates.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('requires the Enterprise Edition and exports into the Security & Access folder', () => {
+      expect(emailTemplates.requiresEnterpriseEdition).toBe(true);
+      expect(emailTemplates.directory).toBe('security_access/email_templates');
+      expect(emailTemplates.importModes).toEqual(['OVERWRITE', 'COPY']);
+    });
+
+    it('exports an email template in the import format only, with its standard id', async () => {
+      const file = await exportConfigPresetItem(context, user, emailTemplates, await findItem('emailTemplates', customEmailTemplate.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'securityAccess.emailTemplates',
+        id: customEmailTemplate.standard_id,
+        configuration: {
+          name: 'Welcome analyst',
+          description: 'Onboarding message for new analysts',
+          email_object: 'Welcome to OpenCTI',
+          sender_email: 'CTI team',
+          template_body: '<p>Hello $user.firstname</p>',
+        },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|custom-email-template-id/);
+    });
+
+    it('leaves a missing description out, so the import leaves the one of the template as it is', async () => {
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ ...customEmailTemplate, description: null }] as never);
+      const file = await exportConfigPresetItem(context, user, emailTemplates, await findItem('emailTemplates', customEmailTemplate.standard_id));
+      expect(file.configuration).not.toHaveProperty('description');
+    });
+
+    it('opens the first page with the email templates by name, and counts them', async () => {
+      const page = await emailTemplates.listItems(context, user, { first: 1 });
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['EmailTemplate'], {
+        first: 1,
+        after: undefined,
+        search: undefined,
+        orderBy: 'name',
+        orderMode: 'asc',
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([[otherEmailTemplate.standard_id, 'Built-In Template For Onboarding', false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
+    });
+
+    it('applies search, ids and excluded ids to the email templates', async () => {
+      expect(await pageIds({ search: 'welcome' })).toEqual([customEmailTemplate.standard_id]);
+      expect(await pageIds({ ids: [otherEmailTemplate.standard_id] })).toEqual([otherEmailTemplate.standard_id]);
+      expect(await pageIds({ excludedIds: [otherEmailTemplate.standard_id] })).toEqual([customEmailTemplate.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every template
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the email templates to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await emailTemplates.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([otherEmailTemplate.standard_id, customEmailTemplate.standard_id]);
+      expect(await ids(null, [otherEmailTemplate.standard_id])).toEqual([customEmailTemplate.standard_id]);
+      expect(await ids([customEmailTemplate.standard_id], [])).toEqual([customEmailTemplate.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
   });
 
   describe('labels', () => {
