@@ -46,6 +46,8 @@ For now, OpenCTI has a simple workflow approach. They're represented by the "Pro
 2. Click on the small pink pen icon next to "Workflow" to access the object customization window.
 3. Add and configure the desired statuses, defining their order within the workflow.
 
+To enforce transitions between statuses, restrict who can take them and run automatic actions, see [Entities workflow](../usage/entities-workflow.md).
+
 ![Workflow status](./assets/workflow-configuration.png)
 
 In addition, the available statuses are defined by a collection of status templates visible in "Settings > Taxonomies > Status templates". This collection can be customized.

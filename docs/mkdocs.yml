@@ -229,7 +229,8 @@ nav:
       - Custom views: usage/custom-views.md
       - Workflows:
          - Draft workflow: usage/draft-workflow.md
-         - Entities workflow: usage/workflows.md
+         - Entities workflow: usage/entities-workflow.md
+         - Workflows and assignation: usage/workflows.md
       - Indicators lifecycle: usage/indicators-lifecycle.md
       - Playbook automation:
         - Introduction: usage/playbook-automation.md
