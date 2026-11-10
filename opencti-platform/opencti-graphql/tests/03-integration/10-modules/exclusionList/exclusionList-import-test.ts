@@ -14,6 +14,7 @@ import { exportConfigPresetItem } from '../../../../src/modules/configPreset/con
 // Values that no other test of the platform uses: an enabled list is enforced when an indicator is created
 const NAME = 'Config preset exclusion list';
 const OTHER_NAME = 'Config preset retired exclusion list';
+const COPY_NAME = `${NAME} (1)`;
 const VALUES = Buffer.from('config-preset-a.invalid\nconfig-preset-b.invalid\n');
 const mode = ConfigImportMode.Overwrite;
 const fileOf = (content: Buffer) => ({ read: async () => content });
@@ -26,7 +27,7 @@ const loadList = async (name: string) => (await listsNamed(name))[0];
 
 describe('Exclusion list import and export (configuration preset)', () => {
   afterAll(async () => {
-    for (const name of [NAME, OTHER_NAME]) {
+    for (const name of [NAME, OTHER_NAME, COPY_NAME]) {
       for (const list of await listsNamed(name)) {
         await deleteExclusionList(testContext, ADMIN_USER, list.id);
       }
@@ -61,6 +62,24 @@ describe('Exclusion list import and export (configuration preset)', () => {
     const configuration = { name: NAME, description: 'Another', exclusion_list_entity_types: ['Domain-Name'] };
     expect(await importExclusionList(testContext, ADMIN_USER, configuration, fileOf(Buffer.from('x.invalid\n')), { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists' });
     expect(await loadList(NAME)).toMatchObject({ description: 'Config preset test', exclusion_list_file_size: VALUES.length });
+  });
+
+  it('adds a copy of an existing list under a free name, with its values, and leaves the first list as it is', async () => {
+    const copyValues = Buffer.from('config-preset-copy.invalid\n');
+    const configuration = { name: NAME, description: 'Copy', exclusion_list_entity_types: ['Domain-Name'] };
+    expect(await importExclusionList(testContext, ADMIN_USER, configuration, fileOf(copyValues), { mode: ConfigImportMode.Copy, dryRun: true })).toMatchObject({ status: 'created', exists: true, reason: `Added as "${COPY_NAME}"` });
+    expect(await listsNamed(COPY_NAME)).toHaveLength(0);
+    expect(await importExclusionList(testContext, ADMIN_USER, configuration, fileOf(copyValues), { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'created', exists: true, reason: `Added as "${COPY_NAME}"` });
+    const copy = await loadList(COPY_NAME);
+    expect(copy).toMatchObject({ description: 'Copy', exclusion_list_file_size: copyValues.length });
+    expect((await readExclusionListFile(copy))?.equals(copyValues)).toBe(true);
+    // The list that was copied keeps its own description and values
+    expect(await loadList(NAME)).toMatchObject({ description: 'Config preset test', exclusion_list_file_size: VALUES.length });
+    // A second copy takes the next free name
+    expect(await importExclusionList(testContext, ADMIN_USER, configuration, fileOf(copyValues), { mode: ConfigImportMode.Copy, dryRun: true })).toMatchObject({ reason: `Added as "${NAME} (2)"` });
+    // The next tests list the lists of the platform: the copy is not one of theirs
+    await deleteExclusionList(testContext, ADMIN_USER, copy.id);
+    expect(await listsNamed(COPY_NAME)).toHaveLength(0);
   });
 
   it('gives an existing list the description, the state, the types and the values of the configuration', async () => {

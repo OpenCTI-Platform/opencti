@@ -53,7 +53,7 @@
   "{count}h ago": "hace {count} h",
   "{count}m ago": "hace {count} min",
   "{counts} tokens": "{counts} tokens",
-  "{created} created, {overwritten} overwritten, {skipped} skipped, {failed} failed": "{created} creados, {overwritten} sobrescritos, {skipped} omitidos, {failed} con error",
+  "{created} created, {overwritten} overwritten, {unchanged} up to date, {skipped} skipped, {failed} failed": "{created} creados, {overwritten} sobrescritos, {unchanged} ya actualizados, {skipped} omitidos, {failed} con error",
   "{decided}/{total} decided": "{decided}/{total} decididos",
   "{enabled} of {total} enabled": "{enabled} de {total} activados",
   "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "Se eliminarán {entitiesCount} entidades y {relationshipsCount} relaciones, incluidas las relaciones vinculadas a las entidades seleccionadas.",

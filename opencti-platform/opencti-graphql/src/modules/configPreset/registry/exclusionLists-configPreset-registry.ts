@@ -1,5 +1,6 @@
 import { ExclusionListOrdering, FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
 import { FunctionalError } from '../../../config/errors';
+import { ConfigImportMode } from '../../configImport/configImport-types';
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { exportExclusionList } from '../../exclusionList/exclusionList-export';
 import { readExclusionListFile } from '../../exclusionList/exclusionList-file';
@@ -56,9 +57,10 @@ const exclusionListsImporter: ConfigPresetImporter = {
   },
 };
 
-// Exclusion lists with their values, paged and searched through the exclusion list domain. A list has no copy, an import overwrites.
+// Exclusion lists with their values, paged and searched through the exclusion list domain. An import overwrites, or adds a copy under a free name.
 export const exclusionListsFamily: ConfigPresetFamilyDefinition = {
   importer: exclusionListsImporter,
+  importModes: [ConfigImportMode.Overwrite, ConfigImportMode.Copy],
   id: EXCLUSION_LISTS_FAMILY_ID,
   label: 'Exclusion lists',
   description: 'Exclusion lists and their values',

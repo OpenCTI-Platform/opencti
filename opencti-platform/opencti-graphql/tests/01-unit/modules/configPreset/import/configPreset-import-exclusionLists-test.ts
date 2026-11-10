@@ -33,9 +33,9 @@ beforeEach(() => {
 });
 
 describe('Exclusion lists import (registry)', () => {
-  it('is importable, in the Customization group, and offers no choice of mode: an exclusion list has no copy', () => {
+  it('is importable, in the Customization group, and offers overwrite or a copy of a list that exists', () => {
     expect(family.importer).toBeDefined();
-    expect(family.importModes).toBeUndefined();
+    expect(family.importModes).toEqual(['OVERWRITE', 'COPY']);
     expect(family.group).toEqual({ id: 'customization', label: 'Customization' });
     expect(family.directory).toBe('customization/exclusion_lists');
   });

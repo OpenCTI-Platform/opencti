@@ -53,7 +53,7 @@
   "{count}h ago": "vor {count} Std.",
   "{count}m ago": "vor {count} Min.",
   "{counts} tokens": "{counts} Token",
-  "{created} created, {overwritten} overwritten, {skipped} skipped, {failed} failed": "{created} erstellt, {overwritten} überschrieben, {skipped} übersprungen, {failed} fehlgeschlagen",
+  "{created} created, {overwritten} overwritten, {unchanged} up to date, {skipped} skipped, {failed} failed": "{created} erstellt, {overwritten} überschrieben, {unchanged} bereits aktuell, {skipped} übersprungen, {failed} fehlgeschlagen",
   "{decided}/{total} decided": "{decided}/{total} entschieden",
   "{enabled} of {total} enabled": "{enabled} von {total} aktiviert",
   "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "{entitiesCount} Entitäten und {relationshipsCount} Beziehungen werden entfernt, einschließlich der Beziehungen, die mit den ausgewählten Entitäten verbunden sind.",

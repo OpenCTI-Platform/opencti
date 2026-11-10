@@ -53,7 +53,7 @@
   "{count}h ago": "{count} 時間前",
   "{count}m ago": "{count} 分前",
   "{counts} tokens": "{counts} トークン",
-  "{created} created, {overwritten} overwritten, {skipped} skipped, {failed} failed": "作成 {created} 件、上書き {overwritten} 件、スキップ {skipped} 件、失敗 {failed} 件",
+  "{created} created, {overwritten} overwritten, {unchanged} up to date, {skipped} skipped, {failed} failed": "作成 {created} 件、上書き {overwritten} 件、最新の状態 {unchanged} 件、スキップ {skipped} 件、失敗 {failed} 件",
   "{decided}/{total} decided": "{decided}/{total} 件が決定済み",
   "{enabled} of {total} enabled": "{total} 件中 {enabled} 件が有効",
   "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "{entitiesCount} 件のエンティティと {relationshipsCount} 件のリレーションシップが削除されます（選択したエンティティに関連付けられたリレーションシップを含む）。",

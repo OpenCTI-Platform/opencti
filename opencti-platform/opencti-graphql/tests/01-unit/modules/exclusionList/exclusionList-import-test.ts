@@ -200,12 +200,63 @@ describe('importExclusionList', () => {
       expect(fieldPatchExclusionList).not.toHaveBeenCalled();
     });
 
-    it('has no copy: an exclusion list is its name', async () => {
-      expect(await importExclusionList(context, user, configuration, fileOf(VALUES), { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: true });
-      withLists();
-      expect(await importExclusionList(context, user, configuration, fileOf(VALUES), { mode: ConfigImportMode.Copy })).toMatchObject({ status: 'failed', code: 'copy_unsupported', exists: false });
-      expect(addExclusionListFile).not.toHaveBeenCalled();
-      expect(fieldPatchExclusionList).not.toHaveBeenCalled();
+    describe('in copy mode', () => {
+      const copy = { mode: ConfigImportMode.Copy };
+      const named = (name: string) => ({ ...stored, id: `${name}-id`, name }) as BasicStoreEntityExclusionList;
+
+      it('adds the list as another list under the first free name, with its values, and leaves the first one untouched', async () => {
+        withLists(stored, named('Public DNS resolvers (1)'));
+        expect(await importExclusionList(context, user, configuration, fileOf(VALUES), copy)).toMatchObject({ status: 'created', exists: true, reason: 'Added as "Public DNS resolvers (2)"' });
+        expect(addExclusionListFile).toHaveBeenCalledTimes(1);
+        const [, , input] = vi.mocked(addExclusionListFile).mock.calls[0];
+        expect(input).toMatchObject({ name: 'Public DNS resolvers (2)', description: 'Well-known resolvers', exclusion_list_entity_types: ['IPv4-Addr'] });
+        expect((await readUpload(input.file)).content).toEqual(VALUES);
+        expect(fieldPatchExclusionList).not.toHaveBeenCalled();
+      });
+
+      it('creates a list that does not exist under its own name, with no other reason', async () => {
+        withLists();
+        expect(await importExclusionList(context, user, configuration, fileOf(VALUES), copy)).toEqual({ status: 'created', exists: false, configuration });
+        expect(vi.mocked(addExclusionListFile).mock.calls[0][2]).toMatchObject({ name: 'Public DNS resolvers' });
+      });
+
+      it('is no more refused for a name that several lists have: it does not touch any of them', async () => {
+        withLists(stored, { ...retiredExclusionList, name: 'public dns resolvers' } as BasicStoreEntityExclusionList);
+        expect(await importExclusionList(context, user, configuration, fileOf(VALUES), copy)).toMatchObject({ status: 'created', exists: true, reason: 'Added as "Public DNS resolvers (1)"' });
+        expect(fieldPatchExclusionList).not.toHaveBeenCalled();
+      });
+
+      it('does not need the file of the list that exists to be its own: that list is not read or written', async () => {
+        withLists({ ...stored, file_id: 'exclusionLists/another-list.txt' } as BasicStoreEntityExclusionList);
+        expect(await importExclusionList(context, user, configuration, fileOf(VALUES), copy)).toMatchObject({ status: 'created', exists: true });
+      });
+
+      it('decides the same on a dry run, and writes nothing', async () => {
+        expect(await importExclusionList(context, user, configuration, fileOf(VALUES), { ...copy, dryRun: true })).toMatchObject({ status: 'created', exists: true, reason: 'Added as "Public DNS resolvers (1)"' });
+        expect(addExclusionListFile).not.toHaveBeenCalled();
+      });
+
+      it('holds the name of its copy for the next items of the bundle, which cannot take it', async () => {
+        const reservedNames = new Set<string>();
+        expect(await importExclusionList(context, user, configuration, fileOf(VALUES), { ...copy, dryRun: true, reservedNames })).toMatchObject({ status: 'created', reason: 'Added as "Public DNS resolvers (1)"' });
+        expect([...reservedNames]).toEqual(expect.arrayContaining(['public dns resolvers', 'public dns resolvers (1)']));
+        expect(await importExclusionList(context, user, { ...configuration, name: 'Public DNS resolvers (1)' }, fileOf(VALUES), { ...copy, dryRun: true, reservedNames })).toMatchObject({ status: 'failed', code: 'duplicate' });
+      });
+
+      it('refuses a file that is missing or too large, as an overwrite does', async () => {
+        expect(await importExclusionList(context, user, configuration, undefined, copy)).toMatchObject({ status: 'failed', code: 'file_missing', exists: true });
+        expect(await importExclusionList(context, user, configuration, fileOf(null), copy)).toMatchObject({ status: 'failed', code: 'file_too_large', exists: true });
+        expect(addExclusionListFile).not.toHaveBeenCalled();
+      });
+
+      it('fails when the first copies are all taken', async () => {
+        // Every name is held: the list looked up by a name is returned under that name
+        vi.mocked(fullEntitiesList).mockImplementation((async (_ctx: unknown, _user: unknown, _types: unknown, args?: { filters: { filters: { values: string[] }[] } }) => {
+          return args ? [{ ...stored, name: args.filters.filters[0].values[0] }] : [];
+        }) as never);
+        expect(await importExclusionList(context, user, { ...configuration }, fileOf(VALUES), copy)).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true });
+        expect(addExclusionListFile).not.toHaveBeenCalled();
+      });
     });
 
     it('is refused as ambiguous when several lists have its name, not guessed', async () => {

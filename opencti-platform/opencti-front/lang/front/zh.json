@@ -53,7 +53,7 @@
   "{count}h ago": "{count} 小时前",
   "{count}m ago": "{count} 分钟前",
   "{counts} tokens": "{counts} 个 token",
-  "{created} created, {overwritten} overwritten, {skipped} skipped, {failed} failed": "已创建 {created} 个，已覆盖 {overwritten} 个，已跳过 {skipped} 个，失败 {failed} 个",
+  "{created} created, {overwritten} overwritten, {unchanged} up to date, {skipped} skipped, {failed} failed": "已创建 {created} 个，已覆盖 {overwritten} 个，已是最新 {unchanged} 个，已跳过 {skipped} 个，失败 {failed} 个",
   "{decided}/{total} decided": "已决定 {decided}/{total}",
   "{enabled} of {total} enabled": "已启用 {enabled}/{total}",
   "{entitiesCount} entities and {relationshipsCount} relationships will be removed, including the relationships attached to the selected entities.": "将移除 {entitiesCount} 个实体和 {relationshipsCount} 个关系，包括与所选实体关联的关系。",

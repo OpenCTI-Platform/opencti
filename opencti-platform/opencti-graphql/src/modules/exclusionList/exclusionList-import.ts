@@ -3,13 +3,13 @@ import { normalizeName } from '../../schema/identifier';
 import type { EditInput } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
-import { configImportValidationReason } from '../configImport/configImport-utils';
+import { configImportReasonValue, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
 import { addExclusionListFile, exclusionListStorageKey, fieldPatchExclusionList, findExclusionListsByName, MAX_FILE_SIZE } from './exclusionList-domain';
 import { readExclusionListFile } from './exclusionList-file';
 import { type ExclusionListImportConfiguration, exclusionListImportSchema } from './exclusionList-import-schema';
 import { hasSameTypes } from './exclusionList-rules';
 
-export type ExclusionListImportCode = 'invalid' | 'exists' | 'copy_unsupported' | 'unchanged' | 'ambiguous' | 'duplicate' | 'file_missing' | 'file_too_large' | 'file_not_own';
+export type ExclusionListImportCode = 'invalid' | 'exists' | 'name_conflict' | 'unchanged' | 'ambiguous' | 'duplicate' | 'file_missing' | 'file_too_large' | 'file_not_own';
 
 export interface ExclusionListImportOptions extends ConfigImportOptions {
   // The names (normalized) the items of the same import already hold: two lists of a bundle with the same name are one list on the platform
@@ -43,7 +43,8 @@ const toUpload = (content: Buffer) => {
 // cache rebuilt): the list is never written any other way.
 // add: the list must not exist yet. overwrite: a list that exists is given the type, the state and the description of the configuration
 // (a description that is null or absent, and a state that is absent, leave it untouched) and the values of the file when they differ.
-// A list is its name: it has no copy.
+// copy: a list is its name, so the copy of one that exists is another list under the first free `name (n)` (a name the platform or an
+// earlier item of the bundle holds is taken), with the values of the file, whatever the lists that already have its name.
 export const importExclusionList = async (
   context: AuthContext,
   user: AuthUser,
@@ -62,18 +63,17 @@ export const importExclusionList = async (
   }
   reservedNames?.add(normalizeName(name));
   const sameName = await findExclusionListsByName(context, user, name);
-  if (sameName.length > 1) {
+  const isCopy = mode === ConfigImportMode.Copy;
+  // A copy is never refused for the lists that have its name, however many: it does not touch any of them
+  if (sameName.length > 1 && !isCopy) {
     return refused('failed', 'ambiguous', 'Several exclusion lists have this name', true, parsed.data);
   }
   const [existing] = sameName;
-  if (mode === ConfigImportMode.Copy) {
-    return refused('failed', 'copy_unsupported', 'An exclusion list has no copy', !!existing, parsed.data);
-  }
   if (existing && mode === ConfigImportMode.Add) {
     return refused('failed', 'exists', 'Exclusion list already exists', true, parsed.data);
   }
   // The values of a list are read and written under its own key: a list that points at another file is not touched, whatever the bundle holds
-  if (existing && existing.file_id !== exclusionListStorageKey(existing.internal_id)) {
+  if (!isCopy && existing && existing.file_id !== exclusionListStorageKey(existing.internal_id)) {
     return refused('failed', 'file_not_own', 'The file of the exclusion list is not its own', true, parsed.data);
   }
   if (!file) {
@@ -83,16 +83,27 @@ export const importExclusionList = async (
   if (!content) {
     return refused('failed', 'file_too_large', 'The file of the values of the exclusion list is too large', !!existing, parsed.data);
   }
-  if (!existing) {
+  if (!existing || isCopy) {
+    const copyName = isCopy
+      ? await freeConfigImportName(name, async (candidate) => {
+          const heldByBundle = candidate !== name && !!reservedNames?.has(normalizeName(candidate));
+          return heldByBundle || (await findExclusionListsByName(context, user, candidate)).length > 0;
+        })
+      : name;
+    if (!copyName) {
+      return refused('failed', 'name_conflict', 'Exclusion list already exists', !!existing, parsed.data);
+    }
+    reservedNames?.add(normalizeName(copyName));
     if (!dryRun) {
       await addExclusionListFile(context, user, {
-        name,
+        name: copyName,
         description: description ?? undefined,
         exclusion_list_entity_types: types,
         file: toUpload(content),
       }, enabled !== false);
     }
-    return { status: 'created', exists: false, configuration: parsed.data };
+    const reason = copyName === name ? undefined : `Added as "${configImportReasonValue(copyName)}"`;
+    return { status: 'created', exists: !!existing, configuration: parsed.data, reason };
   }
   const patch: EditInput[] = [];
   if (description !== null && description !== undefined && description !== (existing.description ?? '')) {
