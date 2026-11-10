@@ -49,6 +49,7 @@ testCreatedCounter['ipv4-addr'] = 1;
 // Counts for:
 // - 1 created and deleted by form-submission-test
 // - 3 created and deleted by killChainPhase-import-test
+// - 3 created by the data files the tests load (kill_chain_phases of their objects), never deleted
 testCreatedCounter['kill-chain-phase'] = 7;
 // Counts for:
 // - 3 created and deleted by investigation-enrichment-test

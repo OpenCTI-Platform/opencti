@@ -1,7 +1,8 @@
 import { z } from 'zod';
 
 // The rules of a status template to import, whatever the source: strict, unknown keys are rejected.
-// The color reaches CSS in the chips of the statuses: a hex color, the only one the status template form saves.
+// The color reaches CSS in the chips of the statuses: a hex color, the only one the status template form saves. The API takes any string, so a
+// template created through it with another value (`red`) is exported but refused here, on purpose: the import does not widen what is stored.
 const colorValue = z.string().regex(/^#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/, 'Must be a hex color');
 
 export const statusTemplateImportSchema = z.strictObject({
