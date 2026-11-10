@@ -67,6 +67,7 @@ import { PROVIDERS } from '../modules/authenticationProvider/providers-configura
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
+import { findProviderStrategy, isSamlStrategy } from '../modules/authenticationProvider/providers-strategy';
 import { buildDefaultHelmetParameters, buildPublicHelmetParameters } from './httpUtils';
 import { CATALOG_LOGO_VIEW_PATH, handleCatalogLogoViewRequest } from '../modules/catalog/catalog-http';
 
@@ -458,21 +459,26 @@ const createApp = async (app, schema) => {
     }
   });
 
+  // Unknown or disabled provider: a client-side outcome, the provider identifier comes from the URL
+  const rejectUnknownProvider = (res, provider) => {
+    setCookieError(res, `Unknown authentication provider '${provider}'`);
+    logApp.warn('Unknown authentication provider', { provider });
+    res.status(404).send({ status: 'error' });
+  };
+
   // -- Passport login
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
+    const { provider } = req.params;
     try {
-      const { provider } = req.params;
-      const strategy = passport._strategy(provider);
+      const strategy = findProviderStrategy(provider);
       if (!strategy) {
-        setCookieError(res, `Unknown authentication provider '${provider}'`);
-        logApp.info('Unknown authentication provider', { provider });
-        res.status(503).send({ status: 'error' });
+        rejectUnknownProvider(res, provider);
         return;
       }
 
       const referer = extractRefererPathFromReq(req);
 
-      const isSaml = strategy._saml;
+      const isSaml = isSamlStrategy(strategy);
 
       if (!isSaml) {
         // For openid / oauth, session is required so we can use it
@@ -496,7 +502,7 @@ const createApp = async (app, schema) => {
       )(req, res, next);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error('Error auth provider', { cause: e });
+      logApp.error('Error auth provider', { cause: e, provider });
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
@@ -506,7 +512,11 @@ const createApp = async (app, schema) => {
   const urlencodedParser = AUTH_PAYLOAD_BODY_SIZE ? bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE }) : bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
     const { provider } = req.params;
-    const strategy = passport._strategy(provider);
+    const strategy = findProviderStrategy(provider);
+    if (!strategy) {
+      rejectUnknownProvider(res, provider);
+      return;
+    }
 
     const callbackLogin = () => new Promise((accept, reject) => {
       passport.authenticate(
