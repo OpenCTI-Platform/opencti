@@ -30,6 +30,8 @@ export interface PlatformHealthStatus {
 
 const CHECK_TIMEOUT_MS = 15_000;
 const DEFAULT_DEPENDENCY_CHECK_INTERVAL_MS = 30_000;
+// While a dependency stays unreachable, how often a warning reminds that the outage is still going on.
+const OUTAGE_REMINDER_INTERVAL_MS = 300_000;
 // Also the cadence at which `platformUsageMetricsManager` recomputes and republishes the shared value.
 export const DEFAULT_USAGE_METRICS_INTERVAL_MS = 300_000;
 
@@ -47,6 +49,15 @@ let usageMetrics: PlatformUsageMetrics = buildInitialUsageMetrics();
 let dependencyCheckInterval: NodeJS.Timeout | null = null;
 let usageMetricsInterval: NodeJS.Timeout | null = null;
 let gaugesRegistered = false;
+
+// Unreachable dependencies. An outage is logged as one event: an error when it starts,
+// an info when it ends, and in between a periodic warning, the other failed checks at debug.
+interface DependencyOutage {
+  startedAt: number;
+  remindedAt: number;
+  failedChecks: number;
+}
+let dependencyOutages: Partial<Record<HealthDependency, DependencyOutage>> = {};
 
 const dependencyProbes: Record<HealthDependency, () => Promise<unknown>> = {
   elasticsearch: isEngineAlive,
@@ -77,15 +88,44 @@ export const buildHealthFailures = (statuses: Record<HealthDependency, Dependenc
     .map((dependency) => `${dependency}: ${statuses[dependency].error ?? 'unavailable'}`);
 };
 
+const logDependencyFailure = (dependency: HealthDependency, error: unknown, now: number) => {
+  const outage = dependencyOutages[dependency];
+  // Up to now alive, or first check at startup
+  if (!outage) {
+    dependencyOutages[dependency] = { startedAt: now, remindedAt: now, failedChecks: 1 };
+    logApp.error('[HEALTH] Dependency check failed', { dependency, cause: error });
+    return;
+  }
+  outage.failedChecks += 1;
+  const meta = { dependency, cause: error, outageDurationMs: now - outage.startedAt, failedChecks: outage.failedChecks };
+  if (now - outage.remindedAt >= OUTAGE_REMINDER_INTERVAL_MS) {
+    outage.remindedAt = now;
+    logApp.warn('[HEALTH] Dependency still unreachable', meta);
+  } else {
+    logApp.debug('[HEALTH] Dependency check failed', meta);
+  }
+};
+
+const logDependencySuccess = (dependency: HealthDependency, now: number) => {
+  const outage = dependencyOutages[dependency];
+  if (outage) {
+    delete dependencyOutages[dependency];
+    logApp.info('[HEALTH] Dependency reachable again', { dependency, outageDurationMs: now - outage.startedAt, failedChecks: outage.failedChecks });
+  }
+};
+
 export const refreshDependencyStatus = async (): Promise<void> => {
   await Promise.all(HEALTH_DEPENDENCIES.map(async (dependency) => {
     try {
       await withTimeout(dependencyProbes[dependency](), `Timeout checking ${dependency} health`);
-      dependencyStatuses[dependency] = { isAlive: true, error: null, checkedAt: Date.now() };
+      const now = Date.now();
+      dependencyStatuses[dependency] = { isAlive: true, error: null, checkedAt: now };
+      logDependencySuccess(dependency, now);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      dependencyStatuses[dependency] = { isAlive: false, error: message, checkedAt: Date.now() };
-      logApp.error('[HEALTH] Dependency check failed', { dependency, cause: error });
+      const now = Date.now();
+      dependencyStatuses[dependency] = { isAlive: false, error: message, checkedAt: now };
+      logDependencyFailure(dependency, error, now);
     }
   }));
 };
@@ -229,6 +269,7 @@ export const stopPlatformHealthMonitor = (): void => {
     usageMetricsInterval = null;
   }
   dependencyStatuses = buildInitialStatuses();
+  dependencyOutages = {};
   usageMetrics = buildInitialUsageMetrics();
   logApp.info('[HEALTH] Platform health monitoring stopped');
 };
