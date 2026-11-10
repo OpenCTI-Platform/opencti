@@ -205,9 +205,12 @@ export const ResourceNotFoundError = (reason?: string, data?: any) => error(RESO
   ...data,
 });
 
-const TYPE_LOCK = 'LOCK_ERROR';
+// LOCK_ERROR is the code of the error returned to the client (and retried by the workers).
+// TYPE_LOCK_ERROR is the name of the internal abort error raised while waiting for the lock,
+// checked by the callers to convert it into a LockTimeoutError.
+export const LOCK_ERROR = 'LOCK_ERROR';
 export const TYPE_LOCK_ERROR = 'ExecutionError';
-export const LockTimeoutError = (data: any, reason?: string) => error(TYPE_LOCK, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
+export const LockTimeoutError = (data: any, reason?: string) => error(LOCK_ERROR, reason ?? 'Execution timeout, too many concurrent call on the same entities', {
   http_status: 500,
   genre: CATEGORY_BUSINESS,
   ...data,
@@ -266,7 +269,7 @@ export const FUNCTIONAL_ERRORS = [
   MISSING_REF_ERROR,
   VALIDATION_ERROR,
   RESOURCE_NOT_FOUND_ERROR,
-  TYPE_LOCK_ERROR,
+  LOCK_ERROR,
   CLIENT_ABORT_ERROR,
   PASSWORD_REUSED,
   PASSWORD_CHANGE_THROTTLED,
