@@ -3641,6 +3641,7 @@
   "No platform announcement yet": "No platform announcement yet",
   "No playbook available": "No playbook available",
   "No potential duplicate entities has been found.": "No potential duplicate entities has been found.",
+  "Its value will also be removed from {count} preset(s).": "Its value will also be removed from {count} preset(s).",
   "No preset": "No preset",
   "No preset (default values of the dashboard)": "No preset (default values of the dashboard)",
   "No processes running": "No processes running",

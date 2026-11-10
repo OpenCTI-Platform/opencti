@@ -3641,6 +3641,7 @@
   "No platform announcement yet": "Todavía no hay ningún anuncio de plataforma",
   "No playbook available": "No hay playbook disponible",
   "No potential duplicate entities has been found.": "No se han encontrado posibles entidades duplicadas.",
+  "Its value will also be removed from {count} preset(s).": "Su valor también se eliminará de {count} preajuste(s).",
   "No preset": "Sin preajuste",
   "No preset (default values of the dashboard)": "Sin preajuste (valores predeterminados del panel)",
   "No processes running": "No hay procesos en ejecución",

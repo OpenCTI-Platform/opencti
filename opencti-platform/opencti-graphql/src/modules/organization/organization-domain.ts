@@ -19,7 +19,7 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicObject, EditInput, OrganizationAddInput, ResolversTypes } from '../../generated/graphql';
-import { AlreadyDeletedError, FunctionalError } from '../../config/errors';
+import { AlreadyDeletedError, ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { BasicStoreEntity } from '../../types/store';
@@ -75,6 +75,8 @@ const organizationUsersCacheRefresh = async (context: AuthContext, user: AuthUse
   }
 };
 
+const ORGANIZATION_ACCESS_SETTINGS_KEYS = ['default_dashboard', 'default_dashboard_preset'];
+
 export const organizationEditField = async (
   context: AuthContext,
   user: AuthUser,
@@ -82,6 +84,12 @@ export const organizationEditField = async (
   input: EditInput[],
   opts = {},
 ) => {
+  // The dashboard the members open on, and its preset, change the home page of everyone in the organization:
+  // reserved to the administrators of the accesses, like the other settings of an organization.
+  const touchesDefaultDashboard = input.some(({ key }) => ORGANIZATION_ACCESS_SETTINGS_KEYS.includes(key));
+  if (touchesDefaultDashboard && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+    throw ForbiddenAccess('The default dashboard of an organization is reserved to the administrators');
+  }
   const result = await stixDomainObjectEditField(context, user, organizationId, input, opts);
   await organizationUsersCacheRefresh(context, user, organizationId);
   return result;

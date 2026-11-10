@@ -35,6 +35,11 @@ describe('DashboardPresetSelector', () => {
     // The clear control of the trigger: back to no preset
     await user.click(screen.getByRole('button', { name: 'No preset' }));
     expect(onSelect).toHaveBeenLastCalledWith(null);
+    // The same entry in the list
+    onSelect.mockClear();
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByRole('option', { name: 'No preset' }));
+    expect(onSelect).toHaveBeenCalledExactlyOnceWith(null);
   });
 
   it('offers the editor actions, the update only when the preset is modified', async () => {

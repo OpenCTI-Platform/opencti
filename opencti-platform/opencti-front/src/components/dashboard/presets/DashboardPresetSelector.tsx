@@ -6,6 +6,8 @@ import { useFormatter } from '../../i18n';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import type { DashboardPreset } from '../dashboard-types';
 
+// Value of the list entry that stands for no preset: the library Select takes no empty value in an item.
+const NO_PRESET = '__no_preset__';
 export interface DashboardPresetSelectorProps {
   presets: readonly DashboardPreset[];
   activePreset: DashboardPreset | null;
@@ -61,7 +63,7 @@ const DashboardPresetSelector = ({
           <Select
             value={activePreset?.id ?? ''}
             // The clear control of the trigger empties the selection: back to no preset.
-            onValueChange={(value) => onSelect(value === '' ? null : value)}
+            onValueChange={(value) => onSelect(value === '' || value === NO_PRESET ? null : value)}
             clearable
             clearLabel={t_i18n('No preset')}
             disabled={disabled}
@@ -71,6 +73,8 @@ const DashboardPresetSelector = ({
               <SelectValue placeholder={label} />
             </SelectTrigger>
             <SelectContent aria-label={label}>
+              {/* The same as the clear control, offered in the list too: back to the default preset, or none. */}
+              <SelectItem value={NO_PRESET}>{t_i18n('No preset')}</SelectItem>
               {presets.map((preset) => (
                 <SelectItem key={preset.id} value={preset.id}>
                   {preset.id === defaultPreset?.id ? t_i18n('{name} (default)', { values: { name: preset.name } }) : preset.name}

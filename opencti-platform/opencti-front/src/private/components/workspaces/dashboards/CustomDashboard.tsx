@@ -218,13 +218,13 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   // The bar is the only way to see, change and clear a per user value: to a user who does not get it, such a
   // value (stored, or from the URL) would filter the widgets with no chip to show or reset it.
   const showVariablesBar = isVariablesEnabled && !noToolbar
-    && (canManageVariables || config.allowViewersToChangeVariables === true);
+    && (canManageVariables || config.allowViewersToChangeVariables !== false);
   // The presets of the dashboard, from the server owned key of the manifest.
   const presets = useMemo(() => workspace.presets.map(presetFromGraphql), [workspace.presets]);
   // The selector: editors always (they can at least save one), viewers when they may switch and there is something
   // to switch to.
   const showPresetSelector = isVariablesEnabled && !noToolbar
-    && (canManageVariables ? variables.length > 0 || presets.length > 0 : config.allowViewersToSwitchPresets === true && presets.length > 0);
+    && (canManageVariables ? variables.length > 0 || presets.length > 0 : config.allowViewersToSwitchPresets !== false && presets.length > 0);
   const presetControls = useDashboardPreset(workspace.id, presets, {
     ignoreLocalValues: noToolbar || !showPresetSelector,
     enabled: isVariablesEnabled,
@@ -245,7 +245,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   // Flag on, the time range is per user: an editor always gets the time filters, a reader only when viewers may edit
   // them. As for the variables, a user without them only ever sees the base range.
   const showTimeFilters = isVariablesEnabled && !noToolbar
-    && (userCanEdit || config.allowViewersToEditTimeFilters === true);
+    && (userCanEdit || config.allowViewersToEditTimeFilters !== false);
   const timeRange = useDashboardTimeRange(workspace.id, config, {
     ignoreLocalValues: noToolbar || !showTimeFilters,
     defaultOverride: activePreset?.config ?? null,
@@ -522,6 +522,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                 variable={variableToDelete}
                 usedInWidgetIds={usedInWidgetIdsByVariable.get(variableToDelete.id) ?? []}
                 widgets={widgetsArray}
+                presets={presets}
                 onClose={() => setVariableToDelete(undefined)}
               />
             )}

@@ -103,8 +103,6 @@ export interface PublicDashboardCached extends BasicStoreIdentifier {
       endDate?: string | null;
       relativeDate?: string | null;
       refresh_interval?: number | null;
-      // The viewer switch of the dashboard, copied at publication: whether the visitors may change the time range.
-      allowViewersToEditTimeFilters?: boolean;
     };
   };
   user_id: string;

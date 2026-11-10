@@ -19,6 +19,8 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import DashboardField from '../../common/form/DashboardField';
 import DashboardPresetField from '../../common/form/DashboardPresetField';
+import Security from '../../../../utils/Security';
+import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { SettingsOrganization_organization$data } from './__generated__/SettingsOrganization_organization.graphql';
 import SettingsOrganizationHiddenTypesField from './SettingsOrganizationHiddenTypesField';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -275,27 +277,32 @@ const SettingsOrganizationEdition = ({
                   />
                 )}
               />
-              <DashboardField
-                onChange={(name, value) => {
-                  // Another dashboard: its presets are other ones, both keys go in one patch.
-                  if (values.default_dashboard_preset) {
-                    setFieldValue('default_dashboard_preset', null);
-                    editor.fieldPatch({ variables: { id: organization.id, input: [{ key: name, value: value || '' }, { key: 'default_dashboard_preset', value: '' }] } });
-                  } else {
-                    editor.changeField(name, value);
-                  }
-                }}
-                context={context}
-              />
-              <DashboardPresetField
-                dashboardId={values.default_dashboard?.value}
-                value={values.default_dashboard_preset}
-                style={{ marginTop: 20 }}
-                onChange={(value) => {
-                  setFieldValue('default_dashboard_preset', value);
-                  editor.changeField('default_dashboard_preset', value ?? '');
-                }}
-              />
+              {/* The home page of every member: reserved to the administrators of the accesses, the API refuses the others. */}
+              <Security needs={[SETTINGS_SETACCESSES]}>
+                <>
+                  <DashboardField
+                    onChange={(name, value) => {
+                      // Another dashboard: its presets are other ones, both keys go in one patch.
+                      if (values.default_dashboard_preset) {
+                        setFieldValue('default_dashboard_preset', null);
+                        editor.fieldPatch({ variables: { id: organization.id, input: [{ key: name, value: value || '' }, { key: 'default_dashboard_preset', value: '' }] } });
+                      } else {
+                        editor.changeField(name, value);
+                      }
+                    }}
+                    context={context}
+                  />
+                  <DashboardPresetField
+                    dashboardId={values.default_dashboard?.value}
+                    value={values.default_dashboard_preset}
+                    style={{ marginTop: 20 }}
+                    onChange={(value) => {
+                      setFieldValue('default_dashboard_preset', value);
+                      editor.changeField('default_dashboard_preset', value ?? '');
+                    }}
+                  />
+                </>
+              </Security>
               <SettingsOrganizationHiddenTypesField organizationData={organization} />
               <EEField featureLabel="Organization sharing">
                 <GroupField

@@ -3641,6 +3641,7 @@
   "No platform announcement yet": "プラットフォームの発表はまだありません",
   "No playbook available": "プレイブックなし",
   "No potential duplicate entities has been found.": "重複する可能性のあるエンティティは見つかりませんでした。",
+  "Its value will also be removed from {count} preset(s).": "その値は {count} 件のプリセットからも削除されます。",
   "No preset": "プリセットなし",
   "No preset (default values of the dashboard)": "プリセットなし（ダッシュボードのデフォルト値）",
   "No processes running": "実行中のプロセスはありません",

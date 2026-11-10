@@ -3641,6 +3641,7 @@
   "No platform announcement yet": "暂无平台公告",
   "No playbook available": "没有可用的游戏手册",
   "No potential duplicate entities has been found.": "未找到潜在的重复实体",
+  "Its value will also be removed from {count} preset(s).": "其值也将从 {count} 个预设中移除。",
   "No preset": "无预设",
   "No preset (default values of the dashboard)": "无预设（仪表板默认值）",
   "No processes running": "无进程运行",
