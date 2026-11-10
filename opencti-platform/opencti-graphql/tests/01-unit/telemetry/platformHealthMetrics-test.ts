@@ -205,8 +205,9 @@ describe('platformHealthMetrics: dependency outage logging', () => {
   let infoSpy: ReturnType<typeof vi.spyOn>;
   let debugSpy: ReturnType<typeof vi.spyOn>;
 
-  const failureLogs = (spy: ReturnType<typeof vi.spyOn>, message: string) => spy.mock.calls
-    .filter(([logMessage, meta]) => logMessage === message && (meta as any)?.dependency === 'rabbitmq');
+  type LogCall = [message: string, meta?: { dependency?: string; outageDurationMs?: number }];
+  const failureLogs = (spy: ReturnType<typeof vi.spyOn>, message: string) => (spy.mock.calls as LogCall[])
+    .filter(([logMessage, meta]: LogCall) => logMessage === message && meta?.dependency === 'rabbitmq');
 
   beforeEach(() => {
     stopPlatformHealthMonitor();
@@ -268,7 +269,7 @@ describe('platformHealthMetrics: dependency outage logging', () => {
 
     expect(errorSpy).toHaveBeenCalledTimes(1);
     const reminders = failureLogs(warnSpy, '[HEALTH] Dependency still unreachable');
-    expect(reminders.map(([, meta]) => (meta as any).outageDurationMs)).toEqual([300_000, 600_000]);
+    expect(reminders.map(([, meta]: LogCall) => meta?.outageDurationMs)).toEqual([300_000, 600_000]);
   });
 
   it('should log an info with the outage duration when the dependency is reachable again', async () => {
