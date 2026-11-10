@@ -44,9 +44,9 @@ const INGESTION_HEALTH_MANAGER_ENABLED = booleanConf('ingestion_health_manager:e
 const INGESTION_HEALTH_MANAGER_KEY = conf.get('ingestion_health_manager:lock_key') || 'ingestion_health_manager_lock';
 const SCHEDULE_TIME = conf.get('ingestion_health_manager:interval') || 60000; // 1 minute
 
-type IngestionElement = BasicStoreEntity & IngestionHealthFields;
+export type IngestionElement = BasicStoreEntity & IngestionHealthFields;
 
-interface IngestionSource<T extends IngestionElement> {
+export interface IngestionSource<T extends IngestionElement> {
   entityType: string;
   load: (context: AuthContext) => Promise<T[]>;
 }
@@ -69,7 +69,7 @@ const feedOrSyncSource = (entityType: string): IngestionSource<IngestionElement 
   load: (context) => fullEntitiesList(context, INGESTION_HEALTH_MANAGER_USER, [entityType]),
 });
 
-const INGESTION_SOURCES: IngestionSource<IngestionElement>[] = [
+export const INGESTION_SOURCES: IngestionSource<IngestionElement>[] = [
   connectorSource,
   feedOrSyncSource(ENTITY_TYPE_INGESTION_RSS),
   feedOrSyncSource(ENTITY_TYPE_INGESTION_CSV),
