@@ -24,7 +24,9 @@ const MAX_ATTEMPTS = 5;
 const RETRY_DELAY_MS = 2000;
 const RETRYABLE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
 
-const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms); });
+const sleep = (ms: number) => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
 
 // A transient network reset or a 5xx from GitHub must not fail the build: retry
 // those, fail at once on any other HTTP error.
