@@ -40,10 +40,6 @@ PENDING_DIFFERENCES = {"x_opencti_modified_at"}
 
 # Same as PENDING_DIFFERENCES, for one STIX object type only.
 PENDING_DIFFERENCES_BY_STIX_TYPE = {
-    # The embedded author is read with a partial GraphQL fragment by the
-    # legacy export, without `confidence` and `revoked`. The difference shows
-    # once the author type itself is on the backend path.
-    "identity": {"confidence", "revoked"},
     # The legacy export leaks the raw GraphQL key `number_seen`.
     "observed-data": {"number_seen"},
     # SCOs: legacy outputs `external_references`, the backend outputs
@@ -52,6 +48,13 @@ PENDING_DIFFERENCES_BY_STIX_TYPE = {
     "domain-name": {"x_opencti_external_references"},
     "ipv4-addr": {"x_opencti_external_references"},
 }
+
+# Keys the legacy export leaves out of a partially read object. They are only
+# ignored when the legacy object does not have them, so they stay enforced on
+# a fully read object.
+# - identity: the embedded author is read with a partial GraphQL fragment,
+#   without `confidence` and `revoked`.
+PARTIAL_LEGACY_KEYS_BY_STIX_TYPE = {"identity": {"confidence", "revoked"}}
 
 # Not STIX core objects: they are not exported on their own.
 NOT_EXPORTED_CASES = {
@@ -128,10 +131,13 @@ def _differences(legacy_bundle, stix_2_0_bundle):
     for object_id in legacy_objects.keys() & stix_2_0_objects.keys():
         legacy_object = _normalized(legacy_objects[object_id])
         stix_2_0_object = _normalized(stix_2_0_objects[object_id])
+        stix_type = object_id.split("--")[0]
+        partial_legacy_keys = PARTIAL_LEGACY_KEYS_BY_STIX_TYPE.get(stix_type, set())
         ignored = (
             ACCEPTED_DIFFERENCES
             | PENDING_DIFFERENCES
-            | PENDING_DIFFERENCES_BY_STIX_TYPE.get(object_id.split("--")[0], set())
+            | PENDING_DIFFERENCES_BY_STIX_TYPE.get(stix_type, set())
+            | (partial_legacy_keys - legacy_object.keys())
         )
         keys = {
             key

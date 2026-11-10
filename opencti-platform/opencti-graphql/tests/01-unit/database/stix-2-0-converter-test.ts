@@ -220,6 +220,11 @@ describe('Stix 2.0 opencti converter', () => {
       { type: 'StixFile', hashes: [{ algorithm: 'SHA-256', hash: sha256 }] },
     ]);
   });
+  it('should convert Indicator observable values with the legacy fields only', async () => {
+    const instance = { ...INDICATOR_INSTANCE, pattern: "[file:name = 'payload.exe']" };
+    const result = convertIndicatorToStix_2_0(instance);
+    expect(JSON.parse(JSON.stringify(result.x_opencti_observable_values))).toStrictEqual([{ type: 'StixFile' }]);
+  });
   it('should convert Infrastructure', async () => {
     const result = convertInfrastructureToStix(INFRASTRUCTURE_INSTANCE);
     expect(result).toEqual(EXPECTED_INFRASTRUCTURE);

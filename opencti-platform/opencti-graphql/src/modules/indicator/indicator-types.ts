@@ -11,6 +11,7 @@ export const ENTITY_TYPE_INDICATOR = 'Indicator';
 interface ObservableValues {
   type: string;
   value: string;
+  hashes?: Array<{ algorithm: string; hash: string }>;
 }
 
 // Indicator Specific Properties
