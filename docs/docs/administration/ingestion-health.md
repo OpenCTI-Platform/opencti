@@ -30,26 +30,25 @@ With ingestion health, you:
 |---|---|
 | **Critical** | The ingestion does not work: at least one runtime check fails with a blocking severity. |
 | **Degraded** | The ingestion works, or may work, but something needs attention: at least one check fails with an advisory severity (every configuration check is advisory). |
-| **Healthy** | No check fails, and the ingestion proved it is alive: a connector that pings continuously sent a heartbeat in the last 5 minutes. |
-| **Unknown** | No check fails, but nothing proves the ingestion is alive: feeds, synchronizations and connectors that do not ping continuously (see [Heartbeat](#how-the-checks-work-details)). |
 
 ![Critical and degraded alerts above the deployed integrations list](assets/ingestion-health-deployed-banners.png)
 
 The status follows these rules, in this order:
 
 1. any **blocking runtime** failure makes the ingestion **critical**;
-2. otherwise, any **advisory** failure makes it **degraded**;
-3. otherwise, it is **healthy** when a live heartbeat proves it, and **unknown** when nothing does.
+2. otherwise, any **advisory** failure makes it **degraded**.
+
+When no check fails, the ingestion shows no chip.
 
 !!! warning "The status is an indication, not a certainty"
 
     A critical or degraded status, or the absence of one, only reflects the checks OpenCTI runs today. It is not 100% accurate: an ingestion can fail in a way no check detects yet, and show no chip. More checks will be added progressively.
 
-    In particular, the errors raised by connectors are not monitored yet: a connector failing on its source (unreachable API, refused credentials, invalid data) does not turn critical or degraded as long as it keeps pinging. See [Errors reported by the connector](#how-the-checks-work-details).
+    In particular, the failures that connectors encounter on their sources are not monitored yet: a connector failing on its source (unreachable API, refused credentials, invalid data) does not turn critical or degraded as long as it keeps pinging, unless it explicitly reports that error with its ping. See [Errors reported by the connector](#how-the-checks-work-details).
 
-!!! note "Healthy and unknown look the same in the interface"
+!!! note "No chip does not prove that the ingestion works"
 
-    The interface does not distinguish a healthy ingestion from an unknown one: neither shows a chip, and the health filter only offers critical and degraded. No chip only means that no check fails. It does not prove that the ingestion works: even a healthy status is not a certain proof, since a heartbeat only shows that the process of the connector is alive, not that it ingests data correctly.
+    No chip means that no check fails, or that the ingestion has no status at all: not evaluated yet, or stopped (see [When there is no status](#when-there-is-no-status)). It does not prove that the ingestion works: a heartbeat, for instance, only shows that the process of the connector is alive, not that it ingests data correctly.
 
 !!! note "Why every configuration check is advisory"
 
@@ -102,7 +101,6 @@ The following rules explain why a check fails, or does not for complex cases.
 
 - Only the connectors that ping continuously are checked for a heartbeat: the ones that report their information to the platform and do not run and terminate. A connector that runs once and exits pings only at the start and at the end of a run: it would be missing its heartbeat between two runs.
 - The heartbeat is considered alive for 5 minutes, the same window as the active or inactive state of the connector.
-- A healthy status needs this proof of life: this is why feeds, synchronizations and connectors that do not ping continuously are **unknown**, never **healthy**, when no check fails.
 
 **Feed and synchronization executions**
 
@@ -113,7 +111,7 @@ The following rules explain why a check fails, or does not for complex cases.
 
 **Errors reported by the connector**
 
-- The errors raised by connectors are not monitored yet: these two checks only see the errors that a connector explicitly reports to the platform with its ping, which connectors do not do yet.
+- Failures that connectors encounter on their sources are not monitored yet: a connector failing on its source (unreachable API, refused credentials, invalid data) does not turn critical or degraded as long as it keeps pinging, unless it explicitly reports that error to the platform with its ping.
 - A connector can report errors with each ping, each one with a code, a message and a criticity. Each reported error is a failure of its own: a connector reporting two errors shows two failures.
 - The criticity sets the severity: a low criticity gives **Connector reported an error** (advisory); a high criticity gives **Connector reported a critical error** (blocking).
 - A reported error expires 10 minutes after the last ping that reported it: a connector that stops reporting it, or stops pinging, clears it.
@@ -180,7 +178,7 @@ The rules:
 
 - **The status must stay stable.** An event is only sent once the status has stayed unchanged for the notification delay (5 minutes by default): an ingestion flapping between two statuses does not flood you with events.
 - **One event per change.** While the status does not change, no other event is sent.
-- **A recovery needs a failure first.** An ingestion is only reported as recovered when its last event reported it critical or degraded. A new ingestion that is healthy from the start sends nothing.
+- **A recovery needs a failure first.** An ingestion is only reported as recovered when its last event reported it critical or degraded. A new ingestion with no failing check from the start sends nothing.
 - **A stopped ingestion sends nothing.** Stopping an ingestion removes its health without event.
 - **A lost event is retried.** When the event cannot be logged, it is sent again at the next evaluation.
 
