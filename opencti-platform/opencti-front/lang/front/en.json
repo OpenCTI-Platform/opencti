@@ -5406,8 +5406,6 @@
   "this blogpost": "this blogpost",
   "This breakdown cannot be computed with the settings of this widget.": "This breakdown cannot be computed with the settings of this widget.",
   "This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.": "This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.",
-  "This breakdown field is not available for the dataset of this widget.": "This breakdown field is not available for the dataset of this widget.",
-  "This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.": "This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.",
   "This breakdown has too many points for the selected period.": "This breakdown has too many points for the selected period.",
   "This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.": "This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.",
   "This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.": "This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.",

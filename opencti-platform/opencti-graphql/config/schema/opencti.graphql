@@ -14504,6 +14504,16 @@ type Query {
     filters: FilterGroup
     search: String
   ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE]) @ff(flags: ["TIME_SERIES_BREAKDOWN"])
+  """
+  Keys of the fields a time series widget of the perspective can be broken down by, for the types its dataset is
+  restricted to (at most 1,000, duplicates ignored), as the widget editor lists them. Without types, the ones the
+  breakdown queries default to: Stix-Core-Object, stix-relationship. Each field listed is accepted by the breakdown
+  query of the perspective for these types. The type itself (entity_type, relationship_type), which these queries
+  accept whatever the types, is only listed when it makes several series: several types, an abstract type, or none.
+  The relationships perspective lists no field when a type is not a relationship, as its breakdown refuses such a
+  dataset. The audits perspective lists the fields of the logs whatever the types.
+  """
+  timeSeriesBreakdownFields(perspective: WidgetPerspective!, types: [String!]): [String!]! @auth @ff(flags: ["TIME_SERIES_BREAKDOWN"])
   stixCoreObjectsNumber(
     dateAttribute: String
     types: [String]

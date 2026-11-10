@@ -25832,6 +25832,16 @@ export type Query = {
   threatActors?: Maybe<ThreatActorConnection>;
   threatActorsGroup?: Maybe<ThreatActorGroupConnection>;
   threatActorsIndividuals?: Maybe<ThreatActorIndividualConnection>;
+  /**
+   * Keys of the fields a time series widget of the perspective can be broken down by, for the types its dataset is
+   * restricted to (at most 1,000, duplicates ignored), as the widget editor lists them. Without types, the ones the
+   * breakdown queries default to: Stix-Core-Object, stix-relationship. Each field listed is accepted by the breakdown
+   * query of the perspective for these types. The type itself (entity_type, relationship_type), which these queries
+   * accept whatever the types, is only listed when it makes several series: several types, an abstract type, or none.
+   * The relationships perspective lists no field when a type is not a relationship, as its breakdown refuses such a
+   * dataset. The audits perspective lists the fields of the logs whatever the types.
+   */
+  timeSeriesBreakdownFields: Array<Scalars['String']['output']>;
   tool?: Maybe<Tool>;
   tools?: Maybe<ToolConnection>;
   triggerActivity?: Maybe<Trigger>;
@@ -29039,6 +29049,12 @@ export type QueryThreatActorsIndividualsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryTimeSeriesBreakdownFieldsArgs = {
+  perspective: WidgetPerspective;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
 };
 
 
@@ -52460,6 +52476,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   threatActors?: Resolver<Maybe<ResolversTypes['ThreatActorConnection']>, ParentType, ContextType, Partial<QueryThreatActorsArgs>>;
   threatActorsGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroupConnection']>, ParentType, ContextType, Partial<QueryThreatActorsGroupArgs>>;
   threatActorsIndividuals?: Resolver<Maybe<ResolversTypes['ThreatActorIndividualConnection']>, ParentType, ContextType, Partial<QueryThreatActorsIndividualsArgs>>;
+  timeSeriesBreakdownFields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryTimeSeriesBreakdownFieldsArgs, 'perspective'>>;
   tool?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, Partial<QueryToolArgs>>;
   tools?: Resolver<Maybe<ResolversTypes['ToolConnection']>, ParentType, ContextType, Partial<QueryToolsArgs>>;
   triggerActivity?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<QueryTriggerActivityArgs, 'id'>>;

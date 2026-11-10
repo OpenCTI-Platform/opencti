@@ -195,6 +195,6 @@ export const useWidgetConfigContext = () => {
 
 /**
  * Breakdown of the edited widget: whether its controls show, the fields offered, whether the saved filter
- * of its dataset is read, and the field the widget keeps on submit.
+ * of its dataset and its fields are read, and the field the widget keeps on submit.
  */
 export const useWidgetBreakdownState = () => useWidgetConfigContext().breakdown;

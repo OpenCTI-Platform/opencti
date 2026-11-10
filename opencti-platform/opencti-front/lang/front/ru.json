@@ -5406,8 +5406,6 @@
   "this blogpost": "этот пост в блоге",
   "This breakdown cannot be computed with the settings of this widget.": "Эту разбивку невозможно вычислить с настройками этого виджета.",
   "This breakdown cannot be computed with the settings of this widget. Edit the widget to change them.": "Эту разбивку невозможно вычислить с настройками этого виджета. Измените виджет, чтобы поменять их.",
-  "This breakdown field is not available for the dataset of this widget.": "Это поле разбивки недоступно для набора данных этого виджета.",
-  "This breakdown field is not available for the dataset of this widget. Edit the widget to choose another field.": "Это поле разбивки недоступно для набора данных этого виджета. Измените виджет, чтобы выбрать другое поле.",
   "This breakdown has too many points for the selected period.": "В этой разбивке слишком много точек для выбранного периода.",
   "This breakdown has too many points for the selected period. Shorten the period, choose a coarser interval or reduce the number of series.": "В этой разбивке слишком много точек для выбранного периода. Сократите период, выберите более крупный интервал или уменьшите количество рядов.",
   "This change may have an impact on users and connectors who WILL NO LONGER BE ABLE TO ACCESS KNOWLEDGE if they do not belong to the main platform organization.": "Это изменение может повлиять на пользователей и коннекторы, которые больше не смогут получить доступ к знаниям, если они не принадлежат к основной организации платформы.",
