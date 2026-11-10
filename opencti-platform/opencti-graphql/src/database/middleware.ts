@@ -261,7 +261,7 @@ import {
   type VocabAttribute,
 } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { type EditInput, EditOperation, type FilterGroup, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
+import { type EditInput, EditOperation, type FilterGroup, FilterMode, FilterOperator, Version, type Vulnerability, WidgetPerspective } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION, type StoreEntityOrganization } from '../modules/organization/organization-types';
 import {
@@ -978,31 +978,45 @@ const resolveSchemaBreakdownField = (types: string[], field: string): BreakdownF
   }
   return null;
 };
+// Fields a breakdown of entities or relationships accepts besides the ones of the schema, for each perspective. The
+// rule that accepts or refuses a field (resolveBreakdownField, resolveRelationshipBreakdownField) and the fields list of
+// the editor (timeSeriesBreakdownFields) both read them: adding a field here is enough.
+type NonSchemaBreakdownFields = {
+  fields: ReadonlyMap<string, BreakdownField>;
+  // The one that is the type of the elements: accepted whatever the types, only listed when it makes several series
+  typeField: string;
+};
+// Entities: the entity type
+const ENTITIES_NON_SCHEMA_BREAKDOWN_FIELDS: NonSchemaBreakdownFields = {
+  fields: new Map<string, BreakdownField>([
+    ['entity_type', { aggregationField: 'entity_type', resolveEntities: false, resolveLabel: resolveEntityTypeLabel }],
+  ]),
+  typeField: 'entity_type',
+};
+// Relationships: the relationship type, and the type of the source or of the target.
+// A relationship has a single source and a single target: each falls in one bucket, among a bounded number of types.
+// Their type is already shown for every relationship the user can read, even when the element itself is restricted.
+// The source and the target themselves (fromId, toId) have an unbounded cardinality and are refused, like objects.
+const RELATIONSHIPS_NON_SCHEMA_BREAKDOWN_FIELDS: NonSchemaBreakdownFields = {
+  fields: new Map<string, BreakdownField>([
+    // Named after their registered type by the engine
+    [RELATION_FROM_TYPES_FILTER, { aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'from' }],
+    [RELATION_TO_TYPES_FILTER, { aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'to' }],
+    [RELATION_TYPE_FILTER, { aggregationField: 'relationship_type', resolveEntities: false }],
+  ]),
+  typeField: RELATION_TYPE_FILTER,
+};
 // Entities: the schema fields, and the entity type
 export const resolveBreakdownField = (types: string[], field: string): BreakdownField => {
-  if (field === 'entity_type') {
-    return { aggregationField: field, resolveEntities: false, resolveLabel: resolveEntityTypeLabel };
-  }
-  const breakdownField = resolveSchemaBreakdownField(types, field);
+  const breakdownField = ENTITIES_NON_SCHEMA_BREAKDOWN_FIELDS.fields.get(field) ?? resolveSchemaBreakdownField(types, field);
   if (!breakdownField) {
     throw FunctionalError('Time series breakdown does not support this field for these entity types', { reason: BREAKDOWN_REFUSAL_REASONS.UNSUPPORTED_FIELD, field, types });
   }
   return breakdownField;
 };
-// Relationships: the schema fields, the relationship type, and the type of the source or of the target.
-// A relationship has a single source and a single target: each falls in one bucket, among a bounded number of types.
-// Their type is already shown for every relationship the user can read, even when the element itself is restricted.
-// The source and the target themselves (fromId, toId) have an unbounded cardinality and are refused, like objects.
+// Relationships: the schema fields, the relationship type, and the type of the source or of the target
 export const resolveRelationshipBreakdownField = (types: string[], field: string): BreakdownField => {
-  if (field === RELATION_TYPE_FILTER) {
-    return { aggregationField: 'relationship_type', resolveEntities: false };
-  }
-  if (field === RELATION_FROM_TYPES_FILTER || field === RELATION_TO_TYPES_FILTER) {
-    const connectionSide = field === RELATION_FROM_TYPES_FILTER ? 'from' : 'to';
-    // Named after their registered type by the engine
-    return { aggregationField: 'connections.types', resolveEntities: false, connectionSide };
-  }
-  const breakdownField = resolveSchemaBreakdownField(types, field);
+  const breakdownField = RELATIONSHIPS_NON_SCHEMA_BREAKDOWN_FIELDS.fields.get(field) ?? resolveSchemaBreakdownField(types, field);
   if (!breakdownField) {
     throw FunctionalError('Time series breakdown does not support this field for these relationship types', { reason: BREAKDOWN_REFUSAL_REASONS.UNSUPPORTED_FIELD, field, types });
   }
@@ -1031,32 +1045,46 @@ const getSchemaBreakdownFields = (types: string[]): string[] => {
   const candidates = R.uniq([...BREAKDOWN_ALLOWED_REFS, ...types.flatMap((type) => schemaAttributesDefinition.getAttributeNames(type))]);
   return candidates.filter((field) => resolveSchemaBreakdownField(types, field) !== null);
 };
-// The type itself is accepted whatever the types, but only makes several series for several types, or for an
-// abstract one, which holds several concrete types
-const isBreakdownTypeFieldOffered = (types: string[]) => types.length !== 1 || isAbstract(types[0]) || schemaTypesDefinition.hasChildren(types[0]);
-type BreakdownFieldsPerspective = 'entities' | 'relationships' | 'audits';
+// Whether breaking the types down by their own type makes several series: several types, or an abstract one, which
+// holds several concrete types. The breakdown accepts the type whatever the types, a single series included.
+const isTypeBreakdownMeaningful = (types: string[]) => types.length !== 1 || isAbstract(types[0]) || schemaTypesDefinition.hasChildren(types[0]);
+// Fields a breakdown of the perspective accepts for the types, the type itself only when it makes several series
+const listBreakdownFields = (nonSchemaFields: NonSchemaBreakdownFields, types: string[]): string[] => {
+  const isTypeListed = isTypeBreakdownMeaningful(types);
+  const otherFields = Array.from(nonSchemaFields.fields.keys()).filter((field) => isTypeListed || field !== nonSchemaFields.typeField);
+  return [...getSchemaBreakdownFields(types), ...otherFields];
+};
+// The types the breakdown queries read, or the abstract type they default to without any
+const typesOrDefault = (types: string[], defaultType: string) => (types.length > 0 ? types : [defaultType]);
+// Types a single request of the fields can name: far more than the schema registers
+export const TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES = 1000;
 /**
- * Fields a widget can be broken down by, for its perspective and the types its dataset is restricted to: the
- * same types the breakdown queries default to without any (Stix-Core-Object, stix-relationship). Read by the
- * widget editor, so that it offers exactly the fields the breakdown queries accept.
+ * Keys of the fields a widget of the perspective can be broken down by, for the types its dataset is restricted to,
+ * as the widget editor lists them. The types are deduplicated, and read as the breakdown queries read them: the
+ * entities keep the entity types and default to Stix-Core-Object (extractStixCoreObjectTypesFromArgs), the
+ * relationships default to stix-relationship and list no field for a type that is not a relationship, which their
+ * breakdown refuses (buildRelationshipTypes). The logs list their fields whatever the types.
+ * Each field listed is accepted by the breakdown of the perspective for these types. The type itself (entity_type,
+ * relationship_type), accepted whatever the types, is only listed when it makes several series.
  */
-export const timeSeriesBreakdownFields = (perspective: BreakdownFieldsPerspective, types?: string[] | null): string[] => {
-  if (perspective === 'audits') {
+export const timeSeriesBreakdownFields = (perspective: WidgetPerspective, types?: string[] | null): string[] => {
+  // Deduplicate and bound the requested types, before any work
+  const requestedTypes = Array.from(new Set(types ?? []));
+  if (requestedTypes.length > TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES) {
+    throw FunctionalError('Too many types to list the time series breakdown fields of', { max: TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES, typesCount: requestedTypes.length });
+  }
+  if (perspective === WidgetPerspective.Audits) {
     return HISTORY_BREAKDOWN_ALLOWED_FIELDS;
   }
-  if (perspective === 'relationships') {
-    // The relationships breakdown refuses a dataset holding a type that is not a relationship: nothing to offer
-    if ((types ?? []).some((type) => !isStixRelationship(type))) {
+  if (perspective === WidgetPerspective.Relationships) {
+    // The relationships breakdown refuses a dataset holding a type that is not a relationship: nothing to list
+    if (requestedTypes.some((type) => !isStixRelationship(type))) {
       return [];
     }
-    const relationshipTypes = types && types.length > 0 ? types : [ABSTRACT_STIX_RELATIONSHIP];
-    const fields = [...getSchemaBreakdownFields(relationshipTypes), RELATION_FROM_TYPES_FILTER, RELATION_TO_TYPES_FILTER];
-    return isBreakdownTypeFieldOffered(relationshipTypes) ? [...fields, RELATION_TYPE_FILTER] : fields;
+    return listBreakdownFields(RELATIONSHIPS_NON_SCHEMA_BREAKDOWN_FIELDS, typesOrDefault(requestedTypes, ABSTRACT_STIX_RELATIONSHIP));
   }
-  const requestedTypes = (types ?? []).filter((type) => isStixCoreObject(type));
-  const entityTypes = requestedTypes.length > 0 ? requestedTypes : [ABSTRACT_STIX_CORE_OBJECT];
-  const fields = getSchemaBreakdownFields(entityTypes);
-  return isBreakdownTypeFieldOffered(entityTypes) ? [...fields, 'entity_type'] : fields;
+  const entityTypes = typesOrDefault(requestedTypes.filter((type) => isStixCoreObject(type)), ABSTRACT_STIX_CORE_OBJECT);
+  return listBreakdownFields(ENTITIES_NON_SCHEMA_BREAKDOWN_FIELDS, entityTypes);
 };
 const HISTORY_TYPES = [ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY];
 export const resolveHistoryBreakdownField = (field: string): BreakdownField => {

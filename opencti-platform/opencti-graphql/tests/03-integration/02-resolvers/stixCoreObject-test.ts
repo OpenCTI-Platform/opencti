@@ -446,7 +446,7 @@ describe('stixCoreObjectsTimeSeriesBreakdown', () => {
 
 describe('timeSeriesBreakdownFields', () => {
   const FIELDS_QUERY = gql`
-    query TimeSeriesBreakdownFields($perspective: TimeSeriesBreakdownPerspective!, $types: [String!]) {
+    query TimeSeriesBreakdownFields($perspective: WidgetPerspective!, $types: [String!]) {
       timeSeriesBreakdownFields(perspective: $perspective, types: $types)
     }
   `;
