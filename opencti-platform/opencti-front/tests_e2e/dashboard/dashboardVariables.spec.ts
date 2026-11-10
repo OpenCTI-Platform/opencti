@@ -9,7 +9,7 @@ import AccessRestrictionPageModel from '../model/AccessRestriction.pageModel';
 import LoginFormPageModel from '../model/form/loginForm.pageModel';
 import { addSector, deleteSector } from '../dataForTesting/sector.data';
 import { addReport, deleteReport } from '../dataForTesting/report.data';
-import { addDashboard, deleteWorkspace, upsertEntityVariable } from '../dataForTesting/workspace.data';
+import { addDashboard, deleteWorkspace, setDashboardViewerPermissions, upsertEntityVariable } from '../dataForTesting/workspace.data';
 import { REGISTER_BANNER_DISMISSED_KEY } from '../../src/utils/bannerConstants';
 
 // The tests below share the sectors and reports seeded in beforeAll (deleted in afterAll), so they run
@@ -29,7 +29,8 @@ test.describe.configure({ mode: 'serial' });
  * Reload the dashboard: the value is back (stored in the browser).
  * Delete the variable from the popover of its chip: the widget has no data anymore.
  *
- * Viewer (second user, 'can view' on the dashboard): the variables bar is not displayed.
+ * Viewer (second user, 'can view' on the dashboard): the variables bar is displayed and the value can be changed,
+ * but nothing can be created or edited; once the editor closes the viewer switch, the bar is not displayed anymore.
  */
 test.describe('Dashboard variables', { tag: ['@ce'] }, () => {
   const suffix = uuid();
@@ -176,9 +177,10 @@ test.describe('Dashboard variables', { tag: ['@ce'] }, () => {
   /**
    * The dashboard and its variable are created through the API, so this test does not use the dashboard of the
    * journey above (it still runs after it, serial mode, and is skipped if the journey fails).
-   * Default setting is kept: viewers are not allowed to change the variables, hence no bar for them.
+   * The viewer switches are open unless the editor closes them: the viewer sees the bar and may change the value
+   * for themselves, without creating or editing anything. Closing `allowViewersToChangeVariables` removes the bar.
    */
-  test('Variables bar is hidden for a viewer', async ({ page, request, secondUserPage }) => {
+  test('Variables bar follows the viewer switch', async ({ page, request, secondUserPage }) => {
     const adminDashboards = new DashboardPage(page);
     const adminDashboardDetails = new DashboardDetailsPage(page);
     const adminVariables = new DashboardVariablesPageModel(page);
@@ -242,9 +244,26 @@ test.describe('Dashboard variables', { tag: ['@ce'] }, () => {
       await userDashboards.getItemFromList(viewerDashboardName).click();
       await expect(userDashboardDetails.getDashboardDetailsPage()).toBeVisible();
       await expect(userDashboardDetails.getTitle(viewerDashboardName)).toBeVisible();
-      // Read only: nothing to create or edit...
+      // Read only: nothing to create...
       await expect(new DashboardWidgetsPageModel(secondUserPage).getCreateWidgetButton()).toBeHidden();
-      // ...and no variables bar, neither its chips nor its creation button.
+      await expect(userVariables.getBar()).toBeVisible();
+      await expect(userVariables.getCreateButton()).toBeHidden();
+      // ...but the switch is open by default: the chip is there, and its popover offers the value, not the edition.
+      await userVariables.getChipButton(variableName, sectors[0].name).click();
+      await expect(secondUserPage.getByRole('combobox', { name: 'Value' })).toBeVisible();
+      await expect(secondUserPage.getByTestId('dashboard-variable-edit')).toBeHidden();
+      await expect(secondUserPage.getByTestId('dashboard-variable-delete')).toBeHidden();
+      await secondUserPage.keyboard.press('Escape');
+
+      // ---------
+      // endregion
+
+      // region The editor closes the switch: the bar disappears for the viewer
+      // ----------------------------------------------------------------------
+
+      await setDashboardViewerPermissions(request, dashboardId, { allowViewersToChangeVariables: false });
+      await secondUserPage.reload();
+      await expect(userDashboardDetails.getTitle(viewerDashboardName)).toBeVisible();
       await expect(userVariables.getBar()).toBeHidden();
       await expect(userVariables.getCreateButton()).toBeHidden();
       await expect(userVariables.getChip(variableName)).toBeHidden();
