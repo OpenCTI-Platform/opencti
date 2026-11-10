@@ -14513,7 +14513,7 @@ type Query {
   The relationships perspective lists no field when a type is not a relationship, as its breakdown refuses such a
   dataset. The audits perspective lists the fields of the logs whatever the types.
   """
-  timeSeriesBreakdownFields(perspective: WidgetPerspective!, types: [String!]): [String!]! @auth @ff(flags: ["TIME_SERIES_BREAKDOWN"])
+  timeSeriesBreakdownFields(perspective: WidgetPerspective!, types: [String!]): [String!]! @auth
   stixCoreObjectsNumber(
     dateAttribute: String
     types: [String]
