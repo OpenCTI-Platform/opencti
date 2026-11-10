@@ -75,7 +75,8 @@ const readConfig = (): SequencerConfig => {
     identityMapSize: Number(conf.get('app:ingestion_sequencer:identity_map_size') ?? 200000),
     identityMapTtlS: Number(conf.get('app:ingestion_sequencer:identity_map_ttl_s') ?? 600),
     coalesceUpdateEvents: booleanConf('app:ingestion_sequencer:coalesce_update_events', true),
-    pipelineEvents: booleanConf('app:ingestion_sequencer:pipeline_events', false),
+    // Default on since 2026-11-10: -28 s of events phase, +3% throughput on mix285k (task 0040)
+    pipelineEvents: booleanConf('app:ingestion_sequencer:pipeline_events', true),
     // P3 (plan 0009 part 9): push whole bundles to the worker (bundle_inline marker), which
     // imports them in place by nb_deps levels; batch depth then comes from the payload.
     bundleIntake: booleanConf('app:ingestion_sequencer:bundle_intake', false),
@@ -83,7 +84,8 @@ const readConfig = (): SequencerConfig => {
     // prefetch window (plan 0009 §8.8); default = v2 (hard endpoint deps only).
     parkSoftRefs: booleanConf('app:ingestion_sequencer:park_soft_refs', false),
     stripReconcile: booleanConf('app:ingestion_sequencer:strip_reconcile', false),
-    resolveAhead: booleanConf('app:ingestion_sequencer:resolve_ahead', false),
+    // Default on since 2026-11-10: +4.9% on mix285k once the loop's CPU was cut (falsified in 2026-09 with workers)
+    resolveAhead: booleanConf('app:ingestion_sequencer:resolve_ahead', true),
     // rung 5 (2026-09-21): concurrent apply of independent groups within a batch, level by
     // level on the plan's dependsOn edges; 1 = the sequential path measured through the study.
     // Default 8 since 2026-09-25 (the operating point of every run since 2026-09-21; 16 stalled
