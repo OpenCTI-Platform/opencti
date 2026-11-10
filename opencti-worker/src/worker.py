@@ -234,7 +234,6 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             self.worker_logger.info("Included queues", {"included_queues": self.included_queues})
         if self.excluded_queues:
             self.worker_logger.info("Excluded queues", {"excluded_queues": self.excluded_queues})
-
         log_tls_verification_disabled(self.worker_logger, config)
 
     def build_pika_parameters(
