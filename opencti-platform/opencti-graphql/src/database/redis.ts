@@ -356,9 +356,32 @@ export const notify = async (topic: string, instance: any, user: AuthUser) => {
   return instance;
 };
 
+// Ref input names are frozen once read (schemaRelationsRefDefinition refuses any registration after
+// a first usage), so the set is built once instead of on every notify
+let refInputNamesSet: Set<string> | undefined;
+const refInputNames = () => {
+  if (!refInputNamesSet) {
+    refInputNamesSet = new Set([INPUT_OBJECTS, ...schemaRelationsRefDefinition.getAllInputNames()]);
+  }
+  return refInputNamesSet;
+};
+// Same object as Object.fromEntries(Object.entries(instance).filter(...)): own enumerable string keys in
+// the same order, defined as own data properties (a '__proto__' key stays a plain property)
 export const removeResolvedRefs = (instance: any) => {
-  const refInputNames = new Set([INPUT_OBJECTS, ...schemaRelationsRefDefinition.getAllInputNames()]);
-  return Object.fromEntries(Object.entries(instance).filter(([k]) => !refInputNames.has(k)));
+  const names = refInputNames();
+  const data: Record<string, any> = {};
+  const keys = Object.keys(instance);
+  for (let index = 0; index < keys.length; index += 1) {
+    const key = keys[index];
+    if (!names.has(key)) {
+      if (key === '__proto__') {
+        Object.defineProperty(data, key, { value: instance[key], writable: true, enumerable: true, configurable: true });
+      } else {
+        data[key] = instance[key];
+      }
+    }
+  }
+  return data;
 };
 
 // region user context (clientContext)

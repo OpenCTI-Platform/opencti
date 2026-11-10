@@ -176,7 +176,7 @@ import { lockResources } from '../lock/master-lock';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_DELETE_LINKED, DRAFT_OPERATION_UPDATE_LINKED } from '../modules/draftWorkspace/draftOperations';
 import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
 import { asyncMap } from '../utils/data-processing';
-import { doYield } from '../utils/eventloop-utils';
+import { doYield, shouldYield, yieldNow } from '../utils/eventloop-utils';
 import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -4789,14 +4789,18 @@ export const prepareElementForIndexing = async (element: Record<string, any>) =>
   const thing: Record<string, any> = {};
   const keyItems = Object.keys(element);
   for (let index = 0; index < keyItems.length; index += 1) {
-    await doYield();
+    // shouldYield then await only when needed: an awaited doYield() per key and per array element
+    // was the first allocator of the write path (one promise each)
+    if (shouldYield()) await yieldNow();
     const key = keyItems[index];
     const value = element[key];
     if (Array.isArray(value)) { // Array of Date, objects, string or number
       const preparedArray = [];
+      const keyIsDate = isDateAttribute(key);
       let yieldCount = 0;
       for (let valueIndex = 0; valueIndex < value.length; valueIndex += 1) {
-        if (await doYield()) {
+        if (shouldYield()) {
+          await yieldNow();
           // If we extend the preparation 5 times, log a warn
           // It will help to understand what kind of key have so many elements
           if (yieldCount === 5) {
@@ -4806,11 +4810,11 @@ export const prepareElementForIndexing = async (element: Record<string, any>) =>
         }
         const valueElement = value[valueIndex];
         if (valueElement) {
-          if (isDateAttribute(key)) { // Date is an object but natively supported
+          if (keyIsDate) { // Date is an object but natively supported
             preparedArray.push(valueElement);
           } else if (R.is(String, valueElement)) { // For string, trim by default
             preparedArray.push(valueElement.trim());
-          } else if (R.is(Object, valueElement) && Object.keys(value).length > 0) { // For complex object, prepare inner elements
+          } else if (R.is(Object, valueElement)) { // For complex object, prepare inner elements
             const complexPrepared = await prepareElementForIndexing(valueElement);
             preparedArray.push(complexPrepared);
           } else {
