@@ -8,8 +8,10 @@ export const allMenuEntries: MenuEntry[] = Object.values(
 
 /**
  * Capabilities opening a page (or a section): the union of the `requiredCapabilities` of the entries under `path`.
- * Single source for route guards, so they cannot drift from the menus and the search. An unknown path yields `[]`,
- * which `useGranted` denies.
+ * Single source for route guards, so they cannot drift from the menus and the search. Any ONE of them is enough.
+ *
+ * Fails closed: a path without entries (typo, page not declared yet) yields `[]`, and `useGranted` denies an empty
+ * list for everyone, except BYPASS users who pass every check before the list is even read.
  */
 export const capabilitiesOf = (path: string): string[] => [...new Set(
   allMenuEntries

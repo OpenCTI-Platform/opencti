@@ -1,8 +1,10 @@
 import React, { MutableRefObject, useEffect } from 'react';
 import { Box, List, ListItemButton, ListItemIcon, ListItemText, Popper } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { Link } from 'react-router';
 import { SearchOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
-import useNavSearch, { NavSearchResult } from '../nav/useNavSearch';
+import useNavSearch, { NavSearchResult, PLATFORM_SEARCH_PAGE_MAX_RESULTS } from '../nav/useNavSearch';
 import NavSearchResultContent from './NavSearchResultContent';
 
 export const NAV_SEARCH_LISTBOX_ID = 'nav-search-suggestions';
@@ -15,15 +17,17 @@ interface NavSearchSuggestionsProps {
   activeIndex: number;
   /** Written with the displayed pages, so the parent's key handler can resolve the highlighted row. */
   itemsRef: MutableRefObject<NavSearchResult[]>;
-  onSelectPage: (path: string) => void;
+  /** A page row was clicked: only closes the dropdown, the row is a link that navigates by itself. */
+  onPageClick: () => void;
   onSearch: () => void;
 }
 
 // FDS-WORKAROUND #78: MUI Popper, no library field pairs a free-text search with a suggestions list — see fds-migration/LIBRARY-FEEDBACK.md #78
 // Mounted only while open: the pages search is not computed for a closed dropdown.
-const NavSearchSuggestions = ({ keyword, anchorEl, activeIndex, itemsRef, onSelectPage, onSearch }: NavSearchSuggestionsProps) => {
+const NavSearchSuggestions = ({ keyword, anchorEl, activeIndex, itemsRef, onPageClick, onSearch }: NavSearchSuggestionsProps) => {
   const { t_i18n } = useFormatter();
-  const pages = useNavSearch(keyword);
+  const theme = useTheme();
+  const pages = useNavSearch(keyword).slice(0, PLATFORM_SEARCH_PAGE_MAX_RESULTS);
 
   useEffect(() => {
     itemsRef.current = pages;
@@ -40,7 +44,7 @@ const NavSearchSuggestions = ({ keyword, anchorEl, activeIndex, itemsRef, onSele
       open
       anchorEl={anchorEl}
       placement="bottom-start"
-      style={{ width: anchorEl?.clientWidth, zIndex: 1300 }}
+      style={{ width: anchorEl?.clientWidth, zIndex: theme.zIndex.modal }}
     >
       <Box
         // Keeps the focus in the input: a click on a row must not blur it first.
@@ -56,10 +60,11 @@ const NavSearchSuggestions = ({ keyword, anchorEl, activeIndex, itemsRef, onSele
           boxShadow: 8,
         }}
       >
-        <List id={NAV_SEARCH_LISTBOX_ID} role="listbox" disablePadding>
+        <List id={NAV_SEARCH_LISTBOX_ID} role="listbox" aria-label={t_i18n('Suggestions')} disablePadding>
           <ListItemButton
             id={navSearchOptionId(0)}
             role="option"
+            tabIndex={-1}
             aria-selected={activeIndex === 0}
             selected={activeIndex === 0}
             onClick={onSearch}
@@ -70,13 +75,17 @@ const NavSearchSuggestions = ({ keyword, anchorEl, activeIndex, itemsRef, onSele
             <ListItemText primary={`${t_i18n('Search')}: ${keyword}`} />
           </ListItemButton>
           {pages.map(({ path, label, parents }, index) => (
+            // A real link: the Link navigates (plain click) and the browser handles Cmd/Ctrl-click (new tab).
             <ListItemButton
               key={path}
+              component={Link}
+              to={path}
               id={navSearchOptionId(index + 1)}
               role="option"
+              tabIndex={-1}
               aria-selected={index + 1 === activeIndex}
               selected={index + 1 === activeIndex}
-              onClick={() => onSelectPage(path)}
+              onClick={onPageClick}
             >
               <NavSearchResultContent label={label} parents={parents} iconWidth={40} />
             </ListItemButton>
