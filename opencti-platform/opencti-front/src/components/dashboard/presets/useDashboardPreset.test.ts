@@ -43,12 +43,20 @@ describe('useDashboardPreset', () => {
     expect(renderHook(() => useDashboardPreset('ws-1', presets)).result.current.activePreset?.id).toBe('energy');
   });
 
-  it('prefers the URL over the stored preset and ignores a deleted one, keeping the stored preset', () => {
+  it('prefers the URL over the stored preset and ignores a deleted one', () => {
     window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'ws-1'), 'energy');
     window.history.replaceState(null, '', '/?preset=finance');
     expect(renderHook(() => useDashboardPreset('ws-1', presets)).result.current.activePreset?.id).toBe('finance');
     window.history.replaceState(null, '', '/?preset=gone');
-    expect(renderHook(() => useDashboardPreset('ws-1', presets)).result.current.activePreset?.id).toBe('energy');
+    expect(renderHook(() => useDashboardPreset('ws-1', presets)).result.current.activePreset).toBeNull();
+  });
+
+  it('applies the preset of the address once the presets of the dashboard are loaded', () => {
+    window.history.replaceState(null, '', '/?preset=finance');
+    const { result, rerender } = renderHook((current: DashboardPreset[]) => useDashboardPreset('ws-1', current), { initialProps: [] as DashboardPreset[] });
+    expect(result.current.activePreset).toBeNull();
+    rerender(presets);
+    expect(result.current.activePreset?.id).toBe('finance');
   });
 
   it('falls back to the default preset when the stored preset was deleted', () => {
@@ -67,9 +75,9 @@ describe('useDashboardPreset', () => {
     window.history.replaceState(null, '', '/?preset=energy');
     renderHook(() => useDashboardPreset('ws-1', presets));
     expect(window.localStorage.getItem(valuesKey)).not.toBeNull();
-    // A preset that does not exist (deleted, mistyped): nothing is dropped either
+    // A preset that does not exist (deleted, mistyped, not loaded yet): nothing is dropped either
     window.history.replaceState(null, '', '/?preset=gone');
-    expect(renderHook(() => useDashboardPreset('ws-1', presets)).result.current.activePreset?.id).toBe('energy');
+    renderHook(() => useDashboardPreset('ws-1', presets));
     expect(window.localStorage.getItem(valuesKey)).not.toBeNull();
     // Another preset: the values and the range of this user go
     window.history.replaceState(null, '', '/?preset=finance');
