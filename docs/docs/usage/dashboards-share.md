@@ -90,8 +90,9 @@ marking definition.
 Also note that the list of marking definitions you can see is based on your current marking
 access on the platform **and the maximum sharable marking definitions** defined in your groups.
 
-Widgets broken down by the values of a field keep their breakdown in the public dashboard, with the same
-series, colors and legend. See [Time series breakdown](time-series-breakdown.md#public-dashboards).
+Widgets broken down by the values of a field keep their breakdown settings in the public dashboard. Their
+series are computed on the data the public dashboard can show, within the maximum marking level chosen above,
+so they can differ from the custom dashboard. See [Time series breakdown](time-series-breakdown.md#public-dashboards).
 
 !!! note "Define maximum shareable markings in groups"
 

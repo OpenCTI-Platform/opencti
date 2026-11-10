@@ -17,7 +17,7 @@ With a breakdown:
 - **One dataset is enough.** Its filters and its date attribute apply to every series.
 - **Values are discovered automatically.** The widget stores the field, never the list of values: a new analyst shows up in the widget without any change.
 - **Up to 50 series.** You choose how many, and whether to keep the highest or the lowest values.
-- **The rest is not lost.** An optional **Other** series groups everything that is not displayed.
+- **The rest is not lost.** An optional **Other** series counts the data that has none of the displayed values.
 
 ## Where you can use it
 
@@ -51,7 +51,7 @@ The breakdown options are in the **Parameters** step, next to the interval:
 | **Break down by** | The field whose values become the series. **None** keeps a regular widget. |
 | **Maximum number of series** | 5, 10, 20 or 50. Default: 10. |
 | **Order** | **Highest values** keeps the values that count the most over the whole period, **Lowest values** the ones that count the least. |
-| **Include Other** | Adds an **Other** series that groups everything outside the displayed values, including the data without any value for the field. |
+| **Include Other** | Adds an **Other** series that counts the data with none of the displayed values, including the data without any value for the field. With a multi-valued field, a report labeled *A* and *B* is not counted in **Other** when *A* is displayed, even if *B* is not. |
 
 !!! note "A breakdown uses a single dataset"
 
@@ -84,7 +84,7 @@ flowchart LR
   D["<b>Dataset</b><br/>filters, date attribute,<br/>period"] --> R["<b>Rank the values</b><br/>of the field<br/>over the whole period"]
   R --> N["<b>Top N</b><br/>highest or lowest"]
   N --> S["<b>One series</b><br/>per value"]
-  R --> O["<b>Other</b> (optional)<br/>the remaining values<br/>and the data without value"]
+  N --> O["<b>Other</b> (optional)<br/>the data with none of<br/>the displayed values"]
 ```
 
 Keep in mind the following behaviors when you read a broken down widget:
@@ -102,7 +102,7 @@ Keep in mind the following behaviors when you read a broken down widget:
 
 ### Colors
 
-Each value keeps the same color in every widget: a label keeps its color, a marking its color, and an entity type the color the platform gives it. The other values get a color derived from the value itself, and no two series of a widget share one. **Other** is always grey.
+A value keeps its own color when it has one: a label keeps its color, a marking its color, and an entity type the color the platform gives it. The other values get a color derived from the value itself. No two series of a widget share a color: when two values would get the same color, one of them takes the next free color. So two widgets that show the same values give them the same colors, but a value can get another color in a widget that shows other values: check the legend before comparing widgets by color. **Other** is always grey.
 
 ### Default period
 
@@ -158,7 +158,7 @@ On the Activity & history perspective, break down the events by *User* or by *Ev
 
 ## Public dashboards
 
-A broken down widget is published as is: the [public dashboard](dashboards-share.md) shows the same series, colors, legend and warnings as the custom dashboard.
+A broken down widget keeps its breakdown in the [public dashboard](dashboards-share.md): the same field, maximum number of series, order and **Other** series, drawn the same way as in the custom dashboard. The series themselves can differ, because they are computed on the data the public dashboard can show: the top values, the counts, the interval and the warnings can change.
 
 ![Public dashboard](assets/time-series-breakdown-11-public-dashboard.jpg)
 
