@@ -35,14 +35,14 @@ describe('SearchInput (top bar) pages dropdown', () => {
     return { onSubmit, user };
   };
 
-  it('lists matching pages and a trailing "Search" row while typing', async () => {
+  it('lists a leading "Search" row then the matching pages while typing', async () => {
     const { user } = setup();
     await user.type(screen.getByRole('combobox'), 'imp');
 
     const options = screen.getAllByRole('option');
     expect(options).toHaveLength(2);
-    expect(options[0]).toHaveTextContent('Import');
-    expect(options[1]).toHaveTextContent('Search: imp');
+    expect(options[0]).toHaveTextContent('Search: imp');
+    expect(options[1]).toHaveTextContent('Import');
   });
 
   it('runs the classic search on Enter when no row is highlighted', async () => {
@@ -54,14 +54,15 @@ describe('SearchInput (top bar) pages dropdown', () => {
     expect(screen.queryAllByRole('option')).toHaveLength(0);
   });
 
-  it('navigates to the highlighted page with the arrow keys, or searches from the last row', async () => {
+  it('navigates to the highlighted page with the arrow keys, or searches from the first row', async () => {
     const { onSubmit, user } = setup();
-    await user.type(screen.getByRole('combobox'), 'imp{ArrowDown}{Enter}');
+    // first ArrowDown highlights the "Search" row, the second the page
+    await user.type(screen.getByRole('combobox'), 'imp{ArrowDown}{ArrowDown}{Enter}');
     expect(mockNavigate).toHaveBeenCalledWith('/dashboard/data/import');
     expect(onSubmit).not.toHaveBeenCalled();
 
-    // the first ArrowDown reopens the closed dropdown, the next two reach the last row
-    await user.type(screen.getByRole('combobox'), '{ArrowDown}{ArrowDown}{ArrowDown}{Enter}');
+    // the first ArrowDown reopens the closed dropdown, the next one highlights the "Search" row
+    await user.type(screen.getByRole('combobox'), '{ArrowDown}{ArrowDown}{Enter}');
     expect(onSubmit).toHaveBeenCalledWith('imp', false, undefined);
   });
 });
