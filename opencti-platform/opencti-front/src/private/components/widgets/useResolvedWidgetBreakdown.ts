@@ -70,17 +70,17 @@ const readBreakdownFields = ({ perspective, types }: BreakdownFieldsRequest) => 
  * Breakdown of the edited widget (getWidgetBreakdownState), derived by the editor provider for all its steps:
  * the saved filter of the dataset is read once per opening, whatever the widget becomes meanwhile, and then the
  * fields the API lists for the dataset, once per opening for each perspective and types it reads.
- * Without `enabled` (the feature off, or the editor closed), no breakdown is shown, nor kept or dropped.
+ * While the editor is not `open`, no breakdown is shown, nor kept or dropped.
  */
-const useResolvedWidgetBreakdown = (widget: EditedWidget, host: WidgetHost, enabled: boolean): WidgetBreakdownState => {
+const useResolvedWidgetBreakdown = (widget: EditedWidget, host: WidgetHost, open: boolean): WidgetBreakdownState => {
   const { schema: { filterKeysSchema } } = useAuth();
   const { t_i18n } = useFormatter();
   const variables = useOptionalDashboardVariableDefinitions();
   const savedFilterId = widget.dataSelection[0]?.filters_id ?? null;
-  const isSavedFilterNeeded = enabled && !!savedFilterId && getBreakdownEditorState(widget, host) !== 'hidden';
+  const isSavedFilterNeeded = open && !!savedFilterId && getBreakdownEditorState(widget, host) !== 'hidden';
   // The filters of each saved filter read, null for one that cannot be read or holds none
   const savedFilters = useReadOncePerOpening({
-    isOpen: enabled,
+    isOpen: open,
     request: isSavedFilterNeeded ? savedFilterId : null,
     requestKey: savedFilterId,
     read: readSavedFilter,
@@ -100,15 +100,15 @@ const useResolvedWidgetBreakdown = (widget: EditedWidget, host: WidgetHost, enab
   }, [savedFilterId, savedFilters]);
   // The fields of the dataset, asked once it is known
   const fieldsRequest = useMemo(
-    () => (enabled ? getBreakdownFieldsRequest({ widget, host, savedFilter: savedFilterContent, variables }) : null),
-    [enabled, widget, host, savedFilterContent, variables],
+    () => (open ? getBreakdownFieldsRequest({ widget, host, savedFilter: savedFilterContent, variables }) : null),
+    [open, widget, host, savedFilterContent, variables],
   );
   const fieldsRequestKey = fieldsRequest ? JSON.stringify(fieldsRequest) : null;
   // The keys of the fields read for each request, null for a request that failed
-  const fields = useReadOncePerOpening({ isOpen: enabled, request: fieldsRequest, requestKey: fieldsRequestKey, read: readBreakdownFields });
+  const fields = useReadOncePerOpening({ isOpen: open, request: fieldsRequest, requestKey: fieldsRequestKey, read: readBreakdownFields });
 
   return useMemo(() => {
-    if (!enabled) {
+    if (!open) {
       return NO_BREAKDOWN_STATE;
     }
     const keys = fieldsRequestKey ? fields.get(fieldsRequestKey) : undefined;
@@ -126,7 +126,7 @@ const useResolvedWidgetBreakdown = (widget: EditedWidget, host: WidgetHost, enab
       fields: { resolution: fieldsResolution, keys },
       translate: t_i18n,
     });
-  }, [enabled, filterKeysSchema, widget, host, savedFilterContent, fieldsRequestKey, fields, t_i18n]);
+  }, [open, filterKeysSchema, widget, host, savedFilterContent, fieldsRequestKey, fields, t_i18n]);
 };
 
 export default useResolvedWidgetBreakdown;

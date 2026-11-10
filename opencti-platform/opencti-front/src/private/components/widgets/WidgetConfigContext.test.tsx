@@ -6,12 +6,8 @@ import type { FilterDefinition } from '../../../utils/hooks/useAuth';
 import type { Widget, WidgetDataSelection } from '../../../utils/widget/widget';
 
 const mocks = vi.hoisted(() => ({
-  flags: ['TIME_SERIES_BREAKDOWN'],
   fetchSavedFilterContent: vi.fn(),
   fetchTimeSeriesBreakdownFields: vi.fn(),
-}));
-vi.mock('../../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: (flag: string) => mocks.flags.includes(flag) }),
 }));
 vi.mock('../../../components/dashboard/dashboardVizUtils', () => ({
   fetchSavedFilterContent: mocks.fetchSavedFilterContent,
@@ -95,7 +91,6 @@ const submittedParameters = () => context().getSubmittedConfig().widget.paramete
 describe('WidgetConfigProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.flags = ['TIME_SERIES_BREAKDOWN'];
     captured.context = undefined;
     mocks.fetchTimeSeriesBreakdownFields.mockReset();
     mocks.fetchTimeSeriesBreakdownFields.mockImplementation(readApiFields);
@@ -280,16 +275,5 @@ describe('WidgetConfigProvider', () => {
       expect(captured.isFormValid).toBe(true);
       expect(submittedParameters()).toEqual({ title: 'Reports', ...breakdown });
     });
-  });
-
-  it('keeps the stored breakdown as it is without the TIME_SERIES_BREAKDOWN feature flag', async () => {
-    mocks.flags = [];
-    await renderProvider({ ...brokenDownLine, dataSelection: [{ ...reports, filters_id: 'saved-filter' } as unknown as WidgetDataSelection] });
-    await changeWidget({ type: 'donut' });
-    expect(context().config.widget.type).toBe('donut');
-    expect(submittedParameters()).toEqual({ title: 'Reports', ...breakdown });
-    expect(captured.breakdown?.editorState).toEqual('hidden');
-    expect(mocks.fetchSavedFilterContent).not.toHaveBeenCalled();
-    expect(mocks.fetchTimeSeriesBreakdownFields).not.toHaveBeenCalled();
   });
 });

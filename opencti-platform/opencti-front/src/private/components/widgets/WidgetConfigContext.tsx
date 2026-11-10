@@ -4,8 +4,6 @@ import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 import { getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
 import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import { applyBreakdownCompatibility, type WidgetBreakdownState } from '../../../utils/widget/widgetBreakdown';
-import useHelper from '../../../utils/hooks/useHelper';
-import { TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../../components/dashboard/timeSeriesBreakdownFeatureFlag';
 import useResolvedWidgetBreakdown from './useResolvedWidgetBreakdown';
 
 export interface WidgetConfigType {
@@ -92,7 +90,6 @@ export const WidgetConfigProvider = ({
   open,
   disabledSteps,
 }: WidgetConfigProviderProps) => {
-  const { isFeatureEnable } = useHelper();
   const [conf, setConfig] = useState(buildConfig(host, undefined, undefined));
   const [step, setStep] = useState(0);
 
@@ -161,11 +158,9 @@ export const WidgetConfigProvider = ({
     }));
   };
 
-  // Without the feature, the breakdown of a stored widget is neither shown nor dropped
-  const isBreakdownEnabled = isFeatureEnable(TIME_SERIES_BREAKDOWN_FEATURE_FLAG);
-  const breakdown = useResolvedWidgetBreakdown(conf.widget, host, open && isBreakdownEnabled);
+  const breakdown = useResolvedWidgetBreakdown(conf.widget, host, open);
   // The breakdown is kept while the widget is edited, and only dropped on submit
-  const getSubmittedConfig = () => (isBreakdownEnabled ? { ...conf, widget: applyBreakdownCompatibility(conf.widget, breakdown) } : conf);
+  const getSubmittedConfig = () => ({ ...conf, widget: applyBreakdownCompatibility(conf.widget, breakdown) });
 
   return (
     <WidgetConfigContext.Provider value={{

@@ -14244,7 +14244,7 @@ type Query {
     types: [String]
     filters: FilterGroup
     search: String
-  ): TimeSeriesBreakdown @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN]) @ff(flags: ["TIME_SERIES_BREAKDOWN"])
+  ): TimeSeriesBreakdown @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   subType(id: String!): SubType @auth
   subTypes(
     first: Int
@@ -14503,7 +14503,7 @@ type Query {
     types: [String]
     filters: FilterGroup
     search: String
-  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE]) @ff(flags: ["TIME_SERIES_BREAKDOWN"])
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
   """
   Keys of the fields a time series widget of the perspective can be broken down by, for the types its dataset is
   restricted to (at most 1,000, duplicates ignored), as the widget editor lists them. Without types, the ones the
@@ -14513,7 +14513,7 @@ type Query {
   The relationships perspective lists no field when a type is not a relationship, as its breakdown refuses such a
   dataset. The audits perspective lists the fields of the logs whatever the types.
   """
-  timeSeriesBreakdownFields(perspective: WidgetPerspective!, types: [String!]): [String!]! @auth @ff(flags: ["TIME_SERIES_BREAKDOWN"])
+  timeSeriesBreakdownFields(perspective: WidgetPerspective!, types: [String!]): [String!]! @auth
   stixCoreObjectsNumber(
     dateAttribute: String
     types: [String]
@@ -15122,7 +15122,7 @@ type Query {
     dynamicFrom: FilterGroup
     dynamicTo: FilterGroup
     search: String
-  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE]) @ff(flags: ["TIME_SERIES_BREAKDOWN"])
+  ): TimeSeriesBreakdown @auth(for: [KNOWLEDGE, EXPLORE])
   stixRelationshipsDistribution(
     field: String!
     operation: StatsOperation!

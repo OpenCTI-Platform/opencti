@@ -640,10 +640,6 @@ export const CONFIG_PRESET_FEATURE_FLAG = 'CONFIG_PRESET';
 // (use isFeatureEnabled(INGESTION_DEDUPLICATION_FEATURE_FLAG) to check activation)
 export const INGESTION_DEDUPLICATION_FEATURE_FLAG = 'INGESTION_DEDUPLICATION';
 
-// Time series breakdown of the dashboard widgets, one series per value of a field
-// (use isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG) to check activation)
-export const TIME_SERIES_BREAKDOWN_FEATURE_FLAG = 'TIME_SERIES_BREAKDOWN';
-
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;
