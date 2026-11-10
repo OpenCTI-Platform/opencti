@@ -29,7 +29,7 @@ With ingestion health, you:
 | Status | Meaning |
 |---|---|
 | **Critical** | The ingestion does not work: at least one runtime check fails with a blocking severity. |
-| **Degraded** | The ingestion works, or may work, but something needs attention: at least one check fails with an advisory severity, or a configuration check fails. |
+| **Degraded** | The ingestion works, or may work, but something needs attention: at least one check fails with an advisory severity (every configuration check is advisory). |
 | **Healthy** | No check fails, and the ingestion proved it is alive: a connector that pings continuously sent a heartbeat in the last 5 minutes. |
 | **Unknown** | No check fails, but nothing proves the ingestion is alive: feeds, synchronizations and connectors that do not ping continuously (see [Heartbeat](#how-the-checks-work-details)). |
 
@@ -38,7 +38,7 @@ With ingestion health, you:
 The status follows these rules, in this order:
 
 1. any **blocking runtime** failure makes the ingestion **critical**;
-2. otherwise, any **advisory** failure, or any **configuration** failure, makes it **degraded**;
+2. otherwise, any **advisory** failure makes it **degraded**;
 3. otherwise, it is **healthy** when a live heartbeat proves it, and **unknown** when nothing does.
 
 !!! warning "The status is an indication, not a certainty"
@@ -51,9 +51,9 @@ The status follows these rules, in this order:
 
     The interface does not distinguish a healthy ingestion from an unknown one: neither shows a chip, and the health filter only offers critical and degraded. No chip only means that no check fails. It does not prove that the ingestion works: even a healthy status is not a certain proof, since a heartbeat only shows that the process of the connector is alive, not that it ingests data correctly.
 
-!!! note "Why a blocking configuration check only degrades the status"
+!!! note "Why every configuration check is advisory"
 
-    A configuration check describes how the ingestion is set up, not what it is doing. A connector whose user lacks a capability is likely to fail, but only a runtime check can tell that it actually fails. So a configuration failure, even blocking, degrades the status, and only a runtime failure makes it critical.
+    A configuration check describes how the ingestion is set up, not what it is doing. A connector whose user lacks a capability or whose account is not active is likely to fail, but only a runtime check can tell that it actually fails. So every configuration failure is advisory, even when it prevents the ingestion from working: it degrades the status, and only a blocking runtime failure makes it critical.
 
 ### When there is no status
 
@@ -79,8 +79,8 @@ and a **severity**:
 | Check | Applies to | Kind | Severity | Fails when                                                                                                                                                                                   | What to do |
 |---|---|---|---|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|
 | User is missing | Connectors, feeds, synchronizations | Configuration | Advisory | A connector has no user, or the user of an ingestion was deleted                                                                                                                             | Set an existing user on the ingestion |
-| User lacks required capability | Connectors | Configuration | Blocking | The user of the connector lacks the **Connectors API usage** capability (`CONNECTORAPI`): the connector cannot register nor ping                                                             | Give the capability to a role of the user |
-| User account is not active | Connectors, feeds, synchronizations | Configuration | Blocking | The account of the user is expired, locked or disabled: the platform refuses to authenticate it. As a configuration check, it degrades the status, it does not make it critical              | Reactivate the account, or set another user |
+| User lacks required capability | Connectors | Configuration | Advisory | The user of the connector lacks the **Connectors API usage** capability (`CONNECTORAPI`): the connector cannot register nor ping                                                             | Give the capability to a role of the user |
+| User account is not active | Connectors, feeds, synchronizations | Configuration | Advisory | The account of the user is expired, locked or disabled: the platform refuses to authenticate it                                                                                          | Reactivate the account, or set another user |
 | User is not a service account | Connectors, feeds, synchronizations | Configuration | Advisory | The user of the ingestion is a regular user: the ingestion breaks when this person leaves or changes rights. This is not necessarily blocking, but using a service account is recommended | Use a service account |
 | No heartbeat received | Connectors pinging continuously | Runtime | Blocking | The connector sent no heartbeat for 5 minutes: its process is down                                                                                                                           | Check the process of the connector (container, logs) |
 | Feed or sync execution failed | Feeds (except TAXII push), synchronizations | Runtime | Blocking | The last execution failed: source unreachable, not found, invalid data... The message gives the HTTP status or the error code when known                                                     | Check the source and the configuration of the feed |
