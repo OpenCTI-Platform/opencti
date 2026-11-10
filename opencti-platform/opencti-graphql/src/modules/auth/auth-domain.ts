@@ -171,7 +171,7 @@ export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => 
     if (attempt?.locksAccount) {
       await lockAccountAfterFailedAttempts(mfaUser);
     }
-    throw attempt?.failure ?? AuthenticationFailure();
+    throw attempt ? await attempt.reject({ source: 'forgot_password', ip: context.req?.ip }) : AuthenticationFailure();
   } else {
     // Also when the lockout is disabled, so that enabling it again never brings back an old lock
     await clearLocalAuthLockout(email);

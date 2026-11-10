@@ -5,17 +5,18 @@
 // The permanent lock lasts until an administrator sets the account back to Active, or until a login with another provider.
 
 import { v4 as uuid } from 'uuid';
-import { ACCOUNT_STATUSES, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
+import { ACCOUNT_STATUSES, ENABLED_DEMO_MODE, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { type LocalAuthLockoutTimings, type LocalAuthLockType, redisClearLocalAuthLockout, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt } from '../database/redis';
 import { LocalAuthLockoutFinalAction } from '../generated/graphql';
+import { publishUserAction, type UserLockSource } from '../listener/UserActionListener';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { ENTITY_TYPE_USER } from '../modules/user/user-types';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
-import { BYPASS, executionContext, SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
+import { BYPASS, executionContext, REDACTED_USER, SETTINGS_SETACCESSES, SETTINGS_SETAUTH, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
 import { normalizeEmail } from '../utils/email';
 import { hashSHA256 } from '../utils/hash';
 
@@ -70,17 +71,16 @@ export const isAdministrativeAccount = (user: Pick<AuthUser, 'capabilities'>) =>
   return (user.capabilities ?? []).some(({ name }) => ADMINISTRATIVE_CAPABILITIES.includes(name));
 };
 
-// Unknown emails get the users threshold, so that a lock never reveals whether an account exists
-const isAdministrativeUserId = async (context: AuthContext, userId?: string) => {
+const loadPlatformUser = async (context: AuthContext, userId?: string) => {
   if (!userId) {
-    return false;
+    return undefined;
   }
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const user = platformUsers.get(userId);
-  return !!user && isAdministrativeAccount(user);
+  return platformUsers.get(userId);
 };
 
-const getLockoutTimings = async (userId?: string): Promise<LocalAuthLockoutTimings | undefined> => {
+// Returns the policy of the email, and its user (undefined for an unknown email), only when the lockout is enabled
+const getLockoutPolicy = async (userId?: string): Promise<{ timings: LocalAuthLockoutTimings; user?: AuthUser } | undefined> => {
   if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
     return undefined;
   }
@@ -89,8 +89,10 @@ const getLockoutTimings = async (userId?: string): Promise<LocalAuthLockoutTimin
   if (!(settings.local_auth_lockout_enabled ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_enabled)) {
     return undefined;
   }
-  // NIST SP 800-53 AC-7: administrative accounts get a lower threshold than the other users
-  const isAdministrative = await isAdministrativeUserId(context, userId);
+  // NIST SP 800-53 AC-7: administrative accounts get a lower threshold than the other users.
+  // Unknown emails get the users threshold, so that a lock never reveals whether an account exists
+  const user = await loadPlatformUser(context, userId);
+  const isAdministrative = !!user && isAdministrativeAccount(user);
   const maxAttempts = isAdministrative
     ? settings.local_auth_lockout_admin_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_admin_max_attempts
     : settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts;
@@ -100,12 +102,43 @@ const getLockoutTimings = async (userId?: string): Promise<LocalAuthLockoutTimin
   // The permanent lock never expires for an existing account (0), including the service accounts and the external users
   // that are never set to Locked: otherwise each expiry would give new attempts
   const permanentLockMs = userId ? 0 : UNKNOWN_EMAIL_RETENTION_MS;
-  return {
+  const timings = {
     maxAttempts,
     windowMs: windowMs === 0 && !userId ? UNKNOWN_EMAIL_RETENTION_MS : windowMs,
     finalLockMs: finalAction === LocalAuthLockoutFinalAction.Permanent ? permanentLockMs : durationMs,
     finalAction,
   };
+  return { timings, user };
+};
+
+// Where the failed attempt comes from, and its source IP, for the activity event of a lock
+export type LocalAuthAttemptOrigin = { source: UserLockSource; ip?: string };
+
+// One activity event per lock, for an existing account only: an unknown email has no user to attribute it to.
+// The event is attributed to the locked user, from the source IP of the attempt that locked it
+const publishLocalAuthLock = async (user: AuthUser, timings: LocalAuthLockoutTimings, { source, ip }: LocalAuthAttemptOrigin) => {
+  const origin = {
+    socket: 'query',
+    ip,
+    user_id: user.id,
+    group_ids: user.groups?.map((g) => g.internal_id) ?? [],
+    organization_ids: user.organizations?.map((o) => o.internal_id) ?? [],
+  };
+  const isPermanent = timings.finalAction === LocalAuthLockoutFinalAction.Permanent;
+  await publishUserAction({
+    user: { ...user, origin },
+    event_type: 'authentication',
+    event_scope: 'lock',
+    event_access: 'administration',
+    status: 'error',
+    context_data: {
+      username: ENABLED_DEMO_MODE ? REDACTED_USER.name : user.user_email,
+      lock_type: isPermanent ? 'permanent' : 'temporary',
+      ...(!isPermanent && { lock_duration: timings.finalLockMs / MINUTE_MS }),
+      max_attempts: timings.maxAttempts,
+      source,
+    },
+  });
 };
 
 // Returns undefined when the lockout is disabled, so that the login keeps its previous behavior.
@@ -116,16 +149,18 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
   if (userId === OPENCTI_ADMIN_UUID) {
     return undefined;
   }
-  const timings = await getLockoutTimings(userId);
-  if (!timings) {
+  const policy = await getLockoutPolicy(userId);
+  if (!policy) {
     return undefined;
   }
+  const { timings, user } = policy;
   // Unknown emails are counted too, so that a lock never reveals whether an account exists
   const emailHash = hashSHA256(normalizeEmail(email));
   return {
     // Counts the attempt as a failure before the password or the MFA code is checked, and throws the lock error during a lock.
-    // Returns what to do if the check fails: the lock error to throw once the max attempts are reached
-    // (below, the usual authentication failure), and whether the account must be set to Locked (permanent final action).
+    // Returns what to do if the check fails: whether the account must be set to Locked (permanent final action),
+    // and reject, which returns the error to throw: the lock error once the max attempts are reached
+    // (below, the usual authentication failure). The attempt that reaches them publishes the lock in the activity.
     // If the check succeeds, release undoes this attempt only: its failure in its own window, and its lock,
     // but never the failures of a later window nor the lock of a concurrent failure
     recordAttempt: async () => {
@@ -135,8 +170,16 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
         throw LocalAuthLocked(lockType, remainingMs);
       }
       return {
-        failure: isFinal ? LocalAuthLocked(lockType, remainingMs) : undefined,
         locksAccount: isFinal && lockType === 'permanent',
+        reject: async (origin: LocalAuthAttemptOrigin) => {
+          if (!isFinal) {
+            return AuthenticationFailure();
+          }
+          if (user) {
+            await publishLocalAuthLock(user, timings, origin);
+          }
+          return LocalAuthLocked(lockType, remainingMs);
+        },
         release: () => redisReleaseLocalAuthAttempt(emailHash, { attemptToken, windowId }),
       };
     },
