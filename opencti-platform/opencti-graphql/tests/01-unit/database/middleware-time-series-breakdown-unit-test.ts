@@ -1513,7 +1513,9 @@ describe('timeSeriesBreakdownFields', () => {
     expect(uses).not.toContain('relationship_type');
     expect(timeSeriesBreakdownFields('relationships', ['targets', 'uses'])).toContain('relationship_type');
     expect(timeSeriesBreakdownFields('relationships', [])).toContain('relationship_type');
-    expect(timeSeriesBreakdownFields('relationships', ['Report'])).toEqual(timeSeriesBreakdownFields('relationships', []));
+    // The relationships breakdown refuses such a dataset (buildRelationshipTypes)
+    expect(timeSeriesBreakdownFields('relationships', ['Report'])).toEqual([]);
+    expect(timeSeriesBreakdownFields('relationships', ['uses', 'Report'])).toEqual([]);
     for (const types of [['uses'], ['targets', 'uses'], ['stix-relationship']]) {
       for (const field of timeSeriesBreakdownFields('relationships', types)) {
         expect(accepted(() => resolveRelationshipBreakdownField(types, field)), `${field} for ${types}`).toBe(true);

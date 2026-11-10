@@ -1045,8 +1045,11 @@ export const timeSeriesBreakdownFields = (perspective: BreakdownFieldsPerspectiv
     return HISTORY_BREAKDOWN_ALLOWED_FIELDS;
   }
   if (perspective === 'relationships') {
-    const requestedTypes = (types ?? []).filter((type) => isStixRelationship(type));
-    const relationshipTypes = requestedTypes.length > 0 ? requestedTypes : [ABSTRACT_STIX_RELATIONSHIP];
+    // The relationships breakdown refuses a dataset holding a type that is not a relationship: nothing to offer
+    if ((types ?? []).some((type) => !isStixRelationship(type))) {
+      return [];
+    }
+    const relationshipTypes = types && types.length > 0 ? types : [ABSTRACT_STIX_RELATIONSHIP];
     const fields = [...getSchemaBreakdownFields(relationshipTypes), RELATION_FROM_TYPES_FILTER, RELATION_TO_TYPES_FILTER];
     return isBreakdownTypeFieldOffered(relationshipTypes) ? [...fields, RELATION_TYPE_FILTER] : fields;
   }
