@@ -5541,6 +5541,28 @@ enum FormsOrdering {
   updated_at
 }
 
+input FrontendLogExceptionInput {
+  message: String
+  stacktrace: String
+  type: String
+}
+
+input FrontendLogInput {
+  data: JSON
+  eventName: String!
+  exception: FrontendLogExceptionInput
+  level: FrontendLogLevel!
+  message: String!
+  timestamp: DateTime!
+}
+
+enum FrontendLogLevel {
+  DEBUG
+  ERROR
+  INFO
+  WARN
+}
+
 type GetMetrics {
   total: String
 }
@@ -9365,7 +9387,8 @@ type Mutation {
   formFieldPatch(id: ID!, input: [EditInput!]!): Form
   formImport(file: Upload!): Form
   formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse
-  frontendErrorLog(codeStack: String, componentStack: String, message: String!): Boolean
+  frontendErrorLog(codeStack: String, componentStack: String, message: String!): Boolean @deprecated(reason: "Replaced by frontendLogsAdd (#17400)")
+  frontendLogsAdd(logs: [FrontendLogInput!]!): Boolean
   groupAdd(input: GroupAddInput!): Group
   groupEdit(id: ID!): GroupEditMutations
   groupingAdd(input: GroupingAddInput!): Grouping
