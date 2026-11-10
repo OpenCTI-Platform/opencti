@@ -102,7 +102,7 @@ Keep in mind the following behaviors when you read a broken down widget:
 | **Filter on the broken down field** | A filter narrows the data, not the series: with *Label = ransomware*, the other labels of these reports show up too. |
 | **Values you cannot access** | They are shown as *Restricted*. When several series share a name, they are numbered. |
 | **Values that cannot be resolved** (a deleted user) | They are ignored, without taking a place in the top N. |
-| **Date attribute** | The series use the date attribute of the dataset. The default technical date groups imported data at its import date: prefer a business date (publication date, creation date) for reports. |
+| **Date attribute** | The series use the date attribute of the dataset. The technical date *created_at* groups imported data at its import date: prefer a functional date, such as *created* for reports. |
 
 ### Colors
 
