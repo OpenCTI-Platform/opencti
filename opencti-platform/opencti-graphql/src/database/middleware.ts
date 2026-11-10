@@ -28,6 +28,7 @@ import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
 import {
   assertExternalStatusCreateAllowed,
+  isRequestAccessOutcomeStatus,
   assertExternalStatusWriteAllowed,
   cleanupEntityWorkflow,
   initializeEntityWorkflow,
@@ -2447,8 +2448,13 @@ const mergeEntitiesRaw = async (
         updateAttributes.push({ key: targetFieldKey, value: multipleValues, operation: EditOperation.Add });
       }
     } else if (isEmptyField(mergedEntityCurrentFieldValue) && isNotEmptyField(sourceFieldValue)) {
-      // Single value. Put the data in the merged field only if empty.
-      updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
+      // A merge never decides a request: an Approved / Declined status of a source is not copied, only a transition or a bypass reaches it.
+      const isCopiedOutcome = targetFieldKey === X_WORKFLOW_ID && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)
+        && await isRequestAccessOutcomeStatus(context, targetType, sourceFieldValue);
+      if (!isCopiedOutcome) {
+        // Single value. Put the data in the merged field only if empty.
+        updateAttributes.push({ key: targetFieldKey, value: [sourceFieldValue] });
+      }
     }
   }
 

@@ -2858,6 +2858,23 @@ export const assertExternalStatusWriteAllowed = async (
 };
 
 /**
+ * True when `statusId` is the Approved / Declined status of the request access workflow of a Case-Rfi:
+ * a state only a transition or a bypass may reach.
+ */
+export const isRequestAccessOutcomeStatus = async (
+  context: AuthContext,
+  entityType: string,
+  statusId: string | null | undefined,
+): Promise<boolean> => {
+  if (entityType !== ENTITY_TYPE_CONTAINER_CASE_RFI || !statusId) return false;
+  const status = await findStatusInCache(context, statusId);
+  if (status?.type !== ENTITY_TYPE_CONTAINER_CASE_RFI || status.scope !== StatusScope.RequestAccess) return false;
+  const entitySetting = await getWorkflowConfig(context, SYSTEM_USER, entityType);
+  const definitionData = await getDefinitionData(context, SYSTEM_USER, entitySetting, false, StatusScope.RequestAccess);
+  return !!definitionData && !!findStateOutcome(definitionData, status.template_id);
+};
+
+/**
  * Refuses the creation of a Case-Rfi that supplies the Approved / Declined status of the request access
  * workflow: the request would exist already decided, with no transition, share or notification. A creation
  * starts a request at the initial state; only a transition or a bypass decides it. Runs before the entity is saved.
@@ -2867,12 +2884,7 @@ export const assertExternalStatusCreateAllowed = async (
   entityType: string,
   statusId: string | null | undefined,
 ): Promise<void> => {
-  if (entityType !== ENTITY_TYPE_CONTAINER_CASE_RFI || !statusId) return;
-  const status = await findStatusInCache(context, statusId);
-  if (status?.type !== ENTITY_TYPE_CONTAINER_CASE_RFI || status.scope !== StatusScope.RequestAccess) return;
-  const entitySetting = await getWorkflowConfig(context, SYSTEM_USER, entityType);
-  const definitionData = await getDefinitionData(context, SYSTEM_USER, entitySetting, false, StatusScope.RequestAccess);
-  if (definitionData && findStateOutcome(definitionData, status.template_id)) {
+  if (await isRequestAccessOutcomeStatus(context, entityType, statusId)) {
     throw FunctionalError('Approved and Declined can only be reached or left through the workflow', { statusId });
   }
 };

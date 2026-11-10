@@ -29,7 +29,7 @@ import { logApp } from '../../../src/config/conf';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import type { BasicStoreEntity, BasicWorkflowStatus } from '../../../src/types/store';
-import { createEntity, deleteElementById, internalDeleteElementById, loadEntity, storeLoadByIdWithRefs, updateAttribute } from '../../../src/database/middleware';
+import { createEntity, deleteElementById, internalDeleteElementById, loadEntity, mergeEntities, storeLoadByIdWithRefs, updateAttribute } from '../../../src/database/middleware';
 import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
 import { INPUT_GRANTED_REFS, OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
@@ -1157,7 +1157,7 @@ describe('Request access decided through workflow transitions', async () => {
         x_opencti_workflow_id: await statusIdOf(templateIds.approved),
       }, ENTITY_TYPE_CONTAINER_CASE_RFI)).rejects.toThrow(outcomeRejection);
 
-      const created = await fullEntitiesList<{ id: string }>(testContext, ADMIN_USER, [ENTITY_TYPE_CONTAINER_CASE_RFI], { filters: { mode: 'and', filters: [{ key: ['name'], values: [name] }], filterGroups: [] } });
+      const created = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CONTAINER_CASE_RFI], { filters: { mode: FilterMode.And, filters: [{ key: ['name'], values: [name] }], filterGroups: [] } });
       expect(created).toHaveLength(0);
     });
 
@@ -1176,6 +1176,19 @@ describe('Request access decided through workflow transitions', async () => {
       expect((await loadDecision(rfiId))).toMatchObject({ statusId: declinedStatusId, action: { status: ActionStatus.DECLINED } });
       expect((await findInstance(rfiId))?.currentState).toBe(templateIds.declined);
     });
+  });
+
+  it('merging a decided RFI into a target without status does not copy the outcome status', async () => {
+    const rfiId = await requestAccess();
+    expect(await triggerWorkflowEvent(testContext, ADMIN_USER, rfiId, 'Reject')).toMatchObject({ success: true });
+    const target = await addCaseRfi(testContext, ADMIN_USER, { name: `Merge target without status ${suffix}` });
+    createdRfiIds.push(target.id);
+    await updateAttribute(testContext, ADMIN_USER, target.id, ENTITY_TYPE_CONTAINER_CASE_RFI, [{ key: 'x_opencti_workflow_id', value: [] }]);
+
+    await mergeEntities(testContext, ADMIN_USER, target.id, [rfiId]);
+
+    const merged = await storeLoadById<BasicStoreEntity & { x_opencti_workflow_id?: string }>(testContext, ADMIN_USER, target.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
+    expect(merged.x_opencti_workflow_id).not.toBe(await statusIdOf(templateIds.declined));
   });
 
   it('a plain RFI on a request access status stays on the legacy flow', async () => {

@@ -1430,14 +1430,13 @@ describe('Workflow migration from legacy statuses (Case-Rft)', () => {
     }
   });
 
-  it('previews GLOBAL in legacy order and keeps REQUEST_ACCESS apart', async () => {
+  it('previews GLOBAL in legacy order and leaves request access statuses out (request access is Case-Rfi only)', async () => {
     const result = await queryAsAdminWithSuccess({ query: WORKFLOW_MIGRATION_PREVIEW_QUERY, variables: { entityType } });
     const { results } = result.data.workflowMigrationPreview;
     const global = results.find((r: any) => r.scope === StatusScope.Global);
-    const requestAccess = results.find((r: any) => r.scope === StatusScope.RequestAccess);
 
     expect(global.states.slice(0, 3).map((s: any) => s.statusId)).toEqual([templateIds.open, templateIds.review, templateIds.done]);
-    expect(requestAccess.states.map((s: any) => s.statusId)).toContain(templateIds.pending);
+    expect(results.find((r: any) => r.scope === StatusScope.RequestAccess)).toBeUndefined();
     expect(global.states.map((s: any) => s.statusId)).not.toContain(templateIds.pending);
   });
 
