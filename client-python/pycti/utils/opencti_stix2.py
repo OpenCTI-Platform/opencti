@@ -218,6 +218,8 @@ class OpenCTIStix2:
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
+        # STIX marking definitions of the exported external reference files, by id
+        self.export_file_marking_definitions = {}
 
     def get_in_cache(self, data_id):
         """Get an item from the cache.
@@ -2002,16 +2004,25 @@ class OpenCTIStix2:
     # endregion
 
     # region export
-    def generate_export(self, entity: Dict, no_custom_attributes: bool = False) -> Dict:
+    def generate_export(
+        self,
+        entity: Dict,
+        no_custom_attributes: bool = False,
+        access_filter: Dict = None,
+    ) -> Dict:
         """Generate a STIX2 export from an OpenCTI entity.
 
         :param entity: OpenCTI entity dictionary to export
         :type entity: Dict
         :param no_custom_attributes: Whether to exclude custom x_opencti attributes, defaults to False
         :type no_custom_attributes: bool, optional
+        :param access_filter: Access filter for the export, external reference files
+            carrying an excluded marking are not embedded, defaults to None
+        :type access_filter: Dict, optional
         :return: STIX2 formatted entity dictionary
         :rtype: Dict
         """
+        excluded_marking_ids = self._get_excluded_marking_ids(access_filter)
         # Handle model deviation
         original_entity_type = entity["entity_type"]
 
@@ -2171,23 +2182,35 @@ class OpenCTIStix2:
                     external_reference["external_id"] = entity_external_reference[
                         "external_id"
                     ]
-                if (
-                    "importFiles" in entity_external_reference
-                    and len(entity_external_reference["importFiles"]) > 0
-                ):
+                shareable_files = [
+                    file
+                    for file in entity_external_reference.get("importFiles") or []
+                    if self._is_file_shareable(file, excluded_marking_ids)
+                ]
+                if len(shareable_files) > 0:
                     external_reference["x_opencti_files"] = []
-                    for file in entity_external_reference["importFiles"]:
+                    for file in shareable_files:
                         data = self.opencti.fetch_opencti_file_by_id(
                             file["id"], binary=True, serialize=True
                         )
-                        external_reference["x_opencti_files"].append(
-                            {
-                                "name": file["name"],
-                                "data": data,
-                                "mime_type": file["metaData"]["mimetype"],
-                                "version": file["metaData"].get("version", None),
-                            }
-                        )
+                        x_opencti_file = {
+                            "name": file["name"],
+                            "data": data,
+                            "mime_type": file["metaData"]["mimetype"],
+                            "version": file["metaData"].get("version", None),
+                        }
+                        if "objectMarking" in file:
+                            x_opencti_file["object_marking_refs"] = []
+                            for file_marking in file["objectMarking"]:
+                                marking_definition = self._marking_to_stix(file_marking)
+                                # Kept so prepare_export adds it to the bundle
+                                self.export_file_marking_definitions[
+                                    marking_definition["id"]
+                                ] = marking_definition
+                                x_opencti_file["object_marking_refs"].append(
+                                    marking_definition["id"]
+                                )
+                        external_reference["x_opencti_files"].append(x_opencti_file)
                 entity["external_references"].append(external_reference)
         if "externalReferences" in entity:
             del entity["externalReferences"]
@@ -2276,6 +2299,86 @@ class OpenCTIStix2:
             identity.get("name") == "Restricted"
             and identity.get("identity_class") == "Restricted"
         )
+
+    @staticmethod
+    def _get_excluded_marking_ids(access_filter: Optional[Dict]) -> set:
+        """Collect the marking ids an export access filter excludes.
+
+        The export access filter excludes content with ``objectMarking``
+        ``not_eq`` filters (see ``getExportFilter`` on the platform side).
+
+        :param access_filter: Access filter for the export, may be None
+        :type access_filter: Dict, optional
+        :return: Internal ids of the excluded markings
+        :rtype: set
+        """
+        excluded_marking_ids = set()
+        if not access_filter:
+            return excluded_marking_ids
+        for export_filter in access_filter.get("filters") or []:
+            keys = export_filter.get("key")
+            keys = keys if isinstance(keys, list) else [keys]
+            if "objectMarking" in keys and export_filter.get("operator") == "not_eq":
+                excluded_marking_ids.update(export_filter.get("values") or [])
+        for filter_group in access_filter.get("filterGroups") or []:
+            excluded_marking_ids.update(
+                OpenCTIStix2._get_excluded_marking_ids(filter_group)
+            )
+        return excluded_marking_ids
+
+    @staticmethod
+    def _is_file_shareable(file: Dict, excluded_marking_ids: set) -> bool:
+        """Tell whether a file can be embedded in an export.
+
+        A file whose markings (or marking ids) were not read is not shareable
+        when some markings are excluded, as nothing proves it is under the
+        export restrictions.
+
+        :param file: File as returned by the API (``importFiles`` entry)
+        :type file: Dict
+        :param excluded_marking_ids: Internal ids of the excluded markings
+        :type excluded_marking_ids: set
+        :return: True if the file can be embedded
+        :rtype: bool
+        """
+        if len(excluded_marking_ids) == 0:
+            return True
+        if file.get("objectMarking") is None:
+            return False
+        return not any(
+            marking.get("id") is None or marking["id"] in excluded_marking_ids
+            for marking in file["objectMarking"]
+        )
+
+    @staticmethod
+    def _marking_to_stix(marking: Dict) -> Dict:
+        """Convert an API marking definition to a STIX marking definition."""
+        if marking["definition_type"] == "TLP":
+            created = "2017-01-20T00:00:00.000Z"
+        else:
+            created = marking["created"]
+        return {
+            "type": "marking-definition",
+            "spec_version": SPEC_VERSION,
+            "id": marking["standard_id"],
+            "created": created,
+            "definition_type": marking["definition_type"].lower(),
+            "name": marking["definition"],
+            "definition": {
+                marking["definition_type"]
+                .lower(): marking["definition"]
+                .lower()
+                .replace("tlp:", "")
+            },
+        }
+
+    @staticmethod
+    def _append_marking_definition(result: List, marking_definition: Dict) -> None:
+        """Add a marking definition to the export objects, once."""
+        if not any(
+            stix_object.get("id") == marking_definition["id"] for stix_object in result
+        ):
+            result.append(marking_definition)
 
     def prepare_export(
         self,
@@ -2576,18 +2679,30 @@ class OpenCTIStix2:
         if "attribute_date" in entity:
             entity["date"] = entity["attribute_date"]
             del entity["attribute_date"]
-        # Artifact
-        if entity["type"] == "artifact" and "importFiles" in entity:
-            first_file_id = entity["importFiles"][0]["id"]
+        # Files carrying a marking excluded by the export access filter are not embedded
+        excluded_marking_ids = self._get_excluded_marking_ids(access_filter)
+        import_files = entity.get("importFiles") or []
+        shareable_files = [
+            file
+            for file in import_files
+            if self._is_file_shareable(file, excluded_marking_ids)
+        ]
+        # Artifact, its payload is its first file
+        if (
+            entity["type"] == "artifact"
+            and len(import_files) > 0
+            and self._is_file_shareable(import_files[0], excluded_marking_ids)
+        ):
+            first_file_id = import_files[0]["id"]
             file = self.opencti.fetch_opencti_file_by_id(
                 first_file_id, binary=True, serialize=True
             )
             if file:
                 entity["payload_bin"] = file
         # Files
-        if "importFiles" in entity and len(entity["importFiles"]) > 0:
+        if len(shareable_files) > 0:
             entity["x_opencti_files"] = []
-            for file in entity["importFiles"]:
+            for file in shareable_files:
                 data = self.opencti.fetch_opencti_file_by_id(
                     file["id"], binary=True, serialize=True
                 )
@@ -2598,34 +2713,24 @@ class OpenCTIStix2:
                     "version": file["metaData"].get("version", None),
                     "object_marking_refs": [],
                 }
-                for file_marking_definition in file.get("objectMarking", []):
-                    if file_marking_definition["definition_type"] == "TLP":
-                        created = "2017-01-20T00:00:00.000Z"
-                    else:
-                        created = file_marking_definition["created"]
-                    marking_definition = {
-                        "type": "marking-definition",
-                        "spec_version": SPEC_VERSION,
-                        "id": file_marking_definition["standard_id"],
-                        "created": created,
-                        "definition_type": file_marking_definition[
-                            "definition_type"
-                        ].lower(),
-                        "name": file_marking_definition["definition"],
-                        "definition": {
-                            file_marking_definition["definition_type"]
-                            .lower(): file_marking_definition["definition"]
-                            .lower()
-                            .replace("tlp:", "")
-                        },
-                    }
-                    result.append(marking_definition)
+                for file_marking_definition in file.get("objectMarking") or []:
+                    marking_definition = self._marking_to_stix(file_marking_definition)
+                    self._append_marking_definition(result, marking_definition)
                     x_opencti_file["object_marking_refs"].append(
                         marking_definition["id"]
                     )
                 entity["x_opencti_files"].append(x_opencti_file)
+        if "importFiles" in entity:
             del entity["importFiles"]
-            del entity["importFilesIds"]
+            entity.pop("importFilesIds", None)
+        # Marking definitions of the external reference files (see generate_export)
+        for external_reference in entity.get("external_references") or []:
+            for x_opencti_file in external_reference.get("x_opencti_files") or []:
+                for marking_id in x_opencti_file.get("object_marking_refs") or []:
+                    if marking_id in self.export_file_marking_definitions:
+                        self._append_marking_definition(
+                            result, self.export_file_marking_definitions[marking_id]
+                        )
 
         # StixRefRelationship
         stix_nested_ref_relationships = self.opencti.stix_nested_ref_relationship.list(
@@ -2745,7 +2850,9 @@ class OpenCTIStix2:
                 )
                 relation_object_data = (
                     self.prepare_export(  # ICI -> remove max marking ?
-                        entity=self.generate_export(stix_core_relationship),
+                        entity=self.generate_export(
+                            stix_core_relationship, access_filter=access_filter
+                        ),
                         mode="simple",
                         access_filter=access_filter,
                     )
@@ -2768,7 +2875,9 @@ class OpenCTIStix2:
                 )
                 relation_object_data = (
                     self.prepare_export(  # ICI -> remove max marking ?
-                        entity=self.generate_export(stix_sighting_relationship),
+                        entity=self.generate_export(
+                            stix_sighting_relationship, access_filter=access_filter
+                        ),
                         mode="simple",
                         access_filter=access_filter,
                     )
@@ -2795,7 +2904,9 @@ class OpenCTIStix2:
                 entity_object_data = do_read(filters=query_filters)
                 if entity_object_data is not None:
                     stix_entity_object = self.prepare_export(
-                        entity=self.generate_export(entity_object_data),
+                        entity=self.generate_export(
+                            entity_object_data, access_filter=access_filter
+                        ),
                         mode="simple",
                         access_filter=access_filter,
                     )
@@ -2900,7 +3011,9 @@ class OpenCTIStix2:
             return bundle
         entity_standard_id = entity["standard_id"]
         stix_objects = self.prepare_export(
-            entity=self.generate_export(entity, no_custom_attributes),
+            entity=self.generate_export(
+                entity, no_custom_attributes, access_filter=access_filter
+            ),
             mode=mode,
             access_filter=access_filter,
             no_custom_attributes=no_custom_attributes,
@@ -3111,7 +3224,7 @@ class OpenCTIStix2:
             uuids = []
             for entity in entities_list:
                 entity_bundle = self.prepare_export(
-                    entity=self.generate_export(entity),
+                    entity=self.generate_export(entity, access_filter=access_filter),
                     mode=mode,
                     access_filter=access_filter,
                 )
@@ -3149,7 +3262,7 @@ class OpenCTIStix2:
         uuids = []
         for entity in entities_list:
             entity_bundle = self.prepare_export(
-                entity=self.generate_export(entity),
+                entity=self.generate_export(entity, access_filter=access_filter),
                 mode=mode,
                 access_filter=access_filter,
             )
