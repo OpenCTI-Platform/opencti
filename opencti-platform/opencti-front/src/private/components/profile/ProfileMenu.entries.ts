@@ -9,6 +9,7 @@ export const profileEntry: MenuEntry = {
   label: 'Profile',
   standaloneParents: [],
   keywords: ['account', 'user', 'me', 'password', 'api token', 'two factor', '2fa', 'language', 'theme'],
+  availableInDraft: true,
 };
 
 export const notificationCenterEntry: MenuEntry = {
