@@ -1,10 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import bcrypt from 'bcryptjs';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { ACCOUNT_STATUS_EXPIRED } from '../../../../src/config/conf';
 import { addIndividual } from '../../../../src/domain/individual';
 import { addUser, userEditField } from '../../../../src/modules/user/user-domain';
 import { deleteMergeableUser } from './userMerge-testFixtures';
-import { deleteElementById } from '../../../../src/database/middleware';
+import { deleteElementById, patchAttribute } from '../../../../src/database/middleware';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
@@ -79,5 +81,24 @@ describe('userMerge source disable handler', () => {
     const untouched = await loadIndividual(individual.id);
     expect(untouched?.x_opencti_firstname ?? null).toBeNull();
     expect(untouched?.x_opencti_lastname ?? null).toBeNull();
+  });
+
+  // The merged-away account keeps its password but is disabled: its old hashes have no use left
+  it('should delete the password history of the source and leave the one of the target', async () => {
+    const source = await addNamedUser('userMerge disable history source', 'usermerge-disable-history-source@opencti.invalid');
+    const target = await addNamedUser('userMerge disable history target', 'usermerge-disable-history-target@opencti.invalid');
+    const sourceHistory = [bcrypt.hashSync('Source-Old-1!', 4)];
+    const targetHistory = [bcrypt.hashSync('Target-Old-1!', 4)];
+    await patchAttribute(testContext, SYSTEM_USER, source.id, ENTITY_TYPE_USER, { password_history: sourceHistory });
+    await patchAttribute(testContext, SYSTEM_USER, target.id, ENTITY_TYPE_USER, { password_history: targetHistory });
+    const handlerContext = { context: testContext, sourceId: source.id, targetId: target.id } as unknown as UserMergeHandlerContext;
+    const plan = await userMergeSourceDisableHandler.compute(handlerContext);
+    await userMergeSourceDisableHandler.apply(handlerContext, plan);
+    const loadHistory = async (id: string) => {
+      const stored = await storeLoadById<BasicStoreEntity & { password_history?: string[] }>(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+      return stored?.password_history ?? [];
+    };
+    expect(await loadHistory(source.id)).toEqual([]);
+    expect(await loadHistory(target.id)).toEqual(targetHistory);
   });
 });

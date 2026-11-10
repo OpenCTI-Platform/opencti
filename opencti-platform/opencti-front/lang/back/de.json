@@ -851,6 +851,8 @@
   "Participants": "Teilnehmer",
   "Password": "Kennwort",
   "Password (encrypted)": "Kennwort (verschlüsselt)",
+  "Password history": "Passwortverlauf",
+  "Password history count": "Anzahl der Passwörter im Verlauf",
   "Password policy, users visibility and main organization": "Passwortrichtlinie, Sichtbarkeit der Benutzer und Hauptorganisation",
   "Password valid until": "Passwort gültig bis",
   "Password validity in days": "Gültigkeitsdauer des Passworts in Tagen",
