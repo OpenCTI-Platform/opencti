@@ -42,6 +42,12 @@ import { createReleaseScheduler, type ReleaseScheduler } from '../intake/workerl
 import { createImportContext, type ImportContext } from '../intake/stix-import/context';
 import { type ImportClient, ImportClientError, type ImportLogger } from '../intake/stix-import/types';
 import { connectorsForWorker } from '../modules/connector/connector-domain';
+import { connectorConfig } from '../modules/connector/connector-rabbitmq';
+import { fullEntitiesList } from '../database/middleware-loader';
+import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
+import { lockResources } from '../lock/master-lock';
+import { TYPE_LOCK_ERROR } from '../config/errors';
+import { consumedPushQueues, createOrderedQueuesLeadership, intakeLockKey } from '../intake/workerless/push-queues';
 import { rehydrateFiles, removeStagedFiles, stageFiles } from '../intake/intake-files';
 import { intakeEnvelopeOfMessage, type IntakeEnvelope } from '../intake/intake-envelope';
 import { reportWorkProgress } from '../domain/work';
@@ -784,10 +790,20 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     }
     return context;
   };
+  // multi_writer: the queues of the stream synchronizations are consumed by the platform holding the
+  // intake's historical lock only (push-queues.ts)
+  const leadership = SEQUENCER_CONFIG.multiWriter
+    ? createOrderedQueuesLeadership(() => lockResources([CHUNK_INTAKE_MANAGER_KEY], { retryCount: 0 })
+        .catch((e: any) => (e?.name === TYPE_LOCK_ERROR ? null : Promise.reject(e))))
+    : null;
   const listQueues = async () => {
     const context = executionContext(CHUNK_INTAKE_MANAGER_CONTEXT);
     // One consumer per queue, as the worker: connectorsForWorker lists some queues twice (background tasks)
-    return [...new Set((await connectorsForWorker(context, SYSTEM_USER)).map((connector: any) => connector.config?.push).filter((queue: unknown): queue is string => typeof queue === 'string'))];
+    const queues = [...new Set((await connectorsForWorker(context, SYSTEM_USER)).map((connector: any) => connector.config?.push).filter((queue: unknown): queue is string => typeof queue === 'string'))];
+    if (!leadership || await leadership.refresh()) return queues;
+    const syncs = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_SYNC]);
+    const ordered = new Set([connectorConfig('sync').push, ...syncs.map((sync) => connectorConfig(sync.internal_id).push)]);
+    return consumedPushQueues(queues, ordered, false);
   };
   // The operations are released against the sequencer's queue: R* = factor x max batch
   const setPoint = Math.max(1, Math.round(PUSH_READY_DEPTH_FACTOR * SEQUENCER_CONFIG.maxBatchSize));
@@ -843,9 +859,11 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
   );
   return {
     ...consumer,
+    alive: () => consumer.alive() && !leadership?.lost(),
     close: async () => {
       unsubscribe();
       await consumer.close();
+      await leadership?.release();
     },
   };
 };
@@ -953,7 +971,8 @@ const CHUNK_INTAKE_MANAGER_DEFINITION: ManagerDefinition = {
     handlerInitializer: chunkIntakeInitializer,
     interval: SCHEDULE_TIME,
     infiniteInterval: SCHEDULE_TIME,
-    lockKey: CHUNK_INTAKE_MANAGER_KEY,
+    // multi_writer: one intake per platform, each under its own lock (push-queues.ts)
+    lockKey: intakeLockKey(CHUNK_INTAKE_MANAGER_KEY, SEQUENCER_CONFIG.multiWriter, SEQUENCER_CONFIG.nodeId),
   },
   enabledByConfig: CHUNK_INTAKE_MANAGER_ENABLED,
   enabledToStart(): boolean {

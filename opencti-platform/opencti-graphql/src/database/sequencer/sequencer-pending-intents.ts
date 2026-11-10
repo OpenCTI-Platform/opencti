@@ -26,6 +26,7 @@ import { SEQUENCER_DEFERRED_ERROR } from '../../config/errors';
 import { getInstanceIds } from '../../schema/identifier';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { sequencerMetrics } from './sequencer-metrics';
+import { NODE_FIELD_MAPPING, ownedPendingQuery, recordOwner } from './sequencer-multi-writer';
 import type { IntentKind, SequencerIntent } from './sequencer-intent';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type IntakeEnvelope, intakeEnvelopeOf } from '../../intake/intake-envelope';
@@ -55,6 +56,8 @@ export interface PendingIntentRecord {
   // handed = an operation re-executed and RETAINED AGAIN by the loop as an intent record,
   // which now owns the work bookkeeping: terminal here, no work report from this record
   status: 'pending' | 'applied' | 'expired' | 'failed' | 'handed';
+  // multi_writer: the node that owns it (sequencer-multi-writer.ts)
+  node?: string;
   // Original AuthUser, MEMORY-ONLY: keeps the creator attribution of the re-submitted
   // creation; records rehydrated after a restart are re-submitted as SYSTEM_USER with a
   // worker origin (documented divergence, same as pending refs).
@@ -66,6 +69,7 @@ interface EsOps {
   createIndex: (index: string, mappingProperties: Record<string, any>) => Promise<any>;
   bulk: (body: any[]) => Promise<any>;
   search: (query: any) => Promise<any>;
+  putMapping?: (index: string, mappingProperties: Record<string, any>) => Promise<void>;
 }
 let esOps: EsOps | null = null;
 export const registerPendingIntentsEsOps = (ops: EsOps) => {
@@ -238,6 +242,7 @@ export const deferIntents = async (deferrals: { intent: SequencerIntent; missing
         updated_at: now,
         attempts: 0,
         status: 'pending',
+        ...recordOwner(),
         user: intent.user,
       });
       sequencerMetrics.pendingIntentEvent('deferred');
@@ -301,6 +306,7 @@ export const deferOperation = async ({ operation, envelope, user, missing }: Pen
       updated_at: now,
       attempts: 0,
       status: 'pending',
+      ...recordOwner(),
       user,
     };
     sequencerMetrics.pendingIntentEvent('deferred');
@@ -496,15 +502,17 @@ export const initPendingIntents = async () => {
       updated_at: { type: 'long' },
       attempts: { type: 'integer' },
       status: { type: 'keyword' },
+      ...NODE_FIELD_MAPPING,
     });
   } else {
+    if (SEQUENCER_CONFIG.multiWriter && esOps.putMapping) await esOps.putMapping(PENDING_INTENTS_INDEX, NODE_FIELD_MAPPING);
     let after: any[] | undefined;
     for (;;) {
       const query: any = {
         index: PENDING_INTENTS_INDEX,
         size: 2000,
         sort: [{ created_at: 'asc' }, { _shard_doc: 'asc' }],
-        query: { term: { status: 'pending' } },
+        query: ownedPendingQuery(SEQUENCER_CONFIG.multiWriter, SEQUENCER_CONFIG.nodeId),
       };
       if (after) query.search_after = after;
       const result = await esOps.search(query);

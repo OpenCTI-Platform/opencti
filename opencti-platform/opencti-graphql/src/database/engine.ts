@@ -1478,6 +1478,16 @@ export const elCreateIndexWithMapping = async (index: string, mappingProperties:
   }
   return null;
 };
+// POC ingestion sequencer (task 0040): fields added to an existing index of the sequencer (the
+// platform template is dynamic:strict, a document with an unmapped field is refused)
+export const elPutIndexMappingProperties = async (index: string, properties: Record<string, any>): Promise<void> => {
+  const putMappingArgs = { index, body: { properties } };
+  if (isElkEngine(engine)) {
+    await engine.indices.putMapping(putMappingArgs);
+  } else {
+    await engine.indices.putMapping(putMappingArgs);
+  }
+};
 export const elCreateIndices = async (indexesToCreate = WRITE_PLATFORM_INDICES): Promise<any[]> => {
   await updateCoreSettings();
   await elCreateLifecyclePolicy();

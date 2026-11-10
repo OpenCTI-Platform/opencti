@@ -3,6 +3,7 @@
 // the platform behaves exactly as its base commit, which provides the control run on the same
 // build. Knob semantics: plan 0009 §2.6 (the size caps are safety bounds sitting above the
 // structural ceiling = offered worker concurrency; the gather window only matters at mid-load).
+import { hostname } from 'node:os';
 import conf, { booleanConf, logApp } from '../../config/conf';
 
 export type SequencerMode = 'passthrough' | 'batch';
@@ -49,6 +50,13 @@ export interface SequencerConfig {
   deferredWaitMaxExpiries: number;
   deferredReadmitRatio: number;
   origin: string;
+  // task 0040 multi-platform, step 1: every platform runs its own intake and loop (no election);
+  // what a batch checked before its lock is read again under it, retention records are owned per
+  // node (KB opencti-sequencer-multi-platform-scaling)
+  multiWriter: boolean;
+  // The node owning the retention records it writes: stable across restarts (app:node_identifier),
+  // the host name otherwise
+  nodeId: string;
 }
 
 const readConfig = (): SequencerConfig => {
@@ -118,6 +126,8 @@ const readConfig = (): SequencerConfig => {
     // for the queue drain); the queue also gets at least this share of the cap every cycle
     deferredReadmitRatio: Number(conf.get('app:ingestion_sequencer:deferred_readmit_ratio') ?? 0.5),
     origin: conf.get('app:ingestion_sequencer:origin') ?? 'worker',
+    multiWriter: booleanConf('app:ingestion_sequencer:multi_writer', false),
+    nodeId: conf.get('app:node_identifier') || hostname(),
   };
 };
 

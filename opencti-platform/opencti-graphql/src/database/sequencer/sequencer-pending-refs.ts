@@ -16,6 +16,7 @@ import { logApp } from '../../config/conf';
 import { getInstanceIds } from '../../schema/identifier';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { sequencerMetrics } from './sequencer-metrics';
+import { NODE_FIELD_MAPPING, ownedPendingQuery, recordOwner } from './sequencer-multi-writer';
 
 export const PENDING_REFS_INDEX = 'opencti_sequencer_pending_refs';
 
@@ -29,6 +30,8 @@ export interface PendingRefRecord {
   created_at: number;
   attempts: number;
   status: 'pending' | 'reconciled' | 'expired' | 'void';
+  // multi_writer: the node that owns it (sequencer-multi-writer.ts)
+  node?: string;
   // Original AuthUser, MEMORY-ONLY (never persisted): keeps the reconciled edge's creator
   // attribution identical to a normal write. After a restart the rehydrated records lose
   // it and the sweeper re-asserts as SYSTEM_USER (documented divergence).
@@ -60,6 +63,7 @@ interface EsOps {
   createIndex: (index: string, mappingProperties: Record<string, any>) => Promise<any>;
   bulk: (body: any[]) => Promise<any>;
   search: (query: any) => Promise<any>;
+  putMapping?: (index: string, mappingProperties: Record<string, any>) => Promise<void>;
 }
 let esOps: EsOps | null = null;
 export const registerPendingRefsEsOps = (ops: EsOps) => {
@@ -110,6 +114,7 @@ export const buildPendingRecords = (inputs: StrippedRefInput[]): PendingRefRecor
     created_at: now,
     attempts: 0,
     status: 'pending' as const,
+    ...recordOwner(),
     user: s.user,
   }));
 };
@@ -259,8 +264,10 @@ export const initPendingRefs = async () => {
       created_at: { type: 'long' },
       attempts: { type: 'integer' },
       status: { type: 'keyword' },
+      ...NODE_FIELD_MAPPING,
     });
   } else {
+    if (SEQUENCER_CONFIG.multiWriter && esOps.putMapping) await esOps.putMapping(PENDING_REFS_INDEX, NODE_FIELD_MAPPING);
     // rehydrate the complete index (search_after pages; population is small by design)
     let after: any[] | undefined;
     for (;;) {
@@ -268,7 +275,7 @@ export const initPendingRefs = async () => {
         index: PENDING_REFS_INDEX,
         size: 5000,
         sort: [{ created_at: 'asc' }, { _shard_doc: 'asc' }],
-        query: { term: { status: 'pending' } },
+        query: ownedPendingQuery(SEQUENCER_CONFIG.multiWriter, SEQUENCER_CONFIG.nodeId),
       };
       if (after) query.search_after = after;
       const result = await esOps.search(query);

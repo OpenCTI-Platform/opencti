@@ -15,14 +15,15 @@
 // Errors are caught per intent and rejected on its promise: the GraphQL error contract is
 // unchanged. Fail-open watchdog: a dead loop sends every later submit direct and logs.
 import conf, { logApp } from '../../config/conf';
-import { MissingReferenceFinalError } from '../../config/errors';
+import { MissingReferenceFinalError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { generateStandardId, getInputIds, getInstanceIds } from '../../schema/identifier';
 import { idLabel } from '../../schema/schema-labels';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
-import { elCreateIndexWithMapping, elFindByIds, elFlushSequencerWrites, elIndexExists, elRawBulk, elRawSearch } from '../engine';
+import { elCreateIndexWithMapping, elFindByIds, elFlushSequencerWrites, elIndexExists, elPutIndexMappingProperties, elRawBulk, elRawSearch } from '../engine';
+import { ignoreIndexAlreadyExists } from './sequencer-multi-writer';
 import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps } from './sequencer-pending-refs';
 import type { StrippedRef, StrippedRefInput } from './sequencer-pending-refs';
 import { computeApplyLevels, groupIndicesByLevel, runBounded } from './sequencer-apply-levels';
@@ -293,7 +294,8 @@ const warmResolveAhead = async (batch: SequencerIntent[]) => {
     sequencerIdentityMap.ingestBare(hits);
     sequencerMetrics.esOp('search');
   }
-  if (withRefsLoader) {
+  // multi_writer: the diff bases are read under the batch lock, a warm one would be read again
+  if (withRefsLoader && !SEQUENCER_CONFIG.multiWriter) {
     const targetIds = new Set<string>();
     entityCandidateIds.forEach((id) => {
       if (sequencerIdentityMap.hasBare(id)) targetIds.add(id);
@@ -308,42 +310,9 @@ const warmResolveAhead = async (batch: SequencerIntent[]) => {
   sequencerMetrics.phase('resolve_ahead', (Date.now() - t0) / 1000);
 };
 
-const preResolveBatch = async (batch: SequencerIntent[]) => {
-  const t0 = Date.now();
-  const m0 = sequencerMetrics.mark();
-  const context = executionContext('sequencer', SYSTEM_USER);
-  // s10.3: the negative cache and the dedup prefetch are strictly per-batch state
-  sequencerIdentityMap.clearAbsent();
-  dedupPrefetch.clear();
-  dedupPrefetchEndpoints.clear();
-  const { typedIds, untypedIds, entityCandidateIds } = collectBatchResolveIds(batch);
-  const typedMisses: string[] = [];
-  const typedTypes = new Set<string>();
-  typedIds.forEach((ids, type) => {
-    ids.forEach((id) => {
-      if (!sequencerIdentityMap.hasBare(id)) {
-        typedMisses.push(id);
-        typedTypes.add(type);
-      }
-    });
-  });
-  const untypedMisses = Array.from(untypedIds).filter((id) => !sequencerIdentityMap.hasBare(id));
-  if (typedMisses.length > 0) {
-    const hits = await inPackets(typedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { type: Array.from(typedTypes), searchCaller: 'sequencer_preresolve' }) as Promise<any[]>);
-    sequencerIdentityMap.ingestBare(hits);
-    sequencerMetrics.esOp('search');
-    // s10.3: probed under the type union and not found = known absent for any query whose
-    // type filter is a subset of that union (see sequencer-identity-map)
-    sequencerIdentityMap.markAbsent(typedMisses.filter((id) => !sequencerIdentityMap.hasBare(id)), Array.from(typedTypes));
-  }
-  if (untypedMisses.length > 0) {
-    const hits = await inPackets(untypedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { searchCaller: 'sequencer_preresolve' }) as Promise<any[]>);
-    sequencerIdentityMap.ingestBare(hits);
-    sequencerMetrics.esOp('search');
-    // probed with no type filter = unconditionally absent
-    sequencerIdentityMap.markAbsent(untypedMisses.filter((id) => !sequencerIdentityMap.hasBare(id)), null);
-  }
-  // step 2: upsert targets = entity candidate ids now resolved; load their diff basis once
+// step 2 of the pre-resolution: upsert targets = entity candidate ids now resolved; load their
+// diff basis once
+const loadUpsertBases = async (context: AuthContext, entityCandidateIds: Set<string>) => {
   if (withRefsLoader) {
     const targetIds = new Set<string>();
     entityCandidateIds.forEach((id) => {
@@ -356,6 +325,10 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
       sequencerMetrics.esOp('search', 3); // element + meta rels + their targets
     }
   }
+};
+
+// step 3 of the pre-resolution
+const prefetchRelationDedup = async (context: AuthContext, batch: SequencerIntent[]) => {
   // step 3 (s10.3 rung 1): dedup prefetch for the batch's relation intents (see header note)
   if (dedupLoader) {
     const jobs: { key: string; inputIds: string[]; input: Record<string, any>; run: () => Promise<any[]> }[] = [];
@@ -437,7 +410,73 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
       });
     }
   }
+};
+
+const preResolveBatch = async (batch: SequencerIntent[]) => {
+  const t0 = Date.now();
+  const m0 = sequencerMetrics.mark();
+  const context = executionContext('sequencer', SYSTEM_USER);
+  // s10.3: the negative cache and the dedup prefetch are strictly per-batch state
+  sequencerIdentityMap.clearAbsent();
+  dedupPrefetch.clear();
+  dedupPrefetchEndpoints.clear();
+  const { typedIds, untypedIds, entityCandidateIds } = collectBatchResolveIds(batch);
+  const typedMisses: string[] = [];
+  const typedTypes = new Set<string>();
+  typedIds.forEach((ids, type) => {
+    ids.forEach((id) => {
+      if (!sequencerIdentityMap.hasBare(id)) {
+        typedMisses.push(id);
+        typedTypes.add(type);
+      }
+    });
+  });
+  const untypedMisses = Array.from(untypedIds).filter((id) => !sequencerIdentityMap.hasBare(id));
+  if (typedMisses.length > 0) {
+    const hits = await inPackets(typedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { type: Array.from(typedTypes), searchCaller: 'sequencer_preresolve' }) as Promise<any[]>);
+    sequencerIdentityMap.ingestBare(hits);
+    sequencerMetrics.esOp('search');
+    // s10.3: probed under the type union and not found = known absent for any query whose
+    // type filter is a subset of that union (see sequencer-identity-map)
+    sequencerIdentityMap.markAbsent(typedMisses.filter((id) => !sequencerIdentityMap.hasBare(id)), Array.from(typedTypes));
+  }
+  if (untypedMisses.length > 0) {
+    const hits = await inPackets(untypedMisses, (packet) => elFindByIds(context, SYSTEM_USER, packet, { searchCaller: 'sequencer_preresolve' }) as Promise<any[]>);
+    sequencerIdentityMap.ingestBare(hits);
+    sequencerMetrics.esOp('search');
+    // probed with no type filter = unconditionally absent
+    sequencerIdentityMap.markAbsent(untypedMisses.filter((id) => !sequencerIdentityMap.hasBare(id)), null);
+  }
+  // task 0040 multi_writer: another platform may write between this resolution and the batch
+  // lock, the diff bases and the relation dedup are read under the lock (resolveUnderLock)
+  if (!SEQUENCER_CONFIG.multiWriter) {
+    await loadUpsertBases(context, entityCandidateIds);
+    await prefetchRelationDedup(context, batch);
+  }
   sequencerMetrics.phase('resolve', (Date.now() - t0) / 1000, m0);
+};
+
+// task 0040 multi_writer: the batch lock is held. The ids the resolution found absent are searched
+// again: a platform that created one released its lock after its refresh, so the search sees it,
+// and the batch must resolve again (returns the elements found). Otherwise the diff bases and the
+// relation dedup are read now, under the lock.
+const resolveUnderLock = async (batch: SequencerIntent[]): Promise<any[]> => {
+  const t0 = Date.now();
+  const m0 = sequencerMetrics.mark();
+  const context = executionContext('sequencer', SYSTEM_USER);
+  const absent = sequencerIdentityMap.knownAbsentIds();
+  if (absent.length > 0) {
+    const found = await inPackets(absent, (packet) => elFindByIds(context, SYSTEM_USER, packet, { searchCaller: 'sequencer_recheck' }) as Promise<any[]>);
+    sequencerMetrics.esOp('search');
+    if (found.length > 0) {
+      sequencerMetrics.phase('resolve_locked', (Date.now() - t0) / 1000, m0);
+      return found;
+    }
+  }
+  await loadUpsertBases(context, collectBatchResolveIds(batch).entityCandidateIds);
+  await prefetchRelationDedup(context, batch);
+  sequencerMetrics.phase('resolve_locked', (Date.now() - t0) / 1000, m0);
+  return [];
 };
 
 // D4: one lock set per batch, mirroring every direct-path acquisition: input ids, stored
@@ -579,7 +618,9 @@ const runBatchLoop = async () => {
   if (SEQUENCER_CONFIG.stripReconcile) {
     registerPendingRefsEsOps({
       indexExists: (index) => elIndexExists(index),
-      createIndex: (index, mappingProperties) => elCreateIndexWithMapping(index, mappingProperties),
+      // multi_writer: the platforms start together, the second creation finds the index created
+      createIndex: (index, mappingProperties) => elCreateIndexWithMapping(index, mappingProperties).catch(ignoreIndexAlreadyExists),
+      putMapping: (index, mappingProperties) => elPutIndexMappingProperties(index, mappingProperties),
       bulk: async (body) => {
         const esContext = executionContext('sequencer', SYSTEM_USER);
         return elRawBulk(esContext, { body });
@@ -595,7 +636,8 @@ const runBatchLoop = async () => {
   // today the chunk intake manager's)
   registerPendingIntentsEsOps({
     indexExists: (index) => elIndexExists(index),
-    createIndex: (index, mappingProperties) => elCreateIndexWithMapping(index, mappingProperties),
+    createIndex: (index, mappingProperties) => elCreateIndexWithMapping(index, mappingProperties).catch(ignoreIndexAlreadyExists),
+    putMapping: (index, mappingProperties) => elPutIndexMappingProperties(index, mappingProperties),
     bulk: async (body) => {
       const esContext = executionContext('sequencer', SYSTEM_USER);
       return elRawBulk(esContext, { body });
@@ -875,10 +917,22 @@ const runBatchLoop = async () => {
     }
     // 4. one batch lock over the predicted key set
     const lockKeys = batchLockKeys(plan.order);
+    // task 0040 multi_writer: the planned intents start a new cycle (first of the next batch)
+    const replanNext = () => {
+      carried = plan.order.flatMap(({ leader, absorbed }) => [leader, ...absorbed]);
+    };
     let lock;
     try {
       lock = await lockResources(lockKeys, {});
-    } catch (err) {
+    } catch (err: any) {
+      // multi_writer: another platform held a key past the lock's retry budget, the batch waits
+      // its turn again instead of failing its intents (the workers' clients would retry them)
+      if (SEQUENCER_CONFIG.multiWriter && err?.name === TYPE_LOCK_ERROR) {
+        sequencerMetrics.mapEvent('lock_retry');
+        replanNext();
+        await settleDeferrals();
+        continue;
+      }
       plan.order.forEach(({ leader, absorbed }) => {
         sequencerMetrics.intent('failed', leader.kind);
         leader.reject(err);
@@ -889,6 +943,24 @@ const runBatchLoop = async () => {
       });
       await settleDeferrals();
       continue;
+    }
+    if (SEQUENCER_CONFIG.multiWriter) {
+      let found: any[] = [];
+      try {
+        found = await resolveUnderLock(plan.order.flatMap(({ leader, absorbed }) => [leader, ...absorbed]));
+      } catch (err) {
+        logApp.error('[SEQUENCER] resolution under the batch lock failed, applying without it', { cause: err });
+      }
+      // an id the batch planned to create exists now: written by another platform since the
+      // resolution, the batch resolves and plans again
+      if (found.length > 0) {
+        sequencerMetrics.mapEvent('recheck_conflict', found.length);
+        sequencerIdentityMap.ingestBare(found);
+        await lock.unlock();
+        replanNext();
+        await settleDeferrals();
+        continue;
+      }
     }
     setCurrentBatchLock({ heldKeys: new Set(lockKeys), signal: lock.signal, onMiss: recordLockMiss });
     // 5. apply leaders one at a time (C6) with the Stage E write buffer armed, then commit:

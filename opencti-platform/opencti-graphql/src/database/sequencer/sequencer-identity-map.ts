@@ -268,6 +268,12 @@ export class SequencerIdentityMap {
     return types.every((t) => probed.includes(t));
   }
 
+  // task 0040 multi_writer: the ids the running batch's resolution found absent, searched again
+  // under the batch lock
+  knownAbsentIds(): string[] {
+    return [...new Set([...this.absentGlobal, ...this.absentTyped.keys()])];
+  }
+
   clearAbsent() {
     this.absentGlobal.clear();
     this.absentTyped.clear();

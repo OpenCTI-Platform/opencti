@@ -7,8 +7,8 @@ import type { Attributes, Counter, Gauge, Histogram } from '@opentelemetry/api';
 import { meterManager } from '../../config/tracing';
 
 export type IntentOutcome = 'applied' | 'coalesced' | 'parked' | 'expired' | 'failed' | 'bypassed' | 'deferred' | 'retained';
-export type BatchPhase = 'resolve' | 'order' | 'apply' | 'commit' | 'events' | 'resolve_ahead';
-export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent' | 'written_hit' | 'written_shielded';
+export type BatchPhase = 'resolve' | 'order' | 'apply' | 'commit' | 'events' | 'resolve_ahead' | 'resolve_locked';
+export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent' | 'written_hit' | 'written_shielded' | 'recheck_conflict' | 'lock_retry';
 
 class SequencerMetrics {
   // Hot-path counters (one add per intent, per identity map lookup): plain totals, exported at
