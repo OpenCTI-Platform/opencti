@@ -175,7 +175,7 @@ import { pushAll } from '../../utils/arrayUtil';
 import { USER_MERGED_INTO_FIELD } from '../userMerge/userMerge-types';
 import { verifyXtmJwt, isOwnIssuer } from '../../domain/xtm-auth';
 import { getSettings } from '../../domain/settings';
-import { clearLocalAuthLockout, isLocalAuthLockedError, loadLocalAuthLockout, releaseLocalAuthAttempt } from '../../domain/local-auth-lockout';
+import { clearLocalAuthLockout, isLocalAuthLockedError, loadLocalAuthLockout } from '../../domain/local-auth-lockout';
 import {
   EnvStrategyType,
   getConfigurationAdminEmail,
@@ -1483,8 +1483,9 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     await clearLocalAuthLockout(element.user_email);
   }
   // The lockout is keyed on the email: the failures of a previous email must not be inherited by its next owner
-  if (userToUpdate.user_email && normalizeEmail(userToUpdate.user_email) !== normalizeEmail(element.user_email)) {
-    await clearLocalAuthLockout(userToUpdate.user_email);
+  const previousEmail = userToUpdate.user_email;
+  if (previousEmail && element.user_email && normalizeEmail(previousEmail) !== normalizeEmail(element.user_email)) {
+    await clearLocalAuthLockout(previousEmail);
   }
   // The password history is internal bookkeeping of a password change: it never reaches the audit log
   const auditedInputs = inputs.filter((i) => i.key !== 'password_history');
@@ -2084,7 +2085,9 @@ export const login = async (email: string, password: string, sourceIp?: string, 
     }
     throw attempt?.failure ?? AuthenticationFailure();
   }
+  // A right password is not a failure: its attempt is undone, the other failures are kept.
   // The caller clears the lockout once the login is fully accepted (IP whitelist, local auth enabled, API access, MFA)
+  await attempt?.release();
   return user;
 };
 
@@ -2195,12 +2198,9 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
     });
     if (user && (isLocalAuthEnabled || user.id === OPENCTI_ADMIN_UUID)) {
       await checkIpWhitelistOnLogin(context.req?.ip, user.id);
+      // The right password already undid its own attempt in login(). With MFA, the other failures are kept
+      // until a valid MFA code, otherwise logging in again would reset them between MFA guesses
       loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
-      // The right password still waits for its MFA code: its attempt is lifted, but the counter is kept
-      // until a valid MFA code, otherwise logging in again would reset it between MFA guesses
-      if (loggedUser.otp_activated) {
-        await releaseLocalAuthAttempt(input.email);
-      }
     }
   }
   if (loggedUser) {
@@ -2475,8 +2475,7 @@ export const authenticateUserByBasicAuth = async (context: AuthContext, req: Ori
   const user = platformUsers.get(loggedUser.id);
   if (user) {
     if (!isUserHasCapability(user, 'APIACCESS_USEBASICAUTH')) {
-      // The password was right: its attempt is not a failure, but the login is not accepted either, so the counter is kept
-      await releaseLocalAuthAttempt(basicAuth.username);
+      // The password was right, so login() already undid its attempt, but the login is not accepted: the other failures are kept
       throw ForbiddenAccess('You are not allowed to use API basic auth');
     }
     await clearLocalAuthLockout(basicAuth.username);

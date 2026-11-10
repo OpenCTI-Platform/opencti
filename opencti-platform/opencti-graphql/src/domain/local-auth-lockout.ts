@@ -2,7 +2,9 @@
 // Each failed local password login or MFA code is counted within the window, without any lock.
 // Once the max attempts are reached, the final action applies: a lock for the lockout duration, or the account set to Locked.
 // The temporary lock lives in Redis only: the account status is not changed, and open sessions and API tokens keep working.
+// The permanent lock lasts until an administrator sets the account back to Active, or until a login with another provider.
 
+import { v4 as uuid } from 'uuid';
 import { ACCOUNT_STATUSES, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
@@ -38,9 +40,9 @@ export const LOCAL_AUTH_LOCKOUT_KEYS = Object.keys(LOCAL_AUTH_LOCKOUT_DEFAULTS) 
 
 const SECOND_MS = 1000;
 const MINUTE_MS = 60 * SECOND_MS;
-// Without a window, the failures of a real account are kept until a successful login or an administrator.
-// The failures of an unknown email are still forgotten after a day, so that random emails cannot fill Redis
-const UNKNOWN_EMAIL_FAILURES_RETENTION_MS = 24 * 60 * MINUTE_MS;
+// The failures and the permanent lock of a real account are kept until a successful login or an administrator.
+// Those of an unknown email are still forgotten after a day, so that random emails cannot fill Redis
+const UNKNOWN_EMAIL_RETENTION_MS = 24 * 60 * MINUTE_MS;
 
 // The lock type and the remaining time are sent in the error data, so that the login form can show them.
 // A permanent lock has no remaining time: an administrator must unlock the account
@@ -90,13 +92,16 @@ const getLockoutTimings = async (userId?: string): Promise<LocalAuthLockoutTimin
     ? settings.local_auth_lockout_admin_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_admin_max_attempts
     : settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts;
   const windowMs = (settings.local_auth_lockout_window ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window) * MINUTE_MS;
+  const finalAction = settings.local_auth_lockout_final_action ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_final_action;
+  const durationMs = (settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration) * MINUTE_MS;
+  // The permanent lock never expires for an existing account (0), including the service accounts and the external users
+  // that are never set to Locked: otherwise each expiry would give new attempts
+  const permanentLockMs = userId ? 0 : UNKNOWN_EMAIL_RETENTION_MS;
   return {
     maxAttempts,
-    windowMs: windowMs === 0 && !userId ? UNKNOWN_EMAIL_FAILURES_RETENTION_MS : windowMs,
-    // The permanent final action sets the account to Locked. Its lock in Redis only reports it, for the same duration,
-    // so that an unknown email is reported the same way as an existing account
-    finalLockMs: (settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration) * MINUTE_MS,
-    finalAction: settings.local_auth_lockout_final_action ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_final_action,
+    windowMs: windowMs === 0 && !userId ? UNKNOWN_EMAIL_RETENTION_MS : windowMs,
+    finalLockMs: finalAction === LocalAuthLockoutFinalAction.Permanent ? permanentLockMs : durationMs,
+    finalAction,
   };
 };
 
@@ -116,31 +121,26 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
   return {
     // Counts the attempt as a failure before the password or the MFA code is checked, and throws the lock error during a lock.
     // Returns what to do if the check fails: the lock error to throw once the max attempts are reached
-    // (below, the usual authentication failure), and whether the account must be set to Locked (permanent final action)
+    // (below, the usual authentication failure), and whether the account must be set to Locked (permanent final action).
+    // If the check succeeds, release undoes this attempt only: its lock, but not the lock of a concurrent failure
     recordAttempt: async () => {
-      const { allowed, remainingMs, lockType, isFinal } = await redisRecordLocalAuthAttempt(emailHash, timings);
+      const attemptToken = uuid();
+      const { allowed, remainingMs, lockType, isFinal } = await redisRecordLocalAuthAttempt(emailHash, timings, attemptToken);
       if (!allowed) {
         throw LocalAuthLocked(lockType, remainingMs);
       }
-      return { failure: isFinal ? LocalAuthLocked(lockType, remainingMs) : undefined, locksAccount: isFinal && lockType === 'permanent' };
+      return {
+        failure: isFinal ? LocalAuthLocked(lockType, remainingMs) : undefined,
+        locksAccount: isFinal && lockType === 'permanent',
+        release: () => redisReleaseLocalAuthAttempt(emailHash, attemptToken),
+      };
     },
-    // A right password that still waits for its MFA code: undoes this attempt and its lock, but keeps the counter
-    release: () => redisReleaseLocalAuthAttempt(emailHash),
     clear: () => redisClearLocalAuthLockout(emailHash),
   };
 };
 
 // Called once a login is fully accepted (local, Basic auth, another provider or a valid MFA code): resets the lockout of the email.
-// Also when the lockout is disabled in the settings, so that enabling it again never brings back an old lock
+// Also when the lockout or its feature flag is disabled, so that enabling it again never brings back an old lock
 export const clearLocalAuthLockout = async (email: string) => {
-  if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
-    return;
-  }
   await redisClearLocalAuthLockout(hashSHA256(normalizeEmail(email)));
-};
-
-// Called when a right password still waits for its MFA code, so that only a valid MFA code resets the counter
-export const releaseLocalAuthAttempt = async (email: string) => {
-  const lockout = await loadLocalAuthLockout(email);
-  await lockout?.release();
 };

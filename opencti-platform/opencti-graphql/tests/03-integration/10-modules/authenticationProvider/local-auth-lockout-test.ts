@@ -6,7 +6,7 @@ import type Express from 'express';
 import { ADMIN_USER, AMBER_GROUP, API_EMAIL, API_PASSWORD, getGroupIdByName, PLATFORM_ADMIN_GROUP, testContext } from '../../../utils/testQuery';
 import * as conf from '../../../../src/config/conf';
 import * as cache from '../../../../src/database/cache';
-import { getClientBase, localAuthLockoutKeys, redisSetForgotPasswordOtp } from '../../../../src/database/redis';
+import { getClientBase, localAuthLockoutKeys, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt, redisSetForgotPasswordOtp } from '../../../../src/database/redis';
 import { patchAttribute } from '../../../../src/database/middleware';
 import { resetCacheForEntity } from '../../../../src/database/cache';
 import { getSettingsFromDatabase } from '../../../../src/domain/settings';
@@ -258,6 +258,21 @@ describe('Local authentication lockout', () => {
       await expectLocked(login(LOCKOUT_USER.email.toUpperCase(), WRONG_PASSWORD));
     });
 
+    it('should not lift the lock of a concurrent failure when a right password is released', async () => {
+      const emailHash = hashSHA256(normalizeEmail(UNKNOWN_EMAIL));
+      const timings = { maxAttempts: 2, windowMs: 3600 * 1000, finalLockMs: LOCK_SECONDS * 1000, finalAction: 'temporary' as const };
+      // A right password is counted, then a concurrent failure reaches the max attempts and locks
+      await redisRecordLocalAuthAttempt(emailHash, timings, 'right-password');
+      expect((await redisRecordLocalAuthAttempt(emailHash, timings, 'failure')).isFinal).toBe(true);
+      // Releasing the right password undoes its own attempt only
+      await redisReleaseLocalAuthAttempt(emailHash, 'right-password');
+      expect(await getClientBase().exists(keysOf(UNKNOWN_EMAIL).lock)).toEqual(1);
+      expect(await failuresOf(UNKNOWN_EMAIL)).toEqual(1);
+      // The attempt that set the lock lifts it
+      await redisReleaseLocalAuthAttempt(emailHash, 'failure');
+      expect(await getClientBase().exists(keysOf(UNKNOWN_EMAIL).lock)).toEqual(0);
+    });
+
     it('should check no more passwords than the max attempts under concurrent attempts', async () => {
       const compareSpy = vi.spyOn(bcrypt, 'compareSync');
       const attempts = Array.from({ length: 20 }, () => login(LOCKOUT_USER.email, WRONG_PASSWORD).catch((e) => e));
@@ -420,6 +435,29 @@ describe('Local authentication lockout', () => {
       await expectPermanentlyLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD));
     });
 
+    it('should keep the permanent lock of an existing account until an administrator unlocks it', async () => {
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      // -1: the lock never expires, so that no new attempt is ever given
+      expect(await lockRemainingMs(LOCKOUT_USER.email)).toEqual(-1);
+      await expectPermanentlyLocked(login(LOCKOUT_USER.email, LOCKOUT_USER.password));
+    });
+
+    it('should forget the permanent lock of an unknown email after a day', async () => {
+      await reachMaxAttempts(UNKNOWN_EMAIL);
+      const remainingMs = await lockRemainingMs(UNKNOWN_EMAIL);
+      expect(remainingMs).toBeGreaterThan(0);
+      expect(remainingMs).toBeLessThanOrEqual(24 * 3600 * 1000);
+    });
+
+    it('should keep the permanent lock of an external user until a login with another provider', async () => {
+      const externalUser = await getUserByEmail(EXTERNAL_USER.email);
+      await reachMaxAttempts(EXTERNAL_USER.email);
+      expect(await lockRemainingMs(EXTERNAL_USER.email)).toEqual(-1);
+      // The SSO login is never blocked, and clears the lock
+      await sessionAuthenticateUser(testContext, buildRequest(), { id: externalUser!.id, internal_id: externalUser!.internal_id }, 'oidc');
+      expect(await getClientBase().exists(keysOf(EXTERNAL_USER.email).lock)).toEqual(0);
+    });
+
     it.each([
       ['a service account', SERVICE_ACCOUNT_EMAIL],
       ['an external user', EXTERNAL_USER.email],
@@ -476,6 +514,16 @@ describe('Local authentication lockout', () => {
       await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
       // Enabling the lockout again does not bring back the previous failures
       await setLockoutPolicy(LOCKOUT_POLICY);
+      expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
+    });
+
+    it('should reset the lockout on a login accepted while the feature flag is disabled', async () => {
+      await failLogin(LOCKOUT_USER.email, 2);
+      const isFeatureEnabled = conf.isFeatureEnabled;
+      vi.spyOn(conf, 'isFeatureEnabled').mockImplementation((flag: string) => (flag === conf.LOCAL_AUTH_LOCKOUT_FEATURE_FLAG ? false : isFeatureEnabled(flag)));
+      await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
+      vi.restoreAllMocks();
+      // Enabling the flag again does not bring back the previous failures
       expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
     });
 
