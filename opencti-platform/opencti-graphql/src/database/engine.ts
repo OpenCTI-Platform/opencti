@@ -59,6 +59,7 @@ import {
   DatabaseError,
   EngineShardsError,
   FunctionalError,
+  isClientAbortError,
   LockTimeoutError,
   TYPE_LOCK_ERROR,
   UnsupportedError,
@@ -636,12 +637,6 @@ export const isTransitoryError = (error: any): boolean => {
 // payload itself may trip the breaker (e.g. large attachments): replaying them would only add memory pressure.
 export const isTransitoryNonCircuitBreakingError = (error: any): boolean => {
   return !isCircuitBreakingError(error) && isTransitoryError(error);
-};
-
-// covers both engine clients: node-fetch's AbortError (ElkClient) and
-// OpenSearch's RequestAbortedError.
-export const isClientAbortError = (err: any): boolean => {
-  return err instanceof AbortError || err?.name === 'AbortError' || err?.name === 'RequestAbortedError';
 };
 
 // Use this instead of throwing DatabaseError directly when catching an error
