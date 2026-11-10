@@ -220,7 +220,7 @@ const SearchInput = (props) => {
     const { value } = event.target;
     // preventDefault also tells the library field to skip its own Enter / Escape handling
     if (showSuggestions) {
-      const rows = suggestionsRef.current.length + 1; // pages + the "Search" row
+      const rows = suggestionsRef.current.length + 1; // the "Search" row (0) + pages
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         event.preventDefault();
         const step = event.key === 'ArrowDown' ? 1 : -1;
@@ -232,7 +232,8 @@ const SearchInput = (props) => {
         closeSuggestions();
         return;
       }
-      const page = event.key === 'Enter' ? suggestionsRef.current[activeIndex] : undefined;
+      // Row 0 is "Search": it falls through to the classic Enter submit below.
+      const page = event.key === 'Enter' ? suggestionsRef.current[activeIndex - 1] : undefined;
       if (page) {
         event.preventDefault();
         handleSelectPage(page.path);
