@@ -88,7 +88,8 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
 
   Object.keys(contract.config_schema.properties).forEach((key) => {
     const { value } = connector.manager_contract_configuration?.find((a) => a.key === key) ?? {};
-    if (!value) {
+    // An empty stored value is meaningful (e.g. an emptied array): load it so it is kept on save
+    if (value === undefined || value === null) {
       return;
     }
 

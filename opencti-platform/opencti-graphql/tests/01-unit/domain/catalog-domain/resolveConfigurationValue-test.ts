@@ -163,6 +163,66 @@ describe('resolveConfigurationValue', () => {
     });
   });
 
+  describe('Partial edition', () => {
+    it('should keep the existing value when the key is omitted from the input', () => {
+      const propSchema = { type: 'boolean', default: false };
+      const existingConfig: ConnectorContractConfiguration = { key: 'bool_field', value: 'true' };
+
+      const result = resolveConfigurationValue('bool_field', propSchema, undefined, existingConfig, TEST_PUBLIC_KEY);
+
+      expect(result).toEqual(existingConfig);
+    });
+
+    it('should store an explicitly empty array instead of its default', () => {
+      const propSchema = { type: 'array', default: ['malware_families', 'attack_techniques'] };
+      const inputConfig: ContractConfigInput = { key: 'array_field', value: '' };
+      const existingConfig: ConnectorContractConfiguration = { key: 'array_field', value: 'malware_families' };
+
+      const result = resolveConfigurationValue('array_field', propSchema, inputConfig, existingConfig, TEST_PUBLIC_KEY);
+
+      expect(result).toEqual({ key: 'array_field', value: '' });
+    });
+
+    it('should store an explicitly empty array on creation', () => {
+      const propSchema = { type: 'array', default: ['malware_families'] };
+      const inputConfig: ContractConfigInput = { key: 'array_field', value: '' };
+
+      const result = resolveConfigurationValue('array_field', propSchema, inputConfig, undefined, TEST_PUBLIC_KEY);
+
+      expect(result).toEqual({ key: 'array_field', value: '' });
+    });
+
+    it('should drop an explicitly empty array without default', () => {
+      const propSchema = { type: 'array' };
+      const inputConfig: ContractConfigInput = { key: 'array_field', value: '' };
+      const existingConfig: ConnectorContractConfiguration = { key: 'array_field', value: 'a,b' };
+
+      const result = resolveConfigurationValue('array_field', propSchema, inputConfig, existingConfig, TEST_PUBLIC_KEY);
+
+      expect(result).toBeNull();
+    });
+
+    it('should clean an explicitly emptied optional non-array field', () => {
+      const propSchema = { type: 'string', default: 'default_value' };
+      const inputConfig: ContractConfigInput = { key: 'field_key', value: '' };
+      const existingConfig: ConnectorContractConfiguration = { key: 'field_key', value: 'custom' };
+
+      const result = resolveConfigurationValue('field_key', propSchema, inputConfig, existingConfig, TEST_PUBLIC_KEY);
+
+      expect(result).toBeNull();
+    });
+
+    it('should reset an explicitly emptied required non-array field to its default', () => {
+      const propSchema = { type: 'integer', default: 24 };
+      const inputConfig: ContractConfigInput = { key: 'int_field', value: '' };
+      const existingConfig: ConnectorContractConfiguration = { key: 'int_field', value: '12' };
+
+      const result = resolveConfigurationValue('int_field', propSchema, inputConfig, existingConfig, TEST_PUBLIC_KEY, true);
+
+      expect(result).toEqual({ key: 'int_field', value: '24' });
+    });
+  });
+
   describe('Password encryption', () => {
     it('should encrypt new password value', () => {
       const propSchema = {

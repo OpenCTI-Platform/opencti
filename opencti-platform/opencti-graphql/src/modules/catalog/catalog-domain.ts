@@ -192,6 +192,11 @@ export const getDefaultValueAsString = (propSchema: any): string | null => {
 
 /**
  * Resolve the final configuration value for a property
+ * - key omitted from the input: keep the stored value, or fall back to the default when nothing is stored
+ * - key provided with an empty value: an array is stored as empty (an empty list is a meaningful setting
+ *   that must stay distinguishable from its default), a password keeps its stored value,
+ *   an optional field of any other type is removed, a required one falls back to its default
+ * - key provided with a value: the value is validated (and encrypted for passwords)
  */
 export const resolveConfigurationValue = (
   propKey: string,
@@ -199,18 +204,27 @@ export const resolveConfigurationValue = (
   inputConfig: ContractConfigInput | undefined,
   existingConfig: ConnectorContractConfiguration | undefined,
   publicKey: string,
+  isRequired = false,
 ): ConnectorContractConfiguration | null => {
   const isPassword = propSchema.format === 'password';
 
   // No new value provided
-  if (!inputConfig || !inputConfig.value || inputConfig.value === '') {
-    // Keep existing password if available
-    if (isPassword && existingConfig) {
+  if (!inputConfig || !inputConfig.value) {
+    // Omitted key (partial edit) or empty password: keep what is stored
+    if (existingConfig && (!inputConfig || isPassword)) {
       return existingConfig;
     }
-    // Use default value if available
+    // Explicitly emptied optional non-array field: clean it
+    if (inputConfig && !isPassword && propSchema.type !== 'array' && !isRequired) {
+      return null;
+    }
     const defaultValue = getDefaultValueAsString(propSchema);
     if (defaultValue !== null) {
+      // Explicitly emptied array: store it empty rather than replacing it by its default
+      if (inputConfig && propSchema.type === 'array') {
+        return { key: propKey, value: '' };
+      }
+      // Use default value if available
       return { key: propKey, value: defaultValue };
     }
     return null;
@@ -412,9 +426,6 @@ export const computeConnectorTargetContract = (
     if (!hasInput && !hasExisting && (propSchema.default !== undefined && propSchema.default !== null)) {
       defaultedCount += 1;
     }
-    if (hasExisting && !hasInput) {
-      reusedCount += 1;
-    }
     if (isPassword && hasInput && inputConfig?.value !== existingConfig?.value) {
       passwordCount += 1;
     }
@@ -425,8 +436,12 @@ export const computeConnectorTargetContract = (
       inputConfig,
       existingConfig,
       publicKey,
+      isRequired,
     );
 
+    if (hasExisting && !hasInput && finalConfig === existingConfig) {
+      reusedCount += 1;
+    }
     if (finalConfig) {
       contractConfigurations.push(finalConfig);
     }
