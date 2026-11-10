@@ -18,8 +18,9 @@ testCreatedCounter['attack-pattern'] = 27;
 testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
-testCreatedCounter['case-rfi'] = 9;
-testCreatedCounter['case-rft'] = 1;
+// 32 case-rfi and 1 case-rft created by the request access workflow tests (requestAccess-test, requestAccess-domain-test, workflow-test)
+testCreatedCounter['case-rfi'] = 41;
+testCreatedCounter['case-rft'] = 2;
 testCreatedCounter.channel = 1;
 testCreatedCounter['course-of-action'] = 4;
 testCreatedCounter.credential = 1;
@@ -61,7 +62,7 @@ testCreatedCounter.location = 23; // includes 1 created and deleted by publicDas
 testCreatedCounter['mac-addr'] = 1;
 // Includes 2 created and deleted by form-submission-test (a verified form import, an existing one left as it is),
 // 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown), and 5 by ingestionDeduplication-domain-test
-testCreatedCounter.malware = 75;
+testCreatedCounter.malware = 77; // 2 by the request access workflow tests
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 29;
 testCreatedCounter.narrative = 1;
@@ -100,7 +101,7 @@ testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 33;
 // 1 by ingestionDeduplication-domain-test (an edit in the platform)
-testUpdatedCounter.malware = 23;
+testUpdatedCounter.malware = 24; // 1 org sharing by the request access workflow tests
 testUpdatedCounter.file = 27;
 testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
@@ -133,7 +134,9 @@ testUpdatedCounter['email-addr'] = 1;
 testUpdatedCounter.event = 1;
 testUpdatedCounter.persona = 1;
 testUpdatedCounter['ssh-key'] = 1;
-testUpdatedCounter['case-rfi'] = 5;
+// 42 case-rfi and 2 case-rft updated by the request access workflow tests (status transitions, decisions)
+testUpdatedCounter['case-rfi'] = 47;
+testUpdatedCounter['case-rft'] = 2;
 testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
@@ -157,6 +160,7 @@ testMergedCounter.artifact = 1;
 testMergedCounter['attack-pattern'] = 1;
 testMergedCounter['case-incident'] = 2; // 1 by workflow-closing-reason-test merge case
 testMergedCounter['intrusion-set'] = 1;
+testMergedCounter['case-rfi'] = 1; // requestAccess-test merge of a decided RFI
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
@@ -165,8 +169,9 @@ testDeletedCounter['attack-pattern'] = 22;
 testDeletedCounter.campaign = 2;
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;
-testDeletedCounter['case-rfi'] = 9;
-testDeletedCounter['case-rft'] = 1;
+// 31 case-rfi and 1 case-rft deleted by the request access workflow tests (1 more case-rfi is merged)
+testDeletedCounter['case-rfi'] = 40;
+testDeletedCounter['case-rft'] = 2;
 testDeletedCounter.channel = 1;
 testDeletedCounter['course-of-action'] = 2;
 testDeletedCounter['data-component'] = 2;
@@ -203,7 +208,7 @@ testDeletedCounter.location = 18; // includes 1 created and deleted by publicDas
 testDeletedCounter['mac-addr'] = 1;
 // Includes 2 created and deleted by form-submission-test, and 2 by stixRelationship-test and 1 by publicDashboard-test (time series breakdown),
 // and 5 by ingestionDeduplication-domain-test
-testDeletedCounter.malware = 48;
+testDeletedCounter.malware = 50; // 2 by the request access workflow tests
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 18;
 testDeletedCounter.narrative = 1;
