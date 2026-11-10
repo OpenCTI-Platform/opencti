@@ -29,7 +29,8 @@ const WidgetBreakdownSelection = () => {
   const { editorState, fieldOptions, resolution, savedFilterResolution, field, unlistedField } = useWidgetBreakdownState();
   const { parameters, perspective } = config.widget;
 
-  // Nothing to choose: a single type without any field to break it down by
+  // Nothing to choose, without a field to keep: no field to break the dataset down by, or its fields are still read,
+  // or cannot be read
   if (editorState === 'hidden' || (fieldOptions.length === 0 && !field)) {
     return null;
   }
@@ -57,7 +58,7 @@ const WidgetBreakdownSelection = () => {
             {t_i18n(label)}
           </SelectItem>
         ))}
-        {/* The field of the widget, not offered: the type of a single type, or a field kept while the fields of the dataset are unknown */}
+        {/* The field of the widget, not offered: kept while the fields of the dataset are unknown */}
         {unlistedField && (
           <SelectItem value={unlistedField.key} disabled={resolution !== 'resolved'}>
             {t_i18n(unlistedField.label)}

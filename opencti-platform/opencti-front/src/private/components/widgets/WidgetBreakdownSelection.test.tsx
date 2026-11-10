@@ -224,23 +224,23 @@ describe('WidgetBreakdownSelection', () => {
     expect(mocks.setConfigWidget).not.toHaveBeenCalled();
   });
 
-  it('keeps and lists the entity type of a dataset of a single type, which the API accepts', async () => {
+  it('shows none for the entity type of a dataset of a single type, which the API does not list, dropped on submit only', async () => {
     setWidget({ parameters: { breakdownBy: 'entity_type', breakdownLimit: 20 } });
-    const { getAllByRole, getByText } = await renderSelection();
+    const { getAllByRole, queryByText } = await renderSelection();
 
-    expect(getAllByRole('combobox')[0].textContent).toContain('Entity type');
-    expect(getByText('Maximum number of series')).toBeTruthy();
-    expect(openOptions(getAllByRole('combobox')[0])).toEqual(['None', 'Author', 'Report types', 'Entity type']);
-    expect(disabledOptions()).toEqual([]);
+    expect(getAllByRole('combobox')).toHaveLength(1);
+    expect(getAllByRole('combobox')[0].textContent).toContain('None');
+    expect(queryByText('Maximum number of series')).toBeNull();
+    expect(openOptions(getAllByRole('combobox')[0])).toEqual(['None', 'Author', 'Report types']);
     expect(mocks.setConfigWidget).not.toHaveBeenCalled();
   });
 
-  it('is not shown for a dataset without any field to break it down by, unless one is kept', async () => {
+  it('is not shown for a dataset without any field to break it down by, the type of its single type included', async () => {
     setWidget({ dataSelection: [notes] });
     expect((await renderSelection()).queryByTestId('widget-breakdown-selection')).toBeNull();
     setWidget({ dataSelection: [notes], parameters: { breakdownBy: 'entity_type' } });
-    const { getAllByRole } = await renderSelection();
-    expect(getAllByRole('combobox')[0].textContent).toContain('Entity type');
+    expect((await renderSelection()).queryByTestId('widget-breakdown-selection')).toBeNull();
+    expect(mocks.setConfigWidget).not.toHaveBeenCalled();
   });
 
   describe('fields read from the API', () => {
@@ -485,7 +485,7 @@ describe('WidgetBreakdownSelection', () => {
       expect(openFieldOptions(getAllByRole)).toEqual(['Aucun', 'Marquage', 'Type de cible', 'Type de relation', 'Type de source']);
     });
 
-    it('keeps a relationships field, and the relationship type of a single relationship type', async () => {
+    it('keeps a relationships field, not the relationship type of a single relationship type', async () => {
       setWidget({ perspective: 'relationships', type: 'line', dataSelection: [targets], parameters: { breakdownBy: 'fromTypes' } });
       const first = await renderSelection();
       expect(first.getAllByRole('combobox')[0].textContent).toContain('Source type');
@@ -493,8 +493,8 @@ describe('WidgetBreakdownSelection', () => {
 
       setWidget({ perspective: 'relationships', type: 'line', dataSelection: [targets], parameters: { breakdownBy: 'relationship_type' } });
       const { getAllByRole } = await renderSelection();
-      expect(getAllByRole('combobox')[0].textContent).toContain('Relationship type');
-      expect(openOptions(getAllByRole('combobox')[0])).toEqual(['None', 'Marking', 'Source type', 'Target type', 'Relationship type']);
+      expect(getAllByRole('combobox')[0].textContent).toContain('None');
+      expect(openOptions(getAllByRole('combobox')[0])).toEqual(['None', 'Marking', 'Source type', 'Target type']);
       expect(mocks.setConfigWidget).not.toHaveBeenCalled();
     });
 

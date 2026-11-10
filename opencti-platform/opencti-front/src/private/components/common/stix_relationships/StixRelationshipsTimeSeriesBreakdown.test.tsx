@@ -196,11 +196,13 @@ describe('StixRelationshipsTimeSeriesBreakdown', () => {
     vi.mocked(console.error).mockRestore();
   });
 
-  it('accepts the relationship type for a single relationship type, a type variable may resolve to one', () => {
-    respond([]);
-    render(makeWidget('line', { breakdownBy: 'relationship_type' }));
-    const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
-    expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ field: 'relationship_type' });
+  it('draws a stored field the editor does not list, the type of a single relationship type, when the API accepts it', async () => {
+    // An imported widget, or one written through the API: a single series
+    respond([{ label: 'targets', entity: null, values: [1, 2, 3] }]);
+    const widget = makeWidget('line', { breakdownBy: 'relationship_type' });
+    render(widget);
+    expect(queryVariables(widget)).toMatchObject({ field: 'relationship_type', relationship_type: ['targets'] });
+    expect((await drawn(mocks.lines)).series).toHaveLength(1);
   });
 
   it('says why the API refused the breakdown', () => {

@@ -39,7 +39,7 @@ const API_FIELDS: Record<string, string[]> = {
   'entities:': ['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'entity_type'],
   'entities:Report': ['createdBy', 'objectLabel', 'objectMarking', 'objectAssignee', 'objectParticipant', 'creator_id', 'x_opencti_closing_reason', 'report_types'],
   'entities:Malware': ['createdBy', 'objectLabel', 'objectMarking', 'objectAssignee', 'creator_id', 'malware_types'],
-  'entities:Report,Malware': ['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'entity_type'],
+  'entities:Malware,Report': ['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'entity_type'],
   'relationships:': ['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'fromTypes', 'toTypes', 'relationship_type'],
   'relationships:targets': ['createdBy', 'objectLabel', 'objectMarking', 'creator_id', 'fromTypes', 'toTypes'],
   'audits:': AUDITS_API_FIELDS,
@@ -322,10 +322,12 @@ describe('getBreakdownFieldsRequest', () => {
   // A dataset read from a saved filter holds no filters of its own
   const savedFilterWidget = { ...makeWidget(), dataSelection: [{ filters_id: 'saved-filter', filters: undefined }] } as unknown as Widget;
 
-  it('asks the fields of the types the dataset is restricted to', () => {
+  it('asks the fields of the types the dataset is restricted to, sorted to ask the same types once whatever their order', () => {
     expect(requestOf(makeWidget())).toEqual({ perspective: 'entities', types: ['Report'] });
-    expect(requestOf(makeWidget({}, ['Report', 'Malware']))).toEqual({ perspective: 'entities', types: ['Report', 'Malware'] });
+    expect(requestOf(makeWidget({}, ['Report', 'Malware']))).toEqual({ perspective: 'entities', types: ['Malware', 'Report'] });
+    expect(requestOf(makeWidget({}, ['Malware', 'Report']))).toEqual({ perspective: 'entities', types: ['Malware', 'Report'] });
     expect(requestOf(makeRelationshipsWidget())).toEqual({ perspective: 'relationships', types: ['targets'] });
+    expect(requestOf(makeRelationshipsWidget({}, ['uses', 'targets']))).toEqual({ perspective: 'relationships', types: ['targets', 'uses'] });
   });
 
   it('asks the fields of any type of the perspective without type filter, and of the logs whatever their filters', () => {
@@ -344,7 +346,7 @@ describe('getBreakdownFieldsRequest', () => {
     });
     const widget = makeWidget({}, [`$var:${VARIABLE_ID}`]);
     expect(requestOf(widget, resolved, [typeVariable({ mode: 'selection', values: ['Report', 'Malware'] })]))
-      .toEqual({ perspective: 'entities', types: ['Report', 'Malware'] });
+      .toEqual({ perspective: 'entities', types: ['Malware', 'Report'] });
     expect(requestOf(widget, resolved, [typeVariable({ mode: 'none' })])).toEqual({ perspective: 'entities', types: [] });
   });
 
@@ -531,25 +533,25 @@ describe('getWidgetBreakdownState', () => {
     expect(keys(state)).not.toContain('report_types');
   });
 
-  it('keeps and lists the type of a dataset of a single type, not offered but accepted by the API', () => {
-    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }))).toMatchObject({
-      field: 'entity_type',
-      unlistedField: { key: 'entity_type', label: 'Entity type' },
-    });
+  it('keeps only a field the API lists, not the type of a dataset of a single type, which makes a single series', () => {
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }))).toMatchObject({ field: null, unlistedField: null });
     // A type variable allowing a single type
     const VARIABLE_ID = '6f1c3f0e-2b7a-4c1e-9d3a-0a1b2c3d4e5f';
     const variable: DashboardVariable = { id: VARIABLE_ID, name: 'type', type: 'entityType', defaultValue: null, restriction: { mode: 'selection', values: ['Report'] } };
     const byVariable = makeWidget({ parameters: { breakdownBy: 'entity_type' } }, [`$var:${VARIABLE_ID}`]);
-    expect(stateOf(byVariable, resolved, { variables: [variable] })).toMatchObject({ field: 'entity_type', unlistedField: { key: 'entity_type' } });
+    expect(stateOf(byVariable, resolved, { variables: [variable] })).toMatchObject({ field: null, unlistedField: null });
     // ...whose fields are kept, which a variable that may hold any type does not have
     const reportTypesByVariable = { ...byVariable, parameters: { breakdownBy: 'report_types' } };
     expect(stateOf(reportTypesByVariable, resolved, { variables: [variable] }).field).toEqual('report_types');
     expect(stateOf(reportTypesByVariable, resolved, { variables: [{ ...variable, restriction: { mode: 'none' } }] }).field).toBeNull();
     // A single relationship type
     const targets = makeRelationshipsWidget({ parameters: { breakdownBy: 'relationship_type' } });
-    expect(stateOf(targets)).toMatchObject({ field: 'relationship_type', unlistedField: { key: 'relationship_type', label: 'Relationship type' } });
-    // Offered with several types: listed among the options
+    expect(stateOf(targets)).toMatchObject({ field: null, unlistedField: null });
+    // Listed with several types: kept among the options
     expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }, ['Report', 'Malware']))).toMatchObject({ field: 'entity_type', unlistedField: null });
+    // Kept while the fields of the dataset are unknown, as any field
+    expect(stateOf(makeWidget({ parameters: { breakdownBy: 'entity_type' } }), resolved, { fields: loadingFields }))
+      .toMatchObject({ field: 'entity_type', unlistedField: { key: 'entity_type', label: 'Entity type' } });
   });
 
   it('keeps the field while the saved filter is read, offering no other, and lists it apart', () => {

@@ -30,7 +30,7 @@ export type BreakdownField = { key: string; label: string };
 interface BreakdownPerspective {
   // Filter key restricting the types of the dataset
   typeFilterKey: string;
-  // The type itself, which the API accepts for any dataset: it only offers it when it makes several series
+  // The type itself, labelled here: the API lists it when it makes several series
   typeField: BreakdownField;
   // Fields of the perspective that are not filters of the schema, labelled here
   fields: BreakdownField[];
@@ -246,8 +246,7 @@ export interface WidgetBreakdownState {
   savedFilterResolution: BreakdownResolution;
   // Field the widget is broken down by, kept on submit: none when the widget, or its dataset, cannot be broken down by it
   field: string | null;
-  // The field, when it is not among the options: the type of a dataset of a single type, which the API accepts,
-  // or any field while the fields of the dataset are unknown
+  // The field, when it is not among the options: kept while the fields of the dataset are unknown
   unlistedField: BreakdownField | null;
 }
 
@@ -272,7 +271,7 @@ const withSavedFilter = <T extends BreakdownWidget>(widget: T, savedFilter: Save
 
 /**
  * What the editor asks the API the fields of (fetchTimeSeriesBreakdownFields): the perspective of the dataset,
- * and the types it is restricted to, none for any type of the perspective, or for the logs.
+ * and the types it is restricted to, sorted, none for any type of the perspective, or for the logs.
  */
 export interface BreakdownFieldsRequest {
   perspective: BreakdownWidgetPerspective;
@@ -308,7 +307,8 @@ export const getBreakdownFieldsRequest = ({
     return { perspective, types: [] };
   }
   const types = getBreakdownEntityTypes(resolvedWidget.dataSelection[0]?.filters, perspective);
-  return { perspective, types: resolveBreakdownTypeVariables(types, variables) };
+  // Sorted: the same types in another order are the same request, read once
+  return { perspective, types: resolveBreakdownTypeVariables(types, variables).sort() };
 };
 
 // Label of a field: the one of the perspective, or of its filter in the schema, the key itself otherwise
@@ -329,7 +329,7 @@ const getBreakdownFieldLabel = (
 };
 
 /**
- * Fields offered for the `keys` of the fields the API accepts for the dataset (fetchTimeSeriesBreakdownFields),
+ * Fields offered for the `keys` of the fields the API lists for the dataset (fetchTimeSeriesBreakdownFields),
  * labelled after the perspective, or after their filter. They are ordered by their `translate`d label, but the
  * fields of the logs, which keep the order of the API.
  */
@@ -345,10 +345,10 @@ export const getBreakdownFieldOptions = (
 
 /**
  * Breakdown of the edited widget, on the dataset its query reads: the content of its saved filter once read
- * (`savedFilter`), and the keys of the fields the API offers for it once read (`fields`, asked as
+ * (`savedFilter`), and the keys of the fields the API lists for it once read (`fields`, asked as
  * getBreakdownFieldsRequest says). Its field is kept while they are read, or when one of them cannot be: the
- * fields of the dataset are unknown. Once they are known, a field the dataset cannot be broken down by is not kept.
- * The labels are `translate`d to order the options.
+ * fields of the dataset are unknown. Once they are known, only a field the API lists is kept: the type of a
+ * single type, which makes a single series, is not. The labels are `translate`d to order the options.
  */
 export const getWidgetBreakdownState = ({
   filterKeysSchema,
@@ -376,10 +376,7 @@ export const getWidgetBreakdownState = ({
   const resolution = combineResolutions(savedFilter.resolution, fields.resolution);
   const breakdownBy = widget.parameters?.breakdownBy;
   const storedField = isBreakdownField(breakdownBy) ? breakdownBy : null;
-  // The API accepts the type itself for any dataset: it only offers it when it makes several series, while a type
-  // variable may well hold a single type once resolved
-  const isAccepted = (key: string) => fieldKeys.includes(key) || key === getBreakdownPerspective(perspective)?.typeField.key;
-  const isFieldKept = editorState === 'editable' && !!storedField && (resolution !== 'resolved' || isAccepted(storedField));
+  const isFieldKept = editorState === 'editable' && !!storedField && (resolution !== 'resolved' || fieldKeys.includes(storedField));
   const field = isFieldKept ? storedField : null;
   const unlistedField = field && !fieldOptions.some(({ key }) => key === field)
     ? { key: field, label: getBreakdownFieldLabel(filterKeysSchema, perspective, field) }

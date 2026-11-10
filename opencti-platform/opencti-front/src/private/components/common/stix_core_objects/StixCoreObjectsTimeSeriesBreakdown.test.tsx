@@ -670,11 +670,13 @@ describe('StixCoreObjectsTimeSeriesBreakdown', () => {
     vi.mocked(console.error).mockRestore();
   });
 
-  it('accepts the entity type for a dataset resolved to a single type, a type variable may hold one', () => {
-    respond([]);
+  it('draws a stored field the editor does not list, the type of a single type, when the API accepts it', async () => {
+    // An imported widget, or one written through the API: a single series
+    respond([{ label: 'Report', entity: null, values: dailyValues(3) }]);
     render(makeWidget('line', { breakdownBy: 'entity_type' }, selection));
     const { buildQueryVariables, dataSelection, parameters } = mocks.dashboardViz.mock.lastCall?.[0] ?? {};
     expect(buildQueryVariables(dataSelection, config, parameters)).toMatchObject({ field: 'entity_type', types: ['Report'] });
+    expect((await drawn(mocks.lines)).series).toHaveLength(1);
   });
 
   it('shows the no data state without any series', () => {
