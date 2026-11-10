@@ -27,16 +27,16 @@ export const useDashboardPreset = (
   const key = dashboardPresetStorageKey(me.id, workspaceId);
   const load = () => {
     if (ignoreLocalValues || !enabled) return null;
-    const fromParam = parsePresetParam(window.location.search);
-    // A deleted or mistyped preset in the address is ignored: nothing of this user is dropped for it.
-    const fromUrl = fromParam && presets.some((preset) => preset.id === fromParam) ? fromParam : null;
+    const fromUrl = parsePresetParam(window.location.search);
     const stored = readStoredPresetId(key);
     // A shared address opens the view of its preset: the values and range this user had kept on another preset are
     // dropped, the ones of the address (variables=, timeRange=) still apply as the hooks read them after this one.
-    if (fromUrl && fromUrl !== stored) {
+    // Only for a preset the dashboard holds: a deleted or mistyped one, or one not loaded yet, drops nothing.
+    if (fromUrl && fromUrl !== stored && presets.some((preset) => preset.id === fromUrl)) {
       writeStoredVariableValues(dashboardVariablesStorageKey(me.id, workspaceId), {});
       writeStoredTimeRange(dashboardTimeRangeStorageKey(me.id, workspaceId), null);
     }
+    // The preset of the address is kept even when unknown: it applies once the presets of the dashboard hold it.
     return fromUrl ?? stored;
   };
   const [state, setState] = useState(() => ({ key, ignoreLocalValues, enabled, stored: load() }));
