@@ -17,6 +17,7 @@ import { utcDate } from '../utils/format';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { extendedErrors } from '../config/conf';
 import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../utils/access';
+import { ENTITY_TYPE_KILL_CHAIN_PHASE } from './stixMetaObject';
 
 const ajv = new Ajv();
 
@@ -126,6 +127,31 @@ const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUs
 
 // -- VALIDATE ATTRIBUTE MANDATORY --
 
+// The key is present and its value (or one of its values) is not empty
+const isMandatoryValueFilled = (input: Record<string, unknown>, mandatoryKey: string) => {
+  const value = input[mandatoryKey];
+  return Array.isArray(value) ? value.some((v) => isNotEmptyField(v)) : isNotEmptyField(value);
+};
+
+// Types whose built-in mandatory attributes are checked at creation.
+// It should cover every type in the end: a type is added once all its write paths are known to fill these attributes.
+const SCHEMA_MANDATORY_ENFORCED_TYPES = [ENTITY_TYPE_KILL_CHAIN_PHASE];
+
+// The attributes declared mandatory in the schema (mandatoryType 'external') must be given at creation.
+// Unlike the mandatory attributes of the entity settings, no capability bypasses them: an element without them is invalid.
+// The 'internal' ones are not checked here, the platform fills them after this validation.
+export const validateSchemaMandatoryAttributesOnCreation = (instanceType: string, input: Record<string, unknown>) => {
+  if (!SCHEMA_MANDATORY_ENFORCED_TYPES.includes(instanceType)) {
+    return;
+  }
+  const attributes = schemaAttributesDefinition.getAttributes(instanceType);
+  attributes.forEach((attribute) => {
+    if (attribute.mandatoryType === 'external' && !isMandatoryValueFilled(input, attribute.name)) {
+      throw ValidationError('This attribute is mandatory', attribute.name, { entity_type: instanceType });
+    }
+  });
+};
+
 const validateMandatoryAttributes = (
   user: AuthUser,
   input: Record<string, unknown>,
@@ -165,8 +191,7 @@ const validateMandatoryAttributesOnCreation = async (
       return;
     }
     // Should have all the mandatory keys and the associated values not null
-    const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (inputKeys.includes(mandatoryKey)
-      && (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
+    const inputValidValue = (inputKeys: string[], mandatoryKey: string) => inputKeys.includes(mandatoryKey) && isMandatoryValueFilled(input, mandatoryKey);
 
     validateMandatoryAttributes(user, input, entitySetting, true, inputValidValue);
   };
@@ -215,6 +240,7 @@ export const validateInputCreation = async (
     const editInputs: EditInput[] = Object.entries(input)
       .map(([k, v]) => ({ operation: EditOperation.Replace, value: Array.isArray(v) ? v : [v], key: k }));
     await validateFormatSchemaAttributes(context, user, instanceType, editInputs);
+    validateSchemaMandatoryAttributesOnCreation(instanceType, input);
     await validateMandatoryAttributesOnCreation(context, user, input, entitySetting, opts);
     // Functional validator
     const validator = getEntityValidatorCreation(instanceType);

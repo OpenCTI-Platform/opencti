@@ -3,6 +3,7 @@ import {
   addKillChainPhase,
   findKillChainPhasePaginated,
   findById,
+  getKillChainName,
   killChainPhaseAddRelation,
   killChainPhaseCleanContext,
   killChainPhaseDelete,
@@ -20,6 +21,7 @@ const killChainPhaseResolvers = {
     killChainPhases: (_, args, context) => findKillChainPhasePaginated(context, context.user, args),
   },
   KillChainPhase: {
+    kill_chain_name: (killChainPhase) => getKillChainName(killChainPhase),
     editContext: (killChainPhase) => fetchEditContext(killChainPhase.id),
   },
   Mutation: {
