@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { logApp } from '../../../src/config/conf';
 import { isEngineAlive } from '../../../src/database/engine';
 import { isStorageAlive } from '../../../src/database/raw-file-storage';
@@ -194,5 +194,114 @@ describe('platformHealthMetrics: startPlatformHealthMonitor function', () => {
       },
     });
     stopPlatformHealthMonitor();
+  });
+});
+
+describe('platformHealthMetrics: dependency outage logging', () => {
+  const CHECK_INTERVAL_MS = 30_000;
+  const OUTAGE_START = new Date('2026-01-01T00:00:00.000Z').getTime();
+  let errorSpy: ReturnType<typeof vi.spyOn>;
+  let warnSpy: ReturnType<typeof vi.spyOn>;
+  let infoSpy: ReturnType<typeof vi.spyOn>;
+  let debugSpy: ReturnType<typeof vi.spyOn>;
+
+  type LogCall = [message: string, meta?: { dependency?: string; outageDurationMs?: number }];
+  const failureLogs = (spy: ReturnType<typeof vi.spyOn>, message: string) => (spy.mock.calls as LogCall[])
+    .filter(([logMessage, meta]: LogCall) => logMessage === message && meta?.dependency === 'rabbitmq');
+
+  beforeEach(() => {
+    stopPlatformHealthMonitor();
+    vi.clearAllMocks();
+    vi.useFakeTimers({ now: OUTAGE_START });
+    vi.mocked(isEngineAlive).mockResolvedValue(undefined);
+    vi.mocked(isStorageAlive).mockResolvedValue(true);
+    vi.mocked(rabbitMQIsAlive).mockResolvedValue(true);
+    vi.mocked(redisIsAlive).mockResolvedValue(true);
+    vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(null);
+    errorSpy = vi.spyOn(logApp, 'error').mockImplementation(() => {});
+    warnSpy = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+    infoSpy = vi.spyOn(logApp, 'info').mockImplementation(() => {});
+    debugSpy = vi.spyOn(logApp, 'debug').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    stopPlatformHealthMonitor();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('should log an error when an alive dependency becomes unreachable', async () => {
+    await refreshDependencyStatus();
+    expect(errorSpy).not.toHaveBeenCalled();
+
+    vi.mocked(rabbitMQIsAlive).mockRejectedValue(Error('RabbitMQ seems down'));
+    await refreshDependencyStatus();
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalledWith('[HEALTH] Dependency check failed', { dependency: 'rabbitmq', cause: expect.any(Error) });
+  });
+
+  it('should not log an error again while the dependency stays unreachable', async () => {
+    vi.mocked(rabbitMQIsAlive).mockRejectedValue(Error('RabbitMQ seems down'));
+    await refreshDependencyStatus();
+
+    for (let check = 0; check < 5; check += 1) {
+      await vi.advanceTimersByTimeAsync(CHECK_INTERVAL_MS);
+      await refreshDependencyStatus();
+    }
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).not.toHaveBeenCalled();
+    expect(failureLogs(debugSpy, '[HEALTH] Dependency check failed')).toHaveLength(5);
+    // Every probe is still reported through the health status
+    expect(getPlatformHealthStatus().failures).toEqual(['rabbitmq: RabbitMQ seems down']);
+  });
+
+  it('should remind with a warning every five minutes while the outage lasts', async () => {
+    vi.mocked(rabbitMQIsAlive).mockRejectedValue(Error('RabbitMQ seems down'));
+    await refreshDependencyStatus();
+
+    // 12 minutes of outage, one check every 30 seconds
+    for (let check = 0; check < 24; check += 1) {
+      await vi.advanceTimersByTimeAsync(CHECK_INTERVAL_MS);
+      await refreshDependencyStatus();
+    }
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    const reminders = failureLogs(warnSpy, '[HEALTH] Dependency still unreachable');
+    expect(reminders.map(([, meta]: LogCall) => meta?.outageDurationMs)).toEqual([300_000, 600_000]);
+  });
+
+  it('should log an info with the outage duration when the dependency is reachable again', async () => {
+    vi.mocked(rabbitMQIsAlive).mockRejectedValue(Error('RabbitMQ seems down'));
+    await refreshDependencyStatus();
+    await vi.advanceTimersByTimeAsync(CHECK_INTERVAL_MS);
+    await refreshDependencyStatus();
+
+    vi.mocked(rabbitMQIsAlive).mockResolvedValue(true);
+    await vi.advanceTimersByTimeAsync(CHECK_INTERVAL_MS);
+    await refreshDependencyStatus();
+
+    expect(infoSpy).toHaveBeenCalledWith('[HEALTH] Dependency reachable again', { dependency: 'rabbitmq', outageDurationMs: 2 * CHECK_INTERVAL_MS, failedChecks: 2 });
+    expect(getPlatformHealthStatus().isHealthy).toBe(true);
+
+    // A new outage is a new event
+    vi.mocked(rabbitMQIsAlive).mockRejectedValue(Error('RabbitMQ seems down'));
+    await vi.advanceTimersByTimeAsync(CHECK_INTERVAL_MS);
+    await refreshDependencyStatus();
+    expect(errorSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('should log an error when the dependency is already unreachable at startup', async () => {
+    vi.mocked(rabbitMQIsAlive).mockRejectedValue(Error('RabbitMQ seems down'));
+
+    await startPlatformHealthMonitor();
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy).toHaveBeenCalledWith('[HEALTH] Dependency check failed', { dependency: 'rabbitmq', cause: expect.any(Error) });
+
+    // The next scheduled checks don't log it as an error again
+    await vi.advanceTimersByTimeAsync(3 * CHECK_INTERVAL_MS);
+    expect(rabbitMQIsAlive).toHaveBeenCalledTimes(4);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
   });
 });
