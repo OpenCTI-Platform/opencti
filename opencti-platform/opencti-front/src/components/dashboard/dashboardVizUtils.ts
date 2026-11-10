@@ -12,6 +12,7 @@ import { computeRelativeDate, dayStartDate, formatDate, monthsAgo, now } from 's
 import { fetchQuery } from 'src/relay/environment';
 import { DashboardConfig } from './dashboard-types';
 import { dashboardVizUtilsSavedFilterQuery$data } from './__generated__/dashboardVizUtilsSavedFilterQuery.graphql';
+import { dashboardVizUtilsTimeSeriesBreakdownFieldsQuery$data } from './__generated__/dashboardVizUtilsTimeSeriesBreakdownFieldsQuery.graphql';
 import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
 import { resolveVariablesInFilterGroup } from './dashboardVariablesResolution';
 
@@ -35,6 +36,27 @@ export const fetchSavedFilterContent = async (filterId: string) => {
     const result = await fetchQuery(savedFilterQuery, { id: filterId }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
     if (!result?.savedFilter) return null;
     return JSON.parse(result.savedFilter.filters);
+  } catch {
+    return null;
+  }
+};
+
+export const timeSeriesBreakdownFieldsQuery = graphql`
+  query dashboardVizUtilsTimeSeriesBreakdownFieldsQuery($perspective: WidgetPerspective!, $types: [String!]) {
+    timeSeriesBreakdownFields(perspective: $perspective, types: $types)
+  }
+`;
+
+/**
+ * Fetches the keys of the fields a time series of the `perspective` can be broken down by, for the `types` its
+ * dataset is restricted to (none for the types the breakdown queries default to), as the editor lists them: the
+ * ones these queries accept, the type itself only when it makes several series. Returns null if they could not be read.
+ */
+export const fetchTimeSeriesBreakdownFields = async (perspective: WidgetPerspective, types: string[]): Promise<string[] | null> => {
+  try {
+    const result = await fetchQuery(timeSeriesBreakdownFieldsQuery, { perspective, types })
+      .toPromise() as dashboardVizUtilsTimeSeriesBreakdownFieldsQuery$data | undefined;
+    return result ? [...result.timeSeriesBreakdownFields] : null;
   } catch {
     return null;
   }

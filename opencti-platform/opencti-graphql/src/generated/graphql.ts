@@ -15873,6 +15873,7 @@ export type LocalAuthConfigInput = {
   local_auth_lockout_final_action?: InputMaybe<LocalAuthLockoutFinalAction>;
   local_auth_lockout_max_attempts?: InputMaybe<Scalars['Int']['input']>;
   local_auth_lockout_window?: InputMaybe<Scalars['Int']['input']>;
+  password_policy_history_count?: InputMaybe<Scalars['Int']['input']>;
   password_policy_max_length?: InputMaybe<Scalars['Int']['input']>;
   password_policy_min_length?: InputMaybe<Scalars['Int']['input']>;
   password_policy_min_lowercase?: InputMaybe<Scalars['Int']['input']>;
@@ -25377,6 +25378,7 @@ export type PublicSettings = IntlSettings & ThemeSettings & {
   __typename?: 'PublicSettings';
   id: Scalars['ID']['output'];
   metrics_definition?: Maybe<Array<MetricDefinition>>;
+  password_policy_history_count?: Maybe<Scalars['Int']['output']>;
   password_policy_max_length?: Maybe<Scalars['Int']['output']>;
   password_policy_min_length?: Maybe<Scalars['Int']['output']>;
   password_policy_min_lowercase?: Maybe<Scalars['Int']['output']>;
@@ -25830,6 +25832,16 @@ export type Query = {
   threatActors?: Maybe<ThreatActorConnection>;
   threatActorsGroup?: Maybe<ThreatActorGroupConnection>;
   threatActorsIndividuals?: Maybe<ThreatActorIndividualConnection>;
+  /**
+   * Keys of the fields a time series widget of the perspective can be broken down by, for the types its dataset is
+   * restricted to (at most 1,000, duplicates ignored), as the widget editor lists them. Without types, the ones the
+   * breakdown queries default to: Stix-Core-Object, stix-relationship. Each field listed is accepted by the breakdown
+   * query of the perspective for these types. The type itself (entity_type, relationship_type), which these queries
+   * accept whatever the types, is only listed when it makes several series: several types, an abstract type, or none.
+   * The relationships perspective lists no field when a type is not a relationship, as its breakdown refuses such a
+   * dataset. The audits perspective lists the fields of the logs whatever the types.
+   */
+  timeSeriesBreakdownFields: Array<Scalars['String']['output']>;
   tool?: Maybe<Tool>;
   tools?: Maybe<ToolConnection>;
   triggerActivity?: Maybe<Trigger>;
@@ -29040,6 +29052,12 @@ export type QueryThreatActorsIndividualsArgs = {
 };
 
 
+export type QueryTimeSeriesBreakdownFieldsArgs = {
+  perspective: WidgetPerspective;
+  types?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+
 export type QueryToolArgs = {
   id?: InputMaybe<Scalars['String']['input']>;
 };
@@ -32025,6 +32043,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   metrics_definition?: Maybe<Array<MetricDefinition>>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Scalars['String']['output']>;
+  password_policy_history_count?: Maybe<Scalars['Int']['output']>;
   password_policy_max_length?: Maybe<Scalars['Int']['output']>;
   password_policy_min_length?: Maybe<Scalars['Int']['output']>;
   password_policy_min_lowercase?: Maybe<Scalars['Int']['output']>;
@@ -52007,6 +52026,7 @@ export type PublicProviderResolvers<ContextType = any, ParentType extends Resolv
 export type PublicSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicSettings'] = ResolversParentTypes['PublicSettings']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
+  password_policy_history_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_lowercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -52456,6 +52476,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   threatActors?: Resolver<Maybe<ResolversTypes['ThreatActorConnection']>, ParentType, ContextType, Partial<QueryThreatActorsArgs>>;
   threatActorsGroup?: Resolver<Maybe<ResolversTypes['ThreatActorGroupConnection']>, ParentType, ContextType, Partial<QueryThreatActorsGroupArgs>>;
   threatActorsIndividuals?: Resolver<Maybe<ResolversTypes['ThreatActorIndividualConnection']>, ParentType, ContextType, Partial<QueryThreatActorsIndividualsArgs>>;
+  timeSeriesBreakdownFields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryTimeSeriesBreakdownFieldsArgs, 'perspective'>>;
   tool?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, Partial<QueryToolArgs>>;
   tools?: Resolver<Maybe<ResolversTypes['ToolConnection']>, ParentType, ContextType, Partial<QueryToolsArgs>>;
   triggerActivity?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<QueryTriggerActivityArgs, 'id'>>;
@@ -53429,6 +53450,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  password_policy_history_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_lowercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

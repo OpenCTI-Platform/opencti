@@ -8227,6 +8227,7 @@ input LocalAuthConfigInput {
   local_auth_lockout_final_action: LocalAuthLockoutFinalAction
   local_auth_lockout_max_attempts: Int
   local_auth_lockout_window: Int
+  password_policy_history_count: Int
   password_policy_max_length: Int
   password_policy_min_length: Int
   password_policy_min_lowercase: Int
@@ -11795,6 +11796,7 @@ type PublicProvider {
 type PublicSettings implements IntlSettings & ThemeSettings {
   id: ID!
   metrics_definition: [MetricDefinition!]
+  password_policy_history_count: Int
   password_policy_max_length: Int
   password_policy_min_length: Int
   password_policy_min_lowercase: Int
@@ -12311,6 +12313,17 @@ type Query {
   threatActors(after: ID, filters: FilterGroup, first: Int, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): ThreatActorConnection
   threatActorsGroup(after: ID, filters: FilterGroup, first: Int, orderBy: ThreatActorsOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): ThreatActorGroupConnection
   threatActorsIndividuals(after: ID, filters: FilterGroup, first: Int, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): ThreatActorIndividualConnection
+
+  """
+  Keys of the fields a time series widget of the perspective can be broken down by, for the types its dataset is
+  restricted to (at most 1,000, duplicates ignored), as the widget editor lists them. Without types, the ones the
+  breakdown queries default to: Stix-Core-Object, stix-relationship. Each field listed is accepted by the breakdown
+  query of the perspective for these types. The type itself (entity_type, relationship_type), which these queries
+  accept whatever the types, is only listed when it makes several series: several types, an abstract type, or none.
+  The relationships perspective lists no field when a type is not a relationship, as its breakdown refuses such a
+  dataset. The audits perspective lists the fields of the logs whatever the types.
+  """
+  timeSeriesBreakdownFields(perspective: WidgetPerspective!, types: [String!]): [String!]!
   tool(id: String): Tool
   tools(after: ID, filters: FilterGroup, first: Int, orderBy: ToolsOrdering, orderMode: OrderingMode, search: String, toStix: Boolean): ToolConnection
   triggerActivity(id: String!): Trigger
@@ -13776,6 +13789,7 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   metrics_definition: [MetricDefinition!]
   otp_mandatory: Boolean
   parent_types: [String!]!
+  password_policy_history_count: Int
   password_policy_max_length: Int
   password_policy_min_length: Int
   password_policy_min_lowercase: Int

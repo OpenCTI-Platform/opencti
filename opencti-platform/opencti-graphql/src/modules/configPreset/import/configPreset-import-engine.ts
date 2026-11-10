@@ -20,6 +20,7 @@ import { applyConfigPresetImportEvent, applyConfigPresetImportRunEvent, readConf
 import type { ConfigPresetImportCounts, ConfigPresetImportItemResult, ConfigPresetImportResultStatus } from './configPreset-import-session';
 import {
   CONFIG_PRESET_DEFAULT_IMPORT_MODE,
+  CONFIG_PRESET_REASON_BUNDLE_REFUSED,
   CONFIG_PRESET_REASON_FILE_MISSING,
   type ConfigPresetBundle,
   type ConfigPresetBundleItem,
@@ -196,6 +197,10 @@ const realImport = async (
             }
           }
         } catch (err) {
+          // A bundle that cannot be read to the end stops the import: the next items would be read the same way
+          if ((err as { extensions?: { data?: { reason?: string } } }).extensions?.data?.reason === CONFIG_PRESET_REASON_BUNDLE_REFUSED) {
+            throw err;
+          }
           // The item was not written (a theme, a role): the items that depend on it fail with it
           const key = configPresetPlanKey(item.type, item.id);
           plan.created.delete(key);
