@@ -413,14 +413,14 @@ describe('withPublicBreakdownRefusals', () => {
   });
 
   it('should leave the other errors as they are', async () => {
-    const others = [UnsupportedError('Feature is disabled', { flag: 'TIME_SERIES_BREAKDOWN' }), DatabaseError('Engine execution fail'), new Error('Unexpected')];
+    const others = [UnsupportedError('This widget has no breakdown', { widgetId: 'widget-1' }), DatabaseError('Engine execution fail'), new Error('Unexpected')];
     for (const other of others) {
       expect(await refusedWith(other)).toBe(other);
     }
-    // Refused before any promise, like the disabled feature
-    const disabled = UnsupportedError('Feature is disabled', { flag: 'TIME_SERIES_BREAKDOWN' });
+    // Refused before any promise, like a widget without breakdown
+    const unsupported = UnsupportedError('This widget has no breakdown', { widgetId: 'widget-1' });
     await expect(withPublicBreakdownRefusals(() => {
-      throw disabled;
-    })).rejects.toBe(disabled);
+      throw unsupported;
+    })).rejects.toBe(unsupported);
   });
 });

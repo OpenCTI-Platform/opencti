@@ -12,7 +12,7 @@ type EditedWidget = Pick<Widget, 'type' | 'perspective' | 'dataSelection'> & { p
 /**
  * Breakdown of the edited widget (getWidgetBreakdownState), derived by the editor provider for all its steps:
  * the saved filter of the dataset is read once per opening, whatever the widget becomes meanwhile.
- * Without `enabled` (the feature off, or the editor closed), no breakdown is shown, nor kept or dropped.
+ * Without `enabled` (the editor closed), no breakdown is shown, nor kept or dropped.
  */
 const useResolvedWidgetBreakdown = (widget: EditedWidget, host: WidgetHost, enabled: boolean): WidgetBreakdownState => {
   const { schema: { filterKeysSchema } } = useAuth();

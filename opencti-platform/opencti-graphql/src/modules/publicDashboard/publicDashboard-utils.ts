@@ -12,7 +12,6 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { elLoadById } from '../../database/engine';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { findById as findWorkspace } from '../workspace/workspace-domain';
-import { isFeatureEnabled, TIME_SERIES_BREAKDOWN_FEATURE_FLAG } from '../../config/conf';
 import { fromB64, toB64 } from '../../utils/base64';
 import { canWidgetBreakDown } from './publicDashboard-breakdown';
 
@@ -21,9 +20,8 @@ export const WIDGET_BREAKDOWN_PARAMETERS = ['breakdownBy', 'breakdownLimit', 'br
 
 /**
  * Public manifest as served to the visitors. A widget keeps its breakdown when it can be broken down (canWidgetBreakDown),
- * read on its stored widget of the private manifest, which keeps the filters the public one strips, and with the time
- * series breakdown feature. Otherwise it is served without, and renders its regular chart as in the private dashboards:
- * the stored manifest keeps it.
+ * read on its stored widget of the private manifest, which keeps the filters the public one strips. Otherwise it is
+ * served without, and renders its regular chart as in the private dashboards: the stored manifest keeps it.
  */
 export const getServedPublicManifest = (publicDashboard: Pick<BasicStoreEntityPublicDashboard, 'public_manifest' | 'private_manifest'>) => {
   const { public_manifest: publicManifest } = publicDashboard;
@@ -35,9 +33,7 @@ export const getServedPublicManifest = (publicDashboard: Pick<BasicStoreEntityPu
   if (!widgets.some(([, widget]) => widget?.parameters?.breakdownBy)) {
     return publicManifest;
   }
-  const storedWidgets = isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG)
-    ? fromB64<{ widgets?: Record<string, PublicDashboardCachedWidget> }>(publicDashboard.private_manifest).widgets ?? {}
-    : {};
+  const storedWidgets = fromB64<{ widgets?: Record<string, PublicDashboardCachedWidget> }>(publicDashboard.private_manifest).widgets ?? {};
   const isServedWithoutBreakdown = (widgetId: string, widget: any) => {
     const storedWidget = storedWidgets[widgetId];
     return !!widget?.parameters?.breakdownBy && !(storedWidget && canWidgetBreakDown(storedWidget));
