@@ -1,5 +1,5 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
+import { ENABLED_API, logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
 import historyManager from './historyManager';
 import ruleEngine from './ruleManager';
 import taskManager from './taskManager';
@@ -41,10 +41,17 @@ const initClusterManager = () => {
       fileIndexManager.status(settings),
       ...getAllManagersStatuses(settings),
     ];
-    const configData: ClusterConfig = { platform_id: platformId, managers };
+    const configData: ClusterConfig = { platform_id: platformId, api_enabled: ENABLED_API, managers };
     await registerClusterInstance(platformId, configData);
   };
   return {
+    // A starting node serves its API before its managers are started: it is listed right away, with no managers yet,
+    // so that the other nodes take it into account (logout when the last tab is closed counts the nodes serving the API).
+    // The first run of the cluster manager then replaces this entry.
+    registerStartingNode: async () => {
+      const configData: ClusterConfig = { platform_id: PLATFORM_INSTANCE_ID, api_enabled: ENABLED_API, managers: [] };
+      await registerClusterInstance(PLATFORM_INSTANCE_ID, configData);
+    },
     start: async () => {
       logApp.info('[OPENCTI-MODULE] Starting cluster manager');
       await clusterHandler(PLATFORM_INSTANCE_ID);

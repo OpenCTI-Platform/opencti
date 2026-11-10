@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { registerSessionPresence, unregisterSessionPresence } from '../../../../src/modules/session/session-presence-domain';
+import { isSessionPresenceSupported, registerSessionPresence, unregisterSessionPresence } from '../../../../src/modules/session/session-presence-domain';
 import { onSessionPresenceClose, onSessionPresenceConnect } from '../../../../src/modules/session/session-presence-ws';
 import * as cache from '../../../../src/database/cache';
 import * as session from '../../../../src/database/session';
@@ -76,8 +76,14 @@ const storeSession = (sessionData: unknown) => {
   vi.mocked(session.findSessionByRawId).mockResolvedValue(sessionData);
 };
 
+// Nodes listed in the cluster, by their `api_enabled` flag (undefined for a node of a previous version)
+const listClusterNodes = (...apiEnabledFlags: (boolean | undefined)[]) => {
+  const nodes = apiEnabledFlags.map((apiEnabled, i) => ({ platform_id: `node-${i}`, api_enabled: apiEnabled, managers: [] }));
+  vi.mocked(redis.getClusterInstances).mockResolvedValue(nodes as any);
+};
+
 const runPlatformNodes = (count: number) => {
-  vi.mocked(redis.getClusterInstances).mockResolvedValue(Array.from({ length: count }, (_, i) => ({ id: `node-${i}` })) as any);
+  listClusterNodes(...Array.from({ length: count }, () => true));
 };
 
 describe('session presence', () => {
@@ -190,6 +196,28 @@ describe('session presence', () => {
     await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
     expect(session.killSessionByRawId).not.toHaveBeenCalled();
     expect(listener.publishUserAction).not.toHaveBeenCalled();
+  });
+
+  it('should still logout when the other nodes only run managers', async () => {
+    listClusterNodes(true, false);
+    const sessionId = nextSessionId();
+    const connectionId = registerSessionPresence(sessionId, ORIGIN);
+    unregisterSessionPresence(sessionId, connectionId);
+
+    await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
+    expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
+  });
+
+  it('should only be supported while at most one node serves the API', async () => {
+    listClusterNodes(true);
+    expect(await isSessionPresenceSupported()).toBe(true);
+    listClusterNodes(true, false, false);
+    expect(await isSessionPresenceSupported()).toBe(true);
+    listClusterNodes(true, true);
+    expect(await isSessionPresenceSupported()).toBe(false);
+    // A node of a previous version doesn't tell whether it serves the API: it is counted
+    listClusterNodes(true, undefined);
+    expect(await isSessionPresenceSupported()).toBe(false);
   });
 
   it('should not logout while several platform nodes are running', async () => {

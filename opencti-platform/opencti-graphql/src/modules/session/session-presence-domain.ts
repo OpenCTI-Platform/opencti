@@ -29,14 +29,22 @@ const isSessionPresenceEnabled = async () => {
   return settings.platform_session_presence_enabled === true;
 };
 
-// A node restarted in place stays listed until its registration expires, pausing the feature meanwhile
-const isSingleNodePlatform = async () => {
+// Only the nodes serving the API hold WebSockets: manager-only nodes are not counted.
+// A node of a previous version doesn't tell, so it is counted. A starting node is listed before it serves the API,
+// a stopped one stays listed until its registration expires: both pause the feature meanwhile.
+export const isSessionPresenceSupported = async () => {
   const instances = await getClusterInstances();
-  if (instances.length > 1 && !isMultiNodeWarned) {
+  const apiNodes = instances.filter((instance) => instance.api_enabled !== false);
+  return apiNodes.length <= 1;
+};
+
+const isSingleNodePlatform = async () => {
+  const isSupported = await isSessionPresenceSupported();
+  if (!isSupported && !isMultiNodeWarned) {
     isMultiNodeWarned = true;
-    logApp.warn('[SESSION PRESENCE] Logout when the last tab is closed is not supported on a multi-node platform, no session is logged out', { nodes: instances.length });
+    logApp.warn('[SESSION PRESENCE] Logout when the last tab is closed is not supported when several nodes serve the API, no session is logged out');
   }
-  return instances.length <= 1;
+  return isSupported;
 };
 
 const logoutAbandonedSession = async (sessionId: string, origin: PresenceOrigin) => {

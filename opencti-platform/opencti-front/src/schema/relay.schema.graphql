@@ -13883,6 +13883,7 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   platform_session_idle_timeout: Int
   platform_session_max_concurrent: Int
   platform_session_presence_enabled: Boolean!
+  platform_session_presence_supported: Boolean!
   platform_session_timeout: Int
   platform_theme: Theme
   platform_time_format: TimeFormat

@@ -1,8 +1,9 @@
 import React, { Suspense } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { Field, Form, Formik, useFormikContext } from 'formik';
 import * as Yup from 'yup';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import { Alert } from '@filigran/design-system';
 import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
@@ -18,6 +19,7 @@ const authenticationGlobalSettingsQuery = graphql`
       otp_mandatory
       platform_session_max_concurrent
       platform_session_presence_enabled
+      platform_session_presence_supported
     }
   }
 `;
@@ -40,6 +42,22 @@ const validationSchema = Yup.object().shape({
   platform_session_max_concurrent: Yup.number().nullable(),
   platform_session_presence_enabled: Yup.boolean(),
 });
+
+// The logout when the last tab is closed can be enabled while several nodes serve the API, but then never applies
+const SessionPresenceUnsupportedAlert = ({ isSupported }: { isSupported: boolean }) => {
+  const { t_i18n } = useFormatter();
+  const { values } = useFormikContext<{ platform_session_presence_enabled: boolean }>();
+  if (isSupported || !values.platform_session_presence_enabled) {
+    return null;
+  }
+  return (
+    <Alert
+      severity="warning"
+      style={{ marginTop: 20 }}
+      title={t_i18n('Several platform nodes serve the API: no session is logged out when its last tab is closed.')}
+    />
+  );
+};
 
 const AuthenticationGlobalSettingsContent = () => {
   const { t_i18n } = useFormatter();
@@ -115,9 +133,10 @@ const AuthenticationGlobalSettingsContent = () => {
                 containerstyle={{ marginTop: 20 }}
                 onChange={(name: string, value: string) => handleSubmitField(name, value)}
                 tooltip={t_i18n(
-                  'When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported on a platform running several nodes.',
+                  'When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported when several platform nodes serve the API.',
                 )}
               />
+              <SessionPresenceUnsupportedAlert isSupported={settings.platform_session_presence_supported} />
             </Card>
           </Grid>
         </Grid>
