@@ -194,14 +194,14 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
   // The bar is the only way to see, change and clear a per user value: to a user who does not get it, such a
   // value (stored, or from the URL) would filter the widgets with no chip to show or reset it.
   const showVariablesBar = isVariablesEnabled && !noToolbar
-    && (canManageVariables || config.allowViewersToChangeVariables === true);
+    && (canManageVariables || config.allowViewersToChangeVariables !== false);
   // The home dashboard (noToolbar) and a user without the bar only ever see the manifest defaults:
   // no per user value is read or written.
   const variableControls = useDashboardVariables(workspace.id, variables, { ignoreLocalValues: noToolbar || !showVariablesBar });
   // Flag on, the time range is per user: an editor always gets the time filters, a reader only when viewers may edit
   // them. As for the variables, a user without them only ever sees the manifest range.
   const showTimeFilters = isVariablesEnabled && !noToolbar
-    && (userCanEdit || config.allowViewersToEditTimeFilters === true);
+    && (userCanEdit || config.allowViewersToEditTimeFilters !== false);
   const timeRange = useDashboardTimeRange(workspace.id, config, { ignoreLocalValues: noToolbar || !showTimeFilters });
   // Mirrors the bar, which renders nothing without variables nor a way to create one.
   const isBarVisible = showVariablesBar && (variables.length > 0 || canManageVariables);
