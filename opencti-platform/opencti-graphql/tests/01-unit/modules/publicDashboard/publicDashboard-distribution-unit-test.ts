@@ -85,8 +85,6 @@ vi.mock('../../../../src/modules/publicDashboard/publicDashboard-utils', () => (
   getWidgetArguments: vi.fn(),
   checkUserIsAdminOnDashboard: vi.fn(),
   sanitizePublicDashboardUriKey: vi.fn(),
-  // The published range is not enforced here: the resolvers run with the range they are given.
-  resolvePublicDashboardTimeRange: vi.fn((_config, requested) => requested),
 }));
 
 // ── Imports (after mocks) ────────────────────────────────────────────────────
