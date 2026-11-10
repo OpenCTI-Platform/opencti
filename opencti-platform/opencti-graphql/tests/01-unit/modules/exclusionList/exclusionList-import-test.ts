@@ -236,11 +236,23 @@ describe('importExclusionList', () => {
         expect(addExclusionListFile).not.toHaveBeenCalled();
       });
 
-      it('holds the name of its copy for the next items of the bundle, which cannot take it', async () => {
+      it('holds the name of its copy for the next items of the bundle, which are copied under the next free name, not refused', async () => {
         const reservedNames = new Set<string>();
         expect(await importExclusionList(context, user, configuration, fileOf(VALUES), { ...copy, dryRun: true, reservedNames })).toMatchObject({ status: 'created', reason: 'Added as "Public DNS resolvers (1)"' });
-        expect([...reservedNames]).toEqual(expect.arrayContaining(['public dns resolvers', 'public dns resolvers (1)']));
-        expect(await importExclusionList(context, user, { ...configuration, name: 'Public DNS resolvers (1)' }, fileOf(VALUES), { ...copy, dryRun: true, reservedNames })).toMatchObject({ status: 'failed', code: 'duplicate' });
+        // The name of the list is not reserved, only the one its copy is given
+        expect([...reservedNames]).toEqual(['public dns resolvers (1)']);
+        // A distinct list of the bundle that is named like that copy is copied too: a copy never loses a list
+        expect(await importExclusionList(context, user, { ...configuration, name: 'Public DNS resolvers (1)' }, fileOf(VALUES), { ...copy, dryRun: true, reservedNames }))
+          .toMatchObject({ status: 'created', reason: 'Added as "Public DNS resolvers (1) (1)"' });
+        expect(addExclusionListFile).not.toHaveBeenCalled();
+      });
+
+      it('copies two lists of the bundle that have the same name, each under its own name', async () => {
+        withLists();
+        const reservedNames = new Set<string>();
+        expect(await importExclusionList(context, user, configuration, fileOf(VALUES), { ...copy, dryRun: true, reservedNames })).toEqual({ status: 'created', exists: false, configuration });
+        expect(await importExclusionList(context, user, configuration, fileOf(VALUES), { ...copy, dryRun: true, reservedNames }))
+          .toMatchObject({ status: 'created', reason: 'Added as "Public DNS resolvers (1)"' });
       });
 
       it('refuses a file that is missing or too large, as an overwrite does', async () => {

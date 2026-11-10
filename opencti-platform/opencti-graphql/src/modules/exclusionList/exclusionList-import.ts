@@ -57,13 +57,16 @@ export const importExclusionList = async (
     return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
   }
   const { name, description, enabled, exclusion_list_entity_types: types } = parsed.data;
-  // Found by name, a second list of the bundle with the same name would overwrite the first one
-  if (reservedNames?.has(normalizeName(name))) {
-    return refused('failed', 'duplicate', 'Another exclusion list of the bundle has this name', false, parsed.data);
-  }
-  reservedNames?.add(normalizeName(name));
-  const sameName = await findExclusionListsByName(context, user, name);
   const isCopy = mode === ConfigImportMode.Copy;
+  // Found by name, a second list of the bundle with the same name would overwrite the first one. A copy overwrites nothing: it only reserves
+  // the name it is given below, so a list of the bundle named like an earlier copy is copied under the next free name, not refused.
+  if (!isCopy) {
+    if (reservedNames?.has(normalizeName(name))) {
+      return refused('failed', 'duplicate', 'Another exclusion list of the bundle has this name', false, parsed.data);
+    }
+    reservedNames?.add(normalizeName(name));
+  }
+  const sameName = await findExclusionListsByName(context, user, name);
   // A copy is never refused for the lists that have its name, however many: it does not touch any of them
   if (sameName.length > 1 && !isCopy) {
     return refused('failed', 'ambiguous', 'Several exclusion lists have this name', true, parsed.data);
@@ -86,8 +89,8 @@ export const importExclusionList = async (
   if (!existing || isCopy) {
     const copyName = isCopy
       ? await freeConfigImportName(name, async (candidate) => {
-          const heldByBundle = candidate !== name && !!reservedNames?.has(normalizeName(candidate));
-          return heldByBundle || (await findExclusionListsByName(context, user, candidate)).length > 0;
+          // A name given to an earlier copy of the bundle is taken, including the name of this list: a copy does not reserve its source name
+          return !!reservedNames?.has(normalizeName(candidate)) || (await findExclusionListsByName(context, user, candidate)).length > 0;
         })
       : name;
     if (!copyName) {
