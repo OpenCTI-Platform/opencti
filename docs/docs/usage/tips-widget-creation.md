@@ -47,6 +47,10 @@ You can add up to 5 different data sets.  The `Label` field allows you to name a
 
 As mentioned in [How to choose the appropriate widget visualization for your use case?](#howto-section) section you can add data sets to decompose your graph into smaller meaningful chunks. In the below points, you can find some use cases that will help you understand how to structure your data.
 
+!!! tip "One series per value, without adding datasets"
+
+    For vertical bars, lines, areas and heatmaps over time, you do not need one dataset per value: the `Break down by` parameter draws one series per value of a field, found automatically in the data (up to 50 series). See [Time series breakdown](time-series-breakdown.md).
+
 You can break down a view either by **entity or by relations**, depending on what you need to count.
 
 #### Break down by entity
