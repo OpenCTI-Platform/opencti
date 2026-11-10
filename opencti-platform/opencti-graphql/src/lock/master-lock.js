@@ -4,6 +4,7 @@ import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { lockResource } from '../database/redis';
 import { meterManager } from '../config/tracing';
+import { rebuildChildLockError } from './child-lock-error';
 
 // Global variable for the child process
 const USE_CHILD_LOCK = booleanConf('app:child_locking_process:enabled', false);
@@ -101,7 +102,7 @@ const childUnlockResources = async (operation) => {
       if (msg.success) {
         resolve(msg);
       } else {
-        reject(msg.error);
+        reject(rebuildChildLockError(msg.error));
       }
     });
     // Send the unlock operation to the child process
@@ -131,7 +132,7 @@ const childLockResources = async (ids, args = {}) => {
       } else {
         // Cleanup the callback map
         removeAllCallbacksForOperation(operation);
-        reject(msg.error);
+        reject(rebuildChildLockError(msg.error));
       }
     });
     // Send the lock operation to the child process
