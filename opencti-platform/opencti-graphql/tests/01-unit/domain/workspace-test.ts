@@ -6,7 +6,7 @@ import * as access from '../../../src/utils/access';
 import * as userActionListener from '../../../src/listener/UserActionListener';
 import * as engine from '../../../src/database/engine';
 import * as internalObject from '../../../src/domain/internalObject';
-import { investigationDuplicate, sanitizeManifestAuditInput, workspaceEditField } from '../../../src/modules/workspace/workspace-domain';
+import { investigationDuplicate, sanitizeElementForPublishAction, sanitizeWorkspaceAuditInput, workspaceEditField } from '../../../src/modules/workspace/workspace-domain';
 
 const context = {} as any;
 const user = { id: 'user-id' } as any;
@@ -162,8 +162,13 @@ describe('workspace field patch audit', () => {
   });
 
   it('hides the manifest and keeps other edits', () => {
-    expect(sanitizeManifestAuditInput([{ key: 'manifest', value: ['huge-b64'] }, { key: 'name', value: ['New name'] }]))
+    expect(sanitizeWorkspaceAuditInput([{ key: 'manifest', value: ['huge-b64'] }, { key: 'name', value: ['New name'] }]))
       .toEqual([{ key: 'manifest', value: ['[sanitized]'] }, { key: 'name', value: ['New name'] }]);
+  });
+
+  it('hides the graph data and keeps other edits', () => {
+    expect(sanitizeWorkspaceAuditInput([{ key: 'graph_data', value: ['huge-b64'] }, { key: 'name', value: ['New name'] }]))
+      .toEqual([{ key: 'graph_data', value: ['[sanitized]'] }, { key: 'name', value: ['New name'] }]);
   });
 
   it('never publishes the manifest in the audit event of a field patch', async () => {
@@ -171,5 +176,26 @@ describe('workspace field patch audit', () => {
     await workspaceEditField(context, user, 'workspace-id', [{ key: 'name', value: ['New name'] }]);
     const opts = editSpy.mock.calls[0][5];
     expect(opts?.auditLogContextSanitizer?.([{ key: 'manifest', value: ['huge-b64'] }])).toEqual([{ key: 'manifest', value: ['[sanitized]'] }]);
+  });
+
+  it('never publishes the graph data in the audit event of a graph layout patch', async () => {
+    const editSpy = vi.spyOn(internalObject, 'editInternalObject').mockResolvedValue({ id: 'workspace-id' } as any);
+    await workspaceEditField(context, user, 'workspace-id', [{ key: 'graph_data', value: ['huge-b64'] }]);
+    const [, , , , input, opts] = editSpy.mock.calls[0];
+    // The stored value is untouched, only the audit input is sanitized
+    expect(input).toEqual([{ key: 'graph_data', value: ['huge-b64'] }]);
+    expect(opts?.auditLogContextSanitizer?.(input)).toEqual([{ key: 'graph_data', value: ['[sanitized]'] }]);
+  });
+});
+
+describe('workspace audit element', () => {
+  it('removes the manifest and the graph data from the published element', () => {
+    const element = { id: 'workspace-id', name: 'Investigation', type: 'investigation', manifest: 'huge-b64', graph_data: 'huge-b64' } as any;
+    const sanitized = sanitizeElementForPublishAction(element);
+    expect(sanitized.manifest).toBeUndefined();
+    expect(sanitized.graph_data).toBeUndefined();
+    expect(sanitized).toMatchObject({ id: 'workspace-id', name: 'Investigation', type: 'investigation' });
+    // The element itself is not modified
+    expect(element.graph_data).toEqual('huge-b64');
   });
 });

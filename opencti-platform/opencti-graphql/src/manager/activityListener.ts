@@ -42,28 +42,47 @@ export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];
 export const EVENT_STATUS_VALUES = ['error', 'success'];
 
+// The activity context is indexed with flattened (or flat_object) fields, where one value of more than 32766 bytes
+// rejects the whole event. 8192 UTF-16 code units are at most 24576 bytes in UTF-8, which leaves room for the key.
+export const ACTIVITY_MAX_STRING_LENGTH = 8192;
+export const ACTIVITY_TRUNCATED_MARKER = '[truncated]';
+
+const truncateLongString = (value: string) => {
+  if (value.length <= ACTIVITY_MAX_STRING_LENGTH) {
+    return value;
+  }
+  // Never cut a surrogate pair in half
+  const lastCode = value.charCodeAt(ACTIVITY_MAX_STRING_LENGTH - 1);
+  const end = lastCode >= 0xD800 && lastCode <= 0xDBFF ? ACTIVITY_MAX_STRING_LENGTH - 1 : ACTIVITY_MAX_STRING_LENGTH;
+  return `${value.substring(0, end)}${ACTIVITY_TRUNCATED_MARKER}`;
+};
+
+export const cleanInputData = (data: any) => {
+  // Sensitive values are redacted at any depth, including the value of { key, value } edit inputs
+  const obj = redactSensitiveData(data);
+  const stack = [obj];
+  while (stack.length > 0) {
+    const currentObj = stack.pop() as any;
+    Object.keys(currentObj).forEach((key) => {
+      if (typeof currentObj[key] === 'string') {
+        // Any large value (graph data, description, content...) would make the event fail to index
+        currentObj[key] = truncateLongString(currentObj[key]);
+      } else if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
+        if (key === 'input') {
+          // remove unsupported props in input like sort, _id that cause errors for old databases.
+          UNSUPPORTED_INTPUT_PROPS.forEach((prop) => {
+            delete currentObj[key][prop];
+          });
+        }
+        stack.push(currentObj[key]);
+      }
+    });
+  }
+  return obj;
+};
+
 const initActivityManager = () => {
   const activityReadCache = new LRUCache({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
-  const cleanInputData = (data: any) => {
-    // Sensitive values are redacted at any depth, including the value of { key, value } edit inputs
-    const obj = redactSensitiveData(data);
-    const stack = [obj];
-    while (stack.length > 0) {
-      const currentObj = stack.pop() as any;
-      Object.keys(currentObj).forEach((key) => {
-        if (typeof currentObj[key] === 'object' && currentObj[key] !== null) {
-          if (key === 'input') {
-            // remove unsupported props in input like sort, _id that cause errors for old databases.
-            UNSUPPORTED_INTPUT_PROPS.forEach((prop) => {
-              delete currentObj[key][prop];
-            });
-          }
-          stack.push(currentObj[key]);
-        }
-      });
-    }
-    return obj;
-  };
   const buildActivityStreamEvent = (action: UserAction, message: string): ActivityStreamEvent => {
     const data = cleanInputData(action.context_data ?? {});
     return {
