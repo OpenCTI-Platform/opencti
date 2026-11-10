@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
+import type { Moment } from 'moment';
 import { createEntity, createRelation, distributionEntities, inputResolveRefs, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
@@ -24,7 +25,7 @@ import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern, extrac
 import { computeValidPeriod, hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE, isDecayEnabled } from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
+import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type IndicatorDecayRule, type StoreEntityIndicator } from './indicator-types';
 import {
   type EditInput,
   FilterMode,
@@ -61,6 +62,7 @@ import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySet
 import { transformCustomFieldValueAddInput } from '../customField/custom-field-validator';
 import { pushAll } from '../../utils/arrayUtil';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
+import type { BasicStoreEntityDecayRule } from '../decayRule/decayRule-types';
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
@@ -258,6 +260,35 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
   return { formattedPattern };
 };
 
+/**
+ * Compute the decay attributes of an indicator created under a decay rule.
+ * Reaction points are optional on a rule: without them, the indicator decays straight to the revoke score.
+ */
+export const computeIndicatorDecayOnCreation = (
+  decayRule: Pick<BasicStoreEntityDecayRule, 'id' | 'decay_lifetime' | 'decay_pound' | 'decay_points' | 'decay_revoke_score'>,
+  baseScore: number,
+  validFrom: Moment,
+  userId: string,
+) => {
+  const decayAppliedRule: IndicatorDecayRule = {
+    decay_rule_id: decayRule.id,
+    decay_lifetime: decayRule.decay_lifetime,
+    decay_pound: decayRule.decay_pound,
+    decay_points: [...(decayRule.decay_points ?? [])],
+    decay_revoke_score: decayRule.decay_revoke_score,
+  };
+  const decayHistory: DecayHistory[] = [{ updated_at: validFrom.toDate(), score: baseScore, updated_by: userId }];
+  const revokeDate = computeDecayPointReactionDate(baseScore, decayAppliedRule, validFrom, decayAppliedRule.decay_revoke_score);
+  return {
+    decay_next_reaction_date: computeNextScoreReactionDate(baseScore, baseScore, decayAppliedRule, validFrom),
+    decay_base_score: baseScore,
+    decay_base_score_date: validFrom.toISOString(),
+    decay_applied_rule: decayAppliedRule,
+    decay_history: decayHistory,
+    valid_until: revokeDate.toISOString(),
+  };
+};
+
 export const addIndicator = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
   let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type as string;
   if (observableType === 'File') {
@@ -328,29 +359,9 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
       },
     };
   } else if (isDecayActivated && !revoked) {
-    const indicatorDecayRule = {
-      decay_rule_id: decayRule.id,
-      decay_lifetime: decayRule.decay_lifetime,
-      decay_pound: decayRule.decay_pound,
-      decay_points: [...decayRule.decay_points],
-      decay_revoke_score: decayRule.decay_revoke_score,
-    };
-    const nextScoreReactionDate = computeNextScoreReactionDate(indicatorBaseScore, indicatorBaseScore, decayRule, validFrom);
-    const decayHistory: DecayHistory[] = [];
-    decayHistory.push({
-      updated_at: validFrom.toDate(),
-      score: indicatorBaseScore,
-      updated_by: user.id,
-    });
-    const revokeDate = computeDecayPointReactionDate(indicatorBaseScore, decayRule, validFrom, decayRule.decay_revoke_score);
     finalIndicatorToCreate = {
       ...indicatorToCreate,
-      decay_next_reaction_date: nextScoreReactionDate,
-      decay_base_score: indicatorBaseScore,
-      decay_base_score_date: validFrom.toISOString(),
-      decay_applied_rule: indicatorDecayRule,
-      decay_history: decayHistory,
-      valid_until: revokeDate.toISOString(),
+      ...computeIndicatorDecayOnCreation(decayRule, indicatorBaseScore, validFrom, user.id),
     };
   } else {
     finalIndicatorToCreate = { ...indicatorToCreate };

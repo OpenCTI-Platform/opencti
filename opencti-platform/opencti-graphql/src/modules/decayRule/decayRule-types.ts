@@ -9,7 +9,7 @@ export interface BasicStoreEntityDecayRule extends BasicStoreEntity {
   built_in: boolean;
   decay_lifetime: number; // in days
   decay_pound: number; // can be changed in other model when feature is ready.
-  decay_points: number[]; // reactions points
+  decay_points?: number[]; // reactions points, optional in the schema
   decay_revoke_score: number; // revoked when score is <= 20
   decay_filters: string;
   order: number; // low priority = 0
@@ -21,7 +21,7 @@ export interface StoreEntityDecayRule extends StoreEntity {
   built_in: boolean;
   decay_lifetime: number;
   decay_pound: number;
-  decay_points: number[];
+  decay_points?: number[];
   decay_revoke_score: number;
   decay_filters: string;
   order: number;
@@ -33,7 +33,7 @@ export interface StixDecayRule extends StixObject {
   description: string;
   decay_lifetime: number;
   decay_pound: number;
-  decay_points: number[];
+  decay_points?: number[];
   decay_revoke_score: number;
   decay_filters: string;
   extensions: {
