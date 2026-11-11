@@ -53,7 +53,7 @@ When clicking on this button, we will retrieve the state in which your graph was
 
 You can roll back your investigation graph up to the last 10 expand actions.
 
-### Manipulate relationship
+### Create relationships
 
 We can create a relationship between entities directly within our investigation. To achieve this, select multiple entities by clicking on them while holding down the shift key. Subsequently, a button appears at the bottom right to create one (or more, depending on the number of entities selected) relationships.
 
