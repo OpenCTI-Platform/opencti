@@ -9589,10 +9589,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async-lock@npm:1.4.1":
-  version: 1.4.1
-  resolution: "async-lock@npm:1.4.1"
-  checksum: 10c0/f696991c7d894af1dc91abc81cc4f14b3785190a35afb1646d8ab91138238d55cabd83bfdd56c42663a008d72b3dc39493ff83797e550effc577d1ccbde254af
+"async-lock@npm:1.5.0":
+  version: 1.5.0
+  resolution: "async-lock@npm:1.5.0"
+  checksum: 10c0/e45d2dbddbbe3776dc49f1642565d1febbcf61d774478a2c72bf30d5790d856128b736b1426469004ee354417038c0344c980a8fbe4ca8c51909c2c1018e725a
   languageName: node
   linkType: hard
 
@@ -18464,7 +18464,7 @@ __metadata:
     antlr4: "npm:4.13.2"
     archiver: "npm:8.0.0"
     archiver-zip-encrypted: "npm:2.0.0"
-    async-lock: "npm:1.4.1"
+    async-lock: "npm:1.5.0"
     aws-sdk-v3-proxy: "npm:2.2.0"
     bcryptjs: "npm:3.0.3"
     bluebird: "npm:3.7.2"

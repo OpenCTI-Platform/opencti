@@ -94,7 +94,7 @@
     "antlr4": "4.13.2",
     "archiver": "8.0.0",
     "archiver-zip-encrypted": "2.0.0",
-    "async-lock": "1.4.1",
+    "async-lock": "1.5.0",
     "aws-sdk-v3-proxy": "2.2.0",
     "bcryptjs": "3.0.3",
     "bluebird": "3.7.2",
