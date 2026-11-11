@@ -4,6 +4,7 @@ import {
   isEventCreateRelationship,
   isEventInPirRelationship,
   isEventUpdateOnEntity,
+  isPlaybookInDebugList,
   isValidEventType,
   StreamDataEventTypeEnum,
 } from '../../../../src/manager/playbookManager/playbookManagerUtils';
@@ -209,6 +210,24 @@ describe('playbookManagerUtils', () => {
       const result = isEventCreateRelationship(streamEventMock);
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('isPlaybookInDebugList', () => {
+    it('should return true for a playbook id listed in the debug list', () => {
+      expect(isPlaybookInDebugList(['playbook-a'], 'playbook-a')).toBe(true);
+    });
+
+    it('should return false for a playbook id not listed in the debug list', () => {
+      expect(isPlaybookInDebugList(['playbook-a'], 'playbook-b')).toBe(false);
+    });
+
+    it('should return true for any playbook id when the debug list holds the * wildcard', () => {
+      expect(isPlaybookInDebugList(['*'], 'playbook-b')).toBe(true);
+    });
+
+    it('should return false for an empty debug list', () => {
+      expect(isPlaybookInDebugList([], 'playbook-a')).toBe(false);
     });
   });
 });

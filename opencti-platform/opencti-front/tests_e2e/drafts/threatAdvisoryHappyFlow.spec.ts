@@ -25,7 +25,8 @@ import DraftToolbarPageModel from '../model/drafts/draftToolbar.pageModel';
 import DraftOverviewPageModel from '../model/drafts/draftOverview.pageModel';
 import ReportPage from '../model/report.pageModel';
 import ReportDetailsPage from '../model/reportDetails.pageModel';
-import { advanceDraftViaApi, submitThreatAdvisoryDraftViaApi, waitForReportAccessApplied } from '../dataForTesting/threatAdvisory.data';
+import { advanceDraftViaApi, submitThreatAdvisoryDraftViaApi, waitForPlaybookManagerReady, waitForReportAccessApplied } from '../dataForTesting/threatAdvisory.data';
+import { THREAT_ADVISORY_PLAYBOOK_NAME } from '../dataForTesting/playbook.data';
 import { asPersona, gotoDraft, openDraftPage, submitThreatAdvisoryForm, USERS } from './threatAdvisoryDraftHelpers';
 
 const newReportName = () => `Threat Advisory E2E - ${crypto.randomUUID()}`;
@@ -169,6 +170,9 @@ test('Threat Advisory happy flow - phase 4: sharing, validation and Report acces
     });
 
     await test.step('Step 17: ManagerOrgC validates the draft, exits draft mode, Report is created', async () => {
+      // The Report this step creates must reach a running playbook through a manager that has caught
+      // up with the live stream; otherwise step 18 waits on an event the manager will never act on.
+      await waitForPlaybookManagerReady(playwright, baseURL!, THREAT_ADVISORY_PLAYBOOK_NAME);
       await gotoDraft(page, draftId);
       await toolbar.openTransition('Validate');
       await toolbar.fillWizard();
