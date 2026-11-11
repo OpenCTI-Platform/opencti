@@ -612,6 +612,10 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
+// Password history feature flag (use isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) to check activation).
+// When disabled, local passwords can be reused as before and no password history is recorded.
+export const PASSWORD_HISTORY_FEATURE_FLAG = 'PASSWORD_HISTORY';
+
 // Local authentication lockout policy feature flag (use isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) to check activation)
 export const LOCAL_AUTH_LOCKOUT_FEATURE_FLAG = 'LOCAL_AUTH_LOCKOUT';
 
@@ -635,10 +639,6 @@ export const CONFIG_PRESET_FEATURE_FLAG = 'CONFIG_PRESET';
 // Skip the import of entities unchanged since the last import by the same user
 // (use isFeatureEnabled(INGESTION_DEDUPLICATION_FEATURE_FLAG) to check activation)
 export const INGESTION_DEDUPLICATION_FEATURE_FLAG = 'INGESTION_DEDUPLICATION';
-
-// Time series breakdown of the dashboard widgets, one series per value of a field
-// (use isFeatureEnabled(TIME_SERIES_BREAKDOWN_FEATURE_FLAG) to check activation)
-export const TIME_SERIES_BREAKDOWN_FEATURE_FLAG = 'TIME_SERIES_BREAKDOWN';
 
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;

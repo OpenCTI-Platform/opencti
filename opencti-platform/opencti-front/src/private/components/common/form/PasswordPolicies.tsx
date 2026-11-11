@@ -13,10 +13,19 @@ const passwordPoliciesFragment = graphql`
     password_policy_min_words
     password_policy_min_lowercase
     password_policy_min_uppercase
+    password_policy_history_count
   }
 `;
 
-const PasswordPolicies: FunctionComponent<{ value?: string }> = ({ value }) => {
+interface PasswordPoliciesProps {
+  value?: string;
+  // 'admin' when the password is set for another user
+  audience?: 'self' | 'admin';
+  // A new account has no previous password to compare with
+  hideHistory?: boolean;
+}
+
+const PasswordPolicies: FunctionComponent<PasswordPoliciesProps> = ({ value, audience = 'self', hideHistory = false }) => {
   const { settings } = useAuth();
   const {
     password_policy_min_length,
@@ -26,6 +35,7 @@ const PasswordPolicies: FunctionComponent<{ value?: string }> = ({ value }) => {
     password_policy_min_words,
     password_policy_min_lowercase,
     password_policy_min_uppercase,
+    password_policy_history_count,
   } = useFragment<PasswordPolicies$key>(passwordPoliciesFragment, settings);
 
   return (
@@ -38,8 +48,10 @@ const PasswordPolicies: FunctionComponent<{ value?: string }> = ({ value }) => {
         minWords: password_policy_min_words,
         minLowercase: password_policy_min_lowercase,
         minUppercase: password_policy_min_uppercase,
+        historyCount: hideHistory ? 0 : password_policy_history_count,
       }}
       value={value}
+      audience={audience}
     />
   );
 };

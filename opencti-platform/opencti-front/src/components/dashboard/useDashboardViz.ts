@@ -27,8 +27,7 @@ const useDashboardViz = <TQuery extends OperationType>({
   query: GraphQLTaggedNode;
   config?: DashboardConfig;
   parameters?: WidgetParameters;
-  // No variables, and then no query, when the resolved selection must not be queried
-  buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'] | null;
+  buildQueryVariables?: (resolvedDataSelection: WidgetDataSelection[], config: DashboardConfig, parameters?: WidgetParameters) => TQuery['variables'];
 }) => {
   const [queryRef, load, disposeQuery] = useQueryLoader<TQuery>(query);
   const [isPending, startTransition] = useTransition();
@@ -111,8 +110,6 @@ const useDashboardViz = <TQuery extends OperationType>({
     () => (canBuildQueryVariables ? buildQueryVariables(resolvedDataSelection, config, parameters) : null),
     [canBuildQueryVariables, buildQueryVariables, resolvedDataSelection, config, parameters],
   );
-  // The resolved selection must not be queried, said buildQueryVariables
-  const skipped = !isBlocked && canBuildQueryVariables && !queryVariables;
 
   const queryVariablesSignature = useMemo(
     () => (queryVariables ? JSON.stringify(queryVariables) : null),
@@ -152,8 +149,8 @@ const useDashboardViz = <TQuery extends OperationType>({
     disposeQuery();
   }, [disposeQuery, isBlocked]);
 
-  // Without variables, while the selection is resolved or once it must not be queried, the query loaded
-  // before is not shown, and the next variables are loaded even when they are the ones loaded before
+  // Without variables, while the selection is resolved, the query loaded before is not shown, and the next
+  // variables are loaded even when they are the ones loaded before
   useEffect(() => {
     if (queryVariables || lastLoadedVariablesSignatureRef.current === null) {
       return;
@@ -187,9 +184,6 @@ const useDashboardViz = <TQuery extends OperationType>({
     }
 
     const refreshedVariables = buildQueryVariables(selection, config, parameters);
-    if (!refreshedVariables) {
-      return;
-    }
     const refreshedSignature = JSON.stringify(refreshedVariables);
     loadAndTrackSignature(refreshedVariables, refreshedSignature);
   }, [buildQueryVariables, config, resolvedDataSelection, parameters, reloadData, loadAndTrackSignature]);
@@ -224,10 +218,6 @@ const useDashboardViz = <TQuery extends OperationType>({
     isPreviewMode,
     resolvedDataSelection,
     renderGuards,
-    // The resolved selection is not the one of the current selection yet
-    isResolving,
-    // The resolved selection is not queried, buildQueryVariables having built no variables for it
-    skipped,
   };
 };
 

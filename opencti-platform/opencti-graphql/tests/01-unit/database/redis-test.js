@@ -52,7 +52,8 @@ vi.mock('../../../src/schema/schema-relationsRef', () => ({
   },
 }));
 
-import { createRedisClient, generateClusterNodes, generateNatMap, removeResolvedRefs } from '../../../src/database/redis';
+import { logApp } from '../../../src/config/conf';
+import { createRedisClient, generateClusterNodes, generateNatMap, readPasswordChangeLimit, removeResolvedRefs } from '../../../src/database/redis';
 
 describe('Redis client creation', () => {
   let client;
@@ -177,5 +178,44 @@ describe('removeResolvedRefs', () => {
   it('should keep all fields when there are no resolved refs', () => {
     const instance = { id: 'a', name: 'B', description: 'C' };
     expect(removeResolvedRefs(instance)).toEqual(instance);
+  });
+
+  it('should strip password hashes from a user before it is broadcast', () => {
+    const instance = { id: 'user-1', entity_type: 'User', name: 'Jane', password: '$2b$10$hash', password_history: ['$2b$10$old'] };
+    expect(removeResolvedRefs(instance)).toEqual({ id: 'user-1', entity_type: 'User', name: 'Jane' });
+  });
+
+  it('should keep a password field on an entity that is not a user', () => {
+    const instance = { id: 'smtp-1', entity_type: 'SmtpConfiguration', password: 'kept' };
+    expect(removeResolvedRefs(instance)).toEqual(instance);
+  });
+});
+
+describe('readPasswordChangeLimit', () => {
+  const KEY = 'app:password_change:max_attempts';
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should use a positive integer, including one given as a string by an environment variable', () => {
+    expect(readPasswordChangeLimit(KEY, 3, 5)).toBe(3);
+    expect(readPasswordChangeLimit(KEY, '10', 5)).toBe(10);
+  });
+
+  it('should use the default when the value is not set', () => {
+    const warn = vi.spyOn(logApp, 'warn');
+    expect(readPasswordChangeLimit(KEY, undefined, 5)).toBe(5);
+    expect(readPasswordChangeLimit(KEY, null, 5)).toBe(5);
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('should warn and use the default for 0, a negative, a decimal or a non numeric value', () => {
+    const warn = vi.spyOn(logApp, 'warn');
+    [0, '0', -1, 2.5, '', 'abc'].forEach((value) => {
+      expect(readPasswordChangeLimit(KEY, value, 5)).toBe(5);
+    });
+    expect(warn).toHaveBeenCalledTimes(6);
+    expect(warn).toHaveBeenCalledWith('[PASSWORD_HISTORY] Ignoring an invalid password change limit, using the default', { key: KEY, value: 0, default: 5 });
   });
 });
