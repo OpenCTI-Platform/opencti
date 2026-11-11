@@ -107,7 +107,7 @@ Each enrichment of the **To review** tab offers:
 | See the **Enrichment** panel and the enrichments of the investigation | The `Access knowledge` capability. |
 | Launch an enrichment, from the panel or the context menu | Edit or manage access to the investigation, and the `Create / Update investigations`, `Ask for knowledge enrichment` and `Create / Update knowledge` capabilities. |
 | Run a connector again on an entity | Edit or manage access to the investigation, and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. |
-| Add results to the graph or mark them as reviewed | Edit or manage access to the investigation. |
+| Add results to the graph or mark them as reviewed | Edit or manage access to the investigation, and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. |
 
 With view access to the investigation, you can open the results of an enrichment but not add them or mark them as reviewed; the dialog says so. See [Access control](dashboards.md#access-control) for the levels of access and [Users and roles](../administration/users.md) for the capabilities.
 
