@@ -64,6 +64,54 @@ We can create a relationship between entities directly within our investigation.
     Creating a relationship in the investigation graph will generate the relationship in your knowledge base.
 
 
+## Enrich from the graph
+
+You can run [enrichment connectors](enrichment.md) on the entities of an investigation without leaving the graph. The results are not drawn straight away: you review them first and choose what to add, so that an enrichment bringing back many objects does not flood the investigation.
+
+### Launch an enrichment
+
+Select one or more entities or relationships of the same type, then either:
+
+- open the **Enrichment** panel with the cloud button of the graph toolbar, pick one or more connectors under **Start an enrichment** and click **Enrich**;
+- or right-click the selection and pick a connector under **Enrichment** (see [Context menu](graphs.md#context-menu)).
+
+A confirmation lists the selected elements, then the enrichment runs as a [background task](background-tasks.md) and the panel opens on its **To review** tab. Only the connectors that can enrich the selected type are offered. When the selection mixes types, or no connector can enrich it, the panel says **No connector available for the selected entities.** and the menu entry cannot be chosen.
+
+### Follow enrichments
+
+The **Enrichment** panel lists the enrichments launched from this investigation, grouped by enriched entity, then by connector. While elements are selected, it lists only their enrichments. Three tabs sort them:
+
+- **To review**: the connector has finished and its results wait for your review.
+- **In progress**: the connector is still running.
+- **Done**: the enrichment has finished and nothing waits for review.
+
+The cloud button of the toolbar carries a badge: the number of enrichments with results waiting, or, when none are waiting, the number in progress. Otherwise, a red dot means that an enrichment failed. The tooltip of the button spells the count out. The button is disabled while the investigation has no enrichment yet and you have nothing selected that you can enrich.
+
+Next to each connector, **Refresh the knowledge using this connector** runs that connector again on the entity.
+
+### Review the results
+
+Each enrichment of the **To review** tab offers:
+
+- **Review results**: lists only the data that the enrichment created or updated, counted by entity type and relationship type. Tick the types to add and click **Expand**: the entities of those types are added with their relationships to the enriched entity, and the enrichment is marked as reviewed. When the enrichment brought nothing that is not already on the graph, the dialog says **Nothing to add to the graph** and offers **Expand with data in the platform**, which opens the usual [expansion](#expansion) on the enriched entity.
+- **Add all to graph**: adds every result, without choosing types, after a confirmation, and marks the enrichment as reviewed.
+- **Mark as reviewed**: moves the enrichment to **Done** without adding anything.
+- **Delete**: removes the enrichment from the list. The data it brought into the platform stays.
+
+**Review all** opens the results of every enrichment of the tab that has some, in one dialog. An enrichment that failed has no results to review; only **Mark as reviewed** and **Delete** apply to it.
+
+### Who can enrich
+
+| To | You need |
+|:---|:---|
+| See the **Enrichment** panel and the enrichments of the investigation | The `Access knowledge` capability. |
+| Launch an enrichment, from the panel or the context menu | Edit or manage access to the investigation, and the `Create / Update investigations`, `Ask for knowledge enrichment` and `Create / Update knowledge` capabilities. |
+| Run a connector again on an entity | Edit or manage access to the investigation, and the `Create / Update investigations` and `Ask for knowledge enrichment` capabilities. |
+| Add results to the graph or mark them as reviewed | Edit or manage access to the investigation. |
+
+With view access to the investigation, you can open the results of an enrichment but not add them or mark them as reviewed; the dialog says so. See [Access control](dashboards.md#access-control) for the levels of access and [Users and roles](../administration/users.md) for the capabilities.
+
+
 ## Capitalize on an investigation
 
 

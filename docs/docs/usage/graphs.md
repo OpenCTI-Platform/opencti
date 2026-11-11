@@ -115,7 +115,7 @@ From left to right:
 | View | Zoom in and out, **Fit the whole graph**, fit the selection, locate the selection, full screen. |
 | Layout | 3D mode, hierarchical layouts (top to bottom, left to right), layered layout (by entity category), radial layout, force-directed layout (see [Layouts](#layouts)). |
 | Selection | Box and lasso selection, adding the neighbours to the selection, the shortest path between two entities (see [Select](#select)). |
-| Creation and removal | Add entities, edit the selected item, create a relationship, a nested relationship or a sighting, remove the selection; in investigations, expand the selection and roll the last expansion back. |
+| Creation and removal | Add entities, edit the selected item, create a relationship, a nested relationship or a sighting, remove the selection; in investigations, expand the selection, roll the last expansion back and open the **Enrichment** panel (see [Enrich from the graph](pivoting.md#enrich-from-the-graph)). |
 | Filters | Filter by type (entity and relationship types, the same filters as the legend), by marking and by author, the time range selector, and **Clear all filters**; in correlation graphs, show every correlated entity or only the observables and indicators. A number on a filter tells how many choices are in use. Each filter opens a menu of its choices, grouped under headings and checked when in use; the menu stays open so that several choices can be made in a row. |
 | Export and help | The high-resolution image export, the keyboard shortcuts. |
 
