@@ -48,6 +48,7 @@ import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { lockResources } from '../lock/master-lock';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { consumedPushQueues, createOrderedQueuesLeadership, intakeLockKey } from '../intake/workerless/push-queues';
+import { isLockError } from '../database/sequencer/sequencer-multi-writer';
 import { rehydrateFiles, removeStagedFiles, stageFiles } from '../intake/intake-files';
 import { intakeEnvelopeOfMessage, type IntakeEnvelope } from '../intake/intake-envelope';
 import { reportWorkProgress } from '../domain/work';
@@ -506,6 +507,15 @@ const transientOutcome = async (run: IntakeOperationRun, err: any, attempt: numb
   }
   return null;
 };
+// pycti parity (opencti_stix2.py import_item): an operation refused because its entities are
+// locked waits 1 to 3 s and runs again, without limit; the worker-less intake failed it (task 0040:
+// invisible on one platform, 2,968 operations lost at two)
+const lockRetryOutcome = async (err: any): Promise<OperationOutcome | null> => {
+  if (!isLockError(err)) return null;
+  operationsCounter?.add(1, { outcome: 'lock_retry' });
+  await wait(1000 + Math.round(Math.random() * 2000));
+  return { deferred: false }; // sentinel: retry
+};
 const runOperationOnce = async (run: IntakeOperationRun, attempt: number): Promise<OperationOutcome> => {
   const { operation, key, user } = run;
   // one pre-loop permit per attempt, released by the boundary hook (intent queued) or,
@@ -544,6 +554,8 @@ const runOperationOnce = async (run: IntakeOperationRun, attempt: number): Promi
       if (code === SEQUENCER_DEFERRED_ERROR) {
         return { deferred: true };
       }
+      const locked = await lockRetryOutcome(first);
+      if (locked) return locked;
       const transient = await transientOutcome(run, first, attempt);
       if (transient) return transient;
       // A consumer refused for a missing reference before it reached the loop: retain
@@ -577,6 +589,8 @@ const runOperationOnce = async (run: IntakeOperationRun, attempt: number): Promi
     }
     return {};
   } catch (e: any) {
+    const locked = await lockRetryOutcome(e);
+    if (locked) return locked;
     const transient = await transientOutcome(run, e, attempt);
     if (transient) return transient;
     return { error: String(e.message ?? e) };

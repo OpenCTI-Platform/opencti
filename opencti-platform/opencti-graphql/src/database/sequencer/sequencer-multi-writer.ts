@@ -3,6 +3,7 @@
 // is owned by the node that wrote it: a node rehydrates and sweeps its own records only (and the
 // records written before multi_writer, without owner); a producer landing on another node is
 // reached by the sweeper. Taking over the records of a dead node is out of the POC.
+import { TYPE_LOCK_ERROR } from '../../config/errors';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 
 // The owner field a new record carries, none on a single writer (documents unchanged)
@@ -32,3 +33,12 @@ export const ignoreIndexAlreadyExists = (error: any): null => {
   if (type === 'resource_already_exists_exception' || String(error?.message ?? '').includes('resource_already_exists_exception')) return null;
   throw error;
 };
+
+// A lock that could not be taken: the redlock error of an acquisition out of retries (name
+// ExecutionError, kept across the lock child process), the LOCK_ERROR the middleware lock sites
+// convert it to, or that error once GraphQL replaced it, when it reached the execution as a plain
+// object (the lock child's IPC), by "Unexpected error value: { ... LOCK_ERROR ... }" without extensions
+const LOCK_ERROR_TEXT = /LOCK_ERROR|too many concurrent call on the same entities/;
+export const isLockError = (error: any): boolean => error?.name === TYPE_LOCK_ERROR
+  || error?.extensions?.code === 'LOCK_ERROR'
+  || LOCK_ERROR_TEXT.test(String(error?.message ?? ''));
