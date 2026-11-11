@@ -1916,25 +1916,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/chatbot@npm:3.22.0":
-  version: 3.22.0
-  resolution: "@filigran/chatbot@npm:3.22.0"
+"@filigran/chatbot@npm:3.25.0":
+  version: 3.25.0
+  resolution: "@filigran/chatbot@npm:3.25.0"
   dependencies:
     remark-parse: "npm:^11.0.0"
     unified: "npm:^11.0.0"
   peerDependencies:
+    "@filigran/design-system": ^1.5.0
     react: ">=18"
     react-dom: ">=18"
     react-markdown: ">=10"
     remark-breaks: ">=4"
     remark-gfm: ">=4"
-  checksum: 10c0/6dbbc95d15d5cd94678faaaf397950eec8a8d7cd8ded6dacac9a64b9d69e58791d292f71969176f0f931058e031695c7361f3fe38e30a5f506e6fa3a3f3e9468
+  checksum: 10c0/83746ecbcad18cc9a0789b6830c1273ba0f52bdb4ef30d738d058035a828b67094a9a50e080407b2bc6d1065cbf47ba8b864830f63888eb809764c508a3cb148
   languageName: node
   linkType: hard
 
-"@filigran/design-system@npm:1.4.0":
-  version: 1.4.0
-  resolution: "@filigran/design-system@npm:1.4.0"
+"@filigran/design-system@npm:1.5.0":
+  version: 1.5.0
+  resolution: "@filigran/design-system@npm:1.5.0"
   dependencies:
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/sortable": "npm:^10.0.0"
@@ -1974,7 +1975,7 @@ __metadata:
     react-dom: ^19.0.0
   bin:
     filigran-design-system: bin/install-skills.mjs
-  checksum: 10c0/3faa34145e653af5ad283659a70c189de524a302d6f9f828fc868c089ac80b52cc404c66840541e70022dd8a710fd504d723eccbaf5dc9a814c18f82b3d90492
+  checksum: 10c0/fa0d18b2931d420df7be2a4893e3dcb7ea6d609007cd9f6600c99a09afa24d89e1dc2fae5a936818ee5e4ddf45e388c88f1ead45638328a2934afa91bc691c98
   languageName: node
   linkType: hard
 
@@ -18240,9 +18241,9 @@ __metadata:
     "@emotion/styled": "npm:11.14.1"
     "@eslint/js": "npm:10.0.1"
     "@faker-js/faker": "npm:10.6.0"
-    "@filigran/chatbot": "npm:3.22.0"
+    "@filigran/chatbot": "npm:3.25.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "npm:1.4.0"
+    "@filigran/design-system": "npm:1.5.0"
     "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
