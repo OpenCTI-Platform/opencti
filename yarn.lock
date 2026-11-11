@@ -1916,9 +1916,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/chatbot@npm:3.26.0":
-  version: 3.26.0
-  resolution: "@filigran/chatbot@npm:3.26.0"
+"@filigran/chatbot@npm:3.27.0":
+  version: 3.27.0
+  resolution: "@filigran/chatbot@npm:3.27.0"
   dependencies:
     remark-parse: "npm:^11.0.0"
     unified: "npm:^11.0.0"
@@ -1929,7 +1929,7 @@ __metadata:
     react-markdown: ">=10"
     remark-breaks: ">=4"
     remark-gfm: ">=4"
-  checksum: 10c0/5bd239761267165db86fde4a6d14f8a85ae0ff931c085b9f32d0e1f2a7b29a6d30abb688b4d793e942d867f1cf58aead7c9cf825838acec231f206a35e8bf71d
+  checksum: 10c0/feab486c24de45e773586ca34218c2f65849eaca3458b83ba17cc4e8fbe1476e1f38842b68c8bde5dd50c9005e7b49f3fcff6274df7ea321422aadf68be5e140
   languageName: node
   linkType: hard
 
@@ -18241,7 +18241,7 @@ __metadata:
     "@emotion/styled": "npm:11.14.1"
     "@eslint/js": "npm:10.0.1"
     "@faker-js/faker": "npm:10.6.0"
-    "@filigran/chatbot": "npm:3.26.0"
+    "@filigran/chatbot": "npm:3.27.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
     "@filigran/design-system": "npm:1.5.0"
     "@filigran/rich-text-editor": "npm:2.0.1"
