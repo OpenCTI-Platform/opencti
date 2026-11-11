@@ -18334,7 +18334,7 @@ __metadata:
     mdi-material-ui: "npm:8.0.0"
     moment: "npm:2.31.0"
     monocart-reporter: "npm:2.15.1"
-    pdfmake: "npm:0.3.13"
+    pdfmake: "npm:0.3.14"
     pmtiles: "npm:4.5.0"
     prop-types: "npm:15.8.1"
     qrcode: "npm:1.5.4"
@@ -19305,14 +19305,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pdfmake@npm:0.3.13":
-  version: 0.3.13
-  resolution: "pdfmake@npm:0.3.13"
+"pdfmake@npm:0.3.14":
+  version: 0.3.14
+  resolution: "pdfmake@npm:0.3.14"
   dependencies:
     linebreak: "npm:^1.1.0"
     pdfkit: "npm:^0.20.2"
     xmldoc: "npm:^2.0.3"
-  checksum: 10c0/c8043ab6b836d3701d9ba7bf248eec6779d8bb061050ddfa39966fbb6afaffdbca670d5b86041060cbc94629d7472560d531bc303da315f5c7bec7de187d0656
+  checksum: 10c0/cc90afd92c6388c879bbc4fd671bb858b7165ce3b24b6fbdbdfd644327bda36b0384e8ea6ff19b36270052bb184360085e77e606320542eb7adfd9698fbecbd5
   languageName: node
   linkType: hard
 
