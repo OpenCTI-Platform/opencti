@@ -135,7 +135,7 @@ Hovering an entity or a relationship, or selecting it, keeps it and its direct n
 
 After a short moment on an element, a **hover card** previews its key facts: type, name, date, author, confidence, markings, relationship counts, every badge with what it means and, in investigations, the number of relationships not drawn yet. The card only reads; what you can do with the element is in its context menu.
 
-![Hover card of the Copper Lantern intrusion set, with its facts, markings and relationship counts](assets/graph-hover-card.png)
+![Hover card of the apt28 malware, with its facts, markings, relationship counts and a hint to right-click for its actions](assets/graph-hover-card.png)
 
 ## Context menu
 
