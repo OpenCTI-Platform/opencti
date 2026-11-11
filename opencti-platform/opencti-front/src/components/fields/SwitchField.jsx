@@ -3,6 +3,7 @@ import { Switch } from '@filigran/design-system';
 import FormGroup from '@mui/material/FormGroup';
 import FormHelperText from '@mui/material/FormHelperText';
 import Tooltip from '@mui/material/Tooltip';
+import { useTheme } from '@mui/material/styles';
 import { InformationOutline } from 'mdi-material-ui';
 import { useFormatter } from '../i18n';
 
@@ -20,6 +21,7 @@ const SwitchField = (props) => {
     label,
   } = props;
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   // Radix reports the new value directly; MUI reported an event whose target.checked had to be
   // read.
   const internalOnChange = useCallback(
@@ -51,7 +53,7 @@ const SwitchField = (props) => {
         <InformationOutline
           fontSize="small"
           color="primary"
-          style={{ cursor: 'default', margin: '0 0 0 10px' }}
+          style={{ cursor: 'default', marginLeft: theme.spacing(0.5) }}
         />
       </Tooltip>
     </div>

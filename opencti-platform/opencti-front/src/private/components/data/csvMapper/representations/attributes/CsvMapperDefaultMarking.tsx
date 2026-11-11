@@ -1,9 +1,11 @@
 import { Field } from 'formik';
 import React from 'react';
+import { useTheme } from '@mui/material/styles';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import SelectFieldFds, { SelectItem } from '../../../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../../../components/i18n';
+import type { Theme } from '../../../../../../components/Theme';
 
 interface CsvMapperDefaultMarkingProps {
   name: string;
@@ -11,9 +13,10 @@ interface CsvMapperDefaultMarkingProps {
 
 const CsvMapperDefaultMarking = ({ name }: CsvMapperDefaultMarkingProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginTop: theme.spacing(1.25) }}>
       <Field
         component={SelectFieldFds}
         name={name}

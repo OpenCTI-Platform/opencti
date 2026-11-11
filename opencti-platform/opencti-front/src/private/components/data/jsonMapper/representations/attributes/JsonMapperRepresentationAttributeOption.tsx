@@ -4,6 +4,8 @@ import React from 'react';
 import Alert from '@mui/material/Alert';
 import { FieldProps } from 'formik';
 import { Input } from '@filigran/design-system';
+import { useTheme } from '@mui/material/styles';
+import type { Theme } from '../../../../../../components/Theme';
 
 interface JsonMapperRepresentationAttributeOptionProps extends FieldProps<string> {
   placeholder: string;
@@ -18,12 +20,13 @@ const JsonMapperRepresentationAttributeOption = ({
   tooltip,
   info,
 }: JsonMapperRepresentationAttributeOptionProps) => {
+  const theme = useTheme<Theme>();
   const { name, value } = field;
   const { setFieldValue } = form;
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginTop: theme.spacing(1.25) }}>
         <Input
           className="flex-1"
           type="text"
