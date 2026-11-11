@@ -10,6 +10,10 @@ export interface SequencerBatchLock {
   // fix 2026-09-22 instrumentation: keys an apply-time lock site asked for and the batch lock
   // did not hold (a real Redis lock is then taken; under concurrent apply those contend)
   onMiss?: (keys: string[]) => void;
+  // task 0040 multi_writer step 2: a key outside the batch lock is tried once, never waited for
+  // (another platform may hold it while waiting for one of ours); the apply fails with LOCK_ERROR
+  // and its group starts a new cycle with the key locked up front
+  noWait?: boolean;
 }
 
 // Keys the batch lock must hold so the apply-time lock sites are no-ops (master-lock's
@@ -20,8 +24,8 @@ export interface SequencerBatchLock {
 // pre-resolved element; a relation's endpoints are resolved to their internal id when the map
 // knows them. Zero imports kept on purpose: lookups are injected.
 export interface BatchLockGroup {
-  leader: { kind: string; candidateIds: string[]; referencedIds: string[]; input: Record<string, any> };
-  absorbed: { referencedIds: string[] }[];
+  leader: { kind: string; candidateIds: string[]; referencedIds: string[]; input: Record<string, any>; extraLockKeys?: string[] };
+  absorbed: { referencedIds: string[]; extraLockKeys?: string[] }[];
 }
 
 // Increment 2026-09-24: a relation's OWN ids (standard id and aliases) only exist once its
@@ -58,6 +62,40 @@ export const computeBatchLockKeys = (
         });
       }
     }
+  });
+  return Array.from(keys);
+};
+
+// task 0040 multi_writer step 2: the keys a batch locks in Redis when several platforms write. Only
+// what the batch writes as its own: the intents' own ids with the instance ids of their resolved
+// target, the relations' own ids, the meta objects an apply may create from its input, and the keys
+// an apply could not take in an earlier cycle. Referenced ids and relation endpoints are not locked
+// across platforms: an apply only reads them and appends to their denormalized refs, a scripted
+// update that commutes (KB opencti-sequencer-multi-platform-scaling). The batch still HOLDS the full
+// set of computeBatchLockKeys, so the apply-time lock sites asking for them stay no-ops.
+export const computeOwnLockKeys = (
+  groups: BatchLockGroup[],
+  peekInstanceIds: (id: string) => string[] | null,
+  relationOwnIds: (leader: BatchLockGroup['leader']) => string[] | null,
+  creatableIds: (input: Record<string, any>) => string[],
+): string[] => {
+  const keys = new Set<string>();
+  const add = (id: unknown) => {
+    if (typeof id === 'string' && id.length > 0) keys.add(id);
+  };
+  groups.forEach(({ leader, absorbed }) => {
+    if (leader.kind === 'relation') {
+      const endpoints = new Set([leader.input.fromId, leader.input.toId]);
+      leader.candidateIds.filter((id) => !endpoints.has(id)).forEach(add);
+      (relationOwnIds(leader) ?? []).forEach(add);
+    } else {
+      leader.candidateIds.forEach((id) => {
+        add(id);
+        (peekInstanceIds(id) ?? []).forEach(add);
+      });
+    }
+    creatableIds(leader.input).forEach(add);
+    [leader, ...absorbed].forEach((intent) => (intent.extraLockKeys ?? []).forEach(add));
   });
   return Array.from(keys);
 };

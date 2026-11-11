@@ -15,7 +15,7 @@
 // Errors are caught per intent and rejected on its promise: the GraphQL error contract is
 // unchanged. Fail-open watchdog: a dead loop sends every later submit direct and logs.
 import conf, { logApp } from '../../config/conf';
-import { MissingReferenceFinalError, TYPE_LOCK_ERROR } from '../../config/errors';
+import { MissingReferenceFinalError } from '../../config/errors';
 import { executionContext, SYSTEM_USER } from '../../utils/access';
 import { generateStandardId, getInputIds, getInstanceIds } from '../../schema/identifier';
 import { idLabel } from '../../schema/schema-labels';
@@ -23,7 +23,7 @@ import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { elCreateIndexWithMapping, elFindByIds, elFlushSequencerWrites, elIndexExists, elPutIndexMappingProperties, elRawBulk, elRawSearch } from '../engine';
-import { ignoreIndexAlreadyExists } from './sequencer-multi-writer';
+import { creatableNestedIds, ignoreIndexAlreadyExists, isLockError, lockErrorKeys } from './sequencer-multi-writer';
 import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps } from './sequencer-pending-refs';
 import type { StrippedRef, StrippedRefInput } from './sequencer-pending-refs';
 import { computeApplyLevels, groupIndicesByLevel, runBounded } from './sequencer-apply-levels';
@@ -39,7 +39,7 @@ import { SequencerQueue } from './sequencer-queue';
 import { buildIntent, intentOwnIds } from './sequencer-intent';
 import { sequencerIdentityMap, startIdentityMapInvalidation } from './sequencer-identity-map';
 import { buildBatchPlan, canonicalKey, classifyPhase } from './sequencer-batch-plan';
-import { computeBatchLockKeys, getCurrentBatchLock, setCurrentBatchLock } from './sequencer-batch-lock';
+import { computeBatchLockKeys, computeOwnLockKeys, getCurrentBatchLock, setCurrentBatchLock } from './sequencer-batch-lock';
 import type { CoalesceGroup } from './sequencer-batch-plan';
 import type { IntentKind, SequencerIntent } from './sequencer-intent';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -484,28 +484,32 @@ const resolveUnderLock = async (batch: SequencerIntent[]): Promise<any[]> => {
 // ids on rename are the unpredictable rest: the nested lock site real-locks them.
 // fix 2026-09-22: candidates AND referenced ids, with their pre-resolved instance ids (see
 // computeBatchLockKeys); the ids written during the batch are added live by applyGroup
+const peekInstanceIds = (id: string) => {
+  const element = sequencerIdentityMap.peekBare(id);
+  return element ? getInstanceIds(element) : null;
+};
+// increment 2026-09-24: the relation's own ids, computable when both endpoints are in the map
+// (same construction as the dedup prefetch: entity_type is required by getInputIds)
+const relationOwnIds = (leader: { input: Record<string, any> }) => {
+  const { fromId, toId, relationship_type: relationshipType } = leader.input;
+  if (typeof fromId !== 'string' || typeof toId !== 'string' || typeof relationshipType !== 'string') return null;
+  const from = sequencerIdentityMap.peekBare(fromId);
+  const to = sequencerIdentityMap.peekBare(toId);
+  if (!from || !to) return null;
+  try {
+    return getInputIds(relationshipType, { ...leader.input, entity_type: relationshipType, from, to }, false);
+  } catch {
+    return null; // underspecified input: the apply-time lock site takes its real lock as today
+  }
+};
 const batchLockKeys = (groups: CoalesceGroup[]): string[] => computeBatchLockKeys(
   groups,
-  (id) => {
-    const element = sequencerIdentityMap.peekBare(id);
-    return element ? getInstanceIds(element) : null;
-  },
+  peekInstanceIds,
   (id) => sequencerIdentityMap.resolveInternalId(id),
-  // increment 2026-09-24: the relation's own ids, computable when both endpoints are in the map
-  // (same construction as the dedup prefetch: entity_type is required by getInputIds)
-  (leader) => {
-    const { fromId, toId, relationship_type: relationshipType } = leader.input;
-    if (typeof fromId !== 'string' || typeof toId !== 'string' || typeof relationshipType !== 'string') return null;
-    const from = sequencerIdentityMap.peekBare(fromId);
-    const to = sequencerIdentityMap.peekBare(toId);
-    if (!from || !to) return null;
-    try {
-      return getInputIds(relationshipType, { ...leader.input, entity_type: relationshipType, from, to }, false);
-    } catch {
-      return null; // underspecified input: the apply-time lock site takes its real lock as today
-    }
-  },
+  relationOwnIds,
 );
+// task 0040 multi_writer step 2: what the batch locks in Redis (sequencer-batch-lock.ts)
+const ownLockKeys = (groups: CoalesceGroup[]): string[] => computeOwnLockKeys(groups, peekInstanceIds, relationOwnIds, creatableNestedIds);
 
 interface ParkedIntent {
   intent: SequencerIntent;
@@ -915,8 +919,10 @@ const runBatchLoop = async () => {
       sequencerMetrics.batchCommitted(0);
       continue;
     }
-    // 4. one batch lock over the predicted key set
-    const lockKeys = batchLockKeys(plan.order);
+    // 4. one batch lock over the predicted key set; multi_writer: Redis locks the batch's own
+    // keys only, the batch holds the full set (heldKeys below)
+    const heldKeys = batchLockKeys(plan.order);
+    const lockKeys = SEQUENCER_CONFIG.multiWriter ? ownLockKeys(plan.order) : heldKeys;
     // task 0040 multi_writer: the planned intents start a new cycle (first of the next batch)
     const replanNext = () => {
       carried = plan.order.flatMap(({ leader, absorbed }) => [leader, ...absorbed]);
@@ -927,7 +933,7 @@ const runBatchLoop = async () => {
     } catch (err: any) {
       // multi_writer: another platform held a key past the lock's retry budget, the batch waits
       // its turn again instead of failing its intents (the workers' clients would retry them)
-      if (SEQUENCER_CONFIG.multiWriter && err?.name === TYPE_LOCK_ERROR) {
+      if (SEQUENCER_CONFIG.multiWriter && isLockError(err)) {
         sequencerMetrics.mapEvent('lock_retry');
         replanNext();
         await settleDeferrals();
@@ -962,7 +968,12 @@ const runBatchLoop = async () => {
         continue;
       }
     }
-    setCurrentBatchLock({ heldKeys: new Set(lockKeys), signal: lock.signal, onMiss: recordLockMiss });
+    setCurrentBatchLock({
+      heldKeys: new Set(SEQUENCER_CONFIG.multiWriter ? [...heldKeys, ...lockKeys] : lockKeys),
+      signal: lock.signal,
+      onMiss: recordLockMiss,
+      noWait: SEQUENCER_CONFIG.multiWriter,
+    });
     // 5. apply leaders one at a time (C6) with the Stage E write buffer armed, then commit:
     // flush the buffered writes (one docs bulk + one side/update bulk + ONE refresh), push the
     // buffered events in application order, and only then resolve the intents' promises.
@@ -970,8 +981,21 @@ const runBatchLoop = async () => {
     // BEFORE any write) on a non-expired intent re-parks it instead of rejecting: the
     // reference is usually in flight, and the plan-time predicate cannot see every
     // plan->apply coherence gap. Anything else, or an exhausted deadline, rejects as today.
+    // multi_writer step 2: the groups an apply-time lock refused, first of the next batch
+    const lockReplans: SequencerIntent[] = [];
     const onApplyFailure = (group: CoalesceGroup, err: unknown) => {
       const { leader, absorbed } = group;
+      // multi_writer step 2: an apply-time lock site found a key held by another platform (tried
+      // once, sequencer-batch-lock.ts): the group starts a new cycle, the key locked up front
+      if (SEQUENCER_CONFIG.multiWriter && isLockError(err)) {
+        const keys = lockErrorKeys(err);
+        [leader, ...absorbed].forEach((intent) => {
+          intent.extraLockKeys = [...new Set([...(intent.extraLockKeys ?? []), ...keys])];
+        });
+        sequencerMetrics.mapEvent('apply_lock_retry');
+        lockReplans.push(leader, ...absorbed);
+        return;
+      }
       const isMissingRef = (err as any)?.extensions?.code === 'MISSING_REFERENCE_ERROR';
       const missingIds = (): string[] => {
         const unresolved: unknown = (err as any)?.extensions?.data?.unresolvedIds ?? (err as any)?.data?.unresolvedIds;
@@ -1193,6 +1217,7 @@ const runBatchLoop = async () => {
       // never be lost), and BEFORE the evict/clear below so any stale warm entry for an
       // id this batch wrote is wiped right after the warm completed.
       if (aheadGrab) carried = await aheadGrab;
+      if (lockReplans.length > 0) carried = [...lockReplans, ...carried];
       setCurrentWriteBuffer(null);
       setCurrentBatchLock(null);
       if (writtenIds.length > 0) sequencerIdentityMap.evict(writtenIds, 'write');

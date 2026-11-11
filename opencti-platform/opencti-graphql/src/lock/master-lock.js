@@ -153,7 +153,8 @@ export const lockResources = async (ids, args = {}) => {
     }
     // fix 2026-09-22 instrumentation: the loop counts the keys that escape the batch lock by kind
     if (sequencer.onMiss) sequencer.onMiss(missing);
-    return lockResources(missing, cleanArgs);
+    // task 0040 multi_writer: never wait for a key while the batch lock is held (sequencer-batch-lock.ts)
+    return lockResources(missing, sequencer.noWait ? { ...cleanArgs, retryCount: 0 } : cleanArgs);
   }
   if (USE_CHILD_LOCK) {
     return childLockResources(ids, cleanArgs);

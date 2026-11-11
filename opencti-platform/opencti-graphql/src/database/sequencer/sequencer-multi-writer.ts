@@ -3,6 +3,10 @@
 // is owned by the node that wrote it: a node rehydrates and sweeps its own records only (and the
 // records written before multi_writer, without owner); a producer landing on another node is
 // reached by the sweeper. Taking over the records of a dead node is out of the POC.
+import { generateStandardId } from '../../schema/identifier';
+import { idLabel } from '../../schema/schema-labels';
+import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
 import { TYPE_LOCK_ERROR } from '../../config/errors';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 
@@ -42,3 +46,39 @@ const LOCK_ERROR_TEXT = /LOCK_ERROR|too many concurrent call on the same entitie
 export const isLockError = (error: any): boolean => error?.name === TYPE_LOCK_ERROR
   || error?.extensions?.code === 'LOCK_ERROR'
   || LOCK_ERROR_TEXT.test(String(error?.message ?? ''));
+
+// The keys a LOCK_ERROR of a middleware lock site was refused (LockTimeoutError({ participantIds }))
+export const lockErrorKeys = (error: any): string[] => {
+  const keys = error?.extensions?.data?.participantIds ?? error?.data?.participantIds;
+  return Array.isArray(keys) ? keys.filter((key: unknown): key is string => typeof key === 'string' && key.length > 0) : [];
+};
+
+const STIX_LIKE_ID = /^[a-z][a-z0-9-]*--/;
+
+// Step 2 (narrowed lock): the meta objects an apply may CREATE from its own input, so two platforms
+// could create them at once: a label given by its value, an external reference or a kill chain
+// phase given as an object. A meta object given by its id already exists (or is created by its own
+// intent): the apply only reads it and appends to it, it needs no lock across platforms.
+export const creatableNestedIds = (input: Record<string, any>): string[] => {
+  const out: string[] = [];
+  const labels = input[INPUT_LABELS];
+  if (Array.isArray(labels)) {
+    labels.forEach((label: unknown) => {
+      if (typeof label === 'string' && !STIX_LIKE_ID.test(label)) out.push(idLabel(label));
+    });
+  }
+  const objects = (entries: unknown, type: string) => {
+    if (!Array.isArray(entries)) return;
+    entries.forEach((entry: unknown) => {
+      if (entry === null || typeof entry !== 'object') return;
+      try {
+        out.push(generateStandardId(type, entry as Record<string, any>));
+      } catch {
+        // underspecified: the apply fails the same way, before any write
+      }
+    });
+  };
+  objects(input[INPUT_EXTERNAL_REFS], ENTITY_TYPE_EXTERNAL_REFERENCE);
+  objects(input[INPUT_KILLCHAIN], ENTITY_TYPE_KILL_CHAIN_PHASE);
+  return out;
+};

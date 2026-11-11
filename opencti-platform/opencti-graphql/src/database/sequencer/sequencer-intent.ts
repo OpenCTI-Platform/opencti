@@ -42,6 +42,9 @@ export interface SequencerIntent {
   // successful apply into the pending-refs store (s9.12.3): a "dead" member is usually
   // just LATE, and the reconcile restores the edge when it lands.
   deadStrippedRefs?: { inputKey: string; refId: string }[];
+  // task 0040 multi_writer step 2: keys an apply-time lock site could not take at once (held by
+  // another platform): the next batch locks them up front, before it holds anything
+  extraLockKeys?: string[];
   // stripSink: the loop's per-apply sink, set on the applying context (sequencer-strip-sink.ts)
   apply: (stripSink?: StrippedRef[]) => Promise<any>;
   resolve: (value: any) => void;
