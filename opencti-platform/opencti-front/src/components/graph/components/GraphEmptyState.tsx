@@ -15,17 +15,19 @@ export interface GraphEmptyStateProps {
   context?: string;
   onClearFilters: () => void;
   onShowHidden: () => void;
+  /** Opens the drawer adding entities, offered on first use when the graph can take entities (an investigation). */
+  onAddEntities?: () => void;
 }
 
 /**
- * Says why the graph draws nothing and offers the next action: the documentation on first use,
- * clearing the filters when they leave nothing, showing the entities hidden from the view.
+ * Says why the graph draws nothing and offers the next action: adding entities or the documentation
+ * on first use, clearing the filters when they leave nothing, showing the entities hidden from the view.
  */
-const GraphEmptyState = ({ kind, context, onClearFilters, onShowHidden }: GraphEmptyStateProps) => {
+const GraphEmptyState = ({ kind, context, onClearFilters, onShowHidden, onAddEntities }: GraphEmptyStateProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const firstUse: Record<string, string> = {
-    investigation: t_i18n('Add entities to this investigation from the toolbar, then expand them to follow their relationships.'),
+    investigation: t_i18n('Add entities to this investigation, then expand them to follow their relationships.'),
     analyses: t_i18n('No container contains this entity yet.'),
     correlation: t_i18n('No other container shares an entity with this one.'),
   };
@@ -72,9 +74,14 @@ const GraphEmptyState = ({ kind, context, onClearFilters, onShowHidden }: GraphE
           <Button priority="primary" size="sm" onClick={onShowHidden}>{t_i18n('Show the hidden entities')}</Button>
         )}
         {kind === 'empty' && (
-          <Button asChild priority="secondary" size="sm">
-            <a href={GRAPHS_DOCUMENTATION} target="_blank" rel="noopener noreferrer">{t_i18n('Read the documentation')}</a>
-          </Button>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: theme.spacing(1) }}>
+            <Button asChild priority="secondary" size="sm">
+              <a href={GRAPHS_DOCUMENTATION} target="_blank" rel="noopener noreferrer">{t_i18n('Read the documentation')}</a>
+            </Button>
+            {onAddEntities && (
+              <Button priority="primary" size="sm" onClick={onAddEntities}>{t_i18n('Add entities')}</Button>
+            )}
+          </div>
         )}
       </Paper>
     </div>

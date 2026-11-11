@@ -268,7 +268,7 @@
   "Add dynamic filter": "동적 필터 추가",
   "Add entities": "엔터티 추가",
   "Add entities and relationships to this container from the toolbar, or from its Entities and Observables tabs.": "도구 모음 또는 엔터티 및 관찰 가능 항목 탭에서 이 컨테이너에 엔터티와 관계를 추가하세요.",
-  "Add entities to this investigation from the toolbar, then expand them to follow their relationships.": "도구 모음에서 이 조사에 엔터티를 추가한 다음 확장하여 관계를 따라가세요.",
+  "Add entities to this investigation, then expand them to follow their relationships.": "이 조사에 엔터티를 추가한 다음 확장하여 관계를 따라가세요.",
   "Add Entity": "엔티티 추가",
   "Add entity": "엔티티 추가",
   "Add external references": "외부 참조 추가",

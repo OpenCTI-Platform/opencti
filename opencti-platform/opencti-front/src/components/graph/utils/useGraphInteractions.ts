@@ -683,6 +683,10 @@ const useGraphInteractions = () => {
     setGraphStateProp('isAddRelationOpen', val);
   };
 
+  const setIsAddEntitiesOpen = (val: boolean) => {
+    setGraphStateProp('isAddEntitiesOpen', val);
+  };
+
   /**
    * Opens or closes the expand of the selection. A callback given on opening
    * runs if the expand is submitted, and is dropped when the expand closes.
@@ -734,6 +738,7 @@ const useGraphInteractions = () => {
     removeLinks,
     setSelectedTimeRange,
     setIsAddRelationOpen,
+    setIsAddEntitiesOpen,
     setRawPositions,
     setLinearProgress,
     rebuildGraphData,
