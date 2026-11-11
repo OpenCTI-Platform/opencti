@@ -21,7 +21,7 @@ In addition, the right panel will have now a counter of the amount of selected e
 ![select entities in graph](assets/Select-entities-in-graph.png)
 
 
-### Manipulate entity
+### Add entities
 
 You can add any existing entity of the platform to your investigation with **Add an entity to this investigation**, the + of the graph toolbar. While the investigation is still empty, the middle of the graph also offers an **Add entities** button, which opens the same panel.
 
