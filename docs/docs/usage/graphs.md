@@ -170,7 +170,8 @@ When the time range selector of the toolbar is open, the legend moves up so that
 
 The graph says why it is empty and offers the next step:
 
-- a container or an investigation without any entity yet explains how to add some, with a link to this page;
+- a container without any entity yet explains how to add some, with a link to this page;
+- an investigation without any entity yet offers **Add entities**, which opens the same panel as the + of the toolbar, and **Read the documentation**, a link to this page;
 - when the filters of the toolbar leave no entity, **Clear filters** restores the graph;
 - when every entity is hidden from the view, **Show the hidden entities** brings them back.
 
