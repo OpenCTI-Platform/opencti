@@ -39,13 +39,20 @@ describe('Email template import schema', () => {
     const { description: _description, ...withoutDescription } = configuration;
     expect(emailTemplateImportSchema.parse(withoutDescription)).toEqual(withoutDescription);
     expect(emailTemplateImportSchema.parse({ ...configuration, description: null }).description).toBeNull();
-    // The name is the identity: not trimmed. The sender is a display name, not an address, and the body may be empty like the API allows
-    expect(emailTemplateImportSchema.parse({ ...configuration, name: ' Welcome ', sender_email: '', template_body: '' })).toMatchObject({ name: ' Welcome ', sender_email: '', template_body: '' });
+    // The sender is a display name, not an address, and the body may be empty like the API allows
+    expect(emailTemplateImportSchema.parse({ ...configuration, sender_email: '', template_body: '' })).toMatchObject({ sender_email: '', template_body: '' });
+  });
+
+  it('trims the values, as the engine does when it stores them', () => {
+    const padded = { name: ' Welcome ', description: ' d ', email_object: ' Hi ', sender_email: ' CTI ', template_body: '<p>Hello</p>\n' };
+    expect(emailTemplateImportSchema.parse(padded)).toEqual({ name: 'Welcome', description: 'd', email_object: 'Hi', sender_email: 'CTI', template_body: '<p>Hello</p>' });
   });
 
   it.each([
     ['no name', { ...configuration, name: undefined }],
     ['a name of one character', { ...configuration, name: 'a' }],
+    ['a name of one character between spaces', { ...configuration, name: ' a ' }],
+    ['a name of more than 512 characters', { ...configuration, name: 'a'.repeat(513) }],
     ['a blank name', { ...configuration, name: '   ' }],
     ['a blank email object', { ...configuration, email_object: '   ' }],
     ['an email object of one character', { ...configuration, email_object: 'a' }],
@@ -86,6 +93,11 @@ describe('importEmailTemplate', () => {
     expect(findEmailTemplatesByName).not.toHaveBeenCalled();
   });
 
+  it('finds the template by its trimmed name, the one the engine stores', async () => {
+    await importEmailTemplate(context, user, { ...configuration, name: ' Welcome analyst ' }, { ...overwrite, dryRun: true });
+    expect(findEmailTemplatesByName).toHaveBeenCalledWith(context, user, 'Welcome analyst');
+  });
+
   it('finds the template by its name, as it is written', async () => {
     await importEmailTemplate(context, user, configuration, { ...overwrite, dryRun: true });
     expect(findEmailTemplatesByName).toHaveBeenCalledWith(context, user, 'Welcome analyst');
@@ -110,6 +122,12 @@ describe('importEmailTemplate', () => {
 
   describe('a template that exists, overwrite', () => {
     beforeEach(() => withExisting(stored));
+
+    it('is unchanged when the values only differ by their surrounding whitespace', async () => {
+      const result = await importEmailTemplate(context, user, { ...configuration, name: ` ${configuration.name} `, template_body: `${configuration.template_body}\n` }, overwrite);
+      expect(result).toMatchObject({ status: 'skipped', code: 'unchanged' });
+      expect(fieldPatchEmailTemplate).not.toHaveBeenCalled();
+    });
 
     it('patches the fields that differ, and only those', async () => {
       const result = await importEmailTemplate(context, user, { ...configuration, email_object: 'Hello', template_body: '<p>Bye</p>' }, overwrite);
@@ -169,7 +187,7 @@ describe('importEmailTemplate', () => {
       const dryRun = { mode, dryRun: true, reservedNames };
       expect(await importEmailTemplate(context, user, configuration, dryRun)).toMatchObject({ status: 'created', exists: false });
       expect([...reservedNames]).toEqual(['Welcome analyst']);
-      expect(await importEmailTemplate(context, user, { ...configuration, template_body: 'other' }, dryRun)).toMatchObject({ status: 'failed', code: 'duplicate', exists: true });
+      expect(await importEmailTemplate(context, user, { ...configuration, template_body: 'other' }, dryRun)).toMatchObject({ status: 'failed', code: 'duplicate', exists: false });
       expect(addEmailTemplate).not.toHaveBeenCalled();
       expect(fieldPatchEmailTemplate).not.toHaveBeenCalled();
     });
@@ -220,6 +238,13 @@ describe('importEmailTemplate', () => {
       vi.mocked(findEmailTemplatesByName).mockClear();
       await importEmailTemplate(context, user, configuration, copy);
       expect(vi.mocked(findEmailTemplatesByName).mock.calls.map(([, , name]) => name)).toEqual(['Welcome analyst', 'Welcome analyst (1)']);
+    });
+
+    it('keeps the name of a copy within the 512 characters of the name', async () => {
+      const name = 'a'.repeat(512);
+      vi.mocked(findEmailTemplatesByName).mockImplementation(async (_context, _user, candidate) => (candidate === name ? [{ ...stored, name }] : []));
+      await importEmailTemplate(context, user, { ...configuration, name }, copy);
+      expect(vi.mocked(addEmailTemplate).mock.calls[0][2].name).toBe(`${'a'.repeat(508)} (1)`);
     });
 
     it('copies a name that several templates have: it is no ambiguity for a copy', async () => {
