@@ -4,6 +4,7 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
 import ConfigPresetExportDrawer from './ConfigPresetExportDrawer';
+import { expandConfigPresetGroups } from '../../../../../utils/tests/config-preset-test-utils';
 
 // The Enterprise Edition of the platform, which can change while the drawer is open (a license activated from it)
 const enterpriseEdition = vi.hoisted(() => {
@@ -94,6 +95,7 @@ const renderOpenDrawer = async (onClose = vi.fn(), types: unknown[] = catalog) =
     }));
   });
   await screen.findByRole('button', { name: 'Export Platform Bundle' });
+  expandConfigPresetGroups();
   return { ...rendered, onClose };
 };
 

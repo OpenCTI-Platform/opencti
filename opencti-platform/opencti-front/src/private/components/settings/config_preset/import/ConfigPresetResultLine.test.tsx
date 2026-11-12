@@ -16,6 +16,12 @@ describe('ConfigPresetResultLine', () => {
     expect(screen.getByText('name: Too small')).toBeInTheDocument();
   });
 
+  it('leaves the reason to the row that shows it under its label', () => {
+    testRender(<ConfigPresetResultLine status="FAILED" reason="Theme already exists" withoutReason />);
+    expect(screen.getByText('Failed')).toBeInTheDocument();
+    expect(screen.queryByText('Theme already exists')).not.toBeInTheDocument();
+  });
+
   it.each([
     ['Already exists', 'Already exists'],
     ['Nothing to import', 'Nothing to import'],
