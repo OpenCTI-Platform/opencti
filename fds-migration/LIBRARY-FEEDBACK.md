@@ -2929,3 +2929,8 @@ too narrow.
 and a value measures the same width as its trigger button (compare
 `getBoundingClientRect().width` of the trigger and of its parent). When it
 does, drop the span and the test case.
+
+**Status in this product.** No workaround left: the unified dashboard context
+bar (issue 18808) replaced the preset `Select` with a `Menu` pill, so the span
+and its test case are gone. The library gap itself stands for any clearable
+`Select` placed in a flex row.

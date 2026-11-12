@@ -296,12 +296,8 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
       presets={presets}
       activePreset={activePreset}
       defaultPreset={defaultPreset}
-      isModified={isActivePresetModified}
-      canManage={canManageVariables}
       disabled={isPresetSubmitting}
       onSelect={onSelectPreset}
-      onSaveAs={canManageVariables ? () => setPresetNameDialog(null) : undefined}
-      onUpdate={canManageVariables ? onUpdatePreset : undefined}
       onRename={canManageVariables ? setPresetNameDialog : undefined}
       onDelete={canManageVariables ? setPresetToDelete : undefined}
     />
@@ -481,7 +477,7 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   {/* Without the bar the actions close this row: only a reader, who never sets the defaults. */}
                   {!isBarVisible && (timeRange.isModified || isPresetSelected) && (
-                    <DashboardValuesActions canSetAsDefaults={false} onReset={onReset} />
+                    <DashboardValuesActions resetTargetName={defaultPreset?.name} onReset={onReset} />
                   )}
                   <Security
                     needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
@@ -508,9 +504,14 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                 canManage={canManageVariables}
                 isTimeRangeModified={timeRange.isModified}
                 isPresetSelected={isPresetSelected}
+                resetTargetName={defaultPreset?.name}
+                activePresetName={activePreset?.name}
+                isActivePresetModified={isActivePresetModified}
                 onSetValue={variableControls.setValue}
                 onReset={onReset}
                 onSetAsDefaults={onSetAsDefaults}
+                onUpdatePreset={canManageVariables ? onUpdatePreset : undefined}
+                onSavePresetAs={canManageVariables ? () => setPresetNameDialog(null) : undefined}
                 onCreate={canManageVariables ? () => setDialogVariable(null) : undefined}
                 onEdit={canManageVariables ? setDialogVariable : undefined}
                 onDelete={canManageVariables ? setVariableToDelete : undefined}

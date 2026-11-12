@@ -1,142 +1,117 @@
-import Stack from '@mui/material/Stack';
-import { BookmarkAddOutlined, DeleteOutlined, EditOutlined } from '@mui/icons-material';
+import { useState } from 'react';
+import Box from '@mui/material/Box';
+import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
-import { IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Menu, MenuContent, MenuGroup, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, Text } from '@filigran/design-system';
+import { ArrowDropDownOutlined, ArrowDropUpOutlined, DeleteOutlined, EditOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../i18n';
-import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
+import type { Theme } from '../../Theme';
 import type { DashboardPreset } from '../dashboard-types';
 
-// Value of the list entry that stands for no preset: the library Select takes no empty value in an item.
-const NO_PRESET = '__no_preset__';
-export interface DashboardPresetSelectorProps {
+interface DashboardPresetSelectorProps {
   presets: readonly DashboardPreset[];
   activePreset: DashboardPreset | null;
-  // The preset the dashboard opens on for this user (their own choice, their group or organization).
   defaultPreset: DashboardPreset | null;
-  // The current values differ from the ones of the active preset: it can be updated.
-  isModified: boolean;
-  // Create, update, rename and delete: editors of the dashboard only.
-  canManage: boolean;
   disabled?: boolean;
   onSelect: (presetId: string | null) => void;
-  onSaveAs?: () => void;
-  onUpdate?: () => void;
+  // The management of the active preset only exists when its callback is provided (editors).
   onRename?: (preset: DashboardPreset) => void;
   onDelete?: (preset: DashboardPreset) => void;
 }
 
 /**
- * The preset selector of a dashboard: switching restores the values and the time range of the preset at once.
- * Presentational: the page wires the callbacks.
+ * The preset pill opening the bar of a dashboard: the view in use, and the menu to switch to another one. The editors
+ * also rename and delete the active preset from there; saving lives in the Save menu of the bar.
  */
 const DashboardPresetSelector = ({
   presets,
   activePreset,
   defaultPreset,
-  isModified,
-  canManage,
   disabled = false,
   onSelect,
-  onSaveAs,
-  onUpdate,
   onRename,
   onDelete,
 }: DashboardPresetSelectorProps) => {
   const { t_i18n } = useFormatter();
-  const label = t_i18n('Preset');
-  // The library shows its clear control only with a value and when enabled (Select.tsx, canClear).
-  const hasClearControl = presets.length > 0 && !!activePreset && !disabled;
+  const theme = useTheme<Theme>();
+  const [open, setOpen] = useState(false);
+  // Nothing to switch to: the editor saves the first preset from the Save menu.
+  if (presets.length === 0) return null;
+  const secondaryText = { color: theme.palette.text.secondary };
   return (
-    <Stack
-      direction="row"
-      data-testid="dashboard-preset-selector"
-      className={EXPORT_REMOVE_CLASS}
-      sx={{
-        alignItems: 'center',
-        gap: 1,
-      }}
-    >
-      {presets.length > 0 && (
-        // FDS-WORKAROUND #77: with its clear control, the library Select wrapper is 32px narrower than its trigger, so
-        // the chevron overflows onto the next sibling of a flex row - see fds-migration/LIBRARY-FEEDBACK.md #77
-        <span data-testid="dashboard-preset-select" style={{ display: 'inline-flex', paddingRight: hasClearControl ? 32 : 0 }}>
-          <Select
-            value={activePreset?.id ?? ''}
-            // The clear control of the trigger empties the selection: back to no preset.
-            onValueChange={(value) => onSelect(value === '' || value === NO_PRESET ? null : value)}
-            clearable
-            clearLabel={t_i18n('No preset')}
+    <Box data-testid="dashboard-preset-selector" sx={{ display: 'flex', alignItems: 'center' }}>
+      <Menu open={open && !disabled} onOpenChange={setOpen} modal={false}>
+        <MenuTrigger asChild>
+          <Button
+            variant="secondary"
+            size="small"
             disabled={disabled}
-            name="dashboard-preset"
+            data-testid="dashboard-preset-trigger"
+            endIcon={open ? <ArrowDropUpOutlined /> : <ArrowDropDownOutlined />}
           >
-            <SelectTrigger aria-label={label} data-testid="dashboard-preset-trigger">
-              <SelectValue placeholder={label} />
-            </SelectTrigger>
-            <SelectContent aria-label={label}>
-              {/* The same as the clear control, offered in the list too: back to the default preset, or none. */}
-              <SelectItem value={NO_PRESET}>{t_i18n('No preset')}</SelectItem>
-              {presets.map((preset) => (
-                <SelectItem key={preset.id} value={preset.id}>
-                  {preset.id === defaultPreset?.id ? t_i18n('{name} (default)', { values: { name: preset.name } }) : preset.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </span>
-      )}
-      {canManage && activePreset && isModified && onUpdate && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="secondary"
-              size="small"
-              data-testid="dashboard-preset-update"
-              disabled={disabled}
-              onClick={onUpdate}
-            >
-              {t_i18n('Update preset')}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{t_i18n('The current values and time range differ from this preset: save them into it')}</TooltipContent>
-        </Tooltip>
-      )}
-      {canManage && onSaveAs && (
-        <Button
-          variant="tertiary"
-          size="small"
-          data-testid="dashboard-preset-save-as"
-          startIcon={<BookmarkAddOutlined />}
-          disabled={disabled}
-          onClick={onSaveAs}
-        >
-          {t_i18n('Save as preset')}
-        </Button>
-      )}
-      {canManage && activePreset && onRename && (
-        <IconButton
-          variant="default"
-          priority="tertiary"
-          size="sm"
-          aria-label={t_i18n('Rename preset')}
-          data-testid="dashboard-preset-rename"
-          disabled={disabled}
-          onClick={() => onRename(activePreset)}
-          icon={<EditOutlined fontSize="small" />}
-        />
-      )}
-      {canManage && activePreset && onDelete && (
-        <IconButton
-          variant="default"
-          priority="tertiary"
-          size="sm"
-          aria-label={t_i18n('Delete preset')}
-          data-testid="dashboard-preset-delete"
-          disabled={disabled}
-          onClick={() => onDelete(activePreset)}
-          icon={<DeleteOutlined fontSize="small" />}
-        />
-      )}
-    </Stack>
+            <Text variant="content-caption" as="span" style={{ ...secondaryText, marginRight: 6 }}>
+              {t_i18n('Preset')}
+            </Text>
+            {activePreset?.name ?? t_i18n('No preset')}
+          </Button>
+        </MenuTrigger>
+        <MenuContent align="start" sideOffset={6} style={{ minWidth: 220 }}>
+          <MenuGroup>
+            <MenuLabel>{t_i18n('Presets')}</MenuLabel>
+            {presets.map((preset) => (
+              <MenuItem
+                key={preset.id}
+                data-testid={`dashboard-preset-option-${preset.id}`}
+                selected={preset.id === activePreset?.id}
+                onSelect={() => onSelect(preset.id)}
+              >
+                <span style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  <span>{preset.name}</span>
+                  {preset.id === defaultPreset?.id && (
+                    <Text variant="content-caption" as="span" style={secondaryText}>
+                      {t_i18n('Default')}
+                    </Text>
+                  )}
+                </span>
+              </MenuItem>
+            ))}
+            {/* Back to no preset: with a default preset, picking that one already does it. */}
+            {defaultPreset === null && (
+              <MenuItem
+                data-testid="dashboard-preset-none"
+                selected={activePreset === null}
+                onSelect={() => onSelect(null)}
+              >
+                {t_i18n('No preset')}
+              </MenuItem>
+            )}
+          </MenuGroup>
+          {activePreset && (onRename || onDelete) && (
+            <>
+              <MenuSeparator />
+              {onRename && (
+                <MenuItem
+                  data-testid="dashboard-preset-rename"
+                  startIcon={<EditOutlined fontSize="small" />}
+                  onSelect={() => onRename(activePreset)}
+                >
+                  {t_i18n('Rename “{name}”', { values: { name: activePreset.name } })}
+                </MenuItem>
+              )}
+              {onDelete && (
+                <MenuItem
+                  data-testid="dashboard-preset-delete"
+                  startIcon={<DeleteOutlined fontSize="small" />}
+                  onSelect={() => onDelete(activePreset)}
+                >
+                  {t_i18n('Delete “{name}”', { values: { name: activePreset.name } })}
+                </MenuItem>
+              )}
+            </>
+          )}
+        </MenuContent>
+      </Menu>
+    </Box>
   );
 };
 
