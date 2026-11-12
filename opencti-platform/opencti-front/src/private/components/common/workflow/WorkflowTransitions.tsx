@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useEffect, useRef, useState } from 'react';
+import React, { ComponentProps, FunctionComponent, ReactNode, useEffect, useRef, useState } from 'react';
 import { fetchQuery, useFragment, useRelayEnvironment } from 'react-relay';
 import type { Subscription } from 'relay-runtime';
 import {
@@ -90,6 +90,8 @@ interface WorkflowTransitionsViewProps {
   onCompleted?: () => void;
   onFailed?: () => void;
   transitionButtons?: TransitionButtonsOptions;
+  // Small next to an entity status chip, default next to the other draft toolbar buttons
+  buttonSize?: ComponentProps<typeof Button>['size'];
 }
 
 const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> = ({
@@ -103,6 +105,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   onCompleted,
   onFailed,
   transitionButtons,
+  buttonSize,
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
@@ -251,7 +254,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
         <Button
           key={transition.event}
           variant="primary"
-          size="small"
+          size={buttonSize}
           onClick={() => fireTransition(transition)}
           disabled={approving || clearing || !!wizard}
         >
@@ -291,7 +294,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           <Menu open={menuOpen} onOpenChange={setMenuOpen}>
             <MenuTrigger asChild>
               <Button
-                size="small"
+                size={buttonSize}
                 disabled={approving || clearing || !!wizard}
                 endIcon={!menuOpen ? (<ArrowDropDownOutlined />) : (<ArrowDropUpOutlined />)}
               >
@@ -506,6 +509,7 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
         onCompleted={refresh}
         onFailed={refreshOnFailure ? refresh : undefined}
         transitionButtons={transitionButtons}
+        buttonSize="small"
       />
     </>
   );

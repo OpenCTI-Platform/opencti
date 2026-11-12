@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
+import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import Avatar from '@mui/material/Avatar';
@@ -107,6 +107,8 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
   const { isFeatureEnable } = useHelper();
   const [keyword, setKeyword] = useState<string>('');
   const [hasPublishedWorkflowDefinition, setHasPublishedWorkflowDefinition] = useState<boolean>(false);
+  // Read by a search still in flight when the workflow statuses arrive
+  const workflowListedRef = useRef<boolean>(false);
   const [statuses, setStatuses] = useState<StatusOption[]>(
     defaultStatus
       ? [{
@@ -138,6 +140,8 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
     })
       .toPromise()
       .then((data) => {
+        // A search sent before the workflow statuses loaded would add the statuses outside the workflow
+        if (workflowListedRef.current) return;
         const queryData = data as StatusFieldStatusesSearchQuery$data;
         const edges = queryData?.statuses?.edges ?? [];
         const newStatuses: StatusOption[] = edges
@@ -163,6 +167,7 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
   const isWorkflowUiEnabled = !!type && isWorkflowUiEnabledForType(type, isFeatureEnable);
 
   useEffect(() => {
+    workflowListedRef.current = false;
     if (!type || !isWorkflowUiEnabled) {
       setHasPublishedWorkflowDefinition(false);
       return;
@@ -174,6 +179,7 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
         const isPublished = !!queryData?.workflowDefinitionPublished;
         setHasPublishedWorkflowDefinition(isPublished);
         if (isPublished && workflowStatusesOnly) {
+          workflowListedRef.current = true;
           // Only the workflow statuses can be set, the type statuses outside the workflow are dropped
           setStatuses((queryData?.workflowStatuses ?? [])
             .filter((status) => status.template != null)

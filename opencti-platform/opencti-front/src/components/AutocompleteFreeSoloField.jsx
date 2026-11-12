@@ -71,6 +71,7 @@ const AutocompleteFreeSoloField = (props) => {
       createOptionLabel={createLabel ? (input) => `${createLabel} "${input}"` : undefined}
       renderOption={renderOption}
       error={error}
+      className={className}
     >
       {textfieldprops.label && (
         <ComboboxLabel>{textfieldprops.label}</ComboboxLabel>
@@ -92,9 +93,9 @@ const AutocompleteFreeSoloField = (props) => {
       {helperText && <ComboboxHelperText>{helperText}</ComboboxHelperText>}
     </Combobox>
   );
-  // The library Combobox takes no style or className: a spacing given by the form goes on a wrapper
-  if (!style && !className) return combobox;
-  return <div style={style} className={className}>{combobox}</div>;
+  // FDS-WORKAROUND #78: the spacing a form passes as `style` goes on a wrapper, Combobox takes no style — see fds-migration/LIBRARY-FEEDBACK.md #78
+  if (!style) return combobox;
+  return <div style={style}>{combobox}</div>;
 };
 
 export default AutocompleteFreeSoloField;
