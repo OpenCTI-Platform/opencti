@@ -31,6 +31,7 @@ import { deferIntents, fireResubmit, initPendingIntents, matchLandedIntents, pen
 import { DeferredMissingReferenceError } from '../../config/errors';
 import { flushSequencerEvents } from '../stream/stream-handler';
 import { lockResources } from '../../lock/master-lock';
+import { lockedResources } from '../redis';
 import { SequencerWriteBuffer, setCurrentWriteBuffer } from './sequencer-write-buffer';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { DeferredLanes } from './sequencer-lanes';
@@ -75,6 +76,43 @@ const recordLockMiss = (keys: string[]) => {
     logApp.info('[SEQUENCER] lock keys outside the batch lock', { keys: keys.slice(0, 5), count: keys.length });
   }
 };
+// task 0040 multi-platform diagnosis. The batch lock with its own retry delay, the attempt count
+// scaled to the same total wait budget. Under contention_diag a first try that finds keys held
+// records which ones (one EXISTS round trip) before waiting as usual.
+const LOCK_RETRY_DELAY_MS = Number(conf.get('app:concurrency:retry_delay'));
+const LOCK_RETRY_COUNT = Number(conf.get('app:concurrency:retry_count'));
+const batchLockArgs = (): Record<string, number> => {
+  const delay = SEQUENCER_CONFIG.batchLockRetryDelayMs;
+  if (delay <= 0 || delay === LOCK_RETRY_DELAY_MS) return {};
+  return { retryDelay: delay, retryCount: Math.ceil((LOCK_RETRY_COUNT * LOCK_RETRY_DELAY_MS) / delay) };
+};
+const keyKind = (key: string): { kind: string; name?: string } => {
+  const element = sequencerIdentityMap.peekBare(key);
+  if (element) return { kind: element.entity_type, name: element.name ?? element.value ?? element.definition };
+  const sep = key.indexOf('--');
+  return { kind: sep > 0 && sep < 40 ? key.slice(0, sep) : 'internal' };
+};
+let contentionSamples = 0;
+const acquireBatchLock = async (keys: string[]) => {
+  const args = batchLockArgs();
+  if (!SEQUENCER_CONFIG.contentionDiag) return lockResources(keys, args);
+  try {
+    return await lockResources(keys, { ...args, retryCount: 0 });
+  } catch (err) {
+    if (!isLockError(err)) throw err;
+    if (contentionSamples < 5000) {
+      contentionSamples += 1;
+      const held = await lockedResources(keys).catch(() => [] as string[]);
+      logApp.info('[SEQUENCER] batch lock contended', {
+        keys: keys.length,
+        held: held.length,
+        sample: held.slice(0, 20).map((key) => ({ key, ...keyKind(key) })),
+      });
+    }
+    return lockResources(keys, args);
+  }
+};
+
 // s9.9: batches a group may be skipped for a failed in-batch producer before it applies
 // through today's path anyway
 const FAILED_PRODUCER_DEFER_LIMIT = 2;
@@ -590,6 +628,11 @@ const applyGroup = async (
         (intent.deadStrippedRefs ?? []).forEach(({ inputKey, refId }) => {
           const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
           if (ref?.databaseName) {
+            // task 0040 contention diag: a target already known here landed before its record exists,
+            // only the sweeper can restore the edge
+            if (SEQUENCER_CONFIG.contentionDiag && sequencerIdentityMap.resolveInternalId(refId)) {
+              logApp.info('[SEQUENCER] dead-stripped ref already resolvable at record', { type: element.entity_type, refId });
+            }
             strippedInputs.push({
               ownerId: element.internal_id,
               ownerType: element.entity_type,
@@ -848,7 +891,30 @@ const runBatchLoop = async () => {
     // up within the bounded wait: it failed its own creation, no retry can help. Reject
     // NOW with the FINAL error code (distinct from MISSING_REFERENCE_ERROR on purpose):
     // pycti's retry classifier reports the object once and drops it, no retry budget burnt.
+    // task 0040 contention diag: where the producer of a member declared dead is when the plan gives up
+    const logMemberDead = (intent: SequencerIntent, ids: string[], hard: boolean) => {
+      if (!SEQUENCER_CONFIG.contentionDiag) return;
+      const own = new Set(batch.flatMap((i) => intentOwnIds(i)));
+      const memberWhere = (id: string): string => {
+        if (sequencerIdentityMap.resolveInternalId(id)) return 'resolvable';
+        if (own.has(id)) return 'in_batch';
+        if (queue.hasCandidate(id)) return 'queued';
+        if (lanes.hasResident(id)) return 'lane';
+        return 'not_in_loop';
+      };
+      logApp.info('[SEQUENCER] member dead diag', {
+        type: intent.type,
+        kind: intent.kind,
+        hard,
+        source: intent.source,
+        replans: intent.replans ?? 0,
+        waitAttempts: intent.memberWaitAttempts ?? 0,
+        ageMs: Date.now() - intent.arrivedAt,
+        members: ids.map((id) => ({ id, where: memberWhere(id) })),
+      });
+    };
     plan.finalMissing.forEach(({ intent, missing }) => {
+      logMemberDead(intent, missing, true);
       classifyMissing(missing, 'final');
       sequencerMetrics.memberDead();
       const err = MissingReferenceFinalError({ unresolvedIds: missing, doc_code: 'ELEMENT_NOT_FOUND' });
@@ -865,6 +931,7 @@ const runBatchLoop = async () => {
     // s9.10.2: dead SOFT member refs were stripped in the plan; the intents apply without
     // them. Counted per stripped id; first occurrences sampled for live diagnosis.
     plan.strippedDead.forEach(({ intent, stripped }) => {
+      logMemberDead(intent, stripped, false);
       sequencerMetrics.memberDeadStripped(stripped.length);
       if (strippedSamples < 20) {
         strippedSamples += 1;
@@ -926,10 +993,13 @@ const runBatchLoop = async () => {
     // task 0040 multi_writer: the planned intents start a new cycle (first of the next batch)
     const replanNext = () => {
       carried = plan.order.flatMap(({ leader, absorbed }) => [leader, ...absorbed]);
+      carried.forEach((intent) => {
+        intent.replans = (intent.replans ?? 0) + 1;
+      });
     };
     let lock;
     try {
-      lock = await lockResources(lockKeys, {});
+      lock = await acquireBatchLock(lockKeys);
     } catch (err: any) {
       // multi_writer: another platform held a key past the lock's retry budget, the batch waits
       // its turn again instead of failing its intents (the workers' clients would retry them)
@@ -993,6 +1063,9 @@ const runBatchLoop = async () => {
           intent.extraLockKeys = [...new Set([...(intent.extraLockKeys ?? []), ...keys])];
         });
         sequencerMetrics.mapEvent('apply_lock_retry');
+        [leader, ...absorbed].forEach((intent) => {
+          intent.replans = (intent.replans ?? 0) + 1;
+        });
         lockReplans.push(leader, ...absorbed);
         return;
       }

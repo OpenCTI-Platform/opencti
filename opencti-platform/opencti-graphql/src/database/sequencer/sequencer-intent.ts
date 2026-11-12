@@ -31,6 +31,9 @@ export interface SequencerIntent {
   // s9.8.2 bounded wait: plan passes spent waiting for a declared member ref not yet seen
   // in the queue (mutated by the planner; at the limit the ref is declared dead)
   memberWaitAttempts?: number;
+  // task 0040 contention diag: cycles this intent was planned then carried to the next batch
+  // (multi_writer re-check conflict, batch lock retry, apply-time lock refusal)
+  replans?: number;
   // s9.9 bounded wait: batches this intent was skipped in because its in-batch producer
   // failed at apply (mutated by the loop; at the limit it applies through today's path)
   failedProducerDefers?: number;

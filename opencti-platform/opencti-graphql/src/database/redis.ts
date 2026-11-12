@@ -437,6 +437,8 @@ export const redisFetchLatestDeletions = async () => {
 interface LockOptions {
   automaticExtension?: boolean;
   retryCount?: number;
+  // task 0040 contention diag: the delay between two acquisition attempts (app:concurrency:retry_delay otherwise)
+  retryDelay?: number;
   draftId?: string;
   child_operation?: string;
 }
@@ -462,6 +464,15 @@ export const isResourceLocked = async (id: string): Promise<boolean> => {
   return (await getClientLock().exists(buildLockKey(id))) > 0;
 };
 
+// task 0040 contention diag: the resources of a set locked right now (no draftId), one round trip
+export const lockedResources = async (ids: string[]): Promise<string[]> => {
+  if (ids.length === 0) return [];
+  const pipeline = getClientLock().pipeline();
+  ids.forEach((id) => pipeline.exists(buildLockKey(id)));
+  const results = (await pipeline.exec()) ?? [];
+  return ids.filter((_, i) => Number(results[i]?.[1] ?? 0) > 0);
+};
+
 export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts): Promise<LockHandle> => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
@@ -470,7 +481,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   const resourcesId = R.uniq(resources).map((id) => `${id}${draftId}`);
   const locks = R.uniq(resourcesId).map((id) => buildLockKey(id, draftId));
   const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
-  const retryDelay = conf.get('app:concurrency:retry_delay');
+  const retryDelay = opts.retryDelay ?? conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
   const maxTtl = conf.get('app:concurrency:max_ttl');
   const controller = new AbortController();

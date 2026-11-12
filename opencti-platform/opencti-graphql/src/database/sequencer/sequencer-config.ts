@@ -57,6 +57,12 @@ export interface SequencerConfig {
   // The node owning the retention records it writes: stable across restarts (app:node_identifier),
   // the host name otherwise
   nodeId: string;
+  // task 0040 multi-platform diagnosis (POC only): which keys a contended batch lock waited for, where
+  // the producer of a member declared dead was, what the dead-strip retention did with its records
+  contentionDiag: boolean;
+  // task 0040: delay between two batch lock attempts, 0 = app:concurrency:retry_delay; the attempt
+  // count is scaled to keep the same total wait budget
+  batchLockRetryDelayMs: number;
 }
 
 const readConfig = (): SequencerConfig => {
@@ -128,6 +134,8 @@ const readConfig = (): SequencerConfig => {
     origin: conf.get('app:ingestion_sequencer:origin') ?? 'worker',
     multiWriter: booleanConf('app:ingestion_sequencer:multi_writer', false),
     nodeId: conf.get('app:node_identifier') || hostname(),
+    contentionDiag: booleanConf('app:ingestion_sequencer:contention_diag', false),
+    batchLockRetryDelayMs: Math.max(0, Math.floor(Number(conf.get('app:ingestion_sequencer:batch_lock_retry_delay_ms') ?? 0))),
   };
 };
 

@@ -207,8 +207,17 @@ export const fireReconcile = (hits: { record: PendingRefRecord; targetInternalId
 const SWEEP_INTERVAL_MS = 60_000;
 const SWEEP_MIN_AGE_MS = 30_000;
 let sweeping = false; // sweeps can outlast the interval: never overlap them
+// task 0040 contention diag: a sweep re-asserts its records one at a time through the loop's queue
+const sweepProgress = { startedAt: 0, done: 0, total: 0 };
 const sweepOnce = async () => {
-  if (sweeping) return;
+  if (sweeping) {
+    if (SEQUENCER_CONFIG.contentionDiag) {
+      logApp.info('[SEQUENCER] pending refs sweep still running', {
+        running_ms: Date.now() - sweepProgress.startedAt, done: sweepProgress.done, total: sweepProgress.total, pending: byId.size,
+      });
+    }
+    return;
+  }
   sweeping = true;
   const sweepStart = Date.now();
   let reconciled = 0;
@@ -217,7 +226,11 @@ const sweepOnce = async () => {
   try {
     const now = Date.now();
     const aged = [...byId.values()].filter((r) => now - r.created_at > SWEEP_MIN_AGE_MS);
+    sweepProgress.startedAt = sweepStart;
+    sweepProgress.done = 0;
+    sweepProgress.total = aged.length;
     for (let i = 0; i < aged.length; i += 1) {
+      sweepProgress.done = i;
       const record = aged[i];
       if (now - record.created_at > SEQUENCER_CONFIG.pendingRefExpiryS * 1000) {
         await settle(record, 'expired');
