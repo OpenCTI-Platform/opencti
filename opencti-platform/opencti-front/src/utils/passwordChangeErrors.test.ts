@@ -52,7 +52,10 @@ describe('showPasswordFieldError', () => {
     expect(helpers.setFieldValue).toHaveBeenCalledTimes(2);
     expect(helpers.setFieldValue).toHaveBeenCalledWith('password', '', false);
     expect(helpers.setFieldValue).toHaveBeenCalledWith('confirmation', '', false);
+    expect(helpers.setFieldTouched).toHaveBeenCalledTimes(2);
     expect(helpers.setFieldTouched).toHaveBeenCalledWith('password', true, false);
+    // Emptied, it would otherwise show that it is required before the user reaches it
+    expect(helpers.setFieldTouched).toHaveBeenCalledWith('confirmation', false, false);
     expect(helpers.setFieldError).toHaveBeenCalledWith('password', 'Used recently');
     // Last, so that nothing set after it replaces the message
     const lastOtherCall = Math.max(...helpers.setFieldValue.mock.invocationCallOrder, ...helpers.setFieldTouched.mock.invocationCallOrder);

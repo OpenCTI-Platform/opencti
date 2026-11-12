@@ -151,6 +151,23 @@ describe('ForcePasswordChange (public login)', () => {
     expect((screen.getByLabelText('Confirmation') as HTMLInputElement).value).toBe('');
   });
 
+  it('does not ask for the confirmation while the user types a new password after a recently used one was refused', async () => {
+    const { user } = renderWithLoginContext(<ForcePasswordChange policies={basePolicies} />);
+    await user.type(screen.getByLabelText('New password'), 'OldPass1!');
+    await user.type(screen.getByLabelText('Confirmation'), 'OldPass1!');
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+    act(() => {
+      (commitFnMock as Mock).mock.calls[0][0].onError?.({ res: { errors: [{ message: 'reused', name: 'PASSWORD_REUSED', extensions: { code: 'PASSWORD_REUSED' } }] } });
+    });
+    expect(await screen.findByText('This password has already been used recently. Please choose a different one.')).toBeDefined();
+
+    await user.type(screen.getByLabelText('New password'), 'N');
+
+    // The emptied confirmation is not touched any more: it waits for the user to reach it
+    await waitFor(() => expect((screen.getByLabelText('New password') as HTMLInputElement).value).toBe('N'));
+    expect(screen.queryByText('This field is required')).toBeNull();
+  });
+
   it('shows the password history rule when the platform enforces it', () => {
     renderWithLoginContext(<ForcePasswordChange policies={{ historyCount: 3 }} />);
     expect(screen.getByText('Must be different from your last 3 passwords')).toBeDefined();

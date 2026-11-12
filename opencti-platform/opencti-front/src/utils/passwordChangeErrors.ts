@@ -27,9 +27,13 @@ interface PasswordFormHelpers {
 }
 
 // Clears the typed passwords and says why under the new password field. Not with resetForm(nextState): it makes that state
-// the starting one of the form, so the resetForm() of a later successful change would bring the error back
+// the starting one of the form, so the resetForm() of a later successful change would bring the error back.
+// The other cleared fields go back to untouched: the submit touched them, and once emptied they would show
+// "This field is required" as soon as the user types in the new password field
 export const showPasswordFieldError = (helpers: PasswordFormHelpers, message: string, passwordField: string, clearedFields: string[]) => {
-  clearedFields.forEach((field) => helpers.setFieldValue(field, '', false));
-  helpers.setFieldTouched(passwordField, true, false);
+  clearedFields.forEach((field) => {
+    helpers.setFieldValue(field, '', false);
+    helpers.setFieldTouched(field, field === passwordField, false);
+  });
   helpers.setFieldError(passwordField, message);
 };
