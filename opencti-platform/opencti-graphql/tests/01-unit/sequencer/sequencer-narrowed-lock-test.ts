@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { computeBatchLockKeys, computeOwnLockKeys } from '../../../src/database/sequencer/sequencer-batch-lock';
-import { creatableNestedIds, lockErrorKeys } from '../../../src/database/sequencer/sequencer-multi-writer';
+import { creatableNestedIds, lockErrorKeys, relationDedupLockKey } from '../../../src/database/sequencer/sequencer-multi-writer';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { idLabel } from '../../../src/schema/schema-labels';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../../src/schema/stixMetaObject';
@@ -46,6 +46,34 @@ describe('own lock keys of a batch', () => {
     }];
     const own = computeOwnLockKeys(groups, peek, relationOwn, (input) => (input.objectLabel ? ['label--apt'] : []));
     ['label--apt', 'relationship--refused', 'int-other', 'malware--m'].forEach((k) => expect(own).toContain(k));
+  });
+});
+
+// task 0040 defect 2: two bundles asserting the same relation with other dates have other standard
+// ids, yet the dedup lands both on one document; their batches must exclude each other on it
+describe('relation dedup key', () => {
+  const peek = () => null;
+  const relationOf = (stixId: string, startTime: string) => ({
+    leader: {
+      kind: 'relation',
+      candidateIds: [stixId, 'intrusion-set--lockbit', 'location--au'],
+      referencedIds: ['intrusion-set--lockbit', 'location--au'],
+      input: { fromId: 'intrusion-set--lockbit', toId: 'location--au', relationship_type: 'targets', start_time: startTime, stix_id: stixId },
+    },
+    absorbed: [],
+  });
+  const own = (leader: { input: Record<string, any> }) => [`relationship--std-${leader.input.start_time}`];
+  const dedup = (leader: { input: Record<string, any> }) => relationDedupLockKey(leader.input.relationship_type, `int-${leader.input.fromId}`, `int-${leader.input.toId}`);
+
+  it('should give two relations of the same type and endpoints one common key, whatever their dates and ids', () => {
+    const first = computeOwnLockKeys([relationOf('relationship--a', '2021-09-10')], peek, own, () => [], dedup);
+    const second = computeOwnLockKeys([relationOf('relationship--b', '2021-09-20')], peek, own, () => [], dedup);
+    expect(first.filter((key) => second.includes(key))).toEqual([relationDedupLockKey('targets', 'int-intrusion-set--lockbit', 'int-location--au')]);
+  });
+
+  it('should keep the direction and the type in the key, as the dedup search does', () => {
+    expect(relationDedupLockKey('targets', 'a', 'b')).not.toEqual(relationDedupLockKey('targets', 'b', 'a'));
+    expect(relationDedupLockKey('targets', 'a', 'b')).not.toEqual(relationDedupLockKey('uses', 'a', 'b'));
   });
 });
 

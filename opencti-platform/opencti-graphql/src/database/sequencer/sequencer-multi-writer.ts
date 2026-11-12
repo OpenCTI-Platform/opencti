@@ -53,6 +53,16 @@ export const lockErrorKeys = (error: any): string[] => {
   return Array.isArray(keys) ? keys.filter((key: unknown): key is string => typeof key === 'string' && key.length > 0) : [];
 };
 
+// task 0040 defect 2: two bundles assert the same relation with different start / stop times, so
+// different standard ids and different lock keys, while the dedup (same type, from, to within a time
+// window, middleware buildExistingRelationsSearch) lands both on one document: concurrent upserts of
+// x_opencti_stix_ids replace each other (multi-writer: 29 to 142 stix ids erased per mix285k run, the
+// reports citing them lost their refs). The key the dedup can never split: type, from, to (internal
+// ids, the search is directional), wider than the dedup window, never narrower.
+export const relationDedupLockKey = (relationshipType: string, fromInternalId: string, toInternalId: string) => (
+  `relation-dedup:${relationshipType}:${fromInternalId}:${toInternalId}`
+);
+
 const STIX_LIKE_ID = /^[a-z][a-z0-9-]*--/;
 
 // Step 2 (narrowed lock): the meta objects an apply may CREATE from its own input, so two platforms

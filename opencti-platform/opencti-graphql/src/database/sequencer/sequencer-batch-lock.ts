@@ -68,16 +68,18 @@ export const computeBatchLockKeys = (
 
 // task 0040 multi_writer step 2: the keys a batch locks in Redis when several platforms write. Only
 // what the batch writes as its own: the intents' own ids with the instance ids of their resolved
-// target, the relations' own ids, the meta objects an apply may create from its input, and the keys
-// an apply could not take in an earlier cycle. Referenced ids and relation endpoints are not locked
-// across platforms: an apply only reads them and appends to their denormalized refs, a scripted
-// update that commutes (KB opencti-sequencer-multi-platform-scaling). The batch still HOLDS the full
-// set of computeBatchLockKeys, so the apply-time lock sites asking for them stay no-ops.
+// target, the relations' own ids and the key of the document their dedup may land on, the meta
+// objects an apply may create from its input, and the keys an apply could not take in an earlier
+// cycle. Referenced ids and relation endpoints are not locked across platforms: an apply only reads
+// them and appends to their denormalized refs, a scripted update that commutes (KB
+// opencti-sequencer-multi-platform-scaling). The batch still HOLDS the full set of
+// computeBatchLockKeys, so the apply-time lock sites asking for them stay no-ops.
 export const computeOwnLockKeys = (
   groups: BatchLockGroup[],
   peekInstanceIds: (id: string) => string[] | null,
   relationOwnIds: (leader: BatchLockGroup['leader']) => string[] | null,
   creatableIds: (input: Record<string, any>) => string[],
+  relationDedupKey: (leader: BatchLockGroup['leader']) => string | null = () => null,
 ): string[] => {
   const keys = new Set<string>();
   const add = (id: unknown) => {
@@ -88,6 +90,7 @@ export const computeOwnLockKeys = (
       const endpoints = new Set([leader.input.fromId, leader.input.toId]);
       leader.candidateIds.filter((id) => !endpoints.has(id)).forEach(add);
       (relationOwnIds(leader) ?? []).forEach(add);
+      add(relationDedupKey(leader));
     } else {
       leader.candidateIds.forEach((id) => {
         add(id);

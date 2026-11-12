@@ -23,7 +23,7 @@ import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { elCreateIndexWithMapping, elFindByIds, elFlushSequencerWrites, elIndexExists, elPutIndexMappingProperties, elRawBulk, elRawSearch } from '../engine';
-import { creatableNestedIds, ignoreIndexAlreadyExists, isLockError, lockErrorKeys } from './sequencer-multi-writer';
+import { creatableNestedIds, ignoreIndexAlreadyExists, isLockError, lockErrorKeys, relationDedupLockKey } from './sequencer-multi-writer';
 import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps } from './sequencer-pending-refs';
 import type { StrippedRef, StrippedRefInput } from './sequencer-pending-refs';
 import { computeApplyLevels, groupIndicesByLevel, runBounded } from './sequencer-apply-levels';
@@ -540,6 +540,14 @@ const relationOwnIds = (leader: { input: Record<string, any> }) => {
     return null; // underspecified input: the apply-time lock site takes its real lock as today
   }
 };
+// task 0040 defect 2: the document a relation's dedup may land on, when both endpoints are resolved
+const relationDedupKey = (leader: { input: Record<string, any> }) => {
+  const { fromId, toId, relationship_type: relationshipType } = leader.input;
+  if (typeof fromId !== 'string' || typeof toId !== 'string' || typeof relationshipType !== 'string') return null;
+  const from = sequencerIdentityMap.resolveInternalId(fromId);
+  const to = sequencerIdentityMap.resolveInternalId(toId);
+  return from && to ? relationDedupLockKey(relationshipType, from, to) : null;
+};
 const batchLockKeys = (groups: CoalesceGroup[]): string[] => computeBatchLockKeys(
   groups,
   peekInstanceIds,
@@ -547,7 +555,7 @@ const batchLockKeys = (groups: CoalesceGroup[]): string[] => computeBatchLockKey
   relationOwnIds,
 );
 // task 0040 multi_writer step 2: what the batch locks in Redis (sequencer-batch-lock.ts)
-const ownLockKeys = (groups: CoalesceGroup[]): string[] => computeOwnLockKeys(groups, peekInstanceIds, relationOwnIds, creatableNestedIds);
+const ownLockKeys = (groups: CoalesceGroup[]): string[] => computeOwnLockKeys(groups, peekInstanceIds, relationOwnIds, creatableNestedIds, relationDedupKey);
 
 interface ParkedIntent {
   intent: SequencerIntent;
