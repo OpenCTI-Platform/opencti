@@ -30,6 +30,7 @@ import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { Close } from 'mdi-material-ui';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 import type { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import type { WorkflowStatusEntityQuery } from './__generated__/WorkflowStatusEntityQuery.graphql';
@@ -406,7 +407,9 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const { canEdit } = useGetCurrentUserAccessRight(entity.currentUserAccessRight);
-  const enabled = canEdit && isWorkflowUiEnabledForType(entityType, isFeatureEnable) && !!entity.workflowInstance;
+  // Inside a draft only the draft's own workflow moves: the entity keeps showing its status, read only.
+  const draftContext = useDraftContext();
+  const enabled = !draftContext && canEdit && isWorkflowUiEnabledForType(entityType, isFeatureEnable) && !!entity.workflowInstance;
   const request = useRef<Subscription | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshFailed, setRefreshFailed] = useState(false);

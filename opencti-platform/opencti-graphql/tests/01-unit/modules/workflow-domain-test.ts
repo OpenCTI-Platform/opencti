@@ -5271,3 +5271,100 @@ describe('triggerWorkflowEvent — closing reason', () => {
     expect(projectWorkflowState).not.toHaveBeenCalled();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Draft guard: entity workflows are read-only inside a draft
+// ---------------------------------------------------------------------------
+
+describe('Workflow mutations inside a draft', () => {
+  const bypassUser = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as any;
+  const definition = JSON.stringify({
+    initialState: 'draft',
+    states: [{ statusId: 'draft' }, { statusId: 'reviewing' }],
+    transitions: [{ from: 'draft', to: 'reviewing', event: 'submit' }],
+  });
+  const mockStore = (entity: any) => {
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === entity.id) return Promise.resolve(entity);
+      if (id === 'workflow-def-id') return Promise.resolve({ id: 'workflow-def-id', name: 'Test Workflow', published_version: { id: 'v1', content: definition, validation_errors: [] } });
+      return Promise.resolve(null);
+    });
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', currentState: 'draft', history: '[]' });
+  };
+  const incident = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+  const draftWorkspace = { id: 'draft-id', internal_id: 'draft-id', entity_type: 'DraftWorkspace' };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+    vi.mocked(lockResources).mockResolvedValue({ unlock: vi.fn() });
+    vi.mocked(getDraftContext).mockReturnValue('draft-id');
+  });
+
+  afterEach(() => {
+    vi.mocked(getDraftContext).mockReturnValue(undefined);
+  });
+
+  it('refuses triggerWorkflowEvent on an entity', async () => {
+    mockStore(incident);
+
+    await expect(triggerWorkflowEvent(mockContext, bypassUser, 'entity-id', 'submit'))
+      .rejects.toThrow('Workflow transitions cannot be applied to an entity while in a draft');
+    expect(updateAttribute).not.toHaveBeenCalled();
+    expect(lockResources).not.toHaveBeenCalled();
+  });
+
+  it('refuses setWorkflowStatus on an entity, even for a bypass user', async () => {
+    mockStore(incident);
+
+    await expect(setWorkflowStatus(mockContext, bypassUser, 'entity-id', 'status-reviewing', false))
+      .rejects.toThrow('Workflow transitions cannot be applied to an entity while in a draft');
+    expect(lockResources).not.toHaveBeenCalled();
+  });
+
+  it('refuses clearWorkflowPendingState on an entity', async () => {
+    mockStore(incident);
+
+    await expect(clearWorkflowPendingState(mockContext, bypassUser, 'entity-id'))
+      .rejects.toThrow('Workflow transitions cannot be applied to an entity while in a draft');
+    expect(lockResources).not.toHaveBeenCalled();
+  });
+
+  it('lists no allowed transition for an entity', async () => {
+    mockStore(incident);
+
+    const transitions = await getAllowedTransitions(mockContext, bypassUser, 'entity-id');
+
+    expect(transitions).toEqual([]);
+    // Refused before the workflow config is read, not because of a missing definition
+    expect(findByType).not.toHaveBeenCalled();
+  });
+
+  it('lists the allowed transitions of the same entity outside a draft', async () => {
+    mockStore(incident);
+    vi.mocked(getDraftContext).mockReturnValue(undefined);
+
+    const transitions = await getAllowedTransitions(mockContext, bypassUser, 'entity-id');
+
+    expect(transitions.length).toBeGreaterThan(0);
+  });
+
+  it('lists no mass transition for an entity type', async () => {
+    mockStore(incident);
+
+    const transitions = await getMassWorkflowTransitions(mockContext, bypassUser, 'Incident', { entityIds: ['entity-id'] });
+
+    expect(transitions).toEqual([]);
+    expect(findByType).not.toHaveBeenCalled();
+  });
+
+  it('still runs the transition of a draft workspace', async () => {
+    mockStore(draftWorkspace);
+
+    await expect(triggerWorkflowEvent(mockContext, bypassUser, 'draft-id', 'submit')).resolves.toBeDefined();
+
+    expect(lockResources).toHaveBeenCalledWith(['workflow-mutation-draft-id']);
+    expect(updateAttribute).toHaveBeenCalled();
+  });
+});
