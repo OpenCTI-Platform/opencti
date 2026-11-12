@@ -42,6 +42,13 @@ describe('adaptFilterToGenericNestedFilterKey', () => {
     expect(adapt(filter({ values: [{ key: 'coverage_score', operator: 'not_eq', values: ['20'] }] as any }))?.nested)
       .toEqual([{ key: 'coverage_score', operator: 'not_eq', values: ['20'] }]);
   });
+  it('rejects a sub-filter operator that is not a filter operator, as GraphQL does for the operator of a filter', () => {
+    // sub-filters are given in the values of the filter ([Any!]!): GraphQL does not check their operator
+    expect(() => adapt(filter({ values: [{ key: 'coverage_score', operator: 'bogus', values: ['20'] }] as any }))).toThrow(/sub-filter operator/);
+    expect(() => adapt(filter({ values: [{ key: 'coverage_name', operator: 'bogus', values: [] }] as any }))).toThrow(/sub-filter operator/);
+    expect(adapt(filter({ values: [{ key: 'coverage_score', operator: 'gte', values: ['90'] }] as any }))?.nested)
+      .toEqual([{ key: 'coverage_score', operator: 'gte', values: ['90'] }]);
+  });
   it('rejects unknown sub-filter keys and operators other than eq, nil and not_nil on the nested filter', () => {
     expect(() => adapt(filter({ values: [{ key: 'unknown', values: ['a'] }] as any }))).toThrow(/sub-filter key/);
     expect(() => adapt(filter({ operator: FilterOperator.NotEq }))).toThrow(/operator/);
