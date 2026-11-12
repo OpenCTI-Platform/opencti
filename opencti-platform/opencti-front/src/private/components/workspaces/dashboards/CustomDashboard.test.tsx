@@ -131,6 +131,18 @@ const userContext = () => createMockUserContext({
   settings: { platform_feature_flags: [] },
 });
 
+type User = ReturnType<typeof testRender>['user'];
+// The Save menu of the bar: its trigger, and Set as dashboard defaults inside it.
+const saveMenu = () => screen.getByTestId('dashboard-save-menu');
+const setAsDefaults = async (user: User) => {
+  await user.click(saveMenu());
+  await user.click(await screen.findByTestId('dashboard-set-as-defaults'));
+};
+const pickFinance = async (user: User) => {
+  await user.click(screen.getByTestId('dashboard-preset-trigger'));
+  await user.click(await screen.findByTestId('dashboard-preset-option-p1'));
+};
+
 const storeFinanceEverywhere = () => {
   window.localStorage.setItem(
     dashboardVariablesStorageKey('user-1', 'ws-1'),
@@ -321,8 +333,8 @@ describe('CustomDashboard variables bar', () => {
     await user.tab();
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
     await user.keyboard('{Escape}');
-    expect(await screen.findByRole('button', { name: 'Reset' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Set as default values' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Reset to defaults' })).toBeInTheDocument();
+    expect(screen.queryByTestId('dashboard-save-menu')).not.toBeInTheDocument();
   });
 
   it('mutes the chip of a variable no widget uses', () => {
@@ -334,7 +346,7 @@ describe('CustomDashboard variables bar', () => {
     storeFinanceEverywhere();
     const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
     expect(screen.getByRole('button', { name: 'Sector : Finance' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await user.click(screen.getByRole('button', { name: 'Reset to defaults' }));
     expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeInTheDocument();
     expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
   });
@@ -342,7 +354,7 @@ describe('CustomDashboard variables bar', () => {
   it('sets the local values as the dashboard defaults, then drops the local entry', async () => {
     storeFinanceEverywhere();
     const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
-    await user.click(screen.getByRole('button', { name: 'Set as default values' }));
+    await setAsDefaults(user);
     expect(captured.commit).toHaveBeenCalledTimes(1);
     expect(captured.commit.mock.calls[0][0].variables).toMatchObject({
       id: 'ws-1',
@@ -358,7 +370,7 @@ describe('CustomDashboard variables bar', () => {
       completeMutation = () => args.onCompleted?.({});
     });
     const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
-    await user.click(screen.getByRole('button', { name: 'Set as default values' }));
+    await setAsDefaults(user);
     expect(screen.getByRole('button', { name: 'Sector : Finance' })).toBeDisabled();
     act(() => completeMutation());
     await waitFor(() => expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeEnabled());
@@ -371,12 +383,12 @@ describe('CustomDashboard variables bar', () => {
       completeMutation = () => args.onCompleted?.({});
     });
     const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
-    await user.click(screen.getByRole('button', { name: 'Set as default values' }));
+    await setAsDefaults(user);
     expect(captured.commit).toHaveBeenCalledTimes(1);
     // Finance is what is being saved: another value is chosen while the request is pending.
     act(() => captured.onSetValue?.(SECTOR_ID, 'Retail'));
     act(() => completeMutation());
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Set as default values' })).toBeEnabled());
+    await waitFor(() => expect(saveMenu()).toBeEnabled());
     expect(screen.getByRole('button', { name: 'Sector : Retail' })).toBeInTheDocument();
     expect(captured.values?.get(SECTOR_ID)).toBe('Retail');
     expect(window.localStorage.getItem(dashboardVariablesStorageKey('user-1', 'ws-1'))).toBe(JSON.stringify({ [SECTOR_ID]: 'Retail' }));
@@ -388,8 +400,8 @@ describe('CustomDashboard variables bar', () => {
     const unhandled = vi.fn();
     process.on('unhandledRejection', unhandled);
     const { user } = testRender(<CustomDashboard data={workspace as never} />, { userContext: flagOn() });
-    await user.click(screen.getByRole('button', { name: 'Set as default values' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Set as default values' })).toBeEnabled());
+    await setAsDefaults(user);
+    await waitFor(() => expect(saveMenu()).toBeEnabled());
     await new Promise((resolve) => setTimeout(resolve, 0));
     process.off('unhandledRejection', unhandled);
     expect(unhandled).not.toHaveBeenCalled();
@@ -435,7 +447,6 @@ describe('CustomDashboard time range', () => {
   const relative = (relativeDate: string) => ({ startDate: null, endDate: null, relativeDate });
   const editorWorkspace = buildWorkspace({}, { relativeDate: 'days-7' });
   const changeRange = (relativeDate: string) => act(() => captured.timeFilters?.handleDateChange('relativeDate', relativeDate));
-  const setAsDefaultsButton = () => screen.getByRole('button', { name: 'Set as default values' });
 
   beforeEach(() => {
     window.localStorage.clear();
@@ -462,7 +473,7 @@ describe('CustomDashboard time range', () => {
     const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
     const before = captured.contentConfig;
     // Opening the variable dialog re-renders the page without changing the range.
-    await user.click(screen.getByRole('button', { name: 'Create variable' }));
+    await user.click(screen.getByRole('button', { name: 'Variable' }));
     expect(captured.contentConfig).toBe(before);
   });
 
@@ -487,29 +498,32 @@ describe('CustomDashboard time range', () => {
     expect(window.localStorage.getItem(timeRangeKey)).toBe(JSON.stringify(relative('months-1')));
   });
 
-  it('shows Reset and Set as default values in the bar after a date change alone', () => {
-    testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
-    expect(screen.queryByRole('button', { name: 'Reset' })).not.toBeInTheDocument();
+  it('shows Reset, Modified and an enabled Set as dashboard defaults in the bar after a date change alone', async () => {
+    const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
+    expect(screen.queryByTestId('dashboard-values-reset')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('dashboard-values-modified')).not.toBeInTheDocument();
     changeRange('months-1');
     const bar = within(screen.getByTestId('dashboard-variables-bar'));
-    expect(bar.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
-    expect(bar.getByRole('button', { name: 'Set as default values' })).toBeInTheDocument();
+    expect(bar.getByRole('button', { name: 'Reset to defaults' })).toBeInTheDocument();
+    expect(bar.getByTestId('dashboard-values-modified')).toBeInTheDocument();
+    await user.click(saveMenu());
+    expect(await screen.findByTestId('dashboard-set-as-defaults')).not.toHaveAttribute('data-disabled');
   });
 
   it('resets both the variables and the range', async () => {
     storeFinanceEverywhere();
     const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
     changeRange('months-1');
-    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    await user.click(screen.getByRole('button', { name: 'Reset to defaults' }));
     expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
     expect(captured.contentConfig?.relativeDate).toBe('days-7');
     expect(window.localStorage.getItem(timeRangeKey)).toBeNull();
   });
 
-  it('writes the range in manifest.config on Set as default values, then drops the local range', async () => {
+  it('writes the range in manifest.config on Set as dashboard defaults, then drops the local range', async () => {
     const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
     changeRange('months-1');
-    await user.click(setAsDefaultsButton());
+    await setAsDefaults(user);
     // Through the mutation hook, which reports every failure: no variable changed, so no other call.
     expect(captured.relayCommit).not.toHaveBeenCalled();
     expect(captured.commit).toHaveBeenCalledTimes(1);
@@ -519,13 +533,13 @@ describe('CustomDashboard time range', () => {
     await waitFor(() => expect(window.localStorage.getItem(timeRangeKey)).toBeNull());
   });
 
-  it('keeps the local range and re-enables the chips when Set as default values fails', async () => {
+  it('keeps the local range and re-enables the chips when Set as dashboard defaults fails', async () => {
     // The hook calls onError on any failure, a network one included.
     captured.commit.mockImplementation((args) => args.onError?.(new Error('Failed to fetch')));
     const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
     changeRange('months-1');
-    await user.click(setAsDefaultsButton());
-    await waitFor(() => expect(setAsDefaultsButton()).toBeEnabled());
+    await setAsDefaults(user);
+    await waitFor(() => expect(saveMenu()).toBeEnabled());
     expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeEnabled();
     expect(window.localStorage.getItem(timeRangeKey)).toBe(JSON.stringify(relative('months-1')));
     // The range failed: the variables are not sent.
@@ -538,8 +552,8 @@ describe('CustomDashboard time range', () => {
     captured.commit.mockImplementation((args) => (Array.isArray(args.variables.input) ? args.onCompleted?.({}) : args.onError?.(new Error('denied'))));
     const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
     changeRange('months-1');
-    await user.click(setAsDefaultsButton());
-    await waitFor(() => expect(setAsDefaultsButton()).toBeEnabled());
+    await setAsDefaults(user);
+    await waitFor(() => expect(saveMenu()).toBeEnabled());
     expect(captured.commit).toHaveBeenCalledTimes(1);
     expect(captured.commit.mock.calls[0][0].variables.input).toMatchObject({ id: SECTOR_ID, defaultValue: 'Finance' });
     expect(window.localStorage.getItem(timeRangeKey)).toBe(JSON.stringify(relative('months-1')));
@@ -552,10 +566,10 @@ describe('CustomDashboard time range', () => {
     });
     const { user } = testRender(<CustomDashboard data={editorWorkspace as never} />, { userContext: flagOn() });
     changeRange('months-1');
-    await user.click(setAsDefaultsButton());
+    await setAsDefaults(user);
     changeRange('years-1');
     act(() => completeMutation());
-    await waitFor(() => expect(setAsDefaultsButton()).toBeEnabled());
+    await waitFor(() => expect(saveMenu()).toBeEnabled());
     expect(captured.contentConfig?.relativeDate).toBe('years-1');
     expect(window.localStorage.getItem(timeRangeKey)).toBe(JSON.stringify(relative('years-1')));
   });
@@ -586,15 +600,15 @@ describe('CustomDashboard time range', () => {
       expect(captured.relayCommit).not.toHaveBeenCalled();
     });
 
-    it('puts Reset at the end of the time filters row when there is no variables bar, never Set as default values', async () => {
+    it('puts Reset at the end of the time filters row when there is no variables bar, never the Save menu', async () => {
       const { user } = testRender(
         <CustomDashboard data={readerWorkspace({ allowViewersToChangeVariables: false }) as never} />,
         { userContext: flagOn() },
       );
       changeRange('months-1');
       expect(screen.queryByTestId('dashboard-variables-bar')).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Set as default values' })).not.toBeInTheDocument();
-      await user.click(screen.getByRole('button', { name: 'Reset' }));
+      expect(screen.queryByTestId('dashboard-save-menu')).not.toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Reset to defaults' }));
       expect(captured.contentConfig?.relativeDate).toBe('days-7');
     });
   });
@@ -735,12 +749,11 @@ describe('CustomDashboard presets', () => {
 
   it('applies the values and the range of the preset picked by an editor, and Reset puts the defaults back', async () => {
     const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
-    await user.click(screen.getByTestId('dashboard-preset-trigger'));
-    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    await pickFinance(user);
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
     expect(captured.contentConfig?.relativeDate).toBe('months-1');
     expect(new URLSearchParams(window.location.search).get('preset')).toBe('p1');
-    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: /^Reset$/ }));
+    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: 'Reset to defaults' }));
     expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
     expect(captured.contentConfig?.relativeDate).toBe('days-7');
     expect(new URLSearchParams(window.location.search).get('preset')).toBeNull();
@@ -752,9 +765,8 @@ describe('CustomDashboard presets', () => {
     const { user } = testRender(<CustomDashboard data={viewer as never} />, { userContext: flagOn() });
     expect(selector()).toBeInTheDocument();
     expect(screen.queryByTestId('dashboard-variables-bar')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('dashboard-preset-save-as')).not.toBeInTheDocument();
-    await user.click(screen.getByTestId('dashboard-preset-trigger'));
-    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    expect(screen.queryByTestId('dashboard-save-menu')).not.toBeInTheDocument();
+    await pickFinance(user);
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
     expect(captured.contentConfig?.relativeDate).toBe('months-1');
   });
@@ -770,10 +782,13 @@ describe('CustomDashboard presets', () => {
     const { user } = testRender(<CustomDashboard data={withPresets({ currentUserDefaultPresetId: 'p1' }) as never} />, { userContext: flagOn() });
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
     expect(captured.contentConfig?.relativeDate).toBe('months-1');
-    expect(screen.getByTestId('dashboard-preset-trigger')).toHaveTextContent('Finance (default)');
+    expect(screen.getByTestId('dashboard-preset-trigger')).toHaveTextContent('Finance');
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    expect(await screen.findByTestId('dashboard-preset-option-p1')).toHaveTextContent('FinanceDefault');
+    await user.keyboard('{Escape}');
     act(() => captured.onSetValue?.(SECTOR_ID, 'Retail'));
     expect(captured.values?.get(SECTOR_ID)).toBe('Retail');
-    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: /^Reset$/ }));
+    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: 'Reset to “Finance”' }));
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
   });
 
@@ -785,14 +800,16 @@ describe('CustomDashboard presets', () => {
     expect(captured.contentConfig?.relativeDate).toBe('months-1');
   });
 
-  it('keeps the per user changes apart from the preset, and offers Update preset only once a value differs', async () => {
+  it('keeps the per user changes apart from the preset, and enables its update only once a value differs', async () => {
     const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
-    await user.click(screen.getByTestId('dashboard-preset-trigger'));
-    await user.click(await screen.findByRole('option', { name: 'Finance' }));
-    expect(screen.queryByTestId('dashboard-preset-update')).not.toBeInTheDocument();
+    await pickFinance(user);
+    expect(screen.queryByTestId('dashboard-values-modified')).not.toBeInTheDocument();
+    await user.click(saveMenu());
+    expect(await screen.findByTestId('dashboard-preset-update')).toHaveAttribute('data-disabled');
     act(() => captured.onSetValue?.(SECTOR_ID, 'Retail'));
     expect(captured.values?.get(SECTOR_ID)).toBe('Retail');
-    expect(screen.getByTestId('dashboard-preset-update')).toBeInTheDocument();
+    expect(screen.getByTestId('dashboard-preset-update')).not.toHaveAttribute('data-disabled');
+    expect(screen.getByTestId('dashboard-values-modified')).toBeInTheDocument();
     expect(new URLSearchParams(window.location.search).get('variables')).toBe(`${SECTOR_ID}:Retail`);
   });
 
@@ -806,12 +823,11 @@ describe('CustomDashboard presets', () => {
     expect(captured.contentConfig?.relativeDate).toBe('months-1');
   });
 
-  it('writes the range of the active preset in the manifest on Set as default values', async () => {
+  it('writes the range of the active preset in the manifest on Set as dashboard defaults', async () => {
     captured.commit.mockImplementation((args) => args.onCompleted?.({}));
     const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
-    await user.click(screen.getByTestId('dashboard-preset-trigger'));
-    await user.click(await screen.findByRole('option', { name: 'Finance' }));
-    await user.click(within(screen.getByTestId('dashboard-variables-bar')).getByRole('button', { name: 'Set as default values' }));
+    await pickFinance(user);
+    await setAsDefaults(user);
     const manifestCall = captured.commit.mock.calls.map((call) => call[0].variables.input).flat().find((input) => input.key === 'manifest');
     expect(manifestCall).toBeDefined();
     expect(JSON.parse(fromB64(manifestCall.value[0])).config).toMatchObject({ relativeDate: 'months-1' });
@@ -820,10 +836,10 @@ describe('CustomDashboard presets', () => {
   it('drops the values and the range of the active preset when it is deleted', async () => {
     captured.commit.mockImplementation((args) => args.onCompleted?.({}));
     const { user } = testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });
-    await user.click(screen.getByTestId('dashboard-preset-trigger'));
-    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    await pickFinance(user);
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
-    await user.click(screen.getByTestId('dashboard-preset-delete'));
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await user.click(await screen.findByTestId('dashboard-preset-delete'));
     await user.click(await screen.findByTestId('dashboard-preset-delete-confirm'));
     expect(captured.commit).toHaveBeenCalledWith(expect.objectContaining({ variables: { id: 'ws-1', presetId: 'p1' } }));
     expect(captured.values?.get(SECTOR_ID)).toBe('Energy');
@@ -850,11 +866,11 @@ describe('CustomDashboard presets', () => {
     });
     const { user } = testRender(<CustomDashboard data={data as never} />, { userContext: flagOn() });
     expect(captured.values?.get(LEVEL_ID)).toBe('High');
-    await user.click(screen.getByTestId('dashboard-preset-trigger'));
-    await user.click(await screen.findByRole('option', { name: 'Finance' }));
+    await pickFinance(user);
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
     expect(captured.values?.get(LEVEL_ID)).toBe('Low');
-    expect(screen.queryByTestId('dashboard-preset-update')).not.toBeInTheDocument();
+    await user.click(saveMenu());
+    expect(await screen.findByTestId('dashboard-preset-update')).toHaveAttribute('data-disabled');
   });
 
   it('applies the default preset on the home dashboard without selector nor local read', () => {

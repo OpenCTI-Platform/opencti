@@ -5,15 +5,20 @@ import { EXPORT_REMOVE_CLASS } from '../../utils/Image';
 import DashboardValuesActions from './DashboardValuesActions';
 
 describe('DashboardValuesActions', () => {
-  it('renders Reset only when the defaults cannot be set', () => {
-    testRender(<DashboardValuesActions canSetAsDefaults={false} onReset={vi.fn()} />);
-    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Set as default values' })).not.toBeInTheDocument();
+  it('names the dashboard defaults when there is no default preset', async () => {
+    const onReset = vi.fn();
+    const { user } = testRender(<DashboardValuesActions onReset={onReset} />);
+    await user.click(screen.getByRole('button', { name: 'Reset to defaults' }));
+    expect(onReset).toHaveBeenCalledOnce();
   });
 
-  it('keeps both buttons out of the image export', () => {
-    testRender(<DashboardValuesActions canSetAsDefaults onReset={vi.fn()} onSetAsDefaults={vi.fn()} />);
-    expect(screen.getByRole('button', { name: 'Reset' })).toHaveClass(EXPORT_REMOVE_CLASS);
-    expect(screen.getByRole('button', { name: 'Set as default values' })).toHaveClass(EXPORT_REMOVE_CLASS);
+  it('names the default preset it goes back to', () => {
+    testRender(<DashboardValuesActions resetTargetName="Finance" onReset={vi.fn()} />);
+    expect(screen.getByTestId('dashboard-values-reset')).toHaveTextContent('Reset to “Finance”');
+  });
+
+  it('stays out of the image export', () => {
+    testRender(<DashboardValuesActions onReset={vi.fn()} />);
+    expect(screen.getByTestId('dashboard-values-reset')).toHaveClass(EXPORT_REMOVE_CLASS);
   });
 });

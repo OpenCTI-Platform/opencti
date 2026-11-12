@@ -12,96 +12,70 @@ const presets: DashboardPreset[] = [
 const noop = () => {};
 
 describe('DashboardPresetSelector', () => {
-  it('shows the active preset and marks the default one', async () => {
+  it('shows the active preset in the pill and marks the default one in the menu', async () => {
     const { user } = testRender(
-      <DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={presets[1]} isModified={false} canManage={false} onSelect={noop} />,
+      <DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={presets[1]} onSelect={noop} />,
     );
-    expect(screen.getByTestId('dashboard-preset-trigger')).toHaveTextContent('Energy');
+    expect(screen.getByTestId('dashboard-preset-trigger')).toHaveTextContent('PresetEnergy');
     await user.click(screen.getByTestId('dashboard-preset-trigger'));
-    expect(await screen.findByRole('option', { name: 'Finance (default)' })).toBeInTheDocument();
-    // A viewer gets no action
-    expect(screen.queryByTestId('dashboard-preset-save-as')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('dashboard-preset-option-finance')).toHaveTextContent('FinanceDefault');
+    expect(screen.getByTestId('dashboard-preset-option-energy')).not.toHaveTextContent('Default');
+    // With a default preset, picking it already leaves the others: no separate entry for no preset.
+    expect(screen.queryByTestId('dashboard-preset-none')).not.toBeInTheDocument();
+    // A viewer gets no management entry.
+    expect(screen.queryByTestId('dashboard-preset-rename')).not.toBeInTheDocument();
     expect(screen.queryByTestId('dashboard-preset-delete')).not.toBeInTheDocument();
   });
 
   it('reports the selected preset, or none', async () => {
     const onSelect = vi.fn();
     const { user } = testRender(
-      <DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={null} isModified={false} canManage={false} onSelect={onSelect} />,
+      <DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={null} onSelect={onSelect} />,
     );
     await user.click(screen.getByTestId('dashboard-preset-trigger'));
-    await user.click(await screen.findByRole('option', { name: 'Finance' }));
-    expect(onSelect).toHaveBeenCalledWith('finance');
-    // The clear control of the trigger: back to no preset
-    await user.click(screen.getByRole('button', { name: 'No preset' }));
-    expect(onSelect).toHaveBeenLastCalledWith(null);
-    // The same entry in the list
+    await user.click(await screen.findByTestId('dashboard-preset-option-finance'));
+    expect(onSelect).toHaveBeenCalledExactlyOnceWith('finance');
     onSelect.mockClear();
     await user.click(screen.getByTestId('dashboard-preset-trigger'));
-    await user.click(await screen.findByRole('option', { name: 'No preset' }));
+    await user.click(await screen.findByTestId('dashboard-preset-none'));
     expect(onSelect).toHaveBeenCalledExactlyOnceWith(null);
   });
 
-  it('offers the editor actions, the update only when the preset is modified', async () => {
-    const onUpdate = vi.fn();
+  it('shows No preset in the pill when none is active', () => {
+    testRender(<DashboardPresetSelector presets={presets} activePreset={null} defaultPreset={null} onSelect={noop} />);
+    expect(screen.getByTestId('dashboard-preset-trigger')).toHaveTextContent('PresetNo preset');
+  });
+
+  it('offers the editor to rename and delete the active preset, by name', async () => {
     const onRename = vi.fn();
     const onDelete = vi.fn();
-    const onSaveAs = vi.fn();
-    const { user, rerender } = testRender(
-      <DashboardPresetSelector
-        presets={presets}
-        activePreset={presets[0]}
-        defaultPreset={null}
-        isModified={false}
-        canManage
-        onSelect={noop}
-        onSaveAs={onSaveAs}
-        onUpdate={onUpdate}
-        onRename={onRename}
-        onDelete={onDelete}
-      />,
+    const { user } = testRender(
+      <DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={null} onSelect={noop} onRename={onRename} onDelete={onDelete} />,
     );
-    expect(screen.queryByTestId('dashboard-preset-update')).not.toBeInTheDocument();
-    await user.click(screen.getByTestId('dashboard-preset-save-as'));
-    expect(onSaveAs).toHaveBeenCalledOnce();
-    await user.click(screen.getByTestId('dashboard-preset-rename'));
-    expect(onRename).toHaveBeenCalledWith(presets[0]);
-    await user.click(screen.getByTestId('dashboard-preset-delete'));
-    expect(onDelete).toHaveBeenCalledWith(presets[0]);
-    rerender(
-      <DashboardPresetSelector
-        presets={presets}
-        activePreset={presets[0]}
-        defaultPreset={null}
-        isModified
-        canManage
-        onSelect={noop}
-        onSaveAs={onSaveAs}
-        onUpdate={onUpdate}
-        onRename={onRename}
-        onDelete={onDelete}
-      />,
-    );
-    await user.click(screen.getByTestId('dashboard-preset-update'));
-    expect(onUpdate).toHaveBeenCalledOnce();
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    const rename = await screen.findByTestId('dashboard-preset-rename');
+    expect(rename).toHaveTextContent('Rename “Energy”');
+    await user.click(rename);
+    expect(onRename).toHaveBeenCalledExactlyOnceWith(presets[0]);
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    const remove = await screen.findByTestId('dashboard-preset-delete');
+    expect(remove).toHaveTextContent('Delete “Energy”');
+    await user.click(remove);
+    expect(onDelete).toHaveBeenCalledExactlyOnceWith(presets[0]);
   });
 
-  it('reserves the room the library clear control takes from the row (FDS-WORKAROUND #77)', () => {
-    const { rerender } = testRender(
-      <DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={null} isModified={false} canManage onSelect={noop} onSaveAs={noop} />,
+  it('offers no management without an active preset', async () => {
+    const { user } = testRender(
+      <DashboardPresetSelector presets={presets} activePreset={null} defaultPreset={null} onSelect={noop} onRename={noop} onDelete={noop} />,
     );
-    // With a value the trigger shows a clear control: its wrapper is 32px narrower than the trigger.
-    expect(screen.getByTestId('dashboard-preset-select')).toHaveStyle({ paddingRight: '32px' });
-    // Without a value (no clear control) or disabled (the library hides it), nothing to compensate.
-    rerender(<DashboardPresetSelector presets={presets} activePreset={null} defaultPreset={null} isModified={false} canManage onSelect={noop} onSaveAs={noop} />);
-    expect(screen.getByTestId('dashboard-preset-select')).toHaveStyle({ paddingRight: '0px' });
-    rerender(<DashboardPresetSelector presets={presets} activePreset={presets[0]} defaultPreset={null} isModified={false} canManage disabled onSelect={noop} onSaveAs={noop} />);
-    expect(screen.getByTestId('dashboard-preset-select')).toHaveStyle({ paddingRight: '0px' });
+    await user.click(screen.getByTestId('dashboard-preset-trigger'));
+    await screen.findByTestId('dashboard-preset-option-energy');
+    expect(screen.queryByTestId('dashboard-preset-rename')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('dashboard-preset-delete')).not.toBeInTheDocument();
   });
 
-  it('shows only the save action when the dashboard has no preset yet', () => {
-    testRender(<DashboardPresetSelector presets={[]} activePreset={null} defaultPreset={null} isModified={false} canManage onSelect={noop} onSaveAs={noop} />);
-    expect(screen.queryByTestId('dashboard-preset-trigger')).not.toBeInTheDocument();
-    expect(screen.getByTestId('dashboard-preset-save-as')).toBeInTheDocument();
+  it('renders nothing when the dashboard has no preset yet', () => {
+    testRender(<DashboardPresetSelector presets={[]} activePreset={null} defaultPreset={null} onSelect={noop} onRename={noop} />);
+    expect(screen.queryByTestId('dashboard-preset-selector')).not.toBeInTheDocument();
   });
 });

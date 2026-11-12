@@ -29,6 +29,13 @@ const country: DashboardVariable = {
 };
 
 type BarProps = React.ComponentProps<typeof DashboardVariablesBar>;
+type User = ReturnType<typeof testRender>['user'];
+
+const openSaveMenu = (user: User) => user.click(screen.getByTestId('dashboard-save-menu'));
+const setAsDefaults = async (user: User) => {
+  await openSaveMenu(user);
+  await user.click(await screen.findByTestId('dashboard-set-as-defaults'));
+};
 
 const renderBar = (props: Partial<BarProps> = {}) => {
   const handlers = {
@@ -83,22 +90,37 @@ describe('DashboardVariablesBar', () => {
     expect(onSetAsDefaults).not.toHaveBeenCalled();
   });
 
-  it('hides Reset and Set as default values while nothing differs from the defaults', () => {
-    renderBar({ canManage: true });
-    expect(screen.queryByRole('button', { name: 'Reset' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Set as default values' })).not.toBeInTheDocument();
+  it('hides Reset and the Modified badge while nothing differs from the defaults, the Save menu staying for a manager', async () => {
+    const { user } = renderBar({ canManage: true });
+    expect(screen.queryByTestId('dashboard-values-reset')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('dashboard-values-modified')).not.toBeInTheDocument();
+    await openSaveMenu(user);
+    expect(await screen.findByTestId('dashboard-set-as-defaults')).toHaveAttribute('data-disabled');
   });
 
   it('treats a null default and an empty value as equal', () => {
     renderBar({ canManage: true, values: new Map([['var-1', 'Energy'], ['var-2', '']]) });
-    expect(screen.queryByRole('button', { name: 'Reset' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('dashboard-values-reset')).not.toBeInTheDocument();
+    expect(screen.getByTestId('dashboard-variable-chip-Country')).not.toHaveAttribute('data-modified');
   });
 
-  it('shows Reset to a viewer when a value differs, and never Set as default values', async () => {
+  it('flags the departure: the Modified badge, and a dot on the changed chip only', () => {
+    renderBar({ values: new Map([['var-1', 'Finance']]) });
+    expect(screen.getByTestId('dashboard-values-modified')).toHaveTextContent('Modified');
+    expect(screen.getByTestId('dashboard-variable-chip-Sector')).toHaveAttribute('data-modified', 'true');
+    expect(screen.getByTestId('dashboard-variable-chip-Country')).not.toHaveAttribute('data-modified');
+  });
+
+  it('shows Reset to a viewer when a value differs, and never the Save menu', async () => {
     const { user, onReset } = renderBar({ values: new Map([['var-1', 'Finance']]) });
-    expect(screen.queryByRole('button', { name: 'Set as default values' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Reset' }));
+    expect(screen.queryByTestId('dashboard-save-menu')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Reset to defaults' }));
     expect(onReset).toHaveBeenCalledTimes(1);
+  });
+
+  it('names the default preset Reset goes back to', () => {
+    renderBar({ values: new Map([['var-1', 'Finance']]), resetTargetName: 'Finance' });
+    expect(screen.getByTestId('dashboard-values-reset')).toHaveTextContent('Reset to “Finance”');
   });
 
   it('lets a manager set the current values as defaults, and disables the actions meanwhile', async () => {
@@ -107,12 +129,13 @@ describe('DashboardVariablesBar', () => {
       finish = resolve;
     }));
     const { user } = renderBar({ canManage: true, values: new Map([['var-2', 'France']]), onSetAsDefaults });
-    await user.click(screen.getByRole('button', { name: 'Set as default values' }));
+    await setAsDefaults(user);
     expect(onSetAsDefaults).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('button', { name: 'Set as default values' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Reset' })).toBeDisabled();
+    expect(screen.getByTestId('dashboard-save-menu')).toBeDisabled();
+    expect(screen.getByTestId('dashboard-values-reset')).toBeDisabled();
     finish();
-    expect(await screen.findByRole('button', { name: 'Reset' })).toBeEnabled();
+    await waitFor(() => expect(screen.getByTestId('dashboard-values-reset')).toBeEnabled());
+    expect(screen.getByTestId('dashboard-save-menu')).toBeEnabled();
   });
 
   it('makes the chips inert while the values are being saved, so no value changes meanwhile', async () => {
@@ -122,7 +145,7 @@ describe('DashboardVariablesBar', () => {
     }));
     const { user } = renderBar({ canManage: true, values: new Map([['var-1', 'Energy'], ['var-2', 'France']]), onSetAsDefaults });
     expect(screen.getByRole('button', { name: 'Country : France' })).toBeEnabled();
-    await user.click(screen.getByRole('button', { name: 'Set as default values' }));
+    await setAsDefaults(user);
     const chip = screen.getByRole('button', { name: 'Country : France' });
     expect(chip).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeDisabled();
@@ -133,10 +156,23 @@ describe('DashboardVariablesBar', () => {
     expect(screen.getByRole('button', { name: 'Sector : Energy' })).toBeEnabled();
   });
 
+  it('offers the update of the active preset, enabled only once it is modified', async () => {
+    const { user, unmount } = renderBar({ canManage: true, activePresetName: 'Finance', onUpdatePreset: vi.fn() });
+    await openSaveMenu(user);
+    expect(await screen.findByTestId('dashboard-preset-update')).toHaveAttribute('data-disabled');
+    unmount();
+    const onUpdatePreset = vi.fn();
+    const modified = renderBar({ canManage: true, activePresetName: 'Finance', isActivePresetModified: true, onUpdatePreset });
+    await openSaveMenu(modified.user);
+    await modified.user.click(await screen.findByTestId('dashboard-preset-update'));
+    expect(onUpdatePreset).toHaveBeenCalledOnce();
+  });
+
   it('marks the action buttons for removal from an image export, not the chips', () => {
     renderBar({ canManage: true, onCreate: vi.fn(), values: new Map([['var-1', 'Energy'], ['var-2', 'France']]) });
-    expect(screen.getByRole('button', { name: 'Reset' }).closest(`.${EXPORT_REMOVE_CLASS}`)).not.toBeNull();
-    expect(screen.getByRole('button', { name: 'Set as default values' }).closest(`.${EXPORT_REMOVE_CLASS}`)).not.toBeNull();
+    expect(screen.getByTestId('dashboard-values-reset').closest(`.${EXPORT_REMOVE_CLASS}`)).not.toBeNull();
+    expect(screen.getByTestId('dashboard-save-menu').closest(`.${EXPORT_REMOVE_CLASS}`)).not.toBeNull();
+    expect(screen.getByTestId('dashboard-values-modified').closest(`.${EXPORT_REMOVE_CLASS}`)).not.toBeNull();
     expect(screen.getByTestId('create-variable-button').closest(`.${EXPORT_REMOVE_CLASS}`)).not.toBeNull();
     expect(screen.getByRole('button', { name: 'Sector : Energy' }).closest(`.${EXPORT_REMOVE_CLASS}`)).toBeNull();
   });
@@ -187,18 +223,29 @@ describe('DashboardVariablesBar', () => {
 
   it('shows Reset when a preset other than the default one is active, even without any changed value', () => {
     renderBar({ variables: [sector], isPresetSelected: true });
-    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
+    expect(screen.getByTestId('dashboard-values-reset')).toBeInTheDocument();
+    // Not a departure from that preset: no Modified badge.
+    expect(screen.queryByTestId('dashboard-values-modified')).not.toBeInTheDocument();
   });
 
-  it('shows Reset and Set as default values when only the time range is modified', () => {
-    renderBar({ variables: [sector], canManage: true, isTimeRangeModified: true });
-    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Set as default values' })).toBeInTheDocument();
+  it('shows Reset, Modified and an enabled Set as dashboard defaults when only the time range is modified', async () => {
+    const { user } = renderBar({ variables: [sector], canManage: true, isTimeRangeModified: true });
+    expect(screen.getByTestId('dashboard-values-reset')).toBeInTheDocument();
+    expect(screen.getByTestId('dashboard-values-modified')).toBeInTheDocument();
+    await openSaveMenu(user);
+    expect(await screen.findByTestId('dashboard-set-as-defaults')).not.toHaveAttribute('data-disabled');
   });
 
-  it('shows the actions after Create variable when there is no variable but the time range is modified', () => {
+  it('shows the actions after the create button when there is no variable but the time range is modified', () => {
     renderBar({ variables: [], canManage: true, onCreate: vi.fn(), isTimeRangeModified: true });
-    expect(screen.getByRole('button', { name: 'Create variable' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Variable' })).toBeInTheDocument();
+    expect(screen.getByTestId('dashboard-values-reset')).toBeInTheDocument();
+  });
+
+  it('renders the leading pill first, then the Modified badge', () => {
+    renderBar({ leading: <span data-testid="leading-pill">pill</span>, values: new Map([['var-1', 'Finance']]) });
+    const bar = screen.getByTestId('dashboard-variables-bar');
+    expect(bar.firstElementChild).toBe(screen.getByTestId('leading-pill'));
+    expect(screen.getByTestId('leading-pill').nextElementSibling).toBe(screen.getByTestId('dashboard-values-modified'));
   });
 });

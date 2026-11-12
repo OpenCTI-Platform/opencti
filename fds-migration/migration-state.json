@@ -928,22 +928,10 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "dashboard presets: the preset selector of the variables bar (clearable, the clear control reads No preset), the Default preset field of the user, group and organization settings, and Load a preset in the publication form.",
+      "reason": "dashboard presets: the Default preset field of the user, group and organization settings, and Load a preset in the publication form.",
       "files": [
-        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx",
         "opencti-platform/opencti-front/src/private/components/common/form/DashboardPresetField.tsx",
         "opencti-platform/opencti-front/src/private/components/workspaces/dashboards/public_dashboards/PublicDashboardPublishedValues.tsx"
-      ]
-    },
-    {
-      "component": "IconButton",
-      "importFrom": "@filigran/design-system",
-      "guards": [
-        "imported-from-library"
-      ],
-      "reason": "dashboard presets: rename and delete the active preset (icon only, aria-label carried by the button).",
-      "files": [
-        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx"
       ]
     },
     {
@@ -955,17 +943,6 @@
       "reason": "dashboard widgets: the warning of a widget title (what a broken down or audits chart does not display). The trigger is a bare TooltipTrigger button named with the warning, around the same 15 px warning glyph, so that the keyboard and the screen readers reach it; its own TooltipProvider, as the public dashboards mount none.",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/WidgetContainer.tsx"
-      ]
-    },
-    {
-      "component": "Tooltip",
-      "importFrom": "@filigran/design-system",
-      "guards": [
-        "imported-from-library"
-      ],
-      "reason": "dashboard presets: explains the Update preset action (the current values differ from the preset).",
-      "files": [
-        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx"
       ]
     },
     {
@@ -1001,6 +978,54 @@
       "reason": "dashboard presets: the name of a preset, with the library error state for a blank, too long or duplicated name.",
       "files": [
         "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetNameDialog.tsx"
+      ]
+    },
+    {
+      "component": "Menu",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard context bar: the preset pill (the presets of the dashboard, the default one captioned Default, No preset without a default preset, Rename and Delete of the active preset for its editors) and the Save menu (Update the active preset, Save as new preset, Set as dashboard defaults).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx",
+        "opencti-platform/opencti-front/src/components/dashboard/DashboardSaveMenu.tsx"
+      ]
+    },
+    {
+      "component": "MenuItem",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard context bar: the presets and the actions of the preset pill, the three actions of the Save menu, each with its scope as a caption.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx",
+        "opencti-platform/opencti-front/src/components/dashboard/DashboardSaveMenu.tsx"
+      ]
+    },
+    {
+      "component": "MenuLabel",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard context bar: the groups of the preset pill (Presets, the active preset) and of the Save menu (Everyone using this preset, New, Everyone, without a preset).",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/presets/DashboardPresetSelector.tsx",
+        "opencti-platform/opencti-front/src/components/dashboard/DashboardSaveMenu.tsx"
+      ]
+    },
+    {
+      "component": "Badge",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "dashboard context bar: the Modified badge after the preset pill, and the dot of a variable chip whose value differs from its default.",
+      "files": [
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariablesBar.tsx",
+        "opencti-platform/opencti-front/src/components/dashboard/variables/DashboardVariableChip.tsx"
       ]
     }
   ]

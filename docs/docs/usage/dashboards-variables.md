@@ -31,29 +31,49 @@ A widget that uses at least one variable shows a small marker in its header; its
 
 Click the chip of a variable in the bar to change its value. The widgets using it reload at once. The values you pick are **personal**: they are kept in your browser, for this dashboard, and reflected in the address bar so that a shared link opens the same view. Other users keep their own values, and the dashboard itself is not modified.
 
-- **Reset** brings every value, and the time range, back to your default preset (see [Default preset](#default-preset)) or, without one, to the defaults of the dashboard.
-- **Set as default values** (editors only) saves your current values and time range as the new defaults for everyone.
+The bar tells you when you depart from what you started from (the selected preset or, without one, the defaults of the dashboard):
+
+- a **Modified** badge appears next to the preset selector as soon as a value or the time range differs;
+- a dot marks the chip of each variable whose value differs.
+
+On the right of the bar:
+
+- **Reset to "<preset>"** brings every value, and the time range, back to your default preset (see [Default preset](#default-preset)); without one, the button reads **Reset to defaults** and brings back the defaults of the dashboard. It shows only when there is something to reset.
+- **Save** (editors only) opens a menu where each entry says who it affects; see [Save menu](#save-menu).
 
 A variable no widget uses is shown muted. If a variable is deleted while widgets still use it, those widgets show *No data has been found* rather than ignoring the filter: edit their filters to pick another variable or a fixed value. The values the presets held for that variable are dropped.
 
 ### Time range
 
-Changing the time range of a dashboard no longer modifies the dashboard: like the variable values, the range is personal and kept in your browser. Editors promote their range with **Set as default values**.
+Changing the time range of a dashboard no longer modifies the dashboard: like the variable values, the range is personal and kept in your browser. A changed range counts as a modification: it lights the **Modified** badge and is restored by **Reset**. Editors promote their range from the **Save** menu, with **Set as dashboard defaults** or by updating a preset.
 
 !!! warning "Behaviour change"
 
-    Before this feature, changing the time range of a dashboard was saved immediately and applied to every user. It is now a personal setting: the home dashboard, the dashboard export and your other browsers keep the defaults of the dashboard (or your default preset); the publication form starts from the range you see. Use **Set as default values** to change the range of the dashboard for everyone.
+    Before this feature, changing the time range of a dashboard was saved immediately and applied to every user. It is now a personal setting: the home dashboard, the dashboard export and your other browsers keep the defaults of the dashboard (or your default preset); the publication form starts from the range you see. Use **Save** > **Set as dashboard defaults** to change the range of the dashboard for everyone.
 
 ## Presets
 
-A preset is a named snapshot of the values of all the variables and of the time range. The preset selector sits at the start of the variables bar.
+A preset is a named snapshot of the values of all the variables and of the time range. The preset selector is the first element of the variables bar, labelled **Preset** and showing the name of the selected preset, or *No preset*. It appears once the dashboard holds at least one preset.
 
-- **Save as preset** saves the current values and time range under a name. A dashboard holds up to 50 presets; names are limited to 200 characters.
-- Selecting a preset restores its values and its time range at once.
-- When your current values differ from the selected preset, **Update preset** (editors only) saves them into it.
-- Editors can rename and delete a preset from the selector.
+Open the selector to:
 
-The selected preset is personal, like the values: it is kept in your browser and in the address bar, so sharing the address opens the same view. A value changed on top of a preset is kept apart from it: **Reset** drops it and goes back to your default preset, or to the defaults of the dashboard.
+- select a preset: its values and its time range are restored at once. The default preset of the dashboard for you (see [Default preset](#default-preset)) is captioned *Default*;
+- select *No preset* to go back to the defaults of the dashboard;
+- rename or delete the selected preset (editors only).
+
+The selected preset is personal, like the values: it is kept in your browser and in the address bar, so sharing the address opens the same view. A value changed on top of a preset is kept apart from it and lights the **Modified** badge: **Reset** drops it and goes back to your default preset, or to the defaults of the dashboard.
+
+### Save menu
+
+Editors save from a single **Save** button at the end of the bar. Its menu groups the entries by who they affect:
+
+| Entry | Affects | Effect |
+|---|---|---|
+| **Update "<preset>"** | Everyone using this preset | Replaces the values and time range of the selected preset with yours. Shown when a preset is selected; available when you departed from it. |
+| **Save as new preset…** | New | Saves your current values and time range under a new name. A dashboard holds up to 50 presets; names are limited to 200 characters. |
+| **Set as dashboard defaults** | Everyone, without a preset | Saves your current values and time range as the defaults of the dashboard, what it shows with no preset. |
+
+The first preset of a dashboard is created with **Save as new preset…**: the selector appears once it exists.
 
 ### Default preset
 
@@ -75,7 +95,7 @@ In the edition drawer of a dashboard, three switches decide what a user who can 
 |---|---|
 | Allow viewers to edit time filters | Shows the time filters; the range is personal |
 | Allow viewers to change variable values | Shows the variables bar; the values are personal |
-| Allow viewers to switch presets | Shows the preset selector |
+| Allow viewers to switch presets | Shows the preset selector; the selected preset is personal |
 
 All three are on by default: a viewer may change the values, the time range and the preset for themselves unless the editor closes a switch. Behind a closed switch, the viewer sees the dashboard with its defaults for that part.
 
