@@ -21,6 +21,8 @@ import {
   assertExternalStatusWriteAllowed,
   assertExternalStatusCreateAllowed,
   assertExternalRequestAccessCreateAllowed,
+  assertExternalRequestAccessWriteAllowed,
+  REQUEST_ACCESS_MAX_LENGTH,
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
   getAllowedTransitions,
@@ -59,6 +61,7 @@ import { controlUserConfidenceAgainstElement } from '../../../src/utils/confiden
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
 import { createListTask } from '../../../src/domain/backgroundTask-common';
+import type { BasicStoreEntity } from '../../../src/types/store';
 import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
 import { isUserCanActionRequestAccess, notifyRequestAccessResult } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
@@ -7652,6 +7655,27 @@ describe('assertExternalStatusWriteAllowed', () => {
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', undefined, record)).resolves.toBeUndefined();
       (findByType as any).mockResolvedValue({ id: 'setting-id' });
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'ra-new', record)).resolves.toBeUndefined();
+    });
+  });
+
+  describe('assertExternalRequestAccessWriteAllowed – record shape', () => {
+    const plainRfi = { internal_id: 'rfi-id', entity_type: 'Case-Rfi', x_opencti_workflow_id: 'global-new' } as unknown as BasicStoreEntity;
+    const refusal = 'Request access must be a JSON object of at most';
+
+    it('refuses a malformed, scalar or oversized record before any lookup', async () => {
+      for (const value of ['not json', '42', 'null', '"text"', JSON.stringify({ padding: 'x'.repeat(REQUEST_ACCESS_MAX_LENGTH) })]) {
+        await expect(assertExternalRequestAccessWriteAllowed(mockContext, plainRfi, [value], undefined)).rejects.toThrow(refusal);
+      }
+      expect(findByType).not.toHaveBeenCalled();
+    });
+
+    it('checks every input of a patch, not only the last one', async () => {
+      await expect(assertExternalRequestAccessWriteAllowed(mockContext, plainRfi, ['not json', null], undefined)).rejects.toThrow(refusal);
+    });
+
+    it('lets a JSON object record or a removal through on a plain RFI', async () => {
+      await expect(assertExternalRequestAccessWriteAllowed(mockContext, plainRfi, [JSON.stringify({ status: 'NEW' })], undefined)).resolves.toBeUndefined();
+      await expect(assertExternalRequestAccessWriteAllowed(mockContext, plainRfi, [null], undefined)).resolves.toBeUndefined();
     });
   });
 

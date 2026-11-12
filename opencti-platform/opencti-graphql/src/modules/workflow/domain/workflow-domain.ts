@@ -457,15 +457,22 @@ const resolveEntityDefinition = async (
   return { instanceEntity, suppliedStatus, ...await resolveInstanceDefinition(context, user, entitySetting, instanceEntity, suppliedStatus) };
 };
 
-const hasRequestAccess = (entity: BasicStoreCommon): boolean => {
-  const { x_opencti_request_access: rawRequestAccess } = entity as { x_opencti_request_access?: unknown };
-  if (typeof rawRequestAccess !== 'string') return false;
+/** Longest request record accepted: a request names a few entities and organizations, far below this. */
+export const REQUEST_ACCESS_MAX_LENGTH = 100_000;
+
+// A request record is a JSON object of bounded size: anything else is no request
+const isRequestAccessRecord = (rawRequestAccess: unknown): boolean => {
+  if (typeof rawRequestAccess !== 'string' || rawRequestAccess.length > REQUEST_ACCESS_MAX_LENGTH) return false;
   try {
     const requestAccess = JSON.parse(rawRequestAccess);
     return !!requestAccess && typeof requestAccess === 'object';
   } catch {
     return false;
   }
+};
+
+const hasRequestAccess = (entity: BasicStoreCommon): boolean => {
+  return isRequestAccessRecord((entity as { x_opencti_request_access?: unknown }).x_opencti_request_access);
 };
 
 /**
@@ -2917,6 +2924,10 @@ export const assertExternalRequestAccessWriteAllowed = async (
   if (entity.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI) return;
   const { x_opencti_request_access: currentRequestAccess } = entity as { x_opencti_request_access?: string };
   if (newRequestAccessValues.every((value) => value === (currentRequestAccess ?? null))) return;
+  // A malformed record reads as no request, which would hand its RFI back to the direct status edit
+  if (newRequestAccessValues.some((value) => value !== null && !isRequestAccessRecord(value))) {
+    throw FunctionalError(`Request access must be a JSON object of at most ${REQUEST_ACCESS_MAX_LENGTH} characters`, { id: entity.internal_id });
+  }
   const entityAfterWrite = {
     ...entity,
     x_opencti_request_access: newRequestAccessValues.at(-1) ?? undefined,
