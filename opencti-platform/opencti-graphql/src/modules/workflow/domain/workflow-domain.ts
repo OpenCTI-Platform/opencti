@@ -2982,7 +2982,12 @@ export const assertExternalRequestAccessCreateAllowed = async (
   statusId: string | null | undefined,
   requestAccess: string | null | undefined,
 ): Promise<void> => {
-  if (entityType !== ENTITY_TYPE_CONTAINER_CASE_RFI || !requestAccess || !statusId || isInternalUser(user)) return;
+  if (entityType !== ENTITY_TYPE_CONTAINER_CASE_RFI || !requestAccess) return;
+  // A malformed record reads as no request, which would hand the RFI to the direct status edit
+  if (!isRequestAccessRecord(requestAccess)) {
+    throw FunctionalError(`Request access must be a JSON object of at most ${REQUEST_ACCESS_MAX_LENGTH} characters`);
+  }
+  if (!statusId || isInternalUser(user)) return;
   const status = await findStatusInCache(context, statusId);
   if (status?.type !== ENTITY_TYPE_CONTAINER_CASE_RFI || status.scope !== StatusScope.RequestAccess) return;
   const entitySetting = await getWorkflowConfig(context, SYSTEM_USER, entityType);

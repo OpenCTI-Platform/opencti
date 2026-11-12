@@ -7658,6 +7658,16 @@ describe('assertExternalStatusWriteAllowed', () => {
     });
   });
 
+  it('refuses the creation of an RFI with a malformed or oversized record, with or without a status', async () => {
+    const refusal = 'Request access must be a JSON object of at most';
+    const oversized = JSON.stringify({ padding: 'x'.repeat(REQUEST_ACCESS_MAX_LENGTH) });
+    for (const statusId of [undefined, 'global-new']) {
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', statusId, oversized)).rejects.toThrow(refusal);
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', statusId, 'not json')).rejects.toThrow(refusal);
+    }
+    await expect(assertExternalRequestAccessCreateAllowed(mockContext, SYSTEM_USER, 'Case-Rfi', 'ra-new', '42')).rejects.toThrow(refusal);
+  });
+
   describe('assertExternalRequestAccessWriteAllowed – record shape', () => {
     const plainRfi = { internal_id: 'rfi-id', entity_type: 'Case-Rfi', x_opencti_workflow_id: 'global-new' } as unknown as BasicStoreEntity;
     const refusal = 'Request access must be a JSON object of at most';
