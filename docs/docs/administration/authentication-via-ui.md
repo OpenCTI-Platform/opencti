@@ -113,7 +113,7 @@ Every way of setting the password of a local account is checked:
 |:---------------------|:-----------------------------------------------------------------------------------------|
 | Profile              | The user, from their profile, after confirming their current password.                   |
 | Forced change        | The user, when their password has expired or an administrator forced a change.           |
-| Forgot password      | Anyone holding the code sent by email, on the new password step of the login page.       |
+| Forgot password      | The requester, after validating the emailed code and completing MFA if enabled, on the new password step of the login page. |
 | Administration       | An administrator, when setting a user's password in the user edition (Password tab).     |
 
 A new password goes through these checks, in this order:
