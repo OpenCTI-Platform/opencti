@@ -118,7 +118,7 @@
     "react-router": "8.5.1",
     "react-syntax-highlighter": "16.1.2",
     "react-transition-group": "4.4.5",
-    "react-virtualized": "10.0.0",
+    "react-virtualized": "10.0.1",
     "react-virtualized-auto-sizer": "2.0.4",
     "react-wordcloud": "1.2.7",
     "reactflow": "11.11.4",
