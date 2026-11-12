@@ -57,8 +57,6 @@ export interface StixEmailBodyMultipart extends StixCyberObject {
   body: string;
   body_raw_ref: StixId | undefined;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -190,7 +188,6 @@ export interface StixSoftware extends StixCyberObject {
 // URL
 export interface StixURL extends StixCyberObject {
   value: string;
-  score: number;
 }
 
 // User Account
@@ -256,8 +253,6 @@ export interface StixX509Certificate extends StixCyberObject {
 export interface StixCryptocurrencyWallet extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -266,8 +261,6 @@ export interface StixCryptocurrencyWallet extends StixCyberObject {
 export interface StixCryptographicKey extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -276,8 +269,6 @@ export interface StixCryptographicKey extends StixCyberObject {
 export interface StixHostname extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -286,8 +277,6 @@ export interface StixHostname extends StixCyberObject {
 export interface StixText extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -296,8 +285,6 @@ export interface StixText extends StixCyberObject {
 export interface StixCredential extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -306,8 +293,6 @@ export interface StixCredential extends StixCyberObject {
 export interface StixUserAgent extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -318,8 +303,6 @@ export interface StixBankAccount extends StixCyberObject {
   bic: string;
   account_number: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -328,8 +311,6 @@ export interface StixBankAccount extends StixCyberObject {
 export interface StixTrackingNumber extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -338,8 +319,6 @@ export interface StixTrackingNumber extends StixCyberObject {
 export interface StixPhoneNumber extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -351,8 +330,6 @@ export interface StixPaymentCard extends StixCyberObject {
   cvv: number;
   holder_name: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -360,13 +337,11 @@ export interface StixPaymentCard extends StixCyberObject {
 // Media Content
 export interface StixMediaContent extends StixCyberObject {
   title: string;
-  description: string;
   content: string;
   media_category: string;
   url: string;
   publication_date: StixDate;
   labels: Array<string>;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -376,7 +351,6 @@ export interface StixPersona extends StixCyberObject {
   persona_name: string;
   persona_type: string;
   labels: Array<string>;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -398,8 +372,6 @@ export interface StixSSHKey extends StixCyberObject {
 export interface StixAIPrompt extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -408,8 +380,6 @@ export interface StixAIPrompt extends StixCyberObject {
 export interface StixIMEI extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -418,8 +388,6 @@ export interface StixIMEI extends StixCyberObject {
 export interface StixICCID extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
@@ -428,8 +396,6 @@ export interface StixICCID extends StixCyberObject {
 export interface StixIMSI extends StixCyberObject {
   value: string;
   labels: Array<string>;
-  description: string;
-  score: number;
   created_by_ref: StixId | undefined;
   external_references: Array<StixInternalExternalReference>;
 }
