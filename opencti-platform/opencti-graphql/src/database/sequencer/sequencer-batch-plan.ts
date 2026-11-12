@@ -405,6 +405,13 @@ export const buildBatchPlan = (
       chainPrev.push(stepIndex === 0 ? -1 : groups.length - 2);
     });
   });
+  // task 0040: an intent deferred above (same target, another input) is in flight: it goes to its
+  // lane and lands in a later batch. A container waiting for it waits for a certain producer,
+  // not for a declared member still unseen (which would burn its bounded member wait: two such
+  // passes behind a busy relation target stripped the container's refs, multi-writer diag).
+  const deferredOwnIds = new Set(deferred.flatMap(({ intent }) => intentOwnIds(intent)));
+  const inFlight = (id: string) => deferredOwnIds.has(id) || (options.queueHas?.(id) ?? false);
+  const planOptions: BatchPlanOptions = { ...options, queueHas: inFlight };
   // 2. producers: candidate ids of every leader (absorbed assert the same target). Chain
   // heads register their ids first (insertion order), so consumers of a chained target
   // order after step 1, which provides existence.
@@ -436,7 +443,7 @@ export const buildBatchPlan = (
     const deadSoftIds: string[] = [];
     let defer: DeferReason | null = null;
     const onMissing = (id: string, soft: boolean) => {
-      const cls = classifyMissing(group.leader, id, options);
+      const cls = classifyMissing(group.leader, id, planOptions);
       if (cls === 'member_wait') {
         defer = 'member_wait'; // dominates queued_producer: this pass counts an attempt
       } else if (cls === 'queued_producer') {
@@ -487,8 +494,8 @@ export const buildBatchPlan = (
         // in-chunk member, waits for its producer like any other (probe 2026-09-24: 86
         // course-of-action label refs per MITRE run applied with the producer still queued
         // and were stripped, then reconciled one intent per cycle).
-        const inFlight = options.queueHas?.(id) || group.leader.memberRefIds?.has(id);
-        if (!isAutoCreatedRef(id) || inFlight) onMissing(id, true);
+        const producerInFlight = inFlight(id) || group.leader.memberRefIds?.has(id);
+        if (!isAutoCreatedRef(id) || producerInFlight) onMissing(id, true);
       }
     });
     // s9.10.2 strip point: a group not condemned by a hard dead ref sheds its dead soft

@@ -676,6 +676,12 @@ const runBatchLoop = async () => {
         const esContext = executionContext('sequencer', SYSTEM_USER);
         return elRawSearch(esContext, SYSTEM_USER, null, query);
       },
+      findExisting: async (ids) => {
+        const esContext = executionContext('sequencer', SYSTEM_USER);
+        const elements = await inPackets(ids, (packet) => elFindByIds(esContext, SYSTEM_USER, packet, { searchCaller: 'sequencer_pending_refs' }) as Promise<any[]>);
+        const known = new Set(elements.flatMap((element) => getInstanceIds(element)));
+        return new Set(ids.filter((id) => known.has(id)));
+      },
     });
     await initPendingRefs();
   }
@@ -1249,7 +1255,15 @@ const runBatchLoop = async () => {
         // element against the pending population and re-assert the hits (fire-and-forget:
         // the re-assertions re-enter the boundary as normal mutations).
         if (strippedInputs.length > 0) {
-          await persistPendingRecords(buildPendingRecords(strippedInputs));
+          const records = buildPendingRecords(strippedInputs);
+          await persistPendingRecords(records);
+          // task 0040: a target that landed in an earlier batch is matched by no later commit, the
+          // record is re-asserted now instead of waiting for the sweeper
+          const landedTargets = records.flatMap((record) => {
+            const targetInternalId = sequencerIdentityMap.resolveInternalId(record.target_ref);
+            return targetInternalId ? [{ record, targetInternalId }] : [];
+          });
+          if (landedTargets.length > 0) fireReconcile(landedTargets);
         }
         pendings.forEach(({ result }) => {
           const element = result?.element ?? result;

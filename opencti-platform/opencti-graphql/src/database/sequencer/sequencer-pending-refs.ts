@@ -15,6 +15,7 @@ import { createHash } from 'node:crypto';
 import { logApp } from '../../config/conf';
 import { getInstanceIds } from '../../schema/identifier';
 import { SEQUENCER_CONFIG } from './sequencer-config';
+import { runBounded } from './sequencer-apply-levels';
 import { sequencerMetrics } from './sequencer-metrics';
 import { NODE_FIELD_MAPPING, ownedPendingQuery, recordOwner } from './sequencer-multi-writer';
 
@@ -64,6 +65,8 @@ interface EsOps {
   bulk: (body: any[]) => Promise<any>;
   search: (query: any) => Promise<any>;
   putMapping?: (index: string, mappingProperties: Record<string, any>) => Promise<void>;
+  // task 0040: the ids of a list that resolve to an element (any instance id), for the sweeper
+  findExisting?: (ids: string[]) => Promise<Set<string>>;
 }
 let esOps: EsOps | null = null;
 export const registerPendingRefsEsOps = (ops: EsOps) => {
@@ -170,6 +173,16 @@ const settle = async (record: PendingRefRecord, status: PendingRefRecord['status
   }
 };
 
+const bumpAttemptsMany = async (records: PendingRefRecord[]) => {
+  records.forEach((record) => {
+    record.attempts += 1;
+  });
+  if (esOps && records.length > 0) {
+    const body = records.flatMap((record) => [{ update: { _index: PENDING_REFS_INDEX, _id: record.id } }, { doc: { attempts: record.attempts } }]);
+    checkBulkResponse(await esOps.bulk(body), 'bump');
+  }
+};
+
 const bumpAttempts = async (record: PendingRefRecord) => {
   record.attempts += 1;
   if (esOps) {
@@ -206,10 +219,15 @@ export const fireReconcile = (hits: { record: PendingRefRecord; targetInternalId
 // the expiry go TERMINAL and visible, never silently dropped.
 const SWEEP_INTERVAL_MS = 60_000;
 const SWEEP_MIN_AGE_MS = 30_000;
+// task 0040: a re-assertion goes through the loop's queue, and one whose target never comes waits
+// for the park deadline (5 s): one at a time, records whose target never came starved the others
+// (multi-writer diag: 50 records in 381 s, none reconciled during the runs). The sweep now searches
+// the targets once, re-asserts only the records whose target exists, a few at a time.
+const SWEEP_REASSERT_CONCURRENCY = 8;
 let sweeping = false; // sweeps can outlast the interval: never overlap them
-// task 0040 contention diag: a sweep re-asserts its records one at a time through the loop's queue
+// task 0040 contention diag: progress of the running sweep
 const sweepProgress = { startedAt: 0, done: 0, total: 0 };
-const sweepOnce = async () => {
+export const sweepPendingRefsOnce = async () => {
   if (sweeping) {
     if (SEQUENCER_CONFIG.contentionDiag) {
       logApp.info('[SEQUENCER] pending refs sweep still running', {
@@ -225,20 +243,33 @@ const sweepOnce = async () => {
   let failSample: unknown = null;
   try {
     const now = Date.now();
+    const expiryMs = SEQUENCER_CONFIG.pendingRefExpiryS * 1000;
     const aged = [...byId.values()].filter((r) => now - r.created_at > SWEEP_MIN_AGE_MS);
+    const expired = aged.filter((r) => now - r.created_at > expiryMs);
+    for (let i = 0; i < expired.length; i += 1) {
+      const record = expired[i];
+      await settle(record, 'expired');
+      sequencerMetrics.pendingRefEvent('expired');
+      logApp.warn('[SEQUENCER] pending ref EXPIRED without target', {
+        id: record.id, owner: record.owner_id, rel_type: record.rel_type, target: record.target_ref, attempts: record.attempts,
+      });
+    }
+    let live = aged.filter((r) => now - r.created_at <= expiryMs);
+    if (esOps?.findExisting && live.length > 0) {
+      const found = await esOps.findExisting([...new Set(live.map((r) => r.target_ref))]);
+      const absent = live.filter((r) => !found.has(r.target_ref));
+      if (absent.length > 0) {
+        await bumpAttemptsMany(absent);
+        failed += absent.length;
+        failSample = { rel_type: absent[0].rel_type, target: absent[0].target_ref, attempts: absent[0].attempts, cause: 'target not found' };
+      }
+      live = live.filter((r) => found.has(r.target_ref));
+    }
     sweepProgress.startedAt = sweepStart;
     sweepProgress.done = 0;
-    sweepProgress.total = aged.length;
-    for (let i = 0; i < aged.length; i += 1) {
-      sweepProgress.done = i;
-      const record = aged[i];
-      if (now - record.created_at > SEQUENCER_CONFIG.pendingRefExpiryS * 1000) {
-        await settle(record, 'expired');
-        sequencerMetrics.pendingRefEvent('expired');
-        logApp.warn('[SEQUENCER] pending ref EXPIRED without target', {
-          id: record.id, owner: record.owner_id, rel_type: record.rel_type, target: record.target_ref, attempts: record.attempts,
-        });
-      } else if (reconcileAssert) {
+    sweepProgress.total = live.length;
+    await runBounded(live, SWEEP_REASSERT_CONCURRENCY, async (record) => {
+      if (reconcileAssert && byId.has(record.id)) {
         try {
           // target resolution happens inside the normal path (by any instance id)
           await reconcileAssert(record, record.target_ref);
@@ -251,7 +282,8 @@ const sweepOnce = async () => {
           if (!failSample) failSample = { rel_type: record.rel_type, target: record.target_ref, attempts: record.attempts, cause: String(err) };
         }
       }
-    }
+      sweepProgress.done += 1;
+    });
     if (aged.length > 0) {
       logApp.info('[SEQUENCER] pending refs sweep', {
         swept: aged.length, reconciled, failed, remaining: byId.size, duration_ms: Date.now() - sweepStart, fail_sample: failSample,
@@ -301,7 +333,7 @@ export const initPendingRefs = async () => {
   }
   if (!sweeper) {
     sweeper = setInterval(() => {
-      sweepOnce().catch((err) => logApp.error('[SEQUENCER] pending refs sweep failed', { cause: err }));
+      sweepPendingRefsOnce().catch((err) => logApp.error('[SEQUENCER] pending refs sweep failed', { cause: err }));
     }, SWEEP_INTERVAL_MS);
     if (typeof sweeper.unref === 'function') sweeper.unref();
   }

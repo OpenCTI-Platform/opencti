@@ -135,6 +135,10 @@ const buildBatchPlanOld = (
       chainPrev.push(stepIndex === 0 ? -1 : groups.length - 2);
     });
   });
+  // task 0040 rule, carried into the reference: an intent deferred above is an in-flight producer
+  const deferredOwnIds = new Set(deferred.flatMap(({ intent }) => intentOwnIds(intent)));
+  const inFlight = (id: string) => deferredOwnIds.has(id) || (options.queueHas?.(id) ?? false);
+  const planOptions: BatchPlanOptions = { ...options, queueHas: inFlight };
   const producers = new Map<string, number>();
   groups.forEach((group, index) => {
     intentOwnIds(group.leader).forEach((id) => {
@@ -158,7 +162,7 @@ const buildBatchPlanOld = (
     const deadSoftIds: string[] = [];
     let defer: DeferReason | null = null;
     const onMissing = (id: string, soft: boolean) => {
-      const cls = classifyMissing(group.leader, id, options);
+      const cls = classifyMissing(group.leader, id, planOptions);
       if (cls === 'member_wait') {
         defer = 'member_wait';
       } else if (cls === 'queued_producer') {
@@ -194,8 +198,8 @@ const buildBatchPlanOld = (
       if (producer !== undefined && producer !== index) {
         edges[index].add(producer);
       } else if (producer === undefined) {
-        const inFlight = options.queueHas?.(id) || group.leader.memberRefIds?.has(id);
-        if (!isAutoCreatedRef(id) || inFlight) onMissing(id, true);
+        const producerInFlight = inFlight(id) || group.leader.memberRefIds?.has(id);
+        if (!isAutoCreatedRef(id) || producerInFlight) onMissing(id, true);
       }
     });
     if (finalIds.length === 0 && deadSoftIds.length > 0) {

@@ -415,3 +415,21 @@ describe('auto-created references with a producer in flight (single wave, 2026-0
     expect(plan.deferred).toEqual([]);
   });
 });
+
+// task 0040 (multi-writer diag 2026-11-12): a relation deferred because another one in the batch
+// targets the same relation (same from, to and type, another input) lands in a later batch. A
+// container declaring it as a member waits for it as for a queued producer: its bounded member
+// wait is not spent, so a busy relation target no longer gets the container's ref stripped dead.
+describe('sequencer batch plan: member deferred behind the same relation target', () => {
+  it('should wait for a member deferred in this batch without spending a member wait attempt', () => {
+    const leader = intentOf({ kind: 'relation', type: 'targets', input: { fromId: 'intrusion-set--conti', toId: 'identity--sector', stix_id: 'relationship--a' }, candidateIds: ['relationship--a', 'intrusion-set--conti', 'identity--sector'], referencedIds: ['intrusion-set--conti', 'identity--sector'] });
+    const twin = intentOf({ kind: 'relation', type: 'targets', input: { fromId: 'intrusion-set--conti', toId: 'identity--sector', stix_id: 'relationship--b' }, candidateIds: ['relationship--b', 'intrusion-set--conti', 'identity--sector'], referencedIds: ['intrusion-set--conti', 'identity--sector'] });
+    const report = intentOf({ kind: 'entity', type: 'Report', input: { name: 'R', objects: ['relationship--b'] }, candidateIds: ['report--r'], referencedIds: ['relationship--b'], memberRefIds: new Set(['relationship--b']) });
+    const resolve = (id: string) => (id === 'intrusion-set--conti' || id === 'identity--sector' ? `int-${id}` : null);
+    const plan = buildBatchPlan([leader, twin, report], resolve, new Set(), { queueHas: () => false, memberWaitLimit: 2 });
+    expect(plan.deferred).toContainEqual({ intent: twin, reason: 'relation' });
+    expect(plan.deferred).toContainEqual({ intent: report, reason: 'queued_producer', waitingOn: ['relationship--b'] });
+    expect(report.memberWaitAttempts ?? 0).toBe(0);
+    expect(plan.strippedDead).toEqual([]);
+  });
+});
