@@ -479,7 +479,7 @@ jobs:
         run: docker load --input /tmp/opencti-builder.tar
 
       - name: Install Syft
-        uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        uses: ./.github/actions/install-syft
 
       # Both builds share the single Yarn installation of the repository root, and each production
       # focus prunes the other workspace: every SBOM is generated right after the build of its workspace.

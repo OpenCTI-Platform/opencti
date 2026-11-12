@@ -76,7 +76,7 @@ FROM base AS app
 RUN <<EOT
   set -euxo pipefail
 
-  curl -L -o /sbin/tini https://github.com/krallin/tini/releases/download/v0.19.0/tini
+  curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 --retry-max-time 300 -o /sbin/tini https://github.com/krallin/tini/releases/download/v0.19.0/tini
   echo "93dcc18adc78c65a028a84799ecf8ad40c936fdfc5f2a57b1acda5a8117fa82c /sbin/tini" | sha256sum -c -
   chmod +x /sbin/tini
 
