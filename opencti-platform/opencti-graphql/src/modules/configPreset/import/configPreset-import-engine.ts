@@ -6,8 +6,6 @@ import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySe
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigImportMode, ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetItemCredentialsInput, ConfigPresetItemServiceAccountInput, ConfigPresetSelectionInput, ResolversTypes } from '../../../generated/graphql';
-import { resolveUserByIdFromCache } from '../../user/user-domain';
-import { BYPASS, isUserHasCapability } from '../../../utils/access';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
 import {
   checkConfigPresetImportAccess,
