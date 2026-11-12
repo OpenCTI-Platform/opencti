@@ -457,7 +457,7 @@ const resolveEntityDefinition = async (
   return { instanceEntity, suppliedStatus, ...await resolveInstanceDefinition(context, user, entitySetting, instanceEntity, suppliedStatus) };
 };
 
-const hasRequestAccess = (entity: BasicStoreEntity): boolean => {
+const hasRequestAccess = (entity: BasicStoreCommon): boolean => {
   const { x_opencti_request_access: rawRequestAccess } = entity as { x_opencti_request_access?: unknown };
   if (typeof rawRequestAccess !== 'string') return false;
   try {
