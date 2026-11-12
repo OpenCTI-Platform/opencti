@@ -17,7 +17,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { CONFIG_IMPORT_UNCHANGED_REASON, configImportReasonValue, configImportValidationReason, freeConfigImportName } from '../configImport/configImport-utils';
 import { addEmailTemplate, fieldPatchEmailTemplate, findEmailTemplatesByName } from './emailTemplate-domain';
-import { type EmailTemplateImportConfiguration, emailTemplateImportSchema } from './emailTemplate-import-schema';
+import { EMAIL_TEMPLATE_NAME_MAX_LENGTH, type EmailTemplateImportConfiguration, emailTemplateImportSchema } from './emailTemplate-import-schema';
 
 // The names the earlier items of the same import (or dry run) take, written or not: the template of a name is imported once per import.
 // An overwrite reserves the name it targets, a copy the name it takes
@@ -69,7 +69,7 @@ export const importEmailTemplate = async (
       }
       return (candidate === data.name ? sameName : await findEmailTemplatesByName(context, user, candidate)).length > 0;
     };
-    const name = await freeConfigImportName(data.name, isTaken);
+    const name = await freeConfigImportName(data.name, isTaken, { maxLength: EMAIL_TEMPLATE_NAME_MAX_LENGTH });
     if (!name) {
       return refused('failed', 'name_conflict', 'Email template name already exists', sameName.length > 0, data);
     }
@@ -82,7 +82,9 @@ export const importEmailTemplate = async (
     return { status: 'created', exists: sameName.length > 0, configuration: data, reason };
   }
   if (reservedNames?.has(data.name)) {
-    return refused('failed', 'duplicate', 'Another email template of the import has this name', true, data);
+    // exists is false: the clash is with an earlier item of the bundle, not with a template of the platform. The preview shows the choice
+    // between overwrite and copy ("When it already exists") only for an item that exists, so this one is refused without a choice, as for exclusion lists
+    return refused('failed', 'duplicate', 'Another email template of the import has this name', false, data);
   }
   if (dryRun) {
     reservedNames?.add(data.name);
