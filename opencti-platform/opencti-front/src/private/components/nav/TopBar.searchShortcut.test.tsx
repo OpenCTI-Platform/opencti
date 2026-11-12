@@ -54,6 +54,6 @@ describe('TopBar search shortcut', () => {
     expect(screen.getByPlaceholderText('Type Ctrl+K to search')).toHaveAttribute('aria-keyshortcuts', 'Control+K');
 
     act(() => writeSearchShortcut(null));
-    expect(screen.getByPlaceholderText('Search')).not.toHaveAttribute('aria-keyshortcuts');
+    expect(screen.getByPlaceholderText('Search the platform...')).not.toHaveAttribute('aria-keyshortcuts');
   });
 });
