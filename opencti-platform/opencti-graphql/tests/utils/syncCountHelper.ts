@@ -19,7 +19,8 @@ testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
 testCreatedCounter['case-rfi'] = 9;
-testCreatedCounter['case-rft'] = 1;
+// 1 created by workflow-test legacy status migration case
+testCreatedCounter['case-rft'] = 2;
 testCreatedCounter.channel = 1;
 testCreatedCounter['course-of-action'] = 4;
 testCreatedCounter.credential = 1;
@@ -124,6 +125,8 @@ testUpdatedCounter.event = 1;
 testUpdatedCounter.persona = 1;
 testUpdatedCounter['ssh-key'] = 1;
 testUpdatedCounter['case-rfi'] = 5;
+// 2 by workflow-test legacy status migration case (legacy status write, then a transition)
+testUpdatedCounter['case-rft'] = 2;
 testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
@@ -154,7 +157,8 @@ testDeletedCounter.campaign = 2;
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;
 testDeletedCounter['case-rfi'] = 9;
-testDeletedCounter['case-rft'] = 1;
+// 1 by workflow-test legacy status migration case
+testDeletedCounter['case-rft'] = 2;
 testDeletedCounter.channel = 1;
 testDeletedCounter['course-of-action'] = 2;
 testDeletedCounter['data-component'] = 2;
