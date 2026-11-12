@@ -16,6 +16,7 @@ import {
   pickConfigPresetTypeItems,
   publishConfigPresetImportAction,
   reloadConfigPresetImportUser,
+  toConfigPresetItemOptions,
 } from './configPreset-import-utils';
 import { computeConfigPresetItem, computeConfigPresetItems, loadConfigPresetImportZip } from './configPreset-import-domain';
 import { readConfigPresetBundle, resolveBundleDependencies } from './configPreset-import-bundle';
@@ -30,7 +31,6 @@ import {
   type ConfigPresetBundle,
   type ConfigPresetBundleItem,
   type ConfigPresetComputedItem,
-  type ConfigPresetImportCredentials,
   type ConfigPresetItemOptions,
   type ConfigPresetImportPlan,
   configPresetPlanKey,
@@ -284,12 +284,7 @@ export const configPresetImport = async (
   itemServiceAccounts: ConfigPresetItemServiceAccountInput[] = [],
 ): Promise<ConfigPresetImportOutput> => {
   checkConfigPresetImportAccess(context, user);
-  const credentials: ConfigPresetImportCredentials = new Map(itemCredentials.map(({ type, key, values }) => [
-    configPresetPlanKey(type, key),
-    Object.fromEntries(values.map((credential) => [credential.key, credential.secret])),
-  ]));
-  const serviceAccounts = new Map(itemServiceAccounts.map(({ type, key, user_id: userId }) => [configPresetPlanKey(type, key), userId]));
-  const itemOptions: ConfigPresetItemOptions = { credentials, serviceAccounts };
+  const itemOptions = toConfigPresetItemOptions(itemCredentials, itemServiceAccounts);
   // A real import goes on if the browser disconnects: its context is detached from the request
   const engineContext: AuthContext = isDryRun ? context : { ...context, requestAbortSignal: undefined };
   const prepare = async () => {

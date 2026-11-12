@@ -4694,6 +4694,7 @@ export type ConfigPresetImportItem = {
   isEnabled?: Maybe<Scalars['Boolean']['output']>;
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
+  serviceAccountRequired: Scalars['Boolean']['output'];
   translatable: Scalars['Boolean']['output'];
 };
 
@@ -18715,9 +18716,11 @@ export type MutationConfigPresetImportUploadArgs = {
 
 
 export type MutationConfigPresetPartialImportArgs = {
+  credentials?: InputMaybe<Array<ConfigPresetItemCredentialsInput>>;
   file: Scalars['Upload']['input'];
   item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
   items: Array<Scalars['ID']['input']>;
+  service_accounts?: InputMaybe<Array<ConfigPresetItemServiceAccountInput>>;
   type: Scalars['ID']['input'];
 };
 
@@ -45490,6 +45493,7 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
   isEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  serviceAccountRequired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 

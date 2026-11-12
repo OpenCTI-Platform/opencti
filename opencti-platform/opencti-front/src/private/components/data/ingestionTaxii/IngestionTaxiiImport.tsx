@@ -1,5 +1,7 @@
 import React, { BaseSyntheticEvent, FunctionComponent, useRef, useState } from 'react';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
+import IngestionFeedImportDialog from '@components/data/IngestionFeedImportDialog';
+import useConfigPresetPartialImportAccess from '@components/settings/config_preset/import/partial/useConfigPresetPartialImportAccess';
 import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -33,11 +35,15 @@ interface IngestionTaxiiImportProps {
   hideTrigger?: boolean;
   // Called when the prefilled creation drawer closes (creation or cancel).
   onClose?: () => void;
+  // Called after feeds are imported from a configuration bundle.
+  onBundleImported?: () => void;
 }
-const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
+const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ paginationOptions, hideTrigger, onClose, onBundleImported }) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
+  const canImportFromBundle = useConfigPresetPartialImportAccess();
+  const [bundleImportOpen, setBundleImportOpen] = useState(false);
   const [open, setOpen] = useState<boolean>(false);
   const [ingestTaxiiData, setIngestTaxiiData] = useState<IngestionTaxiiImportQuery$data['taxiiFeedAddInputFromImport'] | undefined>(undefined);
   const { t_i18n } = useFormatter();
@@ -95,7 +101,7 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
           size="small"
           sx={{ marginLeft: 1 }}
           title={t_i18n('Import a Taxii Feed')}
-          onClick={() => inputFileRef?.current?.click()}
+          onClick={() => (canImportFromBundle ? setBundleImportOpen(true) : inputFileRef?.current?.click())}
         >
           <FileUploadOutlined fontSize="small" color="primary" />
         </ToggleButton>
@@ -106,6 +112,17 @@ const IngestionTaxiiImport: FunctionComponent<IngestionTaxiiImportProps> = ({ pa
         accept="application/JSON"
         onChange={fileImport}
       />
+      {canImportFromBundle && (
+        <IngestionFeedImportDialog
+          open={bundleImportOpen}
+          onClose={() => setBundleImportOpen(false)}
+          title={t_i18n('Import a Taxii Feed')}
+          type="taxiiFeeds"
+          itemsLabel={t_i18n('TAXII feeds')}
+          fileInputRef={inputFileRef}
+          onImported={onBundleImported}
+        />
+      )}
       <IngestionTaxiiCreation
         open={open}
         handleClose={() => {

@@ -76,15 +76,17 @@ const feedImporter = (familyId: string, kind: FeedKind): ConfigPresetImporter =>
         plannedMarkings: plan.plannedMarkings,
         ...itemOptionsOf(plan, item.id),
       };
-      const { feedAdapterOf, importConfigPresetFeed } = await loadFeedImport();
+      const { feedAdapterOf, importConfigPresetFeed, isIngestionGroupMissing } = await loadFeedImport();
       const result = await importConfigPresetFeed(context, user, feedAdapterOf(kind), item.configuration, options);
+      plan.ingestionGroupMissing ??= isIngestionGroupMissing(context, user);
+      const serviceAccountRequired = !plan.ingestionGroupPlanned && await plan.ingestionGroupMissing;
       if (result.status !== 'failed' && result.name) {
         reservedNames.add(result.name);
       }
       if (result.status === 'created' && !result.exists) {
         plan.created.add(configPresetPlanKey(familyId, item.id));
       }
-      return { ...toComputedItem(label, result), credentials: result.credentials };
+      return { ...toComputedItem(label, result), credentials: result.credentials, serviceAccountRequired };
     },
     apply: async (context, user, item, computed, mode, plan) => {
       const { feedAdapterOf, importConfigPresetFeed } = await loadFeedImport();

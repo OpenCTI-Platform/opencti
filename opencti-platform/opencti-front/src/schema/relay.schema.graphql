@@ -2311,6 +2311,7 @@ type ConfigPresetImportItem {
   isEnabled: Boolean
   key: String!
   label: String!
+  serviceAccountRequired: Boolean!
   translatable: Boolean!
 }
 
@@ -9328,7 +9329,7 @@ type Mutation {
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
   configPresetImportSessionSave(file_id: ID!, revision: Int!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportSession!
   configPresetImportUpload(file: Upload!): File!
-  configPresetPartialImport(file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, type: ID!): ConfigPresetPartialImportOutput!
+  configPresetPartialImport(credentials: [ConfigPresetItemCredentialsInput!], file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, service_accounts: [ConfigPresetItemServiceAccountInput!], type: ID!): ConfigPresetPartialImportOutput!
   configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview!
   connectorJWT: String!
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!

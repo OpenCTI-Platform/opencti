@@ -23,7 +23,7 @@ const ingestionRssResolvers: Resolvers = {
   Query: {
     ingestionRss: (_, { id }, context) => findById(context, context.user, id),
     ingestionRsss: (_, args, context) => findRssIngestionPaginated(context, context.user, args),
-    ingestionRssAddInputFromImport: (_, { file }) => rssFeedAddInputFromImport(file),
+    ingestionRssAddInputFromImport: (_, { file }, context) => rssFeedAddInputFromImport(context, file),
     ingestionRssLogs: async (_: unknown, { id }: { id: string }, context) => {
       await findById(context, context.user, id);
       return findIngestionLogsForFeed(id);

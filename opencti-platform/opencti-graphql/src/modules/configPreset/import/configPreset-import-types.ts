@@ -58,6 +58,8 @@ export interface ConfigPresetComputedItem {
   // A setting that is on or off: whether the bundle turns it on, shown under its label; null when the bundle does not set it
   isEnabled?: boolean | null;
   credentials?: ConfigPresetImportCredential[];
+  // Created, the item writes with a service account to choose: the platform has no default group for the service accounts
+  serviceAccountRequired?: boolean;
 }
 
 export interface ConfigPresetImportCredential {
@@ -101,6 +103,8 @@ export interface ConfigPresetImportPlan {
   // The feed names the earlier items of an import take, by family
   ingestionFeedNames?: Map<string, Set<string>>;
   ingestionGroupPlanned?: boolean;
+  // Whether the platform has no default group for the service accounts, read once per import
+  ingestionGroupMissing?: Promise<boolean>;
   credentials?: ConfigPresetImportCredentials;
   serviceAccounts?: Map<string, string>;
 }

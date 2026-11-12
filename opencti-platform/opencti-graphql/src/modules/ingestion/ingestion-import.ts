@@ -70,6 +70,9 @@ export type FeedImportResult = ConfigImportResult<FeedImportConfiguration, FeedI
 
 export const AMBIGUOUS_FEED_REASON = 'Several feeds have this name: import it as a copy';
 
+// Without a default group for the service accounts, a feed created writes with a service account the user chooses
+export const isIngestionGroupMissing = async (context: AuthContext, user: AuthUser) => (await findDefaultIngestionGroups(context, user)).length === 0;
+
 interface WriteContext {
   dryRun: boolean;
   markingIds: string[];
@@ -424,52 +427,53 @@ export const importConfigPresetFeed = async <C extends FeedImportConfiguration, 
     return refused('invalid', configImportValidationReason(parsed.error), false);
   }
   const bundleFeed = parsed.data;
-  // The credentials of a copy: a refusal still tells them, so that the preview can ask for them when another mode is chosen
-  const copyCredentials = feedCredentials(bundleFeed);
   const feeds = await adapter.list(context, user);
   const sameName = feeds.filter(({ name }) => name === bundleFeed.name);
   const exists = sameName.length > 0;
+  // The credentials told back, whatever the mode and even on a refusal: stored is what the feed an overwrite targets holds,
+  // so that the preview knows what each mode needs (a copy never keeps a stored one)
+  const shownCredentials = feedCredentials(bundleFeed, sameName.length === 1 ? sameName[0] : undefined);
   try {
     verifyIngestionUri(bundleFeed.uri);
   } catch (error) {
-    return refused('invalid', error instanceof Error ? error.message : String(error), exists, bundleFeed, copyCredentials);
+    return refused('invalid', error instanceof Error ? error.message : String(error), exists, bundleFeed, shownCredentials);
   }
   if (exists && mode === ConfigImportMode.Add) {
-    return refused('exists', 'Feed already exists', true, bundleFeed, copyCredentials);
+    return refused('exists', 'Feed already exists', true, bundleFeed, shownCredentials);
   }
   const isCopy = mode === ConfigImportMode.Copy;
   if (!isCopy && (sameName.length > 1 || reservedNames?.has(bundleFeed.name))) {
-    return refused('ambiguous', AMBIGUOUS_FEED_REASON, exists, bundleFeed, copyCredentials);
+    return refused('ambiguous', AMBIGUOUS_FEED_REASON, exists, bundleFeed, shownCredentials);
   }
   const target = isCopy ? undefined : sameName[0];
   const isNameTaken = async (candidate: string) => !!reservedNames?.has(candidate) || feeds.some(({ name }) => name === candidate);
   const name = isCopy ? await freeConfigImportName(bundleFeed.name, isNameTaken) : bundleFeed.name;
   if (!name) {
-    return refused('name_conflict', 'Feed name already exists', exists, bundleFeed, copyCredentials);
+    return refused('name_conflict', 'Feed name already exists', exists, bundleFeed, shownCredentials);
   }
   const { markingIds, missing } = await resolveMarkings(context, user, 'markings' in bundleFeed ? bundleFeed.markings : [], plannedMarkings);
   if (missing.length > 0) {
-    return refused('markings_not_found', `Markings not found: ${configImportReasonValue(missing.join(', '))}`, exists, bundleFeed, feedCredentials(bundleFeed, target));
+    return refused('markings_not_found', `Markings not found: ${configImportReasonValue(missing.join(', '))}`, exists, bundleFeed, shownCredentials);
   }
   const feedCredentialsList = feedCredentials(bundleFeed, target);
   const given = Object.fromEntries(Object.entries(credentials).filter(([key, value]) => value !== '' && feedCredentialsList.some((credential) => credential.key === key)));
   const missingCredentials = feedCredentialsList.filter(({ key, required, stored }) => required && !stored && !given[key]);
   if (missingCredentials.length > 0) {
-    return refused('credentials_required', `Configuration to provide: ${missingCredentials.map(({ key }) => key).join(', ')}`, exists, bundleFeed, feedCredentialsList);
+    return refused('credentials_required', `Configuration to provide: ${missingCredentials.map(({ key }) => key).join(', ')}`, exists, bundleFeed, shownCredentials);
   }
   const authenticationValue = await authenticationValueOf(bundleFeed, feedCredentialsList, given, target);
   if (authenticationValue !== undefined) {
     try {
       verifyIngestionAuthenticationContent(authenticationTypeOf(bundleFeed), authenticationValue);
     } catch (error) {
-      return refused('invalid', error instanceof Error ? error.message : String(error), exists, bundleFeed, feedCredentialsList);
+      return refused('invalid', error instanceof Error ? error.message : String(error), exists, bundleFeed, shownCredentials);
     }
   }
   if (!target && serviceAccountId && !(await storeLoadById(context, user, serviceAccountId, ENTITY_TYPE_USER))) {
-    return refused('service_account_missing', 'Service account not found', exists, bundleFeed, feedCredentialsList);
+    return refused('service_account_missing', 'Service account not found', exists, bundleFeed, shownCredentials);
   }
-  if (!target && !serviceAccountId && !ingestionGroupPlanned && (await findDefaultIngestionGroups(context, user)).length === 0) {
-    return refused('no_ingestion_group', NO_INGESTION_GROUP_REASON, exists, bundleFeed, feedCredentialsList);
+  if (!target && !serviceAccountId && !ingestionGroupPlanned && await isIngestionGroupMissing(context, user)) {
+    return refused('no_ingestion_group', NO_INGESTION_GROUP_REASON, exists, bundleFeed, shownCredentials);
   }
   const { confidence_level: confidence } = bundleFeed;
   const feedUser = target?.user_id && confidence !== null && confidence !== undefined
@@ -478,7 +482,7 @@ export const importConfigPresetFeed = async <C extends FeedImportConfiguration, 
   const confidenceReason = feedUser && feedUser.user_confidence_level?.max_confidence !== confidence ? CONFIDENCE_NOT_CHANGED_REASON : undefined;
   if (target && Object.keys(given).length === 0 && sameConfiguration(await adapter.exportFeed(context, user, target), bundleFeed)) {
     const reason = joinConfigImportReasons([CONFIG_IMPORT_UNCHANGED_REASON, confidenceReason]);
-    return { status: 'skipped', code: 'unchanged', reason, exists: true, name, configuration: bundleFeed, credentials: feedCredentialsList };
+    return { status: 'skipped', code: 'unchanged', reason, exists: true, name, configuration: bundleFeed, credentials: shownCredentials };
   }
   const targetHeaders = target && 'headers' in target ? target.headers ?? [] : [];
   const headerValues = Object.fromEntries(('headers' in bundleFeed ? bundleFeed.headers : [])
@@ -491,10 +495,10 @@ export const importConfigPresetFeed = async <C extends FeedImportConfiguration, 
   const write: WriteContext = { dryRun, markingIds, authenticationValue, headerValues, queryDefaults, plannedMarkings };
   const { fields: specificFields, reasons, missingMarkings = [], rollback } = await adapter.fields(context, user, bundleFeed, write, target);
   if (missingMarkings.length > 0) {
-    return refused('markings_not_found', `Markings not found: ${configImportReasonValue(missingMarkings.join(', '))}`, exists, bundleFeed, feedCredentialsList);
+    return refused('markings_not_found', `Markings not found: ${configImportReasonValue(missingMarkings.join(', '))}`, exists, bundleFeed, shownCredentials);
   }
   const reason = joinConfigImportReasons([name !== bundleFeed.name ? `Added as "${name}"` : undefined, confidenceReason, ...reasons]);
-  const result: FeedImportResult = { status: target ? 'overwritten' : 'created', exists, name, configuration: bundleFeed, reason, credentials: feedCredentialsList };
+  const result: FeedImportResult = { status: target ? 'overwritten' : 'created', exists, name, configuration: bundleFeed, reason, credentials: shownCredentials };
   if (dryRun) {
     return result;
   }

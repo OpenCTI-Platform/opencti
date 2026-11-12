@@ -16,9 +16,10 @@ export interface BuiltInIntegrationCardProps {
   definition: BuiltInIntegrationDefinition;
   deploymentCount: number;
   onClickCreate: () => void;
+  onImported?: () => void;
 }
 
-const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: BuiltInIntegrationCardProps) => {
+const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate, onImported }: BuiltInIntegrationCardProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const Icon = definition.icon;
@@ -152,7 +153,7 @@ const BuiltInIntegrationCard = ({ definition, deploymentCount, onClickCreate }: 
             >
               {isImportableBuiltInKind(definition.kind) && (
                 <>
-                  <BuiltInIntegrationImport kind={definition.kind} />
+                  <BuiltInIntegrationImport kind={definition.kind} onBundleImported={onImported} />
                   <BuiltInIntegrationHubButton kind={definition.kind} />
                 </>
               )}

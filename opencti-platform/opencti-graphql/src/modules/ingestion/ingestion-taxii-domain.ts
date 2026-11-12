@@ -216,7 +216,8 @@ export const taxiiFeedAddInputFromImport = async (file: Promise<FileHandle>) => 
     );
   }
 
-  return parsedData.configuration;
+  // The description is optional in a bundle feed (null), and required by the creation form
+  return { ...parsedData.configuration, description: parsedData.configuration.description ?? '' };
 };
 
 export const taxiiFeedExport = async (ingestionTaxii: BasicStoreEntityIngestionTaxii) => {

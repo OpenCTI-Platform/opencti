@@ -11,7 +11,14 @@ import type { ConfigImportMode } from '../../configImport/configImport-types';
 import { resolveUserByIdFromCache } from '../../user/user-domain';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
-import { CONFIG_PRESET_DEFAULT_IMPORT_MODE, type ConfigPresetBundle, type ConfigPresetBundleItem, configPresetPlanKey } from './configPreset-import-types';
+import type { ConfigPresetItemCredentialsInput, ConfigPresetItemServiceAccountInput } from '../../../generated/graphql';
+import {
+  CONFIG_PRESET_DEFAULT_IMPORT_MODE,
+  type ConfigPresetBundle,
+  type ConfigPresetBundleItem,
+  type ConfigPresetItemOptions,
+  configPresetPlanKey,
+} from './configPreset-import-types';
 
 // The family of a type of a selection: the type sent by the frontend is not trusted
 export const findConfigPresetFamily = (type: string): ConfigPresetFamilyDefinition => {
@@ -68,6 +75,18 @@ export const pickConfigPresetTypeItems = (
 export const configPresetImportModes = (selections: { type: string; item_modes?: { key: string; mode: ConfigImportMode }[] | null }[]) => {
   return new Map(selections.flatMap(({ type, item_modes: itemModes }) => (itemModes ?? []).map(({ key, mode }) => [configPresetPlanKey(type, key), mode] as const)));
 };
+
+// The credentials and the service accounts given by the user, by `<type>/<bundle id>`: held for the import only, never stored
+export const toConfigPresetItemOptions = (
+  itemCredentials: ConfigPresetItemCredentialsInput[],
+  itemServiceAccounts: ConfigPresetItemServiceAccountInput[],
+): ConfigPresetItemOptions => ({
+  credentials: new Map(itemCredentials.map(({ type, key, values }) => [
+    configPresetPlanKey(type, key),
+    Object.fromEntries(values.map((credential) => [credential.key, credential.secret])),
+  ])),
+  serviceAccounts: new Map(itemServiceAccounts.map(({ type, key, user_id: userId }) => [configPresetPlanKey(type, key), userId])),
+});
 
 // The mode of an item, the default one when it has none: OVERWRITE for the wizard, COPY for a partial import of a type that offers it
 export const configPresetImportMode = (modes: Map<string, ConfigImportMode>, type: string, id: string, defaultMode: ConfigImportMode = CONFIG_PRESET_DEFAULT_IMPORT_MODE) => {

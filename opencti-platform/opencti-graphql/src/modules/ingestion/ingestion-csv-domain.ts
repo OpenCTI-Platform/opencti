@@ -35,6 +35,7 @@ import {
   verifyIngestionUri,
   FEED_REQUEST_TIMEOUT,
 } from './ingestion-common';
+import { isConfigPresetFeedFile, resolveFeedFileMarkings } from './ingestion-file-import';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -357,10 +358,18 @@ export const csvFeedAddInputFromImport = async (context: AuthContext, user: Auth
     );
   }
 
-  const csvMapperResolved: CsvMapperResolved = await transformCsvMapperConfig(parsedData.configuration.csv_mapper.configuration, context, user);
+  const configuration = isConfigPresetFeedFile(parsedData, 'csvFeeds') ? {
+    ...parsedData.configuration,
+    description: parsedData.configuration.description ?? '',
+    authentication_value: '',
+    markings: (await resolveFeedFileMarkings(context, parsedData.configuration.markings)).map(({ internal_id }) => internal_id),
+    csv_mapper_type: 'inline',
+    csv_mapper: { configuration: parsedData.configuration.csv_mapper },
+  } : parsedData.configuration;
+  const csvMapperResolved: CsvMapperResolved = await transformCsvMapperConfig(configuration.csv_mapper.configuration, context, user);
   return {
     markings: [], // On some config, marking is missing
-    ...parsedData.configuration,
+    ...configuration,
     csvMapper: regenerateCsvMapperUUID(csvMapperResolved),
   };
 };
