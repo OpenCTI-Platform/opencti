@@ -118,6 +118,7 @@ const ResetPassword = ({ policies = {} }: ResetPasswordProps) => {
     setValue('changePasswordErrorCode', undefined);
     setValue('validateOtpInError', undefined);
     setValue('mfaInError', undefined);
+    setValue('mfaLockMessage', undefined);
     // Change step
     setValue('resetPwdStep', step);
   };

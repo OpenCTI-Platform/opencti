@@ -11,6 +11,7 @@ const AlertMfa = ({ forceDisplay = false }: AlertMfaProps) => {
   const { t_i18n } = useFormatter();
   const {
     mfaInError,
+    mfaLockMessage,
     resetPwdStep,
   } = useLoginContext();
 
@@ -19,9 +20,10 @@ const AlertMfa = ({ forceDisplay = false }: AlertMfaProps) => {
   }
 
   const alertSeverity = mfaInError ? 'error' : 'info';
-  const alertMessage = mfaInError
-    ? t_i18n('The code is not correct.')
-    : t_i18n('You need to validate your two-factor authentication. Please type the code generated in your application');
+  let alertMessage = t_i18n('You need to validate your two-factor authentication. Please type the code generated in your application');
+  if (mfaInError) {
+    alertMessage = mfaLockMessage ?? t_i18n('The code is not correct.');
+  }
 
   return (
     <LoginAlert severity={alertSeverity}>

@@ -31,3 +31,9 @@ export const localAuthLockMessage = (t_i18n: Translate, error?: LocalAuthLockErr
   }
   return undefined;
 };
+
+// The same, for a refused mutation: reads its first error
+export const relayLocalAuthLockMessage = (t_i18n: Translate, error: unknown): string | undefined => {
+  const firstError = (error as { res?: { errors?: LocalAuthLockError[] } } | undefined)?.res?.errors?.[0];
+  return localAuthLockMessage(t_i18n, firstError);
+};
