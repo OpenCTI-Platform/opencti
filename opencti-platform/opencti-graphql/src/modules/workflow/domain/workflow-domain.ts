@@ -74,7 +74,7 @@ import {
   tryConvertRequestAccessGroup,
   type WorkflowMigrationConversionResult,
 } from '../migration/status-to-definition-converter';
-import { applyRequestAccessOutcome, assertCanEnterRequestAccessOutcome, findStateOutcome, mirrorRequestAccessStatus, type RequestAccessOutcome } from './workflow-request-access';
+import { assertCanEnterRequestAccessOutcome, findStateOutcome, mirrorRequestAccessStatus, recordRequestAccessDecision, type RequestAccessOutcome } from './workflow-request-access';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -2610,25 +2610,6 @@ export const setWorkflowStatus = async (
   return result.success ? { ...result, instance: await getWorkflowInstance(context, user, entityId) } : result;
 };
 
-// The RFI is in its outcome state but its request still reads NEW: flag the instance so the gap is visible
-// for an admin.
-const recordRequestAccessDecision = async (
-  context: AuthContext,
-  user: AuthUser,
-  rfi: BasicStoreEntityCaseRfi,
-  outcome: RequestAccessOutcome,
-  instanceId: string,
-): Promise<void> => {
-  if (await applyRequestAccessOutcome(context, user, rfi, outcome)) return;
-  try {
-    await updateAttribute(context, WORKFLOW_MANAGER_USER, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
-      { key: 'pendingError', value: [`The ${outcome === 'APPROVED' ? 'approval' : 'decline'} could not be recorded on the request: its status still reads NEW and the applicant was not notified`] },
-    ]);
-  } catch (error) {
-    logApp.error('[OPENCTI-MODULE][Request access] Failed to flag the unrecorded request decision', { cause: error, instanceId });
-  }
-};
-
 /**
  * Initialize the workflow instance for a newly created entity and fire the
  * onEnter hooks of the initial state. No-op if no workflow is configured for
@@ -2858,6 +2839,32 @@ export const assertExternalStatusWriteAllowed = async (
 };
 
 /**
+ * Refuses a write of x_opencti_request_access made outside the workflow engine on a Case-Rfi whose request is,
+ * or would become, decided on the request access workflow: the request record is owned by the workflow, which
+ * alone decides it with its share, audit, count and notification. The state after the write is checked too,
+ * so a record cannot be added to a plain RFI on a request access status. Requests on the legacy flow keep
+ * their legacy writes. Runs before the write is saved.
+ */
+export const assertExternalRequestAccessWriteAllowed = async (
+  context: AuthContext,
+  entity: BasicStoreEntity,
+  newRequestAccessValues: (string | null)[],
+  newStatusId: string | null | undefined,
+): Promise<void> => {
+  if (entity.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI) return;
+  const { x_opencti_request_access: currentRequestAccess } = entity as { x_opencti_request_access?: string };
+  if (newRequestAccessValues.every((value) => value === (currentRequestAccess ?? null))) return;
+  const entityAfterWrite = {
+    ...entity,
+    x_opencti_request_access: newRequestAccessValues.at(-1) ?? undefined,
+    ...(newStatusId !== undefined ? { x_opencti_workflow_id: newStatusId ?? undefined } : {}),
+  } as BasicStoreEntity;
+  if (await resolveRequestAccessWorkflowState(context, entity) || await resolveRequestAccessWorkflowState(context, entityAfterWrite)) {
+    throw FunctionalError('Request access can only be changed through the workflow', { id: entity.internal_id });
+  }
+};
+
+/**
  * True when `statusId` is the Approved / Declined status of the request access workflow of a Case-Rfi:
  * a state only a transition or a bypass may reach.
  */
@@ -2981,12 +2988,15 @@ export const isStatusUsedInWorkflow = async (
   user: AuthUser,
   status: BasicWorkflowStatus,
 ): Promise<boolean> => {
-  if (status.scope === StatusScope.RequestAccess) {
-    return isStatusReferencedByRequestAccessWorkflow(context, user, status.id);
+  const scope = status.scope === StatusScope.RequestAccess ? StatusScope.RequestAccess : StatusScope.Global;
+  // The legacy request access settings still name their Approved / Declined statuses.
+  if (scope === StatusScope.RequestAccess && await isStatusReferencedByRequestAccessWorkflow(context, user, status.id)) {
+    return true;
   }
 
   const entitySetting = await getWorkflowConfig(context, user, status.type);
-  if (!entitySetting?.workflow_id) {
+  const definitionId = resolveScopedDefinitionId(entitySetting, scope);
+  if (!definitionId) {
     return false;
   }
 
@@ -2995,7 +3005,7 @@ export const isStatusUsedInWorkflow = async (
   const workflowDefinitionEntity = await storeLoadById(
     executionContext,
     executionUser,
-    entitySetting.workflow_id,
+    definitionId,
     ENTITY_TYPE_WORKFLOW_DEFINITION,
   ) as WorkflowDefinitionEntity | undefined;
   if (!workflowDefinitionEntity) {

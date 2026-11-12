@@ -8,11 +8,11 @@ import { publishUserAction } from '../../../listener/UserActionListener';
 import { addRequestAccessApprovedCount, addRequestAccessDeclinedCount } from '../../../manager/telemetryManager';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { SYSTEM_USER } from '../../../utils/access';
+import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../utils/access';
 import { type BasicStoreEntityCaseRfi, ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
 import type { BasicStoreEntityEntitySetting } from '../../entitySetting/entitySetting-types';
 import type { RequestAccessAction } from '../../requestAccess/requestAccess-domain';
-import type { TriggerResult } from '../types/workflow-types';
+import { ENTITY_TYPE_WORKFLOW_INSTANCE, type TriggerResult } from '../types/workflow-types';
 import {
   getAllowedTransitions,
   getDefinitionData,
@@ -153,6 +153,25 @@ export const applyRequestAccessOutcome = async (
     logApp.error('[OPENCTI-MODULE][Request access] Failed to notify the applicant of the request decision', { cause: error, id: rfiId, outcome });
   }
   return true;
+};
+
+// The RFI is in its outcome state but its request still reads NEW: flag the instance so the gap is visible
+// for an admin.
+export const recordRequestAccessDecision = async (
+  context: AuthContext,
+  user: AuthUser,
+  rfi: BasicStoreEntityCaseRfi,
+  outcome: RequestAccessOutcome,
+  instanceId: string,
+): Promise<void> => {
+  if (await applyRequestAccessOutcome(context, user, rfi, outcome)) return;
+  try {
+    await updateAttribute(context, WORKFLOW_MANAGER_USER, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+      { key: 'pendingError', value: [`The ${outcome === 'APPROVED' ? 'approval' : 'decline'} could not be recorded on the request: its status still reads NEW and the applicant was not notified`] },
+    ]);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE][Request access] Failed to flag the unrecorded request decision', { cause: error, instanceId });
+  }
 };
 
 /**

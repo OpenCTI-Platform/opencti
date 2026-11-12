@@ -1191,6 +1191,60 @@ describe('Workflow Domain', () => {
       expect(result).toBe(false);
     });
 
+    it('should return true for a RequestAccess status mapped by a state of the request access definition', async () => {
+      (fullEntitiesList as any).mockResolvedValue([]);
+      (findByType as any).mockResolvedValue({
+        id: 'entity-setting-id',
+        workflow_id: 'global-workflow-id',
+        request_access_workflow: { workflow_definition_id: 'request-access-workflow-id' },
+      });
+      (storeLoadById as any).mockResolvedValue({
+        draft_version: {
+          id: 'version-1',
+          timestamp: '2024-01-01T00:00:00Z',
+          createdBy: 'user-1',
+          content: '{"states":[{"statusId":"status-template-id"}]}',
+          validation_errors: [],
+        },
+      });
+
+      const result = await isStatusUsedInWorkflow(mockContext, mockUser, {
+        id: 'status-id',
+        type: 'Case-Rfi',
+        scope: StatusScope.RequestAccess,
+        template_id: 'status-template-id',
+      } as any);
+
+      expect(result).toBe(true);
+      expect(storeLoadById).toHaveBeenCalledWith(mockContext, mockUser, 'request-access-workflow-id', 'WorkflowDefinition');
+    });
+
+    it('should return false for a RequestAccess status the request access definition does not map', async () => {
+      (fullEntitiesList as any).mockResolvedValue([]);
+      (findByType as any).mockResolvedValue({
+        id: 'entity-setting-id',
+        request_access_workflow: { workflow_definition_id: 'request-access-workflow-id' },
+      });
+      (storeLoadById as any).mockResolvedValue({
+        published_version: {
+          id: 'version-1',
+          timestamp: '2024-01-01T00:00:00Z',
+          createdBy: 'user-1',
+          content: '{"states":[{"statusId":"another-template-id"}]}',
+          validation_errors: [],
+        },
+      });
+
+      const result = await isStatusUsedInWorkflow(mockContext, mockUser, {
+        id: 'status-id',
+        type: 'Case-Rfi',
+        scope: StatusScope.RequestAccess,
+        template_id: 'status-template-id',
+      } as any);
+
+      expect(result).toBe(false);
+    });
+
     it('should return false for a Global status when its entity type has no workflow configured', async () => {
       (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: null });
 

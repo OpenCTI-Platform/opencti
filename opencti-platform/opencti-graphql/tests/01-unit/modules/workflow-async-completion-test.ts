@@ -7,6 +7,8 @@ import { storeLoadById } from '../../../src/database/middleware-loader';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
 import { createListTask } from '../../../src/domain/backgroundTask-common';
 import { lockResources } from '../../../src/lock/master-lock';
+import { recordRequestAccessDecision } from '../../../src/modules/workflow/domain/workflow-request-access';
+import { resolveUserById } from '../../../src/modules/user/user-domain';
 
 vi.mock('../../../src/domain/backgroundTask-common', () => ({ createListTask: vi.fn() }));
 vi.mock('../../../src/utils/access', () => ({ WORKFLOW_MANAGER_USER: { id: 'workflow-manager' } }));
@@ -32,6 +34,13 @@ vi.mock('../../../src/config/conf', () => ({
 vi.mock('../../../src/modules/workflow/registry/workflow-actions', () => ({
   ActionRegistry: {},
 }));
+
+vi.mock('../../../src/modules/workflow/domain/workflow-request-access', () => ({
+  recordRequestAccessDecision: vi.fn(),
+  mirrorRequestAccessStatus: vi.fn(),
+}));
+
+vi.mock('../../../src/modules/user/user-domain', () => ({ resolveUserById: vi.fn() }));
 
 vi.mock('../../../src/modules/workflow/domain/workflow-projection', () => ({
   projectWorkflowState: vi.fn(),
@@ -751,6 +760,27 @@ describe('reportWorkflowAsyncActionResult', () => {
   // ---------------------------------------------------------------------------
   // Status projection wiring — keeps x_opencti_workflow_id in sync on completion
   // ---------------------------------------------------------------------------
+
+  it('records the request access decision as the decider, so a failed record flags the instance', async () => {
+    const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Case-Rfi' };
+    const instance = makeInstance({ pendingTransition: JSON.stringify(makePendingTransition({ requestAccessOutcome: 'APPROVED', triggeredBy: 'decider-id' })) });
+    (storeLoadById as any)
+      .mockResolvedValueOnce(instance)
+      .mockResolvedValueOnce(instance)
+      .mockResolvedValueOnce(fullEntity);
+    (updateAttribute as any).mockResolvedValue({});
+    vi.mocked(resolveUserById).mockResolvedValue({ id: 'decider-id' } as any);
+
+    await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+    expect(recordRequestAccessDecision).toHaveBeenCalledWith(
+      expect.objectContaining({ user: expect.objectContaining({ id: 'decider-id' }) }),
+      expect.objectContaining({ id: 'decider-id' }),
+      fullEntity,
+      'APPROVED',
+      'instance-id',
+    );
+  });
 
   describe('status projection on completion', () => {
     it('projects the completed state onto the full entity after the instance is updated', async () => {

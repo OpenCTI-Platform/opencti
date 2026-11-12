@@ -301,8 +301,9 @@ const completeWorkflowAsyncActionResult = async (
   }
 
   if (pendingTransition.requestAccessOutcome && requestAccessDecider && fullEntity) {
-    const { applyRequestAccessOutcome } = await import('./workflow-request-access');
-    await applyRequestAccessOutcome(actionContext, requestAccessDecider, fullEntity, pendingTransition.requestAccessOutcome);
+    // Flags the instance when the decision cannot be recorded, as the synchronous path does
+    const { recordRequestAccessDecision } = await import('./workflow-request-access');
+    await recordRequestAccessDecision(actionContext, requestAccessDecider, fullEntity, pendingTransition.requestAccessOutcome, workflowInstanceId);
   } else if (pendingTransition.requestAccessStatus && fullEntity) {
     const { mirrorRequestAccessStatus } = await import('./workflow-request-access');
     await mirrorRequestAccessStatus(executionContext, executionUser, instanceEntity.entity_id, pendingTransition.requestAccessStatus);

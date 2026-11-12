@@ -23,7 +23,7 @@ import {
   type RequestAccessAction,
 } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
-import { createStatusTemplate, findTemplatePaginated, statusTemplateDelete } from '../../../src/domain/status';
+import { createStatusTemplate, findTemplatePaginated, statusDelete, statusTemplateDelete } from '../../../src/domain/status';
 import { FilterMode, OrderingMode, type RequestAccessConfigureInput, RequestAccessType, type StatusAddInput, StatusOrdering, StatusScope } from '../../../src/generated/graphql';
 import { logApp } from '../../../src/config/conf';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
@@ -1175,6 +1175,47 @@ describe('Request access decided through workflow transitions', async () => {
 
       expect((await loadDecision(rfiId))).toMatchObject({ statusId: declinedStatusId, action: { status: ActionStatus.DECLINED } });
       expect((await findInstance(rfiId))?.currentState).toBe(templateIds.declined);
+    });
+
+    it('fieldPatch that lists the current status before the Approved one is rejected', async () => {
+      const rfiId = await requestAccess();
+
+      const patchResult = await queryAsAdmin({
+        query: STATUS_FIELD_PATCH_QUERY,
+        variables: {
+          id: rfiId,
+          input: [
+            { key: 'x_opencti_workflow_id', value: [await statusIdOf(templateIds.pending)] },
+            { key: 'x_opencti_workflow_id', value: [await statusIdOf(templateIds.approved)] },
+          ],
+        },
+      });
+
+      expect(patchResult.errors?.[0].message).toBe(outcomeRejection);
+      expect((await loadDecision(rfiId))).toMatchObject({ statusId: await statusIdOf(templateIds.pending), action: { status: ActionStatus.NEW } });
+      expect(share).not.toHaveBeenCalled();
+    });
+
+    it('fieldPatch of the request of a workflow-driven RFI is rejected', async () => {
+      const rfiId = await requestAccess();
+      const { action } = await loadDecision(rfiId);
+
+      const patchResult = await queryAsAdmin({
+        query: STATUS_FIELD_PATCH_QUERY,
+        variables: { id: rfiId, input: [{ key: 'x_opencti_request_access', value: [JSON.stringify({ ...action, status: ActionStatus.APPROVED })] }] },
+      });
+
+      expect(patchResult.errors?.[0].message).toBe('Request access can only be changed through the workflow');
+      expect((await loadDecision(rfiId))).toMatchObject({ action: { status: ActionStatus.NEW } });
+    });
+
+    it('a status mapped by the request access workflow cannot be deleted', async () => {
+      const escalatedStatusId = await statusIdOf(templateIds.escalated);
+
+      await expect(statusDelete(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, escalatedStatusId))
+        .rejects.toThrow('Cannot delete a status that is used in a published or draft workflow');
+
+      expect(await storeLoadById(testContext, ADMIN_USER, escalatedStatusId, ENTITY_TYPE_STATUS)).toBeDefined();
     });
   });
 

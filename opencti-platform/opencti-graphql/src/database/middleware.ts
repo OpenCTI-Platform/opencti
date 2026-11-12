@@ -29,6 +29,7 @@ import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from 
 import {
   assertExternalStatusCreateAllowed,
   isRequestAccessOutcomeStatus,
+  assertExternalRequestAccessWriteAllowed,
   assertExternalStatusWriteAllowed,
   cleanupEntityWorkflow,
   initializeEntityWorkflow,
@@ -3126,10 +3127,23 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   if (!opts.workflowInternalWrite && !isBypassUser(user) && updates.some((e) => e.key === X_CLOSING_REASON)) {
     throw FunctionalError('Closing reason can only be changed through a workflow transition', { id: initial.internal_id });
   }
-  const workflowStatusInput = updates.find((input) => input.key === X_WORKFLOW_ID);
-  if (workflowStatusInput && !opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
-    const newStatusId = workflowStatusInput.operation === EditOperation.Remove ? null : (workflowStatusInput.value?.[0] ?? null);
-    await assertExternalStatusWriteAllowed(context, user, initial as BasicStoreBase, newStatusId);
+  if (!opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    // A patch can carry several inputs for one key and the last one wins: every status input is checked
+    const statusIdOfInput = (input: EditInput) => (input.operation === EditOperation.Remove ? null : (input.value?.[0] ?? null));
+    const workflowStatusInputs = updates.filter((input) => input.key === X_WORKFLOW_ID);
+    for (let index = 0; index < workflowStatusInputs.length; index += 1) {
+      await assertExternalStatusWriteAllowed(context, user, initial as BasicStoreBase, statusIdOfInput(workflowStatusInputs[index]));
+    }
+    const requestAccessInputs = updates.filter((input) => input.key === 'x_opencti_request_access');
+    if (requestAccessInputs.length > 0) {
+      const lastStatusInput = workflowStatusInputs.at(-1);
+      await assertExternalRequestAccessWriteAllowed(
+        context,
+        initial as BasicStoreEntity,
+        requestAccessInputs.map((input) => (input.operation === EditOperation.Remove ? null : (input.value?.[0] ?? null))),
+        lastStatusInput ? statusIdOfInput(lastStatusInput) : undefined,
+      );
+    }
   }
 
   await rewriteEmbeddedDataUriImagesInUpdateInputs(context, user, updates, {

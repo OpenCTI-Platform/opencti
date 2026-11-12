@@ -6,8 +6,10 @@ import { z } from 'zod';
 import { editAuthorizedMembers } from '../../../utils/authorizedMembers';
 import type { MemberAccessInput } from '../../../generated/graphql';
 import { isInternalUser, KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../utils/access';
-import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
-import { addOrganizationRestriction } from '../../../domain/stix';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_PARTICIPANT } from '../../../schema/stixRefRelationship';
+import { addOrganizationRestriction, removeOrganizationRestriction } from '../../../domain/stix';
+import { buildRefRelationKey } from '../../../schema/general';
+import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
 import { internalLoadById } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
 import { UnsupportedError } from '../../../config/errors';
@@ -117,7 +119,7 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     if (entity?.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI || !entity.x_opencti_request_access) {
       throw UnsupportedError('shareRequestedEntities is only available on request access RFIs', { id: entity?.id });
     }
-    let requestAccess: { entities?: unknown } | undefined;
+    let requestAccess: { entities?: unknown; members?: unknown } | undefined;
     try {
       requestAccess = JSON.parse(entity.x_opencti_request_access);
     } catch {
@@ -128,14 +130,23 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     }
     const requestedEntityIds = requestAccess.entities as string[];
     // Reuses the dynamic key resolution of authorized members; the access right is irrelevant here.
-    const organizationIds = [...new Set(
-      resolveDynamicAuthorizedMembers(entity, (params?.organizations ?? []).map((id: string) => ({ id, access_right: 'view' })))
-        .map((member) => member.id),
-    )];
+    const requestedOrganizations: string[] = params?.organizations ?? [];
+    const resolvedOrganizationIds = resolveDynamicAuthorizedMembers(entity, requestedOrganizations.map((id: string) => ({ id, access_right: 'view' })))
+      .map((member) => member.id);
+    // A request created before the workflow was published has no requesting organization as author:
+    // AUTHOR then falls back to the organization recorded on the request itself.
+    const hasAuthor = resolveDynamicAuthorizedMembers(entity, [{ id: 'AUTHOR', access_right: 'view' }]).length > 0;
+    const legacyRequestingOrganizations = requestedOrganizations.includes('AUTHOR') && !hasAuthor && Array.isArray(requestAccess.members)
+      ? (requestAccess.members as unknown[]).filter((member): member is string => typeof member === 'string' && member.length > 0)
+      : [];
+    const organizationIds = [...new Set([...resolvedOrganizationIds, ...legacyRequestingOrganizations])];
     if (requestedEntityIds.length === 0 || organizationIds.length === 0) {
       throw UnsupportedError('Nothing to share: no requested entity or no organization resolved', { id: entity.id });
     }
-    // Every target is checked before the first share so a refused target leaves nothing shared.
+    // Loaded lazily: the schema module pulls the attribute definitions, which the registry does not need otherwise
+    const { isStixDomainObjectShareableContainer } = await import('../../../schema/stixDomainObject');
+    // Every target is checked against the sharing requirements before the first share, so a refused target leaves nothing shared.
+    const targets: { id: string; isContainer: boolean; newOrganizationIds: string[] }[] = [];
     for (const targetId of requestedEntityIds) {
       const target = await internalLoadById<any>(context, user, targetId);
       if (!target) {
@@ -144,9 +155,35 @@ export const ActionRegistry: Record<string, ActionFunction> = {
       if (target.restricted_members?.length) {
         throw UnsupportedError('Element is not sharable at the moment (restricted)', { targetId });
       }
+      // The sharing write enforces the confidence of the approver over the target
+      controlUserConfidenceAgainstElement(user, target);
+      const currentGrants: string[] = target[buildRefRelationKey(RELATION_GRANTED_TO)] ?? [];
+      targets.push({
+        id: targetId,
+        isContainer: isStixDomainObjectShareableContainer(target.entity_type),
+        newOrganizationIds: organizationIds.filter((organizationId) => !currentGrants.includes(organizationId)),
+      });
     }
-    for (const targetId of requestedEntityIds) {
-      await addOrganizationRestriction(context, user, targetId, organizationIds);
+    // Containers are shared by a background task that cannot be rolled back: they go last, once every direct share succeeded.
+    const orderedTargets = [...targets.filter((target) => !target.isContainer), ...targets.filter((target) => target.isContainer)];
+    const directlyShared: typeof targets = [];
+    try {
+      for (const target of orderedTargets) {
+        await addOrganizationRestriction(context, user, target.id, organizationIds);
+        if (!target.isContainer && target.newOrganizationIds.length > 0) {
+          directlyShared.push(target);
+        }
+      }
+    } catch (error) {
+      // Undo the grants this action added, so a refused decision leaves the targets as they were
+      for (const target of directlyShared) {
+        try {
+          await removeOrganizationRestriction(context, user, target.id, target.newOrganizationIds);
+        } catch (rollbackError) {
+          logApp.error('[shareRequestedEntities] Failed to undo a grant after a refused share', { cause: rollbackError, targetId: target.id });
+        }
+      }
+      throw error;
     }
   },
   /**
