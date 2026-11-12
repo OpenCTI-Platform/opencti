@@ -674,7 +674,8 @@ describe('ActionRegistry.updateAuthorizedMembers (skipAdminValidation)', () => {
 
 describe('ActionRegistry.shareRequestedEntities', () => {
   const makeRfiCtx = (
-    requestAccess: Record<string, unknown> | null = { entities: ['entity-1', 'entity-2'], members: ['org-requester'] },
+    // The form records the requesting organization and sets it as the RFI author at creation
+    requestAccess: Record<string, unknown> | null = { entities: ['entity-1', 'entity-2'], members: ['org-author'] },
     entityOverrides: Record<string, unknown> = {},
   ) => ({
     user: { id: 'workflow-manager-id' },
@@ -738,10 +739,10 @@ describe('ActionRegistry.shareRequestedEntities', () => {
     expect(addOrganizationRestriction).not.toHaveBeenCalled();
   });
 
-  it('resolves AUTHOR to the RFI createdBy', async () => {
-    const ctx = makeRfiCtx({ entities: ['entity-1'] }, { 'created-by': 'org-requesting' });
+  it('resolves AUTHOR to the organization recorded on the request, never the RFI author', async () => {
+    const ctx = makeRfiCtx({ entities: ['entity-1'], members: ['org-requester'] }, { 'created-by': 'org-changed-by-an-editor' });
     await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
-    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-requesting']);
+    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-requester']);
   });
 
   it('throws before sharing anything when one target has restricted_members', async () => {
@@ -781,21 +782,15 @@ describe('ActionRegistry.shareRequestedEntities', () => {
   });
 
   it('throws when no organization can be resolved', async () => {
-    const ctx = makeRfiCtx({ entities: ['entity-1'] }, { 'created-by': undefined });
+    const ctx = makeRfiCtx({ entities: ['entity-1'] });
     await expect(ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] })).rejects.toThrow();
     expect(addOrganizationRestriction).not.toHaveBeenCalled();
   });
 
-  it('resolves AUTHOR to the organization recorded on a request created before the workflow', async () => {
+  it('resolves AUTHOR to the recorded organization on a request without RFI author', async () => {
     const ctx = makeRfiCtx({ entities: ['entity-1'], members: ['org-requester'] }, { 'created-by': undefined });
     await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR', 'org-extra'] });
-    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-extra', 'org-requester']);
-  });
-
-  it('ignores the recorded organization when the RFI has an author', async () => {
-    const ctx = makeRfiCtx({ entities: ['entity-1'], members: ['org-requester'] });
-    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
-    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-author']);
+    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-requester', 'org-extra']);
   });
 
   it('throws before sharing anything when the approver confidence is too low for one target', async () => {

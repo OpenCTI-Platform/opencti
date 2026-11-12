@@ -20,6 +20,7 @@ import {
   __resetReadRepairRateLimitForTest,
   assertExternalStatusWriteAllowed,
   assertExternalStatusCreateAllowed,
+  assertExternalRequestAccessCreateAllowed,
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
   getAllowedTransitions,
@@ -53,7 +54,7 @@ import { FilterMode } from '../../../src/generated/graphql';
 import { WorkflowFactory } from '../../../src/modules/workflow/engine/workflow-factory';
 import { validateWorkflowDefinitionData } from '../../../src/modules/workflow/workflow-validation';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
-import { WORKFLOW_MANAGER_USER } from '../../../src/utils/access';
+import { SYSTEM_USER, WORKFLOW_MANAGER_USER } from '../../../src/utils/access';
 import { controlUserConfidenceAgainstElement } from '../../../src/utils/confidence-level';
 import { emptyFilterGroup } from '../../../src/utils/filtering/filtering-utils';
 import { ActionRegistry } from '../../../src/modules/workflow/registry/workflow-actions';
@@ -7463,6 +7464,23 @@ describe('assertExternalStatusWriteAllowed', () => {
       (findByType as any).mockResolvedValue({ id: 'setting-id' });
       await expect(assertExternalStatusCreateAllowed(mockContext, 'Case-Rfi', 'ra-approved')).resolves.toBeUndefined();
       await expect(assertExternalStatusCreateAllowed(mockContext, 'Report', 'ra-approved')).resolves.toBeUndefined();
+    });
+
+    it('rejects a request access record supplied by a caller on the request access workflow', async () => {
+      const forged = JSON.stringify({ entities: ['malware-1'], members: ['org-attacker'], status: 'NEW' });
+      const refusal = 'A request access can only be created through the request access form';
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'ra-new', forged)).rejects.toThrow(refusal);
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'ra-review', forged)).rejects.toThrow(refusal);
+    });
+
+    it('lets the request access form, a Global status, a plain RFI or the legacy flow create', async () => {
+      const record = JSON.stringify({ entities: ['malware-1'], members: ['org-1'], status: 'NEW' });
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, SYSTEM_USER, 'Case-Rfi', 'ra-new', record)).resolves.toBeUndefined();
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'global-approved', record)).resolves.toBeUndefined();
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'ra-new', undefined)).resolves.toBeUndefined();
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', undefined, record)).resolves.toBeUndefined();
+      (findByType as any).mockResolvedValue({ id: 'setting-id' });
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'ra-new', record)).resolves.toBeUndefined();
     });
   });
 

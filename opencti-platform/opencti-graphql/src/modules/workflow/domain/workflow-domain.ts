@@ -30,6 +30,7 @@ import {
   SYSTEM_USER,
   WORKFLOW_MANAGER_USER,
   isBypassUser,
+  isInternalUser,
   isUserHasCapability,
   validateUserAccessOperation,
 } from '../../../utils/access';
@@ -2893,6 +2894,28 @@ export const assertExternalStatusCreateAllowed = async (
 ): Promise<void> => {
   if (await isRequestAccessOutcomeStatus(context, entityType, statusId)) {
     throw FunctionalError('Approved and Declined can only be reached or left through the workflow', { statusId });
+  }
+};
+
+/**
+ * Refuses the creation of a request access RFI on the published request access workflow by anyone but the
+ * request access form, which creates it as the system. The request record decides what an approval shares and
+ * with whom, so a caller must not supply one of its own. Runs before the entity is saved.
+ */
+export const assertExternalRequestAccessCreateAllowed = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  statusId: string | null | undefined,
+  requestAccess: string | null | undefined,
+): Promise<void> => {
+  if (entityType !== ENTITY_TYPE_CONTAINER_CASE_RFI || !requestAccess || !statusId || isInternalUser(user)) return;
+  const status = await findStatusInCache(context, statusId);
+  if (status?.type !== ENTITY_TYPE_CONTAINER_CASE_RFI || status.scope !== StatusScope.RequestAccess) return;
+  const entitySetting = await getWorkflowConfig(context, SYSTEM_USER, entityType);
+  const definitionData = await getDefinitionData(context, SYSTEM_USER, entitySetting, false, StatusScope.RequestAccess);
+  if (definitionData) {
+    throw FunctionalError('A request access can only be created through the request access form', { statusId });
   }
 };
 

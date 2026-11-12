@@ -129,17 +129,18 @@ export const ActionRegistry: Record<string, ActionFunction> = {
       throw UnsupportedError('This RFI is not compatible', { id: entity.id });
     }
     const requestedEntityIds = requestAccess.entities as string[];
-    // Reuses the dynamic key resolution of authorized members; the access right is irrelevant here.
+    // AUTHOR is the requesting organization recorded on the request at creation, which only the workflow can write.
+    // The RFI author is not used: any editor of the RFI can change it, and with it who receives the entities.
     const requestedOrganizations: string[] = params?.organizations ?? [];
-    const resolvedOrganizationIds = resolveDynamicAuthorizedMembers(entity, requestedOrganizations.map((id: string) => ({ id, access_right: 'view' })))
-      .map((member) => member.id);
-    // A request created before the workflow was published has no requesting organization as author:
-    // AUTHOR then falls back to the organization recorded on the request itself.
-    const hasAuthor = resolveDynamicAuthorizedMembers(entity, [{ id: 'AUTHOR', access_right: 'view' }]).length > 0;
-    const legacyRequestingOrganizations = requestedOrganizations.includes('AUTHOR') && !hasAuthor && Array.isArray(requestAccess.members)
+    const requestingOrganizations = requestedOrganizations.includes('AUTHOR') && Array.isArray(requestAccess.members)
       ? (requestAccess.members as unknown[]).filter((member): member is string => typeof member === 'string' && member.length > 0)
       : [];
-    const organizationIds = [...new Set([...resolvedOrganizationIds, ...legacyRequestingOrganizations])];
+    // Other keys reuse the dynamic key resolution of authorized members; the access right is irrelevant here.
+    const resolvedOrganizationIds = resolveDynamicAuthorizedMembers(
+      entity,
+      requestedOrganizations.filter((id) => id !== 'AUTHOR').map((id: string) => ({ id, access_right: 'view' })),
+    ).map((member) => member.id);
+    const organizationIds = [...new Set([...requestingOrganizations, ...resolvedOrganizationIds])];
     if (requestedEntityIds.length === 0 || organizationIds.length === 0) {
       throw UnsupportedError('Nothing to share: no requested entity or no organization resolved', { id: entity.id });
     }

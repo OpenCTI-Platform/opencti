@@ -30,6 +30,7 @@ import {
   assertExternalStatusCreateAllowed,
   isRequestAccessOutcomeStatus,
   assertExternalRequestAccessWriteAllowed,
+  assertExternalRequestAccessCreateAllowed,
   assertExternalStatusWriteAllowed,
   cleanupEntityWorkflow,
   initializeEntityWorkflow,
@@ -4663,6 +4664,7 @@ const internalCreateEntityRaw = async (
     // upsert branch, so that restoring or re-importing an existing decided request is not refused.
     if (resolvedInput[X_WORKFLOW_ID] && !opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
       await assertExternalStatusCreateAllowed(context, type, resolvedInput[X_WORKFLOW_ID]);
+      await assertExternalRequestAccessCreateAllowed(context, user, type, resolvedInput[X_WORKFLOW_ID], resolvedInput.x_opencti_request_access);
     }
     // Create the object
     const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts) as { element: Record<string, any>; relations: Record<string, any>[] };
