@@ -19,8 +19,8 @@ interface InvestigationEnrichmentMenuActionProps {
 /**
  * The "Enrichment" action of the Selection section of the graph context menu: a submenu of the
  * connectors that can enrich the selection, the same as the enrichment drawer lists. Picking one
- * opens the background task launcher with that connector only. Not registered for a user who
- * cannot launch an enrichment from the drawer.
+ * launches the enrichment with that connector only, asking for a confirmation only above the
+ * background task limit. Not registered for a user who cannot launch an enrichment from the drawer.
  */
 const InvestigationEnrichmentMenuAction = ({
   investigationId,
@@ -85,6 +85,7 @@ const InvestigationEnrichmentMenuAction = ({
       numberOfSelectedElements={selectionSize}
       taskScope="KNOWLEDGE"
       actions={toEnrichmentTaskActions(connector ? [connector] : [], investigationId)}
+      confirmOnlyAboveLimit
       onClose={() => {
         setConnector(undefined);
         // A launch the API rejected never completes: closing the launcher must not leave it busy for the next one.

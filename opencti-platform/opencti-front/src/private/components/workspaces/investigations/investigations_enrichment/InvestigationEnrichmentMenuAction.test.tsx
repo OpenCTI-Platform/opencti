@@ -162,7 +162,7 @@ describe('InvestigationEnrichmentMenuAction', () => {
     expect(enrichmentAction()?.options?.items).toEqual([{ key: 'connector-1', label: 'DomainTools' }]);
   });
 
-  it('opens the launcher with the connector picked only, and launches nothing on cancel', async () => {
+  it('launches with the connector picked only, confirming only for many elements, and nothing once closed', async () => {
     mocks.selectedNodes = [ip, otherIp];
     const query = answerConnectors();
     const onLaunched = vi.fn();
@@ -174,6 +174,7 @@ describe('InvestigationEnrichmentMenuAction', () => {
 
     expect(lastLaunchProps()).toMatchObject({
       display: true,
+      confirmOnlyAboveLimit: true,
       numberOfSelectedElements: 2,
       actions: [{ type: 'ENRICHMENT', context: { values: [{ id: 'connector-2', value: 'Shodan' }], options: { investigationId: 'investigation-1' } } }],
     });

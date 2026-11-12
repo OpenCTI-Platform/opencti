@@ -77,7 +77,11 @@ const InvestigationEnrichmentLaunch = ({
         numberOfSelectedElements={selectionSize}
         taskScope="KNOWLEDGE"
         actions={backgroundTaskAction}
-        onClose={() => setShowValidation(false)}
+        confirmOnlyAboveLimit
+        onClose={() => {
+          setShowValidation(false);
+          setProcessing(false);
+        }}
         onLaunch={() => setProcessing(true)}
         onCompleted={() => {
           setSelectedConnectors([]);

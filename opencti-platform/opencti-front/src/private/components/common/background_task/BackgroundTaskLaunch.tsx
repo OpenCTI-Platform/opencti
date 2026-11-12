@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router';
 import { useTheme } from '@mui/material/styles';
@@ -75,6 +76,8 @@ interface BackgroundTaskLaunchProps {
   excludedIds?: string[];
   // To show the label of a custom field updated by an action, instead of its name
   customFieldDefinitions?: ReadonlyArray<{ name: string; label: string }>;
+  // Launches without the dialog up to MAX_ENTITIES elements
+  confirmOnlyAboveLimit?: boolean;
 }
 
 const BackgroundTaskLaunch = ({
@@ -97,6 +100,7 @@ const BackgroundTaskLaunch = ({
   promoteToContainer,
   excludedIds,
   customFieldDefinitions,
+  confirmOnlyAboveLimit = false,
 }: BackgroundTaskLaunchProps) => {
   const { me, schema } = useAuth();
   const isInDraft = me.draftContext;
@@ -188,6 +192,17 @@ const BackgroundTaskLaunch = ({
     );
   };
 
+  // Decided once per display, so that a selection changing meanwhile cannot relaunch or show the dialog
+  const [displayed, setDisplayed] = useState(false);
+  const [launchWithoutConfirmation, setLaunchWithoutConfirmation] = useState(false);
+  if (display !== displayed) {
+    setDisplayed(display);
+    setLaunchWithoutConfirmation(display
+      && confirmOnlyAboveLimit
+      && numberOfSelectedElements > 0
+      && numberOfSelectedElements <= MAX_ENTITIES);
+  }
+
   const launchTask = () => {
     onLaunch();
     const scope = taskScope ?? 'KNOWLEDGE';
@@ -198,6 +213,7 @@ const BackgroundTaskLaunch = ({
     const finalActions = taskScope === 'USER'
       ? getUserFinalActions()
       : getOtherActions();
+    const onError = launchWithoutConfirmation ? onClose : undefined;
 
     if (selectAll) {
       queryMutation({
@@ -212,6 +228,7 @@ const BackgroundTaskLaunch = ({
           },
         },
         onCompleted,
+        onError,
       });
     } else {
       listMutation({
@@ -226,13 +243,20 @@ const BackgroundTaskLaunch = ({
           },
         },
         onCompleted,
+        onError,
       });
     }
   };
 
+  useEffect(() => {
+    if (display && launchWithoutConfirmation) {
+      launchTask();
+    }
+  }, [display, launchWithoutConfirmation]);
+
   return (
     <Dialog
-      open={display}
+      open={display && !launchWithoutConfirmation}
       onClose={onClose}
       data-testid="background-task-popup"
       title={(
