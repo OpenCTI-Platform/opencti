@@ -81,10 +81,8 @@ const resetLockout = (email: string) => {
   return getClientBase().del(keys.failures, keys.lock);
 };
 // Redis TTLs cannot be faked, so expirations are simulated by deleting the keys.
-// With a window, the failures expire with the final lock, so that the count starts over once the lock is lifted
+// The failures expire with the temporary lock, with or without a window, so that the count starts over once the lock is lifted
 const expireLock = resetLockout;
-// Without a window, the failures are kept when the lock is lifted
-const liftLock = (email: string) => getClientBase().del(keysOf(email).lock);
 const expireWindow = (email: string) => getClientBase().del(keysOf(email).failures);
 const lockRemainingMs = (email: string) => getClientBase().pttl(keysOf(email).lock);
 const failuresOf = async (email: string) => Number(await getClientBase().hget(keysOf(email).failures, 'count') ?? 0);
@@ -378,12 +376,16 @@ describe('Local authentication lockout', () => {
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
     });
 
-    it('should lock again on the next failure once the lock is over, with a window of 0', async () => {
+    it('should give the attempts back once the temporary lock is over, with a window of 0', async () => {
       await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_window: 0 });
       await reachMaxAttempts(LOCKOUT_USER.email);
-      // The final lock does not give the failures a TTL
-      expect(await getClientBase().pttl(keysOf(LOCKOUT_USER.email).failures)).toEqual(-1);
-      await liftLock(LOCKOUT_USER.email);
+      // The temporary lock gives the failures its own TTL, even without a window
+      const failuresRemainingMs = await getClientBase().pttl(keysOf(LOCKOUT_USER.email).failures);
+      expect(failuresRemainingMs).toBeGreaterThan(0);
+      expect(failuresRemainingMs).toBeLessThanOrEqual(LOCK_SECONDS * 1000);
+      await expireLock(LOCKOUT_USER.email);
+      // All the max attempts again, not a lock on the next failure
+      await failLogin(LOCKOUT_USER.email, 2);
       await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
     });
 

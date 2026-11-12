@@ -111,7 +111,7 @@ const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuth
   if (adminMaxAttempts > LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT) {
     throw FunctionalError(`Lockout admin max attempts must be lower than or equal to ${LOCAL_AUTH_LOCKOUT_MAX_ATTEMPTS_LIMIT}`, { local_auth_lockout_admin_max_attempts: adminMaxAttempts });
   }
-  // A window of 0 disables it
+  // A window of 0 removes its time limit
   if (lockoutWindow < 0) {
     throw FunctionalError('Lockout window must be greater than or equal to 0', { local_auth_lockout_window: lockoutWindow });
   }

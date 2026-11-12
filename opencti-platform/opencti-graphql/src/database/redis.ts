@@ -919,14 +919,13 @@ export type LocalAuthLockoutTimings = { maxAttempts: number; windowMs: number; f
 
 // Records an attempt as a failure before its password is checked, in one atomic step with the lock check,
 // so that concurrent attempts never check more passwords than the max attempts. An accepted attempt clears or releases it.
-// - The failure window starts on the first failure and is never extended. A window of 0 disables it:
-//   the failures never expire, only an accepted login or an administrator resets them.
+// - The failure window starts on the first failure and is never extended. A window of 0 removes its time limit:
+//   the failures are kept until an accepted login, the end of a temporary lock, or an administrator resets them.
 // - Below the max attempts, a failure is only counted: no lock.
 // - At the max attempts, the final action locks the email for finalLockMs, or until it is cleared when finalLockMs is 0.
 //   The lock holds the final action, so that a permanent lock is reported the same way for an existing account and an unknown email,
 //   and the token of the attempt that set it, so that releasing another attempt never lifts it.
-//   With a window, the failures expire with a temporary lock, so that the count starts over once the lock is lifted.
-//   Without a window, they are kept: once the lock is lifted, each new failure locks again.
+//   The failures expire with a temporary lock, with or without a window, so that the count starts over once the lock is lifted.
 // Returns [allowed, remainingMs, lockType, isFinal, windowId]:
 // - [0, remaining, type, 0, '']: the email is locked (remaining is -1 without expiry), the attempt is neither checked nor counted
 // - [1, 0, type, 0, window]: the attempt is counted in this window, below the max attempts, its password can be checked
@@ -947,9 +946,7 @@ if failures >= tonumber(ARGV[2]) then
   local lock = ARGV[4] .. ':' .. ARGV[5]
   if tonumber(ARGV[3]) > 0 then
     redis.call('SET', KEYS[2], lock, 'PX', ARGV[3])
-    if tonumber(ARGV[1]) > 0 then
-      redis.call('PEXPIRE', KEYS[1], ARGV[3])
-    end
+    redis.call('PEXPIRE', KEYS[1], ARGV[3])
   else
     redis.call('SET', KEYS[2], lock)
   end

@@ -30,7 +30,8 @@ export const LOCAL_AUTH_LOCKOUT_DEFAULTS = {
   local_auth_lockout_admin_max_attempts: 3,
   // Applied once max attempts are reached: a lock for the lockout duration, or the account set to Locked until an admin unlocks it
   local_auth_lockout_final_action: LocalAuthLockoutFinalAction.Temporary,
-  // Failed attempts older than the window are forgotten. 0 disables the window: failed attempts are only reset by a successful login
+  // Failed attempts older than the window are forgotten. 0 removes the time limit: failed attempts are kept until
+  // a successful login or the end of a temporary lock
   local_auth_lockout_window: 15, // minutes
   // Duration of the lock applied by the temporary final action
   local_auth_lockout_duration: 15, // minutes
@@ -107,7 +108,8 @@ const getLockoutTimings = async (userId?: string): Promise<LocalAuthLockoutTimin
 
 // Returns undefined when the lockout is disabled, so that the login keeps its previous behavior.
 // The built-in admin (app:admin) is a break-glass account, never locked out: if every administrator gets locked,
-// it is enabled again in the configuration to unlock them
+// it is enabled again in the configuration to unlock them. Once other administrators exist, it should be disabled
+// with APP__ADMIN__EXTERNALLY_MANAGED=true (its account is then set to Locked): the lockout settings form says so
 export const loadLocalAuthLockout = async (email: string, userId?: string) => {
   if (userId === OPENCTI_ADMIN_UUID) {
     return undefined;
