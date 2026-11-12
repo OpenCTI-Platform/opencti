@@ -13,7 +13,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pycti import OpenCTIApiClient, OpenCTIStix2
-from pycti.utils.opencti_stix2 import _STIX_2_0_REBUILT_KEYS, STIX_VERSION_2_0
+from pycti.utils.opencti_stix2 import (
+    _STIX_2_0_BACKEND_ENTITY_TYPES,
+    _STIX_2_0_REBUILT_KEYS,
+    STIX_VERSION_2_0,
+)
 
 MALWARE_STANDARD_ID = "malware--92ddf766-b27c-5159-8f46-27002bba2f04"
 MALWARE_INTERNAL_ID = "internal-uuid-malware-1"
@@ -142,12 +146,36 @@ def test_generate_export_stix_2_0_non_migrated_type_uses_legacy_converter(
 ):
     """A type not yet migrated keeps the legacy converter, even in 2.0."""
     entity = _raw_graphql_entity()
-    entity["entity_type"] = "Tool"
+    entity["entity_type"] = "Language"
 
     result = stix_helper.generate_export(entity, stix_version=STIX_VERSION_2_0)
 
     stix_helper.opencti.stix_core_object.to_stix.assert_not_called()
-    assert result["type"] == "tool"
+    assert result["type"] == "language"
+
+
+@pytest.mark.parametrize("entity_type", sorted(_STIX_2_0_BACKEND_ENTITY_TYPES))
+def test_stix_2_0_backend_entity_types_are_exportable_types(stix_helper, entity_type):
+    """Every migrated type is an OpenCTI entity type the export can read.
+
+    A misspelled type (e.g. ``Security-Platform`` for ``SecurityPlatform``)
+    would silently keep the legacy converter.
+    """
+    reader = stix_helper.get_reader(entity_type)
+
+    assert reader in stix_helper.get_readers().values()
+
+
+@pytest.mark.parametrize(
+    "entity_type",
+    # The backend has no STIX 2.0 converter for them: `toStix` raises an error.
+    ["Language", "Security-Coverage", "Security-Coverage-Result"],
+)
+def test_stix_2_0_backend_entity_types_exclude_types_without_converter(
+    entity_type,
+):
+    """The SDOs without a backend STIX 2.0 converter keep the legacy one."""
+    assert entity_type not in _STIX_2_0_BACKEND_ENTITY_TYPES
 
 
 # --- Backend dispatch -------------------------------------------------------
@@ -635,6 +663,122 @@ def test_prepare_export_full_mode_skips_non_string_refs(stix_helper, stix_versio
     assert [call.kwargs["filters"] for call in reader.call_args_list] == [sample_id]
     malware = next(obj for obj in result if obj.get("type") == "malware")
     assert malware["x_opencti_cf_source_ref"] == ["source-a", "source-b"]
+
+
+# --- Containers and data source ---------------------------------------------
+
+REPORT_STANDARD_ID = "report--66666666-6666-6666-6666-666666666666"
+INTRUSION_SET_ID = "intrusion-set--77777777-7777-7777-7777-777777777777"
+NOTE_ID = "note--88888888-8888-8888-8888-888888888888"
+DATA_COMPONENT_ID = "x-mitre-data-component--99999999-9999-9999-9999-999999999999"
+DATA_SOURCE_ID = "x-mitre-data-source--aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+
+
+def _contained_object(object_id, standard_id, entity_type, parent_types):
+    return {
+        "id": object_id,
+        "standard_id": standard_id,
+        "entity_type": entity_type,
+        "parent_types": parent_types,
+    }
+
+
+def test_prepare_export_stix_2_0_container_rebuilds_object_refs(stix_helper):
+    """``object_refs`` follows the legacy filtering of each container type."""
+    stix_helper.opencti.stix_core_object.to_stix.return_value = {
+        "id": REPORT_STANDARD_ID,
+        "type": "report",
+        "spec_version": "2.0",
+        "name": "Backend Report",
+        # The backend keeps the Note, the legacy export filters it out.
+        "object_refs": [INTRUSION_SET_ID, NOTE_ID],
+        "x_opencti_id": "internal-report",
+        "x_opencti_type": "Report",
+    }
+    contained_objects = [
+        _contained_object(
+            "internal-intrusion-set",
+            INTRUSION_SET_ID,
+            "Intrusion-Set",
+            ["Stix-Domain-Object"],
+        ),
+        _contained_object("internal-note", NOTE_ID, "Note", ["Stix-Domain-Object"]),
+        _contained_object(
+            "internal-ref",
+            "relationship--bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+            "object",
+            ["basic-relationship", "stix-ref-relationship"],
+        ),
+    ]
+    raw_report = {
+        **_raw_graphql_entity(),
+        "id": "internal-report",
+        "standard_id": REPORT_STANDARD_ID,
+        "entity_type": "Report",
+        "objects": contained_objects,
+        "objectsIds": [item["id"] for item in contained_objects],
+    }
+
+    prepared = stix_helper.generate_export(raw_report, stix_version=STIX_VERSION_2_0)
+    assert prepared["objects"] == contained_objects
+    result = stix_helper.prepare_export(prepared, stix_version=STIX_VERSION_2_0)
+
+    report = next(obj for obj in result if obj["type"] == "report")
+    assert report["object_refs"] == [INTRUSION_SET_ID]
+    assert "objects" not in report
+
+
+def test_prepare_export_stix_2_0_data_component_embeds_data_source(stix_helper):
+    """The Data-Source is added to the bundle, as in the legacy export."""
+    backend_payloads = {
+        "internal-data-component": {
+            "id": DATA_COMPONENT_ID,
+            "type": "x-mitre-data-component",
+            "spec_version": "2.0",
+            "name": "Backend Data Component",
+            "x_mitre_data_source_ref": DATA_SOURCE_ID,
+            "x_opencti_id": "internal-data-component",
+            "x_opencti_type": "Data-Component",
+        },
+        "internal-data-source": {
+            "id": DATA_SOURCE_ID,
+            "type": "x-mitre-data-source",
+            "spec_version": "2.0",
+            "name": "Backend Data Source",
+            "x_opencti_id": "internal-data-source",
+            "x_opencti_type": "Data-Source",
+        },
+    }
+
+    def to_stix(id, version):
+        return dict(backend_payloads[id])
+
+    stix_helper.opencti.stix_core_object.to_stix.side_effect = to_stix
+    raw_data_component = {
+        **_raw_graphql_entity(),
+        "id": "internal-data-component",
+        "standard_id": "data-component--99999999-9999-9999-9999-999999999999",
+        "entity_type": "Data-Component",
+        "dataSource": {
+            "id": "internal-data-source",
+            "standard_id": "data-source--aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+            "entity_type": "Data-Source",
+            "parent_types": ["Stix-Domain-Object"],
+        },
+        "dataSourceId": "internal-data-source",
+    }
+
+    prepared = stix_helper.generate_export(
+        raw_data_component, stix_version=STIX_VERSION_2_0
+    )
+    assert "x_mitre_data_source_ref" not in prepared
+    result = stix_helper.prepare_export(prepared, stix_version=STIX_VERSION_2_0)
+
+    assert [obj["id"] for obj in result] == [DATA_SOURCE_ID, DATA_COMPONENT_ID]
+    data_component = result[1]
+    assert data_component["x_mitre_data_source_ref"] == DATA_SOURCE_ID
+    assert "dataSource" not in data_component
+    assert result[0]["spec_version"] == "2.0"
 
 
 # --- StixCoreObject.to_stix -------------------------------------------------

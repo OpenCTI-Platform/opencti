@@ -438,6 +438,7 @@ export const convertReportToStix = (instance: StoreEntity): SDO.StixReport => {
     report_types: instance.report_types,
     published: convertToStixDate(instance.published, { allowEpoch: true }),
     object_refs: convertObjectReferences(instance),
+    content: instance.content,
     x_opencti_reliability: instance.x_opencti_reliability,
   };
 };

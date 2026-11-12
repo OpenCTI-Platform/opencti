@@ -11,13 +11,17 @@ import type { StoreEntity } from '../../types/store';
 import { INPUT_KILLCHAIN } from '../../schema/general';
 import type { StixInternalKillChainPhase } from '../../types/stix-2-0-smo';
 
-const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator => {
-  const indicator = buildStixDomain(instance);
-  // Adding one second to the valid_until if valid_from and valid_until are equals,
-  // because according to STIX 2.1 specification the valid_until must be greater than the valid_from.
-  const computedValidUntil = (
+// Adding one second to the valid_until if valid_from and valid_until are equals,
+// because according to the STIX 2.0 and 2.1 specifications the valid_until must be greater than the valid_from.
+const computeValidUntil = (instance: StoreEntityIndicator) => {
+  return (
     isNotEmptyField(instance.valid_from) && isNotEmptyField(instance.valid_until) && instance.valid_until === instance.valid_from
   ) ? moment(instance.valid_from).add(1, 'seconds').toDate() : instance.valid_until;
+};
+
+const convertIndicatorToStix = (instance: StoreEntityIndicator): StixIndicator => {
+  const indicator = buildStixDomain(instance);
+  const computedValidUntil = computeValidUntil(instance);
   return {
     ...indicator,
     name: instance.name,
@@ -61,7 +65,7 @@ export const convertIndicatorToStix_2_0 = (instance: StoreEntity): Stix2Indicato
     pattern_type: indicator.pattern_type,
     pattern_version: indicator.pattern_version,
     valid_from: convertToStixDate(indicator.valid_from),
-    valid_until: convertToStixDate(indicator.valid_until),
+    valid_until: convertToStixDate(computeValidUntil(indicator)),
     kill_chain_phases: killChainPhases,
     x_opencti_score: indicator.x_opencti_score,
     x_opencti_detection: indicator.x_opencti_detection,
