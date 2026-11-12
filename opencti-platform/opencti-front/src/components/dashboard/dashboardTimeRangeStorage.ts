@@ -9,14 +9,19 @@ const ABSOLUTE_RANGE_SEPARATOR = '..';
 
 export const dashboardTimeRangeStorageKey = (userId: string, workspaceId: string) => `dashboard-time-range-${userId}-${workspaceId}`;
 
-const isOptionalIsoDate = (value: unknown) => value === null || (typeof value === 'string' && isStrictIsoDate(value));
+const isOptionalIsoDate = (value: unknown): value is string | null => value === null || (typeof value === 'string' && isStrictIsoDate(value));
+
+// A reversed absolute range would match nothing: a link or a stored value carrying one is ignored like a malformed one.
+const isOrderedRange = (startDate: string | null, endDate: string | null) => (
+  startDate === null || endDate === null || Date.parse(startDate) <= Date.parse(endDate)
+);
 
 // A relative date always comes alone: picking one clears the absolute dates.
 export const isValidTimeRange = (value: unknown): value is DashboardTimeRange => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const { startDate, endDate, relativeDate } = value as Record<string, unknown>;
   if (!isOptionalIsoDate(startDate) || !isOptionalIsoDate(endDate)) return false;
-  if (relativeDate === null) return true;
+  if (relativeDate === null) return isOrderedRange(startDate, endDate);
   return typeof relativeDate === 'string' && RELATIVE_DATE_VALUES.includes(relativeDate) && startDate === null && endDate === null;
 };
 
