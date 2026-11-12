@@ -387,6 +387,24 @@ export const buildRelationships = async (
   }
 };
 
+// Tasks, notes and opinions belong to an entity through their own object_refs (a case lists the tasks that reference it):
+// the ones created by the submission are attached to the main entities. Returns their ids.
+const SELF_ATTACHED_STIX_TYPES = ['task', 'note', 'opinion'];
+export const attachToMainEntities = (
+  mainStixEntities: any[],
+  bundle: any,
+  additionalEntitiesMap: Record<string, string[]>,
+): string[] => {
+  const mainIds = mainStixEntities.map((entity) => entity.id);
+  if (mainIds.length === 0) return [];
+  const additionalIds = Object.values(additionalEntitiesMap).flat();
+  const attached = bundle.objects.filter((object: StixContainer) => additionalIds.includes(object.id) && SELF_ATTACHED_STIX_TYPES.includes(object.type));
+  attached.forEach((object: StixContainer) => {
+    object.object_refs = [...new Set([...(object.object_refs ?? []), ...mainIds])];
+  });
+  return attached.map((object: StixContainer) => object.id);
+};
+
 export const wrapInContainerOrPush = (
   mainEntityType: string,
   mainStixEntities: any[],
@@ -395,13 +413,16 @@ export const wrapInContainerOrPush = (
   additionalEntitiesMap: Record<string, string[]> = {},
   existingMainStixIds: string[] = [],
 ): void => {
+  const attachedIds = attachToMainEntities(mainStixEntities, bundle, additionalEntitiesMap);
   const isContainer = includeInContainer && isStixDomainObjectContainer(mainEntityType);
   for (let i = 0; i < mainStixEntities.length; i += 1) {
     const isExisting = existingMainStixIds.includes(mainStixEntities[i].id);
     if (isContainer) {
       const stixContainer = mainStixEntities[i] as StixContainer;
-      // Existing additional entities are not in the bundle, the container still references them
-      stixContainer.object_refs = [...new Set([...bundle.objects.map((n: BasicStoreEntity) => n.id), ...Object.values(additionalEntitiesMap).flat()])];
+      // Existing additional entities are not in the bundle, the container still references them.
+      // Attached entities already reference the container: a ref back would be a cycle, and a case does not hold its tasks
+      const containedIds = [...bundle.objects.map((n: BasicStoreEntity) => n.id), ...Object.values(additionalEntitiesMap).flat()];
+      stixContainer.object_refs = [...new Set(containedIds.filter((id) => !attachedIds.includes(id)))];
       // An existing container is only sent to add the submitted objects into it
       if (!isExisting || stixContainer.object_refs.length > 0) {
         bundle.objects.push(stixContainer);
