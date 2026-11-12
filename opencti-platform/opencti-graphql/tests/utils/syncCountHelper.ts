@@ -138,8 +138,8 @@ testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
 testUpdatedCounter['threat-actor'] = 18;
 // Counts for:
-// - 9 updated by vocabulary-import-test
-testUpdatedCounter.vocabulary = 3 + 9;
+// - 2 updated by vocabulary-import-test (the description of an entry of the platform, edited then restored)
+testUpdatedCounter.vocabulary = 3 + 2;
 testUpdatedCounter.vulnerability = 5;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
