@@ -34,7 +34,14 @@ const SourceCard: FunctionComponent<SourceCardProps> = ({ icon, label, descripti
   const theme = useTheme<Theme>();
   return (
     <div data-testid={testId}>
-      <Card selected={selected} disabled={disabled} onClick={onClick} aria-label={label}>
+      {/* The content starts at the top of the card, whatever the height the other card gives it */}
+      <Card
+        selected={selected}
+        disabled={disabled}
+        onClick={onClick}
+        aria-label={label}
+        sx={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start' }}
+      >
         <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
           {icon}
           <Text variant="title-sm">{label}</Text>
@@ -46,7 +53,8 @@ const SourceCard: FunctionComponent<SourceCardProps> = ({ icon, label, descripti
 };
 
 // The choice of a screen that imports its items: the import it already had, or the items of its type taken from a configuration bundle.
-// Two cards side by side, the chosen one highlighted. Generic: any screen that offers the partial import shows it.
+// Two cards side by side: a click is the choice, the one chosen before is highlighted when the user comes back.
+// Generic: any screen that offers the partial import shows it.
 const ConfigPresetPartialImportSourceChoice: FunctionComponent<ConfigPresetPartialImportSourceChoiceProps> = ({
   value,
   onChange,
@@ -60,7 +68,7 @@ const ConfigPresetPartialImportSourceChoice: FunctionComponent<ConfigPresetParti
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }}>
       <Text variant="title-sm">{t_i18n('Choose the import method')}</Text>
-      <Text variant="content-base">{t_i18n('Select one of the two options below, then click Next.')}</Text>
+      <Text variant="content-base">{t_i18n('Select one of the two options below.')}</Text>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing(2) }}>
         <SourceCard
           icon={<DescriptionOutlined fontSize="small" aria-hidden />}

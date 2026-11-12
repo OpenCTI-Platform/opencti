@@ -20,16 +20,13 @@ const resolve = async (rendered: Rendered, name: string, resolvers: Record<strin
 };
 const fileCard = () => screen.getByRole('button', { name: /^Import a theme file/ });
 const bundleCard = () => screen.getByRole('button', { name: /^Import from bundle platform config/ });
-const next = () => screen.getByTestId('config-preset-partial-import-next');
 const activeStep = () => document.querySelector('.MuiStepLabel-label.Mui-active')?.textContent;
 
-// Opens the dialog and goes to the second step of the chosen method
-const openOnMethod = async (method: 'file' | 'bundle') => {
+// Opens the dialog of a BYPASS user with the flag on
+const openDialog = async () => {
   (useConfigPresetPartialImportAccess as Mock).mockReturnValue(true);
   const rendered = renderImporter();
   await rendered.user.click(screen.getByTestId('import-theme-btn'));
-  await rendered.user.click(method === 'file' ? fileCard() : bundleCard());
-  await rendered.user.click(next());
   return rendered;
 };
 
@@ -46,44 +43,49 @@ describe('ThemeImporter', () => {
     expect(screen.getByTestId('import-theme-btn').querySelector('input[type="file"]')).not.toBeNull();
   });
 
-  it('starts with the two methods only, and goes on once one is chosen', async () => {
-    (useConfigPresetPartialImportAccess as Mock).mockReturnValue(true);
-    const { user, relayEnv } = renderImporter();
-    await user.click(screen.getByTestId('import-theme-btn'));
+  it('starts with the two methods only, without a Next nor a Cancel: a click on a card is the choice', async () => {
+    const { relayEnv } = await openDialog();
     expect(activeStep()).toEqual('Method');
     expect(fileCard()).toHaveAttribute('aria-pressed', 'false');
     expect(bundleCard()).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.queryByTestId('import-theme-file')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Next' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('config-preset-partial-import-file')).not.toBeInTheDocument();
-    expect(next()).toBeDisabled();
-
-    await user.click(bundleCard());
-    expect(bundleCard()).toHaveAttribute('aria-pressed', 'true');
-    await user.click(next());
-    expect(activeStep()).toEqual('Select file');
-    expect(screen.getByTestId('config-preset-partial-import-file')).toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: 'Back' }));
-    expect(activeStep()).toEqual('Method');
-    expect(bundleCard()).toHaveAttribute('aria-pressed', 'true');
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
   });
 
-  it('imports the theme file picked in the second step, then shows it in the last one', async () => {
-    const rendered = await openOnMethod('file');
+  it('goes to the file of the bundle at once, and back to the methods with the bundle highlighted', async () => {
+    const { user } = await openDialog();
+    await user.click(bundleCard());
     expect(activeStep()).toEqual('Select file');
-    expect(screen.getByTestId('import-theme-submit')).toBeDisabled();
+    expect(screen.getByTestId('config-preset-partial-import-file')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+    expect(activeStep()).toEqual('Method');
+    expect(bundleCard()).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('opens the file picker of the theme file import at once, as without the dialog, with no step of its own', async () => {
+    const { user } = await openDialog();
+    const fileInput = screen.getByTestId('import-theme-file') as HTMLInputElement;
+    const openPicker = vi.spyOn(fileInput, 'click');
+    await user.click(fileCard());
+    expect(openPicker).toHaveBeenCalledTimes(1);
+    // The dialog waits for a file: no second step, it closes once the file is picked
+    expect(activeStep()).toEqual('Method');
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('imports the theme file picked and closes the dialog, the import telling its outcome as before', async () => {
+    const rendered = await openDialog();
     const file = new File(['{}'], 'theme.json', { type: 'application/json' });
     await rendered.user.upload(screen.getByTestId('import-theme-file'), file);
-    await rendered.user.click(screen.getByTestId('import-theme-submit'));
     expect(operation(rendered, 'ThemeImporterImportMutation').request.variables).toEqual({ file });
-    await resolve(rendered, 'ThemeImporterImportMutation', { Theme: () => ({ id: 'theme-id', name: 'Imported theme' }) });
-    expect(activeStep()).toEqual('Done');
-    expect(screen.getByTestId('config-preset-partial-import-file-result')).toHaveTextContent('Imported theme');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('keeps the bundle import mounted while it runs: no dismissal until its result, shown in the last step', async () => {
-    const rendered = await openOnMethod('bundle');
+    const rendered = await openDialog();
+    await rendered.user.click(bundleCard());
     await rendered.user.upload(screen.getByTestId('config-preset-partial-import-file'), new File(['zip'], 'bundle.zip', { type: 'application/zip' }));
     await resolve(rendered, 'ConfigPresetPartialImportPreviewMutation', {
       ConfigPresetPartialImportPreview: () => ({

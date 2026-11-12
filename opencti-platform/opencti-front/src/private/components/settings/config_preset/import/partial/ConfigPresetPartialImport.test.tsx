@@ -143,6 +143,43 @@ describe('ConfigPresetPartialImport', () => {
     expect(screen.queryByText('Skipped')).not.toBeInTheDocument();
   });
 
+  it('offers no Cancel, the close button of the dialog is enough, and scrolls the list of items only', async () => {
+    await renderWithPreview(previewOf(themes));
+    expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('config-preset-partial-import-items')).toHaveStyle({ overflowY: 'auto' });
+    expect(screen.getByTestId('config-preset-partial-import-submit')).toBeEnabled();
+  });
+
+  it('offers the same mode for all the selected items in conflict from two of them, and applies it to each', async () => {
+    const conflicts = [
+      ...themes,
+      { key: 'theme--c', label: 'Dusk', translatable: false, exists: true, conflict: true },
+    ];
+    const rendered = await renderWithPreview(previewOf(conflicts));
+    const applyToAll = () => screen.getByRole('combobox', { name: 'themes: Apply to all' });
+    expect(applyToAll()).toHaveTextContent('Add as a copy');
+    await rendered.user.click(applyToAll());
+    await rendered.user.click(await screen.findByRole('option', { name: 'Overwrite' }));
+    expect(screen.getByRole('combobox', { name: 'Day: When it already exists' })).toHaveTextContent('Overwrite');
+    expect(screen.getByRole('combobox', { name: 'Dusk: When it already exists' })).toHaveTextContent('Overwrite');
+    // One of them back to a copy: they differ
+    await rendered.user.click(screen.getByRole('combobox', { name: 'Dusk: When it already exists' }));
+    await rendered.user.click(await screen.findByRole('option', { name: 'Add as a copy' }));
+    expect(applyToAll()).toHaveTextContent('Mixed');
+    // The modes sent are the ones shown
+    await rendered.user.click(screen.getByTestId('config-preset-partial-import-submit'));
+    expect(operation(rendered, 'ConfigPresetPartialImportMutation').request.variables.item_modes).toEqual([
+      { key: 'theme--b', mode: 'OVERWRITE' },
+      { key: 'theme--c', mode: 'COPY' },
+    ]);
+  });
+
+  it('does not offer the same mode for all with a single item in conflict, its own choice is enough', async () => {
+    await renderWithPreview(previewOf(themes));
+    expect(screen.queryByTestId('config-preset-partial-import-apply-to-all')).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Day: When it already exists' })).toBeInTheDocument();
+  });
+
   it('imports the selected items with the mode of those in conflict, then shows the results', async () => {
     const rendered = await renderWithPreview(previewOf(themes));
     await rendered.user.click(screen.getByRole('checkbox', { name: 'Night' }));

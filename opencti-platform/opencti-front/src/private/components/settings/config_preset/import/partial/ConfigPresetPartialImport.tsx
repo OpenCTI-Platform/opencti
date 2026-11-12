@@ -14,7 +14,14 @@ import ConfigPresetResultLine from '../ConfigPresetResultLine';
 import { toConfigPresetSummaryCounts } from '../ConfigPresetImportResult';
 import { ConfigPresetLockedTypeRow } from '../../ConfigPresetSelectionAccordion';
 import useConfigPresetLockedTypes from '../../useConfigPresetLockedTypes';
-import { partialImportItemModes, partialImportSelectedKeys, toggleSelectedKey } from './configPresetPartialImportSelection';
+import {
+  partialImportConflictKeys,
+  partialImportItemModes,
+  partialImportSelectedKeys,
+  sharedPartialImportMode,
+  toggleSelectedKey,
+  withPartialImportModeForItems,
+} from './configPresetPartialImportSelection';
 import { ConfigPresetPartialImportPreviewMutation, ConfigPresetPartialImportPreviewMutation$data } from './__generated__/ConfigPresetPartialImportPreviewMutation.graphql';
 import { ConfigPresetPartialImportMutation, ConfigPresetPartialImportMutation$data } from './__generated__/ConfigPresetPartialImportMutation.graphql';
 
@@ -78,6 +85,7 @@ interface ConfigPresetPartialImportProps {
   onBusyChange?: (busy: boolean) => void;
   // Back to the previous step of the dialog, before the import
   onBack?: () => void;
+  // The Close of the result
   onClose: () => void;
 }
 
@@ -103,6 +111,7 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
 
   const items = preview?.type?.items ?? [];
   const defaultMode = isConfigImportMode(preview?.default_mode ?? '') ? preview?.default_mode as ConfigImportMode : null;
+  const conflictKeys = partialImportConflictKeys(items, selected);
   const itemLabel = (item: { label: string; translatable: boolean }) => (item.translatable ? t_i18n(item.label) : item.label);
 
   // The preview of the file, every item selected
@@ -202,33 +211,52 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
         )}
         {items.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), width: '100%' }}>
-            <Text variant="content-base">{t_i18n('Select the {items} to import', { values: { items: itemsLabel } })}</Text>
-            {items.map((item) => (
-              <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1) }}>
-                <Checkbox
-                  label={itemLabel(item)}
-                  description={item.conflict ? t_i18n('Already exists') : undefined}
-                  checked={selected.has(item.key)}
-                  disabled={importing}
-                  onCheckedChange={() => setSelected(toggleSelectedKey(selected, item.key))}
-                />
-                {item.conflict && defaultMode && selected.has(item.key) && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1) }}>
+              <Text variant="content-base">{t_i18n('Select the {items} to import', { values: { items: itemsLabel } })}</Text>
+              {/* The same mode for every selected item in conflict, from two of them, as the wizard does on the row of a type */}
+              {defaultMode && conflictKeys.length > 1 && (preview?.type?.modes.length ?? 0) > 1 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }} data-testid="config-preset-partial-import-apply-to-all">
+                  <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{t_i18n('Apply to all')}</Text>
                   <ConfigPresetImportModeSelect
-                    subject={itemLabel(item)}
+                    subject={itemsLabel}
                     modes={preview?.type?.modes ?? []}
-                    value={modes[item.key] ?? defaultMode}
-                    purpose="When it already exists"
+                    value={sharedPartialImportMode(modes, conflictKeys, defaultMode)}
+                    purpose="Apply to all"
                     disabled={importing}
-                    onChange={(mode) => setModes({ ...modes, [item.key]: mode })}
+                    onChange={(mode) => setModes(withPartialImportModeForItems(modes, conflictKeys, mode))}
                   />
-                )}
-              </div>
-            ))}
+                </div>
+              )}
+            </div>
+            {/* Only the list scrolls: the stepper, the file and the actions stay in view, however many items the bundle holds */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), maxHeight: '40vh', overflowY: 'auto' }} data-testid="config-preset-partial-import-items">
+              {items.map((item) => (
+                <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1) }}>
+                  <Checkbox
+                    label={itemLabel(item)}
+                    description={item.conflict ? t_i18n('Already exists') : undefined}
+                    checked={selected.has(item.key)}
+                    disabled={importing}
+                    onCheckedChange={() => setSelected(toggleSelectedKey(selected, item.key))}
+                  />
+                  {item.conflict && defaultMode && selected.has(item.key) && (
+                    <ConfigPresetImportModeSelect
+                      subject={itemLabel(item)}
+                      modes={preview?.type?.modes ?? []}
+                      value={modes[item.key] ?? defaultMode}
+                      purpose="When it already exists"
+                      disabled={importing}
+                      onChange={(mode) => setModes({ ...modes, [item.key]: mode })}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
+      {/* No Cancel: the close button of the dialog is enough */}
       <DialogActions>
-        <Button variant="secondary" onClick={onClose} disabled={busy}>{t_i18n('Cancel')}</Button>
         {onBack && <Button variant="secondary" onClick={onBack} disabled={busy}>{t_i18n('Back')}</Button>}
         <Button
           onClick={handleImport}
