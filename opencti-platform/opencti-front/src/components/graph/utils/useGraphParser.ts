@@ -9,6 +9,7 @@ import { itemColor } from '../../../utils/Colors';
 
 export interface ObjectToParse {
   id: string;
+  standard_id?: string;
   entity_type: string;
   relationship_type: string;
   parent_types: string[];
@@ -28,6 +29,7 @@ export interface ObjectToParse {
     id: string;
     name: string;
   };
+  confidence?: number | null;
   created: string;
   start_time: string;
   stop_time: string;
@@ -46,11 +48,51 @@ export interface ObjectToParse {
   objectMarking: {
     id: string;
     definition: string;
+    x_opencti_color?: string | null;
   }[];
   // Other containers associated to this object.
   // Used for correlation graphs.
   linkedContainers?: ObjectToParse[];
 }
+
+/**
+ * The full name of a node as plain text. `name` is the HTML of the library tooltip and `label`
+ * is shortened, so the name is read again from the object received from the query.
+ */
+export const graphNodeTitle = (node: Pick<GraphNode, 'label' | 'raw' | 'relationship_type' | 'groupOf' | 'isRestricted'>): string => {
+  if (node.groupOf || node.relationship_type || node.isRestricted || !node.raw) return node.label;
+  return getMainRepresentative(node.raw) || node.label;
+};
+
+/** Name the platform gives to an entity the reader may not see; it keeps only its id and types. */
+const RESTRICTED_NAME = 'Restricted';
+
+/**
+ * Whether the object is the placeholder the platform returns for an entity the reader may not see:
+ * every text value replaced by "Restricted", its standard id included, which decides when the query
+ * fetched it. Without it: named "Restricted", with every other value emptied (no author, no marking,
+ * dates at the start of time); a readable entity that happens to be named "Restricted" keeps its
+ * author, its markings or its real dates, and is not taken for one.
+ */
+export const isRestrictedObject = (data: ObjectToParse) => {
+  if (data.parent_types.includes('basic-relationship')) return false;
+  if (data.standard_id) return data.standard_id === RESTRICTED_NAME;
+  const { name, representative, created_at: createdAt } = data as ObjectToParse & {
+    name?: string | null;
+    representative?: { main?: string | null } | null;
+    created_at?: string | null;
+  };
+  if (name !== RESTRICTED_NAME && representative?.main !== RESTRICTED_NAME) return false;
+  const dates = [data.created, createdAt].filter((date): date is string => !!date);
+  return !data.createdBy?.id
+    && (data.objectMarking ?? []).length === 0
+    && dates.every((date) => new Date(date).getTime() === 0);
+};
+
+/** Id of the placeholder marking of unmarked elements, which the marking filter lists as "None". */
+export const NO_MARKING_ID = 'abb8eb18-a02c-48e9-adae-08c92275c87e';
+/** Id of the placeholder author of elements without one, which the author filter lists as "None". */
+export const NO_AUTHOR_ID = '0533fcc9-b9e8-4010-877c-174343cb24cd';
 
 const useGraphParser = () => {
   const { t_i18n } = useFormatter();
@@ -66,20 +108,18 @@ const useGraphParser = () => {
     return `${relTypeStr}<br/>${createdStr}<br/>${startStr}<br/>${endStr}`;
   };
 
-  const getMarkings = (data: ObjectToParse) => {
-    let markedBy = [{
-      id: 'abb8eb18-a02c-48e9-adae-08c92275c87e',
-      definition: t_i18n('None'),
-    }];
+  const getMarkings = (data: ObjectToParse): GraphNode['markedBy'] => {
     if (data.objectMarking && data.objectMarking.length > 0) {
-      markedBy = data.objectMarking.map((m) => ({ id: m.id, definition: m.definition }));
+      return data.objectMarking.map((m) => (m.x_opencti_color
+        ? { id: m.id, definition: m.definition, x_opencti_color: m.x_opencti_color }
+        : { id: m.id, definition: m.definition }));
     }
-    return markedBy;
+    return [{ id: NO_MARKING_ID, definition: t_i18n('None') }];
   };
 
   const getCreatedBy = (data: ObjectToParse) => {
     return data.createdBy ? data.createdBy : {
-      id: '0533fcc9-b9e8-4010-877c-174343cb24cd',
+      id: NO_AUTHOR_ID,
       name: t_i18n('None'),
     };
   };
@@ -154,6 +194,7 @@ const useGraphParser = () => {
     graphPositions: OctiGraphPositions,
     numberOfConnectedElement?: number,
   ): GraphNode => {
+    const isRestricted = isRestrictedObject(data);
     return {
       id: data.id,
       disabled: false,
@@ -176,11 +217,14 @@ const useGraphParser = () => {
       numberOfConnectedElement: numberOfConnectedElement ?? data.numberOfConnectedElement,
       ...getNodeImg(data),
       name: sanitize(getNodeName(data), true),
-      label: getNodeLabel(data),
+      label: isRestricted ? t_i18n('Restricted') : (getNodeLabel(data) || t_i18n(`entity_${data.entity_type}`)),
+      isRestricted,
       markedBy: getMarkings(data),
       createdBy: getCreatedBy(data),
       defaultDate: jsDate(defaultDate(data)),
       isNestedInferred: getIsNestedInferred(data),
+      confidence: data.confidence ?? null,
+      raw: data,
     };
   };
 
@@ -202,6 +246,8 @@ const useGraphParser = () => {
       createdBy: getCreatedBy(data),
       defaultDate: jsDate(defaultDate(data)),
       isNestedInferred: getIsNestedInferred(data),
+      confidence: data.confidence ?? null,
+      raw: data,
     };
     return {
       ...baseLink,
@@ -302,6 +348,7 @@ const useGraphParser = () => {
     const links = uniqCorrelatedObjects.flatMap((object) => {
       const objectCorrelatedContainers = R.uniqBy(R.prop('id'), (object.linkedContainers ?? []));
       return objectCorrelatedContainers.map((container) => {
+        // The link only places the object in the container: the inference and the confidence of the container are not the link's.
         return buildLink(container, {
           id: `${object.id}-${container.id}`,
           target: container.id,
@@ -313,6 +360,9 @@ const useGraphParser = () => {
           relationship_type: 'reported-in',
           label: '',
           name: '',
+          inferred: false,
+          isNestedInferred: false,
+          confidence: null,
         });
       });
     });

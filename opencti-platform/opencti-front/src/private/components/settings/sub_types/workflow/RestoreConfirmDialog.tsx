@@ -28,6 +28,7 @@ const RestoreConfirmDialog = ({ open, onClose, onConfirm }: RestoreConfirmDialog
           {t_i18n('Cancel')}
         </Button>
         <Button
+          data-testid="workflow-restore-confirm-button"
           intent="destructive"
           onClick={onConfirm}
         >

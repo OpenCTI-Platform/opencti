@@ -3,7 +3,7 @@ import conf, { BUS_TOPICS } from '../../config/conf';
 import { type FileUploadData, uploadToStorage } from '../../database/file-storage';
 import { deleteFile, guessMimeType } from '../../database/file-storage';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
-import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST, type StoreEntityExclusionList } from './exclusionList-types';
 import type { ExclusionListFileAddInput, MutationExclusionListFieldPatchArgs, QueryExclusionListsArgs } from '../../generated/graphql';
@@ -11,14 +11,31 @@ import { getClusterInstances, notify, redisGetExclusionListStatus, redisUpdateEx
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { generateInternalId } from '../../schema/identifier';
+import { generateInternalId, normalizeName } from '../../schema/identifier';
+import { FilterMode } from '../../generated/graphql';
+import { exclusionListNameSchema, hasSameTypes } from './exclusionList-rules';
 
 const filePath = 'exclusionLists';
 
-const MAX_FILE_SIZE = conf.get('app:exclusion_list:file_max_size') ?? 10000000;
+export const MAX_FILE_SIZE = conf.get('app:exclusion_list:file_max_size') ?? 10000000;
+
+// The name of the file of a list: the upload takes it from here, and the key of the list in the storage is built from it
+const exclusionListFileName = (internalId: string) => `${internalId}.txt`;
+
+// The key of the file of a list in the storage: the upload lowercases the name of the file, not the folder
+export const exclusionListStorageKey = (internalId: string) => `${filePath}/${exclusionListFileName(internalId).toLowerCase()}`;
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityExclusionList>(context, user, id, ENTITY_TYPE_EXCLUSION_LIST);
+};
+
+// The lists that have this name, whatever its case. The filter on a name is an exact match on the index (lowercased), so only the candidates
+// are read, not every list: the comparison is made again here, as the importer decides on it.
+export const findExclusionListsByName = async (context: AuthContext, user: AuthUser, name: string) => {
+  const candidates = await fullEntitiesList<BasicStoreEntityExclusionList>(context, user, [ENTITY_TYPE_EXCLUSION_LIST], {
+    filters: { mode: FilterMode.And, filters: [{ key: ['name'], values: [name] }], filterGroups: [] },
+  });
+  return candidates.filter((list) => normalizeName(list.name) === normalizeName(name));
 };
 
 export const findExclusionListPaginated = (context: AuthContext, user: AuthUser, args: QueryExclusionListsArgs) => {
@@ -52,7 +69,6 @@ const checkFileSize = async (createReadStream: () => Readable) => {
   let byteLength = 0;
   let linesNumber = 1;
   let fileTooHeavy = false;
-  // eslint-disable-next-line no-restricted-syntax
   for await (const uploadChunk of uploadStream) {
     byteLength += (uploadChunk as Buffer).byteLength;
     const chunkAsString = (uploadChunk as Buffer).toString('utf-8');
@@ -80,31 +96,42 @@ const uploadExclusionListFile = async (context: AuthContext, user: AuthUser, exc
   if (mimeType !== 'text/plain') {
     throw UnsupportedError('Exclusion list file format must be text/plain', { mimeType });
   }
-  const exclusionFile = { ...fullFile, filename: `${exclusionListId}.txt` };
+  const exclusionFile = { ...fullFile, filename: exclusionListFileName(exclusionListId) };
   const { upload } = await uploadToStorage(context, user, filePath, exclusionFile, {});
   return { upload, byteLength, linesNumber };
 };
 
-const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput, file: FileUploadData) => {
+// One rule for every way to create or rename a list: the creation form, the edit form, the API and the import of a configuration preset
+const checkExclusionListName = (value: string) => {
+  const name = exclusionListNameSchema.safeParse(value);
+  if (!name.success) {
+    throw FunctionalError(name.error.issues[0].message, { name: value });
+  }
+};
+
+const storeAndCreateExclusionList = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput, file: FileUploadData, enabled: boolean) => {
+  checkExclusionListName(input.name);
   const exclusionListInternalId = generateInternalId();
   const { upload, byteLength, linesNumber } = await uploadExclusionListFile(context, user, exclusionListInternalId, file);
   const exclusionListToCreate = {
     name: input.name,
     description: input.description,
-    enabled: true,
+    enabled,
     exclusion_list_entity_types: input.exclusion_list_entity_types,
     file_id: upload.id,
     internal_id: exclusionListInternalId,
     exclusion_list_file_size: byteLength,
     exclusion_list_values_count: linesNumber,
   };
-  const createdExclusionList = createInternalObject<StoreEntityExclusionList>(context, user, exclusionListToCreate, ENTITY_TYPE_EXCLUSION_LIST);
+  // The list is indexed before the cache is asked to rebuild, or a rebuild between the two would miss it
+  const createdExclusionList = await createInternalObject<StoreEntityExclusionList>(context, user, exclusionListToCreate, ENTITY_TYPE_EXCLUSION_LIST);
   await refreshExclusionListStatus();
   return createdExclusionList;
 };
 
-export const addExclusionListFile = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput) => {
-  return storeAndCreateExclusionList(context, user, input, input.file);
+// A list is created with its final state: disabling it afterwards could leave the cache built from the enabled list
+export const addExclusionListFile = async (context: AuthContext, user: AuthUser, input: ExclusionListFileAddInput, enabled = true) => {
+  return storeAndCreateExclusionList(context, user, input, input.file, enabled);
 };
 
 export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUser, args: MutationExclusionListFieldPatchArgs) => {
@@ -113,6 +140,8 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
   if (!exclusionList) {
     throw FunctionalError(`Exclusion list ${id} cannot be found`);
   }
+  // Every name of the input is checked: the update applies them in order, so the last one is the one stored
+  (input ?? []).filter((i) => i.key === 'name').forEach((i) => checkExclusionListName(String(i.value?.[0] ?? '')));
 
   let fileSize = exclusionList.exclusion_list_file_size;
   let exclusionListCount = exclusionList.exclusion_list_values_count;
@@ -124,7 +153,10 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
   const fullInput = [...(input ?? []), { key: 'exclusion_list_file_size', value: [fileSize] }, { key: 'exclusion_list_values_count', value: [exclusionListCount] }];
   const { element } = await updateAttribute<StoreEntityExclusionList>(context, user, id, ENTITY_TYPE_EXCLUSION_LIST, fullInput);
 
-  if (file || fullInput.some((i) => i.key === 'enabled')) {
+  // The cache holds the types of each list next to its values: a change of types needs a rebuild as much as a change of values. The edit form
+  // sends the types on every save: only types that differ from the ones of the list are a change.
+  const typesChanged = (input ?? []).some((i) => i.key === 'exclusion_list_entity_types' && !hasSameTypes(exclusionList.exclusion_list_entity_types, i.value as string[]));
+  if (file || typesChanged || fullInput.some((i) => i.key === 'enabled')) {
     await refreshExclusionListStatus();
   }
 
@@ -133,7 +165,7 @@ export const fieldPatchExclusionList = async (context: AuthContext, user: AuthUs
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${input?.map((i) => i.key).join(', ')}\` for exclusion list \`${element.name}\``,
+    message: `updates \`${[...(input ?? []).map((i) => i.key), ...(file ? ['file'] : [])].join(', ')}\` for exclusion list \`${element.name}\``,
     context_data: { id, entity_type: ENTITY_TYPE_EXCLUSION_LIST, input },
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_EXCLUSION_LIST].EDIT_TOPIC, element, user);

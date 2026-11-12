@@ -22,7 +22,7 @@ import {
   UNIMPACTED_ENTITIES_ROLE,
   type ElFindByIdsOpts,
 } from './engine';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey, isAbstract } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreObject, BasicStoreRelation, BasicConnection, StoreProxyRelation } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -50,6 +50,8 @@ export interface FiltersWithNested extends Filter {
     operator?: FilterOperator;
     mode?: FilterMode;
   }>;
+  // Match the documents having no nested element satisfying all the nested filters
+  negateNested?: boolean;
 }
 
 export interface FilterGroupWithNested extends FilterGroup {
@@ -140,7 +142,18 @@ export interface RelationOptions<T extends BasicStoreCommon> extends RelationFil
   includeDeletedInDraft?: boolean | null;
 }
 
-export const buildAggregationFilter = <T extends BasicStoreCommon>(args: RelationFilters<T>) => {
+// The role of a connection is always `<relationship type>_from` or `<relationship type>_to`.
+// When every relationship type is concrete, filter on the exact roles: a leading wildcard
+// makes the search engine enumerate the role terms of every segment.
+export const buildConnectionRoleFilter = (relationshipTypes: string | Array<string> | undefined | null, side: 'from' | 'to') => {
+  const types = !relationshipTypes ? [] : (Array.isArray(relationshipTypes) ? relationshipTypes : [relationshipTypes]);
+  if (types.length > 0 && types.every((type) => !isAbstract(type))) {
+    return { key: 'role', values: types.map((type) => `${type}_${side}`) };
+  }
+  return { key: 'role', values: [`*_${side}`], operator: FilterOperator.Wildcard };
+};
+
+export const buildAggregationFilter = <T extends BasicStoreCommon>(relationshipTypes: string | Array<string> | undefined | null, args: RelationFilters<T>) => {
   const { fromOrToId = [], isTo = null } = args;
   const { fromId, fromRole, fromTypes = [] } = args;
   const { toId, toRole, toTypes = [] } = args;
@@ -162,7 +175,7 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
     if (fromRole) {
       nestedFrom.push({ key: 'role', values: [fromRole] });
     } else {
-      nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
+      nestedFrom.push(buildConnectionRoleFilter(relationshipTypes, 'from'));
     }
     filtersContent.push({ key: 'connections', nested: nestedFrom });
   }
@@ -177,7 +190,7 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
     if (toRole) {
       nestedTo.push({ key: 'role', values: [toRole] });
     } else {
-      nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
+      nestedTo.push(buildConnectionRoleFilter(relationshipTypes, 'to'));
     }
     filtersContent.push({ key: 'connections', nested: nestedTo });
   }
@@ -324,7 +337,7 @@ export const fullRelationsList = async <T extends BasicStoreRelation>(context: A
 
 export const buildAggregationRelationFilter = <T extends BasicStoreCommon>(relationshipTypes: string | Array<string>, args: RelationFilters<T>) => {
   const searchOptions = buildRelationsFilter(relationshipTypes, args);
-  const aggregationOptions = buildAggregationFilter(args);
+  const aggregationOptions = buildAggregationFilter(relationshipTypes, args);
   return { ...args, searchOptions, aggregationOptions };
 };
 
@@ -394,7 +407,7 @@ export const fullEntitiesListThroughRelations = async <T extends BasicStoreCommo
     values: [],
     nested: [
       { key: 'internal_id', values: fromOrToIds },
-      { key: 'role', values: [`*_${relation.sourceSide}`], operator: FilterOperator.Wildcard },
+      buildConnectionRoleFilter(type, relation.sourceSide),
     ],
   };
   // Filter the other side of the relation to have expected toEntityType
@@ -403,7 +416,7 @@ export const fullEntitiesListThroughRelations = async <T extends BasicStoreCommo
     values: [],
     nested: [
       { key: 'types', values: Array.isArray(fromOrToType) ? fromOrToType : [fromOrToType] },
-      { key: 'role', values: [`*_${opposite}`], operator: FilterOperator.Wildcard },
+      buildConnectionRoleFilter(type, opposite),
     ],
   };
   const filters: FilterGroupWithNested = {

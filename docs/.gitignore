@@ -1,3 +1,2 @@
 site/
-.cache/
-.mypy_cache
+site-shared/

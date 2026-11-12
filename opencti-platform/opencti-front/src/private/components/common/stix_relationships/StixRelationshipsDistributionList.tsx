@@ -186,7 +186,7 @@ const StixRelationshipsDistributionList = ({
 }: StixRelationshipsDistributionListProps) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsDistributionListDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsDistributionListDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -206,8 +206,7 @@ const StixRelationshipsDistributionList = ({
     >
       <div style={{ height: '100%' }}>
         <WidgetRenderContent
-          isMissingHostEntity={isMissingHostEntity}
-          isMissingSavedFilters={isMissingSavedFilters}
+          {...renderGuards}
           queryRef={queryRef}
           host={host}
         >

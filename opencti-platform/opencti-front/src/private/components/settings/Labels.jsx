@@ -1,7 +1,7 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import LabelPopover from './labels/LabelPopover';
 import LabelCreation from './labels/LabelCreation';
 import Breadcrumbs from '../../../components/Breadcrumbs';
@@ -13,12 +13,10 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import ItemCopy from '../../../components/ItemCopy';
 
-const useStyles = makeStyles((theme) => ({
-  container: {
-    margin: 0,
-    padding: `0 calc( 200px - ${theme.spacing(3)} + ${theme.spacing(1)} ) 0 0`, // 200 of menu size, 3 space from main html, 1 for correct alignment
-    maxWidth: '100%',
-  },
+const Container = styled('div')(({ theme }) => ({
+  margin: 0,
+  padding: `0 calc( 200px - ${theme.spacing(3)} + ${theme.spacing(1)} ) 0 0`, // 200 of menu size, 3 space from main html, 1 for correct alignment
+  maxWidth: '100%',
 }));
 
 const LOCAL_STORAGE_KEY = 'Labels';
@@ -95,7 +93,6 @@ const lineFragment = graphql`
 `;
 
 const Labels = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const { setTitle } = useConnectedDocumentModifier();
@@ -155,7 +152,7 @@ const Labels = () => {
   };
 
   return (
-    <div className={classes.container} data-testid="labels-page">
+    <Container data-testid="labels-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Labels'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -173,12 +170,11 @@ const Labels = () => {
           createButton={<LabelCreation paginationOptions={queryPaginationOptions} />}
         />
       )}
-    </div>
+    </Container>
   );
 };
 
 Labels.propTypes = {
-  classes: PropTypes.object,
   t: PropTypes.func,
   navigate: PropTypes.func,
   location: PropTypes.object,

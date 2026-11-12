@@ -3,10 +3,10 @@ import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema } from './database/engine';
 import { initializeBucket } from './database/raw-file-storage';
-import { enforceQueuesConsistency, initializeInternalQueues } from './database/rabbitmq';
-import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
+import { enforceQueuesConsistency, initializeInternalQueues } from './modules/connector/connector-rabbitmq';
+import { ENABLED_FEATURE_FLAGS, GRAPHQL_SECURE_BY_DEFAULT, logApp, PLATFORM_VERSION, TLS_REJECT_UNAUTHORIZED } from './config/conf';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
-import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
+import { ENTITY_TYPE_MIGRATION_STATUS, ENTITY_TYPE_SETTINGS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity } from './database/middleware';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
@@ -22,7 +22,9 @@ import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils'
 import { initializeStreamStack } from './database/stream/stream-handler';
 import { initializeAuthenticationProviders } from './modules/authenticationProvider/providers';
 import { initializeAdminUser } from './modules/user/user-domain';
+import { cleanUpPasswordHistoryWhenDisabled } from './modules/user/user-password-history';
 import type { BasicStoreEntityMigrationStatus } from './types/store';
+import type { BasicStoreSettings } from './types/settings';
 import type { AuthContext } from './types/user';
 
 // region Platform constants
@@ -32,6 +34,20 @@ const PLATFORM_LOCK_ID = 'platform_init_lock';
 export const checkFeatureFlags = () => {
   if (ENABLED_FEATURE_FLAGS.length > 0) {
     logApp.info(`[FEATURE-FLAG] Activated features still in development: ${ENABLED_FEATURE_FLAGS}`);
+  }
+};
+
+export const checkTlsVerification = () => {
+  if (!TLS_REJECT_UNAUTHORIZED) {
+    logApp.warn('[OPENCTI] TLS certificate verification is disabled for the outgoing connections that do not set their own option (tls:reject_unauthorized=false). '
+      + 'It will be enabled by default in an upcoming version: set TLS__REJECT_UNAUTHORIZED=true to opt in now.');
+  }
+};
+
+export const checkGraphqlSecurity = () => {
+  if (!GRAPHQL_SECURE_BY_DEFAULT) {
+    logApp.warn('[OPENCTI] GraphQL secure defaults are disabled for the protections that do not set their own option (app:graphql:secure_by_default=false). '
+      + 'They will be enabled by default in an upcoming version: set APP__GRAPHQL__SECURE_BY_DEFAULT=true to opt in now.');
   }
 };
 
@@ -62,6 +78,15 @@ const isCompatiblePlatform = async (context: AuthContext) => {
   if (runtimeVersion && semver.lt(runtimeVersion, currentVersion)) {
     throw UnsupportedError('Your platform data are too recent to start on', { currentVersion, runtimeVersion });
   }
+};
+
+// With the password history feature flag off, no password history may stay behind
+const cleanUpPasswordHistory = async (context: AuthContext) => {
+  const settings = await loadEntity<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
+  if (!settings) {
+    return;
+  }
+  await cleanUpPasswordHistoryWhenDisabled(settings);
 };
 
 const platformInit = async (withMarkings = true) => {
@@ -103,6 +128,7 @@ const platformInit = async (withMarkings = true) => {
       await isCompatiblePlatform(context);
       await initializeAdminUser(context);
       await applyMigration(context);
+      await cleanUpPasswordHistory(context);
       await initCreateEntitySettings(context, SYSTEM_USER);
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);

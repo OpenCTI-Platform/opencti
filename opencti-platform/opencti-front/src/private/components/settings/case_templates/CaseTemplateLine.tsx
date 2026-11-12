@@ -2,29 +2,16 @@ import React, { FunctionComponent } from 'react';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
 import { ListItemButton } from '@mui/material';
-import type { Theme } from '../../../../components/Theme';
 import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 import ItemIcon from '../../../../components/ItemIcon';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>({
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
-  bodyItem: bodyItemStyle,
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
-});
+const BodyItem = styled('div')(bodyItemStyle);
 
 export const CaseTemplateLineFragment = graphql`
   fragment CaseTemplateLine_node on CaseTemplate {
@@ -55,13 +42,11 @@ const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({
   node,
   dataColumns,
 }) => {
-  const classes = useStyles();
-
   const data = useFragment(CaseTemplateLineFragment, node);
 
   return (
     <ListItemButton
-      classes={{ root: classes.item }}
+      sx={{ paddingLeft: '10px', height: 50 }}
       component={Link}
       divider
       to={`/dashboard/settings/vocabularies/case_templates/${data.id}`}
@@ -73,18 +58,17 @@ const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({
         primary={(
           <>
             {Object.values(dataColumns).map((value) => (
-              <div
+              <BodyItem
                 key={value.label}
-                className={classes.bodyItem}
                 style={{ width: value.width }}
               >
                 {value.render?.(data)}
-              </div>
+              </BodyItem>
             ))}
           </>
         )}
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemIcon sx={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>

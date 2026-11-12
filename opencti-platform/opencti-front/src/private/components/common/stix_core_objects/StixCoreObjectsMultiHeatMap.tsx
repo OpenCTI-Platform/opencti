@@ -133,7 +133,7 @@ const StixCoreObjectsMultiHeatMap = ({
 }: StixCoreObjectsMultiHeatMapProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiHeatMapTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiHeatMapTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -155,8 +155,7 @@ const StixCoreObjectsMultiHeatMap = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

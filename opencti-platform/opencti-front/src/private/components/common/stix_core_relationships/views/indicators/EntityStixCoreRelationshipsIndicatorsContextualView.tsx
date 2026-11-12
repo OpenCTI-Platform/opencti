@@ -69,7 +69,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
   stixCoreObjectTypes = [],
   currentView,
 }) => {
-  const { t_i18n, n, nsdt } = useFormatter();
+  const { t_i18n, n, ftdt } = useFormatter();
 
   const stixDomainObject = usePreloadedFragment<
     EntityStixCoreRelationshipsIndicatorsContextualViewQuery,
@@ -149,13 +149,13 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
       label: 'Platform creation date',
       width: '15%',
       isSortable: true,
-      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => nsdt(stixCoreObject.created_at),
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => ftdt(stixCoreObject.created_at),
     },
     valid_until: {
       label: 'Valid until',
       width: '15%',
       isSortable: true,
-      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => nsdt(stixCoreObject.valid_until),
+      render: (stixCoreObject: EntityStixCoreRelationshipsIndicatorsContextualViewLine_node$data) => ftdt(stixCoreObject.valid_until),
     },
     objectMarking: {
       label: 'Marking',

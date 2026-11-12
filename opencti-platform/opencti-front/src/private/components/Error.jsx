@@ -3,12 +3,12 @@ import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { graphql } from 'react-relay';
 import { Link } from 'react-router';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import { useFormatter } from '../../components/i18n';
-import { commitMutation } from '../../relay/environment';
 import withRouter from '../../utils/compat_router/withRouter';
+import { getGraphQLResponseErrors } from '../../relay/graphQLResponseErrors';
+import { logger } from '../../utils/logging/logger';
 
 // --- Region UI errors components
 // -------------------------------
@@ -53,13 +53,6 @@ export const NoMatch = () => <ErrorNotFound />;
 // --- End region
 // --------------
 
-// Mutation to send the frontend error to the backend.
-const frontendErrorLogMutation = graphql`
-  mutation ErrorFrontendLogMutation($message: String!, $codeStack: String, $componentStack: String) {
-    frontendErrorLog(message: $message, codeStack: $codeStack, componentStack: $componentStack)
-  }
-`;
-
 class ErrorBoundaryComponent extends React.Component {
   state = { error: null };
 
@@ -69,21 +62,13 @@ class ErrorBoundaryComponent extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    try {
-      const isNetworkError = this.state.error?.res;
-      if (!isNetworkError) {
-        // If direct javascript error, sent the error for back logging
-        commitMutation({
-          mutation: frontendErrorLogMutation,
-          variables: {
-            message: String(error),
-            codeStack: error.stack,
-            componentStack: errorInfo.componentStack,
-          },
-        });
-      }
-    } catch {
-      // If error fail to be reported, do nothing
+    const isNetworkError = this.state.error?.data?.res ?? this.state.error?.res;
+    if (!isNetworkError) {
+      logger.error('React component tree crashed', {
+        eventName: 'opencti.frontend.component_crashed',
+        error,
+        data: { component: { stack: errorInfo.componentStack } },
+      });
     }
   }
 
@@ -96,9 +81,7 @@ class ErrorBoundaryComponent extends React.Component {
 
   render() {
     if (this.state.error) {
-      const baseErrors = this.state.error.res?.errors ?? [];
-      const retroErrors = this.state.error.data?.res?.errors ?? [];
-      const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);
+      const types = map((e) => e.extensions?.code, getGraphQLResponseErrors(this.state.error));
       // Specific error catching
       if (includes('COMPLEX_SEARCH_ERROR', types)) {
         return <DedicatedWarning title="Complex search" description="Your search have too much terms to be executed. Please limit the number of words or the complexity" />;

@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import Alert from '@mui/material/Alert';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { MoreVert } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
@@ -200,6 +200,10 @@ const DeployedIntegrationPopover = ({ item, onChange }: DeployedIntegrationPopov
   }
 
   return (
+    // This wrapper only stops the click from bubbling up to the card and
+    // following its link; the actual interactive control (the icon button
+    // below, via handleOpen) is already focusable and keyboard-operable on its own.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
       <IconButton
         aria-label={t_i18n('Open menu')}

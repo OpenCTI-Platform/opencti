@@ -13,7 +13,7 @@ You can access playbook automation in the user interface under **Data > Processi
 
 ## Creating playbooks
 
-You can create as many playbooks as you need. Each playbook runs independently. Playbooks can be [created manually](#create-a-playbook-manually) from scratch, [duplicated](#duplicate-a-playbook) or [imported](#import-and-export-a-playbook) from other OpenCTI environments. Playbooks can only be used when they are started running. 
+You can create as many playbooks as you need. Each playbook runs independently. Playbooks can be [created manually](#create-a-playbook-manually) from scratch, [duplicated](#duplicate-a-playbook) or [imported](#import-and-export-a-playbook) from other OpenCTI environments or [from the XTM Hub](#import-a-playbook-from-the-xtm-hub). Playbooks can only be used when they are started running. 
 
 Each playbook needs to have three steps to be complete:
 
@@ -96,6 +96,25 @@ You can import a playbook from your own platform or from another platform. Navig
 | Task template | Container wrapper | Verify that the task template exists in your platform | Create the missing task template |
 | Notifier | Send to notifier | Verify that the notifier exists in your platform | Create the missing notifier |
 | Target | Send to notifier | Verify that the target exists in your platform | Create the missing target |
+
+#### Import a playbook from the XTM Hub
+
+You can select playbooks from the XTM Hub by clicking the **Import from Hub** button in **Data > Processing > Automation**. The XTM Hub playbook library opens in a new tab. This button is only displayed when your platform can reach the XTM Hub.
+
+#### One-click playbook deployment
+
+From the XTM Hub, you can deploy your desired playbook with a single click.
+To get started, register your OpenCTI platform following the instructions in our [OpenCTI registration documentation](../administration/hub.md).
+Next, navigate to your preferred playbook and click the **Deploy in OpenCTI** button located in the top right corner.
+If you have multiple OpenCTI platforms registered, choose the platform where you wish to deploy the playbook.
+You will then be redirected to the OpenCTI platform, where the process will proceed automatically.
+Within a few seconds, you'll be directed to your newly imported playbook.
+
+_Make sure you have the "Manage Playbooks" capability on OpenCTI._
+
+![One-click deploy button on the XTM Hub](assets/one-click-deploy.png)
+
+Playbooks imported from the XTM Hub are not started automatically. Before you [start the playbook](#step-4-start-your-playbook), check its configuration as described in [Verify imported playbook configuration](#import-a-playbook).
 
 ### Export a playbook
 

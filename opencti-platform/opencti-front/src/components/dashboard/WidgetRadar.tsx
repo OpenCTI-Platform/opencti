@@ -1,6 +1,6 @@
 import Chart, { OpenCTIChartProps } from '@components/common/charts/Chart';
 import React, { useMemo } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ApexOptions } from 'apexcharts';
 import { radarChartOptions } from '../../utils/Charts';
 import { useFormatter } from '../i18n';

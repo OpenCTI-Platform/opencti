@@ -1,0 +1,303 @@
+// Dashboard variables are referenced in widget filters with a textual token `$var:<uuid>`.
+// This module is mirrored in opencti-front (src/components/dashboard/dashboardVariablesResolution.ts);
+// both sides are locked by tests/data/dashboard-variables/resolution-cases.json.
+
+import { logApp } from '../../config/conf';
+
+const DASHBOARD_VARIABLE_TOKEN_PREFIX = '$var:';
+
+const UUID_PATTERN = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
+const TOKEN_REGEXP = new RegExp(`^\\$var:(${UUID_PATTERN})$`);
+const TOKEN_ANYWHERE_REGEXP = new RegExp(`\\$var:${UUID_PATTERN}`);
+
+type FilterGroupLike = { filters: unknown[]; filterGroups?: unknown[] };
+type SubFilterLike = { key: unknown; values: unknown[]; operator?: unknown };
+
+export interface DashboardVariablesResolutionOptions {
+  // Ids of the variables of type date: their value is shifted like a fixed date for the lte and gt operators.
+  dateVariableIds?: ReadonlySet<string>;
+  // IANA time zone in which the day shift of a date variable is counted, 'UTC' by default.
+  // Today no caller provides the time zone of the publisher; the publication form will send it.
+  timeZone?: string;
+}
+
+// The front stores a fixed date D as D + 1 day 00:00 for these operators, so that "<= D" includes the whole day D
+// and "> D" excludes it. A date variable gets the same shift when it is substituted.
+const DAY_SHIFTED_DATE_OPERATORS = ['lte', 'gt'];
+
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Whether `timeZone` is a non-empty time zone name that the runtime supports (a Node build without full ICU only
+ * supports UTC). The GraphQL input of the publication form, which will send the time zone of the publisher, must call
+ * it and throw a FunctionalError when it fails: the UTC fallback of the day shift is only a last resort.
+ */
+export const isValidTimeZone = (timeZone: string): boolean => {
+  if (!timeZone) return false;
+  try {
+    return Boolean(new Intl.DateTimeFormat('en-US', { timeZone }).resolvedOptions().timeZone);
+  } catch {
+    return false;
+  }
+};
+
+// Invalid time zones already logged: the UTC fallback is logged once per zone, not for every value it shifts.
+const loggedInvalidTimeZones = new Set<string>();
+
+const buildWallClockFormatter = (timeZone: string) => {
+  const formatOptions: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hourCycle: 'h23',
+  };
+  try {
+    return new Intl.DateTimeFormat('en-US', { ...formatOptions, timeZone });
+  } catch {
+    // Last resort, since a time zone sent by a client is validated first (isValidTimeZone): an invalid or unsupported
+    // time zone falls back to UTC, which shifts the day by the offset of the zone. Logged, never thrown.
+    if (!loggedInvalidTimeZones.has(timeZone)) {
+      loggedInvalidTimeZones.add(timeZone);
+      logApp.warn('[DASHBOARD] Unsupported time zone for a date variable, its day shift is counted in UTC', { timeZone });
+    }
+    return new Intl.DateTimeFormat('en-US', { ...formatOptions, timeZone: 'UTC' });
+  }
+};
+
+// Wall clock time of an instant in the time zone of the formatter, as the timestamp showing the same wall clock in UTC.
+const toWallClock = (time: number, formatter: Intl.DateTimeFormat) => {
+  const parts: Record<string, number> = {};
+  formatter.formatToParts(new Date(time)).forEach(({ type, value }) => {
+    parts[type] = Number(value);
+  });
+  const wallClock = new Date(0);
+  // setUTCFullYear, unlike Date.UTC, does not map the years 0 to 99 to 1900 to 1999.
+  wallClock.setUTCFullYear(parts.year, parts.month - 1, parts.day);
+  wallClock.setUTCHours(parts.hour % 24, parts.minute, parts.second, new Date(time).getUTCMilliseconds());
+  return wallClock.getTime();
+};
+
+/**
+ * One calendar day after `isoString` in `timeZone`, at the same wall clock time: local midnight stays local midnight,
+ * so the result is 23 or 25 hours later across a daylight saving change. Mirrored in the front, where it matches the
+ * date-fns `addDays` of the fixed date input when counted in the time zone of the browser.
+ * A wall clock time skipped by a daylight saving change (gap) gives the instant after the gap, moved forward by the
+ * length of the gap; a wall clock time repeated by a change (overlap) gives its first occurrence. Both follow JavaScript
+ * dates, hence date-fns. A value that is not a date is returned unchanged; an invalid time zone falls back to UTC,
+ * with a log (a time zone sent by a client must be checked with isValidTimeZone first).
+ */
+const addCalendarDayInTimeZone = (isoString: string, timeZone: string): string => {
+  const time = new Date(isoString).getTime();
+  if (Number.isNaN(time)) return isoString;
+  const formatter = buildWallClockFormatter(timeZone);
+  const offsetAt = (instant: number) => toWallClock(instant, formatter) - instant;
+  const targetWallClock = toWallClock(time, formatter) + ONE_DAY_MS;
+  // Offsets of the zone on both sides of a daylight saving change that may happen around the target.
+  const offsetBefore = offsetAt(targetWallClock - ONE_DAY_MS);
+  const offsetAfter = offsetAt(targetWallClock + ONE_DAY_MS);
+  const beforeCandidate = targetWallClock - offsetBefore;
+  const afterCandidate = targetWallClock - offsetAfter;
+  // The offset before the change is kept when it is valid at the target (no change, or the first occurrence of an
+  // overlap) and in a gap, where no offset is valid; the offset after the change only when the change precedes the target.
+  const isAfterChange = offsetAt(beforeCandidate) !== offsetBefore && offsetAt(afterCandidate) === offsetAfter;
+  return new Date(isAfterChange ? afterCandidate : beforeCandidate).toISOString();
+};
+
+const isFilterGroupLike = (value: unknown): value is FilterGroupLike => {
+  return typeof value === 'object' && value !== null && Array.isArray((value as FilterGroupLike).filters);
+};
+
+const isSubFilterLike = (value: unknown): value is SubFilterLike => {
+  return typeof value === 'object' && value !== null && 'key' in value && Array.isArray((value as SubFilterLike).values);
+};
+
+export const toDashboardVariableToken = (variableId: string) => `${DASHBOARD_VARIABLE_TOKEN_PREFIX}${variableId}`;
+
+export const parseDashboardVariableToken = (value: unknown): string | null => {
+  if (typeof value !== 'string') return null;
+  const match = TOKEN_REGEXP.exec(value);
+  return match ? match[1] : null;
+};
+
+export const containsDashboardVariableToken = (serialized: string) => TOKEN_ANYWHERE_REGEXP.test(serialized);
+
+/**
+ * Replace every `$var:<uuid>` token of a filter group by the current value of the variable.
+ * The value of a date variable (`options.dateVariableIds`) in a filter of operator lte or gt is shifted by one calendar
+ * day in `options.timeZone` (UTC by default), exactly as the front shifts a fixed date when it is picked.
+ * A token without a (non-empty, non-token) value is kept in place and reported in `unresolved`:
+ * the caller must then refuse to run the query (fail closed), never drop the filter.
+ * The input is never mutated.
+ */
+export const resolveVariablesInFilterGroup = <T>(
+  filterGroup: T,
+  values: ReadonlyMap<string, string>,
+  options: DashboardVariablesResolutionOptions = {},
+): { filters: T; unresolved: string[] } => {
+  const unresolved: string[] = [];
+  // `operator` is the one of the filter holding the value; a sub filter (regardingOf) has none of its own.
+  const resolveValue = (value: unknown, operator?: unknown): unknown => {
+    const variableId = parseDashboardVariableToken(value);
+    if (variableId !== null) {
+      const current = values.get(variableId);
+      // A value that is itself a token is not resolved further (no chaining, no cycle): fail closed.
+      if (current === undefined || current === '' || parseDashboardVariableToken(current) !== null) {
+        if (!unresolved.includes(variableId)) unresolved.push(variableId);
+        return value;
+      }
+      const isDayShifted = options.dateVariableIds?.has(variableId) && DAY_SHIFTED_DATE_OPERATORS.includes(operator as string);
+      return isDayShifted ? addCalendarDayInTimeZone(current, options.timeZone ?? 'UTC') : current;
+    }
+    if (isFilterGroupLike(value)) return resolveGroup(value);
+    if (isSubFilterLike(value)) return resolveFilter(value);
+    return value;
+  };
+  const resolveFilter = (filter: SubFilterLike): SubFilterLike => ({
+    ...filter,
+    values: filter.values.map((value) => resolveValue(value, filter.operator)),
+  });
+  const resolveGroup = (group: FilterGroupLike): FilterGroupLike => {
+    const result: FilterGroupLike = {
+      ...group,
+      filters: group.filters.map((filter) => (isSubFilterLike(filter) ? resolveFilter(filter) : filter)),
+    };
+    if (Array.isArray(group.filterGroups)) {
+      result.filterGroups = group.filterGroups.map((subGroup) => (isFilterGroupLike(subGroup) ? resolveGroup(subGroup) : subGroup));
+    }
+    return result;
+  };
+  if (!isFilterGroupLike(filterGroup)) {
+    return { filters: filterGroup, unresolved };
+  }
+  return { filters: resolveGroup(filterGroup) as T, unresolved };
+};
+
+export const extractDashboardVariableIds = (filterGroup: unknown) => {
+  // With no value available, every referenced variable is reported as unresolved.
+  return resolveVariablesInFilterGroup(filterGroup, new Map()).unresolved;
+};
+
+type ManifestWidgetLike = { dataSelection?: Array<{ filters?: unknown; dynamicFrom?: unknown; dynamicTo?: unknown }> };
+
+/**
+ * Map each variable id to the ids of the widgets referencing it in their inline filters.
+ * Saved filters are deliberately ignored: a token is forbidden inside a saved filter.
+ */
+export const computeDashboardVariablesUsage = (widgets: Record<string, ManifestWidgetLike> | undefined) => {
+  const usage = new Map<string, string[]>();
+  Object.entries(widgets ?? {}).forEach(([widgetId, widget]) => {
+    const ids = new Set<string>();
+    (widget.dataSelection ?? []).forEach((selection) => {
+      [selection.filters, selection.dynamicFrom, selection.dynamicTo]
+        .flatMap(extractDashboardVariableIds)
+        .forEach((id) => ids.add(id));
+    });
+    ids.forEach((id) => usage.set(id, [...(usage.get(id) ?? []), widgetId]));
+  });
+  return usage;
+};
+
+// Strict ISO-8601 date: `YYYY-MM-DD`, or a date-time `YYYY-MM-DDTHH:mm`, `…:ss` or `…:ss.s` (1 to 3 digits) ending with
+// a time zone designator, `Z` or `±HH:mm`. Outside this format `Date.parse` depends on the JavaScript engine (V8 parses
+// `2024/01/01` or `March 7 2024`, Safari does not), and a date-time without designator is local time in some engines
+// and UTC in others. Written identically in the front (dashboardVariablesResolution.ts).
+const ISO_DATE_REGEXP = /^(\d{4})-(\d{2})-(\d{2})(?:T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,3})?)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d))?$/;
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+/**
+ * Whether `value` is a strict ISO-8601 date (see ISO_DATE_REGEXP) of an existing calendar day, which every engine parses
+ * to the same instant. A day that does not exist (`2024-02-30`) is refused: some engines roll it over, others refuse it.
+ */
+export const isStrictIsoDate = (value: string): boolean => {
+  const match = ISO_DATE_REGEXP.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12) return false;
+  const isLeapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const daysInMonth = month === 2 && isLeapYear ? 29 : DAYS_IN_MONTH[month - 1];
+  return day >= 1 && day <= daysInMonth && !Number.isNaN(Date.parse(value));
+};
+
+/**
+ * Whether a default value is valid for the type of its variable (mirror of the frontend isValidVariableValue, without
+ * its selection pool rule: the default of a selection variable is checked when the variable is written).
+ * A boolean is `true` or `false`, a numeric a finite number, a date a strict ISO-8601 date (`isStrictIsoDate`), any
+ * other type a non-blank string. A boolean, numeric or date value is never trimmed: one with surrounding spaces is refused.
+ * No value may reference another variable.
+ */
+export const isValidDashboardVariableValue = (type: unknown, value: string) => {
+  const trimmed = value.trim();
+  if (trimmed === '' || value.includes(DASHBOARD_VARIABLE_TOKEN_PREFIX)) return false;
+  switch (type) {
+    case 'boolean':
+      return value === 'true' || value === 'false';
+    case 'numeric':
+      return value === trimmed && Number.isFinite(Number(value));
+    case 'date':
+      return isStrictIsoDate(value);
+    default:
+      return true;
+  }
+};
+
+/**
+ * Default value of each variable of a manifest, keyed by variable id.
+ * The manifest may come from an import: anything malformed, or invalid for the type of its variable, is ignored,
+ * so its tokens stay unresolved.
+ */
+export const buildDashboardVariableDefaultValues = (variables: unknown) => {
+  const values = new Map<string, string>();
+  if (!Array.isArray(variables)) return values;
+  variables.forEach((variable: { id?: unknown; type?: unknown; defaultValue?: unknown } | null) => {
+    if (typeof variable?.id === 'string' && typeof variable.defaultValue === 'string'
+      && isValidDashboardVariableValue(variable.type, variable.defaultValue)) {
+      values.set(variable.id, variable.defaultValue);
+    }
+  });
+  return values;
+};
+
+/**
+ * Ids of the variables of type date of a manifest, whose value is shifted for the lte and gt operators.
+ * The manifest may come from an import: anything malformed is ignored.
+ */
+export const buildDashboardDateVariableIds = (variables: unknown) => {
+  const ids = new Set<string>();
+  if (!Array.isArray(variables)) return ids;
+  variables.forEach((variable: { id?: unknown; type?: unknown } | null) => {
+    if (typeof variable?.id === 'string' && variable.type === 'date') ids.add(variable.id);
+  });
+  return ids;
+};
+
+const RESOLVED_SELECTION_KEYS = ['filters', 'dynamicFrom', 'dynamicTo'] as const;
+
+/**
+ * Resolve the variable tokens of every widget data selection. The widgets given are not mutated.
+ */
+export const resolveDashboardVariablesInWidgets = <W extends ManifestWidgetLike>(
+  widgets: Record<string, W> | undefined,
+  values: ReadonlyMap<string, string>,
+  options: DashboardVariablesResolutionOptions = {},
+) => {
+  const unresolved = new Set<string>();
+  const resolvedWidgets = Object.fromEntries(Object.entries(widgets ?? {}).map(([widgetId, widget]) => {
+    if (!widget.dataSelection) return [widgetId, widget];
+    const dataSelection = widget.dataSelection.map((selection) => {
+      const resolvedSelection = { ...selection };
+      RESOLVED_SELECTION_KEYS.filter((key) => key in selection).forEach((key) => {
+        const resolution = resolveVariablesInFilterGroup(selection[key], values, options);
+        resolvedSelection[key] = resolution.filters;
+        resolution.unresolved.forEach((id) => unresolved.add(id));
+      });
+      return resolvedSelection;
+    });
+    return [widgetId, { ...widget, dataSelection }];
+  })) as Record<string, W>;
+  return { widgets: resolvedWidgets, unresolved: [...unresolved] };
+};

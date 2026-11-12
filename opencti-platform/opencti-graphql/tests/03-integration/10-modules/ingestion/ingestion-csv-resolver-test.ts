@@ -913,8 +913,8 @@ describe('CSV ingestion resolver — ingestion logs', () => {
     }
   });
 
-  it('should delete the CSV ingestion used for logs tests', async () => {
-    await redisDeleteIngestionLogHistory(csvLogsIngestionId);
+  it('should delete the CSV ingestion used for logs tests and its log history', async () => {
+    await redisPushIngestionLog(csvLogsIngestionId, { level: 'info', type: 'csv', identifier: csvLogsIngestionName, message: 'before-delete' });
     const result = await queryAsAdminWithSuccess({
       query: gql`
         mutation deleteCsvIngesterForLogs($id: ID!) {
@@ -924,5 +924,6 @@ describe('CSV ingestion resolver — ingestion logs', () => {
       variables: { id: csvLogsIngestionId },
     });
     expect(result.data?.ingestionCsvDelete).toEqual(csvLogsIngestionId);
+    expect(await getClientBase().exists(`ingestion-log-${csvLogsIngestionId}-history`)).toBe(0);
   });
 });

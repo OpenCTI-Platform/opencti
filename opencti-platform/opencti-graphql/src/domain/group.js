@@ -1,7 +1,9 @@
 import * as R from 'ramda';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute } from '../database/middleware';
 import {
+  fullEntitiesList,
   fullEntitiesThroughRelationsFromList,
+  fullRelationsList,
   fullEntitiesThroughRelationsToList,
   topEntitiesList,
   pageEntitiesConnection,
@@ -16,10 +18,11 @@ import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../database/cache';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SECURITYACTIVITY, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
+import { emptyPaginationResult } from '../database/utils';
 
 export const GROUP_DEFAULT = 'Default';
 
@@ -46,9 +49,17 @@ export const findById = (context, user, groupId) => {
 export const findGroupPaginated = async (context, user, args) => {
   if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     const groupsIds = R.uniq((user.administrated_organizations ?? []).map((orga) => (orga.grantable_groups ?? [])).flat());
+    // Empty ids are ignored by the engine and would list every group
+    if (groupsIds.length === 0 && !isUserHasCapability(user, SETTINGS_SECURITYACTIVITY)) {
+      return emptyPaginationResult();
+    }
     return pageEntitiesConnection(context, user, [ENTITY_TYPE_GROUP], { ...args, ids: groupsIds });
   }
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_GROUP], args);
+};
+
+export const findAllGroups = (context, user, args = {}) => {
+  return fullEntitiesList(context, user, [ENTITY_TYPE_GROUP], args);
 };
 
 export const findDefaultIngestionGroups = async (context, user) => {
@@ -70,6 +81,24 @@ export const findDefaultIngestionGroups = async (context, user) => {
 
 export const groupAllowedMarkings = async (context, user, groupId) => {
   return fullEntitiesThroughRelationsToList(context, user, groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+};
+
+export const batchMarkingsForGroups = async (context, user, groups) => {
+  if (groups.length === 0) {
+    return [];
+  }
+  const [relations, markings] = await Promise.all([
+    fullRelationsList(context, user, RELATION_ACCESSES_TO, { fromId: groups.map(({ id }) => id), toTypes: [ENTITY_TYPE_MARKING_DEFINITION] }),
+    getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION),
+  ]);
+  return groups.map((group) => {
+    const ids = [
+      ...relations.filter(({ fromId }) => fromId === group.id).map(({ toId }) => toId),
+      ...(group.default_marking ?? []).flatMap(({ values }) => values ?? []),
+      ...(group.max_shareable_markings ?? []).map(({ value }) => value).filter((value) => value !== 'none'),
+    ];
+    return R.uniq(ids).map((id) => markings.get(id)).filter((marking) => !!marking);
+  });
 };
 
 export const groupNotShareableMarkingTypes = (group) => group.max_shareable_markings?.filter(({ value }) => value === 'none')

@@ -5,6 +5,17 @@ import { memoize } from '../../utils/memoize';
 import { verifyUriWithDenyList } from '../../utils/uriDenyList';
 import { uriDenyList } from '../../config/uriDenyList';
 import { type IngestionLogEntry, redisGetIngestionLogHistory } from '../../database/redis';
+import { booleanTrueFilter } from '../../utils/filtering/filtering-utils';
+import conf from '../../config/conf';
+
+// Timeout in ms of the HTTP requests sent to a feed source (RSS, TAXII, CSV, JSON), 5 minutes by default
+export const FEED_REQUEST_TIMEOUT = conf.get('ingestion_manager:feed:request_timeout') || 300000;
+
+// Only a feed explicitly started is processed: polled by the ingestion manager, accepting pushes on the TAXII endpoint
+export const isIngestionRunning = (ingestion: { ingestion_running?: boolean | null }) => ingestion.ingestion_running === true;
+
+// Same rule as isIngestionRunning, as filters for the queries of the ingestion manager
+export const runningIngestionsFilters = () => booleanTrueFilter('ingestion_running');
 
 export const verifyIngestionUri = (uri: string): void => {
   verifyUriWithDenyList(uri, uriDenyList(), 'This URI is not allowed for ingestion.');

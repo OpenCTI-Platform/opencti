@@ -3,7 +3,7 @@ import Dialog from '@common/dialog/Dialog';
 import { WorkbenchFileCreatorStixCoreObjectQuery$data } from '@components/common/files/workbench/__generated__/WorkbenchFileCreatorStixCoreObjectQuery.graphql';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import DialogActions from '@mui/material/DialogActions';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
@@ -14,27 +14,23 @@ import AutocompleteFreeSoloField from '../../../../../components/AutocompleteFre
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import TextField from '../../../../../components/TextField';
-import type { Theme } from '../../../../../components/Theme';
 import { fetchQuery } from '../../../../../relay/environment';
 import { FieldOption } from '../../../../../utils/field';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { WorkbenchFileCreatorMutation } from './__generated__/WorkbenchFileCreatorMutation.graphql';
 import { WorkbenchFileViewer_entity$data } from './__generated__/WorkbenchFileViewer_entity.graphql';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')(({ theme }) => ({
+  paddingTop: 4,
+  display: 'inline-block',
+  color: theme.palette.primary.main,
 }));
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 const workbenchFileCreatorMutation = graphql`
   mutation WorkbenchFileCreatorMutation(
@@ -89,7 +85,6 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
   entity,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const [commitWorkbench] = useApiMutation<WorkbenchFileCreatorMutation>(
     workbenchFileCreatorMutation,
     undefined,
@@ -203,10 +198,10 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
                 options={[]}
                 renderOption={(option: FieldOption) => (
                   <>
-                    <div className={classes.icon}>
+                    <OptionIcon>
                       <ItemIcon type="Label" />
-                    </div>
-                    <div className={classes.text}>{option.label}</div>
+                    </OptionIcon>
+                    <OptionText>{option.label}</OptionText>
                   </>
                 )}
               />

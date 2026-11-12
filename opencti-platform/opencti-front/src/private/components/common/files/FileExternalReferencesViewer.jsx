@@ -40,7 +40,7 @@ const FileExternalReferencesViewerBase = ({
     };
   });
   return (
-    <Grid item xs={12}>
+    <Grid size={12}>
       <Card title={t('External references files')}>
         {allFiles.length ? (
           <List>

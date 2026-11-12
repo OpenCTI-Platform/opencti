@@ -35,9 +35,18 @@ vi.mock('../../../relay/environment', () => ({
 }));
 
 vi.mock('@common/dialog/Dialog', () => ({
-  default: ({ open, title, children }: { open: boolean; title: string; children: React.ReactNode }) => (
-    open ? <div role="dialog" aria-label={title}>{children}</div> : null
-  ),
+  default: ({ open, title, children, slotProps }: {
+    open: boolean;
+    title: string;
+    children: React.ReactNode;
+    slotProps?: { transition?: { onEntered?: () => void } };
+  }) => {
+    // Stands in for MUI's transition completing once the dialog is shown.
+    React.useEffect(() => {
+      if (open) slotProps?.transition?.onEntered?.();
+    }, [open]);
+    return open ? <div role="dialog" aria-label={title}>{children}</div> : null;
+  },
 }));
 
 vi.mock('@common/button/Button', () => ({
@@ -54,12 +63,16 @@ vi.mock('@filigran/design-system', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@filigran/design-system')>();
   return {
     ...actual,
-    Input: ({ error, label, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { error?: string; label?: string }) => (
-      <label>
-        {label}
-        <input {...props} aria-invalid={Boolean(error)} />
-        {error && <span>{error}</span>}
-      </label>
+    Input: React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement> & { error?: string; label?: string }>(
+      function MockInput({ error, label, ...props }, ref) {
+        return (
+          <label>
+            {label}
+            <input {...props} ref={ref} aria-invalid={Boolean(error)} />
+            {error && <span>{error}</span>}
+          </label>
+        );
+      },
     ),
   };
 });
@@ -102,6 +115,19 @@ describe('WorkspaceDuplicationDialog', () => {
     expect(handleCloseDuplicate).toHaveBeenCalledOnce();
     testRender(mocks.notifySuccess.mock.calls[0][0]);
     expect(screen.getByRole('link', { name: 'here' })).toHaveAttribute('href', '/dashboard/workspaces/dashboards/duplicated-id');
+  });
+
+  it('focuses the name field once the dialog has entered', () => {
+    testRender(
+      <WorkspaceDuplicationDialog
+        data={{ name: 'Source dashboard', type: 'dashboard' } as unknown as WorkspaceDuplicationDialogFragment$key}
+        displayDuplicate={true}
+        duplicating={false}
+        handleCloseDuplicate={vi.fn()}
+        setDuplicating={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('textbox')).toHaveFocus();
   });
 
   it('preserves empty-string defaults for optional dashboard metadata', async () => {

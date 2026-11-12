@@ -10,6 +10,7 @@ import {
 import type { Resolvers } from '../../generated/graphql';
 import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 import { loadCreator } from '../../database/members';
+import { ingestionHealthFieldResolvers } from '../ingestionHealth/ingestionHealth-resolvers';
 
 const ingestionTaxiiCollectionResolvers: Resolvers = {
   Query: {
@@ -18,6 +19,7 @@ const ingestionTaxiiCollectionResolvers: Resolvers = {
     ingestionTaxiiCollectionAddInputFromImport: (_, { file }) => taxiiCollectionAddInputFromImport(file),
   },
   IngestionTaxiiCollection: {
+    ...ingestionHealthFieldResolvers,
     user: (ingestionTaxiiCollection, _, context) => loadCreator(context, context.user, ingestionTaxiiCollection.user_id),
     authorized_members: (ingestionTaxiiCollection, _, context) => getAuthorizedMembers(context, context.user, ingestionTaxiiCollection),
     toConfigurationExport: (ingestionTaxiiCollection) => taxiiCollectionExport(ingestionTaxiiCollection),

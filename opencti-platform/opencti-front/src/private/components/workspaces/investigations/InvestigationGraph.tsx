@@ -83,10 +83,12 @@ const investigationGraphObjectsFragment = graphql`
           node {
             ... on BasicObject {
               id
+              standard_id
               entity_type
               parent_types
             }
             ... on StixCoreObject {
+              is_inferred
               created_at
               numberOfConnectedElement
               createdBy {
@@ -106,6 +108,7 @@ const investigationGraphObjectsFragment = graphql`
             }
             ... on StixDomainObject {
               created
+              confidence
               numberOfConnectedElement
             }
             ... on AttackPattern {
@@ -279,6 +282,7 @@ const investigationGraphObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -296,6 +300,7 @@ const investigationGraphObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -317,6 +322,7 @@ const investigationGraphObjectsFragment = graphql`
               start_time
               stop_time
               confidence
+              is_inferred
               created
               created_at
               createdBy {
@@ -344,6 +350,7 @@ const investigationGraphObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -359,6 +366,7 @@ const investigationGraphObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -651,6 +659,10 @@ const InvestigationGraphLoader = ({
 
   const { graph_data } = useFragment(investigationGraphDataFragment, dataPositions);
 
+  // The graph keeps its own objects once loaded: an expand saves its ids without updating the connection,
+  // so the objects are set again only when a page adds ids. Watching the whole workspace would reset the
+  // graph, and drop the expanded objects, whenever a query writes a field of an object already loaded.
+  const loadedIdsKey = (workspace?.objects?.edges ?? []).map((edge) => edge?.node?.id).join(',');
   const [objects, setObjects] = useState<ObjectToParse[]>([]);
   useEffect(() => {
     const workspaceObjects = workspace ? getObjectsToParse(workspace) : [];
@@ -658,7 +670,7 @@ const InvestigationGraphLoader = ({
       setObjects(await fetchMetaObjectsCount(workspaceObjects));
     }
     fetchCounts();
-  }, [workspace]);
+  }, [loadedIdsKey]);
 
   const positions = useMemo(() => deserializeObjectB64(graph_data), [graph_data]);
 

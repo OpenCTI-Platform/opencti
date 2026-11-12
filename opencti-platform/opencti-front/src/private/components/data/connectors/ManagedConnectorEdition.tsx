@@ -4,7 +4,7 @@ import CreatorField from '@components/common/form/CreatorField';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import React, { useMemo } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { graphql } from 'react-relay';
 import { FormikHelpers } from 'formik/dist/types';
 import Alert from '@mui/material/Alert';
@@ -23,6 +23,7 @@ import buildContractConfiguration from '@components/data/connectors/utils/buildC
 import { augmentPasswordDescriptions, buildContractPropertyGroups } from '@components/data/connectors/utils/buildContractPropertyGroups';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/integrations/catalog/utils/JsonFormUnsupportedType';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
+import { ConnectorUserChangeDeduplicationWarning } from '@components/data/connectors/ConnectorDeduplication';
 import JsonFormDeprecatedRenderer, { jsonFormDeprecatedTester } from '@components/integrations/catalog/utils/JsonFormDeprecatedRenderer';
 import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/integrations/catalog/utils/JsonFormPasswordRenderer';
 import TextField from '../../../../components/TextField';
@@ -254,6 +255,12 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                 name="creator"
                 required
               />
+              <div style={{ marginTop: theme.spacing(1) }}>
+                <ConnectorUserChangeDeduplicationWarning
+                  previousUserId={connector.connector_user_id}
+                  newUserId={values.creator?.value as string | undefined}
+                />
+              </div>
               {(hasRequiredProperties || hasOptionalProperties) && (
                 <>
                   <div style={fieldSpacingContainerStyle}>{t_i18n('Configuration')}</div>

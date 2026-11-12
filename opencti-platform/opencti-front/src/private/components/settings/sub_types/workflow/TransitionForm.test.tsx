@@ -3,8 +3,8 @@ import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import { Formik, Form } from 'formik';
 import TransitionForm from './TransitionForm';
-import testRender from '../../../../../utils/tests/test-render';
-import { WorkflowActionType, CommentMode } from './utils';
+import testRender, { createMockUserContext } from '../../../../../utils/tests/test-render';
+import { WorkflowActionType, CommentMode, type TargetStatusExits } from './utils';
 import type { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
@@ -17,7 +17,7 @@ vi.mock('./WorkflowFieldList', () => ({
 }));
 
 vi.mock('./WorkflowConditionFilters', () => ({
-  default: () => <div data-testid="workflow-condition-filters" />,
+  default: ({ entityType }: { entityType?: string }) => <div data-testid="workflow-condition-filters" data-entity-type={entityType} />,
 }));
 
 vi.mock('../../../../../components/TextField', () => ({
@@ -36,16 +36,26 @@ vi.mock('../../../common/form/ObjectOrganizationField', () => ({
   default: () => <div data-testid="object-organization-field" />,
 }));
 
+vi.mock('../../../../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: () => true }),
+}));
+
 // ---------------------------------------------------------------------------
 // Helper: render TransitionForm inside a Formik context
 // ---------------------------------------------------------------------------
-const renderForm = (initialValues: Partial<WorkflowEditionFormValues>, onSubmit = vi.fn(), entityType = 'DraftWorkspace') => {
+const renderForm = (
+  initialValues: Partial<WorkflowEditionFormValues>,
+  onSubmit = vi.fn(),
+  entityType = 'DraftWorkspace',
+  targetStatusExits?: TargetStatusExits,
+) => {
   return testRender(
     <Formik initialValues={initialValues as WorkflowEditionFormValues} onSubmit={onSubmit}>
       <Form>
-        <TransitionForm entityType={entityType} />
+        <TransitionForm entityType={entityType} targetStatusExits={targetStatusExits} />
       </Form>
     </Formik>,
+    { userContext: createMockUserContext({ schema: { sdos: [{ id: 'Case-Incident', label: 'Case-Incident' }] } }) },
   );
 };
 
@@ -59,37 +69,37 @@ describe('TransitionForm – comment section', () => {
 
   it('renders "Enable comment" switch unchecked when comment is "disable"', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
-    const enableSwitch = screen.getByRole('checkbox', { name: /enable comment/i });
+    const enableSwitch = screen.getByRole('switch', { name: /enable comment/i });
     expect((enableSwitch as HTMLInputElement).checked).toBe(false);
   });
 
   it('renders "Enable comment" switch checked when comment is "allowed"', () => {
     renderForm({ event: 'approve', comment: CommentMode.allowed, syncActions: [] });
-    const enableSwitch = screen.getByRole('checkbox', { name: /enable comment/i });
+    const enableSwitch = screen.getByRole('switch', { name: /enable comment/i });
     expect((enableSwitch as HTMLInputElement).checked).toBe(true);
   });
 
   it('renders "Enable comment" switch checked when comment is "required"', () => {
     renderForm({ event: 'approve', comment: CommentMode.required, syncActions: [] });
-    const enableSwitch = screen.getByRole('checkbox', { name: /enable comment/i });
+    const enableSwitch = screen.getByRole('switch', { name: /enable comment/i });
     expect((enableSwitch as HTMLInputElement).checked).toBe(true);
   });
 
   it('"Required" switch is disabled when comment is "disable"', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
-    const requiredSwitch = screen.getByRole('checkbox', { name: /required/i });
+    const requiredSwitch = screen.getByRole('switch', { name: /required/i });
     expect((requiredSwitch as HTMLInputElement).disabled).toBe(true);
   });
 
   it('"Required" switch is enabled when comment is "allowed"', () => {
     renderForm({ event: 'approve', comment: CommentMode.allowed, syncActions: [] });
-    const requiredSwitch = screen.getByRole('checkbox', { name: /required/i });
+    const requiredSwitch = screen.getByRole('switch', { name: /required/i });
     expect((requiredSwitch as HTMLInputElement).disabled).toBe(false);
   });
 
   it('"Required" switch is checked when comment is "required"', () => {
     renderForm({ event: 'approve', comment: CommentMode.required, syncActions: [] });
-    const requiredSwitch = screen.getByRole('checkbox', { name: /required/i });
+    const requiredSwitch = screen.getByRole('switch', { name: /required/i });
     expect((requiredSwitch as HTMLInputElement).checked).toBe(true);
   });
 
@@ -97,7 +107,7 @@ describe('TransitionForm – comment section', () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
 
-    await user.click(screen.getByRole('checkbox', { name: /enable comment/i }));
+    await user.click(screen.getByRole('switch', { name: /enable comment/i }));
 
     const form = document.querySelector('form')!;
     form.dispatchEvent(new Event('submit', { bubbles: true }));
@@ -114,7 +124,7 @@ describe('TransitionForm – comment section', () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ event: 'approve', comment: CommentMode.allowed, syncActions: [] }, onSubmit);
 
-    await user.click(screen.getByRole('checkbox', { name: /enable comment/i }));
+    await user.click(screen.getByRole('switch', { name: /enable comment/i }));
 
     const form = document.querySelector('form')!;
     form.dispatchEvent(new Event('submit', { bubbles: true }));
@@ -131,7 +141,7 @@ describe('TransitionForm – comment section', () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ event: 'approve', comment: CommentMode.allowed, syncActions: [] }, onSubmit);
 
-    await user.click(screen.getByRole('checkbox', { name: /required/i }));
+    await user.click(screen.getByRole('switch', { name: /required/i }));
 
     const form = document.querySelector('form')!;
     form.dispatchEvent(new Event('submit', { bubbles: true }));
@@ -148,7 +158,7 @@ describe('TransitionForm – comment section', () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ event: 'approve', comment: CommentMode.required, syncActions: [] }, onSubmit);
 
-    await user.click(screen.getByRole('checkbox', { name: /required/i }));
+    await user.click(screen.getByRole('switch', { name: /required/i }));
 
     const form = document.querySelector('form')!;
     form.dispatchEvent(new Event('submit', { bubbles: true }));
@@ -169,7 +179,7 @@ describe('TransitionForm – action toggles', () => {
 
   it('"Update authorized members" switch is unchecked when action is absent', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
-    const uamSwitch = screen.getByRole('checkbox', { name: /update authorized members/i });
+    const uamSwitch = screen.getByRole('switch', { name: /update authorized members/i });
     expect((uamSwitch as HTMLInputElement).checked).toBe(false);
   });
 
@@ -179,7 +189,7 @@ describe('TransitionForm – action toggles', () => {
       comment: CommentMode.disabled,
       syncActions: [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }],
     });
-    const uamSwitch = screen.getByRole('checkbox', { name: /update authorized members/i });
+    const uamSwitch = screen.getByRole('switch', { name: /update authorized members/i });
     expect((uamSwitch as HTMLInputElement).checked).toBe(true);
   });
 
@@ -187,7 +197,7 @@ describe('TransitionForm – action toggles', () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
 
-    await user.click(screen.getByRole('checkbox', { name: /update authorized members/i }));
+    await user.click(screen.getByRole('switch', { name: /update authorized members/i }));
 
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 
@@ -211,7 +221,7 @@ describe('TransitionForm – action toggles', () => {
       syncActions: [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }],
     }, onSubmit);
 
-    await user.click(screen.getByRole('checkbox', { name: /update authorized members/i }));
+    await user.click(screen.getByRole('switch', { name: /update authorized members/i }));
 
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 
@@ -225,7 +235,7 @@ describe('TransitionForm – action toggles', () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
 
-    await user.click(screen.getByRole('checkbox', { name: /update authorized members/i }));
+    await user.click(screen.getByRole('switch', { name: /update authorized members/i }));
 
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 
@@ -242,7 +252,7 @@ describe('TransitionForm – action toggles', () => {
 
   it('"Validate draft" switch is unchecked when action is absent', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
-    const vdSwitch = screen.getByRole('checkbox', { name: /validate draft/i });
+    const vdSwitch = screen.getByRole('switch', { name: /validate draft/i });
     expect((vdSwitch as HTMLInputElement).checked).toBe(false);
   });
 
@@ -252,7 +262,7 @@ describe('TransitionForm – action toggles', () => {
       comment: CommentMode.disabled,
       syncActions: [{ type: WorkflowActionType.validateDraft }],
     });
-    const vdSwitch = screen.getByRole('checkbox', { name: /validate draft/i });
+    const vdSwitch = screen.getByRole('switch', { name: /validate draft/i });
     expect((vdSwitch as HTMLInputElement).checked).toBe(true);
   });
 
@@ -260,7 +270,7 @@ describe('TransitionForm – action toggles', () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
 
-    await user.click(screen.getByRole('checkbox', { name: /validate draft/i }));
+    await user.click(screen.getByRole('switch', { name: /validate draft/i }));
 
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 
@@ -284,7 +294,7 @@ describe('TransitionForm – action toggles', () => {
       syncActions: [{ type: WorkflowActionType.validateDraft }],
     }, onSubmit);
 
-    await user.click(screen.getByRole('checkbox', { name: /validate draft/i }));
+    await user.click(screen.getByRole('switch', { name: /validate draft/i }));
 
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 
@@ -315,6 +325,11 @@ describe('TransitionForm – rendering', () => {
     expect(screen.getByTestId('workflow-condition-filters')).toBeDefined();
   });
 
+  it('passes the workflow entity type to WorkflowConditionFilters', () => {
+    renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [], conditions: { filters: emptyFilterGroup } }, vi.fn(), 'Report');
+    expect(screen.getByTestId('workflow-condition-filters').getAttribute('data-entity-type')).toBe('Report');
+  });
+
   it('does not render WorkflowConditionFilters when conditions are undefined', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] });
     expect(screen.queryByTestId('workflow-condition-filters')).toBeNull();
@@ -336,25 +351,25 @@ describe('TransitionForm – EE / CE gating', () => {
     vi.mocked(useEnterpriseEdition).mockReturnValue(false);
     renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [], asyncActions: [] });
 
-    expect((screen.getByRole('checkbox', { name: /update authorized members/i }) as HTMLInputElement).disabled).toBe(true);
-    expect((screen.getByRole('checkbox', { name: /share with organizations/i }) as HTMLInputElement).disabled).toBe(true);
-    expect((screen.getByRole('checkbox', { name: /unshare from organizations/i }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('switch', { name: /update authorized members/i }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('switch', { name: /share with organizations/i }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('switch', { name: /unshare from organizations/i }) as HTMLInputElement).disabled).toBe(true);
   });
 
   it('enables EE-only switches in EE', () => {
     vi.mocked(useEnterpriseEdition).mockReturnValue(true);
     renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [], asyncActions: [] });
 
-    expect((screen.getByRole('checkbox', { name: /update authorized members/i }) as HTMLInputElement).disabled).toBe(false);
-    expect((screen.getByRole('checkbox', { name: /share with organizations/i }) as HTMLInputElement).disabled).toBe(false);
-    expect((screen.getByRole('checkbox', { name: /unshare from organizations/i }) as HTMLInputElement).disabled).toBe(false);
+    expect((screen.getByRole('switch', { name: /update authorized members/i }) as HTMLInputElement).disabled).toBe(false);
+    expect((screen.getByRole('switch', { name: /share with organizations/i }) as HTMLInputElement).disabled).toBe(false);
+    expect((screen.getByRole('switch', { name: /unshare from organizations/i }) as HTMLInputElement).disabled).toBe(false);
   });
 
   it('"Validate draft" switch is always enabled regardless of EE status', () => {
     vi.mocked(useEnterpriseEdition).mockReturnValue(false);
     renderForm({ event: 'close', comment: CommentMode.disabled, syncActions: [] });
 
-    expect((screen.getByRole('checkbox', { name: /validate draft/i }) as HTMLInputElement).disabled).toBe(false);
+    expect((screen.getByRole('switch', { name: /validate draft/i }) as HTMLInputElement).disabled).toBe(false);
   });
 
   it('renders the conditions block with pointer-events:none in CE', () => {
@@ -426,5 +441,46 @@ describe('TransitionForm – entityType-based section visibility', () => {
   it('renders "Authorized members" section for a Container entityType that supports authorized members', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Report');
     expect(screen.queryByRole('heading', { name: /authorized members/i })).not.toBeNull();
+  });
+});
+
+describe('TransitionForm – closing reason section', () => {
+  beforeEach(() => {
+    vi.mocked(useEnterpriseEdition).mockReturnValue(true);
+  });
+
+  it('is hidden for entity types without a closing reason', () => {
+    renderForm({ event: 'approve', syncActions: [] });
+    expect(screen.queryByRole('switch', { name: /enable closing reason/i })).toBeNull();
+  });
+
+  it('is disabled by default on domain objects', () => {
+    renderForm({ event: 'close', syncActions: [] }, vi.fn(), 'Case-Incident');
+    expect(screen.getByRole('switch', { name: /enable closing reason/i })).not.toBeChecked();
+    expect(screen.getByRole('switch', { name: /closing reason required/i })).toBeDisabled();
+  });
+
+  it('sets closingReason to "required" when enabled then required', async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderForm({ event: 'close', syncActions: [] }, onSubmit, 'Case-Incident');
+
+    await user.click(screen.getByRole('switch', { name: /enable closing reason/i }));
+    await user.click(screen.getByRole('switch', { name: /closing reason required/i }));
+    document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ closingReason: CommentMode.required }), expect.anything());
+    });
+  });
+
+  it('cannot be enabled on a transition into a status other transitions leave', () => {
+    renderForm({ event: 'close', syncActions: [] }, vi.fn(), 'Case-Incident', { status: 'Closed', events: ['reopen', 'archive'] });
+    expect(screen.getByRole('switch', { name: /enable closing reason/i })).toBeDisabled();
+    expect(screen.getByText("Only on a transition into a final state: 'Closed' is left by 'reopen', 'archive'.")).toBeTruthy();
+  });
+
+  it('can still be turned off when it was enabled before the status was left by a transition', () => {
+    renderForm({ event: 'close', syncActions: [], closingReason: CommentMode.allowed }, vi.fn(), 'Case-Incident', { status: 'Closed', events: ['reopen'] });
+    expect(screen.getByRole('switch', { name: /enable closing reason/i })).toBeEnabled();
   });
 });

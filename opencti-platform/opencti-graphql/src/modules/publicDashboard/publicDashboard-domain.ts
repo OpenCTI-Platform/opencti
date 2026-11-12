@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -19,10 +20,12 @@ import {
   type QueryPublicStixCoreObjectsDistributionArgs,
   type QueryPublicStixCoreObjectsMultiTimeSeriesArgs,
   type QueryPublicStixCoreObjectsNumberArgs,
+  type QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs,
   type QueryPublicStixRelationshipsArgs,
   type QueryPublicStixRelationshipsDistributionArgs,
   type QueryPublicStixRelationshipsMultiTimeSeriesArgs,
   type QueryPublicStixRelationshipsNumberArgs,
+  type QueryPublicStixRelationshipsTimeSeriesBreakdownArgs,
 } from '../../generated/graphql';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { getUserAccessRight, isUserInPlatformOrganization, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
@@ -32,16 +35,25 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
+import { buildPublicBreakdownArgs, withPublicBreakdownRefusals } from './publicDashboard-breakdown';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
+import { buildDashboardDateVariableIds, buildDashboardVariableDefaultValues, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
 import {
   findStixCoreObjectPaginated,
   stixCoreObjectsDistribution,
   stixCoreObjectsDistributionByEntity,
   stixCoreObjectsMultiTimeSeries,
   stixCoreObjectsNumber,
+  stixCoreObjectsTimeSeriesBreakdown,
 } from '../../domain/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
-import { findStixRelationPaginated, stixRelationshipsDistribution, stixRelationshipsMultiTimeSeries, stixRelationshipsNumber } from '../../domain/stixRelationship';
+import {
+  findStixRelationPaginated,
+  stixRelationshipsDistribution,
+  stixRelationshipsMultiTimeSeries,
+  stixRelationshipsNumber,
+  stixRelationshipsTimeSeriesBreakdown,
+} from '../../domain/stixRelationship';
 import { bookmarks, checkUserCanShareMarkings } from '../user/user-domain';
 import { daysAgo } from '../../utils/format';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
@@ -52,6 +64,7 @@ import { fromB64, toB64 } from '../../utils/base64';
 import { computeLoaders } from '../../http/httpAuthenticatedContext';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
+import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS } from '../workspace/workspace-variables-types';
 
 export const findById = (
   context: AuthContext,
@@ -143,7 +156,8 @@ export const getAllowedMarkings = async (
 
 /**
  * Creates the private manifest by resolving saved filter references
- * (filters_id, dynamicFrom_id, dynamicTo_id) into inline filters.
+ * (filters_id, dynamicFrom_id, dynamicTo_id) into inline filters,
+ * then dashboard variable tokens into their default values.
  */
 const createPrivateManifest = async (
   context: AuthContext,
@@ -153,21 +167,35 @@ const createPrivateManifest = async (
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const widgetDefinitions = Object.values(parsedManifest.widgets);
     await Promise.all(widgetDefinitions.map((widget: any) => resolveSavedFiltersInDataSelection(context, user, widget)));
+    // Variable values are frozen at publication: the private manifest never holds a token.
+    // A token without value would otherwise reach the queries as a literal (with not_eq, matching everything).
+    const variableValues = buildDashboardVariableDefaultValues(parsedManifest.variables);
+    const dateVariableIds = buildDashboardDateVariableIds(parsedManifest.variables);
+    const { widgets, unresolved } = resolveDashboardVariablesInWidgets(parsedManifest.widgets, variableValues, { dateVariableIds });
+    if (unresolved.length > 0) {
+      throw FunctionalError('Cannot publish this dashboard, some widgets use dashboard variables without value', { variableIds: unresolved });
+    }
+    return toB64({ ...R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], parsedManifest), widgets });
   }
-  return toB64(parsedManifest ?? '{}');
+  return toB64(parsedManifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], parsedManifest) : '{}');
 };
 
 /**
  * Creates the public manifest by stripping each widget's dataSelection
  * to only keep display-related properties (no filters, no query data).
  */
-const createPublicManifest = (parsedManifest: any) => {
+const createPublicManifest = (manifest: any) => {
+  // Dashboard variables and presets are internal definitions (filters, ids, default values):
+  // the public manifest is served to anonymous visitors and must never carry them.
+  const parsedManifest = manifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest) : manifest;
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const publicWidgets = Object.fromEntries(
       Object.entries(parsedManifest.widgets).map(([widgetId, widget]: [string, any]) => {
         const publicDataSelection = widget.dataSelection.map((selection: any) => {
           return {
             ...(selection.label && { label: selection.label }),
+            // The kind of elements of the dataset: the front only routes a widget to its breakdown when they are the ones of the widget
+            ...(selection.perspective && { perspective: selection.perspective }),
             ...(selection.attribute && { attribute: selection.attribute }),
             ...(selection.date_attribute && { date_attribute: selection.date_attribute }),
             ...(isNotEmptyField(selection.number) && { number: selection.number }),
@@ -329,12 +357,12 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 
 // region Widgets Public API
 const ensurePublicContext = async (context: AuthContext, uriKey: string, widgetId: string) => {
-  const { user, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
+  const { user, type, perspective, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
   context.user = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
   context.batch = computeLoaders(context, user);
-  return { user, dataSelection, parameters };
+  return { user, type, perspective, dataSelection, parameters };
 };
 
 // heatmap & vertical-bar & line & area
@@ -352,6 +380,26 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
   };
   // Use standard API
   return stixCoreObjectsMultiTimeSeries(context, user, standardArgs);
+};
+
+// vertical-bar & line & area & heatmap with a breakdown: one series per value of a field
+export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs) => {
+  const { user, ...widget } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+
+  const breakdownArgs = buildPublicBreakdownArgs(args, widget, 'entities');
+  // Use standard API, with the interval the dates are counted in
+  const breakdown = await withPublicBreakdownRefusals(() => stixCoreObjectsTimeSeriesBreakdown(context, user, breakdownArgs));
+  return breakdown && { ...breakdown, interval: breakdownArgs.interval };
+};
+
+// vertical-bar & line & area & heatmap of relationships with a breakdown
+export const publicStixRelationshipsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixRelationshipsTimeSeriesBreakdownArgs) => {
+  const { user, ...widget } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+
+  const breakdownArgs = buildPublicBreakdownArgs(args, widget, 'relationships');
+  // Use standard API, with the interval the dates are counted in
+  const breakdown = await withPublicBreakdownRefusals(() => stixRelationshipsTimeSeriesBreakdown(context, user, breakdownArgs));
+  return breakdown && { ...breakdown, interval: breakdownArgs.interval };
 };
 
 export const publicStixRelationshipsMultiTimeSeries = async (

@@ -26,15 +26,9 @@ export const findCatalogByCatalogId = async (
   user: AuthUser,
   catalogId: string,
 ) => {
-  const catalog = await elLoadBy<BasicStoreEntityCatalog>(
-    context,
-    user,
-    'catalog_id',
-    catalogId,
-    ENTITY_TYPE_CATALOG,
-    [READ_INDEX_INTERNAL_OBJECTS],
-  );
-  return catalog;
+  // Compared literally, the catalog id can come from an API input: as a filter value, EXISTS would be a presence check
+  const catalogs = await findAllCatalogs(context, user);
+  return catalogs.find((catalog) => catalog.catalog_id === catalogId);
 };
 
 export const findCatalogBySourceUri = async (
@@ -268,6 +262,7 @@ export const findCatalogContractsByImageName = async (
   context: AuthContext,
   user: AuthUser,
   imageName: string,
+  catalogId?: string,
 ) => {
   return fullEntitiesList<BasicStoreEntityCatalogContract>(
     context,
@@ -276,10 +271,10 @@ export const findCatalogContractsByImageName = async (
     {
       indices: [READ_INDEX_INTERNAL_OBJECTS],
       filters: {
-        filters: [{
-          key: ['image'],
-          values: [imageName],
-        }],
+        filters: [
+          { key: ['image'], values: [imageName] },
+          ...(catalogId ? [{ key: ['catalog_id'], values: [catalogId] }] : []),
+        ],
         filterGroups: [],
         mode: FilterMode.And,
       },
@@ -291,13 +286,15 @@ export const findLatestCompatibleCatalogContractByImageName = async (
   context: AuthContext,
   user: AuthUser,
   imageName: string,
+  catalogId?: string,
 ) => {
-  const contracts = await findCatalogContractsByImageName(context, user, imageName);
+  const contracts = await findCatalogContractsByImageName(context, user, imageName, catalogId);
   const selectedContract = filterAndSortLatestCompatibleContracts(contracts)[0];
   if (!selectedContract) {
     logApp.debug('[OPENCTI-MODULE] No compatible catalog contract found by image', {
       module: 'catalog',
       imageName,
+      catalogId,
       platformVersion: PLATFORM_VERSION,
     });
   } else {

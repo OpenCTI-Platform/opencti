@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios';
+import { HttpClientError } from '../../utils/http-client';
 import { redisPushIngestionLog } from '../../database/redis';
 import { logApp } from '../../config/conf';
 
@@ -36,7 +36,7 @@ export const createIngestionLogger = (feedId: string, feedName: string, feedType
 };
 
 export const buildIngestionErrorMeta = (e: Error): Record<string, unknown> => {
-  if (e instanceof AxiosError) {
+  if (e instanceof HttpClientError) {
     return {
       error_code: e.code,
       ...(e.response ? {

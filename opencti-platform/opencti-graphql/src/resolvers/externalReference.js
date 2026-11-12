@@ -17,7 +17,7 @@ import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { worksForSource } from '../domain/work';
 import { loadFile } from '../database/file-storage';
 import { askElementEnrichmentForConnector, askElementEnrichmentForConnectors } from '../domain/stixCoreObject';
-import { connectorsForEnrichment } from '../database/repository';
+import { connectorsForEnrichment } from '../modules/connector/connector-domain';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 
@@ -65,8 +65,8 @@ const externalReferenceResolvers = {
       relationDelete: ({ fromId, relationship_type: relationshipType }) => {
         return externalReferenceDeleteRelation(context, context.user, id, fromId, relationshipType);
       },
-      askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
-      askEnrichments: ({ connectorIds }) => askElementEnrichmentForConnectors(context, context.user, id, connectorIds),
+      askEnrichment: ({ connectorId, investigationId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId, { investigationId }),
+      askEnrichments: ({ connectorIds, investigationId }) => askElementEnrichmentForConnectors(context, context.user, id, connectorIds, { investigationId }),
       importPush: (args) => externalReferenceImportPush(context, context.user, id, args.file, args),
     }),
     externalReferenceAdd: (_, { input }, context) => addExternalReference(context, context.user, input),

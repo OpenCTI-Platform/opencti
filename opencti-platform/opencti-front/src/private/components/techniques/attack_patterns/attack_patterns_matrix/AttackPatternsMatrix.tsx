@@ -17,6 +17,7 @@ export interface AttackPatternsMatrixProps {
   selectedKillChain?: string;
   attackPatternIdsToOverlap?: string[];
   isModeOnlyActive: boolean;
+  expandAll?: boolean;
   entityType: string;
   inPaper?: boolean;
   isCoverage?: boolean;
@@ -37,6 +38,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   selectedKillChain,
   attackPatternIdsToOverlap,
   isModeOnlyActive,
+  expandAll,
   entityType,
   inPaper,
   isCoverage = false,
@@ -64,6 +66,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
             handleAdd={handleAdd}
             selectedKillChain={selectedKillChain}
             isModeOnlyActive={isModeOnlyActive}
+            expandAll={expandAll}
             inPaper={inPaper}
             isCoverage={isCoverage}
             coverageMap={coverageMap}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { filter, map, pathOr, pipe, union } from 'ramda';
 import { Field } from 'formik';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import ComboboxField from '../../../../components/ComboboxField';
 import IdentityCreation from '../identities/IdentityCreation';
@@ -10,19 +10,19 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { canUse } from '../../../../utils/authorizedMembers';
 import { useFormatter } from '../../../../components/i18n';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 
-const useStyles = makeStyles((theme) => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')(({ theme }) => ({
+  paddingTop: 4,
+  display: 'inline-block',
+  color: theme.palette.primary.main,
 }));
+
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 const CreatedByField = (props) => {
   const {
@@ -38,8 +38,9 @@ const CreatedByField = (props) => {
     defaultCreatedBy,
     clearable = false,
   } = props;
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
+  // Form Intake: authors are never created on the fly, only selected
+  const { isDeferredMode } = useDeferredCreation();
   const { isFeatureEnable } = useHelper();
   const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
   const [identityCreation, setIdentityCreation] = useState(false);
@@ -118,6 +119,14 @@ const CreatedByField = (props) => {
     }
   };
 
+  // The server also matches aliases: the default label-only filter would hide those hits
+  const filterOptions = (options, inputValue) => {
+    const needle = inputValue.trim().toLowerCase();
+    if (!needle) return options;
+    return options.filter((option) => [option.label, ...(option.entity?.x_opencti_aliases ?? [])]
+      .some((candidate) => candidate?.toLowerCase().includes(needle)));
+  };
+
   const handleOpenIdentityCreation = () => {
     setIdentityCreation(true);
   };
@@ -138,16 +147,17 @@ const CreatedByField = (props) => {
         clearable={clearable}
         noOptionsText={t_i18n('No available options')}
         options={identities.sort((a, b) => a.label.localeCompare(b.label))}
+        filterOptions={filterOptions}
         onInputChange={handleSearch}
         onFocusInput={searchIdentities}
-        openCreate={handleOpenIdentityCreation}
+        openCreate={isDeferredMode ? undefined : handleOpenIdentityCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(option) => (
           <>
-            <div className={classes.icon}>
+            <OptionIcon>
               <ItemIcon type={option.type} />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
           </>
         )}
       />

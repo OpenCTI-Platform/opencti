@@ -1,5 +1,16 @@
 import { RootSettings$data } from '../private/__generated__/RootSettings.graphql';
 
+export const getXtmHubOrigin = (hubUrl?: string | null): string | null => {
+  if (!hubUrl) {
+    return null;
+  }
+  try {
+    return new URL(hubUrl).origin;
+  } catch {
+    return null;
+  }
+};
+
 interface FetchDocumentParams {
   settings: RootSettings$data;
   serviceInstanceId: string;

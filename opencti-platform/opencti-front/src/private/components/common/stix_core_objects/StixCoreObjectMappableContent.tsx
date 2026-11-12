@@ -8,8 +8,7 @@ import { ExternalReferencesValues } from '@components/common/form/ExternalRefere
 import { StixCoreObjectMappableContentFieldPatchMutation } from '@components/common/stix_core_objects/__generated__/StixCoreObjectMappableContentFieldPatchMutation.graphql';
 import { ContainerMappingContent_container$data } from '@components/common/containers/__generated__/ContainerMappingContent_container.graphql';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
-import { createStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import RichTextField from '../../../../components/fields/RichTextField';
@@ -21,31 +20,20 @@ import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisp
 import { emptyFilled } from '../../../../utils/String';
 import { isNotEmptyField } from '../../../../utils/utils';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
-import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
 import Card from '../../../../components/common/card/Card';
 
-const useStyles = makeStyles<Theme>(() => createStyles({
-  documentContainer: {
-    margin: 0,
-    overflow: 'scroll',
-    minWidth: 'calc(100vw - 455px)',
-    minHeight: 'calc(100vh - 260px)',
-    width: 'calc(100vw - 455px)',
-    height: 'calc(100vh - 260px)',
-    maxWidth: 'calc(100vw - 455px)',
-    maxHeight: 'calc(100vh - 260px)',
-  },
-  documentContainerNavOpen: {
-    margin: 0,
-    overflow: 'scroll',
-    minWidth: 'calc(100vw - 580px)',
-    minHeight: 'calc(100vh - 260px)',
-    width: 'calc(100vw - 580px)',
-    height: 'calc(100vh - 260px)',
-    maxWidth: 'calc(100vw - 580px)',
-    maxHeight: 'calc(100vh - 260px)',
-  },
+const DocumentContainer = styled('div', {
+  shouldForwardProp: (prop) => prop !== 'navOpen',
+})<{ navOpen: boolean }>(({ navOpen }) => ({
+  margin: 0,
+  overflow: 'scroll',
+  minWidth: navOpen ? 'calc(100vw - 580px)' : 'calc(100vw - 455px)',
+  minHeight: 'calc(100vh - 260px)',
+  width: navOpen ? 'calc(100vw - 580px)' : 'calc(100vw - 455px)',
+  height: 'calc(100vh - 260px)',
+  maxWidth: navOpen ? 'calc(100vw - 580px)' : 'calc(100vw - 455px)',
+  maxHeight: 'calc(100vh - 260px)',
 }));
 
 export const stixCoreObjectMappableContentFieldPatchMutation = graphql`
@@ -91,7 +79,6 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
   currentMode = 'content',
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   let { description, contentField } = containerData;
   const [draftContent, setDraftContent] = useState(contentField || '');
   useEffect(() => {
@@ -222,13 +209,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
 
   if (currentMode === 'content') {
     return (
-      <div
-        className={
-          navOpen
-            ? classes.documentContainerNavOpen
-            : classes.documentContainer
-        }
-      >
+      <DocumentContainer navOpen={navOpen}>
         {isNotEmptyField(description) && (
           <>
             <Typography variant="h3" gutterBottom={true}>
@@ -250,7 +231,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
             <HtmlDisplay content={draftContent || contentField || null} />
           </>
         )}
-      </div>
+      </DocumentContainer>
     );
   }
   return (

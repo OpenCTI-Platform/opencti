@@ -159,7 +159,7 @@ const AuditsMultiHeatMap: FunctionComponent<AuditsMultiHeatMapProps> = ({
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiHeatMapTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiHeatMapTimeSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -181,8 +181,7 @@ const AuditsMultiHeatMap: FunctionComponent<AuditsMultiHeatMapProps> = ({
       showPreviewTag={isPreviewMode}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

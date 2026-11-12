@@ -14,7 +14,11 @@ export default class FiltersPageModel {
     await this.page.getByRole('option', { name: filterKey, exact: true }).click();
 
     await expect(this.page.getByRole('combobox', { name: filterKey, exact: true })).toBeVisible();
-    await this.page.getByRole('combobox', { name: filterKey }).click();
+    const valuesCombobox = this.page.getByRole('combobox', { name: filterKey });
+    await valuesCombobox.click();
+    // The values list can be long and not fully rendered/scrolled into view - type to filter it
+    // down to the option we want before selecting it.
+    await valuesCombobox.fill(filterLabel);
 
     await expect(this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox')).toBeVisible();
     await this.page.getByLabel(filterLabel, { exact: true }).getByRole('checkbox').check();

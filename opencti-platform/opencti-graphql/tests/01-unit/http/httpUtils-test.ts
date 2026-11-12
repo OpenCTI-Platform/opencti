@@ -329,23 +329,45 @@ describe('httpUtils: server keep-alive timeout', () => {
 });
 
 describe('httpUtils: buildGraphqlUploadOptions', () => {
+  const defaultFileLimits = { maxFileSize: 1024 * 1024 * 1024, maxFiles: 20 };
+
   it('should align maxFieldSize with the default JSON body limit', () => {
-    expect(buildGraphqlUploadOptions('50mb')).toEqual({ maxFieldSize: 50 * 1024 * 1024 });
+    expect(buildGraphqlUploadOptions('50mb')).toEqual({ maxFieldSize: 50 * 1024 * 1024, ...defaultFileLimits });
   });
 
   it('should convert a configured size string to bytes', () => {
-    expect(buildGraphqlUploadOptions('10mb')).toEqual({ maxFieldSize: 10 * 1024 * 1024 });
-    expect(buildGraphqlUploadOptions('512kb')).toEqual({ maxFieldSize: 512 * 1024 });
-    expect(buildGraphqlUploadOptions('1.5gb')).toEqual({ maxFieldSize: 1.5 * 1024 * 1024 * 1024 });
+    expect(buildGraphqlUploadOptions('10mb').maxFieldSize).toBe(10 * 1024 * 1024);
+    expect(buildGraphqlUploadOptions('512kb').maxFieldSize).toBe(512 * 1024);
+    expect(buildGraphqlUploadOptions('1.5gb').maxFieldSize).toBe(1.5 * 1024 * 1024 * 1024);
   });
 
   it('should keep a configured size already expressed in bytes', () => {
-    expect(buildGraphqlUploadOptions(2097152)).toEqual({ maxFieldSize: 2097152 });
+    expect(buildGraphqlUploadOptions(2097152).maxFieldSize).toBe(2097152);
   });
 
   it('should not set maxFieldSize for an unparsable size, keeping graphql-upload default', () => {
-    expect(buildGraphqlUploadOptions('not-a-size')).toEqual({});
-    expect(buildGraphqlUploadOptions('')).toEqual({});
+    expect(buildGraphqlUploadOptions('not-a-size')).toEqual(defaultFileLimits);
+    expect(buildGraphqlUploadOptions('')).toEqual(defaultFileLimits);
+  });
+
+  it('should always bound the uploaded files, graphql-upload accepting any size and count by default', () => {
+    const options = buildGraphqlUploadOptions('50mb');
+    expect(Number.isFinite(options.maxFileSize)).toBe(true);
+    expect(Number.isFinite(options.maxFiles)).toBe(true);
+  });
+
+  it('should apply the configured upload file limits', () => {
+    expect(buildGraphqlUploadOptions('50mb', '10mb', 5)).toEqual({ maxFieldSize: 50 * 1024 * 1024, maxFileSize: 10 * 1024 * 1024, maxFiles: 5 });
+    expect(buildGraphqlUploadOptions('50mb', 2097152, '3')).toMatchObject({ maxFileSize: 2097152, maxFiles: 3 });
+  });
+
+  it('should fall back to the platform default, never to unlimited, for an invalid upload file limit', () => {
+    ['not-a-size', '', 0, -1, '0mb'].forEach((size) => {
+      expect(buildGraphqlUploadOptions('50mb', size).maxFileSize).toBe(defaultFileLimits.maxFileSize);
+    });
+    ['not-a-number', '', 0, -1, 2.5, 'Infinity'].forEach((count) => {
+      expect(buildGraphqlUploadOptions('50mb', '10mb', count).maxFiles).toBe(defaultFileLimits.maxFiles);
+    });
   });
 });
 
@@ -484,6 +506,15 @@ describe('httpUtils: clientErrorResponse', () => {
       expect(body.error).toBe('Bad request');
       expect(body.error).not.toContain('<script>');
     });
+  });
+
+  it('should relay the max file uploads message, built only from the platform limit', () => {
+    const tooManyFiles = Object.assign(new Error('20 max file uploads exceeded.'), { status: 413, expose: true });
+    const { status, body } = clientErrorResponse(tooManyFiles);
+    expect(status).toBe(413);
+    expect(body.error).toBe('20 max file uploads exceeded.');
+    const tampered = Object.assign(new Error('<script> 20 max file uploads exceeded.'), { status: 413, expose: true });
+    expect(clientErrorResponse(tampered).body.error).toBe('Payload too large');
   });
 
   it('should fall back to the built message when graphql-upload rewords one', () => {

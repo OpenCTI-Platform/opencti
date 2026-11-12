@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Connection, useReactFlow, MarkerType, Edge, Node, addEdge } from 'reactflow';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../../components/Theme';
 import { NEW_EVENT_NAME, WorkflowNodeType } from '../utils';
 

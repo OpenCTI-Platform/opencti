@@ -5,7 +5,13 @@ import { pageEntitiesConnection, storeLoadById, type EntityOptions } from '../..
 import { notify } from '../../../database/redis';
 import { ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES, createListTask } from '../../../domain/backgroundTask-common';
 import { createQueryTask } from '../../../domain/backgroundTask';
-import { type FilterGroup, type SecurityCoverageResultAddInput, type SecurityCoverageSelectedEntitiesInput } from '../../../generated/graphql';
+import {
+  type EditInput,
+  type FilterGroup,
+  type SecurityCoverageResultAddInput,
+  type SecurityCoverageResultEditInput,
+  type SecurityCoverageSelectedEntitiesInput,
+} from '../../../generated/graphql';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import { isNotEmptyField } from '../../../database/utils';
 import { emptyFilterGroup, isFilterGroupNotEmpty } from '../../../utils/filtering/filtering-utils';
@@ -14,6 +20,9 @@ import { ENTITY_TYPE_SECURITY_COVERAGE, type BasicStoreEntitySecurityCoverage } 
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, type BasicStoreEntitySecurityCoverageResult } from './securityCoverageResult-types';
 import { internalCreateSecurityCoverageResult } from './securityCoverageResult-utils';
 import { isFromConnectorWork } from '../../../utils/connector-work';
+import { stixDomainObjectEditField } from '../../../domain/stixDomainObject';
+import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../../../schema/schema-relationsRef';
 
 /**
  * Find a security coverage results by its ID.
@@ -80,19 +89,87 @@ export const addSecurityCoverageResult = async (
     throw FunctionalError('Security coverage not found', { securityCoverageResultInput });
   }
 
-  const input = {
-    ...securityCoverageResultInput,
-  };
+  const {
+    add_related_entities,
+    ...input
+  } = securityCoverageResultInput;
+
   if (!securityCoverageResultInput.name) {
     input.name = `Result of ${securityCoverage.name}`;
   }
   const noEnrichOnUpdate = await isFromConnectorWork(context, user);
   const result = await internalCreateSecurityCoverageResult(context, user, input, noEnrichOnUpdate);
+
+  if (add_related_entities) {
+    await createHasCoveredRelTask(context, user, result.id, add_related_entities);
+  }
+
   return notify(
     BUS_TOPICS[ENTITY_TYPE_SECURITY_COVERAGE_RESULT].ADDED_TOPIC,
     result,
     user,
   );
+};
+
+/**
+ * Whether a field of a security coverage result holds a list of values.
+ *
+ * @param key Name of the field.
+ * @returns True for multiple attributes (coverage_information) and multiple refs (labels, markings).
+ */
+const isMultipleField = (key: string) => {
+  return schemaAttributesDefinition.isMultipleAttribute(ENTITY_TYPE_SECURITY_COVERAGE_RESULT, key)
+    || (schemaRelationsRefDefinition.getRelationRef(ENTITY_TYPE_SECURITY_COVERAGE_RESULT, key)?.multiple ?? false);
+};
+
+/**
+ * Update the attributes of a security coverage result, and optionally
+ * add new has-covered relationships to it.
+ *
+ * Existing has-covered relationships are never removed here: the background
+ * task only creates relationships for the selected entities.
+ *
+ * @param context
+ * @param user User making the request.
+ * @param id ID of the security coverage result.
+ * @param securityCoverageResultInput Attributes to update and entities to add.
+ * @returns Updated result.
+ */
+export const editSecurityCoverageResult = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  securityCoverageResultInput: SecurityCoverageResultEditInput,
+): Promise<BasicStoreEntitySecurityCoverageResult> => {
+  const securityCoverageResult = await findById(context, user, id);
+  if (!securityCoverageResult) {
+    throw FunctionalError('Security coverage result not found', { id });
+  }
+
+  const {
+    add_related_entities,
+    ...attributes
+  } = securityCoverageResultInput;
+
+  const editInputs: EditInput[] = Object.entries(attributes)
+    .filter(([, value]) => value !== undefined)
+    .map(([key, value]) => {
+      // A null list means an empty list: [null] would be stored as a null element.
+      if (value === null && isMultipleField(key)) {
+        return { key, value: [] };
+      }
+      return { key, value: Array.isArray(value) ? value : [value] };
+    });
+
+  const result = editInputs.length > 0
+    ? await stixDomainObjectEditField(context, user, id, editInputs)
+    : securityCoverageResult;
+
+  if (add_related_entities) {
+    await createHasCoveredRelTask(context, user, id, add_related_entities);
+  }
+
+  return result;
 };
 
 /**
@@ -139,7 +216,11 @@ export const createHasCoveredRelTask = async (
   selection: SecurityCoverageSelectedEntitiesInput,
 ) => {
   const description = `Create has-covered relationships for SCR ${securityCoverageResultId}`;
-  const actions = [{ type: ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES, id: securityCoverageResultId }];
+  const actions = [{
+    type: ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES,
+    id: securityCoverageResultId,
+    relationships_config: selection.relationships_config ?? undefined,
+  }];
 
   const selectedIds = selection.selected_ids ?? [];
   if (selectedIds.length > 0) {
@@ -160,7 +241,7 @@ export const createHasCoveredRelTask = async (
     ? JSON.parse(selection.filters as string)
     : emptyFilterGroup;
   const search = isNotEmptyField(selection.search) ? selection.search as string : undefined;
-  if (!isFilterGroupNotEmpty(filterGroup) && !search) {
+  if (!isFilterGroupNotEmpty(filterGroup)) {
     throw FunctionalError(
       'Cannot create has-covered relationships without any entity selection, please provide ids, filters or a search term.',
       { securityCoverageResultId },

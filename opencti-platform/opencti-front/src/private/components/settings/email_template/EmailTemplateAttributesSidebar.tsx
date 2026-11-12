@@ -2,7 +2,7 @@ import { Alert, Drawer, ListItem, ListItemText, SxProps, Toolbar, Tooltip, Typog
 import { IconButton } from '@filigran/design-system';
 import React from 'react';
 import { useSettingsMessagesBannerHeight } from '@components/settings/settings_messages/SettingsMessagesBanner';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { ContentCopy } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';

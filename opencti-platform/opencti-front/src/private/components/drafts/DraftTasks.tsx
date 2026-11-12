@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 import { DraftTasksQuery, DraftTasksQuery$variables } from '@components/drafts/__generated__/DraftTasksQuery.graphql';
 import { DraftTasksLines_data$data } from '@components/drafts/__generated__/DraftTasksLines_data.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { addFilter, canonicalizeFilterGroupForBackend, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps, DataTableVariant } from '../../../components/dataGrid/dataTableTypes';
@@ -109,8 +109,10 @@ const DraftTasks: FunctionComponent<DraftTasksProps> = ({ draftId }) => {
 
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DraftTasksQuery$variables>(LOCAL_STORAGE_KEY, initialValues, true);
   const { filters } = viewStorage;
-  const currentDraftFilter = { key: 'draft_context', values: [draftId], operator: 'eq', mode: 'or' };
-  const finalFilters = { ...filters, filters: [...(filters?.filters ?? []), currentDraftFilter] };
+  // add a filter targeting the current draft
+  const finalFilters = canonicalizeFilterGroupForBackend(
+    addFilter(filters ?? undefined, 'draft_context', draftId) ?? emptyFilterGroup,
+  );
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: finalFilters,
@@ -137,7 +139,7 @@ const DraftTasks: FunctionComponent<DraftTasksProps> = ({ draftId }) => {
     created_at: {
       percentWidth: 25,
       isSortable: true,
-      render: ({ created_at }, h) => defaultRender(h.nsdt(created_at)),
+      render: ({ created_at }, h) => defaultRender(h.ftdt(created_at)),
     },
     task_expected_number: {
       id: 'Impacted elements',

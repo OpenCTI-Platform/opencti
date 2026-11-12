@@ -49,7 +49,10 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
   const title = `${inProgress ? t_i18n('In progress works') : t_i18n('Completed works')}${` (${works.length})`}`;
 
   return (
-    <Stack gap={1}>
+    <Stack sx={{
+      gap: 1,
+    }}
+    >
       <CardTitle>{title}</CardTitle>
       {works.length === 0 && (
         <Card>

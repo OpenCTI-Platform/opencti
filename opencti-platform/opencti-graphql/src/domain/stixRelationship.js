@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
-import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
+import { deleteElementById, distributionRelations, timeSeriesBreakdownRelations, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
 import { buildRelationsFilter, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { isEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
@@ -80,6 +80,12 @@ export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
     const fullArgs = { ...timeSeriesParameter, filters };
     return { data: timeSeriesRelations(context, user, { ...args, relationship_type, ...fullArgs }) };
   }));
+};
+export const stixRelationshipsTimeSeriesBreakdown = async (context, user, args) => {
+  const relationshipTypes = buildRelationshipTypes(args.relationship_type);
+  // The dynamic source and target restrict the relationships as they do for stixRelationshipsMultiTimeSeries
+  const filters = addDynamicFromAndToToFilters(args);
+  return timeSeriesBreakdownRelations(context, user, relationshipTypes, { ...args, filters });
 };
 // endregion
 

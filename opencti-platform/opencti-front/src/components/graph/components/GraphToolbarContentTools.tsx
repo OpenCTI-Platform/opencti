@@ -10,7 +10,7 @@ import GraphToolbarEditObject from './GraphToolbarEditObject';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../i18n';
 import useGraphInteractions from '../utils/useGraphInteractions';
-import { GraphEntity, GraphLink, GraphNode } from '../graph.types';
+import { GraphEntity, GraphLink, GraphNode, isInferredLink, isInferredNode } from '../graph.types';
 import { dateFormat, dayStartDate, minutesBefore, now } from '../../../utils/Time';
 import { convertCreatedBy, convertMarkings } from '../../../utils/edition';
 import { useGraphContext } from '../GraphContext';
@@ -18,6 +18,9 @@ import { ObjectToParse } from '../utils/useGraphParser';
 import GraphToolbarRemoveConfirm, { GraphToolbarDeleteConfirmProps } from './GraphToolbarRemoveConfirm';
 import ContainerAddStixCoreObjectsInLine from '../../../private/components/common/containers/ContainerAddStixCoreObjectsInLine';
 import { getRelationshipMainRepresentative } from '../../../utils/defaultRepresentatives';
+import InvestigationEnrichmentTool from '../../../private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentTool';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
 
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery?: GraphQLTaggedNode;
@@ -27,6 +30,7 @@ export interface GraphToolbarContentToolsProps {
   enableReferences?: boolean;
   onDeleteRelation?: GraphToolbarDeleteConfirmProps['onDeleteRelation'];
   onRemove?: GraphToolbarDeleteConfirmProps['onRemove'];
+  onInvestigationExpand?: (newObjects: ObjectToParse[]) => void;
 }
 
 const GraphToolbarContentTools = ({
@@ -37,6 +41,7 @@ const GraphToolbarContentTools = ({
   onAddRelation,
   onDeleteRelation,
   onRemove,
+  onInvestigationExpand,
 }: GraphToolbarContentToolsProps) => {
   const { t_i18n } = useFormatter();
 
@@ -98,8 +103,7 @@ const GraphToolbarContentTools = ({
   const relBetweenNodes = selectedNodes.length >= 2 && selectedLinks.length === 0;
   const relBetweenNodeAndLink = selectedNodes.length === 1 && selectedLinks.length === 1;
 
-  const selectionContainsInferred = selectedNodes.some((n) => n.isNestedInferred)
-    || selectedLinks.some((n) => n.inferred || n.isNestedInferred);
+  const selectionContainsInferred = selectedNodes.some(isInferredNode) || selectedLinks.some(isInferredLink);
   const canDelete = !selectionContainsInferred && (selectedNodes.length > 0 || selectedLinks.length > 0);
 
   const isReversed = relationReversed || sightingReversed || nestedReversed;
@@ -118,6 +122,10 @@ const GraphToolbarContentTools = ({
   }
 
   const canAddRelation = objectsFrom.length > 0 && objectsTo.length > 0;
+  const linkDisabledReason = canAddRelation ? undefined : t_i18n('Select the entities to link first');
+  let removeDisabledReason: string | undefined;
+  if (selectionContainsInferred) removeDisabledReason = t_i18n('Inferred knowledge cannot be removed');
+  else if (!canDelete) removeDisabledReason = t_i18n('Select the elements to remove first');
 
   const removeFromAddPanel = (node: { id: string }) => {
     // Remove links associated to removed node
@@ -158,13 +166,22 @@ const GraphToolbarContentTools = ({
         />
       )}
       {entity && context === 'investigation' && (
-        <InvestigationAddStixCoreObjects
-          workspaceId={entity.id}
-          workspaceStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
-          targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
-          onAdd={addNode}
-          onDelete={removeFromAddPanel}
-        />
+        <>
+          <InvestigationAddStixCoreObjects
+            workspaceId={entity.id}
+            workspaceStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
+            targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+            onAdd={addNode}
+            onDelete={removeFromAddPanel}
+          />
+
+          <Security needs={[KNOWLEDGE]}>
+            <InvestigationEnrichmentTool
+              entity={entity}
+              onExpand={onInvestigationExpand}
+            />
+          </Security>
+        </>
       )}
 
       {stixCoreObjectRefetchQuery && relationshipRefetchQuery && (
@@ -178,7 +195,7 @@ const GraphToolbarContentTools = ({
         <>
           <GraphToolbarItem
             Icon={<LinkOutlined />}
-            disabled={!canAddRelation}
+            disabledReason={linkDisabledReason}
             color="primary"
             onClick={() => setIsAddRelationOpen(true)}
             title={t_i18n('Create a relationship')}
@@ -230,7 +247,7 @@ const GraphToolbarContentTools = ({
         <>
           <GraphToolbarItem
             Icon={<VisibilityOutlined />}
-            disabled={!canAddRelation}
+            disabledReason={linkDisabledReason}
             color="primary"
             onClick={() => setAddSightingOpen(true)}
             title={t_i18n('Create a sighting')}
@@ -258,7 +275,7 @@ const GraphToolbarContentTools = ({
         <>
           <GraphToolbarItem
             Icon={<DeleteOutlined />}
-            disabled={!canDelete}
+            disabledReason={removeDisabledReason}
             color="primary"
             onClick={() => setRemoveDialogOpen(true)}
             title={t_i18n('Remove selected items')}

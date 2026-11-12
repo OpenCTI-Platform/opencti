@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined, ViewColumnOutlined, VisibilityOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined, UnfoldLessOutlined, UnfoldMoreOutlined, ViewColumnOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -17,7 +17,18 @@ import StixDomainObjectAttackPatternsKillChainMatrixInline from '@components/com
 import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import FiligranIcon from '@components/common/FiligranIcon';
 import FormControl from '@mui/material/FormControl';
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, IconButton } from '@filigran/design-system';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+  IconButton,
+  Tooltip as FdsTooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
 import { attackPatternsMatrixColumnsFragment } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import * as R from 'ramda';
 import { AttackPatternsMatrixColumns_data$key } from '@components/techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixColumns_data.graphql';
@@ -129,6 +140,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
   const [attackPatternIdsToOverlap, setAttackPatternIdsToOverlap] = useState<string[] | undefined>();
   const [isModeOnlyActive, setIsModeOnlyActive] = useState<boolean>(false);
+  const [expandAll, setExpandAll] = useState<boolean>(false);
   const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectAttackPatternsKillChainQuery>(
     stixDomainObjectAttackPatternsKillChainQuery,
   );
@@ -307,13 +319,17 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           {currentView === 'matrix' && (
             <Stack
               direction="row"
-              alignItems="center"
-              justifyContent="space-between"
+              sx={{
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
             >
               <Stack
                 direction="row"
-                alignItems="end"
-                gap={1}
+                sx={{
+                  alignItems: 'end',
+                  gap: 1,
+                }}
               >
                 <Stack direction="row">
                   <FormControl>
@@ -356,6 +372,20 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                     icon={<VisibilityOutlined />}
                   />
                 </Tooltip>
+
+                <FdsTooltip>
+                  <TooltipTrigger asChild>
+                    <IconButton
+                      variant="default"
+                      priority="tertiary"
+                      active={expandAll}
+                      aria-label={expandAll ? t_i18n('Collapse all') : t_i18n('Expand all')}
+                      onClick={() => setExpandAll((value) => !value)}
+                      icon={expandAll ? <UnfoldLessOutlined /> : <UnfoldMoreOutlined />}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>{expandAll ? t_i18n('Collapse all') : t_i18n('Expand all')}</TooltipContent>
+                </FdsTooltip>
               </Stack>
 
               {!isSecurityPlatform && (
@@ -384,13 +414,17 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           <Stack>
             <Stack
               direction="row"
-              alignItems="center"
-              justifyContent="space-between"
+              sx={{
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
             >
               <Stack
                 direction="row"
-                gap={1}
-                alignItems="center"
+                sx={{
+                  gap: 1,
+                  alignItems: 'center',
+                }}
               >
                 <SearchInput
                   variant="small"
@@ -409,7 +443,9 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   <Stack
                     id="container-view-buttons"
                     direction="row"
-                    gap={1}
+                    sx={{
+                      gap: 1,
+                    }}
                   >
                     <ToggleButtonGroup
                       size="small"
@@ -489,6 +525,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             attackPatternIdsToOverlap={attackPatternIdsToOverlap}
             entityType={entityType}
             isModeOnlyActive={isModeOnlyActive}
+            expandAll={expandAll}
           />
         )}
         {currentView === 'matrix-in-line' && (

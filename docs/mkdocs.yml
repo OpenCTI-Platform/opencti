@@ -66,6 +66,15 @@ plugins:
       enable_creation_date: true
       type: timeago
   - glightbox
+  - macros:
+      module_name: macros
+      render_by_default: false
+      on_undefined: strict
+      on_error_fail: true
+
+# Images are stored once at the gh-pages root, shared by all docs versions
+hooks:
+  - hooks/shared_assets.py
 
 # Extensions
 markdown_extensions:
@@ -107,6 +116,10 @@ markdown_extensions:
   - pymdownx.snippets:
       url_download: true
 
+draft_docs: |
+  feature-flags/
+  _*.md
+
 # Page tree
 nav:
   - Home: 'index.md'
@@ -147,6 +160,7 @@ nav:
     - Breaking changes:
         - Index: deployment/breaking-changes.md
         - Migration guides:
+            - Elasticsearch 9 support: deployment/breaking-changes/elasticsearch-9-support.md
             - SSO Migration from environment variable to UI: deployment/breaking-changes/7.260224.0-SSO-authentication-migration.md
             - Metrics renamed in Client Python: deployment/breaking-changes/6.8-client-python-metrics.md
             - OpenBAS scenario generation: deployment/breaking-changes/6.5-generation-scenario-opencti-openbas-placeholders.md
@@ -179,6 +193,7 @@ nav:
         - Techniques: usage/exploring-techniques.md
         - Entities: usage/exploring-entities.md
         - Locations: usage/exploring-locations.md
+      - Work with graphs: usage/graphs.md
       - Pivot and investigate: usage/pivoting.md
     - Create knowledge:
       - Automated import:
@@ -210,6 +225,7 @@ nav:
         - Custom dashboards: usage/dashboards.md
         - Share custom dashboards: usage/dashboards-share.md
         - Widget creation: usage/widgets.md
+        - Time series breakdown: usage/time-series-breakdown.md
         - Tips for widget creation: usage/tips-widget-creation.md
       - Custom views: usage/custom-views.md
       - Workflows:
@@ -244,6 +260,7 @@ nav:
         - Policies: administration/policies.md
         - Users and RBAC:
           - Users and RBAC: administration/users.md
+          - Merging users: administration/users-merge.md
           - Protect sensitive configuration: administration/protect-sensitive-configuration.md
         - Data segregation:
           - Marking restriction: administration/segregation.md
@@ -257,6 +274,7 @@ nav:
         - Email templates: administration/email-templates.md
       - Customization:
         - Entity types: administration/entities.md
+        - Custom fields: administration/custom-fields.md
         - Rules engine: administration/reasoning.md
         - Notifiers:
           - Custom notifiers: administration/notifiers.md

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import moment, { type DurationInputArg2 } from 'moment/moment';
 import type { estypes } from '@elastic/elasticsearch';
-import { DatabaseError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { DatabaseError, FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../schema/stixDomainObject';
@@ -169,7 +169,27 @@ export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: s
   return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));
 };
 
-export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
+// Reasons of the refusals of a time series breakdown, in the data of their error: the front tells the
+// refusals apart from them, never from their messages
+export const BREAKDOWN_REFUSAL_REASONS = {
+  // The limit of series is not an integer between 1 and the maximum
+  INVALID_LIMIT: 'invalid_limit',
+  // The field cannot be broken down for the requested types
+  UNSUPPORTED_FIELD: 'unsupported_field',
+  // The date attribute is not a date of the requested types
+  UNSUPPORTED_DATE_ATTRIBUTE: 'unsupported_date_attribute',
+  // The series and their dates would exceed the maximum number of buckets
+  TOO_LARGE: 'too_large',
+  // The lowest values cannot be ranked exactly among so many values
+  TOO_MANY_VALUES: 'too_many_values',
+} as const;
+
+// Same refusal as elHistogramCount, for the intervals its date histogram cannot aggregate
+const unsupportedIntervalError = (interval: string) => {
+  return FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
+};
+
+const computeTimeSeriesRange = (startDate: Date, endDate: Date, interval: string) => {
   // Elasticsearch aggregates on UTC calendar boundaries and the front-end labels the
   // emitted instants as UTC: everything here must stay anchored on UTC, never on the
   // time zone of the platform process.
@@ -202,31 +222,112 @@ export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string,
       dateFormat = 'YYYY-MM-DD HH:mm:ss';
       startDateParsed = startDateParsed.startOf('hour');
       break;
-    default:
+    case 'day':
       dateFormat = 'YYYY-MM-DD';
+      break;
+    default:
+      throw unsupportedIntervalError(interval);
   }
   const formattedEndDate = moment.utc(endDateParsed.format(dateFormat), dateFormat);
   const formattedStartDate = moment.utc(startDateParsed.format(dateFormat), dateFormat);
   const duration: DurationInputArg2 = `${interval}s` as DurationInputArg2;
   const elementsOfInterval = formattedEndDate.diff(formattedStartDate, duration);
-  const newData = [];
-  for (let i = 0; i <= elementsOfInterval; i += 1) {
-    const workDate = startDateParsed.clone().add(i, duration);
-    // Looking for the value
-    let dataValue = 0;
-    for (let j = 0; j < data.length; j += 1) {
-      if (data[j].date === workDate.format(dateFormat)) {
-        dataValue = data[j].value;
-      }
-    }
-    // Cloned: startOf() mutates, and workDate is still needed unmodified above.
-    const intervalDate = workDate.clone().startOf(startOfInterval).toISOString();
-    newData[i] = {
-      date: intervalDate,
-      value: dataValue,
-    };
+  return { startDateParsed, elementsOfInterval };
+};
+
+// A period ending before it starts, or with an invalid date, holds no bucket, as its axis
+export const countTimeSeriesIntervals = (startDate: Date, endDate: Date, interval: string) => {
+  const count = computeTimeSeriesRange(startDate, endDate, interval).elementsOfInterval + 1;
+  return Number.isFinite(count) ? Math.max(0, count) : 0;
+};
+
+export type TimeSeriesAxis = {
+  keys: string[]; // bucket keys as formatted by the date histogram
+  dates: string[]; // start of each bucket, ISO formatted
+};
+
+const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
+// First day of a UTC month, months past December going on the next years (unlike Date.UTC, years 0 to 99 stay themselves)
+const startOfUtcMonth = (year: number, month: number) => new Date(0).setUTCFullYear(year, month, 1);
+// Start of the bucket at `index` from the start of the range, as moment add(index, interval) then startOf(interval)
+// gave it: months, quarters and years step on the UTC calendar, the others on their duration (UTC has no time change)
+const buildBucketStartAt = (rangeStart: number, interval: string): ((index: number) => number) => {
+  const start = new Date(rangeStart);
+  const year = start.getUTCFullYear();
+  const month = start.getUTCMonth();
+  switch (interval) {
+    case 'year':
+      return (index) => startOfUtcMonth(year + index, 0);
+    case 'quarter':
+      // The range starts on the first month of its quarter
+      return (index) => startOfUtcMonth(year, month + 3 * index);
+    case 'month':
+      return (index) => startOfUtcMonth(year, month + index);
+    case 'week':
+      // The range starts on a monday at midnight
+      return (index) => rangeStart + index * 7 * DAY_MS;
+    case 'day':
+      return (index) => Math.floor(rangeStart / DAY_MS) * DAY_MS + index * DAY_MS;
+    case 'hour':
+      // The range starts at the beginning of its hour
+      return (index) => rangeStart + index * HOUR_MS;
+    default:
+      throw unsupportedIntervalError(interval);
   }
-  return newData;
+};
+const HOURS = Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, '0'));
+// Key of a bucket as getHistogramDateFormat in engine.ts formats it, from the day it starts on
+const toBucketKey = (isoDay: string, hour: string, interval: string) => {
+  switch (interval) {
+    case 'year':
+      return isoDay.slice(0, 4);
+    case 'quarter':
+    case 'month':
+      return isoDay.slice(0, 7);
+    case 'hour':
+      return `${isoDay} ${hour}:00:00`;
+    default:
+      return isoDay;
+  }
+};
+
+// The dates of a time series only depend on the period and the interval: compute them once, then
+// place the values of any number of series on them. The range is parsed once with moment, the buckets
+// are computed on UTC timestamps: moment for each of them blocked the event loop for about 120 ms
+// per series of 50,000 hours (5.7 years), against about 15 ms now.
+export const buildTimeSeriesAxis = (startDate: Date, endDate: Date, interval: string): TimeSeriesAxis => {
+  const { startDateParsed, elementsOfInterval } = computeTimeSeriesRange(startDate, endDate, interval);
+  const bucketStartAt = buildBucketStartAt(startDateParsed.valueOf(), interval);
+  const keys = [];
+  const dates = [];
+  // Every bucket starts on an exact UTC hour: its day is only formatted again when it changes
+  let day = NaN;
+  let isoDay = '';
+  for (let i = 0; i <= elementsOfInterval; i += 1) {
+    const bucketStart = bucketStartAt(i);
+    const bucketDay = Math.floor(bucketStart / DAY_MS) * DAY_MS;
+    if (bucketDay !== day) {
+      day = bucketDay;
+      isoDay = new Date(day).toISOString().slice(0, 10);
+    }
+    const hour = HOURS[(bucketStart - bucketDay) / HOUR_MS];
+    dates[i] = `${isoDay}T${hour}:00:00.000Z`;
+    keys[i] = toBucketKey(isoDay, hour, interval);
+  }
+  return { keys, dates };
+};
+
+export const fillTimeSeriesValues = (axis: TimeSeriesAxis, data: { date: string; value: number }[]) => {
+  // Last value wins on duplicated dates, as the former linear lookup did
+  const valuesByDate = new Map(data.map((d) => [d.date, d.value]));
+  return axis.keys.map((key) => (valuesByDate.has(key) ? valuesByDate.get(key) as number : 0));
+};
+
+export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: { date: string; value: number }[]) => {
+  const axis = buildTimeSeriesAxis(startDate, endDate, interval);
+  const values = fillTimeSeriesValues(axis, data);
+  return axis.dates.map((date, i) => ({ date, value: values[i] }));
 };
 
 export const offsetToCursor = (sort: estypes.SortResults): string => {
@@ -354,20 +455,26 @@ export const wait = <T> (ms: number, resolveResult?: T): Promise<void | T> => {
 };
 
 // Turn a function call into a potential long running async call
+// lockId scopes the mutual exclusion (default: the execution itself). Two executions of the same work
+// (duplicate messages) must share it, otherwise they run concurrently on the same data.
 export const runFunctionAsLongRunning = async (
   context: AuthContext,
   user: AuthUser,
   functionToRun: () => Promise<void>,
   executionId: string,
+  lockId: string = executionId,
 ): Promise<boolean> => {
   let lock: { unlock: () => any } | undefined;
   try {
     // Try to get the lock in redis
-    lock = await lockResources(executionId, { draftId: getDraftContext(context, user) });
+    lock = await lockResources([lockId], { draftId: getDraftContext(context, user) });
     const currentAsyncCall = await redisGetAsyncCall(executionId);
     // If a call was already processed and is finished, return true
     if (currentAsyncCall && currentAsyncCall !== '0') {
-      await lock?.unlock();
+      // Released once: the catch below must not unlock this handle again
+      const heldLock = lock;
+      lock = undefined;
+      await heldLock?.unlock();
       return true;
     } else {
       // Otherwise, it means that either the rule apply wasn't started yet, or the node processing it went down and that the call couldn't finish.
@@ -380,8 +487,19 @@ export const runFunctionAsLongRunning = async (
         } catch (err: any) {
           logApp.error('[OPENCTI] Error during function run', { cause: err });
         }
-        await redisFinishAsyncCall(executionId);
-        await lock?.unlock();
+        try {
+          await redisFinishAsyncCall(executionId);
+        } catch (err: any) {
+          // Once the call has returned (timeout), nobody else would see this failure
+          logApp.warn('[OPENCTI] Unable to record the end of a long running call', { cause: err, executionId });
+          throw err;
+        } finally {
+          // A lock left behind would block every execution sharing the lock id until the process stops.
+          // Released once: with the child lock process, a second unlock of the same handle never gets an answer.
+          const heldLock = lock;
+          lock = undefined;
+          await heldLock?.unlock();
+        }
       };
       const fullRuleApplyPromise = fullFunctionRun();
       const raceResult = await Promise.race([fullRuleApplyPromise, timeoutPromise]) as { timeout?: boolean };

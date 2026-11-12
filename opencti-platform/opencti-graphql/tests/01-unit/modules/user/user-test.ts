@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { DateTime } from 'luxon';
+import bcrypt from 'bcryptjs';
 import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
 import { updateAttribute } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
@@ -10,7 +11,10 @@ import {
   authenticateUserByToken,
   authenticateUserByUserId,
   checkPasswordInlinePolicy,
+  generatePasswordFromPolicy,
+  isPasswordPolicySatisfiable,
   isSensitiveChangesAllowed,
+  login,
 } from '../../../../src/modules/user/user-domain';
 import { addUserToken, generateSecureToken } from '../../../../src/modules/user/user-domain';
 import { testContext } from '../../../utils/testQuery';
@@ -134,6 +138,78 @@ describe('password checker', () => {
     };
     expect(checkPasswordInlinePolicy(testContext, policy03, 'julA').length).toBe(1);
     expect(checkPasswordInlinePolicy(testContext, policy03, 'ju!lA').length).toBe(0);
+  });
+});
+
+describe('password generator', () => {
+  it('should generate a password without policy', async () => {
+    const password = generatePasswordFromPolicy({});
+    expect(password.length).toBe(32);
+    expect(checkPasswordInlinePolicy(testContext, {}, password).length).toBe(0);
+  });
+  it('should generate a password matching a complex policy', async () => {
+    const policy = {
+      password_policy_min_length: 10,
+      password_policy_min_symbols: 2,
+      password_policy_min_numbers: 3,
+      password_policy_min_words: 3,
+      password_policy_min_lowercase: 2,
+      password_policy_min_uppercase: 5,
+    };
+    for (let i = 0; i < 50; i += 1) {
+      expect(checkPasswordInlinePolicy(testContext, policy, generatePasswordFromPolicy(policy))).toEqual([]);
+    }
+  });
+  it('should generate a password matching min and max length policy', async () => {
+    const longPolicy = { password_policy_min_length: 64, password_policy_min_symbols: 5, password_policy_min_words: 2 };
+    const longPassword = generatePasswordFromPolicy(longPolicy);
+    expect(longPassword.length).toBe(64);
+    expect(checkPasswordInlinePolicy(testContext, longPolicy, longPassword)).toEqual([]);
+    const shortPolicy = { password_policy_max_length: 8, password_policy_min_uppercase: 2, password_policy_min_numbers: 2 };
+    const shortPassword = generatePasswordFromPolicy(shortPolicy);
+    expect(shortPassword.length).toBe(8);
+    expect(checkPasswordInlinePolicy(testContext, shortPolicy, shortPassword)).toEqual([]);
+  });
+  it('should generate different passwords', async () => {
+    expect(generatePasswordFromPolicy({})).not.toBe(generatePasswordFromPolicy({}));
+  });
+  it('should generate non-empty random words', async () => {
+    const policy = { password_policy_min_words: 33 };
+    const password = generatePasswordFromPolicy(policy);
+    expect(checkPasswordInlinePolicy(testContext, policy, password)).toEqual([]);
+    const words = password.split('-');
+    expect(words.length).toBe(33);
+    expect(words.every((word) => word.length > 0)).toBeTruthy();
+    expect(words.join('').length).toBe(33);
+    const shortPolicy = { password_policy_max_length: 5, password_policy_min_words: 3 };
+    for (let i = 0; i < 20; i += 1) {
+      const shortPassword = generatePasswordFromPolicy(shortPolicy);
+      expect(checkPasswordInlinePolicy(testContext, shortPolicy, shortPassword)).toEqual([]);
+      expect(shortPassword.split('-').every((word) => word.length > 0)).toBeTruthy();
+    }
+  });
+  it('should reject unsatisfiable policy', async () => {
+    expect(() => generatePasswordFromPolicy({ password_policy_max_length: 8, password_policy_min_uppercase: 9 }))
+      .toThrowError('password policy cannot be satisfied');
+    expect(() => generatePasswordFromPolicy({ password_policy_max_length: 4, password_policy_min_words: 3 }))
+      .toThrowError('password policy cannot be satisfied');
+    expect(() => generatePasswordFromPolicy({ password_policy_max_length: 8, password_policy_min_uppercase: Number.MAX_SAFE_INTEGER }))
+      .toThrowError('password policy cannot be satisfied');
+  });
+  it('should tell a policy satisfiable when the password checker accepts a password of at most its maximum length', async () => {
+    // The checker counts the empty words around a separator, and a separator as a symbol
+    const emptyWords = { password_policy_max_length: 3, password_policy_min_words: 3, password_policy_min_symbols: 2 };
+    expect(checkPasswordInlinePolicy(testContext, emptyWords, 'a--')).toEqual([]);
+    expect(isPasswordPolicySatisfiable(emptyWords)).toBe(true);
+    expect(isPasswordPolicySatisfiable({ password_policy_max_length: 0, password_policy_min_uppercase: 9 })).toBe(true);
+    expect(isPasswordPolicySatisfiable({
+      password_policy_max_length: 4,
+      password_policy_min_words: 3,
+      password_policy_min_uppercase: 1,
+      password_policy_min_lowercase: 1,
+      password_policy_min_numbers: 1,
+    })).toBe(false);
+    expect(isPasswordPolicySatisfiable({ password_policy_max_length: 10, password_policy_min_length: 12 })).toBe(false);
   });
 });
 
@@ -752,5 +828,29 @@ describe('authenticateUserByToken', () => {
     await expect(
       authenticateUserByToken(mockContext, mockReq, 'notokens-plaintext'),
     ).rejects.toThrow('Cannot identify user with token');
+  });
+});
+
+describe('login', () => {
+  const prototype = Object.prototype as Record<string, unknown>;
+
+  beforeEach(() => {
+    vi.mocked(elLoadBy).mockReset();
+  });
+
+  it('should log in a user with the password matching its own hash', async () => {
+    const user = { id: 'local-user', user_email: 'local@test.com', password: bcrypt.hashSync('local-password', 4) };
+    vi.mocked(elLoadBy).mockResolvedValue(user as any);
+    await expect(login('local@test.com', 'local-password')).resolves.toBe(user);
+  });
+
+  it('should refuse a user without its own password even when one is set on the object prototype', async () => {
+    vi.mocked(elLoadBy).mockResolvedValue({ id: 'service-account', user_email: 'service@test.com' } as any);
+    prototype.password = bcrypt.hashSync('inherited-password', 4);
+    try {
+      await expect(login('service@test.com', 'inherited-password')).rejects.toThrow('Bad login or password');
+    } finally {
+      delete prototype.password;
+    }
   });
 });

@@ -1,0 +1,10 @@
+{
+  "name": "Test rgb color theme",
+  "theme_background": "rgb(43, 182, 211)",
+  "theme_paper": "#303030",
+  "theme_nav": "#2bb6d3",
+  "theme_primary": "#4c88a0",
+  "theme_secondary": "#692929",
+  "theme_accent": "#833365",
+  "theme_text_color": "#ffffff"
+}

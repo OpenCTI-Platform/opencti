@@ -42,7 +42,7 @@ import PlaybookFlowFieldString from './playbookFlowFields/PlaybookFlowFieldStrin
 import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTargets';
 import PlaybookFlowFieldTriggerTime from './playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
-import { PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import { isPlaybookUpdateActionValid, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
 import { computeInitialComponentConfigValues } from './playbookComponents-utils';
 
 export type PlaybookFlowFormData
@@ -164,10 +164,7 @@ const PlaybookFlowForm = ({
         onReset={handleClose}
       >
         {({ submitForm, handleReset, isSubmitting, values }) => {
-          const actionsAreValid = (values.actions ?? []).every((a) => {
-            if (a.attribute === 'x_opencti_detection') return true;
-            return a.op && a.attribute && a.value && a.value.length > 0;
-          });
+          const actionsAreValid = (values.actions ?? []).every(isPlaybookUpdateActionValid);
 
           return (
             <Form>

@@ -87,6 +87,9 @@
   "catalog_manager": {
     "enabled": false
   },
+  "ingestion_health_manager": {
+    "enabled": false
+  },
   "import_csv_built_in_connector": {
     "enabled": true,
     "interval": 2000,

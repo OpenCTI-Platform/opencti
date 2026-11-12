@@ -10,17 +10,18 @@ import { basePath, getBaseUrl, logApp } from '../config/conf';
 import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR, UnsupportedError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../modules/dataSharing/taxiiCollection-domain';
-import { executionContext, isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import { executionContext, isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER, TAXIIAPI } from '../utils/access';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { findById as findTaxiiCollection } from '../modules/ingestion/ingestion-taxii-collection-domain';
-import { handleConfidenceToScoreTransformation } from '../manager/ingestionManager';
 import { now } from '../utils/format';
 import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
-import { TAXIIAPI } from '../modules/user/user-domain';
+import { handleConfidenceToScoreTransformation } from '../modules/ingestion/ingestion-taxii-utils';
+import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import { checkDraftInContext } from './httpServer-draft';
 import { pushBundleToConnectorQueue } from '../manager/ingestionManager/ingestionManagerPushToQueue';
 
 const TAXII_REQUEST_ALLOWED_CONTENT_TYPE = ['application/taxii+json', 'application/vnd.oasis.stix+json'];
@@ -43,7 +44,7 @@ const errorConverter = (e) => {
   };
 };
 
-const checkAuthenticationFromRequest = async (req, res) => {
+export const checkAuthenticationFromRequest = async (req, res) => {
   // noinspection UnnecessaryLocalVariableJS
   const context = await createAuthenticatedContext(req, res, 'taxii');
   if (!context.user) {
@@ -53,6 +54,11 @@ const checkAuthenticationFromRequest = async (req, res) => {
   if (!isUserHasCapability(context.user, TAXIIAPI)) {
     throw ForbiddenAccess();
   }
+  // TAXII routes don't go through the GraphQL `checkDraftInContext` middleware,
+  // so validate the draft context explicitly here before it is used further.
+  // Without this guard a caller could forge an `opencti-draft-id` header and
+  // read staged content from a draft they don't have access to.
+  await checkDraftInContext(context);
   return context;
 };
 const rebuildParamsForObject = (id, req) => {
@@ -152,7 +158,7 @@ const initTaxiiApi = (app) => {
     const { id } = req.params;
     try {
       const { collection } = await extractUserAndCollection(req, res, id);
-      if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION && collection.ingestion_running !== true) {
+      if (collection.entity_type === ENTITY_TYPE_INGESTION_TAXII_COLLECTION && !isIngestionRunning(collection)) {
         throw TaxiiError('Collection not found', 404);
       }
       sendJsonResponse(res, restBuildCollection(collection));
@@ -253,7 +259,7 @@ const initTaxiiApi = (app) => {
       if (!ingestion) {
         throw TaxiiError('Collection not found', 404);
       }
-      if (ingestion.ingestion_running !== true) {
+      if (!isIngestionRunning(ingestion)) {
         throw TaxiiError('Collection not found', 404);
       }
 

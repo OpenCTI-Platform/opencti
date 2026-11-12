@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import type { AuthContext } from '../types/user';
 import crypto from 'node:crypto';
-import { booleanConf, logApp } from '../config/conf';
+import { basePath, booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import { URL } from 'node:url';
 import {
@@ -65,6 +65,38 @@ export const extractRefererPathFromReq = (req: Request) => {
     logApp.warn('Invalid referer for redirect extraction', { referer: req.headers.referer });
   }
 };
+
+export const sanitizeReferer = (refererToSanitize: string | undefined, req?: Request): string => {
+  // NOTE: basePath will be configured, if the site is hosted behind a reverseProxy otherwise '/' should be accurate
+  // Ternary Operator (?): Defaults if basePath is undefined, null, "" (empty string), 0, etc (falsy values).
+  // basePath is trimmed in '../config/conf.js' to prevent a user from setting it to something like '       '
+  // NOTE: Do NOT use Nullish Coalescing (??): Would only default if basePath is undefined or null.
+  // It might be set to an empty string and would fail to set properly in base2return var in next line
+  const base2return = basePath ? basePath : '/';
+  // In some odd configurations refererToSanitize will be the string('undefined') versus value(undefined)
+  if (!refererToSanitize || refererToSanitize === 'undefined') return base2return;
+  try {
+    // Normalize the base (lowercase host, default port removed) so it compares with the resolved URL
+    const base = new URL(getBaseUrl(req)).toString().replace(/\/$/, '');
+    const resolvedUrl = new URL(refererToSanitize, base).toString();
+    // Accept the base itself, or the base followed by a path, a query or a hash
+    if (resolvedUrl === base || ['/', '?', '#'].some((separator) => resolvedUrl.startsWith(`${base}${separator}`))) {
+      // same domain URL accept the redirection
+      if (refererToSanitize.startsWith('/') && !refererToSanitize.startsWith('//')) {
+        // in case of relative URL, keep relative.
+        return refererToSanitize;
+      }
+      return resolvedUrl;
+    }
+  } catch {
+    // base url cannot be resolved, never redirect outside the platform
+  }
+  logApp.info('Redirect target rejected, not on the platform url', { url: refererToSanitize });
+  return base2return;
+};
+
+// Same-origin redirect target taken from the request referer, falling back to the platform base path.
+export const extractSafeRedirectFromReq = (req: Request) => sanitizeReferer(extractRefererPathFromReq(req), req);
 
 // Whether this request is driven by a signed-in person in a browser, as opposed
 // to an API token.
@@ -286,12 +318,41 @@ const logRateLimitThrottled = (ip: string, userAgent: string): void => {
   }
 };
 
+// graphql-upload accepts files of any size and in any number by default, so a single request could fill the
+// temporary directory where uploads are buffered, then the platform storage.
+// Artifacts (malware samples) can legitimately weigh up to 1GB, each platform can tighten these limits.
+export const DEFAULT_MAX_UPLOAD_FILE_SIZE = '1gb';
+export const DEFAULT_MAX_UPLOAD_FILES = 20;
+
+interface GraphqlUploadOptions {
+  maxFieldSize?: number;
+  maxFileSize: number;
+  maxFiles: number;
+}
+
+const parsePositiveSize = (size: string | number): number | null => {
+  const parsed = bytes.parse(size);
+  return parsed !== null && Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+const parsePositiveInteger = (value: string | number): number | null => {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+};
+
 // The multipart 'operations' field carries the GraphQL variables (e.g. markdown with data URI images).
 // Align its limit with the JSON body limit instead of graphql-upload 1MB default.
 // An unparsable size keeps graphql-upload default.
-export const buildGraphqlUploadOptions = (requestSizeLimit: string | number): { maxFieldSize?: number } => {
+// An unparsable file limit falls back to the platform default, never to graphql-upload unlimited default.
+export const buildGraphqlUploadOptions = (
+  requestSizeLimit: string | number,
+  uploadFileSizeLimit: string | number = DEFAULT_MAX_UPLOAD_FILE_SIZE,
+  uploadMaxFiles: string | number = DEFAULT_MAX_UPLOAD_FILES,
+): GraphqlUploadOptions => {
   const maxFieldSize = bytes.parse(requestSizeLimit);
-  return maxFieldSize === null ? {} : { maxFieldSize };
+  const maxFileSize = parsePositiveSize(uploadFileSizeLimit) ?? bytes.parse(DEFAULT_MAX_UPLOAD_FILE_SIZE) as number;
+  const maxFiles = parsePositiveInteger(uploadMaxFiles) ?? DEFAULT_MAX_UPLOAD_FILES;
+  return maxFieldSize === null ? { maxFileSize, maxFiles } : { maxFieldSize, maxFileSize, maxFiles };
 };
 
 export const buildRateLimiterOptions = (): Options => {
@@ -345,6 +406,8 @@ const SAFE_MULTIPART_MESSAGES = new Set([
   `Invalid type for the ‘map’ multipart field (${MULTIPART_SPEC_URL}).`,
   'Request disconnected during file upload stream parsing.',
 ]);
+// graphql-upload builds this one from the configured limit, a platform setting the caller can know.
+const MAX_FILES_EXCEEDED_MESSAGE = /^\d+ max file uploads exceeded\.$/;
 
 // Built for everything else, from the parser error type then the status.
 // The precise cause always stays in the log.
@@ -366,7 +429,8 @@ const CLIENT_STATUS_MESSAGES: Record<number, string> = {
 
 export const clientErrorResponse = (error: any) => {
   const status = error?.status ?? error?.statusCode ?? 400;
-  const message = SAFE_MULTIPART_MESSAGES.has(error?.message)
+  const isSafeMessage = SAFE_MULTIPART_MESSAGES.has(error?.message) || MAX_FILES_EXCEEDED_MESSAGE.test(error?.message ?? '');
+  const message = isSafeMessage
     ? error.message
     : CLIENT_ERROR_MESSAGES[error?.type] ?? CLIENT_STATUS_MESSAGES[status] ?? 'Bad request';
   return { status, body: { status: 'error', error: message } };

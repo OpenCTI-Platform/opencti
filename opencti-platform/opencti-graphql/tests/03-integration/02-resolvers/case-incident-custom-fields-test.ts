@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
+import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
 
 const CUSTOM_FIELD_ADD_QUERY = gql`
   mutation CustomFieldDefinitionAddForCaseIncidentTest($input: CustomFieldDefinitionAddInput!) {
@@ -78,6 +79,14 @@ const CASE_INCIDENT_DELETE_QUERY = gql`
   }
 `;
 
+// Managing the custom field definitions is an Enterprise Edition feature
+beforeAll(() => {
+  vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+});
+afterAll(() => {
+  vi.restoreAllMocks();
+});
+
 describe('Custom fields wired on Case-Incident', () => {
   let customFieldId: string;
   let customFieldName: string;
@@ -90,6 +99,7 @@ describe('Custom fields wired on Case-Incident', () => {
         input: {
           name: 'x_opencti_cf_test_case_incident_score',
           label: 'Test Case Incident Score',
+          description: 'Test Case Incident Score description',
           field_type: 'integer',
           min_value: 0,
           max_value: 100,
@@ -215,6 +225,7 @@ describe('Custom fields multi_select upsert on Case-Incident', () => {
         input: {
           name: 'x_opencti_cf_test_case_incident_tags',
           label: 'Test Case Incident Tags',
+          description: 'Test Case Incident Tags description',
           field_type: 'multi_select',
           select_options: ['alpha', 'bravo', 'charlie'],
         },
@@ -270,10 +281,93 @@ describe('Custom fields multi_select upsert on Case-Incident', () => {
     expect(values[0].select_values).toHaveLength(2);
   });
 
+  it('should find the Case-Incident with the full-text search on a custom field value', async () => {
+    const SEARCH_QUERY = gql`
+      query CaseIncidentsSearchByCustomFieldTest($search: String, $filters: FilterGroup) {
+        caseIncidents(first: 10, search: $search, filters: $filters) { edges { node { id } } }
+      }
+    `;
+    const filters = { mode: 'and', filterGroups: [], filters: [{ key: ['ids'], values: [caseIncidentId] }] };
+    const found = await queryAsAdmin({ query: SEARCH_QUERY, variables: { search: 'bravo', filters } });
+    expect(found.errors).toBeUndefined();
+    expect(found.data?.caseIncidents.edges.map((edge: any) => edge.node.id)).toEqual([caseIncidentId]);
+    const notFound = await queryAsAdmin({ query: SEARCH_QUERY, variables: { search: 'charlie', filters } });
+    expect(notFound.data?.caseIncidents.edges).toEqual([]);
+  });
+
   it('should cleanup the Case-Incident and the multi_select custom field definition', async () => {
     const deleteCaseResult = await queryAsAdmin({ query: CASE_INCIDENT_DELETE_QUERY, variables: { id: caseIncidentId } });
     expect(deleteCaseResult.errors).toBeUndefined();
     const deleteCustomFieldResult = await queryAsAdmin({ query: CUSTOM_FIELD_DELETE_QUERY, variables: { id: multiSelectFieldId } });
+    expect(deleteCustomFieldResult.errors).toBeUndefined();
+  });
+});
+
+describe('Custom fields text value full-text search on Case-Incident', () => {
+  let textFieldId: string;
+  let caseIncidentId: string;
+
+  const SEARCH_QUERY = gql`
+    query CaseIncidentsSearchByTextCustomFieldTest($search: String, $filters: FilterGroup) {
+      caseIncidents(first: 10, search: $search, filters: $filters) { edges { node { id } } }
+    }
+  `;
+  const searchCaseIncident = async (search: string) => {
+    const filters = { mode: 'and', filterGroups: [], filters: [{ key: ['ids'], values: [caseIncidentId] }] };
+    const result = await queryAsAdmin({ query: SEARCH_QUERY, variables: { search, filters } });
+    expect(result.errors).toBeUndefined();
+    return result.data?.caseIncidents.edges.map((edge: any) => edge.node.id);
+  };
+
+  it('should create a Case-Incident with a multi-word text custom field value', async () => {
+    const addResult = await queryAsAdmin({
+      query: CUSTOM_FIELD_ADD_QUERY,
+      variables: {
+        input: {
+          name: 'x_opencti_cf_test_case_incident_note',
+          label: 'Test Case Incident Note',
+          description: 'Test Case Incident Note description',
+          field_type: 'string',
+        },
+      },
+    });
+    expect(addResult.errors).toBeUndefined();
+    textFieldId = addResult.data?.customFieldDefinitionAdd.id;
+    const textFieldName = addResult.data?.customFieldDefinitionAdd.name;
+    const attachResult = await queryAsAdmin({
+      query: CUSTOM_FIELD_ADD_ENTITY_TYPE_QUERY,
+      variables: { id: textFieldId, entityType: 'Case-Incident', mandatory: false },
+    });
+    expect(attachResult.errors).toBeUndefined();
+
+    const createResult = await queryAsAdmin({
+      query: CASE_INCIDENT_ADD_QUERY,
+      variables: {
+        input: {
+          name: 'Case Incident with text custom field',
+          customFieldValues: [{ field_name: textFieldName, value: ['Closing note from the vendor'] }],
+        },
+      },
+    });
+    expect(createResult.errors).toBeUndefined();
+    caseIncidentId = createResult.data?.caseIncidentAdd.id;
+    expect(caseIncidentId).toBeDefined();
+  });
+
+  it('should find the Case-Incident with a word of the text custom field value', async () => {
+    expect(await searchCaseIncident('vendor')).toEqual([caseIncidentId]);
+    expect(await searchCaseIncident('supplier')).toEqual([]);
+  });
+
+  it('should find the Case-Incident with the exact phrase of the text custom field value', async () => {
+    expect(await searchCaseIncident('"closing note"')).toEqual([caseIncidentId]);
+    expect(await searchCaseIncident('"note closing"')).toEqual([]);
+  });
+
+  it('should cleanup the Case-Incident and the text custom field definition', async () => {
+    const deleteCaseResult = await queryAsAdmin({ query: CASE_INCIDENT_DELETE_QUERY, variables: { id: caseIncidentId } });
+    expect(deleteCaseResult.errors).toBeUndefined();
+    const deleteCustomFieldResult = await queryAsAdmin({ query: CUSTOM_FIELD_DELETE_QUERY, variables: { id: textFieldId } });
     expect(deleteCustomFieldResult.errors).toBeUndefined();
   });
 });

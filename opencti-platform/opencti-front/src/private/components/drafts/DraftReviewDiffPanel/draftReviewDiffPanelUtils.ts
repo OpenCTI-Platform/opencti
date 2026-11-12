@@ -1,4 +1,5 @@
 import { Change } from '../../../../components/common/table/ChangesTable';
+import { type CustomFieldStoredValue, getCustomFieldRawValueByFieldName } from '../../../../utils/customFields';
 
 export interface PatchValue {
   initial_value: string[];
@@ -27,6 +28,49 @@ export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9
 /** Returns true if the value looks like a STIX ID or UUID that can be resolved to a label. */
 export const isResolvableId = (value: string): boolean => STIX_ID_REGEX.test(value) || UUID_REGEX.test(value);
 
+const CUSTOM_FIELD_VALUES_KEY = 'custom_field_values';
+
+const toCustomFieldValues = (values: unknown[] | undefined): CustomFieldStoredValue[] => (values ?? [])
+  .map((value) => (typeof value === 'string' ? JSON.parse(value) : value) as CustomFieldStoredValue)
+  .filter((value) => !!value?.field_name);
+
+const formatCustomFieldValue = (values: CustomFieldStoredValue[], fieldName: string): string[] => {
+  const value = getCustomFieldRawValueByFieldName(values, fieldName);
+  if (value === undefined || value === null) return [];
+  return [Array.isArray(value) ? value.join(', ') : String(value)];
+};
+
+/**
+ * All the custom fields are stored in a single list, replaced as a whole on each edition:
+ * one change is built per custom field (keyed by its technical name) whose value actually changed.
+ * The final values are the ones of the draft version when known: the patch alone cannot tell a replacement
+ * by an empty list (every custom field cleared) from canceled incremental edits.
+ */
+const parseCustomFieldValuesChanges = (values: PatchValue, currentValues?: readonly CustomFieldStoredValue[] | null): Change[] => {
+  const initialValues = toCustomFieldValues(values.initial_value);
+  let finalValues: CustomFieldStoredValue[];
+  if (currentValues) {
+    finalValues = [...currentValues];
+  } else if (values.replaced_value && values.replaced_value.length > 0) {
+    finalValues = toCustomFieldValues(values.replaced_value);
+  } else {
+    const removedIds = toCustomFieldValues(values.removed_value).map((v) => v.field_id);
+    const addedValues = toCustomFieldValues(values.added_value);
+    const addedIds = addedValues.map((v) => v.field_id);
+    finalValues = [...initialValues.filter((v) => !removedIds.includes(v.field_id) && !addedIds.includes(v.field_id)), ...addedValues];
+  }
+  const fieldNames = [...new Set([...initialValues, ...finalValues].map((v) => v.field_name))];
+  // Compared on the raw values: the displayed ones join the multi_select options (['a, b'] and ['a', 'b'] look alike)
+  const rawValue = (customFieldValues: CustomFieldStoredValue[], fieldName: string) => JSON.stringify(getCustomFieldRawValueByFieldName(customFieldValues, fieldName) ?? null);
+  return fieldNames
+    .filter((fieldName) => rawValue(initialValues, fieldName) !== rawValue(finalValues, fieldName))
+    .map((fieldName) => ({
+      field: fieldName,
+      removed: formatCustomFieldValue(initialValues, fieldName),
+      added: formatCustomFieldValue(finalValues, fieldName),
+    }));
+};
+
 /**
  * Parses the raw JSON patch stored in `draft_updates_patch` into a list of `Change` objects
  * suitable for the ChangesTable component.
@@ -37,13 +81,19 @@ export const isResolvableId = (value: string): boolean => STIX_ID_REGEX.test(val
  *
  * Fields listed in `EXCLUDED_PATCH_FIELDS` are filtered out.
  */
-export const parseUpdatesPatch = (rawPatch: string | null | undefined): Change[] => {
+export const parseUpdatesPatch = (
+  rawPatch: string | null | undefined,
+  currentCustomFieldValues?: readonly CustomFieldStoredValue[] | null,
+): Change[] => {
   if (!rawPatch) return [];
   try {
     const patch: UpdatesPatch = JSON.parse(rawPatch);
     return Object.entries(patch)
       .filter(([field]) => !EXCLUDED_PATCH_FIELDS.has(field))
-      .map(([field, values]) => {
+      .flatMap(([field, values]): Change | Change[] => {
+        if (field === CUSTOM_FIELD_VALUES_KEY) {
+          return parseCustomFieldValuesChanges(values, currentCustomFieldValues);
+        }
         if (values.replaced_value && values.replaced_value.length > 0) {
           return {
             field,

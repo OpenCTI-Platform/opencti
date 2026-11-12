@@ -5,6 +5,7 @@ import { getIn, useFormikContext } from 'formik';
 import { CustomFieldDef, CustomFieldFormValues, getCustomFieldSetting } from '../../../../utils/customFields';
 import { CustomFieldInput } from './CustomFieldsInput';
 import { CustomFieldsCreationContext } from './CustomFieldsFormik';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 interface CustomFieldValuesCreationProps {
   entityType?: string;
@@ -32,6 +33,7 @@ const CustomFieldValuesCreation: FunctionComponent<CustomFieldValuesCreationProp
               definition={definition}
               mandatory={getCustomFieldSetting(definition, entityType)?.mandatory ?? false}
               value={values.customFields?.[definition.id] ?? ''}
+              style={fieldSpacingContainerStyle}
               onChange={(value) => {
                 setFieldTouched(name, true, false);
                 setFieldValue(name, value);

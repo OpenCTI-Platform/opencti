@@ -1906,6 +1906,9 @@ const navigateAllMenu = async (page: Page) => {
   await leftBarPage.expectBreadcrumb('Investigations');
 };
 
+// Tests are independent and slow (35-53 s each): let `--shard` spread them across shards.
+test.describe.configure({ mode: 'parallel' });
+
 test.describe('Navigation available on CE', { tag: ['@ce'] }, () => {
   test('Check navigation on all pages', async ({ page }) => {
     await page.goto('/');

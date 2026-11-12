@@ -162,7 +162,7 @@ const DynamicResolutionField = ({
     <div style={style}>
       <Typography variant="h4">{title}</Typography>
       <Grid container={true} spacing={3}>
-        <Grid item xs={5}>
+        <Grid size={5}>
           <TextField
             error={!R.isNil(meta.error)}
             helperText={helperText}
@@ -176,7 +176,7 @@ const DynamicResolutionField = ({
             }}
           />
         </Grid>
-        <Grid item xs={7}>
+        <Grid size={7}>
           {(field.value || []).length > 0 ? (
             <List style={{ marginTop: 0 }}>
               {(field.value || []).map((item) => (

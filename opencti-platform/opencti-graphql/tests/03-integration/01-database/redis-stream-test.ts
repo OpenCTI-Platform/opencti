@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { createStreamProcessor } from '../../../src/database/stream/stream-handler';
+import { getClientBase } from '../../../src/database/redis';
+import { createStreamProcessor, fetchStreamInfo } from '../../../src/database/stream/stream-handler';
 import type { ActivityStreamEvent, SseEvent } from '../../../src/types/event';
 import { wait } from '../../../src/database/utils';
-import { type StreamProcessor } from '../../../src/database/stream/stream-utils';
+import { LIVE_STREAM_NAME, type StreamProcessor } from '../../../src/database/stream/stream-utils';
 
 describe('Redis stream test coverage', () => {
   it('Should stream processor works', async () => {
@@ -33,5 +34,11 @@ describe('Redis stream test coverage', () => {
     const totalTime = Date.now() - startTime;
     expect(totalTime).toBeLessThan(2_000);
     expect(totalTime).toBeGreaterThan(200);
+  });
+
+  it('Should store the live stream under the namespaced key', async () => {
+    expect(await getClientBase().exists(LIVE_STREAM_NAME)).toBe(1);
+    const streamInfo = await fetchStreamInfo();
+    expect(streamInfo.lastEventId).toEqual(expect.stringMatching(/^\d+-\d+$/));
   });
 });

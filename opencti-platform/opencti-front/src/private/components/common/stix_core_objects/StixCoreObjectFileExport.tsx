@@ -338,6 +338,8 @@ const StixCoreObjectFileExportComponent = ({
           scoId,
           maxContentMarkings,
           templateId,
+          undefined,
+          { removeEmptySections: values.removeEmptySections },
         );
 
         if (values.format === 'text/html') {

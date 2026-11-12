@@ -1,7 +1,5 @@
-import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import { print, type ASTNode } from 'graphql';
-import axios, { type AxiosInstance } from 'axios';
 
 import conf, { ACCOUNT_STATUS_ACTIVE, PORT } from '../../src/config/conf';
 import { ADMINISTRATOR_ROLE, BYPASS, DEFAULT_ROLE, executionContext } from '../../src/utils/access';
@@ -17,12 +15,62 @@ import type { ConfidenceLevel } from '../../src/generated/graphql';
 import { findById } from '../../src/modules/user/user-domain';
 // endregion
 
+interface TestHttpResponse {
+  data: any;
+  status: number;
+  headers: Record<string, string>;
+}
+
+export interface TestHttpClient {
+  post: (url: string, data: any, opts?: { headers?: Record<string, string> }) => Promise<TestHttpResponse>;
+}
+
+const parseResponseData = (text: string) => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
+const createFetchClient = (defaultHeaders: Record<string, string>, jar?: CookieJar): TestHttpClient => {
+  return {
+    post: async (url: string, data: any, opts: { headers?: Record<string, string> } = {}) => {
+      const mergedHeaders: Record<string, string> = { ...defaultHeaders, ...opts.headers };
+      if (jar) {
+        const cookieString = await jar.getCookieString(url);
+        if (cookieString) mergedHeaders.Cookie = cookieString;
+      }
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: mergedHeaders,
+        body: JSON.stringify(data),
+      });
+      if (jar) {
+        const setCookies = response.headers.getSetCookie?.() ?? [];
+        for (const cookie of setCookies) {
+          await jar.setCookie(cookie, url);
+        }
+      }
+      const responseHeaders: Record<string, string> = {};
+      response.headers.forEach((v, k) => {
+        responseHeaders[k] = v;
+      });
+      const result: TestHttpResponse = { data: parseResponseData(await response.text()), status: response.status, headers: responseHeaders };
+      if (!response.ok) {
+        throw Object.assign(new Error(`Request failed with status code ${response.status}`), { response: result });
+      }
+      return result;
+    },
+  };
+};
+
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
 export const SYNC_LIVE_START_REMOTE_URI = conf.get('app:sync_live_start_remote_uri');
 export const SYNC_DIRECT_START_REMOTE_URI = conf.get('app:sync_direct_start_remote_uri');
 export const SYNC_RESTORE_START_REMOTE_URI = conf.get('app:sync_restore_start_remote_uri');
 export const SYNC_TEST_REMOTE_URI = `http://api-tests:${PORT}`;
-export const SYNC_LIVE_EVENTS_SIZE = 630;
+export const SYNC_LIVE_EVENTS_SIZE = 635;
 
 export const PYTHON_PATH = './src/python/testing';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -45,39 +93,32 @@ export const generateBasicAuth = (email?: string, password?: string) => {
   return `Basic ${buff.toString('base64')}`;
 };
 
-export const createHttpClient = (email?: string, password?: string) => {
-  return wrapper(axios.create({
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      authorization: generateBasicAuth(email, password),
-    },
-  }));
+export const createHttpClient = (email?: string, password?: string): TestHttpClient => {
+  return createFetchClient({
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    authorization: generateBasicAuth(email, password),
+  });
 };
 
-export const createTokenHttpClient = (token: string) => {
-  return wrapper(axios.create({
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      authorization: `Bearer ${token}`,
-    },
-  }));
+export const createTokenHttpClient = (token: string): TestHttpClient => {
+  return createFetchClient({
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    authorization: `Bearer ${token}`,
+  });
 };
 
-export const createUnauthenticatedClient = () => {
+export const createUnauthenticatedClient = (): TestHttpClient => {
   const jar = new CookieJar();
-  return wrapper(axios.create({
-    jar,
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-  }));
+  return createFetchClient({
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  }, jar);
 };
 
-export const executeExternalQuery = async (client: AxiosInstance, uri: string, query: unknown, variables = {}) => {
-  const response = await client.post(uri, { query, variables }, { withCredentials: true });
+export const executeExternalQuery = async (client: TestHttpClient, uri: string, query: unknown, variables = {}) => {
+  const response = await client.post(uri, { query, variables });
   const { data } = response.data;
   return data;
 };
@@ -91,16 +132,16 @@ interface QueryOption {
   draftId?: string;
 }
 
-const executeInitPlatformQuery = async (client: AxiosInstance, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
+const executeInitPlatformQuery = async (client: TestHttpClient, query: string | ASTNode, variables = {}, options: QueryOption = {}) => {
   const queryStr = typeof query === 'string' ? query : print(query);
-  const headers: any = {};
+  const headers: Record<string, string> = {};
   if (options.workId) headers['opencti-work-id'] = options.workId;
   if (options.eventId) headers['opencti-event-id'] = options.eventId;
   if (options.previousStandard) headers['previous-standard'] = options.previousStandard;
   if (options.synchronizedUpsert) headers['synchronized-upsert'] = options.synchronizedUpsert;
   if (options.applicantId) headers['opencti-applicant-id'] = options.applicantId;
   if (options.draftId) headers['opencti-draft-id'] = options.draftId;
-  const response = await client.post(`${API_URI}/graphql`, { query: queryStr, variables }, { withCredentials: true, headers });
+  const response = await client.post(`${API_URI}/graphql`, { query: queryStr, variables }, { headers });
   return response.data;
 };
 const adminClient = createHttpClient();
@@ -285,6 +326,18 @@ export const ROLE_PLATFORM_ADMIN: Role = {
 };
 TESTING_ROLES.push(ROLE_PLATFORM_ADMIN);
 
+// Only the Form Intake capability: can submit forms, nothing else on knowledge.
+export const ROLE_FORM_INTAKE: Role = {
+  id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Form intake only' }),
+  name: 'Form intake only',
+  description: 'Create knowledge via Form Intake only',
+  capabilities: [
+    'KNOWLEDGE_KNFORMINTAKE',
+    'APIACCESS_USEBASICAUTH',
+  ],
+};
+TESTING_ROLES.push(ROLE_FORM_INTAKE);
+
 // Groups
 export interface GroupTestData {
   id: string;
@@ -374,6 +427,19 @@ export const PLATFORM_ADMIN_GROUP: GroupTestData = {
   max_shareable_markings: [],
 };
 TESTING_GROUPS.push(PLATFORM_ADMIN_GROUP);
+
+export const FORM_INTAKE_GROUP: GroupTestData = {
+  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'FORM INTAKE GROUP' }),
+  name: 'FORM INTAKE GROUP',
+  markings: [MARKING_TLP_GREEN],
+  roles: [ROLE_FORM_INTAKE],
+  group_confidence_level: {
+    max_confidence: 100,
+    overrides: [],
+  },
+  max_shareable_markings: [],
+};
+TESTING_GROUPS.push(FORM_INTAKE_GROUP);
 
 // Organization
 export interface OrganizationTestData {
@@ -492,6 +558,14 @@ export const USER_PLATFORM_ADMIN: UserTestData = {
   groups: [PLATFORM_ADMIN_GROUP],
 };
 TESTING_USERS.push(USER_PLATFORM_ADMIN);
+
+export const USER_FORM_INTAKE: UserTestData = {
+  id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'formintake@opencti.io' }),
+  email: 'formintake@opencti.io',
+  password: 'formintake',
+  groups: [FORM_INTAKE_GROUP],
+};
+TESTING_USERS.push(USER_FORM_INTAKE);
 
 // region group management
 const GROUP_CREATION_MUTATION = `

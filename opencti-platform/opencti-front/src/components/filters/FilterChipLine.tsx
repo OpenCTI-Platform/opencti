@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import { ChipOwnProps } from '@mui/material/Chip';
 import { Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
@@ -133,6 +133,9 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   const { filterStyle, operatorStyle } = getChipStyles(theme, variant);
   const lineStyle = getLineStyle({ isReadWriteFilter, hasSavedFilters });
+  // The summary button lists every filter of the group (top-level ones included): only when it
+  // is displayed does it replace the chips. Without nested groups the chips stay the display.
+  const isGroupsSummaryDisplayed = !isReadWriteFilter && !!showGroupsSummaryButtonOnReadOnly && displayedFilterGroups.length > 0;
 
   const manageRemoveFilter = (
     currentFilterId: string | undefined,
@@ -170,7 +173,7 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
 
   return (
     <Box sx={lineStyle} ref={lineRef}>
-      {(isReadWriteFilter || !showGroupsSummaryButtonOnReadOnly)
+      {!isGroupsSummaryDisplayed
         ? displayedFilterGroups.map((group, index) => (
             <Fragment key={group.id ?? `filter-group-${index}`}>
               <FilterGroupChipButton
@@ -186,18 +189,18 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
               {(index < displayedFilterGroups.length - 1 || displayedFilters.length > 0) && globalModeSeparator}
             </Fragment>
           ))
-        : displayedFilterGroups.length > 0 && (
-          <Box sx={{ padding: '0 4px' }}>
-            <FilterGroupSummaryButton
-              filterObj={{ mode: globalMode, filters: displayedFilters, filterGroups: displayedFilterGroups }}
-              filtersRepresentativesMap={filtersRepresentativesMap}
-              filterStyle={filterStyle}
-              buttonLabel={t_i18n('Click to display filters')}
-              dialogTitle={t_i18n('Filters')}
-            />
-          </Box>
-        )}
-      {!showGroupsSummaryButtonOnReadOnly && displayedFilters.map((currentFilter, index) => {
+        : (
+            <Box sx={{ padding: '0 4px' }}>
+              <FilterGroupSummaryButton
+                filterObj={{ mode: globalMode, filters: displayedFilters, filterGroups: displayedFilterGroups }}
+                filtersRepresentativesMap={filtersRepresentativesMap}
+                filterStyle={filterStyle}
+                buttonLabel={t_i18n('Click to display filters')}
+                dialogTitle={t_i18n('Filters')}
+              />
+            </Box>
+          )}
+      {!isGroupsSummaryDisplayed && displayedFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterLabel = t_i18n(getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap)?.label ?? filterKey);
         const filterOperator = currentFilter.operator ?? 'eq';
@@ -267,10 +270,10 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
               }
             >
               <Stack
-                alignItems="center"
                 direction="row"
-                gap={0.5}
                 sx={{
+                  alignItems: 'center',
+                  gap: 0.5,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                 }}

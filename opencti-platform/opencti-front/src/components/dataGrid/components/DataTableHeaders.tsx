@@ -3,8 +3,8 @@ import { DragIndicatorOutlined } from '@mui/icons-material';
 import Menu from '@mui/material/Menu';
 import { DragDropContext, Draggable, DraggableLocation, Droppable } from '@hello-pangea/dnd';
 import MenuItem from '@mui/material/MenuItem';
-import { PopoverProps } from '@mui/material/Popover/Popover';
-import { useTheme } from '@mui/styles';
+import { PopoverProps } from '@mui/material/Popover';
+import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import { UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY } from '@components/SearchBulkUnknownEntities';
 import { DataTableColumn, DataTableColumns, DataTableHeadersProps } from '../dataTableTypes';
@@ -36,6 +36,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     endsWithAction,
     actionsColumnWidth,
     startColumnWidth,
+    visibleWidth,
     useDataTablePaginationLocalStorage: {
       viewStorage: { sortBy, orderAsc },
     },
@@ -77,8 +78,14 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
   const showToolbar = (numberOfSelectedElements > 0 && !disableToolBar)
     || (storageKey === UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY && selectAll); // case of DataTableWithoutFragment
 
+  // The row is as wide as the columns, which can be wider than the table once a column is widened.
+  // The toolbar replacing it is kept within the visible part of the table so that none of its actions is cut off.
+  const toolbarStyle: CSSProperties = showToolbar
+    ? { position: 'sticky', left: 0, maxWidth: visibleWidth || undefined }
+    : {};
+
   return (
-    <div ref={containerRef} style={{ display: 'flex', height: 42 }}>
+    <div ref={containerRef} style={{ display: 'flex', height: 42, ...toolbarStyle }}>
       {(startsWithAction || startsWithIcon) && (
         <div data-testid="dataTableCheckAll" style={checkboxStyle}>
           {(startsWithAction && !removeSelectAll) && (

@@ -247,7 +247,26 @@ export class TelemetryMeterManager {
 
   workflowPublishCount = 0;
 
+  configPresetExportCount = 0;
+
   // endregion providers usage
+
+  // region Custom fields
+  // Number of custom field definitions created
+  customFieldCreatedCount = 0;
+
+  // Custom field definitions broken down by attached entity type
+  customFieldsByEntityType: DimensionalGaugeItem[] = [];
+
+  // Custom field definitions broken down by field type (integer, string, ...)
+  customFieldsByFieldType: DimensionalGaugeItem[] = [];
+
+  // Number of dashboards with at least one widget filtering on a custom field
+  dashboardsWithCustomFieldFilterCount = 0;
+
+  // Number of saved filters (lists) filtering on a custom field
+  savedFiltersWithCustomFieldCount = 0;
+  // endregion
 
   // region AI usage (backend-agnostic: no legacy/xtm_one dimension anywhere)
   // Number of chatbot messages sent (legacy Flowise and XTM One combined)
@@ -563,6 +582,10 @@ export class TelemetryMeterManager {
     this.workflowPublishCount = n;
   }
 
+  setConfigPresetExportCount(n: number) {
+    this.configPresetExportCount = n;
+  }
+
   setChatbotMessageCount(n: number) {
     this.chatbotMessageCount = n;
   }
@@ -577,6 +600,26 @@ export class TelemetryMeterManager {
 
   setXtmAgentCallItems(items: DimensionalGaugeItem[]) {
     this.xtmAgentCallItems = items;
+  }
+
+  setCustomFieldCreatedCount(n: number) {
+    this.customFieldCreatedCount = n;
+  }
+
+  setCustomFieldsByEntityType(items: DimensionalGaugeItem[]) {
+    this.customFieldsByEntityType = items;
+  }
+
+  setCustomFieldsByFieldType(items: DimensionalGaugeItem[]) {
+    this.customFieldsByFieldType = items;
+  }
+
+  setDashboardsWithCustomFieldFilterCount(n: number) {
+    this.dashboardsWithCustomFieldFilterCount = n;
+  }
+
+  setSavedFiltersWithCustomFieldCount(n: number) {
+    this.savedFiltersWithCustomFieldCount = n;
   }
 
   setPlaybookAiAgentRunCount(n: number) {
@@ -772,12 +815,20 @@ export class TelemetryMeterManager {
     this.registerGauge('shared_saved_filters_count', 'Number of saved filters shared with at least one other member (non-creator)', 'sharedSavedFiltersCount');
     this.registerGauge('shared_saved_filters_permission_changes', 'Number of access restriction updates on shared saved filters', 'sharedSavedFiltersPermissionChangesCount');
     this.registerGauge('workflow_publish_count', 'Number of workflow definitions published', 'workflowPublishCount');
+    this.registerGauge('config_preset_export_count', 'Number of configuration preset bundles exported', 'configPresetExportCount');
     // region AI usage (backend-agnostic counters, see telemetryManager)
     this.registerGauge('chatbot_message_count', 'Number of chatbot messages sent (legacy and XTM One combined)', 'chatbotMessageCount');
     this.registerDimensionalGauge('ai_insight_request_count', 'AI Insights requests broken down by cache state (hit, miss)', 'aiInsightRequestItems');
     this.registerDimensionalGauge('ask_ai_query_count', 'Ask AI queries broken down by feature', 'askAiQueryItems');
     this.registerDimensionalGauge('xtm_agent_call_count', 'Direct XTM One agent calls broken down by channel (direct, direct_files)', 'xtmAgentCallItems');
     this.registerGauge('playbook_ai_agent_run_count', 'Number of playbook AI agent component runs', 'playbookAiAgentRunCount');
+    // region Custom fields
+    this.registerGauge('custom_field_created_count', 'Number of custom field definitions created', 'customFieldCreatedCount');
+    this.registerDimensionalGauge('custom_fields_by_entity_type', 'custom field definitions broken down by attached entity type', 'customFieldsByEntityType');
+    this.registerDimensionalGauge('custom_fields_by_field_type', 'custom field definitions broken down by field type', 'customFieldsByFieldType');
+    this.registerGauge('dashboards_with_custom_field_filter_count', 'Number of dashboards with at least one widget filtering on a custom field', 'dashboardsWithCustomFieldFilterCount');
+    this.registerGauge('saved_filters_with_custom_field_count', 'Number of saved filters filtering on a custom field', 'savedFiltersWithCustomFieldCount');
+    // endregion
     this.registerDimensionalGauge('is_ai_enabled', 'Built-in LLM configuration state with provider type dimension', 'isAiEnabledItems', { unit: 'boolean' });
     this.registerGauge('is_xtm_one_configured', 'XTM One is configured (url and token)', 'isXtmOneConfigured', { unit: 'boolean' });
     this.registerGauge('is_chatbot_cgu_accepted', 'Filigran chatbot AI CGU accepted', 'isChatbotCguAccepted', { unit: 'boolean' });

@@ -1,6 +1,6 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import useConfidenceLevel from '../utils/hooks/useConfidenceLevel';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';

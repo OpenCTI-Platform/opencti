@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
-import useGraphParser, { ObjectToParse } from './useGraphParser';
+import useGraphParser, { isRestrictedObject, ObjectToParse } from './useGraphParser';
 import type { GraphNode, GraphLink, OctiGraphPositions } from '../graph.types';
 
 /**
@@ -44,6 +44,46 @@ describe('useGraphParser', () => {
     );
     const { result } = renderHook(() => useGraphParser(), { wrapper });
     parser = result.current;
+  });
+
+  describe('restricted entities', () => {
+    // What the platform returns for an entity the reader may not see: every value emptied.
+    const placeholder = {
+      name: 'Restricted',
+      createdBy: null as unknown as ObjectToParse['createdBy'],
+      objectMarking: [],
+      created: '1970-01-01T00:00:00.000Z',
+      created_at: '1970-01-01T00:00:00.000Z',
+    } as Partial<ObjectToParse>;
+
+    it('names an entity the reader may not see "Restricted", never with a blank name', () => {
+      const restricted = parser.buildNode(constructEntity({ id: 'hidden', ...placeholder }), emptyPositions);
+      expect(restricted.isRestricted).toBe(true);
+      expect(restricted.label).toBe('Restricted');
+      const visible = parser.buildNode(constructEntity({ id: 'visible', name: 'Emotet' } as Partial<ObjectToParse>), emptyPositions);
+      expect(visible.isRestricted).toBe(false);
+    });
+
+    it('recognises the placeholder without its dates, as an endpoint of a relationship carries none', () => {
+      expect(isRestrictedObject(constructEntity({ ...placeholder, created: undefined, created_at: undefined } as Partial<ObjectToParse>))).toBe(true);
+    });
+
+    it('never takes a readable entity named "Restricted" for one the reader may not see', () => {
+      // With its author, with a marking, or with its real creation date.
+      expect(isRestrictedObject(constructEntity({ ...placeholder, createdBy: { id: 'author-1', name: 'Author' } }))).toBe(false);
+      expect(isRestrictedObject(constructEntity({ ...placeholder, objectMarking: [{ id: 'marking-1', definition: 'TLP:GREEN' }] }))).toBe(false);
+      expect(isRestrictedObject(constructEntity({ ...placeholder, created: '2025-01-01T00:00:00.000Z' }))).toBe(false);
+    });
+
+    it('decides by the standard id when the query fetched it, whatever else the endpoint carries', () => {
+      const endpoint = { name: 'Restricted', createdBy: undefined, objectMarking: undefined, created: undefined, created_at: undefined } as Partial<ObjectToParse>;
+      expect(isRestrictedObject(constructEntity({ ...endpoint, standard_id: 'Restricted' }))).toBe(true);
+      expect(isRestrictedObject(constructEntity({ ...endpoint, standard_id: 'malware--0d4b4a2c-0a9e-4a37-9d8c-6d1d1c8c2b7e' }))).toBe(false);
+    });
+
+    it('never takes a relationship for a restricted entity', () => {
+      expect(isRestrictedObject(constructRelationship({ name: 'Restricted' } as Partial<ObjectToParse>))).toBe(false);
+    });
   });
 
   describe('buildNode', () => {
@@ -157,6 +197,19 @@ describe('useGraphParser', () => {
       // Both nested relationships should have been promoted to nodes.
       expect(nodeIds.has('inner-rel-1')).toBe(true);
       expect(nodeIds.has('inner-rel-2')).toBe(true);
+    });
+  });
+
+  describe('buildCorrelationData', () => {
+    it('draws the link to a container as certain, whatever the inference or the confidence of the container', () => {
+      const container = constructEntity({ id: 'report-1', entity_type: 'Report', is_inferred: true, confidence: 10 });
+      const other = constructEntity({ id: 'report-2', entity_type: 'Report' });
+      const shared = constructEntity({ id: 'malware-1', linkedContainers: [container, other] });
+      const { nodes, links } = parser.buildCorrelationData([shared], emptyPositions);
+      const toContainer = links.find((link) => link.target_id === 'report-1');
+      expect(toContainer).toMatchObject({ source_id: 'malware-1', inferred: false, isNestedInferred: false, confidence: null });
+      // The container keeps its own.
+      expect(nodes.find((node) => node.id === 'report-1')?.confidence).toBe(10);
     });
   });
 

@@ -116,6 +116,8 @@ const WorkspaceHeader = ({
             domElementId="container"
             name={workspace.name}
             type={workspace.type}
+            // An investigation is a graph: its toolbar exports the image of the drawing.
+            exportToImage={workspace.type !== 'investigation'}
             adjust={adjust}
             handleDownloadAsStixReport={handleDownloadAsStixReport}
             handleExportDashboard={handleExportDashboard}

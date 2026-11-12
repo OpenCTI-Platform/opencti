@@ -12,7 +12,9 @@ import { computeRelativeDate, dayStartDate, formatDate, monthsAgo, now } from 's
 import { fetchQuery } from 'src/relay/environment';
 import { DashboardConfig } from './dashboard-types';
 import { dashboardVizUtilsSavedFilterQuery$data } from './__generated__/dashboardVizUtilsSavedFilterQuery.graphql';
+import { dashboardVizUtilsTimeSeriesBreakdownFieldsQuery$data } from './__generated__/dashboardVizUtilsTimeSeriesBreakdownFieldsQuery.graphql';
 import { getWidgetInterval } from 'src/utils/widget/widgetUtils';
+import { resolveVariablesInFilterGroup } from './dashboardVariablesResolution';
 
 export const savedFilterQuery = graphql`
   query dashboardVizUtilsSavedFilterQuery($id: ID!) {
@@ -29,7 +31,7 @@ export const savedFilterQuery = graphql`
  * Fetches a saved filter by ID and returns its parsed filters content.
  * Returns null if the filter could not be resolved.
  */
-const fetchSavedFilterContent = async (filterId: string) => {
+export const fetchSavedFilterContent = async (filterId: string) => {
   try {
     const result = await fetchQuery(savedFilterQuery, { id: filterId }).toPromise() as dashboardVizUtilsSavedFilterQuery$data | undefined;
     if (!result?.savedFilter) return null;
@@ -39,23 +41,53 @@ const fetchSavedFilterContent = async (filterId: string) => {
   }
 };
 
+export const timeSeriesBreakdownFieldsQuery = graphql`
+  query dashboardVizUtilsTimeSeriesBreakdownFieldsQuery($perspective: WidgetPerspective!, $types: [String!]) {
+    timeSeriesBreakdownFields(perspective: $perspective, types: $types)
+  }
+`;
+
+/**
+ * Fetches the keys of the fields a time series of the `perspective` can be broken down by, for the `types` its
+ * dataset is restricted to (none for the types the breakdown queries default to), as the editor lists them: the
+ * ones these queries accept, the type itself only when it makes several series. Returns null if they could not be read.
+ */
+export const fetchTimeSeriesBreakdownFields = async (perspective: WidgetPerspective, types: string[]): Promise<string[] | null> => {
+  try {
+    const result = await fetchQuery(timeSeriesBreakdownFieldsQuery, { perspective, types })
+      .toPromise() as dashboardVizUtilsTimeSeriesBreakdownFieldsQuery$data | undefined;
+    return result ? [...result.timeSeriesBreakdownFields] : null;
+  } catch {
+    return null;
+  }
+};
+
+const NO_VARIABLE_VALUES: ReadonlyMap<string, string> = new Map();
+const NO_DATE_VARIABLE_IDS: ReadonlySet<string> = new Set();
+
 /**
  * Resolves widget data selections by cleaning filters based on the widget perspective,
- * substituting host entity IDs for custom views, and removing unavailable filter keys.
- * Returns the resolved selections along with flags indicating missing host entity or preview mode.
+ * substituting dashboard variables and host entity IDs for custom views, and removing unavailable filter keys.
+ * Returns the resolved selections along with flags indicating missing host entity, unresolved variables or preview mode.
  */
 export const resolveDataSelection = async ({
   filterKeysSchema,
   dataSelection,
   perspective,
   host,
+  variableValues = NO_VARIABLE_VALUES,
+  dateVariableIds = NO_DATE_VARIABLE_IDS,
 }: {
   filterKeysSchema: Map<string, Map<string, FilterDefinition>>;
   dataSelection: WidgetDataSelection[];
   perspective: WidgetPerspective;
   host?: WidgetHost;
+  variableValues?: ReadonlyMap<string, string>;
+  // The date variables, whose value is shifted by one day for the lte and gt operators, like a fixed date.
+  dateVariableIds?: ReadonlySet<string>;
 }) => {
   let isMissingSavedFilters = false;
+  let hasUnresolvedVariables = false;
   let mainEntityTypes = ['Stix-Core-Object', 'DraftWorkspace'];
   if (perspective === 'relationships') {
     mainEntityTypes = ['stix-core-relationship', 'stix-sighting-relationship'];
@@ -81,11 +113,19 @@ export const resolveDataSelection = async ({
           }
         }
       }
+      // Resolution order is contractual: saved filters, then variables, then host entity, then cleanup.
+      // An unresolved token is kept in place and the whole widget is blocked (fail closed):
+      // the cleanup below would otherwise silently drop a filter it cannot read.
+      let resolvedFilters = filters.map((f) => {
+        const { filters: withValues, unresolved } = resolveVariablesInFilterGroup(f, variableValues, { dateVariableIds });
+        if (unresolved.length > 0) hasUnresolvedVariables = true;
+        return withValues;
+      });
       // For custom-view widgets, resolve SELF_ID placeholders with the actual host entity ID
-      let resolvedFilters = filters;
       if (host?.kind === 'custom-view') {
-        resolvedFilters = filters.map((f) => buildFiltersForCustomView(f, host.customViewTargetEntityId));
-        hostEntityNeeded = hostEntityNeeded || filters.some((f, i) => f !== resolvedFilters[i]);
+        const withVariables = resolvedFilters;
+        resolvedFilters = withVariables.map((f) => buildFiltersForCustomView(f, host.customViewTargetEntityId));
+        hostEntityNeeded = hostEntityNeeded || withVariables.some((f, i) => f !== resolvedFilters[i]);
       }
       return {
         ...data,
@@ -103,6 +143,7 @@ export const resolveDataSelection = async ({
     isMissingHostEntity,
     isPreviewMode,
     isMissingSavedFilters,
+    hasUnresolvedVariables,
   };
 };
 

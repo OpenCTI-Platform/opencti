@@ -3,11 +3,12 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StoreEntity, BasicStoreEntity } from '../../types/store';
 import { IngestionAuthType, IngestionCsvMapperType } from '../../generated/graphql';
 import type { AuthorizedMember } from '../../utils/access';
+import type { IngestionHealthFields } from '../ingestionHealth/ingestionHealth-types';
 
 // region Rss ingestion
 export const ENTITY_TYPE_INGESTION_RSS = 'IngestionRss';
 
-export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
+export interface BasicStoreEntityIngestionRss extends BasicStoreEntity, IngestionHealthFields {
   kind: 'rss';
   name: string;
   description: string;
@@ -54,7 +55,7 @@ export interface StixIngestionRss extends StixObject {
 // region Taxii ingestion
 export const ENTITY_TYPE_INGESTION_TAXII = 'IngestionTaxii';
 
-export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity {
+export interface BasicStoreEntityIngestionTaxii extends BasicStoreEntity, IngestionHealthFields {
   kind: 'taxii';
   name: string;
   description: string;
@@ -109,7 +110,7 @@ export interface StixIngestionTaxii extends StixObject {
 // region Csv ingestion
 export const ENTITY_TYPE_INGESTION_CSV = 'IngestionCsv';
 
-export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
+export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity, IngestionHealthFields {
   kind: 'csv';
   current_state_hash: string;
   name: string;
@@ -156,7 +157,7 @@ export interface StixIngestionCsv extends StixObject {
 // region json ingestion
 export const ENTITY_TYPE_INGESTION_JSON = 'IngestionJson';
 
-export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
+export interface BasicStoreEntityIngestionJson extends BasicStoreEntity, IngestionHealthFields {
   kind: 'json';
   name: string;
   description: string;
@@ -223,7 +224,7 @@ export interface StixIngestionJson extends StixObject {
 // region Taxii ingestion
 export const ENTITY_TYPE_INGESTION_TAXII_COLLECTION = 'IngestionTaxiiCollection';
 
-export interface BasicStoreEntityIngestionTaxiiCollection extends BasicStoreEntity {
+export interface BasicStoreEntityIngestionTaxiiCollection extends BasicStoreEntity, IngestionHealthFields {
   name: string;
   description: string;
   user_id: string | undefined;

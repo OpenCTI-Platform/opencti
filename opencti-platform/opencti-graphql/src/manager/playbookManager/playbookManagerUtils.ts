@@ -17,9 +17,17 @@ interface EventConfig {
   delete?: boolean;
 }
 
-const PLAYBOOK_DEBUG_ID_LIST = conf.get('playbook_manager:debug_id_list') || [];
+/** The wildcard entry of `playbook_manager:debug_id_list` that turns on the debug logs of every playbook. */
+export const PLAYBOOK_DEBUG_ALL = '*';
+
+/** True when the playbook is in the debug list, by its id or through the `*` wildcard. */
+export const isPlaybookInDebugList = (debugList: string[], id: string) => {
+  return debugList.includes(PLAYBOOK_DEBUG_ALL) || debugList.includes(id);
+};
+
+const PLAYBOOK_DEBUG_ID_LIST: string[] = conf.get('playbook_manager:debug_id_list') || [];
 export const isDebugPlaybook = (id: string) => {
-  return PLAYBOOK_DEBUG_ID_LIST.includes(id);
+  return isPlaybookInDebugList(PLAYBOOK_DEBUG_ID_LIST, id);
 };
 
 export const isValidEventType = (eventType: StreamDataEventType, configuration: EventConfig) => {

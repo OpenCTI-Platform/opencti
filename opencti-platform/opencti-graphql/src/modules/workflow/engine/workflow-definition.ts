@@ -37,10 +37,11 @@ export class WorkflowDefinition<TContext extends Context = Context> {
    */
   addTransition(
     from: State,
-    to: State,
+    to: State | null | undefined,
     event: Event,
     options?: {
       comment?: string;
+      closingReason?: string;
       conditions?: ConditionValidator<TContext>[];
       asyncSideEffects?: SideEffect<TContext>[];
       onTransition?: SideEffect<TContext>[];
@@ -51,13 +52,14 @@ export class WorkflowDefinition<TContext extends Context = Context> {
   ) {
     // Ensure states exist
     if (!this.states.has(from)) this.addState(from);
-    if (!this.states.has(to)) this.addState(to);
+    if (to != null && !this.states.has(to)) this.addState(to);
 
     this.transitions.push({
       from,
       to,
       event,
       comment: options?.comment,
+      closingReason: options?.closingReason,
       conditions: options?.conditions || [],
       asyncSideEffects: options?.asyncSideEffects || [],
       onTransition: options?.onTransition || [],

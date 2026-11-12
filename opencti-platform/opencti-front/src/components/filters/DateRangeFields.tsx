@@ -32,7 +32,6 @@ const DateRangeFields: FunctionComponent<DateRangeFieldsProps> = ({
         helpers={helpers}
         label={t_i18n('From')}
         valueOrder={0}
-        autoFocus
         dateInput={dateInput}
         setDateInput={setDateInput}
       />

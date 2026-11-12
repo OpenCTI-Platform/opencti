@@ -1,6 +1,6 @@
 import { EdgeLabelRenderer, EdgeProps, getSmoothStepPath } from 'reactflow';
 import { useFormatter } from 'src/components/i18n';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../../components/Theme';
 
 function EdgeLabel({ transform, label }: { transform: string; label: string }) {

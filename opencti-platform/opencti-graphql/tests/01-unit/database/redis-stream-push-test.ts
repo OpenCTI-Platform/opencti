@@ -1,8 +1,8 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import type { BaseEvent } from '../../../src/types/event';
+import type { ActivityStreamEvent, BaseEvent, StreamNotifEvent } from '../../../src/types/event';
 
 // Shared mocks referenced by the (per-scenario) module factories below.
-const mockClient = { call: vi.fn() };
+const mockClient = { xadd: vi.fn(), xinfo: vi.fn(), xrange: vi.fn() };
 const mockRawUpload = vi.fn();
 const mockGetFileContent = vi.fn();
 const mockLogWarn = vi.fn();
@@ -35,7 +35,7 @@ const loadModule = async (maxEventSize: number, trimming: number) => {
       },
     },
     logApp: { info: vi.fn(), debug: vi.fn(), error: vi.fn(), warn: mockLogWarn },
-    REDIS_PREFIX: '',
+    REDIS_PREFIX: 'test:',
   }));
 
   // Avoid pulling in the heavy STIX/schema graph that stream-utils transitively imports:
@@ -93,12 +93,11 @@ describe('rawPushToStream', () => {
       expect(mockRawUpload).not.toHaveBeenCalled();
 
       // A single XADD carrying the serialized fields, without MAXLEN trimming
-      expect(mockClient.call).toHaveBeenCalledTimes(1);
-      const args = mockClient.call.mock.calls[0];
-      expect(args[0]).toBe('XADD');
-      expect(args[1]).toContain('stream.opencti');
-      expect(args[2]).toBe('*');
-      expect(args.slice(3)).toEqual(toStreamFields(event as unknown as Record<string, unknown>));
+      expect(mockClient.xadd).toHaveBeenCalledTimes(1);
+      const args = mockClient.xadd.mock.calls[0];
+      expect(args[0]).toBe('stream.opencti');
+      expect(args[1]).toBe('*');
+      expect(args.slice(2)).toEqual(toStreamFields(event as unknown as Record<string, unknown>));
     });
 
     it('offloads a large event to S3 and stores only the file reference in the stream', async () => {
@@ -115,11 +114,10 @@ describe('rawPushToStream', () => {
       expect(uploadContent).toBe(JSON.stringify(expectedFields));
 
       // The stream entry only keeps the file pointer, not the full payload
-      expect(mockClient.call).toHaveBeenCalledTimes(1);
-      const args = mockClient.call.mock.calls[0];
-      expect(args[0]).toBe('XADD');
-      expect(args[2]).toBe('*');
-      expect(args.slice(3)).toEqual(['event_file_id', uploadPath]);
+      expect(mockClient.xadd).toHaveBeenCalledTimes(1);
+      const args = mockClient.xadd.mock.calls[0];
+      expect(args[1]).toBe('*');
+      expect(args.slice(2)).toEqual(['event_file_id', uploadPath]);
     });
 
     it('does not offload an event whose size is exactly at the threshold', async () => {
@@ -132,7 +130,7 @@ describe('rawPushToStream', () => {
       await mod.rawPushToStream(event);
 
       expect(mockRawUpload).not.toHaveBeenCalled();
-      expect(mockClient.call.mock.calls[0].slice(3)).toEqual(toStreamFields(event as unknown as Record<string, unknown>));
+      expect(mockClient.xadd.mock.calls[0].slice(2)).toEqual(toStreamFields(event as unknown as Record<string, unknown>));
     });
   });
 
@@ -151,14 +149,13 @@ describe('rawPushToStream', () => {
       const event = { type: 'create', scope: 'external' } as unknown as BaseEvent;
       await mod.rawPushToStream(event);
 
-      expect(mockClient.call).toHaveBeenCalledTimes(1);
-      const args = mockClient.call.mock.calls[0];
-      expect(args[0]).toBe('XADD');
-      expect(args[2]).toBe('MAXLEN');
-      expect(args[3]).toBe('~');
-      expect(args[4]).toBe(1000);
-      expect(args[5]).toBe('*');
-      expect(args.slice(6)).toEqual(toStreamFields(event as unknown as Record<string, unknown>));
+      expect(mockClient.xadd).toHaveBeenCalledTimes(1);
+      const args = mockClient.xadd.mock.calls[0];
+      expect(args[1]).toBe('MAXLEN');
+      expect(args[2]).toBe('~');
+      expect(args[3]).toBe(1000);
+      expect(args[4]).toBe('*');
+      expect(args.slice(5)).toEqual(toStreamFields(event as unknown as Record<string, unknown>));
     });
 
     it('never offloads to S3 when max_event_length is disabled (0), regardless of size', async () => {
@@ -228,5 +225,67 @@ describe('processStreamData', () => {
       'Error fetching file stream event, skipping event',
       expect.objectContaining({ id: '400-0', filePath: 'streams/stream.opencti/400-0' }),
     );
+  });
+});
+
+describe('stream commands', () => {
+  let mod: RedisStreamModule;
+
+  beforeAll(async () => {
+    mod = await loadModule(0, 0);
+  }, 60000);
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('reads the stream info with the namespaced key and parses the reply', async () => {
+    mockClient.xinfo.mockResolvedValueOnce([
+      'length', 2,
+      'first-entry', ['1000-0', ['type', '"create"']],
+      'last-entry', ['2000-0', ['type', '"update"']],
+    ]);
+
+    const info = await mod.rawFetchStreamInfo();
+
+    expect(mockClient.xinfo).toHaveBeenCalledWith('STREAM', 'test:stream.opencti');
+    expect(info).toEqual({
+      firstEventId: '1000-0',
+      firstEventDate: new Date(1000).toISOString(),
+      lastEventId: '2000-0',
+      lastEventDate: new Date(2000).toISOString(),
+      streamSize: 2,
+    });
+  });
+
+  it('rejects an unknown stream name', async () => {
+    await expect(mod.rawFetchStreamInfo('stream.unknown')).rejects.toThrow('Cannot recognize stream name');
+    expect(mockClient.xinfo).not.toHaveBeenCalled();
+  });
+
+  it('stores notification and activity events with the bare stream name', async () => {
+    const notification = { type: 'live', notification_id: 'trigger-A' } as unknown as StreamNotifEvent;
+    const activity = { type: 'authentication', event_scope: 'login' } as unknown as ActivityStreamEvent;
+
+    await mod.rawRedisStreamClient.rawStoreNotificationEvent(notification);
+    await mod.rawRedisStreamClient.rawStoreActivityEvent(activity);
+
+    expect(mockClient.xadd).toHaveBeenNthCalledWith(1, 'stream.notification', 'MAXLEN', '~', 50000, '*', ...toStreamFields(notification as unknown as Record<string, unknown>));
+    expect(mockClient.xadd).toHaveBeenNthCalledWith(2, 'stream.activity', 'MAXLEN', '~', 50000, '*', ...toStreamFields(activity as unknown as Record<string, unknown>));
+  });
+
+  it('fetches a live stream range after the given event id', async () => {
+    const fields = ['type', JSON.stringify('create'), 'scope', JSON.stringify('external')];
+    mockClient.xrange.mockResolvedValueOnce([['1001-0', fields], ['1002-0', fields]]);
+    const callback = vi.fn();
+
+    const result = await mod.rawRedisStreamClient.rawFetchStreamEventsRangeFromEventId('1000-0', callback, { streamBatchSize: 10 });
+
+    expect(mockClient.xrange).toHaveBeenCalledWith('stream.opencti', '(1000-0', '+', 'COUNT', 10);
+    expect(callback).toHaveBeenCalledWith(
+      [expect.objectContaining({ id: '1001-0' }), expect.objectContaining({ id: '1002-0' })],
+      '1002-0',
+    );
+    expect(result).toEqual({ lastEventId: '1002-0' });
   });
 });

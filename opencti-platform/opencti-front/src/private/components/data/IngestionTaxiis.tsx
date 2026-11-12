@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import Alert from '@mui/material/Alert';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled } from '@mui/material/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import IngestionTaxiiLines, { IngestionTaxiiLinesQuery } from './ingestionTaxii/IngestionTaxiiLines';
@@ -21,15 +21,12 @@ import Button from '../../../components/common/button/Button';
 
 const LOCAL_STORAGE_KEY = 'ingestionTaxii';
 
-const useStyles = makeStyles(() => ({
-  container: {
-    margin: 0,
-    padding: '0 0 50px 0',
-  },
-}));
+const Container = styled('div')({
+  margin: 0,
+  padding: '0 0 50px 0',
+});
 
 const IngestionTaxii = () => {
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { settings, isXTMHubAccessible } = useContext(UserContext);
   const { setTitle } = useConnectedDocumentModifier();
@@ -87,18 +84,18 @@ const IngestionTaxii = () => {
 
   if (!platformModuleHelpers.isIngestionManagerEnable()) {
     return (
-      <div className={classes.container}>
+      <Container>
         <Alert severity="info">
           {t_i18n(
             platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER),
           )}
         </Alert>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className={classes.container} data-testid="taxii-feeds-page">
+    <Container data-testid="taxii-feeds-page">
       <Breadcrumbs
         elements={[
           { label: t_i18n('Integrations') },
@@ -153,7 +150,7 @@ const IngestionTaxii = () => {
           )}
         />
       </ListLines>
-    </div>
+    </Container>
   );
 };
 

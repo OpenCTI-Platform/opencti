@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import ReactWordcloud, { Props } from 'react-wordcloud';
 import type { Theme } from '../Theme';
 import { colors } from '../../utils/Charts';

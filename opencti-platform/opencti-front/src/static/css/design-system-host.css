@@ -61,7 +61,7 @@
    (1300).
 
    ONE element does flip, and it is deliberately left alone: the Suspense
-   fallback of the top bar (TopBar.tsx, `classes.appBar`) is an
+   fallback of the top bar (TopBar.tsx) is an
    `AppBar position="fixed"` at `theme.zIndex.drawer - 1` = 1199, full width from
    x=0, so it overlaps the rail and now passes UNDER it where it passed over the
    legacy rail. Do NOT "fix" this by giving it a left offset. That bar is the
@@ -153,3 +153,12 @@
   margin-left: -1px;
 }
 
+
+/* FDS-WORKAROUND #75: the Alert sets its title and description as bare <p> and the
+   library ships no preflight, so the user-agent paragraph margin spaces them out —
+   remove when both paragraphs carry their own `m-0` — see
+   fds-migration/LIBRARY-FEEDBACK.md #75 */
+p.title-xs.text-alert,
+p.title-xs.text-alert + p.content-compact {
+  margin: 0;
+}

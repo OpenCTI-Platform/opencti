@@ -41,10 +41,13 @@ export interface AsyncActionSlot {
 export interface WorkflowPendingTransition {
   event: string;
   toState: string;
+  /** Terminal transitions retain the source status in toState for persistence. */
+  completesWorkflow?: boolean;
   triggeredBy: string;
   triggeredAt: string; // ISO 8601
   runtimeParams: Record<string, unknown>;
   comment?: string;
+  closingReason?: string | null;
   asyncActions: AsyncActionSlot[];
   syncActions: WorkflowActionConfig[];
   onEnterActions?: WorkflowActionConfig[]; // onEnter actions of the target state, serialized so phase 2 can replay them.
@@ -82,9 +85,10 @@ export type SideEffect<TContext extends Context = Context> = (
  */
 export interface Transition<TContext extends Context = Context> {
   from: State;
-  to: State;
+  to?: State | null;
   event: Event;
   comment?: string;
+  closingReason?: string;
   conditions?: ConditionValidator<TContext>[];
   /** Phase 1: async effects (background tasks). State does NOT advance until all succeed. */
   asyncSideEffects?: SideEffect<TContext>[];
@@ -122,6 +126,7 @@ export interface MachineDefinition<TContext extends Context = Context> {
  */
 export interface TriggerResult {
   success: boolean;
+  workflowCompleted?: boolean;
   reason?: string;
   newState?: string;
   status?: any;
@@ -130,10 +135,14 @@ export interface TriggerResult {
   /** Present when the transition spawned async background tasks. */
   executionStatus?: 'pending' | 'completed' | 'error';
   asyncActionSlots?: AsyncActionSlot[];
+  /** The entity was already in the target status: no action ran and no history was recorded. */
+  unchanged?: boolean;
 }
 
 // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.graphql.ts
 export const COMMENT_MAX_LENGTH = 1000;
+
+export const CLOSING_REASON_MAX_LENGTH = 255;
 
 /**
  * Workflow validation error structure
@@ -172,6 +181,7 @@ export interface WorkflowSerializedTransition {
   to: string | null;
   event: string;
   comment?: string;
+  closingReason?: string;
   /** Phase 1: async background task actions. Run before syncActions. */
   asyncActions?: WorkflowActionConfig[];
   /** Phase 2: sync actions. Run after all asyncActions succeed (or immediately if no asyncActions). */

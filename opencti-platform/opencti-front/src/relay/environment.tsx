@@ -106,8 +106,10 @@ const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
   subscribeFn: subscribeFn as unknown as SubscribeFunction,
 });
 const store = new Store(new RecordSource());
-const namespacedTypenames = new Set(['MeUser', 'PublicSettings']);
-const getDataID = (fieldValue: { id?: string } | null | undefined, typeName: string) => {
+// Connector: a sync's built-in twin connector shares the sync id (queue key), so
+// it must not collide with the Synchronizer record in the store.
+const namespacedTypenames = new Set(['MeUser', 'PublicSettings', 'Connector']);
+export const getDataID = (fieldValue: { id?: string } | null | undefined, typeName: string) => {
   const id = fieldValue?.id;
   if (!id) return null;
   if (namespacedTypenames.has(typeName)) {
@@ -151,7 +153,7 @@ export const QueryRenderer = ({
   );
 };
 
-const buildErrorMessages = (error: RelayError) => (error.res.errors ?? []).map(
+export const buildErrorMessages = (error: RelayError) => (error.res.errors ?? []).map(
   (e) => ({
     type: 'error',
     text: e?.data?.reason ?? e.message,

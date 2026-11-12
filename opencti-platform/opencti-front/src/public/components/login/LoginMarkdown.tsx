@@ -1,5 +1,5 @@
 import { Box, SxProps } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import Markdown from 'react-markdown';
 import { Theme } from '../../../components/Theme';
 import { PropsWithSx } from '../../../utils/props';

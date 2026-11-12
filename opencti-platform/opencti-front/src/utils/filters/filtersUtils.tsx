@@ -7,14 +7,17 @@ import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import type { filtersUtilsCustomFieldStixFilterKeysQuery } from './__generated__/filtersUtilsCustomFieldStixFilterKeysQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
-import useHelper from '../hooks/useHelper';
 import { fetchQuery } from '../../relay/environment';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { isEmptyField, uniqueArray } from '../utils';
+import { isCustomFieldAttribute } from '../customFields';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
+import type { DashboardVariable } from '../../components/dashboard/dashboard-types';
+import { getVariableTokenLabel } from '../../components/dashboard/dashboardVariableTokenLabel';
+import { logger } from '../logging/logger';
 
 // ----------------------------------------------------------------------------------------------------------------------
 
@@ -237,6 +240,7 @@ const STATIC_STIX_FILTERS = [
   'x_opencti_ssvc_exploitation',
   'x_opencti_ssvc_automatable',
   'x_opencti_ssvc_technical_impact',
+  'x_opencti_closing_reason',
 ];
 const customFieldStixFilterKeysQuery = graphql`
   query filtersUtilsCustomFieldStixFilterKeysQuery($entityType: String) {
@@ -247,19 +251,12 @@ const customFieldStixFilterKeysQuery = graphql`
 /**
  * Centralizes the fetching of the custom fields filter keys usable in stix filtering
  * (streams, playbooks, triggers, connectors, ...), so that callers don't have to
- * each implement their own loading strategy (feature flag check, query, caching...).
- * Returns an empty array while loading, or if the CUSTOM_FIELDS feature flag is disabled
- * (the underlying query field would otherwise throw server-side).
+ * each implement their own loading strategy (query, caching...).
+ * Returns an empty array while loading.
  */
-const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
-  const { isFeatureEnable } = useHelper();
-  const isCustomFieldsEnabled = isFeatureEnable('CUSTOM_FIELDS');
+export const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
   const [customFieldFilterKeys, setCustomFieldFilterKeys] = useState<string[]>([]);
   useEffect(() => {
-    if (!isCustomFieldsEnabled) {
-      setCustomFieldFilterKeys([]);
-      return undefined;
-    }
     let isMounted = true;
     fetchQuery<filtersUtilsCustomFieldStixFilterKeysQuery>(
       customFieldStixFilterKeysQuery,
@@ -270,18 +267,23 @@ const useCustomFieldStixFilterKeys = (entityType?: string): string[] => {
         if (isMounted) {
           setCustomFieldFilterKeys([...(data?.customFieldStixFilterKeys ?? [])]);
         }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setCustomFieldFilterKeys([]);
+        }
       });
     return () => {
       isMounted = false;
     };
-  }, [isCustomFieldsEnabled, entityType]);
+  }, [entityType]);
   return customFieldFilterKeys;
 };
 
 /**
  * Returns the full list of filter keys usable in stix filtering (streams, playbooks, triggers,
  * connectors, ...): the static list of built-in keys, concatenated with the dynamic list of
- * custom fields filter keys (fetched and feature-flagged centrally by this hook).
+ * custom fields filter keys (fetched centrally by this hook).
  * This is the single entry point callers should use instead of hard-coding/duplicating
  * the custom fields loading logic.
  */
@@ -298,6 +300,23 @@ export const useStixFilters = (entityType?: string): string[] => {
 
 const getStringFilterKey = (key: string | string[]): string => {
   return Array.isArray(key) ? key[0] : key;
+};
+
+/**
+ * The filter keys displayed by a stix filters form: a stored filter on a custom field deleted since stays
+ * displayed, so that it can be removed on its own (the backend rejects saving it).
+ */
+export const getStixFiltersDisplayedKeys = (availableFilterKeys: string[], filters?: FilterGroup | null): string[] => {
+  if (!filters) return availableFilterKeys;
+  const unavailableCustomFieldKeys = new Set<string>();
+  mapFilterGroupTree(filters, (group) => {
+    (group.filters ?? []).forEach((filter) => {
+      const key = getStringFilterKey(filter.key);
+      if (isCustomFieldAttribute(key) && !availableFilterKeys.includes(key)) unavailableCustomFieldKeys.add(key);
+    });
+    return group;
+  });
+  return unavailableCustomFieldKeys.size > 0 ? [...availableFilterKeys, ...unavailableCustomFieldKeys] : availableFilterKeys;
 };
 
 export const isDraftWorkspaceFilterGroup = (filters: FilterGroup | null | undefined): boolean => {
@@ -674,7 +693,14 @@ export const filterValue = (
   }
 
   // Defensive check to prevent errors on string manipulation after this call
-  return typeof value === 'string' ? value : String(value);
+  if (typeof value !== 'string') {
+    logger.warn('Filter value is not a string', {
+      eventName: 'opencti.filter.value_not_string',
+      data: { filter: { key: filterKey, type: filterType, operator: filterOperator }, value: { type: typeof value } },
+    });
+    return String(value);
+  }
+  return value;
 };
 
 export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | undefined, filterKey: string, filterValues: string[]) => {
@@ -1255,6 +1281,9 @@ export const getSelectedOptions = (
   filtersRepresentativesMap: Map<string,
     FilterRepresentative>,
   t_i18n: (s: string) => string,
+  // Dashboard variables, only given in a dashboard: a `$var:` token is then shown under the variable name.
+  // Not given (anywhere else), a token-looking value is handled as any other value.
+  variables?: DashboardVariable[],
 ): FilterOptionValue[] => {
   // we try to get first the element from the search
   // and if we did not find we tried one from filterRepresentative
@@ -1262,10 +1291,20 @@ export const getSelectedOptions = (
   const mapFilterValues: FilterOptionValue[] = [];
   filterValues.forEach((value: string) => {
     const mapRepresentative = entitiesOptions.find((f) => f.value === value);
+    const tokenLabel = getVariableTokenLabel(value, variables, t_i18n);
     if (mapRepresentative) {
       mapFilterValues.push({
         ...mapRepresentative,
         group: capitalizeFirstLetter(t_i18n('selected')),
+      });
+    } else if (tokenLabel !== null) {
+      // The representatives query cannot resolve a token: never rely on its answer.
+      mapFilterValues.push({
+        value,
+        type: 'Variable',
+        parentTypes: [],
+        group: capitalizeFirstLetter(t_i18n('selected')),
+        label: tokenLabel.label,
       });
     } else if (value === SELF_ID) {
       mapFilterValues.push({

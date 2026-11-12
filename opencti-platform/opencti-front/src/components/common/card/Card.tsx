@@ -1,6 +1,6 @@
-import { PropsWithChildren, ReactNode } from 'react';
-import { useTheme } from '@mui/styles';
-import { Stack, SxProps, Card as CardMui, CardActionArea, StackProps } from '@mui/material';
+import { CSSProperties, PropsWithChildren, ReactNode } from 'react';
+import { useTheme } from '@mui/material/styles';
+import { Stack, SxProps, Card as CardMui, CardActionArea } from '@mui/material';
 import CardTitle from './CardTitle';
 import { Theme } from '../../Theme';
 import { Link } from 'react-router';
@@ -11,12 +11,14 @@ export interface CardProps extends PropsWithChildren {
   padding?: 'none' | 'small' | 'medium' | 'horizontal' | 'default';
   sx?: SxProps;
   titleSx?: SxProps;
-  titleAlignItems?: StackProps['alignItems'];
+  titleAlignItems?: CSSProperties['alignItems'];
   fullHeight?: boolean;
   onClick?: () => void;
   to?: string;
   variant?: 'elevation' | 'outlined';
   disabled?: boolean;
+  // A clickable card that is one of several choices: highlighted when chosen, and announced as pressed
+  selected?: boolean;
   'aria-label'?: string;
 }
 
@@ -33,6 +35,7 @@ const Card = ({
   to,
   disabled,
   variant,
+  selected,
   ...otherProps
 }: CardProps) => {
   const theme = useTheme<Theme>();
@@ -71,7 +74,9 @@ const Card = ({
     flexGrow: fullHeight ? 1 : 0,
     borderRadius: theme.spacing(0.5),
     background: backgroundColor,
-    border: '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
+    border: selected
+      ? `1px solid ${theme.palette.primary.main}`
+      : '1px solid var(--border-elevation-subtle-soft-layer-1-transparency-15)',
     ...(applyStyleToContainer ? paddingStyle : {}),
     ...(applyStyleToContainer ? sx : {}),
   };
@@ -95,6 +100,7 @@ const Card = ({
       <CardActionArea
         disabled={disabled}
         onClick={onClick}
+        aria-pressed={selected}
         sx={actionAreaSx}
         {...linkProps}
       >

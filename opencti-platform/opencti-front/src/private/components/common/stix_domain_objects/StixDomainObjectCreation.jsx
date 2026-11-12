@@ -1,5 +1,5 @@
 import Dialog from '@common/dialog/Dialog';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import { Stack } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import * as R from 'ramda';
@@ -49,6 +49,7 @@ import { CampaignCreationForm } from '../../threats/campaigns/CampaignCreation';
 import { IntrusionSetCreationForm } from '../../threats/intrusion_sets/IntrusionSetCreation';
 import { ThreatActorGroupCreationForm } from '../../threats/threat_actors_group/ThreatActorGroupCreation';
 import { ThreatActorIndividualCreationForm } from '../../threats/threat_actors_individual/ThreatActorIndividualCreation';
+import { FORM_UNCREATABLE_TYPES, useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
@@ -205,13 +206,14 @@ const StixDomainPanel = ({
     stixDomainObjectCreationAllTypesQuery,
     queryRef,
   );
+  const { isDeferredMode } = useDeferredCreation();
   const availableEntityTypes = buildEntityTypes(
     t_i18n,
     queryData,
     stixDomainObjectTypes,
-  );
+  ).filter((n) => !isDeferredMode || !FORM_UNCREATABLE_TYPES.includes(n.value));
   const selectedType = (stixDomainObjectTypes?.length && availableEntityTypes.find((item) => item.value === stixDomainObjectTypes[0])) ?? availableEntityTypes.at(0);
-  const [type, setType] = useState(selectedType.value);
+  const [type, setType] = useState(selectedType?.value);
   const baseCreatedBy = defaultCreatedBy
     ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name }
     : undefined;
@@ -796,7 +798,12 @@ const StixDomainPanel = ({
       open={true}
       onClose={onClose}
       title={(
-        <Stack direction="row" justifyContent="space-between">
+        <Stack
+          direction="row"
+          sx={{
+            justifyContent: 'space-between',
+          }}
+        >
           <span>{t_i18n('Create an entity')}</span>
           {!isFromBulkRelation && (
             <BulkTextModalButton

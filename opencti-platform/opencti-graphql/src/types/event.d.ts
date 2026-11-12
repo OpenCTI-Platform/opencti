@@ -8,8 +8,18 @@ interface CommitContext {
   external_references: Array<string>;
 }
 
+// A ref relationship created with the element of an event, reduced to what the touched elements tracking needs.
+interface CreatedRef {
+  internal_id: string;
+  fromId: string;
+  toId: string;
+  toType: string;
+}
+
 interface EventOpts {
   publishStreamEvent?: boolean;
+  // Ref relationships created with the event element: they have no stream event of their own
+  createdRefs?: CreatedRef[];
 }
 
 interface CreateEventOpts extends EventOpts {
@@ -103,7 +113,7 @@ type DataEvent = UpdateEvent | DataEvent | MergeEvent;
 
 export interface ActivityStreamEvent {
   version: string;
-  type: 'authentication' | 'read' | 'mutation' | 'file' | 'command';
+  type: 'authentication' | 'read' | 'mutation' | 'file' | 'command' | 'ingestion_health';
   event_access: 'extended' | 'administration';
   prevent_indexing: boolean;
   event_scope: string;

@@ -3,7 +3,7 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 const steps: string[] = [];
 let rejectPendingRead: ((error: Error) => void) | undefined;
 const mockClient = {
-  call: vi.fn(),
+  xread: vi.fn(),
   disconnect: vi.fn(() => rejectPendingRead?.(new Error('disconnected'))),
 };
 
@@ -86,12 +86,12 @@ const serveReads = (batchSizes: number[]) => {
     reachedIdle = resolve;
   });
   let offset = 0;
-  mockClient.call.mockReset();
+  mockClient.xread.mockReset();
   batchSizes.forEach((size) => {
-    mockClient.call.mockResolvedValueOnce([['stream.opencti', buildEntries(size, offset)]]);
+    mockClient.xread.mockResolvedValueOnce([['stream.opencti', buildEntries(size, offset)]]);
     offset += size;
   });
-  mockClient.call.mockImplementationOnce(() => new Promise((_, reject) => {
+  mockClient.xread.mockImplementationOnce(() => new Promise((_, reject) => {
     rejectPendingRead = reject;
     reachedIdle();
   }));

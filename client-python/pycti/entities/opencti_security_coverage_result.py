@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 
 class SecurityCoverageResult:
     """Main SecurityCoverageResult class for OpenCTI
@@ -57,6 +59,7 @@ class SecurityCoverageResult:
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value
@@ -278,8 +281,8 @@ class SecurityCoverageResult:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
-        :param custom_properties: (optional) list of custom field name/value inputs
-        :type custom_properties: list
+        :param custom_field_values: (optional) list of custom field name/value inputs
+        :type custom_field_values: list
         :return: Security Coverage Result object
         :rtype: dict or None
         """
@@ -301,7 +304,11 @@ class SecurityCoverageResult:
         files_markings = kwargs.get("filesMarkings", None)
         no_trigger_import = kwargs.get("noTriggerImport", None)
         embedded = kwargs.get("embedded", None)
-        custom_properties = kwargs.get("custom_properties", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
 
         if result_of is not None:
             self.opencti.app_logger.info(
@@ -339,7 +346,7 @@ class SecurityCoverageResult:
                         "filesMarkings": files_markings,
                         "noTriggerImport": no_trigger_import,
                         "embedded": embedded,
-                        "customFieldValues": custom_properties,
+                        "customFieldValues": custom_field_values,
                     }
                 },
             )
@@ -443,7 +450,7 @@ class SecurityCoverageResult:
                 filesMarkings=extras.get("filesMarkings"),
                 noTriggerImport=extras.get("noTriggerImport", None),
                 embedded=extras.get("embedded", None),
-                custom_properties=extras.get("custom_properties", None),
+                custom_field_values=extras.get("custom_field_values", None),
             )
         else:
             self.opencti.app_logger.error(

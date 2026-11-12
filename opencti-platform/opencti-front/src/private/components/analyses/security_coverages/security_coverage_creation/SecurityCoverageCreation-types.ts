@@ -1,19 +1,6 @@
 import { FieldOption } from 'src/utils/field';
-import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import { CoverageInformation } from '../SecurityCoverage-types';
-
-// Type definitions for GraphQL responses
-export interface StixCoreObjectNode {
-  id: string;
-  name?: string;
-  entity_type: string;
-  parent_types: string[];
-  created_at: string;
-  representative?: { main: string };
-  createdBy?: { id: string; name: string };
-  objectLabel?: { id: string; value: string; color: string }[];
-  objectMarking?: { id: string; definition_type: string; definition: string; x_opencti_order: number; x_opencti_color: string }[];
-}
+import { StixCoreRelationshipCreationAddInput } from '../../../common/stix_core_relationships/StixCoreRelationshipCreation';
 
 export enum StepKey {
   MODE = 'mode',
@@ -45,9 +32,10 @@ export interface SecurityCoverageFormValues {
 
 export interface SelectedEntities {
   selected_ids?: string[];
-  filters?: FilterGroup;
+  filters?: string;
   excluded_ids?: string[];
   search?: string;
+  relationships_config?: StixCoreRelationshipCreationAddInput;
 }
 
 export const HAS_COVERED_TARGETS_TYPES = ['Attack-Pattern', 'Vulnerability', 'Artifact', 'Indicator', 'SecurityPlatform'];

@@ -20,7 +20,8 @@ type Theme implements InternalObject & BasicObject {
   theme_login_aside_gradient_start: String 
   theme_login_aside_gradient_end: String   
   theme_login_aside_image: String          
-  toConfigurationExport: String!
+  # The theme file holds the standard id, which is @auth: the theme itself is readable anonymously (login page)
+  toConfigurationExport: String! @auth
   built_in: Boolean
   metrics:[Metric]
 }
@@ -54,7 +55,7 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): ThemeConnection @public
+  ): ThemeConnection @auth
 }
 
 # Input

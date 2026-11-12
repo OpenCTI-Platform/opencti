@@ -1,4 +1,4 @@
-import { ChangeEvent, FunctionComponent, KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, CSSProperties, FunctionComponent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import {
   Combobox,
@@ -22,7 +22,6 @@ import {
 import DateTimePicker from '../../../../components/common/input/DateTimePicker';
 import MarkdownFieldBase from '../../../../components/fields/markdownField/MarkdownFieldBase';
 import { useFormatter } from '../../../../components/i18n';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import type { CustomFieldDef, CustomFieldValue } from '../../../../utils/customFields';
 import { CustomFieldsInputQuery } from './__generated__/CustomFieldsInputQuery.graphql';
 
@@ -53,10 +52,8 @@ export const customFieldDefinitionsForEntityTypeQuery = graphql`
   }
 `;
 
-// Isolates the useLazyLoadQuery call so it can be conditionally mounted (feature-flag gated)
-// without violating the Rules of Hooks. Meant to be rendered inside a <Suspense> boundary and
-// only when the CUSTOM_FIELDS feature flag is enabled: the query field itself throws server-side
-// (no softFail) when the flag is disabled, so it must never be called in that case.
+// Isolates the useLazyLoadQuery call so it can be conditionally mounted without violating the
+// Rules of Hooks. Meant to be rendered inside a <Suspense> boundary.
 export const CustomFieldsLoader: FunctionComponent<{
   entityType: string;
   onLoaded: (definitions: CustomFieldDef[]) => void;
@@ -80,6 +77,8 @@ interface CustomFieldInputProps {
   error?: string;
   onChange?: (val: CustomFieldValue) => void;
   onSubmit?: (val: CustomFieldValue) => void;
+  // As for the standard fields, the spacing is given by the form (e.g. fieldSpacingContainerStyle)
+  style?: CSSProperties;
 }
 
 const TextInputCustomField: FunctionComponent<{
@@ -89,7 +88,8 @@ const TextInputCustomField: FunctionComponent<{
   error?: string;
   onChange?: (val: CustomFieldValue) => void;
   onSubmit?: (val: CustomFieldValue) => void;
-}> = ({ definition, label, value, error, onChange, onSubmit }) => {
+  containerStyle: CSSProperties;
+}> = ({ definition, label, value, error, onChange, onSubmit, containerStyle }) => {
   const [localValue, setLocalValue] = useState(value);
 
   useEffect(() => {
@@ -114,11 +114,13 @@ const TextInputCustomField: FunctionComponent<{
   };
 
   return (
-    <div style={fieldSpacingContainerStyle}>
+    <div style={containerStyle}>
       <Input
         label={label}
         value={typeof localValue === 'string' ? localValue : ''}
-        isTypeNumber={definition.field_type === 'integer'}
+        isTypeNumber={definition.field_type === 'integer' || definition.field_type === 'decimal'}
+        // A decimal accepts any precision, as the EPSS score of the vulnerabilities
+        step={definition.field_type === 'decimal' ? 'any' : undefined}
         min={definition.field_type === 'integer' ? definition.min_value ?? undefined : undefined}
         max={definition.field_type === 'integer' ? definition.max_value ?? undefined : undefined}
         error={error}
@@ -139,13 +141,15 @@ export const CustomFieldInput: FunctionComponent<CustomFieldInputProps> = ({
   error,
   onChange,
   onSubmit,
+  style,
 }) => {
   const { t_i18n } = useFormatter();
   const label = `${definition.label}${mandatory ? ' *' : ''}`;
+  const containerStyle = { width: '100%', ...style };
 
   if (definition.field_type === 'boolean') {
     return (
-      <div style={fieldSpacingContainerStyle}>
+      <div style={containerStyle}>
         <Switch
           checked={value === true}
           onCheckedChange={(checked) => {
@@ -167,13 +171,13 @@ export const CustomFieldInput: FunctionComponent<CustomFieldInputProps> = ({
           onSubmit?.(nextVal);
         }}
         label={label}
-        slotProps={{ textField: { variant: 'standard', fullWidth: true, style: fieldSpacingContainerStyle } }}
+        slotProps={{ textField: { variant: 'standard', fullWidth: true, style: containerStyle } }}
       />
     );
   }
   if (definition.field_type === 'select' && definition.select_options) {
     return (
-      <div style={fieldSpacingContainerStyle}>
+      <div style={containerStyle}>
         <Select
           value={typeof value === 'string' ? value : ''}
           onValueChange={(nextValue) => {
@@ -198,7 +202,7 @@ export const CustomFieldInput: FunctionComponent<CustomFieldInputProps> = ({
   if (definition.field_type === 'multi_select' && definition.select_options) {
     const selected = Array.isArray(value) ? value : [];
     return (
-      <div style={fieldSpacingContainerStyle}>
+      <div style={containerStyle}>
         <Combobox<string>
           multiple
           closeOnSelect
@@ -233,7 +237,7 @@ export const CustomFieldInput: FunctionComponent<CustomFieldInputProps> = ({
         value={typeof value === 'string' ? value : ''}
         onValueChange={(nextValue) => onChange?.(nextValue)}
         onSubmit={(_, submitValue) => onSubmit?.(submitValue)}
-        style={fieldSpacingContainerStyle}
+        style={containerStyle}
         height={200}
       />
     );
@@ -246,6 +250,7 @@ export const CustomFieldInput: FunctionComponent<CustomFieldInputProps> = ({
       error={error}
       onChange={onChange}
       onSubmit={onSubmit}
+      containerStyle={containerStyle}
     />
   );
 };

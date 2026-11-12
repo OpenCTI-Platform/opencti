@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { logApp } from '../../../src/config/conf';
-import { reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
+import { appendWorkflowHistoryEntry, reportWorkflowAsyncActionResult } from '../../../src/modules/workflow/domain/workflow-async-completion';
 import { projectWorkflowState } from '../../../src/modules/workflow/domain/workflow-projection';
 import { updateAttribute } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
@@ -150,7 +150,7 @@ describe('reportWorkflowAsyncActionResult', () => {
     expect(instance.pendingTransition).toBeNull();
     expect(ActionRegistry.bypassSync).toHaveBeenCalledTimes(2);
     expect(JSON.parse(instance.history)).toEqual([expect.objectContaining({ event: 'event_bypass', user_id: 'user-id', comment: 'override', state: 'reviewing' })]);
-    expect(projectWorkflowState).toHaveBeenCalledWith({}, { ...mockUser, draft_context: undefined }, entity, 'reviewing', 'GLOBAL');
+    expect(projectWorkflowState).toHaveBeenCalledWith({}, { ...mockUser, draft_context: undefined }, entity, 'reviewing', 'GLOBAL', undefined);
     await reportWorkflowAsyncActionResult(contextWithoutUser, mockUser, 'instance-id', 'slot-2', 'success');
     expect(ActionRegistry.bypassSync).toHaveBeenCalledTimes(2);
   });
@@ -766,11 +766,102 @@ describe('reportWorkflowAsyncActionResult', () => {
 
       await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
 
-      expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ id: mockUser.id }), fullEntity, 'reviewing', 'GLOBAL');
+      expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ id: mockUser.id }), fullEntity, 'reviewing', 'GLOBAL', undefined);
       // Must happen after the instance's own currentState/history update, not before.
       const updateAttributeOrder = (updateAttribute as any).mock.invocationCallOrder.at(-1);
       const projectionOrder = (projectWorkflowState as any).mock.invocationCallOrder[0];
       expect(projectionOrder).toBeGreaterThan(updateAttributeOrder);
+    });
+
+    it('clears the closing reason when the pending transition says so', async () => {
+      const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+      const pt = makePendingTransition({ syncActions: [], closingReason: null });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt), scope: 'GLOBAL' });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), expect.anything(), fullEntity, 'reviewing', 'GLOBAL', null);
+    });
+
+    it('projects the closing reason captured when the transition was triggered', async () => {
+      const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+      const pt = makePendingTransition({ syncActions: [], closingReason: 'false-positive' });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt), scope: 'GLOBAL' });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(projectWorkflowState).toHaveBeenCalledWith(expect.anything(), expect.anything(), fullEntity, 'reviewing', 'GLOBAL', 'false-positive');
+    });
+
+    it('keeps the closing reason in the history and reports it when the entity write fails', async () => {
+      const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };
+      const pt = makePendingTransition({ syncActions: [], closingReason: 'false-positive' });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt), scope: 'GLOBAL' });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+      (updateAttribute as any).mockResolvedValue({});
+      (projectWorkflowState as any).mockResolvedValueOnce(false);
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      const inputs = (updateAttribute as any).mock.calls.flatMap((call: any[]) => call[4]);
+      const history = JSON.parse(inputs.find((input: any) => input.key === 'history').value[0]);
+      expect(history.at(-1)).toMatchObject({ closing_reason: 'false-positive' });
+      expect((updateAttribute as any).mock.calls.at(-1)[4]).toEqual([
+        { key: 'pendingError', value: [expect.stringContaining('false-positive')] },
+      ]);
+    });
+
+    it('reports a closing reason that could not be cleared when the entity write fails', async () => {
+      const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', x_opencti_closing_reason: 'duplicate' };
+      const pt = makePendingTransition({ syncActions: [], closingReason: null });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt), scope: 'GLOBAL' });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(fullEntity);
+      (updateAttribute as any).mockResolvedValue({});
+      (projectWorkflowState as any).mockResolvedValueOnce(false);
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect((updateAttribute as any).mock.calls.at(-1)[4]).toEqual([
+        { key: 'pendingError', value: [expect.stringContaining('could not be cleared')] },
+      ]);
+    });
+
+    it('reports the closing reason when the full entity could not be loaded', async () => {
+      const pt = makePendingTransition({ syncActions: [], closingReason: 'false-positive' });
+      const instance = makeInstance({ pendingTransition: JSON.stringify(pt) });
+
+      (storeLoadById as any)
+        .mockResolvedValueOnce(instance)
+        .mockResolvedValueOnce(instance)
+        .mockRejectedValueOnce(new Error('DB connection lost'));
+      (updateAttribute as any).mockResolvedValue({});
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(projectWorkflowState).not.toHaveBeenCalled();
+      expect((updateAttribute as any).mock.calls.at(-1)[4]).toEqual([
+        { key: 'pendingError', value: [expect.stringContaining('false-positive')] },
+      ]);
     });
 
     it('skips projection and logs a warning when the full entity could not be loaded', async () => {
@@ -918,5 +1009,21 @@ describe('reportWorkflowAsyncActionResult', () => {
     await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
 
     expect(capturedRuntimeParams).toEqual({});
+  });
+});
+
+describe('appendWorkflowHistoryEntry', () => {
+  it('appends the entry at the end of the history', () => {
+    expect(appendWorkflowHistoryEntry([{ state: 'draft' }], { state: 'reviewing' })).toEqual([{ state: 'draft' }, { state: 'reviewing' }]);
+  });
+
+  it('keeps only the latest 200 entries', () => {
+    const fullHistory = Array.from({ length: 200 }, (_, i) => ({ state: `state-${i}` }));
+
+    const history = appendWorkflowHistoryEntry(fullHistory, { state: 'reviewing' });
+
+    expect(history).toHaveLength(200);
+    expect(history[0]).toEqual({ state: 'state-1' });
+    expect(history[199]).toEqual({ state: 'reviewing' });
   });
 });

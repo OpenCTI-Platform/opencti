@@ -9,6 +9,7 @@ import { ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
 import { completeEntity } from './form-entity-builder';
 import { convertFieldType, transformSpecialFields } from './form-fields-converter';
 import type { FormFieldDefinition } from './form-types';
+import { getCustomFieldAttributeDefinitions, moveCustomFieldValuesToInput } from '../customField/custom-field-attributes';
 
 type MaterializedEntity = StoreEntity & Record<string, unknown>;
 
@@ -63,6 +64,9 @@ export const materializeEntityFromFields = async (
       entity[field.attributeMapping.attributeName] = convertedValue;
     }
     entity = await transformSpecialFields(context, user, entity, fields, false) as MaterializedEntity;
+    // Custom field values are converted to the stored format, the only one exported to STIX
+    const customFieldAttributes = await getCustomFieldAttributeDefinitions(context, user, entityType, fields.map((field) => field.attributeMapping.attributeName));
+    await moveCustomFieldValuesToInput(context, user, entity, customFieldAttributes, entityType);
   }
 
   if (options.applyTypeDefaults) {

@@ -1,6 +1,6 @@
 import { PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader, graphql } from 'react-relay';
 import React, { FunctionComponent, useRef } from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import { FileUploadOutlined } from '@mui/icons-material';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';

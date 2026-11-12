@@ -141,7 +141,7 @@ const DraftsDistributionList = ({
 }: DraftsDistributionListProps) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsDistributionListQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<DraftsDistributionListQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -161,8 +161,7 @@ const DraftsDistributionList = ({
     >
       <div style={{ height: '100%' }}>
         <WidgetRenderContent
-          isMissingHostEntity={isMissingHostEntity}
-          isMissingSavedFilters={isMissingSavedFilters}
+          {...renderGuards}
           queryRef={queryRef}
           host={host}
         >

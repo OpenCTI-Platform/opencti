@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import { Chip } from '@filigran/design-system';
-import { ChipOwnProps } from '@mui/material/Chip/Chip';
+import { ChipOwnProps } from '@mui/material/Chip';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { WarningOutlined } from '@mui/icons-material';
 import TasksFilterValueContainer from '../TasksFilterValueContainer';
@@ -12,7 +12,7 @@ import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../Loader';
 import { FilterValuesForDynamicSubKeyQuery } from './__generated__/FilterValuesForDynamicSubKeyQuery.graphql';
 import { normalizeFilterGroupForBackend } from '../../utils/filters/filtersUtils';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../components/Theme';
 
 // TODO, use MAX_RUNTIME_RESOLUTION_SIZE from backend

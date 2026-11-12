@@ -143,11 +143,9 @@ describe('NavBarView', () => {
     // The platform message banner is a fixed overlay the app shell does not reserve flow space for, so the rail
     // reserves it itself to keep the ProductSwitcher (Filigran logo) from being hidden while unscrolled.
     expect(nav.style.marginTop).toBe('30px');
-    // jsdom reorders the terms of a calc(), so assert on its parts: the rail
-    // is one viewport tall minus the space the banners take.
-    expect(nav.style.height).toContain('100dvh');
-    expect(nav.style.height).toContain('50px');
-    expect(nav.style.height).toContain('20px');
+    // The rail is one viewport tall minus the space the banners take; jsdom
+    // simplifies the calc(), so both banner offsets add up to 70px.
+    expect(nav.style.height).toBe('calc(100dvh - 70px)');
     expect(nav.style.alignSelf).toBe('flex-start');
   });
 

@@ -39,7 +39,7 @@ import ObjectAssigneeField from '../form/ObjectAssigneeField';
 import ObjectParticipantField from '../form/ObjectParticipantField';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
-import { WorkflowStatusForEntity } from '../workflow/WorkflowStatus';
+import { WorkflowClosingReasonForEntity, WorkflowStatusForEntity } from '../workflow/WorkflowStatus';
 import { WorkflowTransitionsForEntity } from '../workflow/WorkflowTransitions';
 import { isWorkflowUiEnabledForType } from '../workflow/workflowFeatureFlag';
 
@@ -151,7 +151,7 @@ const StixDomainObjectOverview = ({
           )}
         </Grid>
         <Grid container={true} spacing={3}>
-          <Grid item xs={6}>
+          <Grid size={6}>
             {stixDomainObject.objectMarking && (
               <>
                 <Label>{t_i18n('Marking')}</Label>
@@ -177,7 +177,7 @@ const StixDomainObjectOverview = ({
             {(displayConfidence || displayReliability) && (
               <Grid container={true} columnSpacing={1}>
                 {displayReliability && (
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label sx={{ mt: 2 }}>
                       {t_i18n('Reliability')}
                       {isReliabilityOfSource && (
@@ -195,7 +195,7 @@ const StixDomainObjectOverview = ({
                   </Grid>
                 )}
                 {displayConfidence && (
-                  <Grid item xs={6}>
+                  <Grid size={6}>
                     <Label sx={{ marginTop: 2 }}>
                       {t_i18n('Confidence level')}
                     </Label>
@@ -217,7 +217,7 @@ const StixDomainObjectOverview = ({
             </Label>
             {fldt(stixDomainObject.modified)}
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={6}>
             {withPattern && (
               <>
                 <Label>
@@ -232,13 +232,16 @@ const StixDomainObjectOverview = ({
                   {t_i18n('Processing status')}
                 </Label>
                 {isWorkflowUiEnabledForType(stixDomainObject.entity_type, isFeatureEnable) ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                    <WorkflowStatusForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} fallback={legacyStatus}>
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <WorkflowTransitionsForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
-                      </Security>
-                    </WorkflowStatusForEntity>
-                  </Box>
+                  <>
+                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                      <WorkflowStatusForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} fallback={legacyStatus}>
+                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                          <WorkflowTransitionsForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
+                        </Security>
+                      </WorkflowStatusForEntity>
+                    </Box>
+                    <WorkflowClosingReasonForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
+                  </>
                 ) : legacyStatus}
               </>
             )}

@@ -2,9 +2,10 @@ import React, { lazy, Suspense, useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { boundaryWrapper, NoMatch } from '@components/Error';
 import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
+import ConfigPresetBootstrapWizard from '@components/settings/config_preset/ConfigPresetBootstrapWizard';
 import TopBannersManager from '@components/TopBannersManager';
 import TopBar from './components/nav/TopBar';
 import NavBar from './components/nav/NavBar';
@@ -113,10 +114,10 @@ const Index = ({ settings }: IndexProps) => {
         {((settings.platform_session_idle_timeout ?? 0) > 0 || (settings.platform_session_timeout ?? 0) > 0) && <TimeoutLock />}
         <SettingsMessagesBanner />
         <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts} />
+        {!isForcePasswordChangeRoute && <ConfigPresetBootstrapWizard settings={settings} />}
         <Box
           sx={{
             display: 'flex',
-            minWidth: isForcePasswordChangeRoute ? 0 : 1400,
             marginTop: `calc(${topBannerHeight}px + ${bannerHeight})`,
             marginBottom: bannerHeight,
           }}

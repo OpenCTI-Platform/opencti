@@ -16,7 +16,7 @@ jobs:
   # -----------------------
   build-builder:
     name: Build builder image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/docker-build-builder
@@ -31,7 +31,7 @@ jobs:
 
   app-sbom:
     name: Build and generate app SBOM
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [build-builder]
     outputs:
       app_version: ${{ steps.version.outputs.app_version }}
@@ -55,21 +55,13 @@ jobs:
       - name: Build graphql production and prune devDependencies
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}/opencti-platform/opencti-graphql:/opt/opencti/opencti-graphql \
-            -w /opt/opencti/opencti-graphql \
+            -v ${{ github.workspace }}:/opt/opencti \
+            -w /opt/opencti/opencti-platform/opencti-graphql \
             filigran/builder:${{ github.sha }} \
-            sh -c "yarn install --immutable && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production"
-
-      - name: Build front production and prune devDependencies
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}/opencti-platform/opencti-front:/opt/opencti/opencti-front \
-            -w /opt/opencti/opencti-front \
-            filigran/builder:${{ github.sha }} \
-            sh -c "yarn install --immutable && yarn build && yarn workspaces focus --production"
+            sh -c "yarn workspaces focus opencti-graphql && apk add --no-cache git && yarn install:python && yarn build:prod && yarn workspaces focus --production opencti-graphql"
 
       - name: Install Syft
-        uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        uses: ./.github/actions/install-syft
 
       - name: Generate graphql SBOM
         working-directory: opencti-platform/opencti-graphql
@@ -85,6 +77,14 @@ jobs:
             | .metadata.component.name = "opencti-graphql"
             | .metadata.component["bom-ref"] = "opencti-graphql"
             | .metadata.component.version = $version' sbom-opencti-graphql.cdx.json > tmp.cdx.json && mv tmp.cdx.json sbom-opencti-graphql.cdx.json
+
+      - name: Build front production and prune devDependencies
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/opt/opencti \
+            -w /opt/opencti/opencti-platform/opencti-front \
+            filigran/builder:${{ github.sha }} \
+            sh -c "yarn workspaces focus opencti-front && yarn build && yarn workspaces focus --production opencti-front"
 
       - name: Generate front SBOM
         working-directory: opencti-platform/opencti-front
@@ -147,7 +147,7 @@ jobs:
   # -----------------------
   build-platform:
     name: Build platform (${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -171,7 +171,7 @@ jobs:
   # -----------------------
   build-worker:
     name: Build worker (${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -195,7 +195,7 @@ jobs:
   # -----------------------
   build-tar-platform:
     name: Build platform tarball (standard)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/tar-platform
@@ -205,7 +205,7 @@ jobs:
 
   build-tar-platform-musl:
     name: Build platform tarball (musl)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/tar-platform-musl
@@ -218,7 +218,7 @@ jobs:
   # -----------------------
   generate-sbom-platform:
     name: Generate SBOM (platform ${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [build-platform]
     strategy:
       fail-fast: false
@@ -242,7 +242,7 @@ jobs:
 
   generate-sbom-worker:
     name: Generate SBOM (worker ${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [build-worker]
     strategy:
       fail-fast: false
@@ -269,7 +269,7 @@ jobs:
   # -----------------------
   merge-sbom:
     name: Merge SBOM (${{ matrix.variant }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [app-sbom, generate-sbom-platform, generate-sbom-worker]
     strategy:
       fail-fast: false
@@ -347,7 +347,7 @@ jobs:
 
   upload-artifacts:
     name: Upload all artifacts
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: [merge-sbom, build-tar-platform-musl, build-tar-platform]
     steps:
       - name: Download all SBOM artifacts

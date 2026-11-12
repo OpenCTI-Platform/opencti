@@ -1,9 +1,12 @@
+/* The `<div onClick>` wrappers below are test fixtures standing in for clickable
+   rows/cards, to assert that clicks do or do not bubble up to them. */
+/* eslint-disable jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Link, MemoryRouter, useLocation } from 'react-router';
-import { navigationClickHandlers, openInNewTab, stopLinkNavigation } from './domEvent';
+import { navigationClickHandlers, onActivationKey, openInNewTab, stopLinkNavigation } from './domEvent';
 
 vi.mock('../relay/environment', () => ({ APP_BASE_PATH: '/opencti' }));
 
@@ -151,5 +154,27 @@ describe('stopLinkNavigation', () => {
     expect(fireEvent.click(checkbox)).toBe(true);
     expect(checkbox).toBeChecked();
     expect(parentClick).not.toHaveBeenCalled();
+  });
+});
+
+describe('onActivationKey', () => {
+  const renderButton = () => {
+    const action = vi.fn();
+    render(<span role="button" tabIndex={0} onKeyDown={onActivationKey(action)}>sort</span>);
+    return { button: screen.getByRole('button', { name: 'sort' }), action };
+  };
+
+  it.each(['Enter', ' '])('runs the action on %j, without the key\'s default behaviour', (key) => {
+    const { button, action } = renderButton();
+    const notCancelled = fireEvent.keyDown(button, { key });
+    expect(action).toHaveBeenCalledTimes(1);
+    expect(notCancelled).toBe(false);
+  });
+
+  it('ignores the other keys', () => {
+    const { button, action } = renderButton();
+    const notCancelled = fireEvent.keyDown(button, { key: 'a' });
+    expect(action).not.toHaveBeenCalled();
+    expect(notCancelled).toBe(true);
   });
 });

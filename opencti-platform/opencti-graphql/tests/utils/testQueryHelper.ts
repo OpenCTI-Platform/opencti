@@ -1,6 +1,7 @@
 import { expect } from 'vitest';
 import readline from 'node:readline';
 import fs from 'node:fs';
+import { Readable } from 'node:stream';
 import Upload from 'graphql-upload/Upload.mjs';
 import { ApolloServer } from '@apollo/server';
 import type { FormattedExecutionResult } from 'graphql';
@@ -252,6 +253,21 @@ export const createUploadFromTestDataFile = async (filePathRelativeFromData: str
   upload.promise = new Promise((executor) => {
     executor(fileUpload);
   });
+  upload.file = fileUpload;
+  return upload;
+};
+
+// An upload of a buffer: the stream is fresh on every call, as the upload reads the file twice
+export const createUploadFromBuffer = (content: Buffer, fileName: string, mimetype = 'application/zip') => {
+  const upload = new Upload();
+  const fileUpload = {
+    fieldName: 'fieldName',
+    filename: fileName,
+    mimetype,
+    encoding: '7bit',
+    createReadStream: () => Readable.from(content),
+  };
+  upload.promise = Promise.resolve(fileUpload);
   upload.file = fileUpload;
   return upload;
 };

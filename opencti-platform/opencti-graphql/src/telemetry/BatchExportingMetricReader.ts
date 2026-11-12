@@ -1,5 +1,5 @@
 import * as api from '@opentelemetry/api';
-import { internal, ExportResultCode, globalErrorHandler, unrefTimer } from '@opentelemetry/core';
+import { internal, ExportResultCode, globalErrorHandler } from '@opentelemetry/core';
 import { type MetricProducer, type PushMetricExporter } from '@opentelemetry/sdk-metrics';
 import { type DataPoint, type ResourceMetrics, MetricReader } from '@opentelemetry/sdk-metrics';
 import { emptyResource } from '@opentelemetry/resources';
@@ -125,11 +125,9 @@ export class BatchExportingMetricReader extends MetricReader {
   }
 
   protected override onInitialized(): void {
-    this._intervalCollect = setInterval(() => this._doRunCollect(), this._collectInterval);
-    unrefTimer(this._intervalCollect);
+    this._intervalCollect = setInterval(() => this._doRunCollect(), this._collectInterval).unref();
     // start running the interval as soon as this reader is initialized and keep handle for shutdown.
-    this._intervalExport = setInterval(() => this._runExportOnce(), this._exportInterval);
-    unrefTimer(this._intervalExport);
+    this._intervalExport = setInterval(() => this._runExportOnce(), this._exportInterval).unref();
   }
 
   protected async onForceFlush(): Promise<void> {

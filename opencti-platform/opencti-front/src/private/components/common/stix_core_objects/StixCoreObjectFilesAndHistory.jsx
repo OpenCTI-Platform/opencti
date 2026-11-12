@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
+import { filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
-import withStyles from '@mui/styles/withStyles';
 import MenuItem from '@mui/material/MenuItem';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
@@ -39,21 +38,8 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
-import { Stack } from '@mui/material';
-
-const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: '15px',
-    borderRadius: 4,
-  },
-});
+import { Box, Stack } from '@mui/material';
+import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 export const stixCoreObjectFilesAndHistoryAskJobImportMutation = graphql`
   mutation StixCoreObjectFilesAndHistoryAskJobImportMutation(
@@ -140,7 +126,6 @@ const importValidation = (t_i18n, configurations) => {
 const StixCoreObjectFilesAndHistory = ({
   id,
   entity,
-  classes,
   connectorsExport,
   connectorsImport,
   withoutRelations,
@@ -204,17 +189,7 @@ const StixCoreObjectFilesAndHistory = ({
         objectAssignee: values.objectAssignee.map(({ value }) => value),
         objectParticipant: values.objectParticipant.map(({ value }) => value),
         createdBy: values.createdBy?.value,
-        authorized_members: !authorizedMembers
-          ? null
-          : authorizedMembers
-              .filter((v) => v.accessRight !== 'none')
-              .map((member) => ({
-                id: member.value,
-                access_right: member.accessRight,
-                groups_restriction_ids: member.groupsRestriction?.length > 0
-                  ? member.groupsRestriction.map((group) => group.value)
-                  : undefined,
-              })),
+        authorized_members: authorizedMembers ? authorizedMembersToInput(authorizedMembers) : null,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -279,11 +254,11 @@ const StixCoreObjectFilesAndHistory = ({
     authorized_members: undefined,
   });
   return (
-    <div className={classes.container} data-testid="sco-data-file-and-history">
+    <Box sx={{ margin: 0 }} data-testid="sco-data-file-and-history">
       <Grid
         container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
+        sx={{ marginBottom: '20px' }}
       >
         <FileImportViewer
           entity={entity}
@@ -305,7 +280,7 @@ const StixCoreObjectFilesAndHistory = ({
           connectors={importConnsPerFormat}
           handleOpenImport={handleOpenImport}
         />
-        <Grid item xs={12} style={{ paddingTop: 14 }}>
+        <Grid style={{ marginTop: -10 }} size={12}>
           <StixCoreObjectHistory
             stixCoreObjectId={id}
             withoutRelations={withoutRelations}
@@ -493,7 +468,13 @@ const StixCoreObjectFilesAndHistory = ({
                 fullWidth={true}
                 data-testid="StixCoreObjectFilesAndHistoryExportDialog"
                 title={(
-                  <Stack direction="row" alignItems="center" gap={1}>
+                  <Stack
+                    direction="row"
+                    sx={{
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     {t_i18n('Generate an export')}
                     <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
                       <InfoOutlined fontSize="small" color="primary" />
@@ -566,7 +547,7 @@ const StixCoreObjectFilesAndHistory = ({
           )}
         </Formik>
       </div>
-    </div>
+    </Box>
   );
 };
 
@@ -612,7 +593,4 @@ const StixCoreObjectFilesAndHistoryFragment = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectFilesAndHistoryFragment);
+export default inject18n(StixCoreObjectFilesAndHistoryFragment);

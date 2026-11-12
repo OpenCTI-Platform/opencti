@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 // Registers all entity/relation modules so schemaAttributesDefinition / schemaRelationsRefDefinition
 // are populated, without requiring a live DB/ES stack (pure in-memory schema registration).
 import '../../../src/modules/index';
-import { addFilter, checkFiltersValidity, convertRelationRefsFilterKeys } from '../../../src/utils/filtering/filtering-utils';
+import { addFilter, booleanTrueFilter, checkFiltersValidity, convertRelationRefsFilterKeys } from '../../../src/utils/filtering/filtering-utils';
 import { buildRefRelationKey } from '../../../src/schema/general';
 import { RELATION_OBJECT, RELATION_CREATED_BY } from '../../../src/schema/stixRefRelationship';
 import type { FilterGroup } from '../../../src/generated/graphql';
@@ -105,5 +105,40 @@ describe('Filtering utils', () => {
     } as unknown as FilterGroup;
 
     expect(() => checkFiltersValidity(filterGroup)).not.toThrow();
+  });
+
+  describe('incorrect filter keys', () => {
+    // A bad key is a mistake of the caller, not a failure of the platform: it is a client error (400)
+    // carried by the BAD_USER_INPUT_ERROR code so that it is not logged like an unexpected technical error.
+    it.each([
+      { title: 'a key not existing in any schema definition', key: 'labels', message: 'Incorrect filter keys not existing in any schema definition' },
+      { title: 'a key containing invalid characters', key: "name.']; ctx._source.value = true; //", message: 'Incorrect filter keys containing invalid characters' },
+    ])('should throw a bad user input error for $title', ({ key, message }) => {
+      const filterGroup = { mode: 'and', filters: [{ key: [key], values: ['x'] }], filterGroups: [] } as FilterGroup;
+      let thrown: any;
+      try {
+        checkFiltersValidity(filterGroup);
+      } catch (e) {
+        thrown = e;
+      }
+      expect(thrown.message).toEqual(message);
+      expect(thrown.extensions.code).toEqual('BAD_USER_INPUT_ERROR');
+      expect(thrown.extensions.data.http_status).toEqual(400);
+      expect(thrown.extensions.data.keys).toEqual([key]);
+    });
+  });
+});
+
+describe('booleanTrueFilter', () => {
+  it('should build a filter group matching the entities whose boolean attribute is true', () => {
+    expect(booleanTrueFilter('ingestion_running')).toEqual({
+      mode: 'and',
+      filters: [{ key: ['ingestion_running'], values: ['true'] }],
+      filterGroups: [],
+    });
+  });
+
+  it('should build a valid filter group for a boolean attribute of the schema', () => {
+    expect(() => checkFiltersValidity(booleanTrueFilter('ingestion_running'))).not.toThrow();
   });
 });

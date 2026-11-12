@@ -9,6 +9,8 @@ import { entityTypesFilters, filterOperatorsWithIcon, useFilterDefinition } from
 import { displayEntityTypeForTranslation, truncate } from '../utils/String';
 import FilterGroupSummaryButton from './filters/FilterGroupSummaryButton';
 import { FilterGroup } from '../utils/filters/filtersHelpers-types';
+import { useOptionalDashboardVariableDefinitions } from './dashboard/DashboardVariablesContext';
+import { getVariableTokenLabel } from './dashboard/dashboardVariableTokenLabel';
 
 /**
  * The task detail was the last screen mixing shapes: a MUI pill here next to the library Chip
@@ -36,6 +38,8 @@ const TaskFilterValue = ({
   entityTypes?: string[];
 }) => {
   const { t_i18n } = useFormatter();
+  // In a dashboard (dynamic filter tooltip of a widget filter), a variable token is shown under the variable name.
+  const variables = useOptionalDashboardVariableDefinitions();
   const { filtersRepresentatives } = usePreloadedQuery<FilterValuesContentQuery>(
     filterValuesContentQuery,
     queryRef,
@@ -80,7 +84,7 @@ const TaskFilterValue = ({
           );
         }
         const values = currentFilter.values.map(
-          (o) => formatValue(`${filtersRepresentativesMap.get(o)?.value ?? o}`),
+          (o) => getVariableTokenLabel(o, variables, t_i18n)?.label ?? formatValue(`${filtersRepresentativesMap.get(o)?.value ?? o}`),
         );
         const localFilterMode = t_i18n((currentFilter.mode ?? 'or').toUpperCase());
         const joined = truncate(values.join(` ${localFilterMode} `), 40);

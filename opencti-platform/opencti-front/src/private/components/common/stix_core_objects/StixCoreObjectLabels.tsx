@@ -68,7 +68,14 @@ const StixCoreObjectLabels = ({
       >
         {/* Render the chips, but keep it hidden so we can useChipOverflow calculate
             the width remaining by chip to know if it should truncate or not */}
-        <Stack direction="row" position="absolute" visibility="hidden" gap={1}>
+        <Stack
+          direction="row"
+          sx={{
+            position: 'absolute',
+            visibility: 'hidden',
+            gap: 1,
+          }}
+        >
           {labels.map((label, index) => (
             <div
               key={label.id}
@@ -82,7 +89,13 @@ const StixCoreObjectLabels = ({
         </Stack>
 
         {/* Visible chips */}
-        <Stack direction="row" gap={1} overflow="hidden">
+        <Stack
+          direction="row"
+          sx={{
+            gap: 1,
+            overflow: 'hidden',
+          }}
+        >
           {labels.slice(0, visibleCount).map((label) => (
             <Box key={label.id} sx={{ minWidth: 0 }}>
               <RawTag

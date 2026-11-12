@@ -1,59 +1,47 @@
-import List from '@mui/material/List';
-import Popover from '@mui/material/Popover';
-import { ListItemButton } from '@mui/material';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import { Checkbox } from '@filigran/design-system';
+import React, { Fragment } from 'react';
+import { MenuItem, MenuLabel } from '@filigran/design-system';
+import type { GraphToolbarAction } from './useGraphToolbarActions';
 
-interface GraphToolbarOptionsListProps<T> {
-  onClose: () => void;
-  onSelect: (o: T) => void;
-  options: T[];
-  getOptionKey: (o: T) => string;
-  getOptionText: (o: T) => string;
-  isOptionSelected?: (o: T) => boolean;
-  anchorEl?: Element;
-  isMultiple?: boolean;
+/**
+ * A toggle or a choice of a list is a checkable item. The attributes are only spread when they
+ * apply: an explicit `role={undefined}` would erase the `menuitem` role of the item.
+ */
+export const checkable = (checked: boolean | undefined) => (checked === undefined ? {} : { role: 'menuitemcheckbox', 'aria-checked': checked });
+
+interface GraphToolbarOptionsListProps {
+  options: NonNullable<GraphToolbarAction['options']>;
 }
 
-function GraphToolbarOptionsList<T>({
-  onClose,
-  onSelect,
-  options,
-  getOptionKey,
-  getOptionText,
-  anchorEl,
-  isMultiple = false,
-  isOptionSelected = () => false,
-}: GraphToolbarOptionsListProps<T>) {
+/**
+ * The choices of a toolbar list (select by type, filters) as menu items, the same in the menu the
+ * toolbar opens and in the submenu of "More actions": a heading opens each part of the list, and a
+ * choice of a multiple list is checkable and leaves the menu open for the next one.
+ */
+const GraphToolbarOptionsList = ({ options }: GraphToolbarOptionsListProps) => {
+  let section: string | undefined;
   return (
-    <Popover
-      open={!!anchorEl}
-      anchorEl={anchorEl}
-      onClose={onClose}
-    >
-      <List>
-        {options.map((option) => (
-          <ListItemButton
-            dense
-            key={getOptionKey(option)}
-            onClick={() => onSelect(option)}
-          >
-            {isMultiple && (
-              <ListItemIcon sx={{ minWidth: 0, marginRight: 1, pointerEvents: 'none' }}>
-                <Checkbox
-                  aria-label={getOptionText(option)}
-                  className="py-1"
-                  checked={isOptionSelected(option)}
-                />
-              </ListItemIcon>
-            )}
-            <ListItemText primary={getOptionText(option)} />
-          </ListItemButton>
-        ))}
-      </List>
-    </Popover>
+    <>
+      {options.items.map((option) => {
+        const heading = option.section && option.section !== section ? option.section : undefined;
+        section = option.section;
+        return (
+          <Fragment key={option.key}>
+            {heading && <MenuLabel>{heading}</MenuLabel>}
+            <MenuItem
+              {...checkable(options.multiple ? !!option.selected : undefined)}
+              selected={!!option.selected}
+              onSelect={(event) => {
+                if (options.multiple) event.preventDefault();
+                options.onSelect(option.key);
+              }}
+            >
+              {option.label}
+            </MenuItem>
+          </Fragment>
+        );
+      })}
+    </>
   );
-}
+};
 
 export default GraphToolbarOptionsList;

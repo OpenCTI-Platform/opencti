@@ -76,6 +76,7 @@ export const DESCRIPTION_FILTER = 'description';
 export const SSVC_EXPLOITATION_FILTER = 'x_opencti_ssvc_exploitation';
 export const SSVC_AUTOMATABLE_FILTER = 'x_opencti_ssvc_automatable';
 export const SSVC_TECHNICAL_IMPACT_FILTER = 'x_opencti_ssvc_technical_impact';
+export const CLOSING_REASON_FILTER = 'x_opencti_closing_reason';
 
 // special cases
 export const IDS_FILTER = 'ids';
@@ -116,6 +117,7 @@ export const PIR_IDS_SUBFILTER = 'pir_ids';
 // for Custom Fields (nested filter on custom_field_values)
 export const CUSTOM_FIELD_NAME_SUBFILTER = 'field_name';
 export const CUSTOM_FIELD_INT_VALUE_SUBFILTER = 'int_value';
+export const CUSTOM_FIELD_FLOAT_VALUE_SUBFILTER = 'float_value';
 export const CUSTOM_FIELD_STRING_VALUE_SUBFILTER = 'string_value';
 export const CUSTOM_FIELD_BOOLEAN_VALUE_SUBFILTER = 'boolean_value';
 export const CUSTOM_FIELD_DATE_VALUE_SUBFILTER = 'date_value';
@@ -136,6 +138,9 @@ export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
 export const WORKFLOW_USER_FILTER = 'workflow_user';
 export const WORKFLOW_GROUP_FILTER = 'workflow_group';
 export const WORKFLOW_ORGANIZATION_FILTER = 'workflow_organization';
+export const WORKFLOW_ROLE_FILTER = 'workflow_role';
+// workflow condition keys evaluated against the workflow context (triggering user, entity name), not by the stix filtering engine
+export const WORKFLOW_CONTEXT_FILTER_KEYS = [WORKFLOW_USER_FILTER, WORKFLOW_GROUP_FILTER, WORKFLOW_ORGANIZATION_FILTER, WORKFLOW_ROLE_FILTER, 'name'];
 
 const COMPLEX_CONVERSION_FILTER_KEYS = [
   IDS_FILTER, // values should match any id (internal_id, standard_id, or stix_id)

@@ -170,7 +170,7 @@ const AuditsMultiAreaChart: FunctionComponent<AuditsMultiAreaChartProps> = ({
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiAreaChartTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiAreaChartTimeSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -193,8 +193,7 @@ const AuditsMultiAreaChart: FunctionComponent<AuditsMultiAreaChartProps> = ({
       warning={warning}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

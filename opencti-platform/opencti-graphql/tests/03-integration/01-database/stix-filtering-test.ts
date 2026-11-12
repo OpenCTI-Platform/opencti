@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
-import { isStixMatchFilterGroup_MockableForUnitTests } from '../../../src/utils/filtering/filtering-stix/stix-filtering';
+import { isStixMatchFilterGroup_MockableForUnitTests, validateFilterGroupForStixMatch } from '../../../src/utils/filtering/filtering-stix/stix-filtering';
 
 import stixReports from '../../data/stream-events/stream-event-stix2-reports.json';
 import stixIndicators from '../../data/stream-events/stream-event-stix2-indicators.json';
@@ -109,6 +109,20 @@ describe('Stix Filtering', () => {
 
     const WHITE_USER = buildStandardUser([WHITE_TLP]);
     expect(await isStixMatchFilterGroup_MockableForUnitTests(testContext, WHITE_USER, stixReport, filterGroup, MOCK_RESOLUTION_MAP)).toEqual(false);
+  });
+
+  it('tolerates a stored filter on a deleted custom field but rejects saving it', async () => {
+    const deletedCustomFieldFilter = (operator: string) => ({
+      mode: 'and',
+      filters: [{ key: ['x_opencti_cf_deleted'], mode: 'or', operator, values: ['a'] }],
+      filterGroups: [],
+    } as FilterGroup);
+    // Matched as a custom field no stix has
+    expect(await isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, deletedCustomFieldFilter('eq'), MOCK_RESOLUTION_MAP)).toEqual(false);
+    expect(await isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, deletedCustomFieldFilter('not_eq'), MOCK_RESOLUTION_MAP)).toEqual(true);
+    // But saved as any unknown key
+    await expect(() => validateFilterGroupForStixMatch(testContext, ADMIN_USER, deletedCustomFieldFilter('not_eq')))
+      .rejects.toThrow('The filter key x_opencti_cf_deleted does not match any existing custom field');
   });
 
   it('matches stix objects with basic filter groups', async () => {

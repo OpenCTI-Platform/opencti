@@ -171,7 +171,7 @@ const StixCoreObjectsDistributionList = ({
 }: StixCoreObjectsDistributionListProps) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDistributionListDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDistributionListDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -191,8 +191,7 @@ const StixCoreObjectsDistributionList = ({
     >
       <div style={{ height: '100%' }}>
         <WidgetRenderContent
-          isMissingHostEntity={isMissingHostEntity}
-          isMissingSavedFilters={isMissingSavedFilters}
+          {...renderGuards}
           queryRef={queryRef}
           host={host}
         >

@@ -4,6 +4,8 @@ import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
 import type { FormFieldDefinition } from '../../../../src/modules/form/form-types';
 import { FormFieldType } from '../../../../src/modules/form/form-types';
+import * as cacheModule from '../../../../src/database/cache';
+import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../../../../src/modules/customField/custom-field-types';
 
 vi.mock('../../../../src/modules/form/form-entity-builder', () => ({
   completeEntity: vi.fn((entityType: string, entity: Record<string, unknown>) => ({
@@ -20,7 +22,8 @@ vi.mock('../../../../src/modules/form/form-fields-converter', () => ({
   transformSpecialFields: vi.fn(async (_c: unknown, _u: unknown, entity: Record<string, unknown>) => entity),
 }));
 
-vi.mock('../../../../src/database/utils', () => ({
+vi.mock('../../../../src/database/utils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/utils')>()),
   isEmptyField: (value: unknown) => value === undefined || value === null || value === '',
 }));
 
@@ -313,5 +316,33 @@ describe('buildMaterializeOptions', () => {
       isBypass: false,
       errorLabel: 'custom label',
     });
+  });
+});
+
+describe('materializeEntityFromFields with custom fields', () => {
+  it('moves the custom field values to the custom field values of the entity', async () => {
+    const definitions = [
+      { id: 'cf-score', name: 'x_opencti_cf_score', label: 'Score', field_type: 'integer', entity_types: ['Case-Incident'] },
+      { id: 'cf-note', name: 'x_opencti_cf_note', label: 'Note', field_type: 'string', entity_types: ['Case-Incident'] },
+    ];
+    vi.spyOn(cacheModule, 'getEntitiesListFromCache').mockImplementation(async (_, __, type) => (
+      type === ENTITY_TYPE_CUSTOM_FIELD_DEFINITION ? definitions : []
+    ) as any);
+    const fields = [makeField('name', 'name'), makeField('score', 'x_opencti_cf_score'), makeField('note', 'x_opencti_cf_note')];
+    const values: Record<string, unknown> = { name: 'Incident from form', score: 42, note: '' };
+
+    const entity = await materializeEntityFromFields(
+      context,
+      user,
+      'Case-Incident',
+      fields,
+      (field) => values[field.name],
+      buildMaterializeOptions(false, { errorLabel: 'test error' }),
+    ) as unknown as Record<string, unknown>;
+
+    expect(entity.name).toEqual('Incident from form');
+    expect(entity.x_opencti_cf_score).toBeUndefined();
+    expect(entity.x_opencti_cf_note).toBeUndefined();
+    expect(entity.custom_field_values).toEqual([{ field_id: 'cf-score', field_name: 'x_opencti_cf_score', int_value: 42 }]);
   });
 });

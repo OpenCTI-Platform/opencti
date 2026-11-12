@@ -19,6 +19,27 @@ import { ActionRegistry } from '../registry/workflow-actions';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE, type AsyncActionSlot, type Context, type WorkflowPendingTransition } from '../types/workflow-types';
 import { projectWorkflowState, resolveProjectionScope } from './workflow-projection';
 
+// history is rewritten as a whole on each append, so keep only the latest entries.
+const MAX_WORKFLOW_HISTORY_ENTRIES = 200;
+// A failed entity write must not lose a closing reason: the history entry keeps it, the instance error points to it.
+// A failed clear (null) is reported too: nothing repairs a closing reason left on a reopened entity.
+// A value is always worth reporting; a clear only when the entity holds a reason, or could not be read
+export const isClosingReasonLost = (closingReason: string | null | undefined, entity: { x_opencti_closing_reason?: string } | null | undefined) => {
+  if (closingReason === undefined) return false;
+  return closingReason !== null || !entity || !!entity.x_opencti_closing_reason;
+};
+
+export const closingReasonNotWrittenError = (closingReason: string | null) => {
+  if (closingReason === null) {
+    return 'The closing reason could not be cleared on the entity: a user with bypass rights can clear it';
+  }
+  return `Closing reason "${closingReason}" could not be written on the entity: a user with bypass rights can set it`;
+};
+
+export const appendWorkflowHistoryEntry = (history: any[], entry: any): any[] => {
+  return [...history, entry].slice(-MAX_WORKFLOW_HISTORY_ENTRIES);
+};
+
 export const runWorkflowBypassActions = async (workflowContext: Context, pendingTransition: WorkflowPendingTransition): Promise<void> => {
   const slots: AsyncActionSlot[] = [];
   workflowContext.pendingAsyncSlots = slots;
@@ -180,8 +201,9 @@ const completeWorkflowAsyncActionResult = async (
     }
   }
 
-  // Run onEnter actions of the target state (phase 2 equivalent of engine's onEnter block)
-  for (const actionConfig of (pendingTransition.onEnterActions ?? [])) {
+  // Run onEnter actions of the target state (phase 2 equivalent of engine's onEnter block).
+  // A terminal transition has no target state to enter.
+  for (const actionConfig of (pendingTransition.completesWorkflow ? [] : pendingTransition.onEnterActions ?? [])) {
     const actionFn = ActionRegistry[actionConfig.type];
     if (!actionFn) {
       logApp.error('[workflow-async-completion] Unknown onEnter action type', { type: actionConfig.type });
@@ -207,20 +229,22 @@ const completeWorkflowAsyncActionResult = async (
   }
 
   // All phases complete — advance state and clear pending
-  const history = (() => {
+  const previousHistory = (() => {
     try {
       return JSON.parse(instanceEntity.history || '[]');
     } catch {
       return [];
     }
   })();
-  history.push({
+  const history = appendWorkflowHistoryEntry(previousHistory, {
     state: pendingTransition.toState,
     user_id: pendingTransition.triggeredBy,
     timestamp: new Date().toISOString(),
     event: pendingTransition.event,
     completedAt: new Date().toISOString(),
+    ...(pendingTransition.completesWorkflow ? { completed: true } : {}),
     ...(pendingTransition.comment ? { comment: pendingTransition.comment } : {}),
+    ...(pendingTransition.closingReason ? { closing_reason: pendingTransition.closingReason } : {}),
   });
 
   await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
@@ -229,14 +253,22 @@ const completeWorkflowAsyncActionResult = async (
     { key: 'pendingStatus', value: [null] },
     { key: 'pendingError', value: [null] },
     { key: 'pendingTransition', value: [null] },
+    ...(pendingTransition.completesWorkflow ? [{ key: 'completed', value: [true] }] : []),
   ]);
 
   // Keep the legacy `x_opencti_workflow_id` in sync with the completed state.
   // `projectWorkflowState` never throws (best-effort, logs and skips on failure).
+  let projected = false;
   if (fullEntity) {
-    await projectWorkflowState(executionContext, executionUser, fullEntity, pendingTransition.toState, resolveProjectionScope(instanceEntity.scope));
+    const scope = resolveProjectionScope(instanceEntity.scope);
+    projected = await projectWorkflowState(executionContext, executionUser, fullEntity, pendingTransition.toState, scope, pendingTransition.closingReason);
   } else {
     logApp.warn('[workflow-async-completion] Skipping status projection: entity could not be loaded', { entityId: instanceEntity.entity_id });
+  }
+  if (!projected && isClosingReasonLost(pendingTransition.closingReason, fullEntity)) {
+    await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+      { key: 'pendingError', value: [closingReasonNotWrittenError(pendingTransition.closingReason ?? null)] },
+    ]);
   }
 
   logApp.info('[workflow-async-completion] Transition completed', {

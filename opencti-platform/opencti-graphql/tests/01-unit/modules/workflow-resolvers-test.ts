@@ -50,6 +50,7 @@ describe('Workflow bypass API', () => {
         enum Capabilities { BYPASS KNOWLEDGE_KNUPDATE SETTINGS_SETCUSTOMIZATION SETTINGS }
         directive @auth(for: [Capabilities!]!, forDraft: [Capabilities!], and: Boolean) on FIELD_DEFINITION | OBJECT
         directive @public on FIELD_DEFINITION
+        directive @ff(flags: [String!]!, softFail: Boolean = false, defaultValue: String = null) on FIELD_DEFINITION
         scalar JSON
         scalar DateTime
         scalar BasicObject
@@ -206,6 +207,23 @@ describe('WorkflowInstance resolver – lastHistoryEntry comment', () => {
     expect(entry!.comment).toBeUndefined();
   });
 
+  it('should skip external writes that did not change the state', () => {
+    const instance = {
+      id: 'inst-1',
+      currentState: 'reviewed',
+      allowedTransitions: [],
+      history: [
+        { state: 'reviewed', event: 'review', user_id: 'u1', timestamp: '2024-01-02T00:00:00Z', comment: 'Looks good' },
+        { state: 'reviewed', event: 'event_external_ignored', user_id: 'u2', timestamp: '2024-01-03T00:00:00Z' },
+        { state: 'reviewed', event: 'event_external_kept', user_id: 'u2', timestamp: '2024-01-04T00:00:00Z' },
+      ],
+    };
+
+    const entry = workflowResolvers.WorkflowInstance.lastHistoryEntry(instance);
+    expect(entry!.event).toBe('review');
+    expect(entry!.comment).toBe('Looks good');
+  });
+
   it('should return null when history is empty', () => {
     const instance = { id: 'inst-1', currentState: 'draft', allowedTransitions: [], history: [] };
     const entry = workflowResolvers.WorkflowInstance.lastHistoryEntry(instance);
@@ -240,6 +258,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment forwarding', () => 
       'review',
       'Approved for review',
       {},
+      undefined,
     );
   });
 
@@ -259,7 +278,44 @@ describe('Mutation.triggerWorkflowEvent resolver – comment forwarding', () => 
       'review',
       undefined,
       {},
+      undefined,
     );
+  });
+});
+
+describe('Mutation.triggerWorkflowEvent resolver – closing reason forwarding', () => {
+  it('should forward the closing reason to the domain function', async () => {
+    (triggerWorkflowEvent as any).mockResolvedValue({ success: true, newState: 'closed', instance: {}, entity: {} });
+
+    await workflowResolvers.Mutation.triggerWorkflowEvent(
+      {},
+      { entityId: 'entity-id', eventName: 'close', closingReason: 'duplicate' },
+      mockContext,
+    );
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(mockContext, mockContext.user, 'entity-id', 'close', undefined, {}, 'duplicate');
+  });
+
+  it('should reject a closing reason longer than 255 characters', () => {
+    expect(() => workflowResolvers.Mutation.triggerWorkflowEvent(
+      {},
+      { entityId: 'entity-id', eventName: 'close', closingReason: 'a'.repeat(256) },
+      mockContext,
+    )).toThrow('Closing reason exceeds maximum allowed length of 255 characters.');
+    expect(triggerWorkflowEvent).not.toHaveBeenCalled();
+  });
+
+  it('should check the closing reason length after trimming', async () => {
+    (triggerWorkflowEvent as any).mockResolvedValue({ success: true, newState: 'closed', instance: {}, entity: {} });
+    const reason = 'a'.repeat(255);
+
+    await workflowResolvers.Mutation.triggerWorkflowEvent(
+      {},
+      { entityId: 'entity-id', eventName: 'close', closingReason: `  ${reason}  ` },
+      mockContext,
+    );
+
+    expect(triggerWorkflowEvent).toHaveBeenCalledWith(mockContext, mockContext.user, 'entity-id', 'close', undefined, {}, reason);
   });
 });
 
@@ -331,7 +387,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     ).resolves.not.toThrow();
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', exactComment, {},
+      mockContext, mockContext.user, 'entity-id', 'review', exactComment, {}, undefined,
     );
   });
 
@@ -345,7 +401,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     );
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', 'trimmed comment', {},
+      mockContext, mockContext.user, 'entity-id', 'review', 'trimmed comment', {}, undefined,
     );
   });
 
@@ -359,7 +415,7 @@ describe('Mutation.triggerWorkflowEvent resolver – comment validation', () => 
     );
 
     expect(triggerWorkflowEvent).toHaveBeenCalledWith(
-      mockContext, mockContext.user, 'entity-id', 'review', undefined, {},
+      mockContext, mockContext.user, 'entity-id', 'review', undefined, {}, undefined,
     );
   });
 });
@@ -610,6 +666,7 @@ describe('workflow-resolvers', () => {
           'close',
           undefined,
           {},
+          undefined,
         );
         expect(result).toBe(mockResult);
       });
@@ -659,6 +716,12 @@ describe('workflow-resolvers', () => {
   });
 
   describe('WorkflowTransition type resolvers', () => {
+    describe('closingReason', () => {
+      it('should return the closing reason mode or null', () => {
+        expect(workflowResolvers.WorkflowTransition.closingReason({ closingReason: 'required' })).toBe('required');
+        expect(workflowResolvers.WorkflowTransition.closingReason({})).toBeNull();
+      });
+    });
     describe('toStatus', () => {
       it('should return the complete mapped destination status', () => {
         const toStatus = { id: 'mapped-closed', template_id: 'closed', order: 2 };

@@ -1,8 +1,8 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useContext } from 'react';
 import { Chip } from '@filigran/design-system';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { DraftChip, DraftStatusChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
 import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
@@ -37,6 +37,9 @@ import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';
 import { Box, Stack } from '@mui/material';
+import { isWorkflowUiEnabledForType } from '@components/common/workflow/workflowFeatureFlag';
+import { UserContext } from '../../utils/hooks/useAuth';
+import { isFeatureEnable } from '../../utils/platformModulesHelper';
 
 export const Truncate = ({ children }: { children: ReactNode }) => (
   <div
@@ -60,9 +63,11 @@ export const defaultRender: NonNullable<DataTableColumn['render']> = (
       <Tooltip title={displayedData}>
         <Stack
           direction="row"
-          gap={1}
-          alignItems="center"
-          sx={{ maxWidth: '100%' }}
+          sx={{
+            gap: 1,
+            alignItems: 'center',
+            maxWidth: '100%',
+          }}
         >
           <Truncate>{displayedData}</Truncate>
           {displayDraftChip && <DraftChip />}
@@ -119,6 +124,37 @@ export const renderObservableValue = (observable: any, theme: Theme) => {
   }
 };
 
+type StatusValue = { id?: string; template?: { name: string; color: string } | null } | null;
+
+interface StatusCellProps {
+  data: {
+    entity_type?: string;
+    status?: StatusValue;
+    workflowEnabled?: boolean;
+    workflowInstance?: { id?: string; currentStatus?: StatusValue } | null;
+  };
+  onStatusClick?: (statusId: string, event: React.MouseEvent) => void;
+}
+
+// Shared by the workflowInstance and x_opencti_workflow_id columns: rows whose list selects
+// workflowInstance show its status when the workflow UI is enabled for their type, others keep
+// the legacy status.
+const StatusCell = ({ data, onStatusClick }: StatusCellProps) => {
+  // Read settings directly: public dashboards render without an authenticated user context.
+  const { settings } = useContext(UserContext);
+  const { workflowInstance, status, workflowEnabled, entity_type: entityType } = data;
+  // An 'initial-' id is a synthesized, not yet persisted instance: prefer the legacy status if any.
+  const isNotPersisted = (workflowInstance?.id ?? '').startsWith('initial-');
+  const isWorkflowUiEnabled = isWorkflowUiEnabledForType(entityType ?? '', (id) => !!settings && isFeatureEnable(settings, id));
+  const isWorkflowStatus = !!workflowInstance && !(isNotPersisted && status) && isWorkflowUiEnabled;
+  // A workflow status is the Status that the backend projects onto x_opencti_workflow_id.
+  const shownStatus = isWorkflowStatus ? workflowInstance?.currentStatus ?? null : status;
+  const statusId = shownStatus?.id;
+  // Only a real status is clickable: "Disabled" and "Unknown" add no filter.
+  const onClick = onStatusClick && statusId ? (event: React.MouseEvent) => onStatusClick(statusId, event) : undefined;
+  return <ItemStatus status={shownStatus} disabled={isWorkflowStatus ? !shownStatus : !workflowEnabled} onClick={onClick} />;
+};
+
 const defaultColumns: DataTableProps['dataColumns'] = {
   aliases: {
     id: 'aliases',
@@ -143,7 +179,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Allowed markings',
     isSortable: false,
     render: ({ allowed_markings }) => (
-      <ItemMarkings markingDefinitions={allowed_markings ?? []} limit={2} />
+      <ItemMarkings markingDefinitions={allowed_markings ?? []} limit={1} />
     ),
   },
   analyses: {
@@ -189,7 +225,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Restriction Date',
     isSortable: true,
     render: ({ authorized_members_activation_date }, helpers) =>
-      defaultRender(helpers.fd(authorized_members_activation_date)),
+      defaultRender(helpers.ftd(authorized_members_activation_date)),
   },
   attribute_abstract: {
     id: 'attribute_abstract',
@@ -223,7 +259,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ color }) => (
       <Tooltip title={color}>
-        <Stack direction="row" gap={0.5} alignItems="center" sx={{ maxWidth: '100%' }}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 0.5,
+            alignItems: 'center',
+            maxWidth: '100%',
+          }}
+        >
           <div
             style={{
               backgroundColor: color,
@@ -262,14 +305,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Last result',
     percentWidth: 12,
     isSortable: true,
-    render: ({ coverage_last_result }, { fndt }) => fndt(coverage_last_result),
+    render: ({ coverage_last_result }, { ftdt }) => defaultRender(ftdt(coverage_last_result, 'numeric')),
   },
   coverage_last_modified_date: {
     id: 'coverage_last_modified_date',
     label: 'Coverage Last modified date',
     percentWidth: 16,
     isSortable: false,
-    render: ({ updated_at }, { fldt }) => (updated_at ? fldt(updated_at) : '-'),
+    render: ({ updated_at }, { ftdt }) => defaultRender(ftdt(updated_at, 'long')),
   },
   coverage: {
     id: 'coverage',
@@ -295,14 +338,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Original creation date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ created }, helpers) => defaultRender(helpers.fd(created)),
+    render: ({ created }, helpers) => defaultRender(helpers.ftd(created)),
   },
   created_at: {
     id: 'created_at',
     label: 'Platform creation date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ created_at }, helpers) => defaultRender(helpers.fd(created_at)),
+    render: ({ created_at }, helpers) => defaultRender(helpers.ftd(created_at)),
   },
   createdBy: {
     id: 'createdBy',
@@ -369,6 +412,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ draftVersion }) => (
       <ItemOperations draftOperation={draftVersion?.draft_operation} />
     ),
+  },
+  workflowInstance: {
+    id: 'workflowInstance',
+    label: 'Workflow status',
+    percentWidth: 12,
+    isSortable: false,
+    render: (data) => <StatusCell data={data} />,
   },
   draft_status: {
     id: 'draft_status',
@@ -504,14 +554,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'First obs.',
     percentWidth: 14,
     isSortable: true,
-    render: ({ first_observed }, { nsdt }) => nsdt(first_observed),
+    render: ({ first_observed }, { ftdt }) => defaultRender(ftdt(first_observed)),
   },
   first_seen: {
     id: 'first_seen',
     label: 'First obs.',
     percentWidth: 12,
     isSortable: true,
-    render: ({ first_seen }, { nsdt }) => nsdt(first_seen),
+    render: ({ first_seen }, { ftdt }) => defaultRender(ftdt(first_seen)),
   },
   fromName: {
     id: 'fromName',
@@ -546,7 +596,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ from }, helpers) => {
       const { created_at } = from;
-      return defaultRender(helpers.fd(created_at));
+      return defaultRender(helpers.ftd(created_at));
     },
   },
   from_creator: {
@@ -735,14 +785,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Last obs.',
     percentWidth: 14,
     isSortable: true,
-    render: ({ last_observed }, { nsdt }) => nsdt(last_observed),
+    render: ({ last_observed }, { ftdt }) => defaultRender(ftdt(last_observed)),
   },
   last_seen: {
     id: 'last_seen',
     label: 'Last obs.',
     percentWidth: 12,
     isSortable: true,
-    render: ({ last_seen }, { nsdt }) => nsdt(last_seen),
+    render: ({ last_seen }, { ftdt }) => defaultRender(ftdt(last_seen)),
   },
   malware_types: {
     id: 'malware_types',
@@ -758,7 +808,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Modification date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ modified }, { fd }) => fd(modified),
+    render: ({ modified }, { ftd }) => defaultRender(ftd(modified)),
   },
   name: {
     id: 'name',
@@ -968,7 +1018,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Date',
     percentWidth: 10,
     isSortable: true,
-    render: ({ published }, { fd }) => fd(published),
+    render: ({ published }, { ftd }) => defaultRender(ftd(published)),
   },
   rating: {
     id: 'rating',
@@ -1144,28 +1194,28 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Start date',
     percentWidth: 25,
     isSortable: true,
-    render: ({ start_date }, { fd }) => fd(start_date),
+    render: ({ start_date }, { ftd }) => defaultRender(ftd(start_date)),
   },
   start_time: {
     id: 'start_time',
     label: 'Start date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ start_time }, { fd }) => fd(start_time),
+    render: ({ start_time }, { ftd }) => defaultRender(ftd(start_time)),
   },
   stop_time: {
     id: 'stop_time',
     label: 'End date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ stop_time }, { fd }) => fd(stop_time),
+    render: ({ stop_time }, { ftd }) => defaultRender(ftd(stop_time)),
   },
   submitted: {
     id: 'submitted',
     label: 'Submission date',
     percentWidth: 12,
     isSortable: true,
-    render: ({ submitted }, { fd }) => fd(submitted),
+    render: ({ submitted }, { ftd }) => defaultRender(ftd(submitted)),
   },
   takedown_types: {
     id: 'takedown_types',
@@ -1235,7 +1285,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Timestamp',
     percentWidth: 50,
     isSortable: true,
-    render: ({ timestamp }, { nsdt }) => defaultRender(nsdt(timestamp)),
+    render: ({ timestamp }, { ftdt }) => defaultRender(ftdt(timestamp)),
   },
   toName: {
     id: 'toName',
@@ -1334,7 +1384,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Modification date',
     percentWidth: 15,
     isSortable: true,
-    render: ({ updated_at }, { fd }) => fd(updated_at),
+    render: ({ updated_at }, { ftd }) => defaultRender(ftd(updated_at)),
   },
   url: {
     id: 'url',
@@ -1364,18 +1414,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Valid until',
     percentWidth: 10,
     isSortable: true,
-    render: ({ valid_until }, { nsdt }) => (
-      <Tooltip title={nsdt(valid_until)}>{nsdt(valid_until)}</Tooltip>
-    ),
+    render: ({ valid_until }, { ftdt }) => defaultRender(ftdt(valid_until)),
   },
   valid_from: {
     id: 'valid_from',
     label: 'Valid from',
     percentWidth: 10,
     isSortable: true,
-    render: ({ valid_from }, { nsdt }) => (
-      <Tooltip title={nsdt(valid_from)}>{nsdt(valid_from)}</Tooltip>
-    ),
+    render: ({ valid_from }, { ftdt }) => defaultRender(ftdt(valid_from)),
   },
   value: {
     id: 'value',
@@ -1406,7 +1452,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ x_opencti_color }) => (
       <Tooltip title={x_opencti_color}>
-        <Stack direction="row" gap={0.5} alignItems="center" sx={{ maxWidth: '100%' }}>
+        <Stack
+          direction="row"
+          sx={{
+            gap: 0.5,
+            alignItems: 'center',
+            maxWidth: '100%',
+          }}
+        >
           <div
             style={{
               backgroundColor: x_opencti_color,
@@ -1563,14 +1616,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Processing status',
     percentWidth: 8,
     isSortable: true,
-    render: (
-      { status, workflowEnabled },
-      { storageHelpers: { handleAddFilter } },
-    ) => (
-      <ItemStatus
-        status={status}
-        disabled={!workflowEnabled}
-        onClick={handleAddFilter}
+    render: (data, { storageHelpers: { handleAddFilter } }) => (
+      <StatusCell
+        data={data}
+        onStatusClick={(statusId, event) => handleAddFilter('workflow_id', statusId, 'eq', event)}
       />
     ),
   },

@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import axios, { type AxiosInstance } from 'axios';
-import { handleWebhookNotification, resolveNotificationDataMarkings } from '../../../src/manager/publisherManager';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { getHttpClient } from '../../../src/utils/http-client';
+import { handleWebhookNotification, processNotificationData, resolveNotificationDataMarkings } from '../../../src/manager/publisherManager';
+import { buildActivityNotificationData } from '../../../src/manager/activityManager';
 import type { NotificationData } from '../../../src/utils/publisher-mock';
 import type { StoreMarkingDefinition } from '../../../src/types/store';
 import type { AuthUser } from '../../../src/types/user';
@@ -8,34 +9,33 @@ import { BYPASS } from '../../../src/utils/access';
 import { sanitizeNotificationData } from '../../../src/utils/templateContextSanitizer';
 import { safeRender } from '../../../src/utils/safeEjs';
 
-describe('handleWebhookNotification', () => {
-  const mockedAxiosInstance = vi.fn();
+const { mockedCall } = vi.hoisted(() => ({ mockedCall: vi.fn() }));
+vi.mock('../../../src/utils/http-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/utils/http-client')>()),
+  getHttpClient: vi.fn(() => ({ call: mockedCall })),
+}));
 
+describe('handleWebhookNotification', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(axios, 'create').mockReturnValue(mockedAxiosInstance as unknown as AxiosInstance);
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('should intercept the axios.create call and use a mock instance', async () => {
+  it('should send the webhook through the http client', async () => {
     const configurationString = JSON.stringify({
       url: 'https://my-webhook-endpoint.com/test',
       verb: 'POST',
       template: '{}',
     });
-    mockedAxiosInstance.mockResolvedValue({ status: 200, data: 'success from spy' });
+    mockedCall.mockResolvedValue({ status: 200, data: 'success from spy' });
 
     await handleWebhookNotification(configurationString, {});
 
-    expect(axios.create).toHaveBeenCalledTimes(1);
-    expect(mockedAxiosInstance).toHaveBeenCalledOnce();
-    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    expect(axiosCallArgs.url).toBe('https://my-webhook-endpoint.com/test');
-    expect(axiosCallArgs.method).toBe('POST');
-    expect(axiosCallArgs.data).toEqual({});
+    expect(getHttpClient).toHaveBeenCalledTimes(1);
+    expect(mockedCall).toHaveBeenCalledOnce();
+    const callArgs = mockedCall.mock.calls[0][0];
+    expect(callArgs.url).toBe('https://my-webhook-endpoint.com/test');
+    expect(callArgs.method).toBe('POST');
+    expect(callArgs.data).toEqual({});
   });
 
   it('should call webhook with correct POST payload, headers, and params', async () => {
@@ -62,24 +62,24 @@ describe('handleWebhookNotification', () => {
       data: [],
     };
 
-    mockedAxiosInstance.mockResolvedValue({ status: 200, data: 'OK' });
+    mockedCall.mockResolvedValue({ status: 200, data: 'OK' });
 
     await handleWebhookNotification(configurationString, templateData);
 
-    expect(axios.create).toHaveBeenCalledTimes(1);
-    expect(axios.create).toHaveBeenCalledWith(expect.objectContaining({
+    expect(getHttpClient).toHaveBeenCalledTimes(1);
+    expect(getHttpClient).toHaveBeenCalledWith(expect.objectContaining({
       headers: {
         'Content-Type': 'application/json',
         'X-API-Key': 'filigran-secret-key-123',
         Accept: 'application/json',
       },
     }));
-    expect(mockedAxiosInstance).toHaveBeenCalledTimes(1);
+    expect(mockedCall).toHaveBeenCalledTimes(1);
 
-    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    expect(axiosCallArgs.url).toBe(webhookConfiguration.url);
-    expect(axiosCallArgs.method).toBe('POST');
-    expect(axiosCallArgs.params).toEqual({
+    const callArgs = mockedCall.mock.calls[0][0];
+    expect(callArgs.url).toBe(webhookConfiguration.url);
+    expect(callArgs.method).toBe('POST');
+    expect(callArgs.params).toEqual({
       source: 'opencti-platform',
       type: 'notification',
     });
@@ -89,7 +89,7 @@ describe('handleWebhookNotification', () => {
       message: 'Update on Stix-Object-Cyber-Tigrou by test-admin',
       source_id: 'trigger-id-abcde',
     };
-    expect(axiosCallArgs.data).toEqual(expectedData);
+    expect(callArgs.data).toEqual(expectedData);
   });
 
   it('should correctly escape newline characters in template data', async () => {
@@ -103,18 +103,18 @@ describe('handleWebhookNotification', () => {
       description: 'Line 1\nLine 2',
     };
 
-    mockedAxiosInstance.mockResolvedValue({ status: 200 });
+    mockedCall.mockResolvedValue({ status: 200 });
 
     await handleWebhookNotification(configurationString, templateDataWithNewline);
 
-    expect(mockedAxiosInstance).toHaveBeenCalledOnce();
+    expect(mockedCall).toHaveBeenCalledOnce();
 
-    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
+    const callArgs = mockedCall.mock.calls[0][0];
     // Ensure the template rendering produce valid JSON
-    expect(axiosCallArgs.data).toHaveProperty('description');
-    expect(typeof axiosCallArgs.data.description).toBe('string');
-    expect(axiosCallArgs.data.description).toContain('Line 1');
-    expect(axiosCallArgs.data.description).toContain('Line 2');
+    expect(callArgs.data).toHaveProperty('description');
+    expect(typeof callArgs.data.description).toBe('string');
+    expect(callArgs.data.description).toContain('Line 1');
+    expect(callArgs.data.description).toContain('Line 2');
   });
 
   it('should escape line breaks in nested objects and arrays', async () => {
@@ -141,23 +141,23 @@ describe('handleWebhookNotification', () => {
       },
     };
 
-    mockedAxiosInstance.mockResolvedValue({ status: 200 });
+    mockedCall.mockResolvedValue({ status: 200 });
 
     await handleWebhookNotification(configurationString, templateDataWithNesting);
 
-    expect(mockedAxiosInstance).toHaveBeenCalledOnce();
+    expect(mockedCall).toHaveBeenCalledOnce();
 
-    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
+    const callArgs = mockedCall.mock.calls[0][0];
     // Check imbricated properties are correctly rendered
-    expect(axiosCallArgs.data).toHaveProperty('title');
-    expect(axiosCallArgs.data).toHaveProperty('author_bio');
-    expect(axiosCallArgs.data).toHaveProperty('first_event_message');
+    expect(callArgs.data).toHaveProperty('title');
+    expect(callArgs.data).toHaveProperty('author_bio');
+    expect(callArgs.data).toHaveProperty('first_event_message');
 
     // Ensure new lines are correctly rendered
-    expect(axiosCallArgs.data.title).toContain('Quarterly');
-    expect(axiosCallArgs.data.title).toContain('Report');
-    expect(axiosCallArgs.data.author_bio).toContain('Cybersecurity expert');
-    expect(axiosCallArgs.data.first_event_message).toContain('First alert');
+    expect(callArgs.data.title).toContain('Quarterly');
+    expect(callArgs.data.title).toContain('Report');
+    expect(callArgs.data.author_bio).toContain('Cybersecurity expert');
+    expect(callArgs.data.first_event_message).toContain('First alert');
   });
 
   it('should set a request timeout on the webhook http client to prevent indefinite hangs', async () => {
@@ -166,15 +166,15 @@ describe('handleWebhookNotification', () => {
       verb: 'POST',
       template: '{}',
     });
-    mockedAxiosInstance.mockResolvedValue({ status: 200, data: 'success' });
+    mockedCall.mockResolvedValue({ status: 200, data: 'success' });
 
     await handleWebhookNotification(configurationString, {});
 
-    expect(axios.create).toHaveBeenCalledWith(expect.objectContaining({ timeout: 300_000 }));
-    const axiosCreateArgs = (axios.create as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0];
-    // A falsy timeout (0/undefined) means axios waits forever; guard against ever regressing to that.
-    expect(axiosCreateArgs.timeout).toBeTypeOf('number');
-    expect(axiosCreateArgs.timeout).toBeGreaterThan(0);
+    expect(getHttpClient).toHaveBeenCalledWith(expect.objectContaining({ timeout: 300_000 }));
+    const clientOptions = vi.mocked(getHttpClient).mock.calls[0][0];
+    // A falsy timeout (0/undefined) means the http client waits forever; guard against ever regressing to that.
+    expect(clientOptions.timeout).toBeTypeOf('number');
+    expect(clientOptions.timeout).toBeGreaterThan(0);
   });
 
   it('should correctly handle forward slashes in template data', async () => {
@@ -188,15 +188,15 @@ describe('handleWebhookNotification', () => {
       description: 'This is a path: /home/user/file.txt',
     };
 
-    mockedAxiosInstance.mockResolvedValue({ status: 200 });
+    mockedCall.mockResolvedValue({ status: 200 });
 
     await handleWebhookNotification(configurationString, templateDataWithSlash);
 
-    expect(mockedAxiosInstance).toHaveBeenCalledOnce();
+    expect(mockedCall).toHaveBeenCalledOnce();
 
-    const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    expect(axiosCallArgs.data).toHaveProperty('description');
-    expect(axiosCallArgs.data.description).toBe('This is a path: /home/user/file.txt');
+    const callArgs = mockedCall.mock.calls[0][0];
+    expect(callArgs.data).toHaveProperty('description');
+    expect(callArgs.data.description).toBe('This is a path: /home/user/file.txt');
   });
 });
 
@@ -307,5 +307,25 @@ describe('resolveNotificationDataMarkings', () => {
     const rendered = await safeRender(template, sanitizeNotificationData({ data }));
 
     expect(rendered).toBe('TLP:AMBER');
+  });
+});
+
+describe('processNotificationData', () => {
+  const NOTIFICATION_ID = 'trigger-id';
+  const user = { user_id: 'user-id' } as any;
+  const notificationMap = new Map([[NOTIFICATION_ID, { id: NOTIFICATION_ID }]] as any);
+  const usersMap = new Map([['user-id', { id: 'user-id' }]] as any);
+
+  // The activity events title their notification with the element name, such as an ingestion name: any name is possible
+  it.each(['constructor', 'toString', 'hasOwnProperty', '__proto__'])('should group the events of an element named %s under its name', async (name) => {
+    const instance = buildActivityNotificationData({ id: 'ingestion-id', entity_type: 'IngestionRss', entity_name: name } as any);
+    const data = [1, 2].map((index) => ({ notification_id: NOTIFICATION_ID, instance, type: 'action', message: `message ${index}` }));
+
+    const content = await processNotificationData({} as any, notificationMap as any, user, data as any, usersMap as any);
+
+    expect(Object.entries(content)).toEqual([[name, [
+      { operation: 'action', message: 'message 1', instance_id: 'ingestion-id', entity_internal_id: 'ingestion-id', entity_type: 'IngestionRss' },
+      { operation: 'action', message: 'message 2', instance_id: 'ingestion-id', entity_internal_id: 'ingestion-id', entity_type: 'IngestionRss' },
+    ]]]);
   });
 });

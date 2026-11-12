@@ -50,7 +50,7 @@ const JsonMapperRepresentationDialogOption: FunctionComponent<JsonMapperRepresen
       >
         {children}
         <DialogActions>
-          <Button onClick={handleClose} autoFocus>
+          <Button onClick={handleClose}>
             {t_i18n('Close')}
           </Button>
         </DialogActions>

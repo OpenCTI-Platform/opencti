@@ -800,6 +800,13 @@ replaces the popover under it. `TopBar.libraryOnly.test.ts` names `Popover` in
 `EXEMPTED` so that importing one directly stays a declared, dated exemption
 rather than a new arrival.
 
+**Second consumer, 2026-10-04:** the graph toolbar (`GraphToolbar.tsx`) folds its
+creation and removal tools into one button on a narrow graph and opens them in
+a MUI `Popover`. It needs `keepMounted`: the tools own their creation dialogs
+(the relationship drawn with the right button included), which must open while
+the popover is closed. A library popover will have to offer the same
+keep-mounted behaviour to replace it.
+
 **Not exempted, and now closed:** `Stack` and `Box` were still inside the NLQ
 toggle — MUI layout, not the control. Replaced by plain elements at the same
 geometry (4px caret margin and padding, unchanged 1px divider). The guard reads
@@ -2352,6 +2359,12 @@ the two MUI imports for the library group, delete both markers, and check that
 the three segments still read "All", "Enabled" and "Disabled" with their counts,
 36 px tall on the search field's centre line.
 
+**Also at.** `FilterValueVariableSwitch.tsx` (dashboard widget filters): the
+"Fixed value" / "Variable" switch of a date, numeric or free text value is
+specified with text segments. It uses the library group with two glyphs, each
+named by its `aria-label` and a library `Tooltip` (marked `FDS-WORKAROUND`).
+With a text item, drop the glyphs and the tooltips and show both words.
+
 ## 64. `MenuItem` has no destructive tone, so a Delete row cannot read as dangerous
 
 **Needed.** A row menu that ends with a Delete command shows that row in the
@@ -2366,14 +2379,16 @@ only the menu row lacks it.
 
 **Workaround.** FDS-WORKAROUND #64 in `SettingsMapSource.tsx`: the Delete row
 sets its text colour inline from the theme's `palette.error.main`, and its icon
-takes MUI's `color="error"`.
+takes MUI's `color="error"`. Same marker on the workflow editor's edge menu
+(`workflow/EdgeTypes/TransitionEdge.tsx`): its Delete connection row sets the
+same inline colour, and its icon takes `className="text-icon-error"`.
 
 **Ask.** A `destructive` tone on `MenuItem`, covering the text, the icon slot and
 the hover state, named like the button family's.
 
-**Removal test.** At a pin where `MenuItem` takes the tone: give the Delete row
-the tone, remove its `style` colour, the icon's `color` prop and the marker, and
-confirm the row text and icon render in the library's destructive colour.
+**Removal test.** At a pin where `MenuItem` takes the tone: give both Delete rows
+the tone, remove their `style` colour, the icon's `color` prop or class and the
+markers, and confirm the row text and icon render in the library's destructive colour.
 
 ---
 
@@ -2541,3 +2556,363 @@ flip the filter mode; on a `dynamicRegardingOf` filter that has a dynamic
 filter, the relationship-type chip must stay, be non-deletable and show its
 tooltip; and the field must be 36px high empty and with chips. Then delete the
 `sx` padding override and the `fds:keep-mui` markers in the file.
+
+---
+
+## 67. `Button` and `IconButton` always paint a box, so a control whose content *is* the target stays a bare `<button>`
+
+**Needed.** Fixing the `jsx-a11y` click-handler violations (#16818) turned
+four clickable non-interactive elements into real buttons. In each, the
+control's content is the visual, and the button must add no box of its own:
+- `TruncatedRawValue` — a truncated raw value, clicking it opens the full
+  value: as pre-wrapped code (`code` variant), or as a single line cut with an
+  ellipsis in the History and Audit tables (`text` variant, a button only once
+  the value overflows).
+- `MarkdownDisplay` — a markdown image, clicking it opens the preview.
+- `SearchInput` — the caret half of the AI search split control: a narrow
+  zone sharing one pill with the MUI `ToggleButton` beside it (hover tint,
+  focus ring, divider), and opening the agent picker.
+- `FilterIconButtonGlobalMode` — the and/or between the filters and groups of
+  a filter line, drawn as the operator badge of the filter chips (monospace,
+  tinted, 4px radius); clicking it switches the mode.
+
+**Today.** Measured from the installed build (`@filigran/design-system` 1.2.0,
+`components/button/Button.mjs` and `components/icon-button/IconButton.mjs`):
+`Button` fixes its height per size (`h-6` / `h-9`) with horizontal padding,
+and every priority paints a fill or a border; `asChild` keeps those classes
+on the child. `IconButton` is a fixed square (24 or 36 px) with its own fill
+and focus ring. None has an unstyled variant.
+
+**Workaround.** FDS-WORKAROUND #67 at the four sites: a native
+`<button type="button">` reset to no border, padding or background, keeping
+the content's own layout (the and/or keeps the operator badge's own padding
+and tint). Each is a real, focusable, keyboard-operable
+control.
+
+**Ask.** A bare variant of `Button` (or a `ButtonBase` / `Pressable`
+primitive) that owns only the semantics and the focus ring: no height, no
+padding, no fill. That would cover content-as-control cases like these, and
+split controls built from two halves of one pill.
+
+**Removal test.** At a pin with that variant: replace the four
+`<button>`s, delete their reset styles and the markers, and check that the
+truncated code value keeps its whitespace and wrapping, the truncated text
+value its single line and ellipsis, the image keeps its size,
+the caret still reads as one pill with the AI toggle (idle, hover, focus),
+and the and/or still matches the filter chips' operator badge.
+
+## 68. A disabled `Button`, `IconButton`, `Select` or `Checkbox` cannot trigger its own tooltip, so the reason it is disabled needs a focusable wrapper
+
+**Needed.** Several places explain a disabled control in its tooltip: the
+integration catalog says why Deploy is disabled (an incompatible platform
+version), the graph toolbar names each tool, disabled ones included, and the
+widget editor says why a time series breakdown locks a control: the buttons
+adding a dataset to a broken down widget, the Distinct checkbox of a broken
+down audits widget, and the breakdown controls of a widget with several
+datasets or counting distinct values.
+The tooltip must reach mouse users on hover and keyboard users on focus,
+which is the WAI-ARIA APG pattern for this case ("Focusability of disabled
+controls"): a control marked `aria-disabled` that stays focusable and
+hoverable, and simply does nothing when activated.
+
+**Today.** Measured from the installed build (`@filigran/design-system` 1.2.0,
+`components/button/Button.mjs` and `components/icon-button/IconButton.mjs`).
+Without `asChild`, a disabled `Button` renders a native `disabled`
+attribute: no focus, no pointer events, so the tooltip trigger never
+fires. With `asChild`, it renders `aria-disabled` and stays focusable, but
+its `data-[disabled]:pointer-events-none` class still removes hover, so the
+tooltip only opens from the keyboard. `IconButton` passes `disabled`
+through to the native attribute, with `disabled:pointer-events-none`, and
+has no `aria-disabled` mode at all. Re-measured at 1.3.0 for the two
+controls the widget editor adds (`components/select/Select.mjs`,
+`components/checkbox/Checkbox.mjs`): the `SelectTrigger` and the `Checkbox`
+root are native buttons passed `disabled`, with `disabled:pointer-events-none`,
+and neither has an `aria-disabled` mode. No mode works as a tooltip trigger on
+its own.
+
+**Workaround.** FDS-WORKAROUND #68 at five sites, where the disabled
+control sits in a focusable `<span>` or `<div>` (`tabIndex={0}`) that takes
+the hover and the focus for the tooltip:
+- `DisabledReasonTooltip`, around the library `Button` of the Deploy
+  actions in `AvailableIntegrationLine`, `IngestionCatalogConnectorHeader`
+  and `IngestionCatalogCardDeployButton`.
+- `GraphToolbarItem`, around every disabled graph toolbar tool. It renders
+  the library `IconButton` and `Tooltip`, which hit this same gap, so the
+  span stays: it carries `role="button"`, `aria-disabled` and the disabled
+  reason.
+- `WidgetCreationDataSelection`, around the add-dataset buttons of a broken
+  down widget: the library `IconButton` (entities) and `Button` (audits) in a
+  span each, and the two relationships `Button`s in one div. They render
+  through `@common/button`.
+- `WidgetCreationParameters`, around the disabled Distinct `Checkbox` of a
+  broken down audits widget.
+- `WidgetBreakdownSelection`, around the breakdown controls (the field
+  `Select`) of a widget with several datasets or counting distinct values.
+
+Except in `GraphToolbarItem`, the wrapper is a focusable element with no role,
+which `jsx-a11y/no-noninteractive-tabindex` flags and is disabled there. At
+every site the Tab stop lands on that wrapper, not on the control.
+
+**Ask.** A disabled mode of `Button`, `IconButton`, `SelectTrigger` and
+`Checkbox` that renders `aria-disabled` instead of `disabled`, keeps focus
+and pointer events, and blocks activation in JavaScript, for example a
+`focusableWhenDisabled` prop. That would make the control itself the tooltip
+trigger.
+
+**Removal test.** At a pin with that mode: pass the disabled state through
+it on the three Deploy buttons, on `GraphToolbarItem`, on the add-dataset
+buttons and the Distinct checkbox of a broken down widget and on the
+breakdown field select of a widget with two datasets; delete the wrappers
+with their markers and eslint-disable, and check that the tooltip shows on
+hover and on keyboard focus, that the screen reader announces the control as
+disabled, and that a click, Enter or Space does nothing (the select does not
+open, the checkbox does not toggle). In the graph toolbar, also check that
+each tool keeps its size and alignment, which the span's `inline-flex` holds
+today; in the widget editor, that the add buttons keep their full width,
+which the span's `flex: 1` holds today.
+
+---
+
+## 69. `Chip` has no muted state that stays clickable, so a dashboard variable no widget uses is dimmed by hand
+
+**Where.** `DashboardVariableChip.tsx` (dashboard variables bar). A variable that
+no widget references must read as inactive (it still has to open its value
+input, so the user can change it) and explain itself in a `Tooltip`.
+
+**Gap.** The only muted state of `Chip` is `disabled`, which is non-interactive:
+the click that opens the value popover would be lost. There is no tone between
+`neutral` and `disabled`.
+
+**Workaround.** The chip is wrapped and the wrapper carries `opacity: 0.6`
+(`UNUSED_OPACITY`, marked `FDS-WORKAROUND`).
+
+**Ask.** A `muted` (or `tone="subtle"`) prop on `Chip` that lowers the label and
+fill contrast but keeps the chip a focusable, clickable `<button>`.
+
+**Removal test.** Replace the wrapper opacity by the prop: the chip of an unused
+variable must still open its popover on click and keep its hover tooltip.
+
+---
+
+## 70. `Menu` opens only from a trigger element, so a context menu at the pointer needs a hidden one
+
+**Needed.** The graphs open a context menu where the reader right-clicks an
+entity, a relationship or the empty canvas (and from the keyboard with
+Shift+F10 or the context-menu key), with the sections, submenus, shortcuts and
+disabled reasons of the toolbar's "More actions" menu.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.1.0):
+`Menu` wraps the Radix dropdown menu and positions `MenuContent` against its
+`MenuTrigger` element only. The library has no context-menu component and no
+way to anchor a `Menu` at a point.
+
+**Workaround.** `GraphContextMenu.tsx` renders a controlled `Menu` whose
+`MenuTrigger` is a one-pixel, `aria-hidden`, non-focusable span placed at the
+pointer inside the graph container, under one `FDS-WORKAROUND #70` marker.
+`onCloseAutoFocus` gives the focus back to the element that had it, as the
+trigger cannot take it.
+
+**Ask.** A `ContextMenu` (the Radix context menu, with the `Menu` item
+components) or an `anchor` point on `Menu`, both opening from the keyboard.
+
+**Removal test.** At a pin with either: replace the hidden trigger by the
+library anchor, delete the marker, and check that a right click on a node of a
+report graph opens the menu at the pointer, that Shift+F10 opens it for the
+entity of the keyboard list, and that Escape gives the focus back.
+
+---
+
+## 71. `Dialog` is always modal, so a form embedding the product's MUI filter editor cannot use it
+
+`Dialog` omits Radix's `modal` prop (`Omit<…DialogPrimitive.Root…, "modal">`):
+it is always modal. A modal Radix dialog sets `pointer-events: none` on `<body>`
+and traps the focus inside its content. Anything portalled outside of it is
+then neither clickable nor focusable.
+
+**Where it bites.** The dashboard variables dialog edits the rule of a variable
+restricted by filters with the shared filter editor (`Filters` +
+`FilterIconButton`), the one of the widget editor. Its key picker is a library
+`Combobox` and works, but the value of a filter is chosen in `FilterChipPopover`,
+a MUI `Popover` portalled to `<body>`: inside the library `Dialog` it does not
+open in a usable state. Rendering the MUI popover inside the dialog content is no
+way out either: the content is centred with a `translate`, which offsets a
+fixed-positioned popover.
+
+**Workaround.** FDS-WORKAROUND #71: `DashboardVariableDialog.tsx` goes back to the
+MUI wrapper `@common/dialog/Dialog`, as the widget editor (`WidgetUpsert.tsx`),
+and its `Dialog` adoption is removed from `migration-state.json`. The deletion
+dialog of a variable, which embeds no filter, stays on the library `Dialog`.
+
+**Ask.** Either a non-modal option on `Dialog`, or the product's filter editor
+moving to library floating surfaces (the value popover first).
+
+**Removal test.** Back on the library `Dialog`, create an entity variable, choose
+*By filter*, add a `Label` filter: the value popover opens, a label can be searched
+by typing and picked with the mouse, and the dialog stays open.
+
+---
+
+## 72. `ComboboxChips` keys its chips by label, so two values sharing a label break the chip row
+
+`ComboboxChips` renders `engine.selectedValues.map(…)` with
+`key = engine.getOptionLabel(option)` (`components/combobox/Combobox.mjs`). Two
+selected values with the same label get the same React key.
+
+**Where it bites.** The values of a dashboard variable restricted to a selection
+are ids whose labels resolve after the field mounts: every chip is labelled
+`Loading` meanwhile, and React left stale `Loading` chips next to the resolved
+ones once the labels arrived. Two deleted entities (both `Restricted`) or two
+entities of the same name hit the same defect.
+
+**Workaround.** FDS-WORKAROUND #72: `SelectionValuesInput.tsx` numbers a label
+already taken (`benign`, `benign (2)`).
+
+**Ask.** Key the chips by position, or by a `getOptionKey` the host provides.
+
+**Removal test.** Drop the numbering; select three labels, two of the same name,
+switch the restriction mode away and back: exactly three chips, no `Loading` chip
+left once the labels resolve.
+
+---
+
+## 73. There is no `Stepper`, so the bootstrap wizard draws its steps with the MUI one
+
+**Needed.** The bootstrap wizard (`ConfigPresetWizardStepper.tsx`) shows where the
+administrator is in the import: welcome, upload, selection, progress, result. It
+needs the steps in order, the current one marked, and the finished ones ticked.
+
+**Today.** The library has no stepper or progress-steps component (`ProgressBar`
+is a single bar, `Tabs` are free navigation, not an ordered flow).
+
+**What the product did.** It uses the MUI `Stepper`, as the priority rule allows
+when the library does not ship the component. Nothing is forked or worked
+around inside the library; this entry is the record the rule asks for.
+
+**Ask.** A `Stepper` with `activeStep`, completed and disabled steps, a label per
+step and both orientations.
+
+**Removal test.** The wizard imports `Stepper` from the library, and
+`ConfigPresetWizardStepper.tsx` no longer imports from `@mui/material`.
+
+---
+
+## 74. There is no collapsible row, so the selection and the results draw their sections by hand
+
+**Needed.** The export drawer, the import preview and the import results list
+their items in groups, then types, each with a checkbox or a title, a chevron that
+shows or hides what is below it, and a count. A screen reader must hear which
+section a chevron opens.
+
+**Today.** The library has no `Accordion` or `Collapsible`. A section is a
+`Checkbox` (or a `Text`) next to an `IconButton`, with the content shown or not.
+
+**What the product did.** `ConfigPresetExpandableRow` (in
+`ConfigPresetSelectionAccordion.tsx`) and `ConfigPresetResultGroups.tsx` draw the
+rows by hand, with `aria-expanded`, `aria-controls` and a label that names the
+section. The rule is the same as for entry 73: MUI is the fallback, and the gap is
+recorded.
+
+**Ask.** A collapsible section with a header slot (a checkbox, a title and
+actions), the open state controlled or not, and the `aria-expanded` /
+`aria-controls` wiring built in.
+
+**Removal test.** Both files render the library component, and a screen reader
+reads each chevron with the name of its section without the product setting it.
+
+---
+
+## 75. `Alert` paragraphs keep the browser margins, so a compact banner needs a scoped reset
+
+**Needed.** Ingestion health banners (connector and feed detail pages, deployed
+integrations page): one-to-three line alerts stacked above the page content,
+which must stay as short as the library's Alert frame intends.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.1.0):
+`Alert` renders its `title` and `description` as `<p>` elements
+(`title-xs` / `content-compact` classes) and the library ships no preflight, so
+both `<p>` keep the user-agent block margins. Neither the component nor its
+`className` reaches those inner paragraphs, and there is no prop to reset them.
+
+**Workaround.** `IngestionHealthBanner.tsx` wraps the `Alert` in a `Box` whose
+`sx` sets `'& p': { margin: 0 }`, under one `FDS-WORKAROUND #71` marker.
+Several detail lines are passed as `display: block` spans inside the
+`description` (a `<p>`, so no block children).
+
+Every other `Alert` of the product hits the same margin — first seen on the
+investigation enrichment review (`InvestigationEnrichmentExpandEmpty.tsx`), where
+a title and a description stood a full line apart. FDS-WORKAROUND #75:
+`design-system-host.css` zeroes the margin of `p.title-xs.text-alert` (only the
+Alert's title carries `text-alert` in the installed build) and of the
+`p.content-compact` that follows it, for every `Alert` at once. It makes the
+banner's `Box` wrapper redundant for the margin.
+
+**Ask.** Zero the margins of the Alert's own paragraphs library-side (an
+`m-0` on the two `<p>`), and accept a node list for `description` rendered as
+block lines.
+
+**Removal test.** At a pin where the paragraphs carry no margin: delete the
+`Box` wrapper, the host rule and their markers, and check that a banner with a
+title and one description line is no taller than the Alert frame (padding plus
+the two lines).
+
+---
+
+## 76. `Switch` labels its control in 12px, smaller than the MUI switches of the same step, and has no info slot
+
+**Needed.** The parameters step of the widget editor (`WidgetCreationParameters.tsx`)
+lists its options as MUI `Switch`es in `FormControlLabel`s ("Stacked", "Display
+legend", ...). The time series breakdown settings (`WidgetBreakdownSelection.tsx`)
+add one more, "Include Other", with the library `Switch`, and explain it as the
+dialog explains its other fields: an info icon next to the label.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.3.0,
+`components/switch/Switch.mjs`): the `label` is a `content-compact-medium` span,
+`--text-content-compact-medium: var(--text-2)`, 12px. The MUI labels of the same
+step are `body1`, `0.9rem` in this product's theme (`ThemeDark.ts`,
+`ThemeLight.ts`), 14.4px. Nothing sizes the label: `wrapperClassName` styles the
+outer `<label>`, not its text. And unlike `Input` (`infoTooltip`) or `SelectLabel`
+(`hasInfoIcon`, a decorative glyph), `Switch` has no slot for an info control:
+anything passed in `label` sits inside the `<label>`, and a click on it toggles
+the switch.
+
+**What the product did.** Nothing is worked around. "Include Other" keeps the
+library size, and the other switches stay MUI (entry 59 holds their migration):
+the two sizes side by side are the gap this entry records. The info `IconButton`
+and its `Tooltip` sit next to the `Switch`, outside its `<label>`, as the info
+icon of the dataset label does in `WidgetCreationDataSelection.tsx`.
+
+**Ask.** A decision on the size of a switch label: either a text size the
+product can match to its other form labels, or 12px everywhere, which entry 59's
+migration would then bring to the other switches. And an `infoTooltip` slot, as
+on `Input`, rendered outside the `<label>`.
+
+**Removal test.** Once every switch of the step is a library one (entry 59), all
+their labels read at one size. With an `infoTooltip` slot, the info icon of
+"Include Other" moves into it, still opens its tooltip on hover and focus, and
+a click on it does not toggle the switch.
+
+---
+
+## 77. The number stepper throws on `step="any"`, so a free decimal field has dead arrows
+
+**Needed.** A decimal custom field (`CustomFieldsInput.tsx` on the entity forms,
+`EntitySettingCustomFields.tsx` for its default value) accepts any number, as the
+EPSS score does: `0.125` or `0.005` must be valid. Only `step="any"` lets the
+browser accept every value: with `step="0.01"`, `0.125` is a step mismatch, and a
+form submitted natively (`CoverageDetailsStep.tsx`) refuses `0.005`.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.4.0,
+`components/input/Input.mjs`): the stepper buttons and ArrowUp / ArrowDown call
+the native `node.stepUp()` / `node.stepDown()`. The HTML spec makes both throw an
+`InvalidStateError` when the element has no allowed value step, which is the case
+of `step="any"` (checked in Chrome: `stepUp()` throws, the value is unchanged).
+
+**What the product did.** Nothing is worked around. Both decimal inputs use
+`step="any"`: typing a value works, the arrows do nothing and log the error.
+
+**Ask.** With `step="any"`, step the value by hand (by 1, the native default
+increment) instead of calling `stepUp()` / `stepDown()`, or catch the error and
+do so.
+
+**Removal test.** On a decimal custom field holding `0.125`, a click on the up
+arrow sets `1.125` and logs no error.

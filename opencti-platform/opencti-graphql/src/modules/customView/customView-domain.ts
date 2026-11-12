@@ -34,6 +34,7 @@ import { updateAttribute } from '../../database/middleware';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { addCustomViewCreatedCount, addCustomViewEnabledCount } from '../../manager/telemetryManager';
 import { lockResources } from '../../lock/master-lock';
+import { stripServerOwnedManifestKeys } from '../workspace/workspace-variables-utils';
 
 /**
  * Exclusion list: entity types not capable of
@@ -191,7 +192,7 @@ export const addCustomView = async (
   }
   const customViewToCreate = {
     description: input.description,
-    manifest: input.manifest,
+    manifest: stripServerOwnedManifestKeys(input.manifest),
     name: input.name,
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
@@ -269,7 +270,7 @@ export const editCustomView = async (
       customViewId,
       ENTITY_TYPE_CUSTOM_VIEW,
       [
-        ...input,
+        ...input.map((entry) => (entry.key === 'manifest' ? { ...entry, value: entry.value.map(stripServerOwnedManifestKeys) } : entry)),
         ...(nameInput ? [{
           key: 'slug',
           value: [slugify(nameInput.value[0])],
@@ -319,7 +320,7 @@ export const customViewImportWidgetConfiguration = async (
     user,
     customViewId,
     ENTITY_TYPE_CUSTOM_VIEW,
-    [{ key: 'manifest', value: [updatedManifest] }],
+    [{ key: 'manifest', value: [stripServerOwnedManifestKeys(updatedManifest)] }],
     {
       auditLogEnabled: true,
       auditLogContextSanitizer: (input) => input.map((entry) => ({
@@ -356,7 +357,7 @@ export async function duplicateCustomView(
   }
   const customViewToCreate = {
     description: input.description,
-    manifest: input.manifest,
+    manifest: stripServerOwnedManifestKeys(input.manifest),
     name: input.name,
     target_entity_type: input.targetEntityType,
     slug: slugify(input.name),
@@ -454,7 +455,7 @@ export const importCustomViewConfiguration = async (
   const generatedManifest = await convertDashboardManifestIds(context, user, manifest, 'stix');
   const customViewToCreate = {
     name: parsedData.configuration.name,
-    manifest: generatedManifest,
+    manifest: stripServerOwnedManifestKeys(generatedManifest),
     target_entity_type: resolvedTargetEntityType,
     slug: slugify(parsedData.configuration.name),
     default: false,

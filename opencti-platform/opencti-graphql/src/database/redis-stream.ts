@@ -1,5 +1,4 @@
 import { Cluster, Redis } from 'ioredis';
-import * as R from 'ramda';
 import conf, { logApp, REDIS_PREFIX } from '../config/conf';
 import type { ActivityStreamEvent, BaseEvent, DataEvent, SseEvent, StreamNotifEvent } from '../types/event';
 import {
@@ -25,24 +24,16 @@ import { getFileContent, rawListObjects, rawUpload } from './raw-file-storage';
 import * as redisStreamSelf from './redis-stream';
 
 // region opencti data stream
-const REDIS_LIVE_STREAM_NAME = `${REDIS_PREFIX}${LIVE_STREAM_NAME}`;
-const REDIS_NOTIFICATION_STREAM_NAME = `${REDIS_PREFIX}${NOTIFICATION_STREAM_NAME}`;
-const REDIS_ACTIVITY_STREAM_NAME = `${REDIS_PREFIX}${ACTIVITY_STREAM_NAME}`;
 const streamTrimming = conf.get('redis:trimming') || 0;
 const streamMaxEventSize = conf.get('redis:max_event_length') || 0;
 const streamMaxEventFileKey = 'event_file_id';
 
-const convertStreamName = (streamName = LIVE_STREAM_NAME) => {
-  switch (streamName) {
-    case ACTIVITY_STREAM_NAME:
-      return REDIS_ACTIVITY_STREAM_NAME;
-    case NOTIFICATION_STREAM_NAME:
-      return REDIS_NOTIFICATION_STREAM_NAME;
-    case LIVE_STREAM_NAME:
-      return REDIS_LIVE_STREAM_NAME;
-    default:
-      throw UnsupportedError('Cannot recognize stream name', streamName);
+const STREAM_NAMES = [LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, ACTIVITY_STREAM_NAME];
+const checkStreamName = (streamName = LIVE_STREAM_NAME) => {
+  if (!STREAM_NAMES.includes(streamName)) {
+    throw UnsupportedError('Cannot recognize stream name', streamName);
   }
+  return streamName;
 };
 
 const mapJSToStream = (event: any) => {
@@ -65,7 +56,7 @@ const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
   return { id, event: obj.type, data: obj };
 };
 
-export const STREAM_FILE_DIRECTORY = `streams/${REDIS_LIVE_STREAM_NAME}/`;
+export const STREAM_FILE_DIRECTORY = `streams/${REDIS_PREFIX}${LIVE_STREAM_NAME}/`;
 export const isEventTooLarge = (eventStreamData: any) => {
   const eventStreamDataBlob = new Blob(eventStreamData);
   const totalStreamEventSize = eventStreamDataBlob.size;
@@ -91,9 +82,9 @@ export const rawPushToStream = async <T extends BaseEvent> (event: T) => {
     });
   }
   if (streamTrimming) {
-    await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...eventStreamData);
+    await redisClient.xadd(LIVE_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...eventStreamData);
   } else {
-    await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, '*', ...eventStreamData);
+    await redisClient.xadd(LIVE_STREAM_NAME, '*', ...eventStreamData);
   }
 };
 // Count the stream events that have been offloaded to file storage (events too large for redis).
@@ -132,14 +123,18 @@ const processStreamResult = async (results: Array<any>, callback: any, withInter
   const transform = (r: any) => processStreamData(r);
   const filter = (s: any) => s && (withInternal ? true : (s.data.scope ?? 'external') === 'external');
   const events = await asyncMap(results, transform, filter);
-  const lastEventId = events.length > 0 ? R.last(events)?.id : `${new Date().valueOf()}-0`;
+  const lastEventId = events.length > 0 ? events[events.length - 1]?.id : `${new Date().valueOf()}-0`;
   await callback(events, lastEventId);
   return lastEventId;
 };
 export const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
-  const redisStreamName = convertStreamName(streamName);
+  // keyPrefix is not applied to XINFO: Redis declares its key on the STREAM subcommand, which ioredis does not model
+  const redisStreamName = `${REDIS_PREFIX}${checkStreamName(streamName)}`;
   const res: any = await getClientBase().xinfo('STREAM', redisStreamName);
-  const info: any = R.fromPairs(R.splitEvery(2, res) as any);
+  const info: any = {};
+  for (let i = 0; i < res.length; i += 2) {
+    info[res[i]] = res[i + 1];
+  }
   const firstId = info['first-entry'][0];
   const firstEventDate = utcDate(parseInt(firstId.split('-')[0], 10)).toISOString();
   const lastId = info['last-entry'][0];
@@ -160,7 +155,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
   let processingLoopPromise: Promise<void>;
   let streamListening = true;
   const { streamName = LIVE_STREAM_NAME } = opts;
-  const redisStreamName = convertStreamName(streamName);
+  const redisStreamName = checkStreamName(streamName);
 
   const processStep = async () => {
     // since previous call is async (and blocking) we should check if we are still running before processing the message
@@ -169,8 +164,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
     }
     try {
       // Consume the data stream
-      const streamResult = await client.call(
-        'XREAD',
+      const streamResult = await client.xread(
         'COUNT',
         MAX_RANGE_MESSAGES,
         'BLOCK',
@@ -178,7 +172,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
         'STREAMS',
         redisStreamName,
         startEventId,
-      ) as any[];
+      );
       // Process the event results
       let isFullBatch = false;
       if (streamResult && streamResult.length > 0) {
@@ -265,22 +259,21 @@ const rawFetchStreamEventsRangeFromEventId = async (
   opts: FetchEventRangeOption = {},
 ) => {
   const { streamBatchSize = MAX_RANGE_MESSAGES, streamName = LIVE_STREAM_NAME, withInternal } = opts;
-  const redisStreamName = convertStreamName(streamName);
+  const redisStreamName = checkStreamName(streamName);
   let effectiveStartEventId = startEventId;
   const redisClient = getClientXRANGE();
   try {
     // Consume streamBatchSize number of stream events from startEventId (excluded)
-    const streamResult = await redisClient.call(
-      'XRANGE',
+    const streamResult = await redisClient.xrange(
       redisStreamName,
       `(${startEventId}`, // ( prefix to exclude startEventId
       '+',
       'COUNT',
       streamBatchSize,
-    ) as any[];
+    );
     // Process the event results
     if (streamResult && streamResult.length > 0) {
-      const lastStreamResultId = R.last(streamResult)[0]; // id of last event fetched (internal or external)
+      const lastStreamResultId = streamResult[streamResult.length - 1][0]; // id of last event fetched (internal or external)
       await processStreamResult(streamResult, callback, withInternal); // process the stream events of the range
       if (lastStreamResultId) {
         effectiveStartEventId = lastStreamResultId;
@@ -303,7 +296,7 @@ const notificationTrimming = conf.get('redis:notification_trimming') || 50000;
 const notificationRangeBatchSize = conf.get('redis:notification_range_batch_size') || 1000;
 const rawStoreNotificationEvent = async <T extends StreamNotifEvent> (event: T) => {
   const eventStreamData = mapJSToStream(event);
-  await getClientBase().call('XADD', REDIS_NOTIFICATION_STREAM_NAME, 'MAXLEN', '~', notificationTrimming, '*', ...eventStreamData);
+  await getClientBase().xadd(NOTIFICATION_STREAM_NAME, 'MAXLEN', '~', notificationTrimming, '*', ...eventStreamData);
 };
 // Byte size of a raw XRANGE entry [id, [field, value, ...]]: sum of the already-serialized stored
 // strings. Cheaper and more faithful than re-stringifying the parsed object to budget memory.
@@ -329,7 +322,7 @@ const rawFetchRangeNotifications = async <T extends StreamNotifEvent> (
     // The '(' prefix excludes the cursor entry already processed at the end of the previous batch.
     // cursor is in the form "timestamp - eventCursor"
     const startId = isFirstBatch ? fromId : `(${fromId}`;
-    const streamResult = await client.call('XRANGE', REDIS_NOTIFICATION_STREAM_NAME, startId, endId, 'COUNT', notificationRangeBatchSize) as any[];
+    const streamResult = await client.xrange(NOTIFICATION_STREAM_NAME, startId, endId, 'COUNT', notificationRangeBatchSize);
     if (!streamResult || streamResult.length === 0) {
       break;
     }
@@ -350,7 +343,7 @@ const rawFetchRangeNotifications = async <T extends StreamNotifEvent> (
     if (streamResult.length < notificationRangeBatchSize) {
       break;
     }
-    fromId = R.last(streamResult)[0];
+    fromId = streamResult[streamResult.length - 1][0];
     isFirstBatch = false;
   }
 };
@@ -360,7 +353,7 @@ const rawFetchRangeNotifications = async <T extends StreamNotifEvent> (
 const auditTrimming = conf.get('redis:activity_trimming') || 50000;
 const rawStoreActivityEvent = async (event: ActivityStreamEvent) => {
   const eventStreamData = mapJSToStream(event);
-  await getClientBase().call('XADD', REDIS_ACTIVITY_STREAM_NAME, 'MAXLEN', '~', auditTrimming, '*', ...eventStreamData);
+  await getClientBase().xadd(ACTIVITY_STREAM_NAME, 'MAXLEN', '~', auditTrimming, '*', ...eventStreamData);
 };
 // endregion
 

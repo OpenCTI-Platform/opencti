@@ -16,7 +16,7 @@ export const flattenCustomFieldValuesForStix = (customFieldValues?: CustomFieldV
   const result: Record<string, any> = {};
   for (const cfv of customFieldValues) {
     // Extract the actual value based on whichever field is set (select_values is the array channel for multi_select)
-    const value = cfv.select_values ?? cfv.int_value ?? cfv.string_value ?? cfv.boolean_value ?? cfv.date_value ?? cfv.select_value;
+    const value = cfv.select_values ?? cfv.int_value ?? cfv.float_value ?? cfv.string_value ?? cfv.boolean_value ?? cfv.date_value ?? cfv.select_value;
     if (value !== undefined && value !== null) {
       result[cfv.field_name] = value;
     }
@@ -85,6 +85,7 @@ export const buildCustomFieldStixFilterTester = (customFieldDefinition: BasicSto
         // other types hold a single (possibly nullish) value that toValidArray safely wraps (or empties).
         return testStringFilter(filter, Array.isArray(customFieldStixValue) ? customFieldStixValue : toValidArray(customFieldStixValue), changeContext);
       case 'integer':
+      case 'decimal':
         return testNumericFilter(filter, customFieldStixValue, changeContext);
       case 'boolean':
         return testBooleanFilter(filter, customFieldStixValue, changeContext);
@@ -96,6 +97,9 @@ export const buildCustomFieldStixFilterTester = (customFieldDefinition: BasicSto
     }
   };
 };
+
+// A deleted custom field is tested as a custom field the stix object does not have
+export const deletedCustomFieldStixFilterTester: TesterFunction = (_stix, filter, changeContext) => testStringFilter(filter, [], changeContext);
 
 export const getCustomFieldsStixFilterTesters = async (context: AuthContext, user: AuthUser): Promise<Record<string, TesterFunction>> => {
   const customFieldsDefinitions = await getCustomFieldDefinitions(context, user);

@@ -2,7 +2,19 @@ import TextField from '@mui/material/TextField';
 import ReactMde from 'react-mde';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import { Checkbox, Input, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import {
+  Checkbox,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+  Tooltip as FdsTooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
 import { stixCyberObservablesLinesAttributesQuery } from '@components/observations/stix_cyber_observables/StixCyberObservablesLines';
 import * as R from 'ramda';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -20,7 +32,7 @@ import {
   getDefaultWidgetColumns,
   getWidgetColumns,
 } from '@components/widgets/WidgetListsDefaultColumns';
-import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
+import { useWidgetBreakdownState, useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
 import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
 import { WidgetAttributesInputContainerInstanceQuery$data } from '@components/widgets/__generated__/WidgetAttributesInputContainerInstanceQuery.graphql';
@@ -36,13 +48,15 @@ import { getCurrentAvailableParameters, getCurrentCategory, getMaxResultCount, g
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import useAuth from '../../../utils/hooks/useAuth';
 import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { Box, Typography } from '@mui/material';
 import WidgetCustomAttributesColumnsInput, { WidgetColumnsLayout } from '@components/widgets/WidgetCustomAttributesColumnsInput';
 import { getEntityTypeFromFilters, getWidgetColumnsEntityType, mergeAvailableAndSelectedColumns } from './WidgetCreationParameters.utils';
 import { WIDE_TABLE_COLUMN_THRESHOLD } from 'src/utils/htmlToPdf/utils/pdfTableWidth';
 import useCustomFieldWidgetColumns from '@components/widgets/useCustomFieldWidgetColumns';
+import { getCustomFieldLabelFromFilterKeysSchema, isCustomFieldAttribute } from 'src/utils/customFields';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
+import WidgetBreakdownSelection from './WidgetBreakdownSelection';
 
 const WidgetCreationParameters = () => {
   const { metricsDefinition } = useAttributes();
@@ -50,6 +64,7 @@ const WidgetCreationParameters = () => {
   const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
+    schema: { filterKeysSchema },
   } = useAuth();
   const { ignoredAttributesInDashboards } = useAttributes();
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview' | undefined>('write');
@@ -133,6 +148,7 @@ const WidgetCreationParameters = () => {
     setDataSelectionWithIndex,
   } = useWidgetConfigContext();
   const { type, dataSelection, parameters } = config.widget;
+  const breakdown = useWidgetBreakdownState();
   const { isWidgetVarNameAlreadyUsed, isVariableNameValid, isDateAttributeValid } = useWidgetConfigValidateForm();
   const widgetCategory = getCurrentCategory(type);
 
@@ -306,6 +322,8 @@ const WidgetCreationParameters = () => {
   const auditAttributeSelectionSection = (uniqueParameterEnabled: boolean, dataSelectionIndex: number) => {
     const isAttributeSelectionDisabled = uniqueParameterEnabled && !dataSelection[dataSelectionIndex].unique;
     const attributeSize = uniqueParameterEnabled ? 10 : 12;
+    // A breakdown counts every event: distinct values can only be counted without the field the widget keeps
+    const isDistinctLockedByBreakdown = !!breakdown.field;
 
     const uniqueDataCheckbox = () => {
       const inline = dataSelection.length === 1;
@@ -316,6 +334,7 @@ const WidgetCreationParameters = () => {
           style={{ marginLeft: inline ? 0 : -24 }}
           label={inline ? distinctLabel : undefined}
           aria-label={inline ? undefined : t_i18n('Distinct')}
+          disabled={isDistinctLockedByBreakdown}
           onCheckedChange={(checked) => handleChangeDataValidationParameter(
             dataSelectionIndex,
             'unique',
@@ -326,7 +345,17 @@ const WidgetCreationParameters = () => {
       );
       return (
         <Grid size={inline ? 2 : 1.5} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {checkbox}
+          {isDistinctLockedByBreakdown ? (
+            <FdsTooltip>
+              <TooltipTrigger asChild>
+                {/* FDS-WORKAROUND #68: a disabled library Checkbox cannot trigger its own tooltip,
+                    so this span takes the hover and focus — see fds-migration/LIBRARY-FEEDBACK.md #68 */}
+                {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+                <span tabIndex={0}>{checkbox}</span>
+              </TooltipTrigger>
+              <TooltipContent>{t_i18n('A breakdown counts every event: it cannot count distinct values.')}</TooltipContent>
+            </FdsTooltip>
+          ) : checkbox}
         </Grid>
       );
     };
@@ -445,6 +474,7 @@ const WidgetCreationParameters = () => {
           </SelectContent>
         </Select>
       )}
+      <WidgetBreakdownSelection />
       {uniqueParameterEnabled(dataSelection[0].perspective, type) && dataSelection.length > 1 && (
         <Grid container sx={{ pt: 4 }} spacing={4}>
           <Grid size={1.5}>
@@ -858,11 +888,9 @@ const WidgetCreationParameters = () => {
                                             key={value}
                                             value={value}
                                           >
-                                            {t_i18n(
-                                              capitalizeFirstLetter(
-                                                value,
-                                              ),
-                                            )}
+                                            {isCustomFieldAttribute(value)
+                                              ? getCustomFieldLabelFromFilterKeysSchema(filterKeysSchema, getCurrentSelectedEntityTypes(i), value)
+                                              : t_i18n(capitalizeFirstLetter(value))}
                                           </SelectItem>
                                         ))}
                                       </SelectContent>

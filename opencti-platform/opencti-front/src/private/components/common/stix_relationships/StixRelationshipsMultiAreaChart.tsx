@@ -118,7 +118,7 @@ const StixRelationshipsMultiAreaChart = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -140,8 +140,7 @@ const StixRelationshipsMultiAreaChart = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

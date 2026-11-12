@@ -1,7 +1,7 @@
 import type { FilterDefinition } from '../hooks/useAuth';
 import { getFilterDefinitionFromFilterKeysMap } from './filtersUtils';
 
-const WORKFLOW_FILTER_KEYS = ['workflow_user', 'workflow_group', 'workflow_organization'];
+export const WORKFLOW_FILTER_KEYS = ['workflow_user', 'workflow_group', 'workflow_organization'];
 
 export interface GroupedFilterKeyOption {
   value: string;

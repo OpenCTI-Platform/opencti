@@ -2,12 +2,12 @@ import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { ENTITY_TYPE_CSV_MAPPER } from '../../modules/internal/csvMapper/csvMapper-types';
-import type { Connector } from '../internalConnector';
+import type { InternalConnector } from '../../modules/connector/connector-types';
 import { ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR } from './importCsv-configuration';
 
 export const IMPORT_CSV_CONNECTOR_ID = 'd336676c-4ee5-4257-96ff-b2a86688d4af';
 
-export const IMPORT_CSV_CONNECTOR: Connector = {
+export const IMPORT_CSV_CONNECTOR: InternalConnector = {
   id: IMPORT_CSV_CONNECTOR_ID,
   internal_id: IMPORT_CSV_CONNECTOR_ID,
   active: ENABLED_IMPORT_CSV_BUILT_IN_CONNECTOR,

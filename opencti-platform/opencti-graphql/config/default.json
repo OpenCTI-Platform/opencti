@@ -51,8 +51,8 @@
       "max_time": 1000
     },
     "graphql": {
+      "secure_by_default": false,
       "armor_protection": {
-        "disabled": true,
         "max_depth": 20,
         "max_directives": 20,
         "max_tokens": 100000,
@@ -65,7 +65,6 @@
         "query_subtypes": 4
       },
       "playground": {
-        "enabled": true,
         "force_disabled_introspection": true
       }
     },
@@ -83,7 +82,8 @@
       "metrics": {
         "enabled": false,
         "exporter_otlp": "",
-        "exporter_prometheus": 14269
+        "exporter_prometheus": 14269,
+        "exporter_prometheus_host": "0.0.0.0"
       }
     },
     "health_access_key": "ChangeMe",
@@ -118,7 +118,8 @@
     },
     "live_stream": {
       "cache_max_size": 5000,
-      "cache_max_time": 2
+      "cache_max_time": 2,
+      "resolution_batch_size": 500
     },
     "exclusion_list": {
       "file_max_size": 10000000
@@ -131,6 +132,7 @@
     "python_execution": "native",
     "python_execution_venv": "../../../.python-venv/lib/python3.12/site-packages",
     "artifact_zip_password": "infected",
+    "artifact_zip_max_extracted_size": 104857600,
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",
@@ -143,6 +145,9 @@
     "trash": {
       "enabled": true
     },
+    "bootstrap_wizard": {
+      "enabled": true
+    },
     "csv_ingestion": {
       "max_bundle_size": 1000
     },
@@ -153,14 +158,20 @@
     },
     "forgot_password": {
       "otp_ttl_second": 600
+    },
+    "password_change": {
+      "max_attempts": 5,
+      "window_seconds": 900
     }
   },
   "demo_mode": false,
+  "tls": {
+    "reject_unauthorized": false
+  },
   "http_proxy": "",
   "https_proxy": "",
   "no_proxy": "",
   "https_proxy_ca": [],
-  "https_proxy_reject_unauthorized": false,
   "trust_proxy_addresses": [],
   "relations_deduplication": {
     "past_days": 30,
@@ -226,7 +237,6 @@
     "xtm_one_token": "",
     "openaev_url": "",
     "openaev_token": "",
-    "openaev_reject_unauthorized": false,
     "opengrc_url": "",
     "opengrc_token": "",
     "xtmhub_url": "https://hub.filigran.io",
@@ -382,12 +392,39 @@
     "lock_key": "exclusion_list_cache_sync_manager_lock",
     "interval": 10000
   },
+  "ingestion_health_manager": {
+    "enabled": true,
+    "lock_key": "ingestion_health_manager_lock",
+    "interval": 60000
+  },
   "catalog_manager": {
     "enabled": true,
     "lock_key": "catalog_manager_lock",
     "interval": 60000,
     "custom_catalog_refresh_endpoint_uri": null,
     "catalog_sync_remote_timeout": 30000
+  },
+  "safe_ejs": {
+    "idle_pool_size": 2,
+    "max_renders_per_worker": 1000,
+    "resource_limits": {
+      "max_old_generation_size_mb": 50,
+      "max_young_generation_size_mb": 10,
+      "code_range_size_mb": 10,
+      "stack_size_mb": 4
+    }
+  },
+  "json_path": {
+    "timeout": 60000,
+    "idle_pool_size": 2,
+    "max_pool_size": 4,
+    "idle_timeout": 60000,
+    "max_queries_per_worker": 10000,
+    "resource_limits": {
+      "max_young_generation_size_mb": 32,
+      "code_range_size_mb": 10,
+      "stack_size_mb": 4
+    }
   },
   "redis": {
     "mode": "single",
@@ -405,8 +442,7 @@
   "elasticsearch": {
     "index_prefix": "opencti",
     "url": "http://localhost:9200",
-    "engine_selector": "auto",
-    "engine_check": true,
+    "engine_client": "auto",
     "index_creation_pattern": "-000001",
     "max_pagination_result": 5000,
     "default_pagination_result": 500,
@@ -442,7 +478,6 @@
   "smtp": {
     "hostname": "localhost",
     "use_ssl": false,
-    "reject_unauthorized": false,
     "port": 25,
     "username": "",
     "password": "",

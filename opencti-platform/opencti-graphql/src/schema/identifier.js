@@ -56,6 +56,7 @@ export const REVOKED = 'revoked';
 export const X_MITRE_ID_FIELD = 'x_mitre_id';
 export const X_DETECTION = 'x_opencti_detection';
 export const X_WORKFLOW_ID = 'x_opencti_workflow_id';
+export const X_CLOSING_REASON = 'x_opencti_closing_reason';
 export const X_SCORE = 'x_opencti_score';
 // endregion
 
@@ -190,8 +191,6 @@ const stixBaseEntityContribution = {
     [I.ENTITY_TYPE_GROUP]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_ROLE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
-    [I.ENTITY_TYPE_CONNECTOR]: () => uuidv4(),
-    [I.ENTITY_TYPE_CONNECTOR_MANAGER]: () => uuidv4(),
     [I.ENTITY_TYPE_RULE_MANAGER]: () => uuidv4(),
     [I.ENTITY_TYPE_RULE]: () => uuidv4(),
     [I.ENTITY_TYPE_HISTORY]: () => uuidv4(),

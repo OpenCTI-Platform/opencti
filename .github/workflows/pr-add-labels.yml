@@ -7,7 +7,7 @@ jobs:
     name: Check if PR author is an OpenCTI-Platform member and add label
     # except for renovate
     if: ${{ github.event.pull_request.user.login != 'renovate[bot]' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       pull-requests: write
@@ -30,7 +30,7 @@ jobs:
 
   check-migration-label:
     name: Add migration label when migration files are added or updated
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       pull-requests: write

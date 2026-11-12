@@ -164,7 +164,7 @@ const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsRadarDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsRadarDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -187,8 +187,7 @@ const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
       showPreviewTag={isPreviewMode}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

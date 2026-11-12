@@ -1,5 +1,5 @@
 import React, { ReactNode, UIEvent, useState } from 'react';
-import { PopoverProps } from '@mui/material/Popover/Popover';
+import { PopoverProps } from '@mui/material/Popover';
 import { MoreVert } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import Menu from '@mui/material/Menu';

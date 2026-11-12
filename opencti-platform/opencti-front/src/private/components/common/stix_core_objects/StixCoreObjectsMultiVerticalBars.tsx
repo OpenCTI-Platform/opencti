@@ -123,7 +123,7 @@ const StixCoreObjectsMultiVerticalBars = ({
   host,
 }: StixCoreObjectsMultiVerticalBarsProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiVerticalBarsTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -144,8 +144,7 @@ const StixCoreObjectsMultiVerticalBars = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

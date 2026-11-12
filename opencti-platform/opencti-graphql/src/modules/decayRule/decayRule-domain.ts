@@ -3,6 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { DecayRuleAddInput, EditInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
+import { booleanTrueFilter } from '../../utils/filtering/filtering-utils';
 import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE, type StoreEntityDecayRule } from './decayRule-types';
 import { createInternalObject } from '../../domain/internalObject';
 import { now } from '../../utils/format';
@@ -25,6 +26,7 @@ import {
 } from '../../schema/stixCyberObservable';
 import { unshiftAll } from '../../utils/arrayUtil';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import { flattenCustomFieldValuesForStix } from '../customField/custom-field-stix-utils';
 import { convertTypeToStixType } from '../../database/stix-2-1-converter';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { addDecayRuleCreationCount } from '../../manager/telemetryManager';
@@ -360,13 +362,7 @@ export const BUILT_IN_DECAY_RULES = [
  * @param user
  */
 export const initDecayRules = async (context: AuthContext, user: AuthUser) => {
-  const args = {
-    filters: {
-      mode: 'and' as FilterMode,
-      filters: [{ key: ['built_in'], values: [true] }],
-      filterGroups: [],
-    },
-  };
+  const args = { filters: booleanTrueFilter('built_in') };
   const currentBuiltInDecayRules = await fullEntitiesList<BasicStoreEntityDecayRule>(context, user, [ENTITY_TYPE_DECAY_RULE], args);
   if (currentBuiltInDecayRules.length === 0) {
     // no built-in decay rule, we should create the default ones
@@ -400,6 +396,7 @@ export const checkDecayRules = async (context: AuthContext, user: AuthUser, reso
       [STIX_EXT_OCTI]: {
         main_observable_type: resolvedIndicator.x_opencti_main_observable_type,
         creator_ids: [user.internal_id],
+        ...flattenCustomFieldValuesForStix(resolvedIndicator.custom_field_values),
       },
     },
   } as ResolvedDecayRule;

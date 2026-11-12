@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
 import { useInvestigationState } from './utils/useInvestigationState';
 import { InvestigationAddStixCoreObjecstLineDummy, InvestigationAddStixCoreObjectsLine } from './InvestigationAddStixCoreObjectsLine';
@@ -10,39 +8,6 @@ import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { numberFormat } from '../../../../utils/Number';
-
-const styles = (theme) => ({
-  investigation: {
-    padding: '20px 0 20px 0',
-  },
-  heading: {
-    fontSize: theme.typography.pxToRem(15),
-    flexBasis: '33.33%',
-    flexShrink: 0,
-  },
-  secondaryHeading: {
-    fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary,
-  },
-  expansionPanelContent: {
-    padding: 0,
-  },
-  list: {
-    width: '100%',
-  },
-  listItem: {
-    width: '100M',
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-  tooltip: {
-    maxWidth: '80%',
-    lineHeight: 2,
-    padding: 10,
-    backgroundColor: '#323232',
-  },
-});
 
 const nbOfRowsToLoad = 50;
 
@@ -173,7 +138,6 @@ InvestigationAddStixCoreObjectsLinesInvestigation.propTypes = {
   workspaceId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   workspaceStixCoreObjects: PropTypes.array,
@@ -290,7 +254,4 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(InvestigationAddStixCoreObjectsLines);
+export default inject18n(InvestigationAddStixCoreObjectsLines);

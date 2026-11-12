@@ -1,4 +1,4 @@
-import React, { Suspense, useCallback, useEffect, useMemo } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
 import { Box, Stack, Typography } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -30,7 +30,7 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import PageContainer from '../../../components/PageContainer';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { fetchQuery } from '../../../relay/environment';
-import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
+import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
 import { paperBg, paperBorder } from './paperSurface';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
 
@@ -57,7 +57,9 @@ interface IntegrationsDataProviderProps {
 const IntegrationsDataProvider = ({ children }: IntegrationsDataProviderProps) => {
   const isConnectorReader = useGranted([MODULES]);
   const isIngestionReader = useGranted([INGESTION]);
-  const isFormReader = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT]);
+  const isFormReader = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE], false, {
+    capabilitiesInDraft: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE], // the @auth of forms
+  });
 
   const [catalogsRef, loadCatalogs] = useQueryLoader<IngestionConnectorsCatalogsQuery>(ingestionConnectorsCatalogsQuery);
   const [deploymentRef, loadDeployment] = useQueryLoader<IngestionConnectorsQuery>(ingestionConnectorsQuery);
@@ -202,7 +204,15 @@ const IntegrationsHero = ({ deployedCount }: IntegrationsHeroProps) => {
           filter: 'blur(60px)',
         }}
       />
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2} sx={{ position: 'relative' }}>
+      <Stack
+        direction="row"
+        sx={{
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: 2,
+          position: 'relative',
+        }}
+      >
         <Box>
           <Typography
             variant="h1"
@@ -236,6 +246,7 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
   const { t_i18n } = useFormatter();
   const { hasActiveManagers } = useConnectorManagerStatus();
   const { deploymentData, feedsData, formsData } = data;
+  const [alertsSlot, setAlertsSlot] = useState<HTMLElement | null>(null);
 
   // Feed instances register a technical twin connector: excluded from the
   // connector count so deployed integrations are not counted twice.
@@ -276,6 +287,9 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
 
         <IntegrationsHero deployedCount={deployedCount} />
 
+        {/* Receives the health alerts of the deployed tab; display: contents adds no box, so no extra gap while empty */}
+        <div ref={setAlertsSlot} style={{ display: 'contents' }} />
+
         <Tabs value={tab} panels="external">
           <TabsList>
             <TabsTrigger value="deployed" asChild>
@@ -292,7 +306,7 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
         </Tabs>
 
         {tab === 'deployed' ? (
-          <IntegrationsDeployed data={data} />
+          <IntegrationsDeployed data={data} alertsSlot={alertsSlot} />
         ) : (
           <IntegrationsAvailable data={data} />
         )}

@@ -6,7 +6,7 @@ import IconButton from '../common/button/IconButton';
 import type { MarkdownPreviewImage } from './markdownPreviewImageUtils';
 import { useFormatter } from '../i18n';
 import { Theme } from '../Theme';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 
 export type { MarkdownPreviewImage };
 
@@ -35,6 +35,13 @@ const captionStyle: SxProps = {
   borderRadius: 1,
   backgroundColor: 'rgba(0, 0, 0, 0.5)',
   marginTop: 2,
+};
+
+// The slide spans the whole preview area: a click on the image or its caption
+// must not close the preview, but one on the dark area around them still
+// reaches the outer onClose.
+const keepOpenOnContentClick = (event: React.MouseEvent<HTMLElement>) => {
+  if (event.target !== event.currentTarget) event.stopPropagation();
 };
 
 const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProps> = ({
@@ -165,15 +172,15 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
+                  onClickCapture={keepOpenOnContentClick}
                 >
                   <img
                     src={image.src}
                     alt={image.alt}
                     style={{ maxWidth: '90vw', maxHeight: image.alt ? '74vh' : '80vh' }}
-                    onClick={(event) => event.stopPropagation()}
                   />
                   {image.alt && (
-                    <Box sx={captionStyle} onClick={(event) => event.stopPropagation()}>
+                    <Box sx={captionStyle}>
                       {image.alt}
                     </Box>
                   )}
@@ -191,15 +198,15 @@ const MarkdownImagePreviewModal: FunctionComponent<MarkdownImagePreviewModalProp
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
+                onClickCapture={keepOpenOnContentClick}
               >
                 <img
                   src={images[0].src}
                   alt={images[0].alt}
                   style={{ maxWidth: '90vw', maxHeight: images[0].alt ? '74vh' : '80vh' }}
-                  onClick={(event) => event.stopPropagation()}
                 />
                 {images[0].alt && (
-                  <Box sx={captionStyle} onClick={(event) => event.stopPropagation()}>
+                  <Box sx={captionStyle}>
                     {images[0].alt}
                   </Box>
                 )}

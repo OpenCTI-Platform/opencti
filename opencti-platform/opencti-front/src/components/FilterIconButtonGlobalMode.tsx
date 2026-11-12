@@ -19,21 +19,32 @@ const FilterIconButtonGlobalMode: FunctionComponent<
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const clickableOperatorOnHoverStyle = {
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: `${theme.palette.action?.disabled} !important`,
-      textDecorationLine: 'underline',
-    },
-  };
+  const label = t_i18n(globalMode.toLowerCase());
+
+  if (!isOperatorClickable || !handleSwitchGlobalMode) {
+    return <Box style={operatorStyle}>{label}</Box>;
+  }
 
   return (
+    // FDS-WORKAROUND #67: bare <button>, the library Button and IconButton always paint a box — see fds-migration/LIBRARY-FEEDBACK.md #67
     <Box
+      component="button"
+      type="button"
       style={operatorStyle}
-      sx={isOperatorClickable ? clickableOperatorOnHoverStyle : undefined}
+      sx={{
+        border: 'none',
+        font: 'inherit',
+        lineHeight: 'inherit',
+        color: 'inherit',
+        cursor: 'pointer',
+        '&:hover': {
+          backgroundColor: `${theme.palette.action?.disabled} !important`,
+          textDecorationLine: 'underline',
+        },
+      }}
       onClick={handleSwitchGlobalMode}
     >
-      {t_i18n(globalMode.toLowerCase())}
+      {label}
     </Box>
   );
 };

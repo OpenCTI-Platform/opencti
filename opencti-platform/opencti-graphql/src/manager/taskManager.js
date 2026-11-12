@@ -49,13 +49,20 @@ import {
   TASK_TYPE_QUERY,
   TASK_TYPE_RULE,
   ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES,
+  ACTION_TYPE_WORKFLOW_BYPASS,
+  ACTION_TYPE_WORKFLOW_TRANSITION,
+  isWorkflowBypassAction,
+  isWorkflowTransitionAction,
 } from '../domain/backgroundTask-common';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { getDraftContext } from '../utils/draftContext';
 import { getBestBackgroundConnectorId, pushBundleToWorker } from '../database/rabbitmq';
-import { updateProcessedTime } from '../domain/work';
+import { reportExpectation, updateExpectationsNumber, updateProcessedTime } from '../domain/work';
 import { convertStoreToStix_2_1, convertTypeToStixType } from '../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
+import { getCustomFieldDefinitions, isCustomFieldDefinitionOfEntityType } from '../modules/customField/custom-field-cache';
+import { buildCustomFieldTaskInputs } from '../modules/customField/custom-field-task';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { extractValidObservablesFromIndicatorPattern } from '../utils/syntax';
 import { generateStandardId } from '../schema/identifier';
@@ -66,6 +73,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
 import { doYield } from '../utils/eventloop-utils';
+import { setWorkflowStatus, triggerWorkflowEvent } from '../modules/workflow/domain/workflow-domain';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -90,13 +98,16 @@ const findTasksToExecute = async (context) => {
   });
 };
 
+const ruleScanOrder = (taskPosition) => (isEmptyField(taskPosition) ? 'created_at' : 'updated_at');
 export const taskRule = async (context, user, task, callback) => {
   const { task_position, rule, enable } = task;
   const ruleDefinition = await getRule(context, user, rule);
   if (enable) {
     const { scan } = ruleDefinition;
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan), after: task_position };
+    // Ordered by an immutable field: applying the rule updates the scanned elements, an updated_at order would list them again.
+    // A legacy task_position is a cursor on the updated_at order, so it keeps that order to resume where it stopped.
+    const options = { baseData: true, orderMode: 'asc', orderBy: ruleScanOrder(task_position), ...buildEntityFilters(scan.types, scan), after: task_position };
     const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
   } else {
@@ -106,7 +117,7 @@ export const taskRule = async (context, user, task, callback) => {
       filterGroups: [],
     };
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
-    const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters, after: task_position };
+    const options = { baseData: true, orderMode: 'asc', orderBy: ruleScanOrder(task_position), filters, after: task_position };
     const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
@@ -130,7 +141,13 @@ export const taskList = async (context, user, task, callback) => {
     includeDeletedInDraft: true,
   };
   const elements = await internalFindByIds(context, user, ids, options);
-  callback(elements);
+  // Awaited so in-process callbacks finish before completion, but a failure keeps the previous
+  // outcome: the task completes instead of being retried from the start and blocking the queue
+  try {
+    await callback(elements);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during list task, completing the task', { cause: error, taskId: task.id });
+  }
 };
 
 const throwErrorInDraftContext = (context, user, actionType) => {
@@ -156,12 +173,20 @@ const isUnshareAction = (actionType) => {
   return actionType === ACTION_TYPE_UNSHARE || actionType === ACTION_TYPE_UNSHARE_MULTIPLE;
 };
 
-export const baseOperationBuilder = (actionType, operations, element) => {
+export const baseOperationBuilder = (actionType, operations, element, customFieldDefinitions = []) => {
   const baseOperationObject = {};
   // Knowledge management
   if (actionType === 'KNOWLEDGE_CHANGE') {
     baseOperationObject.opencti_operation = 'patch';
-    baseOperationObject.opencti_field_patch = operations.map((action) => {
+    baseOperationObject.opencti_field_patch = operations.flatMap((action) => {
+      // Custom fields are edited through custom_field_values, only on the elements whose type carries them
+      if (action.context.field?.startsWith(CUSTOM_FIELD_PREFIX)) {
+        const definition = customFieldDefinitions.find((d) => d.name === action.context.field);
+        if (!definition || !isCustomFieldDefinitionOfEntityType(definition, element.entity_type)) {
+          return [];
+        }
+        return buildCustomFieldTaskInputs(definition, action.type, action.context.values ?? []);
+      }
       let attrKey = action.context.field;
       if (action.context.type === 'RELATION') {
         attrKey = schemaRelationsRefDefinition
@@ -186,6 +211,10 @@ export const baseOperationBuilder = (actionType, operations, element) => {
   if (actionType === ACTION_TYPE_ENRICHMENT) {
     baseOperationObject.opencti_operation = 'enrichment';
     baseOperationObject.connector_ids = operations[0].context.values;
+    const investigationId = operations[0].context.options?.investigationId;
+    if (investigationId) {
+      baseOperationObject.investigation_id = investigationId;
+    }
   }
   if (actionType === ACTION_TYPE_MERGE) {
     baseOperationObject.opencti_operation = 'merge';
@@ -223,6 +252,7 @@ export const baseOperationBuilder = (actionType, operations, element) => {
   if (actionType === ACTION_TYPE_ADD_RELATED_COVERED_ENTITIES) {
     baseOperationObject.opencti_operation = 'add_related_covered_entities';
     baseOperationObject.security_coverage_result_id = operations[0].id;
+    baseOperationObject.relationships_config = operations[0].relationships_config;
   }
   // Access management
   if (actionType === ACTION_TYPE_REMOVE_AUTH_MEMBERS) {
@@ -286,7 +316,7 @@ export const sendResultToQueue = async (context, user, task, objects, opts = {})
   }
 };
 
-const buildBundleElement = (element, actionType, operations) => {
+const buildBundleElement = (element, actionType, operations, customFieldDefinitions = []) => {
   const baseObject = {
     id: element.standard_id,
     type: convertTypeToStixType(element.entity_type),
@@ -294,7 +324,7 @@ const buildBundleElement = (element, actionType, operations) => {
       [STIX_EXT_OCTI]: {
         id: element.internal_id,
         type: element.entity_type,
-        ...baseOperationBuilder(actionType, operations, element),
+        ...baseOperationBuilder(actionType, operations, element, customFieldDefinitions),
       },
     },
   };
@@ -311,21 +341,33 @@ const buildBundleElement = (element, actionType, operations) => {
 
 const standardOperationCallback = async (context, user, task, actionType, operations) => {
   let totalProcessed = task.task_processed_number;
-  return async (elements) => {
+  const hasCustomFieldActions = operations.some((action) => action.context?.field?.startsWith(CUSTOM_FIELD_PREFIX));
+  const customFieldDefinitions = hasCustomFieldActions ? await getCustomFieldDefinitions(context, user) : [];
+  let hasQueuedWork = false;
+  const callback = async (elements) => {
     // Build limited stix object to limit memory footprint
     const objects = [];
     for (let index = 0; index < elements.length; index += 1) {
       await doYield();
       const e = elements[index];
-      const object = buildBundleElement(e, actionType, operations);
-      objects.push(object);
+      const object = buildBundleElement(e, actionType, operations, customFieldDefinitions);
+      // An element without any change to apply (e.g. its type does not carry the custom field) is skipped
+      const fieldPatch = object.extensions[STIX_EXT_OCTI].opencti_field_patch;
+      if (!Array.isArray(fieldPatch) || fieldPatch.length > 0) {
+        objects.push(object);
+      }
     }
     // Send actions to queue
-    await sendResultToQueue(context, user, task, objects);
+    if (objects.length > 0) {
+      await sendResultToQueue(context, user, task, objects);
+      hasQueuedWork = true;
+    }
     // Update task
     totalProcessed += elements.length;
     await updateTask(context, task.id, { task_processed_number: totalProcessed });
   };
+  callback.hasQueuedWork = () => hasQueuedWork;
+  return callback;
 };
 
 export const buildContainersElementsBundle = async (context, user, containers, elements, withNeighbours, operationType) => {
@@ -590,6 +632,64 @@ const customFieldValuesRemoveOperationCallback = async (context, user, task, ope
   };
 };
 
+// Workflow operations go through the workflow engine, element by element, instead of the workers.
+// The task work is only told about the elements once every page is applied, so it cannot complete
+// early; rejected elements are listed as work errors.
+const workflowOperationCallback = (context, user, task, applyOnElement) => {
+  let totalProcessed = task.task_processed_number;
+  let appliedCount = 0;
+  const errors = [];
+  const callback = async (elements) => {
+    for (let index = 0; index < elements.length; index += 1) {
+      await doYield();
+      const element = elements[index];
+      try {
+        const result = await applyOnElement(element);
+        if (!result.success) {
+          errors.push({ error: result.reason, source: element.internal_id });
+        }
+      } catch (error) {
+        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Workflow operation error, skipping element', { cause: error, id: element.internal_id });
+        errors.push({ error: error.message, source: element.internal_id });
+      }
+    }
+    appliedCount += elements.length;
+    totalProcessed += elements.length;
+    await updateTask(context, task.id, { task_processed_number: totalProcessed });
+  };
+  callback.reportOnWork = async () => {
+    if (!task.work_id) return;
+    if (appliedCount === 0) {
+      await updateProcessedTime(context, user, task.work_id, 'No element to process');
+      return;
+    }
+    await updateExpectationsNumber(context, user, task.work_id, appliedCount);
+    for (let index = 0; index < appliedCount; index += 1) {
+      await reportExpectation(context, user, task.work_id, errors[index]);
+    }
+  };
+  return callback;
+};
+
+export const workflowBypassOperationCallback = (context, user, task, operations) => {
+  const { values, options } = operations[0].context;
+  return workflowOperationCallback(context, user, task, (element) => {
+    return setWorkflowStatus(context, user, element.internal_id, values[0], options.applyTransitionActions);
+  });
+};
+
+export const workflowTransitionOperationCallback = (context, user, task, operations) => {
+  const { eventName, comment, closingReason, shareOrganizationIds, unshareOrganizationIds } = operations[0].context.options;
+  // Same inputs for every element, as the single-entity transition wizard sends them
+  const runtimeParams = {
+    ...(shareOrganizationIds ? { shareOrganizationIds } : {}),
+    ...(unshareOrganizationIds ? { unshareOrganizationIds } : {}),
+  };
+  return workflowOperationCallback(context, user, task, (element) => {
+    return triggerWorkflowEvent(context, user, element.internal_id, eventName, comment?.trim() || undefined, runtimeParams, closingReason?.trim() || undefined);
+  });
+};
+
 const computeOperationCallback = async (context, user, task, actionType, operations) => {
   // Handle specific case of adding elements in container
   if (actionType === 'KNOWLEDGE_CONTAINER') {
@@ -607,6 +707,12 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   if (actionType === ACTION_TYPE_REMOVE_CUSTOM_FIELD_VALUES) {
     return customFieldValuesRemoveOperationCallback(context, user, task, operations);
   }
+  if (actionType === ACTION_TYPE_WORKFLOW_BYPASS) {
+    return workflowBypassOperationCallback(context, user, task, operations);
+  }
+  if (actionType === ACTION_TYPE_WORKFLOW_TRANSITION) {
+    return workflowTransitionOperationCallback(context, user, task, operations);
+  }
   // Handle specific sharing operation, as container must share inner object
   if (isShareAction(actionType) || isUnshareAction(actionType)) {
     return sharingOperationCallback(context, user, task, actionType, operations);
@@ -615,7 +721,7 @@ const computeOperationCallback = async (context, user, task, actionType, operati
   return standardOperationCallback(context, user, task, actionType, operations);
 };
 
-const workerTaskHandler = async (context, user, task, actionType, operations) => {
+export const workerTaskHandler = async (context, user, task, actionType, operations) => {
   // Generate the right callback
   const callback = await computeOperationCallback(context, user, task, actionType, operations);
   // Handle queries and list
@@ -633,6 +739,14 @@ const workerTaskHandler = async (context, user, task, actionType, operations) =>
   if (task.type === TASK_TYPE_RULE) {
     // Task rule is enlist step by step
     await taskRule(context, user, task, callback);
+  }
+  // Elements can have nothing to apply (e.g. a custom field their type does not carry): when the whole task sent
+  // nothing to the workers, its work is completed here, otherwise it would stay in progress
+  if (task.work_id && callback.hasQueuedWork?.() === false) {
+    await updateProcessedTime(context, user, task.work_id, 'No change to apply');
+  }
+  if (callback.reportOnWork) {
+    await callback.reportOnWork();
   }
   return updateTask(context, task.id, { completed: true });
 };
@@ -654,7 +768,7 @@ const handleTaskMigrationToWorker = async (context, task) => {
   return updatedTask;
 };
 
-const taskHandlerGenerator = (context) => {
+export const taskHandlerGenerator = (context) => {
   return async (rawTask) => {
     const initTask = { ...rawTask };
     const task = await handleTaskMigrationToWorker(context, initTask);
@@ -697,6 +811,12 @@ const taskHandlerGenerator = (context) => {
       // Support specific container add operation
       if (action.context?.field === 'container-object') {
         return 'KNOWLEDGE_CONTAINER';
+      }
+      if (isWorkflowBypassAction(action)) {
+        return ACTION_TYPE_WORKFLOW_BYPASS;
+      }
+      if (isWorkflowTransitionAction(action)) {
+        return ACTION_TYPE_WORKFLOW_TRANSITION;
       }
       // Support generic knowledge
       if ([ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_REMOVE].includes(action.type)) {

@@ -5,7 +5,7 @@ import { fullEntitiesList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { patchAttribute } from '../database/middleware';
-import type { BasicStoreEntityConnector } from '../types/connector';
+import type { BasicStoreEntityConnector } from '../modules/connector/connector-types';
 import openCtiManifest from '../__generated__/opencti-manifest.json';
 import type { CatalogContract, CatalogDefinition } from '../modules/catalog/catalog-types';
 import { mapContractDtoV0ToContractEntityFields } from '../modules/catalog/catalog-domain';

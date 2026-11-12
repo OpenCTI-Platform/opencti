@@ -179,7 +179,7 @@ describe('sessionLogin — must return null, not the session token', () => {
       headers: {},
       header: () => undefined,
       socket: { remoteAddress: '127.0.0.1' },
-      session: { user: null as any, session_provider: null as any, save: vi.fn() },
+      session: { user: null as any, session_provider: null as any, regenerate: vi.fn((callback: (err: unknown) => void) => callback(null)), save: vi.fn() },
     },
   } as any;
 

@@ -3,7 +3,7 @@ import Dialog from '@common/dialog/Dialog';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';

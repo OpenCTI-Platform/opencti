@@ -12,8 +12,7 @@ import {
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import ContainerStixCoreObjectsMapping from '@components/common/containers/ContainerStixCoreObjectsMapping';
-import { ContainerAddStixCoreObjectsLine_node$data } from '@components/common/containers/__generated__/ContainerAddStixCoreObjectsLine_node.graphql';
-import ContainerAddStixCoreObjects from '@components/common/containers/ContainerAddStixCoreObjects';
+import ContainerAddStixCoreObjects, { ContainerAddStixCoreObjectsLine } from '@components/common/containers/ContainerAddStixCoreObjects';
 import {
   ContainerMappingContent_container$data,
   ContainerMappingContent_container$key,
@@ -202,7 +201,7 @@ const ContainerMappingContentComponent: FunctionComponent<
   const LOCAL_STORAGE_KEY = `container-${containerData.id}-mapping`;
   const {
     paginationOptions,
-  } = usePaginationLocalStorage(
+  } = usePaginationLocalStorage<Record<string, unknown>>(
     LOCAL_STORAGE_KEY,
     {
       id: containerData.id,
@@ -290,7 +289,7 @@ const ContainerMappingContentComponent: FunctionComponent<
     setRemovedEntities([...removedEntities, removedEntity.id]);
   };
 
-  const contentMappingData = deserializeObjectB64(content_mapping);
+  const contentMappingData: Record<string, string> = deserializeObjectB64(content_mapping);
   const mappedStrings = Object.keys(contentMappingData);
   const mappedStringsCount = countMappingMatch(mappedStrings);
 
@@ -391,7 +390,7 @@ const ContainerMappingContentComponent: FunctionComponent<
     }
   };
 
-  const addMapping = (stixCoreObject: ContainerAddStixCoreObjectsLine_node$data) => {
+  const addMapping = (stixCoreObject: ContainerAddStixCoreObjectsLine) => {
     const newMappingData = {
       ...contentMappingData,
       [selectedText.toLowerCase()]: stixCoreObject.standard_id,
@@ -438,11 +437,13 @@ const ContainerMappingContentComponent: FunctionComponent<
     <>
       <Grid
         container
-        alignItems="stretch"
         columnSpacing={2}
-        mb={2}
+        sx={{
+          alignItems: 'stretch',
+          mb: 2,
+        }}
       >
-        <Grid item xs={6} sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Grid sx={{ display: 'flex', flexDirection: 'column' }} size={6}>
           <StixCoreObjectMappableContent
             containerData={containerData}
             handleTextSelection={handleTextSelection}
@@ -454,7 +455,7 @@ const ContainerMappingContentComponent: FunctionComponent<
           />
         </Grid>
 
-        <Grid item xs={6} sx={{ display: 'flex', flexDirection: 'column' }}>
+        <Grid sx={{ display: 'flex', flexDirection: 'column' }} size={6}>
           <Card>
             <ContainerStixCoreObjectsMappingHeader
               suggestedMappingData={suggestedMappingData}

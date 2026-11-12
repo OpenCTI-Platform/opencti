@@ -15,6 +15,8 @@ import {
   elIndexGetAlias,
   elLoadById,
   elPaginate,
+  elPlatformIndices,
+  elPlatformTemplates,
   elReindexElements,
   ES_INDEX_PATTERN_SUFFIX,
   ES_MAX_PAGINATION,
@@ -71,6 +73,14 @@ describe('Elasticsearch configuration test', () => {
     expect(numberOfIndices).toEqual(1);
     expect(Object.entries(internalObjectsIndexAlias)[0][0]).toEqual(`${INDEX_INTERNAL_OBJECTS}${ES_INDEX_PATTERN_SUFFIX}`);
     expect(Object.entries(internalObjectsIndexAlias)[0][1].aliases).toEqual({ [INDEX_INTERNAL_OBJECTS]: {} });
+  });
+  it('should list platform indices', async () => {
+    const indices = await elPlatformIndices();
+    expect(indices.map((i) => i.index)).toContain(`${INDEX_INTERNAL_OBJECTS}${ES_INDEX_PATTERN_SUFFIX}`);
+  });
+  it('should list platform templates', async () => {
+    const templates = await elPlatformTemplates();
+    expect(templates.map((t) => t.name)).toContain(INDEX_INTERNAL_OBJECTS);
   });
 });
 

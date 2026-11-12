@@ -1089,7 +1089,7 @@ const StixRelationshipsTimeline = ({
   refreshRate = null,
 }: StixRelationshipsTimelineProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsTimelineStixRelationshipQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsTimelineStixRelationshipQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -1108,8 +1108,7 @@ const StixRelationshipsTimeline = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

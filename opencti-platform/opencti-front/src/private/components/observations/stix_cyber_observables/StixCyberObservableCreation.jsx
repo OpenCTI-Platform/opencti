@@ -4,12 +4,11 @@ import Dialog from '@common/dialog/Dialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import Drawer from '@components/common/drawer/Drawer';
 import { Add } from '@mui/icons-material';
-import Alert from '@mui/lab/Alert';
+import Alert from '@mui/material/Alert';
 import { ListItemButton, Stack } from '@mui/material';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
-import { useTheme } from '@mui/styles';
-import makeStyles from '@mui/styles/makeStyles';
+import { styled, useTheme } from '@mui/material/styles';
 import { Field, Form, Formik } from 'formik';
 import PropTypes from 'prop-types';
 import { dissoc, filter, fromPairs, includes, map, pipe, pluck, propOr, toPairs } from 'ramda';
@@ -35,6 +34,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
+import { useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import useMarkdownCreationFilesInput from '../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../utils/store';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -46,25 +46,12 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { stixCyberObservablesLinesAttributesQuery, stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-  createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-}));
+const ContextualCreateButton = styled(IconButton)({
+  position: 'fixed',
+  bottom: 30,
+  right: 30,
+  zIndex: 2000,
+});
 
 const stixCyberObservableMutation = graphql`
   mutation StixCyberObservableCreationMutation(
@@ -267,9 +254,9 @@ const StixCyberObservableCreation = ({
   onCompleted = () => {},
   stixCyberObservableTypes = undefined,
 }) => {
-  const classes = useStyles();
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+  const { isDeferredMode } = useDeferredCreation();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { booleanAttributes, dateAttributes, multipleAttributes, numberAttributes, ignoredAttributes } = useAttributes();
   const [status, setStatus] = useState({ open: false, type: type ?? null });
@@ -1000,13 +987,15 @@ const StixCyberObservableCreation = ({
                           : undefined
                         }
                       />
-                      <Field
-                        component={SwitchField}
-                        type="checkbox"
-                        name="createIndicator"
-                        label={t_i18n('Create an indicator from this observable')}
-                        containerstyle={{ marginTop: 20 }}
-                      />
+                      {!isDeferredMode && (
+                        <Field
+                          component={SwitchField}
+                          type="checkbox"
+                          name="createIndicator"
+                          label={t_i18n('Create an indicator from this observable')}
+                          containerstyle={{ marginTop: 20 }}
+                        />
+                      )}
                       <FormButtonContainer>
                         {!isFromBulkRelation && (
                           <Button
@@ -1093,21 +1082,26 @@ const StixCyberObservableCreation = ({
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {!speeddial && (
-          <IconButton
+          <ContextualCreateButton
             onClick={handleOpen}
             aria-label="Add"
-            className={classes.createButtonContextual}
             variant="tertiary"
             size="small"
           >
             <Add />
-          </IconButton>
+          </ContextualCreateButton>
         )}
         <Dialog
           open={speeddial ? open : status.open}
           onClose={speeddial ? handleClose : localHandleClose}
           title={(
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Stack
+              direction="row"
+              sx={{
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
               {t_i18n('Create an observable')}
               {!isFromBulkRelation && status.type
                 ? (

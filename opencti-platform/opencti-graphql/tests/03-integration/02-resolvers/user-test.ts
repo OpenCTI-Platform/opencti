@@ -1,6 +1,8 @@
 import gql from 'graphql-tag';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { elLoadById } from '../../../src/database/engine';
+import bcrypt from 'bcryptjs';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { elLoadById, elRawUpdateByQuery } from '../../../src/database/engine';
+import { READ_INDEX_INTERNAL_OBJECTS } from '../../../src/database/utils';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import {
@@ -23,7 +25,7 @@ import {
 import { queryAsAdmin } from '../../utils/testQueryHelper';
 import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
-import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
+import { SYSTEM_USER, VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
   queryAsAdminWithError,
   queryAsAdminWithSuccess,
@@ -38,7 +40,14 @@ import {
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { entitiesCounter } from '../../02-dataInjection/01-dataCount/entityCountHelper';
-import { clearAllUsersPasswordValidUntil, adjustAllUsersPasswordValidUntil, isPasswordExpired, computePasswordValidUntilFromPolicy } from '../../../src/modules/user/user-domain';
+import {
+  clearAllUsersPasswordValidUntil,
+  adjustAllUsersPasswordValidUntil,
+  isPasswordExpired,
+  computePasswordValidUntilFromPolicy,
+  findById as findUserById,
+  meEditField,
+} from '../../../src/modules/user/user-domain';
 import { getSettingsFromDatabase } from '../../../src/domain/settings';
 import { updateLocalAuth } from '../../../src/domain/setting-auth';
 import type { BasicStoreSettings } from '../../../src/types/settings';
@@ -733,7 +742,7 @@ describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await queryAsUser(USER_EDITOR, { query: LIST_MEMBERS_QUERY, variables: {} });
     const usersEdges = queryResult.data?.members.edges as { node: Member }[];
-    expect(usersEdges.length).toEqual(23);
+    expect(usersEdges.length).toEqual(25);
     // +1 = Plus admin user minus 2 users in PLATFORM_ORGANIZATION
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1 - 2);
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(entitiesCounter.Group);
@@ -865,6 +874,18 @@ describe('User has no settings capability and is organization admin query behavi
     }
   `;
 
+  const GROUPS_QUERY = gql`
+    query OrganizationAdminGroups {
+      groups {
+        edges {
+          node {
+            id
+          }
+        }
+      }
+    }
+  `;
+
   const ORGANIZATION_DELETE_QUERY = gql`
         mutation UserOrganizationDeleteMutation(
             $id: ID!
@@ -891,6 +912,24 @@ describe('User has no settings capability and is organization admin query behavi
     mutation UserRelationDeleteParticipateTo($id: ID!, $toId: StixRef!) {
       userEdit(id: $id) {
         relationDelete(toId: $toId, relationship_type: "participate-to") {
+          id
+        }
+      }
+    }
+  `;
+  const USER_RELATION_ADD_MEMBER_OF_QUERY = gql`
+    mutation UserRelationAddMemberOf($id: ID!, $toId: ID!) {
+      userEdit(id: $id) {
+        relationAdd(input: { toId: $toId, relationship_type: "member-of" }) {
+          id
+        }
+      }
+    }
+  `;
+  const USER_RELATION_DELETE_MEMBER_OF_QUERY = gql`
+    mutation UserRelationDeleteMemberOf($id: ID!, $toId: StixRef!) {
+      userEdit(id: $id) {
+        relationDelete(toId: $toId, relationship_type: "member-of") {
           id
         }
       }
@@ -944,6 +983,10 @@ describe('User has no settings capability and is organization admin query behavi
     const capabilities = editorUserQueryResult.data?.user.capabilities ?? [];
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
+  it('should list no group when its administrated organizations have no grantable group', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: GROUPS_QUERY, variables: {} });
+    expect(queryResult.data?.groups.edges).toEqual([]);
+  });
   it('should user created', async () => {
     testOrganizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     organizationsIds.push(testOrganizationId);
@@ -979,6 +1022,11 @@ describe('User has no settings capability and is organization admin query behavi
     expect(user.data?.userAdd).not.toBeNull();
     expect(user.data?.userAdd.name).toEqual('User');
     userInternalId = user.data?.userAdd.id;
+  });
+  it('should list only the grantable groups of its administrated organizations', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: GROUPS_QUERY, variables: {} });
+    const groupsIds = queryResult.data?.groups.edges.map((e: { node: { id: string } }) => e.node.id);
+    expect(groupsIds).toEqual([amberGroupId]);
   });
   it('should not create user in an organization the org admin does not administrate', async () => {
     const notAdministratedOrganizationId = await getOrganizationIdByName(PLATFORM_ORGANIZATION.name);
@@ -1200,6 +1248,36 @@ describe('User has no settings capability and is organization admin query behavi
     });
     expect(queryResult.data.userEdit.organizationDelete.id).toEqual(userEditorId);
   });
+  it('should not remove user from a group not grantable by the administrated organization', async () => {
+    const notGrantableGroupId = await getGroupIdByName(GREEN_GROUP.name);
+    await queryAsAdminWithSuccess({
+      query: USER_RELATION_ADD_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+
+    // the membership must still be there
+    const userQueryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
+    const groupsIds = userQueryResult.data?.user.groups.edges.map((e: { node: { id: string } }) => e.node.id);
+    expect(groupsIds).toContain(notGrantableGroupId);
+
+    // clean up
+    await queryAsAdminWithSuccess({
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: notGrantableGroupId },
+    });
+  });
+  it('should remove user from a group grantable by the administrated organization', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: USER_RELATION_DELETE_MEMBER_OF_QUERY,
+      variables: { id: userInternalId, toId: amberGroupId },
+    });
+    expect(queryResult.data.userEdit.relationDelete.id).toEqual(userInternalId);
+  });
   it('should user deleted', async () => {
     // Delete user
     await queryAsUser(USER_EDITOR, {
@@ -1257,6 +1335,38 @@ describe('meUser specific resolvers', async () => {
       variables,
     });
     expect(queryResult.data?.meEdit.language).toEqual('en-us');
+  });
+
+  it('User should update the date and time display of tables', async () => {
+    const ME_EDIT_DATE_DISPLAY = gql`
+      mutation meEdit($input: [EditInput]!, $password: String) {
+        meEdit(input: $input, password: $password) {
+          id
+          date_format
+          time_format
+        }
+      }
+    `;
+    let queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_EDIT_DATE_DISPLAY,
+      variables: { input: [{ key: 'date_format', value: 'iso' }, { key: 'time_format', value: 'seconds' }] },
+    });
+    expect(queryResult.data?.meEdit.date_format).toEqual('iso');
+    expect(queryResult.data?.meEdit.time_format).toEqual('seconds');
+    // Back to the platform display
+    queryResult = await queryAsUserWithSuccess(USER_EDITOR, {
+      query: ME_EDIT_DATE_DISPLAY,
+      variables: { input: [{ key: 'date_format', value: 'auto' }, { key: 'time_format', value: 'auto' }] },
+    });
+    expect(queryResult.data?.meEdit.date_format).toEqual('auto');
+    expect(queryResult.data?.meEdit.time_format).toEqual('auto');
+  });
+
+  it('User should NOT update the time display of tables with an unsupported value', async () => {
+    await queryAsUserIsExpectedError(USER_EDITOR, {
+      query: ME_EDIT,
+      variables: { input: [{ key: 'time_format', value: 'hours' }] },
+    }, 'Unsupported time format');
   });
 
   it('User should NOT update password without providing proper current password', async () => {
@@ -1508,6 +1618,63 @@ describe('Service account User coverage', async () => {
       },
     }, 'Cannot update password for Service account');
   });
+  it('should turn service account into user when the password comes first', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: [{ key: 'password', value: ['toto'] }, { key: 'user_service_account', value: [false] }],
+      },
+    });
+    const { userEdit } = queryResult.data;
+    expect(userEdit.fieldPatch.user_service_account).toEqual(false);
+    // the generated password is kept, the one sent alongside is dropped
+    const userUpdated: any = await storeLoadById(testContext, ADMIN_USER, userInternalId, ENTITY_TYPE_USER);
+    expect(userUpdated.password).toBeDefined();
+    expect(bcrypt.compareSync('toto', userUpdated.password)).toBe(false);
+  });
+  it('should turn user into service account when the password comes first', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: [{ key: 'password', value: ['toto'] }, { key: 'user_service_account', value: [true] }],
+      },
+    });
+    const { userEdit } = queryResult.data;
+    expect(userEdit.fieldPatch.user_service_account).toEqual(true);
+    const userUpdated: any = await storeLoadById(testContext, ADMIN_USER, userInternalId, ENTITY_TYPE_USER);
+    expect(userUpdated.password).toBeUndefined();
+  });
+  it('should change the password of a user without user_service_account when false is sent with it', async () => {
+    // Users created before service accounts existed have no user_service_account: false is not a switch for them
+    const created = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: { name: 'Legacy user', password: 'legacy-pass-1', user_email: 'legacy_user@mail.com' } },
+    });
+    const legacyUserId = created.data.userAdd.id;
+    await elRawUpdateByQuery({
+      index: [READ_INDEX_INTERNAL_OBJECTS],
+      refresh: true,
+      wait_for_completion: true,
+      body: {
+        script: { source: "ctx._source.remove('user_service_account')" },
+        query: { term: { 'internal_id.keyword': { value: legacyUserId } } },
+      },
+    });
+    const legacyUser: any = await storeLoadById(testContext, ADMIN_USER, legacyUserId, ENTITY_TYPE_USER);
+    expect(legacyUser.user_service_account).toBeUndefined();
+    await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: legacyUserId,
+        input: [{ key: 'password', value: ['legacy-pass-2'] }, { key: 'user_service_account', value: [false] }],
+      },
+    });
+    const updated: any = await storeLoadById(testContext, ADMIN_USER, legacyUserId, ENTITY_TYPE_USER);
+    expect(bcrypt.compareSync('legacy-pass-2', updated.password)).toBe(true);
+    await queryAsAdminWithSuccess({ query: DELETE_QUERY, variables: { id: legacyUserId } });
+  });
   it('should service account user deleted', async () => {
     // Delete the users
     for (let i = 0; i < userToDeleteIds.length; i += 1) {
@@ -1520,6 +1687,58 @@ describe('Service account User coverage', async () => {
       const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userId } });
       expect(queryResult.data.user).toBeNull();
     }
+  });
+});
+
+describe('Service account conversion with password policy', () => {
+  let settings: BasicStoreSettings;
+  let serviceAccountId: string;
+  const resetPolicy = {
+    enabled: true,
+    password_policy_max_length: 0,
+    password_policy_min_length: 0,
+    password_policy_min_lowercase: 0,
+    password_policy_min_numbers: 0,
+    password_policy_min_symbols: 0,
+    password_policy_min_uppercase: 0,
+    password_policy_min_words: 0,
+    password_policy_validity_days: 0,
+  };
+
+  beforeAll(async () => {
+    settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+    const serviceAccount = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: { name: 'Service account with policy', user_service_account: true, groups: [], objectOrganization: [] } },
+    });
+    serviceAccountId = serviceAccount.data.userAdd.id;
+    // Password policy set after the service account creation
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      ...resetPolicy,
+      password_policy_min_length: 12,
+      password_policy_min_uppercase: 4,
+      password_policy_min_symbols: 2,
+      password_policy_min_words: 3,
+      password_policy_validity_days: 20,
+    });
+  });
+
+  afterAll(async () => {
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, resetPolicy);
+    await queryAsAdminWithSuccess({ query: DELETE_QUERY, variables: { id: serviceAccountId } });
+  });
+
+  it('should turn service account into user with a password matching the policy', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: UPDATE_QUERY,
+      variables: { id: serviceAccountId, input: { key: 'user_service_account', value: [false] } },
+    });
+    expect(queryResult.data.userEdit.fieldPatch.user_service_account).toEqual(false);
+    const convertedUser: any = await storeLoadById(testContext, ADMIN_USER, serviceAccountId, ENTITY_TYPE_USER);
+    expect(convertedUser.password).toBeDefined();
+    // Password validity policy must apply to the generated password
+    expect(convertedUser.password_valid_until).toBeTruthy();
+    expect(new Date(convertedUser.password_valid_until).getTime()).toBeGreaterThan(DateTime.now().plus({ days: 19 }).toMillis());
   });
 });
 
@@ -1652,9 +1871,9 @@ describe('Password expiration - computePasswordValidUntilFromPolicy', () => {
       password_policy_min_words: 0,
       password_policy_validity_days: 20,
     });
-    const before = DateTime.now().plus({ days: 20 }).toUTC();
+    const before = DateTime.utc().plus({ days: 20 });
     const result = await computePasswordValidUntilFromPolicy(testContext);
-    const after = DateTime.now().plus({ days: 20 }).toUTC();
+    const after = DateTime.utc().plus({ days: 20 });
 
     expect(result).not.toBeNull();
     const resultDate = DateTime.fromISO(result!);
@@ -2272,5 +2491,198 @@ describe('Bookmarks API', () => {
     // Verify the other bookmarks are still intact
     expect(idsAfter).toContain(malware1Id);
     expect(idsAfter).toContain(malware2Id);
+  });
+});
+
+describe('Password history', () => {
+  const PASSWORD_REUSED_MESSAGE = 'This password has already been used recently. Please choose a different one.';
+  const PASSWORD_THROTTLED_MESSAGE = 'Too many password change attempts. Please try again in a few minutes.';
+  let settings: BasicStoreSettings;
+  const createdUserIds: string[] = [];
+
+  const setHistoryCount = async (count: number) => {
+    await updateLocalAuth(testContext, ADMIN_USER, settings.id, {
+      enabled: true,
+      password_policy_max_length: 0,
+      password_policy_min_length: 0,
+      password_policy_min_lowercase: 0,
+      password_policy_min_numbers: 0,
+      password_policy_min_symbols: 0,
+      password_policy_min_uppercase: 0,
+      password_policy_min_words: 0,
+      password_policy_validity_days: 0,
+      password_policy_history_count: count,
+    });
+  };
+
+  const createUser = async (suffix: string, password: string) => {
+    const result = await queryAsAdminWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: { name: `Password history ${suffix}`, password, user_email: `password_history_${suffix}@mail.com` } },
+    });
+    const id = result.data.userAdd.id;
+    createdUserIds.push(id);
+    return id;
+  };
+
+  const setPassword = (id: string, password: string) => queryAsAdmin({
+    query: UPDATE_QUERY,
+    variables: { id, input: [{ key: 'password', value: [password] }] },
+  });
+
+  beforeAll(async () => {
+    settings = await getSettingsFromDatabase(testContext) as unknown as BasicStoreSettings;
+  });
+
+  afterAll(async () => {
+    await setHistoryCount(0);
+    for (let i = 0; i < createdUserIds.length; i += 1) {
+      await queryAsAdminWithSuccess({ query: DELETE_QUERY, variables: { id: createdUserIds[i] } });
+    }
+  });
+
+  it('refuses the current password and the ones still in the window, then throttles the account', async () => {
+    const id = await createUser('window', 'History-Pass-1!');
+    await setHistoryCount(2);
+    // The current password is one of the N
+    const current = await setPassword(id, 'History-Pass-1!');
+    expect(current.errors?.[0].message).toBe(PASSWORD_REUSED_MESSAGE);
+    expect(current.errors?.[0].extensions?.code).toBe('PASSWORD_REUSED');
+    expect((await setPassword(id, 'History-Pass-2!')).errors).toBeUndefined();
+    // Window: Pass-2 (current) and Pass-1
+    expect((await setPassword(id, 'History-Pass-1!')).errors?.[0].extensions?.code).toBe('PASSWORD_REUSED');
+    expect((await setPassword(id, 'History-Pass-3!')).errors).toBeUndefined();
+    // Window: Pass-3 and Pass-2, so Pass-1 is allowed again
+    expect((await setPassword(id, 'History-Pass-1!')).errors).toBeUndefined();
+    // Five counted submissions in the window: the sixth is refused before any check, and before any hash
+    const hashSpy = vi.spyOn(bcrypt, 'hashSync');
+    try {
+      const throttled = await setPassword(id, 'History-Pass-6!');
+      expect(throttled.errors?.[0].message).toBe(PASSWORD_THROTTLED_MESSAGE);
+      expect(throttled.errors?.[0].extensions?.code).toBe('PASSWORD_CHANGE_THROTTLED');
+      expect(hashSpy).not.toHaveBeenCalled();
+    } finally {
+      hashSpy.mockRestore();
+    }
+    // The administrator used up their own attempts only: the user can still change their password
+    const self = await findUserById(testContext, SYSTEM_USER, id);
+    await expect(meEditField(testContext, self, id, [{ key: 'password', value: ['History-Pass-7!'] }], 'History-Pass-1!')).resolves.toBeDefined();
+  });
+
+  // Without the lock, both changes would check and rebuild the same old history: with N = 2, A -> B and
+  // A -> C would both save a history holding only A, and once C won, B could be reused at once.
+  it('keeps both passwords of two changes made at the same moment', async () => {
+    const id = await createUser('concurrent', 'Concurrent-Pass-A!');
+    await setHistoryCount(2);
+    const results = await Promise.all([setPassword(id, 'Concurrent-Pass-B!'), setPassword(id, 'Concurrent-Pass-C!')]);
+    results.forEach((result) => expect(result.errors).toBeUndefined());
+    // Whichever was saved last is the current password, and the other one is in the history
+    expect((await setPassword(id, 'Concurrent-Pass-B!')).errors?.[0].extensions?.code).toBe('PASSWORD_REUSED');
+    expect((await setPassword(id, 'Concurrent-Pass-C!')).errors?.[0].extensions?.code).toBe('PASSWORD_REUSED');
+  });
+
+  it('stores only bcrypt hashes, N - 1 at most, and trims them when N is lowered', async () => {
+    const id = await createUser('trim', 'Trim-Pass-1!');
+    await setHistoryCount(4);
+    await setPassword(id, 'Trim-Pass-2!');
+    await setPassword(id, 'Trim-Pass-3!');
+    await setPassword(id, 'Trim-Pass-4!');
+    const before: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    expect(before.password_history).toHaveLength(3);
+    before.password_history.forEach((hash: string) => expect(hash).toMatch(/^\$2[abxy]?\$\d{2}\$/));
+    expect(JSON.stringify(before.password_history)).not.toContain('Trim-Pass');
+    await setHistoryCount(2);
+    const after: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    expect(after.password_history).toHaveLength(1);
+    expect(after.password_history[0]).toEqual(before.password_history[0]);
+  });
+
+  it('deletes every history when N is set back to 0, and then allows reuse', async () => {
+    const id = await createUser('reset', 'Reset-Pass-1!');
+    await setHistoryCount(3);
+    await setPassword(id, 'Reset-Pass-2!');
+    await setHistoryCount(0);
+    const stored: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    expect(stored.password_history ?? []).toHaveLength(0);
+    expect((await setPassword(id, 'Reset-Pass-2!')).errors).toBeUndefined();
+    expect((await setPassword(id, 'Reset-Pass-1!')).errors).toBeUndefined();
+  });
+
+  it('refuses a password sent with another field while the history applies, and saves nothing', async () => {
+    const id = await createUser('mixed', 'Mixed-Pass-1!');
+    await setHistoryCount(1);
+    const before: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    await queryAsAdminWithError({
+      query: UPDATE_QUERY,
+      variables: { id, input: [{ key: 'password', value: ['Mixed-Pass-2!'] }, { key: 'language', value: ['xx'] }] },
+    }, 'The password must be changed on its own');
+    const after: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    expect(after.password).toEqual(before.password);
+    await setHistoryCount(0);
+  });
+
+  // Without a history there is nothing to learn from a refusal, so existing API calls keep working
+  it('accepts a password sent with another field while the history does not apply', async () => {
+    const id = await createUser('mixed-off', 'Mixed-Off-Pass-1!');
+    await setHistoryCount(0);
+    const before: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    const result = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id, input: [{ key: 'password', value: ['Mixed-Off-Pass-2!'] }, { key: 'language', value: ['fr-fr'] }] },
+    });
+    expect(result.errors).toBeUndefined();
+    const after: any = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_USER);
+    expect(after.password).not.toEqual(before.password);
+    expect(after.language).toEqual('fr-fr');
+  });
+
+  it('refuses any direct write of the history and never exposes it', async () => {
+    const id = await createUser('direct', 'Direct-Pass-1!');
+    await queryAsAdminWithError({
+      query: UPDATE_QUERY,
+      variables: { id, input: [{ key: 'password_history', value: [] }] },
+    }, undefined, FORBIDDEN_ACCESS);
+    const exposed = await queryAsAdmin({ query: gql`query user($id: String!) { user(id: $id) { id password_history } }`, variables: { id } });
+    expect(exposed.errors?.length).toBeGreaterThan(0);
+  });
+
+  it('refuses a reused password on a profile change', async () => {
+    await setHistoryCount(1);
+    const ME_EDIT_HISTORY = gql`
+      mutation meEdit($input: [EditInput]!, $password: String) {
+        meEdit(input: $input, password: $password) { id }
+      }
+    `;
+    await queryAsUserIsExpectedError(USER_EDITOR, {
+      query: ME_EDIT_HISTORY,
+      variables: { input: [{ key: 'password', value: [USER_EDITOR.password] }], password: USER_EDITOR.password },
+    }, PASSWORD_REUSED_MESSAGE, 'PASSWORD_REUSED');
+    await setHistoryCount(0);
+  });
+
+  it('refuses to save the count through the generic settings mutation', async () => {
+    const SETTINGS_EDIT = gql`
+      mutation settingsEdit($id: ID!, $input: [EditInput]!) {
+        settingsEdit(id: $id) { fieldPatch(input: $input) { id } }
+      }
+    `;
+    await queryAsAdminWithError({
+      query: SETTINGS_EDIT,
+      variables: { id: settings.id, input: [{ key: 'password_policy_history_count', value: [100] }] },
+    }, 'The password history count can only be changed with the local authentication settings');
+  });
+
+  it('refuses an out-of-range count in the local authentication settings', async () => {
+    await expect(setHistoryCount(25)).rejects.toThrow('between 0 and 24');
+  });
+
+  it('gives the count to the settings screens and to the login page', async () => {
+    await setHistoryCount(3);
+    const result = await queryAsAdminWithSuccess({
+      query: gql`query { settings { password_policy_history_count } publicSettings { password_policy_history_count } }`,
+    });
+    expect(result.data?.settings.password_policy_history_count).toBe(3);
+    expect(result.data?.publicSettings.password_policy_history_count).toBe(3);
+    await setHistoryCount(0);
   });
 });

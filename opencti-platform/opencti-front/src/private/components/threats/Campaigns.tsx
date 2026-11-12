@@ -19,7 +19,7 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY = 'campaigns';
@@ -93,7 +93,7 @@ const Campaigns = () => {
         numberOfElements={numberOfElements}
         handleChangeView={helpers.handleChangeView}
         additionalHeaderButtons={[
-          <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+          <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}>
             <StixCoreObjectForms entityType="Campaign" />
           </Security>,
         ]}
@@ -114,11 +114,7 @@ const Campaigns = () => {
                 {Array(20)
                   .fill(0)
                   .map((_, idx) => (
-                    <Grid
-                      item
-                      xs={3}
-                      key={idx}
-                    >
+                    <Grid key={idx} size={3}>
                       <GenericAttackCardDummy />
                     </Grid>
                   ))}
@@ -184,7 +180,7 @@ const Campaigns = () => {
               </ToggleButton>,
             ]}
             additionalHeaderButtons={[
-              <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE]}>
+              <Security key="form-intake" needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE]} capabilitiesInDraft={[KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE]}>
                 <StixCoreObjectForms entityType="Campaign" />
               </Security>,
             ]}

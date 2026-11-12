@@ -7,6 +7,8 @@ import { alpha, darken, lighten } from '@mui/material';
 import { FDS } from './fds-tokens.generated';
 
 const EE_COLOR = '#00f18d';
+// Focus ring of the toggle buttons, also drawn by the AI search caret (palette.border.focus).
+const FOCUS_RING_COLOR = '#BDFFED';
 
 export const THEME_DARK_DEFAULT_BACKGROUND = FDS.colors.dark['--bg-elevation-default-layer-0'];
 const THEME_DARK_DEFAULT_BODY_END_GRADIENT = FDS.colors.dark['--bg-elevation-default-layer-0-gradient'];
@@ -60,6 +62,7 @@ const ThemeDark = (
     secondary: { main: secondary || THEME_DARK_DEFAULT_SECONDARY },
     gradient: { main: '#00f18d' },
     border: {
+      focus: FOCUS_RING_COLOR,
       primary: hexToRGB((primary || THEME_DARK_DEFAULT_PRIMARY), 0.3),
       secondary: '#424751',
       pagination: hexToRGB('#ffffff', 0.5),
@@ -436,7 +439,7 @@ const ThemeDark = (
 
             '&:focus-visible': {
               outline: 'none',
-              boxShadow: '0 0 0 2px #BDFFED',
+              boxShadow: `0 0 0 2px ${FOCUS_RING_COLOR}`,
             },
 
             '&.Mui-selected': {
@@ -543,6 +546,66 @@ const ThemeDark = (
         },
       },
     },
+    // The date pickers render their own field, not MuiTextField / MuiOutlinedInput:
+    // the same paint and geometry as those two, so a date reads as one more
+    // outlined field.
+    MuiPickersTextField: {
+      styleOverrides: {
+        root: {
+          color: text_color,
+          '& .MuiFormLabel-root:not(.MuiInputLabel-shrink):not(.Mui-error)': {
+            color: '#AFB0B6',
+          },
+        },
+      },
+    },
+    MuiPickersInputBase: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          color: text_color,
+          '&.Mui-disabled': {
+            color: theme.palette.text.disabled,
+          },
+        }),
+      },
+    },
+    MuiPickersOutlinedInput: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'var(--bg-input-default)',
+          borderRadius: 'var(--radius-sm)',
+          minHeight: 36,
+          // The sections carry the left padding, as the <input> did.
+          paddingLeft: 0,
+          '& .MuiPickersOutlinedInput-notchedOutline': {
+            borderColor: 'transparent',
+          },
+          '&:hover .MuiPickersOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-hover)',
+          },
+          // Matches the picker's own focused rule, which a plain `.Mui-focused` would not outrank.
+          '&.Mui-focused:not(.Mui-error) .MuiPickersOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-focus)',
+          },
+          '&.Mui-error .MuiPickersOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-input-error)',
+          },
+          '&.Mui-disabled': {
+            backgroundColor: 'transparent',
+            '& .MuiPickersOutlinedInput-notchedOutline': {
+              borderColor: 'var(--border-elevation-disabled)',
+            },
+          },
+        },
+        sectionsContainer: {
+          padding: '8px 8px 8px 12px',
+          // MUI's own 182px widens every date field. Short formats keep 150px, long ones grow
+          // with their text instead of being cut by the container's overflow: hidden.
+          width: 'auto',
+          minWidth: 150,
+        },
+      },
+    },
     MuiSelect: {
       defaultProps: {
         // Every remaining MUI field is outlined, so it can carry the library
@@ -632,6 +695,12 @@ const ThemeDark = (
           },
           // Paragraph spacing belongs between blocks, not against the edges of
           // the field, where it reads as a stray gap now that the editor is painted.
+          // Keeps the edited content inside the editor box whatever its inline
+          // styles (fixed positioning, transform, negative margins...), as
+          // HtmlDisplay does for the read-only rendering.
+          '.rich-text-editor-wrapper .ProseMirror': {
+            contain: 'paint',
+          },
           '.rich-text-editor-wrapper .ProseMirror > :first-child': {
             marginTop: 0,
           },
@@ -755,6 +824,15 @@ const ThemeDark = (
       styleOverrides: {
         root: {
           color: text_color,
+        },
+      },
+    },
+    MuiListItemIcon: {
+      styleOverrides: {
+        root: {
+          // Material UI 9 lowered it to 36px; the lists are laid out on the former 56px.
+          // MenuItem keeps its own 36px, which outranks this rule.
+          minWidth: 56,
         },
       },
     },

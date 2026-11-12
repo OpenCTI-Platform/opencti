@@ -4,13 +4,13 @@ import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, resetCa
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
-import { FilterMode, OrderingMode } from '../generated/graphql';
+import { OrderingMode } from '../generated/graphql';
 import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { stixLoadByIds } from '../database/middleware';
 import { type EntityOptions, internalFindByIds, fullEntitiesList, fullRelationsList } from '../database/middleware-loader';
 import { CACHE_RESET_TOPIC, pubSubSubscription } from '../database/redis';
-import { connectors as findConnectors } from '../database/repository';
+import { connectorsForCache } from '../modules/connector/connector-domain';
 import { buildCompleteUsers, resolveUserById } from '../modules/user/user-domain';
 import { STATIC_NOTIFIERS } from '../modules/notifier/notifier-statics';
 import type { BasicStoreEntityNotifier } from '../modules/notifier/notifier-types';
@@ -48,15 +48,16 @@ import { ENTITY_TYPE_DECAY_RULE, type BasicStoreEntityDecayRule } from '../modul
 import { isNotEmptyField } from '../database/utils';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../modules/publicDashboard/publicDashboard-types';
 import { getAllowedMarkings } from '../modules/publicDashboard/publicDashboard-domain';
-import type { BasicStoreEntityConnector } from '../types/connector';
+import type { BasicStoreEntityConnector } from '../modules/connector/connector-types';
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
+import { booleanTrueFilter, emptyFilterGroup } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { fromB64 } from '../utils/base64';
 import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
+import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../modules/ingestionDeduplication/ingestionDeduplicationRule-types';
 import type * as S from '../types/stix-2-1-common';
 import { pushAll } from '../utils/arrayUtil';
 import { ENTITY_TYPE_CUSTOM_FIELD_DEFINITION } from '../modules/customField/custom-field-types';
@@ -102,11 +103,29 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
       .flatMap((config) => [config.filters, config.applyWithFilters])
       .filter((f) => isNotEmptyField(f))
       .flatMap((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)));
-    // IDs from list of PIRs to listen.
-    const playbookInPirFilterIds = configurations
-      .map((config) => config.inPirFilters)
-      .map((f) => (f ?? []).map((i: { value: string }) => i.value))
-      .flat();
+    // IDs from list of PIRs to listen (only for "Listen PIR events" nodes).
+    // inPirFilters is not validated at save time, ignore anything that is not an array of { value }
+    // so a single malformed playbook cannot break the whole resolved filters cache.
+    const playbookInPirFilterIds: string[] = [];
+    for (let index = 0; index < definition.nodes.length; index += 1) {
+      const { inPirFilters } = configurations[index];
+      if (definition.nodes[index].component_id === 'PLAYBOOK_DATA_STREAM_PIR' && inPirFilters !== null && inPirFilters !== undefined) {
+        const inPirFilterIds = (Array.isArray(inPirFilters) ? inPirFilters : [])
+          .map((i: unknown) => (
+            typeof i === 'object' && i !== null && 'value' in i
+              ? i.value
+              : undefined
+          ))
+          .filter((id): id is string => typeof id === 'string' && isNotEmptyField(id));
+        if (!Array.isArray(inPirFilters) || inPirFilterIds.length !== inPirFilters.length) {
+          logApp.warn('[CACHE] Malformed inPirFilters in playbook configuration, invalid values are ignored', {
+            playbook_id: instance.internal_id,
+            node_id: definition.nodes[index].id,
+          });
+        }
+        pushAll(playbookInPirFilterIds, inPirFilterIds);
+      }
+    }
     pushAll(filteringIds, playbookFilterIds);
     pushAll(filteringIds, playbookInPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {
@@ -178,7 +197,7 @@ const platformResolvedFilters = (context: AuthContext) => {
 };
 const platformConnectors = (context: AuthContext) => {
   const reloadConnectors = () => {
-    return findConnectors(context, SYSTEM_USER);
+    return connectorsForCache(context, SYSTEM_USER);
   };
   return { values: null, fn: reloadConnectors };
 };
@@ -200,6 +219,12 @@ const platformDecayExclusionRules = (context: AuthContext) => {
   };
   return { value: null, fn: reloadDecayExclusionRules };
 };
+const platformIngestionDeduplicationRules = (context: AuthContext) => {
+  const reloadIngestionDeduplicationRules = () => {
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE]);
+  };
+  return { values: null, fn: reloadIngestionDeduplicationRules };
+};
 const platformMarkings = (context: AuthContext) => {
   const reloadMarkings = () => {
     return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_MARKING_DEFINITION]);
@@ -214,12 +239,7 @@ const platformTriggers = (context: AuthContext) => {
 };
 const platformRunningPlaybooks = (context: AuthContext) => {
   const reloadPlaybooks = () => {
-    const filters = {
-      mode: FilterMode.And,
-      filters: [{ key: ['playbook_running'], values: ['true'] }],
-      filterGroups: [],
-    };
-    const opts = { filters, noFiltersChecking: true };
+    const opts = { filters: booleanTrueFilter('playbook_running'), noFiltersChecking: true };
     return fullEntitiesList<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], opts);
   };
   return { values: null, fn: reloadPlaybooks };
@@ -375,6 +395,7 @@ const CACHED_ENTITIES_MAP = {
   [ENTITY_TYPE_DRAFT_WORKSPACE]: platformDraftWorkspaces,
   [ENTITY_TYPE_PIR]: platformPirs,
   [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: platformDecayExclusionRules,
+  [ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE]: platformIngestionDeduplicationRules,
   [ENTITY_TYPE_CUSTOM_FIELD_DEFINITION]: platformCustomFieldDefinitions,
 };
 // ABSTRACT_INTERNAL_OBJECT is always included

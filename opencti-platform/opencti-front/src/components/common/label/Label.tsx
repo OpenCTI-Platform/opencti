@@ -1,8 +1,9 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { Stack, SxProps, Typography } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { Theme } from '../../Theme';
 import { PropsWithSx } from '../../../utils/props';
+import { mergeSx } from '../../../utils/sx';
 
 interface LabelProps extends PropsWithChildren, PropsWithSx {
   action?: ReactNode;
@@ -39,9 +40,10 @@ const Label = ({
   return (
     <Stack
       direction="row"
-      alignItems="center"
-      sx={containerSx}
-      gap={0.5}
+      sx={mergeSx({
+        alignItems: 'center',
+        gap: 0.5,
+      }, containerSx)}
     >
       <Typography variant="h6" sx={titleSx}>
         {children}

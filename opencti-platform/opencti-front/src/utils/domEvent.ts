@@ -1,4 +1,4 @@
-import { MouseEvent, UIEvent } from 'react';
+import { KeyboardEvent, MouseEvent, UIEvent } from 'react';
 import { APP_BASE_PATH } from '../relay/environment';
 
 const stopEvent = (event: UIEvent) => {
@@ -45,6 +45,16 @@ export const stopLinkNavigation = (event: MouseEvent<HTMLElement>) => {
   const { currentTarget } = event;
   if (currentTarget.contains(event.target as Node) && currentTarget.closest('a[href]')) {
     event.preventDefault();
+  }
+};
+
+// Keyboard activation for an element given role="button": Enter and Space run
+// the action, as they would on a native <button> (Space without scrolling the
+// page). Usage: onKeyDown={onActivationKey(() => sortBy(field))}
+export const onActivationKey = (action: (event: KeyboardEvent) => void) => (event: KeyboardEvent) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    action(event);
   }
 };
 

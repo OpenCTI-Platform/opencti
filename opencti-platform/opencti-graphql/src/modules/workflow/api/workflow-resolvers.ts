@@ -1,5 +1,6 @@
 import { GraphQLError } from 'graphql';
 import type { AuthContext } from '../../../types/user';
+import type { QueryWorkflowMassTransitionsArgs } from '../../../generated/graphql';
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
 import {
   clearWorkflowPendingState,
@@ -8,6 +9,8 @@ import {
   getWorkflowDefinition,
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
+  getMassWorkflowTransitions,
+  getWorkflowStatuses,
   hasPublishedWorkflowDefinition,
   publishWorkflowDefinition,
   restorePublishedWorkflowDefinition,
@@ -16,7 +19,9 @@ import {
   setWorkflowStatus,
   getWorkflowBypassStatuses,
 } from '../domain/workflow-domain';
-import { COMMENT_MAX_LENGTH } from '../types/workflow-types';
+import { CLOSING_REASON_MAX_LENGTH, COMMENT_MAX_LENGTH } from '../types/workflow-types';
+
+const NON_STATE_CHANGING_EVENTS = new Set(['event_external_ignored', 'event_external_kept']);
 
 const workflowResolvers = {
   Query: {
@@ -25,6 +30,12 @@ const workflowResolvers = {
     },
     workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return hasPublishedWorkflowDefinition(context, context.user!, entityType);
+    },
+    workflowStatuses: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      return getWorkflowStatuses(context, context.user!, entityType);
+    },
+    workflowMassTransitions: (_: any, { entityType, ...target }: QueryWorkflowMassTransitionsArgs, context: AuthContext) => {
+      return getMassWorkflowTransitions(context, context.user!, entityType, target);
     },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);
@@ -54,12 +65,17 @@ const workflowResolvers = {
       eventName,
       comment,
       runtimeParams,
-    }: { entityId: string; eventName: string; comment?: string | null; runtimeParams?: Record<string, unknown> }, context: AuthContext) => {
+      closingReason,
+    }: { entityId: string; eventName: string; comment?: string | null; runtimeParams?: Record<string, unknown>; closingReason?: string | null }, context: AuthContext) => {
       const normalizedComment = comment?.trim() ?? undefined;
       if (normalizedComment !== undefined && normalizedComment.length > COMMENT_MAX_LENGTH) {
         throw new GraphQLError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
       }
-      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {});
+      const normalizedClosingReason = closingReason?.trim() ?? undefined;
+      if (normalizedClosingReason !== undefined && normalizedClosingReason.length > CLOSING_REASON_MAX_LENGTH) {
+        throw new GraphQLError(`Closing reason exceeds maximum allowed length of ${CLOSING_REASON_MAX_LENGTH} characters.`);
+      }
+      return triggerWorkflowEvent(context, context.user!, entityId, eventName, normalizedComment, runtimeParams ?? {}, normalizedClosingReason);
     },
     clearWorkflowPendingState: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return clearWorkflowPendingState(context, context.user!, entityId);
@@ -102,7 +118,8 @@ const workflowResolvers = {
     allowedTransitions: (instance: any) => instance.allowedTransitions,
     lastHistoryEntry: (instance: any) => {
       const history: Array<{ state: string; event: string; user_id: string; timestamp: string; comment?: string | null }> = instance.history ?? [];
-      return history.length > 0 ? history[history.length - 1] : null;
+      // External writes that left the state unchanged must not hide the last real transition.
+      return history.findLast((entry) => !NON_STATE_CHANGING_EVENTS.has(entry.event)) ?? null;
     },
     pendingStatus: (instance: any) => instance.pendingStatus ?? null,
     pendingError: (instance: any) => instance.pendingError ?? null,
@@ -119,6 +136,7 @@ const workflowResolvers = {
   WorkflowTransition: {
     toStatus: (transition: any) => transition.toStatus ?? null,
     comment: (transition: any) => transition.comment ?? null,
+    closingReason: (transition: any) => transition.closingReason ?? null,
     actions: (transition: any) => transition.actions ?? [],
     requiresShareOrganizationInput: (transition: any) => transition.requiresShareOrganizationInput ?? false,
     requiresUnshareOrganizationInput: (transition: any) => transition.requiresUnshareOrganizationInput ?? false,

@@ -107,7 +107,7 @@ const DraftsNumber = ({
   const DEFAULT_TITLE = t_i18n('Draft workspaces number');
   const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<DraftsNumberQuery>({
+  const { renderGuards, isPreviewMode, queryRef } = useDashboardViz<DraftsNumberQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -127,8 +127,7 @@ const DraftsNumber = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

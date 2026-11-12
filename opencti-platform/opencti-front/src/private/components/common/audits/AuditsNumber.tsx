@@ -146,7 +146,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsNumberNumberSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsNumberNumberSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -173,8 +173,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
       warning={warning}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

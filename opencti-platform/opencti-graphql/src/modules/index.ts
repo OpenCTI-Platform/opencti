@@ -24,6 +24,8 @@ import './relationsRef/stixCyberObservable-registrationRef';
 // endregion
 // region registration modules, need to be imported before graphql code registration
 import './channel/channel';
+import './connector/connector';
+import './ingestionHealth/ingestionHealth';
 import './language/language';
 import './event/event';
 import './grouping/grouping';
@@ -60,6 +62,7 @@ import './dataSharing/streamCollection';
 import './indicator/indicator';
 import './decayRule/decayRule';
 import './decayRule/exclusions/decayExclusionRule';
+import './ingestionDeduplication/ingestionDeduplicationRule';
 import './organization/organization';
 import './internal/csvMapper/csvMapper';
 import './internal/jsonMapper/jsonMapper';
@@ -106,6 +109,8 @@ import './customField/custom-field';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
+import './connector/connector-graphql';
+import './ingestionHealth/ingestionHealth-graphql';
 import './catalog/catalog-graphql';
 import './language/language-graphql';
 import './event/event-graphql';
@@ -140,6 +145,7 @@ import './indicator/indicator-graphql';
 import './vulnerability/vulnerability-graphql';
 import './decayRule/decayRule-graphql';
 import './decayRule/exclusions/decayExclusionRule-graphql';
+import './ingestionDeduplication/ingestionDeduplicationRule-graphql';
 import './organization/organization-graphql';
 import './internal/csvMapper/csvMapper-graphql';
 import './internal/jsonMapper/jsonMapper-graphql';
@@ -177,6 +183,7 @@ import './user/user-graphql';
 import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
 import './customField/custom-field-graphql';
+import './configPreset/configPreset-graphql';
 // endregion
 
 // region modules static init

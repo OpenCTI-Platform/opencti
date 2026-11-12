@@ -139,7 +139,7 @@ const StixCoreObjectsTimeline = ({
   refreshRate = null,
 }: StixCoreObjectsTimelineProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTimelineQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTimelineQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -158,8 +158,7 @@ const StixCoreObjectsTimeline = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

@@ -3,26 +3,22 @@ import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import ComboboxField from '../../../../components/ComboboxField';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles(() => ({
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
+const OptionIcon = styled('div')({
+  paddingTop: 4,
+  display: 'inline-block',
+});
 
-}));
+const OptionText = styled('div')({
+  display: 'inline-block',
+  flexGrow: 1,
+  marginLeft: 10,
+});
 
 export const searchObjectOrganizationFieldQuery = graphql`
   query ObjectOrganizationFieldQuery($search: String, $filters: FilterGroup) {
@@ -57,7 +53,6 @@ const ObjectOrganizationField = (props) => {
     value: n.id,
   }));
   const [organizations, setOrganizations] = useState(defaultStateOrganizations);
-  const classes = useStyles();
   const { t_i18n } = useFormatter();
 
   const searchOrganizations = (search) => {
@@ -94,10 +89,10 @@ const ObjectOrganizationField = (props) => {
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(option) => (
           <>
-            <div className={classes.icon}>
+            <OptionIcon>
               <ItemIcon type="Organization" />
-            </div>
-            <div className={classes.text}>{option.label}</div>
+            </OptionIcon>
+            <OptionText>{option.label}</OptionText>
           </>
         )}
       />
@@ -123,10 +118,10 @@ const ObjectOrganizationField = (props) => {
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(option) => (
         <>
-          <div className={classes.icon}>
+          <OptionIcon>
             <ItemIcon type="Organization" />
-          </div>
-          <div className={classes.text}>{option.label}</div>
+          </OptionIcon>
+          <OptionText>{option.label}</OptionText>
         </>
       )}
     />

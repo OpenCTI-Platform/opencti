@@ -8,7 +8,7 @@ import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import DisseminationListField from '../../../../components/fields/DisseminationListField';

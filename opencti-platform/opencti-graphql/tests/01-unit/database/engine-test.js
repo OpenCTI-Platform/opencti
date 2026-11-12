@@ -87,6 +87,17 @@ describe('buildLocalMustFilter testing', () => {
     });
   });
 
+  it('should buildLocalMustFilter wrap a negated nested filter in must_not', () => {
+    const nested = [
+      { key: 'field_name', values: ['x_opencti_cf_field'], operator: 'eq' },
+      { key: 'string_value', values: [], operator: 'not_nil' },
+    ];
+    const positive = buildLocalMustFilter({ key: ['custom_field_values'], values: [], nested });
+    const negated = buildLocalMustFilter({ key: ['custom_field_values'], values: [], nested, negateNested: true });
+    expect(positive.nested.path).toBe('custom_field_values');
+    expect(negated).toStrictEqual({ bool: { must_not: [positive] } });
+  });
+
   const sampleKeys = [
     "name']; ctx._source.value = true; //",
     "name.foo']; ctx._source.value = true; //",
@@ -167,6 +178,19 @@ describe('buildLocalMustFilter testing', () => {
     const query = result.bool.should[0].bool.must_not[0].query_string.query;
 
     expect(query).not.toBe(`"${value}"`);
+  });
+
+  it('should buildLocalMustFilter with nested wildcard escape the query_string syntax but keep wildcards', () => {
+    const buildNestedWildcardQuery = (value) => {
+      const nested = [{ key: 'name', values: [value], operator: 'wildcard' }];
+      const result = buildLocalMustFilter({ key: ['connections'], values: [], nested });
+      return result.nested.query.bool.must[0].bool.should[0].query_string.query;
+    };
+    expect(buildNestedWildcardQuery('*_from')).toBe('*_from');
+    expect(buildNestedWildcardQuery('rep?rt*')).toBe('rep?rt*');
+    expect(buildNestedWildcardQuery('*acme corp*')).toBe('*acme corp*');
+    expect(buildNestedWildcardQuery('* OR _exists_:internal_id')).toBe('* \\OR _exists_\\:internal_id');
+    expect(buildNestedWildcardQuery('a" || (b) && !c')).toBe('a\\" \\|\\| \\(b\\) \\&\\& \\!c');
   });
 
   it('should buildLocalMustFilter with contact_information emit a single terms clause for multiple values', () => {

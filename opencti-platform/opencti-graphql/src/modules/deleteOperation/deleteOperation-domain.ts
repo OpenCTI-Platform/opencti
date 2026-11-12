@@ -325,7 +325,7 @@ export const restoreDelete = async (context: AuthContext, user: AuthUser, id: st
       const relationToRestore = orderedRelationshipsToRestore[i] as BasicStoreRelation;
       const isInferredRelation = Object.keys(relationToRestore).some((k) => k.startsWith(RULE_PREFIX));
       const relationshipInput = convertStoreEntityToInput(relationToRestore, upsertedElements);
-      if (!isInferredRelation) result = await createRelation(context, user, relationshipInput); // created with same id as part of relationshipInput
+      if (!isInferredRelation) result = await createRelation(context, user, relationshipInput, { restore: true }); // created with same id as part of relationshipInput
       else {
         const rule = Object.keys(relationToRestore).find((k) => k.startsWith(RULE_PREFIX));
         if (rule === undefined) {

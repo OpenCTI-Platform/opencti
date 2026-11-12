@@ -3,10 +3,13 @@ import * as cacheModule from '../../../../src/database/cache';
 import {
   extractStringifiedCustomFieldValueFromStoreEntity,
   fillCustomFieldsDefaultValues,
+  foldCustomFieldValuesInputs,
   getCustomFieldDefaultValueFromEntitySettings,
-  normalizeCustomFieldValuesDates,
+  mergeCustomFieldValues,
+  normalizeCustomFieldValues,
   resolveCustomFieldValuesIdentity,
   transformCustomFieldValueAddInput,
+  validateCustomFieldDefaultValue,
   validateCustomFieldValues,
   validateCustomFieldValuesEditInput,
 } from '../../../../src/modules/customField/custom-field-validator';
@@ -226,6 +229,15 @@ describe('validateCustomFieldValues', () => {
   });
 
   describe('mandatory enforcement', () => {
+    it('throws when a mandatory field of stix-core-relationship is not provided for a relationship type', async () => {
+      seed(makeDefinition({
+        field_type: 'string',
+        entity_types: ['stix-core-relationship'],
+        entity_type_settings: [{ entity_type: 'stix-core-relationship', mandatory: true }],
+      }));
+      await expect(validateCustomFieldValues(CONTEXT, USER, [], 'targets')).rejects.toThrow('Mandatory custom field is missing');
+    });
+
     it('throws when a mandatory field for this entity type is not provided at all', async () => {
       seed(makeDefinition({
         field_type: 'string',
@@ -296,6 +308,33 @@ describe('transformCustomFieldValueAddInput', () => {
     seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'string', aliases: ['x_opencti_cf_alias'] } as any));
     const result = await transform([{ field_name: 'x_opencti_cf_alias', value: ['hello'] } as any]);
     expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'hello' }]);
+  });
+
+  it('keeps the first input when the name and an alias of a same field are both given', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'string', aliases: ['x_opencti_cf_alias'] } as any));
+    const result = await transform([
+      { field_name: 'x_opencti_cf_field', value: ['explicit'] } as any,
+      { field_name: 'x_opencti_cf_alias', value: ['from alias'] } as any,
+    ]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'explicit' }]);
+  });
+
+  it('uses the alias input when the input under the name is dropped', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'integer', aliases: ['x_opencti_cf_alias'] } as any));
+    const result = await transform([
+      { field_name: 'x_opencti_cf_field', value: ['not-a-number'] } as any,
+      { field_name: 'x_opencti_cf_alias', value: [42] } as any,
+    ]);
+    expect(result).toEqual([{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', int_value: 42 }]);
+  });
+
+  it('keeps both inputs of a repeated name, for the validation to reject them', async () => {
+    seed(makeDefinition({ id: 'cf-id-1', name: 'x_opencti_cf_field', field_type: 'string' }));
+    const result = await transform([
+      { field_name: 'x_opencti_cf_field', value: ['a'] } as any,
+      { field_name: 'x_opencti_cf_field', value: ['b'] } as any,
+    ]);
+    expect(result).toHaveLength(2);
   });
 
   it('transforms an integer input', async () => {
@@ -456,13 +495,13 @@ describe('resolveCustomFieldValuesIdentity', () => {
   });
 });
 
-describe('normalizeCustomFieldValuesDates', () => {
+describe('normalizeCustomFieldValues', () => {
   it('normalizes valid date values to ISO UTC and leaves other entries untouched', () => {
     const values: CustomFieldValue[] = [
       { field_id: 'cf-id-1', field_name: 'x_opencti_cf_date', date_value: '2026-09-29T02:00:00+02:00' },
       { field_id: 'cf-id-2', field_name: 'x_opencti_cf_text', string_value: 'hello' },
     ];
-    expect(normalizeCustomFieldValuesDates(values)).toEqual([
+    expect(normalizeCustomFieldValues(values)).toEqual([
       { field_id: 'cf-id-1', field_name: 'x_opencti_cf_date', date_value: '2026-09-29T00:00:00.000Z' },
       { field_id: 'cf-id-2', field_name: 'x_opencti_cf_text', string_value: 'hello' },
     ]);
@@ -470,7 +509,30 @@ describe('normalizeCustomFieldValuesDates', () => {
 
   it('leaves an invalid date as is so that validation rejects it', () => {
     const values: CustomFieldValue[] = [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_date', date_value: '09/29/2026' }];
-    expect(normalizeCustomFieldValuesDates(values)).toEqual(values);
+    expect(normalizeCustomFieldValues(values)).toEqual(values);
+  });
+
+  it('drops the unset value keys sent as null, as for entries read back from the API', () => {
+    const values: CustomFieldValue[] = [{
+      field_id: 'cf-id-1',
+      field_name: 'x_opencti_cf_score',
+      int_value: 10,
+      string_value: null,
+      boolean_value: null,
+      date_value: null,
+      select_value: null,
+      select_values: null,
+    }];
+    expect(normalizeCustomFieldValues(values)).toStrictEqual([
+      { field_id: 'cf-id-1', field_name: 'x_opencti_cf_score', int_value: 10 },
+    ]);
+  });
+
+  it('keeps a false boolean value', () => {
+    const values: CustomFieldValue[] = [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_flag', boolean_value: false, int_value: null }];
+    expect(normalizeCustomFieldValues(values)).toStrictEqual([
+      { field_id: 'cf-id-1', field_name: 'x_opencti_cf_flag', boolean_value: false },
+    ]);
   });
 });
 
@@ -694,6 +756,32 @@ describe('getCustomFieldDefaultValueFromEntitySettings', () => {
   });
 });
 
+describe('validateCustomFieldDefaultValue', () => {
+  it('accepts no default value', () => {
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'decimal' }), null)).not.toThrow();
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'decimal' }), '')).not.toThrow();
+  });
+
+  it('accepts a valid default value', () => {
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'decimal' }), '0.125')).not.toThrow();
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'integer', min_value: 0, max_value: 10 }), '5')).not.toThrow();
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'date' }), '@now')).not.toThrow();
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'select', select_options: ['a', 'b'] }), 'a')).not.toThrow();
+  });
+
+  it('rejects a default value the creation of the entities would ignore', () => {
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'decimal' }), '1e400')).toThrow('Invalid default value for the custom field');
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'decimal' }), '0,85')).toThrow('Invalid default value for the custom field');
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'integer' }), '1.5')).toThrow('Invalid default value for the custom field');
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'date' }), 'not-a-date')).toThrow('Invalid default value for the custom field');
+  });
+
+  it('rejects a default value the creation of the entities would fail on', () => {
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'integer', min_value: 0, max_value: 10 }), '42')).toThrow('int_value is above maximum');
+    expect(() => validateCustomFieldDefaultValue(makeDefinition({ field_type: 'select', select_options: ['a', 'b'] }), 'c')).toThrow();
+  });
+});
+
 describe('fillCustomFieldsDefaultValues', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -865,5 +953,90 @@ describe('extractStringifiedCustomFieldValueFromStoreEntity', () => {
     seed(makeDefinition({ name: 'x_opencti_cf_field', field_type: 'unsupported' as any }));
     const element = { custom_field_values: [{ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', string_value: 'a' }] };
     await expect(extract(element, 'x_opencti_cf_field')).rejects.toThrow('Unknown custom field type');
+  });
+});
+
+describe('mergeCustomFieldValues', () => {
+  const note = (value: string): CustomFieldValue => ({ field_id: 'cf-note', field_name: 'x_opencti_cf_note', string_value: value });
+  const tags = (values: string[]): CustomFieldValue => ({ field_id: 'cf-tags', field_name: 'x_opencti_cf_tags', select_values: values });
+
+  it('keeps the value of the target for a single value custom field', () => {
+    expect(mergeCustomFieldValues([note('target')], [[note('source 1')], [note('source 2')]])).toEqual([note('target')]);
+  });
+
+  it('takes the value of the first source having one when the target has none', () => {
+    expect(mergeCustomFieldValues([], [[], [note('source 2')], [note('source 3')]])).toEqual([note('source 2')]);
+  });
+
+  it('merges the options of a multi_select custom field', () => {
+    expect(mergeCustomFieldValues([tags(['a'])], [[tags(['b', 'a'])], [tags(['c'])]])).toEqual([tags(['a', 'b', 'c'])]);
+  });
+
+  it('keeps a single entry per custom field', () => {
+    const merged = mergeCustomFieldValues(undefined, [[note('source 1'), tags(['a'])], [note('source 2'), tags(['b'])]]);
+    expect(merged).toEqual([note('source 1'), tags(['a', 'b'])]);
+  });
+});
+
+describe('foldCustomFieldValuesInputs', () => {
+  const SCORE = { field_id: 'cf-score', field_name: 'x_opencti_cf_score', int_value: 1 };
+  const SECTORS = { field_id: 'cf-sectors', field_name: 'x_opencti_cf_sectors', select_values: ['a', 'b'] };
+  const current = [SCORE, SECTORS];
+  const input = (operation: EditOperation, value: any[]) => ({ key: 'custom_field_values', operation, value });
+
+  it('replaces the options of a multi_select with a remove then an add', () => {
+    const result = foldCustomFieldValuesInputs(current, [
+      input(EditOperation.Remove, [{ field_id: 'cf-sectors' }]),
+      input(EditOperation.Add, [{ field_id: 'cf-sectors', select_values: ['c'] }]),
+    ]);
+    expect(result).toEqual([SCORE, { field_id: 'cf-sectors', select_values: ['c'] }]);
+  });
+
+  it('removes only the given options of a multi_select', () => {
+    expect(foldCustomFieldValuesInputs(current, [input(EditOperation.Remove, [{ field_id: 'cf-sectors', select_values: ['a'] }])]))
+      .toEqual([SCORE, { ...SECTORS, select_values: ['b'] }]);
+    expect(foldCustomFieldValuesInputs(current, [input(EditOperation.Remove, [{ field_id: 'cf-sectors', select_values: ['a', 'b'] }])]))
+      .toEqual([SCORE]);
+  });
+
+  it('unites the options on add and sets a single value field', () => {
+    const result = foldCustomFieldValuesInputs(current, [
+      input(EditOperation.Add, [{ field_id: 'cf-sectors', select_values: ['c'] }]),
+      input(EditOperation.Add, [{ field_id: 'cf-score', int_value: 42 }]),
+    ]);
+    expect(result).toEqual([{ field_id: 'cf-sectors', select_values: ['a', 'b', 'c'] }, { field_id: 'cf-score', int_value: 42 }]);
+  });
+});
+
+describe('decimal custom fields', () => {
+  const DECIMAL = makeDefinition({ id: 'cf-rate', name: 'x_opencti_cf_rate', field_type: 'decimal' });
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    seed(DECIMAL);
+  });
+
+  it('stores a decimal input value in float_value and drops a non numeric one', async () => {
+    const values = await transformCustomFieldValueAddInput(CONTEXT, USER, [{ field_name: 'x_opencti_cf_rate', value: [0.85] }], ENTITY_TYPE);
+    expect(values).toEqual([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: 0.85 }]);
+    const dropped = await transformCustomFieldValueAddInput(CONTEXT, USER, [{ field_name: 'x_opencti_cf_rate', value: ['high'] }], ENTITY_TYPE);
+    expect(dropped).toEqual([]);
+    // Stored as an Elasticsearch double: out of the float range, it is kept
+    const large = await transformCustomFieldValueAddInput(CONTEXT, USER, [{ field_name: 'x_opencti_cf_rate', value: [1e39] }], ENTITY_TYPE);
+    expect(large).toEqual([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: 1e39 }]);
+  });
+
+  it('validates a decimal value', async () => {
+    await expect(validate([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: 1.5 }])).resolves.not.toThrow();
+    await expect(validate([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: -1e39 }])).resolves.not.toThrow();
+    await expect(validate([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: Number.NaN }])).rejects.toThrow('float_value must be a finite number');
+    await expect(validate([{ field_id: 'cf-rate', field_name: 'x_opencti_cf_rate', float_value: Number.POSITIVE_INFINITY }])).rejects.toThrow('float_value must be a finite number');
+  });
+
+  it('parses a decimal default value', () => {
+    const definition = makeDefinition({ field_type: 'decimal', entity_type_settings: [{ entity_type: ENTITY_TYPE, mandatory: false, default_value: '0.5' }] });
+    expect(getCustomFieldDefaultValueFromEntitySettings(definition, ENTITY_TYPE)).toEqual({ field_id: 'cf-id-1', field_name: 'x_opencti_cf_field', float_value: 0.5 });
+    const invalid = makeDefinition({ field_type: 'decimal', entity_type_settings: [{ entity_type: ENTITY_TYPE, mandatory: false, default_value: 'high' }] });
+    expect(getCustomFieldDefaultValueFromEntitySettings(invalid, ENTITY_TYPE)).toBeUndefined();
   });
 });
