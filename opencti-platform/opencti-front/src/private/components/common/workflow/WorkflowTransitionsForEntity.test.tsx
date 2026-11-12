@@ -42,11 +42,12 @@ const Harness = () => {
 };
 
 const setup = async (pendingStatus: string | null = 'pending', enabled = true, access = 'edit', capability = 'KNOWLEDGE_KNUPDATE',
-  allowedTransitions: NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['allowedTransitions'] = instance(null).allowedTransitions) => {
+  allowedTransitions: NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['allowedTransitions'] = instance(null).allowedTransitions,
+  draftContext: { id: string; name: string } | null = null) => {
   vi.useFakeTimers();
   const rendered = testRender(<Suspense><Harness /></Suspense>, {
     userContext: createMockUserContext({
-      me: { capabilities: [{ name: capability }], capabilitiesInDraft: [] },
+      me: { capabilities: [{ name: capability }], capabilitiesInDraft: [], draftContext },
       settings: { platform_feature_flags: enabled ? [{ id: 'ENTITIES_WORKFLOW', enable: true }] : [] },
     }),
   });
@@ -66,6 +67,18 @@ const resolveRefresh = async (relayEnv: ReturnType<typeof testRender>['relayEnv'
 };
 
 afterEach(() => vi.useRealTimers());
+
+describe('WorkflowTransitionsForEntity in a draft', () => {
+  it('shows the status but no transition, bypass or clear control', async () => {
+    await setup('error', true, 'admin', 'BYPASS', instance(null).allowedTransitions, { id: 'draft-1', name: 'Draft' });
+
+    expect(screen.getByText('A')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'approve' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Clear' })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('workflow-transitions-error')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Change status')).not.toBeInTheDocument();
+  });
+});
 
 describe('WorkflowTransitionsForEntity refresh', () => {
   it.each([2, 3])('opens a menu for %s entity transitions without executing any of them', async (count) => {

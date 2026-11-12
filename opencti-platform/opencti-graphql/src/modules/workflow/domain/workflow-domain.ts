@@ -106,6 +106,19 @@ const hasConditions = (conditions?: WorkflowSerializedTransition['conditions']) 
 // mirroring the draft_context stripping that bypassDraftContext applies to the context itself.
 const bypassDraftUser = (user: AuthUser): AuthUser => ({ ...user, draft_context: undefined });
 
+// Inside a draft, only the draft's own workflow can move. An entity workflow writes to the live
+// entity (see bypassDraftContext above), so running it from a draft would approve or transition
+// knowledge that the draft has not published yet.
+const isEntityWorkflowLockedByDraft = (context: AuthContext, user: AuthUser, entityType: string) => {
+  return Boolean(getDraftContext(context, user)) && entityType !== ENTITY_TYPE_DRAFT_WORKSPACE;
+};
+
+const assertEntityWorkflowNotInDraft = (context: AuthContext, user: AuthUser, entity: BasicStoreCommon) => {
+  if (isEntityWorkflowLockedByDraft(context, user, entity.entity_type)) {
+    throw FunctionalError('Workflow transitions cannot be applied to an entity while in a draft', { entityId: entity.id });
+  }
+};
+
 // Domain-specific types
 interface WorkflowVersion {
   id: string;
@@ -1951,6 +1964,10 @@ export const getAllowedTransitions = async (
     return [];
   }
 
+  if (isEntityWorkflowLockedByDraft(context, user, entity.entity_type)) {
+    return [];
+  }
+
   const entitySetting = options?.entitySetting ?? await getWorkflowConfig(context, user, entity.entity_type);
   if (!hasWorkflowDefinition(entitySetting)) {
     return [];
@@ -2055,6 +2072,7 @@ export const getMassWorkflowTransitions = async (
 ): Promise<AllowedTransition[]> => {
   if (entityType !== 'DraftWorkspace' && !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return [];
   assertScopeAllowed(entityType, scope);
+  if (isEntityWorkflowLockedByDraft(context, user, entityType)) return [];
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   const definitionData = await getDefinitionData(context, user, entitySetting, false, scope);
   if (!definitionData) return [];
@@ -2231,6 +2249,8 @@ export const triggerWorkflowEvent = async (
   if (!entity) {
     throw FunctionalError('Entity not found', { entityId });
   }
+
+  assertEntityWorkflowNotInDraft(context, user, entity);
 
   // 2. Fetch its EntitySetting to get the workflow configuration
   const entitySetting = await getWorkflowConfig(context, user, entity.entity_type);
@@ -2772,6 +2792,7 @@ export const setWorkflowStatus = async (
   if (!isBypassUser(user)) throw FunctionalError('BYPASS permission is required');
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) throw FunctionalError('Entity not found', { entityId });
+  assertEntityWorkflowNotInDraft(context, user, entity);
   const lock = await lockResources([`workflow-mutation-${entity.internal_id || entity.id}`]);
   let result: TriggerResult;
   try {
@@ -3266,6 +3287,7 @@ export const clearWorkflowPendingState = async (
 ): Promise<any> => {
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) throw FunctionalError('Entity not found', { entityId });
+  assertEntityWorkflowNotInDraft(context, user, entity);
 
   const executionContext = bypassDraftContext(context);
   const executionUser = bypassDraftUser(user);

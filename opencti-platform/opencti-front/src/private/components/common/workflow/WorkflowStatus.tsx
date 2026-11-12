@@ -12,6 +12,7 @@ import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 import type { WorkflowStatusStixDomainObject_data$data, WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import Label from '../../../../components/common/label/Label';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
@@ -86,11 +87,15 @@ export const WorkflowStatusForEntity = ({ data, entityType, fallback = null, chi
   const { me } = useAuth();
   const entity = useFragment(workflowStatusStixDomainObjectFragment, data);
   const { canEdit } = useGetCurrentUserAccessRight(entity.currentUserAccessRight);
+  // Inside a draft the entity workflow is read only: no transition controls, and the plain status
+  // stays visible even for a bypass user, whose status selector is one of those controls.
+  const draftContext = useDraftContext();
+  const showControls = !!children && canEdit && !draftContext;
   return isWorkflowUiEnabledForType(entityType, isFeatureEnable)
     ? (
         <>
-          {entity.workflowInstance && canEdit && children}
-          <WorkflowStatusView workflowInstance={entity.workflowInstance} fallback={fallback} hideStatus={!!children && canEdit && isBypassUser(me)} />
+          {entity.workflowInstance && showControls && children}
+          <WorkflowStatusView workflowInstance={entity.workflowInstance} fallback={fallback} hideStatus={showControls && isBypassUser(me)} />
         </>
       )
     : fallback;
