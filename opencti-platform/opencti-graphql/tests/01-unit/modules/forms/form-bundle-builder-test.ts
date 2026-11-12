@@ -1246,6 +1246,55 @@ describe('wrapInContainerOrPush', () => {
     expect(bundle.objects).toHaveLength(0);
   });
 
+  describe('entities attached through their own object_refs (Task, Note, Opinion)', () => {
+    it('should attach the created tasks, notes and opinions to every main entity, whatever its type', () => {
+      vi.mocked(isStixDomainObjectContainer).mockReturnValue(false);
+      const bundle = { objects: [{ id: 'task--1', type: 'task' }, { id: 'note--1', type: 'note' }, { id: 'opinion--1', type: 'opinion' }, { id: 'malware--1', type: 'malware' }] as unknown as StixObject[] };
+
+      wrapInContainerOrPush('Incident', [{ id: 'incident--1' }, { id: 'incident--2' }], bundle, false, { t: ['task--1'], n: ['note--1'], o: ['opinion--1'], m: ['malware--1'] });
+
+      expect(bundle.objects.slice(0, 3).map((o) => o.object_refs)).toEqual([['incident--1', 'incident--2'], ['incident--1', 'incident--2'], ['incident--1', 'incident--2']]);
+      expect(bundle.objects[3].object_refs).toBeUndefined();
+    });
+
+    it('should keep the attached entities out of the container they reference', () => {
+      vi.mocked(isStixDomainObjectContainer).mockReturnValue(true);
+      const bundle = { objects: [{ id: 'task--1', type: 'task' }, { id: 'malware--1', type: 'malware' }] as unknown as StixObject[] };
+
+      wrapInContainerOrPush('Case-Incident', [{ id: 'case-incident--1' }], bundle, true, { t: ['task--1'], m: ['malware--1'] });
+
+      expect(bundle.objects[0].object_refs).toEqual(['case-incident--1']);
+      expect(bundle.objects[2].object_refs).toEqual(['malware--1']);
+    });
+
+    it('should attach to an existing main entity picked in the lookup', () => {
+      vi.mocked(isStixDomainObjectContainer).mockReturnValue(true);
+      const bundle = { objects: [{ id: 'task--1', type: 'task' }] as unknown as StixObject[] };
+
+      wrapInContainerOrPush('Case-Incident', [{ id: 'case-incident--existing' }], bundle, false, { t: ['task--1'] }, ['case-incident--existing']);
+
+      expect(bundle.objects.map((o) => o.id)).toEqual(['task--1']);
+      expect(bundle.objects[0].object_refs).toEqual(['case-incident--existing']);
+    });
+
+    it('should leave an existing task picked in a lookup as it is, in the container', () => {
+      vi.mocked(isStixDomainObjectContainer).mockReturnValue(true);
+      const bundle = makeBundle();
+
+      wrapInContainerOrPush('Case-Incident', [{ id: 'case-incident--1' }], bundle, true, { t: ['task--existing'] });
+
+      expect(bundle.objects[0].object_refs).toEqual(['task--existing']);
+    });
+
+    it('should keep the object_refs an attached entity already has', () => {
+      const bundle = { objects: [{ id: 'note--1', type: 'note', object_refs: ['malware--1'] }] as unknown as StixObject[] };
+
+      wrapInContainerOrPush('Malware', [{ id: 'malware--1' }, { id: 'malware--2' }], bundle, false, { n: ['note--1'] });
+
+      expect(bundle.objects[0].object_refs).toEqual(['malware--1', 'malware--2']);
+    });
+  });
+
   it('should handle undefined includeInContainer as falsy', () => {
     vi.mocked(isStixDomainObjectContainer).mockReturnValue(true);
 
