@@ -173,7 +173,9 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
         // same symbols as the other filter chips, with their leading non-breaking space
         return [{ key: subFilterDefinition.filterKey, text: <>{convertOperatorToIcon(subFilter.operator ?? 'eq')} {subValues}</> }];
       }
-      return [{ key: subFilterDefinition.filterKey, text: <> {subFilter.operator === 'not_eq' ? `${t_i18n('not')} ${subValues}` : subValues}</> }];
+      // an equal value reads without its symbol (Coverage detection < 20), a negated one shows ≠ like the other filter chips
+      const operatorIcon = subFilter.operator === 'not_eq' ? convertOperatorToIcon('not_eq') : null;
+      return [{ key: subFilterDefinition.filterKey, text: <>{operatorIcon} {subValues}</> }];
     });
     return (
       <>
