@@ -132,7 +132,7 @@ The comparison is an exact match: a slightly different password (`Summer2025!` i
 ##### What users see
 
 - The password rules shown next to the password fields include "Must be different from your last N passwords", or "Must be different from your current password" when the value is `1`. Administrators setting another user's password see "Must be different from the last N passwords". This rule cannot be checked while typing, since only the platform knows the previous passwords.
-- A refused password shows "This password has already been used recently. Please choose a different one." under the new password field, and the typed passwords are cleared. In the forgot password flow, the user stays on the new password step and can try again with the same code, as long as it has not expired.
+- In the profile, forced-change and forgot-password forms, a reused password shows "This password has already been used recently. Please choose a different one." under the new password field, and the new-password fields are cleared. In administration, the refusal appears as an error notification and the fields are not cleared. In the forgot password flow, the user stays on the new password step and can try again with the same code, as long as it has not expired.
 
 ##### Limit on attempts
 
