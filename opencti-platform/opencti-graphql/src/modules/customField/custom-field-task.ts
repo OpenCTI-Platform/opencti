@@ -6,7 +6,7 @@ import { getCustomFieldValueField } from './custom-field-cache';
 import type { BasicStoreEntityCustomFieldDefinition, CustomFieldType } from './custom-field-types';
 
 const convertTaskValue = (fieldType: CustomFieldType, value: string) => {
-  if (fieldType === 'integer') return Number(value);
+  if (fieldType === 'integer' || fieldType === 'decimal') return Number(value);
   if (fieldType === 'boolean') return value.toLowerCase() === 'true';
   return value;
 };

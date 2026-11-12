@@ -102,8 +102,9 @@ export const describeType = (t_i18n: (text: string) => string, type: { readonly 
 // Under the label of a setting that is on or off: its value
 export const describeEnabled = (t_i18n: (text: string) => string, isEnabled: boolean) => t_i18n(isEnabled ? 'Enabled' : 'Disabled');
 
-// A type the platform cannot use: one row that stays unchecked, with the chip, and opens the license dialog
-const ConfigPresetLockedTypeRow: FunctionComponent<{ type: ConfigPresetAccordionType; title?: string }> = ({ type, title }) => {
+// A type the platform cannot use: one row that stays unchecked, with the chip, and opens the license dialog.
+// Also the row of a locked type in the partial import, which shows one type only
+export const ConfigPresetLockedTypeRow: FunctionComponent<{ type: Pick<ConfigPresetAccordionType, 'label' | 'description'>; title?: string }> = ({ type, title }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const isEnterpriseEdition = useEnterpriseEdition();

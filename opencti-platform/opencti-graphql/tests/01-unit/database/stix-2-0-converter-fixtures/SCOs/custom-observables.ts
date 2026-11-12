@@ -30,8 +30,6 @@ export const EXPECTED_HOSTNAME = {
   x_opencti_external_references: [],
   value: 'c2.evil.com',
   labels: ['malware'],
-  description: 'C2 hostname',
-  score: 85,
   created_by_ref: 'identity--c801c762-92e8-58b6-9bcb-6fa805f902cb',
   external_references: [],
 };
@@ -61,7 +59,6 @@ export const EXPECTED_CRYPTOCURRENCY_WALLET = {
   x_opencti_external_references: [],
   value: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
   labels: [],
-  score: 90,
   external_references: [],
 };
 

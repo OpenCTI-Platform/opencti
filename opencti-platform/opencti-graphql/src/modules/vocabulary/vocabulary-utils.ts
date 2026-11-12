@@ -4,6 +4,14 @@ import { UnsupportedError } from '../../config/errors';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { STIX_PATTERN_TYPE } from '../../utils/syntax';
+import { normalizeName } from '../../schema/identifier';
+
+// The aliases the platform keeps for an entry: it drops an alias that is the name of the entry (whatever its case), the empty ones and the
+// duplicates. An entry created with the alias 'low' under the name 'low' is stored without aliases.
+export const cleanVocabularyAliases = (name: string, aliases: string[] | null = []) => {
+  const kept = (aliases ?? []).map((alias) => alias.trim()).filter((alias) => alias !== '' && normalizeName(alias) !== normalizeName(name));
+  return kept.filter((alias, index) => kept.findIndex((other) => normalizeName(other) === normalizeName(alias)) === index);
+};
 
 export const builtInOv = [
   'pattern_type_ov',

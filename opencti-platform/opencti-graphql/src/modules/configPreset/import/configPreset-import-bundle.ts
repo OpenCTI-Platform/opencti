@@ -17,6 +17,7 @@ import {
 } from './configPreset-import-types';
 
 // Limits of a bundle, enforced on the bytes really read and never on the sizes declared in the zip
+// The front checks the same zip limit before the upload (CONFIG_PRESET_MAX_ZIP_SIZE in ConfigPresetBundleFileSelect.tsx): change both together
 export const CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE = 50 * 1024 * 1024;
 export const CONFIG_PRESET_IMPORT_MAX_ENTRY_SIZE = 5 * 1024 * 1024;
 export const CONFIG_PRESET_IMPORT_MAX_TOTAL_SIZE = 50 * 1024 * 1024;

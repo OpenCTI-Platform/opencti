@@ -143,4 +143,5 @@ You can also select custom views from the XTM Hub by clicking the **Import from 
 - [Custom dashboards](dashboards.md)
 - [Widget creation](widgets.md)
 - [Tips for widget creation](tips-widget-creation.md)
+- [Time series breakdown](time-series-breakdown.md)
 - [Entity types customization](../administration/entities.md)
