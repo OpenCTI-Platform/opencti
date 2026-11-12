@@ -95,6 +95,15 @@ describe('SearchInput (top bar) pages dropdown', () => {
   });
 });
 
+describe('SearchInput (top bar) shortcut target', () => {
+  it('puts the id and the announced shortcut on the input itself', () => {
+    testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" id="top-bar-search" aria-keyshortcuts="/" />);
+
+    expect(screen.getByRole('combobox')).toHaveAttribute('id', 'top-bar-search');
+    expect(screen.getByRole('combobox')).toHaveAttribute('aria-keyshortcuts', '/');
+  });
+});
+
 describe('SearchInput (top bar) in bulk mode', () => {
   it('is not announced as a combobox and shows no pages dropdown', async () => {
     const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />);

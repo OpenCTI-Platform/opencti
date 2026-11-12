@@ -34,6 +34,7 @@ import HomeDashboardSettings from '../HomeDashboardSettings';
 import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
+import ProfileSearchShortcut from './ProfileSearchShortcut';
 import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
 import TextareaField from '../../../components/TextareaField';
 import { dateFormatOptions, timeFormatOptions } from '../../../utils/dateDisplay';
@@ -500,6 +501,7 @@ const ProfileOverviewComponent = (props) => {
             </Form>
           )}
         </Formik>
+        <ProfileSearchShortcut />
       </Card>
       {hasKnowledgeAccess ? (
         <Card title={t('Dashboard settings')}>

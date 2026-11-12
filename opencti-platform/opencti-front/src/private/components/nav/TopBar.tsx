@@ -25,6 +25,8 @@ import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import AskArianeButton from '../chatbox/AskArianeButton';
 import CtemCommandCenterButton from '../chatbox/CtemCommandCenterButton';
 import { notificationCenterEntry, profileEntry } from '../profile/ProfileMenu.entries';
+import { ariaKeyShortcuts, formatSearchShortcut, TOP_BAR_SEARCH_ID } from '../../../utils/searchShortcut';
+import useFocusSearchShortcut from './useFocusSearchShortcut';
 import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useTopBanner from '../../../utils/hooks/useTopBanner';
@@ -82,6 +84,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   } = useAuth();
   const isAllNewsFeedUnsubscribed = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const draftContext = useDraftContext();
+  const searchShortcut = useFocusSearchShortcut();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const showAiCluster = hasKnowledgeAccess
     && filigran_chatbot_ai_cgu_status !== CGUStatus.disabled;
@@ -241,7 +244,12 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               onSubmit={handleSearch}
               keyword={keyword}
               variant="topBar"
-              placeholder={`${t_i18n('Search the platform')}...`}
+              placeholder={searchShortcut
+                ? t_i18n('Type {shortcut} to search', { values: { shortcut: formatSearchShortcut(searchShortcut) } })
+                : `${t_i18n('Search the platform')}...`}
+              // Target of the shortcut, which the field announces to assistive technologies as well
+              id={TOP_BAR_SEARCH_ID}
+              aria-keyshortcuts={searchShortcut ? ariaKeyShortcuts(searchShortcut) : undefined}
               isNLQLoading={isNLQLoading}
             />
           )}
