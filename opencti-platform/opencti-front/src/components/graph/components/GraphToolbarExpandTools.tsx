@@ -281,6 +281,7 @@ const GraphToolbarExpandTools = ({
       return;
     }
 
+    resetForm();
     setLinearProgress(true);
     const entityTypes = entity_types.map((o) => o.value);
     const relationshipTypes = relationship_types.map((o) => o.value);
@@ -310,7 +311,6 @@ const GraphToolbarExpandTools = ({
     onInvestigationExpand?.(allNewElements);
     onExpandSubmit?.();
 
-    resetForm();
     setRollBackOpen(false);
     setLinearProgress(false);
   };
