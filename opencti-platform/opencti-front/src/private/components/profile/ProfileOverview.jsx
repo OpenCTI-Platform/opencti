@@ -26,7 +26,7 @@ import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useGranted, { APIACCESS_USETOKEN, KNOWLEDGE } from '../../../utils/hooks/useGranted';
 import useHelper from '../../../utils/hooks/useHelper';
-import { PASSWORD_REUSED, passwordChangeErrorCode, passwordChangeErrorMessages } from '../../../utils/passwordChangeErrors';
+import { PASSWORD_REUSED, passwordChangeErrorCode, passwordChangeErrorMessages, showPasswordFieldError } from '../../../utils/passwordChangeErrors';
 import NotifierField from '../common/form/NotifierField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../common/form/PasswordPolicies';
@@ -240,7 +240,7 @@ const ProfileOverviewComponent = (props) => {
       .catch(() => false);
   };
 
-  const handleSubmitPasswords = (values, { setSubmitting, resetForm }) => {
+  const handleSubmitPasswords = (values, { setSubmitting, resetForm, setFieldValue, setFieldTouched, setFieldError }) => {
     const field = { key: 'password', value: values.password };
     commitMutation({
       mutation: profileOverviewFieldPatch,
@@ -256,11 +256,13 @@ const ProfileOverviewComponent = (props) => {
       },
       onError: (error) => {
         if (passwordChangeErrorCode(error) === PASSWORD_REUSED) {
-          resetForm({
-            values: { ...values, password: '', confirmation: '' },
-            errors: { password: passwordChangeErrorMessages(t_i18n)[PASSWORD_REUSED] },
-            touched: { password: true },
-          });
+          // The current password stays filled: only the new one has to change
+          showPasswordFieldError(
+            { setFieldValue, setFieldTouched, setFieldError },
+            passwordChangeErrorMessages(t_i18n)[PASSWORD_REUSED],
+            'password',
+            ['password', 'confirmation'],
+          );
         }
       },
     });

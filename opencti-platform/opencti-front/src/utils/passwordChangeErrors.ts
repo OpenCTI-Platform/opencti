@@ -18,3 +18,18 @@ export const passwordChangeErrorMessages = (t_i18n: (message: string) => string)
   [PASSWORD_CHANGE_THROTTLED]: t_i18n('Too many password change attempts. Please try again in a few minutes.'),
   [PASSWORD_RESET_EXPIRED]: t_i18n('Password reset code expired or not found. Please request a new one.'),
 });
+
+// The Formik helpers it needs, whatever the values of the form
+interface PasswordFormHelpers {
+  setFieldValue: (field: string, value: string, shouldValidate?: boolean) => unknown;
+  setFieldTouched: (field: string, isTouched?: boolean, shouldValidate?: boolean) => unknown;
+  setFieldError: (field: string, message: string | undefined) => void;
+}
+
+// Clears the typed passwords and says why under the new password field. Not with resetForm(nextState): it makes that state
+// the starting one of the form, so the resetForm() of a later successful change would bring the error back
+export const showPasswordFieldError = (helpers: PasswordFormHelpers, message: string, passwordField: string, clearedFields: string[]) => {
+  clearedFields.forEach((field) => helpers.setFieldValue(field, '', false));
+  helpers.setFieldTouched(passwordField, true, false);
+  helpers.setFieldError(passwordField, message);
+};

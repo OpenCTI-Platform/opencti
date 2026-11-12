@@ -125,6 +125,32 @@ describe('ForcePasswordChange (public login)', () => {
     expect(handleErrorInForm).not.toHaveBeenCalled();
   });
 
+  it('shows no error once a new password is accepted after a recently used one was refused', async () => {
+    vi.stubGlobal('location', { ...window.location, reload: vi.fn() });
+    const reusedMessage = 'This password has already been used recently. Please choose a different one.';
+    const { user } = renderWithLoginContext(<ForcePasswordChange policies={basePolicies} />);
+    await user.type(screen.getByLabelText('New password'), 'OldPass1!');
+    await user.type(screen.getByLabelText('Confirmation'), 'OldPass1!');
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+    act(() => {
+      (commitFnMock as Mock).mock.calls[0][0].onError?.({ res: { errors: [{ message: 'reused', name: 'PASSWORD_REUSED', extensions: { code: 'PASSWORD_REUSED' } }] } });
+    });
+    expect(await screen.findByText(reusedMessage)).toBeDefined();
+
+    await user.type(screen.getByLabelText('New password'), 'NewPass2!');
+    await user.type(screen.getByLabelText('Confirmation'), 'NewPass2!');
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+    await waitFor(() => expect(commitFnMock).toHaveBeenCalledTimes(2));
+    act(() => {
+      (commitFnMock as Mock).mock.calls[1][0].onCompleted?.();
+    });
+
+    // The refusal was not the starting state of the form: emptying it after the success does not bring the message back
+    expect(screen.queryByText(reusedMessage)).toBeNull();
+    expect((screen.getByLabelText('New password') as HTMLInputElement).value).toBe('');
+    expect((screen.getByLabelText('Confirmation') as HTMLInputElement).value).toBe('');
+  });
+
   it('shows the password history rule when the platform enforces it', () => {
     renderWithLoginContext(<ForcePasswordChange policies={{ historyCount: 3 }} />);
     expect(screen.getByText('Must be different from your last 3 passwords')).toBeDefined();

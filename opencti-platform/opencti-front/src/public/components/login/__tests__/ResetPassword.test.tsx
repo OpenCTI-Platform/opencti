@@ -82,6 +82,18 @@ describe('ResetPassword, new password step', () => {
     expect(await screen.findByText('Must be different from your last 5 passwords')).toBeDefined();
   });
 
+  it('leaves room between the rules and the first field, for its label once it moves onto the border', async () => {
+    renderNewPasswordStep({ minLength: 8 });
+    const field = (await screen.findByLabelText('Password')).closest('.MuiFormControl-root');
+    expect(field?.classList.contains('mt-4')).toBe(true);
+  });
+
+  it('adds no room above the first field when there are no rules to show', async () => {
+    renderNewPasswordStep();
+    const field = (await screen.findByLabelText('Password')).closest('.MuiFormControl-root');
+    expect(field?.classList.contains('mt-4')).toBe(false);
+  });
+
   it('stays on the step, clears the fields and says why when the password was used recently', async () => {
     const { handleErrorInForm } = await import('../../../../relay/environment');
     const { user } = renderNewPasswordStep();

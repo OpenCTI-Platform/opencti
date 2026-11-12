@@ -1,5 +1,12 @@
-import { describe, expect, it } from 'vitest';
-import { PASSWORD_CHANGE_THROTTLED, PASSWORD_RESET_EXPIRED, PASSWORD_REUSED, passwordChangeErrorCode, passwordChangeErrorMessages } from './passwordChangeErrors';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  PASSWORD_CHANGE_THROTTLED,
+  PASSWORD_RESET_EXPIRED,
+  PASSWORD_REUSED,
+  passwordChangeErrorCode,
+  passwordChangeErrorMessages,
+  showPasswordFieldError,
+} from './passwordChangeErrors';
 
 const relayError = (errors: unknown[]) => ({ res: { errors } });
 
@@ -35,5 +42,20 @@ describe('passwordChangeErrorMessages', () => {
 
   it('recognises the expired reset code', () => {
     expect(passwordChangeErrorCode(relayError([{ message: 'x', extensions: { code: PASSWORD_RESET_EXPIRED } }]))).toBe(PASSWORD_RESET_EXPIRED);
+  });
+});
+
+describe('showPasswordFieldError', () => {
+  it('clears the typed passwords without validating them, then says why under the new password field', () => {
+    const helpers = { setFieldValue: vi.fn(), setFieldTouched: vi.fn(), setFieldError: vi.fn() };
+    showPasswordFieldError(helpers, 'Used recently', 'password', ['password', 'confirmation']);
+    expect(helpers.setFieldValue).toHaveBeenCalledTimes(2);
+    expect(helpers.setFieldValue).toHaveBeenCalledWith('password', '', false);
+    expect(helpers.setFieldValue).toHaveBeenCalledWith('confirmation', '', false);
+    expect(helpers.setFieldTouched).toHaveBeenCalledWith('password', true, false);
+    expect(helpers.setFieldError).toHaveBeenCalledWith('password', 'Used recently');
+    // Last, so that nothing set after it replaces the message
+    const lastOtherCall = Math.max(...helpers.setFieldValue.mock.invocationCallOrder, ...helpers.setFieldTouched.mock.invocationCallOrder);
+    expect(helpers.setFieldError.mock.invocationCallOrder[0]).toBeGreaterThan(lastOtherCall);
   });
 });
