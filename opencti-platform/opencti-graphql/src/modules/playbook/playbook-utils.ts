@@ -321,3 +321,91 @@ export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string
   });
   return finalPlaybookDefinition;
 };
+
+/**
+ * Parse a value that must be a string holding a JSON object (not an array, a number or null).
+ *
+ * @param value Value to parse.
+ * @param errorMessage Message of the FunctionalError thrown when the value is invalid.
+ * @param errorData Context added to the FunctionalError.
+ * @returns The parsed object.
+ * @throws FunctionalError if the value is not a string holding a JSON object.
+ */
+const parseJSONObject = (value: unknown, errorMessage: string, errorData: Record<string, unknown>): Record<string, unknown> => {
+  if (typeof value !== 'string') {
+    throw FunctionalError(errorMessage, {
+      ...errorData,
+      reason: 'Expected a stringified JSON object',
+    });
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch (error) {
+    throw FunctionalError(errorMessage, {
+      ...errorData,
+      reason: (error as Error).message,
+    });
+  }
+
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw FunctionalError(errorMessage, {
+      ...errorData,
+      reason: 'Expected a JSON object',
+    });
+  }
+  return parsed as Record<string, unknown>;
+};
+
+// Configuration fields holding stringified filters, parsed again by components and the cache manager.
+const PLAYBOOK_NODE_STRINGIFIED_FILTERS_FIELDS = ['filters', 'applyWithFilters'];
+
+/**
+ * Check that the configuration of a playbook node is a JSON object, including
+ * its stringified filters fields. An empty configuration is valid.
+ *
+ * @param node Playbook node to check.
+ * @throws FunctionalError naming the node if its configuration is invalid.
+ */
+export const assertPlaybookNodeConfigurationValid = (node: { name?: string | null; configuration?: string | null }) => {
+  const {
+    name,
+    configuration,
+  } = node;
+  if (!configuration) {
+    return;
+  }
+
+  const errorMessage = `Invalid JSON in configuration of playbook node "${name}"`;
+  const config = parseJSONObject(configuration, errorMessage, { name });
+  PLAYBOOK_NODE_STRINGIFIED_FILTERS_FIELDS.forEach((field) => {
+    if (config[field]) {
+      parseJSONObject(config[field], errorMessage, {
+        name,
+        field,
+      });
+    }
+  });
+};
+
+/**
+ * Check that a playbook definition is a JSON object and that the configuration
+ * of each of its nodes is valid. An empty definition is valid.
+ *
+ * @param playbookDefinition Stringified playbook definition to check.
+ * @throws FunctionalError if the definition or the configuration of one of its nodes is invalid.
+ */
+export const assertPlaybookDefinitionValid = (playbookDefinition?: string | null) => {
+  if (!playbookDefinition) {
+    return;
+  }
+
+  const errorMessage = 'Invalid JSON in playbook definition';
+  const definition = parseJSONObject(playbookDefinition, errorMessage, {});
+  const nodes = definition.nodes ?? [];
+  if (!Array.isArray(nodes)) {
+    throw FunctionalError(errorMessage, { reason: 'Expected nodes to be an array' });
+  }
+  nodes.forEach((node: NodeDefinition) => assertPlaybookNodeConfigurationValid(node));
+};

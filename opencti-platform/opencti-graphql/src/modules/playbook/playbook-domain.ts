@@ -40,7 +40,13 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
-import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren, updateImportedPlaybookDefinitionScope } from './playbook-utils';
+import {
+  assertPlaybookDefinitionValid,
+  assertPlaybookNodeConfigurationValid,
+  checkPlaybookFiltersAndBuildConfigWithCorrectFilters,
+  deleteLinksAndAllChildren,
+  updateImportedPlaybookDefinitionScope,
+} from './playbook-utils';
 import { type SharingConfiguration } from './components/sharing-component';
 import { assertDefinitionRunAsAllowed, assertRunAsUserAllowed, sanitizeDefinitionRunAs } from './components/ai-agent-shared';
 
@@ -199,6 +205,7 @@ const validateNodeRunAs = async (context: AuthContext, user: AuthUser, configura
 
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
   await checkEnterpriseEdition(context);
+  assertPlaybookNodeConfigurationValid(input);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
   await validateNodeRunAs(context, user, configuration);
   const playbook = await findById(context, user, id);
@@ -217,7 +224,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
     name: input.name,
     position: input.position,
     component_id: input.component_id,
-    configuration, // TODO Check valid json
+    configuration,
     description: input.description || undefined,
   });
   const patch: any = { playbook_definition: JSON.stringify(definition) };
@@ -255,6 +262,7 @@ export const playbookReplaceNode = async (
   input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
+  assertPlaybookNodeConfigurationValid(input);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
   await validateNodeRunAs(context, user, configuration);
 
@@ -291,7 +299,7 @@ export const playbookReplaceNode = async (
         name: input.name,
         position: input.position,
         component_id: input.component_id,
-        configuration, // TODO Check valid json
+        configuration,
         description: input.description || undefined,
       };
     }
@@ -312,6 +320,7 @@ export const playbookInsertNode = async (
   input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
+  assertPlaybookNodeConfigurationValid(input);
   await validateNodeRunAs(context, user, input.configuration);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
@@ -330,7 +339,7 @@ export const playbookInsertNode = async (
     name: input.name,
     position: input.position,
     component_id: input.component_id,
-    configuration: input.configuration ?? '{}', // TODO Check valid json
+    configuration: input.configuration ?? '{}',
     description: input.description || undefined,
   });
   // Replace node with new position
@@ -530,6 +539,8 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     throw FunctionalError('Invalid import type, must be playbook', { type: parsedData.type });
   }
   const config = parsedData.configuration;
+  // Check before the scope migration and run_as sanitization, which parse the definition too.
+  assertPlaybookDefinitionValid(config.playbook_definition);
   const updatedPlaybookDefinition = updateImportedPlaybookDefinitionScope(config.playbook_definition, parsedData.openCTI_version);
   // Imported definitions carry user ids from another platform; reset any
   // disallowed AI-agent run_as to the importing user so the import cannot set
