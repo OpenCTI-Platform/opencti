@@ -890,9 +890,11 @@ export const publishWorkflowDefinition = async (
     entitySetting.workflow_id,
   );
   if (freshValidationErrors.length > 0) {
+    // The fresh errors travel with the refusal: the ones stored at save time may no longer hold
     throw FunctionalError('Cannot publish workflow with validation errors', {
       entityType,
       errorCount: freshValidationErrors.length,
+      errors: freshValidationErrors,
     });
   }
 
@@ -935,10 +937,8 @@ export const publishWorkflowDefinition = async (
           );
         }
 
-        // Same guard as validation's STATUS_IN_USE, re-checked here against the correct baseline
-        // (published_version, not draftVersion): validateWorkflowDefinitionData above compares the
-        // draft against itself at publish time (its own DB lookup still finds draft_version, since
-        // it hasn't been cleared yet), so it can never catch a status removed by this same draft.
+        // Same guard as validation's STATUS_IN_USE, re-checked here under the status lock: entities may
+        // have moved into a removed status between the validation above and this point.
         const oldStatusIds = extractCanonicalStateIds(oldDef as Parameters<typeof extractCanonicalStateIds>[0]);
         const newStatusIds = extractCanonicalStateIds(newDef as Parameters<typeof extractCanonicalStateIds>[0]);
         const removedStatusIds = [...oldStatusIds].filter((sid) => !newStatusIds.has(sid));
@@ -1000,7 +1000,8 @@ export const publishWorkflowDefinition = async (
     // CONSISTENCY GUARANTEE: published_version will be in all_versions (already there via draft)
     // Copy draft_version to published_version and clear the draft (no more unpublished changes).
     const updates: EditInput[] = [
-      { key: 'published_version', value: [draftVersion] },
+      // Fresh validation passed above: the errors stored at save time no longer hold
+      { key: 'published_version', value: [{ ...draftVersion, validation_errors: [] }] },
       { key: 'draft_version', value: [] },
     ];
 

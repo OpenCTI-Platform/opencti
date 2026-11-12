@@ -500,7 +500,10 @@ export const validateWorkflowDefinitionData = async (
     if (existingWorkflow) {
       let oldDefinitionData;
       try {
-        const rawContent = existingWorkflow.draft_version?.content ?? existingWorkflow.published_version?.content;
+        // Removals are measured against what is published: a later save of a draft that already dropped a
+        // state must keep reporting it, else the errors vanish while entities still use that status.
+        // A workflow never published falls back to its draft.
+        const rawContent = existingWorkflow.published_version?.content ?? existingWorkflow.draft_version?.content;
         if (rawContent) {
           oldDefinitionData = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
         } else {

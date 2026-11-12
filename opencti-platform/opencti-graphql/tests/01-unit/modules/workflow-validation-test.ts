@@ -858,6 +858,43 @@ describe('Workflow Validation', () => {
     expect(errors.some((e) => e.type === 'STATUS_IN_USE')).toBe(true);
   });
 
+  it('should keep reporting a status in use on a later save, measured against the published version', async () => {
+    vi.mocked(middlewareLoader.storeLoadById).mockReset();
+    vi.mocked(middlewareLoader.fullEntitiesList).mockReset();
+
+    const withoutB = { initialState: 'state-a', states: [{ statusId: 'state-a' }], transitions: [] };
+    // Published: state-a → state-b. A first save already removed state-b from the draft.
+    vi.mocked(middlewareLoader.storeLoadById).mockResolvedValue({
+      id: 'existing-workflow',
+      published_version: {
+        id: 'v1', timestamp: '', createdBy: '',
+        content: JSON.stringify({
+          initialState: 'state-a',
+          states: [{ statusId: 'state-a' }, { statusId: 'state-b' }],
+          transitions: [{ from: 'state-a', to: 'state-b', event: 'proceed' }],
+        }),
+        validation_errors: [],
+      },
+      draft_version: { id: 'v2', timestamp: '', createdBy: '', content: JSON.stringify(withoutB), validation_errors: [] },
+    } as any);
+    vi.mocked(middlewareLoader.fullEntitiesList).mockImplementation(
+      async (_context: any, _user: any, entityTypes: any): Promise<any> => {
+        if (entityTypes.includes('Status')) {
+          return [{ id: 'status-record-b', template_id: 'state-b', type: 'Incident', scope: 'GLOBAL' }];
+        }
+        if (entityTypes.includes('Incident')) {
+          return [{ id: 'incident-1', x_opencti_workflow_id: 'status-record-b' }];
+        }
+        return [];
+      },
+    );
+
+    // Second save of the same draft: state-b is still gone compared to what is published
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(withoutB), 'Incident', 'existing-workflow');
+
+    expect(errors.some((e) => e.type === 'STATUS_IN_USE')).toBe(true);
+  });
+
   it('should allow removing a state whose status is not assigned to any entity', async () => {
     // Reset mocks for this test
     vi.mocked(middlewareLoader.storeLoadById).mockReset();

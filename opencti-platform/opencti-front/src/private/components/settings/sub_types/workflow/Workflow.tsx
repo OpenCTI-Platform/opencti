@@ -306,13 +306,9 @@ const Workflow = ({
   };
 
   // Handle publish action
+  // Always ask the server: the errors stored at save time may no longer hold (e.g. the entities
+  // left a removed status since), and publish re-validates the draft against the live data.
   const handlePublish = () => {
-    if (workflowDefinitionStatus.validationErrors.length > 0) {
-      MESSAGING$.notifyError(
-        <WorkflowValidationErrorsToastContent errors={workflowDefinitionStatus.validationErrors} t_i18n={t_i18n} />,
-      );
-      return;
-    }
     commitPublish({
       variables: { entityType },
       onCompleted: () => {
@@ -324,9 +320,19 @@ const Workflow = ({
         });
       },
       onError: (error) => {
-        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: { removedStates?: string[]; entityType?: string } } }> } })
+        type PublishErrorData = { removedStates?: string[]; entityType?: string; errors?: WorkflowValidationError[] };
+        const firstError = (error as { res?: { errors?: Array<{ message?: string; extensions?: { data?: PublishErrorData } }> } })
           ?.res?.errors?.[0];
         const data = firstError?.extensions?.data;
+        // A refusal on validation carries the fresh errors: they replace the ones stored at save time
+        if (data?.errors && data.errors.length > 0) {
+          const freshErrors = [...data.errors];
+          setWorkflowDefinitionStatus((prev) => ({ ...prev, validationErrors: freshErrors }));
+          MESSAGING$.notifyError(
+            <WorkflowValidationErrorsToastContent errors={freshErrors} t_i18n={t_i18n} statusTemplates={statusTemplates} />,
+          );
+          return;
+        }
         const publishErrors: WorkflowValidationError[] = [{
           type: 'PUBLISH_ERROR',
           message: firstError?.message ?? t_i18n('An error occurred while publishing the workflow'),

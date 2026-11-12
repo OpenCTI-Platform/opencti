@@ -565,13 +565,13 @@ describe('Workflow Component', () => {
   });
 
   describe('Publish functionality', () => {
-    it('should call notifyError with validation errors toast when pre-existing errors exist', async () => {
+    it('should ask the server even when errors were stored at save time', async () => {
       const user = userEvent.setup();
       const { usePreloadedQuery } = await import('react-relay');
       vi.mocked(usePreloadedQuery).mockReturnValueOnce({
         workflowDefinition: {
           ...mockWorkflowDefinition,
-          errors: [{ type: 'MISSING_TRANSITION', message: 'State has no outgoing transition', path: [] }],
+          errors: [{ type: 'STATUS_IN_USE', message: 'Cannot remove statuses status-1 that are currently assigned to entities', path: [] }],
         },
         statusTemplates: { edges: [{ node: { id: 'status-1', name: 'Open', color: '#00FF00' } }] },
         members: { edges: [] },
@@ -579,10 +579,39 @@ describe('Workflow Component', () => {
 
       renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
 
-      // publish-button is disabled when there are errors; use force-publish-button to invoke handlePublish directly
+      // The entities may have moved since the save: only the server knows
       await user.click(screen.getByTestId('force-publish-button'));
 
-      expect(mockNotifyError).toHaveBeenCalled();
+      expect(mockPublishWorkflowDefinition).toHaveBeenCalledWith(
+        expect.objectContaining({ variables: { entityType: 'DraftWorkspace' } }),
+      );
+      expect(mockNotifyError).not.toHaveBeenCalled();
+    });
+
+    it('should show the fresh errors the server returns when it refuses to publish', async () => {
+      const user = userEvent.setup();
+      renderWithTheme(<Workflow queryRef={mockQueryRef} depsQueryRef={mockDepsQueryRef} onRefetch={mockOnRefetch} entityType="DraftWorkspace" />);
+
+      await user.click(screen.getByTestId('publish-button'));
+
+      const publishCall = mockPublishWorkflowDefinition.mock.calls[0];
+      publishCall?.[0]?.onError?.({
+        res: {
+          errors: [{
+            message: 'Cannot publish workflow with validation errors',
+            extensions: { data: { errors: [{ type: 'STATE_UNREACHABLE', message: 'State is not reachable', path: [] }] } },
+          }],
+        },
+      });
+
+      const toastElement = mockNotifyError.mock.calls[0][0];
+      const { getByText } = render(
+        <ThemeProvider theme={testTheme}>{toastElement}</ThemeProvider>,
+      );
+      expect(getByText(/State is not reachable/)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId('publish-button')).toBeDisabled();
+      });
     });
 
     it('should call commitPublish when there are no validation errors', async () => {

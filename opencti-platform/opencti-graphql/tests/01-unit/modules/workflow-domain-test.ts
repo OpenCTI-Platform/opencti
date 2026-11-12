@@ -1784,6 +1784,55 @@ describe('Workflow Domain', () => {
     await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toThrow('Cannot publish workflow with validation errors');
   });
 
+  it('should return the fresh validation errors when publish is refused', async () => {
+    const draftVersion = {
+      id: 'draft-version-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: '{"name":"Invalid Workflow","initialState":"open","states":[],"transitions":[]}',
+      validation_errors: [],
+    };
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({ id: 'workflow-id', name: 'Invalid Workflow', draft_version: draftVersion, all_versions: [draftVersion] });
+    const freshErrors = [{ type: 'STATUS_IN_USE', message: 'Cannot remove statuses new', path: [{ id: 'incident-1', entity_type: 'Incident' }] }];
+    (validateWorkflowDefinitionData as any).mockResolvedValueOnce(freshErrors);
+
+    await expect(publishWorkflowDefinition(mockContext, mockUser, 'Incident')).rejects.toMatchObject({
+      extensions: { data: { errors: freshErrors } },
+    });
+  });
+
+  it('should not carry the draft stale validation errors into the published version', async () => {
+    const draftVersion = {
+      id: 'draft-version-1',
+      timestamp: '2024-01-01T00:00:00Z',
+      createdBy: 'user-1',
+      content: '{"name":"Test Workflow","initialState":"open","states":[],"transitions":[]}',
+      // Computed at save time, before the entities moved out of the removed status
+      validation_errors: [{ type: 'STATUS_IN_USE', message: 'Cannot remove statuses new', path: [] }],
+    };
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockResolvedValue({
+      id: 'workflow-id',
+      name: 'Test Workflow',
+      published_version: draftVersion,
+      draft_version: draftVersion,
+      all_versions: [draftVersion],
+    });
+
+    await publishWorkflowDefinition(mockContext, mockUser, 'Incident');
+
+    expect(updateAttribute).toHaveBeenCalledWith(
+      mockContext,
+      mockUser,
+      'workflow-id',
+      'WorkflowDefinition',
+      expect.arrayContaining([
+        { key: 'published_version', value: [{ ...draftVersion, validation_errors: [] }] },
+      ]),
+    );
+  });
+
   it('should fail to publish workflow when no draft_version exists', async () => {
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
     (storeLoadById as any).mockResolvedValue({
