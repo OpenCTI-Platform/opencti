@@ -1254,42 +1254,55 @@ const findStatusesByTemplateIds = (
 
 /**
  * Request access Approved / Declined markers of the published version cannot leave a state that
- * still holds RFIs, and no transition may be added out of such a state. A state holds RFIs when a
- * workflow instance sits in it or an RFI still carries its REQUEST_ACCESS `Status`.
+ * still holds RFIs, no transition may be added out of such a state, and a marker cannot be newly
+ * placed on a state that holds RFIs (they would sit in a terminal outcome with no decision applied).
+ * A state holds RFIs when a workflow instance sits in it or an RFI still carries its REQUEST_ACCESS
+ * `Status`. The legacy Approved / Declined `Status` of an outcome is not counted for that outcome:
+ * its RFIs were already decided that way, which is what the first publish of a migration relies on.
+ * `oldDefinitionData` is undefined on the first publish.
  */
 const findRequestAccessOutcomeViolations = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
   workflowDefinitionId: string,
-  oldDefinitionData: WorkflowDefinitionData,
+  oldDefinitionData: WorkflowDefinitionData | undefined,
   newDefinitionData: WorkflowDefinitionData,
 ): Promise<WorkflowValidationError[]> => {
-  const outcomeStatesOf = (definitionData: WorkflowDefinitionData) => (definitionData.states ?? [])
+  const outcomeStatesOf = (definitionData: WorkflowDefinitionData | undefined) => (definitionData?.states ?? [])
     .filter((state) => state.requestAccessOutcome);
   const previousOutcomeStates = outcomeStatesOf(oldDefinitionData);
-  const newOutcomeStateIds = new Map(outcomeStatesOf(newDefinitionData).map((state) => [state.requestAccessOutcome, state.statusId]));
-  const transitionKeys = (definitionData: WorkflowDefinitionData) => (definitionData.transitions ?? [])
+  const previousOutcomeStateIds = new Map(previousOutcomeStates.map((state) => [state.requestAccessOutcome, state.statusId]));
+  const newOutcomeStates = outcomeStatesOf(newDefinitionData);
+  const newOutcomeStateIds = new Map(newOutcomeStates.map((state) => [state.requestAccessOutcome, state.statusId]));
+  const transitionKeys = (definitionData: WorkflowDefinitionData | undefined) => (definitionData?.transitions ?? [])
     .flatMap((transition) => (Array.isArray(transition.from) ? transition.from : [transition.from]).map((from) => `${from}::${transition.event}::${transition.to}`));
   const previousTransitionKeys = new Set(transitionKeys(oldDefinitionData));
   const addedTransitionKeys = transitionKeys(newDefinitionData).filter((key) => !previousTransitionKeys.has(key));
+
+  const requestAccessConfiguration = (await getWorkflowConfig(context, user, entityType))?.request_access_workflow;
+  const legacyOutcomeStatusIds: Record<RequestAccessOutcome, string | undefined> = {
+    APPROVED: requestAccessConfiguration?.approved_workflow_id ?? undefined,
+    DECLINED: requestAccessConfiguration?.declined_workflow_id ?? undefined,
+  };
+  const holdsRfis = async (stateId: string, ignoredStatusId?: string) => {
+    if (oldDefinitionData && (await findInstancesInStates(context, user, [stateId], workflowDefinitionId)).length > 0) return true;
+    const statuses = await findStatusesByTemplateIds(context, user, entityType, [stateId], StatusScope.RequestAccess);
+    for (const status of statuses) {
+      if (status.id !== ignoredStatusId && await isStatusReferencedByEntity(context, user, entityType, status.id)) return true;
+    }
+    return false;
+  };
+  const labelOf = (outcome: RequestAccessOutcome) => (outcome === 'APPROVED' ? 'Approved' : 'Declined');
 
   const errors: WorkflowValidationError[] = [];
   for (const state of previousOutcomeStates) {
     const moved = newOutcomeStateIds.get(state.requestAccessOutcome) !== state.statusId;
     const gainsTransition = addedTransitionKeys.some((key) => key.startsWith(`${state.statusId}::`));
     if (!moved && !gainsTransition) continue;
+    if (!await holdsRfis(state.statusId)) continue;
 
-    let holdsRfis = (await findInstancesInStates(context, user, [state.statusId], workflowDefinitionId)).length > 0;
-    if (!holdsRfis) {
-      const statuses = await findStatusesByTemplateIds(context, user, entityType, [state.statusId], StatusScope.RequestAccess);
-      for (const status of statuses) {
-        holdsRfis = holdsRfis || await isStatusReferencedByEntity(context, user, entityType, status.id);
-      }
-    }
-    if (!holdsRfis) continue;
-
-    const label = state.requestAccessOutcome === 'APPROVED' ? 'Approved' : 'Declined';
+    const label = labelOf(state.requestAccessOutcome!);
     if (moved) {
       errors.push({
         type: 'REQUEST_ACCESS_OUTCOME_MOVED',
@@ -1302,6 +1315,15 @@ const findRequestAccessOutcomeViolations = async (
         message: `No transition can be added out of state '${state.statusId}', the ${label} state of the published version, while it still holds requests`,
       });
     }
+  }
+  for (const state of newOutcomeStates) {
+    const outcome = state.requestAccessOutcome!;
+    if (previousOutcomeStateIds.get(outcome) === state.statusId) continue;
+    if (!await holdsRfis(state.statusId, legacyOutcomeStatusIds[outcome])) continue;
+    errors.push({
+      type: 'REQUEST_ACCESS_OUTCOME_PLACED',
+      message: `The ${labelOf(outcome)} marker cannot be placed on state '${state.statusId}' while it holds undecided requests`,
+    });
   }
   return errors;
 };
@@ -1400,6 +1422,31 @@ export const publishWorkflowDefinition = async (
   // based on its now-stale check — clearing `to_be_deleted_at` does not cancel a deletion in progress.
   const lock = await lockResources([getWorkflowStatusLockKey(entityType)]);
   try {
+    if (scope === StatusScope.RequestAccess) {
+      const parseContent = (raw: unknown): WorkflowDefinitionData | undefined => {
+        try {
+          return (typeof raw === 'string' ? JSON.parse(raw) : raw) as WorkflowDefinitionData;
+        } catch (_) {
+          return undefined;
+        }
+      };
+      const newDefinitionData = parseContent(draftVersion.content);
+      const outcomeErrors = !newDefinitionData ? [] : await findRequestAccessOutcomeViolations(
+        executionContext,
+        executionUser,
+        entityType,
+        workflowDefinitionEntity.id,
+        workflowDefinitionEntity.published_version ? parseContent(workflowDefinitionEntity.published_version.content) : undefined,
+        newDefinitionData,
+      );
+      if (outcomeErrors.length > 0) {
+        throw FunctionalError('Cannot publish workflow with validation errors', {
+          entityType,
+          errorCount: outcomeErrors.length,
+          errors: outcomeErrors,
+        });
+      }
+    }
     // Re-check at publish time: ensure the draft does not remove non-ending states that still have
     // active workflow instances. The validation_errors on the draft were computed at save time and
     // may be stale (instances may have moved into those states since the draft was saved).
@@ -1417,17 +1464,6 @@ export const publishWorkflowDefinition = async (
       }
 
       if (oldDef && newDef) {
-        if (scope === StatusScope.RequestAccess) {
-          const outcomeErrors = await findRequestAccessOutcomeViolations(executionContext, executionUser, entityType, workflowDefinitionEntity.id, oldDef, newDef);
-          if (outcomeErrors.length > 0) {
-            throw FunctionalError('Cannot publish workflow with validation errors', {
-              entityType,
-              errorCount: outcomeErrors.length,
-              errors: outcomeErrors,
-            });
-          }
-        }
-
         // Same rule as validation (shared function): instances in a removed non-ending state block the
         // removal, ending states and completed instances do not.
         const { states: blockingStates, instances: blockingInstances } = await findInstancesBlockingStateRemoval(
@@ -1815,6 +1851,8 @@ const toAllowedTransition = (
   statuses: BasicWorkflowStatus[],
   scope: StatusScope,
   definitionData: Pick<WorkflowDefinitionResponse, 'states'>,
+  // A plain RFI on a request access status carries no request: none of its transitions decides one
+  decidesRequest = scope === StatusScope.RequestAccess,
 ) => ({
   event: transition.event,
   toState: transition.to ?? null,
@@ -1824,7 +1862,7 @@ const toAllowedTransition = (
   actions: transition.actionTypes || [],
   requiresShareOrganizationInput: transition.requiresShareOrganizationInput ?? false,
   requiresUnshareOrganizationInput: transition.requiresUnshareOrganizationInput ?? false,
-  requestAccessOutcome: (scope === StatusScope.RequestAccess ? findStateOutcome(definitionData, transition.to) : undefined) ?? null,
+  requestAccessOutcome: (decidesRequest ? findStateOutcome(definitionData, transition.to) : undefined) ?? null,
 });
 
 type TransitionRefusal = 'forbidden' | 'noLiveEntity' | 'confidence';
@@ -1934,7 +1972,7 @@ export const getAllowedTransitions = async (
         const passes = await condition(conditionContext as any);
         if (!passes) return null;
       }
-      return toAllowedTransition(transition, statuses, scope, definitionData);
+      return toAllowedTransition(transition, statuses, scope, definitionData, scope === StatusScope.RequestAccess && hasRequestAccess(entity));
     }),
   )).filter((t): t is NonNullable<typeof t> => t !== null);
 
@@ -2226,7 +2264,9 @@ export const triggerWorkflowEvent = async (
       return { success: false, reason: missingInput, entity };
     }
     // Entering an outcome state decides the access request, which takes the request approver rights of the actual caller.
-    const requestAccessOutcome = resolved.scope === StatusScope.RequestAccess ? findStateOutcome(definitionData, transition?.to) : undefined;
+    // A plain RFI on a request access status carries no request to decide, like resolveRequestAccessWorkflowState
+    const decidesRequest = resolved.scope === StatusScope.RequestAccess && hasRequestAccess(entity);
+    const requestAccessOutcome = decidesRequest ? findStateOutcome(definitionData, transition?.to) : undefined;
     if (requestAccessOutcome) {
       await assertCanEnterRequestAccessOutcome(context, user, entity as BasicStoreEntityCaseRfi);
       assertNoFailedRequestAccessShare(instanceEntity, eventName, transition?.to);
@@ -2325,12 +2365,16 @@ export const triggerWorkflowEvent = async (
       ...(resolvedClosingReason.closingReason ? { closing_reason: resolvedClosingReason.closingReason } : {}),
     });
 
+    // A retry of the failed transition that now completes at once ends that failure, before the request is decided below
+    const failedTransition = instanceEntity.pendingStatus === 'error' ? parsePendingTransition(instanceEntity) : undefined;
+    const retriedFailedTransition = !!failedTransition && failedTransition.event === eventName && failedTransition.toState === newState;
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'currentState', value: [newState] },
       { key: 'history', value: [JSON.stringify(history)] },
       ...(result.workflowCompleted ? [{ key: 'completed', value: [true] }] : []),
+      ...(retriedFailedTransition ? [{ key: 'pendingStatus', value: [null] }, { key: 'pendingTransition', value: [null] }] : []),
       // The transition re-projects the status, ending any kept external write.
-      ...(instanceEntity.pendingStatus ? [] : [{ key: 'pendingError', value: [null] }]),
+      ...(instanceEntity.pendingStatus && !retriedFailedTransition ? [] : [{ key: 'pendingError', value: [null] }]),
     ]);
 
     // Keep the legacy `x_opencti_workflow_id` in sync with the new state.
@@ -2386,8 +2430,8 @@ const loadWorkflowBypass = async (context: AuthContext, user: AuthUser, entityId
   if (isRequestAccess && (scope !== StatusScope.RequestAccess || !await resolveRequestAccessWorkflowState(executionContext, entity))) {
     throw FunctionalError('RequestAccess workflow bypass is not supported');
   }
-  const currentState = instanceEntity?.currentState ?? (definitionData?.states?.some((state) => state.statusId === suppliedStatus?.template_id)
-    ? suppliedStatus?.template_id : definitionData?.initialState);
+  // Without instance, the same state as transitions and allowedTransitions see
+  const currentState = instanceEntity?.currentState ?? (definitionData ? resolveSuppliedStatus(definitionData, suppliedStatus) ?? definitionData.initialState : undefined);
   return { entity, definitionData, instanceEntity, suppliedStatus, currentState, scope, executionContext, executionUser };
 };
 

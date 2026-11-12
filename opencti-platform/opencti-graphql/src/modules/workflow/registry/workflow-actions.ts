@@ -131,9 +131,10 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     const requestedEntityIds = requestAccess.entities as string[];
     // AUTHOR is the requesting organization recorded on the request at creation, which only the workflow can write.
     // The RFI author is not used: any editor of the RFI can change it, and with it who receives the entities.
+    // Only the first member is the organization validated at creation and named on the RFI, as the legacy approval shares.
     const requestedOrganizations: string[] = params?.organizations ?? [];
     const requestingOrganizations = requestedOrganizations.includes('AUTHOR') && Array.isArray(requestAccess.members)
-      ? (requestAccess.members as unknown[]).filter((member): member is string => typeof member === 'string' && member.length > 0)
+      ? (requestAccess.members as unknown[]).slice(0, 1).filter((member): member is string => typeof member === 'string' && member.length > 0)
       : [];
     // Other keys reuse the dynamic key resolution of authorized members; the access right is irrelevant here.
     const resolvedOrganizationIds = resolveDynamicAuthorizedMembers(

@@ -3,9 +3,13 @@ import { StatusScopeEnum } from '../../../utils/statusConstants';
 
 export const generateConnectionId = ({ recordId, key, params }: { recordId?: string; key: string; params?: Variables }) => ConnectionHandler.getConnectionID(recordId ?? 'root', key, params ?? {});
 
-// A request access RFI is decided through its workflow once its instance runs the request access definition
-export const isWorkflowDrivenRequestAccess = (workflowInstance?: { readonly scope?: string | null } | null) => {
-  return workflowInstance?.scope === StatusScopeEnum.REQUEST_ACCESS;
+// A request access RFI is decided through its workflow once its instance runs the request access definition.
+// A plain RFI on a request access status carries no request: it keeps its usual status field.
+export const isWorkflowDrivenRequestAccess = (rfi: {
+  readonly x_opencti_request_access?: string | null;
+  readonly workflowInstance?: { readonly scope?: string | null } | null;
+}) => {
+  return !!rfi.x_opencti_request_access && rfi.workflowInstance?.scope === StatusScopeEnum.REQUEST_ACCESS;
 };
 
 export const CaseTaskFragment = graphql`

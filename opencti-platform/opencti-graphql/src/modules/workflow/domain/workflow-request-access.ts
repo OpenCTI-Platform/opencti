@@ -47,9 +47,12 @@ export const getRequestAccessWorkflow = async (
 };
 
 /** Whether the request of an RFI is decided on the published request-access workflow rather than the legacy flow. */
-export const isWorkflowDrivenRequestAccess = async (context: AuthContext, rfiId: string): Promise<boolean> => {
+export type RequestAccessWorkflowState = NonNullable<Awaited<ReturnType<typeof resolveRequestAccessWorkflowState>>>;
+
+/** Where the request of an RFI stands on the request-access workflow, or null when it runs on the legacy flow. */
+export const loadRequestAccessWorkflowState = async (context: AuthContext, rfiId: string): Promise<RequestAccessWorkflowState | null> => {
   const rfi = await storeLoadById<BasicStoreEntityCaseRfi>(context, SYSTEM_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
-  return !!rfi && !!await resolveRequestAccessWorkflowState(context, rfi);
+  return rfi ? resolveRequestAccessWorkflowState(context, rfi) : null;
 };
 
 /** Id of the state marked as the Approved / Declined outcome of the definition. */
@@ -183,9 +186,10 @@ export const fireRequestAccessOutcomeTransition = async (
   user: AuthUser,
   rfiId: string,
   outcome: RequestAccessOutcome,
+  // Already resolved by the caller: saves reloading the RFI, its definition and its instance
+  resolvedWorkflowState?: RequestAccessWorkflowState,
 ): Promise<TriggerResult> => {
-  const rfi = await storeLoadById<BasicStoreEntityCaseRfi>(context, SYSTEM_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
-  const workflowState = rfi ? await resolveRequestAccessWorkflowState(context, rfi) : null;
+  const workflowState = resolvedWorkflowState ?? await loadRequestAccessWorkflowState(context, rfiId);
   if (!workflowState) {
     throw FunctionalError('This request access is not decided on a request access workflow', { id: rfiId });
   }

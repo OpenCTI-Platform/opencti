@@ -205,7 +205,7 @@ const LegacyProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewPr
 
 const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) => {
   const { isFeatureEnable } = useHelper();
-  const isWorkflowDriven = isWorkflowUiEnabledForType(data.entity_type, isFeatureEnable) && isWorkflowDrivenRequestAccess(data.workflowInstance);
+  const isWorkflowDriven = isWorkflowUiEnabledForType(data.entity_type, isFeatureEnable) && isWorkflowDrivenRequestAccess(data);
   return isWorkflowDriven ? <WorkflowProcessingStatusOverview data={data} /> : <LegacyProcessingStatusOverview data={data} />;
 };
 

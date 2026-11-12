@@ -210,7 +210,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
   };
   const editor = useFormEditor(caseData as GenericData, enableReferences, queries, validator);
   // A workflow-driven request access RFI changes status through its workflow transitions only
-  const isStatusEditable = caseData.workflowEnabled && !isWorkflowDrivenRequestAccess(caseData.workflowInstance);
+  const isStatusEditable = caseData.workflowEnabled && !isWorkflowDrivenRequestAccess(caseData);
 
   const onSubmit: FormikConfig<CaseRfiEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, x_opencti_workflow_id, ...otherValues } = values;

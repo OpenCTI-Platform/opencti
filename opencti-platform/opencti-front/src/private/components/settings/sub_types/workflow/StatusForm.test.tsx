@@ -331,7 +331,7 @@ describe('StatusForm – Request access outcome', () => {
 
     await pickOutcome(user, /^approved$/i);
 
-    expect((screen.getByRole('switch', { name: /share requested entities on enter/i }) as HTMLInputElement).checked).toBe(true);
+    expect(screen.getByRole('switch', { name: /share requested entities on enter/i })).toHaveAttribute('aria-checked', 'true');
   });
 
   it('lists the automatic bookkeeping of an outcome state read-only', () => {
@@ -349,8 +349,8 @@ describe('StatusForm – Request access outcome', () => {
     const existing = shareAction([{ value: 'AUTHOR', label: 'Author' }]);
     const { user } = renderForm({ requestAccessOutcome: 'APPROVED', onEnter: [existing], onExit: [] }, onSubmit, 'Case-Rfi', 'REQUEST_ACCESS');
 
-    const toggle = screen.getByRole('switch', { name: /share requested entities on enter/i }) as HTMLInputElement;
-    expect(toggle.checked).toBe(true);
+    const toggle = screen.getByRole('switch', { name: /share requested entities on enter/i });
+    expect(toggle).toHaveAttribute('aria-checked', 'true');
     await user.click(toggle);
     submit();
 

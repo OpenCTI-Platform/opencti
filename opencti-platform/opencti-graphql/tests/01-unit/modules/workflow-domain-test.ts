@@ -4509,6 +4509,41 @@ describe('triggerWorkflowEvent — status projection', () => {
     expect((updateAttribute as any).mock.calls[0][4]).toEqual(expect.arrayContaining([{ key: 'pendingError', value: [null] }]));
   });
 
+  it('clears the failed transition when a retry of the same transition completes at once', async () => {
+    setup();
+    (loadEntity as any).mockResolvedValue({
+      ...existingInstance,
+      pendingStatus: 'error',
+      pendingError: 'share failed',
+      pendingTransition: JSON.stringify({ event: 'close', toState: 'closed' }),
+    });
+
+    await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close');
+
+    expect((updateAttribute as any).mock.calls[0][4]).toEqual(expect.arrayContaining([
+      { key: 'pendingStatus', value: [null] },
+      { key: 'pendingTransition', value: [null] },
+      { key: 'pendingError', value: [null] },
+    ]));
+  });
+
+  it('keeps a failed transition that the completed transition does not retry', async () => {
+    setup();
+    (loadEntity as any).mockResolvedValue({
+      ...existingInstance,
+      pendingStatus: 'error',
+      pendingError: 'share failed',
+      pendingTransition: JSON.stringify({ event: 'reopen', toState: 'open' }),
+    });
+
+    await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close');
+
+    const keys = (updateAttribute as any).mock.calls[0][4].map((input: any) => input.key);
+    expect(keys).not.toContain('pendingStatus');
+    expect(keys).not.toContain('pendingTransition');
+    expect(keys).not.toContain('pendingError');
+  });
+
   it('calls projectWorkflowState with the entity, new state, and the instance scope right after the instance is updated', async () => {
     setup();
 
@@ -6587,6 +6622,38 @@ describe('scope-aware workflow definitions', () => {
       await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess)).resolves.toMatchObject({ published: true });
     });
 
+    const markerOnReviewDraft = versionWith('ra-v2', [
+      outcomeState('new'), outcomeState('review', 'APPROVED'), outcomeState('approved'), outcomeState('declined', 'DECLINED'),
+    ], [{ from: 'new', to: 'review' }, { from: 'new', to: 'declined' }]);
+
+    it('refuses to place the Approved marker on a state holding undecided instances', async () => {
+      arrange(markerOnReviewDraft);
+      mockStore([{ currentState: 'review' }]);
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess))
+        .rejects.toMatchObject(publishErrors('REQUEST_ACCESS_OUTCOME_PLACED'));
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
+
+    it('refuses to place a marker on a state whose Status is assigned to an RFI on the first publish', async () => {
+      arrange(markerOnReviewDraft, false);
+      mockStore([], { 'ra-review': ['rfi-1'] });
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess))
+        .rejects.toMatchObject(publishErrors('REQUEST_ACCESS_OUTCOME_PLACED'));
+    });
+
+    it('lets the first publish place a marker on the legacy outcome status', async () => {
+      arrange(versionWith('ra-v1', baseStates, baseTransitions), false);
+      (findByType as any).mockResolvedValue({
+        ...bothSetting,
+        request_access_workflow: { ...bothSetting.request_access_workflow, approved_workflow_id: 'ra-approved', declined_workflow_id: 'ra-declined' },
+      });
+      mockStore([], { 'ra-approved': ['rfi-1'], 'ra-declined': ['rfi-2'] });
+
+      await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess)).resolves.toMatchObject({ published: true });
+    });
+
     it('resyncs approved and declined ids on publish', async () => {
       arrange(movedMarkerDraft);
       mockStore([]);
@@ -6838,7 +6905,7 @@ describe('Instance scope as the single source of truth', () => {
       (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
         if (id === 'global-def') return Promise.resolve(definitionEntity(id, outcomeContent('open')));
         if (id === 'ra-def') return Promise.resolve(definitionEntity(id, outcomeContent('new')));
-        if (id === 'rfi-id') return Promise.resolve(rfi);
+        if (id === 'rfi-id') return Promise.resolve({ ...rfi, x_opencti_request_access: JSON.stringify({ status: 'NEW' }) });
         return Promise.resolve(null);
       });
     });
@@ -6859,6 +6926,21 @@ describe('Instance scope as the single source of truth', () => {
     it('never marks the transitions of a Global instance', async () => {
       (findByType as any).mockResolvedValue(bothDefinitions);
       (loadEntity as any).mockResolvedValue(instanceOf('rfi-id', 'open', StatusScope.Global));
+
+      const transitions = await getAllowedTransitions(mockContext, mockUser, 'rfi-id');
+
+      expect(transitions).toHaveLength(3);
+      expect(transitions.every(({ requestAccessOutcome }) => requestAccessOutcome === null)).toBe(true);
+    });
+
+    it('never marks the transitions of a plain RFI sitting on a request access status', async () => {
+      (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+        if (id === 'ra-def') return Promise.resolve(definitionEntity(id, outcomeContent('new')));
+        if (id === 'rfi-id') return Promise.resolve(rfi);
+        return Promise.resolve(null);
+      });
+      (findByType as any).mockResolvedValue(bothDefinitions);
+      (loadEntity as any).mockResolvedValue(instanceOf('rfi-id', 'new', StatusScope.RequestAccess));
 
       const transitions = await getAllowedTransitions(mockContext, mockUser, 'rfi-id');
 

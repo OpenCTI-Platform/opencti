@@ -2,8 +2,8 @@ import { useFormikContext } from 'formik';
 import { useFormatter } from '../../../../../components/i18n';
 import StatusTemplateField from '@components/common/form/StatusTemplateField';
 import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
-import { Alert, Box, FormControlLabel, Switch, Typography } from '@mui/material';
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Box, FormControlLabel, Switch, Typography } from '@mui/material';
+import { Alert, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch as DsSwitch } from '@filigran/design-system';
 import WorkflowFieldList from './WorkflowFieldList';
 import { FEATURE_NAME, REQUEST_ACCESS_AUTHOR_KEY, RequestAccessOutcome, withoutShareRequestedEntities, WorkflowActionType, WorkflowDataType } from './utils';
 import type { WorkflowScope } from '../SubTypeWorkflow';
@@ -92,9 +92,7 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
             </SelectContent>
           </Select>
           {values.requestAccessOutcome && (
-            <Alert severity="info" variant="outlined" data-testid="workflow-status-outcome-bookkeeping">
-              {outcomeBookkeeping[values.requestAccessOutcome]}
-            </Alert>
+            <Alert severity="info" title={outcomeBookkeeping[values.requestAccessOutcome]} data-testid="workflow-status-outcome-bookkeeping" />
           )}
         </Box>
       )}
@@ -121,16 +119,12 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
           )}
           {isApprovedOutcome && (
             <>
-              <FormControlLabel
-                control={(
-                  <Switch
-                    checked={hasShareRequestedEntitiesOnEnter}
-                    disabled={!isEnterpriseEdition}
-                    onChange={(e) => handleToggleShareRequestedEntities(e.target.checked)}
-                    data-testid="workflow-status-onenter-share-requested-entities-toggle"
-                  />
-                )}
+              <DsSwitch
                 label={t_i18n('Share requested entities on enter')}
+                checked={hasShareRequestedEntitiesOnEnter}
+                disabled={!isEnterpriseEdition}
+                onCheckedChange={handleToggleShareRequestedEntities}
+                data-testid="workflow-status-onenter-share-requested-entities-toggle"
               />
               {hasShareRequestedEntitiesOnEnter && <WorkflowFieldList name={WorkflowDataType.onEnter} actionType={WorkflowActionType.shareRequestedEntities} />}
             </>

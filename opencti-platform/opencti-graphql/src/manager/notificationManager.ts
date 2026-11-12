@@ -6,7 +6,7 @@ import { type SizedNotifEvent, type StreamProcessor } from '../database/stream/s
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import {
   executionContext,
@@ -32,7 +32,7 @@ import {
 import { resolveFiltersMapForUser } from '../utils/filtering/filtering-resolution';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
+import { OPENCTI_ADMIN_UUID, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { extractStixRepresentative, extractStixRepresentativeForUser } from '../database/stix-representative';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
@@ -231,8 +231,11 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
       notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
     }
     notificationTriggers.push({ users: [user], trigger: generatePlatformNotificationTrigger(user) });
-    // Admin is always an authorized member of a request access RFI, so it is notified like any other validator.
-    notificationTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
+    // Admin is always an authorized member of a request access RFI. With the request access workflow it is notified
+    // like any other validator; on the legacy flow it stays a fallback, left out of the alerting.
+    if (user.id !== OPENCTI_ADMIN_UUID || isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+      notificationTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
+    }
   }
   // definedTriggers
   for (let index = 0; index < triggers.length; index += 1) {

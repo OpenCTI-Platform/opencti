@@ -746,6 +746,12 @@ describe('ActionRegistry.shareRequestedEntities', () => {
     expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-requester']);
   });
 
+  it('resolves AUTHOR to the first recorded member only, the organization validated at creation', async () => {
+    const ctx = makeRfiCtx({ entities: ['entity-1'], members: ['org-requester', 'org-smuggled'] });
+    await ActionRegistry.shareRequestedEntities(ctx, { organizations: ['AUTHOR'] });
+    expect(addOrganizationRestriction).toHaveBeenCalledWith(ctx.context, ctx.triggeringUser, 'entity-1', ['org-requester']);
+  });
+
   it('throws before sharing anything when one target has restricted_members', async () => {
     vi.mocked(internalLoadById).mockImplementation(async (_context: any, _user: any, id: any) => (
       { id, internal_id: id, ...(id === 'entity-2' ? { restricted_members: [{ id: 'member-1' }] } : {}) }
