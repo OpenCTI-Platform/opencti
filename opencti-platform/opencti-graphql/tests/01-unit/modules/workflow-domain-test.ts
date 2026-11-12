@@ -7368,6 +7368,67 @@ describe('triggerWorkflowEvent — request access outcomes', () => {
       share.mockRestore();
     }
   });
+
+  describe('after the background share failed', () => {
+    const failedShare = (event: string, toState: string) => ({
+      ...raInstance,
+      pendingStatus: 'error',
+      pendingError: 'share task failed',
+      pendingTransition: JSON.stringify({
+        event,
+        toState,
+        syncActions: [],
+        requestAccessOutcome: 'APPROVED',
+        asyncActions: [{ id: 'share-slot', workId: 'work-share', type: 'shareRequestedEntities', status: 'failed' }],
+      }),
+    });
+
+    it('refuses to decline the request', async () => {
+      setup(definitionContent(), 'declined');
+      storedInstance = failedShare('Accept', 'approved');
+
+      const result = await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Reject');
+
+      expect(result).toMatchObject({ success: false, reason: expect.stringContaining('The background share of the requested entities failed') });
+      expect(trigger).not.toHaveBeenCalled();
+      expect(requestAccessWrites()).toHaveLength(0);
+    });
+
+    it('lets the failed approval run again', async () => {
+      setup(definitionContent(), 'approved');
+      storedInstance = failedShare('Accept', 'approved');
+
+      const result = await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Accept');
+
+      expect(result).toMatchObject({ success: true, newState: 'approved' });
+      expect(trigger).toHaveBeenCalledWith('Accept');
+    });
+
+    it('still allows a transition that decides nothing', async () => {
+      setup(definitionContent(), 'review');
+      storedInstance = failedShare('Accept', 'approved');
+
+      const result = await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Review');
+
+      expect(result).toMatchObject({ success: true, newState: 'review' });
+      expect(trigger).toHaveBeenCalledWith('Review');
+    });
+
+    it('does not block a decision when the failed action was not the share', async () => {
+      setup(definitionContent(), 'declined');
+      storedInstance = {
+        ...failedShare('Accept', 'approved'),
+        pendingTransition: JSON.stringify({
+          event: 'Accept', toState: 'approved', syncActions: [],
+          asyncActions: [{ id: 'bulk-slot', workId: 'work-bulk', type: 'asyncBulkAction', status: 'failed' }],
+        }),
+      };
+
+      const result = await triggerWorkflowEvent(mockContext, mockUser, 'rfi-id', 'Reject');
+
+      expect(result).toMatchObject({ success: true, newState: 'declined' });
+    });
+  });
 });
 
 describe('assertExternalStatusWriteAllowed', () => {

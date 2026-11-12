@@ -2229,6 +2229,7 @@ export const triggerWorkflowEvent = async (
     const requestAccessOutcome = resolved.scope === StatusScope.RequestAccess ? findStateOutcome(definitionData, transition?.to) : undefined;
     if (requestAccessOutcome) {
       await assertCanEnterRequestAccessOutcome(context, user, entity as BasicStoreEntityCaseRfi);
+      assertNoFailedRequestAccessShare(instanceEntity, eventName, transition?.to);
     }
 
     // 6. Create instance and trigger the event
@@ -2649,6 +2650,21 @@ const parsePendingTransition = (instanceEntity: WorkflowInstanceStoreEntity): Wo
     return instanceEntity.pendingTransition ? JSON.parse(instanceEntity.pendingTransition) : null;
   } catch {
     return null;
+  }
+};
+
+/**
+ * Refuses to decide a request access while the background share of its requested entities has failed: part of
+ * the access may already be granted, so the request cannot be declined, nor approved some other way, until the
+ * failed transition is fired again or an admin clears it.
+ */
+const assertNoFailedRequestAccessShare = (instanceEntity: WorkflowInstanceStoreEntity, eventName: string, toState: string | null | undefined): void => {
+  if (instanceEntity.pendingStatus !== 'error') return;
+  const failedTransition = parsePendingTransition(instanceEntity);
+  const shareFailed = (failedTransition?.asyncActions ?? []).some((slot) => slot.type === 'shareRequestedEntities' && slot.status === 'failed');
+  const isRetry = failedTransition?.event === eventName && failedTransition?.toState === toState;
+  if (shareFailed && !isRetry) {
+    throw FunctionalError('The background share of the requested entities failed: retry it before deciding the request', { event: eventName });
   }
 };
 
