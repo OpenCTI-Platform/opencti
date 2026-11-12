@@ -217,6 +217,15 @@ describe('Branding import (compute)', () => {
     expect(plan.created.size).toBe(0);
   });
 
+  it('copies a theme whose name only is taken under a free name: a conflict, as the theme the items depend on', async () => {
+    vi.mocked(checkExistingTheme).mockImplementation(async (_context, _user, name) => name === 'Import test theme');
+    const plan = { created: new Set<string>() };
+    const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan, ConfigImportMode.Copy);
+    expect(result).toMatchObject({ status: 'created', exists: false, conflict: true, reason: 'Added as "Import test theme (1)"' });
+    // The copy keeps the standard id of the bundle: the platform item can still take it as its default theme
+    expect(plan.created.has(`branding/${CUSTOM_THEME_ID}`)).toBe(true);
+  });
+
   it('copies a theme that is new as it is, and it is the theme the items depend on', async () => {
     const plan = { created: new Set<string>() };
     const result = await compute('branding', CUSTOM_THEME_ID, themeConfiguration(), plan, ConfigImportMode.Copy);

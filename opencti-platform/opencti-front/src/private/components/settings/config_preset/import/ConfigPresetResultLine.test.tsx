@@ -63,6 +63,15 @@ describe('ConfigPresetResultLine', () => {
     ["The expiration date of the users' passwords changes", "The expiration date of the users' passwords changes"],
     ["The users' passwords no longer expire", "The users' passwords no longer expire"],
     ['Users can view the users of other organizations', 'Users can view the users of other organizations'],
+    ['Several case templates have this name', 'Several case templates have this name'],
+    ['The standard id of the label does not match its value', 'The standard id of the label does not match its value'],
+    ['The standard id of the kill chain phase does not match its names', 'The standard id of the kill chain phase does not match its names'],
+    ['The standard id of the status template does not match its name', 'The standard id of the status template does not match its name'],
+    ['The id of the vocabulary category does not match its category', 'The id of the vocabulary category does not match its category'],
+    ['This vocabulary category is closed, new values cannot be added', 'This vocabulary category is closed, new values cannot be added'],
+    ['Vocabulary entries already exist', 'Vocabulary entries already exist'],
+    ['The name is an alias of the vocabulary entry fimi-report', 'The name is an alias of the vocabulary entry fimi-report'],
+    ['The alias taken belongs to another vocabulary entry', 'The alias taken belongs to another vocabulary entry'],
   ])('translates the reason %s', (reason, text) => {
     testRender(<ConfigPresetResultLine label="Theme" status="SKIPPED" reason={reason} />);
     expect(screen.getByText(text)).toBeInTheDocument();
@@ -71,6 +80,18 @@ describe('ConfigPresetResultLine', () => {
   it('translates each reason of an item that has several, and shows them on one line', () => {
     testRender(<ConfigPresetResultLine label="Group" status="CREATED" reason={'Added as "SOC (1)"\nMarkings not found: PAP:RED'} />);
     expect(screen.getByText('Added as "SOC (1)" · Markings not found: PAP:RED')).toBeInTheDocument();
+  });
+
+  it('translates the reason of each entry of a vocabulary category that fails, whatever the entry is named', () => {
+    const reason = [
+      'my-own-opinion: This vocabulary category is closed, new values cannot be added',
+      'a: b: The alias taken belongs to another vocabulary entry',
+      'weird, name: Something the front does not know',
+    ].join('\n');
+    testRender(<ConfigPresetResultLine label="Opinions" status="FAILED" reason={reason} />);
+    expect(screen.getByText('my-own-opinion: This vocabulary category is closed, new values cannot be added'
+      + ' · a: b: The alias taken belongs to another vocabulary entry'
+      + ' · weird, name: Something the front does not know')).toBeInTheDocument();
   });
 
   it('says an item the platform has already as it is, without a status that would read as if it was ignored', () => {

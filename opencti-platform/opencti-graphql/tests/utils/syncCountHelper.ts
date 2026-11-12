@@ -46,7 +46,11 @@ testCreatedCounter.infrastructure = 1;
 // - 1 created and deleted by stixRelationship-test (time series breakdown)
 testCreatedCounter['intrusion-set'] = 55;
 testCreatedCounter['ipv4-addr'] = 1;
-testCreatedCounter['kill-chain-phase'] = 4;
+// Counts for:
+// - 1 created and deleted by form-submission-test
+// - 3 created and deleted by killChainPhase-import-test
+// - 3 created by the data files the tests load (kill_chain_phases of their objects), never deleted
+testCreatedCounter['kill-chain-phase'] = 7;
 // Counts for:
 // - 3 created and deleted by investigation-enrichment-test
 // - 3 created and deleted by label-import-test
@@ -79,7 +83,9 @@ testCreatedCounter.task = 1;
 testCreatedCounter['threat-actor'] = 33;
 testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
-testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
+// Counts for:
+// - 3 created and deleted by vocabulary-import-test
+testCreatedCounter.vocabulary = VOCABULARY_NUMBERS + 3;
 // 1 created and deleted by ingestionDeduplication-test (a type outside the deduplication allowlist)
 testCreatedCounter.vulnerability = 12;
 // Counts for:
@@ -111,6 +117,9 @@ testUpdatedCounter.grouping = 3;
 testUpdatedCounter.incident = 4;
 testUpdatedCounter.indicator = 33;
 // Counts for:
+// - 3 updated by killChainPhase-import-test
+testUpdatedCounter['kill-chain-phase'] = 3;
+// Counts for:
 // - 1 updated by label-import-test
 testUpdatedCounter.label = 2;
 testUpdatedCounter['malware-analysis'] = 3;
@@ -128,7 +137,9 @@ testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
 testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
 testUpdatedCounter['threat-actor'] = 18;
-testUpdatedCounter.vocabulary = 3;
+// Counts for:
+// - 2 updated by vocabulary-import-test (the description of an entry of the platform, edited then restored)
+testUpdatedCounter.vocabulary = 3 + 2;
 testUpdatedCounter.vulnerability = 5;
 testUpdatedCounter.iccid = 1;
 testUpdatedCounter.imei = 1;
@@ -177,7 +188,10 @@ testDeletedCounter.infrastructure = 1;
 // - 1 created and deleted by stixRelationship-test (time series breakdown)
 testDeletedCounter['intrusion-set'] = 53;
 testDeletedCounter['ipv4-addr'] = 1;
-testDeletedCounter['kill-chain-phase'] = 1; // created and deleted by form-submission-test
+// Counts for:
+// - 1 created and deleted by form-submission-test
+// - 3 deleted by killChainPhase-import-test
+testDeletedCounter['kill-chain-phase'] = 4;
 // Counts for:
 // - 3 created and deleted by investigation-enrichment-test
 // - 3 deleted by label-import-test
@@ -206,6 +220,9 @@ testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
 testDeletedCounter['threat-actor'] = 20;
 testDeletedCounter.tool = 5;
+// Counts for:
+// - 3 deleted by vocabulary-import-test
+testDeletedCounter.vocabulary = 3;
 // 1 by ingestionDeduplication-test
 testDeletedCounter.vulnerability = 6;
 testDeletedCounter.software = 1;

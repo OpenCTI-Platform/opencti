@@ -3,7 +3,7 @@ import { getPlatformDefaultTheme } from '../../../domain/settings';
 import { FunctionalError } from '../../../config/errors';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import { findAllThemes, findThemePaginated } from '../../theme/theme-domain';
-import { getThemeConfigPresetConfiguration } from '../../theme/theme-export';
+import { exportTheme } from '../../theme/theme-export';
 import { THEME_STANDARD_ID_PATTERN } from '../../theme/theme-import-schema';
 import { importTheme } from '../../theme/theme-import';
 import type { BasicStoreEntityTheme } from '../../theme/theme-types';
@@ -25,7 +25,7 @@ const toThemeItem = (theme: BasicStoreEntityTheme, defaultThemeId: string | unde
   label: theme.name,
   translatable: false,
   isDefault: theme.standard_id === defaultThemeId,
-  exporter: async () => getThemeConfigPresetConfiguration(theme),
+  exporter: async () => exportTheme(theme),
 });
 
 const brandingImporter: ConfigPresetImporter = {
@@ -42,8 +42,10 @@ const brandingImporter: ConfigPresetImporter = {
     if (result.status === 'created' && !result.exists) {
       plan.created.add(configPresetPlanKey(BRANDING_FAMILY_ID, item.id));
     }
-    // A theme conflicts when it exists, or when another one has its name: either way a copy is a way out
-    const conflict = result.exists || result.code === 'name_conflict';
+    // A theme conflicts when it exists, or when another one has its name: either way a copy is a way out. A copy that takes another name
+    // (COPY, the default of a partial import) conflicts too: its name is taken, the dialog shows it and offers the choice of the mode
+    const renamedCopy = result.copyName !== undefined && result.copyName !== result.configuration?.name;
+    const conflict = result.exists || result.code === 'name_conflict' || renamedCopy;
     return { ...base, exists: result.exists, conflict, status: result.status, reason: result.reason };
   },
   apply: async (context, user, item, computed, mode) => {

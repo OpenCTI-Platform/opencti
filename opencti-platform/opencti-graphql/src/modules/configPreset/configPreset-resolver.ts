@@ -9,6 +9,7 @@ import {
   saveConfigPresetImportSession,
 } from './import/configPreset-import-session-domain';
 import { findConfigPresetImportRunning } from './import/configPreset-import-running';
+import { configPresetPartialImport, configPresetPartialImportPreview } from './import/configPreset-partial-import';
 import { getConfigPresetFamilyDisplay } from './configPreset-registry';
 
 const configPresetResolvers: Resolvers = {
@@ -38,6 +39,10 @@ const configPresetResolvers: Resolvers = {
     },
     configPresetImportSessionBackToSelection: (_, __, context) => backToConfigPresetImportSelection(context, context.user!),
     configPresetImportSessionClear: (_, { delete_file }, context) => clearConfigPresetImportSession(context, context.user!, delete_file ?? false),
+    configPresetPartialImportPreview: (_, { file, type }, context) => configPresetPartialImportPreview(context, context.user!, file, type),
+    configPresetPartialImport: (_, { file, type, items, item_modes }, context) => {
+      return configPresetPartialImport(context, context.user!, file, type, items, item_modes ?? []);
+    },
     configPresetImportUpload: async (_, { file }, context) => {
       const upload = await configPresetImportUpload(context, context.user!, file);
       return upload as unknown as ResolversTypes['File'];
