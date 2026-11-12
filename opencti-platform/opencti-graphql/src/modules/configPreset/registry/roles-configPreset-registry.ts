@@ -31,6 +31,7 @@ const rolesImporter: ConfigPresetImporter = {
     recordConfigPresetTarget(plan, ROLES_FAMILY_ID, item.id, null);
     const { label, failed } = namedItemIdentity(item, roleStandardId, 'The standard id of the role does not match its name');
     if (failed) {
+      recordConfigPresetTarget(plan, ROLES_FAMILY_ID, item.id, null);
       return failed;
     }
     const result = await importRole(context, user, item.configuration, { mode, dryRun: true, reservedIds: plan.roleIds });
