@@ -39,9 +39,19 @@ interface ConfigPresetImportResultProps {
   onClose: () => void;
 }
 
-// The items the platform already had as they are are counted apart: the backend counts them as skipped, which reads as if they were ignored
-const toSummaryCounts = (session: ConfigPresetImportSession) => {
-  const { counts, results } = session;
+interface ConfigPresetImportCounts {
+  readonly created: number;
+  readonly overwritten: number;
+  readonly skipped: number;
+  readonly failed: number;
+}
+
+// The items the platform already had as they are are counted apart: the backend counts them as skipped, which reads as if they were ignored.
+// Shared by the result of the wizard and the one of a partial import
+export const toConfigPresetSummaryCounts = (
+  counts: ConfigPresetImportCounts | null | undefined,
+  results: ReadonlyArray<{ readonly status: string; readonly code?: string | null }>,
+) => {
   if (!counts) {
     return null;
   }
@@ -53,7 +63,7 @@ const toSummaryCounts = (session: ConfigPresetImportSession) => {
 export const ConfigPresetImportResult: FunctionComponent<ConfigPresetImportResultProps> = ({ session, onClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const counts = toSummaryCounts(session);
+  const counts = toConfigPresetSummaryCounts(session.counts, session.results);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }}>
       <Text variant="title-sm">{t_i18n('Import finished')}</Text>
