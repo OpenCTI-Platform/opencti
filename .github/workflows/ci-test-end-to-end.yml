@@ -150,6 +150,7 @@ jobs:
             -e EXPIRATION_SCHEDULER__ENABLED=false \
             -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
             -e PUBLISHER_MANAGER__ENABLED=false \
+            -e PLAYBOOK_MANAGER__DEBUG_ID_LIST='["*"]' \
             -e SMTP__ENABLED=false \
             filigran/platform:${{ github.sha }}
 
