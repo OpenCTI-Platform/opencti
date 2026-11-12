@@ -85,6 +85,88 @@ By clicking on the local authentication you can manage your local password polic
 | `Number of lowercase chars must be greater or equals to`                | Specify the minimum number of lowercase characters.           |
 | `Number of uppercase chars must be greater or equals to`                | Specify the minimum number of uppercase characters.           |
 | `Password validity duration in days (0 equals unlimited)`              | Define how long a password remains valid before the user is forced to change it. A value of `0` means passwords never expire. |
+| `Number of recent passwords that cannot be reused (0 equals disabled)` | Refuse a new password equal to the current one or to one of the previous ones, from `0` to `24`. See [Password rotation](#password-rotation). |
+
+#### Password rotation
+
+Password rotation, also called password history, prevents users from going back to a password they used recently, so that a password change always brings a new password. It applies to local accounts only: accounts that sign in through an external provider (SSO, LDAP, etc.) and service accounts are not concerned.
+
+##### Configure the rule
+
+In the local authentication drawer, set "Number of recent passwords that cannot be reused" to a value between `1` and `24`. `0`, the default, disables the rule.
+
+The value includes the current password:
+
+| Value | A new password must differ from                         |
+|:------|:--------------------------------------------------------|
+| `0`   | Nothing: the rule is disabled.                          |
+| `1`   | The current password.                                   |
+| `5`   | The current password and the 4 passwords set before it. |
+
+Pairing this rule with a [password validity duration](policies.md#password-validity-and-forced-password-change) makes users rotate their password regularly without cycling back to an old one.
+
+##### Which password changes are checked
+
+Every way of setting the password of a local account is checked:
+
+| Channel              | Who submits the password                                                                 |
+|:---------------------|:-----------------------------------------------------------------------------------------|
+| Profile              | The user, from their profile, after confirming their current password.                   |
+| Forced change        | The user, when their password has expired or an administrator forced a change.           |
+| Forgot password      | Anyone holding the code sent by email, on the new password step of the login page.       |
+| Administration       | An administrator, when setting a user's password in the user edition (Password tab).     |
+
+A new password goes through these checks, in this order:
+
+1. **Current password** (profile only): a wrong current password is refused first.
+2. **Password policy**: the length and character rules of the table above. A password that breaks them is refused with the usual message.
+3. **Attempt limit**: the change is counted, see [Limit on attempts](#limit-on-attempts).
+4. **Recent passwords**: the new password is compared with the current one and the previous ones the rule keeps.
+
+The comparison is an exact match: a slightly different password (`Summer2025!` instead of `Summer2024!`) is accepted. Only the password hashes are kept, never the passwords themselves.
+
+!!! warning "Long passwords"
+
+    Passwords are compared on their first 72 bytes, a limit of the bcrypt hashing algorithm. Two passwords that share their first 72 bytes are considered identical.
+
+##### What users see
+
+- The password rules shown next to the password fields include "Must be different from your last N passwords", or "Must be different from your current password" when the value is `1`. Administrators setting another user's password see "Must be different from the last N passwords". This rule cannot be checked while typing, since only the platform knows the previous passwords.
+- A refused password shows "This password has already been used recently. Please choose a different one." under the new password field, and the typed passwords are cleared. In the forgot password flow, the user stays on the new password step and can try again with the same code, as long as it has not expired.
+
+##### Limit on attempts
+
+Since each refusal tells whether a password was used recently, the number of password changes is limited to slow down guessing. By default, each submitter can make at most **5 password changes on an account every 15 minutes**.
+
+- **One counter per account and per submitter**, so nobody can block the others:
+    - the user has one counter, shared by the profile and the forced change;
+    - each administrator has their own counter on each account: an administrator can always reset the password of a compromised account, even after someone used up the attempts of the user;
+    - the forgot password flow has one counter per account, shared by every reset request on that account.
+- **What counts**: every password change that passes the current password and password policy checks, whether it is then accepted or refused. A password refused by the policy, or a wrong current password, does not count.
+- **The window**: it starts with the first counted change and lasts 15 minutes. It is not reset by a successful change, and does not slide: once it ends, the counter starts again from zero.
+- **Beyond the limit**: the change is refused with "Too many password change attempts. Please try again in a few minutes.", without comparing the password.
+- **Only while the rule is enabled**: with a value of `0`, password changes are not limited.
+
+Both values can be changed with `app:password_change:max_attempts` and `app:password_change:window_seconds` (see [Configuration](../deployment/configuration.md#network-and-security)). Each must be a positive integer: any other value, `0` included, is ignored and the default applies, with a warning in the application log. The counters live in Redis.
+
+##### Changing the value
+
+- **Enabling the rule**: the history starts from that moment. Passwords set before are not known to the platform, so the first change of each user is only compared with their current password.
+- **Raising the value**: users keep what they already have, and their history grows with each new change up to the new value.
+- **Lowering the value**: the oldest passwords beyond the new value are deleted for every user, right away.
+- **Setting it back to `0`**: the rule is disabled and every user's password history is deleted, so enabling it again starts from scratch.
+
+A user's history is also deleted when the account stops being a local account: when it is turned into a service account, when it starts signing in through an external provider, or when it is merged into another user (the history of the merged account is deleted).
+
+##### Audit and alerting
+
+With an Enterprise Edition license, each refused reuse is recorded in the audit log as an unauthorized action (`password_reuse`), with the target user and the channel (`self` for the profile and forced change, `admin`, or `reset` for forgot password), and never with the password itself. You can build alerts on these activity events. On every platform, a warning line is also written in the application log.
+
+##### Backups and API
+
+Password hashes, current and previous, are stored in the user documents of Elasticsearch / OpenSearch: protect backups of the database accordingly. The history cannot be read or written through the API.
+
+While the rule is enabled (a value of `1` or more), a password change must be sent on its own, without any other field in the same request: otherwise it is refused with "The password must be changed on its own". With the rule disabled, existing API calls are unchanged.
 
 ### HTTP headers
 Unless this authentication strategy was defined before migrating, it should be disabled by default.
