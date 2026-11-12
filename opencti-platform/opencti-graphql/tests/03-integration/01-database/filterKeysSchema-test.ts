@@ -290,8 +290,10 @@ describe('Filter keys schema generation testing', async () => {
     expect(schemaAttributesDefinition.getAttribute(RELATION_USES, 'coverage_information')).toBeUndefined();
     expect(filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get('coverage_information')?.subEntityTypes).toEqual([RELATION_HAS_COVERED]);
     expect(filterKeysSchema.get(RELATION_USES)?.get('coverage_information')).toBeUndefined();
-    // the entities that carry coverage information are filterable on it too
-    expect(filterKeysSchema.get(ENTITY_TYPE_SECURITY_COVERAGE)?.get('coverage_information')?.type).toEqual('nested_attribute');
+    // a security coverage result stores its coverage information: it is filterable on it
     expect(filterKeysSchema.get(ENTITY_TYPE_SECURITY_COVERAGE_RESULT)?.get('coverage_information')?.type).toEqual('nested_attribute');
+    // a security coverage does not store it any more (its coverage is computed from its results): nothing to filter on
+    expect(schemaAttributesDefinition.getAttribute(ENTITY_TYPE_SECURITY_COVERAGE, 'coverage_information')?.isFilterable).toBe(false);
+    expect(filterKeysSchema.get(ENTITY_TYPE_SECURITY_COVERAGE)?.get('coverage_information')).toBeUndefined();
   });
 });

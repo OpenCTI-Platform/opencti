@@ -53,7 +53,8 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
     { name: 'coverage_last_result', label: 'Last coverage', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'coverage_valid_from', label: 'Valid coverage from', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'coverage_valid_to', label: 'Valid coverage to', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
-    coverageInformation,
+    // Not stored on the coverage any more (computed from its results): nothing to filter on
+    { ...coverageInformation, isFilterable: false },
   ],
   relations: [],
   relationsRefs: [
