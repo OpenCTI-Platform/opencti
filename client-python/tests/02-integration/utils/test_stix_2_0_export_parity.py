@@ -777,7 +777,8 @@ def test_indicator_equal_validity_dates_match_legacy_export(
             for item in bundle["objects"]
             if item.get("x_opencti_id") == indicator_id
         )
-        return datetime.fromisoformat(indicator["valid_until"])
+        # Python 3.10 does not parse the `Z` suffix.
+        return datetime.fromisoformat(indicator["valid_until"].replace("Z", "+00:00"))
 
     expected = datetime(2024, 1, 1, 0, 0, 1, tzinfo=timezone.utc)
     assert valid_until(legacy_bundle) == valid_until(stix_2_0_bundle) == expected
