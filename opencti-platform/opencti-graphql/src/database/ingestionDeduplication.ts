@@ -65,8 +65,8 @@ export const INGESTION_DEDUPLICATION_ALLOWED_TYPES = [
 ];
 
 export const INGESTION_DEDUPLICATION_TTL = 86400;
-// Most sources move these dates on every run: hashing them would never let an import be skipped
-export const INGESTION_DEDUPLICATION_DEFAULT_EXCLUDED_FIELDS = ['modified', 'x_opencti_modified_at'];
+// Many sources move these dates on every run (CrowdStrike resets created): hashing them would never let an import be skipped
+export const INGESTION_DEDUPLICATION_DEFAULT_EXCLUDED_FIELDS = ['modified', 'x_opencti_modified_at', 'created'];
 const NEVER_HASHED_FIELDS = ['clientMutationId'];
 
 export interface IngestionDeduplication {

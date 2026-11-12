@@ -162,8 +162,8 @@ describe('Ingestion deduplication domain', () => {
       // GIVEN an administrator adding a rule through the API
       // WHEN no excluded field is given
       const rule = await addIngestionDeduplicationRule(testContext, ADMIN_USER, { user_id: connectorUserId, target_type: ENTITY_TYPE_TOOL });
-      // THEN the modified dates are excluded, as the form offers by default
-      expect(rule.excluded_fields).toEqual(['modified', 'x_opencti_modified_at']);
+      // THEN the dates are excluded, as the form offers by default
+      expect(rule.excluded_fields).toEqual(['modified', 'x_opencti_modified_at', 'created']);
       await deleteIngestionDeduplicationRule(testContext, ADMIN_USER, rule.id);
     });
 
