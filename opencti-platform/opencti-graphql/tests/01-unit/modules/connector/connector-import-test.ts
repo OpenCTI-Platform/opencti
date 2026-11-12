@@ -45,6 +45,8 @@ const connectorConfiguration = (overrides: Record<string, unknown> = {}) => ({
 });
 const contract = { ...mitreConnector.manager_contract, manager_supported: true, slug: 'mitre', title: 'MITRE' };
 const withConnectors = (connectors: unknown[]) => vi.mocked(findConnectors).mockResolvedValue(connectors as never);
+// What a refusal tells, so that the preview asks for it once the item is added as a copy
+const copyCredentials = [{ key: 'MITRE_API_KEY', required: true, stored: false, secret: true }];
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -274,7 +276,7 @@ describe('importConfigPresetConnector overwrite and copy', () => {
     withConnectors([{ ...mitreConnector, name: 'mitre-att-ck', title: 'MITRE ATT&CK' }]);
     const configuration = connectorConfiguration({ name: 'MITRE ATT&CK', manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }] });
     const result = await importConfigPresetConnector(context, user, configuration, { ...overwrite, credentials: { MITRE_API_KEY: 'key' } });
-    expect(result).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true });
+    expect(result).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true, credentials: copyCredentials });
     expectNothingWritten();
   });
 
@@ -315,19 +317,20 @@ describe('importConfigPresetConnector overwrite and copy', () => {
 
   it('refuses to overwrite a connector registered from outside the platform', async () => {
     const result = await importConfigPresetConnector(context, user, connectorConfiguration({ name: 'External' }), { ...overwrite, bundleId: 'external' });
-    expect(result).toMatchObject({ status: 'failed', code: 'not_managed', exists: true });
+    expect(result).toMatchObject({ status: 'failed', code: 'not_managed', exists: true, credentials: copyCredentials });
     expectNothingWritten();
   });
 
   it('never overwrites a connector of another catalog or image that has the same name', async () => {
     withConnectors([{ ...mitreConnector, manager_contract_image: 'opencti/connector-other' }]);
     const result = await importConfigPresetConnector(context, user, connectorConfiguration({ manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '14' }] }), overwrite);
-    expect(result).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true });
+    expect(result).toMatchObject({ status: 'failed', code: 'name_conflict', exists: true, credentials: copyCredentials });
     expectNothingWritten();
   });
 
   it('refuses a connector that exists on an add', async () => {
-    expect(await importConfigPresetConnector(context, user, connectorConfiguration(), { mode: ConfigImportMode.Add, bundleId: 'mitre' })).toMatchObject({ status: 'failed', code: 'exists' });
+    expect(await importConfigPresetConnector(context, user, connectorConfiguration(), { mode: ConfigImportMode.Add, bundleId: 'mitre' }))
+      .toMatchObject({ status: 'failed', code: 'exists', credentials: copyCredentials });
   });
 
   it('creates a copy under a free name, never touching the existing connector', async () => {

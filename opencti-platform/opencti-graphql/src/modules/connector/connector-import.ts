@@ -70,6 +70,33 @@ const sameConfiguration = (current: { key: string; value?: string | null }[], in
   return current.length === input.length && input.every(({ key, value }) => current.some((configuration) => configuration.key === key && (configuration.value ?? '') === value));
 };
 
+type ConnectorConfigSchema = ReturnType<typeof getContractConfigSchemaWithoutExcludedRuntimeVars>;
+
+// What the import asks for: the secrets, never exported, and the required parameters the bundle leaves empty.
+// A credential is stored when the overwritten connector already holds it
+const connectorCredentialsOf = (configSchema: ConnectorConfigSchema, bundleConnector: ConnectorImportConfiguration, currentKeys: string[] = []) => {
+  const secretKeys = connectorSecretKeys(configSchema);
+  const bundleKeys = bundleConnector.manager_contract_configuration.filter(({ value }) => value !== '').map(({ key }) => key);
+  const hasDefault = (key: string) => configSchema.properties[key]?.default !== undefined && configSchema.properties[key]?.default !== null;
+  const missingParameterKeys = configSchema.required
+    .filter((key) => key !== 'CONNECTOR_ID' && configSchema.properties[key] && !secretKeys.includes(key) && !bundleKeys.includes(key) && !hasDefault(key));
+  const toCredential = (key: string, secret: boolean, required: boolean): ConnectorImportCredential => ({
+    key,
+    description: configSchema.properties[key]?.description ?? '',
+    required,
+    stored: currentKeys.includes(key),
+    secret,
+    type: configSchema.properties[key]?.type ?? 'string',
+  });
+  const credentials: ConnectorImportCredential[] = [
+    ...secretKeys
+      .filter((key) => configSchema.required.includes(key) || bundleConnector.required_at_import.includes(key))
+      .map((key) => toCredential(key, true, configSchema.required.includes(key))),
+    ...missingParameterKeys.map((key) => toCredential(key, false, true)),
+  ];
+  return { credentials, secretKeys, missingParameterKeys };
+};
+
 // add: the connector must not exist yet. overwrite: the managed connector with the same name is updated, else it is created.
 // copy: the connector is created under a free name. A created connector is stopped.
 export const importConfigPresetConnector = async (
@@ -92,18 +119,26 @@ export const importConfigPresetConnector = async (
   const existing = connectors.find(({ name }) => name === bundleId);
   const sameName = connectors.find(({ name }) => name === connectorName(bundleConnector.name));
   const isNameReserved = !!reservedNames?.has(connectorName(bundleConnector.name));
+  // A refusal tells the credentials of a copy, so that the preview can ask for them when the copy is chosen
+  const copyCredentials = async () => {
+    const copyCatalog = await findCatalogByCatalogId(context, user, bundleConnector.catalog_id);
+    const copyContract = copyCatalog
+      ? await findLatestCompatibleCatalogContractByImageName(context, user, bundleConnector.manager_contract_image, bundleConnector.catalog_id)
+      : undefined;
+    return copyContract ? connectorCredentialsOf(getContractConfigSchemaWithoutExcludedRuntimeVars(copyContract.config_schema), bundleConnector).credentials : undefined;
+  };
   if (existing && mode === ConfigImportMode.Add) {
-    return refused('exists', 'Connector already exists', true, bundleConnector);
+    return refused('exists', 'Connector already exists', true, bundleConnector, await copyCredentials());
   }
   const isCopy = mode === ConfigImportMode.Copy;
   if (!existing && (sameName || isNameReserved) && !isCopy) {
-    return refused('name_conflict', 'Connector name already exists', !!sameName, bundleConnector);
+    return refused('name_conflict', 'Connector name already exists', !!sameName, bundleConnector, await copyCredentials());
   }
   if (existing && !isCopy && !existing.catalog_id) {
-    return refused('not_managed', 'A connector that is not managed by the platform has this name', true, bundleConnector);
+    return refused('not_managed', 'A connector that is not managed by the platform has this name', true, bundleConnector, await copyCredentials());
   }
   if (existing && !isCopy && (existing.catalog_id !== bundleConnector.catalog_id || existing.manager_contract_image !== bundleConnector.manager_contract_image)) {
-    return refused('name_conflict', 'Connector name already exists', true, bundleConnector);
+    return refused('name_conflict', 'Connector name already exists', true, bundleConnector, await copyCredentials());
   }
   const title = isCopy ? await freeConfigImportName(bundleConnector.name, isNameTaken) : bundleConnector.name;
   if (!title) {
@@ -121,27 +156,8 @@ export const importConfigPresetConnector = async (
     return refused('no_manager', 'There is no connector manager configured', !!existing, bundleConnector);
   }
   const configSchema = getContractConfigSchemaWithoutExcludedRuntimeVars(contract.config_schema);
-  const secretKeys = connectorSecretKeys(configSchema);
   const currentKeys = (target?.manager_contract_configuration ?? []).map(({ key }) => key);
-
-  const bundleKeys = bundleConnector.manager_contract_configuration.filter(({ value }) => value !== '').map(({ key }) => key);
-  const hasDefault = (key: string) => configSchema.properties[key]?.default !== undefined && configSchema.properties[key]?.default !== null;
-  const missingParameterKeys = configSchema.required
-    .filter((key) => key !== 'CONNECTOR_ID' && configSchema.properties[key] && !secretKeys.includes(key) && !bundleKeys.includes(key) && !hasDefault(key));
-  const toCredential = (key: string, secret: boolean, required: boolean): ConnectorImportCredential => ({
-    key,
-    description: configSchema.properties[key]?.description ?? '',
-    required,
-    stored: currentKeys.includes(key),
-    secret,
-    type: configSchema.properties[key]?.type ?? 'string',
-  });
-  const connectorCredentials: ConnectorImportCredential[] = [
-    ...secretKeys
-      .filter((key) => configSchema.required.includes(key) || bundleConnector.required_at_import.includes(key))
-      .map((key) => toCredential(key, true, configSchema.required.includes(key))),
-    ...missingParameterKeys.map((key) => toCredential(key, false, true)),
-  ];
+  const { credentials: connectorCredentials, secretKeys, missingParameterKeys } = connectorCredentialsOf(configSchema, bundleConnector, currentKeys);
   const given = connectorCredentials.filter(({ key }) => (credentials[key] ?? '') !== '');
   const missing = connectorCredentials.filter(({ key, required, stored }) => required && !stored && !given.some((credential) => credential.key === key));
   if (missing.length > 0) {
