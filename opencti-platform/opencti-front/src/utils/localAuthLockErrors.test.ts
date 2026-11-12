@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createIntl } from 'react-intl';
-import { localAuthLockMessage } from './localAuthLockErrors';
+import { localAuthLockMessage, relayLocalAuthLockMessage } from './localAuthLockErrors';
 import en from '../../lang/front/en.json';
 import fr from '../../lang/front/fr.json';
 
@@ -48,6 +48,13 @@ describe('localAuthLockMessage', () => {
     expect(localAuthLockMessage(t_en, { message: 'Bad login or password' })).toBeUndefined();
     expect(localAuthLockMessage(t_en, { message: 'x', extensions: { data: {} } })).toBeUndefined();
     expect(localAuthLockMessage(t_en, undefined)).toBeUndefined();
+  });
+
+  it('reads the lock from the first error of a refused mutation', () => {
+    expect(relayLocalAuthLockMessage(t_en, { res: { errors: [temporaryLock(5)] } })).toBe('Your account has been locked for security reasons. Please try again in 5 minutes.');
+    expect(relayLocalAuthLockMessage(t_en, { res: { errors: [{ message: 'Bad login or password' }] } })).toBeUndefined();
+    expect(relayLocalAuthLockMessage(t_en, new Error('network'))).toBeUndefined();
+    expect(relayLocalAuthLockMessage(t_en, undefined)).toBeUndefined();
   });
 
   it('has a translation of each lock message in every language', async () => {
