@@ -270,7 +270,7 @@
   "Add dynamic filter": "Ajouter un filtre dynamique",
   "Add entities": "Ajouter des entités",
   "Add entities and relationships to this container from the toolbar, or from its Entities and Observables tabs.": "Ajoutez des entités et des relations à ce conteneur depuis la barre d'outils, ou depuis ses onglets Entités et Observables.",
-  "Add entities to this investigation from the toolbar, then expand them to follow their relationships.": "Ajoutez des entités à cette investigation depuis la barre d'outils, puis développez-les pour suivre leurs relations.",
+  "Add entities to this investigation, then expand them to follow their relationships.": "Ajoutez des entités à cette investigation, puis développez-les pour suivre leurs relations.",
   "Add Entity": "Ajouter une entité",
   "Add entity": "Ajouter une entité",
   "Add external references": "Ajouter des références externes",

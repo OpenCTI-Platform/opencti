@@ -270,7 +270,7 @@
   "Add dynamic filter": "添加动态筛选器",
   "Add entities": "添加实体",
   "Add entities and relationships to this container from the toolbar, or from its Entities and Observables tabs.": "请从工具栏或其\"实体\"和\"可观察对象\"选项卡向此容器添加实体和关系。",
-  "Add entities to this investigation from the toolbar, then expand them to follow their relationships.": "请从工具栏向此调查添加实体，然后展开它们以追踪其关系。",
+  "Add entities to this investigation, then expand them to follow their relationships.": "请向此调查添加实体，然后展开它们以追踪其关系。",
   "Add Entity": "添加实体",
   "Add entity": "添加实体",
   "Add external references": "添加外部引用",

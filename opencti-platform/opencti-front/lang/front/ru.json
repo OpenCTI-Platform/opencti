@@ -270,7 +270,7 @@
   "Add dynamic filter": "Добавить динамический фильтр",
   "Add entities": "Добавить организации",
   "Add entities and relationships to this container from the toolbar, or from its Entities and Observables tabs.": "Добавьте сущности и связи в этот контейнер с панели инструментов или на его вкладках «Сущности» и «Наблюдаемые объекты».",
-  "Add entities to this investigation from the toolbar, then expand them to follow their relationships.": "Добавьте сущности в это расследование с панели инструментов, затем раскройте их, чтобы проследить их связи.",
+  "Add entities to this investigation, then expand them to follow their relationships.": "Добавьте сущности в это расследование, затем раскройте их, чтобы проследить их связи.",
   "Add Entity": "Добавить организацию",
   "Add entity": "Добавить организацию",
   "Add external references": "Добавить внешние ссылки",

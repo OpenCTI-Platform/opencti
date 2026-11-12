@@ -270,7 +270,7 @@
   "Add dynamic filter": "動的フィルターを追加する",
   "Add entities": "エンティティの追加",
   "Add entities and relationships to this container from the toolbar, or from its Entities and Observables tabs.": "ツールバー、またはエンティティタブと観測対象タブから、このコンテナーにエンティティと関係を追加してください。",
-  "Add entities to this investigation from the toolbar, then expand them to follow their relationships.": "ツールバーからこの調査にエンティティを追加し、展開して関係をたどってください。",
+  "Add entities to this investigation, then expand them to follow their relationships.": "この調査にエンティティを追加し、展開して関係をたどってください。",
   "Add Entity": "エンティティを追加する",
   "Add entity": "エンティティを追加する",
   "Add external references": "外部参照を追加",
