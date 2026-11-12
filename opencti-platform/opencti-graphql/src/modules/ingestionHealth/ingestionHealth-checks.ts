@@ -59,16 +59,16 @@ const getHealthCheckFailures = (
     : definition.getFailures(ingestor, context);
 };
 
-// Disabled in the platform settings, or not available on the platform (see isHealthCheckAvailable)
-const isHealthCheckDisabled = (code: HealthCheckCode, context: GlobalIngestionHealthContext): boolean => {
-  return !!context.disabledHealthChecks?.includes(code) || !isHealthCheckAvailable(code);
+// Available on the platform (see isHealthCheckAvailable) and not disabled in the platform settings
+const isHealthCheckEnabled = (code: HealthCheckCode, context: GlobalIngestionHealthContext): boolean => {
+  return isHealthCheckAvailable(code) && !context.disabledHealthChecks?.includes(code);
 };
 
 // The runtime checks of the registry not disabled on the platform: the only ones whose runtime data is read
 export const getEnabledRuntimeChecks = (context: GlobalIngestionHealthContext): [HealthCheckCode, RegisteredRuntimeCheck][] => {
   return Object.entries(HEALTH_CHECK_REGISTRY)
     .filter((entry): entry is [HealthCheckCode, RegisteredRuntimeCheck] => entry[1].kind === IngestionHealthCheckKind.Runtime)
-    .filter(([code]) => !isHealthCheckDisabled(code, context));
+    .filter(([code]) => isHealthCheckEnabled(code, context));
 };
 
 // Whether a runtime check is enabled for the ingestor: its runtime data must be read before it is evaluated.
@@ -94,7 +94,7 @@ export const computeIngestionHealthChecks = (
 ): StoredHealthCheck[] => {
   const failures = (Object.entries(HEALTH_CHECK_REGISTRY) as [HealthCheckCode, HealthCheckDefinition][]).flatMap(([code, definition]) => {
     // Disabled on the platform: never evaluated, a failure stored before is dropped at this period
-    if (isHealthCheckDisabled(code, context)) {
+    if (!isHealthCheckEnabled(code, context)) {
       return [];
     }
     const checkFailures = definition.isEnabled(ingestor, context) ? getHealthCheckFailures(code, definition, ingestor, context) : [];
