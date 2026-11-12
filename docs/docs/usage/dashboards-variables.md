@@ -58,7 +58,7 @@ A preset is a named snapshot of the values of all the variables and of the time 
 Open the selector to:
 
 - select a preset: its values and its time range are restored at once. The default preset of the dashboard for you (see [Default preset](#default-preset)) is captioned *Default*;
-- select *No preset* to go back to the defaults of the dashboard;
+- select *No preset* to go back to the defaults of the dashboard. The entry is offered only when no default preset applies to you: with one, that preset is your starting point and **Reset** brings you back to it;
 - rename or delete the selected preset (editors only).
 
 The selected preset is personal, like the values: it is kept in your browser and in the address bar, so sharing the address opens the same view. A value changed on top of a preset is kept apart from it and lights the **Modified** badge: **Reset** drops it and goes back to your default preset, or to the defaults of the dashboard.
