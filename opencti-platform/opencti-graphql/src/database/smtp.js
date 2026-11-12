@@ -17,6 +17,7 @@ const SMTP_ENABLE = booleanConf('smtp:enabled', true);
 const SMTP_TIMEOUTS = {
   connectionTimeout: Number(conf.get('smtp:connection_timeout') ?? 10000),
   greetingTimeout: Number(conf.get('smtp:greeting_timeout') ?? 10000),
+  socketTimeout: 120000,
 };
 
 export const SMTP_JSON_CONFIG = {
