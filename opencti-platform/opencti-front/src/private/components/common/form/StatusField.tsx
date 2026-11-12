@@ -42,6 +42,8 @@ interface StatusFieldProps {
   defaultStatus?: DefaultStatus;
   required?: boolean;
   disabled?: boolean;
+  // With a published workflow for the type, list its statuses instead of making the field read-only
+  workflowStatusesOnly?: boolean;
 }
 
 export const statusFieldStatusesSearchQuery = graphql`
@@ -75,8 +77,17 @@ export const statusFieldStatusesSearchQuery = graphql`
 `;
 
 export const statusFieldWorkflowDefinitionPublishedQuery = graphql`
-  query StatusFieldWorkflowDefinitionPublishedQuery($entityType: String!) {
+  query StatusFieldWorkflowDefinitionPublishedQuery($entityType: String!, $withStatuses: Boolean = false) {
     workflowDefinitionPublished(entityType: $entityType)
+    workflowStatuses(entityType: $entityType) @include(if: $withStatuses) {
+      id
+      order
+      type
+      template {
+        name
+        color
+      }
+    }
   }
 `;
 
@@ -90,6 +101,7 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
   defaultStatus,
   required = false,
   disabled = false,
+  workflowStatusesOnly = false,
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
@@ -155,26 +167,41 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
       setHasPublishedWorkflowDefinition(false);
       return;
     }
-    fetchQuery(statusFieldWorkflowDefinitionPublishedQuery, { entityType: type })
+    fetchQuery(statusFieldWorkflowDefinitionPublishedQuery, { entityType: type, withStatuses: workflowStatusesOnly })
       .toPromise()
       .then((data) => {
         const queryData = data as StatusFieldWorkflowDefinitionPublishedQuery$data;
-        setHasPublishedWorkflowDefinition(!!queryData?.workflowDefinitionPublished);
+        const isPublished = !!queryData?.workflowDefinitionPublished;
+        setHasPublishedWorkflowDefinition(isPublished);
+        if (isPublished && workflowStatusesOnly) {
+          // Only the workflow statuses can be set, the type statuses outside the workflow are dropped
+          setStatuses((queryData?.workflowStatuses ?? [])
+            .filter((status) => status.template != null)
+            .map((status) => ({
+              label: status.template!.name,
+              value: status.id,
+              order: status.order,
+              color: status.template!.color,
+              type: status.type,
+            })));
+        }
       });
-  }, [type, isWorkflowUiEnabled]);
+  }, [type, isWorkflowUiEnabled, workflowStatusesOnly]);
 
-  const isWorkflowManaged = hasPublishedWorkflowDefinition;
+  const isWorkflowManaged = hasPublishedWorkflowDefinition && !workflowStatusesOnly;
+  // The workflow statuses are loaded once with the definition, searching would add the statuses outside the workflow
+  const isWorkflowListed = hasPublishedWorkflowDefinition && workflowStatusesOnly;
 
   const handleSearch = useCallback((value: string) => {
-    if (value) {
+    if (value && !isWorkflowListed) {
       setKeyword(value);
       debouncedSearchStatuses(value);
     }
-  }, [debouncedSearchStatuses]);
+  }, [debouncedSearchStatuses, isWorkflowListed]);
 
   const handleFocus = useCallback(() => {
-    searchStatuses(keyword);
-  }, [searchStatuses, keyword]);
+    if (!isWorkflowListed) searchStatuses(keyword);
+  }, [searchStatuses, keyword, isWorkflowListed]);
 
   return (
     <Field

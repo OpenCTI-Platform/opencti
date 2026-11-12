@@ -549,11 +549,12 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
 
   describe('Workflow status', () => {
     const TARGET_STATUS_ID = 'status-id';
-    const statusAction = (applyTransitionActions?: boolean): ManipulateConfiguration['actions'][number] => ({
+    const statusAction = (applyTransitionActions?: boolean, entityType?: string): ManipulateConfiguration['actions'][number] => ({
       op: 'replace',
       attribute: 'x_opencti_workflow_id',
       value: [{ label: 'In progress', value: TARGET_STATUS_ID, patch_value: TARGET_STATUS_ID }],
       apply_transition_actions: applyTransitionActions,
+      entity_type: entityType,
     });
 
     beforeEach(() => {
@@ -650,6 +651,46 @@ describe('PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT', () => {
         assert.fail('Field patch missing');
       }
       expect(upsertOperations[0]).toMatchObject({ key: 'x_opencti_workflow_id', operation: 'replace', value: [TARGET_STATUS_ID] });
+    });
+
+    describe('Target entity type', () => {
+      const MIXED_BUNDLE = () => [
+        testBundleObject<StixThreatActor>({ id: THREAT_ACTOR_ID, type: ENTITY_TYPE_THREAT_ACTOR }),
+        testBundleObject<StixDomainObject>({ id: MALWARE_ID, type: 'Malware' }),
+      ];
+
+      it('should change the status through the workflow engine only on elements of the target type', async () => {
+        await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+          mainId: THREAT_ACTOR_ID,
+          bundleObjects: MIXED_BUNDLE(),
+          configuration: { applyToElements: 'all-elements', actions: [statusAction(true, 'Malware')] },
+        }));
+
+        expect(workflowDomain.setWorkflowStatus).toHaveBeenCalledTimes(1);
+        expect(workflowDomain.setWorkflowStatus).toHaveBeenCalledWith(expect.anything(), AUTOMATION_MANAGER_USER, MALWARE_ID, TARGET_STATUS_ID, true);
+      });
+
+      it('should patch the status only on elements of the target type', async () => {
+        const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+          mainId: THREAT_ACTOR_ID,
+          bundleObjects: MIXED_BUNDLE(),
+          configuration: { applyToElements: 'all-elements', actions: [statusAction(false, 'Malware')] },
+        }));
+
+        const [threatActor, malware] = result.bundle.objects;
+        expect(threatActor.extensions[STIX_EXT_OCTI].opencti_upsert_operations).toBeUndefined();
+        expect(malware.extensions[STIX_EXT_OCTI].opencti_upsert_operations?.[0]).toMatchObject({ key: 'x_opencti_workflow_id', value: [TARGET_STATUS_ID] });
+      });
+
+      it('should leave the bundle unmodified when no element has the target type', async () => {
+        const result = await PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT.executor(testExecutor({
+          mainId: THREAT_ACTOR_ID,
+          bundleObjects: MIXED_BUNDLE(),
+          configuration: { applyToElements: 'all-elements', actions: [statusAction(false, 'Report')] },
+        }));
+
+        expect(result.output_port).toEqual('unmodified');
+      });
     });
   });
 });

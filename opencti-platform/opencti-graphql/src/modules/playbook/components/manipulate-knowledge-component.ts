@@ -99,6 +99,8 @@ export interface ManipulateConfiguration {
     value: UpdateValueConfiguration[];
     // Only for a replace of x_opencti_workflow_id: change the status through the workflow engine
     apply_transition_actions?: boolean;
+    // Only for a replace of x_opencti_workflow_id: the entity type whose workflow holds the status, other types are left untouched
+    entity_type?: string;
   }[];
   applyToElements: PlaybookBundleElementsToApply;
   applyWithFilters?: string;
@@ -142,6 +144,7 @@ const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<ManipulateC
             },
           },
           apply_transition_actions: { type: 'boolean', nullable: true, default: false },
+          entity_type: { type: 'string', nullable: true },
         },
         required: ['op', 'attribute', 'value'],
       },
@@ -178,6 +181,10 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     };
     const workflowStatusActions = actions.filter((action) => isWorkflowStatusAction(action));
     const patchActions = actions.filter((action) => !isWorkflowStatusAction(action));
+    // A status belongs to the workflow of one entity type: never set it on an element of another type
+    const isActionForElementType = (action: ManipulateConfiguration['actions'][number], elementType: string) => {
+      return action.attribute !== 'x_opencti_workflow_id' || !action.entity_type || action.entity_type === elementType;
+    };
 
     // Compute if the attribute is defined as multiple in schema definition
     const isAttributeMultiple = (entityType: string, attribute: string) => {
@@ -220,7 +227,7 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
       if (isMatchingScope && isMatchingFilters) {
         const { type, id } = element.extensions[STIX_EXT_OCTI];
         if (id) {
-          for (const workflowStatusAction of workflowStatusActions) {
+          for (const workflowStatusAction of workflowStatusActions.filter((action) => isActionForElementType(action, type))) {
             const targetStatusId = R.head(workflowStatusAction.value)?.value;
             if (targetStatusId) {
               try {
@@ -240,6 +247,7 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
           }
         }
         const elementOperations = patchActions
+          .filter((action) => isActionForElementType(action, type))
           .map((action) => {
             const attrPath = computeAttributePath(type, action.attribute);
             const multiple = isAttributeMultiple(type, action.attribute);
