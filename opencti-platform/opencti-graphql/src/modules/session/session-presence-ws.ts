@@ -1,7 +1,7 @@
 import { promisify } from 'node:util';
 import type { Context } from 'graphql-ws';
 import type { Extra } from 'graphql-ws/use/ws';
-import { logApp } from '../../config/conf';
+import { isFeatureEnabled, logApp, SESSION_PRESENCE_FEATURE_FLAG } from '../../config/conf';
 import { getSessionMiddleware } from '../../database/session';
 import { userWithOrigin } from '../user/user-domain';
 import { registerSessionPresence, unregisterSessionPresence } from './session-presence-domain';
@@ -10,9 +10,12 @@ import type { PresenceConnection, SessionRequest } from './session-presence-type
 const socketConnections = new WeakMap<object, PresenceConnection>();
 
 // graphql-ws hooks, the presence must never prevent the socket from being used.
-// Connections are tracked even when the feature is disabled: the setting is only read before a logout,
-// so enabling it also covers the tabs already open.
+// Nothing is tracked without the SESSION_PRESENCE feature flag. With it, connections are tracked even when
+// the platform setting is off: the setting is only read before a logout, so enabling it also covers the tabs already open.
 export const onSessionPresenceConnect = async (ctx: Context<Record<string, unknown> | undefined, Extra>) => {
+  if (!isFeatureEnabled(SESSION_PRESENCE_FEATURE_FLAG)) {
+    return;
+  }
   try {
     const { socket } = ctx.extra;
     const request = ctx.extra.request as SessionRequest;

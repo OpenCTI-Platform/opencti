@@ -6,7 +6,7 @@ import * as session from '../../../../src/database/session';
 import * as listener from '../../../../src/listener/UserActionListener';
 import * as redis from '../../../../src/database/redis';
 import * as userDomain from '../../../../src/modules/user/user-domain';
-import { getStoppingState } from '../../../../src/config/conf';
+import { getStoppingState, isFeatureEnabled } from '../../../../src/config/conf';
 import '../../../../src/modules/attributes/internalObject-registrationAttributes';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
@@ -48,6 +48,7 @@ vi.mock('../../../../src/config/conf', async (importOriginal: any) => {
       }),
     },
     getStoppingState: vi.fn(() => false),
+    isFeatureEnabled: vi.fn(() => true),
     logApp: { ...actual.logApp, error: vi.fn(), warn: vi.fn() },
   };
 });
@@ -91,6 +92,7 @@ describe('session presence', () => {
     vi.useFakeTimers();
     vi.clearAllMocks();
     vi.mocked(getStoppingState).mockReturnValue(false);
+    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     enablePresence(true);
     storeSession({ user: USER });
     runPlatformNodes(1);
@@ -334,6 +336,29 @@ describe('session presence', () => {
 
       await onSessionPresenceConnect(ctx);
       onSessionPresenceClose(ctx);
+      await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
+
+      expect(session.killSessionByRawId).not.toHaveBeenCalled();
+    });
+
+    it('should neither track nor logout without the SESSION_PRESENCE feature flag', async () => {
+      vi.mocked(isFeatureEnabled).mockReturnValue(false);
+      mockSessionMiddleware(nextSessionId(), { user: USER });
+      const ctx = buildContext();
+
+      await onSessionPresenceConnect(ctx);
+      onSessionPresenceClose(ctx);
+      await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
+
+      expect(session.getSessionMiddleware).not.toHaveBeenCalled();
+      expect(session.killSessionByRawId).not.toHaveBeenCalled();
+    });
+
+    it('should not logout a session tracked before the feature flag was disabled', async () => {
+      const sessionId = nextSessionId();
+      const connectionId = registerSessionPresence(sessionId, ORIGIN);
+      vi.mocked(isFeatureEnabled).mockReturnValue(false);
+      unregisterSessionPresence(sessionId, connectionId);
       await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
 
       expect(session.killSessionByRawId).not.toHaveBeenCalled();

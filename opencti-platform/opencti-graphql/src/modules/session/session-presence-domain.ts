@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import conf, { getStoppingState, logApp } from '../../config/conf';
+import conf, { getStoppingState, isFeatureEnabled, logApp, SESSION_PRESENCE_FEATURE_FLAG } from '../../config/conf';
 import { findSessionByRawId, killSessionByRawId } from '../../database/session';
 import { getEntityFromCache } from '../../database/cache';
 import { getClusterInstances } from '../../database/redis';
@@ -24,6 +24,9 @@ const pendingLogouts = new Map<string, NodeJS.Timeout>();
 let isMultiNodeWarned = false;
 
 const isSessionPresenceEnabled = async () => {
+  if (!isFeatureEnabled(SESSION_PRESENCE_FEATURE_FLAG)) {
+    return false;
+  }
   const context = executionContext('session_presence');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   return settings.platform_session_presence_enabled === true;

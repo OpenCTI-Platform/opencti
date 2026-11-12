@@ -8,6 +8,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
 import Card from '../../../../components/common/card/Card';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { AuthenticationGlobalSettingsQuery } from './__generated__/AuthenticationGlobalSettingsQuery.graphql';
@@ -61,6 +62,7 @@ const SessionPresenceUnsupportedAlert = ({ isSupported }: { isSupported: boolean
 
 const AuthenticationGlobalSettingsContent = () => {
   const { t_i18n } = useFormatter();
+  const { isFeatureEnable } = useHelper();
 
   const data = useLazyLoadQuery<AuthenticationGlobalSettingsQuery>(authenticationGlobalSettingsQuery, {});
   const settings = data.settings;
@@ -125,18 +127,22 @@ const AuthenticationGlobalSettingsContent = () => {
                 fullWidth
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value !== '' ? value : '0')}
               />
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="platform_session_presence_enabled"
-                label={t_i18n('Logout when the last tab is closed')}
-                containerstyle={{ marginTop: 20 }}
-                onChange={(name: string, value: string) => handleSubmitField(name, value)}
-                tooltip={t_i18n(
-                  'When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported when several platform nodes serve the API.',
-                )}
-              />
-              <SessionPresenceUnsupportedAlert isSupported={settings.platform_session_presence_supported} />
+              {isFeatureEnable('SESSION_PRESENCE') && (
+                <>
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="platform_session_presence_enabled"
+                    label={t_i18n('Logout when the last tab is closed')}
+                    containerstyle={{ marginTop: 20 }}
+                    onChange={(name: string, value: string) => handleSubmitField(name, value)}
+                    tooltip={t_i18n(
+                      'When enabled, a session is logged out shortly after its last browser tab has been closed. Not supported when several platform nodes serve the API.',
+                    )}
+                  />
+                  <SessionPresenceUnsupportedAlert isSupported={settings.platform_session_presence_supported} />
+                </>
+              )}
             </Card>
           </Grid>
         </Grid>

@@ -60,7 +60,8 @@ const isSessionAlive = async (context: BrowserContext) => {
   return !!result.data?.me?.id;
 };
 
-test.describe('Logout when the last tab is closed', { tag: ['@ce'] }, () => {
+// The feature needs the SESSION_PRESENCE flag, on for the `@groupff` e2e group (`dev_features: '["*"]'`).
+test.describe('Logout when the last tab is closed', { tag: ['@ce', '@groupff'] }, () => {
   test.describe.configure({ timeout: 5 * 60 * 1000 });
 
   let settingsId: string;
