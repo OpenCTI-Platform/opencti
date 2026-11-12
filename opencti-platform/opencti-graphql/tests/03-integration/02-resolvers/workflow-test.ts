@@ -7,10 +7,11 @@ import { findHistory } from '../../../src/domain/log';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { FilterMode, LogsOrdering, OrderingMode, StatusScope } from '../../../src/generated/graphql';
 import { ADMIN_USER, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
-import { createStatus, createStatusTemplate, findByType } from '../../../src/domain/status';
+import { createStatus, createStatusTemplate, findByType, statusTemplateDelete } from '../../../src/domain/status';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../../../src/modules/case/case-rft/case-rft-types';
 import { wait } from '../../../src/database/utils';
 
 // Directly query the store for the WorkflowInstance attached to an entity,
@@ -1322,5 +1323,167 @@ describe('Workflow instance sync from external status writes (Report)', () => {
     expect((await loadReport()).x_opencti_workflow_id).toBe(openStatusId);
     expect(after.currentState).toBe(before.currentState);
     expect(after.history).toHaveLength(before.history.length);
+  });
+});
+
+// Migrates the legacy GLOBAL statuses of Case-Rft, which no other workflow test uses, into a
+// published workflow, then checks the engine really runs it: the migrated mesh must be traversable
+// from every state, entities must keep their legacy status, and REQUEST_ACCESS must stay untouched.
+// DUPLICATE_TEMPLATE is covered by the converter unit tests only: a Status id derives from
+// (template, type, scope), so createStatus cannot create two Statuses sharing a template today.
+describe('Workflow migration from legacy statuses (Case-Rft)', () => {
+  const entityType = ENTITY_TYPE_CONTAINER_CASE_RFT;
+  const suffix = Date.now();
+  const templateIds: Record<'open' | 'review' | 'done' | 'pending', string> = { open: '', review: '', done: '', pending: '' };
+  const statusIds: Record<'open' | 'review' | 'done' | 'pending', string> = { open: '', review: '', done: '', pending: '' };
+  let caseOnReviewId: string;
+
+  const WORKFLOW_MIGRATION_PREVIEW_QUERY = gql`
+    query WorkflowMigrationPreviewForTest($entityType: String!) {
+      workflowMigrationPreview(entityType: $entityType) {
+        results {
+          scope
+          hasPublishedVersion
+          states {
+            statusId
+            order
+          }
+          diagnostics {
+            type
+            legacyStatusId
+            templateId
+          }
+        }
+      }
+    }
+  `;
+  const WORKFLOW_MIGRATE_MUTATION = gql`
+    mutation WorkflowMigrateForTest($entityType: String!, $publish: Boolean, $overwrite: Boolean) {
+      workflowMigrate(entityType: $entityType, publish: $publish, overwrite: $overwrite) {
+        workflow_id
+        published
+        errors {
+          type
+          message
+        }
+      }
+    }
+  `;
+  const CASE_RFT_ADD_MUTATION = gql`
+    mutation CaseRftAddForMigrationTest($input: CaseRftAddInput!) {
+      caseRftAdd(input: $input) {
+        id
+      }
+    }
+  `;
+  const CASE_RFT_DELETE_MUTATION = gql`
+    mutation CaseRftDeleteForMigrationTest($id: ID!) {
+      caseRftDelete(id: $id)
+    }
+  `;
+
+  const loadStatuses = () => fullEntitiesList<any>(testContext, ADMIN_USER, [ENTITY_TYPE_STATUS], {
+    filters: { mode: FilterMode.And, filters: [{ key: ['type'], values: [entityType] }], filterGroups: [] },
+  });
+  // A Status reaches the middleware cache asynchronously: retry the legacy status write until it lands.
+  const createCaseOnStatus = async (name: string, statusId: string) => {
+    const result = await queryAsAdminWithSuccess({ query: CASE_RFT_ADD_MUTATION, variables: { input: { name } } });
+    const caseId = result.data.caseRftAdd.id;
+    let stored: string | undefined;
+    for (let attempt = 0; attempt < 20 && stored !== statusId; attempt += 1) {
+      if (attempt > 0) {
+        await wait(500);
+      }
+      await updateAttribute(testContext, ADMIN_USER, caseId, entityType, [{ key: 'x_opencti_workflow_id', value: [statusId] }]);
+      stored = (await storeLoadById<any>(testContext, ADMIN_USER, caseId, entityType)).x_opencti_workflow_id;
+    }
+    expect(stored).toBe(statusId);
+    return caseId;
+  };
+  const readInstance = (entityId: string) => queryAsAdminWithSuccess({ query: WORKFLOW_INSTANCE_QUERY, variables: { entityId } });
+
+  beforeAll(async () => {
+    await queryAsAdmin({ query: WORKFLOW_DEFINITION_DELETE_MUTATION, variables: { entityType } });
+    for (const key of Object.keys(templateIds) as Array<keyof typeof templateIds>) {
+      const template = await createStatusTemplate(testContext, ADMIN_USER, { name: `Rft ${key} ${suffix}`, color: '#000000' });
+      templateIds[key] = template.id;
+    }
+    // Orders far below anything else on the type, so `open` is the initial state of the migration.
+    const create = async (templateId: string, order: number, scope = StatusScope.Global) => {
+      const status = await createStatus(testContext, ADMIN_USER, entityType, { template_id: templateId, order, scope });
+      return status.id;
+    };
+    statusIds.open = await create(templateIds.open, -30);
+    statusIds.review = await create(templateIds.review, -20);
+    statusIds.done = await create(templateIds.done, -10);
+    statusIds.pending = await create(templateIds.pending, -30, StatusScope.RequestAccess);
+    caseOnReviewId = await createCaseOnStatus(`Migration review case ${suffix}`, statusIds.review);
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({ query: WORKFLOW_DEFINITION_DELETE_MUTATION, variables: { entityType } });
+    if (caseOnReviewId) {
+      await queryAsAdmin({ query: CASE_RFT_DELETE_MUTATION, variables: { id: caseOnReviewId } });
+    }
+    for (const templateId of Object.values(templateIds).filter(Boolean)) {
+      await statusTemplateDelete(testContext, ADMIN_USER, templateId).catch(() => undefined);
+    }
+  });
+
+  it('previews GLOBAL in legacy order and keeps REQUEST_ACCESS apart', async () => {
+    const result = await queryAsAdminWithSuccess({ query: WORKFLOW_MIGRATION_PREVIEW_QUERY, variables: { entityType } });
+    const { results } = result.data.workflowMigrationPreview;
+    const global = results.find((r: any) => r.scope === StatusScope.Global);
+    const requestAccess = results.find((r: any) => r.scope === StatusScope.RequestAccess);
+
+    expect(global.states.slice(0, 3).map((s: any) => s.statusId)).toEqual([templateIds.open, templateIds.review, templateIds.done]);
+    expect(requestAccess.states.map((s: any) => s.statusId)).toContain(templateIds.pending);
+    expect(global.states.map((s: any) => s.statusId)).not.toContain(templateIds.pending);
+  });
+
+  it('refuses to publish while ENTITIES_WORKFLOW is disabled', async () => {
+    const enabledFlags = ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
+    let result;
+    try {
+      result = await queryAsAdmin({ query: WORKFLOW_MIGRATE_MUTATION, variables: { entityType, publish: true } });
+    } finally {
+      ENABLED_FEATURE_FLAGS.push(...enabledFlags);
+    }
+
+    expect(result.errors?.[0].message).toContain('ENTITIES_WORKFLOW feature is disabled');
+  });
+
+  it('migrates and publishes, reusing the existing Status ids and leaving REQUEST_ACCESS untouched', async () => {
+    const before = await loadStatuses();
+
+    const result = await queryAsAdminWithSuccess({ query: WORKFLOW_MIGRATE_MUTATION, variables: { entityType, publish: true } });
+
+    expect(result.data.workflowMigrate.published).toBe(true);
+    expect(result.data.workflowMigrate.errors).toEqual([]);
+    const after = await loadStatuses();
+    const ours = (statuses: any[]) => statuses.filter((s) => Object.values(templateIds).includes(s.template_id)).map((s) => s.id).sort();
+    expect(ours(after)).toEqual(ours(before));
+    const pending = after.find((s: any) => s.id === statusIds.pending);
+    expect(pending).toEqual(expect.objectContaining({ scope: StatusScope.RequestAccess, order: -30, template_id: templateIds.pending }));
+  });
+
+  it('keeps an entity on its legacy status, and lets it move to every other migrated state', async () => {
+    const instance = (await readInstance(caseOnReviewId)).data.workflowInstance;
+
+    expect(instance.currentState).toBe(templateIds.review);
+    const targets = instance.allowedTransitions.map((t: any) => t.toState);
+    expect(targets).toEqual(expect.arrayContaining([templateIds.open, templateIds.done]));
+    expect(targets).not.toContain(templateIds.review);
+
+    const toDone = instance.allowedTransitions.find((t: any) => t.toState === templateIds.done);
+    const trigger = await queryAsAdminWithSuccess({ query: TRIGGER_WORKFLOW_EVENT_MUTATION, variables: { entityId: caseOnReviewId, eventName: toDone.event } });
+    expect(trigger.data.triggerWorkflowEvent.success).toBe(true);
+    expect(trigger.data.triggerWorkflowEvent.newState).toBe(templateIds.done);
+  });
+
+  it('refuses to overwrite the published workflow, even with overwrite: true', async () => {
+    const result = await queryAsAdmin({ query: WORKFLOW_MIGRATE_MUTATION, variables: { entityType, overwrite: true } });
+
+    expect(result.errors?.[0].message).toContain('already has a published workflow');
   });
 });
