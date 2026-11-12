@@ -6303,6 +6303,8 @@
   "You will find here the result in JSON format.": "ここにJSON形式の結果が表示されます。",
   "you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "組織への特別なアクセス権が付与されていない限り、 メインプラットフォームの組織に関わることはありません。",
   "You're targeting more than 1000 entities with this background task, be sure of what you're doing!": "このバックグラウンドタスクで1000以上のエンティティをターゲットにしています。実行内容を確認してください。",
+  "Your account has been locked for security reasons. Please contact your administrator.": "セキュリティ上の理由により、アカウントはロックされています。管理者に連絡してください。",
+  "Your account has been locked for security reasons. Please try again in {hours, plural, one {# hour} other {# hours}}.": "セキュリティ上の理由により、アカウントはロックされています。{hours, plural, other {# 時間}}後にもう一度お試しください。",
   "Your account has been locked for security reasons. Please try again in {minutes, plural, one {# minute} other {# minutes}}.": "セキュリティ上の理由により、アカウントはロックされています。{minutes, plural, other {# 分}}後にもう一度お試しください。",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "アカウントの有効期限が切れました。アカウントを再度アクティブ化したい場合は、管理者に問い合わせてください。",
   "Your answer is ready": "回答の準備が整いました",

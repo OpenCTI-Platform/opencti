@@ -6303,6 +6303,8 @@
   "You will find here the result in JSON format.": "Hier finden Sie das Ergebnis im JSON-Format.",
   "you will not pertain to the main platform organisation anymore unless you have been specifically granted access to the organisation.": "sie gehören nicht mehr zur Hauptplattform-Organisation, es sei denn, Ihnen wurde ausdrücklich Zugang zu dieser Organisation gewährt.",
   "You're targeting more than 1000 entities with this background task, be sure of what you're doing!": "Sie zielen auf mehr als 1000 Entitäten mit dieser Hintergrundaufgabe, seien Sie sicher, was Sie tun!",
+  "Your account has been locked for security reasons. Please contact your administrator.": "Ihr Konto wurde aus Sicherheitsgründen gesperrt. Bitte kontaktieren Sie Ihren Administrator.",
+  "Your account has been locked for security reasons. Please try again in {hours, plural, one {# hour} other {# hours}}.": "Ihr Konto wurde aus Sicherheitsgründen gesperrt. Bitte versuchen Sie es in {hours, plural, one {# Stunde} other {# Stunden}} erneut.",
   "Your account has been locked for security reasons. Please try again in {minutes, plural, one {# minute} other {# minutes}}.": "Ihr Konto wurde aus Sicherheitsgründen gesperrt. Bitte versuchen Sie es in {minutes, plural, one {# Minute} other {# Minuten}} erneut.",
   "Your account has expired. If you would like to reactivate your account, please contact your administrator.": "Ihr Konto ist abgelaufen. Wenn Sie Ihr Konto reaktivieren möchten, wenden Sie sich bitte an Ihren Administrator.",
   "Your answer is ready": "Ihre Antwort ist bereit",
