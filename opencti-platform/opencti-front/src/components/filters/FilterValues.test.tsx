@@ -165,7 +165,8 @@ describe('FilterValues for a generic nested filter key', () => {
     [[{ key: 'coverage_name', operator: 'eq', values: ['detection'] }, { key: 'coverage_score', operator: 'lt', values: ['20'] }], ' detection\u00a0< 20'],
     [[{ key: 'coverage_score', operator: 'gte', values: ['90'] }], '\u00a0≥ 90'],
     [[{ key: 'coverage_score', operator: 'not_eq', values: ['20'] }], '\u00a0≠ 20'],
-    [[{ key: 'coverage_name', operator: 'not_eq', values: ['detection', 'prevention'] }, { key: 'coverage_score', operator: 'eq', values: ['0'] }], ' not detection, prevention\u00a0= 0'],
+    // a negated name too, like a not_eq filter chip; an equal name reads without its symbol (Coverage detection < 20)
+    [[{ key: 'coverage_name', operator: 'not_eq', values: ['detection', 'prevention'] }, { key: 'coverage_score', operator: 'eq', values: ['0'] }], '\u00a0\u2260 detection, prevention\u00a0= 0'],
   ])('renders the coverage chip', (values, text) => {
     const { container } = renderCoverage('eq', values);
     expect(screen.getByText('Coverage score')).toBeInTheDocument();
