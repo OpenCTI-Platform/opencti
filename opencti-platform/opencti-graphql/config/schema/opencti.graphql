@@ -2243,7 +2243,7 @@ type Connector implements BasicObject & InternalObject {
   manager_contract_image: String
   manager_contract_definition: String
   manager_contract_excerpt: ManagerContractExcerpt
-  manager_contract_configuration: [ManagerContractConfiguration!]
+  manager_contract_configuration: [ManagerContractConfiguration!] @auth(for: [MODULES])
   manager_connector_logs: [String!]
   manager_contract_hash: String
   manager_health_metrics: ConnectorHealthMetrics
