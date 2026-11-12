@@ -58,6 +58,8 @@ export interface ConfigPresetComputedItem {
   // A setting that is on or off: whether the bundle turns it on, shown under its label; null when the bundle does not set it
   isEnabled?: boolean | null;
   credentials?: ConfigPresetImportCredential[];
+  // The item is the default of the platform the bundle was exported from, when the item itself says so (the default fintel design)
+  isDefault?: boolean;
 }
 
 export interface ConfigPresetImportCredential {
@@ -85,6 +87,8 @@ export interface ConfigPresetImportPlan {
   releasedThemeNames?: Set<string>;
   // The names (normalized) of the exclusion lists the earlier items of an import hold, dry run or not
   exclusionListNames?: Set<string>;
+  // The names the copies of fintel designs of the earlier items of a dry run would take
+  fintelDesignNames?: Set<string>;
   // The standard ids of the roles the earlier items of a dry run would create
   roleIds?: Set<string>;
   // The standard ids of the groups the earlier items of a dry run would create

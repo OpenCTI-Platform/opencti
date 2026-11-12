@@ -60,6 +60,7 @@ import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusion
 import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './configPreset-killChainPhases-fixtures';
 import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
+import { defaultFintelDesign, nightFintelDesign } from './configPreset-fintelDesigns-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -292,6 +293,24 @@ describe('Config preset exportable types query', () => {
         items: RULES_DECLARATION.slice(0, 10).map(({ id, name }) => staticItem(id, name)),
         itemsPageInfo: { hasNextPage: true, globalCount: RULES_DECLARATION.length },
       },
+      {
+        key: 'fintelDesigns',
+        label: 'Fintel designs',
+        description: 'Fintel designs, their colors and logos',
+        group: { key: 'customization', label: 'Customization' },
+        // By name: the default design, and the others that depend on it
+        items: [
+          { key: defaultFintelDesign.standard_id, label: 'Filigran report', translatable: false, dependsOn: [], isDefault: true },
+          {
+            key: nightFintelDesign.standard_id,
+            label: 'Night briefing',
+            translatable: false,
+            dependsOn: [{ type: 'fintelDesigns', key: defaultFintelDesign.standard_id }],
+            isDefault: false,
+          },
+        ],
+        itemsPageInfo: onePage(2),
+      },
     ]);
   });
 
@@ -333,8 +352,9 @@ describe('Config preset exportable types query', () => {
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
-      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true], ['ruleEngine', false],
+      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true], ['ruleEngine', false], ['fintelDesigns', true],
     ]);
+    expect(types.find((type) => type.key === 'fintelDesigns')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
@@ -383,6 +403,7 @@ describe('Config preset exportable types query', () => {
       ['caseTemplates', 'taxonomy'],
       ['connectors', 'integrations'],
       ['ruleEngine', 'automationRules'],
+      ['fintelDesigns', 'customization'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);
