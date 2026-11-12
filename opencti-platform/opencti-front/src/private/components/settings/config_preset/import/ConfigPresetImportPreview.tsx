@@ -485,8 +485,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
           const result = results?.[`${type.key}/${item.key}`];
           // The types the import hides: the row alone only says that the item is there
-          // The platform points to a theme by its standard id: a copy of the default theme is another theme, the default stays the one it is
-          const keepsDefaultTheme = hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
+          // The platform points to a theme by its standard id: a copy of the default theme is another theme, the default stays the one it is.
+          // A copy of the default fintel design is the default design: it is not said
+          const keepsDefaultTheme = type.key === 'branding' && hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
           const shownResult = result && isResultShown(result, hasChoice) ? result : null;
           // An item that is created has nothing to flag, and its reason says how (the copy of an item that exists): the tag is for what is not a plain creation
           const hasStatus = !!shownResult && shownResult.code !== CODE_UNCHANGED && !(shownResult.status === 'CREATED' && shownResult.reason);
