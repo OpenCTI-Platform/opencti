@@ -56,10 +56,17 @@ export enum WorkflowDataType {
 
 export enum WorkflowActionType {
   updateAuthorizedMembers = 'updateAuthorizedMembers',
+  resetAuthorizedMembers = 'resetAuthorizedMembers',
   validateDraft = 'validateDraft',
   shareWithOrganizations = 'shareWithOrganizations',
   unshareFromOrganizations = 'unshareFromOrganizations',
 }
+
+// Update and reset of authorized members contradict each other on the same transition or status side
+export const AUTHORIZED_MEMBERS_EXCLUSIVE_ACTIONS: Partial<Record<WorkflowActionType, WorkflowActionType>> = {
+  [WorkflowActionType.updateAuthorizedMembers]: WorkflowActionType.resetAuthorizedMembers,
+  [WorkflowActionType.resetAuthorizedMembers]: WorkflowActionType.updateAuthorizedMembers,
+};
 
 export const NODE_SIZE = { width: 160, height: 50 };
 
@@ -80,7 +87,7 @@ const formatActions = (actions: Action[] = []) => {
           })) },
       };
     }
-    if (type === 'validateDraft') {
+    if (type === 'validateDraft' || type === 'resetAuthorizedMembers') {
       return {
         type,
       };

@@ -18,6 +18,17 @@ import { WORKFLOW_CONTEXT_FILTER_KEYS } from '../../utils/filtering/filtering-co
 import { SYSTEM_USER } from '../../utils/access';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 
+// Actions that write the entity's authorized members: only valid on types that support them
+const AUTHORIZED_MEMBERS_ACTION_TYPES = ['updateAuthorizedMembers', 'resetAuthorizedMembers'];
+
+// Updating and resetting authorized members in the same step contradict each other: the result would depend on action order
+const hasConflictingAuthorizedMembersActions = (actions: { type: string }[]) => actions.some((a) => a.type === 'updateAuthorizedMembers')
+  && actions.some((a) => a.type === 'resetAuthorizedMembers');
+const conflictingAuthorizedMembersError = (location: string) => ({
+  type: 'CONFLICTING_AUTHORIZED_MEMBERS_ACTIONS',
+  message: `Authorized members cannot be updated and reset in the same ${location}`,
+});
+
 const filterModeValues = Object.values(FilterMode) as [string, ...string[]];
 const filterOperatorValues = Object.values(FilterOperator) as [string, ...string[]];
 
@@ -235,15 +246,21 @@ export const validateWorkflowDefinitionData = async (
   }
 
   const definedStates = new Set<string>();
-  let hasUpdateAuthorizedMembersAction = false;
+  let hasAuthorizedMembersAction = false;
   states.forEach((state: z.infer<typeof workflowSerializedStateSchema>) => {
     if (state.name) definedStates.add(state.name);
     if (state.statusId) definedStates.add(state.statusId);
 
+    if (hasConflictingAuthorizedMembersActions(state.onEnter || [])) {
+      errors.push(conflictingAuthorizedMembersError(`state ${state.name || state.statusId} (onEnter)`));
+    }
+    if (hasConflictingAuthorizedMembersActions(state.onExit || [])) {
+      errors.push(conflictingAuthorizedMembersError(`state ${state.name || state.statusId} (onExit)`));
+    }
     [...(state.onEnter || []), ...(state.onExit || [])].forEach((action) => {
       validateAction(action, `state ${state.name || state.statusId}`);
-      if (action.type === 'updateAuthorizedMembers') {
-        hasUpdateAuthorizedMembersAction = true;
+      if (AUTHORIZED_MEMBERS_ACTION_TYPES.includes(action.type)) {
+        hasAuthorizedMembersAction = true;
       }
     });
   });
@@ -357,6 +374,10 @@ export const validateWorkflowDefinitionData = async (
       }
     }
 
+    if (hasConflictingAuthorizedMembersActions([...(transition.asyncActions ?? []), ...(transition.syncActions ?? [])])) {
+      errors.push(conflictingAuthorizedMembersError(`transition ${transition.event}`));
+    }
+
     // Validate asyncActions — enforce that the action type allows async-only execution
     if (transition.asyncActions) {
       for (const action of transition.asyncActions) {
@@ -391,8 +412,8 @@ export const validateWorkflowDefinitionData = async (
             });
           }
         }
-        if (action.type === 'updateAuthorizedMembers') {
-          hasUpdateAuthorizedMembersAction = true;
+        if (AUTHORIZED_MEMBERS_ACTION_TYPES.includes(action.type)) {
+          hasAuthorizedMembersAction = true;
         }
       }
     }
@@ -407,10 +428,10 @@ export const validateWorkflowDefinitionData = async (
 
   const isAuthorizedMembersSupportedType = entityType === ENTITY_TYPE_DRAFT_WORKSPACE
     || AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES.includes(entityType);
-  if (hasUpdateAuthorizedMembersAction && !isAuthorizedMembersSupportedType) {
+  if (hasAuthorizedMembersAction && !isAuthorizedMembersSupportedType) {
     errors.push({
       type: 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE',
-      message: 'Update authorized members action is only allowed for entity types that support authorized members (Container, Organization or DraftWorkspace)',
+      message: 'Authorized members actions are only allowed for entity types that support authorized members (Container, Organization or DraftWorkspace)',
     });
   }
 

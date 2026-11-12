@@ -1282,6 +1282,72 @@ describe('Workflow Validation – transition comment field', () => {
     const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Task');
     expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(true);
   });
+
+  it('should not return error for resetAuthorizedMembers action for a supported Container entity type', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [
+        { from: 'existing-state', to: 'in-progress', event: 'start', syncActions: [{ type: 'resetAuthorizedMembers' }] },
+      ],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Report');
+    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(false);
+  });
+
+  it('should return error for resetAuthorizedMembers action in a state onEnter for a non-supported entity type', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state', onEnter: [{ type: 'resetAuthorizedMembers' }] }],
+      transitions: [],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Incident');
+    expect(errors.some((e) => e.type === 'AUTHORIZED_MEMBERS_ACTION_NOT_ALLOWED_FOR_ENTITY_TYPE')).toBe(true);
+  });
+
+  it('should return error when a transition both updates and resets authorized members', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state' }, { statusId: 'in-progress' }],
+      transitions: [{
+        from: 'existing-state',
+        to: 'in-progress',
+        event: 'start',
+        syncActions: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }, { type: 'resetAuthorizedMembers' }],
+      }],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Report');
+    expect(errors.some((e) => e.type === 'CONFLICTING_AUTHORIZED_MEMBERS_ACTIONS')).toBe(true);
+  });
+
+  it('should return error when a state onExit both updates and resets authorized members', async () => {
+    const invalid = {
+      initialState: 'existing-state',
+      states: [{ statusId: 'existing-state', onExit: [{ type: 'resetAuthorizedMembers' }, { type: 'updateAuthorizedMembers', params: { authorized_members: [] } }] }],
+      transitions: [],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(invalid), 'Report');
+    expect(errors.some((e) => e.type === 'CONFLICTING_AUTHORIZED_MEMBERS_ACTIONS')).toBe(true);
+  });
+
+  it('should allow updating on enter and resetting on exit of the same state', async () => {
+    const valid = {
+      initialState: 'existing-state',
+      states: [{
+        statusId: 'existing-state',
+        onEnter: [{ type: 'updateAuthorizedMembers', params: { authorized_members: [] } }],
+        onExit: [{ type: 'resetAuthorizedMembers' }],
+      }],
+      transitions: [],
+    };
+
+    const errors = await validateWorkflowDefinitionData(mockContext, mockUser, JSON.stringify(valid), 'Report');
+    expect(errors.some((e) => e.type === 'CONFLICTING_AUTHORIZED_MEMBERS_ACTIONS')).toBe(false);
+  });
 });
 
 describe('Workflow Validation – transition closingReason field', () => {

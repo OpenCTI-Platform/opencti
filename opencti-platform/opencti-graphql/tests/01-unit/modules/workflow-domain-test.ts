@@ -751,6 +751,8 @@ describe('Workflow Domain', () => {
       ['non-empty conditions filters on transition', { transitions: [{ from: 'open', to: 'closed', event: 'close', conditions: { mode: 'and', filters: [{ key: 'entity_type', values: ['Incident'] }], filterGroups: [] } }] }],
       ['updateAuthorizedMembers on state onEnter', { states: [{ statusId: 'status-1', onEnter: [{ type: 'updateAuthorizedMembers', mode: 'sync' }] }] }],
       ['updateAuthorizedMembers on state onExit', { states: [{ statusId: 'status-1', onExit: [{ type: 'updateAuthorizedMembers', mode: 'sync' }] }] }],
+      ['resetAuthorizedMembers on transition syncActions', { transitions: [{ from: 'open', to: 'closed', event: 'close', syncActions: [{ type: 'resetAuthorizedMembers', mode: 'sync' }] }] }],
+      ['resetAuthorizedMembers on state onEnter', { states: [{ statusId: 'status-1', onEnter: [{ type: 'resetAuthorizedMembers', mode: 'sync' }] }] }],
     ])('calls checkEnterpriseEdition when definition has %s', async (_label, overrides) => {
       const def = ceDefinition(overrides);
       await setWorkflowDefinition(mockContext, mockUser, 'Incident', def);
