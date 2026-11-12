@@ -112,6 +112,7 @@ import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
 import { registerReconcileAssert, stripSinkOf } from './sequencer/sequencer-pending-refs';
 import { pendingIntentContext, pendingRecordInput, registerPendingIntentResubmit } from './sequencer/sequencer-pending-intents';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
+import { relationBasisContext } from './sequencer/sequencer-multi-writer';
 import { createInputCompletionOf } from './create-input-completion';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
@@ -3860,7 +3861,7 @@ export const createRelationRaw = async (
       }
       // TODO Handling merging relation when updating to prevent multiple relations finding
       // resolve all refs so we can upsert properly
-      existingRelationship = await storeLoadByIdWithRefs(context, user, filteredRelations[0].internal_id);
+      existingRelationship = await storeLoadByIdWithRefs(relationBasisContext(context, filteredRelations[0].internal_id), user, filteredRelations[0].internal_id);
     }
     if (!existingRelationship) {
       // We do not use default values on upsert.

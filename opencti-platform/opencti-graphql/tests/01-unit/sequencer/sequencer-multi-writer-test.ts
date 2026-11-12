@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SEQUENCER_CONFIG } from '../../../src/database/sequencer/sequencer-config';
-import { ignoreIndexAlreadyExists, NODE_FIELD_MAPPING, ownedPendingQuery, recordOwner } from '../../../src/database/sequencer/sequencer-multi-writer';
+import {
+  dedupFoundRelationIds,
+  ignoreIndexAlreadyExists,
+  NODE_FIELD_MAPPING,
+  ownedPendingQuery,
+  recordOwner,
+  relationBasisContext,
+} from '../../../src/database/sequencer/sequencer-multi-writer';
 import { deferIntents, deferOperation, initPendingIntents, registerPendingIntentsEsOps } from '../../../src/database/sequencer/sequencer-pending-intents';
 import { buildPendingRecords, initPendingRefs, registerPendingRefsEsOps } from '../../../src/database/sequencer/sequencer-pending-refs';
 import { SequencerIdentityMap } from '../../../src/database/sequencer/sequencer-identity-map';
@@ -123,5 +130,37 @@ describe('ids found absent by the resolution', () => {
     expect(map.knownAbsentIds().sort()).toEqual(['malware--a', 'malware--b', 'tool--c']);
     map.clearAbsent();
     expect(map.knownAbsentIds()).toEqual([]);
+  });
+});
+
+// task 0040 defect 2: a platform's bare copy of a relation can predate another platform's upsert;
+// diffing against it erased the stix ids that platform appended
+describe('relation upsert basis on a multi writer', () => {
+  const resolutions = (withRefs: string[]) => ({ hasWithRefs: (id: string) => withRefs.includes(id), serveBare: vi.fn() });
+  const applying = (withRefs: string[]) => ({ user: 'u', sequencer: { scope: 'applying', resolutions: resolutions(withRefs) } });
+
+  it('should read the basis without the identity map unless the batch holds a with-refs copy', () => {
+    const context = applying(['rel-batch']);
+    const outside = relationBasisContext(context, 'rel-other', true);
+    expect(outside.sequencer.resolutions).toBeUndefined();
+    expect(outside.sequencer.scope).toEqual('applying');
+    expect(outside.user).toEqual('u');
+    expect(relationBasisContext(context, 'rel-batch', true)).toBe(context);
+  });
+
+  it('should keep the context of a single writer and of a write outside the sequencer', () => {
+    const context = applying([]);
+    expect(relationBasisContext(context, 'rel-other', false)).toBe(context);
+    const plain = { user: 'u' } as { user: string; sequencer?: undefined };
+    expect(relationBasisContext(plain, 'rel-other', true)).toBe(plain);
+  });
+
+  it('should list each relation the dedup prefetch found once', () => {
+    const prefetch = [
+      { existing: [{ internal_id: 'rel-a' }, { internal_id: 'rel-b' }] },
+      { existing: [{ internal_id: 'rel-a' }, {}] },
+      { existing: [] },
+    ];
+    expect(dedupFoundRelationIds(prefetch).sort()).toEqual(['rel-a', 'rel-b']);
   });
 });

@@ -116,6 +116,8 @@ interface AuthContext {
       // 2026-09-25: relation dedup shortcut for endpoints created by the running batch
       wasCreatedInBatch?: (internalId: string) => boolean;
       wasAbsentAtBatchStart?: (element: any) => boolean;
+      // task 0040 defect 2: whether the batch holds a with-refs copy of an element (sequencer-multi-writer relationBasisContext)
+      hasWithRefs?: (id: string) => boolean;
     };
   };
 }

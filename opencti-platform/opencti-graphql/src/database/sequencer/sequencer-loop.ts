@@ -23,7 +23,7 @@ import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { INPUT_EXTERNAL_REFS, INPUT_KILLCHAIN, INPUT_LABELS } from '../../schema/general';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { elCreateIndexWithMapping, elFindByIds, elFlushSequencerWrites, elIndexExists, elPutIndexMappingProperties, elRawBulk, elRawSearch } from '../engine';
-import { creatableNestedIds, ignoreIndexAlreadyExists, isLockError, lockErrorKeys, relationDedupLockKey } from './sequencer-multi-writer';
+import { creatableNestedIds, dedupFoundRelationIds, ignoreIndexAlreadyExists, isLockError, lockErrorKeys, relationDedupLockKey } from './sequencer-multi-writer';
 import { buildPendingRecords, fireReconcile, initPendingRefs, matchCreatedElement, persistPendingRecords, registerPendingRefsEsOps } from './sequencer-pending-refs';
 import type { StrippedRef, StrippedRefInput } from './sequencer-pending-refs';
 import { computeApplyLevels, groupIndicesByLevel, runBounded } from './sequencer-apply-levels';
@@ -494,6 +494,27 @@ const preResolveBatch = async (batch: SequencerIntent[]) => {
   sequencerMetrics.phase('resolve', (Date.now() - t0) / 1000, m0);
 };
 
+// task 0040 defect 2: the relations the dedup found under the batch lock get their with-refs basis
+// read now, in one go, served by the map to this batch's upserts and evicted at its end
+// (sequencer-multi-writer relationBasisContext)
+const batchRelationBases = new Set<string>();
+const loadRelationUpsertBases = async (context: AuthContext) => {
+  const ids = dedupFoundRelationIds(dedupPrefetch.values());
+  if (!withRefsLoader || ids.length === 0) return;
+  const loader = withRefsLoader;
+  const loaded = await inPackets(ids, (packet) => loader(context, SYSTEM_USER, packet));
+  loaded.forEach((element) => {
+    sequencerIdentityMap.ingestWithRefs(element);
+    batchRelationBases.add(element.internal_id);
+  });
+  sequencerMetrics.esOp('search', 3);
+};
+const evictRelationUpsertBases = () => {
+  if (batchRelationBases.size === 0) return;
+  sequencerIdentityMap.evict(Array.from(batchRelationBases), 'write');
+  batchRelationBases.clear();
+};
+
 // task 0040 multi_writer: the batch lock is held. The ids the resolution found absent are searched
 // again: a platform that created one released its lock after its refresh, so the search sees it,
 // and the batch must resolve again (returns the elements found). Otherwise the diff bases and the
@@ -513,6 +534,7 @@ const resolveUnderLock = async (batch: SequencerIntent[]): Promise<any[]> => {
   }
   await loadUpsertBases(context, collectBatchResolveIds(batch).entityCandidateIds);
   await prefetchRelationDedup(context, batch);
+  await loadRelationUpsertBases(context);
   sequencerMetrics.phase('resolve_locked', (Date.now() - t0) / 1000, m0);
   return [];
 };
@@ -1320,6 +1342,7 @@ const runBatchLoop = async () => {
       // s10.3: absence and prefetches are only valid while this batch's lock is held
       sequencerIdentityMap.clearAbsent();
       dedupPrefetch.clear();
+      evictRelationUpsertBases();
       await lock.unlock();
     }
     // record the REAL assembly size (before the batchEwp-a diagnosis this recorded the

@@ -63,6 +63,32 @@ export const relationDedupLockKey = (relationshipType: string, fromInternalId: s
   `relation-dedup:${relationshipType}:${fromInternalId}:${toInternalId}`
 );
 
+// task 0040 defect 2: under an applying batch the identity map serves known ids from its bare level,
+// and a bare copy of a relation can predate another platform's upsert (upserts do not invalidate it):
+// diffing against it erased the stix ids that platform appended (28 per mix140k run). With several
+// platforms writing, a relation upsert diffs against the with-refs copy its batch read under the
+// lock (sequencer-loop loadRelationUpsertBases), otherwise against ES, never against a bare copy.
+export const relationBasisContext = <T extends { sequencer?: { resolutions?: { hasWithRefs?: (id: string) => boolean } } }>(
+  context: T,
+  relationId: string,
+  multiWriter = SEQUENCER_CONFIG.multiWriter,
+): T => {
+  if (!multiWriter || !context.sequencer) return context;
+  if (context.sequencer.resolutions?.hasWithRefs?.(relationId)) return context;
+  return { ...context, sequencer: { ...context.sequencer, resolutions: undefined } };
+};
+
+// The relations a batch's dedup prefetch found, whose upsert basis the batch reads under its lock
+export const dedupFoundRelationIds = (prefetch: Iterable<{ existing: any[] }>): string[] => {
+  const ids = new Set<string>();
+  for (const { existing } of prefetch) {
+    (existing ?? []).forEach((element: any) => {
+      if (typeof element?.internal_id === 'string') ids.add(element.internal_id);
+    });
+  }
+  return Array.from(ids);
+};
+
 const STIX_LIKE_ID = /^[a-z][a-z0-9-]*--/;
 
 // Step 2 (narrowed lock): the meta objects an apply may CREATE from its own input, so two platforms
