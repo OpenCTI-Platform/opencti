@@ -22,6 +22,11 @@ export interface DashboardVariablesBarProps {
   usedInWidgetIdsByVariable: ReadonlyMap<string, readonly string[]>;
   // An editor: gets the Save menu.
   canManage: boolean;
+  // A preset write of the page is in flight: the actions wait for it, so that two snapshots are never sent at once.
+  isSaving?: boolean;
+  // The values or the range differ from what the dashboard shows without a preset: Set as dashboard defaults is
+  // offered. Undefined: taken from the departure from the base, which is right when no preset is active.
+  canSetAsDefaults?: boolean;
   // The actions also cover the time range of the dashboard: they show when it alone differs from its default.
   isTimeRangeModified?: boolean;
   // A preset other than the default one is active: Reset goes back to the default one.
@@ -62,6 +67,8 @@ const DashboardVariablesBar = ({
   defaults,
   usedInWidgetIdsByVariable,
   canManage,
+  isSaving = false,
+  canSetAsDefaults,
   isTimeRangeModified = false,
   isPresetSelected = false,
   resetTargetName,
@@ -79,6 +86,7 @@ const DashboardVariablesBar = ({
 }: DashboardVariablesBarProps) => {
   const { t_i18n } = useFormatter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isBusy = isSubmitting || isSaving;
   // One query for the ids of all the chips, rather than one per chip.
   const valueLabels = useVariablesValueLabels(variables.map((variable) => ({ id: variable.id, variable, value: values.get(variable.id) })));
 
@@ -129,7 +137,7 @@ const DashboardVariablesBar = ({
           variable={variable}
           value={values.get(variable.id)}
           valueLabels={valueLabels.get(variable.id)}
-          disabled={isSubmitting}
+          disabled={isBusy}
           modified={isValueModified(variable.id, values, defaults)}
           hasInvalidDefault={invalidDefaultIds.has(variable.id)}
           usedInWidgetIds={usedInWidgetIdsByVariable.get(variable.id) ?? []}
@@ -152,14 +160,14 @@ const DashboardVariablesBar = ({
       )}
       <Box sx={{ flex: 1 }} />
       {isResettable && (
-        <DashboardValuesActions resetTargetName={resetTargetName} disabled={isSubmitting} onReset={onReset} />
+        <DashboardValuesActions resetTargetName={resetTargetName} disabled={isBusy} onReset={onReset} />
       )}
       {canManage && (
         <DashboardSaveMenu
           activePresetName={activePresetName}
           canUpdatePreset={isActivePresetModified}
-          canSetAsDefaults={isResettable}
-          disabled={isSubmitting}
+          canSetAsDefaults={canSetAsDefaults ?? isResettable}
+          disabled={isBusy}
           onUpdatePreset={onUpdatePreset}
           onSavePresetAs={onSavePresetAs}
           onSetAsDefaults={handleSetAsDefaults}

@@ -844,6 +844,15 @@ describe('CustomDashboard presets', () => {
     expect(captured.values?.get(SECTOR_ID)).toBe('Finance');
   });
 
+  it('offers Set as dashboard defaults on the default preset of the user, unmodified, as its view differs from the manifest', async () => {
+    const { user } = testRender(<CustomDashboard data={withPresets({ currentUserDefaultPresetId: 'p1' }) as never} />, { userContext: flagOn() });
+    expect(screen.queryByTestId('dashboard-values-modified')).not.toBeInTheDocument();
+    await user.click(saveMenu());
+    expect(await screen.findByTestId('dashboard-set-as-defaults')).not.toHaveAttribute('data-disabled');
+    // Nothing departs from the preset itself: its update stays disabled.
+    expect(screen.getByTestId('dashboard-preset-update')).toHaveAttribute('data-disabled');
+  });
+
   it('opens on the preset of the URL alone, values and range included, as a shared address', () => {
     window.history.replaceState(null, '', '/?preset=p1');
     testRender(<CustomDashboard data={withPresets() as never} />, { userContext: flagOn() });

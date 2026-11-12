@@ -228,6 +228,20 @@ describe('DashboardVariablesBar', () => {
     expect(screen.queryByTestId('dashboard-values-modified')).not.toBeInTheDocument();
   });
 
+  it('waits for a preset write of the page: the Save menu and Reset are disabled meanwhile', () => {
+    renderBar({ canManage: true, values: new Map([['var-1', 'Finance']]), isSaving: true });
+    expect(screen.getByTestId('dashboard-save-menu')).toBeDisabled();
+    expect(screen.getByTestId('dashboard-values-reset')).toBeDisabled();
+  });
+
+  it('offers Set as dashboard defaults when the page says the view differs from the manifest, even without a departure from the base', async () => {
+    const { user } = renderBar({ canManage: true, canSetAsDefaults: true });
+    expect(screen.queryByTestId('dashboard-values-modified')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('dashboard-values-reset')).not.toBeInTheDocument();
+    await openSaveMenu(user);
+    expect(await screen.findByTestId('dashboard-set-as-defaults')).not.toHaveAttribute('data-disabled');
+  });
+
   it('shows Reset, Modified and an enabled Set as dashboard defaults when only the time range is modified', async () => {
     const { user } = renderBar({ variables: [sector], canManage: true, isTimeRangeModified: true });
     expect(screen.getByTestId('dashboard-values-reset')).toBeInTheDocument();

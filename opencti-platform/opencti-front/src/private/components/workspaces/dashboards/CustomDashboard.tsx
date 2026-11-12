@@ -256,6 +256,11 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
     && isPresetModified(activePreset, variables, variableControls.manifestDefaults, variableControls.values, timeRange.range);
   // A preset other than the default one is a departure from the defaults in itself: Reset is offered.
   const isPresetSelected = activePreset !== null && activePreset.id !== (defaultPreset?.id ?? null);
+  // Set as dashboard defaults writes what the dashboard shows without a preset: it is offered whenever the view
+  // differs from that, the default preset of the user included, even when nothing departs from the preset itself.
+  const manifestRange = useMemo(() => pickTimeRange(config), [config]);
+  const isDepartedFromManifest = variables.some(({ id }) => (variableControls.values.get(id) ?? '') !== (variableControls.manifestDefaults.get(id) ?? ''))
+    || !isSameTimeRange(timeRange.range, manifestRange);
   const { upsert: upsertPreset, remove: removePreset, isSubmitting: isPresetSubmitting } = useDashboardPresetMutations(workspace.id);
   // Switching makes the preset the base of the values and of the range at once, and drops the changes made on the
   // previous one; no preset goes back to the default preset, or to the manifest.
@@ -502,6 +507,8 @@ const CustomDashboard = ({ data, noToolbar = false }: CustomDashboardProps) => {
                 defaults={variableControls.defaults}
                 usedInWidgetIdsByVariable={usedInWidgetIdsByVariable}
                 canManage={canManageVariables}
+                isSaving={isPresetSubmitting}
+                canSetAsDefaults={isDepartedFromManifest}
                 isTimeRangeModified={timeRange.isModified}
                 isPresetSelected={isPresetSelected}
                 resetTargetName={defaultPreset?.name}
