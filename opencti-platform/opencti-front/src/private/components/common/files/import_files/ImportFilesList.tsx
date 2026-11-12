@@ -27,6 +27,15 @@ import { useFormatter } from '../../../../../components/i18n';
 
 import { AgentOption, fetchAgentsForIntent, isXtmOneIntentWithoutAgents } from '../../../../../utils/ai/agentApi';
 
+// Each row's Grid container is a flex child of the ListItem, so it must be
+// given width: 100% or it shrinks to its content and every percentage column
+// is computed against that shrunken width. Icon and delete-button columns hold
+// fixed-size elements, so they get a fixed width instead of a 0.5 fraction of
+// the 12-column grid, which since Material UI 9 (spacing as a CSS gap) is
+// narrower than its content. The header reuses the same widths to stay aligned.
+const ICON_COLUMN_SX = { width: 24, flexShrink: 0 };
+const ACTION_COLUMN_SX = { width: 36, flexShrink: 0 }; // FDS IconButton, size "md"
+
 interface ImportFilesListProps {
   connectorsForImport: ImportFilesContextQuery$data['connectorsForImport'];
 }
@@ -189,21 +198,15 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
     });
   }, [files, connectorsForImport, agentsByIntent]);
 
-  const fileNameColumnSize = useMemo(() => {
-    if (importMode === 'auto') return 11;
-    if (isConfigurationColumn) return 5;
-    return 8;
-  }, [importMode, isConfigurationColumn]);
-
   return (
     <List>
       <TransitionGroup>
         {files.length > 0 && (
           <Collapse key="header">
             <ListItem divider>
-              <Grid container columnSpacing={2}>
-                <Grid size={0.5}></Grid>
-                <Grid size={fileNameColumnSize}>
+              <Grid container columnSpacing={2} wrap="nowrap" sx={{ width: '100%' }}>
+                <Grid size="auto" sx={ICON_COLUMN_SX}></Grid>
+                <Grid size="grow" sx={{ minWidth: 0 }}>
                   <Typography sx={{
                     fontWeight: 'bold',
                   }}
@@ -234,7 +237,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                     )}
                   </>
                 )}
-                <Grid size={0.5}></Grid>
+                <Grid size="auto" sx={ACTION_COLUMN_SX}></Grid>
               </Grid>
             </ListItem>
           </Collapse>
@@ -250,17 +253,19 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                 <Grid
                   container
                   columnSpacing={2}
+                  wrap="nowrap"
                   sx={{
+                    width: '100%',
                     alignItems: 'center',
                   }}
                 >
                   {/* Column 1: File Icon */}
-                  <Grid sx={{ display: 'flex' }} size={0.5}>
+                  <Grid size="auto" sx={{ ...ICON_COLUMN_SX, display: 'flex' }}>
                     <UploadFileOutlined color="primary" />
                   </Grid>
 
-                  {/* Column 2: File Name */}
-                  <Grid size={fileNameColumnSize}>
+                  {/* Column 2: File Name (takes the remaining width) */}
+                  <Grid size="grow" sx={{ minWidth: 0 }}>
                     <Tooltip title={file.name}>
                       <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
                         {file.name}
@@ -379,7 +384,7 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                     </>
                   )}
                   {/* Column 5: Delete Button */}
-                  <Grid size={0.5}>
+                  <Grid size="auto" sx={ACTION_COLUMN_SX}>
                     <IconButton
                       variant="default"
                       priority="tertiary"
