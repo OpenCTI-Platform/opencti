@@ -63,7 +63,7 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
     const relatedTarget = event.relatedTarget as HTMLElement | null;
     const field = event.currentTarget.closest('.MuiTextField-root');
     const popoverPaper = event.currentTarget.closest('.MuiPopover-paper');
-    if (relatedTarget && (field?.contains(relatedTarget) || popoverPaper?.contains(relatedTarget))) {
+    if (relatedTarget && (field?.contains(relatedTarget) || (!subKey && popoverPaper?.contains(relatedTarget)))) {
       return;
     }
     commit(value);
