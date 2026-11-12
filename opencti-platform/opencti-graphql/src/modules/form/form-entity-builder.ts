@@ -8,7 +8,6 @@ import { convertIdentityClass } from './form-utils';
 
 export const completeEntity = (entityType: string, entity: StoreEntity) => {
   const finalEntity = entity;
-  finalEntity.standard_id = generateStandardId(entityType, entity) as StixId;
   finalEntity.internal_id = uuidv4();
   if (isStixDomainObject(entityType)) {
     if (isEmptyField(finalEntity.created)) {
@@ -19,6 +18,8 @@ export const completeEntity = (entityType: string, entity: StoreEntity) => {
     }
     convertIdentityClass(entityType, entity);
   }
+  // After the defaults: the id of some types depends on created (Task, cases, Note...), the platform recomputes it from the stored value
+  finalEntity.standard_id = generateStandardId(entityType, entity) as StixId;
   finalEntity.id = finalEntity.internal_id;
   return finalEntity;
 };

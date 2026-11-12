@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import '../../../../src/modules/index';
 
 import { completeEntity } from '../../../../src/modules/form/form-entity-builder';
+import { generateStandardId } from '../../../../src/schema/identifier';
 
 describe('completeEntity', () => {
   it('sets standard_id, internal_id and id', () => {
@@ -41,5 +43,22 @@ describe('completeEntity', () => {
 
     expect(result.created).toBeUndefined();
     expect(result.modified).toBeUndefined();
+  });
+
+  // The platform recomputes the id from the stored values: the bundle id must be the same, or refs to the entity are lost
+  it.each([
+    ['Task', { name: 'Form task' }],
+    ['Case-Incident', { name: 'Form incident response' }],
+    ['Note', { content: 'Form note' }],
+  ])('computes the standard_id of a %s from the created it sets', (type, input) => {
+    const result = completeEntity(type, { ...input } as any);
+
+    expect(result.standard_id).toEqual(generateStandardId(type, { ...input, created: result.created.toISOString() } as any));
+  });
+
+  it('computes the standard_id of an identity from its identity_class', () => {
+    const result = completeEntity('Individual', { name: 'Form individual' } as any);
+
+    expect(result.standard_id).toEqual(generateStandardId('Individual', { name: 'Form individual', identity_class: 'individual' } as any));
   });
 });
