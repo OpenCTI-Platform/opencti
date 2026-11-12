@@ -5429,6 +5429,46 @@ describe('migrateWorkflowFromStatuses', () => {
     expect(deleteElementById).not.toHaveBeenCalled();
   });
 
+  // A plain workflowDefinitionPublish can publish the migrated draft between the migration's save
+  // and its own publish, which then fails: once the store shows a published version, the workflow is live.
+  const publishedByConcurrentCall = (workflow: object) => () => Promise.resolve(
+    vi.mocked(lockResources).mock.calls.length >= 2 ? { ...workflow, published_version: { id: 'v-migrated' } } : workflow,
+  );
+
+  it('keeps the workflow it created when a concurrent publish made it live before its own publish failed', async () => {
+    (findByType as any)
+      .mockResolvedValueOnce({ id: 'entity-setting-id' })
+      .mockResolvedValueOnce({ id: 'entity-setting-id' })
+      .mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    const migrated = { id: 'v-migrated', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{}', validation_errors: [] };
+    (storeLoadById as any).mockImplementation(publishedByConcurrentCall({ id: 'workflow-id', draft_version: migrated, all_versions: [migrated] }));
+    vi.mocked(lockResources)
+      .mockResolvedValueOnce({ unlock: vi.fn() } as any)
+      .mockRejectedValueOnce(new Error('status lock busy'));
+
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true)).rejects.toThrow('status lock busy');
+
+    expect(deleteElementById).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'entity-setting-id', 'EntitySetting', [{ key: 'workflow_id', value: [null] }]);
+  });
+
+  it('keeps an overwrite that a concurrent publish made live before its own publish failed', async () => {
+    const oldVersion = { id: 'old', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{"initialState":"x","states":[],"transitions":[]}', validation_errors: [] };
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (storeLoadById as any).mockImplementation(publishedByConcurrentCall({ id: 'workflow-id', name: 'Old', draft_version: oldVersion, all_versions: [oldVersion] }));
+    vi.mocked(lockResources)
+      .mockResolvedValueOnce({ unlock: vi.fn() } as any)
+      .mockRejectedValueOnce(new Error('status lock busy'));
+
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true, true)).rejects.toThrow('status lock busy');
+
+    expect(updateAttribute).not.toHaveBeenCalledWith(expect.anything(), expect.anything(), 'workflow-id', 'WorkflowDefinition', [
+      { key: 'draft_version', value: [oldVersion] },
+      { key: 'all_versions', value: [oldVersion] },
+      { key: 'name', value: ['Old'] },
+    ]);
+  });
+
   it('throws when there are no GLOBAL legacy statuses', async () => {
     (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
     (fullEntitiesList as any).mockResolvedValue([legacyStatuses[2]]);

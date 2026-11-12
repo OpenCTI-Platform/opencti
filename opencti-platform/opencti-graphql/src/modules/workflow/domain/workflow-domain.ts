@@ -599,11 +599,20 @@ export const getWorkflowMigrationPreview = async (
 
 const getWorkflowMigrateLockKey = (entityType: string): string => `workflow-migrate:${entityType}`;
 
+// A plain workflowDefinitionPublish does not take the migration lock, so it can publish the migrated
+// draft before the migration's own publish runs (which then fails on the cleared draft). The workflow
+// is live from then on: a rollback must leave it alone instead of deleting it or rewriting its history.
+const isWorkflowPublished = async (context: AuthContext, user: AuthUser, workflowId: string): Promise<boolean> => {
+  const workflow = await storeLoadById(bypassDraftContext(context), bypassDraftUser(user), workflowId, ENTITY_TYPE_WORKFLOW_DEFINITION) as WorkflowDefinitionEntity | undefined;
+  return !!workflow?.published_version;
+};
+
 // Undoes a first-time migration whose publish failed: the type goes back to having no workflow, so
 // a retry does not need `overwrite`.
 const removeMigratedWorkflow = async (context: AuthContext, user: AuthUser, entityType: string) => {
   const entitySetting = await getWorkflowConfig(context, user, entityType);
   if (!entitySetting?.workflow_id) return;
+  if (await isWorkflowPublished(context, user, entitySetting.workflow_id)) return;
   await deleteWorkflowDefinition(context, user, entityType);
   await deleteElementById(bypassDraftContext(context), bypassDraftUser(user), entitySetting.workflow_id, ENTITY_TYPE_WORKFLOW_DEFINITION);
 };
@@ -633,7 +642,8 @@ const restoreOverwrittenWorkflow = async (context: AuthContext, user: AuthUser, 
  *   ENTITIES_WORKFLOW feature, without which the workflow is not applied to entity writes.
  * - Runs under a per-type lock from the existence check to the publish. When the publish fails, it
  *   removes the workflow it created, or restores the draft and history of the one it overwrote, so a
- *   retry starts from the same state.
+ *   retry starts from the same state. Neither runs when a concurrent publish already made the migrated
+ *   workflow live.
  */
 export const migrateWorkflowFromStatuses = async (
   context: AuthContext,
@@ -707,7 +717,7 @@ export const migrateWorkflowFromStatuses = async (
     } catch (error) {
       if (!entitySetting.workflow_id) {
         await removeMigratedWorkflow(context, user, entityType);
-      } else if (previousWorkflow) {
+      } else if (previousWorkflow && !(await isWorkflowPublished(context, user, previousWorkflow.id))) {
         await restoreOverwrittenWorkflow(context, user, previousWorkflow);
       }
       throw error;
