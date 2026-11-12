@@ -49,6 +49,9 @@ describe('adaptFilterToGenericNestedFilterKey', () => {
     expect(adapt(filter({ values: [{ key: 'coverage_score', operator: 'gte', values: ['90'] }] as any }))?.nested)
       .toEqual([{ key: 'coverage_score', operator: 'gte', values: ['90'] }]);
   });
+  it.each(['search', 'only_eq_to', 'has_changed', 'script'])('rejects the filter operator %s, which the nested query would run as an equality', (operator) => {
+    expect(() => adapt(filter({ values: [{ key: 'coverage_score', operator, values: ['20'] }] as any }))).toThrow(/sub-filter operator/);
+  });
   it('rejects unknown sub-filter keys and operators other than eq, nil and not_nil on the nested filter', () => {
     expect(() => adapt(filter({ values: [{ key: 'unknown', values: ['a'] }] as any }))).toThrow(/sub-filter key/);
     expect(() => adapt(filter({ operator: FilterOperator.NotEq }))).toThrow(/operator/);

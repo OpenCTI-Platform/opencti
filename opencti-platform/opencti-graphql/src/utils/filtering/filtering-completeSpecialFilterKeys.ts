@@ -13,6 +13,7 @@ import {
   CUSTOM_FIELD_SELECT_VALUES_SUBFILTER,
   CUSTOM_FIELD_STRING_VALUE_SUBFILTER,
   ID_SUBFILTER,
+  NESTED_SUB_FILTER_OPERATORS,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
@@ -627,8 +628,6 @@ const adaptFilterForMetricsFilterKeys = async (filter: Filter) => {
  * - nil: no element
  * An eq filter without any sub-filter value does not filter, like any filter without value: null is returned.
  */
-const FILTER_OPERATORS: string[] = Object.values(FilterOperator);
-
 export const adaptFilterToGenericNestedFilterKey = (filter: Filter, attribute: NestedObjectAttribute): FiltersWithNested | null => {
   const { operator, values } = filter;
   const base = { key: [attribute.name], values: [], mode: FilterMode.Or, operator: FilterOperator.Eq };
@@ -648,9 +647,9 @@ export const adaptFilterToGenericNestedFilterKey = (filter: Filter, attribute: N
       throw BadUserInputError('Unknown sub-filter key on a nested filter key', { key: attribute.name, subFilterKey: subFilter.key });
     }
     // Sub-filters come in the values of the filter ([Any!]!): GraphQL does not check their operator as it does for the filter.
-    // An unknown operator would otherwise be run as an equality by the engine.
+    // An operator the nested query does not implement would otherwise be run as an equality by the engine.
     const subOperator = subFilter.operator ?? FilterOperator.Eq;
-    if (!FILTER_OPERATORS.includes(subOperator)) {
+    if (!NESTED_SUB_FILTER_OPERATORS.includes(subOperator)) {
       throw BadUserInputError('Unsupported sub-filter operator on a nested filter key', { key: attribute.name, subFilterKey: subFilter.key, operator: subOperator });
     }
     if (subFilter.values && subFilter.values.length > 0) {
