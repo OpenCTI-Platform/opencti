@@ -37,7 +37,13 @@ import {
 import { verifyMfa } from '../../../../src/modules/auth/auth-domain';
 import { AuthType, EnvStrategyType, PROVIDERS } from '../../../../src/modules/authenticationProvider/providers-configuration';
 import { TokenDuration } from '../../../../src/generated/graphql';
-import { ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
+import { buildActivityHistoryElements } from '../../../../src/manager/activityManager';
+import { elIndexElements, elRawDeleteByQuery, elRawGet } from '../../../../src/database/engine';
+import { INDEX_HISTORY, READ_INDEX_HISTORY } from '../../../../src/database/utils';
+import { EVENT_ACTIVITY_VERSION } from '../../../../src/database/stream/stream-utils';
+import { SYSTEM_USER } from '../../../../src/utils/access';
+import type { ActivityStreamEvent, SseEvent } from '../../../../src/types/event';
 import { ENTITY_TYPE_USER } from '../../../../src/modules/user/user-types';
 import { hashSHA256 } from '../../../../src/utils/hash';
 import { normalizeEmail } from '../../../../src/utils/email';
@@ -967,6 +973,50 @@ describe('Local authentication lockout', () => {
       await expectLocked(verifyMfa(testContext, { transactionId, code: await wrongCode() }));
       expect(lockActions).toHaveLength(1);
       expect(lockActions[0].context_data.source).toEqual('forgot_password');
+    });
+
+    // The context data is strictly mapped: a field missing from its mappings would fail the indexing of the whole event
+    it('should store the temporary and permanent lock events in the activity index', async () => {
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      // An external user is never set to Locked: the permanent lock lives in Redis only, cleared after each test
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_final_action: 'permanent' });
+      await reachMaxAttempts(EXTERNAL_USER.email);
+      expect(lockActions).toHaveLength(2);
+      const eventIds = lockActions.map((_, index) => `${Date.now()}-lock-${index}`);
+      const events = lockActions.map((action, index): SseEvent<ActivityStreamEvent> => ({
+        id: eventIds[index],
+        event: action.event_type,
+        data: {
+          version: EVENT_ACTIVITY_VERSION,
+          type: action.event_type,
+          event_access: action.event_access,
+          event_scope: action.event_scope,
+          prevent_indexing: false,
+          status: 'error',
+          origin: action.user.origin,
+          message: 'detects `account lock`',
+          data: action.context_data as unknown as ActivityStreamEvent['data'],
+        },
+      }));
+      try {
+        await elIndexElements(testContext, SYSTEM_USER, ENTITY_TYPE_ACTIVITY, await buildActivityHistoryElements(testContext, events));
+        const documents = await Promise.all(eventIds.map((id) => elRawGet({ id, index: INDEX_HISTORY }))) as { _source: Record<string, unknown> }[];
+        expect(documents.map(({ _source }) => _source)).toEqual([
+          expect.objectContaining({
+            entity_type: ENTITY_TYPE_ACTIVITY,
+            event_scope: 'lock',
+            user_id: lockoutUserId,
+            context_data: expect.objectContaining({ username: LOCKOUT_USER.email, lock_type: 'temporary', lock_duration: LOCK_MINUTES, max_attempts: 3, source: 'form' }),
+          }),
+          expect.objectContaining({
+            entity_type: ENTITY_TYPE_ACTIVITY,
+            event_scope: 'lock',
+            context_data: expect.objectContaining({ username: EXTERNAL_USER.email, lock_type: 'permanent', max_attempts: 3, source: 'form' }),
+          }),
+        ]);
+      } finally {
+        await elRawDeleteByQuery({ index: READ_INDEX_HISTORY, refresh: true, body: { query: { ids: { values: eventIds } } } });
+      }
     });
 
     it('should publish nothing when the attempt reaching the max attempts has the right password', async () => {
