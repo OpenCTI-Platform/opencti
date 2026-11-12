@@ -166,7 +166,7 @@ With an Enterprise Edition license, each refused reuse is recorded in the audit 
 
 Password hashes, current and previous, are stored in the user documents of Elasticsearch / OpenSearch: protect backups of the database accordingly. The history cannot be read or written through the API.
 
-While the rule is enabled (a value of `1` or more), a password change must be sent on its own, without any other field in the same request: otherwise it is refused with "The password must be changed on its own". With the rule disabled, existing API calls are unchanged.
+While the rule is enabled (a value of `1` or more), a local account's password change must be sent on its own: combining it with other fields is refused with "The password must be changed on its own". The exception is `user_service_account`, which may accompany the password; when switching account type, the supplied password is ignored. With the rule disabled, existing API calls are unchanged.
 
 ### HTTP headers
 Unless this authentication strategy was defined before migrating, it should be disabled by default.
