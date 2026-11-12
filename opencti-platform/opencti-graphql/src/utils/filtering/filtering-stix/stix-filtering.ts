@@ -60,6 +60,14 @@ export const validateFilterGroupForStixMatch = async (context: AuthContext, user
   await checkFilterGroupForStixMatch(context, user, filterGroup, false);
 };
 
+/**
+ * check that an already saved FilterGroup can be evaluated in stix filtering, with the same rules as when matching
+ * (a filter on a since deleted custom field stays valid, it matches no stix)
+ */
+export const checkSavedFilterGroupForStixMatch = async (context: AuthContext, user: AuthUser, filterGroup: FilterGroup) => {
+  await checkFilterGroupForStixMatch(context, user, filterGroup, true);
+};
+
 // ----------------------------------------------------------------------------------------------------------------------
 // STIX MATCH
 
