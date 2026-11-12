@@ -14,6 +14,11 @@ vi.mock('../../../../relay/environment', async () => {
   };
 });
 
+vi.mock('../workflow/workflowFeatureFlag', async () => {
+  const actual = await vi.importActual('../workflow/workflowFeatureFlag');
+  return { ...actual, isWorkflowUiEnabledForType: () => true };
+});
+
 const mockStatusesResponse = {
   statuses: {
     edges: [
@@ -119,6 +124,40 @@ describe('StatusField', () => {
           }),
         }),
       );
+    });
+  });
+
+  describe('with a published workflow', () => {
+    const publishedWorkflowResponse = {
+      workflowDefinitionPublished: true,
+      workflowStatuses: [{ id: 'status-2', order: 2, type: 'Case-Incident', template: { name: 'In Progress', color: '#00ff00' } }],
+    };
+
+    beforeEach(() => {
+      // The published workflow query is the one sent with an entityType variable
+      fetchQueryMock.mockImplementation((_query: unknown, variables: Record<string, unknown>) => ({
+        toPromise: () => Promise.resolve(variables.entityType ? publishedWorkflowResponse : mockStatusesResponse),
+      }));
+    });
+
+    it('should be read-only by default', async () => {
+      renderStatusField();
+      await waitFor(() => expect(screen.getByLabelText('Status')).toBeDisabled());
+    });
+
+    it('should list only the workflow statuses with workflowStatusesOnly', async () => {
+      const { user } = renderStatusField({ workflowStatusesOnly: true });
+
+      await waitFor(() => {
+        expect(fetchQueryMock).toHaveBeenCalledWith(expect.anything(), { entityType: 'Case-Incident', withStatuses: true });
+      });
+      const input = screen.getByLabelText('Status');
+      expect(input).toBeEnabled();
+      await user.click(input);
+
+      expect(await screen.findByText('In Progress')).toBeInTheDocument();
+      expect(screen.queryByText('Closed')).not.toBeInTheDocument();
+      expect(fetchQueryMock).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ filters: expect.anything() }));
     });
   });
 });
