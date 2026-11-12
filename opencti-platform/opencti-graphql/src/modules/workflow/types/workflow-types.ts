@@ -139,6 +139,8 @@ export interface TriggerResult {
   /** Present when the transition spawned async background tasks. */
   executionStatus?: 'pending' | 'completed' | 'error';
   asyncActionSlots?: AsyncActionSlot[];
+  /** Set when an onEnter action of the target state suspended the transition: how many onEnter actions already ran. */
+  completedOnEnterActions?: number;
   /** The entity was already in the target status: no action ran and no history was recorded. */
   unchanged?: boolean;
 }

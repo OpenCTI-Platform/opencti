@@ -3850,6 +3850,34 @@ describe('triggerWorkflowEvent – async / pending / lock', () => {
     expect(stored.onEnterActions).toEqual([{ type: 'validateDraft' }]);
   });
 
+  it('stores only the onEnter actions left to run when an onEnter action queued a background task', async () => {
+    const definitionContent = JSON.stringify({
+      initialState: 'draft',
+      states: [
+        { statusId: 'draft' },
+        { statusId: 'reviewing', onEnter: [{ type: 'shareRequestedEntities' }, { type: 'validateDraft' }] },
+      ],
+      transitions: [{ from: 'draft', to: 'reviewing', event: 'submit', syncActions: [{ type: 'validateDraft' }] }],
+    });
+    setupAsyncPendingMocks(definitionContent);
+    (WorkflowFactory.getInstance as any).mockReturnValue({
+      start: vi.fn(),
+      trigger: vi.fn().mockResolvedValue({
+        success: true,
+        executionStatus: 'pending',
+        asyncActionSlots: [{ id: 'slot-1', workId: 'work-1', type: 'shareRequestedEntities' }],
+        completedOnEnterActions: 1,
+      }),
+      getCurrentState: vi.fn().mockReturnValue('reviewing'),
+    });
+
+    await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'submit');
+
+    const stored = getPendingTransitionArg();
+    expect(stored.syncActions).toEqual([]);
+    expect(stored.onEnterActions).toEqual([{ type: 'validateDraft' }]);
+  });
+
   // line 774 (onEnterActions absent when serializedOnEnterActions is empty)
   it('omits onEnterActions from pendingTransition when the target state has no onEnter actions', async () => {
     const definitionContent = JSON.stringify({

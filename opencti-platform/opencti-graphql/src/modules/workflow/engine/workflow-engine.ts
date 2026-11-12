@@ -135,11 +135,22 @@ export class StateMachine<TContext extends Context = Context> {
     // Update state
     this.currentState = transition.to;
 
-    // Execute onEnter of new state
+    // Execute onEnter of new state.
+    // An onEnter action may hand its work to background tasks (e.g. sharing a container): it then registers async slots,
+    // and the transition suspends there. The remaining onEnter actions run once every task completed.
     const newStateDef = this.definition.getStateDefinition(this.currentState);
     if (newStateDef?.onEnter) {
-      for (const hook of newStateDef.onEnter) {
-        await hook(this.context);
+      this.context.pendingAsyncSlots = [];
+      for (let index = 0; index < newStateDef.onEnter.length; index += 1) {
+        await newStateDef.onEnter[index](this.context);
+        if (this.context.pendingAsyncSlots.length > 0) {
+          return {
+            success: true,
+            executionStatus: 'pending',
+            asyncActionSlots: this.context.pendingAsyncSlots,
+            completedOnEnterActions: index + 1,
+          };
+        }
       }
     }
 

@@ -170,7 +170,7 @@ const completeWorkflowAsyncActionResult = async (
   }
   // Sharing tasks and the decision record are created as the decider, not as the completion caller.
   const actionContext = requestAccessDecider ? { ...executionContext, user: requestAccessDecider } : executionContext;
-  const workflowContext = {
+  const workflowContext: Context = {
     user: executionUser,
     ...(requestAccessDecider ? { triggeringUser: requestAccessDecider } : {}),
     entity: fullEntity ?? { id: instanceEntity.entity_id },
@@ -232,7 +232,15 @@ const completeWorkflowAsyncActionResult = async (
 
   // Run onEnter actions of the target state (phase 2 equivalent of engine's onEnter block).
   // A terminal transition has no target state to enter.
-  for (const actionConfig of (pendingTransition.completesWorkflow ? [] : pendingTransition.onEnterActions ?? [])) {
+  const onEnterActions = pendingTransition.completesWorkflow ? [] : pendingTransition.onEnterActions ?? [];
+  if (onEnterActions.length > 0) {
+    // As in the engine, an onEnter action handing its work to background tasks suspends the transition again.
+    const { createListTask } = await import('../../../domain/backgroundTask-common');
+    workflowContext.pendingAsyncSlots = [];
+    workflowContext.__createListTask = createListTask;
+    workflowContext.__workflowInstanceId = workflowInstanceId;
+  }
+  for (const [index, actionConfig] of onEnterActions.entries()) {
     const actionFn = ActionRegistry[actionConfig.type];
     if (!actionFn) {
       logApp.error('[workflow-async-completion] Unknown onEnter action type', { type: actionConfig.type });
@@ -252,6 +260,17 @@ const completeWorkflowAsyncActionResult = async (
         { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
         { key: 'pendingStatus', value: ['error'] },
         { key: 'pendingError', value: [`onEnter action '${actionConfig.type}' failed: ${onEnterErrorMsg}`] },
+      ]);
+      return;
+    }
+    const newSlots = workflowContext.pendingAsyncSlots ?? [];
+    if (newSlots.length > 0) {
+      // The transition actions and the onEnter actions up to this one ran: only the remaining ones wait for the new tasks.
+      pendingTransition.syncActions = [];
+      pendingTransition.onEnterActions = onEnterActions.slice(index + 1);
+      pendingTransition.asyncActions = newSlots.map(({ id, workId, type }) => ({ id, workId, type, status: 'pending' as const }));
+      await updateAttribute(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
+        { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
       ]);
       return;
     }

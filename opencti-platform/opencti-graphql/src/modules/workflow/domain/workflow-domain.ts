@@ -2257,8 +2257,10 @@ export const triggerWorkflowEvent = async (
         status: 'pending' as const,
       }));
 
+      // An onEnter action suspended the transition: the transition actions and the onEnter actions before it already ran.
+      const completedOnEnterActions = result.completedOnEnterActions;
       // fallback on actions if syncActions not explicitly defined on transition (legacy support)
-      const serializedTransitions: WorkflowActionConfig[] = targetTransition?.syncActions ?? [];
+      const serializedTransitions: WorkflowActionConfig[] = completedOnEnterActions === undefined ? (targetTransition?.syncActions ?? []) : [];
 
       // Collect the onEnter actions of the target state so phase 2 can replay them.
       const toStateId = targetTransition?.to ?? instance.getCurrentState();
@@ -2269,7 +2271,7 @@ export const triggerWorkflowEvent = async (
         && targetTransition.to == null
         && serializedTransitions.some((action) => action.type === 'validateDraft');
       const targetStateDef = completesWorkflow ? undefined : definitionData.states?.find((s: any) => s.statusId === toStateId);
-      const serializedOnEnterActions: WorkflowActionConfig[] = targetStateDef?.onEnter ?? [];
+      const serializedOnEnterActions: WorkflowActionConfig[] = (targetStateDef?.onEnter ?? []).slice(completedOnEnterActions ?? 0);
 
       const pendingTransition: WorkflowPendingTransition = {
         event: eventName,

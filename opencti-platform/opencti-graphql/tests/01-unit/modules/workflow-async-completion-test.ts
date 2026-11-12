@@ -782,6 +782,83 @@ describe('reportWorkflowAsyncActionResult', () => {
     );
   });
 
+  describe('request access container share', () => {
+    const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Case-Rfi' };
+    const containerShare = makePendingTransition({
+      toState: 'approved',
+      requestAccessOutcome: 'APPROVED',
+      triggeredBy: 'decider-id',
+      asyncActions: [{ id: 'share-slot', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' }],
+    });
+
+    beforeEach(() => {
+      vi.mocked(storeLoadById).mockImplementation(async (_context, _user, id) => (
+        id === 'instance-id' ? makeInstance({ pendingTransition: JSON.stringify(containerShare) }) : fullEntity
+      ) as any);
+      vi.mocked(updateAttribute).mockResolvedValue({} as any);
+      vi.mocked(resolveUserById).mockResolvedValue({ id: 'decider-id' } as any);
+    });
+
+    it('enters Approved and records the decision once the share task succeeded', async () => {
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'share-slot', 'success');
+
+      expect(updateAttribute).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'instance-id', expect.anything(), expect.arrayContaining([
+        { key: 'currentState', value: ['approved'] },
+        { key: 'pendingTransition', value: [null] },
+      ]));
+      expect(recordRequestAccessDecision).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ id: 'decider-id' }), fullEntity, 'APPROVED', 'instance-id');
+    });
+
+    it('flags the instance and records no decision when the share task failed', async () => {
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'share-slot', 'failed', 'share task failed');
+
+      expect(updateAttribute).toHaveBeenCalledTimes(1);
+      const [, , , , patches] = vi.mocked(updateAttribute).mock.calls[0];
+      expect(patches).toEqual(expect.arrayContaining([
+        { key: 'pendingStatus', value: ['error'] },
+        { key: 'pendingError', value: ['share task failed'] },
+      ]));
+      expect(patches.find((patch: any) => patch.key === 'currentState')).toBeUndefined();
+      expect(recordRequestAccessDecision).not.toHaveBeenCalled();
+    });
+
+    it('suspends again when an onEnter action hands a container share to a background task', async () => {
+      const afterAsyncBulk = makePendingTransition({
+        toState: 'approved',
+        requestAccessOutcome: 'APPROVED',
+        triggeredBy: 'decider-id',
+        syncActions: [{ type: 'transitionSync' }],
+        onEnterActions: [{ type: 'shareContainer' }, { type: 'afterShare' }],
+      });
+      vi.mocked(storeLoadById).mockImplementation(async (_context, _user, id) => (
+        id === 'instance-id' ? makeInstance({ pendingTransition: JSON.stringify(afterAsyncBulk) }) : fullEntity
+      ) as any);
+      const transitionSync = vi.fn();
+      const afterShare = vi.fn();
+      const shareContainer = vi.fn(async (ctx: any) => {
+        expect(ctx.__createListTask).toBe(createListTask);
+        expect(ctx.__workflowInstanceId).toBe('instance-id');
+        ctx.pendingAsyncSlots.push({ id: 'share-slot', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' });
+      });
+      Object.assign(ActionRegistry, { transitionSync, shareContainer, afterShare });
+
+      await reportWorkflowAsyncActionResult(mockContext, mockUser, 'instance-id', 'slot-1', 'success');
+
+      expect(transitionSync).toHaveBeenCalledTimes(1);
+      expect(shareContainer).toHaveBeenCalledTimes(1);
+      expect(afterShare).not.toHaveBeenCalled();
+      expect(updateAttribute).toHaveBeenCalledTimes(1);
+      const [, , , , patches] = vi.mocked(updateAttribute).mock.calls[0];
+      expect(patches).toHaveLength(1);
+      expect(JSON.parse(patches[0].value[0])).toMatchObject({
+        syncActions: [],
+        onEnterActions: [{ type: 'afterShare' }],
+        asyncActions: [{ id: 'share-slot', workId: 'work-share', type: 'shareRequestedEntities', status: 'pending' }],
+      });
+      expect(recordRequestAccessDecision).not.toHaveBeenCalled();
+    });
+  });
+
   describe('status projection on completion', () => {
     it('projects the completed state onto the full entity after the instance is updated', async () => {
       const fullEntity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' };

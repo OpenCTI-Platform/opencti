@@ -10,7 +10,7 @@ import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_ASSIGNEE, REL
 import { addOrganizationRestriction, removeOrganizationRestriction } from '../../../domain/stix';
 import { buildRefRelationKey } from '../../../schema/general';
 import { controlUserConfidenceAgainstElement } from '../../../utils/confidence-level';
-import { internalLoadById } from '../../../database/middleware-loader';
+import { internalFindByIds, internalLoadById } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../case/case-rfi/case-rfi-types';
 import { UnsupportedError } from '../../../config/errors';
 
@@ -167,9 +167,29 @@ export const ActionRegistry: Record<string, ActionFunction> = {
     }
     // Containers are shared by a background task that cannot be rolled back: they go last, once every direct share succeeded.
     const orderedTargets = [...targets.filter((target) => !target.isContainer), ...targets.filter((target) => target.isContainer)];
+    // Inside a workflow transition, each container task is tracked as an async slot: the transition, and the decision record,
+    // only complete once the task finished. Outside one (no slot accumulator), the task is enqueued untracked.
+    const { pendingAsyncSlots, __createListTask, __workflowInstanceId } = executionContext as any;
+    const tracksContainerTasks = Array.isArray(pendingAsyncSlots) && typeof __createListTask === 'function' && !!__workflowInstanceId;
     const directlyShared: typeof targets = [];
     try {
       for (const target of orderedTargets) {
+        if (target.isContainer && tracksContainerTasks) {
+          if (target.newOrganizationIds.length === 0) continue;
+          const slotId = generateInternalId();
+          const organizations = await internalFindByIds<any>(context, user, target.newOrganizationIds, { baseData: true, baseFields: ['name'] });
+          const task = await __createListTask(context, user, {
+            description: `SHARE with organization ${organizations.map((organization: { name: string }) => organization.name).join('|')}`,
+            ids: [target.id],
+            actions: [{ type: 'SHARE', context: { values: target.newOrganizationIds }, containerId: target.id }],
+            scope: 'KNOWLEDGE',
+            orderMode: 'asc',
+            workflow_instance_id: __workflowInstanceId,
+            workflow_action_id: slotId,
+          });
+          pendingAsyncSlots.push({ id: slotId, workId: task.work_id ?? '', type: 'shareRequestedEntities', status: 'pending' } satisfies AsyncActionSlot);
+          continue;
+        }
         await addOrganizationRestriction(context, user, target.id, organizationIds);
         if (!target.isContainer && target.newOrganizationIds.length > 0) {
           directlyShared.push(target);
