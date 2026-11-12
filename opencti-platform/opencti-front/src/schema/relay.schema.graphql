@@ -3404,6 +3404,7 @@ type CustomFieldValue {
   date_value: DateTime
   field_id: ID!
   field_name: String!
+  float_value: Float
   int_value: Int
   select_value: String
   select_values: [String!]
