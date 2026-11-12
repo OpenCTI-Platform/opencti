@@ -38,6 +38,7 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   exists: true,
   conflict: false,
   fields: [],
+  credentials: [],
   dependsOn: [],
   ...overrides,
 });
@@ -109,6 +110,18 @@ const previewWithTwoConflicts = {
     ? { ...type, items: [...type.items, previewItem('theme--3', 'Another theme', { translatable: false, conflict: true })] }
     : type)),
 };
+const previewWithConnector = {
+  ...preview,
+  types: [
+    previewType('connectors', 'Connectors', [
+      previewItem('mitre', 'MITRE', {
+        translatable: false,
+        exists: false,
+        credentials: [{ key: 'MITRE_API_KEY', description: 'The key of the MITRE API', required: true, stored: false, secret: true, type: 'string' }],
+      }),
+    ], ['OVERWRITE', 'COPY']),
+  ],
+};
 const session = (overrides: Record<string, unknown> = {}) => ({
   status: 'DRAFT',
   file_id: 'config_preset/import/id/bundle.zip',
@@ -163,11 +176,24 @@ const resolveSimulation = async (rendered: Rendered, results: unknown[] = [], in
     rendered.relayEnv.mock.resolve(target, MockPayloadGenerator.generate(target, { ConfigPresetImportOutput: () => ({ results, report_id: null, settings: null }) }));
   });
 };
-// The preview shown, its expected results not in yet
-const openPreview = async (currentSession = session(), data: unknown = preview) => {
+// The groups open their types: each expanded level shows the chevrons of the next one
+const expandAll = async ({ user }: Rendered) => {
+  let chevrons = screen.queryAllByRole('button', { name: /^Expand/ });
+  while (chevrons.length > 0) {
+    for (const chevron of chevrons) {
+      await user.click(chevron);
+    }
+    chevrons = screen.queryAllByRole('button', { name: /^Expand/ });
+  }
+};
+// The preview shown, every section open, its expected results not in yet
+const openPreview = async (currentSession = session(), data: unknown = preview, expanded = true) => {
   const rendered = await renderWizard(currentSession);
   await resolve(rendered, 'ConfigPresetImportPreviewQuery', { Query: () => ({ configPresetImportPreview: data }) });
   await screen.findByRole('button', { name: 'Apply' });
+  if (expanded) {
+    await expandAll(rendered);
+  }
   return rendered;
 };
 const renderPreview = async (currentSession = session(), results: unknown[] = [], data: unknown = preview) => {
@@ -448,6 +474,8 @@ describe('ConfigPresetImportWizard', () => {
         file_id: 'config_preset/import/id/bundle.zip',
         selections: [{ type: 'platform', items: null }, { type: 'branding', items: null }],
         dry_run: false,
+        credentials: [],
+        service_accounts: [],
       });
     });
 
@@ -978,6 +1006,7 @@ describe('ConfigPresetImportWizard', () => {
       expect(await screen.findByRole('button', { name: 'Apply' })).toBeInTheDocument();
       await resolveSimulation(rendered);
       await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
+      await expandAll(rendered);
       expect(checkbox('Messages (1/1)')).toHaveAttribute('data-state', 'checked');
       expect(checkbox('Platform configuration')).toHaveAttribute('data-state', 'unchecked');
       expect(screen.queryByText('An import is already running')).not.toBeInTheDocument();
@@ -1009,6 +1038,8 @@ describe('ConfigPresetImportWizard', () => {
         file_id: 'config_preset/import/id/bundle.zip',
         selections: [{ type: 'messages', items: ['banner'] }],
         dry_run: true,
+        credentials: [],
+        service_accounts: [],
       });
     });
 
@@ -1038,6 +1069,13 @@ describe('ConfigPresetImportWizard', () => {
       const banner = within(screen.getByTestId('config-preset-import-item-messages-banner'));
       expect(banner.getByText('Already up to date')).toBeInTheDocument();
       expect(banner.queryByText('Skipped')).not.toBeInTheDocument();
+    });
+
+    it('shows the expected result before the choice, which ends the row', async () => {
+      await renderPreview(session(), [{ type: 'branding', key: 'theme--2', status: 'SKIPPED', reason: 'Already up to date', code: 'unchanged' }]);
+      const row = within(screen.getByTestId('config-preset-import-item-branding-theme--2'));
+      const choice = row.getByRole('combobox', { name: 'Existing theme: When it already exists' });
+      expect(row.getByText('Already up to date').compareDocumentPosition(choice) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it('shows that an item with no choice is overwritten', async () => {
@@ -1114,6 +1152,130 @@ describe('ConfigPresetImportWizard', () => {
         rendered.relayEnv.mock.reject(dryRuns(rendered)[0], { res: { errors: [{ message: 'file_missing', extensions: { code: 'FUNCTIONAL_ERROR', data: { reason: 'file_missing' } } }] } } as unknown as Error);
       });
       expect(await screen.findByText('The uploaded file no longer exists')).toBeInTheDocument();
+    });
+  });
+
+  describe('sections', () => {
+    const withConnector = { ...preview, types: [...preview.types, ...previewWithConnector.types] };
+
+    it('start collapsed when nothing is asked', async () => {
+      await openPreview(session(), preview, false);
+      expect(checkbox('Platform settings (4/4)')).toHaveAttribute('data-state', 'checked');
+      expect(screen.getByRole('button', { name: /^Expand Platform settings/ })).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByText('Banner')).not.toBeInTheDocument();
+    });
+
+    it('keep open the type whose secrets are asked, and its group, and only them', async () => {
+      await openPreview(session(), withConnector, false);
+      expect(screen.getByRole('button', { name: 'Enter the configuration of MITRE' })).toBeInTheDocument();
+      expect(screen.queryByText('Import theme')).not.toBeInTheDocument();
+    });
+
+    it('keep open the type the license locks', async () => {
+      await openPreview(session(), previewWithWhitemark, false);
+      expect(lockedWhitemark().getByText('EE')).toBeInTheDocument();
+      expect(screen.queryByText('Banner')).not.toBeInTheDocument();
+    });
+
+    it('stay open once the secrets are entered', async () => {
+      const rendered = await openPreview(session(), withConnector, false);
+      await rendered.user.click(screen.getByRole('button', { name: 'Enter the configuration of MITRE' }));
+      await rendered.user.type(screen.getByLabelText(/MITRE_API_KEY/), 'secret-key');
+      await rendered.user.click(screen.getByRole('button', { name: 'Save' }));
+      expect(await screen.findByRole('button', { name: 'Configuration' })).toBeInTheDocument();
+      expect(checkbox('MITRE')).toBeInTheDocument();
+    });
+
+    it('open the type of a connector that needs a service account once the expected results say so', async () => {
+      const connectorPreview = { ...preview, types: [...preview.types, previewType('connectors', 'Connectors', [previewItem('mitre', 'MITRE', { translatable: false, exists: false })])] };
+      const rendered = await openPreview(session(), connectorPreview, false);
+      expect(screen.queryByText('MITRE')).not.toBeInTheDocument();
+      await resolveSimulation(rendered, [{ type: 'connectors', key: 'mitre', status: 'FAILED', reason: 'You have not defined a default group for ingestion users', code: 'no_ingestion_group' }]);
+      expect(await screen.findByRole('button', { name: 'Choose a service account' })).toBeInTheDocument();
+      expect(screen.queryByText('Banner')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('credentials', () => {
+    const enterCredentials = async (rendered: Rendered) => {
+      await rendered.user.click(screen.getByRole('button', { name: 'Enter the configuration of MITRE' }));
+      await rendered.user.type(screen.getByLabelText(/MITRE_API_KEY/), 'secret-key');
+      await rendered.user.click(screen.getByRole('button', { name: 'Save' }));
+    };
+    const credentials = [{ type: 'connectors', key: 'mitre', values: [{ key: 'MITRE_API_KEY', secret: 'secret-key' }] }];
+
+    it('locks an item whose required secrets are not entered, as the license locks a type: it is not imported', async () => {
+      await openPreview(session(), previewWithConnector);
+      expect(screen.getByText('Configuration required')).toBeInTheDocument();
+      expect(screen.queryByRole('checkbox', { name: 'MITRE' })).toBeDisabled();
+    });
+
+    it('selects the item its secrets unlock, and sends them with the expected results and with Apply, never with the save', async () => {
+      const rendered = await openPreview(session(), previewWithConnector);
+      await enterCredentials(rendered);
+      await waitFor(() => expect(checkbox('MITRE')).toHaveAttribute('data-state', 'checked'));
+      await waitFor(() => expect(dryRuns(rendered).at(-1)!.request.variables.credentials).toEqual(credentials));
+      await resolveSimulation(rendered);
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      const saves = rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportPreviewSaveMutation');
+      saves.forEach((save) => expect(JSON.stringify(save.request.variables)).not.toContain('secret-key'));
+      if (saves.length > 0) {
+        await resolve(rendered, 'ConfigPresetImportPreviewSaveMutation', {});
+      }
+      await waitFor(() => expect(realApplies(rendered)).toHaveLength(1));
+      expect(realApplies(rendered)[0].request.variables.credentials).toEqual(credentials);
+    });
+
+    it('offers to choose an existing service account for a connector that cannot get a new one', async () => {
+      const connectorPreview = { ...previewWithConnector, types: [previewType('connectors', 'Connectors', [previewItem('mitre', 'MITRE', { translatable: false, exists: false })])] };
+      const rendered = await openPreview(session(), connectorPreview);
+      expect(screen.queryByRole('button', { name: 'Choose a service account' })).not.toBeInTheDocument();
+      await resolveSimulation(rendered, [{ type: 'connectors', key: 'mitre', status: 'FAILED', reason: 'You have not defined a default group for ingestion users', code: 'no_ingestion_group' }]);
+      await rendered.user.click(await screen.findByRole('button', { name: 'Choose a service account' }));
+      expect(screen.getByText('No default group is defined for the service accounts: choose the user this connector writes with.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    });
+
+    it('lets the secrets be changed once entered', async () => {
+      const rendered = await openPreview(session(), previewWithConnector);
+      await enterCredentials(rendered);
+      await rendered.user.click(await screen.findByRole('button', { name: 'Configuration' }));
+      expect(screen.getByLabelText(/MITRE_API_KEY/)).toHaveValue('secret-key');
+    });
+
+    it('asks for a required field the bundle leaves empty with an input of its type, not masked', async () => {
+      const withScore = [
+        { key: 'MITRE_API_KEY', description: 'The key of the MITRE API', required: true, stored: false, secret: true, type: 'string' },
+        { key: 'MITRE_SCORE', description: 'Minimum score', required: true, stored: false, secret: false, type: 'integer' },
+      ];
+      const scorePreview = { ...previewWithConnector, types: [previewType('connectors', 'Connectors', [previewItem('mitre', 'MITRE', { translatable: false, exists: false, credentials: withScore })])] };
+      const rendered = await openPreview(session(), scorePreview);
+      await rendered.user.click(screen.getByRole('button', { name: 'Enter the configuration of MITRE' }));
+      expect(screen.getByLabelText(/MITRE_API_KEY/)).toHaveAttribute('type', 'password');
+      expect(screen.getByLabelText(/MITRE_SCORE/)).toHaveAttribute('type', 'number');
+      await rendered.user.type(screen.getByLabelText(/MITRE_API_KEY/), 'secret-key');
+      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+      await rendered.user.type(screen.getByLabelText(/MITRE_SCORE/), '90');
+      await rendered.user.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => expect(dryRuns(rendered).at(-1)!.request.variables.credentials)
+        .toEqual([{ type: 'connectors', key: 'mitre', values: [{ key: 'MITRE_API_KEY', secret: 'secret-key' }, { key: 'MITRE_SCORE', secret: '90' }] }]));
+    });
+
+    it('asks again for a secret the platform stores when the connector is added as a copy, and keeps the choice on the row', async () => {
+      const storedSecret = [{ key: 'MITRE_API_KEY', description: 'The key of the MITRE API', required: true, stored: true, secret: true, type: 'string' }];
+      const existingConnector = {
+        ...previewWithConnector,
+        types: [previewType('connectors', 'Connectors', [previewItem('mitre', 'MITRE', { translatable: false, conflict: true, credentials: storedSecret })], ['OVERWRITE', 'COPY'])],
+      };
+      const rendered = await openPreview(session(), existingConnector);
+      expect(checkbox('MITRE')).toHaveAttribute('data-state', 'checked');
+      expect(screen.queryByText('Configuration required')).not.toBeInTheDocument();
+      const modeSelect = () => screen.getByRole('combobox', { name: 'MITRE: When it already exists' });
+      await rendered.user.click(modeSelect());
+      await rendered.user.click(await screen.findByRole('option', { name: 'Add as a copy' }));
+      expect(await screen.findByText('Configuration required')).toBeInTheDocument();
+      expect(modeSelect()).toHaveTextContent('Add as a copy');
     });
   });
 
@@ -1194,6 +1356,8 @@ describe('ConfigPresetImportWizard', () => {
         file_id: 'config_preset/import/id/bundle.zip',
         selections: [{ type: 'branding', items: null, item_modes: [{ key: 'theme--2', mode: 'COPY' }] }],
         dry_run: true,
+        credentials: [],
+        service_accounts: [],
       });
       await resolveSimulation(rendered);
       await waitFor(() => expect(screen.getByRole('button', { name: 'Apply' })).toBeEnabled());

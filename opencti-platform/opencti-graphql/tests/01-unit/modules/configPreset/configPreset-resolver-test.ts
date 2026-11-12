@@ -269,6 +269,14 @@ describe('Config preset exportable types query', () => {
         items: [statusTemplateItem(fraudCaseTemplate), statusTemplateItem(phishingCaseTemplate)],
         itemsPageInfo: onePage(2),
       },
+      {
+        key: 'connectors',
+        label: 'Connectors',
+        description: 'Managed connectors and their parameters, without their secrets',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [{ key: 'mitre', label: 'MITRE', translatable: false, dependsOn: [], isDefault: false }],
+        itemsPageInfo: onePage(1),
+      },
     ]);
   });
 
@@ -310,7 +318,7 @@ describe('Config preset exportable types query', () => {
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
-      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false],
+      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true],
     ]);
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
@@ -358,6 +366,7 @@ describe('Config preset exportable types query', () => {
       ['vocabularies', 'taxonomy'],
       ['statusTemplates', 'taxonomy'],
       ['caseTemplates', 'taxonomy'],
+      ['connectors', 'integrations'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);

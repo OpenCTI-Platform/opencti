@@ -26,6 +26,7 @@ import {
   type ConfigPresetBundle,
   type ConfigPresetBundleItem,
   type ConfigPresetComputedItem,
+  type ConfigPresetImportCredentials,
   type ConfigPresetImportPlan,
 } from './configPreset-import-types';
 
@@ -152,7 +153,13 @@ export const computeConfigPresetItems = async (
   context: AuthContext,
   user: AuthUser,
   items: ConfigPresetBundleItem[],
-  { modes = new Map(), availability, defaultMode }: { modes?: Map<string, ConfigImportMode>; availability?: Map<string, boolean>; defaultMode?: ConfigImportMode } = {},
+  { modes = new Map(), availability, defaultMode, credentials = new Map(), serviceAccounts = new Map() }: {
+    modes?: Map<string, ConfigImportMode>;
+    availability?: Map<string, boolean>;
+    defaultMode?: ConfigImportMode;
+    credentials?: ConfigPresetImportCredentials;
+    serviceAccounts?: Map<string, string>;
+  } = {},
 ): Promise<{ item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[]> => {
   const familiesAvailability = availability ?? await getConfigPresetFamiliesAvailability(context, items);
   const plan: ConfigPresetImportPlan = {
@@ -164,6 +171,9 @@ export const computeConfigPresetItems = async (
     roleSensitiveRights: new Map(),
     plannedMarkings: new Map(),
     targets: new Map(),
+    connectorNames: new Set(),
+    credentials,
+    serviceAccounts,
   };
   const results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[] = [];
   for (let i = 0; i < items.length; i += 1) {
@@ -203,6 +213,7 @@ export const buildConfigPresetImportTypes = (
         conflict: computed.conflict,
         fields: computed.fields ?? [],
         isEnabled: computed.isEnabled ?? null,
+        credentials: computed.credentials ?? [],
         dependsOn: bundle.items
           .filter((dependency) => dependencyPaths.includes(dependency.path))
           .map((dependency) => ({ type: dependency.type, key: dependency.id })),

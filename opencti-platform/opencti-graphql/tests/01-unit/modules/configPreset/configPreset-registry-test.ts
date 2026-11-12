@@ -20,10 +20,12 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
 vi.mock('../../../../src/database/cache', async (importOriginal) => {
   const original = await importOriginal<typeof import('../../../../src/database/cache')>();
   const { ALL_MARKINGS } = await import('./configPreset-markings-fixtures');
+  const { mitreConnectorUser } = await import('./configPreset-connectors-fixtures');
   const markings = new Map(ALL_MARKINGS.flatMap((marking) => [[marking.id, marking], [marking.standard_id, marking]]));
+  const cached: Record<string, Map<string, unknown>> = { 'Marking-Definition': markings, User: new Map([[mitreConnectorUser.id, mitreConnectorUser]]) };
   return {
     ...original,
-    getEntitiesMapFromCache: vi.fn(async (ctx, usr, type) => (type === 'Marking-Definition' ? markings : original.getEntitiesMapFromCache(ctx, usr, type))),
+    getEntitiesMapFromCache: vi.fn(async (ctx, usr, type) => cached[type] ?? original.getEntitiesMapFromCache(ctx, usr, type)),
   };
 });
 // The capabilities of a role are read through its relations
@@ -192,11 +194,12 @@ describe('Config preset registry', () => {
         group: 'taxonomy',
         itemIds: [fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id],
       },
+      { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
     ]);
   });
 
   it('marks as requiring the Enterprise Edition the families of an Enterprise Edition setting only', () => {
-    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark']);
+    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'connectors']);
   });
 
   it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template or a case template name', async () => {
@@ -233,6 +236,7 @@ describe('Config preset registry', () => {
       ['IN_PROGRESS', false],
       ['Fraud investigation', false],
       ['Phishing triage', false],
+      ['MITRE', false],
     ]);
   });
 
@@ -273,6 +277,7 @@ describe('Config preset registry', () => {
       `taxonomy/status_templates/${defaultStatusTemplate.standard_id}.json`,
       `taxonomy/case_templates/${fraudCaseTemplate.standard_id}.json`,
       `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
+      'integrations/connectors/mitre.json',
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -321,6 +326,31 @@ describe('Config preset registry', () => {
         expect(item.dependsOn).toEqual([]);
         expect(await item.exporter(context, user)).toEqual({ platform_title: 'Only title', platform_favicon: null, platform_language: null, default_theme: null });
       }
+    });
+  });
+
+  describe('connectors', () => {
+    const connectors = findFamily('connectors');
+
+    it('exports a managed connector without its secrets, its runtime variables nor its state, and lists the secrets it needs', async () => {
+      const file = await exportConfigPresetItem(context, user, connectors, await findItem('connectors', 'mitre'));
+      expect(file).toMatchObject({ type: 'integrations.connectors', id: 'mitre' });
+      expect(file.configuration).toEqual({
+        name: 'MITRE',
+        catalog_id: 'filigran-catalog',
+        manager_contract_image: 'opencti/connector-mitre',
+        confidence_level: 75,
+        manager_contract_configuration: [{ key: 'MITRE_INTERVAL', value: '7' }],
+        required_at_import: ['MITRE_API_KEY'],
+      });
+      expect(JSON.stringify(file)).not.toMatch(/encrypted-secret|runtime-token|last_run|started|mitre-user-id|mitre-connector-id/);
+    });
+
+    it('lists the managed connectors only, by name', async () => {
+      const ids = async (args: Parameters<typeof connectors.listItems>[2]) => (await connectors.listItems(context, user, args)).edges.map(({ node }) => node.id);
+      expect(await ids({})).toEqual(['mitre']);
+      expect(await ids({ excludedIds: ['mitre'] })).toEqual([]);
+      expect(await ids({ ids: ['external'] })).toEqual([]);
     });
   });
 
