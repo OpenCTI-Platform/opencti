@@ -83,11 +83,17 @@ test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee', '@group1'] }, async ({ page
   // region Control tab Overview after flagging
   // ------------------------------------------
 
+  // The entity type count and the two top author widgets are fed by separate aggregations,
+  // which do not necessarily land on the same refresh. Waiting on the count alone left the
+  // top author assertions racing against their own aggregation, so poll on all three.
   const waitForFlagging = async () => {
     await pirPage.navigateFromMenu();
     await pirPage.getItemFromList(pirName).click();
     const text = await pirDetails.getEntityTypeCount('Malware').innerText();
-    return text === '1';
+    if (text !== '1') return false;
+    const hasTopAuthorEntities = await pirDetails.getTopAuthorEntities('John Doe').isVisible();
+    const hasTopAuthorRelationships = await pirDetails.getTopAuthorRelationships('ANSSI').isVisible();
+    return hasTopAuthorEntities && hasTopAuthorRelationships;
   };
   await awaitUntilCondition(waitForFlagging, 5000, 20);
   await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('1');
