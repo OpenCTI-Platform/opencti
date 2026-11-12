@@ -251,6 +251,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
         <Button
           key={transition.event}
           variant="primary"
+          size="small"
           onClick={() => fireTransition(transition)}
           disabled={approving || clearing || !!wizard}
         >
@@ -290,6 +291,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           <Menu open={menuOpen} onOpenChange={setMenuOpen}>
             <MenuTrigger asChild>
               <Button
+                size="small"
                 disabled={approving || clearing || !!wizard}
                 endIcon={!menuOpen ? (<ArrowDropDownOutlined />) : (<ArrowDropUpOutlined />)}
               >

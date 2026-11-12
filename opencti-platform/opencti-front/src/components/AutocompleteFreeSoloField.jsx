@@ -25,6 +25,8 @@ const AutocompleteFreeSoloField = (props) => {
     renderOption,
     textfieldprops = {},
     createLabel,
+    style,
+    className,
   } = props;
   const [, meta] = useField(name);
 
@@ -58,7 +60,7 @@ const AutocompleteFreeSoloField = (props) => {
 
   const error = !isNil(meta.error);
   const helperText = meta.error || textfieldprops.helperText;
-  return (
+  const combobox = (
     <Combobox
       multiple={multiple}
       options={options}
@@ -90,6 +92,9 @@ const AutocompleteFreeSoloField = (props) => {
       {helperText && <ComboboxHelperText>{helperText}</ComboboxHelperText>}
     </Combobox>
   );
+  // The library Combobox takes no style or className: a spacing given by the form goes on a wrapper
+  if (!style && !className) return combobox;
+  return <div style={style} className={className}>{combobox}</div>;
 };
 
 export default AutocompleteFreeSoloField;
