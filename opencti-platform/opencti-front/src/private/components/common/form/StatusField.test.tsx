@@ -159,5 +159,32 @@ describe('StatusField', () => {
       expect(screen.queryByText('Closed')).not.toBeInTheDocument();
       expect(fetchQueryMock).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ filters: expect.anything() }));
     });
+
+    it('should drop a search sent before the workflow statuses loaded with workflowStatusesOnly', async () => {
+      let resolveDefinition: (value: unknown) => void = () => {};
+      let resolveSearch: (value: unknown) => void = () => {};
+      const definition = new Promise((resolve) => {
+        resolveDefinition = resolve;
+      });
+      const search = new Promise((resolve) => {
+        resolveSearch = resolve;
+      });
+      fetchQueryMock.mockImplementation((_query: unknown, variables: Record<string, unknown>) => ({
+        toPromise: () => (variables.entityType ? definition : search),
+      }));
+      const { user } = renderStatusField({ workflowStatusesOnly: true });
+
+      // Focused before the definition answered: the search goes out
+      await user.click(screen.getByLabelText('Status'));
+      await waitFor(() => {
+        expect(fetchQueryMock).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ filters: expect.anything() }));
+      });
+      resolveDefinition(publishedWorkflowResponse);
+      resolveSearch(mockStatusesResponse);
+
+      expect(await screen.findByText('In Progress')).toBeInTheDocument();
+      expect(screen.queryByText('Closed')).not.toBeInTheDocument();
+      expect(screen.queryByText('New')).not.toBeInTheDocument();
+    });
   });
 });

@@ -15,14 +15,51 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { useEffect, useState } from 'react';
 import { Field, useFormikContext } from 'formik';
+import { graphql } from 'react-relay';
 import ComboboxField from '../../../../../../../components/ComboboxField';
 import { useFormatter } from '../../../../../../../components/i18n';
 import { fetchQuery } from '../../../../../../../relay/environment';
 import { FieldOption } from '../../../../../../../utils/field';
 import { StatusScopeEnum } from '../../../../../../../utils/statusConstants';
-import StatusField, { statusFieldStatusesSearchQuery } from '../../../../../common/form/StatusField';
-import type { StatusFieldStatusesSearchQuery$data } from '../../../../../common/form/__generated__/StatusFieldStatusesSearchQuery.graphql';
+import StatusField from '../../../../../common/form/StatusField';
+import type { PlaybookStatusValueFieldStatusTypesQuery$data } from './__generated__/PlaybookStatusValueFieldStatusTypesQuery.graphql';
 import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookAction-types';
+
+const playbookStatusValueFieldStatusTypesQuery = graphql`
+  query PlaybookStatusValueFieldStatusTypesQuery($first: Int, $after: ID, $filters: FilterGroup) {
+    statuses(first: $first, after: $after, filters: $filters) {
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      edges {
+        node {
+          type
+        }
+      }
+    }
+  }
+`;
+
+// Every entity type carrying a global status, read page by page
+const fetchStatusEntityTypes = async (): Promise<string[]> => {
+  const types = new Set<string>();
+  let after: string | null | undefined = null;
+  let hasNextPage = true;
+  while (hasNextPage) {
+    const data = await fetchQuery(playbookStatusValueFieldStatusTypesQuery, {
+      first: 500,
+      after,
+      filters: { mode: 'and', filterGroups: [], filters: [{ key: 'scope', values: [StatusScopeEnum.GLOBAL] }] },
+    }).toPromise() as PlaybookStatusValueFieldStatusTypesQuery$data;
+    (data?.statuses?.edges ?? []).forEach((edge) => types.add(edge.node.type));
+    after = data?.statuses?.pageInfo.endCursor;
+    hasNextPage = !!data?.statuses?.pageInfo.hasNextPage && !!after;
+  }
+  // A playbook bundle never carries a draft workspace
+  types.delete('DraftWorkspace');
+  return [...types];
+};
 
 interface PlaybookStatusValueFieldProps {
   action: PlaybookUpdateAction;
@@ -38,16 +75,18 @@ const PlaybookStatusValueField = ({ action, index, disabled = false }: PlaybookS
   const [entityTypes, setEntityTypes] = useState<string[]>([]);
 
   useEffect(() => {
-    fetchQuery(statusFieldStatusesSearchQuery, {
-      first: 500,
-      filters: { mode: 'and', filterGroups: [], filters: [{ key: 'scope', values: [StatusScopeEnum.GLOBAL] }] },
-    })
-      .toPromise()
-      .then((data) => {
-        const edges = (data as StatusFieldStatusesSearchQuery$data)?.statuses?.edges ?? [];
-        // A playbook bundle never carries a draft workspace
-        setEntityTypes([...new Set(edges.map((edge) => edge.node.type))].filter((type) => type !== 'DraftWorkspace'));
+    let active = true;
+    fetchStatusEntityTypes()
+      .then((types) => {
+        if (active) setEntityTypes(types);
+      })
+      // The type list stays empty, the field shows no available options
+      .catch(() => {
+        if (active) setEntityTypes([]);
       });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const entityTypeOptions: FieldOption[] = entityTypes

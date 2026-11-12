@@ -2916,3 +2916,28 @@ do so.
 
 **Removal test.** On a decimal custom field holding `0.125`, a click on the up
 arrow sets `1.125` and logs no error.
+
+---
+
+## 78. `Combobox` takes no `style`, so a form's field spacing is dropped
+
+**Needed.** OpenCTI forms space their fields with an inline `style` handed to the
+Formik field (`fieldSpacingContainerStyle`, `{ marginTop: 20 }`).
+`AutocompleteFreeSoloField.jsx` renders the library `Combobox`, and the vocabulary
+drawers pass such a style to it: `VocabularyCreation.tsx` (Aliases) and
+`VocabularyEdition.tsx`.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.5.1,
+`components/combobox/Combobox.mjs`): `ComboboxProps` has `className`, set on the
+`data-combobox-root` div, but no `style`, and the remaining props go to the
+combobox engine, not to the DOM. The style was dropped, so Aliases sat flush under
+Description in the "Create a vocabulary" drawer.
+
+**What the product did.** `className` is passed to `Combobox`. A `style` goes on a
+plain `div` around it (`FDS-WORKAROUND #78`).
+
+**Ask.** Accept `style` on `Combobox` and set it on the root, next to `className`.
+
+**Removal test.** With `style` passed straight to `Combobox` and the wrapper
+removed, the "Create a vocabulary" drawer keeps a 20px gap between Description and
+Aliases.
