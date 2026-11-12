@@ -529,6 +529,12 @@ describe('Stix 2.0 opencti converter', () => {
     const result = convertLocationToStix(POSITION_INSTANCE, ENTITY_TYPE_LOCATION_POSITION);
     expect(result).toEqual(EXPECTED_POSITION);
   });
+  it('should convert Position with zero coordinates', async () => {
+    const instance = { ...POSITION_INSTANCE, latitude: 0, longitude: 0 } as unknown as typeof POSITION_INSTANCE;
+    const result = convertLocationToStix(instance, ENTITY_TYPE_LOCATION_POSITION);
+    expect(result.latitude).toEqual(0);
+    expect(result.longitude).toEqual(0);
+  });
   it('should convert Administrative Area', async () => {
     const result = convertAdministrativeAreaToStix_2_0(ADMINISTRATIVE_AREA_INSTANCE);
     expect(result).toEqual(EXPECTED_ADMINISTRATIVE_AREA);

@@ -784,3 +784,35 @@ def test_indicator_equal_validity_dates_match_legacy_export(
     assert valid_until(legacy_bundle) == valid_until(stix_2_0_bundle) == expected
     differences = _differences(legacy_bundle, stix_2_0_bundle)
     assert [set(keys) for keys in differences.values()] == [{"valid_until"}]
+
+
+@pytest.fixture
+def position_at_zero_coordinates(api_client):
+    """A Position on the equator and the prime meridian."""
+    position = api_client.location.create(
+        type="Position",
+        name="STIX 2.0 parity position at zero coordinates",
+        latitude=0.0,
+        longitude=0.0,
+    )
+    yield position
+    api_client.stix_domain_object.delete(id=position["id"])
+
+
+@pytest.mark.parametrize("mode", ["simple", "full"])
+def test_position_zero_coordinates_match_legacy_export(
+    api_stix, position_at_zero_coordinates, mode
+):
+    """Both exports keep a latitude and a longitude of 0."""
+    position_id = position_at_zero_coordinates["id"]
+    legacy_bundle, stix_2_0_bundle = _export_both(
+        api_stix, "Position", position_id, mode
+    )
+    for bundle in (legacy_bundle, stix_2_0_bundle):
+        position = next(
+            item
+            for item in bundle["objects"]
+            if item.get("x_opencti_id") == position_id
+        )
+        assert (position["latitude"], position["longitude"]) == (0, 0)
+    assert _differences(legacy_bundle, stix_2_0_bundle) == {}
