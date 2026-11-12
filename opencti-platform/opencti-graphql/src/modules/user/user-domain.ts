@@ -15,9 +15,7 @@ import conf, {
   DEFAULT_ACCOUNT_STATUS,
   ENABLED_DEMO_MODE,
   getRequestAuditHeaders,
-  isFeatureEnabled,
   logApp,
-  PASSWORD_HISTORY_FEATURE_FLAG,
 } from '../../config/conf';
 import {
   AuthenticationFailure,
@@ -1420,9 +1418,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
     // Turn User into Service Account
     if (input.key === 'user_service_account' && !userToUpdate.user_service_account && input.value[0] === true) {
       inputs.push({ key: 'password', value: [null] });
-      if (isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG)) {
-        inputs.push({ key: 'password_history', value: [] });
-      }
+      inputs.push({ key: 'password_history', value: [] });
       await addUserIntoServiceAccountCount();
     }
     // Turn Service Account into User
@@ -1449,7 +1445,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   const editContext = isDraftContextEdit ? { ...context, draft_context: undefined } : context;
   const editUser = isDraftContextEdit ? { ...user, draft_context: undefined } : user;
   // Password history, last before saving so that a refused password changes nothing
-  const tracksPasswordHistory = clearPassword !== undefined && isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) && isLocalUser(userToUpdate);
+  const tracksPasswordHistory = clearPassword !== undefined && isLocalUser(userToUpdate);
   let lock;
   let lockedIds: string[] = [];
   let element: StoreEntityUser;
@@ -1935,7 +1931,7 @@ export const loginFromProvider = async (userInfo: ProviderUserInfo, opts: LoginF
   }
   // Update the basic information
   // A local user switching to SSO has no local password history to keep
-  const clearsPasswordHistory = isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) && isNotEmptyField(user.password_history);
+  const clearsPasswordHistory = isNotEmptyField(user.password_history);
   const patch = { name, firstname, lastname, external: true, ...(clearsPasswordHistory ? { password_history: [] } : {}) };
   await patchAttribute(context, SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
   // region Update the groups

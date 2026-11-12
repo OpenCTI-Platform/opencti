@@ -13,12 +13,11 @@ vi.mock('../../../../src/config/conf', async () => {
   const actual = await vi.importActual('../../../../src/config/conf');
   return {
     ...actual,
-    isFeatureEnabled: vi.fn(() => true),
     logApp: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() },
   };
 });
 
-import { isFeatureEnabled, logApp } from '../../../../src/config/conf';
+import { logApp } from '../../../../src/config/conf';
 import { elRawCount, elRawUpdateByQuery } from '../../../../src/database/engine';
 import { publishCacheResetEvent, redisConsumePasswordChangeAttempt } from '../../../../src/database/redis';
 import { publishUserAction } from '../../../../src/listener/UserActionListener';
@@ -49,7 +48,6 @@ const context = { user: SYSTEM_USER, req: {} } as any;
 
 describe('password history count', () => {
   beforeEach(() => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     vi.clearAllMocks();
   });
 
@@ -58,15 +56,10 @@ describe('password history count', () => {
     [-1, 25, 2.5, '5', null, undefined].forEach((value) => expect(isValidPasswordHistoryCount(value)).toBe(false));
   });
 
-  it('reads the stored value when the feature flag is on', () => {
+  it('reads the stored value, and 0 when none is stored', () => {
     expect(readPasswordHistoryCount({ password_policy_history_count: 5 })).toBe(5);
     expect(readPasswordHistoryCount({})).toBe(0);
     expect(readPasswordHistoryCount(undefined)).toBe(0);
-  });
-
-  it('reads 0 when the feature flag is off, whatever is stored', () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
-    expect(readPasswordHistoryCount({ password_policy_history_count: 5 })).toBe(0);
   });
 
   it('reads an invalid stored value as 0 and logs a warning', () => {
@@ -274,15 +267,19 @@ describe('cleanUpPasswordHistoryWhenDisabled', () => {
   });
 
   it('does nothing while the rule applies', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 5 });
     expect(elRawCount).not.toHaveBeenCalled();
     expect(elRawUpdateByQuery).not.toHaveBeenCalled();
   });
 
-  // Also what remains once the flag is removed: with N = 0, no history may stay behind
-  it('deletes leftover histories when the flag is on and N is 0, keeping the count', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+  it('does nothing when N is 0 and no history is stored', async () => {
+    vi.mocked(elRawCount).mockResolvedValue(0);
+    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 0 });
+    await cleanUpPasswordHistoryWhenDisabled({});
+    expect(elRawUpdateByQuery).not.toHaveBeenCalled();
+  });
+
+  it('deletes leftover histories when N is 0, keeping the count', async () => {
     vi.mocked(elRawCount).mockResolvedValueOnce(2).mockResolvedValue(0);
     await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 0 });
     const scripts = vi.mocked(elRawUpdateByQuery).mock.calls.map(([args]) => args.body.script.source);
@@ -290,38 +287,19 @@ describe('cleanUpPasswordHistoryWhenDisabled', () => {
     expect(scripts[0]).toContain("remove('password_history')");
   });
 
-  it('removes a stored count the platform cannot use while the flag is on', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
+  it('removes a stored count the platform cannot use', async () => {
     vi.mocked(elRawCount).mockResolvedValue(0);
     await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 25 });
     const scripts = vi.mocked(elRawUpdateByQuery).mock.calls.map(([args]) => args.body.script.source);
     expect(scripts).toEqual([expect.stringContaining("remove('password_policy_history_count')")]);
-  });
-
-  it('does nothing when the flag is off and nothing is stored', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
-    vi.mocked(elRawCount).mockResolvedValue(0);
-    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 0 });
-    expect(elRawUpdateByQuery).not.toHaveBeenCalled();
-  });
-
-  // The setting is not part of the schema with the flag off: it is removed from the store, not patched
-  it('removes the stored value and deletes every history when the flag is off', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
-    vi.mocked(elRawCount).mockResolvedValueOnce(3).mockResolvedValue(0);
-    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 5 });
-    const scripts = vi.mocked(elRawUpdateByQuery).mock.calls.map(([args]) => args.body.script.source);
-    expect(scripts[0]).toContain("remove('password_policy_history_count')");
-    expect(scripts[1]).toContain("remove('password_history')");
     expect(publishCacheResetEvent).toHaveBeenCalledWith('Settings');
   });
 
-  it('only deletes the histories when the stored value is already 0', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
-    vi.mocked(elRawCount).mockResolvedValueOnce(2).mockResolvedValue(0);
-    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 0 });
+  it('removes a stored count the platform cannot use and deletes every history', async () => {
+    vi.mocked(elRawCount).mockResolvedValueOnce(3).mockResolvedValue(0);
+    await cleanUpPasswordHistoryWhenDisabled({ password_policy_history_count: 25 });
     const scripts = vi.mocked(elRawUpdateByQuery).mock.calls.map(([args]) => args.body.script.source);
-    expect(scripts).toHaveLength(1);
-    expect(scripts[0]).toContain("remove('password_history')");
+    expect(scripts[0]).toContain("remove('password_policy_history_count')");
+    expect(scripts[1]).toContain("remove('password_history')");
   });
 });

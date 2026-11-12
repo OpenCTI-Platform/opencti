@@ -144,7 +144,6 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { isFeatureEnable } = useHelper();
-  const isPasswordHistoryEnabled = isFeatureEnable('PASSWORD_HISTORY');
   const isLockoutFeatureEnabled = isFeatureEnable('LOCAL_AUTH_LOCKOUT');
   const data = useLazyLoadQuery<LocalStrategyFormQuery>(localStrategyFormQuery, {});
   const settings = data.settings;
@@ -215,9 +214,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           password_policy_min_lowercase: Number(values.password_policy_min_lowercase) || 0,
           password_policy_min_uppercase: Number(values.password_policy_min_uppercase) || 0,
           password_policy_validity_days: Number(values.password_policy_validity_days) || 0,
-          ...(isPasswordHistoryEnabled
-            ? { password_policy_history_count: Number(values.password_policy_history_count) || 0 }
-            : {}),
+          password_policy_history_count: Number(values.password_policy_history_count) || 0,
           ...(isLockoutFeatureEnabled && lockoutInput),
         },
       },
@@ -340,20 +337,18 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
             label={`${t_i18n('Password validity duration in days')} (${t_i18n('0 equals unlimited')})`}
             fullWidth
           />
-          {isPasswordHistoryEnabled && (
-            <Field
-              component={TextField}
-              type="number"
-              variant="outlined"
-              className="mt-5"
-              name="password_policy_history_count"
-              label={`${t_i18n('Number of recent passwords that cannot be reused')} (${t_i18n('0 equals disabled')})`}
-              min={0}
-              max={PASSWORD_HISTORY_MAX_COUNT}
-              step={1}
-              fullWidth
-            />
-          )}
+          <Field
+            component={TextField}
+            type="number"
+            variant="outlined"
+            className="mt-5"
+            name="password_policy_history_count"
+            label={`${t_i18n('Number of recent passwords that cannot be reused')} (${t_i18n('0 equals disabled')})`}
+            min={0}
+            max={PASSWORD_HISTORY_MAX_COUNT}
+            step={1}
+            fullWidth
+          />
           {isLockoutFeatureEnabled && (
             <>
               <Typography variant="h4" gutterBottom style={{ marginBottom: 20, marginTop: 20 }}>

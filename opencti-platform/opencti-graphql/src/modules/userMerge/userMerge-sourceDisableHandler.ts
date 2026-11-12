@@ -1,4 +1,4 @@
-import { ACCOUNT_STATUS_EXPIRED, isFeatureEnabled, PASSWORD_HISTORY_FEATURE_FLAG } from '../../config/conf';
+import { ACCOUNT_STATUS_EXPIRED } from '../../config/conf';
 import { patchAttribute } from '../../database/middleware';
 import { isEmptyField } from '../../database/utils';
 import { storeLoadById } from '../../database/middleware-loader';
@@ -71,8 +71,7 @@ export const userMergeSourceDisableHandler: UserMergeHandler = {
   compute: async ({ context, sourceId, targetId }: UserMergeHandlerContext): Promise<UserMergeHandlerPlan> => {
     const state = await readSourceAccountState(context, sourceId);
     // The history is emptied in a second write: a run stopped between the two must still empty it on retry.
-    // With the feature flag off the field is not part of the schema, and the startup clean-up already removed it.
-    const historyCleared = !isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) || isEmptyField(state.password_history);
+    const historyCleared = isEmptyField(state.password_history);
     const done = isDisabledForTarget(state, targetId) && historyCleared;
     const count = done ? 0 : 1;
     return {
@@ -102,9 +101,7 @@ export const userMergeSourceDisableHandler: UserMergeHandler = {
     }
     // The disabled account keeps its password but none of the hashes of the passwords it used before.
     // Written apart because userEditField refuses this field from any caller.
-    if (isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG)) {
-      await patchAttribute(context, SYSTEM_USER, sourceId, ENTITY_TYPE_USER, { [PASSWORD_HISTORY_FIELD]: [] }, USER_MERGE_USER_WRITE);
-    }
+    await patchAttribute(context, SYSTEM_USER, sourceId, ENTITY_TYPE_USER, { [PASSWORD_HISTORY_FIELD]: [] }, USER_MERGE_USER_WRITE);
     return 1;
   },
 };
