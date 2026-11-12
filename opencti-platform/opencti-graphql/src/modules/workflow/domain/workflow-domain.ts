@@ -92,6 +92,7 @@ import { assertCanEnterRequestAccessOutcome, findStateOutcome, mirrorRequestAcce
 // 'validateDraft' is a CE feature and must NOT be listed here.
 const EE_ONLY_ACTION_TYPES = new Set<WorkflowActionConfig['type']>([
   'updateAuthorizedMembers',
+  'resetAuthorizedMembers',
   'shareWithOrganizations',
   'unshareFromOrganizations',
   'asyncBulkAction',

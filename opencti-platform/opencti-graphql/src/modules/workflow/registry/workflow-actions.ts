@@ -238,6 +238,20 @@ export const ActionRegistry: Record<string, ActionFunction> = {
       );
     }
   },
+  // Removes the restriction: without restricted members, the entity is visible again to every user with access to it
+  resetAuthorizedMembers: async (executionContext) => {
+    const { entity, context, user } = executionContext;
+    if (entity?.entity_type === 'DraftWorkspace') {
+      await draftWorkspaceEditAuthorizedMembers(context, user, entity.id, null);
+    } else {
+      await editAuthorizedMembers(context, user, {
+        entityId: entity.id ?? entity.internal_id,
+        input: null,
+        requiredCapabilities: [KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS],
+        entityType: entity.entity_type,
+      });
+    }
+  },
   /**
    * asyncBulkAction: spawns a BackgroundTask + Work via createListTask.
    * The slot is pushed onto ctx.pendingAsyncSlots (mutable accumulator).
@@ -334,6 +348,11 @@ export const ActionDefinitions: Record<string, ActionDefinition> = {
     fn: ActionRegistry.shareRequestedEntities,
     paramsSchema: z.object({ organizations: z.array(z.string()).min(1) }),
     allowedModes: ['sync'],
+  },
+  resetAuthorizedMembers: {
+    fn: ActionRegistry.resetAuthorizedMembers,
+    paramsSchema: z.object({}).optional(),
+    allowedModes: ['sync', 'async'],
   },
   asyncBulkAction: {
     fn: ActionRegistry.asyncBulkAction,
