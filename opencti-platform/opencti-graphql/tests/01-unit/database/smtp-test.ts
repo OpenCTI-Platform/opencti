@@ -495,9 +495,9 @@ describe('createSmtpTransporter — DB vs JSON config, sendMail, smtpIsAlive', (
     expect(callOptions).toMatchObject({ connectionTimeout: 10000, greetingTimeout: 10000 });
   });
 
-  it('should close a silent SMTP connection after 2 minutes instead of the 10 minute nodemailer default', async () => {
+  it('should pin the SMTP socket inactivity timeout to 10 minutes', async () => {
     await smtpIsAlive();
-    expect(nodemailerCreateTransport).toHaveBeenCalledWith(expect.objectContaining({ socketTimeout: 120000 }));
+    expect(nodemailerCreateTransport).toHaveBeenCalledWith(expect.objectContaining({ socketTimeout: 600000 }));
   });
 
   it('should use JSON config options when use_db_config is false', async () => {
