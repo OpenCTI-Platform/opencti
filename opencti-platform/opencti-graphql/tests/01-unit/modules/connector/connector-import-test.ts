@@ -345,4 +345,14 @@ describe('importConfigPresetConnector overwrite and copy', () => {
     expect([first.reason, second.reason]).toEqual(['Added as "MITRE (1)"', 'Added as "MITRE (2)"']);
     expectNothingWritten();
   });
+
+  it('fails on a dry run the second item of the import that takes the name of the first one', async () => {
+    withConnectors([]);
+    const reservedNames = new Set<string>();
+    const options = { ...overwrite, dryRun: true, reservedNames, credentials: { MITRE_API_KEY: 'key' } };
+    const first = await importConfigPresetConnector(context, user, connectorConfiguration(), options);
+    const second = await importConfigPresetConnector(context, user, connectorConfiguration(), { ...options, bundleId: 'mitre-2' });
+    expect(first).toMatchObject({ status: 'created' });
+    expect(second).toMatchObject({ status: 'failed', code: 'name_conflict', exists: false });
+  });
 });

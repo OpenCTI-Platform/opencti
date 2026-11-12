@@ -55,6 +55,8 @@ import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './con
 import { customVocabulary, modifiedVocabulary } from './configPreset-vocabularies-fixtures';
 import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
+import { mitreConnector } from './configPreset-connectors-fixtures';
+import { exportConnector } from '../../../../src/modules/connector/connector-export';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -344,6 +346,18 @@ describe('Config preset registry', () => {
         required_at_import: ['MITRE_API_KEY'],
       });
       expect(JSON.stringify(file)).not.toMatch(/encrypted-secret|runtime-token|last_run|started|mitre-user-id|mitre-connector-id/);
+    });
+
+    it('never exports a secret only known by its name, nor a parameter its contract does not have', async () => {
+      const manager_contract_configuration = [
+        ...mitreConnector.manager_contract_configuration,
+        { key: 'MITRE_PROXY_TOKEN', value: 'plain-proxy-token' },
+        { key: 'MITRE_REMOVED_PARAMETER', value: 'removed-value' },
+      ];
+      const configuration = await exportConnector(context, { ...mitreConnector, manager_contract_configuration } as never);
+      expect(configuration.manager_contract_configuration).toEqual([{ key: 'MITRE_INTERVAL', value: '7' }]);
+      expect(configuration.required_at_import).toEqual(['MITRE_API_KEY', 'MITRE_PROXY_TOKEN']);
+      expect(JSON.stringify(configuration)).not.toMatch(/plain-proxy-token|removed-value/);
     });
 
     it('lists the managed connectors only, by name', async () => {

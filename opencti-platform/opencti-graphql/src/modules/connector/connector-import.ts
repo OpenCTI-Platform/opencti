@@ -91,12 +91,13 @@ export const importConfigPresetConnector = async (
   };
   const existing = connectors.find(({ name }) => name === bundleId);
   const sameName = connectors.find(({ name }) => name === connectorName(bundleConnector.name));
+  const isNameReserved = !!reservedNames?.has(connectorName(bundleConnector.name));
   if (existing && mode === ConfigImportMode.Add) {
     return refused('exists', 'Connector already exists', true, bundleConnector);
   }
   const isCopy = mode === ConfigImportMode.Copy;
-  if (!existing && sameName && !isCopy) {
-    return refused('name_conflict', 'Connector name already exists', true, bundleConnector);
+  if (!existing && (sameName || isNameReserved) && !isCopy) {
+    return refused('name_conflict', 'Connector name already exists', !!sameName, bundleConnector);
   }
   if (existing && !isCopy && !existing.catalog_id) {
     return refused('not_managed', 'A connector that is not managed by the platform has this name', true, bundleConnector);
