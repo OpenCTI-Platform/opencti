@@ -15,7 +15,9 @@ import type { StixInternalKillChainPhase } from '../../types/stix-2-0-smo';
 // because according to the STIX 2.0 and 2.1 specifications the valid_until must be greater than the valid_from.
 const computeValidUntil = (instance: StoreEntityIndicator) => {
   return (
-    isNotEmptyField(instance.valid_from) && isNotEmptyField(instance.valid_until) && instance.valid_until === instance.valid_from
+    // Compared by value: the dates can be strings or Date objects.
+    isNotEmptyField(instance.valid_from) && isNotEmptyField(instance.valid_until)
+    && moment(instance.valid_until).valueOf() === moment(instance.valid_from).valueOf()
   ) ? moment(instance.valid_from).add(1, 'seconds').toDate() : instance.valid_until;
 };
 
