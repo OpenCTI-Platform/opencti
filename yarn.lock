@@ -14044,17 +14044,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:17.0.2":
-  version: 17.0.2
-  resolution: "graphql@npm:17.0.2"
-  checksum: 10c0/766546216b891439ed09fd8584963df2013e26f2f79f096036eaaa2788c38964e049c8a142d68e3afdabdd8bbe70042639e83f0f4b82edbc7c6850421f072bb6
+"graphql@npm:17.1.0":
+  version: 17.1.0
+  resolution: "graphql@npm:17.1.0"
+  checksum: 10c0/7bebb1c13c352577c14e10accd38ce51c642bf8e7bfb474c49790c893636f8abf7d61802c47f3ce413703b0a669220c142de9aed67b3e961da3c00d005c9cfd3
   languageName: node
   linkType: hard
 
-"graphql@patch:graphql@17.0.2#./patch/graphql-17.patch::locator=opencti%40workspace%3A.":
-  version: 17.0.2
-  resolution: "graphql@patch:graphql@npm%3A17.0.2#./patch/graphql-17.patch::version=17.0.2&hash=7e98ea&locator=opencti%40workspace%3A."
-  checksum: 10c0/5fbce4d1f804b3a018f1cad6bd4e5235e26d86c11dc8a91e52a0beed18f96434cedad2e62b6ac23bf6f5c16675e0a5c25e4ca73ede04e4a3269c72a1f7445bad
+"graphql@patch:graphql@17.1.0#./patch/graphql-17.patch::locator=opencti%40workspace%3A.":
+  version: 17.1.0
+  resolution: "graphql@patch:graphql@npm%3A17.1.0#./patch/graphql-17.patch::version=17.1.0&hash=7e98ea&locator=opencti%40workspace%3A."
+  checksum: 10c0/993330711b1c060367c7513770771352930804fdf31db55aef20c6421c6d904af74688713d7b70116d4847b7863527c7ce49213aabca3fdd831d12c47d9cce14
   languageName: node
   linkType: hard
 
@@ -18498,7 +18498,7 @@ __metadata:
     form-data: "npm:4.0.6"
     github-api: "npm:3.4.0"
     globals: "npm:17.14.0"
-    graphql: "npm:17.0.2"
+    graphql: "npm:17.1.0"
     graphql-constraint-directive: "npm:6.0.0"
     graphql-no-alias: "npm:3.0.3"
     graphql-rate-limit-directive: "npm:2.0.6"
