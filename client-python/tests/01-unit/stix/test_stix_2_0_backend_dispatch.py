@@ -996,6 +996,33 @@ def test_prepare_export_stix_2_0_email_message_drops_refs_excluded_by_filter(
     assert email_message["body_multipart_refs"] == [MIME_PART_ID]
 
 
+def test_prepare_export_stix_2_0_drops_excluded_ref_to_a_shared_target(stix_helper):
+    """An excluded ref is removed even if an allowed ref has the same target."""
+    allowed = [_sco_nested_ref("to", EMAIL_ADDR_ID)]
+    excluded = _sco_nested_ref("from", EMAIL_ADDR_ID)
+
+    def list_nested_refs(**kwargs):
+        return allowed if kwargs.get("filters") else allowed + [excluded]
+
+    stix_helper.opencti.stix_nested_ref_relationship.list.side_effect = list_nested_refs
+    payload = _backend_sco_payload(
+        "email-message",
+        "Email-Message",
+        from_ref=EMAIL_ADDR_ID,
+        to_refs=[EMAIL_ADDR_ID],
+    )
+
+    email_message = _export_backend_sco(
+        stix_helper,
+        payload,
+        _raw_sco("email-message", "Email-Message"),
+        access_filter=ACCESS_FILTER,
+    )
+
+    assert "from_ref" not in email_message
+    assert email_message["to_refs"] == [EMAIL_ADDR_ID]
+
+
 @pytest.mark.parametrize("stix_version", [None, STIX_VERSION_2_0])
 def test_prepare_export_skips_nested_refs_to_unreadable_targets(
     stix_helper, stix_version

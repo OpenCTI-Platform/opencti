@@ -2169,6 +2169,17 @@ class OpenCTIStix2:
         )
 
     @staticmethod
+    def _nested_ref_key_prefix(relationship_type: str) -> str:
+        """Key of a nested ref, without its ``_ref`` / ``_refs`` suffix.
+
+        :param relationship_type: Nested ref relationship type (``obs_belongs-to``)
+        :type relationship_type: str
+        :return: Key prefix (``belongs_to``)
+        :rtype: str
+        """
+        return relationship_type.replace("obs_", "").replace("-", "_")
+
+    @staticmethod
     def _add_legacy_nested_refs(entity: Dict, nested_refs: List[Dict]) -> None:
         """Add nested refs to an exported entity, with the legacy key names.
 
@@ -2186,7 +2197,7 @@ class OpenCTIStix2:
             if target_id is None:
                 continue
             relationship_type = nested_ref["relationship_type"]
-            key = relationship_type.replace("obs_", "").replace("-", "_")
+            key = OpenCTIStix2._nested_ref_key_prefix(relationship_type)
             # dirty fix because the sample and operating-system ref are not multiple for a Malware Analysis
             # will be replaced by a proper toStix converter in the back
             if not MultipleRefRelationship.has_value(relationship_type) or (
@@ -2238,7 +2249,11 @@ class OpenCTIStix2:
         ``operating_system_refs``...) with the user's rights only, not with the
         export access filter (e.g. the content max markings). The legacy path
         applies that filter when it loads the nested refs, so do the same here:
-        the targets visible without the filter but not with it are removed.
+        the refs listed without the filter but not with it are removed.
+
+        A ref is identified by its key and its target: the same target can be
+        referenced by an allowed ref and an excluded one (e.g. the same address
+        in ``from_ref`` and ``to_refs``).
 
         :param entity: STIX 2.0 entity produced by the backend
         :type entity: Dict
@@ -2249,36 +2264,40 @@ class OpenCTIStix2:
         :type allowed_nested_refs: List[Dict], optional
         """
 
-        def target_ids(nested_refs: List[Dict]) -> set:
+        def refs(nested_refs: List[Dict]) -> set:
+            """(key prefix, target id) of each nested ref."""
             return {
-                (nested_ref.get("to") or {}).get("standard_id")
+                (
+                    self._nested_ref_key_prefix(nested_ref["relationship_type"]),
+                    (nested_ref.get("to") or {}).get("standard_id"),
+                )
                 for nested_ref in nested_refs
-            } - {None}
+            }
 
         nested_ref_client = self.opencti.stix_nested_ref_relationship
-        all_ids = target_ids(
+        all_refs = refs(
             nested_ref_client.list(fromId=entity["x_opencti_id"], getAll=True)
         )
         if allowed_nested_refs is None:
             allowed_nested_refs = nested_ref_client.list(
                 fromId=entity["x_opencti_id"], filters=access_filter, getAll=True
             )
-        allowed_ids = target_ids(allowed_nested_refs)
-        excluded_ids = all_ids - allowed_ids
-        if not excluded_ids:
+        excluded_refs = all_refs - refs(allowed_nested_refs)
+        if not excluded_refs:
             return
         # Only string values are refs: custom fields can also end with `_ref`
         # and hold a list, which is not hashable.
         for key in list(entity):
             value = entity[key]
             if key.endswith("_ref") and isinstance(value, str):
-                if value in excluded_ids:
+                if (key[: -len("_ref")], value) in excluded_refs:
                     del entity[key]
             elif key.endswith("_refs") and isinstance(value, list):
+                prefix = key[: -len("_refs")]
                 kept = [
                     ref
                     for ref in value
-                    if not (isinstance(ref, str) and ref in excluded_ids)
+                    if not (isinstance(ref, str) and (prefix, ref) in excluded_refs)
                 ]
                 if kept:
                     entity[key] = kept
