@@ -43,6 +43,7 @@ from .entities.opencti_narrative import Narrative
 from .entities.opencti_note import Note
 from .entities.opencti_observed_data import ObservedData
 from .entities.opencti_opinion import Opinion
+from .entities.opencti_procedure import Procedure
 from .entities.opencti_report import Report
 from .entities.opencti_role import Role
 from .entities.opencti_security_coverage import SecurityCoverage
@@ -151,6 +152,7 @@ __all__ = [
     "OpenCTIStix2Update",
     "OpenCTIStix2Utils",
     "Opinion",
+    "Procedure",
     "Report",
     "SecurityCoverage",
     "SecurityCoverageResult",
