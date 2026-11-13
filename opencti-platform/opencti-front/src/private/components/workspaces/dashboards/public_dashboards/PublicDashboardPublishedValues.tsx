@@ -16,6 +16,7 @@ import {
   applyPublishedTimeRangeChange,
   buildPublishedValuesState,
   buildPublishedVariables,
+  EMPTY_PUBLISHED_TIME_RANGE,
   type PublicDashboardCreationFormData,
   type PublishableDashboard,
 } from './public-dashboard-utils';
@@ -139,7 +140,14 @@ const PublicDashboardPublishedValuesComponent = ({ queryRef }: { queryRef: Prelo
 };
 
 const PublicDashboardPublishedValuesFetcher = ({ dashboardId }: { dashboardId: string }) => {
+  const { setFieldValue } = useFormikContext<PublicDashboardCreationFormData>();
   const queryRef = useQueryLoading<PublicDashboardPublishedValuesQuery>(publishedValuesQuery, { id: dashboardId });
+  // The values of the previous dashboard must not travel with the new id while its data is on its way: the fields
+  // are cleared at once, the section fills them again from the dashboard once it arrives.
+  useEffect(() => {
+    setFieldValue('variable_values', {});
+    setFieldValue('time_range', EMPTY_PUBLISHED_TIME_RANGE);
+  }, [dashboardId]);
   if (!queryRef) return null;
   return (
     <Suspense fallback={null}>
