@@ -84,6 +84,34 @@ const addRelation = async (request: APIRequestContext, type: string, fromId: str
   return data.stixCoreRelationshipAdd.id;
 };
 
+/** A report that contains the given objects. Its `object` relationships are what the container scoring rule reads. */
+const addReport = async (request: APIRequestContext, name: string, objectIds: string[]): Promise<string> => {
+  const data = await graphqlRequest<{ reportAdd: { id: string } }>(request, `
+    mutation {
+      reportAdd(input: {
+        name: ${quote(name)},
+        published: "2026-01-01T00:00:00.000Z",
+        objects: [${objectIds.map(quote).join(', ')}]
+      }) { id }
+    }
+  `, `Create report ${name}`);
+  return data.reportAdd.id;
+};
+
+/** The id of the `object` relationship from a container to one of its objects. */
+const getContainsRelationId = async (request: APIRequestContext, containerId: string, objectId: string): Promise<string> => {
+  const data = await graphqlRequest<{ stixRefRelationships: { edges: { node: { id: string } }[] } }>(request, `
+    query {
+      stixRefRelationships(fromId: ${quote(containerId)}, toId: ${quote(objectId)}, relationship_type: ["object"], first: 1) {
+        edges { node { id } }
+      }
+    }
+  `, `Read the object relationship of report ${containerId}`);
+  const relation = data.stixRefRelationships.edges[0];
+  if (!relation) throw new Error(`Report ${containerId} does not contain ${objectId}`);
+  return relation.node.id;
+};
+
 const addInvestigation = async (request: APIRequestContext, name: string, entityIds: string[]): Promise<string> => {
   const data = await graphqlRequest<{ workspaceAdd: { id: string } }>(request, `
     mutation {
@@ -168,14 +196,22 @@ const seedKnowledge = async (request: APIRequestContext): Promise<SeededKnowledg
  * Seeds the knowledge of the matrix scenarios and an investigation holding it.
  * Scores: T9001 = 2 (A and B), T9002 = 1 (A), T9003 unscored. T9003.001 is in the investigation too, unscored.
  * With `withSubtechniqueUse`, the investigation also holds `A uses T9003.001`: T9003.001 scores 1 and T9003 stays unscored.
+ * With `withReport`, the investigation also holds the report that contains T9002, and that `object` relationship:
+ * T9002 scores 2 (A and the report).
  * Each call creates a new investigation.
  */
 export const seedInvestigationMatrix = async (
   request: APIRequestContext,
-  { withSubtechniqueUse = false }: { withSubtechniqueUse?: boolean } = {},
+  { withSubtechniqueUse = false, withReport = false }: { withSubtechniqueUse?: boolean; withReport?: boolean } = {},
 ): Promise<InvestigationMatrixSeed> => {
   const knowledge = await seedKnowledge(request);
   const { attackPatterns, intrusionSets } = knowledge;
+  // Report "E2E Matrix report" contains T9002. Seeded only on demand, so other scenarios see no report.
+  const reportIds: string[] = [];
+  if (withReport) {
+    const reportId = await addReport(request, 'E2E Matrix report', [attackPatterns.T9002]);
+    reportIds.push(reportId, await getContainsRelationId(request, reportId, attackPatterns.T9002));
+  }
 
   const investigationName = `E2E matrix ${Date.now()}`;
   const investigationId = await addInvestigation(request, investigationName, [
@@ -188,6 +224,7 @@ export const seedInvestigationMatrix = async (
     knowledge.subtechniqueRelationId,
     ...knowledge.usesRelationIds,
     ...(withSubtechniqueUse ? [knowledge.subtechniqueUseRelationId] : []),
+    ...reportIds,
   ]);
 
   return {

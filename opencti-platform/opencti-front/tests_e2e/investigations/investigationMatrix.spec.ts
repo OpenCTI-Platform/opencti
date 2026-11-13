@@ -245,6 +245,21 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
       await expect(tooltip).toContainText('E2E Matrix A, E2E Matrix B');
     });
 
+    test('A report that contains a technique counts in its score', async ({ page, request }) => {
+      const { investigationId } = await seed(request, { withReport: true });
+      const investigationPage = new InvestigationDetailsPage(page);
+
+      await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
+      // T9002 is used by A and contained in the report: the container rule reads the report's `object` relationship.
+      await expect(page.getByRole('button', { name: `${BETA}, linked to 2 entities`, exact: true })).toBeVisible();
+
+      await investigationPage.toggleHeatmap();
+      await investigationPage.getMatrixCell(BETA).hover();
+      const tooltip = investigationPage.getTooltip().filter({ hasText: 'Linked entities (2)' });
+      await expect(tooltip).toBeVisible();
+      await expect(tooltip).toContainText('E2E Matrix A, E2E Matrix report');
+    });
+
     test('A technique of the investigation that nobody uses gets the neutral outline', async ({ page, request }) => {
       const { investigationId } = await seed(request);
       const investigationPage = new InvestigationDetailsPage(page);
