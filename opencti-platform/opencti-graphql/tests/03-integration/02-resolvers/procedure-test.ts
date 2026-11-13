@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { computeProcedureFingerprint } from '../../../src/modules/procedure/procedure-fingerprint';
 
 const CREATE_QUERY = gql`
   mutation ProcedureAdd($input: ProcedureAddInput!) {
@@ -19,6 +20,7 @@ const READ_QUERY = gql`
       standard_id
       name
       x_mitre_platforms
+      x_fingerprint
       killChainPhases {
         id
         phase_name
@@ -91,6 +93,47 @@ const ORGANIZATION_DELETE = gql`
   }
 `;
 
+const ATTACK_PATTERN_ADD = gql`
+  mutation AttackPatternAdd($input: AttackPatternAddInput!) {
+    attackPatternAdd(input: $input) {
+      id
+      standard_id
+    }
+  }
+`;
+
+const ATTACK_PATTERN_DELETE = gql`
+  mutation attackPatternDelete($id: ID!) {
+    attackPatternEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
+const PROCEDURE_FIELD_PATCH = gql`
+  mutation procedureFieldPatch($id: ID!, $input: [EditInput]!) {
+    procedureFieldPatch(id: $id, input: $input) {
+      id
+      x_fingerprint
+    }
+  }
+`;
+
+const RELATIONSHIPS_QUERY = gql`
+  query procedureRelationships($filters: FilterGroup) {
+    stixCoreRelationships(filters: $filters, first: 10) {
+      edges {
+        node {
+          id
+          relationship_type
+          from { ... on BasicObject { id } }
+          to { ... on BasicObject { id } }
+        }
+      }
+    }
+  }
+`;
+
 const KILL_CHAIN_PHASE_ADD = gql`
   mutation KillChainPhaseAdd($input: KillChainPhaseAddInput!) {
     killChainPhaseAdd(input: $input) {
@@ -129,6 +172,11 @@ describe('Procedure resolver', () => {
   let organizationId: string;
   let killChainPhaseId: string;
   let fullProcedureId: string;
+  let observableStandardId: string;
+  let processStandardId: string;
+  let organizationStandardId: string;
+  let attackPatternId: string;
+  let attackPatternStandardId: string;
 
   beforeAll(async () => {
     const observable = await queryAsAdminWithSuccess({
@@ -136,21 +184,30 @@ describe('Procedure resolver', () => {
       variables: { type: 'IPv4-Addr', IPv4Addr: { value: '198.51.100.27' } },
     });
     observableId = observable.data?.stixCyberObservableAdd.id;
+    observableStandardId = observable.data?.stixCyberObservableAdd.standard_id;
     const process = await queryAsAdminWithSuccess({
       query: OBSERVABLE_ADD,
       variables: { type: 'Process', Process: { command_line: 'cmd.exe /c powershell -enc SQBFAFgA' } },
     });
     processId = process.data?.stixCyberObservableAdd.id;
+    processStandardId = process.data?.stixCyberObservableAdd.standard_id;
     const organization = await queryAsAdminWithSuccess({
       query: ORGANIZATION_ADD,
       variables: { input: { name: 'Procedure test source organization' } },
     });
     organizationId = organization.data?.organizationAdd.id;
+    organizationStandardId = organization.data?.organizationAdd.standard_id;
     const killChainPhase = await queryAsAdminWithSuccess({
       query: KILL_CHAIN_PHASE_ADD,
       variables: { input: { kill_chain_name: 'mitre-attack', phase_name: 'procedure-test-phase', x_opencti_order: 99 } },
     });
     killChainPhaseId = killChainPhase.data?.killChainPhaseAdd.id;
+    const attackPattern = await queryAsAdminWithSuccess({
+      query: ATTACK_PATTERN_ADD,
+      variables: { input: { name: 'Procedure test technique', x_mitre_id: 'T9999' } },
+    });
+    attackPatternId = attackPattern.data?.attackPatternAdd.id;
+    attackPatternStandardId = attackPattern.data?.attackPatternAdd.standard_id;
   });
 
   afterAll(async () => {
@@ -164,6 +221,7 @@ describe('Procedure resolver', () => {
     await queryAsAdmin({ query: OBSERVABLE_DELETE, variables: { id: processId } });
     await queryAsAdmin({ query: ORGANIZATION_DELETE, variables: { id: organizationId } });
     await queryAsAdmin({ query: KILL_CHAIN_PHASE_DELETE, variables: { id: killChainPhaseId } });
+    await queryAsAdmin({ query: ATTACK_PATTERN_DELETE, variables: { id: attackPatternId } });
   });
 
   it('creates a procedure with a random UUIDv4 standard id', async () => {
@@ -219,13 +277,65 @@ describe('Procedure resolver', () => {
     const procedure = await readProcedure(fullProcedureId);
     const stix = JSON.parse(procedure.toStix);
     expect(stix.type).toBe('x-opencti-procedure');
-    expect(stix).toHaveProperty('x_observable_refs');
-    expect(stix).toHaveProperty('x_command_ref');
-    expect(stix).toHaveProperty('x_source_refs');
+    expect(stix.x_observable_refs).toEqual([observableStandardId]);
+    expect(stix.x_command_ref).toEqual(processStandardId);
+    expect(stix.x_source_refs).toEqual([organizationStandardId]);
     expect(stix.platforms).toEqual(['windows']);
     expect(stix.kill_chain_phases).toEqual([{ kill_chain_name: 'mitre-attack', phase_name: 'procedure-test-phase' }]);
     expect(stix).not.toHaveProperty('x_mitre_platforms');
     expect(stix).not.toHaveProperty('x_log_source_refs');
+  });
+
+  it('creates an implements-technique relationship per technique', async () => {
+    const p = await addProcedureAsAdmin({ name: 'Procedure with a technique', techniques: [attackPatternId] });
+    const filters = {
+      mode: 'and',
+      filters: [
+        { key: ['fromId'], values: [p.id] },
+        { key: ['relationship_type'], values: ['implements-technique'] },
+      ],
+      filterGroups: [],
+    };
+    const result = await queryAsAdmin({ query: RELATIONSHIPS_QUERY, variables: { filters } });
+    const relationships = result.data?.stixCoreRelationships.edges.map((e: { node: { from: { id: string }; to: { id: string } } }) => e.node);
+    expect(relationships.length).toBe(1);
+    expect(relationships[0].from.id).toBe(p.id);
+    expect(relationships[0].to.id).toBe(attackPatternId);
+  });
+
+  it('computes the fingerprint on creation when none is provided', async () => {
+    const p = await addProcedureAsAdmin({
+      name: 'Procedure with a computed fingerprint',
+      techniques: [attackPatternId],
+      x_mitre_platforms: ['windows'],
+      killChainPhases: [killChainPhaseId],
+    });
+    const procedure = await readProcedure(p.id);
+    expect(procedure.x_fingerprint).toBe(computeProcedureFingerprint([attackPatternStandardId], ['windows'], ['procedure-test-phase']));
+  });
+
+  it('keeps a provided fingerprint', async () => {
+    const p = await addProcedureAsAdmin({ name: 'Procedure with an imported fingerprint', techniques: [attackPatternId], x_fingerprint: 'abc' });
+    const procedure = await readProcedure(p.id);
+    expect(procedure.x_fingerprint).toBe('abc');
+  });
+
+  it('does not recompute the fingerprint on edit', async () => {
+    const p = await addProcedureAsAdmin({ name: 'Procedure edited later', techniques: [attackPatternId], x_mitre_platforms: ['windows'] });
+    const before = (await readProcedure(p.id)).x_fingerprint;
+    expect(before).toBe(computeProcedureFingerprint([attackPatternStandardId], ['windows'], []));
+    const patched = await queryAsAdminWithSuccess({
+      query: PROCEDURE_FIELD_PATCH,
+      variables: { id: p.id, input: [{ key: 'x_mitre_platforms', value: ['linux'] }] },
+    });
+    expect(patched.data?.procedureFieldPatch.x_fingerprint).toBe(before);
+    expect((await readProcedure(p.id)).x_fingerprint).toBe(before);
+  });
+
+  it('lowercases a provided stix id', async () => {
+    const stixId = 'x-opencti-procedure--5E0040B0-42DF-46D2-8E7F-0FA3D753B75E';
+    const p = await addProcedureAsAdmin({ name: 'Upper case stix id', stix_id: stixId });
+    expect(p.standard_id).toBe(stixId.toLowerCase());
   });
 
   it('deletes a procedure', async () => {
