@@ -417,7 +417,7 @@ describe('CustomDashboard variable definitions for the widget filters', () => {
     captured.contentDefinitions = undefined;
   });
 
-  it('provides the definitions to the whole dashboard, header (widget creation) included, when the flag is on', () => {
+  it('provides the definitions to the whole dashboard, header (widget creation) included', () => {
     testRender(<CustomDashboard data={workspace as never} />, { userContext: userContext() });
     expect(headerDefinitions()).toBe('Sector');
     expect(captured.contentDefinitions?.map((v) => v.name)).toEqual(['Sector']);

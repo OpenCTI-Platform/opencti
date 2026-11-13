@@ -21,6 +21,11 @@ describe('toGraphqlDashboardVariables', () => {
   it('should return no variable for an investigation or an empty manifest', () => {
     expect(toGraphqlDashboardVariables({ type: 'investigation', manifest: toB64({ variables: [{ id: VAR_ID }] }) })).toEqual([]);
     expect(toGraphqlDashboardVariables({ type: 'dashboard', manifest: undefined })).toEqual([]);
+    // A manifest that cannot be decoded, or holds no list, gives nothing instead of failing the workspace
+    expect(toGraphqlDashboardVariables({ type: 'dashboard', manifest: 'not base64 json' })).toEqual([]);
+    expect(toGraphqlDashboardVariables({ type: 'dashboard', manifest: toB64({ variables: 'x' }) })).toEqual([]);
+    expect(toGraphqlDashboardPresets({ type: 'dashboard', manifest: 'not base64 json' })).toEqual([]);
+    expect(toGraphqlDashboardPresets({ type: 'dashboard', manifest: toB64({ presets: {} }) })).toEqual([]);
     expect(toGraphqlDashboardVariables({ type: 'dashboard', manifest: toB64({ widgets: {} }) })).toEqual([]);
   });
   it('should serialize restrictions and compute usage', () => {
