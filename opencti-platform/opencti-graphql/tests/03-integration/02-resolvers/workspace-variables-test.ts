@@ -331,4 +331,18 @@ describe('Dashboard variables export and import', () => {
     const imported = await readWorkspace(data.workspaceConfigurationImport);
     expect(imported.variables[0].defaultValue).toEqual(unknownMarking);
   });
+
+  it('should never convert a text value shaped like an id on import', async () => {
+    // The standard id of a marking that exists: a wrong type check would turn it into the internal id of this marking.
+    const variable = { id: '33333333-3333-4333-8333-333333333333', name: 'Text', type: 'text', restriction: { mode: 'none' }, defaultValue: green.standard_id };
+    const file = JSON.stringify({
+      openCTI_version: '7.0.0',
+      type: 'dashboard',
+      configuration: { name: 'Variables text shaped like an id', manifest: toB64({ widgets: {}, config: {}, variables: [variable] }) },
+    });
+    const { data } = await queryAsAdminWithSuccess({ query: IMPORT_CONFIGURATION, variables: { file: createUploadFromBuffer(Buffer.from(file), 'text.json', 'application/json') } });
+    createdIds.push(data.workspaceConfigurationImport);
+    const imported = await readWorkspace(data.workspaceConfigurationImport);
+    expect(imported.variables[0].defaultValue).toEqual(green.standard_id);
+  });
 });

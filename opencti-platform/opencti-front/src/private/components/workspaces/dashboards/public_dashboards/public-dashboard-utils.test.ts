@@ -6,11 +6,13 @@ import type { DashboardVariable } from '../../../../../components/dashboard/dash
 import {
   applyPresetToPublishedValues,
   applyPublishedTimeRangeChange,
+  applyPublishedVariableChange,
   buildPublicationInput,
   buildPublishedValuesState,
   buildPublishedVariables,
   buildPublishedVariableValues,
   isSamePublishedTimeRange,
+  isTypedPublishedVariable,
   pickPublishedTimeRange,
 } from './public-dashboard-utils';
 
@@ -156,5 +158,30 @@ describe('applyPresetToPublishedValues', () => {
       variable_values: { [SECTOR]: 'Energy', [REGION]: 'us', [LEVEL]: 'Low' },
       time_range: { startDate: '2026-01-01T00:00:00.000Z', endDate: null, relativeDate: null },
     });
+  });
+});
+
+describe('applyPublishedVariableChange', () => {
+  const marking: DashboardVariable = { id: 'marking', name: 'Marking', type: 'marking', restriction: { mode: 'none' }, defaultValue: 'tlp-green-id' };
+  const noDefault: DashboardVariable = { id: 'entity', name: 'Entity', type: 'entity', restriction: { mode: 'none' } };
+  const text: DashboardVariable = { id: 'text', name: 'Text', type: 'text', restriction: { mode: 'none' }, defaultValue: 'x' };
+  const textSelection: DashboardVariable = { id: 'choice', name: 'Choice', type: 'text', restriction: { mode: 'selection', values: ['a', 'b'] }, defaultValue: 'a' };
+
+  it('should show the default again when a picked value is cleared: an empty value publishes the default', () => {
+    expect(applyPublishedVariableChange(marking, '')).toEqual('tlp-green-id');
+    expect(applyPublishedVariableChange(textSelection, '')).toEqual('a');
+  });
+
+  it('should keep a cleared picker empty when the variable has no default', () => {
+    expect(applyPublishedVariableChange(noDefault, '')).toEqual('');
+  });
+
+  it('should keep the empty draft of a typed field, and any chosen value', () => {
+    expect(applyPublishedVariableChange(text, '')).toEqual('');
+    expect(applyPublishedVariableChange(marking, 'tlp-amber-id')).toEqual('tlp-amber-id');
+  });
+
+  it('should only count free text and numbers as typed', () => {
+    expect([text, { ...text, type: 'numeric' as const }, textSelection, marking].map(isTypedPublishedVariable)).toEqual([true, true, false, false]);
   });
 });

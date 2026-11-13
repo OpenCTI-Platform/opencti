@@ -92,6 +92,13 @@ describe('applyPublicationTimeRange', () => {
   ])('should refuse an unknown relative date, a malformed date or a reversed range (%o)', (range) => {
     expect(() => applyPublicationTimeRange({}, range)).toThrow('Invalid public dashboard time range');
   });
+
+  it('should accept a start equal to the end, and a start after the end overridden by a relative date', () => {
+    const day = '2026-06-01T00:00:00.000Z';
+    expect(applyPublicationTimeRange({}, { start_date: day, end_date: day })).toEqual({ relativeDate: null, startDate: day, endDate: day });
+    expect(applyPublicationTimeRange({}, { relative_date: 'days-7', start_date: '2026-12-01T00:00:00.000Z', end_date: '2026-01-01T00:00:00.000Z' }))
+      .toEqual({ relativeDate: 'days-7', startDate: null, endDate: null });
+  });
 });
 
 describe('toPublicationTimeZone', () => {

@@ -1964,6 +1964,17 @@ describe('Public dashboards and dashboard variables', () => {
     expect(privateManifest.presets).toBeUndefined();
   });
 
+  it('should never write the viewer switches of the dashboard in the public manifest', async () => {
+    const dashboardId = await createDashboardWithVariableWidget('Dashboard viewer switches', 'eq', true);
+    const read = await queryAsAdmin({ query: READ_DASHBOARD_MANIFEST_QUERY, variables: { id: dashboardId } });
+    const switches = { allowViewersToEditTimeFilters: true, allowViewersToChangeVariables: false, allowViewersToSwitchPresets: true };
+    const manifest = { ...fromB64(read.data.workspace.manifest), config: { relativeDate: 'days-7', ...switches } };
+    await queryAsAdmin({ query: UPDATE_PRIVATE_DASHBOARD_QUERY, variables: { id: dashboardId, input: { key: 'manifest', value: toB64(manifest) } } });
+    const { publicManifest } = await publishAndRead(dashboardId, 'public-dashboard-viewer-switches');
+    expect(publicManifest.config.relativeDate).toEqual('days-7');
+    Object.keys(switches).forEach((key) => expect(publicManifest.config).not.toHaveProperty(key));
+  });
+
   it('should freeze the provided variable values in the private manifest', async () => {
     const dashboardId = await createDashboardWithVariableWidget('Dashboard variables provided', 'eq', true);
     const variableId = await readVariableId(dashboardId);

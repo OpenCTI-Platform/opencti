@@ -34,7 +34,7 @@ import { findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import type { BasicConnection, BasicStoreRelation, NumberResult, StoreEntity, StoreMarkingDefinition } from '../../types/store';
-import { checkUserIsAdminOnDashboard, getWidgetArguments, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
+import { checkUserIsAdminOnDashboard, getWidgetArguments, omitViewerSwitches, sanitizePublicDashboardUriKey } from './publicDashboard-utils';
 import { buildPublicBreakdownArgs, withPublicBreakdownRefusals } from './publicDashboard-breakdown';
 import { resolveSavedFiltersInDataSelection } from '../dashboard/dashboard-utils';
 import { buildDashboardDateVariableIds, resolveDashboardVariablesInWidgets } from '../dashboard/dashboard-variables-resolution';
@@ -188,9 +188,10 @@ const createPrivateManifest = async (
  * to only keep display-related properties (no filters, no query data).
  */
 const createPublicManifest = (manifest: any) => {
-  // Dashboard variables and presets are internal definitions (filters, ids, default values):
-  // the public manifest is served to anonymous visitors and must never carry them.
-  const parsedManifest = manifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest) : manifest;
+  // Dashboard variables and presets are internal definitions (filters, ids, default values), and the viewer switches
+  // settings of the private dashboard: the public manifest is served to anonymous visitors and must never carry them.
+  const withoutServerKeys = manifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest) : manifest;
+  const parsedManifest = withoutServerKeys?.config ? { ...withoutServerKeys, config: omitViewerSwitches(withoutServerKeys.config) } : withoutServerKeys;
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const publicWidgets = Object.fromEntries(
       Object.entries(parsedManifest.widgets).map(([widgetId, widget]: [string, any]) => {
@@ -403,7 +404,7 @@ export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext,
 export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixCoreObjectsTimeSeriesBreakdownArgs) => {
   const { user, startDate, endDate, ...widget } = await ensurePublicContext(context, args);
 
-  // The dates follow the published range unless the author allowed the visitors to change them
+  // The dates are the ones the caller sends (the public page sends the published range): they are not enforced here
   const breakdownArgs = buildPublicBreakdownArgs({ ...args, startDate, endDate }, widget, 'entities');
   // Use standard API, with the interval the dates are counted in
   const breakdown = await withPublicBreakdownRefusals(() => stixCoreObjectsTimeSeriesBreakdown(context, user, breakdownArgs));
@@ -414,7 +415,7 @@ export const publicStixCoreObjectsTimeSeriesBreakdown = async (context: AuthCont
 export const publicStixRelationshipsTimeSeriesBreakdown = async (context: AuthContext, args: QueryPublicStixRelationshipsTimeSeriesBreakdownArgs) => {
   const { user, startDate, endDate, ...widget } = await ensurePublicContext(context, args);
 
-  // The dates follow the published range unless the author allowed the visitors to change them
+  // The dates are the ones the caller sends (the public page sends the published range): they are not enforced here
   const breakdownArgs = buildPublicBreakdownArgs({ ...args, startDate, endDate }, widget, 'relationships');
   // Use standard API, with the interval the dates are counted in
   const breakdown = await withPublicBreakdownRefusals(() => stixRelationshipsTimeSeriesBreakdown(context, user, breakdownArgs));

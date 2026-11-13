@@ -1947,6 +1947,7 @@
   "Emails (1 / line)": "电子邮件（1 封/行）",
   "Empty": "空",
   "Empty coverage": "空覆盖范围",
+  "Empty: the default value {value} is published": "为空：将发布默认值 {value}",
   "Enable": "启用",
   "Enable 3D mode": "启用3D模式",
   "Enable AI powered platform": "启用人工智能平台",
