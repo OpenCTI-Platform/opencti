@@ -24,6 +24,9 @@ import Security from '../../../utils/Security';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import AskArianeButton from '../chatbox/AskArianeButton';
 import CtemCommandCenterButton from '../chatbox/CtemCommandCenterButton';
+import { notificationCenterEntry, profileEntry } from '../profile/ProfileMenu.entries';
+import { ariaKeyShortcuts, formatSearchShortcut, TOP_BAR_SEARCH_ID } from '../../../utils/searchShortcut';
+import useFocusSearchShortcut from './useFocusSearchShortcut';
 import { CGUStatus } from '../settings/Experience';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
 import useTopBanner from '../../../utils/hooks/useTopBanner';
@@ -81,6 +84,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   } = useAuth();
   const isAllNewsFeedUnsubscribed = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const draftContext = useDraftContext();
+  const searchShortcut = useFocusSearchShortcut();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
   const showAiCluster = hasKnowledgeAccess
     && filigran_chatbot_ai_cgu_status !== CGUStatus.disabled;
@@ -240,7 +244,12 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               onSubmit={handleSearch}
               keyword={keyword}
               variant="topBar"
-              placeholder={`${t_i18n('Search the platform')}...`}
+              placeholder={searchShortcut
+                ? t_i18n('Type {shortcut} to search', { values: { shortcut: formatSearchShortcut(searchShortcut) } })
+                : `${t_i18n('Search the platform')}...`}
+              // Target of the shortcut, which the field announces to assistive technologies as well
+              id={TOP_BAR_SEARCH_ID}
+              aria-keyshortcuts={searchShortcut ? ariaKeyShortcuts(searchShortcut) : undefined}
               isNLQLoading={isNLQLoading}
             />
           )}
@@ -270,25 +279,28 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       size="default"
                     />
                   </Security>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TopBarIconLink
-                        aria-label={t_i18n('Notification Center')}
-                        to="/dashboard/profile/notifications"
-                        active={location.pathname.startsWith('/dashboard/profile/notifications')}
-                        icon={<NotificationsOutlined fontSize="medium" />}
-                        // Marks the control, never the glyph: the glyph sits in an aria-hidden
-                        // span, where the badge's description reaches nobody.
-                        badge={{
-                          content: notificationsNumber ?? 0,
-                          dot: true,
-                          invisible: !isNewNotification,
-                          accessibleText: `${notificationsNumber} ${t_i18n('unread')}`,
-                        }}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>{t_i18n('Notification Center')}</TooltipContent>
-                  </Tooltip>
+                  {/* Same path and capability as the pages search entry. */}
+                  <Security needs={notificationCenterEntry.requiredCapabilities ?? []}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <TopBarIconLink
+                          aria-label={t_i18n('Notification Center')}
+                          to={notificationCenterEntry.path}
+                          active={location.pathname.startsWith(notificationCenterEntry.path)}
+                          icon={<NotificationsOutlined fontSize="medium" />}
+                          // Marks the control, never the glyph: the glyph sits in an aria-hidden
+                          // span, where the badge's description reaches nobody.
+                          badge={{
+                            content: notificationsNumber ?? 0,
+                            dot: true,
+                            invisible: !isNewNotification,
+                            accessibleText: `${notificationsNumber} ${t_i18n('unread')}`,
+                          }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>{t_i18n('Notification Center')}</TooltipContent>
+                    </Tooltip>
+                  </Security>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <TopBarIconLink
@@ -317,7 +329,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   priority="tertiary"
                   aria-label={t_i18n('Profile')}
                   id="profile-menu-button"
-                  active={location.pathname === '/dashboard/profile/me'}
+                  active={location.pathname === profileEntry.path}
                   icon={<AccountCircleOutlined fontSize="medium" />}
                 />
               </MenuTrigger>

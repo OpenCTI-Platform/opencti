@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { SearchField, Spinner } from '@filigran/design-system';
 import { ManageSearchOutlined, TuneOutlined, KeyboardArrowDownOutlined } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
@@ -25,6 +25,7 @@ import { fetchAgentsForIntent } from '../utils/ai/agentApi';
 import { NLQ_INTENT } from '../private/components/common/ai/AINLQ';
 import { useChatbot } from '../private/components/chatbox/ChatbotContext';
 import { hexToRGB } from '../utils/Colors';
+import NavSearchSuggestions, { NAV_SEARCH_LISTBOX_ID, navSearchOptionId } from '../private/components/search/NavSearchSuggestions';
 
 const MODE_SEARCH = 'search';
 const MODE_BULK = 'bulk';
@@ -55,6 +56,12 @@ const SearchInput = (props) => {
   const [displayEEDialog, setDisplayEEDialog] = useState(false);
   const [displayCGUDialog, setDisplayCGUDialog] = useState(false);
   const [searchValue, setSearchValue] = useState(keyword);
+
+  // Pages dropdown of the top bar: opened by typing, row -1 = nothing highlighted (Enter runs the classic search).
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const fieldContainerRef = useRef(null);
+  const suggestionsRef = useRef([]);
 
   // Current mode: 'search', 'bulk', or 'nlq:<slug>'
   const [mode, setMode] = useState(MODE_SEARCH);
@@ -193,9 +200,63 @@ const SearchInput = (props) => {
   };
 
   // ── Submit handler ─────────────────────────────────────────────────────
+  const closeSuggestions = () => {
+    setSuggestionsOpen(false);
+    setActiveIndex(-1);
+  };
+  // One letter matches a dozen pages by substring: wait for two before listing them.
+  const canSuggest = mode === MODE_SEARCH && (searchValue?.trim().length ?? 0) >= 2;
+  const showSuggestions = suggestionsOpen && canSuggest;
+  // Bulk and NLQ modes have no popup: the field must not announce itself as a (collapsed) combobox there.
+  const comboboxProps = mode === MODE_SEARCH
+    ? {
+        role: 'combobox',
+        'aria-autocomplete': 'list',
+        'aria-expanded': showSuggestions,
+        'aria-controls': showSuggestions ? NAV_SEARCH_LISTBOX_ID : undefined,
+        'aria-activedescendant': showSuggestions && activeIndex >= 0 ? navSearchOptionId(activeIndex) : undefined,
+      }
+    : {};
+
+  const handleSearchRow = () => {
+    closeSuggestions();
+    if (typeof onSubmit === 'function') onSubmit(searchValue, false, undefined);
+  };
+  const handleSelectPage = (path) => {
+    closeSuggestions();
+    navigate(path);
+  };
+
   const handleKeyDown = (event) => {
     const { value } = event.target;
+    // preventDefault also tells the library field to skip its own Enter / Escape handling
+    if (showSuggestions) {
+      const rows = suggestionsRef.current.length + 1; // the "Search" row (0) + pages
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const step = event.key === 'ArrowDown' ? 1 : -1;
+        setActiveIndex((i) => (i === -1 && step === -1 ? rows - 1 : (i + step + rows) % rows));
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeSuggestions();
+        return;
+      }
+      // Row 0 is "Search": it falls through to the classic Enter submit below.
+      const page = event.key === 'Enter' ? suggestionsRef.current[activeIndex - 1] : undefined;
+      if (page) {
+        event.preventDefault();
+        handleSelectPage(page.path);
+        return;
+      }
+    } else if (event.key === 'ArrowDown' && canSuggest) {
+      event.preventDefault();
+      setSuggestionsOpen(true);
+      return;
+    }
     if (typeof onSubmit === 'function' && event.key === 'Enter') {
+      closeSuggestions();
       if (mode === MODE_BULK) {
         // Navigate to bulk search page with the keyword as a query param
         const encoded = encodeURIComponent(value);
@@ -212,6 +273,8 @@ const SearchInput = (props) => {
   // otherwise it keeps filtering the results unseen, and adding filters afterwards finds nothing.
   const handleValueChange = (value) => {
     setSearchValue(value);
+    setSuggestionsOpen(value.trim() !== '');
+    setActiveIndex(-1);
     if (value === '' && keyword && typeof onSubmit === 'function') {
       onSubmit('');
     }
@@ -313,20 +376,38 @@ const SearchInput = (props) => {
     <>
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, width: '100%' }}>
         {/* ── Search Input Field (left, fills remaining space) ──── */}
-        <SearchField
-          name="keyword"
-          // WCAG 2.5.3: the announced name must contain the visible text, which here is the placeholder.
-          aria-label={getPlaceholder()}
-          value={searchValue}
-          fullWidth
-          placeholder={getPlaceholder()}
-          onChange={(event) => handleValueChange(event.target.value)}
-          onKeyDown={handleKeyDown}
-          onClear={() => handleValueChange('')}
-          {...otherProps}
-          autoComplete="off"
-          label={t_i18n('Search')}
-        />
+        {/* Focus events bubble: leaving the field (not the dropdown, which keeps the focus) closes it */}
+        <div
+          ref={fieldContainerRef}
+          style={{ flex: 1, minWidth: 0 }}
+          onBlur={closeSuggestions}
+        >
+          <SearchField
+            name="keyword"
+            // WCAG 2.5.3: the announced name must contain the visible text, which here is the placeholder.
+            aria-label={getPlaceholder()}
+            value={searchValue}
+            fullWidth
+            placeholder={getPlaceholder()}
+            onChange={(event) => handleValueChange(event.target.value)}
+            onKeyDown={handleKeyDown}
+            onClear={() => handleValueChange('')}
+            {...comboboxProps}
+            {...otherProps}
+            autoComplete="off"
+            label={t_i18n('Search')}
+          />
+          {showSuggestions && (
+            <NavSearchSuggestions
+              keyword={searchValue.trim()}
+              anchorEl={fieldContainerRef.current}
+              activeIndex={activeIndex}
+              itemsRef={suggestionsRef}
+              onPageClick={closeSuggestions}
+              onSearch={handleSearchRow}
+            />
+          )}
+        </div>
         {/* FDS-WORKAROUND #20: NLQ loading indicator beside the field, SearchField exposes no busy slot — see fds-migration/LIBRARY-FEEDBACK.md #20 */}
         {isNLQActivated && isNLQLoading && <Loader variant="inline" />}
 

@@ -1,9 +1,9 @@
-import React, { FunctionComponent, ReactElement, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import Drawer from '@mui/material/Drawer';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { List, ListItemButton, Stack } from '@mui/material';
@@ -12,8 +12,9 @@ import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import { Theme } from '../../../../components/Theme';
-import { useTheme } from '@mui/material/styles';
 import useTopBanner from '../../../../utils/hooks/useTopBanner';
+import useVisibleEntries from './useVisibleEntries';
+import type { MenuEntry } from './menuEntry';
 
 const StyledDrawer = styled(Drawer)(() => ({
   '& .MuiDrawer-paper': {
@@ -31,13 +32,6 @@ const StyledDrawer = styled(Drawer)(() => ({
 const ToolbarSpacer = styled('div')(({ theme }) => ({
   ...theme.mixins.toolbar,
 }));
-
-export interface MenuEntry {
-  path: string;
-  label: string;
-  icon?: ReactElement;
-  isEE?: boolean;
-}
 
 const TruncatedText: FunctionComponent<{ children: React.ReactNode }> = ({ children }) => {
   const textRef = useRef<HTMLDivElement>(null);
@@ -70,7 +64,8 @@ const TruncatedText: FunctionComponent<{ children: React.ReactNode }> = ({ child
   return content;
 };
 
-const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }) => {
+const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries: allEntries }) => {
+  const entries = useVisibleEntries(allEntries);
   const { t_i18n } = useFormatter();
   const location = useLocation();
   const { bannerSettings } = useAuth();

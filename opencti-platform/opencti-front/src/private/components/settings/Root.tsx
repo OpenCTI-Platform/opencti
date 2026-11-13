@@ -1,24 +1,7 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
-import {
-  SETTINGS_SETCUSTOMIZATION,
-  SETTINGS_SETCUSTOMFIELDS,
-  SETTINGS_SETLABELS,
-  SETTINGS_SECURITYACTIVITY,
-  SETTINGS_FILEINDEXING,
-  SETTINGS_SUPPORT,
-  SETTINGS_SETPARAMETERS,
-  SETTINGS_SETMANAGEXTMHUB,
-  SETTINGS_SETVOCABULARIES,
-  SETTINGS_SETKILLCHAINPHASES,
-  SETTINGS_SETCASETEMPLATES,
-  SETTINGS_SETSTATUSTEMPLATES,
-  SETTINGS_SETACCESSES,
-  SETTINGS_SETMARKINGS,
-  SETTINGS_SETDISSEMINATION,
-  SETTINGS_SETAUTH,
-  VIRTUAL_ORGANIZATION_ADMIN,
-} from '../../../utils/hooks/useGranted';
+import { SETTINGS_FILEINDEXING, SETTINGS_SUPPORT, SETTINGS_SETPARAMETERS, SETTINGS_SETMANAGEXTMHUB } from '../../../utils/hooks/useGranted';
+import { capabilitiesOf } from '../nav/menuEntries';
 import Loader from '../../../components/Loader';
 import useSettingsFallbackUrl from '../../../utils/hooks/useSettingsFallbackUrl';
 import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM, XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY } from '../RedirectByPath';
@@ -71,7 +54,7 @@ const Root = () => {
             path="/accesses/*"
             element={(
               <Security
-                needs={[SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS, SETTINGS_SETDISSEMINATION, SETTINGS_SETAUTH, VIRTUAL_ORGANIZATION_ADMIN]}
+                needs={capabilitiesOf('/dashboard/settings/accesses')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootAccesses />
@@ -81,7 +64,7 @@ const Root = () => {
           <Route
             path="/activity/*"
             element={(
-              <Security needs={[SETTINGS_SECURITYACTIVITY]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/activity')} placeholder={<Navigate to={fallbackUrl} />}>
                 <RootActivity />
               </Security>
             )}
@@ -108,7 +91,7 @@ const Root = () => {
           <Route
             path="/customization/*"
             element={(
-              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+              <Security needs={capabilitiesOf('/dashboard/settings/customization')} placeholder={<Navigate to={fallbackUrl} />}>
                 <RootCustomization />
               </Security>
             )}
@@ -117,14 +100,7 @@ const Root = () => {
             path="/vocabularies/*"
             element={(
               <Security
-                needs={[
-                  SETTINGS_SETLABELS,
-                  SETTINGS_SETKILLCHAINPHASES,
-                  SETTINGS_SETSTATUSTEMPLATES,
-                  SETTINGS_SETCASETEMPLATES,
-                  SETTINGS_SETVOCABULARIES,
-                  SETTINGS_SETCUSTOMFIELDS,
-                ]}
+                needs={capabilitiesOf('/dashboard/settings/vocabularies')}
                 placeholder={<Navigate to={fallbackUrl} />}
               >
                 <RootVocabularies />

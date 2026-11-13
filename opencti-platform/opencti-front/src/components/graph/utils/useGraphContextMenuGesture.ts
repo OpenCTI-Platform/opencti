@@ -1,10 +1,10 @@
 import { RefObject, useEffect, useRef } from 'react';
+import { IS_MAC } from '../../../utils/keyboard';
+
+export { IS_MAC };
 
 /** A right press that moves further than this is a drag (drawing a relationship), not a menu request. */
 export const CONTEXT_MENU_MOVE_TOLERANCE = 4;
-
-/** On macOS a Control click is the context menu of the system: the graph reads it as such. */
-export const IS_MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
 
 /** Whether a click adds to the selection: Shift, Alt, Command, and Control outside macOS. */
 export const isAdditiveClick = (event: Pick<MouseEvent, 'ctrlKey' | 'shiftKey' | 'altKey' | 'metaKey'>) => event.shiftKey

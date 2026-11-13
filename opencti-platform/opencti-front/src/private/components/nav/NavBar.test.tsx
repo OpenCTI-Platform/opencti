@@ -5,7 +5,7 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../../utils/tests/test-render';
 import MadeByFiligran from './MadeByFiligran';
-import { isRouteSelected, NavBarView, NavBarViewProps } from './NavBar';
+import { findSectionToOpen, isRouteSelected, NavBarView, NavBarViewProps, openSection } from './NavBar';
 import { NavGroup } from './useNavMenu';
 
 const groups: NavGroup[] = [
@@ -256,6 +256,25 @@ describe('NavBarView accent compensation', () => {
       [...(nav?.getAttribute('style') ?? '').matchAll(tint)].map((m) => m[0]),
     );
     expect([...reDerived].sort()).toEqual([...consumed].sort());
+  });
+});
+
+describe('section to open for the current page', () => {
+  it('finds the section of a sub-item page, or of a page below it', () => {
+    expect(findSectionToOpen(groups, '/dashboard/threats/campaigns')).toBe('threats');
+    expect(findSectionToOpen(groups, '/dashboard/threats/campaigns/abc')).toBe('threats');
+  });
+
+  it('finds nothing for a leaf entry, an unknown page or a look-alike prefix', () => {
+    expect(findSectionToOpen(groups, '/dashboard')).toBeUndefined();
+    expect(findSectionToOpen(groups, '/dashboard/elsewhere')).toBeUndefined();
+    expect(findSectionToOpen(groups, '/dashboard/threats/campaigns_old')).toBeUndefined();
+  });
+
+  it('opens it alone when sections auto collapse, next to the others otherwise', () => {
+    expect(openSection(['data'], 'threats', true)).toEqual(['threats']);
+    expect(openSection(['data'], 'threats', false)).toEqual(['data', 'threats']);
+    expect(openSection(['threats', 'data'], 'threats', false)).toEqual(['data', 'threats']);
   });
 });
 

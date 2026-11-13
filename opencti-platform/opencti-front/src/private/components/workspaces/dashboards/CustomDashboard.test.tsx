@@ -44,10 +44,10 @@ vi.mock('react-relay', async (importOriginal) => ({
 }));
 
 vi.mock('../../../../utils/hooks/useApiMutation', () => ({ default: () => [captured.commit, false] }));
-vi.mock('../../../../utils/hooks/useGranted', () => ({
+// Keep the real capability constants: `*.entries.ts` files read them at import time.
+vi.mock('../../../../utils/hooks/useGranted', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../utils/hooks/useGranted')>()),
   default: () => captured.granted,
-  EXPLORE_EXUPDATE: 'EXPLORE_EXUPDATE',
-  INVESTIGATION_INUPDATE: 'INVESTIGATION_INUPDATE',
 }));
 vi.mock('../../../../utils/Security', () => ({
   default: ({ children, hasAccess = true }: { children: ReactNode; hasAccess?: boolean }) => (hasAccess ? <>{children}</> : null),

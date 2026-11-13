@@ -1,6 +1,6 @@
 import { Navbar, NavbarItem, NavbarSeparator, NavbarSubmenu, NavbarSubmenuItem, ProductSwitcher } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { Link, useLocation } from 'react-router';
 import { useFormatter } from '../../../components/i18n';
@@ -40,6 +40,16 @@ export const isRouteSelected = (pathname: string, link: string, exact?: boolean)
   if (link === '/dashboard/data' && pathname.includes('/import/draft/')) return false;
   return pathname === link || pathname.startsWith(`${link}/`);
 };
+
+/** Id of the menu section holding the page being shown, if any. Same test as the selected row. */
+export const findSectionToOpen = (groups: NavGroup[], pathname: string): string | undefined => groups
+  .flatMap((group) => group.items)
+  .find((item) => item.subItems?.some((sub) => isRouteSelected(pathname, sub.link, sub.exact)))?.id;
+
+/** `menus` with `id` open: alone when sections auto collapse, next to the others otherwise. */
+export const openSection = (menus: string[], id: string, autoCollapse: boolean): string[] => (
+  autoCollapse ? [id] : [...menus.filter((menu) => menu !== id), id]
+);
 
 export interface NavBarViewProps {
   groups: NavGroup[];
@@ -209,17 +219,24 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
   };
 
   const handleSubmenuOpenChange = (id: string, open: boolean) => {
-    let updated: string[];
-    if (!open) {
-      updated = openSubmenus.filter((menu) => menu !== id);
-    } else if (submenuAutoCollapse) {
-      updated = [id];
-    } else {
-      updated = [...openSubmenus.filter((menu) => menu !== id), id];
-    }
+    const updated = open
+      ? openSection(openSubmenus, id, !!submenuAutoCollapse)
+      : openSubmenus.filter((menu) => menu !== id);
     setOpenSubmenus(updated);
     writeSelectedMenu(updated);
   };
+
+  // Reaching a page (search, link, URL) opens its section. Not tied to `openSubmenus`, so closing it by hand sticks.
+  const currentSection = findSectionToOpen(groups, location.pathname);
+  useEffect(() => {
+    if (!currentSection || !navOpen) return;
+    setOpenSubmenus((menus) => {
+      if (menus.includes(currentSection)) return menus;
+      const updated = openSection(menus, currentSection, !!submenuAutoCollapse);
+      writeSelectedMenu(updated); // idempotent, so safe if React runs the updater twice
+      return updated;
+    });
+  }, [location.pathname, currentSection, navOpen, submenuAutoCollapse]);
 
   const isLightTheme = theme.palette.mode === 'light';
 
