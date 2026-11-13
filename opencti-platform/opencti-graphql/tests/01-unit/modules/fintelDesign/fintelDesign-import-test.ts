@@ -10,6 +10,7 @@ vi.mock('../../../../src/modules/fintelDesign/fintelDesign-domain', async (impor
   ...(await importOriginal<typeof import('../../../../src/modules/fintelDesign/fintelDesign-domain')>()),
   addFintelDesign: vi.fn(),
   fintelDesignEditField: vi.fn(),
+  fintelDesignDelete: vi.fn(),
 }));
 vi.mock('../../../../src/modules/fintelDesign/fintelDesign-logo', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/fintelDesign/fintelDesign-logo')>()),
@@ -17,7 +18,7 @@ vi.mock('../../../../src/modules/fintelDesign/fintelDesign-logo', async (importO
 }));
 
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
-import { addFintelDesign, fintelDesignEditField } from '../../../../src/modules/fintelDesign/fintelDesign-domain';
+import { addFintelDesign, fintelDesignDelete, fintelDesignEditField } from '../../../../src/modules/fintelDesign/fintelDesign-domain';
 import {
   FINTEL_DESIGN_LOGO_MAX_SIZE,
   fintelDesignLogoExtension,
@@ -179,7 +180,7 @@ describe('Fintel design import', () => {
     expect(storeLoadById).not.toHaveBeenCalled();
   });
 
-  it('creates a design that does not exist under its standard id, as the default, then stores its logo, and writes nothing on a dry run', async () => {
+  it('creates a design that does not exist under its standard id, stores its logo then makes it the default, and writes nothing on a dry run', async () => {
     const logo = logoOf(PNG_LOGO);
     expect(await importFintelDesign(context, user, configuration, logo, { ...overwrite, dryRun: true })).toMatchObject({ status: 'created', exists: false });
     expect(addFintelDesign).not.toHaveBeenCalled();
@@ -194,11 +195,12 @@ describe('Fintel design import', () => {
       gradiantFromColor: '#00020c',
       gradiantToColor: '#001bda',
       textColor: '#ffffff',
-      default: true,
+      // The default once the logo is stored, by the same edit
+      default: false,
       standard_id: defaultFintelDesign.standard_id,
     });
     const [[, , { id, file, input }]] = vi.mocked(fintelDesignEditField).mock.calls;
-    expect([id, input]).toEqual(['new-design-id', undefined]);
+    expect([id, input]).toEqual(['new-design-id', [{ key: 'default', value: [true] }]]);
     // The domain checks that the file is an image from its extension: the one of the bytes
     expect(await readUpload(file)).toEqual({ content: PNG_LOGO, filename: 'logo.png' });
   });
@@ -207,6 +209,20 @@ describe('Fintel design import', () => {
     expect(await importFintelDesign(context, user, exportFintelDesign(nightFintelDesign), undefined, overwrite)).toMatchObject({ status: 'created' });
     expect(addFintelDesign).toHaveBeenCalledWith(context, user, expect.objectContaining({ name: 'Night briefing', default: false, textColor: undefined, description: undefined }));
     expect(fintelDesignEditField).not.toHaveBeenCalled();
+    // Without logo, the default design is created as the default at once
+    await importFintelDesign(context, user, configuration, undefined, overwrite);
+    expect(vi.mocked(addFintelDesign).mock.calls[1][2]).toMatchObject({ default: true });
+    expect(fintelDesignEditField).not.toHaveBeenCalled();
+
+    // A logo that cannot be stored: the design created is deleted, the item fails, the default is never moved
+    vi.mocked(fintelDesignEditField).mockRejectedValueOnce(new Error('storage down'));
+    await expect(importFintelDesign(context, user, configuration, logoOf(PNG_LOGO), overwrite)).rejects.toThrow('storage down');
+    expect(vi.mocked(addFintelDesign).mock.calls[2][2]).toMatchObject({ default: false });
+    expect(fintelDesignDelete).toHaveBeenCalledWith(context, user, 'new-design-id');
+    // A deletion that fails too does not hide the error of the logo
+    vi.mocked(fintelDesignEditField).mockRejectedValueOnce(new Error('storage down'));
+    vi.mocked(fintelDesignDelete).mockRejectedValueOnce(new Error('delete failed'));
+    await expect(importFintelDesign(context, user, configuration, logoOf(PNG_LOGO), copy)).rejects.toThrow('storage down');
   });
 
   it('refuses a logo that is too large or is not an image, whatever the mode', async () => {
@@ -266,9 +282,11 @@ describe('Fintel design import', () => {
 
     await importFintelDesign(context, user, configuration, logoOf(PNG_LOGO), copy);
     const [[, , input]] = vi.mocked(addFintelDesign).mock.calls;
-    expect(input).toMatchObject({ name: 'Filigran report (2)', default: true });
+    expect(input).toMatchObject({ name: 'Filigran report (2)', default: false });
     expect(input).not.toHaveProperty('standard_id');
+    // The copy becomes the default with its logo
     expect(fintelDesignEditField).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(fintelDesignEditField).mock.calls[0][2].input).toEqual([{ key: 'default', value: [true] }]);
   });
 
   it('gives a copy the name the real import will give it, after a design an earlier item of the dry run creates or renames', async () => {
