@@ -5,7 +5,7 @@ import { WorkflowEditionFormValues } from './WorkflowEditionDrawer';
 import { Box, FormControlLabel, Switch, Typography } from '@mui/material';
 import { Alert, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Switch as DsSwitch } from '@filigran/design-system';
 import WorkflowFieldList from './WorkflowFieldList';
-import { FEATURE_NAME, REQUEST_ACCESS_AUTHOR_KEY, RequestAccessOutcome, withoutShareRequestedEntities, WorkflowActionType, WorkflowDataType } from './utils';
+import { FEATURE_NAME, REQUEST_ACCESS_AUTHOR_KEY, RequestAccessOutcome, withoutShareRequestedEntities, withShareRequestedEntitiesLast, WorkflowActionType, WorkflowDataType } from './utils';
 import type { WorkflowScope } from '../SubTypeWorkflow';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '../../../common/entreprise_edition/EEChip';
@@ -34,7 +34,8 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
       // isn't set here), making it invisible/impossible to edit or remove from the UI, and it
       // isn't a key resolveDynamicAuthorizedMembers understands server-side (only 'CREATORS' is).
       const newAction = { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [{ label: 'Creators', type: 'Dynamic options', value: 'CREATORS', accessRight: 'admin' as const, groupsRestriction: [] }] } };
-      setFieldValue(field, [...currentActions, newAction]);
+      // On enter, the share action of an Approved state has to stay last.
+      setFieldValue(field, field === 'onEnter' ? withShareRequestedEntitiesLast([...currentActions, newAction]) : [...currentActions, newAction]);
     } else {
       setFieldValue(field, currentActions.filter((a) => a.type !== WorkflowActionType.updateAuthorizedMembers));
     }

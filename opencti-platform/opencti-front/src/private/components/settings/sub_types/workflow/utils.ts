@@ -74,6 +74,12 @@ export enum WorkflowActionType {
 // Only the Approved state may share the requested entities: any other state loses the action.
 export const withoutShareRequestedEntities = (actions: Action[] = []) => actions.filter((a) => a.type !== WorkflowActionType.shareRequestedEntities);
 
+// The share action must stay the last onEnter action of the Approved state (publish refuses any other order).
+export const withShareRequestedEntitiesLast = (actions: Action[] = []) => [
+  ...withoutShareRequestedEntities(actions),
+  ...actions.filter((a) => a.type === WorkflowActionType.shareRequestedEntities),
+];
+
 export const NODE_SIZE = { width: 160, height: 50 };
 
 // Label weight for nodes lit by a hover. A text shadow, not font-weight: a bolder label could

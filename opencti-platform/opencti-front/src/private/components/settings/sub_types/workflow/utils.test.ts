@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { transformToWorkflowDefinition, isElementStatus, isNewElementStatus, WorkflowNodeType, WorkflowActionType, findTargetStatusExits } from './utils';
+import { transformToWorkflowDefinition, isElementStatus, isNewElementStatus, WorkflowNodeType, WorkflowActionType, findTargetStatusExits, withShareRequestedEntitiesLast } from './utils';
 import type { Node, Edge } from 'reactflow';
 import { SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
 
@@ -226,5 +226,19 @@ describe('findTargetStatusExits', () => {
 
   it('returns nothing for a transition without a target status', () => {
     expect(findTargetStatusExits('t-close', nodes, [edge('open', 't-close')])).toBeUndefined();
+  });
+});
+
+describe('withShareRequestedEntitiesLast', () => {
+  const share = { type: WorkflowActionType.shareRequestedEntities, params: {} } as never;
+  const members = { type: WorkflowActionType.updateAuthorizedMembers, params: {} } as never;
+
+  it('moves the share action after the other actions', () => {
+    expect(withShareRequestedEntitiesLast([share, members])).toEqual([members, share]);
+  });
+
+  it('keeps a list without share unchanged', () => {
+    expect(withShareRequestedEntitiesLast([members])).toEqual([members]);
+    expect(withShareRequestedEntitiesLast(undefined)).toEqual([]);
   });
 });
