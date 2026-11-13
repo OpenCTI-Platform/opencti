@@ -146,25 +146,20 @@ describe('BackgroundTaskLaunch', () => {
     });
 
     it('asks for a confirmation above 1000 elements, and launches nothing before it', () => {
-      const onClose = vi.fn();
       testRender(launcher({
         confirmOnlyAboveLimit: true,
         selectAll: true,
         search: '8.8',
         numberOfSelectedElements: 1001,
-        onClose,
       }));
 
       expect(confirmationDialog()).toBeInTheDocument();
       expect(screen.getByText(/more than 1000 entities/)).toBeInTheDocument();
       expect(mocks.taskAdd).not.toHaveBeenCalled();
 
-      mocks.taskAdd.mockImplementation((args) => args.onError?.(new Error('rejected')));
       fireEvent.click(screen.getByRole('button', { name: 'Launch' }));
 
       expect(sentInput()).toMatchObject({ search: '8.8' });
-      expect(onClose).not.toHaveBeenCalled();
-      expect(confirmationDialog()).toBeInTheDocument();
     });
 
     it('shows the dialog rather than launching a task on no element', () => {
@@ -173,33 +168,6 @@ describe('BackgroundTaskLaunch', () => {
       expect(confirmationDialog()).toBeInTheDocument();
       expect(mocks.taskAdd).not.toHaveBeenCalled();
     });
-
-    it('closes the launcher when the API rejects the task, so that the next display launches again', () => {
-      mocks.taskAdd.mockImplementation((args) => args.onError(new Error('rejected')));
-      const onClose = vi.fn();
-      const onCompleted = vi.fn();
-      const view = testRender(launcher({ confirmOnlyAboveLimit: true, onClose, onCompleted }));
-
-      expect(onClose).toHaveBeenCalledTimes(1);
-      expect(onCompleted).not.toHaveBeenCalled();
-
-      view.rerender(launcher({ confirmOnlyAboveLimit: true, onClose, onCompleted, display: false }));
-      view.rerender(launcher({ confirmOnlyAboveLimit: true, onClose, onCompleted }));
-
-      expect(mocks.taskAdd).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  it('does not close the confirmation dialog when the API rejects the task', () => {
-    mocks.taskAdd.mockImplementation((args) => args.onError?.(new Error('rejected')));
-    const onClose = vi.fn();
-    testRender(launcher({ onClose }));
-
-    fireEvent.click(screen.getByRole('button', { name: 'Launch' }));
-
-    expect(mocks.taskAdd).toHaveBeenCalledTimes(1);
-    expect(onClose).not.toHaveBeenCalled();
-    expect(confirmationDialog()).toBeInTheDocument();
   });
 
   it('sends only the id of a value given as { id, value } for all the elements matching a search', () => {

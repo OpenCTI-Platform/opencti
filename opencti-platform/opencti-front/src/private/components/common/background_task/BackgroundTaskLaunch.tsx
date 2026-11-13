@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router';
 import { useTheme } from '@mui/material/styles';
@@ -118,12 +118,12 @@ const BackgroundTaskLaunch = ({
     </span>
   );
 
-  const [listMutation] = useApiMutation<BackgroundTaskLaunchListTaskAddMutation>(
+  const [listMutation, listInFlight] = useApiMutation<BackgroundTaskLaunchListTaskAddMutation>(
     listTaskAddMutation,
     undefined,
     { successMessage },
   );
-  const [queryMutation] = useApiMutation<BackgroundTaskLaunchQueryTaskAddMutation>(
+  const [queryMutation, queryInFlight] = useApiMutation<BackgroundTaskLaunchQueryTaskAddMutation>(
     queryTaskAddMutation,
     undefined,
     { successMessage },
@@ -203,6 +203,10 @@ const BackgroundTaskLaunch = ({
       && numberOfSelectedElements <= MAX_ENTITIES);
   }
 
+  // No onError, so that useApiMutation keeps its error handling: a request that ends with the launcher still open failed
+  const sending = listInFlight || queryInFlight;
+  const sentWithoutConfirmation = useRef(false);
+
   const launchTask = () => {
     onLaunch();
     const scope = taskScope ?? 'KNOWLEDGE';
@@ -213,7 +217,7 @@ const BackgroundTaskLaunch = ({
     const finalActions = taskScope === 'USER'
       ? getUserFinalActions()
       : getOtherActions();
-    const onError = launchWithoutConfirmation ? onClose : undefined;
+    sentWithoutConfirmation.current = launchWithoutConfirmation;
 
     if (selectAll) {
       queryMutation({
@@ -228,7 +232,6 @@ const BackgroundTaskLaunch = ({
           },
         },
         onCompleted,
-        onError,
       });
     } else {
       listMutation({
@@ -243,10 +246,15 @@ const BackgroundTaskLaunch = ({
           },
         },
         onCompleted,
-        onError,
       });
     }
   };
+
+  useEffect(() => {
+    if (sending || !sentWithoutConfirmation.current) return;
+    sentWithoutConfirmation.current = false;
+    if (display) onClose();
+  }, [sending]);
 
   useEffect(() => {
     if (display && launchWithoutConfirmation) {
