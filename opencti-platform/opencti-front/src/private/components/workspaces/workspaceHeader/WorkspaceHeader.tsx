@@ -151,6 +151,8 @@ const WorkspaceHeader = ({
               </Security>
             </>
           )}
+          {/* The view switch sits left of Update, which stays the primary action on the far right. */}
+          {viewSwitcher}
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
             <Button
               disableElevation
@@ -159,7 +161,6 @@ const WorkspaceHeader = ({
               {t_i18n('Update')}
             </Button>
           </Security>
-          {viewSwitcher}
         </div>
       </div>
       <WorkspaceEditionContainer
