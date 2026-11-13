@@ -43,6 +43,7 @@ import { InfrastructureCreationForm } from '../../observations/infrastructures/I
 import { AttackPatternCreationForm } from '../../techniques/attack_patterns/AttackPatternCreation';
 import { CourseOfActionCreationForm } from '../../techniques/courses_of_action/CourseOfActionCreation';
 import { DataComponentCreationForm } from '../../techniques/data_components/DataComponentCreation';
+import { ProcedureCreationForm } from '../../techniques/procedures/ProcedureCreation';
 import { DataSourceCreationForm } from '../../techniques/data_sources/DataSourceCreation';
 import { NarrativeCreationForm } from '../../techniques/narratives/NarrativeCreation';
 import { CampaignCreationForm } from '../../threats/campaigns/CampaignCreation';
@@ -109,6 +110,7 @@ const BULK_ENTITIES = [
   'Narrative',
   'Organization',
   'Position',
+  'Procedure',
   'Region',
   'Sector',
   'System',
@@ -379,6 +381,21 @@ const StixDomainPanel = ({
       // Data-Source
       return (
         <DataSourceCreationForm
+          inputValue={inputValue}
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+          bulkModalOpen={bulkOpen}
+          onBulkModalClose={() => setBulkOpen(false)}
+          onCompleted={onCompleted ?? onClose}
+        />
+      );
+    }
+    if (type === 'Procedure') {
+      return (
+        <ProcedureCreationForm
           inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
