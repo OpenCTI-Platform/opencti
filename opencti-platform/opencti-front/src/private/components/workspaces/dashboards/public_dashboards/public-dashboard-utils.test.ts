@@ -117,6 +117,12 @@ describe('buildPublishedValuesState with presets', () => {
     expect(buildPublishedValuesState(withPresets(), 'user-1', '?preset=alpha', page).variable_values[USED]).toEqual('changed');
   });
 
+  it('should start, as the page, from the default preset when the address names a preset the dashboard does not hold', () => {
+    window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'alpha');
+    expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '?preset=gone', page).variable_values[USED]).toEqual('from beta');
+    expect(buildPublishedValuesState(withPresets(), 'user-1', '?preset=gone', page).variable_values[USED]).toEqual('x');
+  });
+
   it('should start from the preset kept in this browser, else the default preset of the user, else the dashboard', () => {
     expect(buildPublishedValuesState(withPresets('beta'), 'user-1', '', '/dashboard/workspaces/dashboards_public').time_range.relativeDate).toEqual('years-1');
     window.localStorage.setItem(dashboardPresetStorageKey('user-1', 'dashboard-1'), 'alpha');

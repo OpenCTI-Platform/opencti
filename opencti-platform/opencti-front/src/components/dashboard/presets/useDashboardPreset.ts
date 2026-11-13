@@ -64,10 +64,15 @@ export const useDashboardPreset = (
 
   // The URL shows the preset in use, also when it was restored from this browser: a shared address opens the same view.
   // A user who may not switch presets gets none from the address, and none is left in it for a link they would copy.
+  // A preset the dashboard does not hold (deleted, mistyped, not loaded yet) is left as it is: the page shows the
+  // default preset meanwhile, so does the publication form for an unknown preset in the address, and the preset
+  // applies once the dashboard holds it.
   useEffect(() => {
     if (!enabled) return;
-    if (!ignoreLocalValues) writePresetParam(stored && presets.some((preset) => preset.id === stored) ? stored : null);
-    else if (parsePresetParam(window.location.search)) writePresetParam(null);
+    if (!ignoreLocalValues) {
+      if (!stored) writePresetParam(null);
+      else if (presets.some((preset) => preset.id === stored)) writePresetParam(stored);
+    } else if (parsePresetParam(window.location.search)) writePresetParam(null);
   }, [stored, ignoreLocalValues, enabled, presetIds]);
 
   const commit = useCallback((next: string | null) => {
