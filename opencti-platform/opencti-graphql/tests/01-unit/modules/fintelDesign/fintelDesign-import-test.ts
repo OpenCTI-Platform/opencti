@@ -90,6 +90,22 @@ describe('Fintel design logo format', () => {
     expect(fintelDesignLogoExtension(Buffer.from('<html><body>svg</body></html>'))).toBeUndefined();
     expect(fintelDesignLogoExtension(Buffer.from('not an image'))).toBeUndefined();
   });
+
+  it('recognizes an SVG by its root element, whatever comes before it, and not a document that merely holds an svg element', () => {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><svg x="1"></svg></svg>';
+    // A leading comment longer than any fixed window, a self-closed root, and the doctype with an internal subset of the vector editors
+    expect(fintelDesignLogoExtension(Buffer.from(`<!--${'x'.repeat(10000)}-->\n${svg}`))).toBe('svg');
+    expect(fintelDesignLogoExtension(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'))).toBe('svg');
+    const doctype = '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [<!ENTITY ns ">]">]>';
+    expect(fintelDesignLogoExtension(Buffer.from(`<?xml version="1.0"?>${doctype}\n${svg}`))).toBe('svg');
+    // Another root: an HTML page with an inline svg, a commented-out svg, an element whose name starts with svg
+    expect(fintelDesignLogoExtension(Buffer.from(`<!DOCTYPE html><html><body>${svg}</body></html>`))).toBeUndefined();
+    expect(fintelDesignLogoExtension(Buffer.from(`<!-- ${svg} --><html></html>`))).toBeUndefined();
+    expect(fintelDesignLogoExtension(Buffer.from('<svgfoo></svgfoo>'))).toBeUndefined();
+    // A prolog never closed, or nothing after it
+    expect(fintelDesignLogoExtension(Buffer.from(`<!-- ${svg}`))).toBeUndefined();
+    expect(fintelDesignLogoExtension(Buffer.from('<?xml version="1.0"?>\n'))).toBeUndefined();
+  });
 });
 
 describe('Fintel design import', () => {

@@ -15,6 +15,55 @@ const startsWith = (content: Buffer, signature: number[], offset = 0) => {
 };
 const ascii = (text: string) => [...text].map((char) => char.charCodeAt(0));
 
+// The end of the doctype that starts at `start`, after its internal subset when it has one: quoted values may hold '>' or ']'
+const doctypeEnd = (text: string, start: number) => {
+  let quote: string | undefined;
+  let inSubset = false;
+  for (let index = start; index < text.length; index += 1) {
+    const char = text[index];
+    if (quote) {
+      quote = char === quote ? undefined : quote;
+    } else if (char === '"' || char === '\'') {
+      quote = char;
+    } else if (char === '[') {
+      inSubset = true;
+    } else if (char === ']') {
+      inSubset = false;
+    } else if (char === '>' && !inSubset) {
+      return index + 1;
+    }
+  }
+  return -1;
+};
+
+// Whether the root element of the text is an svg element. What may come before it (XML declaration, processing instructions, comments,
+// doctype, blanks) is skipped whatever its length, and nothing is parsed nor resolved: no entity, no external reference is ever read.
+// An HTML page holding an svg element, or a document whose svg element is commented out, has another root.
+const isSvgDocument = (text: string) => {
+  let index = 0;
+  while (index < text.length) {
+    const rest = text.slice(index, index + 9);
+    let end: number;
+    if (/^\s/.test(rest)) {
+      end = index + 1;
+    } else if (rest.startsWith('<?')) {
+      end = text.indexOf('?>', index + 2) + 2;
+    } else if (rest.startsWith('<!--')) {
+      end = text.indexOf('-->', index + 4) + 3;
+    } else if (rest.startsWith('<!DOCTYPE')) {
+      end = doctypeEnd(text, index + 9);
+    } else {
+      return /^<svg[\s/>]/.test(text.slice(index, index + 5));
+    }
+    // A prolog that is never closed is not a document
+    if (end <= index) {
+      return false;
+    }
+    index = end;
+  }
+  return false;
+};
+
 export const fintelDesignLogoExtension = (content: Buffer): string | undefined => {
   if (startsWith(content, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) {
     return 'png';
@@ -28,9 +77,9 @@ export const fintelDesignLogoExtension = (content: Buffer): string | undefined =
   if (startsWith(content, ascii('RIFF')) && startsWith(content, ascii('WEBP'), 8)) {
     return 'webp';
   }
-  // An SVG is text: an XML document whose root is an svg element, after an optional prolog, comments and doctype
-  const head = content.subarray(0, 4096).toString('utf8').replace(/^\uFEFF/, '').trimStart();
-  if (head.startsWith('<') && /<svg[\s>]/i.test(head)) {
+  // An SVG is text: an XML document whose root is an svg element. The whole document is checked: its size is bounded by the callers,
+  // which read FINTEL_DESIGN_LOGO_MAX_SIZE at most
+  if (isSvgDocument(content.toString('utf8').replace(/^\uFEFF/, ''))) {
     return 'svg';
   }
   return undefined;
