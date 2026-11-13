@@ -5,6 +5,7 @@ import StixSightingRelationship from '@components/events/stix_sighting_relations
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixCyberObservableKnowledgeEntities from './StixCyberObservableEntities';
 import StixCyberObservableNestedEntities from './StixCyberObservableNestedEntities';
+import StixCyberObservableProcedures from './StixCyberObservableProcedures';
 
 const StixCyberObservableKnowledgeComponent = (props) => {
   const { stixCyberObservable } = props;
@@ -18,6 +19,11 @@ const StixCyberObservableKnowledgeComponent = (props) => {
               <StixCyberObservableNestedEntities
                 entityId={stixCyberObservable.id}
                 entityType={stixCyberObservable.entity_type}
+              />
+            </div>
+            <div style={{ marginTop: 40 }}>
+              <StixCyberObservableProcedures
+                observableId={stixCyberObservable.id}
               />
             </div>
             <div style={{ marginTop: 40 }}>

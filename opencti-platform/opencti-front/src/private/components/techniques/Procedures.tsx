@@ -16,7 +16,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 
 export const LOCAL_STORAGE_KEY_PROCEDURES = 'procedures';
 
-const procedureFragment = graphql`
+export const procedureFragment = graphql`
   fragment ProceduresLine_node on Procedure {
     id
     entity_type

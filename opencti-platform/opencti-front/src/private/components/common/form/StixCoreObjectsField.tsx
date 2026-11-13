@@ -185,6 +185,9 @@ export const stixCoreObjectsFieldSearchQuery = graphql`
           ... on DataSource {
             name
           }
+          ... on Procedure {
+            name
+          }
           ... on Case {
             name
           }

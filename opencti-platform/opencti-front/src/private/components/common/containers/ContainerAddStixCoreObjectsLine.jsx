@@ -191,6 +191,9 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
         ... on DataSource {
           name
         }
+        ... on Procedure {
+          name
+        }
         ... on Case {
           name
         }
