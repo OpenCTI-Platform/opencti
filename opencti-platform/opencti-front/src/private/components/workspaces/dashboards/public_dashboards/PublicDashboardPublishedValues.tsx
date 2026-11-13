@@ -37,7 +37,7 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const { me } = useAuth();
-  const { values, setFieldValue } = useFormikContext<PublicDashboardCreationFormData>();
+  const { values, errors, setFieldValue } = useFormikContext<PublicDashboardCreationFormData>();
 
   // A cleared picker is given its default back: when that default is the value it held, the form value does not change
   // and the picker would keep its emptied text. Remounting it shows the value again.
@@ -99,6 +99,17 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
           config={values.time_range}
           handleDateChange={(type, value) => setFieldValue('time_range', applyPublishedTimeRangeChange(values.time_range, type, value))}
         />
+        {typeof errors.time_range === 'string' && (
+          <Text
+            variant="content-caption"
+            as="p"
+            role="alert"
+            style={{ color: theme.palette.error.main, marginTop: 4 }}
+            data-testid="public-dashboard-published-range-error"
+          >
+            {errors.time_range}
+          </Text>
+        )}
       </div>
       {variables.map((variable) => {
         const value = values.variable_values[variable.id] ?? '';
