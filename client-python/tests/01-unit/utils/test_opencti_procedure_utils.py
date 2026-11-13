@@ -327,21 +327,26 @@ def test_bundle_without_procedure_is_unchanged():
 def test_splitter_normalizes_and_logs_warnings():
     logger = MagicMock()
     splitter = OpenCTIStix2Splitter(logger=logger)
-    _, _, bundles = splitter.split_bundle_with_expectations(
+    _, incompatible, bundles = splitter.split_bundle_with_expectations(
         _bundle(_procedure_object(x_technique_refs=[AP1], x_source_refs=[REPORT])),
         use_json=False,
     )
     objects = [o for b in bundles for o in b["objects"]]
     assert {o["type"] for o in objects} == {"x-opencti-procedure", "relationship"}
     assert logger.warning.call_count == 1
+    assert REPORT in logger.warning.call_args[0][0]
+    assert splitter.warnings == [logger.warning.call_args[0][0]]
+    # Warnings never go to the incompatible items, which callers read as dicts
+    assert incompatible == []
 
 
-def test_splitter_without_logger_returns_warnings_with_incompatible_items():
+def test_splitter_without_logger_keeps_warnings_out_of_incompatible_items():
     splitter = OpenCTIStix2Splitter()
     _, incompatible, _ = splitter.split_bundle_with_expectations(
         bundle_with(source_refs=[REPORT]), use_json=False
     )
-    assert len(incompatible) == 1 and REPORT in incompatible[0]
+    assert incompatible == []
+    assert len(splitter.warnings) == 1 and REPORT in splitter.warnings[0]
 
 
 def test_import_from_stix2_maps_procedure_fields():

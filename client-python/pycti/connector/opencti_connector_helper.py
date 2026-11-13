@@ -4032,7 +4032,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             bundles = [bundle]
             expectations_number = 1
         else:
-            stix2_splitter = OpenCTIStix2Splitter()
+            stix2_splitter = OpenCTIStix2Splitter(logger=self.connector_logger)
             expectations_number, _, bundles = (
                 stix2_splitter.split_bundle_with_expectations(
                     bundle=bundle,

@@ -179,7 +179,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                 self.logger.warning(str(err))
                             # Instance spliter and split the big bundle
                             event_version = content.get("x_opencti_event_version")
-                            stix2_splitter = OpenCTIStix2Splitter()
+                            stix2_splitter = OpenCTIStix2Splitter(logger=self.logger)
                             expectations, _, bundles = (
                                 stix2_splitter.split_bundle_with_expectations(
                                     content, False, event_version
