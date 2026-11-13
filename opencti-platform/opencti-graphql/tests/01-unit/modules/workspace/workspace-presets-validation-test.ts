@@ -72,6 +72,21 @@ describe('buildDashboardPreset', () => {
     expect(buildDashboardPreset({ name: 'P', values }, [], variables, { dropUnknownVariables: true }).values).toEqual({ [CONFIDENCE_ID]: '70' });
   });
 
+  it('should drop an ill-typed or non-string value on import or duplication, and keep the preset', () => {
+    const values = [
+      { variableId: CONFIDENCE_ID, value: 'high' },
+      { variableId: SINCE_ID, value: '2026-02-30' },
+      { variableId: '99999999-9999-4999-8999-999999999999', value: null },
+      { variableId: SECTOR_ID, value: 7 },
+      null,
+      { variableId: 3, value: 'x' },
+    ] as never;
+    expect(buildDashboardPreset({ name: 'P', values }, [], variables, { dropUnknownVariables: true }).values).toEqual({});
+    // The typed API still refuses them
+    expect(() => buildDashboardPreset({ name: 'P', values: [{ variableId: SECTOR_ID, value: 7 }] as never }, [], variables)).toThrow('Invalid dashboard preset value');
+    expect(() => buildDashboardPreset({ name: 'P', values: [{ variableId: 3, value: 'x' }] as never }, [], variables)).toThrow('Invalid dashboard preset value');
+  });
+
   it('should refuse a duplicated, token-shaped or ill-typed value', () => {
     expect(() => buildDashboardPreset({ name: 'P', values: [{ variableId: SECTOR_ID, value: 'a' }, { variableId: SECTOR_ID, value: 'b' }] }, [], variables))
       .toThrow('Duplicated dashboard preset value');
