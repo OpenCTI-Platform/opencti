@@ -68,6 +68,8 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
       </Alert>
       <div style={{ marginTop: 16 }}>
         <DashboardTimeFilters
+          // Another dashboard starts the pickers again: a refused date typed for the previous one does not stay shown.
+          key={dashboardId}
           config={values.time_range}
           handleDateChange={(type, value) => setFieldValue('time_range', applyPublishedTimeRangeChange(values.time_range, type, value))}
           onInvalidDateChange={(type, invalid) => setInvalidDates((current) => (current[type] === invalid ? current : { ...current, [type]: invalid }))}
