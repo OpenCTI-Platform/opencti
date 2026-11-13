@@ -27,10 +27,7 @@ export const heatStopIndex = (score: number, scale: HeatScale): number => {
   return Math.min(LAST_STOP_INDEX, Math.max(0, index));
 };
 
-// Fill opacity per stop, in %. 70% by default; the two darkest stops need more of their colour for the
-// --black-1000 label to reach 4.5:1 over the dark theme background (orange-500 3.8:1 and red-400 3.2:1 at 70%).
-const HEAT_FILL_OPACITIES: readonly number[] = [70, 70, 70, 85, 95];
-
-export const heatFill = (stopIndex: number): string => `color-mix(in srgb, ${HEAT_STOPS[stopIndex]} ${HEAT_FILL_OPACITIES[stopIndex]}%, transparent)`;
+// Cells are filled with the solid stop: the --black-1000 label is 5.6:1 or more on every stop, in both themes.
+export const heatFill = (stopIndex: number): string => HEAT_STOPS[stopIndex];
 
 export const heatBorder = (stopIndex: number): string => HEAT_STOPS[stopIndex];

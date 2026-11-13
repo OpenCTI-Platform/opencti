@@ -3003,28 +3003,24 @@ says how to use it. The heatmap needs a label of one ink on every step, at least
 
 **Today.** The library ships the colour families (`--yellow-300`, `--yellow-400`,
 `--orange-400`, `--orange-500`, `--red-400`...) and the semantic roles
-(`--border-elevation-default`...), and no scale: no token names a data step, no
-ordering is defined, and nothing says how an alpha is applied for contrast.
+(`--border-elevation-default`...), and no scale: no token names a data step and
+no ordering is defined.
 
 **Workaround.** `heatScale.ts` picks five existing family tokens in order, as
-`var(--...)` references and no hex. It fills with `color-mix(in srgb,
-<stop> N%, transparent)`, where N is 70 for the three lightest steps and 85 and
-95 for the two darkest: at 70% the `--black-1000` label on `--orange-500` is
-3.8:1 and on `--red-400` is 3.2:1 over the dark theme background, below the
-4.5:1 required. (The second step and the label ink are substitutes: see #79.) The alpha per step is product-side contrast tuning that the
-library should own. The product defines the scale; it does not invent a token
-value.
+`var(--...)` references and no hex, and fills the cells with the solid token.
+The `--black-1000` label is 5.6:1 or more on every step, in both themes. (The
+second step and the label ink are substitutes: see #81.) The product defines
+the scale; it does not invent a token value.
 
 **Ask.** A sequential data-visualisation scale in the tokens (for example
 `--dataviz-seq-1` to `--dataviz-seq-5`), with a value per theme designed in Figma
 so that one label ink holds 4.5:1 on every step, and a line in the design
 guidelines on how a product draws the legend.
 
-**Removal test.** At a pin where the scale exists: replace `HEAT_STOPS` and
-`HEAT_FILL_OPACITIES` in `heatScale.ts` by the library tokens, delete the
-`color-mix` alpha, and confirm the label contrast (4.5:1) on every step and the
-border contrast (3:1) in both themes, by the same manual check as the heatmap
-review.
+**Removal test.** At a pin where the scale exists: replace `HEAT_STOPS` in
+`heatScale.ts` by the library tokens, and confirm the label contrast (4.5:1) on
+every step and the border contrast (3:1) in both themes, by the same manual
+check as the heatmap review.
 
 ---
 
