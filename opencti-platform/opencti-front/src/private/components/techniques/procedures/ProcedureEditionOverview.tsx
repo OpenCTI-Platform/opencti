@@ -170,6 +170,18 @@ const PROCEDURE_TYPE = 'Procedure';
 
 const toIds = (value: FieldOption | FieldOption[] | null | undefined) => [value ?? []].flat().map((option) => option.value);
 
+// Patch of a multiple ref from its previous to its next selection: add and remove the changed ids, never replace.
+const buildRefsPatch = (key: string, previous: FieldOption[], next: FieldOption[]) => {
+  const previousIds = toIds(previous);
+  const nextIds = toIds(next);
+  const added = nextIds.filter((id) => !previousIds.includes(id));
+  const removed = previousIds.filter((id) => !nextIds.includes(id));
+  return [
+    ...(added.length > 0 ? [{ key, value: added, operation: 'add' as const }] : []),
+    ...(removed.length > 0 ? [{ key, value: removed, operation: 'remove' as const }] : []),
+  ];
+};
+
 interface ProcedureEditionOverviewProps {
   data: ProcedureEditionOverview_procedure$key;
   context?: readonly (GenericContext | null)[] | null;
@@ -241,27 +253,54 @@ const ProcedureEditionOverview: FunctionComponent<ProcedureEditionOverviewProps>
   };
   const editor = useFormEditor(procedure as GenericData, enableReferences, queries, procedureValidator);
 
+  const initialValues: ProcedureEditionFormData = {
+    name: procedure.name,
+    description: procedure.description ?? '',
+    confidence: procedure.confidence ?? undefined,
+    x_procedure_type: procedure.x_procedure_type ?? null,
+    x_mitre_platforms: [...(procedure.x_mitre_platforms ?? [])],
+    first_observed: buildDate(procedure.first_observed),
+    last_observed: buildDate(procedure.last_observed),
+    x_execution_start: buildDate(procedure.x_execution_start),
+    x_execution_end: buildDate(procedure.x_execution_end),
+    killChainPhases: convertKillChainPhases(procedure),
+    procedureObservables: (procedure.procedureObservables?.edges ?? [])
+      .map(({ node }) => ({ value: node.id, label: node.observable_value, type: node.entity_type })),
+    procedureCommand: procedure.procedureCommand
+      ? { value: procedure.procedureCommand.id, label: procedure.procedureCommand.observable_value, type: procedure.procedureCommand.entity_type }
+      : null,
+    procedureSources: (procedure.procedureSources ?? [])
+      .flatMap((source) => (source ? [{ value: source.id, label: source.name, type: source.entity_type }] : [])),
+    createdBy: convertCreatedBy(procedure) as FieldOption,
+    objectMarking: convertMarkings(procedure),
+    externalReferences: convertExternalReferences(procedure),
+    x_opencti_workflow_id: convertStatus(t_i18n, procedure) as FieldOption,
+    references: [],
+  };
+
   const onSubmit: FormikConfig<ProcedureEditionFormData>['onSubmit'] = (values, { setSubmitting }) => {
-    const { message, references, ...otherValues } = values;
+    const { message, references, procedureObservables, procedureSources, externalReferences, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
     const formatDate = (date: Date | null) => (date ? parse(date).format() : null);
 
-    const inputValues = Object.entries({
-      ...otherValues,
-      createdBy: values.createdBy?.value,
-      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
-      objectMarking: toIds(values.objectMarking),
-      killChainPhases: toIds(values.killChainPhases),
-      externalReferences: toIds(values.externalReferences),
-      procedureObservables: toIds(values.procedureObservables),
-      procedureCommand: toIds(values.procedureCommand),
-      procedureSources: toIds(values.procedureSources),
-      first_observed: formatDate(values.first_observed),
-      last_observed: formatDate(values.last_observed),
-      x_execution_start: formatDate(values.x_execution_start),
-      x_execution_end: formatDate(values.x_execution_end),
-    }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
+    const inputValues = [
+      ...Object.entries({
+        ...otherValues,
+        createdBy: values.createdBy?.value,
+        x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
+        objectMarking: toIds(values.objectMarking),
+        killChainPhases: toIds(values.killChainPhases),
+        procedureCommand: toIds(values.procedureCommand),
+        first_observed: formatDate(values.first_observed),
+        last_observed: formatDate(values.last_observed),
+        x_execution_start: formatDate(values.x_execution_start),
+        x_execution_end: formatDate(values.x_execution_end),
+      }).map(([key, value]) => ({ key, value: adaptFieldValue(value) })),
+      ...buildRefsPatch('procedureObservables', initialValues.procedureObservables, procedureObservables),
+      ...buildRefsPatch('procedureSources', initialValues.procedureSources, procedureSources),
+      ...buildRefsPatch('externalReferences', initialValues.externalReferences, externalReferences),
+    ];
 
     editor.fieldPatch({
       variables: {
@@ -294,46 +333,26 @@ const ProcedureEditionOverview: FunctionComponent<ProcedureEditionOverviewProps>
     }
   };
 
-  // A relationship ref is replaced by the whole selection: the ids of the selected objects.
+  // The command is a single ref, which the backend replaces whatever the operation.
+  // Multiple refs are patched with the added and removed ids only: the form loads one page of them.
   const handleSubmitRefs = (name: string, value: FieldOption | FieldOption[] | null) => {
     if (!enableReferences) {
+      const input = name === 'procedureCommand'
+        ? [{ key: name, value: toIds(value) }]
+        : buildRefsPatch(name, initialValues[name as 'procedureObservables' | 'procedureSources'], [value ?? []].flat());
+      if (input.length === 0) return;
       procedureValidator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
             variables: {
               id: procedure.id,
-              input: [{ key: name, value: toIds(value) }],
+              input,
             },
           });
         })
         .catch(() => false);
     }
-  };
-
-  const initialValues: ProcedureEditionFormData = {
-    name: procedure.name,
-    description: procedure.description ?? '',
-    confidence: procedure.confidence ?? undefined,
-    x_procedure_type: procedure.x_procedure_type ?? null,
-    x_mitre_platforms: [...(procedure.x_mitre_platforms ?? [])],
-    first_observed: buildDate(procedure.first_observed),
-    last_observed: buildDate(procedure.last_observed),
-    x_execution_start: buildDate(procedure.x_execution_start),
-    x_execution_end: buildDate(procedure.x_execution_end),
-    killChainPhases: convertKillChainPhases(procedure),
-    procedureObservables: (procedure.procedureObservables?.edges ?? [])
-      .map(({ node }) => ({ value: node.id, label: node.observable_value, type: node.entity_type })),
-    procedureCommand: procedure.procedureCommand
-      ? { value: procedure.procedureCommand.id, label: procedure.procedureCommand.observable_value, type: procedure.procedureCommand.entity_type }
-      : null,
-    procedureSources: (procedure.procedureSources ?? [])
-      .flatMap((source) => (source ? [{ value: source.id, label: source.name, type: source.entity_type }] : [])),
-    createdBy: convertCreatedBy(procedure) as FieldOption,
-    objectMarking: convertMarkings(procedure),
-    externalReferences: convertExternalReferences(procedure),
-    x_opencti_workflow_id: convertStatus(t_i18n, procedure) as FieldOption,
-    references: [],
   };
 
   const dateField = (name: string, label: string) => (
