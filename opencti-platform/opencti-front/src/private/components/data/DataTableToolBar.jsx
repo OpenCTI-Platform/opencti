@@ -137,6 +137,7 @@ import {
 
 import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
 import BackgroundTaskLaunch from '../common/background_task/BackgroundTaskLaunch';
+import { confirmsOnlyAboveLimit } from '../common/background_task/BackgroundTaskLaunch.utils';
 import toEnrichmentActionValues from './connectors/utils/toEnrichmentActionValues';
 
 const OptionIcon = styled('div')({
@@ -2788,6 +2789,7 @@ class DataTableToolBar extends Component {
                 description={this.state.description}
                 actions={actions}
                 customFieldDefinitions={this.props.customFieldDefinitions}
+                confirmOnlyAboveLimit={confirmsOnlyAboveLimit(actions)}
               />
               <Drawer
                 title={t('Update entities')}

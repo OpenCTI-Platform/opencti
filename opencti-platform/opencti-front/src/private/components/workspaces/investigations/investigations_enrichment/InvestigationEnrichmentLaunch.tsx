@@ -61,7 +61,7 @@ const InvestigationEnrichmentLaunch = ({
         <CardFooter className="justify-end">
           <Button
             onClick={() => setShowValidation(true)}
-            disabled={selectedConnectors.length === 0}
+            disabled={selectedConnectors.length === 0 || processing}
             startIcon={isSending ? <Spinner size="sm" tone="inherit" /> : undefined}
             aria-busy={isSending || undefined}
           >
@@ -77,7 +77,11 @@ const InvestigationEnrichmentLaunch = ({
         numberOfSelectedElements={selectionSize}
         taskScope="KNOWLEDGE"
         actions={backgroundTaskAction}
-        onClose={() => setShowValidation(false)}
+        confirmOnlyAboveLimit
+        onClose={() => {
+          setShowValidation(false);
+          setProcessing(false);
+        }}
         onLaunch={() => setProcessing(true)}
         onCompleted={() => {
           setSelectedConnectors([]);
