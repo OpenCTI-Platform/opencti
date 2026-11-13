@@ -81,7 +81,7 @@ testCreatedCounter['ssh-key'] = 1;
 testCreatedCounter.relationship = 166;
 // Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
 testCreatedCounter.report = 76;
-testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
+testCreatedCounter.sighting = 12; // 3 created and deleted by relations-deduplication-test, 4 created by the hunt tests
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
 testCreatedCounter['threat-actor'] = 33;
@@ -140,7 +140,7 @@ testUpdatedCounter['ssh-key'] = 1;
 testUpdatedCounter['case-rfi'] = 5;
 testUpdatedCounter['ipv4-addr'] = 4;
 testUpdatedCounter.tool = 10;
-testUpdatedCounter.sighting = 7; // 2 upserts in relations-deduplication-test
+testUpdatedCounter.sighting = 10; // 2 upserts in relations-deduplication-test, 3 updates by the hunt tests
 testUpdatedCounter['threat-actor'] = 18;
 // Counts for:
 // - 2 updated by vocabulary-import-test (the description of an entry of the platform, edited then restored)
@@ -220,10 +220,10 @@ testDeletedCounter['observed-data'] = 6; // created and deleted by observedData-
 testDeletedCounter.opinion = 4;
 testDeletedCounter.persona = 1;
 testDeletedCounter['phone-number'] = 2;
-testDeletedCounter.relationship = 10; // includes 5 created and deleted by stixRelationship-test (time series breakdown)
+testDeletedCounter.relationship = 19; // includes 5 created and deleted by stixRelationship-test (time series breakdown), 9 by the hunt tests
 // Includes 8 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
 testDeletedCounter.report = 67;
-testDeletedCounter.sighting = 5; // 3 created and deleted by relations-deduplication-test
+testDeletedCounter.sighting = 7; // 3 created and deleted by relations-deduplication-test, 2 by the hunt tests
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
 testDeletedCounter['threat-actor'] = 20;
