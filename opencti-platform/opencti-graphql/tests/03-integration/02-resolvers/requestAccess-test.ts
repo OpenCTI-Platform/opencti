@@ -27,6 +27,7 @@ import {
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 import { createStatus, createStatusTemplate, findTemplatePaginated, statusDelete, statusTemplateDelete } from '../../../src/domain/status';
 import { FilterMode, OrderingMode, type RequestAccessConfigureInput, RequestAccessType, type StatusAddInput, StatusOrdering, StatusScope } from '../../../src/generated/graphql';
+import * as conf from '../../../src/config/conf';
 import { logApp } from '../../../src/config/conf';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
@@ -889,6 +890,17 @@ describe('Request access decided through workflow transitions', async () => {
       const entities = Array.from({ length: 501 }, () => malwareId);
       await expect(addWith({ request_access_entities: entities }))
         .rejects.toThrow('A request access is limited to 500 requested entities');
+    });
+
+    it('applies no limit while the ENTITIES_WORKFLOW feature is disabled', async () => {
+      const spy = vi.spyOn(conf, 'isFeatureEnabled').mockReturnValue(false);
+      try {
+        const rfiId = await addWith({ request_access_reason: 'a'.repeat(REQUEST_ACCESS_REASON_MAX_LENGTH + 1) });
+        createdRfiIds.push(rfiId);
+        expect(rfiId).toBeDefined();
+      } finally {
+        spy.mockRestore();
+      }
     });
 
     it('accepts a reason of exactly 10,000 characters', async () => {

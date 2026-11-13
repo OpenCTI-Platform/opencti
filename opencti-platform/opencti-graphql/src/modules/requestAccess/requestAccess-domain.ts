@@ -24,7 +24,7 @@ import {
 } from '../../utils/access';
 import { internalLoadById, fullEntitiesList } from '../../database/middleware-loader';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS } from '../../schema/internalObject';
-import { BUS_TOPICS, logApp } from '../../config/conf';
+import { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../config/conf';
 import { addOrganizationRestriction } from '../../domain/stix';
 import { storeLoadByIdWithRefs, updateAttribute } from '../../database/middleware';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
@@ -401,7 +401,12 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
 export const REQUEST_ACCESS_REASON_MAX_LENGTH = 10_000;
 export const REQUEST_ACCESS_ENTITIES_MAX_COUNT = 500;
 
+// The limits protect the stored record of a workflow-driven request: without the ENTITIES_WORKFLOW feature the legacy
+// flow does not store it, so its inputs stay unbounded as before.
 const assertRequestAccessInputSize = (input: RequestAccessAddInput) => {
+  if (!isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    return;
+  }
   const reasonLength = input.request_access_reason?.length ?? 0;
   if (reasonLength > REQUEST_ACCESS_REASON_MAX_LENGTH) {
     throw FunctionalError(`The reason of a request access is limited to ${REQUEST_ACCESS_REASON_MAX_LENGTH} characters`, { reasonLength });

@@ -18,8 +18,8 @@ testCreatedCounter['attack-pattern'] = 27;
 testCreatedCounter.campaign = 6;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
-// 39 case-rfi and 1 case-rft created by the request access workflow tests (requestAccess-test, requestAccess-domain-test, workflow-test)
-testCreatedCounter['case-rfi'] = 48;
+// 40 case-rfi and 1 case-rft created by the request access workflow tests (requestAccess-test, requestAccess-domain-test, workflow-test)
+testCreatedCounter['case-rfi'] = 49;
 testCreatedCounter['case-rft'] = 2;
 testCreatedCounter.channel = 1;
 testCreatedCounter['course-of-action'] = 4;
@@ -169,8 +169,8 @@ testDeletedCounter['attack-pattern'] = 22;
 testDeletedCounter.campaign = 2;
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;
-// 38 case-rfi and 1 case-rft deleted by the request access workflow tests (1 more case-rfi is merged)
-testDeletedCounter['case-rfi'] = 47;
+// 39 case-rfi and 1 case-rft deleted by the request access workflow tests (1 more case-rfi is merged)
+testDeletedCounter['case-rfi'] = 48;
 testDeletedCounter['case-rft'] = 2;
 testDeletedCounter.channel = 1;
 testDeletedCounter['course-of-action'] = 2;
