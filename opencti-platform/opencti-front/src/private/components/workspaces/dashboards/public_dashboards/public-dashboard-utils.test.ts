@@ -1,14 +1,17 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { toB64 } from '../../../../../utils/String';
 import { dashboardVariablesStorageKey } from '../../../../../components/dashboard/dashboardVariablesStorage';
+import { dashboardTimeRangeStorageKey } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
 import type { DashboardVariable } from '../../../../../components/dashboard/dashboard-types';
 import {
   applyPublishedTimeRangeChange,
+  applyPublishedVariableChange,
   buildPublicationInput,
   buildPublishedValuesState,
   buildPublishedVariables,
   buildPublishedVariableValues,
   isSamePublishedTimeRange,
+  isTypedPublishedVariable,
   pickPublishedTimeRange,
 } from './public-dashboard-utils';
 
@@ -75,14 +78,15 @@ describe('buildPublishedValuesState', () => {
 
   it('should prefer the URL values on the page of the dashboard, as the page does', () => {
     window.localStorage.setItem(dashboardVariablesStorageKey('user-1', 'dashboard-1'), JSON.stringify({ [USED]: 'stored' }));
-    const search = `?variables=${USED}:url`;
+    window.localStorage.setItem(dashboardTimeRangeStorageKey('user-1', 'dashboard-1'), JSON.stringify({ relativeDate: 'days-7', startDate: null, endDate: null }));
+    const search = `?variables=${USED}:url&timeRange=years-1`;
     const onPage = buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1', search, '/dashboard/workspaces/dashboards/dashboard-1');
     expect(onPage.variable_values[USED]).toEqual('url');
-    // The range is the one of the dashboard
-    expect(onPage.time_range).toEqual({ relativeDate: 'months-1', startDate: null, endDate: null });
-    // From a list, the URL speaks for another dashboard: ignored
+    expect(onPage.time_range).toEqual({ relativeDate: 'years-1', startDate: null, endDate: null });
+    // From a list, the URL speaks for another dashboard: ignored, the values and range kept in this browser apply
     const fromList = buildPublishedValuesState(dashboard('dashboard-1', { relativeDate: 'months-1' }), 'user-1', search, '/dashboard/workspaces/dashboards_public');
     expect(fromList.variable_values[USED]).toEqual('stored');
+    expect(fromList.time_range).toEqual({ relativeDate: 'days-7', startDate: null, endDate: null });
     // The page of another dashboard whose id starts like this one
     const otherPage = buildPublishedValuesState(dashboard('dashboard-1'), 'user-1', search, '/dashboard/workspaces/dashboards/dashboard-10');
     expect(otherPage.variable_values[USED]).toEqual('stored');
@@ -125,5 +129,30 @@ describe('buildPublicationInput', () => {
   it('should send nothing new when the feature flag is disabled', () => {
     const input = buildPublicationInput(formValues, false);
     expect(input).toEqual({ name: 'Public', enabled: true, uri_key: 'public', dashboard_id: 'dashboard-1', allowed_markings_ids: ['marking-id'] });
+  });
+});
+
+describe('applyPublishedVariableChange', () => {
+  const marking: DashboardVariable = { id: 'marking', name: 'Marking', type: 'marking', restriction: { mode: 'none' }, defaultValue: 'tlp-green-id' };
+  const noDefault: DashboardVariable = { id: 'entity', name: 'Entity', type: 'entity', restriction: { mode: 'none' } };
+  const text: DashboardVariable = { id: 'text', name: 'Text', type: 'text', restriction: { mode: 'none' }, defaultValue: 'x' };
+  const textSelection: DashboardVariable = { id: 'choice', name: 'Choice', type: 'text', restriction: { mode: 'selection', values: ['a', 'b'] }, defaultValue: 'a' };
+
+  it('should show the default again when a picked value is cleared: an empty value publishes the default', () => {
+    expect(applyPublishedVariableChange(marking, '')).toEqual('tlp-green-id');
+    expect(applyPublishedVariableChange(textSelection, '')).toEqual('a');
+  });
+
+  it('should keep a cleared picker empty when the variable has no default', () => {
+    expect(applyPublishedVariableChange(noDefault, '')).toEqual('');
+  });
+
+  it('should keep the empty draft of a typed field, and any chosen value', () => {
+    expect(applyPublishedVariableChange(text, '')).toEqual('');
+    expect(applyPublishedVariableChange(marking, 'tlp-amber-id')).toEqual('tlp-amber-id');
+  });
+
+  it('should only count free text and numbers as typed', () => {
+    expect([text, { ...text, type: 'numeric' as const }, textSelection, marking].map(isTypedPublishedVariable)).toEqual([true, true, false, false]);
   });
 });

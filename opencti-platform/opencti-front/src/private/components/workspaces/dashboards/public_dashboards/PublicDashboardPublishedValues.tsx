@@ -2,16 +2,21 @@ import React, { useEffect, useMemo } from 'react';
 import { useFormikContext } from 'formik';
 import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
+import { Text } from '@filigran/design-system';
 import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import DashboardTimeFilters from '../../../../../components/dashboard/DashboardTimeFilters';
 import DashboardVariableValueInput from '../../../../../components/dashboard/variables/DashboardVariableValueInput';
 import { deserializeDashboardManifestForFrontend } from '../../../../../components/dashboard/dashboard-utils';
 import {
   applyPublishedTimeRangeChange,
+  applyPublishedVariableChange,
   buildPublishedValuesState,
   buildPublishedVariables,
   type PublicDashboardCreationFormData,
+  isTypedPublishedVariable,
   type PublishableDashboard,
 } from './public-dashboard-utils';
 
@@ -25,6 +30,7 @@ interface PublicDashboardPublishedValuesProps {
  */
 const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedValuesProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { me } = useAuth();
   const { values, setFieldValue } = useFormikContext<PublicDashboardCreationFormData>();
 
@@ -55,16 +61,31 @@ const PublicDashboardPublishedValues = ({ dashboard }: PublicDashboardPublishedV
           handleDateChange={(type, value) => setFieldValue('time_range', applyPublishedTimeRangeChange(values.time_range, type, value))}
         />
       </div>
-      {variables.map((variable) => (
-        <div key={variable.id} style={{ marginTop: 16 }}>
-          <DashboardVariableValueInput
-            variable={variable}
-            label={variable.name}
-            value={values.variable_values[variable.id] ?? ''}
-            onChange={(value) => setFieldValue('variable_values', { ...values.variable_values, [variable.id]: value })}
-          />
-        </div>
-      ))}
+      {variables.map((variable) => {
+        const value = values.variable_values[variable.id] ?? '';
+        // An empty typed field publishes the default of the variable: said under the field, as the author types.
+        const showsDefault = value === '' && isTypedPublishedVariable(variable) && !!variable.defaultValue;
+        return (
+          <div key={variable.id} style={{ marginTop: 16 }}>
+            <DashboardVariableValueInput
+              variable={variable}
+              label={variable.name}
+              value={value}
+              onChange={(next) => setFieldValue('variable_values', { ...values.variable_values, [variable.id]: applyPublishedVariableChange(variable, next) })}
+            />
+            {showsDefault && (
+              <Text
+                variant="content-caption"
+                as="p"
+                style={{ color: theme.palette.text.secondary, marginTop: 4 }}
+                data-testid={`public-dashboard-published-default-${variable.id}`}
+              >
+                {t_i18n('Empty: the default value {value} is published', { values: { value: variable.defaultValue } })}
+              </Text>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

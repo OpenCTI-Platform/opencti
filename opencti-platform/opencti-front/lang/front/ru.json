@@ -1941,6 +1941,7 @@
   "Emails (1 / line)": "Электронные письма (1 / строка)",
   "Empty": "Пустой",
   "Empty coverage": "Покрытие пустых",
+  "Empty: the default value {value} is published": "Пусто: будет опубликовано значение по умолчанию {value}",
   "Enable": "Включить",
   "Enable 3D mode": "Включить режим 3D",
   "Enable AI powered platform": "Включить платформу на базе ИИ",

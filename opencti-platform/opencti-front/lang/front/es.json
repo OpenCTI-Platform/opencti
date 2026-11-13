@@ -1941,6 +1941,7 @@
   "Emails (1 / line)": "Correos electrónicos (1 / línea)",
   "Empty": "Vacío",
   "Empty coverage": "Cobertura de vacíos",
+  "Empty: the default value {value} is published": "Vacío: se publica el valor predeterminado {value}",
   "Enable": "Activar",
   "Enable 3D mode": "Activar el modo 3D",
   "Enable AI powered platform": "Habilitar plataforma con IA",

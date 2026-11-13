@@ -68,4 +68,14 @@ describe('PublicDashboardPublishedValues', () => {
     expect(await screen.findByDisplayValue('Health')).toBeDefined();
     expect(screen.queryByDisplayValue('Typed')).toBeNull();
   });
+
+  it('should say under an emptied typed field that the default value is published', async () => {
+    const { user } = renderSection(dashboard('dashboard-1', 'Finance'));
+    const input = await screen.findByDisplayValue('Finance');
+    expect(screen.queryByTestId(`public-dashboard-published-default-${SECTOR}`)).toBeNull();
+    await user.clear(input);
+    expect(screen.getByTestId(`public-dashboard-published-default-${SECTOR}`).textContent).toContain('Finance');
+    await user.type(input, 'Health');
+    expect(screen.queryByTestId(`public-dashboard-published-default-${SECTOR}`)).toBeNull();
+  });
 });
