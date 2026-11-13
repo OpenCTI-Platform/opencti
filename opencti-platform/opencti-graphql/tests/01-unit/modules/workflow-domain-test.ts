@@ -7616,9 +7616,17 @@ describe('assertExternalStatusWriteAllowed', () => {
     (findByType as any).mockResolvedValue({ id: 'setting-id' });
 
     await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt('review'), 'ra-approved')).resolves.toBeUndefined();
-    const { x_opencti_request_access: _request, ...plainRfi } = rfiAt('review');
-    (findByType as any).mockResolvedValue({ id: 'setting-id', request_access_workflow: { workflow_definition_id: 'ra-def' } });
-    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, plainRfi, 'ra-approved')).resolves.toBeUndefined();
+  });
+
+  it('rejects a write into the Approved or Declined status on an RFI off the request access workflow', async () => {
+    const { x_opencti_request_access: _request, x_opencti_workflow_id: _status, ...plainRfi } = rfiAt('review');
+    const globalRfiWithRecord = { ...plainRfi, x_opencti_request_access: '{}', x_opencti_workflow_id: 'global-approved' };
+    (loadEntity as any).mockResolvedValue({ ...instanceAt('new'), scope: 'standard' });
+
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, plainRfi, 'ra-approved')).rejects.toThrow(rejection);
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, globalRfiWithRecord, 'ra-declined')).rejects.toThrow(rejection);
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, globalRfiWithRecord, 'ra-review')).resolves.toBeUndefined();
+    await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, plainRfi, 'global-approved')).resolves.toBeUndefined();
   });
 
   describe('at creation', () => {

@@ -2897,7 +2897,13 @@ export const assertExternalStatusWriteAllowed = async (
 ): Promise<void> => {
   if (entity.entity_type !== ENTITY_TYPE_CONTAINER_CASE_RFI || newStatusId === (entity.x_opencti_workflow_id ?? null)) return;
   const workflowState = await resolveRequestAccessWorkflowState(context, entity as BasicStoreEntity);
-  if (!workflowState) return;
+  if (!workflowState) {
+    // A plain or Global RFI is no request: it never lands on Approved / Declined, which would show it decided
+    if (await isRequestAccessOutcomeStatus(context, entity.entity_type, newStatusId)) {
+      throw FunctionalError('Approved and Declined can only be reached or left through the workflow', { id: entity.internal_id });
+    }
+    return;
+  }
   const { definitionData, currentState } = workflowState;
   // A status of another type or scope maps to no state of the request access workflow
   const newStatus = await findStatusInCache(context, newStatusId);
