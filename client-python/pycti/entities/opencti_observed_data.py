@@ -5,6 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.utils.opencti_stix2_utils import build_custom_field_values_input
+
 
 class ObservedData:
     """Main ObservedData class for OpenCTI
@@ -27,6 +29,7 @@ class ObservedData:
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value
@@ -249,6 +252,7 @@ class ObservedData:
                 field_id
                 field_name
                 int_value
+                float_value
                 string_value
                 boolean_value
                 date_value
@@ -347,6 +351,17 @@ class ObservedData:
                                     metaData {
                                         mimetype
                                         version
+                                    }
+                                    objectMarking {
+                                        id
+                                        standard_id
+                                        entity_type
+                                        definition_type
+                                        definition
+                                        created
+                                        modified
+                                        x_opencti_order
+                                        x_opencti_color
                                     }
                                 }
                             }
@@ -718,8 +733,6 @@ class ObservedData:
         :type number_seen: int
         :param max_distinct_count: maximum number of distinct sources having observed the data at once (optional)
         :type max_distinct_count: int
-        :param x_opencti_hunt_run_id: the hunt run that observed the data (optional)
-        :type x_opencti_hunt_run_id: str
         :param x_opencti_stix_ids: list of additional STIX IDs (optional)
         :type x_opencti_stix_ids: list
         :param objectOrganization: list of organization IDs (optional)
@@ -734,13 +747,17 @@ class ObservedData:
         :type files: list
         :param filesMarkings: (optional) list of lists of marking definition IDs for each file
         :type filesMarkings: list
-        :param custom_properties: (optional) list of custom field name/value inputs
-        :type custom_properties: list
+        :param custom_field_values: (optional) list of custom field name/value inputs
+        :type custom_field_values: list
         :return: ObservedData object
         :rtype: dict or None
         """
         stix_id = kwargs.get("stix_id", None)
-        custom_properties = kwargs.get("custom_properties", None)
+        custom_field_values = build_custom_field_values_input(
+            kwargs.get("custom_field_values", None),
+            kwargs.get("custom_properties", None),
+            self.opencti.app_logger,
+        )
         created_by = kwargs.get("createdBy", None)
         objects = kwargs.get("objects", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -756,7 +773,6 @@ class ObservedData:
         number_observed = kwargs.get("number_observed", None)
         number_seen = kwargs.get("number_seen", None)
         max_distinct_count = kwargs.get("max_distinct_count", None)
-        x_opencti_hunt_run_id = kwargs.get("x_opencti_hunt_run_id", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
@@ -787,7 +803,7 @@ class ObservedData:
             """
             input_variables = {
                 "stix_id": stix_id,
-                "customFieldValues": custom_properties,
+                "customFieldValues": custom_field_values,
                 "createdBy": created_by,
                 "objectMarking": object_marking,
                 "objectLabel": object_label,
@@ -804,7 +820,6 @@ class ObservedData:
                 "number_observed": number_observed,
                 "number_seen": number_seen,
                 "max_distinct_count": max_distinct_count,
-                "x_opencti_hunt_run_id": x_opencti_hunt_run_id,
                 "x_opencti_stix_ids": x_opencti_stix_ids,
                 "x_opencti_workflow_id": x_opencti_workflow_id,
                 "x_opencti_modified_at": x_opencti_modified_at,
@@ -1000,7 +1015,7 @@ class ObservedData:
                 )
 
             observed_data_result = self.create(
-                custom_properties=extras.get("custom_properties", None),
+                custom_field_values=extras.get("custom_field_values", None),
                 stix_id=stix_object["id"],
                 createdBy=(
                     extras["created_by_id"] if "created_by_id" in extras else None
@@ -1046,12 +1061,6 @@ class ObservedData:
                 ),
                 max_distinct_count=self.opencti.get_attribute_in_extension(
                     "max_distinct_count", stix_object
-                ),
-                x_opencti_hunt_run_id=(
-                    stix_object.get("x_opencti_hunt_run_id")
-                    or self.opencti.get_attribute_in_extension(
-                        "hunt_run_id", stix_object
-                    )
                 ),
                 x_opencti_stix_ids=(
                     stix_object["x_opencti_stix_ids"]

@@ -28,11 +28,15 @@ import { CUSTOM_FIELD_PREFIX } from '../modules/customField/custom-field-types';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../modules/customField/custom-field-cache';
 import { cleanupEntityWorkflow, initializeEntityWorkflow, syncWorkflowInstanceFromExternalWrite } from '../modules/workflow/domain/workflow-domain';
 import {
+  BREAKDOWN_REFUSAL_REASONS,
   computeAverage,
+  buildTimeSeriesAxis,
+  countTimeSeriesIntervals,
   extractIdsFromStoreObject,
   extractObjectsPirsFromInputs,
   extractObjectsRestrictionsFromInputs,
   fillTimeSeries,
+  fillTimeSeriesValues,
   INDEX_INFERRED_RELATIONSHIPS,
   inferIndexFromConceptType,
   isDraftIndex,
@@ -42,8 +46,11 @@ import {
   isObjectPathTargetMultipleAttribute,
   READ_DATA_INDICES,
   READ_DATA_INDICES_INFERRED,
+  READ_ENTITIES_INDICES,
   READ_INDEX_HISTORY,
+  READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_INDEX_STIX_META_OBJECTS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
@@ -53,12 +60,17 @@ import {
 import {
   type AggregationRelationsCount,
   elAggregationCount,
+  elAggregationRanking,
   elAggregationNestedTermsWithFilter,
   elAggregationRelationsCount,
   elConnection,
+  type ConnectionSide,
+  elConnectionTypesRanking,
   elDeleteElements,
   elFindByIds,
   type ElFindByIdsOpts,
+  elHistogramBreakdownCount,
+  elKeywordWrittenForms,
   elHistogramCount,
   elIndexElements,
   elList,
@@ -70,6 +82,7 @@ import {
   ES_MAX_CONCURRENCY,
   ES_MAX_PAGINATION,
   isImpactedTypeAndSide,
+  MAX_AGGREGATION_SIZE,
   MAX_BULK_OPERATIONS,
   type RepaginateOpts,
   ROLE_FROM,
@@ -100,10 +113,12 @@ import {
   VALID_UNTIL,
   VALUE_FIELD,
   X_DETECTION,
+  X_CLOSING_REASON,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
 import { notify, redisAddDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
+import { isStreamPublishable } from './stream/stream-utils';
 import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -116,15 +131,18 @@ import {
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
+  INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS,
+  INPUT_PARTICIPANT,
   INTERNAL_IDS_ALIASES,
   INTERNAL_PREFIX,
+  isAbstract,
   REL_INDEX_PREFIX,
   RULE_PREFIX,
 } from '../schema/general';
-import { isAnId, isValidDate } from '../schema/schemaUtils';
+import { getParentTypes, isAnId, isValidDate } from '../schema/schemaUtils';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
@@ -134,9 +152,10 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES,
 } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
+import { schemaTypesDefinition } from '../schema/schema-types';
 import {
   dateForEndAttributes,
   dateForLimitsAttributes,
@@ -160,9 +179,9 @@ import {
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, CUSTOM_FIELDS_FEATURE_FLAG, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
 import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
@@ -192,6 +211,7 @@ import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2
 import { convertStoreToStix } from './stix-common-converter';
 import {
   buildAggregationRelationFilter,
+  buildConnectionRoleFilter,
   buildEntityFilters,
   buildThingsFilters,
   type EntityFilters,
@@ -209,28 +229,39 @@ import { checkRelationConsistency, isRelationConsistent } from '../utils/modelCo
 import { getEntitiesListFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
-import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
-import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import { getVocabularyCategory, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
+import {
+  depsKeysRegister,
+  getRegisteredTypeFromIndexedName,
+  isDateAttribute,
+  isMultipleAttribute,
+  isNumericAttribute,
+  isObjectAttribute,
+  schemaAttributesDefinition,
+} from '../schema/schema-attributes';
 import { fillDefaultCustomFieldValues, fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
-import { telemetry } from '../config/tracing';
+import { meterManager, telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
 import {
+  type AttributeDefinition,
   authorizedMembers,
   authorizedMembersActivationDate,
   confidence,
   customFieldValues,
+  type EnumAttribute,
   iAliasedIds,
   iAttributes,
   modified,
   type RefAttribute,
   updatedAt,
+  type VocabAttribute,
 } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import { type EditInput, EditOperation, FilterMode, FilterOperator, Version, type Vulnerability } from '../generated/graphql';
+import { type EditInput, EditOperation, type FilterGroup, FilterMode, FilterOperator, Version, type Vulnerability, WidgetPerspective } from '../generated/graphql';
 import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION, type StoreEntityOrganization } from '../modules/organization/organization-types';
 import {
@@ -246,6 +277,8 @@ import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDelet
 import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
+import { findUnchangedEntity, prepareIngestionDeduplication, recordIngestion } from './ingestionDeduplication';
+import { isCreateOnlyFormImport } from '../modules/form/form-submission-context';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -292,7 +325,7 @@ import type { BasicStoreSettings } from '../types/settings';
 import type * as S from '../types/stix-2-1-common';
 import type { StixId } from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
-import type { CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
+import type { CreatedRef, CreateEventOpts, EventOpts, UpdateEvent, UpdateEventOpts } from '../types/event';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
 import {
   foldCustomFieldValuesInputs,
@@ -304,6 +337,7 @@ import {
   validateCustomFieldValues,
   validateCustomFieldValuesEditInput,
 } from '../modules/customField/custom-field-validator';
+import { RELATION_FROM_TYPES_FILTER, RELATION_TO_TYPES_FILTER, RELATION_TYPE_FILTER } from '../utils/filtering/filtering-constants';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -426,13 +460,39 @@ export const loadEntity = async <T extends BasicStoreEntity> (
 // endregion
 
 // region Loader element
+// Targets of refs relations, by internal id.
+// With objectsBaseData, the members of containers (object relations) are loaded with their base data only:
+// a container can hold tens of thousands of them, while a STIX conversion only reads their ids.
+// A member also targeted by another ref (author, marking...) keeps its full data.
+const loadRefsTargets = async (
+  context: AuthContext,
+  user: AuthUser,
+  refsRelations: BasicStoreRelation[],
+  objectsBaseData: boolean,
+): Promise<Record<string, BasicStoreBase>> => {
+  const isBaseDataRelation = (rel: BasicStoreRelation) => objectsBaseData && rel.entity_type === RELATION_OBJECT;
+  const fullRelations = refsRelations.filter((rel) => !isBaseDataRelation(rel));
+  const fullTargetIds = new Set(fullRelations.map((rel) => rel.toId));
+  const baseRelations = refsRelations.filter((rel) => isBaseDataRelation(rel) && !fullTargetIds.has(rel.toId));
+  const loadTargets = async (relations: BasicStoreRelation[], baseData: boolean) => {
+    if (relations.length === 0) {
+      return {};
+    }
+    const ids = R.uniq(relations.map((rel) => rel.toId));
+    const types = R.uniq(relations.map((rel) => rel.toType));
+    return await elFindByIds(context, user, ids, { type: types, toMap: true, baseData }) as Record<string, BasicStoreBase>;
+  };
+  const [fullTargets, baseTargets] = await Promise.all([loadTargets(fullRelations, false), loadTargets(baseRelations, true)]);
+  return Object.assign(baseTargets, fullTargets);
+};
+
 const loadElementMetaDependencies = async (
   context: AuthContext,
   user: AuthUser,
   elements: { internal_id: string; entity_type: string }[],
-  args: { onlyMarking?: boolean } = {},
+  args: { onlyMarking?: boolean; objectsBaseData?: boolean } = {},
 ): Promise<Map<string, BasicStoreBase>> => {
-  const { onlyMarking = true } = args;
+  const { onlyMarking = true, objectsBaseData = false } = args;
   const workingElements = Array.isArray(elements) ? elements : [elements];
   const workingElementsMap = new Map(workingElements.map((i) => [i.internal_id, i]));
   const workingIds = Array.from(workingElementsMap.keys());
@@ -452,10 +512,7 @@ const loadElementMetaDependencies = async (
     await fullRelationsList<BasicStoreRelation>(context, user, relTypes, { baseData: true, filters: relationFilter, callback: allRelCallback });
   }
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
-  // Parallel resolutions
-  const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
-  const toResolvedTypes = R.uniq(refsRelations.map((rel) => rel.toType));
-  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { type: toResolvedTypes, toMap: true }) as Record<string, BasicStoreBase>;
+  const toResolvedElements = await loadRefsTargets(context, user, refsRelations, objectsBaseData);
   const refEntries = Object.entries(refsPerElements);
   const loadedElementMap = new Map<string, BasicStoreBase>();
   for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
@@ -508,7 +565,7 @@ export const loadElementsWithDependencies = async (
   context: AuthContext,
   user: AuthUser,
   elements: BasicStoreBase[],
-  opts: { onlyMarking?: boolean } = {},
+  opts: { onlyMarking?: boolean; objectsBaseData?: boolean } = {},
 ): Promise<BasicStoreCommon[]> => {
   const fileMarkings: string[] = [];
   const elementsToDeps: { internal_id: string; entity_type: string }[] = [...elements];
@@ -595,6 +652,8 @@ export const loadElementsWithDependencies = async (
 };
 type LoadByIdsWithDependeciesOpts = ElFindByIdsOpts & {
   onlyMarking?: boolean;
+  // Load the members of containers with their base data only, enough for a STIX conversion
+  objectsBaseData?: boolean;
 };
 const loadByIdsWithDependencies = async (
   context: AuthContext,
@@ -785,32 +844,20 @@ export const buildRestrictedEntity = (resolvedEntity: BasicStoreEntity): BasicSt
 };
 
 // region Graphics
-const convertAggregateDistributions = async (
+const resolveAggregateDistributions = async <T extends { label: string; value: number }>(
   context: AuthContext,
   user: AuthUser,
-  limit: number,
-  orderingFunction: any,
-  distribution: { label: string; value: number }[],
-): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
-  const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
+  data: T[],
+): Promise<(T & { entity: BasicStoreEntity | null })[]> => {
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true }) as Record<string, BasicStoreEntity>;
   // filter out unresolved data (like the SYSTEM user for instance); keep the synthetic 'unknown' bucket
   const filteredData = data.filter((n) => n.label === 'unknown' || isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
-  // entities not granted shall be sent as "restricted" with limited information
-  const grantedIds: string[] = [];
-  for (let i = 0; i < filteredData.length; i += 1) {
-    // The 'unknown' bucket has no real entity — skip resolution and access check
-    if (filteredData[i].label === 'unknown') {
-      grantedIds.push('unknown');
-      continue;
-    }
-    const resolved = allResolveLabels[filteredData[i].label.toLowerCase()];
-    const canAccess = await isUserCanAccessStoreElement(context, user, resolved);
-    if (canAccess) {
-      grantedIds.push(filteredData[i].label.toLowerCase());
-    }
-  }
+  // entities not granted shall be sent as "restricted" with limited information, all checked at once.
+  // The 'unknown' bucket has no real entity — skip its access check
+  const resolvedElements = filteredData.filter((n) => n.label !== 'unknown').map((n) => allResolveLabels[n.label.toLowerCase()]);
+  const grantedElements = await userFilterStoreElements(context, user, resolvedElements);
+  const grantedIds = new Set(grantedElements.map((element) => element.internal_id));
   return filteredData
     .map((n) => {
       // The 'unknown' bucket has no backing entity
@@ -818,7 +865,7 @@ const convertAggregateDistributions = async (
         return { ...n, entity: null };
       }
       const element = allResolveLabels[n.label.toLowerCase()];
-      if (grantedIds.includes(n.label.toLowerCase())) {
+      if (grantedIds.has(element.internal_id)) {
         return {
           ...n,
           entity: element,
@@ -829,6 +876,16 @@ const convertAggregateDistributions = async (
         entity: buildRestrictedEntity(element),
       };
     });
+};
+const convertAggregateDistributions = async (
+  context: AuthContext,
+  user: AuthUser,
+  limit: number,
+  orderingFunction: any,
+  distribution: { label: string; value: number }[],
+): Promise<{ label: string; value: number; entity: BasicStoreEntity | null }[]> => {
+  const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution)) as { label: string; value: number }[];
+  return resolveAggregateDistributions(context, user, data);
 };
 export const timeSeriesHistory = async (context: AuthContext, user: AuthUser, args: any) => {
   const { startDate, endDate, interval } = args;
@@ -846,6 +903,451 @@ export const timeSeriesEntities = async (
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, timeSeriesArgs);
   const { startDate, endDate, interval } = args;
   return fillTimeSeries(startDate, endDate, interval, histogramData);
+};
+export const TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT = 10;
+export const TIME_SERIES_BREAKDOWN_MAX_LIMIT = 50;
+// Stay under the default search.max_buckets (65,535) of Elasticsearch and OpenSearch
+export const TIME_SERIES_BREAKDOWN_MAX_BUCKETS = 50000;
+const BREAKDOWN_ATTRIBUTE_FORMATS = ['id', 'vocabulary', 'enum'];
+// Among id attributes, only the creator can be broken down
+const BREAKDOWN_ALLOWED_ID_ATTRIBUTES = ['creator_id'];
+const BREAKDOWN_OTHER_LABEL = 'Other';
+// Values resolved beyond the limit in the first page, to replace the ones that cannot be resolved (like a deleted
+// user). Each next page doubles: the lowest values among thousands are resolved in a handful of rounds.
+const BREAKDOWN_RESOLUTION_MARGIN = 10;
+// From this many distinct values per series kept, the histogram uses one filter per value
+const BREAKDOWN_FILTER_PER_KEY_RATIO = 3;
+// Relation refs usable as a breakdown field. Any other ref (objects, externalReferences, killChainPhases...)
+// has an unbounded cardinality or is not a classification of the entity, and is refused.
+export const BREAKDOWN_ALLOWED_REFS = [INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS, INPUT_ASSIGNEE, INPUT_PARTICIPANT];
+const getRelationRefOrNull = (type: string, name: string) => {
+  try {
+    return schemaRelationsRefDefinition.getRelationRef(type, name);
+  } catch {
+    return null; // type without registered relations refs
+  }
+};
+type BreakdownField = {
+  aggregationField: string;
+  // Values are ids of entities, resolved with the access of the user
+  resolveEntities: boolean;
+  // Values are ids of users: the internal users (SYSTEM, the managers), stored nowhere, are creators as well
+  withInternalUsers?: boolean;
+  // Label of a value, when its indexed form is not the one to display
+  resolveLabel?: (key: string) => string;
+  // Vocabulary values are indexed in their normalized form: shown with the name of their vocabulary
+  vocabularyCategories?: string[];
+  // Set to break relationships down by the type of their source or target
+  connectionSide?: ConnectionSide;
+};
+// Indexed form of an enum value. The keyword normalizer lowercases and folds to ASCII, and the enum values are
+// ASCII constants of the code (a unit test checks every registered one): lowercasing them is exact.
+export const normalizeEnumValue = (value: string) => value.toLowerCase();
+// Entity types are indexed in lowercase: give them back the name of their registered type
+const resolveEntityTypeLabel = (key: string) => getRegisteredTypeFromIndexedName(key) ?? key;
+// A breakdown field read from the schema is a filter key that every requested type carries: a relation ref of
+// the allowlist (author, labels, markings, assignees, participants), or an id, vocabulary or enum attribute.
+// Free text, dates, numbers and the special filter keys cannot be broken down.
+const resolveSchemaBreakdownField = (types: string[], field: string): BreakdownField | null => {
+  const refs = BREAKDOWN_ALLOWED_REFS.includes(field) ? types.map((type) => getRelationRefOrNull(type, field)) : [null];
+  if (refs.every((ref) => ref !== null)) {
+    return { aggregationField: `${REL_INDEX_PREFIX}${(refs[0] as RefAttribute).databaseName}.${ID_INTERNAL}`, resolveEntities: true };
+  }
+  const attributes = types.map((type) => schemaAttributesDefinition.getAttribute(type, field));
+  const isBreakdownAttribute = (attribute: AttributeDefinition | undefined) => !!attribute
+    && attribute.isFilterable
+    && attribute.type === 'string'
+    && BREAKDOWN_ATTRIBUTE_FORMATS.includes(attribute.format)
+    && (attribute.format !== 'id' || BREAKDOWN_ALLOWED_ID_ATTRIBUTES.includes(attribute.name));
+  if (attributes.every(isBreakdownAttribute)) {
+    const breakdownAttributes = attributes as (AttributeDefinition & { format: string })[];
+    if (breakdownAttributes[0].format === 'id') {
+      // The creators
+      return { aggregationField: field, resolveEntities: true, withInternalUsers: true };
+    }
+    // Vocabulary and enum values are indexed in their normalized form: they are shown as they are written
+    const enumValues = breakdownAttributes.flatMap((attribute) => (attribute.format === 'enum' ? (attribute as EnumAttribute).values : []));
+    const enumLabels = new Map(enumValues.map((value) => [normalizeEnumValue(value), value]));
+    const vocabularyCategories = R.uniq(breakdownAttributes.flatMap((attribute) => (attribute.format === 'vocabulary' ? [(attribute as VocabAttribute).vocabularyCategory] : [])));
+    return {
+      aggregationField: field,
+      resolveEntities: false,
+      ...(enumLabels.size > 0 ? { resolveLabel: (key: string) => enumLabels.get(key) ?? key } : {}),
+      ...(vocabularyCategories.length > 0 ? { vocabularyCategories } : {}),
+    };
+  }
+  return null;
+};
+// Fields a breakdown of entities or relationships accepts besides the ones of the schema, for each perspective. The
+// rule that accepts or refuses a field (resolveBreakdownField, resolveRelationshipBreakdownField) and the fields list of
+// the editor (timeSeriesBreakdownFields) both read them: adding a field here is enough.
+type NonSchemaBreakdownFields = {
+  fields: ReadonlyMap<string, BreakdownField>;
+  // The one that is the type of the elements: accepted whatever the types, only listed when it makes several series
+  typeField: string;
+};
+// Entities: the entity type
+const ENTITIES_NON_SCHEMA_BREAKDOWN_FIELDS: NonSchemaBreakdownFields = {
+  fields: new Map<string, BreakdownField>([
+    ['entity_type', { aggregationField: 'entity_type', resolveEntities: false, resolveLabel: resolveEntityTypeLabel }],
+  ]),
+  typeField: 'entity_type',
+};
+// Relationships: the relationship type, and the type of the source or of the target.
+// A relationship has a single source and a single target: each falls in one bucket, among a bounded number of types.
+// Their type is already shown for every relationship the user can read, even when the element itself is restricted.
+// The source and the target themselves (fromId, toId) have an unbounded cardinality and are refused, like objects.
+const RELATIONSHIPS_NON_SCHEMA_BREAKDOWN_FIELDS: NonSchemaBreakdownFields = {
+  fields: new Map<string, BreakdownField>([
+    // Named after their registered type by the engine
+    [RELATION_FROM_TYPES_FILTER, { aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'from' }],
+    [RELATION_TO_TYPES_FILTER, { aggregationField: 'connections.types', resolveEntities: false, connectionSide: 'to' }],
+    [RELATION_TYPE_FILTER, { aggregationField: 'relationship_type', resolveEntities: false }],
+  ]),
+  typeField: RELATION_TYPE_FILTER,
+};
+// The field of a breakdown of the elements named `elements`: one of their fields outside the schema, or a schema field
+// of the types. Refused otherwise.
+const resolveElementsBreakdownField = (nonSchemaFields: NonSchemaBreakdownFields, elements: string, types: string[], field: string): BreakdownField => {
+  const breakdownField = nonSchemaFields.fields.get(field) ?? resolveSchemaBreakdownField(types, field);
+  if (!breakdownField) {
+    throw FunctionalError(`Time series breakdown does not support this field for these ${elements} types`, { reason: BREAKDOWN_REFUSAL_REASONS.UNSUPPORTED_FIELD, field, types });
+  }
+  return breakdownField;
+};
+// Entities: the schema fields, and the entity type
+export const resolveBreakdownField = (types: string[], field: string): BreakdownField => {
+  return resolveElementsBreakdownField(ENTITIES_NON_SCHEMA_BREAKDOWN_FIELDS, 'entity', types, field);
+};
+// Relationships: the schema fields, the relationship type, and the type of the source or of the target
+export const resolveRelationshipBreakdownField = (types: string[], field: string): BreakdownField => {
+  return resolveElementsBreakdownField(RELATIONSHIPS_NON_SCHEMA_BREAKDOWN_FIELDS, 'relationship', types, field);
+};
+// Fields of the history and activity logs a breakdown accepts, all with a bounded cardinality: the kind of
+// event, who did it (user, groups, organizations) and the types involved. Any other field is refused, the
+// context entity id (one value per entity) and the free texts (messages, searches, names) first.
+const HISTORY_BREAKDOWN_FIELDS = new Map<string, BreakdownField>([
+  ['event_type', { aggregationField: 'event_type', resolveEntities: false }],
+  ['event_scope', { aggregationField: 'event_scope', resolveEntities: false }],
+  // Resolved like the distributions of the logs: values without entity, like a deleted user, are dropped, and
+  // the entities the user cannot access are restricted. The internal users, like SYSTEM, are users as well.
+  ['user_id', { aggregationField: 'user_id', resolveEntities: true, withInternalUsers: true }],
+  ['group_ids', { aggregationField: 'group_ids', resolveEntities: true }],
+  ['organization_ids', { aggregationField: 'organization_ids', resolveEntities: true }],
+  // History or Activity
+  ['entity_type', { aggregationField: 'entity_type', resolveEntities: false, resolveLabel: resolveEntityTypeLabel }],
+  // Type of the entity the event is about
+  ['context_data.entity_type', { aggregationField: 'context_data.entity_type', resolveEntities: false, resolveLabel: resolveEntityTypeLabel }],
+]);
+export const HISTORY_BREAKDOWN_ALLOWED_FIELDS = Array.from(HISTORY_BREAKDOWN_FIELDS.keys());
+// Fields of the schema a breakdown accepts for every one of the types: the allowed relation refs and the attributes
+// of the types, kept by the very rule that accepts or refuses them (resolveSchemaBreakdownField)
+const getSchemaBreakdownFields = (types: string[]): string[] => {
+  const candidates = R.uniq([...BREAKDOWN_ALLOWED_REFS, ...types.flatMap((type) => schemaAttributesDefinition.getAttributeNames(type))]);
+  return candidates.filter((field) => resolveSchemaBreakdownField(types, field) !== null);
+};
+// Whether breaking the types down by their own type makes several series: several types, or an abstract one, which
+// holds several concrete types. The breakdown accepts the type whatever the types, a single series included.
+const isTypeBreakdownMeaningful = (types: string[]) => types.length !== 1 || isAbstract(types[0]) || schemaTypesDefinition.hasChildren(types[0]);
+// Fields a breakdown of the perspective accepts for the types, the type itself only when it makes several series
+const listBreakdownFields = (nonSchemaFields: NonSchemaBreakdownFields, types: string[]): string[] => {
+  const isTypeListed = isTypeBreakdownMeaningful(types);
+  const otherFields = Array.from(nonSchemaFields.fields.keys()).filter((field) => isTypeListed || field !== nonSchemaFields.typeField);
+  return [...getSchemaBreakdownFields(types), ...otherFields];
+};
+// The types the breakdown queries read, or the abstract type they default to without any
+const typesOrDefault = (types: string[], defaultType: string) => (types.length > 0 ? types : [defaultType]);
+// Types a single request of the fields can name: far more than the schema registers
+export const TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES = 1000;
+/**
+ * Keys of the fields a widget of the perspective can be broken down by, for the types its dataset is restricted to,
+ * as the widget editor lists them. The types are deduplicated, and read as the breakdown queries read them: the
+ * entities keep the entity types and default to Stix-Core-Object (extractStixCoreObjectTypesFromArgs), the
+ * relationships default to stix-relationship and list no field for a type that is not a relationship, which their
+ * breakdown refuses (buildRelationshipTypes). The logs list their fields whatever the types.
+ * Each field listed is accepted by the breakdown of the perspective for these types. The type itself (entity_type,
+ * relationship_type), accepted whatever the types, is only listed when it makes several series.
+ */
+export const timeSeriesBreakdownFields = (perspective: WidgetPerspective, types?: string[] | null): string[] => {
+  // Deduplicate and bound the requested types, before any work
+  const requestedTypes = Array.from(new Set(types ?? []));
+  if (requestedTypes.length > TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES) {
+    throw FunctionalError('Too many types to list the time series breakdown fields of', { max: TIME_SERIES_BREAKDOWN_FIELDS_MAX_TYPES, typesCount: requestedTypes.length });
+  }
+  if (perspective === WidgetPerspective.Audits) {
+    return HISTORY_BREAKDOWN_ALLOWED_FIELDS;
+  }
+  if (perspective === WidgetPerspective.Relationships) {
+    // The relationships breakdown refuses a dataset holding a type that is not a relationship: nothing to list
+    if (requestedTypes.some((type) => !isStixRelationship(type))) {
+      return [];
+    }
+    return listBreakdownFields(RELATIONSHIPS_NON_SCHEMA_BREAKDOWN_FIELDS, typesOrDefault(requestedTypes, ABSTRACT_STIX_RELATIONSHIP));
+  }
+  const entityTypes = typesOrDefault(requestedTypes.filter((type) => isStixCoreObject(type)), ABSTRACT_STIX_CORE_OBJECT);
+  return listBreakdownFields(ENTITIES_NON_SCHEMA_BREAKDOWN_FIELDS, entityTypes);
+};
+const HISTORY_TYPES = [ENTITY_TYPE_HISTORY, ENTITY_TYPE_ACTIVITY];
+export const resolveHistoryBreakdownField = (field: string): BreakdownField => {
+  const breakdownField = HISTORY_BREAKDOWN_FIELDS.get(field);
+  if (!breakdownField) {
+    throw FunctionalError('Time series breakdown does not support this field for the history and activity logs', { reason: BREAKDOWN_REFUSAL_REASONS.UNSUPPORTED_FIELD, field });
+  }
+  return breakdownField;
+};
+type TimeSeriesBreakdownArgs = {
+  field: string;
+  dateAttribute?: string | null;
+  limit?: number | null;
+  orderMode?: 'asc' | 'desc' | null;
+  includeOther?: boolean | null;
+  onlyInferred?: boolean | null;
+  startDate: Date;
+  endDate?: Date | null;
+  interval: string;
+};
+const checkTimeSeriesBreakdownLimit = (limit: number) => {
+  if (!Number.isInteger(limit) || limit < 1 || limit > TIME_SERIES_BREAKDOWN_MAX_LIMIT) {
+    throw FunctionalError('Time series breakdown limit must be an integer between 1 and the maximum', {
+      reason: BREAKDOWN_REFUSAL_REASONS.INVALID_LIMIT,
+      limit,
+      max: TIME_SERIES_BREAKDOWN_MAX_LIMIT,
+    });
+  }
+};
+// Names of the vocabularies of the categories, by their indexed form, for the keys only: the vocabularies are
+// matched on the indexed form of their name, normalized as the values of the field are, whatever the letters.
+// Read with the SYSTEM user, as the entities of a breakdown are: only the names of values already counted for
+// the user come back
+export const resolveVocabularyLabels = async (context: AuthContext, categories: string[], keys: string[]) => {
+  const filters = { mode: FilterMode.And, filters: [{ key: ['category'], values: categories }], filterGroups: [] };
+  return elKeywordWrittenForms(context, SYSTEM_USER, READ_INDEX_STIX_META_OBJECTS, {
+    types: [ENTITY_TYPE_VOCABULARY],
+    filters,
+    noFiltersChecking: true,
+    field: 'name',
+    keys,
+  });
+};
+const isDateAttributeOfType = (type: string, name: string) => {
+  try {
+    return schemaAttributesDefinition.getAttribute(type, name)?.type === 'date';
+  } catch {
+    return false; // type without registered attributes
+  }
+};
+const isSubtypeOf = (type: string, parentType: string) => {
+  try {
+    return getParentTypes(type).includes(parentType);
+  } catch {
+    return false; // abstract type
+  }
+};
+// The date attribute is the field of the date histogram and of the range of the period, sent as is to the engine:
+// any other field than a date makes the request fail. It must be a date attribute of one of the types at least,
+// or of a type an abstract one stands for (first_seen of the malwares for Stix-Core-Object, start_time of the
+// stix-core-relationships for stix-relationship).
+export const checkBreakdownDateAttribute = (types: string[], dateAttribute: string) => {
+  const registeredTypes = schemaAttributesDefinition.getRegisteredTypes();
+  const isDateOfTypes = types.some((type) => isDateAttributeOfType(type, dateAttribute)
+    || registeredTypes.some((registeredType) => isSubtypeOf(registeredType, type) && isDateAttributeOfType(registeredType, dateAttribute)));
+  if (!isDateOfTypes) {
+    throw FunctionalError('Time series breakdown does not support this date attribute for these types', {
+      reason: BREAKDOWN_REFUSAL_REASONS.UNSUPPORTED_DATE_ATTRIBUTE,
+      dateAttribute,
+      types,
+    });
+  }
+};
+// Creator of an internal user, which no index stores, as the creators of the entities are built (batchCreator),
+// with the parent types the union of the breakdown entities is resolved on
+const buildInternalUserCreator = (internalUser: AuthUser) => ({
+  id: internalUser.id,
+  internal_id: internalUser.id,
+  standard_id: internalUser.id,
+  entity_type: ENTITY_TYPE_USER,
+  parent_types: getParentTypes(ENTITY_TYPE_USER),
+  name: internalUser.name,
+}) as unknown as BasicStoreEntity;
+// Entities of the values, in their order, without the values of no entity. With the internal users, their ids are
+// creators, never looked for in the indices nor restricted, as the creators of the entities are not.
+const resolveBreakdownEntities = async <T extends { key: string; label: string; value: number }>(
+  context: AuthContext,
+  user: AuthUser,
+  candidates: T[],
+  withInternalUsers: boolean,
+): Promise<(T & { entity: BasicStoreEntity | null })[]> => {
+  if (!withInternalUsers) {
+    return resolveAggregateDistributions(context, user, candidates);
+  }
+  const storedCandidates = candidates.filter((candidate) => !INTERNAL_USERS[candidate.key]);
+  const resolved = storedCandidates.length > 0 ? await resolveAggregateDistributions(context, user, storedCandidates) : [];
+  const resolvedByKey = new Map(resolved.map((candidate) => [candidate.key, candidate]));
+  return candidates.flatMap((candidate) => {
+    const internalUser = INTERNAL_USERS[candidate.key];
+    if (internalUser) {
+      return [{ ...candidate, entity: buildInternalUserCreator(internalUser) }];
+    }
+    const resolvedCandidate = resolvedByKey.get(candidate.key);
+    return resolvedCandidate ? [resolvedCandidate] : [];
+  });
+};
+// What a perspective breaks down: the documents of its indices, by one of its fields, over one of its dates
+type TimeSeriesBreakdownSource = {
+  indices: string[] | string;
+  breakdownField: BreakdownField;
+  // The date attribute must be a date of one of them at least
+  dateAttributeTypes: string[];
+  // Date attribute without one in the arguments
+  defaultDateAttribute: string;
+};
+// One series per value of a field, shared by every perspective: discover the values among the documents that
+// the arguments select (with their access restrictions), keep the top ones, count them over time
+const timeSeriesBreakdown = async (
+  context: AuthContext,
+  user: AuthUser,
+  source: TimeSeriesBreakdownSource,
+  args: TimeSeriesBreakdownArgs & Record<string, any>,
+) => {
+  const { indices, breakdownField, dateAttributeTypes, defaultDateAttribute } = source;
+  // An explicit null gets the default of the schema too
+  const seriesLimit = args.limit ?? TIME_SERIES_BREAKDOWN_DEFAULT_LIMIT;
+  checkTimeSeriesBreakdownLimit(seriesLimit);
+  if (args.dateAttribute) {
+    checkBreakdownDateAttribute(dateAttributeTypes, args.dateAttribute);
+  }
+  const dateAttribute = args.dateAttribute || defaultDateAttribute;
+  const { startDate, interval } = args;
+  // Without an end date, the histogram would create every empty bucket up to the most recent document,
+  // a date in the future included, past the size checked below: the period always ends
+  const endDate = args.endDate ?? new Date();
+  const { aggregationField, resolveEntities, withInternalUsers = false, resolveLabel, vocabularyCategories, connectionSide } = breakdownField;
+  const isAscending = args.orderMode === 'asc';
+  const withOther = args.includeOther === true;
+  // Refuses an unsupported interval, before any request
+  const intervalsCount = countTimeSeriesIntervals(startDate, endDate, interval);
+  // The Other series is one more series of points
+  const seriesCount = seriesLimit + (withOther ? 1 : 0);
+  if (seriesCount * intervalsCount > TIME_SERIES_BREAKDOWN_MAX_BUCKETS) {
+    throw FunctionalError('Time series breakdown is too large, reduce the period, the interval or the number of series', {
+      reason: BREAKDOWN_REFUSAL_REASONS.TOO_LARGE,
+      limit: seriesCount,
+      intervalsCount,
+      max: TIME_SERIES_BREAKDOWN_MAX_BUCKETS,
+    });
+  }
+  const breakdownArgs = {
+    ...R.omit(['orderMode', 'includeOther'], args),
+    dateAttribute,
+    endDate,
+    field: aggregationField,
+    // Same inclusive bounds as the histogram below, so both requests see the same entities
+    intervalInclude: true,
+  };
+  const rankingOrder = isAscending ? 'asc' : 'desc';
+  // 1. Discover the candidate values over the whole period. Vocabulary and enum values keep their raw form.
+  // Ranked on the weighted total the series count below, the types of a side of the relationships on the one of
+  // their relationships: the order of the series and their selection follow their totals, inferred
+  // relationships included. desc gets the top values only, asc every value, ranked exactly or refused when there
+  // are too many of them.
+  const { buckets: candidates, sumOtherDocCount } = connectionSide
+    ? await elConnectionTypesRanking(context, user, indices, { ...breakdownArgs, connectionSide, rankingOrder })
+    : await elAggregationRanking(context, user, indices, { ...breakdownArgs, rankingOrder });
+  const labelledCandidates = resolveLabel ? candidates.map((candidate) => ({ ...candidate, label: resolveLabel(candidate.key) })) : candidates;
+  // desc keeps the values with the highest total over the period, asc the lowest
+  const sortedCandidates = R.sortWith([isAscending ? R.ascend(R.prop('value')) : R.descend(R.prop('value'))], labelledCandidates);
+  // 2. Drop unresolvable values (like a deleted user) before applying the limit, so the limit is honored.
+  // Resolved page by page: one more value than the limit is enough to know whether the series are truncated.
+  let usableCandidates: (typeof sortedCandidates[number] & { entity: BasicStoreEntity | null })[] = [];
+  if (resolveEntities) {
+    let from = 0;
+    let pageSize = seriesLimit + BREAKDOWN_RESOLUTION_MARGIN;
+    while (from < sortedCandidates.length && usableCandidates.length <= seriesLimit) {
+      const resolved = await resolveBreakdownEntities(context, user, sortedCandidates.slice(from, from + pageSize), withInternalUsers);
+      usableCandidates = usableCandidates.concat(resolved);
+      from += pageSize;
+      pageSize *= 2;
+    }
+  } else {
+    usableCandidates = sortedCandidates.map((candidate) => ({ ...candidate, entity: null }));
+  }
+  const selected = R.take(seriesLimit, usableCandidates);
+  // More usable values than the limit, or values the ranking left out (in desc only: asc gets them all or refuses)
+  const truncated = usableCandidates.length > seriesLimit || sumOtherDocCount > 0;
+  // Every series shares the same dates: they are sent once, each series only carries its values
+  const axis = buildTimeSeriesAxis(startDate, endDate, interval);
+  if (selected.length === 0 && !withOther) {
+    return { truncated, dates: axis.dates, series: [] };
+  }
+  // 3. Count every selected value, and the entities carrying none of them, over time in a single query.
+  // Many distinct values (as many as a full desc candidates page, or several times the limit) mean a field with many
+  // values per entity or a high cardinality, where one filter per value is much faster than a restricted terms
+  const filterPerKey = candidates.length >= MAX_AGGREGATION_SIZE || candidates.length >= BREAKDOWN_FILTER_PER_KEY_RATIO * seriesLimit;
+  const keys = selected.map((candidate) => candidate.key);
+  // The names of the vocabularies are read during the histogram, only for the values kept
+  const [{ histograms, other }, vocabularyLabels] = await Promise.all([
+    elHistogramBreakdownCount(context, user, indices, {
+      ...breakdownArgs,
+      interval,
+      keys,
+      withOther,
+      filterPerKey,
+      connectionSide,
+    }),
+    vocabularyCategories && keys.length > 0 ? resolveVocabularyLabels(context, vocabularyCategories, keys) : Promise.resolve(new Map<string, string>()),
+  ]);
+  const sumOf = (values: number[]) => values.reduce((total, value) => total + value, 0);
+  const series = selected.map(({ label, entity, key }) => {
+    const values = fillTimeSeriesValues(axis, histograms.get(key) ?? []);
+    // The total of the series over the period, as its values count it: the weighted total it was ranked on
+    return { label: vocabularyLabels.get(key) ?? label, total: sumOf(values), entity, isOther: false, values };
+  });
+  if (withOther) {
+    const otherValues = fillTimeSeriesValues(axis, other ?? []);
+    series.push({ label: BREAKDOWN_OTHER_LABEL, total: sumOf(otherValues), entity: null, isOther: true, values: otherValues });
+  }
+  return { truncated, dates: axis.dates, series };
+};
+export const timeSeriesBreakdownEntities = async (
+  context: AuthContext,
+  user: AuthUser,
+  types: string[],
+  args: EntityFilters<BasicStoreEntity> & TimeSeriesBreakdownArgs,
+) => {
+  const breakdownField = resolveBreakdownField(types, args.field);
+  // Entities only: the relationships indices hold nothing a Stix-Core-Object filter could match
+  const indices = args.onlyInferred ? [READ_INDEX_INFERRED_ENTITIES] : READ_ENTITIES_INDICES;
+  // buildEntityFilters keeps the other arguments, which its type does not tell
+  const queryArgs = buildEntityFilters(types, args) as typeof args & { types: string[] };
+  const source = { indices, breakdownField, dateAttributeTypes: queryArgs.types, defaultDateAttribute: 'created_at' };
+  return timeSeriesBreakdown(context, user, source, queryArgs);
+};
+type TimeSeriesBreakdownHistoryArgs = TimeSeriesBreakdownArgs & {
+  types?: string[] | null;
+  filters?: FilterGroup | null;
+  search?: string | null;
+  historyFiltering?: boolean;
+};
+// Same breakdown over the history and activity logs, always with the restrictions of the logs (history filtering).
+// The types are the caller's to narrow to what the user can see, like the other logs aggregations (see computeAuditTypes)
+export const timeSeriesBreakdownHistory = async (context: AuthContext, user: AuthUser, args: TimeSeriesBreakdownHistoryArgs) => {
+  const breakdownField = resolveHistoryBreakdownField(args.field);
+  // The dates of the logs, whatever the types requested
+  const source = { indices: READ_INDEX_HISTORY, breakdownField, dateAttributeTypes: HISTORY_TYPES, defaultDateAttribute: 'timestamp' };
+  return timeSeriesBreakdown(context, user, source, { ...args, types: args.types ?? [ENTITY_TYPE_HISTORY], historyFiltering: true });
+};
+export const timeSeriesBreakdownRelations = async (
+  context: AuthContext,
+  user: AuthUser,
+  relationshipTypes: string[],
+  args: RelationFilters<BasicStoreRelation> & TimeSeriesBreakdownArgs,
+) => {
+  const breakdownField = resolveRelationshipBreakdownField(relationshipTypes, args.field);
+  // Same relationships as timeSeriesRelations
+  const indices = args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES;
+  const queryArgs = buildEntityFilters(relationshipTypes, args) as typeof args & { types: string[] };
+  const source = { indices, breakdownField, dateAttributeTypes: queryArgs.types, defaultDateAttribute: 'created_at' };
+  return timeSeriesBreakdown(context, user, source, queryArgs);
 };
 export const timeSeriesRelations = async (
   context: AuthContext,
@@ -911,7 +1413,7 @@ export const distributionEntities = async (
     const customFieldDef = await getCustomFieldDefinitionByNameOrAlias(context, user, field);
     // Terms aggregations on nested text sub-fields require the .keyword suffix; numeric, boolean
     // and date sub-fields are already aggregatable as-is.
-    const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'boolean_value', 'date_value'];
+    const NON_KEYWORD_VALUE_FIELDS = ['int_value', 'float_value', 'boolean_value', 'date_value'];
     const rawValueField = customFieldDef ? getCustomFieldValueField(customFieldDef.field_type) : 'string_value';
     const valueField = `custom_field_values.${rawValueField}${NON_KEYWORD_VALUE_FIELDS.includes(rawValueField) ? '' : '.keyword'}`;
 
@@ -1021,7 +1523,7 @@ const depsKeys = (type: string): { src: string; dst?: string; types?: string[] }
   ],
 ]);
 
-const idVocabulary = (nameOrId: string, category: string) => {
+export const idVocabulary = (nameOrId: string, category: string) => {
   return isAnId(nameOrId) ? nameOrId : generateStandardId(ENTITY_TYPE_VOCABULARY, { name: nameOrId, category });
 };
 
@@ -1052,7 +1554,9 @@ export const inputResolveRefs = async (
   input: Record<string, any>,
   type: string,
   entitySetting: BasicStoreEntityEntitySetting,
+  opts: { embeddedFromWithRefs?: boolean; onUnresolvedRefs?: (ids: string[]) => void } = {},
 ): Promise<Record<string, any>> => {
+  const { embeddedFromWithRefs = true, onUnresolvedRefs } = opts;
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map<string, { id: string; destKey?: string; multiple?: boolean; vocab?: { field: any; data: string } }[]>();
     const expectedIds: string[] = [];
@@ -1061,10 +1565,10 @@ export const inputResolveRefs = async (
     const dependencyKeys = depsKeys(type);
     for (let index = 0; index < dependencyKeys.length; index += 1) {
       const { src, dst, types } = dependencyKeys[index];
-      const depTypes = types ?? [];
       const destKey = dst || src;
       const id = input[src];
-      const isValidType = depTypes.length > 0 ? depTypes.includes(type) : true;
+      // A key without types applies to every type; one with an empty list to none
+      const isValidType = types ? types.includes(type) : true;
       const isAlreadyResolved = Array.isArray(id) ? id[0]?._id : id?._id;
       if (isValidType && !R.isNil(id) && !R.isEmpty(id) && !isAlreadyResolved) {
         const isListing = Array.isArray(id);
@@ -1112,7 +1616,7 @@ export const inputResolveRefs = async (
             expectedIds.push(i);
           });
         } else { // Single
-          if (dst === 'from' && isStixRefRelationship(type)) {
+          if (dst === 'from' && isStixRefRelationship(type) && embeddedFromWithRefs) {
             // If resolution is due to embedded ref, the from must be fully resolved
             // This will be used to generated a correct stream message
             embeddedFromResolution = id;
@@ -1222,6 +1726,9 @@ export const inputResolveRefs = async (
     const expectedUnresolvedIdsNotDefault = optionalRefsUnresolvedIds.filter((id) => !defaultValues.includes(id));
     if (isNotEmptyField(retryNumber) && expectedUnresolvedIdsNotDefault.length > 0 && retryNumber && retryNumber <= 2) {
       throw MissingReferenceError({ unresolvedIds: expectedUnresolvedIdsNotDefault, doc_code: 'ELEMENT_NOT_FOUND', ...extendedErrors({ input }) });
+    }
+    if (onUnresolvedRefs && expectedUnresolvedIdsNotDefault.length > 0) {
+      onUnresolvedRefs(expectedUnresolvedIdsNotDefault);
     }
     const complete = { ...cleanedInput, entity_type: type };
     const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
@@ -1356,6 +1863,15 @@ const partialInstanceWithInputs = (instance: Record<string, any>, inputs: EditIn
     ...inputData,
   };
 };
+// Apply a json patch on a single attribute and return its patched value.
+// Only this attribute is cloned, cloning the whole instance is too expensive for big entities.
+// Operations rooted on other attributes cannot change this one, so they are skipped.
+const patchAttributeValue = (key: string, currentValue: any, patch: ReadonlyArray<jsonpatch.Operation>) => {
+  const keyPath = `/${key}`;
+  const keyPatch = patch.filter((operation) => operation.path === keyPath || operation.path.startsWith(`${keyPath}/`));
+  const document = { [key]: structuredClone(currentValue) };
+  return jsonpatch.applyPatch(document, keyPatch).newDocument[key];
+};
 const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Record<string, any>): EditInput | object => {
   const { key, value, object_path, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
   const isMultiple = isMultipleAttribute(instance.entity_type, key);
@@ -1405,8 +1921,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
             });
           }
         }
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else {
         finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
       }
@@ -1430,8 +1945,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
         } else {
           patch = [{ op: 'remove' as const, path: preparedPath }];
         }
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
       }
@@ -1442,8 +1956,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
         const preparedPath = path.startsWith('/') ? path : `/${path}`;
         const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance as BasicStoreCommon, preparedPath);
         const patch = [{ op: 'replace' as const, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
-        finalVal = patchedInstance[key];
+        finalVal = patchAttributeValue(key, instance[key], patch);
       } else { // Replace general
         finalVal = value;
       }
@@ -1456,13 +1969,12 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
     const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
     const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance as BasicStoreCommon, preparedPath);
     const patch = [{ op: operation as EditOperation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
-    const clonedInstance = structuredClone(instance);
-    clonedInstance[key] = clonedInstance[key] ?? {}; // Patch on complete empty value is not supported by jsonpatch
-    const patchedInstance = jsonpatch.applyPatch(clonedInstance, patch).newDocument;
-    if (compareUnsorted(patchedInstance[key], instance[key])) {
+    // Patch on complete empty value is not supported by jsonpatch
+    const patchedValue = patchAttributeValue(key, instance[key] ?? {}, patch);
+    if (compareUnsorted(patchedValue, instance[key])) {
       return {}; // No need to update the attribute
     }
-    finalVal = [patchedInstance[key]];
+    finalVal = [patchedValue];
   } else {
     // now we  check if the new value would actually result in no change in database
     let evaluateValue = value ? R.head(value) : null;
@@ -1509,8 +2021,9 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Rec
   }
   return { key, value: finalVal, operation };
 };
-const mergeInstanceWithUpdateInputs = (base: Record<string, any>, inputs: EditInput[]) => {
-  const instance = structuredClone(base);
+// The instance is not mutated, no need to clone it.
+// The result shares the nested values of the attributes that are not updated with the instance: do not mutate it.
+const mergeInstanceWithUpdateInputs = (instance: Record<string, any>, inputs: EditInput[]) => {
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(instance.entity_type), ...schemaRelationsRefDefinition.getInputNames(instance.entity_type)];
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
@@ -1678,7 +2191,7 @@ const mergeEntitiesRaw = async (
     if (categories.size > 1) {
       throw FunctionalError('Cannot merge vocabularies of different category', { categories });
     }
-    const completeCategory = getVocabulariesCategories().find(({ key }) => key === targetVocabularyEntity.category);
+    const completeCategory = getVocabularyCategory(targetVocabularyEntity.category);
     if (completeCategory) {
       await updateElasticVocabularyValue(sourceVocabularyEntities.map((s) => s.name), targetVocabularyEntity.name, completeCategory);
     }
@@ -1873,7 +2386,8 @@ const mergeEntitiesRaw = async (
   const updateAttributes: EditInput[] = [];
   // 1. Update all possible attributes
   const attributes = schemaAttributesDefinition.getAttributeNames(targetType);
-  const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX));
+  // The closing reason follows the target's own workflow state: never take it from a source
+  const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX) && s !== X_CLOSING_REASON);
   for (let fieldIndex = 0; fieldIndex < targetFields.length; fieldIndex += 1) {
     const targetFieldKey = targetFields[fieldIndex];
     const mergedEntityCurrentFieldValue = (targetEntity as Record<string, any>)[targetFieldKey];
@@ -2529,6 +3043,9 @@ type UpdateAttributeMetaResolvedOpts = EventOpts & {
   bypassValidation?: boolean;
   // Skip the re-alignment of the individual joined on a user's email, for a caller that owns that individual itself
   skipUserIndividualSync?: boolean;
+  // Set by the workflow projection: its own write is not synced back as an external write,
+  // and it is the only non-bypass writer of the closing reason
+  workflowInternalWrite?: boolean;
 };
 export const updateAttributeMetaResolved = async <T extends StoreObject>(
   context: AuthContext,
@@ -2588,6 +3105,10 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
   const draft = draftId ? await findDraftById(context, user, draftId) : null;
   if (!validateUserAccessOperation(user, initial, accessOperation, draft)) {
     throw ForbiddenAccess();
+  }
+  // The closing reason is owned by the workflow: only a transition or a bypass user can change it
+  if (!opts.workflowInternalWrite && !isBypassUser(user) && updates.some((e) => e.key === X_CLOSING_REASON)) {
+    throw FunctionalError('Closing reason can only be changed through a workflow transition', { id: initial.internal_id });
   }
 
   await rewriteEmbeddedDataUriImagesInUpdateInputs(context, user, updates, {
@@ -2954,6 +3475,7 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
           commit: commit as unknown as any,
           related_restrictions: relatedRestrictions,
           pir_ids,
+          createdRefs: relationsToCreate,
         },
       );
       // region Security coverage hook
@@ -3028,10 +3550,7 @@ const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: Aut
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts & {
-  // Set by the workflow projection so its own write is not synced back as an external write
-  workflowInternalWrite?: boolean;
-};
+type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts;
 export const updateAttribute = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
@@ -3051,24 +3570,20 @@ export const updateAttribute = async <T extends StoreObject>(
   let finalInputs = inputs;
   const customFieldValuesInputs = inputs.filter((inputData) => inputData.key === customFieldValues.name);
   if (customFieldValuesInputs.length > 0) {
-    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      const normalizedInputs: EditInput[] = [];
-      for (let i = 0; i < customFieldValuesInputs.length; i += 1) {
-        const customFieldValuesInput = customFieldValuesInputs[i];
-        const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
-        normalizedInputs.push({ ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) });
-      }
-      // Several inputs, or the removal of some multi_select options, are applied on the current values into a single replace
-      const isFolded = normalizedInputs.length > 1 || isCustomFieldOptionsRemove(normalizedInputs[0]);
-      const currentValues = (initial as Record<string, any>).custom_field_values ?? [];
-      const customFieldValuesInput = isFolded
-        ? { key: customFieldValues.name, operation: EditOperation.Replace, value: foldCustomFieldValuesInputs(currentValues, normalizedInputs) }
-        : normalizedInputs[0];
-      await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
-      finalInputs = [...inputs.filter((inputData) => inputData.key !== customFieldValues.name), customFieldValuesInput];
-    } else {
-      throw FunctionalError('Custom fields feature is not enabled', { id, type });
+    const normalizedInputs: EditInput[] = [];
+    for (let i = 0; i < customFieldValuesInputs.length; i += 1) {
+      const customFieldValuesInput = customFieldValuesInputs[i];
+      const resolvedValues = await resolveCustomFieldValuesIdentity(context, user, customFieldValuesInput.value ?? [], initial.entity_type);
+      normalizedInputs.push({ ...customFieldValuesInput, value: normalizeCustomFieldValues(resolvedValues) });
     }
+    // Several inputs, or the removal of some multi_select options, are applied on the current values into a single replace
+    const isFolded = normalizedInputs.length > 1 || isCustomFieldOptionsRemove(normalizedInputs[0]);
+    const currentValues = (initial as Record<string, any>).custom_field_values ?? [];
+    const customFieldValuesInput = isFolded
+      ? { key: customFieldValues.name, operation: EditOperation.Replace, value: foldCustomFieldValuesInputs(currentValues, normalizedInputs) }
+      : normalizedInputs[0];
+    await validateCustomFieldValuesEditInput(context, user, customFieldValuesInput, initial);
+    finalInputs = [...inputs.filter((inputData) => inputData.key !== customFieldValues.name), customFieldValuesInput];
   }
   // Continue update
   const data = await updateAttributeFromLoadedWithRefs<T>(context, user, initial, finalInputs, opts);
@@ -3274,10 +3789,8 @@ const validateEntityAndRelationCreation = async (
     });
     // Custom field values are validated on the final values (default values included).
     // Mandatory ones follow the same rules as mandatory standard attributes: bypassable.
-    if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-      const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
-      await validateCustomFieldValues(context, user, input.custom_field_values ?? [], type, { checkMandatory: !isAllowedToBypassMandatory });
-    }
+    const isAllowedToBypassMandatory = opts.bypassMandatoryAttributes === true || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS);
+    await validateCustomFieldValues(context, user, input.custom_field_values ?? [], type, { checkMandatory: !isAllowedToBypassMandatory });
   }
 };
 
@@ -3412,18 +3925,12 @@ export const getExistingRelations = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, any>,
-  opts: { fromRule?: string; idsOnly?: boolean } = {},
+  opts: { fromRule?: string } = {},
 ) => {
   const { from, to, relationship_type: relationshipType } = input;
-  const { fromRule, idsOnly } = opts;
+  const { fromRule } = opts;
   const existingRelationships: StoreProxyRelation[] = [];
-  if (idsOnly && !fromRule) {
-    const idsArgs = {
-      indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-      filters: { mode: FilterMode.And, filters: [{ key: ['ids'], values: getInputIds(relationshipType, input, false) }], filterGroups: [] },
-    };
-    pushAll(existingRelationships, await topRelationsList(context, SYSTEM_USER, relationshipType, idsArgs));
-  } else if (fromRule) {
+  if (fromRule) {
     // In case inferred rule, try to find the relation with basic filters
     // Only in inferred indices.
     const fromRuleArgs = {
@@ -3447,7 +3954,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [from.internal_id] },
-              { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
+              buildConnectionRoleFilter(relationshipType, 'from'),
             ],
             values: [],
           },
@@ -3455,7 +3962,7 @@ export const getExistingRelations = async (
             key: ['connections'],
             nested: [
               { key: 'internal_id', values: [to.internal_id] },
-              { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
+              buildConnectionRoleFilter(relationshipType, 'to'),
             ],
             values: [],
           },
@@ -3561,13 +4068,11 @@ export const createRelationRaw = async (
   // endregion
 
   // region custom field values handling
-  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-    const rawInputCustomFieldValues = input.customFieldValues ?? [];
-    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
-    // Only keep empty custom fields values if it came from input
-    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
-      (input as any).custom_field_values = customFieldValuesFromInput;
-    }
+  const rawInputCustomFieldValues = input.customFieldValues ?? [];
+  const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, relationshipType);
+  // Only keep empty custom fields values if it came from input
+  if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+    (input as any).custom_field_values = customFieldValuesFromInput;
   }
   delete input.customFieldValues;
   // endregion
@@ -3581,7 +4086,17 @@ export const createRelationRaw = async (
   const entitySetting = await getEntitySettingFromCache(context, relationshipType) as BasicStoreEntityEntitySetting;
 
   // We need to check existing dependencies
-  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
+  // The full from of an embedded ref (all its refs) only feeds the update event: without event, a base resolution is enough.
+  // For a container with thousands of refs, the full resolution was the main cost of each created ref.
+  // Light from = multiple ref without event: no update event is built and the returned from is the one resolved (without the new ref).
+  const isEventPublished = isStreamPublishable(opts);
+  let resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting, { embeddedFromWithRefs: isEventPublished });
+  // A single ref reads the current target on the fully resolved from (kept, replaced or refused below): it keeps the full resolution
+  const isSingleRef = isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType);
+  if (!isEventPublished && isSingleRef) {
+    resolvedInput = await inputResolveRefs(context, user, input, relationshipType, entitySetting);
+  }
+  const isLightFrom = isStixRefRelationship(relationshipType) && !isEventPublished && !isSingleRef;
   const { from, to } = resolvedInput;
 
   // when creating stix ref, we must check confidence on from side (this count has modifying this element itself)
@@ -3640,16 +4155,7 @@ export const createRelationRaw = async (
     // Try to get the lock in redis
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // region check existing relationship
-    // The sighting a hunt keeps of an object on a platform (x_opencti_hunt_id, set by the platform only) is identified
-    // by its deterministic id only: ordinary sightings sharing its endpoints and time window never merge into it
-    const claimsHuntSighting = relationshipType === STIX_SIGHTING_RELATIONSHIP && isNotEmptyField(resolvedInput.x_opencti_hunt_id);
-    const matchedRelationships = await getExistingRelations(context, user, resolvedInput, { ...opts, idsOnly: claimsHuntSighting });
-    const windowMatched = relationshipType === STIX_SIGHTING_RELATIONSHIP && !claimsHuntSighting && !fromRule;
-    const requestedIds = windowMatched ? new Set(getInputIds(relationshipType, resolvedInput, false)) : new Set<string>();
-    const existingRelationships = windowMatched
-      ? matchedRelationships.filter((relation) => isEmptyField((relation as { x_opencti_hunt_id?: string }).x_opencti_hunt_id)
-        || [relation.internal_id, relation.standard_id, ...(relation.x_opencti_stix_ids ?? [])].some((id) => requestedIds.has(id)))
-      : matchedRelationships;
+    const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
     let existingRelationship = null;
     if (existingRelationships.length > 0) {
       // We need to filter what we found with the user rights
@@ -3684,6 +4190,10 @@ export const createRelationRaw = async (
       if (fromRule) {
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, fromRule, locks: participantIds });
       }
+      // A form submission without Create / Update knowledge only creates: the existing relationship is used as it is
+      if (isCreateOnlyFormImport(context, user)) {
+        return { element: existingRelationship, event: null, isCreation: false };
+      }
       // If not upsert the element
       return upsertElement(context, user, existingRelationship, relationshipType, resolvedInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
     }
@@ -3698,20 +4208,21 @@ export const createRelationRaw = async (
     await indexCreatedElement(context, user, dataRel);
     // Push the input in the stream
     let event;
-    // In case on embedded relationship creation, we need to dispatch
-    // an update of the from entity that host this embedded ref.
-    if (isStixRefRelationship(relationshipType)) {
-      let referencesPromises;
-      if (opts.references) {
-        referencesPromises = internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) as Promise<BasicStoreBase[]>;
-      }
-      const references = referencesPromises ? await BluePromise.all(referencesPromises) : [];
+    // Commit references of an embedded ref are checked whether its event is built or not
+    let references: BasicStoreBase[] = [];
+    if (isStixRefRelationship(relationshipType) && opts.references) {
+      references = await internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) as BasicStoreBase[];
       if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
         throw FunctionalError('Cant find element references for commit', {
           id: input.fromId,
           references: opts.references,
         });
       }
+    }
+    // In case on embedded relationship creation, we need to dispatch
+    // an update of the from entity that host this embedded ref.
+    // Light from: nothing is built, the update of the from (two STIX conversions and diffs of the whole from) would be wasted.
+    if (isStixRefRelationship(relationshipType) && !isLightFrom) {
       const previous = resolvedInput.from; // Complete resolution done by the input resolver
       const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
       const instance = { ...previous };
@@ -3734,10 +4245,10 @@ export const createRelationRaw = async (
         message: opts.commitMessage ?? '',
         external_references: references.map((ref) => convertExternalReferenceToStix(ref as StoreEntity)),
       } : undefined;
-      const storeUpdateEventsOpts = { ...opts, commit: commit as unknown as any };
+      const storeUpdateEventsOpts = { ...opts, commit: commit as unknown as any, createdRefs: [dataRel.element] };
       event = await storeUpdateEvent(context, user, previous, instance, changes, storeUpdateEventsOpts);
       dataRel.element.from = instance; // dynamically update the from to have an up to date relation
-    } else {
+    } else if (!isStixRefRelationship(relationshipType)) {
       const createdRelation = { ...resolvedInput, ...dataRel.element };
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
@@ -3865,6 +4376,7 @@ type CreateEntityRawOpts = PatchAttributeOpts & CreateEventOpts & {
   fromRuleDeletion?: boolean;
   bypassValidation?: boolean;
   bypassMandatoryAttributes?: boolean;
+  onUnresolvedRefs?: (ids: string[]) => void;
 };
 const cleanEntityForIdsCollision = (
   input: Record<string, any>,
@@ -3895,6 +4407,7 @@ const internalCreateEntityRaw = async (
 ) => {
   // region confidence control
   const input = { ...rawInput };
+  const isInputConfidenceMissing = isEmptyField(rawInput.confidence);
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input as ObjectWithConfidence, type);
   input.confidence = confidenceLevelToApply; // confidence of new entity will be capped to user's confidence
   // authorized_members renaming
@@ -3905,13 +4418,11 @@ const internalCreateEntityRaw = async (
   // endregion
 
   // region custom field values handling
-  if (isFeatureEnabled(CUSTOM_FIELDS_FEATURE_FLAG)) {
-    const rawInputCustomFieldValues = input.customFieldValues ?? [];
-    const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
-    // Only keep empty custom fields values if it came from input
-    if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
-      (input as any).custom_field_values = customFieldValuesFromInput;
-    }
+  const rawInputCustomFieldValues = input.customFieldValues ?? [];
+  const customFieldValuesFromInput = await transformCustomFieldValueAddInput(context, user, rawInputCustomFieldValues, type);
+  // Only keep empty custom fields values if it came from input
+  if (customFieldValuesFromInput.length > 0 || input.customFieldValues) {
+    (input as any).custom_field_values = customFieldValuesFromInput;
   }
   delete input.customFieldValues;
   // endregion
@@ -3935,7 +4446,7 @@ const internalCreateEntityRaw = async (
   const entitySetting = await getEntitySettingFromCache(context, type) as BasicStoreEntityEntitySetting;
   const { fromRule } = opts;
   // We need to check existing dependencies
-  let resolvedInput = await inputResolveRefs(context, user, input, type, entitySetting);
+  let resolvedInput = await inputResolveRefs(context, user, input, type, entitySetting, { onUnresolvedRefs: opts.onUnresolvedRefs });
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
   const participantIds = getInputIds(type, resolvedInput, fromRule);
@@ -3975,7 +4486,7 @@ const internalCreateEntityRaw = async (
     // region - Pre-Check
     if (existingEntities.length === 0) { // We do not use default values on upsert.
       resolvedInput = fillDefaultValues(user, resolvedInput, entitySetting);
-      resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting);
+      resolvedInput = await inputResolveRefs(context, user, resolvedInput, type, entitySetting, { onUnresolvedRefs: opts.onUnresolvedRefs });
       resolvedInput = await fillDefaultCustomFieldValues(context, user, resolvedInput, entitySetting);
     }
     await validateEntityAndRelationCreation(context, user, resolvedInput, type, entitySetting, opts);
@@ -3983,6 +4494,11 @@ const internalCreateEntityRaw = async (
     // If existing entities have been found and type is a STIX Core Object
     let dataMessage;
     if (existingEntities.length > 0) {
+      // An input without confidence must not replace the existing confidence with the user's max confidence
+      // The user's max confidence still controls the upsert of the other attributes
+      if (isInputConfidenceMissing) {
+        delete resolvedInput.confidence;
+      }
       // We need to filter what we found with the user rights
       const filteredEntities = await userFilterStoreElements(context, user, existingEntities) as BasicStoreEntity[];
       const entityIds = R.map((i) => i.standard_id, filteredEntities);
@@ -4009,6 +4525,11 @@ const internalCreateEntityRaw = async (
         }
         // If upsert come from a rule, do a specific upsert.
         return await upsertEntityRule(context, user, filteredEntities[0], input, { ...opts, fromRule, locks: participantIds });
+      }
+      // A form submission without Create / Update knowledge only creates: the existing entity is used as it is, never upserted nor merged
+      if (isCreateOnlyFormImport(context, user)) {
+        const existing = R.find((e) => e.standard_id === standardId, filteredEntities) ?? filteredEntities[0];
+        return { element: existing, event: null, isCreation: false };
       }
       if (filteredEntities.length === 1) {
         const upsertEntityOpts = { ...opts, locks: participantIds, bypassIndividualUpdate: true, elementAlreadyResolved: true };
@@ -4203,7 +4724,7 @@ const internalCreateEntityRaw = async (
       createdElement[databaseName] = Array.isArray(createdElement[name]) ? createdElement[name].map(({ id }) => id) : createdElement[name];
     });
 
-    const event = await storeCreateEntityEvent(context, user, createdElement as StoreObject, dataMessage, opts);
+    const event = await storeCreateEntityEvent(context, user, createdElement as StoreObject, dataMessage, { ...opts, createdRefs: dataEntity.relations as CreatedRef[] });
     // Return created element after waiting for it.
     return { element: createdElement, event, isCreation: true };
   } catch (err: any) {
@@ -4248,8 +4769,32 @@ export const createEntity = async (
   opts: { complete?: boolean; noEnrichOnUpdate?: boolean } & CreateEntityRawOpts = {},
 ) => {
   const isCompleteResult = opts.complete === true;
+  const ingestionDeduplication = await prepareIngestionDeduplication(context, user, input, type, opts);
+  if (ingestionDeduplication) {
+    const existing = await findUnchangedEntity(ingestionDeduplication, () => storeLoadById<BasicStoreEntity>(context, user, input.stix_id, type));
+    if (existing) {
+      meterManager.ingestionDeduplication({ entityType: type, userId: ingestionDeduplication.userId, result: 'skipped' });
+      const unchanged = { element: existing, event: null, isCreation: false };
+      return isCompleteResult ? unchanged : unchanged.element;
+    }
+  }
+  // A reference missing at import time can appear later: the same payload must then be imported again
+  let isPartialImport = false;
+  const onUnresolvedRefs = () => {
+    isPartialImport = true;
+  };
+  const createOpts = ingestionDeduplication ? { ...opts, onUnresolvedRefs } : opts;
   // volumes of objects relationships must be controlled
-  const data = await createEntityRaw(context, user, input, type, opts);
+  const data = await createEntityRaw(context, user, input, type, createOpts);
+  if (ingestionDeduplication) {
+    meterManager.ingestionDeduplication({ entityType: type, userId: ingestionDeduplication.userId, result: 'imported' });
+    // Only under the entity's real standard id: a renamed or merged entity would never be found under the recorded key
+    // References are indexed after the element and date it again: the next import then runs once more, never skipped wrongly
+    // A form that can only create leaves an existing entity as it is: its payload was not applied
+    if (data.element.standard_id === ingestionDeduplication.standardId && !isPartialImport && !isCreateOnlyFormImport(context, user)) {
+      await recordIngestion(ingestionDeduplication, data.element);
+    }
+  }
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await triggerCreateEntityAutoEnrichment(context, user, data.element);

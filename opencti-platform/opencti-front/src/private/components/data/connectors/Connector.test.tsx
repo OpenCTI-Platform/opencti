@@ -53,8 +53,6 @@ const baseMockConnector = {
   connector_trigger_filters: null,
   connector_type: 'EXTERNAL_IMPORT',
   connector_scope: ['Report'],
-  // Only INTERNAL_HUNT connectors carry a hunted platform
-  hunt: null,
   connector_state: '',
   is_managed: false,
   manager_current_status: null,
@@ -132,7 +130,7 @@ describe('Connector', () => {
     // Both Version and State fields render an empty placeholder, so scope
     // the assertion to the Version field's container.
     const versionLabel = screen.getByText('Version');
-    const versionContainer = versionLabel.closest('.MuiGrid-item');
+    const versionContainer = versionLabel.closest('.MuiGrid-root');
     expect(versionContainer?.textContent).toContain('-');
   });
 });
