@@ -3,7 +3,7 @@ import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@common/button/Button';
-import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Badge, Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { DeleteOutlined, EditOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../i18n';
 import type { DashboardVariable } from '../dashboard-types';
@@ -25,6 +25,8 @@ export interface DashboardVariableChipProps {
   valueLabels?: VariableValueLabels;
   // The value cannot be edited for now (the values are being saved): the chip is inert and shows it.
   disabled?: boolean;
+  // The value differs from its base (the active preset, else the dashboard default): a dot marks the chip.
+  modified?: boolean;
   onChange: (value: string) => void;
   // The actions of the popover footer only exist when their callback is provided.
   onEdit?: (variable: DashboardVariable) => void;
@@ -45,6 +47,7 @@ const DashboardVariableChip = ({
   hasInvalidDefault = false,
   valueLabels,
   disabled = false,
+  modified = false,
   onChange,
   onEdit,
   onDelete,
@@ -76,7 +79,7 @@ const DashboardVariableChip = ({
   if (isRestricted) severity = 'critical';
   else if (hasInvalidDefault) severity = 'medium';
 
-  const chip = (
+  const plainChip = (
     <Chip
       label={`${variable.name} : ${valueLabel}`}
       severity={severity}
@@ -84,6 +87,10 @@ const DashboardVariableChip = ({
       onClick={(event: MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget)}
     />
   );
+  // The dot is described to assistive technology on the chip itself, not carried by its colour alone.
+  const chip = modified ? (
+    <Badge dot tone="brand" accessibleText={t_i18n('Modified')}>{plainChip}</Badge>
+  ) : plainChip;
 
   // The warning wins over the muted state: it is the one the owner can act on.
   let tooltipText: string | undefined;
@@ -96,6 +103,7 @@ const DashboardVariableChip = ({
       data-testid={`dashboard-variable-chip-${variable.name}`}
       data-unused={isUnused}
       data-invalid-default={hasInvalidDefault ? 'true' : undefined}
+      data-modified={modified ? 'true' : undefined}
       style={isUnused ? { opacity: UNUSED_OPACITY } : undefined}
       sx={{
         alignItems: 'center',

@@ -63,6 +63,7 @@ export const INTERNAL_ATTRIBUTES = [
   'content_mapping',
   'caseTemplate',
   'default_dashboard',
+  'default_dashboard_preset',
   'default_hidden_types',
   'grantable_groups',
   authorizedMembers.name,

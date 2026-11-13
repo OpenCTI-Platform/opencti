@@ -30,7 +30,7 @@ import {
   type PublicDashboardCreationFormData,
   type PublishedTimeRange,
 } from './public-dashboard-utils';
-import PublicDashboardPublishedValues from './PublicDashboardPublishedValues';
+import { PublicDashboardPublishedValuesLoader } from './PublicDashboardPublishedValues';
 
 const publicDashboardCreateMutation = graphql`
   mutation PublicDashboardCreationFormCreateMutation($input: PublicDashboardAddInput!) {
@@ -97,6 +97,11 @@ const PublicDashboardCreationFormComponent = ({
     enabled: Yup.boolean(),
     max_markings: Yup.array().min(1, 'This field is required').required(t_i18n('This field is required')),
     dashboard_id: Yup.string().required(t_i18n('This field is required')),
+    // The published values must be those of the selected dashboard: no submission, by button or by keyboard,
+    // while they load.
+    published_for: Yup.string().nullable().test('published-values-loaded', t_i18n('The published values of the selected dashboard are still loading'), function isLoaded(value) {
+      return !isVariablesEnabled || !this.parent.dashboard_id || value === this.parent.dashboard_id;
+    }),
     // Checked here too, so that the author sees it on the field instead of the refusal of the server
     time_range: Yup.object().test('ordered-range', t_i18n("The end date can't be before start date"), (range) => (
       !isVariablesEnabled || !range || isOrderedPublishedTimeRange(range as PublishedTimeRange)
@@ -136,6 +141,7 @@ const PublicDashboardCreationFormComponent = ({
         max_markings: [],
         variable_values: {},
         time_range: EMPTY_PUBLISHED_TIME_RANGE,
+        published_for: null,
         time_range_invalid: false,
       }}
       onSubmit={onSubmit}
@@ -217,7 +223,7 @@ const PublicDashboardCreationFormComponent = ({
 
           {/* Another dashboard starts the published values again, the date pickers and what they refused included */}
           {isVariablesEnabled && (
-            <PublicDashboardPublishedValues key={values.dashboard_id} dashboard={dashboards?.find(({ id }) => id === values.dashboard_id)} />
+            <PublicDashboardPublishedValuesLoader key={values.dashboard_id} dashboardId={values.dashboard_id} />
           )}
 
           <FormButtonContainer>

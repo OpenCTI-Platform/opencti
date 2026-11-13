@@ -3524,6 +3524,42 @@ type CustomViewsSettings {
   canEntityTypeHaveCustomViews: Boolean!
 }
 
+type DashboardPreset {
+  config: DashboardPresetConfig!
+  id: ID!
+  name: String!
+  values: [DashboardPresetValue!]!
+}
+
+type DashboardPresetConfig {
+  endDate: String
+  relativeDate: String
+  startDate: String
+}
+
+input DashboardPresetConfigInput {
+  endDate: String
+  relativeDate: String
+  startDate: String
+}
+
+input DashboardPresetInput {
+  config: DashboardPresetConfigInput
+  id: ID
+  name: String!
+  values: [DashboardPresetValueInput!]
+}
+
+type DashboardPresetValue {
+  value: String!
+  variableId: ID!
+}
+
+input DashboardPresetValueInput {
+  value: String!
+  variableId: ID!
+}
+
 type DashboardVariable {
   defaultValue: String
   entityTypes: [String!]
@@ -5615,6 +5651,7 @@ type Group implements BasicObject & InternalObject {
   created_at: DateTime
   default_assignation: Boolean
   default_dashboard: Workspace
+  default_dashboard_preset: String
   default_hidden_types: [String!]
   default_marking: [DefaultMarking!]
   description: String
@@ -9019,6 +9056,7 @@ type MeUser implements BasicObject & InternalObject {
   capabilitiesInDraft: [Capability!]!
   date_format: DateFormat
   default_dashboard: Workspace
+  default_dashboard_preset: String
   default_dashboards: [Workspace!]!
   default_hidden_types: [String]!
   default_marking: [DefaultMarking!]
@@ -9772,6 +9810,8 @@ type Mutation {
   workspaceDuplicate(input: WorkspaceDuplicateInput!): Workspace
   workspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Workspace
   workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace
+  workspacePresetDelete(id: ID!, presetId: ID!): Workspace
+  workspacePresetUpsert(id: ID!, input: DashboardPresetInput!): Workspace
   workspaceVariableDelete(id: ID!, variableId: ID!): Workspace
   workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace
   workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace
@@ -10771,6 +10811,7 @@ type Organization implements BasicObject & Identity & StixCoreObject & StixDomai
   currentUserAccessRight: String
   customFieldValues: [CustomFieldValue!]
   default_dashboard: Workspace
+  default_dashboard_preset: String
   default_hidden_types: [String!]
   description: String
   draftVersion: DraftVersion
@@ -18187,6 +18228,7 @@ type Workspace implements BasicObject & InternalObject {
   authorizedMembers: [MemberAccess!]!
   created_at: DateTime
   currentUserAccessRight: String
+  currentUserDefaultPresetId: ID
   description: String
   editContext: [EditUserContext!]
   enrichmentWorks(after: ID, entityIds: [String!], filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
@@ -18201,6 +18243,7 @@ type Workspace implements BasicObject & InternalObject {
   objects(after: ID, all: Boolean, filters: FilterGroup, first: Int, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, search: String, types: [String]): StixObjectOrStixRelationshipRefConnection
   owner: Creator
   parent_types: [String!]!
+  presets: [DashboardPreset!]!
   refresh_interval: Int
   refreshed_at: DateTime
   representative: Representative!

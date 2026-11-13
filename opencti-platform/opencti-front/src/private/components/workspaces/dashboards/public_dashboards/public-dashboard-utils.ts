@@ -7,6 +7,8 @@ import { deserializeDashboardManifestForFrontend } from '../../../../../componen
 import { buildDefaultVariableValues, isValidVariableValue, widgetVariableIds } from '../../../../../components/dashboard/dashboardVariablesResolution';
 import { dashboardVariablesStorageKey, parseVariablesParam, readStoredVariableValues } from '../../../../../components/dashboard/dashboardVariablesStorage';
 import { dashboardTimeRangeStorageKey, parseTimeRangeParam, readStoredTimeRange } from '../../../../../components/dashboard/dashboardTimeRangeStorage';
+import { dashboardPresetStorageKey, NO_PRESET_ID, parsePresetParam, readStoredPresetId } from '../../../../../components/dashboard/presets/dashboardPresetStorage';
+import { presetFromGraphql, type GraphqlDashboardPreset } from '../../../../../components/dashboard/presets/dashboardPresets';
 
 /**
  * Generates a URI key slug from a dashboard name.
@@ -36,17 +38,25 @@ export interface PublicDashboardCreationFormData {
   uri_key: string;
   max_markings: FieldOption[];
   dashboard_id: string;
-  // Frozen in the public dashboard (dashboard variables feature), keyed by variable id
+  // Frozen in the public dashboard, keyed by variable id
   variable_values: Record<string, string>;
   time_range: PublishedTimeRange;
+  // The dashboard the published values were built for: null while they load, so the form cannot publish an
+  // incomplete snapshot under another dashboard id.
+  published_for: string | null;
   // A date picker of the range shows a date it refuses (malformed, or in the future), which the range does not hold
   time_range_invalid?: boolean;
 }
 
-// A dashboard as the creation form loads it: the manifest holds the widgets and the variables.
+// A dashboard as the creation form loads it: the manifest holds the definitions, `variables` their usage,
+// `presets` the sets of values an author can start the publication from.
 export interface PublishableDashboard {
   id: string;
   manifest?: string | null;
+  variables?: readonly { id: string; usedInWidgetIds: readonly string[] }[] | null;
+  presets?: readonly GraphqlDashboardPreset[] | null;
+  // The preset the dashboard opens on for the current user (own choice, organization or group).
+  currentUserDefaultPresetId?: string | null;
 }
 
 export const EMPTY_PUBLISHED_TIME_RANGE: PublishedTimeRange = { startDate: null, endDate: null, relativeDate: null };
@@ -99,6 +109,8 @@ const isDashboardPage = (pathname: string, dashboardId: string) => {
  * The URL only speaks for the dashboard it shows: it is read for the dashboard of the page, never for another one.
  * The time range follows the same precedence: the one of the address on the page, else the one kept in this browser,
  * else the one of the dashboard.
+ * As on the page, the active preset is the base under these: the preset of the address on the page, else the one kept
+ * in this browser, else the default preset of the user; its values and range replace the defaults of the dashboard.
  */
 export const buildPublishedValuesState = (
   dashboard: PublishableDashboard | undefined,
@@ -110,15 +122,42 @@ export const buildPublishedValuesState = (
   const manifest = deserializeDashboardManifestForFrontend(dashboard.manifest);
   const variables = buildPublishedVariables(manifest.variables ?? [], manifest.widgets);
   const onPage = isDashboardPage(pathname, dashboard.id);
+  const presets = (dashboard.presets ?? []).map(presetFromGraphql);
+  // As on the page, a preset of the address replaces the one kept in this browser even when the dashboard does not
+  // hold it: the page then shows the default preset, and so does the form.
+  // No preset chosen explicitly overrides the default preset, as on the page.
+  const fromUrl = onPage ? parsePresetParam(search) : null;
+  const chosen = fromUrl ?? readStoredPresetId(dashboardPresetStorageKey(userId, dashboard.id));
+  const activePreset = chosen === NO_PRESET_ID ? undefined : [chosen, dashboard.currentUserDefaultPresetId ?? null]
+    .map((presetId) => presets.find((preset) => preset.id === presetId)).find((preset) => preset !== undefined);
   const stored = {
+    ...(activePreset?.values ?? {}),
     ...readStoredVariableValues(dashboardVariablesStorageKey(userId, dashboard.id)),
     ...(onPage ? parseVariablesParam(search) : {}),
   };
   const localRange = (onPage ? parseTimeRangeParam(search) : null) ?? readStoredTimeRange(dashboardTimeRangeStorageKey(userId, dashboard.id));
   return {
     variable_values: buildPublishedVariableValues(variables, stored),
-    time_range: pickPublishedTimeRange(localRange ?? manifest.config),
+    time_range: pickPublishedTimeRange(localRange ?? activePreset?.config ?? manifest.config),
   };
+};
+
+/**
+ * The published values a preset gives: its value for every offered variable it holds, the default of the variable for
+ * the others, and its time range. A snapshot: the public dashboard is not tied to the preset afterwards.
+ */
+export const applyPresetToPublishedValues = (
+  preset: GraphqlDashboardPreset,
+  variables: readonly DashboardVariable[],
+): Pick<PublicDashboardCreationFormData, 'variable_values' | 'time_range'> => {
+  const { values, config } = presetFromGraphql(preset);
+  const defaults = Object.fromEntries(buildDefaultVariableValues([...variables]));
+  const variableValues: Record<string, string> = { ...defaults };
+  variables.forEach((variable) => {
+    const value = values[variable.id];
+    if (value !== undefined && isValidVariableValue(variable, value)) variableValues[variable.id] = value;
+  });
+  return { variable_values: variableValues, time_range: { startDate: config.startDate, endDate: config.endDate, relativeDate: config.relativeDate } };
 };
 
 /**
