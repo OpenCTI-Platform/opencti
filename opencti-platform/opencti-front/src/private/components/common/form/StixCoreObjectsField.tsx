@@ -235,6 +235,8 @@ interface StixCoreObjectsFieldProps {
    * deferred defers as well, without this prop.
    */
   deferCreation?: boolean;
+  /** Called with the new value each time the selection changes, e.g. to save it in an edition form. */
+  onChange?: (name: string, value: FieldOption | FieldOption[] | null) => void;
 }
 
 interface CreatedEntity {
@@ -258,10 +260,15 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
   types = null,
   disableCreation = false,
   deferCreation = false,
+  onChange,
 }) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: entityTypes, stixCyberObservableTypes, stixDomainObjectTypes } = useAttributes();
   const { setFieldValue, values } = useFormikContext<Record<string, unknown>>();
+  const selectValue = useCallback((fieldName: string, value: StixCoreObjectOption | StixCoreObjectOption[] | null) => {
+    setFieldValue(fieldName, value);
+    onChange?.(fieldName, value);
+  }, [setFieldValue, onChange]);
 
   const [anchorElSearchScope, setAnchorElSearchScope] = useState<HTMLElement | null>(null);
   const [stixCoreObjects, setStixCoreObjects] = useState<StixCoreObjectOption[]>([]);
@@ -418,9 +425,9 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
       const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
       if (multiple) {
         const currentArray = Array.isArray(currentValue) ? currentValue : [];
-        setFieldValue(name, [...currentArray, newOption]);
+        selectValue(name, [...currentArray, newOption]);
       } else {
-        setFieldValue(name, newOption);
+        selectValue(name, newOption);
       }
     } else {
       fetchQuery(stixCoreObjectsFieldSearchQuery, {
@@ -457,7 +464,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           setStixCoreObjects(finalResults);
         });
     }
-  }, [currentSearchTerm, getCreationType, multiple, name, searchScope, setFieldValue, shouldShowCreateOption, t_i18n, types, values]);
+  }, [currentSearchTerm, getCreationType, multiple, name, searchScope, selectValue, shouldShowCreateOption, t_i18n, types, values]);
 
   const handleSCOEntityCreated = useCallback((createdObservable?: CreatedEntity | null) => {
     // --- Deferred creation path ---
@@ -490,9 +497,9 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
       const currentValue = values[name] as StixCoreObjectOption | StixCoreObjectOption[] | null;
       if (multiple) {
         const currentArray = Array.isArray(currentValue) ? currentValue : [];
-        setFieldValue(name, [...currentArray, newOption]);
+        selectValue(name, [...currentArray, newOption]);
       } else {
-        setFieldValue(name, newOption);
+        selectValue(name, newOption);
       }
     } else {
       fetchQuery(stixCoreObjectsFieldSearchQuery, {
@@ -529,7 +536,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
           setStixCoreObjects(finalResults);
         });
     }
-  }, [applyDeferredCapture, currentSearchTerm, getCreationType, multiple, name, searchScope, setFieldValue, shouldShowCreateOption, t_i18n, types, values]);
+  }, [applyDeferredCapture, currentSearchTerm, getCreationType, multiple, name, searchScope, selectValue, shouldShowCreateOption, t_i18n, types, values]);
 
   const searchStixCoreObjects = useCallback((event: React.SyntheticEvent | null, newInputValue?: string, reason?: string) => {
     const searchValue = newInputValue ?? '';
@@ -588,7 +595,7 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
     value: StixCoreObjectOption | StixCoreObjectOption[] | null,
   ) => {
     if (!value) {
-      setFieldValue(fieldName, value);
+      selectValue(fieldName, value);
       return;
     }
 
@@ -608,8 +615,8 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
       return;
     }
 
-    setFieldValue(fieldName, value);
-  }, [handleOpenCreation, setFieldValue, values]);
+    selectValue(fieldName, value);
+  }, [handleOpenCreation, selectValue, setFieldValue, values]);
 
   return (
     <>
