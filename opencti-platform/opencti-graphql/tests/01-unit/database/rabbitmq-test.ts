@@ -109,7 +109,15 @@ import { logApp } from '../../../src/config/conf';
 import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import { getHttpClient } from '../../../src/utils/http-client';
 import { updateExpectationsNumber } from '../../../src/domain/work';
-import { buildSplitMessages, executeRabbitmq, getQueueConsumersByType, metrics, pushBundleToWorker, rabbitMQIsAlive } from '../../../src/database/rabbitmq';
+import {
+  buildSplitMessages,
+  executeRabbitmq,
+  getBestBackgroundConnectorId,
+  getQueueConsumersByType,
+  metrics,
+  pushBundleToWorker,
+  rabbitMQIsAlive,
+} from '../../../src/database/rabbitmq';
 import {
   connectorConfig,
   consumeQueue,
@@ -796,6 +804,66 @@ describe('rabbitmq: getQueueConsumersByType', () => {
     const result = await getQueueConsumersByType(context, user);
 
     expect(result).toEqual({});
+  });
+});
+
+interface BackgroundQueueFixture {
+  name: string;
+  messages: number;
+}
+
+describe('rabbitmq: getBestBackgroundConnectorId', () => {
+  const context = {};
+  const user = {};
+
+  const mockQueues = (queues: BackgroundQueueFixture[]) => {
+    mockHttpClient.get.mockImplementation((url: string) => {
+      if (url === '/api/overview') {
+        return Promise.resolve({ data: { rabbitmq_version: '3.12.0' } });
+      }
+      if (url.includes('/api/queues')) {
+        return Promise.resolve({ data: queues });
+      }
+      return Promise.resolve({ data: {} });
+    });
+  };
+
+  // Queue N of the result is background-task-N holding messagesPerQueue[N] messages.
+  const backgroundQueues = (messagesPerQueue: number[]): BackgroundQueueFixture[] => messagesPerQueue.map((messages, index) => ({
+    name: `opencti_push_background-task-${index}`,
+    messages,
+  }));
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should select the background queue with the fewest messages', async () => {
+    mockQueues(backgroundQueues([5, 1, 8]));
+
+    const result = await getBestBackgroundConnectorId(context, user);
+
+    expect(result).toBe('background-task-1');
+  });
+
+  it('should spread tasks across background queues tied at the fewest messages', async () => {
+    mockQueues(backgroundQueues([0, 0, 0, 0]));
+    vi.spyOn(Math, 'random')
+      .mockReturnValueOnce(0)
+      .mockReturnValueOnce(0.25)
+      .mockReturnValueOnce(0.5)
+      .mockReturnValueOnce(0.75);
+
+    const results: string[] = [];
+    for (let i = 0; i < 4; i += 1) {
+      results.push(await getBestBackgroundConnectorId(context, user));
+    }
+
+    expect(results).toEqual(['background-task-0', 'background-task-1', 'background-task-2', 'background-task-3']);
   });
 });
 

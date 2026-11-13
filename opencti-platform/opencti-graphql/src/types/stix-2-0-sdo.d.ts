@@ -147,6 +147,7 @@ export interface StixReport extends StixContainer {
   description: string;
   report_types: Array<string>;
   published: StixDate;
+  content: string;
   x_opencti_reliability: string;
 }
 

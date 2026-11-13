@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   taskAdd: vi.fn(),
 }));
 
+// Both the task on selected elements and the task on all the elements matching the search use this mutation.
 vi.mock('../../../../utils/hooks/useApiMutation', () => ({
   default: () => [mocks.taskAdd],
 }));
@@ -199,5 +200,19 @@ describe('BackgroundTaskLaunch', () => {
     expect(mocks.taskAdd).toHaveBeenCalledTimes(1);
     expect(onClose).not.toHaveBeenCalled();
     expect(confirmationDialog()).toBeInTheDocument();
+  });
+
+  it('sends only the id of a value given as { id, value } for all the elements matching a search', () => {
+    testRender(launcher({ selectAll: true, search: '8.8' }));
+
+    expect(screen.getByText('Hygiene')).toBeInTheDocument();
+    expect(screen.queryByText('connector-1')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Launch' }));
+
+    expect(sentInput()).toMatchObject({
+      search: '8.8',
+      actions: [{ type: 'ENRICHMENT', context: { values: ['connector-1'], options: { investigationId: 'investigation-1' } } }],
+    });
   });
 });

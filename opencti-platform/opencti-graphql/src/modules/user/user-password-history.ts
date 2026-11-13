@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import { isFeatureEnabled, logApp, PASSWORD_HISTORY_FEATURE_FLAG } from '../../config/conf';
+import { logApp } from '../../config/conf';
 import { PASSWORD_REUSED, PasswordChangeThrottled, PasswordReused } from '../../config/errors';
 import { elRawCount, elRawUpdateByQuery } from '../../database/engine';
 import { publishCacheResetEvent, redisConsumePasswordChangeAttempt } from '../../database/redis';
@@ -27,11 +27,8 @@ export const isValidPasswordHistoryCount = (value: unknown): value is number => 
   return Number.isInteger(value) && (value as number) >= 0 && (value as number) <= PASSWORD_HISTORY_MAX_COUNT;
 };
 
-// The only reader of the setting: 0 when the feature flag is off or the stored value is not usable.
+// The only reader of the setting: 0 when it is not set or the stored value is not usable.
 export const readPasswordHistoryCount = (settings: Pick<BasicStoreSettings, 'password_policy_history_count'> | null | undefined): number => {
-  if (!isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG)) {
-    return 0;
-  }
   const value = settings?.password_policy_history_count;
   if (value === undefined || value === null) {
     return 0;
@@ -189,7 +186,7 @@ export const trimAllUsersPasswordHistory = async (n: number) => {
   });
 };
 
-// With the feature flag off the setting is not part of the schema, so it is removed straight from the store
+// A count the platform cannot use is removed straight from the store
 const clearStoredPasswordHistoryCount = async () => {
   await elRawUpdateByQuery({
     index: [READ_INDEX_INTERNAL_OBJECTS],
@@ -208,10 +205,8 @@ const clearStoredPasswordHistoryCount = async () => {
   await publishCacheResetEvent(ENTITY_TYPE_SETTINGS);
 };
 
-// Run at startup: while the rule is off (N = 0, or the feature flag off), no password history may stay
-// behind and a count the platform cannot use is removed, so turning the rule back on starts from scratch.
-// It reads the effective count rather than the flag: removing the flag later leaves it meaning the same,
-// where deleting a flag check here would make it wipe every history at each restart.
+// Run at startup: while the rule is off (N = 0, or a stored count that is not usable), no password history
+// may stay behind and a count the platform cannot use is removed, so turning the rule back on starts from scratch.
 export const cleanUpPasswordHistoryWhenDisabled = async (settings: Pick<BasicStoreSettings, 'password_policy_history_count'>) => {
   if (readPasswordHistoryCount(settings) >= 1) {
     return;

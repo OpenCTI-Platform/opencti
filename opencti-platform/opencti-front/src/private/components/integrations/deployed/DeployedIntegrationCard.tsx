@@ -12,7 +12,6 @@ import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
 import IntegrationStatusChip from '@components/data/connectors/IntegrationStatusChip';
 import { stopLinkNavigation } from '../../../../utils/domEvent';
-import useHelper from '../../../../utils/hooks/useHelper';
 import { paperBorder } from '../paperSurface';
 
 interface MetricProps {
@@ -59,9 +58,8 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
   const { t_i18n, n, nsdt } = useFormatter();
   const theme = useTheme();
   const typeMetadata = useDeployedTypeMetadata();
-  const { isFeatureEnable } = useHelper();
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
-  const healthIssue = isFeatureEnable('INGESTION_HEALTH') ? item.healthIssue : null;
+  const { healthIssue } = item;
 
   return (
     <Box

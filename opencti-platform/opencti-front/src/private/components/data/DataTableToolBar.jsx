@@ -138,6 +138,7 @@ import {
 import EnrollPlaybookDrawer from '@components/data/drawers/EnrollPlaybookDrawer';
 import BackgroundTaskLaunch from '../common/background_task/BackgroundTaskLaunch';
 import { confirmsOnlyAboveLimit } from '../common/background_task/BackgroundTaskLaunch.utils';
+import toEnrichmentActionValues from './connectors/utils/toEnrichmentActionValues';
 
 const OptionIcon = styled('div')({
   paddingTop: 4,
@@ -835,7 +836,10 @@ class DataTableToolBar extends Component {
 
   handleLaunchEnrichment() {
     const actions = [
-      { type: 'ENRICHMENT', context: { values: this.state.enrichSelected } },
+      {
+        type: 'ENRICHMENT',
+        context: { values: toEnrichmentActionValues(this.state.enrichConnectors, this.state.enrichSelected) },
+      },
     ];
     this.setState({ actions }, () => {
       this.handleCloseEnrichment();

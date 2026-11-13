@@ -20,6 +20,8 @@ vi.mock(import('./dashboard-utils'), async (importOriginal) => {
   };
 });
 const fakeSerialize = (manifest: DashboardManifest) => manifest as unknown as string;
+// A save that succeeds at once: the dashboard sends its next write only once the previous one is done.
+const completingSaveSpy = () => vi.fn((_id: string, _manifest: string, _noRefresh: boolean, onCompleted: () => void) => onCompleted());
 
 vi.mock('js-file-download');
 
@@ -92,7 +94,7 @@ describe('useDashboard', () => {
           widgets: {},
         }),
       };
-      const saveSpy = vi.fn();
+      const saveSpy = completingSaveSpy();
       const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
         entity,
         onSave: saveSpy,
@@ -121,6 +123,7 @@ describe('useDashboard', () => {
         entity.id,
         expectedSerializedManifest,
         false,
+        expect.any(Function),
         expect.any(Function),
       );
 
@@ -157,7 +160,7 @@ describe('useDashboard', () => {
           },
         }),
       };
-      const saveSpy = vi.fn();
+      const saveSpy = completingSaveSpy();
       const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
         entity,
         onSave: saveSpy,
@@ -190,6 +193,7 @@ describe('useDashboard', () => {
         expectedSerializedManifest,
         false,
         expect.any(Function),
+        expect.any(Function),
       );
 
       // Re-render to mimick entity getting updated in the store
@@ -212,7 +216,7 @@ describe('useDashboard', () => {
           widgets: {},
         }),
       };
-      const saveSpy = vi.fn();
+      const saveSpy = completingSaveSpy();
       const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
         entity,
         onSave: saveSpy,
@@ -232,6 +236,7 @@ describe('useDashboard', () => {
         entity.id,
         expectedSerializedManifest,
         false,
+        expect.any(Function),
         expect.any(Function),
       );
 
@@ -254,6 +259,7 @@ describe('useDashboard', () => {
         entity.id,
         expectedSerializedManifest,
         false,
+        expect.any(Function),
         expect.any(Function),
       );
 
@@ -280,6 +286,7 @@ describe('useDashboard', () => {
         entity.id,
         expectedSerializedManifest,
         false,
+        expect.any(Function),
         expect.any(Function),
       );
 
@@ -322,7 +329,7 @@ describe('useDashboard', () => {
           },
         }),
       };
-      const saveSpy = vi.fn();
+      const saveSpy = completingSaveSpy();
       const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
         entity,
         onSave: saveSpy,
@@ -347,6 +354,7 @@ describe('useDashboard', () => {
         entity.id,
         expectedSerializedManifest,
         false,
+        expect.any(Function),
         expect.any(Function),
       );
 
@@ -383,7 +391,7 @@ describe('useDashboard', () => {
           },
         }),
       };
-      const saveSpy = vi.fn();
+      const saveSpy = completingSaveSpy();
       const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
         entity,
         onSave: saveSpy,
@@ -400,6 +408,7 @@ describe('useDashboard', () => {
         entity.id,
         expectedSerializedManifest,
         false,
+        expect.any(Function),
         expect.any(Function),
       );
 
@@ -436,7 +445,7 @@ describe('useDashboard', () => {
           },
         }),
       };
-      const saveSpy = vi.fn();
+      const saveSpy = completingSaveSpy();
       const { result, rerender } = renderHook((entity: DashboardLike) => useDashboard({
         entity,
         onSave: saveSpy,
@@ -506,7 +515,7 @@ describe('useDashboard', () => {
           },
         }),
       };
-      const saveSpy = vi.fn();
+      const saveSpy = completingSaveSpy();
       const { result } = renderHook((entity: DashboardLike) => useDashboard({
         entity,
         onSave: saveSpy,
@@ -550,6 +559,7 @@ describe('useDashboard', () => {
         entity.id,
         expectedSerializedManifest,
         true,
+        expect.any(Function),
         expect.any(Function),
       );
       expect(result.current.widgetsLayouts).toStrictEqual({
@@ -737,7 +747,7 @@ describe('useDashboard', () => {
           },
         }),
       };
-      const saveSpy = vi.fn();
+      const saveSpy = completingSaveSpy();
       const { result } = renderHook((entity: DashboardLike) => useDashboard({
         entity,
         onSave: saveSpy,
@@ -749,6 +759,168 @@ describe('useDashboard', () => {
       act(() => result.current.handleResize(existingWidget.id));
 
       expect(result.current.idToResize).toBe(existingWidget.id);
+    });
+  });
+
+  describe('using handleConfigChange to change the dashboard config', () => {
+    const widget = {
+      id: '474752bc-4a56-4b05-8230-633b0ca97cb2',
+      type: 'text',
+      perspective: 'entities',
+      dataSelection: [],
+      layout: { i: '474752bc-4a56-4b05-8230-633b0ca97cb2', x: 0, y: 0, w: 4, h: 4, moved: false, static: false },
+    } as DashboardWidget;
+    const entity = {
+      id: '802cbd27-7af4-4eb8-a5d2-3eee65f7049f',
+      manifest: fakeSerialize({ config: { relativeDate: 'days-7' }, widgets: { [widget.id]: widget } }),
+    };
+
+    it('saves a config patch with the current widget layouts, without touching the other keys', async () => {
+      vi.useFakeTimers();
+      const saveSpy = vi.fn((_id, _manifest, _noRefresh, onCompleted: () => void) => onCompleted());
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      act(() => result.current.handleLayoutChange([{ ...widget.layout, x: 4 }]));
+      // Before the layout save delay: the pending layout save is replaced by this one.
+      await act(() => result.current.handleConfigChange({ allowViewersToEditTimeFilters: true }));
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      const saved = saveSpy.mock.calls[0][1] as unknown as DashboardManifest;
+      expect(saved.config).toStrictEqual({ relativeDate: 'days-7', allowViewersToEditTimeFilters: true });
+      expect(saved.widgets[widget.id].layout.x).toBe(4);
+    });
+
+    it('sends one write at a time, each one built on the previous one', async () => {
+      const completions: (() => void)[] = [];
+      const saveSpy = vi.fn((_id: string, _manifest: string, _noRefresh: boolean, onCompleted: () => void) => {
+        completions.push(onCompleted);
+      });
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      const first = result.current.handleConfigChange({ allowViewersToEditTimeFilters: true });
+      const second = result.current.handleConfigChange({ allowViewersToChangeVariables: true });
+      // The second one waits: sent now, it would be built on the manifest the first one is replacing.
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      act(() => completions[0]());
+      expect(saveSpy).toHaveBeenCalledTimes(2);
+      expect((saveSpy.mock.calls[1][1] as unknown as DashboardManifest).config)
+        .toStrictEqual({ relativeDate: 'days-7', allowViewersToEditTimeFilters: true, allowViewersToChangeVariables: true });
+      act(() => completions[1]());
+      await Promise.all([first, second]);
+    });
+
+    it('keeps a config change in a layout save made while it is being saved', async () => {
+      vi.useFakeTimers();
+      const completions: (() => void)[] = [];
+      const saveSpy = vi.fn((_id: string, _manifest: string, _noRefresh: boolean, onCompleted: () => void) => {
+        completions.push(onCompleted);
+      });
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      const saving = result.current.handleConfigChange({ relativeDate: 'months-1' });
+      act(() => result.current.handleLayoutChange([{ ...widget.layout, x: 4 }]));
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      act(() => completions[0]());
+      await saving;
+      expect(saveSpy).toHaveBeenCalledTimes(2);
+      const [, layoutManifest, noRefresh] = saveSpy.mock.calls[1];
+      expect(noRefresh).toBe(true);
+      expect((layoutManifest as unknown as DashboardManifest).config).toStrictEqual({ relativeDate: 'months-1' });
+      expect((layoutManifest as unknown as DashboardManifest).widgets[widget.id].layout.x).toBe(4);
+    });
+
+    it('does not carry a failed change into the next write', async () => {
+      const callbacks: { onCompleted: () => void; onError: (error: Error) => void }[] = [];
+      const saveSpy = vi.fn((_id: string, _manifest: string, _noRefresh: boolean, onCompleted: () => void, onError: (error: Error) => void) => {
+        callbacks.push({ onCompleted, onError });
+      });
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      const failing = result.current.handleConfigChange({ allowViewersToEditTimeFilters: true });
+      const next = result.current.handleConfigChange({ allowViewersToChangeVariables: true });
+      act(() => callbacks[0].onError(new Error('denied')));
+      await expect(failing).rejects.toThrow('denied');
+      expect((saveSpy.mock.calls[1][1] as unknown as DashboardManifest).config)
+        .toStrictEqual({ relativeDate: 'days-7', allowViewersToChangeVariables: true });
+      act(() => callbacks[1].onCompleted());
+      await next;
+    });
+
+    it('rejects when the save fails', async () => {
+      const saveSpy = vi.fn((_id, _manifest, _noRefresh, _onCompleted, onError?: (error: Error) => void) => onError?.(new Error('boom')));
+      const { result } = renderHook(() => useDashboard({ entity, onSave: saveSpy }));
+      await expect(result.current.handleConfigChange({ allowViewersToChangeVariables: true })).rejects.toThrow('boom');
+    });
+  });
+
+  describe('the base of a write', () => {
+    const widget = {
+      id: '474752bc-4a56-4b05-8230-633b0ca97cb2',
+      type: 'text',
+      perspective: 'entities',
+      dataSelection: [],
+      layout: { i: '474752bc-4a56-4b05-8230-633b0ca97cb2', x: 0, y: 0, w: 4, h: 4, moved: false, static: false },
+    } as DashboardWidget;
+    const otherWidget = { ...widget, id: 'added-by-someone-else', layout: { ...widget.layout, i: 'added-by-someone-else', y: 4 } } as DashboardWidget;
+    const entity = {
+      id: '802cbd27-7af4-4eb8-a5d2-3eee65f7049f',
+      manifest: fakeSerialize({ config: { relativeDate: 'days-7' }, widgets: { [widget.id]: widget } }),
+    };
+    // A save that completes when the test says so.
+    const pendingSaveSpy = (completions: (() => void)[]) => vi.fn((_id: string, _manifest: string, _noRefresh: boolean, onCompleted: () => void) => {
+      completions.push(onCompleted);
+    });
+
+    it('takes a change received from the store during a layout save into account in the next write', async () => {
+      vi.useFakeTimers();
+      const completions: (() => void)[] = [];
+      const saveSpy = pendingSaveSpy(completions);
+      const { result, rerender } = renderHook((props: DashboardLike) => useDashboard({ entity: props, onSave: saveSpy }), { initialProps: entity });
+      act(() => result.current.handleLayoutChange([{ ...widget.layout, x: 4 }]));
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      expect(saveSpy.mock.calls[0][2]).toBe(true);
+      // Another editor adds a widget while the layout save is in flight: the subscription updates the store.
+      const fromStore = fakeSerialize({ config: { relativeDate: 'days-7' }, widgets: { [widget.id]: widget, [otherWidget.id]: otherWidget } });
+      rerender({ ...entity, manifest: fromStore });
+      // The layout save completes without refreshing the store.
+      act(() => completions[0]());
+      act(() => result.current.handleDateChange('relativeDate', 'months-1'));
+      expect(saveSpy).toHaveBeenCalledTimes(2);
+      const saved = saveSpy.mock.calls[1][1] as unknown as DashboardManifest;
+      expect(saved.config.relativeDate).toBe('months-1');
+      expect(Object.keys(saved.widgets)).toStrictEqual([widget.id, otherWidget.id]);
+    });
+
+    it('starts from the manifest of another dashboard at once, without waiting for a write of the previous one', () => {
+      const completions: (() => void)[] = [];
+      const saveSpy = pendingSaveSpy(completions);
+      const { result, rerender } = renderHook((props: DashboardLike) => useDashboard({ entity: props, onSave: saveSpy }), { initialProps: entity });
+      act(() => result.current.handleDateChange('relativeDate', 'months-1'));
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      const other = { id: 'other-dashboard', manifest: fakeSerialize({ config: { relativeDate: 'years-1' }, widgets: {} }) };
+      rerender(other);
+      act(() => result.current.handleDateChange('relativeDate', 'days-1'));
+      expect(saveSpy).toHaveBeenCalledTimes(2);
+      expect(saveSpy.mock.calls[1][0]).toBe(other.id);
+      expect((saveSpy.mock.calls[1][1] as unknown as DashboardManifest).config.relativeDate).toBe('days-1');
+      // The write of the previous dashboard completes: nothing more is sent.
+      act(() => completions[0]());
+      expect(saveSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('drops a layout save of the previous dashboard still pending when another one is shown', () => {
+      vi.useFakeTimers();
+      const saveSpy = completingSaveSpy();
+      const { result, rerender } = renderHook((props: DashboardLike) => useDashboard({ entity: props, onSave: saveSpy }), { initialProps: entity });
+      act(() => result.current.handleLayoutChange([{ ...widget.layout, x: 4 }]));
+      rerender({ id: 'other-dashboard', manifest: fakeSerialize({ config: {}, widgets: {} }) });
+      act(() => {
+        vi.advanceTimersByTime(300);
+      });
+      expect(saveSpy).not.toHaveBeenCalled();
     });
   });
 });

@@ -57,6 +57,10 @@ const useDashboardViz = <TQuery extends OperationType>({
   // Stabilize the dataSelection dependency to avoid re-triggering the effect
   // on every render when the parent passes a new array reference with the same content.
   const dataSelectionSignature = useMemo(() => JSON.stringify(dataSelection), [dataSelection]);
+  // Same for the parameters: a refreshed manifest gives every widget a new object with the same content, and the query
+  // variables, computed from "now" for a relative range, would then change and reload the widget.
+  const parametersSignature = useMemo(() => JSON.stringify(parameters ?? null), [parameters]);
+  const stableParameters = useMemo(() => parameters, [parametersSignature]);
 
   // Selection the resolved one comes from: until the current one is resolved (its saved filters are read from the
   // API), the resolved selection is the previous one, and is not queried
@@ -107,8 +111,8 @@ const useDashboardViz = <TQuery extends OperationType>({
   // No variables while the selection is resolved: the previous resolution would query the previous filters
   const canBuildQueryVariables = !!buildQueryVariables && !!config && !isResolving && resolvedDataSelection.length > 0;
   const queryVariables = useMemo(
-    () => (canBuildQueryVariables ? buildQueryVariables(resolvedDataSelection, config, parameters) : null),
-    [canBuildQueryVariables, buildQueryVariables, resolvedDataSelection, config, parameters],
+    () => (canBuildQueryVariables ? buildQueryVariables(resolvedDataSelection, config, stableParameters) : null),
+    [canBuildQueryVariables, buildQueryVariables, resolvedDataSelection, config, stableParameters],
   );
 
   const queryVariablesSignature = useMemo(
@@ -183,10 +187,10 @@ const useDashboardViz = <TQuery extends OperationType>({
       return;
     }
 
-    const refreshedVariables = buildQueryVariables(selection, config, parameters);
+    const refreshedVariables = buildQueryVariables(selection, config, stableParameters);
     const refreshedSignature = JSON.stringify(refreshedVariables);
     loadAndTrackSignature(refreshedVariables, refreshedSignature);
-  }, [buildQueryVariables, config, resolvedDataSelection, parameters, reloadData, loadAndTrackSignature]);
+  }, [buildQueryVariables, config, resolvedDataSelection, stableParameters, reloadData, loadAndTrackSignature]);
 
   useEffect(() => {
     if (prevRefreshTokenRef.current === refreshToken) return undefined;

@@ -92,12 +92,61 @@ STIX_VERSION_2_0: str = "stix_2_0"
 # STIX 2.0 export: entity types whose serialization is delegated to the
 # GraphQL ``toStix(version: stix_2_0)`` field instead of the legacy converter.
 # Only used when the caller opts in with ``stix_version=STIX_VERSION_2_0``.
+# Every SDO is migrated, containers included, except the types without a
+# backend STIX 2.0 converter (Language, Security-Coverage,
+# Security-Coverage-Result).
 # TODO(stix-2-0-migration): once every type is covered, drop this set and the
 # legacy code path in `generate_export` / `prepare_export`.
-_STIX_2_0_BACKEND_ENTITY_TYPES = frozenset({"Malware"})
+_STIX_2_0_BACKEND_ENTITY_TYPES = frozenset(
+    {
+        # Non-container SDOs
+        "Attack-Pattern",
+        "Campaign",
+        "Channel",
+        "Course-Of-Action",
+        "Data-Component",
+        "Data-Source",
+        "Event",
+        "Incident",
+        "Indicator",
+        "Infrastructure",
+        "Intrusion-Set",
+        "Malware",
+        "Malware-Analysis",
+        "Narrative",
+        "Threat-Actor-Group",
+        "Threat-Actor-Individual",
+        "Tool",
+        "Vulnerability",
+        # Identities
+        "Individual",
+        "Organization",
+        "Sector",
+        "SecurityPlatform",
+        "System",
+        # Locations
+        "Administrative-Area",
+        "City",
+        "Country",
+        "Position",
+        "Region",
+        # Containers
+        "Case-Incident",
+        "Case-Rfi",
+        "Case-Rft",
+        "Feedback",
+        "Grouping",
+        "Note",
+        "Observed-Data",
+        "Opinion",
+        "Report",
+        "Task",
+    }
+)
 
 # Raw GraphQL keys kept on the backend payload so that `prepare_export` can
-# still add the related objects (author, markings, files) to the bundle.
+# still add the related objects (author, markings, files, contained objects,
+# data source) to the bundle.
 # TODO(stix-2-0-migration): DELETE once the backend produces these objects.
 _STIX_2_0_PRESERVED_KEYS = (
     "createdBy",
@@ -107,17 +156,24 @@ _STIX_2_0_PRESERVED_KEYS = (
     "objectOrganization",
     "importFiles",
     "importFilesIds",
+    "objects",
+    "objectsIds",
+    "dataSource",
+    "dataSourceId",
 )
 
 # Backend keys dropped because `prepare_export` rebuilds them from the
 # preserved raw keys above, with the legacy rules (restricted author,
-# no_custom_attributes, empty lists, embedded file content).
+# no_custom_attributes, empty lists, embedded file content, contained objects
+# filtered per container type).
 # TODO(stix-2-0-migration): DELETE together with `_STIX_2_0_PRESERVED_KEYS`.
 _STIX_2_0_REBUILT_KEYS = (
     "created_by_ref",
     "object_marking_refs",
     "x_opencti_granted_refs",
     "x_opencti_files",
+    "object_refs",
+    "x_mitre_data_source_ref",
 )
 
 #: STIX Extension ID for OpenCTI custom Cyber Observables (SCO)

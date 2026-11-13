@@ -80,7 +80,7 @@ const isCompatiblePlatform = async (context: AuthContext) => {
   }
 };
 
-// With the password history feature flag off, no password history may stay behind
+// With the password history rule off, no password history may stay behind
 const cleanUpPasswordHistory = async (context: AuthContext) => {
   const settings = await loadEntity<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   if (!settings) {

@@ -612,10 +612,6 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
-// Password history feature flag (use isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) to check activation).
-// When disabled, local passwords can be reused as before and no password history is recorded.
-export const PASSWORD_HISTORY_FEATURE_FLAG = 'PASSWORD_HISTORY';
-
 // Local authentication lockout policy feature flag (use isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) to check activation)
 export const LOCAL_AUTH_LOCKOUT_FEATURE_FLAG = 'LOCAL_AUTH_LOCKOUT';
 
@@ -628,8 +624,7 @@ export const ENTITIES_WORKFLOW_FEATURE_FLAG = 'ENTITIES_WORKFLOW';
 // to check activation): remote catalog synchronization and connector update detection.
 export const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';
 
-// Ingestion health of connectors, computed by the ingestion health manager
-// (use isFeatureEnabled(INGESTION_HEALTH_FEATURE_FLAG) to check activation)
+// Ingestion health monitoring parts that are still under FF
 export const INGESTION_HEALTH_FEATURE_FLAG = 'INGESTION_HEALTH';
 
 // Configuration presets: export of platform configuration bundles (use isFeatureEnabled(CONFIG_PRESET_FEATURE_FLAG)

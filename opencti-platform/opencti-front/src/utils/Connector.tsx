@@ -65,32 +65,14 @@ export const useGetConnectorAvailableFilterKeys = (connector: Connector): string
 };
 
 // Only the fields the status reads: a connector of any query carrying them fits, whatever its other fragments
-export type ConnectorStatusSource = Partial<Pick<ConnectorsStateQuery$data['connectors'][0], 'manager_current_status' | 'manager_requested_status' | 'active'>>;
+export type ConnectorStatusSource = Partial<Pick<ConnectorsStateQuery$data['connectors'][0], 'manager_current_status' | 'manager_requested_status'>>;
 
 // Reduced status of an integration (connector, feed...): decides the color of its status chip and the status facet
 export type IntegrationStatus = 'active' | 'inactive' | 'processing';
 
-// Without the ingestion health feature: inactive when the connector is not started (managed), or when it has no heartbeat (the others)
-const computeLegacyIntegrationStatus = ({
-  manager_current_status,
-  manager_requested_status,
-  active,
-}: ConnectorStatusSource): IntegrationStatus => {
-  if (manager_requested_status) {
-    // On connector created, manager_current_status is null
-    const isTransitioning = (manager_current_status ?? '').slice(0, 5) !== manager_requested_status.slice(0, 5);
-    if (isTransitioning) {
-      if (['starting', 'stopping'].includes(manager_requested_status)) return 'processing';
-      return manager_requested_status === 'stopped' ? 'inactive' : 'active';
-    }
-    return manager_current_status === 'started' ? 'active' : 'inactive';
-  }
-  return active ? 'active' : 'inactive';
-};
-
-// With the ingestion health feature: inactive only when stopped on purpose: only a managed connector can be (see isConnectorStopped in the backend).
+// Inactive only when stopped on purpose: only a managed connector can be (see isConnectorStopped in the backend).
 // Any other connector is active: a missing heartbeat is a failure reported by its health, not a stop
-const computeIntegrationStatusWithHealth = ({
+const computeIntegrationStatus = ({
   manager_current_status,
   manager_requested_status,
 }: ConnectorStatusSource): IntegrationStatus => {
@@ -108,8 +90,7 @@ const computeIntegrationStatusWithHealth = ({
   return integrationStatus;
 };
 
-// The ingestion health feature changes the rule: see computeIntegrationStatusWithHealth
-export const computeConnectorStatus = (connector: ConnectorStatusSource, isIngestionHealthEnabled: boolean) => {
-  const integrationStatus = isIngestionHealthEnabled ? computeIntegrationStatusWithHealth(connector) : computeLegacyIntegrationStatus(connector);
+export const computeConnectorStatus = (connector: ConnectorStatusSource) => {
+  const integrationStatus = computeIntegrationStatus(connector);
   return { integrationStatus, processing: integrationStatus === 'processing' };
 };
