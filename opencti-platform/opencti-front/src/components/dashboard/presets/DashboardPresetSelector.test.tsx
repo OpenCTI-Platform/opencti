@@ -20,8 +20,8 @@ describe('DashboardPresetSelector', () => {
     await user.click(screen.getByTestId('dashboard-preset-trigger'));
     expect(await screen.findByTestId('dashboard-preset-option-finance')).toHaveTextContent('FinanceDefault');
     expect(screen.getByTestId('dashboard-preset-option-energy')).not.toHaveTextContent('Default');
-    // With a default preset, picking it already leaves the others: no separate entry for no preset.
-    expect(screen.queryByTestId('dashboard-preset-none')).not.toBeInTheDocument();
+    // No preset is offered with a default preset too: it shows the defaults of the dashboard.
+    expect(screen.getByTestId('dashboard-preset-none')).toHaveTextContent('No preset');
     // A viewer gets no management entry.
     expect(screen.queryByTestId('dashboard-preset-rename')).not.toBeInTheDocument();
     expect(screen.queryByTestId('dashboard-preset-delete')).not.toBeInTheDocument();

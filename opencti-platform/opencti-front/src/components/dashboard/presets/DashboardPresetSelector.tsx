@@ -75,16 +75,14 @@ const DashboardPresetSelector = ({
                 </span>
               </MenuItem>
             ))}
-            {/* Back to no preset: with a default preset, picking that one already does it. */}
-            {defaultPreset === null && (
-              <MenuItem
-                data-testid="dashboard-preset-none"
-                selected={activePreset === null}
-                onSelect={() => onSelect(null)}
-              >
-                {t_i18n('No preset')}
-              </MenuItem>
-            )}
+            {/* The defaults of the dashboard, also offered to a user with a default preset. */}
+            <MenuItem
+              data-testid="dashboard-preset-none"
+              selected={activePreset === null}
+              onSelect={() => onSelect(null)}
+            >
+              {t_i18n('No preset')}
+            </MenuItem>
           </MenuGroup>
           {activePreset && (onRename || onDelete) && (
             <>
