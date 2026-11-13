@@ -269,13 +269,14 @@ const AttackPatternsMatrixColumns = ({
         return (
           <Box
             sx={{
-              width: `calc(100vw - ${matrixWidth}px)`,
-              height: `calc(100vh - ${matrixHeight}px)`,
+              // A screen that sizes the matrix itself (the investigation) lets it fill the space it gets.
+              width: config.fillParent ? '100%' : `calc(100vw - ${matrixWidth}px)`,
+              height: config.fillParent ? '100%' : `calc(100vh - ${matrixHeight}px)`,
               overflowX: 'auto',
               whiteSpace: 'nowrap',
               paddingBottom: 2,
               position: 'relative',
-              marginBlockStart: 3,
+              marginBlockStart: config.fillParent ? 0 : 3,
             }}
           >
             <Box

@@ -13,6 +13,8 @@ export interface MatrixConfig {
   keyboardCells: boolean;
   // When false, sub-techniques keep the order the API returns.
   sortSubTechniques: boolean;
+  // When true, the matrix fills its parent instead of sizing itself from the viewport and the page margins.
+  fillParent: boolean;
 }
 
 const MITRE_ID_REGEX = /^T(\d+)(?:\.(\d+))?$/i;
@@ -44,6 +46,7 @@ const defaultConfig = (isCoverage: boolean): MatrixConfig => ({
   canAdd: !isCoverage,
   keyboardCells: false,
   sortSubTechniques: false,
+  fillParent: false,
 });
 
 const investigationConfig: MatrixConfig = {
@@ -54,6 +57,7 @@ const investigationConfig: MatrixConfig = {
   canAdd: false,
   keyboardCells: true,
   sortSubTechniques: true,
+  fillParent: true,
 };
 
 export const getMatrixConfig = (variant: MatrixVariant | undefined, isCoverage: boolean): MatrixConfig => {

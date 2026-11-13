@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, useEffect, useMemo } from 'react';
 import { PreloadedQuery } from 'react-relay';
 import * as R from 'ramda';
 import { LocalFireDepartmentOutlined } from '@mui/icons-material';
@@ -45,6 +45,7 @@ import {
   MatrixPhase,
   pickDefaultKillChain,
 } from './investigationMatrixUtils';
+import type { InvestigationMatrixSettings, InvestigationMatrixSettingsChange } from './investigationMatrixSettings';
 
 const MAX_LISTED_NAMES = 10;
 const NO_PHASES: ReadonlyArray<MatrixPhase> = [];
@@ -54,19 +55,33 @@ const isInvestigationLoading = ({ loadingCurrent, loadingTotal }: GraphState) =>
   loadingTotal === undefined || (loadingCurrent ?? 0) < loadingTotal
 );
 
-interface InvestigationMatrixContentProps {
+interface InvestigationMatrixProps {
+  settings: InvestigationMatrixSettings;
+  onSettingsChange: InvestigationMatrixSettingsChange;
+}
+
+interface InvestigationMatrixContentProps extends InvestigationMatrixProps {
   queryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
   rawObjects: ObjectToParse[];
   graphState: GraphState;
 }
 
-const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: InvestigationMatrixContentProps) => {
+const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState, settings, onSettingsChange }: InvestigationMatrixContentProps) => {
   const { t_i18n } = useFormatter();
-  const [selectedKillChain, setSelectedKillChain] = useState<string>();
-  const [isModeOnlyActive, setIsModeOnlyActive] = useState(false);
-  const [isHeatmapSelected, setIsHeatmapSelected] = useState(false);
-  const [selectedSecurityPlatforms, setSelectedSecurityPlatforms] = useState<EntityOption[]>([]);
+  const {
+    killChain: selectedKillChain,
+    onlyUsed: isModeOnlyActive,
+    heatmap: isHeatmapSelected,
+    securityPlatforms: selectedSecurityPlatforms,
+  } = settings;
   const { attackPatternIdsToOverlap, setSecurityPlatformIds, error: postureError } = useShouldCoverOverlap();
+
+  useEffect(() => {
+    // Back from the graph view: the posture marks of the platforms chosen before are looked up again.
+    if (selectedSecurityPlatforms.length > 0) {
+      setSecurityPlatformIds(selectedSecurityPlatforms.map(({ value }) => value));
+    }
+  }, []);
 
   // Kill chains, the "can't be placed" note and the matrix all read this single query result.
   const { attackPatternsMatrix } = usePreloadedFragment<AttackPatternsMatrixQuery, AttackPatternsMatrixColumns_data$key>({
@@ -119,7 +134,7 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
   }, [postureError]);
 
   const handleSecurityPlatformsChange = async (platforms: EntityOption[]) => {
-    setSelectedSecurityPlatforms(platforms);
+    onSettingsChange({ securityPlatforms: platforms });
     await setSecurityPlatformIds(platforms.map(({ value }) => value));
   };
 
@@ -128,7 +143,7 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
     : t_i18n('Display only used techniques');
 
   const handleHeatmapToggle = () => {
-    setIsHeatmapSelected(!isHeatmapOn);
+    onSettingsChange({ heatmap: !isHeatmapOn });
   };
 
   const heatmapLabel = t_i18n('Displays heat map of attack pattern use');
@@ -145,9 +160,13 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
   );
 
   return (
-    <div id={INVESTIGATION_MATRIX_EXPORT_ID} style={{ padding: '16px 24px' }}>
+    // A column as high as the view: the toolbar and the notes take what they need, the matrix fills the rest.
+    <div
+      id={INVESTIGATION_MATRIX_EXPORT_ID}
+      style={{ padding: '16px 24px', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}
+    >
       <div style={{ display: 'flex', alignItems: 'end', gap: 8 }}>
-        <Select value={killChain ?? ''} onValueChange={setSelectedKillChain} disabled={isEmpty}>
+        <Select value={killChain ?? ''} onValueChange={(value) => onSettingsChange({ killChain: value })} disabled={isEmpty}>
           <SelectLabel>{t_i18n('Kill chain :')}</SelectLabel>
           <SelectTrigger aria-label={t_i18n('Kill chain')}>
             <SelectValue />
@@ -168,7 +187,7 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
               active={isModeOnlyActive}
               disabled={isEmpty}
               aria-label={onlyUsedLabel}
-              onClick={() => setIsModeOnlyActive((value) => !value)}
+              onClick={() => onSettingsChange({ onlyUsed: !isModeOnlyActive })}
               icon={<Icon name="eye" />}
             />
           </TooltipTrigger>
@@ -205,7 +224,8 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
         {unplacedAttackPatterns.length > 0 && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Text variant="content-caption" tabIndex={0}>
+              {/* Sized to its text, so the tooltip opens next to the text, not at the far end of the row. */}
+              <Text variant="content-caption" tabIndex={0} style={{ alignSelf: 'flex-start' }}>
                 {t_i18n(
                   '{count, plural, one {# attack pattern in this investigation isn\'t shown in this kill chain} other {# attack patterns in this investigation aren\'t shown in this kill chain}}',
                   { values: { count: unplacedAttackPatterns.length } },
@@ -227,17 +247,19 @@ const InvestigationMatrixContent = ({ queryRef, rawObjects, graphState }: Invest
           {t_i18n('Add attack patterns to the graph view to visualise them here')}
         </Text>
       ) : (
-        <AttackPatternsMatrix
-          variant="investigation"
-          queryRef={queryRef}
-          attackPatterns={attackPatterns}
-          selectedKillChain={killChain}
-          isModeOnlyActive={isModeOnlyActive}
-          // The hook gives [] for an empty selection, which would mark every cell: pass ids only once platforms are chosen.
-          attackPatternIdsToOverlap={selectedSecurityPlatforms.length > 0 ? attackPatternIdsToOverlap : undefined}
-          entityType="Investigation"
-          cellDecorations={cellDecorations}
-        />
+        <div style={{ flex: 1, minHeight: 0, marginTop: 24 }}>
+          <AttackPatternsMatrix
+            variant="investigation"
+            queryRef={queryRef}
+            attackPatterns={attackPatterns}
+            selectedKillChain={killChain}
+            isModeOnlyActive={isModeOnlyActive}
+            // The hook gives [] for an empty selection, which would mark every cell: pass ids only once platforms are chosen.
+            attackPatternIdsToOverlap={selectedSecurityPlatforms.length > 0 ? attackPatternIdsToOverlap : undefined}
+            entityType="Investigation"
+            cellDecorations={cellDecorations}
+          />
+        </div>
       )}
     </div>
   );
@@ -255,7 +277,7 @@ const InvestigationMatrixProgress = ({ graphState: { loadingCurrent, loadingTota
   );
 };
 
-const InvestigationMatrix = () => {
+const InvestigationMatrix = ({ settings, onSettingsChange }: InvestigationMatrixProps) => {
   const { rawObjects, graphState } = useGraphContext();
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 
@@ -272,6 +294,8 @@ const InvestigationMatrix = () => {
             queryRef={queryRef}
             rawObjects={rawObjects}
             graphState={graphState}
+            settings={settings}
+            onSettingsChange={onSettingsChange}
           />
         )}
       </Suspense>
