@@ -34,6 +34,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
           requestAccessOutcome: null,
           onEnter: [{
@@ -51,6 +52,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
           requestAccessOutcome: null,
           onEnter: [],
@@ -68,6 +70,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
           requestAccessOutcome: null,
           onEnter: [{
@@ -179,6 +182,7 @@ describe('extractWorkflowMembersIds', () => {
         states: [
           {
             statusId: 's1',
+            workflowStatusId: null,
             order: 0,
             requestAccessOutcome: null,
             onEnter: [{
@@ -189,6 +193,7 @@ describe('extractWorkflowMembersIds', () => {
           },
           {
             statusId: 's2',
+            workflowStatusId: null,
             order: 1,
             requestAccessOutcome: null,
             onEnter: [{
@@ -207,6 +212,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
           requestAccessOutcome: null,
           onEnter: [{
@@ -229,6 +235,7 @@ describe('extractWorkflowMembersIds', () => {
       const def = emptyDef({
         states: [{
           statusId: 's1',
+          workflowStatusId: null,
           order: 0,
           requestAccessOutcome: null,
           onEnter: [{

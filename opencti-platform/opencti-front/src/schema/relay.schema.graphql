@@ -18207,6 +18207,7 @@ type WorkflowSerializedState {
   order: Int
   requestAccessOutcome: WorkflowRequestAccessOutcome
   statusId: String!
+  workflowStatusId: String
 }
 
 type WorkflowSerializedTransition {

@@ -23,9 +23,10 @@ interface WorkflowEditionDrawerProps {
   onClose: () => void;
   entityType: string;
   scope?: WorkflowScope;
+  workflowStatusIds?: Record<string, string>;
 }
 
-const WorkflowEditionDrawer = ({ open, selectedElement, onClose, entityType, scope }: WorkflowEditionDrawerProps) => {
+const WorkflowEditionDrawer = ({ open, selectedElement, onClose, entityType, scope, workflowStatusIds }: WorkflowEditionDrawerProps) => {
   const { t_i18n } = useFormatter();
   const {
     drawerTitle,
@@ -49,7 +50,9 @@ const WorkflowEditionDrawer = ({ open, selectedElement, onClose, entityType, sco
         >
           {({ submitForm, isSubmitting }) => (
             <Form style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {isStatus ? (<StatusForm entityType={entityType} scope={scope} />) : (<TransitionForm entityType={entityType} targetStatusExits={targetStatusExits} />)}
+              {isStatus
+                ? (<StatusForm entityType={entityType} scope={scope} workflowStatusIds={workflowStatusIds} />)
+                : (<TransitionForm entityType={entityType} targetStatusExits={targetStatusExits} />)}
               <FormButtonContainer>
                 {isNewStatus ? (
                   <Button data-testid="workflow-edition-cancel-button" variant="secondary" onClick={onDelete} disabled={isSubmitting}>

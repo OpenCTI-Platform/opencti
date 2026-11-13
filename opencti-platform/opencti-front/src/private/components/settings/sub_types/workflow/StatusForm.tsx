@@ -19,11 +19,14 @@ import type { WorkflowScope } from '../SubTypeWorkflow';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import EEChip from '../../../common/entreprise_edition/EEChip';
 import { AUTHORIZED_MEMBERS_ENTITY_TYPES } from '../../../../../utils/authorizedMembers';
+import ItemCopy from '../../../../../components/ItemCopy';
 
 // The library Select has no empty item, so "None" is a value of its own.
 const NO_OUTCOME = 'NONE';
 
-const StatusForm = ({ entityType, scope }: { entityType: string; scope?: WorkflowScope }) => {
+type StatusFormProps = { entityType: string; scope?: WorkflowScope; workflowStatusIds?: Record<string, string> };
+
+const StatusForm = ({ entityType, scope, workflowStatusIds = {} }: StatusFormProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { values, setFieldValue } = useFormikContext<WorkflowEditionFormValues>();
@@ -35,6 +38,12 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
   const hasUpdateAuthorizedMembersOnExit = values.onExit?.some((a) => a.type === WorkflowActionType.updateAuthorizedMembers);
   const hasResetAuthorizedMembersOnEnter = values.onEnter?.some((a) => a.type === WorkflowActionType.resetAuthorizedMembers);
   const hasResetAuthorizedMembersOnExit = values.onExit?.some((a) => a.type === WorkflowActionType.resetAuthorizedMembers);
+
+  // The Status id only exists once the template has been published for this entity type.
+  // It is looked up from the template currently selected in the form, so swapping the
+  // template never shows the id of the previous one.
+  const selectedTemplateId = values.statusTemplate?.id;
+  const workflowStatusId = selectedTemplateId ? workflowStatusIds[selectedTemplateId] : undefined;
 
   const handleToggleAuthorizedMembersAction = (field: 'onEnter' | 'onExit', actionType: WorkflowActionType, checked: boolean) => {
     const currentActions = values[field] ?? [];
@@ -95,6 +104,14 @@ const StatusForm = ({ entityType, scope }: { entityType: string; scope?: Workflo
         setFieldValue={(field, { value, label, color }) => setFieldValue(field, { id: value, name: label, color })}
         helpertext=""
       />
+      {selectedTemplateId && (
+        <Box data-testid="workflow-status-id" sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, marginTop: 1 }}>
+          <Typography variant="h6">{t_i18n('Status ID')}</Typography>
+          {workflowStatusId
+            ? <ItemCopy content={workflowStatusId} variant="inLine" />
+            : <Typography variant="body2" color="text.secondary">{t_i18n('Available after publish')}</Typography>}
+        </Box>
+      )}
       {isRequestAccess && (
         <Box data-testid="workflow-status-outcome-container" sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
           <Select value={values.requestAccessOutcome ?? NO_OUTCOME} onValueChange={handleOutcomeChange}>
