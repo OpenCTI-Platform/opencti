@@ -494,6 +494,15 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
     });
   };
 
+  // Conditions such as "assignee is @me" depend on these fields, and our own edits never come back through the subscription
+  const peopleKey = [entity.objectAssignee, entity.objectParticipant].map((people) => (people ?? []).map(({ id }) => id).join(',')).join('|');
+  const seenPeople = useRef({ id: entity.id, key: peopleKey });
+  useEffect(() => {
+    const seen = seenPeople.current;
+    seenPeople.current = { id: entity.id, key: peopleKey };
+    if (seen.id === entity.id && seen.key !== peopleKey) refresh();
+  }, [entity.id, peopleKey]);
+
   if (!enabled) return null;
   return (
     <>

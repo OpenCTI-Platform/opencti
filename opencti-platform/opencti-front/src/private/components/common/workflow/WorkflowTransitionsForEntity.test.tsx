@@ -235,6 +235,35 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     expect(mutation?.request.variables.closingReason).toBeNull();
   });
 
+  // A condition such as "assignee is @me" depends on these fields, and our own edits never come back through the subscription
+  it.each(['objectAssignee', 'objectParticipant'])('refetches the allowed transitions when %s changes in Relay', async (field) => {
+    const { relayEnv } = await setup(null);
+    expect(screen.getByRole('button', { name: 'approve' })).toBeVisible();
+    act(() => relayEnv.commitUpdate((store) => {
+      const user = store.create('user-1', 'User');
+      user.setValue('user-1', 'id');
+      store.get('entity-1')?.setLinkedRecords([user], field);
+    }));
+    const operation = relayEnv.mock.getMostRecentOperation();
+    expect(operation.request.node.params.name).toBe('WorkflowStatusEntityQuery');
+    const transitions = instance(null).allowedTransitions;
+    await act(async () => relayEnv.mock.resolve(operation, {
+      data: { stixDomainObject: { __typename: 'Report', id: 'entity-1', entity_type: 'Report', currentUserAccessRight: 'edit', status: status('A'), workflowInstance: {
+        ...instance(null), allowedTransitions: [...transitions, { ...transitions[0], event: 'answer' }],
+      } } },
+    }));
+    expect(screen.getByRole('button', { name: 'Next status' })).toBeVisible();
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+  });
+
+  it('does not refetch the allowed transitions when another field changes', async () => {
+    const { relayEnv } = await setup(null);
+    act(() => relayEnv.commitUpdate((store) => {
+      store.get('entity-1')?.setValue('Renamed', 'name');
+    }));
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
+  });
+
   it('cancels polling and the active refresh on unmount', async () => {
     const { relayEnv, unmount } = await setup();
     act(() => vi.advanceTimersByTime(FIVE_SECONDS));
