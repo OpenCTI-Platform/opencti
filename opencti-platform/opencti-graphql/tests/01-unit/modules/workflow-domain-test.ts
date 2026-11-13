@@ -44,6 +44,7 @@ import {
   cleanupEntityWorkflow,
   setWorkflowStatus,
   getWorkflowBypassStatuses,
+  attachWorkflowStatusIds,
   syncWorkflowInstanceFromExternalWrite,
   resolveScopedDefinitionId,
   resolveDefinitionEntityName,
@@ -5840,6 +5841,40 @@ describe('getWorkflowStatuses', () => {
     vi.mocked(isFeatureEnabled).mockReturnValue(false);
 
     expect(await getWorkflowStatuses(mockContext, mockUser, 'Report')).toEqual([]);
+  });
+});
+
+describe('attachWorkflowStatusIds', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('sets the mapped Status id on published states and null on new ones', async () => {
+    vi.mocked(fullEntitiesList).mockResolvedValue([
+      { entity_type: 'Status', type: 'Case-Incident', scope: 'GLOBAL', template_id: 'tpl-a', id: 'status-a', order: 1 },
+    ] as any);
+    const definition = {
+      initialState: 'tpl-a',
+      states: [{ statusId: 'tpl-a' }, { statusId: 'tpl-new' }],
+      transitions: [],
+      published: true,
+    } as any;
+
+    const result = await attachWorkflowStatusIds(mockContext, mockUser, 'Case-Incident', definition);
+
+    expect(result.states).toEqual([
+      { statusId: 'tpl-a', workflowStatusId: 'status-a' },
+      { statusId: 'tpl-new', workflowStatusId: null },
+    ]);
+  });
+
+  it('returns states unchanged with null ids when the definition has no states', async () => {
+    const definition = { initialState: '*', states: [], transitions: [], published: false } as any;
+
+    const result = await attachWorkflowStatusIds(mockContext, mockUser, 'Case-Incident', definition);
+
+    expect(result.states).toEqual([]);
+    expect(fullEntitiesList).not.toHaveBeenCalled();
   });
 });
 

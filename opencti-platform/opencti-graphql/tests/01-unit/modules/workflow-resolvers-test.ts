@@ -20,6 +20,7 @@ import { StatusScope } from '../../../src/generated/graphql';
 // Mock all workflow domain functions
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   getWorkflowDefinition: vi.fn(),
+  attachWorkflowStatusIds: vi.fn(),
   hasPublishedWorkflowDefinition: vi.fn(),
   getWorkflowMigrationPreview: vi.fn(),
   getWorkflowInstance: vi.fn(),
@@ -488,7 +489,9 @@ describe('workflow-resolvers', () => {
           states: [],
           transitions: [],
         };
+        const attachedDefinition = { ...mockDefinition, states: [{ statusId: 'tpl-a', workflowStatusId: 'status-a' }] };
         vi.mocked(workflowDomain.getWorkflowDefinition).mockResolvedValue(mockDefinition);
+        vi.mocked(workflowDomain.attachWorkflowStatusIds).mockResolvedValue(attachedDefinition);
 
         const result = await workflowResolvers.Query.workflowDefinition(
           {},
@@ -503,7 +506,8 @@ describe('workflow-resolvers', () => {
           false,
           StatusScope.Global,
         );
-        expect(result).toBe(mockDefinition);
+        expect(workflowDomain.attachWorkflowStatusIds).toHaveBeenCalledWith(mockContext, mockContext.user, 'Case', mockDefinition);
+        expect(result).toBe(attachedDefinition);
       });
 
       it('should call getWorkflowDefinition with allowDraft=true when specified', async () => {
@@ -516,6 +520,7 @@ describe('workflow-resolvers', () => {
           transitions: [],
         };
         vi.mocked(workflowDomain.getWorkflowDefinition).mockResolvedValue(mockDefinition);
+        vi.mocked(workflowDomain.attachWorkflowStatusIds).mockResolvedValue(mockDefinition);
 
         const result = await workflowResolvers.Query.workflowDefinition(
           {},
@@ -531,6 +536,16 @@ describe('workflow-resolvers', () => {
           StatusScope.Global,
         );
         expect(result).toBe(mockDefinition);
+      });
+
+      it('should return null without attaching status ids when there is no definition', async () => {
+        vi.mocked(workflowDomain.getWorkflowDefinition).mockResolvedValue(null);
+        vi.mocked(workflowDomain.attachWorkflowStatusIds).mockClear();
+
+        const result = await workflowResolvers.Query.workflowDefinition({}, { entityType: 'Case' }, mockContext);
+
+        expect(result).toBeNull();
+        expect(workflowDomain.attachWorkflowStatusIds).not.toHaveBeenCalled();
       });
     });
 

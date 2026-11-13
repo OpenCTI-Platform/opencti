@@ -16,6 +16,7 @@ enum WorkflowRequestAccessOutcome {
 
 type WorkflowSerializedState {
     statusId: String!
+    workflowStatusId: String
     order: Int
     onEnter: [WorkflowActionConfig!]
     onExit: [WorkflowActionConfig!]

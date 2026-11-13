@@ -4,6 +4,7 @@ import { type QueryWorkflowMassTransitionsArgs, StatusScope } from '../../../gen
 import { reportWorkflowAsyncActionResult } from '../domain/workflow-async-completion';
 import { buildWorkflowMigrationPreviewResult } from '../migration/status-to-definition-converter';
 import {
+  attachWorkflowStatusIds,
   clearWorkflowPendingState,
   deleteWorkflowDefinition,
   getAllowedTransitions,
@@ -28,12 +29,14 @@ const NON_STATE_CHANGING_EVENTS = new Set(['event_external_ignored', 'event_exte
 
 const workflowResolvers = {
   Query: {
-    workflowDefinition: (
+    workflowDefinition: async (
       _: any,
       { entityType, allowDraft = false, scope }: { entityType: string; allowDraft?: boolean; scope?: StatusScope | null },
       context: AuthContext,
     ) => {
-      return getWorkflowDefinition(context, context.user!, entityType, allowDraft, scope ?? StatusScope.Global);
+      const statusScope = scope ?? StatusScope.Global;
+      const definition = await getWorkflowDefinition(context, context.user!, entityType, allowDraft, statusScope);
+      return definition ? attachWorkflowStatusIds(context, context.user!, entityType, definition, statusScope) : definition;
     },
     workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return hasPublishedWorkflowDefinition(context, context.user!, entityType);
