@@ -23,6 +23,13 @@ const SCHEDULE_TIME = 30000;
 
 const initClusterManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
+  let startingScheduler: SetIntervalAsyncTimer<[]> | undefined;
+  const stopStartingScheduler = async () => {
+    if (startingScheduler) {
+      await clearIntervalAsync(startingScheduler);
+      startingScheduler = undefined;
+    }
+  };
   const clusterHandler = async (platformId: string) => {
     const context = executionContext('cluster_manager');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -47,13 +54,17 @@ const initClusterManager = () => {
   return {
     // A starting node serves its API before its managers are started: it is listed right away, with no managers yet,
     // so that the other nodes take it into account (logout when the last tab is closed counts the nodes serving the API).
-    // The first run of the cluster manager then replaces this entry.
+    // The entry is renewed until the first run of the cluster manager replaces it, however long the managers take to start.
     registerStartingNode: async () => {
       const configData: ClusterConfig = { platform_id: PLATFORM_INSTANCE_ID, api_enabled: ENABLED_API, managers: [] };
       await registerClusterInstance(PLATFORM_INSTANCE_ID, configData);
+      startingScheduler = setIntervalAsync(async () => {
+        await registerClusterInstance(PLATFORM_INSTANCE_ID, configData);
+      }, SCHEDULE_TIME);
     },
     start: async () => {
       logApp.info('[OPENCTI-MODULE] Starting cluster manager');
+      await stopStartingScheduler();
       await clusterHandler(PLATFORM_INSTANCE_ID);
       // receive information from the managers every 30s
       scheduler = setIntervalAsync(async () => {
@@ -63,6 +74,7 @@ const initClusterManager = () => {
     shutdown: async () => {
       const startTime = Date.now();
       logApp.info('[OPENCTI-MODULE] Stopping cluster manager');
+      await stopStartingScheduler();
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }
