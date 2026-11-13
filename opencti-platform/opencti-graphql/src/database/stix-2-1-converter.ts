@@ -124,6 +124,7 @@ import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
 import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
+import { ENTITY_TYPE_PROCEDURE, STIX_TYPE_PROCEDURE } from '../modules/procedure/procedure-types';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 import { pushAll } from '../utils/arrayUtil';
 import { flattenCustomFieldValuesForStix } from '../modules/customField/custom-field-stix-utils';
@@ -155,6 +156,9 @@ export const convertTypeToStixType = (type: string): string => {
   }
   if (isStixDomainObjectThreatActor(type)) {
     return 'threat-actor';
+  }
+  if (type === ENTITY_TYPE_PROCEDURE) {
+    return STIX_TYPE_PROCEDURE;
   }
   return type.toLowerCase();
 };

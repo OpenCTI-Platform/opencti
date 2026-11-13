@@ -34,6 +34,7 @@ import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../config/c
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
+import { ENTITY_TYPE_PROCEDURE } from '../procedure/procedure-types';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
@@ -349,11 +350,20 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   },
   // P
   platforms_ov: {
-    entity_types: [ENTITY_TYPE_DATA_SOURCE, ENTITY_TYPE_INDICATOR, ENTITY_TYPE_ATTACK_PATTERN],
+    entity_types: [ENTITY_TYPE_DATA_SOURCE, ENTITY_TYPE_INDICATOR, ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_PROCEDURE],
     fields: [{
       key: 'x_mitre_platforms',
       required: false,
       multiple: true,
+    }],
+  },
+  procedure_type_ov: {
+    description: 'Procedure type is an open vocabulary that categorizes how a technique is concretely carried out',
+    entity_types: [ENTITY_TYPE_PROCEDURE],
+    fields: [{
+      key: 'x_procedure_type',
+      required: false,
+      multiple: false,
     }],
   },
   pattern_type_ov: {

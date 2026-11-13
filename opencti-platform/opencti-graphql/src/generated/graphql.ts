@@ -39220,6 +39220,7 @@ export enum VocabularyCategory {
   PermissionsOv = 'permissions_ov',
   PersonaTypeOv = 'persona_type_ov',
   PlatformsOv = 'platforms_ov',
+  ProcedureTypeOv = 'procedure_type_ov',
   ProcessorArchitectureOv = 'processor_architecture_ov',
   ReliabilityOv = 'reliability_ov',
   ReportTypesOv = 'report_types_ov',

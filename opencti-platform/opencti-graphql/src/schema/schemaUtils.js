@@ -11,6 +11,7 @@ import {
   isStixDomainObjectThreatActor,
 } from './stixDomainObject';
 import { DatabaseError } from '../config/errors';
+import { ENTITY_TYPE_PROCEDURE, STIX_TYPE_PROCEDURE } from '../modules/procedure/procedure-types';
 import { isStixMetaObject } from './stixMetaObject';
 import {
   ABSTRACT_BASIC_OBJECT,
@@ -106,6 +107,8 @@ export const generateInternalType = (entity) => {
       return ENTITY_SSH_KEY;
     case 'ai-prompt':
       return ENTITY_AI_PROMPT;
+    case STIX_TYPE_PROCEDURE:
+      return ENTITY_TYPE_PROCEDURE;
     default:
       return pascalize(entity.type);
   }
@@ -191,6 +194,8 @@ export const convertStixToInternalTypes = (type) => {
       return [ENTITY_SSH_KEY, ...getParentTypes(ENTITY_SSH_KEY)];
     case 'ai-prompt':
       return [ENTITY_AI_PROMPT, ...getParentTypes(ENTITY_AI_PROMPT)];
+    case STIX_TYPE_PROCEDURE:
+      return [ENTITY_TYPE_PROCEDURE, ...getParentTypes(ENTITY_TYPE_PROCEDURE)];
     default:
       return pascalize(type);
   }

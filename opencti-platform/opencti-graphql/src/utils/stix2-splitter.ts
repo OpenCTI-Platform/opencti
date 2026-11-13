@@ -71,6 +71,7 @@ const SUPPORTED_STIX_ENTITY_OBJECTS = [
   'tool',
   'vulnerability',
   'security-coverage',
+  'x-opencti-procedure',
 ];
 
 // Mirrors pycti's STIX_CYBER_OBSERVABLE_MAPPING keys (opencti_stix2_utils.py)
