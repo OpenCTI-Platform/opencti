@@ -7648,32 +7648,59 @@ describe('assertExternalStatusWriteAllowed', () => {
       await expect(assertExternalStatusCreateAllowed(mockContext, 'Report', 'ra-approved')).resolves.toBeUndefined();
     });
 
-    it('rejects a request access record supplied by a caller on the request access workflow', async () => {
+    it('rejects a request access record supplied by a caller on the request access workflow, whatever the status', async () => {
       const forged = JSON.stringify({ entities: ['malware-1'], members: ['org-attacker'], status: 'NEW' });
       const refusal = 'A request access can only be created through the request access form';
-      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'ra-new', forged)).rejects.toThrow(refusal);
-      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'ra-review', forged)).rejects.toThrow(refusal);
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', forged)).rejects.toThrow(refusal);
     });
 
-    it('lets the request access form, a Global status, a plain RFI or the legacy flow create', async () => {
+    it('lets the request access form, a plain RFI, another type, the legacy flow or a disabled feature create', async () => {
       const record = JSON.stringify({ entities: ['malware-1'], members: ['org-1'], status: 'NEW' });
-      await expect(assertExternalRequestAccessCreateAllowed(mockContext, SYSTEM_USER, 'Case-Rfi', 'ra-new', record)).resolves.toBeUndefined();
-      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'global-approved', record)).resolves.toBeUndefined();
-      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'ra-new', undefined)).resolves.toBeUndefined();
-      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', undefined, record)).resolves.toBeUndefined();
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, SYSTEM_USER, 'Case-Rfi', record)).resolves.toBeUndefined();
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', undefined)).resolves.toBeUndefined();
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Report', record)).resolves.toBeUndefined();
+      vi.mocked(isFeatureEnabled).mockReturnValueOnce(false);
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', record)).resolves.toBeUndefined();
       (findByType as any).mockResolvedValue({ id: 'setting-id' });
-      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'ra-new', record)).resolves.toBeUndefined();
+      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', record)).resolves.toBeUndefined();
     });
   });
 
-  it('refuses the creation of an RFI with a malformed or oversized record, with or without a status', async () => {
+  it('refuses the creation of an RFI with a malformed or oversized record', async () => {
     const refusal = 'Request access must be a JSON object of at most';
     const oversized = JSON.stringify({ padding: 'x'.repeat(REQUEST_ACCESS_MAX_LENGTH) });
-    for (const statusId of [undefined, 'global-new']) {
-      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', statusId, oversized)).rejects.toThrow(refusal);
-      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', statusId, 'not json')).rejects.toThrow(refusal);
-    }
-    await expect(assertExternalRequestAccessCreateAllowed(mockContext, SYSTEM_USER, 'Case-Rfi', 'ra-new', '42')).rejects.toThrow(refusal);
+    await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', oversized)).rejects.toThrow(refusal);
+    await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', 'not json')).rejects.toThrow(refusal);
+    await expect(assertExternalRequestAccessCreateAllowed(mockContext, SYSTEM_USER, 'Case-Rfi', '42')).rejects.toThrow(refusal);
+  });
+
+  describe('a request record carried onto the request access workflow', () => {
+    const refusal = 'A request access can only be created through the request access form';
+
+    it('rejects a status write that puts an RFI carrying a record on the request access workflow', async () => {
+      await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt(null), 'ra-new')).rejects.toThrow(refusal);
+      await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt(null), 'ra-review')).rejects.toThrow(refusal);
+      const globalRfiWithRecord = { ...rfiAt(null), x_opencti_workflow_id: 'global-approved' };
+      await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, globalRfiWithRecord, 'ra-new')).rejects.toThrow(refusal);
+    });
+
+    it('lets a plain RFI, an RFI kept on its Global instance or the legacy flow move onto a request access status', async () => {
+      const { x_opencti_request_access: _request, ...plainRfi } = rfiAt(null);
+      await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, plainRfi, 'ra-new')).resolves.toBeUndefined();
+      (loadEntity as any).mockResolvedValue({ ...instanceAt('new'), scope: StatusScope.Global });
+      await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt(null), 'ra-new')).resolves.toBeUndefined();
+      (loadEntity as any).mockResolvedValue(null);
+      (findByType as any).mockResolvedValue({ id: 'setting-id' });
+      await expect(assertExternalStatusWriteAllowed(mockContext, mockUser, rfiAt(null), 'ra-new')).resolves.toBeUndefined();
+    });
+
+    it('rejects a record added to a plain RFI already on a request access status', async () => {
+      const { x_opencti_request_access: _request, ...plainRfi } = rfiAt('new');
+      const record = JSON.stringify({ entities: ['malware-1'], members: ['org-attacker'], status: 'NEW' });
+
+      await expect(assertExternalRequestAccessWriteAllowed(mockContext, plainRfi as unknown as BasicStoreEntity, [record], undefined))
+        .rejects.toThrow('Request access can only be changed through the workflow');
+    });
   });
 
   describe('assertExternalRequestAccessWriteAllowed – record shape', () => {

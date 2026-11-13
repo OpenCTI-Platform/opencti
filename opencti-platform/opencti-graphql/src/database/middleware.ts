@@ -4662,13 +4662,12 @@ const internalCreateEntityRaw = async (
     }
     // A creation must not supply an outcome status of the request access workflow. Checked here, past every
     // upsert branch, so that restoring or re-importing an existing decided request is not refused.
-    // The request record is checked with or without a supplied status: a creation at the default status can
-    // carry one too.
+    // A request record is refused whatever the supplied status: only the request access form creates one.
     if (!opts.workflowInternalWrite && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
       if (resolvedInput[X_WORKFLOW_ID]) {
         await assertExternalStatusCreateAllowed(context, type, resolvedInput[X_WORKFLOW_ID]);
       }
-      await assertExternalRequestAccessCreateAllowed(context, user, type, resolvedInput[X_WORKFLOW_ID], resolvedInput.x_opencti_request_access);
+      await assertExternalRequestAccessCreateAllowed(context, user, type, resolvedInput.x_opencti_request_access);
     }
     // Create the object
     const dataEntity = await buildEntityData(context, user, resolvedInput, type, opts) as { element: Record<string, any>; relations: Record<string, any>[] };

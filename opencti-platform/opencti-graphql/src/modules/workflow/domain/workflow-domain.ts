@@ -2886,8 +2886,9 @@ export const syncWorkflowInstanceFromExternalWrite = async (
 
 /**
  * Refuses a write of x_opencti_workflow_id made outside the workflow engine that moves a request into or
- * out of its Approved / Declined state: only a transition or a bypass decides a request. Any other
- * external write is left to the tolerant sync. Runs before the write is saved.
+ * out of its Approved / Declined state: only a transition or a bypass decides a request. Also refuses one
+ * that puts an RFI carrying a request record on the request access workflow: only the request access form
+ * starts a request. Any other external write is left to the tolerant sync. Runs before the write is saved.
  */
 export const assertExternalStatusWriteAllowed = async (
   context: AuthContext,
@@ -2901,6 +2902,11 @@ export const assertExternalStatusWriteAllowed = async (
     // A plain or Global RFI is no request: it never lands on Approved / Declined, which would show it decided
     if (await isRequestAccessOutcomeStatus(context, entity.entity_type, newStatusId)) {
       throw FunctionalError('Approved and Declined can only be reached or left through the workflow', { id: entity.internal_id });
+    }
+    // Nor does the write make it one: its record would then decide what an approval shares and with whom
+    const entityAfterWrite = { ...entity, x_opencti_workflow_id: newStatusId ?? undefined } as BasicStoreEntity;
+    if (await resolveRequestAccessWorkflowState(context, entityAfterWrite)) {
+      throw FunctionalError('A request access can only be created through the request access form', { id: entity.internal_id });
     }
     return;
   }
@@ -2977,15 +2983,16 @@ export const assertExternalStatusCreateAllowed = async (
 };
 
 /**
- * Refuses the creation of a request access RFI on the published request access workflow by anyone but the
- * request access form, which creates it as the system. The request record decides what an approval shares and
- * with whom, so a caller must not supply one of its own. Runs before the entity is saved.
+ * Refuses the creation of a Case-Rfi carrying a request record by anyone but the request access form, which
+ * creates it as the system, while the request access workflow is published: the record decides what an approval
+ * shares and with whom, so a caller must not supply one of its own. Whatever the supplied status: an RFI created
+ * on none or a Global one can still be moved onto the request access workflow afterwards. Runs before the entity
+ * is saved.
  */
 export const assertExternalRequestAccessCreateAllowed = async (
   context: AuthContext,
   user: AuthUser,
   entityType: string,
-  statusId: string | null | undefined,
   requestAccess: string | null | undefined,
 ): Promise<void> => {
   if (entityType !== ENTITY_TYPE_CONTAINER_CASE_RFI || !requestAccess) return;
@@ -2993,13 +3000,11 @@ export const assertExternalRequestAccessCreateAllowed = async (
   if (!isRequestAccessRecord(requestAccess)) {
     throw FunctionalError(`Request access must be a JSON object of at most ${REQUEST_ACCESS_MAX_LENGTH} characters`);
   }
-  if (!statusId || isInternalUser(user)) return;
-  const status = await findStatusInCache(context, statusId);
-  if (status?.type !== ENTITY_TYPE_CONTAINER_CASE_RFI || status.scope !== StatusScope.RequestAccess) return;
+  if (isInternalUser(user) || !isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) return;
   const entitySetting = await getWorkflowConfig(context, SYSTEM_USER, entityType);
   const definitionData = await getDefinitionData(context, SYSTEM_USER, entitySetting, false, StatusScope.RequestAccess);
   if (definitionData) {
-    throw FunctionalError('A request access can only be created through the request access form', { statusId });
+    throw FunctionalError('A request access can only be created through the request access form');
   }
 };
 

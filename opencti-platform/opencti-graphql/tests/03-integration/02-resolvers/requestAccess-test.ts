@@ -23,7 +23,7 @@ import {
   type RequestAccessAction,
 } from '../../../src/modules/requestAccess/requestAccess-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
-import { createStatusTemplate, findTemplatePaginated, statusDelete, statusTemplateDelete } from '../../../src/domain/status';
+import { createStatus, createStatusTemplate, findTemplatePaginated, statusDelete, statusTemplateDelete } from '../../../src/domain/status';
 import { FilterMode, OrderingMode, type RequestAccessConfigureInput, RequestAccessType, type StatusAddInput, StatusOrdering, StatusScope } from '../../../src/generated/graphql';
 import { logApp } from '../../../src/config/conf';
 import { ENTITY_TYPE_STATUS } from '../../../src/schema/internalObject';
@@ -135,6 +135,13 @@ const STATUS_FIELD_PATCH_QUERY = gql`
             fieldPatch(input: $input) {
                 id
             }
+        }
+    }`;
+
+const RFI_ADD_QUERY = gql`
+    mutation RequestAccessForgedRfiAdd($input: CaseRfiAddInput!) {
+        caseRfiAdd(input: $input) {
+            id
         }
     }`;
 
@@ -1247,5 +1254,92 @@ describe('Request access decided through workflow transitions', async () => {
       .rejects.toThrow('RequestAccess workflow bypass is not supported');
     expect(share).not.toHaveBeenCalled();
     expect(approvedCount).not.toHaveBeenCalled();
+  });
+
+  describe('a request record forged by a knowledge editor', () => {
+    const formOnly = 'A request access can only be created through the request access form';
+    // USER_EDITOR only has knowledge update rights: it names its own organization as the one to share with
+    const forgedRecord = () => JSON.stringify({
+      reason: 'forged',
+      entities: [malwareId],
+      members: [testOrganizationId],
+      type: RequestAccessType.OrganizationSharing,
+      status: ActionStatus.NEW,
+      executionDate: new Date().toISOString(),
+    });
+    const addRfiAsEditor = async (input: Record<string, unknown>) => {
+      const result = await queryAsUser(USER_EDITOR, { query: RFI_ADD_QUERY, variables: { input } });
+      if (result.data?.caseRfiAdd?.id) createdRfiIds.push(result.data.caseRfiAdd.id);
+      return result;
+    };
+    const patchAsEditor = (rfiId: string, key: string, value: string) => queryAsUser(USER_EDITOR, {
+      query: STATUS_FIELD_PATCH_QUERY,
+      variables: { id: rfiId, input: [{ key, value: [value] }] },
+    });
+    const findRfisNamed = (name: string) => fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CONTAINER_CASE_RFI], {
+      filters: { mode: FilterMode.And, filters: [{ key: ['name'], values: [name] }], filterGroups: [] },
+    });
+
+    it('is refused at creation without a status', async () => {
+      const name = `Forged request without status ${suffix}`;
+
+      const result = await addRfiAsEditor({ name, x_opencti_request_access: forgedRecord() });
+
+      expect(result.errors?.[0].message).toBe(formOnly);
+      expect(await findRfisNamed(name)).toHaveLength(0);
+    });
+
+    it('is refused at creation on a request access status', async () => {
+      const name = `Forged request on a request access status ${suffix}`;
+
+      const result = await addRfiAsEditor({ name, x_opencti_request_access: forgedRecord(), x_opencti_workflow_id: await statusIdOf(templateIds.pending) });
+
+      expect(result.errors?.[0].message).toBe(formOnly);
+      expect(await findRfisNamed(name)).toHaveLength(0);
+    });
+
+    it('cannot be moved onto the request access workflow by a status write', async () => {
+      // A plain RFI on a Global status, with no Global workflow published: it is not workflow-driven
+      const globalTemplate = await createStatusTemplate(testContext, ADMIN_USER, { name: `RA forged global ${suffix}`, color: '#b83f13' });
+      const globalStatus = await createStatus(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, { order: 99, scope: StatusScope.Global, template_id: globalTemplate.id });
+      resetCacheForEntity(ENTITY_TYPE_STATUS);
+      try {
+        const created = await addRfiAsEditor({ name: `Forged request set then moved ${suffix}`, x_opencti_workflow_id: globalStatus.id });
+        const rfiId = created.data?.caseRfiAdd?.id;
+        expect(rfiId).toBeDefined();
+        // Off the request access workflow, the record is a plain field
+        const recordResult = await patchAsEditor(rfiId, 'x_opencti_request_access', forgedRecord());
+        expect(recordResult.errors).toBeUndefined();
+
+        const statusResult = await patchAsEditor(rfiId, 'x_opencti_workflow_id', await statusIdOf(templateIds.pending));
+
+        expect(statusResult.errors?.[0].message).toBe(formOnly);
+        expect((await findRFIById(testContext, ADMIN_USER, rfiId)).x_opencti_workflow_id).toBe(globalStatus.id);
+        expect(await findInstance(rfiId)).toBeFalsy();
+        expect(share).not.toHaveBeenCalled();
+        await deleteElementById(testContext, ADMIN_USER, rfiId, ENTITY_TYPE_CONTAINER_CASE_RFI);
+        createdRfiIds.splice(createdRfiIds.indexOf(rfiId), 1);
+      } finally {
+        await statusDelete(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_CASE_RFI, globalStatus.id);
+        await statusTemplateDelete(testContext, ADMIN_USER, globalTemplate.id);
+        resetCacheForEntity(ENTITY_TYPE_STATUS);
+      }
+    });
+
+    it('cannot be added to a plain RFI already on a request access status', async () => {
+      const created = await addRfiAsEditor({ name: `Plain RFI given a forged request ${suffix}`, x_opencti_workflow_id: await statusIdOf(templateIds.pending) });
+      const rfiId = created.data?.caseRfiAdd?.id;
+      expect(rfiId).toBeDefined();
+      // Without a request access instance either: the status alone would start one
+      const instance = await findInstance(rfiId);
+      if (instance) await deleteElementById(testContext, ADMIN_USER, instance.id, ENTITY_TYPE_WORKFLOW_INSTANCE);
+      expect(await findInstance(rfiId)).toBeFalsy();
+
+      const recordResult = await patchAsEditor(rfiId, 'x_opencti_request_access', forgedRecord());
+
+      expect(recordResult.errors?.[0].message).toBe('Request access can only be changed through the workflow');
+      expect((await findRFIById(testContext, ADMIN_USER, rfiId)).x_opencti_request_access).toBeFalsy();
+      expect(share).not.toHaveBeenCalled();
+    });
   });
 });
