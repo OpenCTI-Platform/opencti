@@ -2,26 +2,43 @@ import React from 'react';
 import { ButtonGroup, ButtonGroupItem, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { ViewColumnOutlined } from '@mui/icons-material';
 import { VectorPolygon } from 'mdi-material-ui';
-import { Link, useLocation } from 'react-router';
+import { Link, Navigate, useLocation } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
+import useGranted, { KNOWLEDGE } from '../../../../utils/hooks/useGranted';
 
 export const INVESTIGATION_MATRIX_EXPORT_ID = 'investigation-matrix-export';
 
 export type InvestigationView = 'graph' | 'matrix';
 
+const isMatrixPath = (pathname: string) => /\/matrix\/?$/.test(pathname);
+
+/**
+ * An investigation only needs INVESTIGATION, but the matrix reads `attackPatternsMatrix` and searches
+ * security platforms, both restricted to KNOWLEDGE. Without KNOWLEDGE there is no matrix view.
+ */
+export const useCanViewInvestigationMatrix = () => useGranted([KNOWLEDGE]);
+
 /**
  * The route is the state: a path ending in `/matrix` selects the matrix,
- * anything else selects the graph.
+ * anything else selects the graph. A user without KNOWLEDGE always gets the graph.
  */
 export const useInvestigationView = (): InvestigationView => {
   const { pathname } = useLocation();
-  return /\/matrix\/?$/.test(pathname) ? 'matrix' : 'graph';
+  const canViewMatrix = useCanViewInvestigationMatrix();
+  return canViewMatrix && isMatrixPath(pathname) ? 'matrix' : 'graph';
 };
 
 const InvestigationViewSwitcher = ({ investigationId }: { investigationId: string }) => {
   const { t_i18n } = useFormatter();
+  const { pathname } = useLocation();
   const view = useInvestigationView();
+  const canViewMatrix = useCanViewInvestigationMatrix();
   const link = `/dashboard/workspaces/investigations/${investigationId}`;
+
+  // Without KNOWLEDGE the graph is the only view: no switch, and a `/matrix` link goes back to the graph.
+  if (!canViewMatrix) {
+    return isMatrixPath(pathname) ? <Navigate to={link} replace /> : null;
+  }
 
   return (
     <div id="investigation-view-buttons">
