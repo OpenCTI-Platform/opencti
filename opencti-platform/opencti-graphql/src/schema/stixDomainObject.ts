@@ -20,6 +20,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rf
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../modules/deleteOperation/deleteOperation-types';
+import { ENTITY_TYPE_HUNT_RUN } from '../modules/hunt/huntRun/huntRun-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
 
@@ -203,4 +204,5 @@ export const STIX_ORGANIZATIONS_UNRESTRICTED = [
 
 export const STIX_ORGANIZATIONS_RESTRICTED = [
   ENTITY_TYPE_DELETE_OPERATION, // deleted operations are internal objects but need to have organization restrictions applied
+  ENTITY_TYPE_HUNT_RUN, // hunt runs are internal objects carrying the organizations of their hunt
 ];

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { type AttributeDefinition, created } from '../../schema/attribute-definition';
-import { xOpenctiModifiedAt } from '../../schema/attribute-definition';
+import { xOpenctiHuntedAt, xOpenctiHuntMatchedAt, xOpenctiModifiedAt } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -48,6 +48,8 @@ const stixCyberObservableAttributes: Array<AttributeDefinition> = [
   xOpenctiModifiedAt,
   { name: 'x_opencti_description', label: 'Observable description', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'x_opencti_score', label: 'Score', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  xOpenctiHuntedAt,
+  xOpenctiHuntMatchedAt,
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CYBER_OBSERVABLE, stixCyberObservableAttributes);
 

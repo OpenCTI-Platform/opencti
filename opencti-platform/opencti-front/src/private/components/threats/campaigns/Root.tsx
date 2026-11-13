@@ -6,6 +6,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootCampaignSubscription } from '@components/threats/campaigns/__generated__/RootCampaignSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
+import HuntThisMenu from '@components/hunts/HuntThisMenu';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Campaign from './Campaign';
@@ -204,6 +205,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               }}
               extraActions={isOverview && (
                 <>
+                  <HuntThisMenu entity={campaign} />
                   <AIInsights id={campaign.id} />
                   <StixCoreObjectSecurityCoverage id={campaign.id} coverage={campaign.securityCoverage} />
                 </>

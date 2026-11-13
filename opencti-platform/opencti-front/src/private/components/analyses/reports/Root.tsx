@@ -4,6 +4,7 @@ import { useLocation, useParams } from 'react-router';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
+import HuntsOfEntity from '@components/hunts/HuntsOfEntity';
 import Security from 'src/utils/Security';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -28,6 +29,7 @@ import ReportEdition from './ReportEdition';
 import ReportDeletion from './ReportDeletion';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import AIInsights from '@components/common/ai/AIInsights';
+import HuntThisMenu from '@components/hunts/HuntThisMenu';
 import { PATH_REPORT, PATH_REPORTS } from '@components/common/routes/paths';
 
 const subscription = graphql`
@@ -178,6 +180,7 @@ const RootReport = () => {
                           containerId={report.id}
                         />
                       ),
+                      defense: <HuntsOfEntity entityId={report.id} variant="defense" />,
                       files: (
                         <StixCoreObjectFilesAndHistory
                           id={reportId}
@@ -191,6 +194,7 @@ const RootReport = () => {
                     }}
                     extraActions={!isKnowledgeOrContent && (
                       <>
+                        <HuntThisMenu entity={report} />
                         <AIInsights id={report.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
                         <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
                       </>

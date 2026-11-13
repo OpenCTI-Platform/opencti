@@ -22,11 +22,13 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
+import { isPathOverview } from '../../../../utils/tabUtils';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import AttackPatternEdition from './AttackPatternEdition';
 import AttackPatternDeletion from './AttackPatternDeletion';
 import { PATH_ATTACK_PATTERN, PATH_ATTACK_PATTERNS } from '@components/common/routes/paths';
+import HuntThisMenu from '@components/hunts/HuntThisMenu';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -102,6 +104,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
 
   const basePath = PATH_ATTACK_PATTERN(attackPatternId);
   const paddingRight = getPaddingRight(location.pathname, basePath);
+  const isOverview = isPathOverview(location.pathname, basePath);
 
   return (
     <CreateRelationshipContextProvider>
@@ -189,6 +192,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                 history:
                   <StixCoreObjectHistory stixCoreObjectId={attackPatternId} />,
               }}
+              extraActions={isOverview && <HuntThisMenu entity={attackPattern} />}
             />
           </div>
         </>

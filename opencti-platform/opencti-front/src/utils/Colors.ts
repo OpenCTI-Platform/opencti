@@ -64,6 +64,8 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   Incident: 'events',
   Sighting: 'events',
   'Observed-Data': 'events',
+  Hunt: 'events',
+  'Hunt-Run': 'events',
 
   // Observations
   Observable: 'observations',

@@ -25,7 +25,7 @@ export default class RoleFormPage {
   }
 
   getCreateUpdateKnowledgeCheckbox() {
-    return this.page.locator('li').filter({ hasText: 'Create / Update knowledge' }).getByRole('checkbox');
+    return this.page.locator('li').filter({ has: this.page.getByText('Create / Update knowledge', { exact: true }) }).getByRole('checkbox');
   }
 
   getManageCustomizationCheckbox() {

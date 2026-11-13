@@ -264,6 +264,12 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
     data.description = R.isNil(input.description) ? '' : input.description;
     data.attribute_count = R.isNil(input.attribute_count) ? 1 : input.attribute_count;
     data.x_opencti_negative = R.isNil(input.x_opencti_negative) ? false : input.x_opencti_negative;
+    if (isNotEmptyField(input.x_opencti_hunt_run_id)) {
+      data.x_opencti_hunt_run_id = input.x_opencti_hunt_run_id;
+    }
+    if (isNotEmptyField(input.x_opencti_hunt_id)) {
+      data.x_opencti_hunt_id = input.x_opencti_hunt_id;
+    }
     data.first_seen = R.isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen;
     data.last_seen = R.isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
     //* v8 ignore if */

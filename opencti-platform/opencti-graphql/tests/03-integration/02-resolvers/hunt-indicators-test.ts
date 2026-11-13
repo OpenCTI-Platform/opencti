@@ -1,0 +1,385 @@
+import gql from 'graphql-tag';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { v4 as uuid } from 'uuid';
+import { ADMIN_USER, getAuthUser, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { deleteElementById, patchAttribute } from '../../../src/database/middleware';
+import { fullEntitiesList, internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
+import { resetCacheForEntity } from '../../../src/database/cache';
+import { FilterMode } from '../../../src/generated/graphql';
+import { MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
+import { ENTITY_HOSTNAME, ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
+import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../../src/schema/stixDomainObject';
+import type { BasicStoreEntity } from '../../../src/types/store';
+import { ENTITY_TYPE_HUNT_RUN } from '../../../src/modules/hunt/huntRun/huntRun-types';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
+import { HUNT_MESSAGES } from '../../../src/modules/hunt/hunt-messages';
+import { type HuntIocSet, previewHuntIocFilter, resolveHuntIocSet } from '../../../src/modules/hunt/hunt-iocs';
+import { createHuntIncidentInWorkspace, createHuntIncidentWorkspace } from '../../../src/modules/hunt/hunt-incident';
+import { type BasicStoreEntityHunt, RELATION_HUNT_SOURCES } from '../../../src/modules/hunt/hunt-types';
+import type { BasicStoreEntityHuntRun } from '../../../src/modules/hunt/huntRun/huntRun-types';
+import { findHuntRunResults } from '../../../src/modules/hunt/huntRun/huntRun-domain';
+import { deleteDraftWorkspace } from '../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+import { ENTITY_TYPE_INCIDENT } from '../../../src/schema/stixDomainObject';
+
+const CONNECTOR_ID = '7d1f6c2e-3b4a-4e5f-8a9b-0c1d2e3f4a51';
+const SECURITY_PLATFORM_NAME = 'Indicator hunt test Splunk';
+const SIGMA_RULE = `title: Indicator hunt test rule
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    CommandLine|contains: ' -enc '
+  condition: selection
+`;
+
+const READINESS = 'readiness { ready items { key status template values { name value } message } }';
+const HUNT_ADD = gql`
+  mutation HuntAdd($input: HuntAddInput!) { huntAdd(input: $input) { id hunt_type hunt_status ${READINESS} } }
+`;
+const HUNT_READ = gql`
+  query Hunt($id: String!) {
+    hunt(id: $id) {
+      id
+      hunt_status
+      hunt_ioc_values { observable_type value }
+      ${READINESS}
+      iocSet(first: 10) { iocs_count restricted_count unsupported_count truncated iocs { key observable_type value sources { id entity_type } } }
+    }
+  }
+`;
+const HUNT_FIELD_PATCH = gql`
+  mutation HuntFieldPatch($id: ID!, $input: [EditInput]!) { huntFieldPatch(id: $id, input: $input) { id hunt_status } }
+`;
+const HUNT_RUN_START = gql`
+  mutation HuntRunStart($id: ID!) { huntRunStart(id: $id) { id hunt_run_status connector_id } }
+`;
+const HUNT_RUN_REPORT = gql`
+  mutation HuntRunReport($id: ID!, $input: HuntRunReportInput!) { huntRunReport(id: $id, input: $input) { id hunt_run_status verdict hits_count } }
+`;
+const HUNT_RUN_READ = gql`
+  query HuntRun($id: String!) {
+    huntRun(id: $id) {
+      id
+      verdict
+      hits_count
+      ioc_results { key value observable_type verdict hits_count first_seen last_seen hosts reason deployed sources { id } }
+    }
+  }
+`;
+const HUNT_CONNECTOR_REGISTER = gql`
+  mutation HuntConnectorRegister($input: HuntConnectorRegisterInput!) {
+    huntConnectorRegister(input: $input) { id supports_indicators securityPlatform { id } }
+  }
+`;
+
+type ReadinessItem = { key: string; status: string; template: string; message: string };
+const itemOf = (items: ReadinessItem[], key: string) => items.filter((item) => item.key === key);
+
+const deleteEntities = async (types: string[], key: string, value: string) => {
+  const entities = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, types, {
+    filters: { mode: FilterMode.And, filters: [{ key: [key], values: [value] }], filterGroups: [] },
+  });
+  for (let index = 0; index < entities.length; index += 1) {
+    await deleteElementById(testContext, ADMIN_USER, entities[index].id, entities[index].entity_type);
+  }
+};
+
+const reportAsConnector = async (runId: string, input: Record<string, unknown>) => {
+  const run = await internalLoadById<BasicStoreEntity & { work_id?: string }>(testContext, ADMIN_USER, runId, { type: ENTITY_TYPE_HUNT_RUN });
+  return queryAsUserWithSuccess(USER_CONNECTOR, { query: HUNT_RUN_REPORT, variables: { id: runId, input: { work_id: run?.work_id, ...input } } });
+};
+
+const registerHuntPlatform = async (supportsIndicators: boolean) => {
+  const registration = await queryAsUserWithSuccess(USER_CONNECTOR, {
+    query: HUNT_CONNECTOR_REGISTER,
+    variables: { input: { connector_id: CONNECTOR_ID, platform: 'splunk', languages: ['spl'], security_platform_name: SECURITY_PLATFORM_NAME, supports_indicators: supportsIndicators } },
+  });
+  resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+  return registration.data?.huntConnectorRegister;
+};
+
+describe('Hunt readiness and indicator hunts', () => {
+  let securityPlatformId: string;
+  let indicatorId: string;
+  let restrictedIndicatorId: string;
+  let observableId: string;
+  let reportId: string;
+  let indicatorHuntId: string;
+  const huntIds: string[] = [];
+  const scope = () => JSON.stringify({ mode: 'and', filters: [{ key: ['id'], values: [securityPlatformId], operator: 'eq', mode: 'or' }], filterGroups: [] });
+
+  beforeAll(async () => {
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: gql`mutation RegisterConnector($input: RegisterConnectorInput) { registerConnector(input: $input) { id } }`,
+      variables: { input: { id: CONNECTOR_ID, name: 'Indicator hunt test connector', type: 'INTERNAL_HUNT', scope: ['splunk'], auto: false, only_contextual: false } },
+    });
+    const connector = await registerHuntPlatform(false);
+    securityPlatformId = connector.securityPlatform.id;
+    const indicator = await queryAsAdminWithSuccess({
+      query: gql`mutation IndicatorAdd($input: IndicatorAddInput!) { indicatorAdd(input: $input) { id } }`,
+      variables: { input: { name: 'Indicator hunt test IP', pattern: "[ipv4-addr:value = '198.51.100.71']", pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } },
+    });
+    indicatorId = indicator.data?.indicatorAdd.id;
+    const restricted = await queryAsAdminWithSuccess({
+      query: gql`mutation IndicatorAdd($input: IndicatorAddInput!) { indicatorAdd(input: $input) { id } }`,
+      variables: { input: { name: 'Indicator hunt test red IP', pattern: "[ipv4-addr:value = '198.51.100.72']", pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr', objectMarking: [MARKING_TLP_RED] } },
+    });
+    restrictedIndicatorId = restricted.data?.indicatorAdd.id;
+    const observable = await queryAsAdminWithSuccess({
+      query: gql`mutation ObservableAdd($type: String!, $DomainName: DomainNameAddInput) { stixCyberObservableAdd(type: $type, DomainName: $DomainName) { id } }`,
+      variables: { type: 'Domain-Name', DomainName: { value: 'indicator-hunt-test.example.com' } },
+    });
+    observableId = observable.data?.stixCyberObservableAdd.id;
+    const report = await queryAsAdminWithSuccess({
+      query: gql`mutation ReportAdd($input: ReportAddInput!) { reportAdd(input: $input) { id } }`,
+      variables: { input: { name: 'Indicator hunt test report', published: '2026-10-01T00:00:00.000Z', objects: [observableId, restrictedIndicatorId] } },
+    });
+    reportId = report.data?.reportAdd.id;
+  });
+
+  afterAll(async () => {
+    for (let index = 0; index < huntIds.length; index += 1) {
+      await queryAsAdmin({ query: gql`mutation HuntDelete($id: ID!) { huntDelete(id: $id) }`, variables: { id: huntIds[index] } });
+    }
+    await queryAsAdmin({ query: gql`mutation DeleteConnector($id: ID!) { deleteConnector(id: $id) }`, variables: { id: CONNECTOR_ID } });
+    await queryAsAdmin({ query: gql`mutation ReportDelete($id: ID!) { reportEdit(id: $id) { delete } }`, variables: { id: reportId } });
+    for (const id of [indicatorId, restrictedIndicatorId]) {
+      await queryAsAdmin({ query: gql`mutation IndicatorDelete($id: ID!) { indicatorDelete(id: $id) }`, variables: { id } });
+    }
+    await queryAsAdmin({ query: gql`mutation ObservableDelete($id: ID!) { stixCyberObservableEdit(id: $id) { delete } }`, variables: { id: observableId } });
+    // The value seen, its victim (a system related to its hostname) and their observed data stay in the knowledge when
+    // the hunt is deleted, and the next files count them
+    if (securityPlatformId) {
+      await deleteEntities([ENTITY_TYPE_CONTAINER_OBSERVED_DATA], 'objects', securityPlatformId);
+    }
+    await deleteEntities([ENTITY_TYPE_IDENTITY_SYSTEM], 'name', 'WKS-01');
+    await deleteEntities([ENTITY_HOSTNAME], 'value', 'WKS-01');
+    await deleteEntities([ENTITY_IPV4_ADDR], 'value', '198.51.100.71');
+    if (securityPlatformId) {
+      await deleteElementById(testContext, ADMIN_USER, securityPlatformId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+    }
+  });
+
+  it('should explain what a draft hunt misses and refuse its activation with the same sentence', async () => {
+    const created = await queryAsAdminWithSuccess({ query: HUNT_ADD, variables: { input: { name: 'Readiness test draft', hunt_status: 'draft', hunt_scope: scope() } } });
+    const hunt = created.data?.huntAdd;
+    huntIds.push(hunt.id);
+    expect(hunt.readiness.ready).toBe(false);
+    expect(itemOf(hunt.readiness.items, 'logic')).toEqual([expect.objectContaining({ status: 'unmet', template: HUNT_MESSAGES.logicTelemetryMissing })]);
+    expect(itemOf(hunt.readiness.items, 'connector')[0]).toMatchObject({ status: 'met', template: HUNT_MESSAGES.connectorReady });
+    expect(itemOf(hunt.readiness.items, 'schedule')[0]).toMatchObject({ status: 'met', template: HUNT_MESSAGES.scheduleManual });
+    expect(itemOf(hunt.readiness.items, 'scope')[0]).toMatchObject({ status: 'met', template: HUNT_MESSAGES.scopePlatforms });
+    const refused = await queryAsAdmin({ query: HUNT_FIELD_PATCH, variables: { id: hunt.id, input: [{ key: 'hunt_status', value: ['active'] }] } });
+    expect(refused.errors?.[0].message).toEqual(`This hunt cannot be activated: ${HUNT_MESSAGES.logicTelemetryMissing}`);
+    // An invalid rule is reported with the errors of the platform
+    const invalid = await queryAsAdmin({ query: HUNT_FIELD_PATCH, variables: { id: hunt.id, input: [{ key: 'sigma_rule', value: ['title: broken'] }] } });
+    expect(invalid.errors?.[0].message).toContain('Invalid Sigma rule:');
+    await queryAsAdminWithSuccess({ query: HUNT_FIELD_PATCH, variables: { id: hunt.id, input: [{ key: 'sigma_rule', value: [SIGMA_RULE] }] } });
+    const ready = await queryAsAdminWithSuccess({ query: HUNT_READ, variables: { id: hunt.id } });
+    expect(ready.data?.hunt.readiness.ready).toBe(true);
+    expect(itemOf(ready.data?.hunt.readiness.items, 'logic')[0]).toMatchObject({ status: 'met', template: HUNT_MESSAGES.sigmaValid });
+    const activated = await queryAsAdminWithSuccess({ query: HUNT_FIELD_PATCH, variables: { id: hunt.id, input: [{ key: 'hunt_status', value: ['active'] }] } });
+    expect(activated.data?.huntFieldPatch.hunt_status).toEqual('active');
+  });
+
+  it('should refuse to activate a hunt whose scope matches no security platform', async () => {
+    const emptyScope = JSON.stringify({ mode: 'and', filters: [{ key: ['name'], values: ['No platform has this name'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+    const created = await queryAsAdminWithSuccess({ query: HUNT_ADD, variables: { input: { name: 'Readiness test empty scope', hunt_status: 'draft', sigma_rule: SIGMA_RULE, hunt_scope: emptyScope } } });
+    huntIds.push(created.data?.huntAdd.id);
+    const items = created.data?.huntAdd.readiness.items as ReadinessItem[];
+    expect(itemOf(items, 'scope')[0]).toMatchObject({ status: 'unmet', template: HUNT_MESSAGES.scopeEmpty });
+    expect(itemOf(items, 'connector')[0]).toMatchObject({ status: 'unmet', template: HUNT_MESSAGES.connectorMissing });
+    const refused = await queryAsAdmin({ query: HUNT_FIELD_PATCH, variables: { id: created.data?.huntAdd.id, input: [{ key: 'hunt_status', value: ['active'] }] } });
+    expect(refused.errors?.[0].message).toEqual(`This hunt cannot be activated: ${HUNT_MESSAGES.connectorMissing}`);
+  });
+
+  it('should resolve the values of an indicator hunt and leave out what its readers cannot see', async () => {
+    const created = await queryAsAdminWithSuccess({
+      query: HUNT_ADD,
+      variables: {
+        input: {
+          name: 'Indicator hunt test',
+          hunt_type: 'indicators',
+          hunt_status: 'draft',
+          hunt_scope: scope(),
+          huntSources: [indicatorId, reportId],
+          hunt_ioc_values: [{ observable_type: 'StixFile', value: 'E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855' }],
+        },
+      },
+    });
+    indicatorHuntId = created.data?.huntAdd.id;
+    huntIds.push(indicatorHuntId);
+    expect(created.data?.huntAdd.hunt_type).toEqual('indicators');
+    const read = await queryAsAdminWithSuccess({ query: HUNT_READ, variables: { id: indicatorHuntId } });
+    const hunt = read.data?.hunt;
+    expect(hunt.hunt_ioc_values).toEqual([{ observable_type: 'StixFile', value: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855' }]);
+    // The indicator, the domain of the report and the pasted hash; the red indicator of the report is left out
+    expect(hunt.iocSet.iocs_count).toEqual(3);
+    expect(hunt.iocSet.restricted_count).toEqual(1);
+    expect(hunt.iocSet.iocs.map((ioc: { value: string }) => ioc.value).sort()).toEqual([
+      '198.51.100.71',
+      'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      'indicator-hunt-test.example.com',
+    ]);
+    const items = hunt.readiness.items as ReadinessItem[];
+    expect(itemOf(items, 'logic').map((item) => [item.status, item.template])).toEqual([
+      ['met', HUNT_MESSAGES.iocCount],
+      ['warning', HUNT_MESSAGES.iocRestricted],
+    ]);
+    // The connector of the platform does not look up indicators yet
+    expect(itemOf(items, 'connector')[0]).toMatchObject({ status: 'unmet', template: HUNT_MESSAGES.connectorIndicatorsMissing });
+    const refused = await queryAsAdmin({ query: HUNT_FIELD_PATCH, variables: { id: indicatorHuntId, input: [{ key: 'hunt_status', value: ['active'] }] } });
+    expect(refused.errors?.[0].message).toEqual(`This hunt cannot be activated: ${HUNT_MESSAGES.connectorIndicatorsMissing}`);
+    const pasted = await queryAsAdmin({ query: HUNT_FIELD_PATCH, variables: { id: indicatorHuntId, input: [{ key: 'hunt_ioc_values', value: [{ observable_type: 'IPv4-Addr', value: 'not an address' }] }] } });
+    expect(pasted.errors?.[0].message).toContain('Pasted value 1 is not a valid IPv4-Addr');
+  });
+
+  it('should hunt with the access the markings of a hunt give, and show a user without TLP:RED no result implying it', async () => {
+    const red = await internalLoadById<BasicStoreEntity>(testContext, ADMIN_USER, MARKING_TLP_RED);
+    const editor = await getAuthUser(USER_EDITOR.id);
+    const values = (set: HuntIocSet) => set.iocs.map((ioc) => ioc.value).sort();
+    // A filter matching both indicators reads them with the access of the readers of the hunt, never as the system
+    const filter = JSON.stringify({ mode: 'and', filters: [{ key: ['name'], values: ['Indicator hunt test IP', 'Indicator hunt test red IP'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+    const filterHunt = { internal_id: uuid(), hunt_type: 'indicators', hunt_ioc_filters: filter, [RELATION_HUNT_SOURCES]: [] } as unknown as BasicStoreEntityHunt;
+    const forAdmin = await resolveHuntIocSet(testContext, filterHunt, ADMIN_USER);
+    expect(values(forAdmin)).toEqual(['198.51.100.71']);
+    expect(forAdmin.restricted_count).toEqual(1);
+    // The editor cannot read TLP:RED: he is not even told that an indicator is left out
+    const forEditor = await resolveHuntIocSet(testContext, filterHunt, editor);
+    expect(values(forEditor)).toEqual(['198.51.100.71']);
+    expect(forEditor.restricted_count).toEqual(0);
+    const redHunt = { ...filterHunt, [RELATION_OBJECT_MARKING]: [red.internal_id] } as unknown as BasicStoreEntityHunt;
+    expect(values(await resolveHuntIocSet(testContext, redHunt, ADMIN_USER))).toEqual(['198.51.100.71', '198.51.100.72']);
+    // The count shown under the filter covers what the hunt can take: the TLP:RED indicator for a hunt marked TLP:RED only
+    expect(await previewHuntIocFilter(testContext, filterHunt)).toEqual({ matching_count: 1, taken_count: 1 });
+    expect(await previewHuntIocFilter(testContext, redHunt, { sort: 'updated_at_asc' })).toEqual({ matching_count: 2, taken_count: 2 });
+    // The results page of a run lists and counts the results the user can read only
+    const run = { internal_id: uuid(), updated_at: new Date().toISOString(), result_ids: [indicatorId, restrictedIndicatorId] } as unknown as BasicStoreEntityHuntRun;
+    const editorResults = await findHuntRunResults(testContext, editor, run);
+    expect(editorResults.edges.map((edge) => edge.node.internal_id)).toEqual([indicatorId]);
+    expect(editorResults.pageInfo.globalCount).toEqual(1);
+    expect((await findHuntRunResults(testContext, ADMIN_USER, run)).pageInfo.globalCount).toEqual(2);
+    // The incident draft of a run restricted to TLP:RED carries the marking, the editor does not read it
+    const redRun = {
+      ...run,
+      security_platform_id: securityPlatformId,
+      hits_count: 3,
+      [RELATION_OBJECT_MARKING]: [red.internal_id],
+      [RELATION_GRANTED_TO]: [],
+    } as unknown as BasicStoreEntityHuntRun;
+    const hunt = { internal_id: indicatorHuntId, name: 'Indicator hunt test', hunt_type: 'indicators' } as unknown as BasicStoreEntityHunt;
+    const draft = await createHuntIncidentWorkspace(testContext, redRun, async (draftId) => ({
+      draftId,
+      ...await createHuntIncidentInWorkspace(testContext, hunt, redRun, null, draftId),
+    }));
+    try {
+      const draftContext = { ...testContext, draft_context: draft.draftId };
+      const incident = await storeLoadById<BasicStoreEntity>(draftContext, ADMIN_USER, draft.incidentId, ENTITY_TYPE_INCIDENT);
+      expect(incident[RELATION_OBJECT_MARKING]).toEqual([red.internal_id]);
+      expect(await storeLoadById(draftContext, editor, draft.incidentId, ENTITY_TYPE_INCIDENT).catch(() => null)).toBeFalsy();
+    } finally {
+      await deleteDraftWorkspace(testContext, ADMIN_USER, draft.draftId);
+    }
+  });
+
+  it('should run an indicator hunt on a connector that looks up indicators and record a verdict per value', async () => {
+    const connector = await registerHuntPlatform(true);
+    expect(connector.supports_indicators).toBe(true);
+    await queryAsAdminWithSuccess({ query: HUNT_FIELD_PATCH, variables: { id: indicatorHuntId, input: [{ key: 'hunt_status', value: ['active'] }] } });
+    const started = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: indicatorHuntId } });
+    const [run] = started.data?.huntRunStart ?? [];
+    expect(run.connector_id).toEqual(CONNECTOR_ID);
+    const dispatched = await queryAsAdminWithSuccess({ query: HUNT_RUN_READ, variables: { id: run.id } });
+    const snapshot = dispatched.data?.huntRun.ioc_results as { key: string; value: string; verdict: string; sources: { id: string }[] }[];
+    expect(snapshot.map((result) => result.verdict)).toEqual(['pending', 'pending', 'pending']);
+    const byValue = new Map(snapshot.map((result) => [result.value, result]));
+    expect(byValue.get('198.51.100.71')?.sources.map((source) => source.id)).toEqual([indicatorId]);
+    expect(byValue.get('indicator-hunt-test.example.com')?.sources.map((source) => source.id)).toEqual([observableId]);
+    await reportAsConnector(run.id, { status: 'running' });
+    const completed = await reportAsConnector(run.id, {
+      status: 'completed',
+      truncated: false,
+      ioc_results: [
+        { key: byValue.get('198.51.100.71')?.key, seen: true, hits_count: 14, first_seen: '2026-10-04T08:00:00.000Z', last_seen: '2026-10-04T09:30:00.000Z', hosts: ['WKS-01'] },
+        { key: byValue.get('indicator-hunt-test.example.com')?.key, seen: false, hits_count: 0 },
+        { key: byValue.get('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')?.key, searched: false, seen: false, reason: 'File hashes are not indexed on this platform' },
+      ],
+    });
+    // Hits were seen: the run waits for a human verdict, its hits count is the sum of the values
+    expect(completed.data?.huntRunReport).toMatchObject({ hunt_run_status: 'completed', verdict: 'pending', hits_count: 14 });
+    const results = (await queryAsAdminWithSuccess({ query: HUNT_RUN_READ, variables: { id: run.id } })).data?.huntRun.ioc_results as Record<string, unknown>[];
+    const resultOf = (value: string) => results.find((result) => result.value === value);
+    expect(resultOf('198.51.100.71')).toMatchObject({ verdict: 'seen', hits_count: 14, hosts: ['WKS-01'], deployed: false });
+    expect(new Date(resultOf('198.51.100.71')?.first_seen as string).toISOString()).toEqual('2026-10-04T08:00:00.000Z');
+    expect(resultOf('indicator-hunt-test.example.com')).toMatchObject({ verdict: 'not_seen', hits_count: 0 });
+    expect(resultOf('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')).toMatchObject({ verdict: 'not_searched', reason: 'File hashes are not indexed on this platform' });
+    // The indicator found and the observable searched without a hit record when a hunt last looked them up, and found them
+    const hunted = await queryAsAdminWithSuccess({
+      query: gql`
+        query HuntedDates($indicator: String!, $observable: String!, $run: String!) {
+          indicator: huntEntityActivity(id: $indicator) { hunted_at matched_at }
+          observable: huntEntityActivity(id: $observable) { hunted_at matched_at }
+          huntRun(id: $run) { indicator: entity_matched(id: $indicator) observable: entity_matched(id: $observable) }
+        }
+      `,
+      variables: { indicator: indicatorId, observable: observableId, run: run.id },
+    });
+    const huntedAt = hunted.data?.indicator.hunted_at;
+    expect(huntedAt).toBeTruthy();
+    expect(hunted.data?.indicator.matched_at).toEqual(huntedAt);
+    expect(hunted.data?.observable).toEqual({ hunted_at: huntedAt, matched_at: null });
+    expect(hunted.data?.huntRun).toEqual({ indicator: true, observable: false });
+    // The dates are filters: a filter leaving out the entities hunted since the run no longer takes the indicator
+    const nameFilter = { key: ['name'], values: ['Indicator hunt test IP'] };
+    const indicatorsMatching = async (huntedFilter: Record<string, unknown>) => {
+      const filters = { mode: 'and', filterGroups: [], filters: [nameFilter, huntedFilter] };
+      const found = await queryAsAdminWithSuccess({ query: gql`query HuntedIndicators($filters: FilterGroup) { indicators(filters: $filters) { edges { node { id } } } }`, variables: { filters } });
+      return found.data?.indicators.edges.map((edge: { node: { id: string } }) => edge.node.id);
+    };
+    expect(await indicatorsMatching({ key: ['x_opencti_hunted_at'], values: [huntedAt], operator: 'gte' })).toEqual([indicatorId]);
+    expect(await indicatorsMatching({ key: ['x_opencti_hunted_at'], values: [huntedAt], operator: 'lt' })).toEqual([]);
+  });
+
+  it('should record a run without hits as inconclusive while a value was not searched, benign once every value was', async () => {
+    const runOnce = async (searchedAll: boolean) => {
+      const started = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: indicatorHuntId } });
+      const [run] = started.data?.huntRunStart ?? [];
+      const dispatched = await queryAsAdminWithSuccess({ query: HUNT_RUN_READ, variables: { id: run.id } });
+      const keys = (dispatched.data?.huntRun.ioc_results as { key: string }[]).map((result) => result.key);
+      await reportAsConnector(run.id, { status: 'running' });
+      const reported = keys.map((key, index) => ({ key, seen: false, searched: searchedAll || index > 0 }));
+      const completed = await reportAsConnector(run.id, { status: 'completed', truncated: false, ioc_results: reported });
+      return completed.data?.huntRunReport.verdict;
+    };
+    expect(await runOnce(false)).toEqual('inconclusive');
+    expect(await runOnce(true)).toEqual('benign');
+    // Keep the connector free for the other suites: runs of this hunt are no longer dispatched
+    await patchAttribute(testContext, ADMIN_USER, indicatorHuntId, 'Hunt', { hunt_status: 'paused' });
+  });
+
+  it('should show the permissions a connector declares', async () => {
+    const registration = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: gql`mutation HuntConnectorSetup($input: HuntConnectorRegisterInput!) {
+        huntConnectorRegister(input: $input) { required_permissions { name purpose } documentation_url }
+      }`,
+      variables: {
+        input: {
+          connector_id: CONNECTOR_ID,
+          platform: 'splunk',
+          languages: ['spl'],
+          security_platform_name: SECURITY_PLATFORM_NAME,
+          supports_indicators: true,
+          required_permissions: [{ name: 'search', purpose: 'Run the hunt searches' }, { name: ' ', purpose: 'Dropped: no name' }],
+          documentation_url: 'http://not-https.example.com',
+        },
+      },
+    });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    expect(registration.data?.huntConnectorRegister.required_permissions).toEqual([{ name: 'search', purpose: 'Run the hunt searches' }]);
+    expect(registration.data?.huntConnectorRegister.documentation_url).toBeNull();
+  });
+});

@@ -55,6 +55,7 @@ const KNOWLEDGE_CAPABILITIES: CapabilityDefinition = {
       dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', attribute_order: 710 }],
     },
     { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', attribute_order: 800 },
+    { name: 'KNHUNT', description: 'Launch hunts on security platforms', attribute_order: 850 },
     { name: 'KNDISSEMINATION', description: 'Disseminate files by email', attribute_order: 900 },
     SHARE_FILTERS_CAPABILITY,
   ],

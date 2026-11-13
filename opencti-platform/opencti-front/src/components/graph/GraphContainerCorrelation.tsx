@@ -214,6 +214,9 @@ const graphContainerCorrelationObjectsFragment = graphql`
             ... on Region {
               name
             }
+            ... on Hunt {
+              name
+            }
             ... on Malware {
               name
               first_seen

@@ -204,6 +204,10 @@ export const InvestigationAddStixCoreObjectsLine = createFragmentContainer(
           name
           description
         }
+        ... on Hunt {
+          name
+          description
+        }
         ... on Malware {
           name
           description

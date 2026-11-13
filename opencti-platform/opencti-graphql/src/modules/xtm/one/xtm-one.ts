@@ -161,6 +161,9 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
       { name: 'cti.stix_harvester', description: 'Extract cyber threat intelligence from documents into STIX 2.1 bundles' },
       { name: 'cti.stix_transformer', description: 'Transform a STIX 2.1 bundle (enrich, filter, rewrite, normalize) and return a valid STIX 2.1 bundle' },
       { name: 'cti.stix_consumer', description: 'Consume a STIX 2.1 bundle as the final step of an OpenCTI playbook (summarize, alert, post, dispatch)' },
+      { name: 'cti.hunt_hypothesis', description: 'Plan an OpenCTI threat hunt (falsifiable hypothesis, Sigma rule, expected observables) for threats and techniques' },
+      { name: 'cti.hunt_sigma_generation', description: 'Write the Sigma rule of an OpenCTI telemetry hunt from its hypothesis, threats, techniques and security platforms' },
+      { name: 'cti.hunt_triage', description: 'Triage the evidence of an OpenCTI hunt run and propose a verdict and an incident' },
     ],
   });
 

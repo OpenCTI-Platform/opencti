@@ -2,6 +2,7 @@ import {
   CloudDownloadOutlined,
   ExtensionOutlined,
   FileDownloadOutlined,
+  GpsFixedOutlined,
   InputOutlined,
   PostAdd,
   StreamOutlined,
@@ -17,6 +18,7 @@ export type IngestionConnectorType
     | 'EXTERNAL_IMPORT'
     | 'INTERNAL_EXPORT_FILE'
     | 'INTERNAL_IMPORT_FILE'
+    | 'INTERNAL_HUNT'
     | 'STREAM';
 
 const CONNECTOR_TYPE_ICONS: Record<IngestionConnectorType, SvgIconComponent> = {
@@ -26,6 +28,7 @@ const CONNECTOR_TYPE_ICONS: Record<IngestionConnectorType, SvgIconComponent> = {
   INTERNAL_EXPORT_FILE: FileDownloadOutlined,
   INTERNAL_IMPORT_FILE: UploadFileOutlined,
   INTERNAL_INGESTION: InputOutlined,
+  INTERNAL_HUNT: GpsFixedOutlined,
   STREAM: StreamOutlined,
 };
 
@@ -68,6 +71,11 @@ export const getConnectorMetadata = (
     case 'INTERNAL_INGESTION':
       return {
         label: t_i18n('Internal ingestion'),
+        color: 'warning' as const,
+      };
+    case 'INTERNAL_HUNT':
+      return {
+        label: t_i18n('Internal hunt'),
         color: 'warning' as const,
       };
     case 'STREAM':

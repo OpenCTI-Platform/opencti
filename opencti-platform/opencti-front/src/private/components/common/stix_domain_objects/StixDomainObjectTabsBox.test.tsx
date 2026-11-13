@@ -55,6 +55,18 @@ describe('StixDomainObjectTabsBox', () => {
     );
   });
 
+  it('renders each tab of a hunt once, in order', () => {
+    testRender(
+      <StixDomainObjectTabsBox
+        entityType="Hunt"
+        tabs={['overview', 'logic', 'runs', 'evidence', 'content', 'files', 'history']}
+        basePath=""
+      />,
+    );
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent))
+      .toEqual(['Overview', 'Logic', 'Runs', 'Evidence', 'Content', 'Data', 'History']);
+  });
+
   it('renders components passed as extraActions', () => {
     testRender(
       <StixDomainObjectTabsBox

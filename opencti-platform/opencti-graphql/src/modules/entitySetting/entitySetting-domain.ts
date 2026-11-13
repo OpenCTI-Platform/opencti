@@ -104,8 +104,15 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
   return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };
 
+// A layout saved before a widget joined the default layout of its type shows that widget last
 export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
-  return entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : schemaOverviewLayoutCustomization.get(entitySetting.target_type);
+  const defaultLayout = schemaOverviewLayoutCustomization.get(entitySetting.target_type);
+  const storedLayout = entitySetting.overview_layout_customization;
+  if (!storedLayout?.[0]) {
+    return defaultLayout;
+  }
+  const storedKeys = new Set(storedLayout.map(({ key }) => key));
+  return [...storedLayout, ...(defaultLayout ?? []).filter(({ key }) => !storedKeys.has(key))];
 };
 
 export const getTemplatesForSetting = async (

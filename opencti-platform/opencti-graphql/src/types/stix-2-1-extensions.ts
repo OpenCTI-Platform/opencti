@@ -16,3 +16,7 @@ export const STIX_EXT_OCTI_SCO = 'extension-definition--f93e2c80-4231-4f9a-af8b-
 // Attributes extensions
 // mitre_id
 export const STIX_EXT_MITRE = 'extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b';
+
+// New SDO "hunt" (OpenCTI Hunts), declared in hunt packs so that any STIX consumer can identify the object schema
+// Properties = hypothesis - hunt_type - hunt_status - sigma_rule - native_queries - hunt_schedule - time_window_hours ...
+export const STIX_EXT_OCTI_HUNT = 'extension-definition--1c445ca2-6982-5163-9107-7e89bc1693d1';

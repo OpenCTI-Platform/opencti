@@ -78,6 +78,8 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   'IngestionTaxiiCollection.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionDeduplicationRule.user_id': { kind: 'excluded', reason: 'another-handler', detail: 'Deduplication rule handler, which keeps the target rule when both users have one on a type' },
   'History.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History is rewritten by the history chunk' },
+  'Hunt-Run.triggered_by': { kind: 'covered', registerRow: 'hunt-run.triggered-by' },
+  'Hunt-Run.connector_user_id': { kind: 'covered', registerRow: 'hunt-run.connector-user-id' },
   'PirHistory.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'PirHistory is rewritten by the history chunk' },
   'Activity.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'Activity is rewritten by the history chunk' },
   [`${ENTITY_USER_ACCOUNT}.user_id`]: {

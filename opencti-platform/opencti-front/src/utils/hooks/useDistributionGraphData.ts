@@ -3,6 +3,7 @@ import { useFormatter } from '../../components/i18n';
 import { getMainRepresentative, isFieldForIdentifier } from '../defaultRepresentatives';
 import { itemColor } from '../Colors';
 import type { Widget } from '../widget/widget';
+import { huntWidgetValueLabel } from '@components/hunts/hunt-utils';
 
 // common type compatible with all distribution queries
 type DistributionNode = {
@@ -64,6 +65,9 @@ const useDistributionGraphData = () => {
         label = getMainRepresentative(n.entity) || n.label;
       } else if (selection.attribute === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
         label = t_i18n(`entity_${n.label}`);
+      } else {
+        const huntLabel = huntWidgetValueLabel(selection.attribute ?? '', n.label);
+        if (huntLabel) label = t_i18n(huntLabel);
       }
       return {
         x: label,
@@ -114,7 +118,8 @@ const useDistributionGraphData = () => {
       if (groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
         return t_i18n(`entity_${n.label}`);
       }
-      return n.label;
+      const huntLabel = huntWidgetValueLabel(groupBy, n.label);
+      return huntLabel ? t_i18n(huntLabel) : n.label;
     });
   };
 
@@ -132,7 +137,8 @@ const useDistributionGraphData = () => {
       if (groupBy === 'entity_type' && t_i18n(`entity_${n.label}`) !== `entity_${n.label}`) {
         return { text: t_i18n(`entity_${n.label}`), value: n.value ?? 0 };
       }
-      return { text: n.label, value: n.value ?? 0 };
+      const huntLabel = huntWidgetValueLabel(groupBy, n.label);
+      return { text: huntLabel ? t_i18n(huntLabel) : n.label, value: n.value ?? 0 };
     });
   };
 
