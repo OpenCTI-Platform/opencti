@@ -299,7 +299,7 @@ type Connector implements BasicObject & InternalObject {
   update_available: Boolean
   latest_compatible_version: String
   has_newer_incompatible_version: Boolean
-  manager_contract_configuration: [ManagerContractConfiguration!]
+  manager_contract_configuration: [ManagerContractConfiguration!] @auth(for: [MODULES])
   manager_connector_logs: [String!]
   manager_contract_hash: String
   manager_health_metrics: ConnectorHealthMetrics

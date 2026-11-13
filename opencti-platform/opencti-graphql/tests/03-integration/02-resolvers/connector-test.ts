@@ -3,7 +3,8 @@ import gql from 'graphql-tag';
 import { v4 as uuid } from 'uuid';
 import { ADMIN_USER, testContext, USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { FORBIDDEN_ACCESS } from '../../../src/config/errors';
 import { type ConnectorInfo, type ConnectorInfoError, type Connector } from '../../../src/generated/graphql';
 import { BACKGROUND_TASK_QUEUES } from '../../../src/modules/connector/connector-rabbitmq';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
@@ -266,6 +267,27 @@ describe('Connector resolver standard behaviour', () => {
         connector_type: 'INTERNAL_IMPORT_FILE',
       }),
     ]));
+  });
+
+  it('should not expose the manager contract configuration to a user without the connectors capability', async () => {
+    const queryResult = await queryAsUser(USER_EDITOR, {
+      query: gql`
+        query ListImportConnectorsWithConfiguration {
+          connectorsForImport {
+            id
+            manager_contract_configuration {
+              key
+              value
+            }
+          }
+        }
+      `,
+      variables: {},
+    });
+    expect(queryResult.data?.connectorsForImport?.length).toBeGreaterThan(0);
+    expect(queryResult.data?.connectorsForImport.every((c: Connector) => c.manager_contract_configuration === null)).toBe(true);
+    expect(queryResult.errors?.length).toBeGreaterThan(0);
+    expect(queryResult.errors?.every((e) => e.extensions?.code === FORBIDDEN_ACCESS)).toBe(true);
   });
 
   it('should expose registered connectors through the worker endpoint', async () => {

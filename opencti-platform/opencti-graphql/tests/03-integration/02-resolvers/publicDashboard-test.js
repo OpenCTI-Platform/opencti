@@ -1214,6 +1214,56 @@ describe('PublicDashboard resolver', () => {
           expect(belgique).toBeDefined();
         });
 
+        it('should not expose enrichment connectors through API: SCO List', async () => {
+          const enrichmentConnectorId = '5d3c8a4e-3b1f-4f63-9c1e-2a7f0d6b8e41';
+          await queryAsAdmin({
+            query: gql`
+              mutation RegisterConnector($input: RegisterConnectorInput) {
+                registerConnector(input: $input) { id }
+              }
+            `,
+            variables: { input: { id: enrichmentConnectorId, name: 'Public dashboard enrichment', type: 'INTERNAL_ENRICHMENT', scope: 'Administrative-Area', auto: false, only_contextual: false } },
+          });
+          try {
+            const { data: privateData } = await queryAsAdmin({
+              query: gql`
+                query AreaConnectors($id: String!) {
+                  administrativeArea(id: $id) { connectors { id } }
+                }
+              `,
+              variables: { id: franceId },
+            });
+            expect(privateData.administrativeArea.connectors.map((c) => c.id)).toContain(enrichmentConnectorId);
+
+            const { data } = await queryAsAdmin({
+              query: gql`
+                query PublicStixCoreObjectsConnectors($uriKey: String!, $widgetId: String!) {
+                  publicStixCoreObjects(uriKey: $uriKey, widgetId: $widgetId) {
+                    edges {
+                      node {
+                        ... on StixCoreObject {
+                          connectors {
+                            id
+                            manager_contract_configuration { key value }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              `,
+              variables: { uriKey: publicDashboardUriKey, widgetId: 'bec879df-4da2-46c0-994a-e795c1b3a649' },
+            });
+            expect(data.publicStixCoreObjects.edges.length).toBeGreaterThan(0);
+            data.publicStixCoreObjects.edges.forEach((e) => expect(e.node.connectors).toEqual([]));
+          } finally {
+            await queryAsAdmin({
+              query: gql`mutation ConnectorDelete($id: ID!) { deleteConnector(id: $id) }`,
+              variables: { id: enrichmentConnectorId },
+            });
+          }
+        });
+
         it('should return the data for API: SCR List', async () => {
           const API_SCR_LIST_QUERY = gql`
             query PublicStixRelationships(
