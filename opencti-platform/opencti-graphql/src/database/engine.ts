@@ -204,7 +204,7 @@ import { pushAll, unshiftAll } from '../utils/arrayUtil';
 import { getRoleAssumerWithWebIdentity } from '../utils/awsSdk';
 import { elConvertHits, elConvertHitsToMap, INNER_HITS_WINDOWS_SIZE } from './engine-data-converter';
 import { engineMappingGenerator, getRetroCompatibleMappings } from './engine-mapping-generator';
-import { isEsScriptFilterEnabled } from './engine-config';
+import { getTranslogDurability, isEsScriptFilterEnabled, isTranslogRequestForced } from './engine-config';
 import { AbortError } from 'node-fetch';
 import { RELATION_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 
@@ -502,6 +502,11 @@ export const searchEngineInit = async (): Promise<boolean> => {
     configuration: 'forced by elasticsearch:engine_client',
   }[decision.source];
   logApp.info(`[SEARCH] Search engine client ${decision.client} selected, ${origin}`);
+  // The durability is only set on Elasticsearch: an OpenSearch cluster may not support 'async'
+  if (enginePlatform === OPENSEARCH_ENGINE && isTranslogRequestForced()) {
+    logApp.warn('[SEARCH] ES_TRANSLOG_REQUEST only applies to Elasticsearch and is ignored: the translog durability of the platform indices is left untouched, '
+      + 'and the OpenSearch default is already the requested \'request\'');
+  }
   // The server was not read to choose the client: it must still answer, or the platform does not start
   if (decision.source !== 'detection') {
     await checkEngineReachable(() => (engine as OpenClient).info());
@@ -1251,6 +1256,11 @@ const computeIndexSettings = (rolloverAlias: string | null | undefined): any => 
           total_fields: {
             limit: ES_MAX_MAPPINGS,
           },
+        },
+        // Settings of the platform indices are re-applied at every start, to the templates and to
+        // every existing index: the durability changes without reindex nor downtime
+        translog: {
+          durability: getTranslogDurability(),
         },
         ...cycle,
       },
