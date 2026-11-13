@@ -53,6 +53,10 @@ export const applyPublicationTimeRange = (
   if ((relativeDate !== null && !RELATIVE_DATE_REGEXP.test(relativeDate)) || !isValidDate(startDate) || !isValidDate(endDate)) {
     throw FunctionalError('Invalid public dashboard time range');
   }
+  // Same rule as the per user range: a start after the end would publish a dashboard that shows no data, with no error.
+  if (relativeDate === null && startDate !== null && endDate !== null && Date.parse(startDate) > Date.parse(endDate)) {
+    throw FunctionalError('Invalid public dashboard time range');
+  }
   if (relativeDate !== null) {
     return { ...config, relativeDate, startDate: null, endDate: null };
   }
