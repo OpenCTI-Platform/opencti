@@ -52,7 +52,7 @@ export default class InvestigationDetailsPage {
   }
 
   getMatrixViewLink() {
-    return this.page.getByLabel('Tactics matrix view', { exact: true });
+    return this.page.getByLabel('Matrix view', { exact: true });
   }
 
   async goToMatrix() {

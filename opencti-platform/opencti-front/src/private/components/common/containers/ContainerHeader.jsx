@@ -672,11 +672,11 @@ const ContainerHeader = (props) => {
                           </Tooltip>
                         )}
                         {modes.includes('matrix') && (
-                          <Tooltip title={t_i18n('Tactics matrix view')}>
+                          <Tooltip title={t_i18n('Matrix view')}>
                             <ButtonGroupItem
                               asChild
                               value="matrix"
-                              aria-label={t_i18n('Tactics matrix view')}
+                              aria-label={t_i18n('Matrix view')}
                               icon={<ViewColumnOutlined sx={{ fontSize: 16 }} />}
                             >
                               <Link to={`${link}/matrix`} />
