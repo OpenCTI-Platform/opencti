@@ -15,11 +15,11 @@ import {
   startPlatformHealthMonitor,
   stopPlatformHealthMonitor,
 } from '../../../src/telemetry/platformHealthMetrics';
-import { redisGetPlatformUsageMetrics, redisIsAlive } from '../../../src/database/redis';
+import { redisGetPlatformUsageMetrics, redisHealthCheck } from '../../../src/database/redis';
 
 vi.mock('../../../src/database/redis', () => ({
   redisGetPlatformUsageMetrics: vi.fn(),
-  redisIsAlive: vi.fn(),
+  redisHealthCheck: vi.fn(),
 }));
 vi.mock('../../../src/database/engine', () => ({ isEngineAlive: vi.fn() }));
 vi.mock('../../../src/database/raw-file-storage', () => ({ isStorageAlive: vi.fn() }));
@@ -144,7 +144,7 @@ describe('platformHealthMetrics: getPlatformHealthStatus function', () => {
     vi.mocked(isEngineAlive).mockResolvedValue(undefined);
     vi.mocked(isStorageAlive).mockRejectedValue(Error('Storage seems down'));
     vi.mocked(rabbitMQIsAlive).mockResolvedValue(true);
-    vi.mocked(redisIsAlive).mockResolvedValue(true);
+    vi.mocked(redisHealthCheck).mockResolvedValue(true);
 
     await refreshDependencyStatus();
 
@@ -172,7 +172,7 @@ describe('platformHealthMetrics: startPlatformHealthMonitor function', () => {
     vi.mocked(isEngineAlive).mockResolvedValue(undefined);
     vi.mocked(isStorageAlive).mockResolvedValue(true);
     vi.mocked(rabbitMQIsAlive).mockResolvedValue(true);
-    vi.mocked(redisIsAlive).mockResolvedValue(true);
+    vi.mocked(redisHealthCheck).mockResolvedValue(true);
     vi.mocked(redisGetPlatformUsageMetrics).mockRejectedValue(Error('Redis read failed'));
     const errorSpy = vi.spyOn(logApp, 'error').mockImplementation(() => {});
 
