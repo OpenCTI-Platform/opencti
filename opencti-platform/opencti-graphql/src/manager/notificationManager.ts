@@ -6,7 +6,7 @@ import { type SizedNotifEvent, type StreamProcessor } from '../database/stream/s
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
-import conf, { booleanConf, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import {
   executionContext,
@@ -231,9 +231,9 @@ export const getNotifications = async (context: AuthContext): Promise<Array<Reso
       notificationTriggers.push({ users: [user], trigger: generateAssigneeTrigger(user) });
     }
     notificationTriggers.push({ users: [user], trigger: generatePlatformNotificationTrigger(user) });
-    // Admin is always an authorized member of a request access RFI. With the request access workflow it is notified
-    // like any other validator; on the legacy flow it stays a fallback, left out of the alerting.
-    if (user.id !== OPENCTI_ADMIN_UUID || isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+    // Admin is always an authorized member of a request access RFI, as a fallback: the validators of the approval
+    // groups are the ones alerted, whichever flow (legacy or request access workflow) decides the request.
+    if (user.id !== OPENCTI_ADMIN_UUID) {
       notificationTriggers.push({ users: [user], trigger: generateRequestAccessAuthorizeTrigger(user) });
     }
   }
