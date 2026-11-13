@@ -35,8 +35,9 @@ import { CguStatus, DateFormat, PlatformType, TimeFormat } from '../generated/gr
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
-import { LOCAL_AUTH_LOCKOUT_DEFAULTS, updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
+import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
 import { readPasswordHistoryCount } from '../modules/user/user-password-history';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../domain/local-auth-lockout';
 
 const settingsResolvers = {
   Query: {
@@ -70,12 +71,8 @@ const settingsResolvers = {
     password_policy_min_uppercase: (settings) => settings.password_policy_min_uppercase ?? 0,
     password_policy_validity_days: (settings) => settings.password_policy_validity_days ?? 0,
     password_policy_history_count: (settings) => readPasswordHistoryCount(settings),
-    local_auth_lockout_enabled: (settings) => settings.local_auth_lockout_enabled ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_enabled,
-    local_auth_lockout_max_attempts: (settings) => settings.local_auth_lockout_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_max_attempts,
-    local_auth_lockout_admin_max_attempts: (settings) => settings.local_auth_lockout_admin_max_attempts ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_admin_max_attempts,
-    local_auth_lockout_final_action: (settings) => settings.local_auth_lockout_final_action ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_final_action,
-    local_auth_lockout_window: (settings) => settings.local_auth_lockout_window ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_window,
-    local_auth_lockout_duration: (settings) => settings.local_auth_lockout_duration ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_duration,
+    // Each lockout field falls back to its default when the settings hold none
+    ...Object.fromEntries(Object.entries(LOCAL_AUTH_LOCKOUT_DEFAULTS).map(([key, defaultValue]) => [key, (settings) => settings[key] ?? defaultValue])),
     editContext: (settings) => fetchEditContext(settings.id),
     platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),

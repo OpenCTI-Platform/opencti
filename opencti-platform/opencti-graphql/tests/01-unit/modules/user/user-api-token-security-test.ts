@@ -30,6 +30,8 @@ vi.mock('../../../../src/database/cache', () => ({
 
 vi.mock('../../../../src/database/redis', () => ({
   notify: vi.fn().mockResolvedValue({}),
+  // Every accepted session login resets the local authentication lockout of the email
+  redisClearLocalAuthLockout: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../../../../src/listener/UserActionListener', () => ({
