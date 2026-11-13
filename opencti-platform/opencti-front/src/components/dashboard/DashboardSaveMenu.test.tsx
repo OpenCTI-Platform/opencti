@@ -19,12 +19,10 @@ describe('DashboardSaveMenu', () => {
     );
     expect(screen.getByTestId('dashboard-save-menu')).toHaveClass(EXPORT_REMOVE_CLASS);
     await user.click(screen.getByTestId('dashboard-save-menu'));
-    expect(await screen.findByText('Everyone using this preset')).toBeInTheDocument();
-    expect(screen.getByTestId('dashboard-preset-update')).toHaveTextContent('Update “Finance”');
-    expect(screen.getByText('New')).toBeInTheDocument();
-    expect(screen.getByTestId('dashboard-preset-save-as')).toHaveTextContent('Save as new preset…');
-    expect(screen.getByText('Everyone, without a preset')).toBeInTheDocument();
-    expect(screen.getByTestId('dashboard-set-as-defaults')).toHaveTextContent('Set as dashboard defaults');
+    // Each entry says for whom it writes, under its action
+    expect(await screen.findByTestId('dashboard-preset-update')).toHaveTextContent('Update “Finance”For everyone using this preset');
+    expect(screen.getByTestId('dashboard-preset-save-as')).toHaveTextContent('Save as new preset…Under a new name, for anyone to pick');
+    expect(screen.getByTestId('dashboard-set-as-defaults')).toHaveTextContent('Set as dashboard defaultsFor everyone without a preset');
   });
 
   it('calls the picked entry', async () => {
