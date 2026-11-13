@@ -7,6 +7,7 @@ import { createRelation, createRelationRaw } from '../../../src/database/middlew
 import { fullRelationsList } from '../../../src/database/middleware-loader';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
+import { ENTITY_TYPE_HUNT } from '../../../src/modules/hunt/hunt-types';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_SOFTWARE } from '../../../src/schema/stixCyberObservable';
 
 describe('StixRefRelationship', () => {
@@ -127,10 +128,12 @@ describe('StixRefRelationship', () => {
       query: ALLOWED_TYPES_QUERY,
       variables: { type: 'Malware' },
     });
-    expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.length).toEqual(3);
+    expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.length).toEqual(4);
     expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.includes(ENTITY_HASHED_OBSERVABLE_STIX_FILE)).toBeTruthy();
     expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.includes(ENTITY_SOFTWARE)).toBeTruthy();
     expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.includes(ENTITY_HASHED_OBSERVABLE_ARTIFACT)).toBeTruthy();
+    // A hunt targets malware through its hunt-target ref
+    expect(queryResult2.data.stixSchemaRefRelationshipsPossibleTypes.includes(ENTITY_TYPE_HUNT)).toBeTruthy();
     // File
     const queryResult3 = await queryAsAdmin({
       query: ALLOWED_TYPES_QUERY,

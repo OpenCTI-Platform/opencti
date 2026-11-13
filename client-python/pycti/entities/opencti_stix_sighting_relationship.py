@@ -613,6 +613,8 @@ class StixSightingRelationship:
         :type count: int
         :param x_opencti_negative: (optional) whether this is a negative sighting
         :type x_opencti_negative: bool
+        :param x_opencti_hunt_run_id: (optional) the hunt run that found the sighting
+        :type x_opencti_hunt_run_id: str
         :param created: (optional) creation date
         :type created: str
         :param modified: (optional) modification date
@@ -648,6 +650,7 @@ class StixSightingRelationship:
         last_seen = kwargs.get("last_seen", None)
         count = kwargs.get("count", None)
         x_opencti_negative = kwargs.get("x_opencti_negative", False)
+        x_opencti_hunt_run_id = kwargs.get("x_opencti_hunt_run_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
         confidence = kwargs.get("confidence", None)
@@ -692,6 +695,7 @@ class StixSightingRelationship:
                     "last_seen": last_seen,
                     "attribute_count": count,
                     "x_opencti_negative": x_opencti_negative,
+                    "x_opencti_hunt_run_id": x_opencti_hunt_run_id,
                     "created": created,
                     "modified": modified,
                     "confidence": confidence,

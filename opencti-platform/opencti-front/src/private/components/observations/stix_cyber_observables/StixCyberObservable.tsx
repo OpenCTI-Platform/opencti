@@ -10,6 +10,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import HuntsOfEntity from '../../hunts/HuntsOfEntity';
 
 const stixCyberObservableFragment = graphql`
   fragment StixCyberObservable_stixCyberObservable on StixCyberObservable {
@@ -104,6 +105,9 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
             stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
             defaultMarkings={stixCyberObservable.objectMarking ?? []}
           />
+        </Grid>
+        <Grid item xs={12}>
+          <HuntsOfEntity entityId={stixCyberObservable.id} />
         </Grid>
       </Grid>
     </div>

@@ -207,6 +207,10 @@ const entityDetailsQuery = graphql`
         name
         description
       }
+      ... on Hunt {
+        name
+        description
+      }
       ... on Malware {
         name
         first_seen
