@@ -4,7 +4,7 @@ import { buildPaginationFromEdges } from '../../../database/utils';
 import { FunctionalError } from '../../../config/errors';
 import type { ConfigImportResult } from '../../configImport/configImport-types';
 import type { ConfigPresetFamilyDefinition, ConfigPresetItemDefinition, ConfigPresetListItemsArgs } from '../configPreset-types';
-import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportField } from '../import/configPreset-import-types';
+import type { ConfigPresetAppliedItem, ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportField } from '../import/configPreset-import-types';
 
 // Export groups of the spec table; a group is added with its first category
 export const platformSettingsGroup = { id: 'platformSettings', label: 'Platform settings' };
@@ -13,6 +13,7 @@ export const securityAccessGroup = { id: 'securityAccess', label: 'Security & Ac
 export const taxonomyGroup = { id: 'taxonomy', label: 'Taxonomy' };
 export const customizationGroup = { id: 'customization', label: 'Customization' };
 export const integrationsGroup = { id: 'integrations', label: 'Integrations' };
+export const automationRulesGroup = { id: 'automationRules', label: 'Automation & Rules' };
 
 // The families the items of another family depend on (the roles of a group, the default theme of the platform):
 // their ids are shared here, so that registries do not import each other
@@ -109,6 +110,8 @@ export const checkStandardId = (
   return { ...label, exists: false, conflict: false, status: 'failed', reason };
 };
 
+export const toIsEnabled = (value: unknown) => (typeof value === 'boolean' ? value : null);
+
 // What an importer returns once a module has written an item: a failure is an error that makes the item failed,
 // and a status other than the computed one is reported
 export const toAppliedStatus = (result: ConfigImportResult, computed: ConfigPresetComputedItem) => {
@@ -116,4 +119,10 @@ export const toAppliedStatus = (result: ConfigImportResult, computed: ConfigPres
     throw FunctionalError(result.reason ?? 'Item cannot be imported');
   }
   return result.status === computed.status ? undefined : result.status;
+};
+
+// The same, with the reason of the module when the status differs: the one of compute described what was expected
+export const toAppliedItem = (result: ConfigImportResult, computed: ConfigPresetComputedItem): ConfigPresetAppliedItem | undefined => {
+  const status = toAppliedStatus(result, computed);
+  return status ? { status, reason: result.reason } : undefined;
 };

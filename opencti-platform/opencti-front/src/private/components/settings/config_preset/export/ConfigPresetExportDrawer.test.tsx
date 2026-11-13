@@ -439,6 +439,19 @@ describe('ConfigPresetExportDrawer', () => {
       expect(relayEnv.mock.getMostRecentOperation().request.variables).toMatchObject({ type: 'branding', cursor: 'next', count: 25 });
     });
 
+    it('shows under each item whether it is on or off, and nothing for an item that is neither', async () => {
+      const rendered = await renderOpenDrawer(vi.fn(), pagedBrandingCatalog());
+      await rendered.user.click(screen.getByRole('button', { name: 'Manage' }));
+      await resolveItems(rendered.relayEnv, [
+        item('rule-on', 'Rule on', { isEnabled: true }),
+        item('rule-off', 'Rule off', { isEnabled: false }),
+        item('theme-acme', 'ACME', { translatable: false, isEnabled: null }),
+      ]);
+      expect(screen.getAllByText('Enabled')).toHaveLength(1);
+      expect(screen.getAllByText('Disabled')).toHaveLength(1);
+      expect(screen.getByRole('checkbox', { name: 'ACME' })).toBeInTheDocument();
+    });
+
     it('goes back to the bundle with the arrow or the button, keeping the selection', async () => {
       const { user } = await openThemes();
       await user.click(screen.getByRole('checkbox', { name: 'ACME' }));
